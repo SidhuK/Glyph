@@ -10,6 +10,7 @@ import {
 	monthDateRange,
 } from "../../lib/calendarActivity";
 import { getTodayDateString } from "../../lib/dailyNotes";
+import type { PeriodKind } from "../../lib/periodNotes";
 import type { CalendarDateNote } from "../../lib/tauri";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CalendarMonth } from "./calendar/CalendarMonth";
@@ -21,7 +22,7 @@ interface CalendarPaletteProps {
 	spacePath: string | null;
 	dailyNoteFolder: string | null;
 	onOpenNote: (path: string) => void;
-	onOpenDailyNoteAtDate: (date: string) => void;
+	onOpenPeriodNoteAtDate: (kind: PeriodKind, date: string) => void;
 }
 
 /** One row per note, daily notes first, then alphabetical by title. */
@@ -56,7 +57,7 @@ export function CalendarPalette({
 	spacePath,
 	dailyNoteFolder,
 	onOpenNote,
-	onOpenDailyNoteAtDate,
+	onOpenPeriodNoteAtDate,
 }: CalendarPaletteProps) {
 	const { t, i18n } = useTranslation("shell");
 	const [visibleMonth, setVisibleMonth] = useState(() => new Date());
@@ -116,10 +117,13 @@ export function CalendarPalette({
 		setSelectedDate(todayKey);
 	}, []);
 
-	const handleOpenDailyNote = useCallback(() => {
-		onClose();
-		onOpenDailyNoteAtDate(selectedDate);
-	}, [onClose, onOpenDailyNoteAtDate, selectedDate]);
+	const handleOpenPeriodNote = useCallback(
+		(kind: PeriodKind) => {
+			onClose();
+			onOpenPeriodNoteAtDate(kind, selectedDate);
+		},
+		[onClose, onOpenPeriodNoteAtDate, selectedDate],
+	);
 
 	const handleOpenNote = useCallback(
 		(path: string) => {
@@ -160,8 +164,8 @@ export function CalendarPalette({
 								? String(notesQuery.error)
 								: null
 					}
-					canOpenDailyNote={Boolean(dailyNoteFolder)}
-					onOpenDailyNote={handleOpenDailyNote}
+					canOpenDatedNotes={Boolean(dailyNoteFolder)}
+					onOpenPeriodNote={handleOpenPeriodNote}
 					onOpenNote={handleOpenNote}
 				/>
 			</DialogContent>

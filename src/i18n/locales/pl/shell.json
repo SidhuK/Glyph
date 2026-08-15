@@ -169,7 +169,13 @@
 		"noteCount_other": "{{count}} notatki",
 		"noNotes": "Brak notatek",
 		"loadFailed": "Nie udało się wczytać notatek: {{message}}",
-		"loadFailedShort": "Nie udało się wczytać notatek"
+		"loadFailedShort": "Nie udało się wczytać notatek",
+		"openPeriodNote": {
+			"day": "Dzień",
+			"week": "Tydzień",
+			"month": "Miesiąc",
+			"quarter": "Kwartał"
+		}
 	},
 	"tabs": {
 		"allNotes": "Wszystkie",

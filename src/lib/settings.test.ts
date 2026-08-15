@@ -615,9 +615,15 @@ describe("space-scoped settings", () => {
 		const settings = await loadSettings({ spacePath: "/spaces/fresh" });
 
 		expect(settings.dailyNotes.folder).toBeNull();
+		expect(settings.dailyNotes.weeklyNotes).toBe(false);
+		expect(settings.dailyNotes.monthlyNotes).toBe(false);
+		expect(settings.dailyNotes.quarterlyNotes).toBe(false);
 		expect(settings.quickNotes.folder).toBe("Quick Notes");
 		expect(settings.templates.folder).toBeNull();
 		expect(settings.templates.dailyNoteTemplate).toBeNull();
+		expect(settings.templates.weeklyNoteTemplate).toBeNull();
+		expect(settings.templates.monthlyNoteTemplate).toBeNull();
+		expect(settings.templates.quarterlyNoteTemplate).toBeNull();
 		expect(settings.editor.attachmentStorageMode).toBe("note-folder");
 		expect(settings.editor.attachmentFolder).toBe("assets");
 	});

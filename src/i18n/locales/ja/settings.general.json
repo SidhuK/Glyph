@@ -159,5 +159,29 @@
 			"description": "サイドバーツリー内のフォルダとファイルの並び順を選びます。",
 			"ariaLabel": "ファイルツリーの並べ替え"
 		}
+	},
+	"periodNotes": {
+		"updateFailed": "日付メモの更新に失敗しました",
+		"week": {
+			"label": "ウィークリーノート",
+			"description": "この ISO 週のノートを1つ。",
+			"ariaLabel": "ウィークリーノートを有効にする"
+		},
+		"month": {
+			"label": "マンスリーノート",
+			"description": "今月のノートを1つ。",
+			"ariaLabel": "マンスリーノートを有効にする"
+		},
+		"quarter": {
+			"label": "四半期ノート",
+			"description": "今四半期のノートを1つ。",
+			"ariaLabel": "四半期ノートを有効にする"
+		}
+	},
+	"periodNoteTemplates": {
+		"day": "デイリーノートのデフォルトテンプレート",
+		"week": "ウィークリーノートのデフォルトテンプレート",
+		"month": "マンスリーノートのデフォルトテンプレート",
+		"quarter": "四半期ノートのデフォルトテンプレート"
 	}
 }

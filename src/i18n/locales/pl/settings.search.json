@@ -316,6 +316,24 @@
 			"description": "Wybierz miejsce tworzenia notatek dziennych.",
 			"keywords": ["dziennik", "dzisiaj", "data"]
 		},
+		"space-weekly-notes": {
+			"title": "Notatki tygodniowe",
+			"section": "Daily Notes",
+			"description": "Utwórz notatkę dla bieżącego tygodnia ISO.",
+			"keywords": ["tydzień", "iso"]
+		},
+		"space-monthly-notes": {
+			"title": "Notatki miesięczne",
+			"section": "Daily Notes",
+			"description": "Utwórz notatkę dla bieżącego miesiąca.",
+			"keywords": ["miesiąc"]
+		},
+		"space-quarterly-notes": {
+			"title": "Notatki kwartalne",
+			"section": "Daily Notes",
+			"description": "Utwórz notatkę dla bieżącego kwartału.",
+			"keywords": ["kwartał"]
+		},
 		"space-quick-notes-folder": {
 			"title": "Folder",
 			"section": "Szybkie notatki",
@@ -336,6 +354,21 @@
 			"title": "Domyślny szablon notatki dziennej",
 			"section": "Szablony",
 			"keywords": ["szablony", "notatki dzienne"]
+		},
+		"space-default-weekly-template": {
+			"title": "Domyślny szablon notatki tygodniowej",
+			"section": "Szablony",
+			"keywords": ["szablony", "notatki tygodniowe"]
+		},
+		"space-default-monthly-template": {
+			"title": "Domyślny szablon notatki miesięcznej",
+			"section": "Szablony",
+			"keywords": ["szablony", "notatki miesięczne"]
+		},
+		"space-default-quarterly-template": {
+			"title": "Domyślny szablon notatki kwartalnej",
+			"section": "Szablony",
+			"keywords": ["szablony", "notatki kwartalne"]
 		},
 		"space-search-index-status": {
 			"title": "Status",

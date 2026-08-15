@@ -69,6 +69,9 @@ vi.mock("../../contexts", () => ({
 	useSpace: () => ({
 		startIndexRebuild: vi.fn(() => Promise.resolve()),
 	}),
+	useUILayoutContext: () => ({
+		periodNotesEnabled: { week: false, month: false, quarter: false },
+	}),
 }));
 
 vi.mock("../../lib/settings", async (importOriginal) => {

@@ -159,5 +159,29 @@
 			"description": "Choisissez comment les dossiers et fichiers sont ordonnés dans l’arborescence de la barre latérale.",
 			"ariaLabel": "Tri de l’arborescence"
 		}
+	},
+	"periodNotes": {
+		"updateFailed": "Échec de la mise à jour des notes datées",
+		"week": {
+			"label": "Notes hebdomadaires",
+			"description": "Une note pour cette semaine ISO.",
+			"ariaLabel": "Activer les notes hebdomadaires"
+		},
+		"month": {
+			"label": "Notes mensuelles",
+			"description": "Une note pour ce mois.",
+			"ariaLabel": "Activer les notes mensuelles"
+		},
+		"quarter": {
+			"label": "Notes trimestrielles",
+			"description": "Une note pour ce trimestre.",
+			"ariaLabel": "Activer les notes trimestrielles"
+		}
+	},
+	"periodNoteTemplates": {
+		"day": "Modèle de note quotidienne par défaut",
+		"week": "Modèle de note hebdomadaire par défaut",
+		"month": "Modèle de note mensuelle par défaut",
+		"quarter": "Modèle de note trimestrielle par défaut"
 	}
 }

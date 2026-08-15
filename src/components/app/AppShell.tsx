@@ -22,11 +22,11 @@ import {
 	useUpdaterContext,
 } from "../../contexts";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
-import { useDailyNote } from "../../hooks/useDailyNote";
 import { useDeeplinkDispatch } from "../../hooks/useDeeplinkDispatch";
 import { useFileImport } from "../../hooks/useFileImport";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
+import { usePeriodNote } from "../../hooks/usePeriodNote";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
@@ -47,6 +47,12 @@ import {
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
+import {
+	type PeriodKind,
+	isPeriodNoteEnabled,
+	periodIdFromDate,
+	periodIdFromIsoDate,
+} from "../../lib/periodNotes";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { buildPrintHtml } from "../../lib/printHtml";
 import { requestSearchJump } from "../../lib/searchJump";
@@ -154,7 +160,8 @@ export function AppShell() {
 		activeMarkdownTabPath,
 		dailyNotesFolder,
 		templateFolder,
-		dailyNoteTemplatePath,
+		periodNoteTemplates,
+		periodNotesEnabled,
 		settingsSpacePath,
 		sidebarWidth,
 		setSidebarWidth,
@@ -440,6 +447,15 @@ export function AppShell() {
 		void invoke("set_markdown_menu_visible", { visible }).catch(() => {});
 	}, [activeMarkdownTabPath]);
 
+	useEffect(() => {
+		const settingsReady = settingsSpacePath === spacePath;
+		void invoke("set_period_note_menu_enabled", {
+			weekly: settingsReady && periodNotesEnabled.week,
+			monthly: settingsReady && periodNotesEnabled.month,
+			quarterly: settingsReady && periodNotesEnabled.quarter,
+		}).catch(() => {});
+	}, [periodNotesEnabled, settingsSpacePath, spacePath]);
+
 	const openWorkspaceFile = useCallback(
 		async (path: string) => {
 			if (!path) return;
@@ -544,11 +560,16 @@ export function AppShell() {
 		});
 	});
 
-	const { openOrCreateDailyNote, openOrCreateDailyNoteAtDate } = useDailyNote({
+	const templatePathForPeriod = useCallback(
+		(period: { kind: PeriodKind }) => periodNoteTemplates[period.kind],
+		[periodNoteTemplates],
+	);
+
+	const { openOrCreatePeriodNote } = usePeriodNote({
 		onOpenFile: (path) => openWorkspaceFile(path),
 		setError,
 		spacePath,
-		templatePath: dailyNoteTemplatePath,
+		templatePathFor: templatePathForPeriod,
 	});
 
 	const openTemplatesSettings = useCallback(() => {
@@ -654,25 +675,33 @@ export function AppShell() {
 		[fileTree, openWorkspaceFile, setError, spacePath, templatePickerDirPath],
 	);
 
-	const handleOpenDailyNote = useCallback(async () => {
-		if (!dailyNotesFolder) return;
-		try {
-			await openOrCreateDailyNote(dailyNotesFolder);
-		} catch (e) {
-			setError(
-				`Failed to open daily note: ${e instanceof Error ? e.message : String(e)}`,
+	const handleOpenPeriodNote = useCallback(
+		async (kind: PeriodKind) => {
+			if (!dailyNotesFolder) return;
+			await openOrCreatePeriodNote(
+				dailyNotesFolder,
+				periodIdFromDate(kind, new Date()),
 			);
-		}
-	}, [dailyNotesFolder, openOrCreateDailyNote, setError]);
+		},
+		[dailyNotesFolder, openOrCreatePeriodNote],
+	);
+
+	const requestOpenPeriodNote = useCallback(
+		(kind: PeriodKind) => {
+			if (!spacePath) return;
+			if (!isPeriodNoteEnabled(kind, periodNotesEnabled)) return;
+			if (!dailyNotesFolder) {
+				setDailyNoteSetupNoticeRequest((value) => value + 1);
+				return;
+			}
+			void handleOpenPeriodNote(kind);
+		},
+		[dailyNotesFolder, handleOpenPeriodNote, periodNotesEnabled, spacePath],
+	);
 
 	const requestOpenDailyNote = useCallback(() => {
-		if (!spacePath) return;
-		if (!dailyNotesFolder) {
-			setDailyNoteSetupNoticeRequest((value) => value + 1);
-			return;
-		}
-		void handleOpenDailyNote();
-	}, [dailyNotesFolder, handleOpenDailyNote, spacePath]);
+		requestOpenPeriodNote("day");
+	}, [requestOpenPeriodNote]);
 
 	const openCalendar = useCallback(() => {
 		if (!spacePath) return;
@@ -683,21 +712,21 @@ export function AppShell() {
 		setCalendarOpen(false);
 	}, []);
 
-	const handleOpenDailyNoteAtDate = useCallback(
-		async (date: string) => {
+	const handleOpenPeriodNoteAtDate = useCallback(
+		async (kind: PeriodKind, date: string) => {
+			if (!isPeriodNoteEnabled(kind, periodNotesEnabled)) return;
 			if (!dailyNotesFolder) {
 				setDailyNoteSetupNoticeRequest((value) => value + 1);
 				return;
 			}
-			try {
-				await openOrCreateDailyNoteAtDate(dailyNotesFolder, date);
-			} catch (e) {
-				setError(
-					`Failed to open daily note: ${e instanceof Error ? e.message : String(e)}`,
-				);
+			const period = periodIdFromIsoDate(kind, date);
+			if (!period) {
+				setError("Failed to open dated note: invalid date");
+				return;
 			}
+			await openOrCreatePeriodNote(dailyNotesFolder, period);
 		},
-		[dailyNotesFolder, openOrCreateDailyNoteAtDate, setError],
+		[dailyNotesFolder, openOrCreatePeriodNote, periodNotesEnabled, setError],
 	);
 
 	const moveTargetDirsRequestIdRef = useRef(0);
@@ -827,9 +856,12 @@ export function AppShell() {
 		void openTemplatePicker(dir);
 	}, [activeDirPath, activeFilePath, openTemplatePicker, spacePath]);
 
-	const handleOpenDailyNoteFromMenu = useCallback(() => {
-		requestOpenDailyNote();
-	}, [requestOpenDailyNote]);
+	const handleOpenPeriodNoteFromMenu = useCallback(
+		(kind: PeriodKind) => {
+			requestOpenPeriodNote(kind);
+		},
+		[requestOpenPeriodNote],
+	);
 
 	const handleSaveNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -1131,7 +1163,7 @@ export function AppShell() {
 		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
 		onImportFiles: handleImportFilesFromMenu,
 		onImportFolder: handleImportFolderFromMenu,
-		onOpenDailyNote: handleOpenDailyNoteFromMenu,
+		onOpenPeriodNote: handleOpenPeriodNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
 		onPrintNote: handlePrintActiveNote,
 		onCloseTab: () => void handleCloseTabOrWindow(),
@@ -1204,8 +1236,10 @@ export function AppShell() {
 		openSearchPalette,
 		openSettings,
 		openWorkspaceFile,
+		periodNotesEnabled,
 		pinnedFiles,
 		requestOpenDailyNote,
+		requestOpenPeriodNote,
 		saveCurrentEditor,
 		setCurrentEditorMode,
 		setAiPanelOpen,
@@ -1489,7 +1523,9 @@ export function AppShell() {
 				spacePath={spacePath}
 				dailyNoteFolder={dailyNotesFolder}
 				onOpenNote={(path) => void openWorkspaceFile(path)}
-				onOpenDailyNoteAtDate={(date) => void handleOpenDailyNoteAtDate(date)}
+				onOpenPeriodNoteAtDate={(kind, date) =>
+					void handleOpenPeriodNoteAtDate(kind, date)
+				}
 			/>
 			<TemplatePickerDialog
 				open={templatePickerOpen}

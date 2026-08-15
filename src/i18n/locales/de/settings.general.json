@@ -159,5 +159,29 @@
 			"description": "Wähle, wie Ordner und Dateien im Seitenleistenbaum sortiert werden.",
 			"ariaLabel": "Dateibaum-Sortierung"
 		}
+	},
+	"periodNotes": {
+		"updateFailed": "Datierte Notizen konnten nicht aktualisiert werden",
+		"week": {
+			"label": "Wochennotizen",
+			"description": "Eine Notiz für diese ISO-Woche.",
+			"ariaLabel": "Wochennotizen aktivieren"
+		},
+		"month": {
+			"label": "Monatsnotizen",
+			"description": "Eine Notiz für diesen Monat.",
+			"ariaLabel": "Monatsnotizen aktivieren"
+		},
+		"quarter": {
+			"label": "Quartalsnotizen",
+			"description": "Eine Notiz für dieses Quartal.",
+			"ariaLabel": "Quartalsnotizen aktivieren"
+		}
+	},
+	"periodNoteTemplates": {
+		"day": "Standardvorlage für Tagesnotizen",
+		"week": "Standardvorlage für Wochennotizen",
+		"month": "Standardvorlage für Monatsnotizen",
+		"quarter": "Standardvorlage für Quartalsnotizen"
 	}
 }

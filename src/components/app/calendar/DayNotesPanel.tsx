@@ -1,8 +1,27 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { Calendar03Icon, NoteIcon } from "@hugeicons/core-free-icons";
+import {
+	Calendar01Icon,
+	Calendar03Icon,
+	CalendarDaysIcon,
+	CalendarsIcon,
+	NoteIcon,
+} from "@hugeicons/core-free-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useUILayoutContext } from "../../../contexts";
+import {
+	PERIOD_KINDS,
+	type PeriodKind,
+	isPeriodNoteEnabled,
+} from "../../../lib/periodNotes";
 import type { CalendarDateNote } from "../../../lib/tauri";
+
+const PERIOD_NOTE_ICONS = {
+	day: Calendar01Icon,
+	week: CalendarDaysIcon,
+	month: Calendar03Icon,
+	quarter: CalendarsIcon,
+} as const;
 
 interface DayNotesPanelProps {
 	selectedDate: Date;
@@ -10,8 +29,8 @@ interface DayNotesPanelProps {
 	notes: CalendarDateNote[];
 	isLoading: boolean;
 	errorMessage: string | null;
-	canOpenDailyNote: boolean;
-	onOpenDailyNote: () => void;
+	canOpenDatedNotes: boolean;
+	onOpenPeriodNote: (kind: PeriodKind) => void;
 	onOpenNote: (path: string) => void;
 }
 
@@ -58,11 +77,15 @@ export function DayNotesPanel({
 	notes,
 	isLoading,
 	errorMessage,
-	canOpenDailyNote,
-	onOpenDailyNote,
+	canOpenDatedNotes,
+	onOpenPeriodNote,
 	onOpenNote,
 }: DayNotesPanelProps) {
 	const { t } = useTranslation("shell");
+	const { periodNotesEnabled } = useUILayoutContext();
+	const openablePeriodKinds = PERIOD_KINDS.filter((kind) =>
+		isPeriodNoteEnabled(kind, periodNotesEnabled),
+	);
 
 	const heading = useMemo(
 		() =>
@@ -89,14 +112,27 @@ export function DayNotesPanel({
 					<h3 className="calendarNotesTitle">{heading}</h3>
 					{summary ? <p className="calendarNotesSummary">{summary}</p> : null}
 				</div>
-				{canOpenDailyNote ? (
-					<button
-						type="button"
-						className="calendarDailyNoteButton"
-						onClick={onOpenDailyNote}
-					>
-						{t("calendar.openDailyNote")}
-					</button>
+				{canOpenDatedNotes ? (
+					<div className="calendarPeriodNoteActions">
+						{openablePeriodKinds.map((kind) => {
+							const label = t(`calendar.openPeriodNote.${kind}`);
+							return (
+								<button
+									key={kind}
+									type="button"
+									className="calendarNavButton"
+									aria-label={label}
+									title={label}
+									onClick={() => onOpenPeriodNote(kind)}
+								>
+									<HugeiconsIcon
+										icon={PERIOD_NOTE_ICONS[kind]}
+										size="var(--icon-md)"
+									/>
+								</button>
+							);
+						})}
+					</div>
 				) : null}
 			</header>
 

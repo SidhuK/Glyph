@@ -159,5 +159,29 @@
 			"description": "Escolha como pastas e arquivos são ordenados na árvore da barra lateral.",
 			"ariaLabel": "Ordenação da árvore de arquivos"
 		}
+	},
+	"periodNotes": {
+		"updateFailed": "Falha ao atualizar as notas datadas",
+		"week": {
+			"label": "Notas semanais",
+			"description": "Uma nota para esta semana ISO.",
+			"ariaLabel": "Ativar notas semanais"
+		},
+		"month": {
+			"label": "Notas mensais",
+			"description": "Uma nota para este mês.",
+			"ariaLabel": "Ativar notas mensais"
+		},
+		"quarter": {
+			"label": "Notas trimestrais",
+			"description": "Uma nota para este trimestre.",
+			"ariaLabel": "Ativar notas trimestrais"
+		}
+	},
+	"periodNoteTemplates": {
+		"day": "Modelo padrão de nota diária",
+		"week": "Modelo padrão de nota semanal",
+		"month": "Modelo padrão de nota mensal",
+		"quarter": "Modelo padrão de nota trimestral"
 	}
 }

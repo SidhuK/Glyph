@@ -22,6 +22,16 @@ import {
 	isDateDisplayFormat,
 } from "../lib/dateDisplayFormat";
 import {
+	DEFAULT_PERIOD_NOTES_ENABLED,
+	EMPTY_PERIOD_NOTE_TEMPLATES,
+	type OptionalPeriodKind,
+	type PeriodKind,
+	type PeriodNoteTemplatePaths,
+	type PeriodNotesEnabled,
+	periodNoteTemplatesFromSettings,
+	periodNotesEnabledFromSettings,
+} from "../lib/periodNotes";
+import {
 	type AiAssistantMode,
 	loadSettings,
 	reloadFromDisk,
@@ -43,11 +53,12 @@ interface UILayoutContextValue {
 	setActiveMarkdownTabPath: (path: string | null) => void;
 	dailyNotesFolder: string | null;
 	templateFolder: string | null;
-	dailyNoteTemplatePath: string | null;
+	periodNoteTemplates: PeriodNoteTemplatePaths;
+	periodNotesEnabled: PeriodNotesEnabled;
 	/**
 	 * The space whose settings `dailyNotesFolder`, `templateFolder` and
-	 * `dailyNoteTemplatePath` currently describe. Hydration is async, so after a
-	 * space switch those three lag until this matches the new space path.
+	 * period note templates currently describe. Hydration is async, so after a
+	 * space switch those values lag until this matches the new space path.
 	 */
 	settingsSpacePath: string | null;
 	showToc: boolean;
@@ -85,7 +96,8 @@ type UIState = {
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
 	templateFolder: string | null;
-	dailyNoteTemplatePath: string | null;
+	periodNoteTemplates: PeriodNoteTemplatePaths;
+	periodNotesEnabled: PeriodNotesEnabled;
 	settingsSpacePath: string | null;
 	showToc: boolean;
 	folioMode: boolean;
@@ -106,7 +118,16 @@ type UIAction =
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
 	| { type: "setTemplateFolder"; value: string | null }
-	| { type: "setDailyNoteTemplatePath"; value: string | null }
+	| {
+			type: "setPeriodNoteEnabled";
+			kind: OptionalPeriodKind;
+			value: boolean;
+	  }
+	| {
+			type: "setPeriodNoteTemplate";
+			kind: PeriodKind;
+			value: string | null;
+	  }
 	| { type: "setShowToc"; value: boolean }
 	| { type: "setFolioMode"; value: boolean }
 	| { type: "setFolioScope"; value: FolioScope }
@@ -125,7 +146,8 @@ type UIAction =
 			aiAssistantMode: AiAssistantMode;
 			dailyNotesFolder: string | null;
 			templateFolder: string | null;
-			dailyNoteTemplatePath: string | null;
+			periodNoteTemplates: PeriodNoteTemplatePaths;
+			periodNotesEnabled: PeriodNotesEnabled;
 			showToc: boolean;
 			folioMode: boolean;
 			dateDisplayFormat: DateDisplayFormat;
@@ -135,7 +157,8 @@ type UIAction =
 			spacePath: string;
 			dailyNotesFolder: string | null;
 			templateFolder: string | null;
-			dailyNoteTemplatePath: string | null;
+			periodNoteTemplates: PeriodNoteTemplatePaths;
+			periodNotesEnabled: PeriodNotesEnabled;
 	  };
 
 const initialUIState: UIState = {
@@ -146,7 +169,8 @@ const initialUIState: UIState = {
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
 	templateFolder: null,
-	dailyNoteTemplatePath: null,
+	periodNoteTemplates: EMPTY_PERIOD_NOTE_TEMPLATES,
+	periodNotesEnabled: DEFAULT_PERIOD_NOTES_ENABLED,
 	settingsSpacePath: null,
 	showToc: true,
 	folioMode: false,
@@ -181,8 +205,22 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, dailyNotesFolder: action.value };
 		case "setTemplateFolder":
 			return { ...state, templateFolder: action.value };
-		case "setDailyNoteTemplatePath":
-			return { ...state, dailyNoteTemplatePath: action.value };
+		case "setPeriodNoteTemplate":
+			return {
+				...state,
+				periodNoteTemplates: {
+					...state.periodNoteTemplates,
+					[action.kind]: action.value,
+				},
+			};
+		case "setPeriodNoteEnabled":
+			return {
+				...state,
+				periodNotesEnabled: {
+					...state.periodNotesEnabled,
+					[action.kind]: action.value,
+				},
+			};
 		case "setShowToc":
 			return { ...state, showToc: action.value };
 		case "setFolioMode":
@@ -240,7 +278,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				settingsSpacePath: action.spacePath,
 				dailyNotesFolder: action.dailyNotesFolder,
 				templateFolder: action.templateFolder,
-				dailyNoteTemplatePath: action.dailyNoteTemplatePath,
+				periodNoteTemplates: action.periodNoteTemplates,
+				periodNotesEnabled: action.periodNotesEnabled,
 			};
 		case "hydrateSettings":
 			return {
@@ -251,7 +290,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				aiAssistantMode: action.aiAssistantMode,
 				dailyNotesFolder: action.dailyNotesFolder,
 				templateFolder: action.templateFolder,
-				dailyNoteTemplatePath: action.dailyNoteTemplatePath,
+				periodNoteTemplates: action.periodNoteTemplates,
+				periodNotesEnabled: action.periodNotesEnabled,
 				showToc: action.showToc,
 				folioMode: action.folioMode,
 				dateDisplayFormat: action.dateDisplayFormat,
@@ -273,7 +313,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		activeMarkdownTabPath,
 		dailyNotesFolder,
 		templateFolder,
-		dailyNoteTemplatePath,
+		periodNoteTemplates,
+		periodNotesEnabled,
 		settingsSpacePath,
 		showToc,
 		folioMode,
@@ -321,6 +362,27 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				value: payload.dailyNotes.folder ?? null,
 			});
 		}
+		if (typeof payload.dailyNotes?.weeklyNotes === "boolean") {
+			dispatch({
+				type: "setPeriodNoteEnabled",
+				kind: "week",
+				value: payload.dailyNotes.weeklyNotes,
+			});
+		}
+		if (typeof payload.dailyNotes?.monthlyNotes === "boolean") {
+			dispatch({
+				type: "setPeriodNoteEnabled",
+				kind: "month",
+				value: payload.dailyNotes.monthlyNotes,
+			});
+		}
+		if (typeof payload.dailyNotes?.quarterlyNotes === "boolean") {
+			dispatch({
+				type: "setPeriodNoteEnabled",
+				kind: "quarter",
+				value: payload.dailyNotes.quarterlyNotes,
+			});
+		}
 		if (payload.templates && "folder" in payload.templates) {
 			dispatch({
 				type: "setTemplateFolder",
@@ -329,8 +391,30 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		}
 		if (payload.templates && "dailyNoteTemplate" in payload.templates) {
 			dispatch({
-				type: "setDailyNoteTemplatePath",
+				type: "setPeriodNoteTemplate",
+				kind: "day",
 				value: payload.templates.dailyNoteTemplate ?? null,
+			});
+		}
+		if (payload.templates && "weeklyNoteTemplate" in payload.templates) {
+			dispatch({
+				type: "setPeriodNoteTemplate",
+				kind: "week",
+				value: payload.templates.weeklyNoteTemplate ?? null,
+			});
+		}
+		if (payload.templates && "monthlyNoteTemplate" in payload.templates) {
+			dispatch({
+				type: "setPeriodNoteTemplate",
+				kind: "month",
+				value: payload.templates.monthlyNoteTemplate ?? null,
+			});
+		}
+		if (payload.templates && "quarterlyNoteTemplate" in payload.templates) {
+			dispatch({
+				type: "setPeriodNoteTemplate",
+				kind: "quarter",
+				value: payload.templates.quarterlyNoteTemplate ?? null,
 			});
 		}
 	});
@@ -351,7 +435,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
 					templateFolder: s.templates?.folder ?? null,
-					dailyNoteTemplatePath: s.templates?.dailyNoteTemplate ?? null,
+					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
+					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
 					showToc: s.ui.showToc,
 					folioMode: s.ui.folioMode,
 					dateDisplayFormat: s.ui.dateDisplayFormat,
@@ -396,7 +481,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					spacePath,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
 					templateFolder: s.templates?.folder ?? null,
-					dailyNoteTemplatePath: s.templates?.dailyNoteTemplate ?? null,
+					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
+					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
 				});
 			} catch {
 				// best-effort settings refresh
@@ -489,7 +575,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
 			templateFolder,
-			dailyNoteTemplatePath,
+			periodNoteTemplates,
+			periodNotesEnabled,
 			settingsSpacePath,
 			showToc,
 			setShowToc,
@@ -516,7 +603,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
 			templateFolder,
-			dailyNoteTemplatePath,
+			periodNoteTemplates,
+			periodNotesEnabled,
 			settingsSpacePath,
 			showToc,
 			setShowToc,

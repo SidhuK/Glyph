@@ -45,6 +45,7 @@ import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { getLicenseStatus } from "../../lib/license";
 import { copyAbsolutePath, copyRelativePath } from "../../lib/pathClipboard";
+import type { PeriodKind, PeriodNotesEnabled } from "../../lib/periodNotes";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import {
 	type ShortcutActionId,
@@ -110,9 +111,11 @@ interface UseAppCommandsDeps {
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
+	periodNotesEnabled: PeriodNotesEnabled;
 	openMarkdownTabsLength: number;
 	pinnedFiles: string[];
 	requestOpenDailyNote: () => void;
+	requestOpenPeriodNote: (kind: PeriodKind) => void;
 	saveCurrentEditor: () => Promise<unknown>;
 	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
@@ -255,9 +258,11 @@ export function useAppCommands({
 	openSearchPalette,
 	openSettings,
 	openWorkspaceFile,
+	periodNotesEnabled,
 	openMarkdownTabsLength,
 	pinnedFiles,
 	requestOpenDailyNote,
+	requestOpenPeriodNote,
 	saveCurrentEditor,
 	setCurrentEditorMode,
 	setAiPanelOpen,
@@ -421,6 +426,24 @@ export function useAppCommands({
 				shortcut: { meta: true, shift: true, key: "d" },
 				enabled: Boolean(spacePath),
 				action: requestOpenDailyNote,
+			},
+			{
+				id: "open-weekly-note",
+				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
+				enabled: Boolean(spacePath) && periodNotesEnabled.week,
+				action: () => requestOpenPeriodNote("week"),
+			},
+			{
+				id: "open-monthly-note",
+				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
+				enabled: Boolean(spacePath) && periodNotesEnabled.month,
+				action: () => requestOpenPeriodNote("month"),
+			},
+			{
+				id: "open-quarterly-note",
+				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
+				enabled: Boolean(spacePath) && periodNotesEnabled.quarter,
+				action: () => requestOpenPeriodNote("quarter"),
 			},
 			{
 				id: "toggle-pin-active-file",
@@ -700,7 +723,9 @@ export function useAppCommands({
 		openMarkdownTabsLength,
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,
+		periodNotesEnabled,
 		requestOpenDailyNote,
+		requestOpenPeriodNote,
 		saveCurrentEditor,
 		setCurrentEditorMode,
 		handleCreateFromTemplateFromMenu,

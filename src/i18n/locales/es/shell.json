@@ -143,7 +143,13 @@
 		"noteCount_other": "{{count}} notas",
 		"noNotes": "No hay notas en este día",
 		"loadFailed": "No se pudieron cargar las notas: {{message}}",
-		"loadFailedShort": "No se pudieron cargar las notas"
+		"loadFailedShort": "No se pudieron cargar las notas",
+		"openPeriodNote": {
+			"day": "Día",
+			"week": "Semana",
+			"month": "Mes",
+			"quarter": "Trimestre"
+		}
 	},
 	"tabs": {
 		"allNotes": "Todas las notas",

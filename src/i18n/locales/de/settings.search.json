@@ -336,6 +336,24 @@
 			"description": "Choose where daily notes are created.",
 			"keywords": ["journal", "today", "date"]
 		},
+		"space-weekly-notes": {
+			"title": "Wochennotizen",
+			"section": "Daily Notes",
+			"description": "Eine Notiz für die aktuelle ISO-Woche anlegen.",
+			"keywords": ["woche", "iso", "period"]
+		},
+		"space-monthly-notes": {
+			"title": "Monatsnotizen",
+			"section": "Daily Notes",
+			"description": "Eine Notiz für den aktuellen Monat anlegen.",
+			"keywords": ["monat", "period"]
+		},
+		"space-quarterly-notes": {
+			"title": "Quartalsnotizen",
+			"section": "Daily Notes",
+			"description": "Eine Notiz für das aktuelle Quartal anlegen.",
+			"keywords": ["quartal", "period"]
+		},
 		"space-quick-notes-folder": {
 			"title": "Folder",
 			"section": "Quick Notes",
@@ -356,6 +374,21 @@
 			"title": "Default daily note template",
 			"section": "Templates",
 			"keywords": ["templates", "daily notes"]
+		},
+		"space-default-weekly-template": {
+			"title": "Default weekly note template",
+			"section": "Templates",
+			"keywords": ["templates", "weekly notes", "period notes"]
+		},
+		"space-default-monthly-template": {
+			"title": "Default monthly note template",
+			"section": "Templates",
+			"keywords": ["templates", "monthly notes", "period notes"]
+		},
+		"space-default-quarterly-template": {
+			"title": "Default quarterly note template",
+			"section": "Templates",
+			"keywords": ["templates", "quarterly notes", "period notes"]
 		},
 		"space-search-index-status": {
 			"title": "Status",

@@ -174,5 +174,29 @@
 			"description": "Choose how folders and files are ordered in the sidebar tree.",
 			"ariaLabel": "File tree sort"
 		}
+	},
+	"periodNotes": {
+		"updateFailed": "Failed to update dated notes",
+		"week": {
+			"label": "Weekly notes",
+			"description": "One note for this ISO week.",
+			"ariaLabel": "Enable weekly notes"
+		},
+		"month": {
+			"label": "Monthly notes",
+			"description": "One note for this month.",
+			"ariaLabel": "Enable monthly notes"
+		},
+		"quarter": {
+			"label": "Quarterly notes",
+			"description": "One note for this quarter.",
+			"ariaLabel": "Enable quarterly notes"
+		}
+	},
+	"periodNoteTemplates": {
+		"day": "Default daily note template",
+		"week": "Default weekly note template",
+		"month": "Default monthly note template",
+		"quarter": "Default quarterly note template"
 	}
 }

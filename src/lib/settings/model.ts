@@ -112,11 +112,17 @@ export interface AppSettings {
 	};
 	dailyNotes: {
 		folder: string | null;
+		weeklyNotes: boolean;
+		monthlyNotes: boolean;
+		quarterlyNotes: boolean;
 	};
 	quickNotes: QuickNotesSettings;
 	templates: {
 		folder: string | null;
 		dailyNoteTemplate: string | null;
+		weeklyNoteTemplate: string | null;
+		monthlyNoteTemplate: string | null;
+		quarterlyNoteTemplate: string | null;
 	};
 	shortcuts: ShortcutSettings;
 	editor: EditorSettings;
@@ -125,9 +131,15 @@ export interface AppSettings {
 
 export interface SpaceScopedSettings {
 	dailyNotesFolder?: string | null;
+	dailyNotesWeeklyNotes?: boolean;
+	dailyNotesMonthlyNotes?: boolean;
+	dailyNotesQuarterlyNotes?: boolean;
 	quickNotesFolder?: string;
 	templatesFolder?: string | null;
 	templatesDailyNoteTemplate?: string | null;
+	templatesWeeklyNoteTemplate?: string | null;
+	templatesMonthlyNoteTemplate?: string | null;
+	templatesQuarterlyNoteTemplate?: string | null;
 	attachmentStorageMode?: AttachmentStorageMode;
 	attachmentFolder?: string | null;
 }

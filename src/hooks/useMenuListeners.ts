@@ -3,6 +3,7 @@ import { useUILayoutContext } from "../contexts";
 import { dispatchAppCommand } from "../lib/commands/commandDispatcher";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { buildHelpMenuCommandHandlers } from "../lib/helpMenu";
+import type { PeriodKind } from "../lib/periodNotes";
 import { invoke } from "../lib/tauri";
 import { listenTauriEvent, useTauriEvent } from "../lib/tauriEvents";
 import { toast } from "../lib/toast";
@@ -12,7 +13,7 @@ interface UseMenuListenersProps {
 	onCreateFromTemplate: () => void;
 	onImportFiles: () => void;
 	onImportFolder: () => void;
-	onOpenDailyNote: () => void;
+	onOpenPeriodNote: (kind: PeriodKind) => void;
 	onSaveNote: () => void;
 	onPrintNote: () => void;
 	onCloseTab: () => void;
@@ -36,7 +37,7 @@ export function useMenuListeners({
 	onCreateFromTemplate,
 	onImportFiles,
 	onImportFolder,
-	onOpenDailyNote,
+	onOpenPeriodNote,
 	onSaveNote,
 	onPrintNote,
 	onCloseTab,
@@ -72,7 +73,10 @@ export function useMenuListeners({
 				"create-from-template": onCreateFromTemplate,
 				"import-files": onImportFiles,
 				"import-folder": onImportFolder,
-				"open-daily-note": onOpenDailyNote,
+				"open-daily-note": () => onOpenPeriodNote("day"),
+				"open-weekly-note": () => onOpenPeriodNote("week"),
+				"open-monthly-note": () => onOpenPeriodNote("month"),
+				"open-quarterly-note": () => onOpenPeriodNote("quarter"),
 				"save-note": onSaveNote,
 				"print-note": onPrintNote,
 				"close-active-tab": onCloseTab,
@@ -160,7 +164,7 @@ export function useMenuListeners({
 			onImportFolder,
 			onNewNote,
 			onOpenAiSettings,
-			onOpenDailyNote,
+			onOpenPeriodNote,
 			onOpenGitSettings,
 			onOpenSpace,
 			onOpenSpaceSettings,

@@ -238,6 +238,23 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 			value.dailyNotesFolder,
 		);
 	}
+	if ("dailyNotesWeeklyNotes" in value) {
+		out.dailyNotesWeeklyNotes = SPACE_SETTINGS.dailyNotesWeeklyNotes.normalize(
+			value.dailyNotesWeeklyNotes,
+		);
+	}
+	if ("dailyNotesMonthlyNotes" in value) {
+		out.dailyNotesMonthlyNotes =
+			SPACE_SETTINGS.dailyNotesMonthlyNotes.normalize(
+				value.dailyNotesMonthlyNotes,
+			);
+	}
+	if ("dailyNotesQuarterlyNotes" in value) {
+		out.dailyNotesQuarterlyNotes =
+			SPACE_SETTINGS.dailyNotesQuarterlyNotes.normalize(
+				value.dailyNotesQuarterlyNotes,
+			);
+	}
 	if ("quickNotesFolder" in value) {
 		out.quickNotesFolder = SPACE_SETTINGS.quickNotesFolder.normalize(
 			value.quickNotesFolder,
@@ -253,6 +270,24 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 		out.templatesDailyNoteTemplate =
 			SPACE_SETTINGS.templatesDailyNoteTemplate.normalize(
 				value.templatesDailyNoteTemplate,
+			);
+	}
+	if ("templatesWeeklyNoteTemplate" in value) {
+		out.templatesWeeklyNoteTemplate =
+			SPACE_SETTINGS.templatesWeeklyNoteTemplate.normalize(
+				value.templatesWeeklyNoteTemplate,
+			);
+	}
+	if ("templatesMonthlyNoteTemplate" in value) {
+		out.templatesMonthlyNoteTemplate =
+			SPACE_SETTINGS.templatesMonthlyNoteTemplate.normalize(
+				value.templatesMonthlyNoteTemplate,
+			);
+	}
+	if ("templatesQuarterlyNoteTemplate" in value) {
+		out.templatesQuarterlyNoteTemplate =
+			SPACE_SETTINGS.templatesQuarterlyNoteTemplate.normalize(
+				value.templatesQuarterlyNoteTemplate,
 			);
 	}
 	if ("attachmentStorageMode" in value) {
@@ -474,6 +509,24 @@ export async function loadSettings(
 		activeScopedSettings,
 		hasActiveSpace,
 	);
+	const dailyNotesWeeklyNotes = loadSpaceSettingValue(
+		SPACE_SETTINGS.dailyNotesWeeklyNotes,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
+	const dailyNotesMonthlyNotes = loadSpaceSettingValue(
+		SPACE_SETTINGS.dailyNotesMonthlyNotes,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
+	const dailyNotesQuarterlyNotes = loadSpaceSettingValue(
+		SPACE_SETTINGS.dailyNotesQuarterlyNotes,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
 	const quickNotesFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.quickNotesFolder,
 		entries,
@@ -490,6 +543,24 @@ export async function loadSettings(
 			: null;
 	const templatesDailyNoteTemplate = loadSpaceSettingValue(
 		SPACE_SETTINGS.templatesDailyNoteTemplate,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
+	const templatesWeeklyNoteTemplate = loadSpaceSettingValue(
+		SPACE_SETTINGS.templatesWeeklyNoteTemplate,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
+	const templatesMonthlyNoteTemplate = loadSpaceSettingValue(
+		SPACE_SETTINGS.templatesMonthlyNoteTemplate,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
+	const templatesQuarterlyNoteTemplate = loadSpaceSettingValue(
+		SPACE_SETTINGS.templatesQuarterlyNoteTemplate,
 		entries,
 		activeScopedSettings,
 		hasActiveSpace,
@@ -573,6 +644,9 @@ export async function loadSettings(
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
+			weeklyNotes: dailyNotesWeeklyNotes,
+			monthlyNotes: dailyNotesMonthlyNotes,
+			quarterlyNotes: dailyNotesQuarterlyNotes,
 		},
 		quickNotes: {
 			folder: quickNotesFolder,
@@ -580,6 +654,9 @@ export async function loadSettings(
 		templates: {
 			folder: templatesFolder,
 			dailyNoteTemplate: templatesDailyNoteTemplate,
+			weeklyNoteTemplate: templatesWeeklyNoteTemplate,
+			monthlyNoteTemplate: templatesMonthlyNoteTemplate,
+			quarterlyNoteTemplate: templatesQuarterlyNoteTemplate,
 		},
 		shortcuts,
 		editor,
@@ -702,6 +779,9 @@ export async function setTemplatesFolder(
 	const scopedPatch: SpaceScopedSettings = { templatesFolder: nextFolder };
 	if (nextFolder === null) {
 		scopedPatch.templatesDailyNoteTemplate = null;
+		scopedPatch.templatesWeeklyNoteTemplate = null;
+		scopedPatch.templatesMonthlyNoteTemplate = null;
+		scopedPatch.templatesQuarterlyNoteTemplate = null;
 	}
 	const spacePath = await updateActiveSpaceSettings(scopedPatch, scope);
 	if (spacePath) {
@@ -710,6 +790,9 @@ export async function setTemplatesFolder(
 			templates: {
 				folder: nextFolder,
 				dailyNoteTemplate: nextFolder === null ? null : undefined,
+				weeklyNoteTemplate: nextFolder === null ? null : undefined,
+				monthlyNoteTemplate: nextFolder === null ? null : undefined,
+				quarterlyNoteTemplate: nextFolder === null ? null : undefined,
 			},
 		});
 		return;
@@ -718,6 +801,9 @@ export async function setTemplatesFolder(
 	if (nextFolder === null) {
 		await store.delete(INTERNAL_SETTING_KEYS.templatesFolder);
 		await store.delete(SPACE_SETTINGS.templatesDailyNoteTemplate.legacyKey);
+		await store.delete(SPACE_SETTINGS.templatesWeeklyNoteTemplate.legacyKey);
+		await store.delete(SPACE_SETTINGS.templatesMonthlyNoteTemplate.legacyKey);
+		await store.delete(SPACE_SETTINGS.templatesQuarterlyNoteTemplate.legacyKey);
 	} else {
 		await store.set(INTERNAL_SETTING_KEYS.templatesFolder, nextFolder);
 	}
@@ -726,6 +812,9 @@ export async function setTemplatesFolder(
 		templates: {
 			folder: nextFolder,
 			dailyNoteTemplate: nextFolder === null ? null : undefined,
+			weeklyNoteTemplate: nextFolder === null ? null : undefined,
+			monthlyNoteTemplate: nextFolder === null ? null : undefined,
+			quarterlyNoteTemplate: nextFolder === null ? null : undefined,
 		},
 	});
 }

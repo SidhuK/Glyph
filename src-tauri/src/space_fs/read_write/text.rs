@@ -289,8 +289,14 @@ pub async fn space_open_or_create_text(
     state: State<'_, SpaceState>,
     path: String,
     text: String,
+    space_path: Option<String>,
 ) -> Result<OpenOrCreateTextResult, String> {
     let root = state.root_for_window(&window)?;
+    if let Some(expected) = space_path.as_deref() {
+        if root.as_path() != Path::new(expected) {
+            return Err("space changed".to_string());
+        }
+    }
     let space_path = root.to_string_lossy().to_string();
     let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());

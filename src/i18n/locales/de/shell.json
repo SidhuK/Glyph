@@ -143,7 +143,13 @@
 		"noteCount_other": "{{count}} Notizen",
 		"noNotes": "Keine Notizen an diesem Tag",
 		"loadFailed": "Notizen konnten nicht geladen werden: {{message}}",
-		"loadFailedShort": "Notizen konnten nicht geladen werden"
+		"loadFailedShort": "Notizen konnten nicht geladen werden",
+		"openPeriodNote": {
+			"day": "Tag",
+			"week": "Woche",
+			"month": "Monat",
+			"quarter": "Quartal"
+		}
 	},
 	"tabs": {
 		"allNotes": "Alle Notizen",

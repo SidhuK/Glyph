@@ -286,6 +286,18 @@
 			"label": "Tagesnotiz öffnen",
 			"description": "Die heutige Tagesnotiz öffnen oder erstellen."
 		},
+		"open-weekly-note": {
+			"label": "Wochennotiz öffnen",
+			"description": "Die Notiz dieser Woche öffnen oder erstellen."
+		},
+		"open-monthly-note": {
+			"label": "Monatsnotiz öffnen",
+			"description": "Die Notiz dieses Monats öffnen oder erstellen."
+		},
+		"open-quarterly-note": {
+			"label": "Quartalsnotiz öffnen",
+			"description": "Die Notiz dieses Quartals öffnen oder erstellen."
+		},
 		"open-databases": {
 			"label": "Sammlungen öffnen",
 			"description": "Die Sammlungsansicht öffnen."

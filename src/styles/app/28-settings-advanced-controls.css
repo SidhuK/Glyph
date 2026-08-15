@@ -499,6 +499,10 @@
 	.settingsSegmentedTrack {
 		flex-wrap: wrap;
 	}
+
+	.settingsPeriodNoteGrid {
+		grid-template-columns: 1fr;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
