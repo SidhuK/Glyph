@@ -6,6 +6,7 @@ interface MarkdownFloatingTocProps {
 	getHeadingPreview: (heading: TOCHeading) => string | null;
 	headings: TOCHeading[];
 	onSelectHeading: (heading: TOCHeading) => void;
+	relPath: string;
 	visible: boolean;
 }
 
@@ -14,6 +15,7 @@ export function MarkdownFloatingToc({
 	getHeadingPreview,
 	headings,
 	onSelectHeading,
+	relPath,
 	visible,
 }: MarkdownFloatingTocProps) {
 	if (!visible) return null;
@@ -23,6 +25,7 @@ export function MarkdownFloatingToc({
 			activeId={activeId}
 			getHeadingPreview={getHeadingPreview}
 			onSelectHeading={onSelectHeading}
+			relPath={relPath}
 		/>
 	);
 }

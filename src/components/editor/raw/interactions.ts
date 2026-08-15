@@ -1,7 +1,9 @@
 import { EditorView } from "@codemirror/view";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { i18n } from "../../../i18n";
 import { isGlyphDeeplink } from "../../../lib/deeplink";
 import { openDeeplink } from "../../../lib/deeplinkOpen";
+import { showNativeContextMenu } from "../../../lib/nativeContextMenu";
 import {
 	dispatchInternalAnchorClick,
 	dispatchMarkdownLinkClick,
@@ -12,7 +14,17 @@ import {
 	type FootnoteKind,
 	findFootnoteCounterpartOffset,
 } from "../markdown/footnote";
+import {
+	copyWikiLinkMarkdown,
+	wikiLinkMarkdownForNote,
+} from "../markdown/wikiLinkClipboard";
 import { parseWikiLink } from "../markdown/wikiLinkCodec";
+import {
+	collectBlockIds,
+	ensureTrailingBlockId,
+	headingTextFromLine,
+	parseTrailingBlockId,
+} from "../markdown/wikiLinkSlices";
 
 function toggleTask(view: EditorView, target: HTMLElement): boolean {
 	const markerPosition = Number(target.dataset.taskMarkerPosition);
@@ -124,6 +136,65 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 				return true;
 			}
 			dispatchMarkdownLinkClick({ href, sourcePath: getRelPath() });
+			return true;
+		},
+		contextmenu: (event: MouseEvent, view: EditorView) => {
+			const relPath = getRelPath();
+			if (!relPath) return false;
+			const offset = view.posAtCoords({ x: event.clientX, y: event.clientY });
+			if (offset === null) return false;
+			const line = view.state.doc.lineAt(offset);
+			const heading = headingTextFromLine(line.text);
+			const existingIds = collectBlockIds(view.state.doc.toString());
+			void showNativeContextMenu(event, [
+				...(heading
+					? [
+							{
+								label: i18n.t("editor:wikiLink.copyHeadingLink"),
+								action: () => {
+									void copyWikiLinkMarkdown(
+										wikiLinkMarkdownForNote({
+											relPath,
+											anchorKind: "heading",
+											anchor: heading,
+										}),
+									);
+								},
+							},
+						]
+					: []),
+				{
+					label: i18n.t("editor:wikiLink.copyBlockLink"),
+					action: () => {
+						const currentId = parseTrailingBlockId(line.text);
+						if (currentId) {
+							void copyWikiLinkMarkdown(
+								wikiLinkMarkdownForNote({
+									relPath,
+									anchorKind: "block",
+									anchor: currentId,
+								}),
+							);
+							return;
+						}
+						const ensured = ensureTrailingBlockId(line.text, existingIds);
+						view.dispatch({
+							changes: {
+								from: line.from,
+								to: line.to,
+								insert: ensured.line,
+							},
+						});
+						void copyWikiLinkMarkdown(
+							wikiLinkMarkdownForNote({
+								relPath,
+								anchorKind: "block",
+								anchor: ensured.id,
+							}),
+						);
+					},
+				},
+			]);
 			return true;
 		},
 	};

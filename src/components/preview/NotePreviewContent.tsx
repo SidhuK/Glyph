@@ -1,7 +1,9 @@
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import type { NotePreviewData } from "./notePreviewShared";
 
-export function NotePreviewContent(data: NotePreviewData) {
+export function NotePreviewContent(
+	data: NotePreviewData & { interactive?: boolean },
+) {
 	if (data.status === "error") {
 		return <div className="markdownEditorInfoEmpty">{data.message}</div>;
 	}
@@ -17,9 +19,10 @@ export function NotePreviewContent(data: NotePreviewData) {
 				relPath={data.relPath}
 				mode="preview"
 				onChange={() => {}}
-				interactive={false}
+				interactive={data.interactive ?? false}
 				acceptSearchJumps={false}
 				deferHeavyFeatures
+				chrome="minimal"
 			/>
 		</div>
 	);

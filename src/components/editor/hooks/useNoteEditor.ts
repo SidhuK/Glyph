@@ -16,7 +16,10 @@ import {
 } from "../../../lib/notePreview";
 import { invoke } from "../../../lib/tauri";
 import { toast } from "../../../lib/toast";
-import { handleEditorClick } from "../editorClickHandlers";
+import {
+	handleEditorClick,
+	handleEditorContextMenu,
+} from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
 import { handleTagDecorationMouseDown } from "../extensions/tagDecorations";
@@ -235,6 +238,7 @@ interface UseNoteEditorOptions {
 	enableFocusMode?: boolean;
 	enableHydrateInlineImages?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
+	enableWikiLiveEmbeds?: boolean;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
 	placeholder?: string;
 	onChange: (nextMarkdown: string) => void;
@@ -313,6 +317,7 @@ export function useNoteEditor({
 	enableFocusMode = false,
 	enableHydrateInlineImages = true,
 	enableMarkdownLinkAutocomplete = true,
+	enableWikiLiveEmbeds = true,
 	pasteMarkdownBehavior = "plain-text",
 	placeholder = "Start writing or press / for commands",
 	onChange,
@@ -388,6 +393,7 @@ export function useNoteEditor({
 				currentPath: "",
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
+				enableWikiLiveEmbeds,
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableFocusMode,
 				enableExternalLinkPreviews: externalLinkPreviewsEnabled,
@@ -398,6 +404,7 @@ export function useNoteEditor({
 		[
 			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
+			enableWikiLiveEmbeds,
 			enableFocusMode,
 			externalLinkPreviewsEnabled,
 			handleListCollapseChange,
@@ -545,6 +552,15 @@ export function useNoteEditor({
 							relPathRef.current,
 							interactiveRef.current,
 							modeRef.current === "rich",
+						);
+					},
+					contextmenu: (view, event): boolean => {
+						if (!(event instanceof MouseEvent)) return false;
+						return handleEditorContextMenu(
+							event,
+							view,
+							relPathRef.current,
+							modeRef.current === "rich" && interactiveRef.current,
 						);
 					},
 					paste: (_view, event) => {

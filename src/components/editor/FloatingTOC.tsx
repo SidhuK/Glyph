@@ -1,5 +1,11 @@
 import { memo, useId, useState } from "react";
+import { i18n } from "../../i18n";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { TOCHeading } from "./hooks/useTableOfContents";
+import {
+	copyWikiLinkMarkdown,
+	wikiLinkMarkdownForNote,
+} from "./markdown/wikiLinkClipboard";
 
 const MIN_HEADINGS = 2;
 
@@ -32,6 +38,7 @@ interface FloatingTOCProps {
 	getHeadingPreview: (heading: TOCHeading) => string | null;
 	headings: TOCHeading[];
 	onSelectHeading: (heading: TOCHeading) => void;
+	relPath?: string;
 }
 
 export const FloatingTOC = memo(function FloatingTOC({
@@ -39,6 +46,7 @@ export const FloatingTOC = memo(function FloatingTOC({
 	getHeadingPreview,
 	headings,
 	onSelectHeading,
+	relPath,
 }: FloatingTOCProps) {
 	const [previewHeadingId, setPreviewHeadingId] = useState<string | null>(null);
 	const [outlineOpen, setOutlineOpen] = useState(false);
@@ -49,6 +57,16 @@ export const FloatingTOC = memo(function FloatingTOC({
 		(heading) => heading.id === previewHeadingId,
 	);
 	const previewText = previewHeading ? getHeadingPreview(previewHeading) : null;
+	const copyHeadingLink = (heading: TOCHeading) => {
+		if (!relPath) return;
+		void copyWikiLinkMarkdown(
+			wikiLinkMarkdownForNote({
+				relPath,
+				anchorKind: "heading",
+				anchor: heading.text,
+			}),
+		);
+	};
 
 	if (headings.length < MIN_HEADINGS) return null;
 
@@ -126,6 +144,15 @@ export const FloatingTOC = memo(function FloatingTOC({
 								onSelectHeading(heading);
 								setOutlineOpen(false);
 							}}
+							onContextMenu={(event) => {
+								if (!relPath) return;
+								void showNativeContextMenu(event, [
+									{
+										label: i18n.t("editor:wikiLink.copyHeadingLink"),
+										action: () => copyHeadingLink(heading),
+									},
+								]);
+							}}
 							title={heading.text}
 						>
 							<span className="floatingTocOutlineText">{heading.text}</span>
@@ -142,6 +169,15 @@ export const FloatingTOC = memo(function FloatingTOC({
 					id={panelId}
 					onMouseEnter={() => setPreviewHeadingId(previewHeading.id)}
 					onClick={() => onSelectHeading(previewHeading)}
+					onContextMenu={(event) => {
+						if (!relPath) return;
+						void showNativeContextMenu(event, [
+							{
+								label: i18n.t("editor:wikiLink.copyHeadingLink"),
+								action: () => copyHeadingLink(previewHeading),
+							},
+						]);
+					}}
 					onKeyDown={(event) => {
 						if (event.key === "Escape") {
 							event.preventDefault();

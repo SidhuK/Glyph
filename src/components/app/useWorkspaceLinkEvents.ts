@@ -20,7 +20,12 @@ import {
 	type TagClickDetail,
 	WIKI_LINK_CLICK_EVENT,
 	type WikiLinkClickDetail,
+	queueWikiAnchorNavigation,
 } from "../editor/markdown/editorEvents";
+import {
+	isSearchQueryWikiTarget,
+	searchQueryFromWikiTarget,
+} from "../editor/markdown/wikiLinkCodec";
 
 interface UseWorkspaceLinkEventsArgs {
 	activeMarkdownTabPath: string | null;
@@ -38,16 +43,30 @@ export function useWorkspaceLinkEvents({
 	setError,
 }: UseWorkspaceLinkEventsArgs) {
 	const openOrCreateWikiLinkTarget = useCallback(
-		async (rawTarget: string) => {
+		async (rawTarget: string, anchor?: WikiLinkClickDetail) => {
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 			if (!normalizedTarget) return;
+			const openResolved = async (path: string) => {
+				if (
+					anchor &&
+					(anchor.anchorKind === "heading" || anchor.anchorKind === "block") &&
+					anchor.anchor
+				) {
+					queueWikiAnchorNavigation({
+						path: normalizeRelPath(path),
+						anchorKind: anchor.anchorKind,
+						anchor: anchor.anchor,
+					});
+				}
+				await openWorkspaceFile(path);
+			};
 			if (isPdfPath(normalizedTarget)) {
 				const resolved = await invoke("space_resolve_wikilink", {
 					target: normalizedTarget,
 				});
 				if (resolved) {
-					await openWorkspaceFile(resolved);
+					await openResolved(resolved);
 					return;
 				}
 				setError(`Could not resolve PDF wikilink: ${rawTarget}`);
@@ -62,7 +81,7 @@ export function useWorkspaceLinkEvents({
 				target: normalizedTarget,
 			});
 			if (resolved) {
-				await openWorkspaceFile(resolved);
+				await openResolved(resolved);
 				return;
 			}
 
@@ -83,7 +102,7 @@ export function useWorkspaceLinkEvents({
 				openParentDir: parentDir(nextRelPath),
 			});
 			if (createdPath) {
-				await openWorkspaceFile(createdPath);
+				await openResolved(createdPath);
 				return;
 			}
 
@@ -92,7 +111,7 @@ export function useWorkspaceLinkEvents({
 				target: normalizedTarget,
 			});
 			if (fallbackResolved) {
-				await openWorkspaceFile(fallbackResolved);
+				await openResolved(fallbackResolved);
 				return;
 			}
 
@@ -107,12 +126,17 @@ export function useWorkspaceLinkEvents({
 			if (!detail?.target) return;
 			void (async () => {
 				try {
+					if (isSearchQueryWikiTarget(detail.target)) {
+						openPalette("search", searchQueryFromWikiTarget(detail.target));
+						return;
+					}
+
 					const targetWithoutAnchor =
 						detail.target.split("#", 1)[0] ?? detail.target;
 					const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 					if (!normalizedTarget) return;
 
-					if (detail.embed || isImagePath(normalizedTarget)) {
+					if (isImagePath(normalizedTarget)) {
 						const resolvedImage = await invoke("space_resolve_image_wikilink", {
 							target: normalizedTarget,
 						});
@@ -125,7 +149,7 @@ export function useWorkspaceLinkEvents({
 					}
 
 					if (isPdfPath(normalizedTarget)) {
-						await openOrCreateWikiLinkTarget(detail.target);
+						await openOrCreateWikiLinkTarget(detail.target, detail);
 						return;
 					}
 
@@ -135,7 +159,7 @@ export function useWorkspaceLinkEvents({
 						);
 						return;
 					}
-					await openOrCreateWikiLinkTarget(detail.target);
+					await openOrCreateWikiLinkTarget(detail.target, detail);
 				} catch (e) {
 					setError(
 						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,

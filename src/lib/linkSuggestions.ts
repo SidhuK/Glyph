@@ -1,4 +1,4 @@
-import { isImagePath, isPdfPath } from "../utils/path";
+import { isImagePath, isMarkdownPath, isPdfPath } from "../utils/path";
 import { invoke } from "./tauri";
 
 export interface EditorLinkSuggestion {
@@ -51,20 +51,22 @@ export async function suggestWikiLinks({
 	limit,
 	query,
 }: SuggestWikiLinksOptions): Promise<EditorLinkSuggestion[]> {
-	const requestLimit = embedOnly ? Math.min(limit * 4, 200) : limit;
 	const results = await invoke("space_suggest_links", {
 		request: {
 			query,
 			markdown_only: true,
 			include_pdf: !embedOnly && includeAttachments,
 			include_images: embedOnly || includeAttachments,
-			strip_markdown_ext: !embedOnly,
+			strip_markdown_ext: true,
 			relative_to_source: false,
-			limit: requestLimit,
+			limit,
 		},
 	});
 	return results
-		.filter((item) => !embedOnly || isImageTarget(item.path))
+		.filter((item) => {
+			if (!embedOnly) return true;
+			return isImageTarget(item.path) || isMarkdownPath(item.path);
+		})
 		.slice(0, limit)
 		.map(toEditorSuggestion);
 }

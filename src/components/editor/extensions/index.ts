@@ -616,6 +616,7 @@ interface CreateEditorExtensionsOptions {
 	enablePeopleMentions?: boolean;
 	enableFocusMode?: boolean;
 	enableExternalLinkPreviews?: boolean;
+	enableWikiLiveEmbeds?: boolean;
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
@@ -635,6 +636,7 @@ export function createEditorExtensions(
 		enablePeopleMentions = false,
 		enableFocusMode = false,
 		enableExternalLinkPreviews = false,
+		enableWikiLiveEmbeds = true,
 		currentPath = "",
 		currentPathResolver = null,
 		placeholder = null,
@@ -700,7 +702,9 @@ export function createEditorExtensions(
 					}),
 				]
 			: []),
-		...(enableWikiLinks ? [WikiLink] : []),
+		...(enableWikiLinks
+			? [WikiLink.configure({ liveEmbeds: enableWikiLiveEmbeds })]
+			: []),
 		...(enableEditingExtensions && enableMarkdownLinkAutocomplete
 			? [
 					MarkdownLinkAutocomplete.configure({

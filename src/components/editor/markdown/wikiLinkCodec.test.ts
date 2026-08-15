@@ -24,6 +24,20 @@ describe("wikiLinkCodec", () => {
 		});
 	});
 
+	it("parses search query embeds without treating hashes as headings", () => {
+		expect(parseWikiLink("![[query: #inbox tag:work]]")).toMatchObject({
+			target: "query: #inbox tag:work",
+			embed: true,
+			anchorKind: "none",
+			anchor: null,
+		});
+		expect(parseWikiLink("[[search: foo|Saved]]")).toMatchObject({
+			target: "search: foo",
+			alias: "Saved",
+			embed: false,
+		});
+	});
+
 	it("parses heading and block anchors", () => {
 		expect(parseWikiLink("[[Note#Section]]")).toMatchObject({
 			target: "Note",
@@ -44,6 +58,14 @@ describe("wikiLinkCodec", () => {
 	});
 
 	it("serializes attrs back to wikilink markdown", () => {
+		expect(
+			wikiLinkAttrsToMarkdown({
+				target: "query: #inbox",
+				embed: true,
+				anchorKind: "none",
+				anchor: null,
+			}),
+		).toBe("![[query: #inbox]]");
 		expect(
 			wikiLinkAttrsToMarkdown({
 				target: "Note",

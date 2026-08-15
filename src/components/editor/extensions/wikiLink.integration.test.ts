@@ -52,4 +52,14 @@ describe("WikiLink markdown manager integration", () => {
 		const out = manager.serialize(json);
 		expect(out).toContain("![[assets/cover.png]]");
 	});
+
+	it("round-trips note and search embeds", () => {
+		const manager = new MarkdownManager({
+			extensions: [StarterKit, WikiLink],
+		});
+		const json = manager.parse("See ![[Note#Heading]] and ![[query: inbox]]");
+		const out = manager.serialize(json);
+		expect(out).toContain("![[Note#Heading]]");
+		expect(out).toContain("![[query: inbox]]");
+	});
 });

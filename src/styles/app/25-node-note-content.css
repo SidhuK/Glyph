@@ -209,6 +209,109 @@
 	);
 }
 
+.wikiLinkEmbed {
+	display: block;
+	width: 100%;
+	margin: var(--space-3) 0;
+	white-space: normal;
+}
+
+.wikiLinkEmbed.is-selected .wikiLinkEmbedCard {
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	outline-offset: 1px;
+}
+
+.wikiLinkEmbedCard {
+	border: 1px solid color-mix(in srgb, var(--border-default) 78%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 58%, var(--bg-primary));
+	overflow: hidden;
+}
+
+.wikiLinkEmbedHeader {
+	display: flex;
+	align-items: baseline;
+	gap: var(--space-2);
+	padding: var(--space-2) var(--space-3);
+	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+}
+
+.wikiLinkEmbedTitle {
+	color: var(--text-primary);
+	font-weight: var(--font-semibold);
+	font-size: calc(var(--editor-font-size) * 0.92);
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wikiLinkEmbedMeta {
+	color: var(--text-tertiary);
+	font-size: calc(var(--editor-font-size) * 0.78);
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wikiLinkEmbedBody {
+	padding: var(--space-3);
+	max-height: 28rem;
+	overflow: auto;
+}
+
+.wikiLinkEmbedStatus {
+	color: var(--text-tertiary);
+	font-size: calc(var(--editor-font-size) * 0.9);
+}
+
+.wikiLinkEmbedHits {
+	list-style: none;
+	margin: 0;
+	padding: var(--space-2);
+	display: grid;
+	gap: 2px;
+}
+
+.wikiLinkEmbedHit {
+	appearance: none;
+	display: grid;
+	gap: 2px;
+	width: 100%;
+	padding: var(--space-2) var(--space-3);
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.wikiLinkEmbedHit:hover,
+.wikiLinkEmbedHit:focus-visible {
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	outline: none;
+}
+
+.wikiLinkEmbedHitTitle {
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+}
+
+.wikiLinkEmbedHitSnippet {
+	color: var(--text-tertiary);
+	font-size: calc(var(--editor-font-size) * 0.85);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wikiLinkEmbed .linkedNotePreviewText {
+	min-height: 0;
+}
+
 .tiptapContentInline .tagToken {
 	display: inline-block;
 	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-primary));

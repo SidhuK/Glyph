@@ -1,7 +1,7 @@
 import { basename } from "../../../utils/path";
-import type { WikiLinkAttrs } from "./wikiLinkTypes";
+import type { WikiLinkAnchorKind, WikiLinkAttrs } from "./wikiLinkTypes";
 
-type WikiLinkAnchorKind = "none" | "heading" | "block";
+const SEARCH_QUERY_TARGET_PATTERN = /^(?:query|search)\s*:/i;
 
 function findUnescapedIndex(text: string, needle: string): number {
 	for (let i = 0; i < text.length; i += 1) {
@@ -27,6 +27,18 @@ export function parseWikiLink(raw: string): WikiLinkAttrs | null {
 	const left = aliasIdx >= 0 ? inner.slice(0, aliasIdx).trim() : inner;
 	const alias = aliasIdx >= 0 ? inner.slice(aliasIdx + 1).trim() : "";
 	if (!left) return null;
+
+	if (isSearchQueryWikiTarget(left)) {
+		return {
+			raw,
+			target: left,
+			alias: alias || null,
+			embed,
+			anchorKind: "none",
+			anchor: null,
+			unresolved: false,
+		};
+	}
 
 	const hashIdx = findUnescapedIndex(left, "#");
 	const target = (hashIdx >= 0 ? left.slice(0, hashIdx) : left).trim();
@@ -121,4 +133,35 @@ export function wikiLinksToStandardMarkdown(markdown: string): string {
 		cursor = span.end;
 	}
 	return out + markdown.slice(cursor);
+}
+
+export function isSearchQueryWikiTarget(target: string): boolean {
+	return SEARCH_QUERY_TARGET_PATTERN.test(target.trim());
+}
+
+export function searchQueryFromWikiTarget(target: string): string {
+	return target.trim().replace(SEARCH_QUERY_TARGET_PATTERN, "").trim();
+}
+
+export function wikiTargetFromRelPath(relPath: string): string {
+	return basename(relPath).replace(/\.(md|markdown)$/i, "") || relPath;
+}
+
+export function wikiLinkChipLabel(
+	attrs: Pick<WikiLinkAttrs, "alias" | "anchor" | "anchorKind" | "target">,
+): string {
+	const alias = attrs.alias?.trim() ?? "";
+	if (alias) return alias;
+	if (isSearchQueryWikiTarget(attrs.target)) {
+		return searchQueryFromWikiTarget(attrs.target) || attrs.target;
+	}
+	const targetName =
+		basename(attrs.target).replace(/\.(md|markdown)$/i, "") || attrs.target;
+	if (attrs.anchorKind === "heading" && attrs.anchor) {
+		return `${targetName} › ${attrs.anchor}`;
+	}
+	if (attrs.anchorKind === "block" && attrs.anchor) {
+		return `${targetName} › ^${attrs.anchor}`;
+	}
+	return targetName;
 }

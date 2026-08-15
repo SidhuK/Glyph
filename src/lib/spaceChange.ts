@@ -131,6 +131,8 @@ export function applySpaceChange(change: SpaceChange): void {
 	invalidateDerived(path, false);
 	if (change.kind === "content") {
 		for (const fn of openNoteListeners) fn(path);
+		void queryClient.invalidateQueries({ queryKey: ["wiki-embed"] });
+		void queryClient.invalidateQueries({ queryKey: ["wiki-search-embed"] });
 	}
 }
 

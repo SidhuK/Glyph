@@ -3,12 +3,12 @@ import type { Range, Text } from "@codemirror/state";
 import { Decoration, type EditorView } from "@codemirror/view";
 import { FOOTNOTE_PATTERN, footnoteKindAt } from "../markdown/footnote";
 import { parseWikiLink } from "../markdown/wikiLinkCodec";
+import { BLOCK_ID_PATTERN } from "../markdown/wikiLinkSlices";
 import { INLINE_TAG_PATTERN } from "../noteProperties/utils";
 
 const WIKI_LINK_PATTERN = /!?\[\[[^\]\n]+\]\]/g;
 const HIGHLIGHT_PATTERN = /==([^=\n]+)==/g;
 const COMMENT_PATTERN = /%%(?:[^%]|%(?!%))*%%/g;
-const BLOCK_ID_PATTERN = /(?:^|\s)(\^[A-Za-z0-9-]+)(?=\s*$)/;
 const FRONTMATTER_SCAN_LIMIT = 500;
 
 function isCodePosition(view: EditorView, position: number): boolean {

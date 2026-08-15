@@ -36,7 +36,10 @@ import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsD
 import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
-import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
+import {
+	isSearchQueryWikiTarget,
+	parseWikiLink,
+} from "../editor/markdown/wikiLinkCodec";
 import { DailyNoteRollover } from "../editor/rollover/DailyNoteRollover";
 import type {
 	ExtractToNoteActions,
@@ -102,6 +105,7 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 		const raw = match[0];
 		const parsed = parseWikiLink(raw);
 		if (!parsed?.target) continue;
+		if (isSearchQueryWikiTarget(parsed.target)) continue;
 		const target = parsed.target.trim();
 		if (!target) continue;
 		const existing = out.get(target);
@@ -366,11 +370,13 @@ export function MarkdownEditorPane({
 
 	const getPlainText = useCallback(() => textRef.current, [textRef]);
 	useInternalAnchorNavigation({
-		relPath,
-		mode,
+		editor: tocSource?.editor ?? null,
 		getPlainText,
-		tocHeadings,
+		mode,
+		rawEditorRef,
+		relPath,
 		selectVisibleHeading,
+		tocHeadings,
 	});
 
 	useEffect(() => {
@@ -640,6 +646,7 @@ export function MarkdownEditorPane({
 				activeId={tocActiveId}
 				getHeadingPreview={getPreviewForHeading}
 				onSelectHeading={scrollToHeading}
+				relPath={relPath}
 				visible={
 					showToc && !infoPanelOpen && !gitDiff && !error && mode !== "plain"
 				}

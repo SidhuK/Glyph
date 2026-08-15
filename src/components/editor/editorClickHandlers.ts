@@ -1,8 +1,10 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
+import { i18n } from "../../i18n";
 import { isGlyphDeeplink } from "../../lib/deeplink";
 import { openDeeplink } from "../../lib/deeplinkOpen";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { cssEscape } from "../../utils/dom";
 import {
 	dispatchInternalAnchorClick,
@@ -11,6 +13,16 @@ import {
 	dispatchTagClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
+import {
+	copyWikiLinkMarkdown,
+	wikiLinkMarkdownForNote,
+} from "./markdown/wikiLinkClipboard";
+import {
+	collectBlockIdsFromDoc,
+	ensureTrailingBlockId,
+	parseTrailingBlockId,
+} from "./markdown/wikiLinkSlices";
+import type { WikiLinkAnchorKind } from "./markdown/wikiLinkTypes";
 
 function isExpandedMarkdownUrlLink(link: HTMLAnchorElement): boolean {
 	const href = link.getAttribute("href")?.trim() ?? "";
@@ -126,11 +138,9 @@ export function handleEditorClick(
 			raw: wikiLink.getAttribute("data-raw") ?? wikiLink.textContent ?? "",
 			target: wikiLink.getAttribute("data-target") ?? "",
 			alias: wikiLink.getAttribute("data-alias") || null,
-			anchorKind:
-				(wikiLink.getAttribute("data-anchor-kind") as
-					| "none"
-					| "heading"
-					| "block") ?? "none",
+			anchorKind: wikiAnchorKindFromDom(
+				wikiLink.getAttribute("data-anchor-kind"),
+			),
 			anchor: wikiLink.getAttribute("data-anchor") || null,
 			unresolved: wikiLink.getAttribute("data-unresolved") === "true",
 			embed: wikiLink.getAttribute("data-wikilink-embed") === "true",
@@ -188,5 +198,78 @@ export function handleEditorClick(
 		href,
 		sourcePath: relPath,
 	});
+	return true;
+}
+
+function wikiAnchorKindFromDom(value: string | null): WikiLinkAnchorKind {
+	if (value === "heading" || value === "block") return value;
+	return "none";
+}
+
+export function handleEditorContextMenu(
+	event: MouseEvent,
+	view: EditorView,
+	relPath: string,
+	editable: boolean,
+): boolean {
+	if (!relPath) return false;
+	const heading = (() => {
+		const target = event.target instanceof Element ? event.target : null;
+		const headingEl = target?.closest("h1, h2, h3, h4, h5, h6");
+		return headingEl?.textContent?.trim() || null;
+	})();
+	const $pos = view.state.doc.resolve(view.state.selection.from);
+	const block = $pos.parent;
+	const blockText = block.isTextblock ? block.textContent : "";
+	void showNativeContextMenu(event, [
+		...(heading
+			? [
+					{
+						label: i18n.t("editor:wikiLink.copyHeadingLink"),
+						action: () => {
+							void copyWikiLinkMarkdown(
+								wikiLinkMarkdownForNote({
+									relPath,
+									anchorKind: "heading",
+									anchor: heading,
+								}),
+							);
+						},
+					},
+				]
+			: []),
+		{
+			label: i18n.t("editor:wikiLink.copyBlockLink"),
+			action: () => {
+				if (!block.isTextblock) return;
+				const currentId = parseTrailingBlockId(blockText);
+				if (currentId) {
+					void copyWikiLinkMarkdown(
+						wikiLinkMarkdownForNote({
+							relPath,
+							anchorKind: "block",
+							anchor: currentId,
+						}),
+					);
+					return;
+				}
+				if (!editable) return;
+				const existing = collectBlockIdsFromDoc(view.state.doc);
+				const ensured = ensureTrailingBlockId(blockText, existing);
+				const from = $pos.before($pos.depth) + 1;
+				const to = from + block.content.size;
+				view.dispatch(
+					view.state.tr.insertText(ensured.line, from, to).scrollIntoView(),
+				);
+				void copyWikiLinkMarkdown(
+					wikiLinkMarkdownForNote({
+						relPath,
+						anchorKind: "block",
+						anchor: ensured.id,
+					}),
+				);
+			},
+		},
+	]);
 	return true;
 }

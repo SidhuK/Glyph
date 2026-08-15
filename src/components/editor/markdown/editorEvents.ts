@@ -70,3 +70,40 @@ export function dispatchInternalAnchorClick(
 		}),
 	);
 }
+
+export const WIKI_ANCHOR_NAVIGATE_EVENT = "glyph:wiki-anchor-navigate";
+
+export interface WikiAnchorNavigateDetail {
+	path: string;
+	anchorKind: "heading" | "block";
+	anchor: string;
+}
+
+let pendingWikiAnchor: WikiAnchorNavigateDetail | null = null;
+
+export function queueWikiAnchorNavigation(
+	detail: WikiAnchorNavigateDetail,
+): void {
+	pendingWikiAnchor = detail;
+	window.dispatchEvent(
+		new CustomEvent<WikiAnchorNavigateDetail>(WIKI_ANCHOR_NAVIGATE_EVENT, {
+			detail,
+		}),
+	);
+}
+
+export function peekWikiAnchorNavigation(
+	path: string,
+): WikiAnchorNavigateDetail | null {
+	if (!pendingWikiAnchor || pendingWikiAnchor.path !== path) return null;
+	return pendingWikiAnchor;
+}
+
+export function takeWikiAnchorNavigation(
+	path: string,
+): WikiAnchorNavigateDetail | null {
+	const detail = peekWikiAnchorNavigation(path);
+	if (!detail) return null;
+	pendingWikiAnchor = null;
+	return detail;
+}

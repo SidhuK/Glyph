@@ -268,5 +268,16 @@
 			"title": "Highlight: Clear",
 			"description": "Remove text highlight"
 		}
+	},
+	"wikiLink": {
+		"copyHeadingLink": "Copy heading link",
+		"copyBlockLink": "Copy block link",
+		"copiedLink": "Copied wikilink.",
+		"copyFailed": "Could not copy wikilink",
+		"embedLoading": "Loading embed…",
+		"embedMissing": "Note not found",
+		"embedEmpty": "Nothing to embed",
+		"searchTitle": "Search",
+		"searchNoResults": "No matching notes"
 	}
 }

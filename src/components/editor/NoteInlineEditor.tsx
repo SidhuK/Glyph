@@ -288,6 +288,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		enableFocusMode,
 		enableHydrateInlineImages: !deferHeavyFeatures,
 		enableMarkdownLinkAutocomplete: !deferHeavyFeatures,
+		enableWikiLiveEmbeds: !deferHeavyFeatures,
 		pasteMarkdownBehavior,
 		placeholder,
 		onChange,

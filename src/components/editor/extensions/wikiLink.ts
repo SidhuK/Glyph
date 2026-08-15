@@ -15,9 +15,16 @@ import {
 import {
 	parseWikiLink,
 	wikiLinkAttrsToMarkdown,
+	wikiLinkChipLabel,
 } from "../markdown/wikiLinkCodec";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
+import {
+	createWikiLinkChipNodeView,
+	createWikiLinkEmbedNodeView,
+	createWikiLinkImageNodeView,
+	isLiveWikiEmbed,
+} from "./wikiLinkEmbedView";
 
 const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
 const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
@@ -88,6 +95,7 @@ export const WikiLink = Node.create({
 	addOptions() {
 		return {
 			suggestionLimit: 8,
+			liveEmbeds: true,
 		};
 	},
 	inline: true,
@@ -154,18 +162,28 @@ export const WikiLink = Node.create({
 			];
 		}
 
-		const targetName = target.split("/").pop()?.replace(/\.md$/i, "") || target;
-		const displayName = alias || targetName;
+		const targetName = wikiLinkChipLabel({
+			alias: alias || null,
+			anchor: typeof node.attrs.anchor === "string" ? node.attrs.anchor : null,
+			anchorKind:
+				node.attrs.anchorKind === "heading" || node.attrs.anchorKind === "block"
+					? node.attrs.anchorKind
+					: "none",
+			target,
+		});
+		const displayName = targetName;
 		return [
 			"span",
 			mergeAttributes(HTMLAttributes, {
 				"data-wikilink": "true",
+				"data-wikilink-embed": node.attrs.embed ? "true" : "false",
 				"data-target": node.attrs.target,
 				"data-anchor-kind": node.attrs.anchorKind,
 				"data-anchor": node.attrs.anchor ?? "",
 				"data-alias": node.attrs.alias ?? "",
+				"data-raw": node.attrs.raw ?? wikiLinkAttrsToMarkdown(node.attrs),
 				"data-unresolved": String(Boolean(node.attrs.unresolved)),
-				class: "wikiLink",
+				class: node.attrs.embed ? "wikiLink wikiLinkEmbedChip" : "wikiLink",
 			}),
 			WIKI_LINK_FILE_ICON,
 			["span", { class: "wikiLinkLabel" }, displayName],
@@ -202,6 +220,28 @@ export const WikiLink = Node.create({
 				attributes: parsed,
 			};
 		},
+	},
+	addNodeView() {
+		return ({ node }) => {
+			const target =
+				typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
+			if (node.attrs.embed && target && isImageTarget(target)) {
+				return createWikiLinkImageNodeView(node);
+			}
+			if (
+				isLiveWikiEmbed(
+					{
+						embed: Boolean(node.attrs.embed),
+						target:
+							typeof node.attrs.target === "string" ? node.attrs.target : "",
+					},
+					this.options.liveEmbeds,
+				)
+			) {
+				return createWikiLinkEmbedNodeView(node);
+			}
+			return createWikiLinkChipNodeView(node);
+		};
 	},
 	addCommands() {
 		return {
