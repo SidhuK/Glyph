@@ -1044,7 +1044,7 @@ interface TauriCommands {
 		LinkUnlinkedMentionsResult
 	>;
 	space_open_or_create_text: CommandDef<
-		{ path: string; text: string },
+		{ path: string; text: string; space_path?: string | null },
 		OpenOrCreateTextResult
 	>;
 	space_create_dir: CommandDef<{ path: string }, void>;

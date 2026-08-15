@@ -325,7 +325,11 @@
 }
 
 :root.light .settingsPeriodNoteBox:has(input[type="checkbox"]:checked) {
-	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary));
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 6%,
+		var(--bg-primary)
+	);
 }
 
 .settingsPeriodNoteBox .settingsPeriodNoteRow.settingsField {
@@ -404,7 +408,8 @@
 	opacity: 0.055;
 }
 
-.settingsPeriodNoteBox:has(input[type="checkbox"]:checked) .settingsPeriodNoteMark {
+.settingsPeriodNoteBox:has(input[type="checkbox"]:checked)
+	.settingsPeriodNoteMark {
 	opacity: 0.11;
 }
 

@@ -75,11 +75,17 @@ export function usePeriodNote(
 							}
 						}
 					}
-					if (!stillOnRequestedSpace()) return null;
-					await invoke("space_open_or_create_text", {
-						path: notePath,
-						text: content,
-					});
+					if (!requestedSpacePath || !stillOnRequestedSpace()) return null;
+					try {
+						await invoke("space_open_or_create_text", {
+							path: notePath,
+							text: content,
+							space_path: requestedSpacePath,
+						});
+					} catch (error) {
+						if (!stillOnRequestedSpace()) return null;
+						throw error;
+					}
 					if (!stillOnRequestedSpace()) return null;
 					await onOpenFile(notePath);
 					return notePath;
