@@ -28,7 +28,9 @@ export function usePeriodNote(
 	options: UsePeriodNoteOptions,
 ): UsePeriodNoteReturn {
 	const { onOpenFile, setError, spacePath, templatePathFor } = options;
-	const inFlightPathsRef = useRef(new Set<string>());
+	const inFlightKeysRef = useRef(new Set<string>());
+	const spacePathRef = useRef(spacePath);
+	spacePathRef.current = spacePath;
 
 	const openOrCreatePeriodNote = useCallback(
 		async (folder: string, period: PeriodId): Promise<string | null> => {
@@ -37,11 +39,16 @@ export function usePeriodNote(
 			}
 			try {
 				const notePath = getPeriodNotePath(folder, period);
-				if (inFlightPathsRef.current.has(notePath)) return null;
-				inFlightPathsRef.current.add(notePath);
+				const requestedSpacePath = spacePath;
+				const flightKey = `${requestedSpacePath ?? ""}\0${notePath}`;
+				if (inFlightKeysRef.current.has(flightKey)) return null;
+				inFlightKeysRef.current.add(flightKey);
+				const stillOnRequestedSpace = () =>
+					spacePathRef.current === requestedSpacePath;
 				try {
 					try {
 						await invoke("space_read_text", { path: notePath });
+						if (!stillOnRequestedSpace()) return null;
 						await onOpenFile(notePath);
 						return notePath;
 					} catch (error) {
@@ -49,6 +56,7 @@ export function usePeriodNote(
 							throw error;
 						}
 					}
+					if (!stillOnRequestedSpace()) return null;
 					let content = getPeriodNoteContent(period);
 					const templatePath = templatePathFor(period);
 					if (templatePath) {
@@ -58,7 +66,7 @@ export function usePeriodNote(
 							});
 							content = renderTemplate(templateDoc.text, {
 								destinationPath: notePath,
-								spaceRootPath: spacePath,
+								spaceRootPath: requestedSpacePath,
 								date: periodAnchorDate(period),
 							});
 						} catch (error) {
@@ -67,14 +75,16 @@ export function usePeriodNote(
 							}
 						}
 					}
+					if (!stillOnRequestedSpace()) return null;
 					await invoke("space_open_or_create_text", {
 						path: notePath,
 						text: content,
 					});
+					if (!stillOnRequestedSpace()) return null;
 					await onOpenFile(notePath);
 					return notePath;
 				} finally {
-					inFlightPathsRef.current.delete(notePath);
+					inFlightKeysRef.current.delete(flightKey);
 				}
 			} catch (err) {
 				const message =

@@ -161,6 +161,7 @@
 		}
 	},
 	"periodNotes": {
+		"updateFailed": "日付メモの更新に失敗しました",
 		"week": {
 			"label": "ウィークリーノート",
 			"description": "この ISO 週のノートを1つ。",

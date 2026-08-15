@@ -161,6 +161,7 @@
 		}
 	},
 	"periodNotes": {
+		"updateFailed": "날짜 노트를 업데이트하지 못했습니다",
 		"week": {
 			"label": "주간 노트",
 			"description": "이번 ISO 주의 노트 하나.",

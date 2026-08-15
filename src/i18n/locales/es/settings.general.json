@@ -161,6 +161,7 @@
 		}
 	},
 	"periodNotes": {
+		"updateFailed": "No se pudieron actualizar las notas con fecha",
 		"week": {
 			"label": "Notas semanales",
 			"description": "Una nota para esta semana ISO.",

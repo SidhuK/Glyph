@@ -48,6 +48,9 @@ pub(crate) fn update_close_space_menu(app: &tauri::AppHandle, state: &SpaceState
         .root_for_window_label(window_geometry::MAIN_WINDOW_LABEL)
         .is_ok();
     let _ = crate::set_space_close_menu_enabled(app, enabled);
+    if !enabled {
+        let _ = crate::apply_period_note_menu_enabled(app);
+    }
 }
 
 #[tauri::command]

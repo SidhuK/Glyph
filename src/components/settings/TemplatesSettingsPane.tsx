@@ -145,7 +145,7 @@ export function TemplateSettingsSections() {
 				const writeId = beginTemplateWrite(kind);
 				await writeSpaceSetting(setting, null, { spacePath });
 				if (writeId !== latestTemplateWriteIdRef.current[kind]) {
-					continue;
+					return cleared;
 				}
 				cleared[kind] = null;
 			}

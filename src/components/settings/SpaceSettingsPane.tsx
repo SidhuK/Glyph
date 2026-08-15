@@ -68,6 +68,7 @@ export function SpaceSettingsPane() {
 		null,
 	);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
+	const [periodNotesError, setPeriodNotesError] = useState<string | null>(null);
 	const [periodNotesEnabled, setPeriodNotesEnabled] = useState(
 		DEFAULT_PERIOD_NOTES_ENABLED,
 	);
@@ -201,7 +202,7 @@ export function SpaceSettingsPane() {
 
 	const handlePeriodNoteToggle = useCallback(
 		async (kind: OptionalPeriodKind, checked: boolean) => {
-			setDailyNotesError(null);
+			setPeriodNotesError(null);
 			try {
 				const spacePath = requireSpacePath(currentSpacePath);
 				await writeSpaceSetting(PERIOD_NOTE_TOGGLE_SETTINGS[kind], checked, {
@@ -209,14 +210,14 @@ export function SpaceSettingsPane() {
 				});
 				setPeriodNotesEnabled((current) => ({ ...current, [kind]: checked }));
 			} catch (cause) {
-				setDailyNotesError(
+				setPeriodNotesError(
 					cause instanceof Error
 						? cause.message
-						: "Failed to update dated notes",
+						: t("periodNotes.updateFailed"),
 				);
 			}
 		},
-		[currentSpacePath],
+		[currentSpacePath, t],
 	);
 
 	const handleAttachmentModeChange = useCallback(
@@ -405,6 +406,11 @@ export function SpaceSettingsPane() {
 							</SettingsRow>
 						))}
 					</div>
+					{periodNotesError ? (
+						<div className="settingsError dailyNotesError" role="alert">
+							{periodNotesError}
+						</div>
+					) : null}
 				</SettingsSection>
 
 				<TemplateSettingsSections />

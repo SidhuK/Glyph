@@ -176,6 +176,7 @@
 		}
 	},
 	"periodNotes": {
+		"updateFailed": "Nie udało się zaktualizować notatek datowanych",
 		"week": {
 			"label": "Notatki tygodniowe",
 			"description": "Jedna notatka na ten tydzień ISO.",

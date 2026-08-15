@@ -161,6 +161,7 @@
 		}
 	},
 	"periodNotes": {
+		"updateFailed": "Datierte Notizen konnten nicht aktualisiert werden",
 		"week": {
 			"label": "Wochennotizen",
 			"description": "Eine Notiz für diese ISO-Woche.",

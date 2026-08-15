@@ -448,12 +448,13 @@ export function AppShell() {
 	}, [activeMarkdownTabPath]);
 
 	useEffect(() => {
+		const settingsReady = settingsSpacePath === spacePath;
 		void invoke("set_period_note_menu_enabled", {
-			weekly: periodNotesEnabled.week,
-			monthly: periodNotesEnabled.month,
-			quarterly: periodNotesEnabled.quarter,
+			weekly: settingsReady && periodNotesEnabled.week,
+			monthly: settingsReady && periodNotesEnabled.month,
+			quarterly: settingsReady && periodNotesEnabled.quarter,
 		}).catch(() => {});
-	}, [periodNotesEnabled]);
+	}, [periodNotesEnabled, settingsSpacePath, spacePath]);
 
 	const openWorkspaceFile = useCallback(
 		async (path: string) => {

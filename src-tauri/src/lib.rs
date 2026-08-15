@@ -147,6 +147,32 @@ pub(crate) fn set_space_close_menu_enabled<R: tauri::Runtime>(
     Ok(())
 }
 
+pub(crate) fn apply_period_note_menu_enabled<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> Result<(), String> {
+    let Some(menu) = app.menu() else {
+        return Ok(());
+    };
+    let space_open = app
+        .try_state::<space::SpaceState>()
+        .map(|state| space_is_open(&state))
+        .unwrap_or(false);
+    let (weekly, monthly, quarterly) = period_note_menu_flags(app);
+    let flags = [
+        ("file.open_weekly_note", space_open && weekly),
+        ("file.open_monthly_note", space_open && monthly),
+        ("file.open_quarterly_note", space_open && quarterly),
+    ];
+    for (id, enabled) in flags {
+        for item in menu.items().map_err(|error| error.to_string())? {
+            if set_menu_item_enabled(&item, id, enabled).map_err(|error| error.to_string())? {
+                break;
+            }
+        }
+    }
+    Ok(())
+}
+
 #[derive(Serialize)]
 struct AppInfo {
     name: String,
@@ -1314,26 +1340,7 @@ fn set_period_note_menu_enabled(
         .lock()
         .map_err(|_| "failed to lock quarterly notes menu state".to_string())? = quarterly;
 
-    let Some(menu) = app.menu() else {
-        return Ok(());
-    };
-    let space_open = app
-        .try_state::<space::SpaceState>()
-        .map(|state| space_is_open(&state))
-        .unwrap_or(false);
-    let flags = [
-        ("file.open_weekly_note", space_open && weekly),
-        ("file.open_monthly_note", space_open && monthly),
-        ("file.open_quarterly_note", space_open && quarterly),
-    ];
-    for (id, enabled) in flags {
-        for item in menu.items().map_err(|error| error.to_string())? {
-            if set_menu_item_enabled(&item, id, enabled).map_err(|error| error.to_string())? {
-                break;
-            }
-        }
-    }
-    Ok(())
+    apply_period_note_menu_enabled(&app)
 }
 
 /// Drain menu commands queued before the main shell registered its listener,
