@@ -2,7 +2,10 @@ import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import type { NotePreviewData } from "./notePreviewShared";
 
 export function NotePreviewContent(
-	data: NotePreviewData & { interactive?: boolean },
+	data: NotePreviewData & {
+		chrome?: "full" | "minimal";
+		interactive?: boolean;
+	},
 ) {
 	if (data.status === "error") {
 		return <div className="markdownEditorInfoEmpty">{data.message}</div>;
@@ -22,7 +25,7 @@ export function NotePreviewContent(
 				interactive={data.interactive ?? false}
 				acceptSearchJumps={false}
 				deferHeavyFeatures
-				chrome="minimal"
+				chrome={data.chrome}
 			/>
 		</div>
 	);

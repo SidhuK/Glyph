@@ -37,9 +37,15 @@ import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import {
+	WIKI_ANCHOR_NAVIGATE_EVENT,
+	type WikiAnchorNavigateDetail,
+	peekWikiAnchorNavigation,
+} from "../editor/markdown/editorEvents";
+import {
 	isSearchQueryWikiTarget,
 	parseWikiLink,
 } from "../editor/markdown/wikiLinkCodec";
+import type { RawMarkdownEditorHandle } from "../editor/raw/types";
 import { DailyNoteRollover } from "../editor/rollover/DailyNoteRollover";
 import type {
 	ExtractToNoteActions,
@@ -222,6 +228,20 @@ export function MarkdownEditorPane({
 		setEditorMode: setMode,
 		spacePath,
 	});
+	const handleRawEditorReadyAndNavigate = useCallback(
+		(editor: RawMarkdownEditorHandle | null) => {
+			handleRawEditorReady(editor);
+			if (!editor) return;
+			const pending = peekWikiAnchorNavigation(normalizeRelPath(relPath));
+			if (!pending) return;
+			window.dispatchEvent(
+				new CustomEvent<WikiAnchorNavigateDetail>(WIKI_ANCHOR_NAVIGATE_EVENT, {
+					detail: pending,
+				}),
+			);
+		},
+		[handleRawEditorReady, relPath],
+	);
 	const requestEditorMode = useCallback(
 		async (nextMode: NoteInlineEditorMode) => {
 			flushPendingEdits();
@@ -630,7 +650,7 @@ export function MarkdownEditorPane({
 										}}
 										onFrontmatterCommit={runAutosave}
 										onEditorReady={handleEditorReady}
-										onRawEditorReady={handleRawEditorReady}
+										onRawEditorReady={handleRawEditorReadyAndNavigate}
 										onFlushPendingEditsReady={handleRichEditorFlushReady}
 										extractToNoteActions={extractToNoteActions}
 										rolloverTaskActions={rolloverTaskActions}

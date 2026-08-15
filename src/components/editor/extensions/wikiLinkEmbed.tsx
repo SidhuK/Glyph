@@ -129,6 +129,7 @@ export function WikiLinkEmbedCard({ attrs }: { attrs: WikiLinkAttrs }) {
 						relPath={query.data.relPath}
 						content={query.data.content}
 						interactive
+						chrome="minimal"
 					/>
 				) : (
 					<div className="wikiLinkEmbedStatus">{t("wikiLink.embedEmpty")}</div>

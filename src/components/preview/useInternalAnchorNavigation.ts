@@ -83,7 +83,8 @@ function navigateWikiAnchor(options: {
 	if (options.mode === "plain") {
 		const offset = findBlockIdOffset(markdown, options.anchor);
 		if (offset === null) return false;
-		options.rawEditor?.selectRange(offset, offset);
+		if (!options.rawEditor) return false;
+		options.rawEditor.selectRange(offset, offset);
 		return true;
 	}
 
