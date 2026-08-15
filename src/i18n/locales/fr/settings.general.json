@@ -159,5 +159,11 @@
 			"description": "Choisissez comment les dossiers et fichiers sont ordonnés dans l’arborescence de la barre latérale.",
 			"ariaLabel": "Tri de l’arborescence"
 		}
+	},
+	"periodNoteTemplates": {
+		"day": "Modèle de note quotidienne par défaut",
+		"week": "Modèle de note hebdomadaire par défaut",
+		"month": "Modèle de note mensuelle par défaut",
+		"quarter": "Modèle de note trimestrielle par défaut"
 	}
 }

@@ -159,5 +159,11 @@
 			"description": "Wähle, wie Ordner und Dateien im Seitenleistenbaum sortiert werden.",
 			"ariaLabel": "Dateibaum-Sortierung"
 		}
+	},
+	"periodNoteTemplates": {
+		"day": "Standardvorlage für Tagesnotizen",
+		"week": "Standardvorlage für Wochennotizen",
+		"month": "Standardvorlage für Monatsnotizen",
+		"quarter": "Standardvorlage für Quartalsnotizen"
 	}
 }

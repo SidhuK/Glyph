@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState } from "react";
+import type { PeriodKind } from "../../lib/periodNotes";
 
 const loadCalendarPalette = () =>
 	import("./CalendarPalette").then((module) => ({
@@ -13,7 +14,7 @@ interface CalendarPaletteControllerProps {
 	spacePath: string | null;
 	dailyNoteFolder: string | null;
 	onOpenNote: (path: string) => void;
-	onOpenDailyNoteAtDate: (date: string) => void;
+	onOpenPeriodNoteAtDate: (kind: PeriodKind, date: string) => void;
 }
 
 export function preloadCalendarPalette(): void {
@@ -26,7 +27,7 @@ export function CalendarPaletteController({
 	spacePath,
 	dailyNoteFolder,
 	onOpenNote,
-	onOpenDailyNoteAtDate,
+	onOpenPeriodNoteAtDate,
 }: CalendarPaletteControllerProps) {
 	// Keep the palette mounted after its first open so reopening is instant.
 	const [mounted, setMounted] = useState(open);
@@ -42,7 +43,7 @@ export function CalendarPaletteController({
 				spacePath={spacePath}
 				dailyNoteFolder={dailyNoteFolder}
 				onOpenNote={onOpenNote}
-				onOpenDailyNoteAtDate={onOpenDailyNoteAtDate}
+				onOpenPeriodNoteAtDate={onOpenPeriodNoteAtDate}
 			/>
 		</Suspense>
 	);

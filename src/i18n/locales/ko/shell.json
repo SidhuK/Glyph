@@ -142,7 +142,13 @@
 		"noteCount_other": "노트 {{count}}개",
 		"noNotes": "이 날짜에 노트가 없습니다",
 		"loadFailed": "노트를 불러오지 못했습니다: {{message}}",
-		"loadFailedShort": "노트를 불러오지 못했습니다"
+		"loadFailedShort": "노트를 불러오지 못했습니다",
+		"openPeriodNote": {
+			"day": "일",
+			"week": "주",
+			"month": "월",
+			"quarter": "분기"
+		}
 	},
 	"tabs": {
 		"allNotes": "모든 노트",

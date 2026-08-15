@@ -337,6 +337,21 @@
 			"section": "Szablony",
 			"keywords": ["szablony", "notatki dzienne"]
 		},
+		"space-default-weekly-template": {
+			"title": "Domyślny szablon notatki tygodniowej",
+			"section": "Szablony",
+			"keywords": ["szablony", "notatki tygodniowe"]
+		},
+		"space-default-monthly-template": {
+			"title": "Domyślny szablon notatki miesięcznej",
+			"section": "Szablony",
+			"keywords": ["szablony", "notatki miesięczne"]
+		},
+		"space-default-quarterly-template": {
+			"title": "Domyślny szablon notatki kwartalnej",
+			"section": "Szablony",
+			"keywords": ["szablony", "notatki kwartalne"]
+		},
 		"space-search-index-status": {
 			"title": "Status",
 			"section": "Indeks wyszukiwania",

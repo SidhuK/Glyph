@@ -159,5 +159,11 @@
 			"description": "Escolha como pastas e arquivos são ordenados na árvore da barra lateral.",
 			"ariaLabel": "Ordenação da árvore de arquivos"
 		}
+	},
+	"periodNoteTemplates": {
+		"day": "Modelo padrão de nota diária",
+		"week": "Modelo padrão de nota semanal",
+		"month": "Modelo padrão de nota mensal",
+		"quarter": "Modelo padrão de nota trimestral"
 	}
 }

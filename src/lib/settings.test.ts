@@ -618,6 +618,9 @@ describe("space-scoped settings", () => {
 		expect(settings.quickNotes.folder).toBe("Quick Notes");
 		expect(settings.templates.folder).toBeNull();
 		expect(settings.templates.dailyNoteTemplate).toBeNull();
+		expect(settings.templates.weeklyNoteTemplate).toBeNull();
+		expect(settings.templates.monthlyNoteTemplate).toBeNull();
+		expect(settings.templates.quarterlyNoteTemplate).toBeNull();
 		expect(settings.editor.attachmentStorageMode).toBe("note-folder");
 		expect(settings.editor.attachmentFolder).toBe("assets");
 	});

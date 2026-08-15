@@ -703,6 +703,48 @@ export const SPACE_SETTINGS = {
 		patch: (value) => ({ templatesDailyNoteTemplate: value }),
 		change: (value) => ({ templates: { dailyNoteTemplate: value } }),
 	}),
+	templatesWeeklyNoteTemplate: defineSpaceSetting({
+		legacyKey: "templates.weeklyNoteTemplate",
+		field: "templatesWeeklyNoteTemplate",
+		defaultValue: null,
+		discovery: searchable("space-default-weekly-template"),
+		normalize: nullablePath,
+		parse: (value) =>
+			typeof value === "string" || value === null
+				? parsed(value)
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.templates.weeklyNoteTemplate,
+		patch: (value) => ({ templatesWeeklyNoteTemplate: value }),
+		change: (value) => ({ templates: { weeklyNoteTemplate: value } }),
+	}),
+	templatesMonthlyNoteTemplate: defineSpaceSetting({
+		legacyKey: "templates.monthlyNoteTemplate",
+		field: "templatesMonthlyNoteTemplate",
+		defaultValue: null,
+		discovery: searchable("space-default-monthly-template"),
+		normalize: nullablePath,
+		parse: (value) =>
+			typeof value === "string" || value === null
+				? parsed(value)
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.templates.monthlyNoteTemplate,
+		patch: (value) => ({ templatesMonthlyNoteTemplate: value }),
+		change: (value) => ({ templates: { monthlyNoteTemplate: value } }),
+	}),
+	templatesQuarterlyNoteTemplate: defineSpaceSetting({
+		legacyKey: "templates.quarterlyNoteTemplate",
+		field: "templatesQuarterlyNoteTemplate",
+		defaultValue: null,
+		discovery: searchable("space-default-quarterly-template"),
+		normalize: nullablePath,
+		parse: (value) =>
+			typeof value === "string" || value === null
+				? parsed(value)
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.templates.quarterlyNoteTemplate,
+		patch: (value) => ({ templatesQuarterlyNoteTemplate: value }),
+		change: (value) => ({ templates: { quarterlyNoteTemplate: value } }),
+	}),
 	attachmentStorageMode: defineSpaceSetting({
 		legacyKey: "editor.attachmentStorageMode",
 		field: "attachmentStorageMode",

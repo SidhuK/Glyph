@@ -174,5 +174,11 @@
 			"description": "Choose how folders and files are ordered in the sidebar tree.",
 			"ariaLabel": "File tree sort"
 		}
+	},
+	"periodNoteTemplates": {
+		"day": "Default daily note template",
+		"week": "Default weekly note template",
+		"month": "Default monthly note template",
+		"quarter": "Default quarterly note template"
 	}
 }

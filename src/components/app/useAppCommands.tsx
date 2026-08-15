@@ -45,6 +45,7 @@ import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { getLicenseStatus } from "../../lib/license";
 import { copyAbsolutePath, copyRelativePath } from "../../lib/pathClipboard";
+import type { PeriodKind } from "../../lib/periodNotes";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import {
 	type ShortcutActionId,
@@ -113,6 +114,7 @@ interface UseAppCommandsDeps {
 	openMarkdownTabsLength: number;
 	pinnedFiles: string[];
 	requestOpenDailyNote: () => void;
+	requestOpenPeriodNote: (kind: PeriodKind) => void;
 	saveCurrentEditor: () => Promise<unknown>;
 	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
@@ -258,6 +260,7 @@ export function useAppCommands({
 	openMarkdownTabsLength,
 	pinnedFiles,
 	requestOpenDailyNote,
+	requestOpenPeriodNote,
 	saveCurrentEditor,
 	setCurrentEditorMode,
 	setAiPanelOpen,
@@ -421,6 +424,24 @@ export function useAppCommands({
 				shortcut: { meta: true, shift: true, key: "d" },
 				enabled: Boolean(spacePath),
 				action: requestOpenDailyNote,
+			},
+			{
+				id: "open-weekly-note",
+				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
+				enabled: Boolean(spacePath),
+				action: () => requestOpenPeriodNote("week"),
+			},
+			{
+				id: "open-monthly-note",
+				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
+				enabled: Boolean(spacePath),
+				action: () => requestOpenPeriodNote("month"),
+			},
+			{
+				id: "open-quarterly-note",
+				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
+				enabled: Boolean(spacePath),
+				action: () => requestOpenPeriodNote("quarter"),
 			},
 			{
 				id: "toggle-pin-active-file",
@@ -701,6 +722,7 @@ export function useAppCommands({
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,
 		requestOpenDailyNote,
+		requestOpenPeriodNote,
 		saveCurrentEditor,
 		setCurrentEditorMode,
 		handleCreateFromTemplateFromMenu,

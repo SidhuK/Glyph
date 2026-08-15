@@ -294,6 +294,18 @@
 			"label": "Otwórz dzisiejszą notatkę",
 			"description": "Otwórz lub utwórz dzisiejszą notatkę w dzienniku."
 		},
+		"open-weekly-note": {
+			"label": "Otwórz notatkę tygodniową",
+			"description": "Otwórz lub utwórz notatkę tego tygodnia."
+		},
+		"open-monthly-note": {
+			"label": "Otwórz notatkę miesięczną",
+			"description": "Otwórz lub utwórz notatkę tego miesiąca."
+		},
+		"open-quarterly-note": {
+			"label": "Otwórz notatkę kwartalną",
+			"description": "Otwórz lub utwórz notatkę tego kwartału."
+		},
 		"open-databases": {
 			"label": "Otwórz kolekcje",
 			"description": "Otwórz widok kolekcji."

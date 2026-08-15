@@ -142,7 +142,13 @@
 		"noteCount_other": "ノート {{count}} 件",
 		"noNotes": "この日のノートはありません",
 		"loadFailed": "ノートを読み込めませんでした: {{message}}",
-		"loadFailedShort": "ノートを読み込めませんでした"
+		"loadFailedShort": "ノートを読み込めませんでした",
+		"openPeriodNote": {
+			"day": "日",
+			"week": "週",
+			"month": "月",
+			"quarter": "四半期"
+		}
 	},
 	"tabs": {
 		"allNotes": "すべてのノート",

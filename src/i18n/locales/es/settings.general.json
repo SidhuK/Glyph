@@ -159,5 +159,11 @@
 			"description": "Elige cómo se ordenan carpetas y archivos en el árbol de la barra lateral.",
 			"ariaLabel": "Orden del árbol de archivos"
 		}
+	},
+	"periodNoteTemplates": {
+		"day": "Plantilla predeterminada de nota diaria",
+		"week": "Plantilla predeterminada de nota semanal",
+		"month": "Plantilla predeterminada de nota mensual",
+		"quarter": "Plantilla predeterminada de nota trimestral"
 	}
 }

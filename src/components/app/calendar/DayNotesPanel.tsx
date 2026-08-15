@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Calendar03Icon, NoteIcon } from "@hugeicons/core-free-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { PERIOD_KINDS, type PeriodKind } from "../../../lib/periodNotes";
 import type { CalendarDateNote } from "../../../lib/tauri";
 
 interface DayNotesPanelProps {
@@ -10,8 +11,8 @@ interface DayNotesPanelProps {
 	notes: CalendarDateNote[];
 	isLoading: boolean;
 	errorMessage: string | null;
-	canOpenDailyNote: boolean;
-	onOpenDailyNote: () => void;
+	canOpenDatedNotes: boolean;
+	onOpenPeriodNote: (kind: PeriodKind) => void;
 	onOpenNote: (path: string) => void;
 }
 
@@ -58,8 +59,8 @@ export function DayNotesPanel({
 	notes,
 	isLoading,
 	errorMessage,
-	canOpenDailyNote,
-	onOpenDailyNote,
+	canOpenDatedNotes,
+	onOpenPeriodNote,
 	onOpenNote,
 }: DayNotesPanelProps) {
 	const { t } = useTranslation("shell");
@@ -89,14 +90,19 @@ export function DayNotesPanel({
 					<h3 className="calendarNotesTitle">{heading}</h3>
 					{summary ? <p className="calendarNotesSummary">{summary}</p> : null}
 				</div>
-				{canOpenDailyNote ? (
-					<button
-						type="button"
-						className="calendarDailyNoteButton"
-						onClick={onOpenDailyNote}
-					>
-						{t("calendar.openDailyNote")}
-					</button>
+				{canOpenDatedNotes ? (
+					<div className="calendarPeriodNoteActions">
+						{PERIOD_KINDS.map((kind) => (
+							<button
+								key={kind}
+								type="button"
+								className="calendarDailyNoteButton"
+								onClick={() => onOpenPeriodNote(kind)}
+							>
+								{t(`calendar.openPeriodNote.${kind}`)}
+							</button>
+						))}
+					</div>
 				) : null}
 			</header>
 

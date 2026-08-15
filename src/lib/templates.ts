@@ -1,4 +1,5 @@
 import { basename, parentDir } from "../utils/path";
+import { isoWeekFromDate } from "./periodNotes";
 import { invoke } from "./tauri";
 
 export interface TemplateEntry {
@@ -89,18 +90,6 @@ function slugifyTitle(value: string): string {
 	);
 }
 
-function getIsoWeek(date: Date): number {
-	const utcDate = new Date(
-		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-	);
-	const day = utcDate.getUTCDay() || 7;
-	utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day);
-	const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
-	return Math.ceil(
-		((utcDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
-	);
-}
-
 function getSpaceName(spaceRootPath: string | null | undefined): string {
 	if (!spaceRootPath) return "";
 	const normalized = spaceRootPath.replace(/\\/g, "/").replace(/\/+$/g, "");
@@ -158,7 +147,7 @@ export function buildTemplateVariables(
 		hour: pad(now.getHours()),
 		minute: pad(now.getMinutes()),
 		second: pad(now.getSeconds()),
-		iso_week: String(getIsoWeek(now)).padStart(2, "0"),
+		iso_week: String(isoWeekFromDate(now).week).padStart(2, "0"),
 		quarter: String(Math.floor(monthIndex / 3) + 1),
 	};
 }

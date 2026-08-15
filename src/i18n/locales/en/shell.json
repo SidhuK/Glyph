@@ -155,6 +155,12 @@
 		"previousMonth": "Previous month",
 		"nextMonth": "Next month",
 		"openDailyNote": "Open daily note",
+		"openPeriodNote": {
+			"day": "Daily",
+			"week": "Week",
+			"month": "Month",
+			"quarter": "Quarter"
+		},
 		"loading": "Loading…",
 		"noteCount_one": "1 note",
 		"noteCount_other": "{{count}} notes",

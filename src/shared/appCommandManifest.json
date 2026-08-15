@@ -844,6 +844,39 @@
 			"commandPalette": true,
 			"menuId": "file.open_daily_note"
 		},
+		"open-weekly-note": {
+			"id": "open-weekly-note",
+			"label": "Open Weekly Note",
+			"description": "Open or create this week's weekly note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.open_weekly_note"
+		},
+		"open-monthly-note": {
+			"id": "open-monthly-note",
+			"label": "Open Monthly Note",
+			"description": "Open or create this month's monthly note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.open_monthly_note"
+		},
+		"open-quarterly-note": {
+			"id": "open-quarterly-note",
+			"label": "Open Quarterly Note",
+			"description": "Open or create this quarter's quarterly note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.open_quarterly_note"
+		},
 		"open-databases": {
 			"id": "open-databases",
 			"label": "Open Collections",

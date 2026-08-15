@@ -320,11 +320,11 @@ export function SpaceSettingsPane() {
 			<div className="settingsGrid">
 				<SettingsSection
 					title="Daily Notes"
-					description="Choose where new daily notes should be created within the current space."
+					description="Choose where daily, weekly, monthly, and quarterly notes are created in the current space."
 				>
 					<SettingsRow
 						label="Folder"
-						description="Glyph stores daily notes relative to the active space."
+						description="Glyph stores dated notes relative to the active space. Weekly notes use ISO weeks (YYYY-Www.md). Monthly notes use YYYY-MM.md. Quarterly notes use YYYY-Qn.md."
 						stacked
 						interactive={false}
 					>

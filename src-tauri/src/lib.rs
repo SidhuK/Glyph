@@ -466,6 +466,18 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         Some("CmdOrCtrl+Shift+D"),
     )?;
+    let open_weekly_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_weekly_note",
+        true,
+        None,
+    )?;
+    let open_monthly_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_monthly_note",
+        true,
+        None,
+    )?;
+    let open_quarterly_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_quarterly_note",
+        true,
+        None,
+    )?;
     let save_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.save_note",
         true,
         Some("CmdOrCtrl+S"),
@@ -653,6 +665,9 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &new_note,
             &create_from_template,
             &open_daily_note,
+            &open_weekly_note,
+            &open_monthly_note,
+            &open_quarterly_note,
             &PredefinedMenuItem::separator(app)?,
             &import_files,
             &import_folder,

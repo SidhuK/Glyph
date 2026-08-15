@@ -1,13 +1,6 @@
-import { useCallback, useRef, useState } from "react";
-import {
-	getDailyNoteContent,
-	getDailyNotePath,
-	getTodayDateString,
-	parseIsoDate,
-} from "../lib/dailyNotes";
-import { isMissingFileError } from "../lib/fsErrors";
-import { invoke } from "../lib/tauri";
-import { renderTemplate } from "../lib/templates";
+import { useCallback } from "react";
+import { getTodayDateString, parseIsoDate } from "../lib/dailyNotes";
+import { usePeriodNote } from "./usePeriodNote";
 
 interface UseDailyNoteOptions {
 	onOpenFile: (path: string) => Promise<void>;
@@ -27,70 +20,27 @@ interface UseDailyNoteReturn {
 
 export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 	const { onOpenFile, setError, spacePath, templatePath } = options;
-	const [isCreating, setIsCreating] = useState(false);
-	const lockRef = useRef(false);
+	const { openOrCreatePeriodNote, isCreating } = usePeriodNote({
+		onOpenFile,
+		setError,
+		spacePath,
+		templatePathFor: (period) =>
+			period.kind === "day" ? (templatePath ?? null) : null,
+	});
 
 	const openOrCreateDailyNoteAtDate = useCallback(
 		async (folder: string, date: string): Promise<string | null> => {
 			if (!parseIsoDate(date)) {
 				return null;
 			}
-			if (lockRef.current) return null;
-			lockRef.current = true;
-			setIsCreating(true);
-			try {
-				const notePath = getDailyNotePath(folder, date);
-				try {
-					await invoke("space_read_text", { path: notePath });
-					await onOpenFile(notePath);
-					return notePath;
-				} catch (error) {
-					if (!isMissingFileError(error)) {
-						throw error;
-					}
-					// Create below when the note does not exist yet.
-				}
-				let content = getDailyNoteContent(date);
-				if (templatePath) {
-					try {
-						const templateDoc = await invoke("space_read_text", {
-							path: templatePath,
-						});
-						const dateValue = parseIsoDate(date) ?? new Date();
-						content = renderTemplate(templateDoc.text, {
-							destinationPath: notePath,
-							spaceRootPath: spacePath,
-							date: dateValue,
-						});
-					} catch (error) {
-						if (!isMissingFileError(error)) {
-							throw error;
-						}
-					}
-				}
-				await invoke("space_open_or_create_text", {
-					path: notePath,
-					text: content,
-				});
-				await onOpenFile(notePath);
-				return notePath;
-			} catch (err) {
-				const message =
-					err instanceof Error ? err.message : "Failed to open daily note";
-				setError(message);
-				return null;
-			} finally {
-				lockRef.current = false;
-				setIsCreating(false);
-			}
+			return openOrCreatePeriodNote(folder, { kind: "day", date });
 		},
-		[onOpenFile, setError, spacePath, templatePath],
+		[openOrCreatePeriodNote],
 	);
 
 	const openOrCreateDailyNote = useCallback(
 		async (folder: string) => {
-			const todayDate = getTodayDateString();
-			return openOrCreateDailyNoteAtDate(folder, todayDate);
+			return openOrCreateDailyNoteAtDate(folder, getTodayDateString());
 		},
 		[openOrCreateDailyNoteAtDate],
 	);

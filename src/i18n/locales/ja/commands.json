@@ -286,6 +286,18 @@
 			"label": "デイリーノートを開く",
 			"description": "今日のデイリーノートを開くか作成します。"
 		},
+		"open-weekly-note": {
+			"label": "ウィークリーノートを開く",
+			"description": "今週のウィークリーノートを開くか作成します。"
+		},
+		"open-monthly-note": {
+			"label": "マンスリーノートを開く",
+			"description": "今月のマンスリーノートを開くか作成します。"
+		},
+		"open-quarterly-note": {
+			"label": "四半期ノートを開く",
+			"description": "今四半期のノートを開くか作成します。"
+		},
 		"open-databases": {
 			"label": "コレクションを開く",
 			"description": "コレクションビューを開きます。"

@@ -361,6 +361,21 @@
 			"section": "Templates",
 			"keywords": ["templates", "daily notes"]
 		},
+		"space-default-weekly-template": {
+			"title": "Default weekly note template",
+			"section": "Templates",
+			"keywords": ["templates", "weekly notes", "period notes"]
+		},
+		"space-default-monthly-template": {
+			"title": "Default monthly note template",
+			"section": "Templates",
+			"keywords": ["templates", "monthly notes", "period notes"]
+		},
+		"space-default-quarterly-template": {
+			"title": "Default quarterly note template",
+			"section": "Templates",
+			"keywords": ["templates", "quarterly notes", "period notes"]
+		},
 		"space-search-index-status": {
 			"title": "Status",
 			"section": "Search Index",

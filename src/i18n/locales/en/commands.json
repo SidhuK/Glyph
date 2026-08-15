@@ -294,6 +294,18 @@
 			"label": "Open Daily Note",
 			"description": "Open or create today's daily note."
 		},
+		"open-weekly-note": {
+			"label": "Open Weekly Note",
+			"description": "Open or create this week's weekly note."
+		},
+		"open-monthly-note": {
+			"label": "Open Monthly Note",
+			"description": "Open or create this month's monthly note."
+		},
+		"open-quarterly-note": {
+			"label": "Open Quarterly Note",
+			"description": "Open or create this quarter's quarterly note."
+		},
 		"open-databases": {
 			"label": "Open Collections",
 			"description": "Open the collections view."

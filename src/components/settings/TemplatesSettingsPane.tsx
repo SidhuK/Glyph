@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { PeriodKind } from "../../lib/periodNotes";
 import {
 	loadSettings,
 	setTemplatesFolder,
 	writeSpaceSetting,
 } from "../../lib/settings";
-import { SPACE_SETTINGS } from "../../lib/settings/definitions";
+import {
+	SPACE_SETTINGS,
+	type SpaceSettingDefinition,
+} from "../../lib/settings/definitions";
 import { invoke } from "../../lib/tauri";
 import { listTemplates } from "../../lib/templates";
 import { SettingsFolderPicker } from "./SettingsFolderPicker";
@@ -20,10 +25,12 @@ interface TemplateOption {
 	value: string;
 }
 
+type PeriodTemplatePaths = Record<PeriodKind, string | null>;
+
 interface TemplatesSettingsState {
 	currentSpacePath: string | null;
 	templatesFolder: string | null;
-	dailyNoteTemplatePath: string | null;
+	periodTemplates: PeriodTemplatePaths;
 	error: string | null;
 }
 
@@ -32,10 +39,17 @@ interface TemplateLibraryState {
 	error: string | null;
 }
 
+const EMPTY_PERIOD_TEMPLATES: PeriodTemplatePaths = {
+	day: null,
+	week: null,
+	month: null,
+	quarter: null,
+};
+
 const INITIAL_TEMPLATES_SETTINGS_STATE: TemplatesSettingsState = {
 	currentSpacePath: null,
 	templatesFolder: null,
-	dailyNoteTemplatePath: null,
+	periodTemplates: EMPTY_PERIOD_TEMPLATES,
 	error: null,
 };
 
@@ -43,6 +57,33 @@ const INITIAL_TEMPLATE_LIBRARY_STATE: TemplateLibraryState = {
 	templates: [],
 	error: null,
 };
+
+const PERIOD_TEMPLATE_SETTINGS: readonly {
+	kind: PeriodKind;
+	setting: SpaceSettingDefinition<string | null>;
+	labelKey: string;
+}[] = [
+	{
+		kind: "day",
+		setting: SPACE_SETTINGS.templatesDailyNoteTemplate,
+		labelKey: "periodNoteTemplates.day",
+	},
+	{
+		kind: "week",
+		setting: SPACE_SETTINGS.templatesWeeklyNoteTemplate,
+		labelKey: "periodNoteTemplates.week",
+	},
+	{
+		kind: "month",
+		setting: SPACE_SETTINGS.templatesMonthlyNoteTemplate,
+		labelKey: "periodNoteTemplates.month",
+	},
+	{
+		kind: "quarter",
+		setting: SPACE_SETTINGS.templatesQuarterlyNoteTemplate,
+		labelKey: "periodNoteTemplates.quarter",
+	},
+];
 
 function toDisplayPath(value: string, folder: string | null): string {
 	if (!folder) return value;
@@ -57,21 +98,61 @@ async function ensureCurrentSpaceOpen(): Promise<string | null> {
 	return null;
 }
 
+function templatesFromSettings(templates: {
+	dailyNoteTemplate?: string | null;
+	weeklyNoteTemplate?: string | null;
+	monthlyNoteTemplate?: string | null;
+	quarterlyNoteTemplate?: string | null;
+}): PeriodTemplatePaths {
+	return {
+		day: templates.dailyNoteTemplate ?? null,
+		week: templates.weeklyNoteTemplate ?? null,
+		month: templates.monthlyNoteTemplate ?? null,
+		quarter: templates.quarterlyNoteTemplate ?? null,
+	};
+}
+
 export function TemplateSettingsSections() {
+	const { t } = useTranslation("settings.general");
 	const [settingsState, setSettingsState] = useState<TemplatesSettingsState>(
 		INITIAL_TEMPLATES_SETTINGS_STATE,
 	);
 	const [templateLibraryState, setTemplateLibraryState] =
 		useState<TemplateLibraryState>(INITIAL_TEMPLATE_LIBRARY_STATE);
-	const latestDailyTemplateWriteIdRef = useRef(0);
-	const { currentSpacePath, templatesFolder, dailyNoteTemplatePath, error } =
+	const latestTemplateWriteIdRef = useRef(0);
+	const { currentSpacePath, templatesFolder, periodTemplates, error } =
 		settingsState;
 	const { templates, error: templatesError } = templateLibraryState;
 
-	const beginDailyTemplateWrite = useCallback(() => {
-		latestDailyTemplateWriteIdRef.current += 1;
-		return latestDailyTemplateWriteIdRef.current;
+	const beginTemplateWrite = useCallback(() => {
+		latestTemplateWriteIdRef.current += 1;
+		return latestTemplateWriteIdRef.current;
 	}, []);
+
+	const clearMissingPeriodTemplates = useCallback(
+		async (
+			spacePath: string | null,
+			nextTemplates: TemplateOption[],
+			current: PeriodTemplatePaths,
+		): Promise<PeriodTemplatePaths> => {
+			const available = new Set(
+				nextTemplates.map((template) => template.value),
+			);
+			let next = current;
+			for (const { kind, setting } of PERIOD_TEMPLATE_SETTINGS) {
+				const selected = current[kind];
+				if (!selected || available.has(selected)) continue;
+				const writeId = beginTemplateWrite();
+				await writeSpaceSetting(setting, null, { spacePath });
+				if (writeId !== latestTemplateWriteIdRef.current) {
+					return next;
+				}
+				next = { ...next, [kind]: null };
+			}
+			return next;
+		},
+		[beginTemplateWrite],
+	);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -83,7 +164,7 @@ export function TemplateSettingsSections() {
 				setSettingsState({
 					currentSpacePath: currentSpace,
 					templatesFolder: settings.templates.folder,
-					dailyNoteTemplatePath: settings.templates.dailyNoteTemplate,
+					periodTemplates: templatesFromSettings(settings.templates),
 					error: null,
 				});
 			} catch (cause) {
@@ -105,28 +186,33 @@ export function TemplateSettingsSections() {
 	useEffect(() => {
 		if (templatesFolder === null) {
 			setTemplateLibraryState(INITIAL_TEMPLATE_LIBRARY_STATE);
-			if (dailyNoteTemplatePath !== null) {
-				const writeId = beginDailyTemplateWrite();
+			const hasSelected = PERIOD_TEMPLATE_SETTINGS.some(
+				({ kind }) => periodTemplates[kind] !== null,
+			);
+			if (hasSelected) {
+				const writeId = beginTemplateWrite();
 				setSettingsState((current) => ({
 					...current,
-					dailyNoteTemplatePath: null,
+					periodTemplates: EMPTY_PERIOD_TEMPLATES,
 				}));
-				void writeSpaceSetting(
-					SPACE_SETTINGS.templatesDailyNoteTemplate,
-					null,
-					{
-						spacePath: currentSpacePath,
-					},
-				).catch((cause) => {
-					if (writeId !== latestDailyTemplateWriteIdRef.current) return;
-					setSettingsState((current) => ({
-						...current,
-						error:
-							cause instanceof Error
-								? cause.message
-								: "Failed to clear daily note template",
-					}));
-				});
+				void (async () => {
+					try {
+						for (const { setting } of PERIOD_TEMPLATE_SETTINGS) {
+							await writeSpaceSetting(setting, null, {
+								spacePath: currentSpacePath,
+							});
+						}
+					} catch (cause) {
+						if (writeId !== latestTemplateWriteIdRef.current) return;
+						setSettingsState((current) => ({
+							...current,
+							error:
+								cause instanceof Error
+									? cause.message
+									: "Failed to clear period note templates",
+						}));
+					}
+				})();
 			}
 			return;
 		}
@@ -142,7 +228,7 @@ export function TemplateSettingsSections() {
 				}
 				return listTemplates(templatesFolder);
 			})
-			.then((entries) => {
+			.then(async (entries) => {
 				if (cancelled) return;
 				const nextTemplates = entries.map((entry) => ({
 					value: entry.relPath,
@@ -152,47 +238,17 @@ export function TemplateSettingsSections() {
 					templates: nextTemplates,
 					error: null,
 				});
-				if (
-					dailyNoteTemplatePath &&
-					!nextTemplates.some(
-						(template) => template.value === dailyNoteTemplatePath,
-					)
-				) {
-					const writeId = beginDailyTemplateWrite();
-					void writeSpaceSetting(
-						SPACE_SETTINGS.templatesDailyNoteTemplate,
-						null,
-						{
-							spacePath: currentSpacePath,
-						},
-					)
-						.then(() => {
-							if (
-								cancelled ||
-								writeId !== latestDailyTemplateWriteIdRef.current
-							) {
-								return;
-							}
-							setSettingsState((current) => ({
-								...current,
-								dailyNoteTemplatePath: null,
-							}));
-						})
-						.catch((cause) => {
-							if (
-								cancelled ||
-								writeId !== latestDailyTemplateWriteIdRef.current
-							) {
-								return;
-							}
-							setSettingsState((current) => ({
-								...current,
-								error:
-									cause instanceof Error
-										? cause.message
-										: "Failed to clear daily note template",
-							}));
-						});
+				const nextPeriodTemplates = await clearMissingPeriodTemplates(
+					currentSpacePath,
+					nextTemplates,
+					periodTemplates,
+				);
+				if (cancelled) return;
+				if (nextPeriodTemplates !== periodTemplates) {
+					setSettingsState((current) => ({
+						...current,
+						periodTemplates: nextPeriodTemplates,
+					}));
 				}
 			})
 			.catch((cause) => {
@@ -207,9 +263,10 @@ export function TemplateSettingsSections() {
 			cancelled = true;
 		};
 	}, [
-		beginDailyTemplateWrite,
+		beginTemplateWrite,
+		clearMissingPeriodTemplates,
 		currentSpacePath,
-		dailyNoteTemplatePath,
+		periodTemplates,
 		templatesFolder,
 	]);
 
@@ -222,22 +279,21 @@ export function TemplateSettingsSections() {
 			await setTemplatesFolder(selection.relativePath, {
 				spacePath: selection.spacePath,
 			});
-			writeId = beginDailyTemplateWrite();
-			await writeSpaceSetting(SPACE_SETTINGS.templatesDailyNoteTemplate, null, {
-				spacePath: selection.spacePath,
-			});
-			if (writeId !== latestDailyTemplateWriteIdRef.current) return;
+			writeId = beginTemplateWrite();
+			for (const { setting } of PERIOD_TEMPLATE_SETTINGS) {
+				await writeSpaceSetting(setting, null, {
+					spacePath: selection.spacePath,
+				});
+			}
+			if (writeId !== latestTemplateWriteIdRef.current) return;
 			setSettingsState((current) => ({
 				...current,
 				currentSpacePath: selection.spacePath,
 				templatesFolder: selection.relativePath,
-				dailyNoteTemplatePath: null,
+				periodTemplates: EMPTY_PERIOD_TEMPLATES,
 			}));
 		} catch (cause) {
-			if (
-				writeId !== null &&
-				writeId !== latestDailyTemplateWriteIdRef.current
-			) {
+			if (writeId !== null && writeId !== latestTemplateWriteIdRef.current) {
 				return;
 			}
 			setSettingsState((current) => ({
@@ -248,7 +304,7 @@ export function TemplateSettingsSections() {
 						: "Failed to select template folder",
 			}));
 		}
-	}, [beginDailyTemplateWrite]);
+	}, [beginTemplateWrite]);
 
 	const handleClearFolder = useCallback(async () => {
 		setSettingsState((current) => ({ ...current, error: null }));
@@ -258,7 +314,7 @@ export function TemplateSettingsSections() {
 			setSettingsState((current) => ({
 				...current,
 				templatesFolder: null,
-				dailyNoteTemplatePath: null,
+				periodTemplates: EMPTY_PERIOD_TEMPLATES,
 			}));
 		} catch (cause) {
 			setSettingsState((current) => ({
@@ -271,35 +327,35 @@ export function TemplateSettingsSections() {
 		}
 	}, [currentSpacePath]);
 
-	const handleDailyTemplateChange = useCallback(
-		async (value: string) => {
+	const handlePeriodTemplateChange = useCallback(
+		async (kind: PeriodKind, value: string) => {
 			const next = value.trim() ? value : null;
-			const writeId = beginDailyTemplateWrite();
+			const writeId = beginTemplateWrite();
+			const setting = PERIOD_TEMPLATE_SETTINGS.find(
+				(row) => row.kind === kind,
+			)?.setting;
+			if (!setting) return;
 			setSettingsState((current) => ({ ...current, error: null }));
 			try {
 				const spacePath = requireSpacePath(currentSpacePath);
-				await writeSpaceSetting(
-					SPACE_SETTINGS.templatesDailyNoteTemplate,
-					next,
-					{ spacePath },
-				);
-				if (writeId !== latestDailyTemplateWriteIdRef.current) return;
+				await writeSpaceSetting(setting, next, { spacePath });
+				if (writeId !== latestTemplateWriteIdRef.current) return;
 				setSettingsState((current) => ({
 					...current,
-					dailyNoteTemplatePath: next,
+					periodTemplates: { ...current.periodTemplates, [kind]: next },
 				}));
 			} catch (cause) {
-				if (writeId !== latestDailyTemplateWriteIdRef.current) return;
+				if (writeId !== latestTemplateWriteIdRef.current) return;
 				setSettingsState((current) => ({
 					...current,
 					error:
 						cause instanceof Error
 							? cause.message
-							: "Failed to update daily note template",
+							: "Failed to update period note template",
 				}));
 			}
 		},
-		[beginDailyTemplateWrite, currentSpacePath],
+		[beginTemplateWrite, currentSpacePath],
 	);
 
 	const summary = useMemo(() => {
@@ -337,22 +393,24 @@ export function TemplateSettingsSections() {
 					/>
 				</SettingsRow>
 
-				<SettingsRow label="Default daily note template">
-					<SettingsSelect
-						value={dailyNoteTemplatePath ?? ""}
-						onChange={(event) =>
-							void handleDailyTemplateChange(event.target.value)
-						}
-						disabled={templatesFolder === null || !templates.length}
-					>
-						<option value="">None</option>
-						{templates.map((template) => (
-							<option key={template.value} value={template.value}>
-								{template.label}
-							</option>
-						))}
-					</SettingsSelect>
-				</SettingsRow>
+				{PERIOD_TEMPLATE_SETTINGS.map((row) => (
+					<SettingsRow key={row.kind} label={t(row.labelKey)}>
+						<SettingsSelect
+							value={periodTemplates[row.kind] ?? ""}
+							onChange={(event) =>
+								void handlePeriodTemplateChange(row.kind, event.target.value)
+							}
+							disabled={templatesFolder === null || !templates.length}
+						>
+							<option value="">None</option>
+							{templates.map((template) => (
+								<option key={template.value} value={template.value}>
+									{template.label}
+								</option>
+							))}
+						</SettingsSelect>
+					</SettingsRow>
+				))}
 			</SettingsSection>
 		</>
 	);

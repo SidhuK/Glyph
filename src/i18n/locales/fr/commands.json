@@ -286,6 +286,18 @@
 			"label": "Ouvrir la note du jour",
 			"description": "Ouvrir ou créer la note du jour."
 		},
+		"open-weekly-note": {
+			"label": "Ouvrir la note hebdomadaire",
+			"description": "Ouvrir ou créer la note de cette semaine."
+		},
+		"open-monthly-note": {
+			"label": "Ouvrir la note mensuelle",
+			"description": "Ouvrir ou créer la note de ce mois."
+		},
+		"open-quarterly-note": {
+			"label": "Ouvrir la note trimestrielle",
+			"description": "Ouvrir ou créer la note de ce trimestre."
+		},
 		"open-databases": {
 			"label": "Ouvrir les collections",
 			"description": "Ouvrir la vue des collections."

@@ -286,6 +286,18 @@
 			"label": "데일리 노트 열기",
 			"description": "오늘의 데일리 노트를 열거나 만듭니다."
 		},
+		"open-weekly-note": {
+			"label": "주간 노트 열기",
+			"description": "이번 주 주간 노트를 열거나 만듭니다."
+		},
+		"open-monthly-note": {
+			"label": "월간 노트 열기",
+			"description": "이번 달 월간 노트를 열거나 만듭니다."
+		},
+		"open-quarterly-note": {
+			"label": "분기 노트 열기",
+			"description": "이번 분기 노트를 열거나 만듭니다."
+		},
 		"open-databases": {
 			"label": "컬렉션 열기",
 			"description": "컬렉션 보기를 엽니다."
