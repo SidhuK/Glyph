@@ -41,7 +41,7 @@ Repo extras: agents may read `docs/agents/` and `docs/architecture/adr/`. All ot
 
 ## Backend Overview (`src-tauri/src/`)
 
-- Tauri setup and command registration live in `lib.rs` / `main.rs`; native features are grouped by domain such as `space`, `space_fs`, `notes`, `index`, `databases`, `ai_*` (`ai_rig`, `ai_codex`, `ai_amp`, `ai_claude_code`, `ai_cursor`, `ai_opencode`, `ai_pi`), `git_sync`, `license`, and `external_markdown`.
+- Tauri setup and command registration live in `lib.rs` / `main.rs`; native features are grouped by domain such as `space`, `space_fs`, `notes`, `index`, `databases`, `ai_*` (`ai_rig`, `ai_codex`, `ai_amp`, `ai_claude_code`, `ai_cursor`, `ai_grok`, `ai_opencode`, `ai_pi`), `git_sync`, `license`, and `external_markdown`.
 - Use `paths::join_under()` for safe space paths, `io_atomic::write_atomic()` for durable writes, and `net.rs` checks for user-supplied URLs.
 
 ## Code Style & Safety

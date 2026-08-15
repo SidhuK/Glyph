@@ -48,6 +48,7 @@ export const providerSupportKeyMap: Record<AiProviderKind, string> = {
 	amp: "amp",
 	claude_code: "anthropic",
 	cursor: "cursor",
+	grok: "grok",
 	opencode: "opencode",
 	pi: "pi",
 };

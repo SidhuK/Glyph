@@ -220,6 +220,7 @@ pub async fn ai_profile_delete(
                 | super::types::AiProviderKind::Amp
                 | super::types::AiProviderKind::ClaudeCode
                 | super::types::AiProviderKind::Cursor
+                | super::types::AiProviderKind::Grok
                 | super::types::AiProviderKind::Opencode
                 | super::types::AiProviderKind::Pi
         );
@@ -348,6 +349,7 @@ pub async fn ai_chat_start(
                 | super::types::AiProviderKind::Amp
                 | super::types::AiProviderKind::ClaudeCode
                 | super::types::AiProviderKind::Cursor
+                | super::types::AiProviderKind::Grok
                 | super::types::AiProviderKind::Opencode
                 | super::types::AiProviderKind::Pi
         )
@@ -517,6 +519,12 @@ pub async fn run_request(
         )
         .await;
     }
+    if matches!(profile.provider, super::types::AiProviderKind::Grok) {
+        return crate::ai_grok::run_with_grok(
+            cancel, app, job_id, profile, system, messages, mode, space_root,
+        )
+        .await;
+    }
     if matches!(profile.provider, super::types::AiProviderKind::Pi) {
         return crate::ai_pi::run_with_pi(
             cancel, app, job_id, profile, system, messages, mode, space_root,
@@ -525,7 +533,16 @@ pub async fn run_request(
     }
 
     runtime::run_with_rig(
-        cancel, app, job_id, profile, api_key, system, messages, mode, space_root, window_label,
+        cancel,
+        app,
+        job_id,
+        profile,
+        api_key,
+        system,
+        messages,
+        mode,
+        space_root,
+        window_label,
     )
     .await
 }

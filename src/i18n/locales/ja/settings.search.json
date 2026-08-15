@@ -291,7 +291,7 @@
 		"ai-provider-service": {
 			"title": "プロバイダー",
 			"section": "接続",
-			"keywords": ["codex", "cursor", "openai", "anthropic", "ollama"]
+			"keywords": ["codex", "cursor", "grok", "openai", "anthropic", "ollama"]
 		},
 		"ai-provider-model": {
 			"title": "Model",

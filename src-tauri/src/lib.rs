@@ -2,6 +2,7 @@ mod ai_amp;
 mod ai_claude_code;
 mod ai_codex;
 mod ai_cursor;
+mod ai_grok;
 mod ai_opencode;
 mod ai_pi;
 mod ai_rig;
