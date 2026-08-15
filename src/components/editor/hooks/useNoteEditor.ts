@@ -500,6 +500,7 @@ export function useNoteEditor({
 		void additionalExtensions;
 		void peopleMentionsEnabled;
 		void enableMarkdownLinkAutocomplete;
+		void enableWikiLiveEmbeds;
 		void enableFocusMode;
 		void showExternalLinkPreviews;
 		void mode;
@@ -518,6 +519,7 @@ export function useNoteEditor({
 		additionalExtensions,
 		peopleMentionsEnabled,
 		enableMarkdownLinkAutocomplete,
+		enableWikiLiveEmbeds,
 		enableFocusMode,
 		showExternalLinkPreviews,
 		mode,
@@ -724,6 +726,7 @@ export function useNoteEditor({
 			additionalExtensions,
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
+			enableWikiLiveEmbeds,
 			enableFocusMode,
 			showExternalLinkPreviews,
 			mode,

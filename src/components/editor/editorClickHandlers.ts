@@ -19,7 +19,7 @@ import {
 } from "./markdown/wikiLinkClipboard";
 import {
 	collectBlockIdsFromDoc,
-	ensureTrailingBlockId,
+	generateBlockId,
 	parseTrailingBlockId,
 } from "./markdown/wikiLinkSlices";
 import type { WikiLinkAnchorKind } from "./markdown/wikiLinkTypes";
@@ -255,18 +255,19 @@ export function handleEditorContextMenu(
 					return;
 				}
 				if (!editable || !heading) return;
-				const existing = collectBlockIdsFromDoc(view.state.doc);
-				const ensured = ensureTrailingBlockId(blockText, existing);
-				const from = $pos.before($pos.depth) + 1;
-				const to = from + block.content.size;
+				const id = generateBlockId(collectBlockIdsFromDoc(view.state.doc));
+				const insertAt = $pos.before($pos.depth) + 1 + block.content.size;
+				const prefix = blockText.trimEnd().length > 0 ? " " : "";
 				view.dispatch(
-					view.state.tr.insertText(ensured.line, from, to).scrollIntoView(),
+					view.state.tr
+						.insertText(`${prefix}^${id}`, insertAt)
+						.scrollIntoView(),
 				);
 				void copyWikiLinkMarkdown(
 					wikiLinkMarkdownForNote({
 						relPath,
 						anchorKind: "block",
-						anchor: ensured.id,
+						anchor: id,
 					}),
 				);
 			},

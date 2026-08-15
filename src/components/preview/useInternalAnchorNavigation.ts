@@ -116,7 +116,6 @@ export function useInternalAnchorNavigation({
 	tocHeadings,
 }: UseInternalAnchorNavigationArgs) {
 	useEffect(() => {
-		const rawEditor = rawEditorRef.current;
 		const apply = (anchorKind: "heading" | "block", anchor: string) =>
 			navigateWikiAnchor({
 				anchor,
@@ -124,7 +123,7 @@ export function useInternalAnchorNavigation({
 				editor,
 				getPlainText,
 				mode,
-				rawEditor,
+				rawEditor: rawEditorRef.current,
 				selectVisibleHeading,
 				tocHeadings,
 			});
