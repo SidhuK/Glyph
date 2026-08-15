@@ -79,12 +79,12 @@ export interface WikiAnchorNavigateDetail {
 	anchor: string;
 }
 
-let pendingWikiAnchor: WikiAnchorNavigateDetail | null = null;
+const pendingWikiAnchors = new Map<string, WikiAnchorNavigateDetail>();
 
 export function queueWikiAnchorNavigation(
 	detail: WikiAnchorNavigateDetail,
 ): void {
-	pendingWikiAnchor = detail;
+	pendingWikiAnchors.set(detail.path, detail);
 	window.dispatchEvent(
 		new CustomEvent<WikiAnchorNavigateDetail>(WIKI_ANCHOR_NAVIGATE_EVENT, {
 			detail,
@@ -95,15 +95,14 @@ export function queueWikiAnchorNavigation(
 export function peekWikiAnchorNavigation(
 	path: string,
 ): WikiAnchorNavigateDetail | null {
-	if (!pendingWikiAnchor || pendingWikiAnchor.path !== path) return null;
-	return pendingWikiAnchor;
+	return pendingWikiAnchors.get(path) ?? null;
 }
 
 export function takeWikiAnchorNavigation(
 	path: string,
 ): WikiAnchorNavigateDetail | null {
-	const detail = peekWikiAnchorNavigation(path);
+	const detail = pendingWikiAnchors.get(path) ?? null;
 	if (!detail) return null;
-	pendingWikiAnchor = null;
+	pendingWikiAnchors.delete(path);
 	return detail;
 }

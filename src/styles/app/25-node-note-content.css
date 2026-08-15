@@ -217,7 +217,8 @@
 }
 
 .wikiLinkEmbed.is-selected .wikiLinkEmbedCard {
-	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 55%, transparent);
 	outline-offset: 1px;
 }
 
@@ -233,7 +234,8 @@
 	align-items: baseline;
 	gap: var(--space-2);
 	padding: var(--space-2) var(--space-3);
-	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 80%, transparent);
 }
 
 .wikiLinkEmbedTitle {

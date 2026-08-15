@@ -213,14 +213,16 @@ export function handleEditorContextMenu(
 	editable: boolean,
 ): boolean {
 	if (!relPath) return false;
-	const heading = (() => {
-		const target = event.target instanceof Element ? event.target : null;
-		const headingEl = target?.closest("h1, h2, h3, h4, h5, h6");
-		return headingEl?.textContent?.trim() || null;
-	})();
-	const $pos = view.state.doc.resolve(view.state.selection.from);
+	const target = event.target instanceof Element ? event.target : null;
+	const heading =
+		target?.closest("h1, h2, h3, h4, h5, h6")?.textContent?.trim() || null;
+	const coords = view.posAtCoords({ left: event.clientX, top: event.clientY });
+	if (!coords) return false;
+	const $pos = view.state.doc.resolve(coords.pos);
 	const block = $pos.parent;
 	const blockText = block.isTextblock ? block.textContent : "";
+	const blockId = parseTrailingBlockId(blockText);
+	if (!heading && !blockId) return false;
 	void showNativeContextMenu(event, [
 		...(heading
 			? [
@@ -242,18 +244,17 @@ export function handleEditorContextMenu(
 			label: i18n.t("editor:wikiLink.copyBlockLink"),
 			action: () => {
 				if (!block.isTextblock) return;
-				const currentId = parseTrailingBlockId(blockText);
-				if (currentId) {
+				if (blockId) {
 					void copyWikiLinkMarkdown(
 						wikiLinkMarkdownForNote({
 							relPath,
 							anchorKind: "block",
-							anchor: currentId,
+							anchor: blockId,
 						}),
 					);
 					return;
 				}
-				if (!editable) return;
+				if (!editable || !heading) return;
 				const existing = collectBlockIdsFromDoc(view.state.doc);
 				const ensured = ensureTrailingBlockId(blockText, existing);
 				const from = $pos.before($pos.depth) + 1;

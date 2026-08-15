@@ -145,6 +145,8 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			if (offset === null) return false;
 			const line = view.state.doc.lineAt(offset);
 			const heading = headingTextFromLine(line.text);
+			const blockId = parseTrailingBlockId(line.text);
+			if (!heading && !blockId) return false;
 			const existingIds = collectBlockIds(view.state.doc.toString());
 			void showNativeContextMenu(event, [
 				...(heading
@@ -166,13 +168,12 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 				{
 					label: i18n.t("editor:wikiLink.copyBlockLink"),
 					action: () => {
-						const currentId = parseTrailingBlockId(line.text);
-						if (currentId) {
+						if (blockId) {
 							void copyWikiLinkMarkdown(
 								wikiLinkMarkdownForNote({
 									relPath,
 									anchorKind: "block",
-									anchor: currentId,
+									anchor: blockId,
 								}),
 							);
 							return;
