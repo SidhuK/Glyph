@@ -1,7 +1,6 @@
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
-    process::Command as StdCommand,
     time::Duration,
 };
 
@@ -27,6 +26,7 @@ use crate::ai_rig::{
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
 const EXIT_AFTER_RESULT_GRACE: Duration = Duration::from_secs(2);
 const STARTUP_OUTPUT_TIMEOUT: Duration = Duration::from_secs(30);
+const LIST_MODELS_TIMEOUT: Duration = Duration::from_secs(30);
 const DEFAULT_MODEL_ID: &str = "grok-build";
 const CHAT_TOOLS: &str = "read_file,grep,list_dir";
 const GROK_ALIAS_MODELS: &[(&str, &str, &str)] = &[
@@ -171,18 +171,24 @@ fn collect_models_from_config(models: &mut Vec<String>, seen: &mut HashSet<Strin
     }
 }
 
-fn collect_models_from_runtime(
+async fn collect_models_from_runtime(
     binary: &Path,
     models: &mut Vec<String>,
     seen: &mut HashSet<String>,
 ) {
-    if let Ok(output) = StdCommand::new(binary).arg("--help").output() {
-        collect_models_from_text(&String::from_utf8_lossy(&output.stdout), models, seen);
-        collect_models_from_text(&String::from_utf8_lossy(&output.stderr), models, seen);
+    let mut command = Command::new(binary);
+    command.arg("--help").kill_on_drop(true);
+    if let Some(path) = cli_runtime_path(binary) {
+        command.env("PATH", path);
     }
+    let Ok(Ok(output)) = tokio::time::timeout(LIST_MODELS_TIMEOUT, command.output()).await else {
+        return;
+    };
+    collect_models_from_text(&String::from_utf8_lossy(&output.stdout), models, seen);
+    collect_models_from_text(&String::from_utf8_lossy(&output.stderr), models, seen);
 }
 
-pub fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
+pub async fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
     let binary = find_grok_binary()?;
     let mut seen = HashSet::new();
     let mut ids = Vec::new();
@@ -190,7 +196,7 @@ pub fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
     for (id, _, _) in GROK_ALIAS_MODELS {
         push_model_id(&mut ids, &mut seen, id);
     }
-    collect_models_from_runtime(&binary, &mut ids, &mut seen);
+    collect_models_from_runtime(&binary, &mut ids, &mut seen).await;
     collect_models_from_config(&mut ids, &mut seen);
     push_model_id(&mut ids, &mut seen, &profile.model);
 
