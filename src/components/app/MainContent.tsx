@@ -265,8 +265,7 @@ export const MainContent = memo(function MainContent({
 		handledDailyNoteSetupNoticeRequestRef.current = dailyNoteSetupNoticeRequest;
 		toast.info("Set a folder to use dated notes", {
 			id: DAILY_NOTES_SETUP_TOAST_ID,
-			description:
-				"Glyph will create daily, weekly, monthly, and quarterly notes there.",
+			description: "Glyph will create dated notes there.",
 			duration: 7200,
 			action: {
 				label: "Open settings",

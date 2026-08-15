@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { PeriodKind } from "../../lib/periodNotes";
+import { useUILayoutContext } from "../../contexts";
+import {
+	EMPTY_PERIOD_NOTE_TEMPLATES,
+	PERIOD_KINDS,
+	type PeriodKind,
+	type PeriodNoteTemplatePaths,
+	isPeriodNoteEnabled,
+	periodNoteTemplatesFromSettings,
+} from "../../lib/periodNotes";
 import {
 	loadSettings,
 	setTemplatesFolder,
@@ -25,12 +33,10 @@ interface TemplateOption {
 	value: string;
 }
 
-type PeriodTemplatePaths = Record<PeriodKind, string | null>;
-
 interface TemplatesSettingsState {
 	currentSpacePath: string | null;
 	templatesFolder: string | null;
-	periodTemplates: PeriodTemplatePaths;
+	periodTemplates: PeriodNoteTemplatePaths;
 	error: string | null;
 }
 
@@ -39,17 +45,10 @@ interface TemplateLibraryState {
 	error: string | null;
 }
 
-const EMPTY_PERIOD_TEMPLATES: PeriodTemplatePaths = {
-	day: null,
-	week: null,
-	month: null,
-	quarter: null,
-};
-
 const INITIAL_TEMPLATES_SETTINGS_STATE: TemplatesSettingsState = {
 	currentSpacePath: null,
 	templatesFolder: null,
-	periodTemplates: EMPTY_PERIOD_TEMPLATES,
+	periodTemplates: EMPTY_PERIOD_NOTE_TEMPLATES,
 	error: null,
 };
 
@@ -98,58 +97,59 @@ async function ensureCurrentSpaceOpen(): Promise<string | null> {
 	return null;
 }
 
-function templatesFromSettings(templates: {
-	dailyNoteTemplate?: string | null;
-	weeklyNoteTemplate?: string | null;
-	monthlyNoteTemplate?: string | null;
-	quarterlyNoteTemplate?: string | null;
-}): PeriodTemplatePaths {
-	return {
-		day: templates.dailyNoteTemplate ?? null,
-		week: templates.weeklyNoteTemplate ?? null,
-		month: templates.monthlyNoteTemplate ?? null,
-		quarter: templates.quarterlyNoteTemplate ?? null,
-	};
-}
-
 export function TemplateSettingsSections() {
 	const { t } = useTranslation("settings.general");
+	const { periodNotesEnabled } = useUILayoutContext();
 	const [settingsState, setSettingsState] = useState<TemplatesSettingsState>(
 		INITIAL_TEMPLATES_SETTINGS_STATE,
 	);
 	const [templateLibraryState, setTemplateLibraryState] =
 		useState<TemplateLibraryState>(INITIAL_TEMPLATE_LIBRARY_STATE);
-	const latestTemplateWriteIdRef = useRef(0);
+	const latestTemplateWriteIdRef = useRef<Record<PeriodKind, number>>({
+		day: 0,
+		week: 0,
+		month: 0,
+		quarter: 0,
+	});
+	const latestFolderWriteIdRef = useRef(0);
 	const { currentSpacePath, templatesFolder, periodTemplates, error } =
 		settingsState;
 	const { templates, error: templatesError } = templateLibraryState;
 
-	const beginTemplateWrite = useCallback(() => {
-		latestTemplateWriteIdRef.current += 1;
-		return latestTemplateWriteIdRef.current;
+	const beginTemplateWrite = useCallback((kind: PeriodKind) => {
+		latestTemplateWriteIdRef.current[kind] += 1;
+		return latestTemplateWriteIdRef.current[kind];
+	}, []);
+
+	const beginFolderWrite = useCallback(() => {
+		latestFolderWriteIdRef.current += 1;
+		for (const kind of PERIOD_KINDS) {
+			latestTemplateWriteIdRef.current[kind] += 1;
+		}
+		return latestFolderWriteIdRef.current;
 	}, []);
 
 	const clearMissingPeriodTemplates = useCallback(
 		async (
 			spacePath: string | null,
 			nextTemplates: TemplateOption[],
-			current: PeriodTemplatePaths,
-		): Promise<PeriodTemplatePaths> => {
+			current: PeriodNoteTemplatePaths,
+		): Promise<Partial<Record<PeriodKind, null>>> => {
 			const available = new Set(
 				nextTemplates.map((template) => template.value),
 			);
-			let next = current;
+			const cleared: Partial<Record<PeriodKind, null>> = {};
 			for (const { kind, setting } of PERIOD_TEMPLATE_SETTINGS) {
 				const selected = current[kind];
 				if (!selected || available.has(selected)) continue;
-				const writeId = beginTemplateWrite();
+				const writeId = beginTemplateWrite(kind);
 				await writeSpaceSetting(setting, null, { spacePath });
-				if (writeId !== latestTemplateWriteIdRef.current) {
-					return next;
+				if (writeId !== latestTemplateWriteIdRef.current[kind]) {
+					continue;
 				}
-				next = { ...next, [kind]: null };
+				cleared[kind] = null;
 			}
-			return next;
+			return cleared;
 		},
 		[beginTemplateWrite],
 	);
@@ -164,7 +164,7 @@ export function TemplateSettingsSections() {
 				setSettingsState({
 					currentSpacePath: currentSpace,
 					templatesFolder: settings.templates.folder,
-					periodTemplates: templatesFromSettings(settings.templates),
+					periodTemplates: periodNoteTemplatesFromSettings(settings.templates),
 					error: null,
 				});
 			} catch (cause) {
@@ -190,10 +190,10 @@ export function TemplateSettingsSections() {
 				({ kind }) => periodTemplates[kind] !== null,
 			);
 			if (hasSelected) {
-				const writeId = beginTemplateWrite();
+				const writeId = beginFolderWrite();
 				setSettingsState((current) => ({
 					...current,
-					periodTemplates: EMPTY_PERIOD_TEMPLATES,
+					periodTemplates: EMPTY_PERIOD_NOTE_TEMPLATES,
 				}));
 				void (async () => {
 					try {
@@ -203,7 +203,7 @@ export function TemplateSettingsSections() {
 							});
 						}
 					} catch (cause) {
-						if (writeId !== latestTemplateWriteIdRef.current) return;
+						if (writeId !== latestFolderWriteIdRef.current) return;
 						setSettingsState((current) => ({
 							...current,
 							error:
@@ -238,18 +238,20 @@ export function TemplateSettingsSections() {
 					templates: nextTemplates,
 					error: null,
 				});
-				const nextPeriodTemplates = await clearMissingPeriodTemplates(
+				const clearedPeriodTemplates = await clearMissingPeriodTemplates(
 					currentSpacePath,
 					nextTemplates,
 					periodTemplates,
 				);
 				if (cancelled) return;
-				if (nextPeriodTemplates !== periodTemplates) {
-					setSettingsState((current) => ({
-						...current,
-						periodTemplates: nextPeriodTemplates,
-					}));
-				}
+				if (Object.keys(clearedPeriodTemplates).length === 0) return;
+				setSettingsState((current) => ({
+					...current,
+					periodTemplates: {
+						...current.periodTemplates,
+						...clearedPeriodTemplates,
+					},
+				}));
 			})
 			.catch((cause) => {
 				if (cancelled) return;
@@ -263,7 +265,7 @@ export function TemplateSettingsSections() {
 			cancelled = true;
 		};
 	}, [
-		beginTemplateWrite,
+		beginFolderWrite,
 		clearMissingPeriodTemplates,
 		currentSpacePath,
 		periodTemplates,
@@ -279,21 +281,21 @@ export function TemplateSettingsSections() {
 			await setTemplatesFolder(selection.relativePath, {
 				spacePath: selection.spacePath,
 			});
-			writeId = beginTemplateWrite();
+			writeId = beginFolderWrite();
 			for (const { setting } of PERIOD_TEMPLATE_SETTINGS) {
 				await writeSpaceSetting(setting, null, {
 					spacePath: selection.spacePath,
 				});
 			}
-			if (writeId !== latestTemplateWriteIdRef.current) return;
+			if (writeId !== latestFolderWriteIdRef.current) return;
 			setSettingsState((current) => ({
 				...current,
 				currentSpacePath: selection.spacePath,
 				templatesFolder: selection.relativePath,
-				periodTemplates: EMPTY_PERIOD_TEMPLATES,
+				periodTemplates: EMPTY_PERIOD_NOTE_TEMPLATES,
 			}));
 		} catch (cause) {
-			if (writeId !== null && writeId !== latestTemplateWriteIdRef.current) {
+			if (writeId !== null && writeId !== latestFolderWriteIdRef.current) {
 				return;
 			}
 			setSettingsState((current) => ({
@@ -304,7 +306,7 @@ export function TemplateSettingsSections() {
 						: "Failed to select template folder",
 			}));
 		}
-	}, [beginTemplateWrite]);
+	}, [beginFolderWrite]);
 
 	const handleClearFolder = useCallback(async () => {
 		setSettingsState((current) => ({ ...current, error: null }));
@@ -314,7 +316,7 @@ export function TemplateSettingsSections() {
 			setSettingsState((current) => ({
 				...current,
 				templatesFolder: null,
-				periodTemplates: EMPTY_PERIOD_TEMPLATES,
+				periodTemplates: EMPTY_PERIOD_NOTE_TEMPLATES,
 			}));
 		} catch (cause) {
 			setSettingsState((current) => ({
@@ -330,7 +332,7 @@ export function TemplateSettingsSections() {
 	const handlePeriodTemplateChange = useCallback(
 		async (kind: PeriodKind, value: string) => {
 			const next = value.trim() ? value : null;
-			const writeId = beginTemplateWrite();
+			const writeId = beginTemplateWrite(kind);
 			const setting = PERIOD_TEMPLATE_SETTINGS.find(
 				(row) => row.kind === kind,
 			)?.setting;
@@ -339,13 +341,13 @@ export function TemplateSettingsSections() {
 			try {
 				const spacePath = requireSpacePath(currentSpacePath);
 				await writeSpaceSetting(setting, next, { spacePath });
-				if (writeId !== latestTemplateWriteIdRef.current) return;
+				if (writeId !== latestTemplateWriteIdRef.current[kind]) return;
 				setSettingsState((current) => ({
 					...current,
 					periodTemplates: { ...current.periodTemplates, [kind]: next },
 				}));
 			} catch (cause) {
-				if (writeId !== latestTemplateWriteIdRef.current) return;
+				if (writeId !== latestTemplateWriteIdRef.current[kind]) return;
 				setSettingsState((current) => ({
 					...current,
 					error:
@@ -393,7 +395,9 @@ export function TemplateSettingsSections() {
 					/>
 				</SettingsRow>
 
-				{PERIOD_TEMPLATE_SETTINGS.map((row) => (
+				{PERIOD_TEMPLATE_SETTINGS.filter((row) =>
+					isPeriodNoteEnabled(row.kind, periodNotesEnabled),
+				).map((row) => (
 					<SettingsRow key={row.kind} label={t(row.labelKey)}>
 						<SettingsSelect
 							value={periodTemplates[row.kind] ?? ""}

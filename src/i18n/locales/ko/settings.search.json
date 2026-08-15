@@ -340,6 +340,24 @@
 			"description": "Choose where daily notes are created.",
 			"keywords": ["journal", "today", "date"]
 		},
+		"space-weekly-notes": {
+			"title": "주간 노트",
+			"section": "Daily Notes",
+			"description": "현재 ISO 주의 노트를 만듭니다.",
+			"keywords": ["주간", "ISO"]
+		},
+		"space-monthly-notes": {
+			"title": "월간 노트",
+			"section": "Daily Notes",
+			"description": "이번 달의 노트를 만듭니다.",
+			"keywords": ["월간"]
+		},
+		"space-quarterly-notes": {
+			"title": "분기 노트",
+			"section": "Daily Notes",
+			"description": "이번 분기의 노트를 만듭니다.",
+			"keywords": ["분기"]
+		},
 		"space-quick-notes-folder": {
 			"title": "Folder",
 			"section": "Quick Notes",

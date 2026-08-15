@@ -40,7 +40,7 @@ export function DailyNoteRollover({
 	const { t } = useTranslation("editor");
 	const [summaryOpen, setSummaryOpen] = useState(false);
 	const { spacePath } = useSpace();
-	const { dailyNotesFolder, dailyNoteTemplatePath } = useUILayoutContext();
+	const { dailyNotesFolder, periodNoteTemplates } = useUILayoutContext();
 	const today = getTodayDateString();
 	const noteDate = dailyNotesFolder
 		? getDailyNoteDateFromPath(relPath, dailyNotesFolder)
@@ -89,10 +89,10 @@ export function DailyNoteRollover({
 				destinationDate,
 			);
 			let initialText = getDailyNoteContent(destinationDate);
-			if (dailyNoteTemplatePath) {
+			if (periodNoteTemplates.day) {
 				try {
 					const template = await invoke("space_read_text", {
-						path: dailyNoteTemplatePath,
+						path: periodNoteTemplates.day,
 					});
 					initialText = renderTemplate(template.text, {
 						destinationPath,

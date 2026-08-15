@@ -106,6 +106,28 @@ fn set_menu_item_enabled<R: tauri::Runtime>(
     Ok(false)
 }
 
+fn period_note_menu_flags<R: tauri::Runtime, M: Manager<R>>(app: &M) -> (bool, bool, bool) {
+    let Some(state) = app.try_state::<MenuState>() else {
+        return (false, false, false);
+    };
+    let weekly = state
+        .weekly_notes
+        .lock()
+        .map(|guard| *guard)
+        .unwrap_or(false);
+    let monthly = state
+        .monthly_notes
+        .lock()
+        .map(|guard| *guard)
+        .unwrap_or(false);
+    let quarterly = state
+        .quarterly_notes
+        .lock()
+        .map(|guard| *guard)
+        .unwrap_or(false);
+    (weekly, monthly, quarterly)
+}
+
 pub(crate) fn set_space_close_menu_enabled<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
     enabled: bool,
@@ -153,6 +175,9 @@ struct MenuState {
     /// drains them once that listener has registered; see
     /// `menu_take_pending_commands`.
     pending_commands: Mutex<PendingMenuCommands>,
+    weekly_notes: Mutex<bool>,
+    monthly_notes: Mutex<bool>,
+    quarterly_notes: Mutex<bool>,
 }
 
 #[derive(Default)]
@@ -462,20 +487,21 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         space_open,
         None,
     )?;
+    let (weekly_notes, monthly_notes, quarterly_notes) = period_note_menu_flags(app);
     let open_daily_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_daily_note",
         true,
         Some("CmdOrCtrl+Shift+D"),
     )?;
     let open_weekly_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_weekly_note",
-        true,
+        space_open && weekly_notes,
         None,
     )?;
     let open_monthly_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_monthly_note",
-        true,
+        space_open && monthly_notes,
         None,
     )?;
     let open_quarterly_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_quarterly_note",
-        true,
+        space_open && quarterly_notes,
         None,
     )?;
     let save_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.save_note",
@@ -1267,6 +1293,49 @@ fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(),
     Ok(())
 }
 
+#[tauri::command(rename_all = "snake_case")]
+fn set_period_note_menu_enabled(
+    app: tauri::AppHandle,
+    menu_state: State<'_, MenuState>,
+    weekly: bool,
+    monthly: bool,
+    quarterly: bool,
+) -> Result<(), String> {
+    *menu_state
+        .weekly_notes
+        .lock()
+        .map_err(|_| "failed to lock weekly notes menu state".to_string())? = weekly;
+    *menu_state
+        .monthly_notes
+        .lock()
+        .map_err(|_| "failed to lock monthly notes menu state".to_string())? = monthly;
+    *menu_state
+        .quarterly_notes
+        .lock()
+        .map_err(|_| "failed to lock quarterly notes menu state".to_string())? = quarterly;
+
+    let Some(menu) = app.menu() else {
+        return Ok(());
+    };
+    let space_open = app
+        .try_state::<space::SpaceState>()
+        .map(|state| space_is_open(&state))
+        .unwrap_or(false);
+    let flags = [
+        ("file.open_weekly_note", space_open && weekly),
+        ("file.open_monthly_note", space_open && monthly),
+        ("file.open_quarterly_note", space_open && quarterly),
+    ];
+    for (id, enabled) in flags {
+        for item in menu.items().map_err(|error| error.to_string())? {
+            if set_menu_item_enabled(&item, id, enabled).map_err(|error| error.to_string())? {
+                break;
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Drain menu commands queued before the main shell registered its listener,
 /// then allow future commands to be emitted directly.
 #[tauri::command]
@@ -1737,6 +1806,7 @@ pub fn run() {
             read_clipboard_plain_text,
             set_quick_note_global_shortcut,
             set_markdown_menu_visible,
+            set_period_note_menu_enabled,
             set_recent_spaces_menu,
             set_menu_shortcuts,
             set_menu_labels,

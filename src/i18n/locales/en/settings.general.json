@@ -175,6 +175,23 @@
 			"ariaLabel": "File tree sort"
 		}
 	},
+	"periodNotes": {
+		"week": {
+			"label": "Weekly notes",
+			"description": "One note for this ISO week.",
+			"ariaLabel": "Enable weekly notes"
+		},
+		"month": {
+			"label": "Monthly notes",
+			"description": "One note for this month.",
+			"ariaLabel": "Enable monthly notes"
+		},
+		"quarter": {
+			"label": "Quarterly notes",
+			"description": "One note for this quarter.",
+			"ariaLabel": "Enable quarterly notes"
+		}
+	},
 	"periodNoteTemplates": {
 		"day": "Default daily note template",
 		"week": "Default weekly note template",

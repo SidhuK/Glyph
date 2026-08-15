@@ -175,6 +175,23 @@
 			"ariaLabel": "Sortowanie drzewa plików"
 		}
 	},
+	"periodNotes": {
+		"week": {
+			"label": "Notatki tygodniowe",
+			"description": "Jedna notatka na ten tydzień ISO.",
+			"ariaLabel": "Włącz notatki tygodniowe"
+		},
+		"month": {
+			"label": "Notatki miesięczne",
+			"description": "Jedna notatka na ten miesiąc.",
+			"ariaLabel": "Włącz notatki miesięczne"
+		},
+		"quarter": {
+			"label": "Notatki kwartalne",
+			"description": "Jedna notatka na ten kwartał.",
+			"ariaLabel": "Włącz notatki kwartalne"
+		}
+	},
 	"periodNoteTemplates": {
 		"day": "Domyślny szablon notatki dziennej",
 		"week": "Domyślny szablon notatki tygodniowej",

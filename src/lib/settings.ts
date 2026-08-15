@@ -238,6 +238,23 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 			value.dailyNotesFolder,
 		);
 	}
+	if ("dailyNotesWeeklyNotes" in value) {
+		out.dailyNotesWeeklyNotes = SPACE_SETTINGS.dailyNotesWeeklyNotes.normalize(
+			value.dailyNotesWeeklyNotes,
+		);
+	}
+	if ("dailyNotesMonthlyNotes" in value) {
+		out.dailyNotesMonthlyNotes =
+			SPACE_SETTINGS.dailyNotesMonthlyNotes.normalize(
+				value.dailyNotesMonthlyNotes,
+			);
+	}
+	if ("dailyNotesQuarterlyNotes" in value) {
+		out.dailyNotesQuarterlyNotes =
+			SPACE_SETTINGS.dailyNotesQuarterlyNotes.normalize(
+				value.dailyNotesQuarterlyNotes,
+			);
+	}
 	if ("quickNotesFolder" in value) {
 		out.quickNotesFolder = SPACE_SETTINGS.quickNotesFolder.normalize(
 			value.quickNotesFolder,
@@ -492,6 +509,24 @@ export async function loadSettings(
 		activeScopedSettings,
 		hasActiveSpace,
 	);
+	const dailyNotesWeeklyNotes = loadSpaceSettingValue(
+		SPACE_SETTINGS.dailyNotesWeeklyNotes,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
+	const dailyNotesMonthlyNotes = loadSpaceSettingValue(
+		SPACE_SETTINGS.dailyNotesMonthlyNotes,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
+	const dailyNotesQuarterlyNotes = loadSpaceSettingValue(
+		SPACE_SETTINGS.dailyNotesQuarterlyNotes,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
 	const quickNotesFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.quickNotesFolder,
 		entries,
@@ -609,6 +644,9 @@ export async function loadSettings(
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
+			weeklyNotes: dailyNotesWeeklyNotes,
+			monthlyNotes: dailyNotesMonthlyNotes,
+			quarterlyNotes: dailyNotesQuarterlyNotes,
 		},
 		quickNotes: {
 			folder: quickNotesFolder,

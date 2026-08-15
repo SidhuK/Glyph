@@ -9,9 +9,69 @@ export type PeriodId =
 	| { kind: "month"; year: number; month: number }
 	| { kind: "quarter"; year: number; quarter: number };
 
-const WEEK_STEM_RE = /^(\d{4})-W(\d{2})$/;
-const MONTH_STEM_RE = /^(\d{4})-(\d{2})$/;
-const QUARTER_STEM_RE = /^(\d{4})-Q([1-4])$/;
+export const OPTIONAL_PERIOD_KINDS = ["week", "month", "quarter"] as const;
+export type OptionalPeriodKind = (typeof OPTIONAL_PERIOD_KINDS)[number];
+
+export type PeriodNotesEnabled = Record<OptionalPeriodKind, boolean>;
+
+export const DEFAULT_PERIOD_NOTES_ENABLED: PeriodNotesEnabled = {
+	week: false,
+	month: false,
+	quarter: false,
+};
+
+export function periodNotesEnabledFromSettings(
+	dailyNotes:
+		| {
+				weeklyNotes?: boolean;
+				monthlyNotes?: boolean;
+				quarterlyNotes?: boolean;
+		  }
+		| null
+		| undefined,
+): PeriodNotesEnabled {
+	return {
+		week: dailyNotes?.weeklyNotes === true,
+		month: dailyNotes?.monthlyNotes === true,
+		quarter: dailyNotes?.quarterlyNotes === true,
+	};
+}
+
+export function isPeriodNoteEnabled(
+	kind: PeriodKind,
+	enabled: PeriodNotesEnabled,
+): boolean {
+	if (kind === "day") return true;
+	return enabled[kind];
+}
+
+export type PeriodNoteTemplatePaths = Record<PeriodKind, string | null>;
+
+export const EMPTY_PERIOD_NOTE_TEMPLATES: PeriodNoteTemplatePaths = {
+	day: null,
+	week: null,
+	month: null,
+	quarter: null,
+};
+
+export function periodNoteTemplatesFromSettings(
+	templates:
+		| {
+				dailyNoteTemplate?: string | null;
+				weeklyNoteTemplate?: string | null;
+				monthlyNoteTemplate?: string | null;
+				quarterlyNoteTemplate?: string | null;
+		  }
+		| null
+		| undefined,
+): PeriodNoteTemplatePaths {
+	return {
+		day: templates?.dailyNoteTemplate ?? null,
+		week: templates?.weeklyNoteTemplate ?? null,
+		month: templates?.monthlyNoteTemplate ?? null,
+		quarter: templates?.quarterlyNoteTemplate ?? null,
+	};
+}
 
 function pad2(value: number): string {
 	return String(value).padStart(2, "0");
@@ -42,14 +102,6 @@ export function mondayOfIsoWeek(isoYear: number, week: number): Date {
 	monday.setDate(monday.getDate() + (week - 1) * 7);
 	monday.setHours(0, 0, 0, 0);
 	return monday;
-}
-
-function isValidIsoWeek(isoYear: number, week: number): boolean {
-	if (!Number.isInteger(isoYear) || !Number.isInteger(week)) return false;
-	if (week < 1 || week > 53) return false;
-	const monday = mondayOfIsoWeek(isoYear, week);
-	const actual = isoWeekFromDate(monday);
-	return actual.isoYear === isoYear && actual.week === week;
 }
 
 export function periodIdFromDate(kind: PeriodKind, date: Date): PeriodId {
@@ -105,35 +157,6 @@ export function periodStem(id: PeriodId): string {
 	}
 }
 
-export function parsePeriodStem(stem: string): PeriodId | null {
-	if (parseIsoDate(stem)) {
-		return { kind: "day", date: stem };
-	}
-	const weekMatch = WEEK_STEM_RE.exec(stem);
-	if (weekMatch) {
-		const isoYear = Number(weekMatch[1]);
-		const week = Number(weekMatch[2]);
-		if (!isValidIsoWeek(isoYear, week)) return null;
-		return { kind: "week", isoYear, week };
-	}
-	const quarterMatch = QUARTER_STEM_RE.exec(stem);
-	if (quarterMatch) {
-		return {
-			kind: "quarter",
-			year: Number(quarterMatch[1]),
-			quarter: Number(quarterMatch[2]),
-		};
-	}
-	const monthMatch = MONTH_STEM_RE.exec(stem);
-	if (monthMatch) {
-		const year = Number(monthMatch[1]);
-		const month = Number(monthMatch[2]);
-		if (month < 1 || month > 12) return null;
-		return { kind: "month", year, month };
-	}
-	return null;
-}
-
 export function periodAnchorDate(id: PeriodId): Date {
 	switch (id.kind) {
 		case "day": {
@@ -161,13 +184,13 @@ export function getPeriodNoteFilename(id: PeriodId): string {
 }
 
 export function getPeriodNotePath(folder: string, id: PeriodId): string {
-	if (isAbsolutePath(folder)) {
+	const filename = getPeriodNoteFilename(id);
+	const normalizedFolder = folder.replace(/\\/g, "/").replace(/\/+$/g, "");
+	if (isAbsolutePath(normalizedFolder)) {
 		throw new Error(
 			`Dated note folder must be a relative path, got: ${folder}`,
 		);
 	}
-	const filename = getPeriodNoteFilename(id);
-	const normalizedFolder = folder.replace(/\\/g, "/").replace(/\/+$/g, "");
 	const hasTraversal = normalizedFolder
 		.split("/")
 		.some((segment) => segment === "..");
@@ -184,20 +207,6 @@ export function getPeriodNotePath(folder: string, id: PeriodId): string {
 
 export function getPeriodNoteContent(id: PeriodId): string {
 	return `# ${periodStem(id)}\n`;
-}
-
-export function getPeriodIdFromPath(
-	path: string,
-	folder: string,
-): PeriodId | null {
-	const normalizedPath = path.replace(/\\/g, "/");
-	const normalizedFolder = folder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
-	const prefix = normalizedFolder ? `${normalizedFolder}/` : "";
-	if (!normalizedPath.startsWith(prefix)) return null;
-	const filename = normalizedPath.slice(prefix.length);
-	if (filename.includes("/")) return null;
-	const stem = filename.endsWith(".md") ? filename.slice(0, -3) : "";
-	return parsePeriodStem(stem);
 }
 
 export const PERIOD_OPEN_COMMAND_IDS = {

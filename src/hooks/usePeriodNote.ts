@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { parseIsoDate } from "../lib/dailyNotes";
 import { isMissingFileError } from "../lib/fsErrors";
 import {
@@ -22,71 +22,69 @@ interface UsePeriodNoteReturn {
 		folder: string,
 		period: PeriodId,
 	) => Promise<string | null>;
-	isCreating: boolean;
 }
 
 export function usePeriodNote(
 	options: UsePeriodNoteOptions,
 ): UsePeriodNoteReturn {
 	const { onOpenFile, setError, spacePath, templatePathFor } = options;
-	const [isCreating, setIsCreating] = useState(false);
-	const lockRef = useRef(false);
+	const inFlightPathsRef = useRef(new Set<string>());
 
 	const openOrCreatePeriodNote = useCallback(
 		async (folder: string, period: PeriodId): Promise<string | null> => {
 			if (period.kind === "day" && !parseIsoDate(period.date)) {
 				return null;
 			}
-			if (lockRef.current) return null;
-			lockRef.current = true;
-			setIsCreating(true);
 			try {
 				const notePath = getPeriodNotePath(folder, period);
+				if (inFlightPathsRef.current.has(notePath)) return null;
+				inFlightPathsRef.current.add(notePath);
 				try {
-					await invoke("space_read_text", { path: notePath });
-					await onOpenFile(notePath);
-					return notePath;
-				} catch (error) {
-					if (!isMissingFileError(error)) {
-						throw error;
-					}
-				}
-				let content = getPeriodNoteContent(period);
-				const templatePath = templatePathFor(period);
-				if (templatePath) {
 					try {
-						const templateDoc = await invoke("space_read_text", {
-							path: templatePath,
-						});
-						content = renderTemplate(templateDoc.text, {
-							destinationPath: notePath,
-							spaceRootPath: spacePath,
-							date: periodAnchorDate(period),
-						});
+						await invoke("space_read_text", { path: notePath });
+						await onOpenFile(notePath);
+						return notePath;
 					} catch (error) {
 						if (!isMissingFileError(error)) {
 							throw error;
 						}
 					}
+					let content = getPeriodNoteContent(period);
+					const templatePath = templatePathFor(period);
+					if (templatePath) {
+						try {
+							const templateDoc = await invoke("space_read_text", {
+								path: templatePath,
+							});
+							content = renderTemplate(templateDoc.text, {
+								destinationPath: notePath,
+								spaceRootPath: spacePath,
+								date: periodAnchorDate(period),
+							});
+						} catch (error) {
+							if (!isMissingFileError(error)) {
+								throw error;
+							}
+						}
+					}
+					await invoke("space_open_or_create_text", {
+						path: notePath,
+						text: content,
+					});
+					await onOpenFile(notePath);
+					return notePath;
+				} finally {
+					inFlightPathsRef.current.delete(notePath);
 				}
-				await invoke("space_open_or_create_text", {
-					path: notePath,
-					text: content,
-				});
-				await onOpenFile(notePath);
-				return notePath;
 			} catch (err) {
 				const message =
 					err instanceof Error ? err.message : "Failed to open dated note";
 				setError(message);
 				return null;
-			} finally {
-				lockRef.current = false;
-				setIsCreating(false);
 			}
 		},
 		[onOpenFile, setError, spacePath, templatePathFor],
 	);
 
-	return { openOrCreatePeriodNote, isCreating };
+	return { openOrCreatePeriodNote };
 }

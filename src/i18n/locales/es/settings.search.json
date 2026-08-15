@@ -346,6 +346,24 @@
 			"description": "Choose where daily notes are created.",
 			"keywords": ["journal", "today", "date"]
 		},
+		"space-weekly-notes": {
+			"title": "Notas semanales",
+			"section": "Daily Notes",
+			"description": "Crear una nota para la semana ISO actual.",
+			"keywords": ["semana", "iso"]
+		},
+		"space-monthly-notes": {
+			"title": "Notas mensuales",
+			"section": "Daily Notes",
+			"description": "Crear una nota para el mes actual.",
+			"keywords": ["mes"]
+		},
+		"space-quarterly-notes": {
+			"title": "Notas trimestrales",
+			"section": "Daily Notes",
+			"description": "Crear una nota para el trimestre actual.",
+			"keywords": ["trimestre"]
+		},
 		"space-quick-notes-folder": {
 			"title": "Folder",
 			"section": "Quick Notes",

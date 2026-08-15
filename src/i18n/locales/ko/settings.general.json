@@ -160,6 +160,23 @@
 			"ariaLabel": "파일 트리 정렬"
 		}
 	},
+	"periodNotes": {
+		"week": {
+			"label": "주간 노트",
+			"description": "이번 ISO 주의 노트 하나.",
+			"ariaLabel": "주간 노트 사용"
+		},
+		"month": {
+			"label": "월간 노트",
+			"description": "이번 달의 노트 하나.",
+			"ariaLabel": "월간 노트 사용"
+		},
+		"quarter": {
+			"label": "분기 노트",
+			"description": "이번 분기의 노트 하나.",
+			"ariaLabel": "분기 노트 사용"
+		}
+	},
 	"periodNoteTemplates": {
 		"day": "기본 데일리 노트 템플릿",
 		"week": "기본 주간 노트 템플릿",

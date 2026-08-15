@@ -160,6 +160,23 @@
 			"ariaLabel": "Dateibaum-Sortierung"
 		}
 	},
+	"periodNotes": {
+		"week": {
+			"label": "Wochennotizen",
+			"description": "Eine Notiz für diese ISO-Woche.",
+			"ariaLabel": "Wochennotizen aktivieren"
+		},
+		"month": {
+			"label": "Monatsnotizen",
+			"description": "Eine Notiz für diesen Monat.",
+			"ariaLabel": "Monatsnotizen aktivieren"
+		},
+		"quarter": {
+			"label": "Quartalsnotizen",
+			"description": "Eine Notiz für dieses Quartal.",
+			"ariaLabel": "Quartalsnotizen aktivieren"
+		}
+	},
 	"periodNoteTemplates": {
 		"day": "Standardvorlage für Tagesnotizen",
 		"week": "Standardvorlage für Wochennotizen",

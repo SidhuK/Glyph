@@ -49,6 +49,7 @@ import {
 } from "../../lib/navigationPrefetch";
 import {
 	type PeriodKind,
+	isPeriodNoteEnabled,
 	periodIdFromDate,
 	periodIdFromIsoDate,
 } from "../../lib/periodNotes";
@@ -160,6 +161,7 @@ export function AppShell() {
 		dailyNotesFolder,
 		templateFolder,
 		periodNoteTemplates,
+		periodNotesEnabled,
 		settingsSpacePath,
 		sidebarWidth,
 		setSidebarWidth,
@@ -445,6 +447,14 @@ export function AppShell() {
 		void invoke("set_markdown_menu_visible", { visible }).catch(() => {});
 	}, [activeMarkdownTabPath]);
 
+	useEffect(() => {
+		void invoke("set_period_note_menu_enabled", {
+			weekly: periodNotesEnabled.week,
+			monthly: periodNotesEnabled.month,
+			quarterly: periodNotesEnabled.quarter,
+		}).catch(() => {});
+	}, [periodNotesEnabled]);
+
 	const openWorkspaceFile = useCallback(
 		async (path: string) => {
 			if (!path) return;
@@ -667,30 +677,25 @@ export function AppShell() {
 	const handleOpenPeriodNote = useCallback(
 		async (kind: PeriodKind) => {
 			if (!dailyNotesFolder) return;
-			try {
-				await openOrCreatePeriodNote(
-					dailyNotesFolder,
-					periodIdFromDate(kind, new Date()),
-				);
-			} catch (e) {
-				setError(
-					`Failed to open dated note: ${e instanceof Error ? e.message : String(e)}`,
-				);
-			}
+			await openOrCreatePeriodNote(
+				dailyNotesFolder,
+				periodIdFromDate(kind, new Date()),
+			);
 		},
-		[dailyNotesFolder, openOrCreatePeriodNote, setError],
+		[dailyNotesFolder, openOrCreatePeriodNote],
 	);
 
 	const requestOpenPeriodNote = useCallback(
 		(kind: PeriodKind) => {
 			if (!spacePath) return;
+			if (!isPeriodNoteEnabled(kind, periodNotesEnabled)) return;
 			if (!dailyNotesFolder) {
 				setDailyNoteSetupNoticeRequest((value) => value + 1);
 				return;
 			}
 			void handleOpenPeriodNote(kind);
 		},
-		[dailyNotesFolder, handleOpenPeriodNote, spacePath],
+		[dailyNotesFolder, handleOpenPeriodNote, periodNotesEnabled, spacePath],
 	);
 
 	const requestOpenDailyNote = useCallback(() => {
@@ -708,6 +713,7 @@ export function AppShell() {
 
 	const handleOpenPeriodNoteAtDate = useCallback(
 		async (kind: PeriodKind, date: string) => {
+			if (!isPeriodNoteEnabled(kind, periodNotesEnabled)) return;
 			if (!dailyNotesFolder) {
 				setDailyNoteSetupNoticeRequest((value) => value + 1);
 				return;
@@ -717,15 +723,9 @@ export function AppShell() {
 				setError("Failed to open dated note: invalid date");
 				return;
 			}
-			try {
-				await openOrCreatePeriodNote(dailyNotesFolder, period);
-			} catch (e) {
-				setError(
-					`Failed to open dated note: ${e instanceof Error ? e.message : String(e)}`,
-				);
-			}
+			await openOrCreatePeriodNote(dailyNotesFolder, period);
 		},
-		[dailyNotesFolder, openOrCreatePeriodNote, setError],
+		[dailyNotesFolder, openOrCreatePeriodNote, periodNotesEnabled, setError],
 	);
 
 	const moveTargetDirsRequestIdRef = useRef(0);
@@ -1235,6 +1235,7 @@ export function AppShell() {
 		openSearchPalette,
 		openSettings,
 		openWorkspaceFile,
+		periodNotesEnabled,
 		pinnedFiles,
 		requestOpenDailyNote,
 		requestOpenPeriodNote,

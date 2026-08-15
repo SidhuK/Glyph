@@ -1,9 +1,27 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { Calendar03Icon, NoteIcon } from "@hugeicons/core-free-icons";
+import {
+	Calendar01Icon,
+	Calendar03Icon,
+	CalendarDaysIcon,
+	CalendarsIcon,
+	NoteIcon,
+} from "@hugeicons/core-free-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { PERIOD_KINDS, type PeriodKind } from "../../../lib/periodNotes";
+import { useUILayoutContext } from "../../../contexts";
+import {
+	PERIOD_KINDS,
+	type PeriodKind,
+	isPeriodNoteEnabled,
+} from "../../../lib/periodNotes";
 import type { CalendarDateNote } from "../../../lib/tauri";
+
+const PERIOD_NOTE_ICONS = {
+	day: Calendar01Icon,
+	week: CalendarDaysIcon,
+	month: Calendar03Icon,
+	quarter: CalendarsIcon,
+} as const;
 
 interface DayNotesPanelProps {
 	selectedDate: Date;
@@ -64,6 +82,10 @@ export function DayNotesPanel({
 	onOpenNote,
 }: DayNotesPanelProps) {
 	const { t } = useTranslation("shell");
+	const { periodNotesEnabled } = useUILayoutContext();
+	const openablePeriodKinds = PERIOD_KINDS.filter((kind) =>
+		isPeriodNoteEnabled(kind, periodNotesEnabled),
+	);
 
 	const heading = useMemo(
 		() =>
@@ -92,16 +114,24 @@ export function DayNotesPanel({
 				</div>
 				{canOpenDatedNotes ? (
 					<div className="calendarPeriodNoteActions">
-						{PERIOD_KINDS.map((kind) => (
-							<button
-								key={kind}
-								type="button"
-								className="calendarDailyNoteButton"
-								onClick={() => onOpenPeriodNote(kind)}
-							>
-								{t(`calendar.openPeriodNote.${kind}`)}
-							</button>
-						))}
+						{openablePeriodKinds.map((kind) => {
+							const label = t(`calendar.openPeriodNote.${kind}`);
+							return (
+								<button
+									key={kind}
+									type="button"
+									className="calendarNavButton"
+									aria-label={label}
+									title={label}
+									onClick={() => onOpenPeriodNote(kind)}
+								>
+									<HugeiconsIcon
+										icon={PERIOD_NOTE_ICONS[kind]}
+										size="var(--icon-md)"
+									/>
+								</button>
+							);
+						})}
 					</div>
 				) : null}
 			</header>

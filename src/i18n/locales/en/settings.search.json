@@ -316,6 +316,24 @@
 			"description": "Choose where daily notes are created.",
 			"keywords": ["journal", "today", "date"]
 		},
+		"space-weekly-notes": {
+			"title": "Weekly notes",
+			"section": "Daily Notes",
+			"description": "One note for this ISO week.",
+			"keywords": ["weekly", "iso week", "period notes"]
+		},
+		"space-monthly-notes": {
+			"title": "Monthly notes",
+			"section": "Daily Notes",
+			"description": "One note for this month.",
+			"keywords": ["monthly", "period notes"]
+		},
+		"space-quarterly-notes": {
+			"title": "Quarterly notes",
+			"section": "Daily Notes",
+			"description": "One note for this quarter.",
+			"keywords": ["quarterly", "period notes"]
+		},
 		"space-quick-notes-folder": {
 			"title": "Folder",
 			"section": "Quick Notes",

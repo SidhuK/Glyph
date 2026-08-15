@@ -347,6 +347,24 @@
 			"description": "Choose where daily notes are created.",
 			"keywords": ["journal", "today", "date"]
 		},
+		"space-weekly-notes": {
+			"title": "ウィークリーノート",
+			"section": "Daily Notes",
+			"description": "現在の ISO 週のノートを作成します。",
+			"keywords": ["週", "ISO"]
+		},
+		"space-monthly-notes": {
+			"title": "マンスリーノート",
+			"section": "Daily Notes",
+			"description": "今月のノートを作成します。",
+			"keywords": ["月"]
+		},
+		"space-quarterly-notes": {
+			"title": "四半期ノート",
+			"section": "Daily Notes",
+			"description": "今四半期のノートを作成します。",
+			"keywords": ["四半期"]
+		},
 		"space-quick-notes-folder": {
 			"title": "Folder",
 			"section": "Quick Notes",

@@ -45,7 +45,7 @@ import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { getLicenseStatus } from "../../lib/license";
 import { copyAbsolutePath, copyRelativePath } from "../../lib/pathClipboard";
-import type { PeriodKind } from "../../lib/periodNotes";
+import type { PeriodKind, PeriodNotesEnabled } from "../../lib/periodNotes";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import {
 	type ShortcutActionId,
@@ -111,6 +111,7 @@ interface UseAppCommandsDeps {
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
+	periodNotesEnabled: PeriodNotesEnabled;
 	openMarkdownTabsLength: number;
 	pinnedFiles: string[];
 	requestOpenDailyNote: () => void;
@@ -257,6 +258,7 @@ export function useAppCommands({
 	openSearchPalette,
 	openSettings,
 	openWorkspaceFile,
+	periodNotesEnabled,
 	openMarkdownTabsLength,
 	pinnedFiles,
 	requestOpenDailyNote,
@@ -428,19 +430,19 @@ export function useAppCommands({
 			{
 				id: "open-weekly-note",
 				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
-				enabled: Boolean(spacePath),
+				enabled: Boolean(spacePath) && periodNotesEnabled.week,
 				action: () => requestOpenPeriodNote("week"),
 			},
 			{
 				id: "open-monthly-note",
 				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
-				enabled: Boolean(spacePath),
+				enabled: Boolean(spacePath) && periodNotesEnabled.month,
 				action: () => requestOpenPeriodNote("month"),
 			},
 			{
 				id: "open-quarterly-note",
 				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size="var(--icon-lg)" />,
-				enabled: Boolean(spacePath),
+				enabled: Boolean(spacePath) && periodNotesEnabled.quarter,
 				action: () => requestOpenPeriodNote("quarter"),
 			},
 			{
@@ -721,6 +723,7 @@ export function useAppCommands({
 		openMarkdownTabsLength,
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,
+		periodNotesEnabled,
 		requestOpenDailyNote,
 		requestOpenPeriodNote,
 		saveCurrentEditor,

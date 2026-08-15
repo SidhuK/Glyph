@@ -160,6 +160,23 @@
 			"ariaLabel": "Ordenação da árvore de arquivos"
 		}
 	},
+	"periodNotes": {
+		"week": {
+			"label": "Notas semanais",
+			"description": "Uma nota para esta semana ISO.",
+			"ariaLabel": "Ativar notas semanais"
+		},
+		"month": {
+			"label": "Notas mensais",
+			"description": "Uma nota para este mês.",
+			"ariaLabel": "Ativar notas mensais"
+		},
+		"quarter": {
+			"label": "Notas trimestrais",
+			"description": "Uma nota para este trimestre.",
+			"ariaLabel": "Ativar notas trimestrais"
+		}
+	},
 	"periodNoteTemplates": {
 		"day": "Modelo padrão de nota diária",
 		"week": "Modelo padrão de nota semanal",

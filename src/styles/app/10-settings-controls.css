@@ -286,6 +286,73 @@
 	align-items: stretch;
 }
 
+.settingsPeriodNoteGrid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+	padding: 12px 18px 16px;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.settingsPeriodNoteBox.settingsField {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+	justify-content: flex-start;
+	min-height: 0;
+	min-width: 0;
+	gap: 12px;
+	padding: 12px 14px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+}
+
+.settingsPeriodNoteBox.settingsField::after {
+	display: none;
+}
+
+:root.light .settingsPeriodNoteBox.settingsField {
+	background: var(--bg-primary);
+}
+
+.settingsPeriodNoteBox.settingsFieldInteractive:has(
+		input[type="checkbox"]:not(:disabled)
+	):hover {
+	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+}
+
+:root.light
+	.settingsPeriodNoteBox.settingsFieldInteractive:has(
+		input[type="checkbox"]:not(:disabled)
+	):hover {
+	background: var(--bg-secondary);
+}
+
+.settingsPeriodNoteBox .settingsFieldCopy {
+	flex: 0 1 auto;
+}
+
+.settingsPeriodNoteBox .settingsLabel {
+	font-size: calc(var(--text-base) * 0.95);
+	font-weight: var(--font-medium);
+	letter-spacing: 0;
+	line-height: 1.3;
+}
+
+.settingsPeriodNoteBox .settingsHelp {
+	font-size: calc(var(--text-base) * 0.8);
+	line-height: 1.4;
+}
+
+.settingsPeriodNoteBox .settingsFieldControl,
+.settingsPeriodNoteBox .settingsFieldControlStacked {
+	flex: 0 0 auto;
+	justify-content: flex-start;
+	width: auto;
+	max-width: none;
+}
+
 .settingsActions {
 	display: inline-flex;
 	align-items: center;

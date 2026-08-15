@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useSpace } from "../../contexts";
 import {
@@ -9,6 +10,12 @@ import {
 	modesUseDifferentFolderSemantics,
 } from "../../lib/attachmentStorage";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import {
+	DEFAULT_PERIOD_NOTES_ENABLED,
+	OPTIONAL_PERIOD_KINDS,
+	type OptionalPeriodKind,
+	periodNotesEnabledFromSettings,
+} from "../../lib/periodNotes";
 import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
@@ -42,12 +49,28 @@ import {
 
 const ATTACHMENT_SUBFOLDER_ERROR_ID = "attachmentSubfolderError";
 
+const PERIOD_NOTE_TOGGLE_SETTINGS = {
+	week: SPACE_SETTINGS.dailyNotesWeeklyNotes,
+	month: SPACE_SETTINGS.dailyNotesMonthlyNotes,
+	quarter: SPACE_SETTINGS.dailyNotesQuarterlyNotes,
+} as const;
+
+const PERIOD_NOTE_SEARCH_IDS = {
+	week: "space-weekly-notes",
+	month: "space-monthly-notes",
+	quarter: "space-quarterly-notes",
+} as const;
+
 export function SpaceSettingsPane() {
+	const { t } = useTranslation("settings.general");
 	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
 		null,
 	);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
+	const [periodNotesEnabled, setPeriodNotesEnabled] = useState(
+		DEFAULT_PERIOD_NOTES_ENABLED,
+	);
 	const [attachmentStorageMode, setAttachmentStorageModeState] =
 		useState<AttachmentStorageMode>("note-folder");
 	const [attachmentFolder, setAttachmentFolderState] = useState(
@@ -91,6 +114,9 @@ export function SpaceSettingsPane() {
 			const settings = await loadSettings(settingsScope);
 			setCurrentSpacePath(currentSpace);
 			setDailyNotesFolderState(settings.dailyNotes.folder);
+			setPeriodNotesEnabled(
+				periodNotesEnabledFromSettings(settings.dailyNotes),
+			);
 			setQuickNotesFolderState(settings.quickNotes.folder);
 			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
 			setAttachmentFolderState(
@@ -172,6 +198,26 @@ export function SpaceSettingsPane() {
 			);
 		}
 	}, [currentSpacePath]);
+
+	const handlePeriodNoteToggle = useCallback(
+		async (kind: OptionalPeriodKind, checked: boolean) => {
+			setDailyNotesError(null);
+			try {
+				const spacePath = requireSpacePath(currentSpacePath);
+				await writeSpaceSetting(PERIOD_NOTE_TOGGLE_SETTINGS[kind], checked, {
+					spacePath,
+				});
+				setPeriodNotesEnabled((current) => ({ ...current, [kind]: checked }));
+			} catch (cause) {
+				setDailyNotesError(
+					cause instanceof Error
+						? cause.message
+						: "Failed to update dated notes",
+				);
+			}
+		},
+		[currentSpacePath],
+	);
 
 	const handleAttachmentModeChange = useCallback(
 		async (nextMode: AttachmentStorageMode) => {
@@ -320,11 +366,11 @@ export function SpaceSettingsPane() {
 			<div className="settingsGrid">
 				<SettingsSection
 					title="Daily Notes"
-					description="Choose where daily, weekly, monthly, and quarterly notes are created in the current space."
+					description="Choose where dated notes are created in the current space."
 				>
 					<SettingsRow
 						label="Folder"
-						description="Glyph stores dated notes relative to the active space. Weekly notes use ISO weeks (YYYY-Www.md). Monthly notes use YYYY-MM.md. Quarterly notes use YYYY-Qn.md."
+						description="Glyph stores dated notes relative to the active space."
 						stacked
 						interactive={false}
 					>
@@ -339,25 +385,29 @@ export function SpaceSettingsPane() {
 							error={dailyNotesError}
 						/>
 					</SettingsRow>
+					<div className="settingsPeriodNoteGrid">
+						{OPTIONAL_PERIOD_KINDS.map((kind) => (
+							<SettingsRow
+								key={kind}
+								className="settingsPeriodNoteBox"
+								searchId={PERIOD_NOTE_SEARCH_IDS[kind]}
+								stacked
+								label={t(`periodNotes.${kind}.label`)}
+								description={t(`periodNotes.${kind}.description`)}
+							>
+								<SettingsToggle
+									checked={periodNotesEnabled[kind]}
+									ariaLabel={t(`periodNotes.${kind}.ariaLabel`)}
+									onCheckedChange={(checked) =>
+										void handlePeriodNoteToggle(kind, checked)
+									}
+								/>
+							</SettingsRow>
+						))}
+					</div>
 				</SettingsSection>
 
-				<SettingsSection title="Quick Notes">
-					<SettingsRow
-						label="Folder"
-						description="New quick notes are added to today's note in this folder."
-						stacked
-						interactive={false}
-					>
-						<SettingsFolderPicker
-							path={quickNotesFolder}
-							browseLabel="Browse"
-							clearLabel="Reset quick notes folder"
-							onBrowse={() => void handleBrowseQuickNotesFolder()}
-							onClear={() => void handleResetQuickNotesFolder()}
-							error={quickNotesError}
-						/>
-					</SettingsRow>
-				</SettingsSection>
+				<TemplateSettingsSections />
 
 				<SettingsSection
 					title="Attachments"
@@ -477,7 +527,23 @@ export function SpaceSettingsPane() {
 					</SettingsRow>
 				</SettingsSection>
 
-				<TemplateSettingsSections />
+				<SettingsSection title="Quick Notes">
+					<SettingsRow
+						label="Folder"
+						description="New quick notes are added to today's note in this folder."
+						stacked
+						interactive={false}
+					>
+						<SettingsFolderPicker
+							path={quickNotesFolder}
+							browseLabel="Browse"
+							clearLabel="Reset quick notes folder"
+							onBrowse={() => void handleBrowseQuickNotesFolder()}
+							onClear={() => void handleResetQuickNotesFolder()}
+							error={quickNotesError}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 
 				<SettingsSection
 					title="Search Index"

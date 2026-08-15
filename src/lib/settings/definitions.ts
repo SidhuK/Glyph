@@ -172,6 +172,18 @@ function defineSpaceSetting<Value>(
 	return config;
 }
 
+function booleanSpaceSetting(
+	config: Omit<SpaceSettingDefinition<boolean>, "normalize" | "parse">,
+): SpaceSettingDefinition<boolean> {
+	return defineSpaceSetting({
+		...config,
+		normalize: (value) =>
+			typeof value === "boolean" ? value : config.defaultValue,
+		parse: (value) =>
+			typeof value === "boolean" ? parsed(value) : INVALID_PARSE_RESULT,
+	});
+}
+
 function booleanSetting(
 	config: Omit<ApplicationSettingConfig<boolean>, "normalize" | "parse">,
 ): ApplicationSettingDefinition<boolean> {
@@ -673,6 +685,33 @@ export const SPACE_SETTINGS = {
 		read: (settings) => settings.dailyNotes.folder,
 		patch: (value) => ({ dailyNotesFolder: value }),
 		change: (value) => ({ dailyNotes: { folder: value } }),
+	}),
+	dailyNotesWeeklyNotes: booleanSpaceSetting({
+		legacyKey: "dailyNotes.weeklyNotes",
+		field: "dailyNotesWeeklyNotes",
+		defaultValue: false,
+		discovery: searchable("space-weekly-notes"),
+		read: (settings) => settings.dailyNotes.weeklyNotes,
+		patch: (value) => ({ dailyNotesWeeklyNotes: value }),
+		change: (value) => ({ dailyNotes: { weeklyNotes: value } }),
+	}),
+	dailyNotesMonthlyNotes: booleanSpaceSetting({
+		legacyKey: "dailyNotes.monthlyNotes",
+		field: "dailyNotesMonthlyNotes",
+		defaultValue: false,
+		discovery: searchable("space-monthly-notes"),
+		read: (settings) => settings.dailyNotes.monthlyNotes,
+		patch: (value) => ({ dailyNotesMonthlyNotes: value }),
+		change: (value) => ({ dailyNotes: { monthlyNotes: value } }),
+	}),
+	dailyNotesQuarterlyNotes: booleanSpaceSetting({
+		legacyKey: "dailyNotes.quarterlyNotes",
+		field: "dailyNotesQuarterlyNotes",
+		defaultValue: false,
+		discovery: searchable("space-quarterly-notes"),
+		read: (settings) => settings.dailyNotes.quarterlyNotes,
+		patch: (value) => ({ dailyNotesQuarterlyNotes: value }),
+		change: (value) => ({ dailyNotes: { quarterlyNotes: value } }),
 	}),
 	quickNotesFolder: defineSpaceSetting({
 		legacyKey: "quickNotes.folder",

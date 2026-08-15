@@ -24,6 +24,7 @@ interface SettingsRowProps {
 	className?: string;
 	stacked?: boolean;
 	interactive?: boolean;
+	searchId?: string;
 }
 
 interface SettingsToggleProps {
@@ -72,6 +73,7 @@ export function SettingsRow({
 	className,
 	stacked = false,
 	interactive = true,
+	searchId,
 }: SettingsRowProps) {
 	const CopyTag = htmlFor ? "label" : "div";
 	const rowTitle = title ?? (typeof label === "string" ? label : undefined);
@@ -119,6 +121,7 @@ export function SettingsRow({
 				className,
 			)}
 			data-settings-row-title={rowTitle}
+			data-settings-search-id={searchId}
 			onClick={handleRowClick}
 			onKeyDown={handleRowKeyDown}
 			role={interactive ? "button" : undefined}
