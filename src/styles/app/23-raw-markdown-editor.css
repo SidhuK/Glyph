@@ -28,7 +28,6 @@
 	overflow: visible;
 	font-family: inherit;
 	line-height: inherit;
-	overscroll-behavior: contain;
 }
 
 .rfNodeNoteEditorRaw .cm-content {
@@ -38,13 +37,24 @@
 	min-height: 100%;
 	margin: 0 auto;
 	padding: 18px var(--editor-readable-content-gutter-compact) 96px;
-	caret-color: var(--interactive-accent);
 }
 
 .rfNodeNoteEditorRaw .cm-line {
 	min-height: 1.68em;
 	padding: 0;
-	text-wrap: pretty;
+}
+
+.rfNodeNoteEditorRaw .cm-selectionLayer {
+	z-index: 1 !important;
+	pointer-events: none;
+}
+
+.rfNodeNoteEditorRaw
+	.cm-editor
+	> .cm-scroller
+	> .cm-selectionLayer
+	.cm-selectionBackground {
+	background: color-mix(in srgb, var(--interactive-accent) 26%, transparent);
 }
 
 .rfNodeNoteEditorRaw .cm-cursor,
@@ -185,7 +195,6 @@
 	font-weight: var(--font-semibold);
 	line-height: 1.3;
 	letter-spacing: -0.018em;
-	text-wrap: balance;
 }
 
 .rfNodeNoteEditorRaw .cm-raw-heading:first-child {
@@ -266,17 +275,10 @@
 .rfNodeNoteEditorRaw .cm-raw-wiki-link,
 .rfNodeNoteEditorRaw .cm-raw-tag {
 	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms
-		ease;
 }
 
 .rfNodeNoteEditorRaw .cm-raw-wiki-link {
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
-	padding: 0;
 	color: var(--interactive-accent);
-	font-weight: inherit;
 	text-decoration: underline;
 	text-decoration-color: color-mix(
 		in srgb,
@@ -287,14 +289,10 @@
 }
 
 .rfNodeNoteEditorRaw .cm-raw-wiki-link[data-embed="true"] {
-	background: none;
 	color: color-mix(in srgb, var(--interactive-accent) 84%, var(--text-primary));
 }
 
-.rfNodeNoteEditorRaw .cm-raw-wiki-link:hover,
-.rfNodeNoteEditorRaw .cm-raw-wiki-link:focus-visible {
-	background: none;
-	box-shadow: none;
+.rfNodeNoteEditorRaw .cm-raw-wiki-link:hover {
 	text-decoration-color: color-mix(
 		in srgb,
 		var(--interactive-accent) 72%,
@@ -314,10 +312,10 @@
 	font-size: 0.9em;
 	font-weight: var(--font-semibold);
 	text-decoration: none;
+	transition: background-color 120ms ease, color 120ms ease;
 }
 
-.rfNodeNoteEditorRaw .cm-raw-tag:hover,
-.rfNodeNoteEditorRaw .cm-raw-tag:focus-visible {
+.rfNodeNoteEditorRaw .cm-raw-tag:hover {
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 15%,
@@ -413,8 +411,7 @@
 		ease;
 }
 
-.rfNodeNoteEditorRaw .cm-raw-task-checkbox:hover,
-.rfNodeNoteEditorRaw .cm-raw-task-checkbox:focus-visible {
+.rfNodeNoteEditorRaw .cm-raw-task-checkbox:hover {
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 10%,
@@ -708,7 +705,6 @@
 
 @media (max-width: 760px) {
 	.rfNodeNoteEditorRaw .cm-content {
-		padding-right: var(--editor-readable-content-gutter-compact);
 		padding-left: calc(var(--editor-readable-content-gutter-compact) + 12px);
 	}
 }
