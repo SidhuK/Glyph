@@ -621,6 +621,11 @@
 			"description": "Notatki utworzone i ostatnio edytowane w czasie.",
 			"keywords": ["aktywność", "seria", "edycja"]
 		},
+		"usage-folder-activity": {
+			"title": "Utworzone notatki według folderu",
+			"description": "Gdzie pojawiały się nowe notatki przez ostatnie dwanaście tygodni.",
+			"keywords": ["foldery", "strumień", "utworzone"]
+		},
 		"usage-tasks": {
 			"title": "Zadania",
 			"description": "Bieżąca liczba zadań i postęp ich realizacji.",
