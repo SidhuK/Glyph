@@ -1,15 +1,15 @@
 {
-  "version": "0.8.14-alpha.7",
-  "notes": "## What's Changed\n* Treat version suffixes as note names, not file extensions by @SidhuK in https://github.com/SidhuK/Glyph/pull/493\n* Add weekly, monthly, and quarterly notes by @SidhuK in https://github.com/SidhuK/Glyph/pull/499\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.14-alpha.6...v0.8.14-alpha.7",
-  "pub_date": "2026-08-15T06:58:24.885Z",
+  "version": "0.8.14-alpha.8",
+  "notes": "## What's Changed\n* Fix raw editor caret positioning and selection layering by @SidhuK in https://github.com/SidhuK/Glyph/pull/500\n* Fix tab close button positioning by @SidhuK in https://github.com/SidhuK/Glyph/pull/501\n* Refactor settings into categorized editor and experimental tabs by @SidhuK in https://github.com/SidhuK/Glyph/pull/502\n* Fix pending app menu commands by @SidhuK in https://github.com/SidhuK/Glyph/pull/503\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.14-alpha.7...v0.8.14-alpha.8",
+  "pub_date": "2026-08-16T05:30:58.497Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDR0RHNBWWJKTm1YQXFRQjVrcUY0MU5ndGV4bVdzOG9US2JWVmMrSXlGWFhSOVg1S2NIRVByMzZwQmpVU3JSVlhOVlEydE90ODhTZXhybngyeCtJamcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2Nzc3MTAwCWZpbGU6R2x5cGguYXBwLnRhci5negoveXJBeWJzNVFuVWYxN2ZuSHJqMURmTVNqZXo2NEFaUm4vVXZ0SDNyOG9kOG5JaXVUTHFGVzkwVXVBdzJTRjl6TnBMMWk3bXVwTloxM3NjWjRHQlFBQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.14-alpha.7/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCtXWTFiZzNydWdlTi9wazduZHorc3FvMy9maWpCRzNPbTNTVDBkYUltTFBHdmpkN0VScnZkc0l2ekJHd1RCbDNwcGFyQndFaHJNWmdLTTU5OU1Na1FRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2ODU4MjU0CWZpbGU6R2x5cGguYXBwLnRhci5negpEK1hkbThoeGthQjU1TWZXYmtrUmtoSjE5M1FPREJBdnJUSVZ0NkhSOWxVQWN4ZHhsUmhPRjdORjl6dzV5TjkxdGl6bHVkTTRLL1BVWVlwUmxEVWJDdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.14-alpha.8/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDR0RHNBWWJKTm1YQXFRQjVrcUY0MU5ndGV4bVdzOG9US2JWVmMrSXlGWFhSOVg1S2NIRVByMzZwQmpVU3JSVlhOVlEydE90ODhTZXhybngyeCtJamcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2Nzc3MTAwCWZpbGU6R2x5cGguYXBwLnRhci5negoveXJBeWJzNVFuVWYxN2ZuSHJqMURmTVNqZXo2NEFaUm4vVXZ0SDNyOG9kOG5JaXVUTHFGVzkwVXVBdzJTRjl6TnBMMWk3bXVwTloxM3NjWjRHQlFBQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.14-alpha.7/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCtXWTFiZzNydWdlTi9wazduZHorc3FvMy9maWpCRzNPbTNTVDBkYUltTFBHdmpkN0VScnZkc0l2ekJHd1RCbDNwcGFyQndFaHJNWmdLTTU5OU1Na1FRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2ODU4MjU0CWZpbGU6R2x5cGguYXBwLnRhci5negpEK1hkbThoeGthQjU1TWZXYmtrUmtoSjE5M1FPREJBdnJUSVZ0NkhSOWxVQWN4ZHhsUmhPRjdORjl6dzV5TjkxdGl6bHVkTTRLL1BVWVlwUmxEVWJDdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.14-alpha.8/Glyph_aarch64.app.tar.gz"
     }
   }
 }
