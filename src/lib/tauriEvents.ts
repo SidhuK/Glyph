@@ -78,9 +78,12 @@ function runUnlisten(unlisten: (() => void) | null): void {
 export function useTauriEvent<K extends keyof TauriEventMap>(
 	event: K,
 	handler: TauriEventHandler<K>,
+	onListening?: () => void,
 ): void {
 	const handlerRef = useRef(handler);
 	handlerRef.current = handler;
+	const onListeningRef = useRef(onListening);
+	onListeningRef.current = onListening;
 
 	useEffect(() => {
 		let cancelled = false;
@@ -115,6 +118,7 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 				return;
 			}
 			unlisten = stop;
+			onListeningRef.current?.();
 			if (pendingTeardown && !didUnlisten) {
 				runUnlisten(unlisten);
 				unlisten = null;
