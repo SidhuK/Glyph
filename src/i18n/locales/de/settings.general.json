@@ -3,6 +3,7 @@
 		"tab": "Allgemein",
 		"panelTitle": "Allgemein",
 		"groupApplication": "Anwendung",
+		"groupLabs": "Labs",
 		"searchPlaceholder": "Einstellungen durchsuchen",
 		"searchAriaLabel": "Einstellungen durchsuchen",
 		"clearSearchAriaLabel": "Einstellungssuche löschen"
@@ -73,6 +74,10 @@
 			"description": "Beim Schließen des letzten Fensters wird es ausgeblendet, während Glyph geöffnet bleibt. Beende Glyph mit „Glyph beenden“.",
 			"ariaLabel": "Glyph nach dem Schließen des letzten Fensters weiter ausführen"
 		}
+	},
+	"experimental": {
+		"sectionTitle": "Experimentell",
+		"sectionDescription": "Experimentelle Funktionen, die noch nicht ausgereift sind. Eine spätere Glyph-Version kann sie ändern oder entfernen."
 	},
 	"editor": {
 		"sectionTitle": "Editor",

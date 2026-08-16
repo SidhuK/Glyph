@@ -15,8 +15,6 @@ const { settingWriter, useLicenseStatusMock, useTauriEventMock } = vi.hoisted(
 );
 
 vi.mock("../../lib/settings", () => ({
-	isFocusMode: (value: unknown) =>
-		value === "off" || value === "paragraph" || value === "sentence",
 	DATE_DISPLAY_FORMAT_OPTIONS: [
 		{ value: "us", label: "US — 08/23/2026" },
 		{ value: "european", label: "European — 23/08/2026" },
@@ -36,21 +34,7 @@ vi.mock("../../lib/settings", () => ({
 				dateDisplayFormat: "friendly",
 				resumeLastSession: false,
 				keepRunningOnLastWindowClose: false,
-				showToc: true,
 				showFileTreeFolderCounts: false,
-				showNonMarkdownFiles: true,
-			},
-			editor: {
-				showFrontmatterInEditor: false,
-				showHeadingPrefixes: true,
-				colorfulHeadings: false,
-				headingPaletteId: "classy",
-				showCollapsibleHeadings: false,
-				showCollapsibleLists: false,
-				spellCheck: true,
-				showExternalLinkPreviews: false,
-				rawMarkdownVimMode: false,
-				defaultEditorMode: "rich",
 			},
 		}),
 	),
@@ -62,20 +46,7 @@ vi.mock("../../lib/settings/definitions", () => ({
 		dateDisplayFormat: settingWriter(),
 		resumeLastSession: settingWriter(),
 		keepRunningOnLastWindowClose: settingWriter(),
-		showToc: settingWriter(),
-		editorShowFrontmatterInEditor: settingWriter(),
-		editorShowHeadingPrefixes: settingWriter(),
-		editorColorfulHeadings: settingWriter(),
-		editorHeadingPaletteId: settingWriter(),
-		editorShowCollapsibleHeadings: settingWriter(),
-		editorShowCollapsibleLists: settingWriter(),
-		editorSpellCheck: settingWriter(),
-		editorShowExternalLinkPreviews: settingWriter(),
-		editorRawMarkdownVimMode: settingWriter(),
-		editorDefaultEditorMode: settingWriter(),
-		editorFocusMode: settingWriter(),
 		showFileTreeFolderCounts: settingWriter(),
-		showNonMarkdownFiles: settingWriter(),
 	},
 }));
 

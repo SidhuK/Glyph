@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "Allgemein",
 		"appearance": "Darstellung",
+		"editor": "Editor",
+		"experimental": "Experimentell",
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
@@ -19,6 +21,16 @@
 			"title": "Darstellungseinstellungen",
 			"description": "Darstellungseinstellungen öffnen.",
 			"keywords": ["Darstellung"]
+		},
+		"editor": {
+			"title": "Editor-Einstellungen",
+			"description": "Editor-Einstellungen öffnen.",
+			"keywords": ["Editor"]
+		},
+		"experimental": {
+			"title": "Experimentelle Einstellungen",
+			"description": "Experimentelle Einstellungen öffnen.",
+			"keywords": ["Experimentell"]
 		},
 		"shortcuts": {
 			"title": "Shortcuts settings",
@@ -521,7 +533,7 @@
 		},
 		"general-editor-vim-mode": {
 			"title": "Vim-Modus",
-			"section": "Editor",
+			"section": "Experimentell",
 			"keywords": [
 				"vim",
 				"tastenkürzel",
@@ -540,12 +552,12 @@
 		},
 		"appearance-layout-folio-mode": {
 			"title": "Folio-Modus",
-			"section": "Layout",
+			"section": "Experimentell",
 			"keywords": ["layout", "lesen", "reading", "folio"]
 		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Klassisches Raster „Alle Notizen“",
-			"section": "Layout",
+			"section": "Experimentell",
 			"keywords": [
 				"alle notizen",
 				"aktivität",
@@ -564,7 +576,7 @@
 		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Nicht-Markdown-Dateien anzeigen",
-			"section": "Dateibaum",
+			"section": "Experimentell",
 			"keywords": [
 				"seitenleiste",
 				"anhänge",

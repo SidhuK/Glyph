@@ -3,6 +3,7 @@
 		"tab": "Général",
 		"panelTitle": "Général",
 		"groupApplication": "Application",
+		"groupLabs": "Labs",
 		"searchPlaceholder": "Rechercher dans les réglages",
 		"searchAriaLabel": "Rechercher dans les réglages",
 		"clearSearchAriaLabel": "Effacer la recherche des réglages"
@@ -73,6 +74,10 @@
 			"description": "La fermeture de la dernière fenêtre la masque tandis que Glyph reste ouvert. Utilisez Quitter Glyph pour fermer l’application.",
 			"ariaLabel": "Garder Glyph actif après la fermeture de la dernière fenêtre"
 		}
+	},
+	"experimental": {
+		"sectionTitle": "Expérimental",
+		"sectionDescription": "Fonctionnalités expérimentales encore inachevées. Une version ultérieure de Glyph peut les modifier ou les retirer."
 	},
 	"editor": {
 		"sectionTitle": "Éditeur",

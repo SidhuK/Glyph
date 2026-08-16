@@ -38,6 +38,8 @@ import { FolioWorkspace } from "../folio/FolioWorkspace";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
 import { AiSettingsPane } from "../settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "../settings/AppearanceSettingsPane";
+import { EditorSettingsPane } from "../settings/EditorSettingsPane";
+import { ExperimentalSettingsPane } from "../settings/ExperimentalSettingsPane";
 import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
 import { GitSettingsPane } from "../settings/GitSettingsPane";
 import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
@@ -293,6 +295,7 @@ export const MainContent = memo(function MainContent({
 	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
 		general: <GeneralSettingsPane />,
 		appearance: <AppearanceSettingsPane />,
+		editor: <EditorSettingsPane />,
 		shortcuts: (
 			<Suspense fallback={null}>
 				<ShortcutsSettingsPane />
@@ -307,6 +310,7 @@ export const MainContent = memo(function MainContent({
 				<UsageSettingsPane />
 			</Suspense>
 		),
+		experimental: <ExperimentalSettingsPane />,
 	};
 
 	const { i18n } = useTranslation();

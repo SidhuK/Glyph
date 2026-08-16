@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "一般",
 		"appearance": "外観",
+		"editor": "エディタ",
+		"experimental": "実験的",
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
@@ -19,6 +21,16 @@
 			"title": "外観設定",
 			"description": "外観設定を開きます。",
 			"keywords": ["外観"]
+		},
+		"editor": {
+			"title": "エディタ設定",
+			"description": "エディタ設定を開きます。",
+			"keywords": ["エディタ"]
+		},
+		"experimental": {
+			"title": "実験的な設定",
+			"description": "実験的な設定を開きます。",
+			"keywords": ["実験的"]
 		},
 		"shortcuts": {
 			"title": "Shortcuts settings",
@@ -518,7 +530,7 @@
 		},
 		"general-editor-vim-mode": {
 			"title": "Vim モード",
-			"section": "エディタ",
+			"section": "実験的",
 			"keywords": [
 				"vim",
 				"キーバインド",
@@ -537,12 +549,12 @@
 		},
 		"appearance-layout-folio-mode": {
 			"title": "Folio モード",
-			"section": "レイアウト",
+			"section": "実験的",
 			"keywords": ["レイアウト", "読書", "layout", "reading", "folio"]
 		},
 		"appearance-layout-classic-all-notes": {
 			"title": "クラシックなすべてのノートグリッド",
-			"section": "レイアウト",
+			"section": "実験的",
 			"keywords": [
 				"すべてのノート",
 				"アクティビティ",
@@ -561,7 +573,7 @@
 		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Markdown 以外のファイルを表示",
-			"section": "ファイルツリー",
+			"section": "実験的",
 			"keywords": [
 				"サイドバー",
 				"添付",

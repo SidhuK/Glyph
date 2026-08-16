@@ -3,6 +3,7 @@
 		"tab": "General",
 		"panelTitle": "General",
 		"groupApplication": "Aplicación",
+		"groupLabs": "Labs",
 		"searchPlaceholder": "Buscar ajustes",
 		"searchAriaLabel": "Buscar ajustes",
 		"clearSearchAriaLabel": "Borrar búsqueda de ajustes"
@@ -73,6 +74,10 @@
 			"description": "Al cerrar la última ventana, esta se oculta y Glyph permanece abierto. Usa Salir de Glyph para cerrarlo.",
 			"ariaLabel": "Mantener Glyph en ejecución al cerrar la última ventana"
 		}
+	},
+	"experimental": {
+		"sectionTitle": "Experimental",
+		"sectionDescription": "Funciones experimentales que aún no están del todo definidas. Una versión posterior de Glyph puede cambiarlas o quitarlas."
 	},
 	"editor": {
 		"sectionTitle": "Editor",

@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "General",
 		"appearance": "Apariencia",
+		"editor": "Editor",
+		"experimental": "Experimental",
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
@@ -19,6 +21,16 @@
 			"title": "Ajustes de apariencia",
 			"description": "Abrir los ajustes de apariencia.",
 			"keywords": ["Apariencia"]
+		},
+		"editor": {
+			"title": "Ajustes del editor",
+			"description": "Abrir los ajustes del editor.",
+			"keywords": ["Editor"]
+		},
+		"experimental": {
+			"title": "Ajustes experimentales",
+			"description": "Abrir los ajustes experimentales.",
+			"keywords": ["Experimental"]
 		},
 		"shortcuts": {
 			"title": "Shortcuts settings",
@@ -530,7 +542,7 @@
 		},
 		"general-editor-vim-mode": {
 			"title": "Modo Vim",
-			"section": "Editor",
+			"section": "Experimental",
 			"keywords": [
 				"vim",
 				"atajos",
@@ -549,12 +561,12 @@
 		},
 		"appearance-layout-folio-mode": {
 			"title": "Modo Folio",
-			"section": "Diseño",
+			"section": "Experimental",
 			"keywords": ["diseño", "lectura", "layout", "reading", "folio"]
 		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Cuadrícula clásica de Todas las notas",
-			"section": "Diseño",
+			"section": "Experimental",
 			"keywords": [
 				"todas las notas",
 				"actividad",
@@ -573,7 +585,7 @@
 		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Mostrar archivos que no son Markdown",
-			"section": "Árbol de archivos",
+			"section": "Experimental",
 			"keywords": [
 				"barra lateral",
 				"adjuntos",

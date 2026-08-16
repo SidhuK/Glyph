@@ -5,8 +5,10 @@ import {
 	ChartIcon,
 	CommandIcon,
 	GitBranchIcon,
+	PencilEdit02Icon,
 	Settings01Icon,
 	Sun03Icon,
+	TestTubeIcon,
 } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { FolderOpen } from "../Icons/NavigationIcons";
@@ -14,12 +16,14 @@ import { FolderOpen } from "../Icons/NavigationIcons";
 export type SettingsTab =
 	| "general"
 	| "appearance"
+	| "editor"
 	| "shortcuts"
 	| "ai"
 	| "space"
 	| "git"
 	| "about"
-	| "usage";
+	| "usage"
+	| "experimental";
 
 export interface SettingsTabMeta {
 	id: SettingsTab;
@@ -42,6 +46,12 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "appearance",
 		renderIcon: () => <HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" />,
+	},
+	{
+		id: "editor",
+		renderIcon: () => (
+			<HugeiconsIcon icon={PencilEdit02Icon} size="var(--icon-md)" />
+		),
 	},
 	{
 		id: "shortcuts",
@@ -75,6 +85,12 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		id: "usage",
 		renderIcon: () => <HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" />,
 	},
+	{
+		id: "experimental",
+		renderIcon: () => (
+			<HugeiconsIcon icon={TestTubeIcon} size="var(--icon-md)" />
+		),
+	},
 ];
 
 const SETTINGS_TAB_IDS = new Set<SettingsTab>(
@@ -89,6 +105,7 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 			(tab) =>
 				tab.id === "general" ||
 				tab.id === "appearance" ||
+				tab.id === "editor" ||
 				tab.id === "shortcuts" ||
 				tab.id === "about",
 		),
@@ -103,6 +120,11 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 				tab.id === "ai" ||
 				tab.id === "usage",
 		),
+	},
+	{
+		id: "experimental",
+		label: "Labs",
+		tabs: SETTINGS_TABS.filter((tab) => tab.id === "experimental"),
 	},
 ];
 

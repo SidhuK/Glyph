@@ -15,13 +15,11 @@ import type { SettingsBoolean } from "./useSettingsBoolean";
 
 interface FileTreeSettingsSectionProps {
 	folderCounts: SettingsBoolean;
-	nonMarkdownFiles: SettingsBoolean;
 	setError: (message: string) => void;
 }
 
 export function FileTreeSettingsSection({
 	folderCounts,
-	nonMarkdownFiles,
 	setError,
 }: FileTreeSettingsSectionProps) {
 	const { t } = useTranslation(["settings.general", "shell"]);
@@ -41,19 +39,6 @@ export function FileTreeSettingsSection({
 					disabled={folderCounts.isSaving}
 					ariaLabel={t("settings.general:fileTree.folderCounts.ariaLabel")}
 					onCheckedChange={folderCounts.onCheckedChange}
-				/>
-			</SettingsRow>
-			<SettingsRow
-				label={t("settings.general:fileTree.nonMarkdownFiles.label")}
-				description={t(
-					"settings.general:fileTree.nonMarkdownFiles.description",
-				)}
-			>
-				<SettingsToggle
-					checked={nonMarkdownFiles.checked}
-					disabled={nonMarkdownFiles.isSaving}
-					ariaLabel={t("settings.general:fileTree.nonMarkdownFiles.ariaLabel")}
-					onCheckedChange={nonMarkdownFiles.onCheckedChange}
 				/>
 			</SettingsRow>
 			<SettingsRow

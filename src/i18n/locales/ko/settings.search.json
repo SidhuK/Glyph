@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "일반",
 		"appearance": "모양",
+		"editor": "편집기",
+		"experimental": "실험적",
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
@@ -19,6 +21,16 @@
 			"title": "모양 설정",
 			"description": "모양 설정을 엽니다.",
 			"keywords": ["모양"]
+		},
+		"editor": {
+			"title": "편집기 설정",
+			"description": "편집기 설정을 엽니다.",
+			"keywords": ["편집기"]
+		},
+		"experimental": {
+			"title": "실험적 설정",
+			"description": "실험적 설정을 엽니다.",
+			"keywords": ["실험적"]
 		},
 		"shortcuts": {
 			"title": "Shortcuts settings",
@@ -504,7 +516,7 @@
 		},
 		"general-editor-vim-mode": {
 			"title": "Vim 모드",
-			"section": "편집기",
+			"section": "실험적",
 			"keywords": [
 				"vim",
 				"키 바인딩",
@@ -523,12 +535,12 @@
 		},
 		"appearance-layout-folio-mode": {
 			"title": "Folio 모드",
-			"section": "레이아웃",
+			"section": "실험적",
 			"keywords": ["레이아웃", "읽기", "layout", "reading", "folio"]
 		},
 		"appearance-layout-classic-all-notes": {
 			"title": "클래식 모든 노트 그리드",
-			"section": "레이아웃",
+			"section": "실험적",
 			"keywords": [
 				"모든 노트",
 				"활동",
@@ -547,7 +559,7 @@
 		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Markdown이 아닌 파일 표시",
-			"section": "파일 트리",
+			"section": "실험적",
 			"keywords": [
 				"사이드바",
 				"첨부",

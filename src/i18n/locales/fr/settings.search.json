@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "Général",
 		"appearance": "Apparence",
+		"editor": "Éditeur",
+		"experimental": "Expérimental",
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
@@ -19,6 +21,16 @@
 			"title": "Réglages d’apparence",
 			"description": "Ouvrir les réglages d’apparence.",
 			"keywords": ["Apparence"]
+		},
+		"editor": {
+			"title": "Réglages de l’éditeur",
+			"description": "Ouvrir les réglages de l’éditeur.",
+			"keywords": ["Éditeur"]
+		},
+		"experimental": {
+			"title": "Réglages expérimentaux",
+			"description": "Ouvrir les réglages expérimentaux.",
+			"keywords": ["Expérimental"]
 		},
 		"shortcuts": {
 			"title": "Shortcuts settings",
@@ -522,7 +534,7 @@
 		},
 		"general-editor-vim-mode": {
 			"title": "Mode Vim",
-			"section": "Éditeur",
+			"section": "Expérimental",
 			"keywords": [
 				"vim",
 				"raccourcis",
@@ -541,12 +553,12 @@
 		},
 		"appearance-layout-folio-mode": {
 			"title": "Mode Folio",
-			"section": "Disposition",
+			"section": "Expérimental",
 			"keywords": ["disposition", "lecture", "layout", "reading", "folio"]
 		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Grille classique Toutes les notes",
-			"section": "Disposition",
+			"section": "Expérimental",
 			"keywords": [
 				"toutes les notes",
 				"activité",
@@ -565,7 +577,7 @@
 		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Afficher les fichiers non Markdown",
-			"section": "Arborescence des fichiers",
+			"section": "Expérimental",
 			"keywords": [
 				"barre latérale",
 				"pièces jointes",

@@ -3,6 +3,7 @@
 		"tab": "일반",
 		"panelTitle": "일반",
 		"groupApplication": "애플리케이션",
+		"groupLabs": "랩",
 		"searchPlaceholder": "설정 검색",
 		"searchAriaLabel": "설정 검색",
 		"clearSearchAriaLabel": "설정 검색 지우기"
@@ -73,6 +74,10 @@
 			"description": "마지막 창을 닫으면 창만 숨겨지고 Glyph는 계속 열려 있습니다. 종료하려면 Glyph 종료를 사용하세요.",
 			"ariaLabel": "마지막 창을 닫아도 Glyph 계속 실행"
 		}
+	},
+	"experimental": {
+		"sectionTitle": "실험적",
+		"sectionDescription": "아직 다듬어지지 않은 실험적 기능입니다. 이후 Glyph 버전에서 바뀌거나 제거될 수 있습니다."
 	},
 	"editor": {
 		"sectionTitle": "편집기",
