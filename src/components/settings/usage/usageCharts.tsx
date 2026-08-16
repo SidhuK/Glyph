@@ -545,12 +545,7 @@ export function NetworkCoverageMosaic({
 				legend: colorLegend(),
 			},
 		});
-	}, [
-		connectedLabel,
-		folderOrder,
-		rows,
-		unlinkedLabel,
-	]);
+	}, [connectedLabel, folderOrder, rows, unlinkedLabel]);
 	if (!definition) {
 		return <p className="usageEmpty">{t("usage.noData")}</p>;
 	}
