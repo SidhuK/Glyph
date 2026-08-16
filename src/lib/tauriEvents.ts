@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import type { DeeplinkErrorPayload, DeeplinkEvent } from "./deeplink";
 import type { SettingsUpdatedPayload } from "./settings/model";
 
@@ -78,21 +78,27 @@ function runUnlisten(unlisten: (() => void) | null): void {
 export function useTauriEvent<K extends keyof TauriEventMap>(
 	event: K,
 	handler: TauriEventHandler<K>,
-	onListening?: () => void,
+	onListening?: () => (() => void) | undefined,
 ): void {
 	const handlerRef = useRef(handler);
-	handlerRef.current = handler;
 	const onListeningRef = useRef(onListening);
-	onListeningRef.current = onListening;
+
+	useLayoutEffect(() => {
+		handlerRef.current = handler;
+		onListeningRef.current = onListening;
+	}, [handler, onListening]);
 
 	useEffect(() => {
 		let cancelled = false;
 		let unlisten: (() => void) | null = null;
+		let onListeningCleanup: (() => void) | null = null;
 		let didUnlisten = false;
 		let pendingTeardown = false;
 
 		const cleanup = () => {
 			if (didUnlisten) return;
+			runUnlisten(onListeningCleanup);
+			onListeningCleanup = null;
 			if (unlisten) {
 				runUnlisten(unlisten);
 				unlisten = null;
@@ -118,7 +124,7 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 				return;
 			}
 			unlisten = stop;
-			onListeningRef.current?.();
+			onListeningCleanup = onListeningRef.current?.() ?? null;
 			if (pendingTeardown && !didUnlisten) {
 				runUnlisten(unlisten);
 				unlisten = null;
