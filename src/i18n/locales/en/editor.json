@@ -3,8 +3,11 @@
 		"label": "Editor mode",
 		"raw": "Raw",
 		"rich": "Rich",
-		"preview": "Preview",
-		"largeNoteHint": "May be slow on large notes"
+		"preview": "Preview"
+	},
+	"toolbar": {
+		"aiPanel": "AI panel",
+		"info": "Info"
 	},
 	"rollover": {
 		"bannerLabel": "Daily note rollover",

@@ -5,6 +5,10 @@
 		"rich": "リッチ",
 		"preview": "プレビュー"
 	},
+	"toolbar": {
+		"aiPanel": "AIパネル",
+		"info": "情報"
+	},
 	"ribbon": {
 		"bold": "太字",
 		"italic": "斜体",

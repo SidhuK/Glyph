@@ -5,6 +5,10 @@
 		"rich": "리치",
 		"preview": "미리보기"
 	},
+	"toolbar": {
+		"aiPanel": "AI 패널",
+		"info": "정보"
+	},
 	"ribbon": {
 		"bold": "굵게",
 		"italic": "기울임꼴",

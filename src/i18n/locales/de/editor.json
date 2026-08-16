@@ -5,6 +5,10 @@
 		"rich": "Rich",
 		"preview": "Vorschau"
 	},
+	"toolbar": {
+		"aiPanel": "KI-Bereich",
+		"info": "Info"
+	},
 	"ribbon": {
 		"bold": "Fett",
 		"italic": "Kursiv",

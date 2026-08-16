@@ -4,6 +4,7 @@ import {
 	EyeIcon,
 	PencilEdit02Icon,
 } from "@hugeicons/core-free-icons";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { EditorViewMode } from "../../lib/editorMode";
 
@@ -33,25 +34,48 @@ export function EditorViewModeSwitch({
 	largeNote = false,
 }: EditorViewModeSwitchProps) {
 	const { t } = useTranslation("editor");
+	const [isPinnedOpen, setIsPinnedOpen] = useState(false);
+	const activeMode = VIEW_MODES.find((item) => item.id === mode);
+
+	if (!activeMode) return null;
+
+	const activeLabel = t(activeMode.labelKey);
+	const shouldShowBubble = isPinnedOpen || (largeNote && mode !== "plain");
 	return (
 		<div
 			className="markdownEditorModeSwitch"
 			role="toolbar"
 			aria-label={t("mode.label")}
+			data-open={shouldShowBubble || undefined}
+			onBlur={(event) => {
+				const nextFocus = event.relatedTarget;
+				if (
+					nextFocus instanceof Node &&
+					event.currentTarget.contains(nextFocus)
+				) {
+					return;
+				}
+				setIsPinnedOpen(false);
+			}}
+			onMouseLeave={() => setIsPinnedOpen(false)}
 		>
-			{VIEW_MODES.map((item) => {
-				const label = t(item.labelKey);
-				const isActive = mode === item.id;
-				const showLargeNoteHint = largeNote && item.id !== "plain";
-				const hint = showLargeNoteHint ? t("mode.largeNoteHint") : label;
+			<button
+				type="button"
+				className="markdownEditorModeBtn markdownEditorModeCurrentBtn"
+				aria-label={activeLabel}
+				aria-expanded={shouldShowBubble}
+				onClick={() => setIsPinnedOpen((open) => !open)}
+			>
+				<HugeiconsIcon icon={activeMode.icon} size="var(--icon-md)" />
+			</button>
+			<div className="markdownEditorModeBubble">
+				{VIEW_MODES.map((item) => {
+					const label = t(item.labelKey);
+					const isActive = mode === item.id;
 
-				return (
-					<span
-						key={item.id}
-						className="markdownEditorModeBtnWrap"
-						data-caution={showLargeNoteHint || undefined}
-					>
+					return (
 						<button
+							key={item.id}
 							type="button"
 							className="markdownEditorModeBtn"
 							aria-pressed={isActive}
@@ -61,16 +85,9 @@ export function EditorViewModeSwitch({
 						>
 							<HugeiconsIcon icon={item.icon} size="var(--icon-md)" />
 						</button>
-						<span
-							className="markdownEditorModeBtnHint"
-							data-warning={showLargeNoteHint || undefined}
-							role="tooltip"
-						>
-							{hint}
-						</span>
-					</span>
-				);
-			})}
+					);
+				})}
+			</div>
 		</div>
 	);
 }

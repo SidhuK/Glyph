@@ -4,6 +4,7 @@ import {
 	LayoutAlignRightIcon,
 } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -162,6 +163,7 @@ export function MarkdownEditorPane({
 	extractToNoteActions,
 	active = true,
 }: MarkdownEditorPaneProps) {
+	const { t } = useTranslation("editor");
 	const [infoPanelText, setInfoPanelText] = useState("");
 	const preferredEditorModeRef = useRef<NoteInlineEditorMode | null>(null);
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
@@ -552,20 +554,8 @@ export function MarkdownEditorPane({
 								setInfoPanelOpen(() => false);
 								setAiPanelOpen((open) => !open);
 							}}
-							aria-label={
-								aiEnabled
-									? aiPanelOpen
-										? "Close AI panel"
-										: "Open AI panel"
-									: "Open AI settings"
-							}
-							title={
-								aiEnabled
-									? aiPanelOpen
-										? "Close AI panel"
-										: "Open AI panel"
-									: "Open AI settings"
-							}
+							aria-label={t("toolbar.aiPanel")}
+							title={t("toolbar.aiPanel")}
 							aria-pressed={aiEnabled ? aiPanelOpen : undefined}
 						>
 							<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
@@ -575,8 +565,8 @@ export function MarkdownEditorPane({
 							className="markdownEditorToolbarBtn"
 							data-active={infoPanelOpen || undefined}
 							onClick={toggleInfoPanel}
-							aria-label={infoPanelOpen ? "Close info" : "Open info"}
-							title={infoPanelOpen ? "Close info" : "Open info"}
+							aria-label={t("toolbar.info")}
+							title={t("toolbar.info")}
 							aria-pressed={infoPanelOpen}
 						>
 							<HugeiconsIcon

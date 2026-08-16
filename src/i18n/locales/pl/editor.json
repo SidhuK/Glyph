@@ -3,8 +3,11 @@
 		"label": "Tryb edytora",
 		"raw": "Źródłowy",
 		"rich": "WYSIWYG",
-		"preview": "Podgląd",
-		"largeNoteHint": "Może działać wolno przy dużych notatkach"
+		"preview": "Podgląd"
+	},
+	"toolbar": {
+		"aiPanel": "Panel AI",
+		"info": "Informacje"
 	},
 	"rollover": {
 		"bannerLabel": "Przenoszenie zaległych notatek dziennych",

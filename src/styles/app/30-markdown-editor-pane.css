@@ -95,38 +95,37 @@
 }
 
 .markdownEditorModeSwitch {
-	display: inline-grid;
-	grid-template-columns: repeat(3, minmax(0, auto));
-	align-items: center;
-	gap: 2px;
-	overflow: visible;
-}
-
-.markdownEditorModeBtnWrap {
+	--markdown-editor-mode-bubble-offset: 6px;
 	position: relative;
 	display: inline-flex;
+	align-items: center;
 }
 
-.markdownEditorModeBtnWrap .markdownEditorModeBtn:disabled {
-	pointer-events: none;
+.markdownEditorModeSwitch::after {
+	position: absolute;
+	top: 100%;
+	left: -36px;
+	width: calc(100% + 72px);
+	height: var(--markdown-editor-mode-bubble-offset);
+	content: "";
 }
 
-.markdownEditorModeBtnHint {
+.markdownEditorModeCurrentBtn {
+	color: var(--text-primary);
+}
+
+.markdownEditorModeBubble {
 	position: absolute;
 	z-index: 30;
-	top: calc(100% + 6px);
+	top: calc(100% + var(--markdown-editor-mode-bubble-offset));
 	left: 50%;
-	width: max-content;
-	max-width: 168px;
-	padding: 4px 8px;
+	display: inline-flex;
+	gap: 2px;
+	padding: 3px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
 	border-radius: var(--radius-md);
-	background: var(--bg-tertiary);
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.66);
-	font-weight: var(--font-medium);
-	line-height: 1.25;
-	text-align: center;
-	text-wrap: balance;
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-float);
 	opacity: 0;
 	visibility: hidden;
 	pointer-events: none;
@@ -134,24 +133,13 @@
 	transition: opacity 140ms ease, visibility 140ms ease, transform 140ms ease;
 }
 
-.markdownEditorModeBtnHint[data-warning="true"] {
-	background: color-mix(in srgb, var(--callout-warning) 14%, var(--bg-primary));
-	color: var(--status-warning-fg);
-}
-
-.markdownEditorModeBtnWrap:hover .markdownEditorModeBtnHint,
-.markdownEditorModeBtnWrap:focus-within .markdownEditorModeBtnHint {
+.markdownEditorModeSwitch:hover .markdownEditorModeBubble,
+.markdownEditorModeSwitch:focus-within .markdownEditorModeBubble,
+.markdownEditorModeSwitch[data-open="true"] .markdownEditorModeBubble {
 	opacity: 1;
 	visibility: visible;
+	pointer-events: auto;
 	transform: translateX(-50%) translateY(0);
-}
-
-.markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn {
-	color: color-mix(in srgb, var(--status-warning-fg) 72%, var(--text-tertiary));
-}
-
-.markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn:hover {
-	color: var(--status-warning-fg);
 }
 
 .markdownEditorTaskProgress {
