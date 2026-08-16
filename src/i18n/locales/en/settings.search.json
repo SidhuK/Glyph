@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "General",
 		"appearance": "Appearance",
+		"editor": "Editor",
+		"experimental": "Experimental",
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
@@ -19,6 +21,16 @@
 			"title": "Appearance settings",
 			"description": "Open Appearance settings.",
 			"keywords": ["Appearance"]
+		},
+		"editor": {
+			"title": "Editor settings",
+			"description": "Open Editor settings.",
+			"keywords": ["Editor"]
+		},
+		"experimental": {
+			"title": "Experimental settings",
+			"description": "Open Experimental settings.",
+			"keywords": ["Experimental"]
 		},
 		"shortcuts": {
 			"title": "Shortcuts settings",
@@ -483,12 +495,12 @@
 		},
 		"general-editor-external-link-previews": {
 			"title": "External link previews",
-			"section": "Editor",
+			"section": "Experimental",
 			"keywords": ["link", "web", "website", "card", "open graph", "metadata"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Vim Mode",
-			"section": "Editor",
+			"section": "Experimental",
 			"keywords": ["vim", "raw", "markdown", "keybindings", "keyboard"]
 		},
 		"ai-assistant-behavior-tools": {
@@ -498,12 +510,12 @@
 		},
 		"appearance-layout-folio-mode": {
 			"title": "Folio Mode",
-			"section": "Layout",
+			"section": "Experimental",
 			"keywords": ["layout", "reading"]
 		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Classic All Notes grid",
-			"section": "Layout",
+			"section": "Experimental",
 			"keywords": ["all notes", "activity", "timeline", "grid"]
 		},
 		"general-file-tree-folder-counts": {
@@ -513,7 +525,7 @@
 		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Show non-Markdown files",
-			"section": "File tree",
+			"section": "Experimental",
 			"keywords": [
 				"sidebar",
 				"attachments",

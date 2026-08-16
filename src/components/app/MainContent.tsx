@@ -3,7 +3,6 @@ import {
 	Activity,
 	type CSSProperties,
 	type Dispatch,
-	type ReactNode,
 	type SetStateAction,
 	Suspense,
 	lazy,
@@ -38,10 +37,12 @@ import { FolioWorkspace } from "../folio/FolioWorkspace";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
 import { AiSettingsPane } from "../settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "../settings/AppearanceSettingsPane";
+import { EditorSettingsPane } from "../settings/EditorSettingsPane";
+import { ExperimentalSettingsPane } from "../settings/ExperimentalSettingsPane";
 import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
 import { GitSettingsPane } from "../settings/GitSettingsPane";
 import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
-import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
+import type { SettingsTab } from "../settings/settingsConfig";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
 import { SplitEditorLayout } from "./SplitEditorLayout";
@@ -118,6 +119,43 @@ function EmptyStateCommandPaletteHint({
 			<div className="mainEmptyTagline">{APP_TAGLINE}</div>
 		</div>
 	);
+}
+
+function SettingsTabContent({ tab }: { tab: SettingsTab }) {
+	switch (tab) {
+		case "general":
+			return <GeneralSettingsPane />;
+		case "appearance":
+			return <AppearanceSettingsPane />;
+		case "editor":
+			return <EditorSettingsPane />;
+		case "shortcuts":
+			return (
+				<Suspense fallback={null}>
+					<ShortcutsSettingsPane />
+				</Suspense>
+			);
+		case "ai":
+			return <AiSettingsPane />;
+		case "space":
+			return <SpaceSettingsPane />;
+		case "git":
+			return <GitSettingsPane />;
+		case "about":
+			return <AboutSettingsPane />;
+		case "usage":
+			return (
+				<Suspense fallback={null}>
+					<UsageSettingsPane />
+				</Suspense>
+			);
+		case "experimental":
+			return <ExperimentalSettingsPane />;
+		default: {
+			const _exhaustive: never = tab;
+			return _exhaustive;
+		}
+	}
 }
 
 interface MainContentProps {
@@ -290,33 +328,9 @@ export const MainContent = memo(function MainContent({
 		[infoSidebarResize, rightSidebarOpen],
 	);
 
-	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
-		general: <GeneralSettingsPane />,
-		appearance: <AppearanceSettingsPane />,
-		shortcuts: (
-			<Suspense fallback={null}>
-				<ShortcutsSettingsPane />
-			</Suspense>
-		),
-		ai: <AiSettingsPane />,
-		space: <SpaceSettingsPane />,
-		git: <GitSettingsPane />,
-		about: <AboutSettingsPane />,
-		usage: (
-			<Suspense fallback={null}>
-				<UsageSettingsPane />
-			</Suspense>
-		),
-	};
-
 	const { i18n } = useTranslation();
-	const activeSettingsTabMeta = useMemo(
-		() =>
-			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
-		[settingsTab],
-	);
 	const settingsPanelTitle = localizedSettingsTabLabel(
-		activeSettingsTabMeta.id,
+		settingsTab,
 		i18n.language,
 	);
 	const handleRenameFile = useCallback(
@@ -463,7 +477,7 @@ export const MainContent = memo(function MainContent({
 							<h2 className="settingsPanelTitle">{settingsPanelTitle}</h2>
 						</div>
 					</header>
-					{settingsTabContentByTab[settingsTab]}
+					<SettingsTabContent tab={settingsTab} />
 				</div>
 			</main>
 		);

@@ -3,6 +3,8 @@
 		"tab": "General",
 		"panelTitle": "General",
 		"groupApplication": "Aplicación",
+		"groupWorkspace": "Espacio de trabajo",
+		"groupLabs": "Labs",
 		"searchPlaceholder": "Buscar ajustes",
 		"searchAriaLabel": "Buscar ajustes",
 		"clearSearchAriaLabel": "Borrar búsqueda de ajustes"
@@ -74,6 +76,10 @@
 			"ariaLabel": "Mantener Glyph en ejecución al cerrar la última ventana"
 		}
 	},
+	"experimental": {
+		"sectionTitle": "Experimental",
+		"sectionDescription": "Funciones experimentales que aún no están del todo definidas. Una versión posterior de Glyph puede cambiarlas o quitarlas."
+	},
 	"editor": {
 		"sectionTitle": "Editor",
 		"sectionDescription": "Controles del comportamiento de edición y la estructura de las notas en Glyph.",
@@ -131,6 +137,11 @@
 			"label": "Corrector ortográfico",
 			"description": "Subrayar errores tipográficos al escribir. Haz clic derecho en una palabra para ver sugerencias.",
 			"ariaLabel": "Corrector ortográfico"
+		},
+		"externalLinkPreviews": {
+			"label": "Vistas previas de enlaces externos",
+			"description": "Mostrar los enlaces web independientes como tarjetas en los modos Enriquecido y Vista previa. Glyph obtiene los datos de vista previa directamente de cada sitio enlazado.",
+			"ariaLabel": "Mostrar vistas previas de enlaces externos"
 		},
 		"vimMode": {
 			"title": "Modo Vim",

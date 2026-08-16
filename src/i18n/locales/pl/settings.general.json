@@ -3,6 +3,8 @@
 		"tab": "Ogólne",
 		"panelTitle": "Ogólne",
 		"groupApplication": "Aplikacja",
+		"groupWorkspace": "Przestrzeń robocza",
+		"groupLabs": "Labs",
 		"searchPlaceholder": "Szukaj w ustawieniach",
 		"searchAriaLabel": "Szukaj w ustawieniach",
 		"clearSearchAriaLabel": "Wyczyść wyszukiwanie ustawień"
@@ -73,6 +75,10 @@
 			"description": "Zamknięcie ostatniego okna ukrywa je, ale Glyph pozostaje otwarty. Aby zakończyć, użyj opcji Zakończ Glyph.",
 			"ariaLabel": "Pozostaw Glyph uruchomiony po zamknięciu ostatniego okna"
 		}
+	},
+	"experimental": {
+		"sectionTitle": "Eksperymentalne",
+		"sectionDescription": "Funkcje eksperymentalne, które nie są jeszcze dopracowane. Późniejsza wersja Glyph może je zmienić lub usunąć."
 	},
 	"editor": {
 		"sectionTitle": "Edytor",

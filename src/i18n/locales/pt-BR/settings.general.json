@@ -3,6 +3,8 @@
 		"tab": "Geral",
 		"panelTitle": "Geral",
 		"groupApplication": "Aplicativo",
+		"groupWorkspace": "Espaço de trabalho",
+		"groupLabs": "Labs",
 		"searchPlaceholder": "Buscar configurações",
 		"searchAriaLabel": "Buscar configurações",
 		"clearSearchAriaLabel": "Limpar busca de configurações"
@@ -74,6 +76,10 @@
 			"ariaLabel": "Manter o Glyph em execução após fechar a última janela"
 		}
 	},
+	"experimental": {
+		"sectionTitle": "Experimental",
+		"sectionDescription": "Recursos experimentais ainda incompletos. Uma versão posterior do Glyph pode alterá-los ou removê-los."
+	},
 	"editor": {
 		"sectionTitle": "Editor",
 		"sectionDescription": "Controles do comportamento de edição e da estrutura das notas no Glyph.",
@@ -131,6 +137,11 @@
 			"label": "Verificação ortográfica",
 			"description": "Sublinhar erros de digitação enquanto você escreve. Clique com o botão direito em uma palavra para ver sugestões.",
 			"ariaLabel": "Verificação ortográfica"
+		},
+		"externalLinkPreviews": {
+			"label": "Pré-visualizações de links externos",
+			"description": "Mostrar links da web avulsos como cartões nos modos Rico e Pré-visualização. O Glyph busca os detalhes da pré-visualização diretamente em cada site vinculado.",
+			"ariaLabel": "Mostrar pré-visualizações de links externos"
 		},
 		"vimMode": {
 			"title": "Modo Vim",

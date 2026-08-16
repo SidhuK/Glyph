@@ -142,9 +142,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 									id={`settings-sidebar-group-${group.id}`}
 									className="settingsSidebarTabGroupHeading"
 								>
-									{group.id === "application"
-										? tGeneral("nav.groupApplication")
-										: group.label}
+									{tGeneral(group.headingKey)}
 								</h3>
 								{group.tabs.map((tab) => (
 									<button

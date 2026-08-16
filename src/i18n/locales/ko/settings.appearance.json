@@ -109,8 +109,6 @@
 		}
 	},
 	"layout": {
-		"sectionTitle": "레이아웃",
-		"sectionDescription": "Glyph가 작업 공간과 모든 노트를 표시하는 방식을 선택합니다.",
 		"folioMode": {
 			"label": "Folio 모드",
 			"description": "탐색, 노트, 편집기를 3열 작업 공간으로 표시합니다.",

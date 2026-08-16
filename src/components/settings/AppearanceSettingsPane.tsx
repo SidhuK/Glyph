@@ -13,7 +13,6 @@ import {
 } from "../../lib/customThemes";
 import {
 	DEFAULT_UI_TRANSLUCENT_APP,
-	type EditorWidthMode,
 	type ThemeMode,
 	type UiDarkThemeId,
 	type UiLightThemeId,
@@ -41,17 +40,10 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
-import { SettingsSelect } from "./SettingsSelect";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
 import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
-
-const EDITOR_WIDTH_VALUES = [
-	"compact",
-	"comfortable",
-	"wide",
-] as const satisfies readonly EditorWidthMode[];
 
 export function AppearanceSettingsPane() {
 	const { t } = useTranslation("settings.appearance");
@@ -79,26 +71,6 @@ export function AppearanceSettingsPane() {
 		DURABLE_SETTINGS.translucentApp.write,
 		setError,
 	);
-	const editorWidthMode = useSettingsValue<EditorWidthMode>(
-		"compact",
-		DURABLE_SETTINGS.editorWidthMode.write,
-		setError,
-	);
-	const beautifulTags = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorBeautifulTags.write,
-		setError,
-	);
-	const folioMode = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.folioMode.write,
-		setError,
-	);
-	const classicAllNotes = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.classicAllNotesByDefault.write,
-		setError,
-	);
 	const showColumnColor = useSettingsBoolean(
 		true,
 		DURABLE_SETTINGS.databaseShowColumnColor.write,
@@ -112,17 +84,13 @@ export function AppearanceSettingsPane() {
 	} = useAppearanceCornerRadius({ setError, isHydrated });
 	const {
 		fontFamily,
-		editorFontFamily,
 		monoFontFamily,
 		uiFontSize,
-		editorFontSize,
 		availableFonts,
 		availableMonospaceFonts,
 		onFontFamilyChange,
-		onEditorFontFamilyChange,
 		onMonoFontFamilyChange,
 		onUiFontSizeChange,
-		onEditorFontSizeChange,
 		setInitialTypography,
 		setFontFamily,
 		setEditorFontFamily,
@@ -131,9 +99,6 @@ export function AppearanceSettingsPane() {
 		setEditorFontSize,
 	} = useAppearanceTypography({ setError, isHydrated });
 
-	const setBeautifulTagsChecked = beautifulTags.setChecked;
-	const setFolioModeChecked = folioMode.setChecked;
-	const setClassicAllNotesChecked = classicAllNotes.setChecked;
 	const setShowColumnColorChecked = showColumnColor.setChecked;
 
 	useEffect(() => {
@@ -147,10 +112,6 @@ export function AppearanceSettingsPane() {
 				darkThemeId.setInitialValue(settings.ui.darkThemeId);
 				translucentApp.setInitialValue(settings.ui.translucentApp);
 				setCustomThemesState(settings.ui.customThemes);
-				setBeautifulTagsChecked(settings.editor.beautifulTags);
-				editorWidthMode.setInitialValue(settings.editor.editorWidthMode);
-				setFolioModeChecked(settings.ui.folioMode);
-				setClassicAllNotesChecked(settings.ui.classicAllNotesByDefault);
 				setShowColumnColorChecked(settings.database.showColumnColor);
 				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
 				setInitialTypography(settings);
@@ -165,12 +126,8 @@ export function AppearanceSettingsPane() {
 			cancelled = true;
 		};
 	}, [
-		setBeautifulTagsChecked,
-		setClassicAllNotesChecked,
-		setFolioModeChecked,
 		setShowColumnColorChecked,
 		darkThemeId.setInitialValue,
-		editorWidthMode.setInitialValue,
 		lightThemeId.setInitialValue,
 		setInitialCornerRadiusStyle,
 		setInitialTypography,
@@ -231,19 +188,6 @@ export function AppearanceSettingsPane() {
 		if (typeof payload.ui?.editorFontSize === "number") {
 			setEditorFontSize(payload.ui.editorFontSize);
 		}
-		applyIfBoolean(payload.editor?.beautifulTags, setBeautifulTagsChecked);
-		if (
-			payload.editor?.editorWidthMode === "compact" ||
-			payload.editor?.editorWidthMode === "comfortable" ||
-			payload.editor?.editorWidthMode === "wide"
-		) {
-			editorWidthMode.setValue(payload.editor.editorWidthMode);
-		}
-		applyIfBoolean(payload.ui?.folioMode, setFolioModeChecked);
-		applyIfBoolean(
-			payload.ui?.classicAllNotesByDefault,
-			setClassicAllNotesChecked,
-		);
 		applyIfBoolean(
 			payload.database?.showColumnColor,
 			setShowColumnColorChecked,
@@ -369,89 +313,14 @@ export function AppearanceSettingsPane() {
 				/>
 				<AppearanceTypographyCard
 					fontFamily={fontFamily}
-					editorFontFamily={editorFontFamily}
 					monoFontFamily={monoFontFamily}
 					uiFontSize={uiFontSize}
-					editorFontSize={editorFontSize}
 					availableFonts={availableFonts}
 					availableMonospaceFonts={availableMonospaceFonts}
 					onFontFamilyChange={onFontFamilyChange}
-					onEditorFontFamilyChange={onEditorFontFamilyChange}
 					onMonoFontFamilyChange={onMonoFontFamilyChange}
 					onUiFontSizeChange={onUiFontSizeChange}
-					onEditorFontSizeChange={onEditorFontSizeChange}
 				/>
-				<SettingsSection
-					title={t("layout.sectionTitle")}
-					description={t("layout.sectionDescription")}
-				>
-					<SettingsRow
-						label={t("layout.folioMode.label")}
-						description={t("layout.folioMode.description")}
-					>
-						<SettingsToggle
-							checked={folioMode.checked}
-							disabled={folioMode.isSaving}
-							ariaLabel={t("layout.folioMode.ariaLabel")}
-							onCheckedChange={folioMode.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("layout.classicAllNotes.label")}
-						description={t("layout.classicAllNotes.description")}
-					>
-						<SettingsToggle
-							checked={classicAllNotes.checked}
-							disabled={classicAllNotes.isSaving}
-							ariaLabel={t("layout.classicAllNotes.ariaLabel")}
-							onCheckedChange={classicAllNotes.onCheckedChange}
-						/>
-					</SettingsRow>
-				</SettingsSection>
-				<SettingsSection
-					title={t("editorPresentation.sectionTitle")}
-					description={t("editorPresentation.sectionDescription")}
-				>
-					<SettingsRow
-						label={t("editorPresentation.beautifulTags.label")}
-						description={t("editorPresentation.beautifulTags.description")}
-					>
-						<SettingsToggle
-							checked={beautifulTags.checked}
-							disabled={beautifulTags.isSaving}
-							ariaLabel={t("editorPresentation.beautifulTags.ariaLabel")}
-							onCheckedChange={beautifulTags.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editorPresentation.editorWidth.label")}
-						description={t("editorPresentation.editorWidth.description")}
-						interactive={false}
-					>
-						<SettingsSelect
-							aria-label={t("editorPresentation.editorWidth.ariaLabel")}
-							value={editorWidthMode.value}
-							disabled={editorWidthMode.isSaving}
-							onChange={(event) => {
-								const nextMode = event.currentTarget.value;
-								if (
-									nextMode !== "compact" &&
-									nextMode !== "comfortable" &&
-									nextMode !== "wide"
-								) {
-									return;
-								}
-								editorWidthMode.onChange(nextMode);
-							}}
-						>
-							{EDITOR_WIDTH_VALUES.map((value) => (
-								<option key={value} value={value}>
-									{t(`editorPresentation.editorWidth.options.${value}`)}
-								</option>
-							))}
-						</SettingsSelect>
-					</SettingsRow>
-				</SettingsSection>
 				<SettingsSection
 					title={t("database.sectionTitle")}
 					description={t("database.sectionDescription")}

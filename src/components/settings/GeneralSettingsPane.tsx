@@ -1,34 +1,24 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
 import {
-	type EditorViewMode,
-	getDefaultEditorViewMode,
-	isEditorViewMode,
-} from "../../lib/editorMode";
-import {
-	DEFAULT_HEADING_PALETTE_ID,
-	type HeadingPaletteId,
-	isHeadingPaletteId,
-} from "../../lib/headingPalettes";
+	type AppLanguage,
+	LANGUAGE_OPTIONS,
+	isAppLanguage,
+} from "../../i18n/locales";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	DATE_DISPLAY_FORMAT_OPTIONS,
 	DEFAULT_DATE_DISPLAY_FORMAT,
 	type DateDisplayFormat,
-	type FocusMode,
 	isDateDisplayFormat,
-	isFocusMode,
 	loadSettings,
 } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { FileTreeSettingsSection } from "./FileTreeSettingsSection";
-import { HeadingPalettePicker } from "./HeadingPalettePicker";
 import {
-	SettingsInfoHint,
 	SettingsRow,
 	SettingsSection,
 	SettingsToggle,
@@ -37,27 +27,6 @@ import { SettingsSelect } from "./SettingsSelect";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
 
-const DEFAULT_EDITOR_MODE_VALUES = [
-	"rich",
-	"preview",
-	"plain",
-] as const satisfies readonly EditorViewMode[];
-
-const FOCUS_MODE_VALUES = [
-	"off",
-	"paragraph",
-	"sentence",
-] as const satisfies readonly FocusMode[];
-
-function VimModeInfo() {
-	const { t } = useTranslation("settings.general");
-	return (
-		<SettingsInfoHint ariaLabel={t("editor.vimMode.helpAriaLabel")}>
-			{t("editor.vimMode.info")}
-		</SettingsInfoHint>
-	);
-}
-
 export function GeneralSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const [error, setError] = useState("");
@@ -65,16 +34,6 @@ export function GeneralSettingsPane() {
 	const dateFormat = useSettingsValue<DateDisplayFormat>(
 		DEFAULT_DATE_DISPLAY_FORMAT,
 		DURABLE_SETTINGS.dateDisplayFormat.write,
-		setError,
-	);
-	const defaultEditorMode = useSettingsValue<EditorViewMode>(
-		getDefaultEditorViewMode,
-		DURABLE_SETTINGS.editorDefaultEditorMode.write,
-		setError,
-	);
-	const focusMode = useSettingsValue<FocusMode>(
-		"off",
-		DURABLE_SETTINGS.editorFocusMode.write,
 		setError,
 	);
 	const resumeLastSession = useSettingsBoolean(
@@ -87,87 +46,16 @@ export function GeneralSettingsPane() {
 		DURABLE_SETTINGS.keepRunningOnLastWindowClose.write,
 		setError,
 	);
-	const showToc = useSettingsBoolean(
-		true,
-		DURABLE_SETTINGS.showToc.write,
-		setError,
-	);
-	const showFrontmatter = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorShowFrontmatterInEditor.write,
-		setError,
-	);
-	const colorfulHeadings = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorColorfulHeadings.write,
-		setError,
-	);
-	const headingPrefixes = useSettingsBoolean(
-		true,
-		DURABLE_SETTINGS.editorShowHeadingPrefixes.write,
-		setError,
-	);
-	const headingPalette = useSettingsValue<HeadingPaletteId>(
-		DEFAULT_HEADING_PALETTE_ID,
-		DURABLE_SETTINGS.editorHeadingPaletteId.write,
-		setError,
-	);
-	const collapsibleHeadings = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorShowCollapsibleHeadings.write,
-		setError,
-	);
-	const collapsibleLists = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorShowCollapsibleLists.write,
-		setError,
-	);
-	const spellCheck = useSettingsBoolean(
-		true,
-		DURABLE_SETTINGS.editorSpellCheck.write,
-		setError,
-	);
-	const externalLinkPreviews = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorShowExternalLinkPreviews.write,
-		setError,
-	);
-	const rawMarkdownVimMode = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorRawMarkdownVimMode.write,
-		setError,
-	);
 	const folderCounts = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.showFileTreeFolderCounts.write,
-		setError,
-	);
-	const nonMarkdownFiles = useSettingsBoolean(
-		true,
-		DURABLE_SETTINGS.showNonMarkdownFiles.write,
 		setError,
 	);
 
 	const setResumeLastSessionChecked = resumeLastSession.setChecked;
 	const setKeepRunningOnLastWindowCloseChecked =
 		keepRunningOnLastWindowClose.setChecked;
-	const setShowTocChecked = showToc.setChecked;
-	const setShowFrontmatterChecked = showFrontmatter.setChecked;
-	const setColorfulHeadingsChecked = colorfulHeadings.setChecked;
-	const setHeadingPrefixesChecked = headingPrefixes.setChecked;
-	const setCollapsibleHeadingsChecked = collapsibleHeadings.setChecked;
-	const setCollapsibleListsChecked = collapsibleLists.setChecked;
-	const setSpellCheckChecked = spellCheck.setChecked;
-	const setExternalLinkPreviewsChecked = externalLinkPreviews.setChecked;
-	const setRawMarkdownVimModeChecked = rawMarkdownVimMode.setChecked;
 	const setFolderCountsChecked = folderCounts.setChecked;
-	const setNonMarkdownFilesChecked = nonMarkdownFiles.setChecked;
-	const setInitialDefaultEditorMode = defaultEditorMode.setInitialValue;
-	const setDefaultEditorModeValue = defaultEditorMode.setValue;
-	const setInitialFocusMode = focusMode.setInitialValue;
-	const setFocusModeValue = focusMode.setValue;
-	const setInitialHeadingPalette = headingPalette.setInitialValue;
-	const setHeadingPaletteValue = headingPalette.setValue;
 	const setInitialDateFormat = dateFormat.setInitialValue;
 	const setDateFormatValue = dateFormat.setValue;
 
@@ -179,26 +67,11 @@ export function GeneralSettingsPane() {
 				if (cancelled) return;
 				setLanguageState(settings.ui.language);
 				setInitialDateFormat(settings.ui.dateDisplayFormat);
-				setInitialDefaultEditorMode(settings.editor.defaultEditorMode);
-				setInitialFocusMode(settings.editor.focusMode);
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
 				setKeepRunningOnLastWindowCloseChecked(
 					settings.ui.keepRunningOnLastWindowClose,
 				);
-				setShowTocChecked(settings.ui.showToc);
-				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
-				setColorfulHeadingsChecked(settings.editor.colorfulHeadings);
-				setHeadingPrefixesChecked(settings.editor.showHeadingPrefixes);
-				setInitialHeadingPalette(settings.editor.headingPaletteId);
-				setCollapsibleHeadingsChecked(settings.editor.showCollapsibleHeadings);
-				setCollapsibleListsChecked(settings.editor.showCollapsibleLists);
-				setSpellCheckChecked(settings.editor.spellCheck);
-				setExternalLinkPreviewsChecked(
-					settings.editor.showExternalLinkPreviews,
-				);
-				setRawMarkdownVimModeChecked(settings.editor.rawMarkdownVimMode);
 				setFolderCountsChecked(settings.ui.showFileTreeFolderCounts);
-				setNonMarkdownFilesChecked(settings.ui.showNonMarkdownFiles);
 			})
 			.catch((cause) => {
 				if (!cancelled) {
@@ -209,23 +82,10 @@ export function GeneralSettingsPane() {
 			cancelled = true;
 		};
 	}, [
-		setResumeLastSessionChecked,
-		setKeepRunningOnLastWindowCloseChecked,
-		setShowTocChecked,
-		setShowFrontmatterChecked,
-		setColorfulHeadingsChecked,
-		setHeadingPrefixesChecked,
-		setCollapsibleHeadingsChecked,
-		setCollapsibleListsChecked,
-		setSpellCheckChecked,
-		setExternalLinkPreviewsChecked,
-		setRawMarkdownVimModeChecked,
 		setFolderCountsChecked,
-		setNonMarkdownFilesChecked,
 		setInitialDateFormat,
-		setInitialDefaultEditorMode,
-		setInitialFocusMode,
-		setInitialHeadingPalette,
+		setKeepRunningOnLastWindowCloseChecked,
+		setResumeLastSessionChecked,
 	]);
 
 	useTauriEvent(
@@ -238,15 +98,6 @@ export function GeneralSettingsPane() {
 				if (isDateDisplayFormat(payload.ui?.dateDisplayFormat)) {
 					setDateFormatValue(payload.ui.dateDisplayFormat);
 				}
-				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
-					setDefaultEditorModeValue(payload.editor.defaultEditorMode);
-				}
-				if (isFocusMode(payload.editor?.focusMode)) {
-					setFocusModeValue(payload.editor.focusMode);
-				}
-				if (isHeadingPaletteId(payload.editor?.headingPaletteId)) {
-					setHeadingPaletteValue(payload.editor.headingPaletteId);
-				}
 				applyIfBoolean(
 					payload.ui?.resumeLastSession,
 					setResumeLastSessionChecked,
@@ -255,63 +106,16 @@ export function GeneralSettingsPane() {
 					payload.ui?.keepRunningOnLastWindowClose,
 					setKeepRunningOnLastWindowCloseChecked,
 				);
-				applyIfBoolean(payload.ui?.showToc, setShowTocChecked);
-				applyIfBoolean(
-					payload.editor?.showFrontmatterInEditor,
-					setShowFrontmatterChecked,
-				);
-				applyIfBoolean(
-					payload.editor?.colorfulHeadings,
-					setColorfulHeadingsChecked,
-				);
-				applyIfBoolean(
-					payload.editor?.showHeadingPrefixes,
-					setHeadingPrefixesChecked,
-				);
-				applyIfBoolean(
-					payload.editor?.showCollapsibleHeadings,
-					setCollapsibleHeadingsChecked,
-				);
-				applyIfBoolean(
-					payload.editor?.showCollapsibleLists,
-					setCollapsibleListsChecked,
-				);
-				applyIfBoolean(payload.editor?.spellCheck, setSpellCheckChecked);
-				applyIfBoolean(
-					payload.editor?.showExternalLinkPreviews,
-					setExternalLinkPreviewsChecked,
-				);
-				applyIfBoolean(
-					payload.editor?.rawMarkdownVimMode,
-					setRawMarkdownVimModeChecked,
-				);
 				applyIfBoolean(
 					payload.ui?.showFileTreeFolderCounts,
 					setFolderCountsChecked,
 				);
-				applyIfBoolean(
-					payload.ui?.showNonMarkdownFiles,
-					setNonMarkdownFilesChecked,
-				);
 			},
 			[
-				setResumeLastSessionChecked,
-				setKeepRunningOnLastWindowCloseChecked,
-				setShowTocChecked,
-				setShowFrontmatterChecked,
-				setColorfulHeadingsChecked,
-				setHeadingPrefixesChecked,
-				setCollapsibleHeadingsChecked,
-				setCollapsibleListsChecked,
-				setSpellCheckChecked,
-				setExternalLinkPreviewsChecked,
-				setRawMarkdownVimModeChecked,
-				setFolderCountsChecked,
-				setNonMarkdownFilesChecked,
 				setDateFormatValue,
-				setDefaultEditorModeValue,
-				setFocusModeValue,
-				setHeadingPaletteValue,
+				setFolderCountsChecked,
+				setKeepRunningOnLastWindowCloseChecked,
+				setResumeLastSessionChecked,
 			],
 		),
 	);
@@ -358,173 +162,8 @@ export function GeneralSettingsPane() {
 						/>
 					</SettingsRow>
 				</SettingsSection>
-				<SettingsSection
-					title={t("editor.sectionTitle")}
-					description={t("editor.sectionDescription")}
-				>
-					<SettingsRow
-						label={t("editor.tableOfContents.label")}
-						description={t("editor.tableOfContents.description")}
-					>
-						<SettingsToggle
-							checked={showToc.checked}
-							disabled={showToc.isSaving}
-							ariaLabel={t("editor.tableOfContents.ariaLabel")}
-							onCheckedChange={showToc.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.showFrontmatter.label")}
-						description={t("editor.showFrontmatter.description")}
-					>
-						<SettingsToggle
-							checked={showFrontmatter.checked}
-							disabled={showFrontmatter.isSaving}
-							ariaLabel={t("editor.showFrontmatter.ariaLabel")}
-							onCheckedChange={showFrontmatter.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.headingPrefixes.label")}
-						description={t("editor.headingPrefixes.description")}
-					>
-						<SettingsToggle
-							checked={headingPrefixes.checked}
-							disabled={headingPrefixes.isSaving}
-							ariaLabel={t("editor.headingPrefixes.ariaLabel")}
-							onCheckedChange={headingPrefixes.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.colorfulHeadings.label")}
-						description={t("editor.colorfulHeadings.description")}
-						interactive={false}
-					>
-						<div className="colorfulHeadingsControls">
-							{colorfulHeadings.checked ? (
-								<HeadingPalettePicker
-									value={headingPalette.value}
-									disabled={headingPalette.isSaving}
-									onChange={headingPalette.onChange}
-								/>
-							) : null}
-							<SettingsToggle
-								checked={colorfulHeadings.checked}
-								disabled={colorfulHeadings.isSaving}
-								ariaLabel={t("editor.colorfulHeadings.ariaLabel")}
-								onCheckedChange={colorfulHeadings.onCheckedChange}
-							/>
-						</div>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.collapsibleHeadings.label")}
-						description={t("editor.collapsibleHeadings.description")}
-					>
-						<SettingsToggle
-							checked={collapsibleHeadings.checked}
-							disabled={collapsibleHeadings.isSaving}
-							ariaLabel={t("editor.collapsibleHeadings.ariaLabel")}
-							onCheckedChange={collapsibleHeadings.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.collapsibleLists.label")}
-						description={t("editor.collapsibleLists.description")}
-					>
-						<SettingsToggle
-							checked={collapsibleLists.checked}
-							disabled={collapsibleLists.isSaving}
-							ariaLabel={t("editor.collapsibleLists.ariaLabel")}
-							onCheckedChange={collapsibleLists.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.spellCheck.label")}
-						description={t("editor.spellCheck.description")}
-					>
-						<SettingsToggle
-							checked={spellCheck.checked}
-							disabled={spellCheck.isSaving}
-							ariaLabel={t("editor.spellCheck.ariaLabel")}
-							onCheckedChange={spellCheck.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.externalLinkPreviews.label")}
-						description={t("editor.externalLinkPreviews.description")}
-					>
-						<SettingsToggle
-							checked={externalLinkPreviews.checked}
-							disabled={externalLinkPreviews.isSaving}
-							ariaLabel={t("editor.externalLinkPreviews.ariaLabel")}
-							onCheckedChange={externalLinkPreviews.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.defaultEditorMode.label")}
-						description={t("editor.defaultEditorMode.description")}
-						interactive={false}
-					>
-						<SettingsSelect
-							aria-label={t("editor.defaultEditorMode.ariaLabel")}
-							value={defaultEditorMode.value}
-							disabled={defaultEditorMode.isSaving}
-							onChange={(event) => {
-								const nextMode = event.currentTarget.value;
-								if (!isEditorViewMode(nextMode)) return;
-								defaultEditorMode.onChange(nextMode);
-							}}
-						>
-							{DEFAULT_EDITOR_MODE_VALUES.map((value) => (
-								<option key={value} value={value}>
-									{t(`editor.defaultEditorMode.options.${value}`)}
-								</option>
-							))}
-						</SettingsSelect>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.focusMode.label")}
-						description={t("editor.focusMode.description")}
-						interactive={false}
-					>
-						<SettingsSelect
-							aria-label={t("editor.focusMode.ariaLabel")}
-							value={focusMode.value}
-							disabled={focusMode.isSaving}
-							onChange={(event) => {
-								const nextMode = event.currentTarget.value;
-								if (!isFocusMode(nextMode)) return;
-								focusMode.onChange(nextMode);
-							}}
-						>
-							{FOCUS_MODE_VALUES.map((value) => (
-								<option key={value} value={value}>
-									{t(`editor.focusMode.options.${value}`)}
-								</option>
-							))}
-						</SettingsSelect>
-					</SettingsRow>
-					<SettingsRow
-						title={t("editor.vimMode.title")}
-						label={
-							<span className="settingsLabelWithHelp">
-								{t("editor.vimMode.label")}
-								<VimModeInfo />
-							</span>
-						}
-						description={t("editor.vimMode.description")}
-					>
-						<SettingsToggle
-							checked={rawMarkdownVimMode.checked}
-							disabled={rawMarkdownVimMode.isSaving}
-							ariaLabel={t("editor.vimMode.ariaLabel")}
-							onCheckedChange={rawMarkdownVimMode.onCheckedChange}
-						/>
-					</SettingsRow>
-				</SettingsSection>
 				<FileTreeSettingsSection
 					folderCounts={folderCounts}
-					nonMarkdownFiles={nonMarkdownFiles}
 					setError={setError}
 				/>
 				<LicenseSettingsCard />
@@ -558,7 +197,8 @@ export function GeneralSettingsPane() {
 							aria-label={t("language.ariaLabel")}
 							value={language}
 							onChange={(event) => {
-								void handleLanguageChange(event.target.value as AppLanguage);
+								if (!isAppLanguage(event.target.value)) return;
+								void handleLanguageChange(event.target.value);
 							}}
 						>
 							{LANGUAGE_OPTIONS.map((option) => (

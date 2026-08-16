@@ -3,6 +3,8 @@
 		"tab": "일반",
 		"panelTitle": "일반",
 		"groupApplication": "애플리케이션",
+		"groupWorkspace": "워크스페이스",
+		"groupLabs": "랩",
 		"searchPlaceholder": "설정 검색",
 		"searchAriaLabel": "설정 검색",
 		"clearSearchAriaLabel": "설정 검색 지우기"
@@ -74,6 +76,10 @@
 			"ariaLabel": "마지막 창을 닫아도 Glyph 계속 실행"
 		}
 	},
+	"experimental": {
+		"sectionTitle": "실험적",
+		"sectionDescription": "아직 다듬어지지 않은 실험적 기능입니다. 이후 Glyph 버전에서 바뀌거나 제거될 수 있습니다."
+	},
 	"editor": {
 		"sectionTitle": "편집기",
 		"sectionDescription": "Glyph 내 편집 동작과 노트 구조에 대한 제어입니다.",
@@ -131,6 +137,11 @@
 			"label": "맞춤법 검사",
 			"description": "입력할 때 오타에 밑줄을 표시합니다. 단어를 마우스 오른쪽 버튼으로 클릭하면 맞춤법 제안이 표시됩니다.",
 			"ariaLabel": "맞춤법 검사"
+		},
+		"externalLinkPreviews": {
+			"label": "외부 링크 미리보기",
+			"description": "리치 및 미리보기 모드에서 단독 웹 링크를 카드로 표시합니다. Glyph는 연결된 사이트에서 미리보기 정보를 직접 가져옵니다.",
+			"ariaLabel": "외부 링크 미리보기 표시"
 		},
 		"vimMode": {
 			"title": "Vim 모드",

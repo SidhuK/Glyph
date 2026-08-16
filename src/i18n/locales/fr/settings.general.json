@@ -3,6 +3,8 @@
 		"tab": "Général",
 		"panelTitle": "Général",
 		"groupApplication": "Application",
+		"groupWorkspace": "Espace de travail",
+		"groupLabs": "Labs",
 		"searchPlaceholder": "Rechercher dans les réglages",
 		"searchAriaLabel": "Rechercher dans les réglages",
 		"clearSearchAriaLabel": "Effacer la recherche des réglages"
@@ -74,6 +76,10 @@
 			"ariaLabel": "Garder Glyph actif après la fermeture de la dernière fenêtre"
 		}
 	},
+	"experimental": {
+		"sectionTitle": "Expérimental",
+		"sectionDescription": "Fonctionnalités expérimentales encore inachevées. Une version ultérieure de Glyph peut les modifier ou les retirer."
+	},
 	"editor": {
 		"sectionTitle": "Éditeur",
 		"sectionDescription": "Contrôles du comportement d’édition et de la structure des notes dans Glyph.",
@@ -131,6 +137,11 @@
 			"label": "Vérification orthographique",
 			"description": "Souligner les fautes de frappe pendant la saisie. Cliquez avec le bouton droit sur un mot pour voir des suggestions.",
 			"ariaLabel": "Vérification orthographique"
+		},
+		"externalLinkPreviews": {
+			"label": "Aperçus des liens externes",
+			"description": "Afficher les liens web autonomes sous forme de cartes en modes Enrichi et Aperçu. Glyph récupère les détails de l’aperçu directement sur chaque site lié.",
+			"ariaLabel": "Afficher les aperçus des liens externes"
 		},
 		"vimMode": {
 			"title": "Mode Vim",

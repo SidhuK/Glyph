@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next";
 import {
-	MAX_EDITOR_FONT_SIZE,
 	MAX_UI_FONT_SIZE,
-	MIN_EDITOR_FONT_SIZE,
 	MIN_UI_FONT_SIZE,
 	type UiFontFamily,
 	type UiFontSize,
@@ -13,17 +11,13 @@ import { SettingsSelect } from "./SettingsSelect";
 
 interface AppearanceTypographyCardProps {
 	fontFamily: UiFontFamily;
-	editorFontFamily: UiFontFamily;
 	monoFontFamily: UiFontFamily;
 	uiFontSize: UiFontSize;
-	editorFontSize: UiFontSize;
 	availableFonts: string[];
 	availableMonospaceFonts: string[];
 	onFontFamilyChange: (font: UiFontFamily) => Promise<void>;
-	onEditorFontFamilyChange: (font: UiFontFamily) => Promise<void>;
 	onMonoFontFamilyChange: (font: UiFontFamily) => Promise<void>;
 	onUiFontSizeChange: (size: UiFontSize) => Promise<void>;
-	onEditorFontSizeChange: (size: UiFontSize) => Promise<void>;
 }
 
 interface FontSizeControlProps {
@@ -34,14 +28,14 @@ interface FontSizeControlProps {
 	value: UiFontSize;
 	min: number;
 	max: number;
-	onChange: (size: UiFontSize) => Promise<void>;
+	onChange: (size: UiFontSize) => void;
 }
 
 function clampFontSize(value: number, min: number, max: number): UiFontSize {
 	return Math.min(max, Math.max(min, value));
 }
 
-function FontSizeControl({
+export function FontSizeControl({
 	id,
 	label,
 	description,
@@ -76,17 +70,13 @@ function FontSizeControl({
 
 export function AppearanceTypographyCard({
 	fontFamily,
-	editorFontFamily,
 	monoFontFamily,
 	uiFontSize,
-	editorFontSize,
 	availableFonts,
 	availableMonospaceFonts,
 	onFontFamilyChange,
-	onEditorFontFamilyChange,
 	onMonoFontFamilyChange,
 	onUiFontSizeChange,
-	onEditorFontSizeChange,
 }: AppearanceTypographyCardProps) {
 	const { t } = useTranslation("settings.appearance");
 
@@ -104,26 +94,6 @@ export function AppearanceTypographyCard({
 					id="settingsFontFamily"
 					value={fontFamily}
 					onChange={(event) => void onFontFamilyChange(event.target.value)}
-				>
-					{availableFonts.map((font) => (
-						<option key={font} value={font}>
-							{font}
-						</option>
-					))}
-				</SettingsSelect>
-			</SettingsRow>
-
-			<SettingsRow
-				label={t("typography.editorFont.label")}
-				htmlFor="settingsEditorFontFamily"
-				description={t("typography.editorFont.description")}
-			>
-				<SettingsSelect
-					id="settingsEditorFontFamily"
-					value={editorFontFamily}
-					onChange={(event) =>
-						void onEditorFontFamilyChange(event.target.value)
-					}
 				>
 					{availableFonts.map((font) => (
 						<option key={font} value={font}>
@@ -160,17 +130,6 @@ export function AppearanceTypographyCard({
 				min={MIN_UI_FONT_SIZE}
 				max={MAX_UI_FONT_SIZE}
 				onChange={onUiFontSizeChange}
-			/>
-
-			<FontSizeControl
-				id="settingsEditorFontSize"
-				label={t("typography.editorFontSize.label")}
-				description={t("typography.editorFontSize.description")}
-				valueAriaLabel={t("typography.editorFontSize.valueAriaLabel")}
-				value={editorFontSize}
-				min={MIN_EDITOR_FONT_SIZE}
-				max={MAX_EDITOR_FONT_SIZE}
-				onChange={onEditorFontSizeChange}
 			/>
 		</SettingsSection>
 	);

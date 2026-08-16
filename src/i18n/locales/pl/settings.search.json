@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "Ogólne",
 		"appearance": "Wygląd",
+		"editor": "Edytor",
+		"experimental": "Eksperymentalne",
 		"shortcuts": "Skróty",
 		"ai": "AI",
 		"space": "Przestrzeń",
@@ -19,6 +21,16 @@
 			"title": "Ustawienia wyglądu",
 			"description": "Otwórz ustawienia wyglądu.",
 			"keywords": ["Wygląd"]
+		},
+		"editor": {
+			"title": "Ustawienia edytora",
+			"description": "Otwórz ustawienia edytora.",
+			"keywords": ["Edytor"]
+		},
+		"experimental": {
+			"title": "Ustawienia eksperymentalne",
+			"description": "Otwórz ustawienia eksperymentalne.",
+			"keywords": ["Eksperymentalne"]
 		},
 		"shortcuts": {
 			"title": "Ustawienia skrótów",
@@ -490,12 +502,12 @@
 		},
 		"general-editor-external-link-previews": {
 			"title": "Podglądy linków zewnętrznych",
-			"section": "Edytor",
+			"section": "Eksperymentalne",
 			"keywords": ["link", "sieć", "witryna", "karta", "open graph", "metadane"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Tryb Vim",
-			"section": "Edytor",
+			"section": "Eksperymentalne",
 			"keywords": [
 				"vim",
 				"surowy",
@@ -511,12 +523,12 @@
 		},
 		"appearance-layout-folio-mode": {
 			"title": "Tryb Folio",
-			"section": "Układ",
+			"section": "Eksperymentalne",
 			"keywords": ["układ", "czytanie"]
 		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Klasyczna siatka wszystkich notatek",
-			"section": "Układ",
+			"section": "Eksperymentalne",
 			"keywords": ["wszystkie notatki", "aktywność", "oś czasu", "siatka"]
 		},
 		"general-file-tree-folder-counts": {
@@ -526,7 +538,7 @@
 		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Pokaż pliki inne niż Markdown",
-			"section": "Drzewo plików",
+			"section": "Eksperymentalne",
 			"keywords": [
 				"pasek boczny",
 				"załączniki",

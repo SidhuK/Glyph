@@ -3,6 +3,8 @@
 		"tab": "一般",
 		"panelTitle": "一般",
 		"groupApplication": "アプリケーション",
+		"groupWorkspace": "ワークスペース",
+		"groupLabs": "ラボ",
 		"searchPlaceholder": "設定を検索",
 		"searchAriaLabel": "設定を検索",
 		"clearSearchAriaLabel": "設定の検索をクリア"
@@ -74,6 +76,10 @@
 			"ariaLabel": "最後のウインドウを閉じても Glyph を実行し続ける"
 		}
 	},
+	"experimental": {
+		"sectionTitle": "実験的",
+		"sectionDescription": "まだ作り込みが足りない実験的な機能です。今後の Glyph のバージョンで変更または削除されることがあります。"
+	},
 	"editor": {
 		"sectionTitle": "エディタ",
 		"sectionDescription": "Glyph 内の編集動作とノート構造のコントロールです。",
@@ -131,6 +137,11 @@
 			"label": "スペルチェック",
 			"description": "入力中に誤字を下線で示します。単語を右クリックするとスペル候補が表示されます。",
 			"ariaLabel": "スペルチェック"
+		},
+		"externalLinkPreviews": {
+			"label": "外部リンクのプレビュー",
+			"description": "リッチモードとプレビューモードで、単独のウェブリンクをカードとして表示します。Glyph はリンク先のサイトからプレビュー情報を直接取得します。",
+			"ariaLabel": "外部リンクのプレビューを表示"
 		},
 		"vimMode": {
 			"title": "Vim モード",

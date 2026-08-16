@@ -230,7 +230,7 @@ export function isAttachmentStorageMode(
 	);
 }
 
-function isEditorWidthMode(value: unknown): value is EditorWidthMode {
+export function isEditorWidthMode(value: unknown): value is EditorWidthMode {
 	return value === "compact" || value === "comfortable" || value === "wide";
 }
 

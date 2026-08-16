@@ -109,8 +109,6 @@
 		}
 	},
 	"layout": {
-		"sectionTitle": "Layout",
-		"sectionDescription": "Wähle, wie Glyph deinen Arbeitsbereich und Alle Notizen darstellt.",
 		"folioMode": {
 			"label": "Folio-Modus",
 			"description": "Navigation, Notizen und Editor in einem dreispaltigen Arbeitsbereich anzeigen.",

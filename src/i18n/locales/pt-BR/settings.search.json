@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "Geral",
 		"appearance": "Aparência",
+		"editor": "Editor",
+		"experimental": "Experimental",
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
@@ -19,6 +21,16 @@
 			"title": "Configurações de aparência",
 			"description": "Abrir as configurações de aparência.",
 			"keywords": ["Aparência"]
+		},
+		"editor": {
+			"title": "Configurações do editor",
+			"description": "Abrir as configurações do editor.",
+			"keywords": ["Editor"]
+		},
+		"experimental": {
+			"title": "Configurações experimentais",
+			"description": "Abrir as configurações experimentais.",
+			"keywords": ["Experimental"]
 		},
 		"shortcuts": {
 			"title": "Shortcuts settings",
@@ -518,7 +530,7 @@
 		},
 		"general-editor-vim-mode": {
 			"title": "Modo Vim",
-			"section": "Editor",
+			"section": "Experimental",
 			"keywords": [
 				"vim",
 				"atalhos",
@@ -537,12 +549,12 @@
 		},
 		"appearance-layout-folio-mode": {
 			"title": "Modo Folio",
-			"section": "Layout",
+			"section": "Experimental",
 			"keywords": ["layout", "leitura", "reading", "folio"]
 		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Grade clássica de Todas as notas",
-			"section": "Layout",
+			"section": "Experimental",
 			"keywords": [
 				"todas as notas",
 				"atividade",
@@ -561,7 +573,7 @@
 		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Mostrar arquivos que não são Markdown",
-			"section": "Árvore de arquivos",
+			"section": "Experimental",
 			"keywords": [
 				"barra lateral",
 				"anexos",

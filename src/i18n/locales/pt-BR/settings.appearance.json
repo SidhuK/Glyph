@@ -109,8 +109,6 @@
 		}
 	},
 	"layout": {
-		"sectionTitle": "Layout",
-		"sectionDescription": "Escolha como o Glyph apresenta seu espaço de trabalho e Todas as notas.",
 		"folioMode": {
 			"label": "Modo Folio",
 			"description": "Mostrar navegação, notas e editor em um espaço de trabalho de três colunas.",
