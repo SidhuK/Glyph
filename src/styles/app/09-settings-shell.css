@@ -349,6 +349,13 @@
 	text-align: left;
 }
 
+.settingsTabLabsBadge {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	color: var(--text-tertiary);
+}
+
 .settingsPanelTitleRow {
 	display: flex;
 	align-items: center;
