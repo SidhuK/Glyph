@@ -5,6 +5,10 @@
 		"rich": "Enrichi",
 		"preview": "Aperçu"
 	},
+	"toolbar": {
+		"aiPanel": "Panneau IA",
+		"info": "Infos"
+	},
 	"ribbon": {
 		"bold": "Gras",
 		"italic": "Italique",

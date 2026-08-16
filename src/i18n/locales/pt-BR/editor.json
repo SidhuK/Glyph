@@ -5,6 +5,10 @@
 		"rich": "Rico",
 		"preview": "Pré-visualização"
 	},
+	"toolbar": {
+		"aiPanel": "Painel de IA",
+		"info": "Informações"
+	},
 	"ribbon": {
 		"bold": "Negrito",
 		"italic": "Itálico",

@@ -27,6 +27,7 @@ vi.mock("react-i18next", () => ({
 				"mode.raw": "Raw",
 				"mode.rich": "Rich",
 				"mode.preview": "Preview",
+				"toolbar.info": "Info",
 			};
 			return labels[key] ?? options?.defaultValue ?? key;
 		},
@@ -407,7 +408,7 @@ describe("MarkdownEditorPane", () => {
 		});
 
 		const infoButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.getAttribute("aria-label") === "Open info",
+			(button) => button.getAttribute("aria-label") === "Info",
 		);
 		expect(infoButton).not.toBeNull();
 		await act(async () => {

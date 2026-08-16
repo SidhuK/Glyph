@@ -175,8 +175,7 @@
 }
 
 .externalMarkdownModeSwitch .markdownEditorModeSwitch {
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 1px;
+	--markdown-editor-mode-bubble-offset: 8px;
 }
 
 .externalMarkdownModeSwitch .markdownEditorModeBtn {
@@ -187,13 +186,26 @@
 	border-radius: var(--radius-full);
 }
 
-.externalMarkdownModeSwitch .markdownEditorModeBtn[data-active="true"] {
-	background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
-	color: var(--text-primary);
+.externalMarkdownModeSwitch .markdownEditorModeBubble {
+	left: auto;
+	right: 0;
+	transform: translateY(-2px);
 }
 
-.externalMarkdownModeSwitch .markdownEditorModeBtnHint {
-	top: calc(100% + 8px);
+.externalMarkdownModeSwitch
+	.markdownEditorModeSwitch:hover
+	.markdownEditorModeBubble,
+.externalMarkdownModeSwitch
+	.markdownEditorModeSwitch[data-open="true"]
+	.markdownEditorModeBubble {
+	transform: translateY(0);
+}
+
+.externalMarkdownModeSwitch
+	.markdownEditorModeBubble
+	.markdownEditorModeBtn[data-active="true"] {
+	background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
+	color: var(--text-primary);
 }
 
 .externalMarkdownBody {
