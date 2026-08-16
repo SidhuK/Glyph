@@ -16,6 +16,7 @@ export function useSettingsBoolean(
 	return {
 		checked: setting.value,
 		setChecked: setting.setValue,
+		setInitialChecked: setting.setInitialValue,
 		isSaving: setting.isSaving,
 		onCheckedChange: setting.onChange,
 	};

@@ -138,6 +138,11 @@
 			"description": "입력할 때 오타에 밑줄을 표시합니다. 단어를 마우스 오른쪽 버튼으로 클릭하면 맞춤법 제안이 표시됩니다.",
 			"ariaLabel": "맞춤법 검사"
 		},
+		"externalLinkPreviews": {
+			"label": "외부 링크 미리보기",
+			"description": "리치 및 미리보기 모드에서 단독 웹 링크를 카드로 표시합니다. Glyph는 연결된 사이트에서 미리보기 정보를 직접 가져옵니다.",
+			"ariaLabel": "외부 링크 미리보기 표시"
+		},
 		"vimMode": {
 			"title": "Vim 모드",
 			"label": "Vim 모드",

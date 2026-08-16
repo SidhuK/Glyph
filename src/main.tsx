@@ -25,6 +25,10 @@ import {
 	normalizeCustomThemes,
 } from "./lib/customThemes";
 import {
+	isEditorViewMode,
+	setCachedDefaultEditorViewMode,
+} from "./lib/editorMode";
+import {
 	applyEditorHeadingPalette,
 	isHeadingPaletteId,
 } from "./lib/headingPalettes";
@@ -200,6 +204,9 @@ function ThemeAndTypographyBridge() {
 		}
 		if (isHeadingPaletteId(payload.editor?.headingPaletteId)) {
 			applyEditorHeadingPalette(payload.editor.headingPaletteId);
+		}
+		if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
+			setCachedDefaultEditorViewMode(payload.editor.defaultEditorMode);
 		}
 	});
 

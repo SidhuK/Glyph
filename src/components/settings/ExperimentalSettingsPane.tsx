@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { type FocusMode, isFocusMode, loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -10,8 +12,10 @@ import {
 	SettingsToggle,
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
-import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
+import { useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
+
+const SETTINGS_QUERY_ROOT = "experimental-settings";
 
 const FOCUS_MODE_VALUES = [
 	"off",
@@ -31,7 +35,12 @@ function VimModeInfo() {
 export function ExperimentalSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const { t: tAppearance } = useTranslation("settings.appearance");
+	const queryClient = useQueryClient();
 	const [error, setError] = useState("");
+	const settingsQuery = useQuery({
+		queryKey: [SETTINGS_QUERY_ROOT],
+		queryFn: () => loadSettings(),
+	});
 	const folioMode = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.folioMode.write,
@@ -63,85 +72,45 @@ export function ExperimentalSettingsPane() {
 		setError,
 	);
 
-	const setFolioModeChecked = folioMode.setChecked;
-	const setClassicAllNotesChecked = classicAllNotes.setChecked;
-	const setExternalLinkPreviewsChecked = externalLinkPreviews.setChecked;
-	const setRawMarkdownVimModeChecked = rawMarkdownVimMode.setChecked;
+	const setInitialFolioMode = folioMode.setInitialChecked;
+	const setInitialClassicAllNotes = classicAllNotes.setInitialChecked;
+	const setInitialExternalLinkPreviews = externalLinkPreviews.setInitialChecked;
+	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
 	const setInitialFocusMode = focusMode.setInitialValue;
-	const setFocusModeValue = focusMode.setValue;
-	const setNonMarkdownFilesChecked = nonMarkdownFiles.setChecked;
+	const setInitialNonMarkdownFiles = nonMarkdownFiles.setInitialChecked;
 
+	const settings = settingsQuery.data;
 	useEffect(() => {
-		let cancelled = false;
-		setError("");
-		void loadSettings()
-			.then((settings) => {
-				if (cancelled) return;
-				setFolioModeChecked(settings.ui.folioMode);
-				setClassicAllNotesChecked(settings.ui.classicAllNotesByDefault);
-				setExternalLinkPreviewsChecked(
-					settings.editor.showExternalLinkPreviews,
-				);
-				setRawMarkdownVimModeChecked(settings.editor.rawMarkdownVimMode);
-				setInitialFocusMode(settings.editor.focusMode);
-				setNonMarkdownFilesChecked(settings.ui.showNonMarkdownFiles);
-			})
-			.catch((cause) => {
-				if (!cancelled) {
-					setError(cause instanceof Error ? cause.message : String(cause));
-				}
-			});
-		return () => {
-			cancelled = true;
-		};
+		if (!settings) return;
+		setInitialFolioMode(settings.ui.folioMode);
+		setInitialClassicAllNotes(settings.ui.classicAllNotesByDefault);
+		setInitialExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
+		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
+		setInitialFocusMode(settings.editor.focusMode);
+		setInitialNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
 	}, [
-		setClassicAllNotesChecked,
-		setExternalLinkPreviewsChecked,
-		setFolioModeChecked,
+		settings,
+		setInitialClassicAllNotes,
+		setInitialExternalLinkPreviews,
+		setInitialFolioMode,
 		setInitialFocusMode,
-		setNonMarkdownFilesChecked,
-		setRawMarkdownVimModeChecked,
+		setInitialNonMarkdownFiles,
+		setInitialRawMarkdownVimMode,
 	]);
 
-	useTauriEvent(
-		"settings:updated",
-		useCallback(
-			(payload) => {
-				applyIfBoolean(payload.ui?.folioMode, setFolioModeChecked);
-				applyIfBoolean(
-					payload.ui?.classicAllNotesByDefault,
-					setClassicAllNotesChecked,
-				);
-				applyIfBoolean(
-					payload.editor?.showExternalLinkPreviews,
-					setExternalLinkPreviewsChecked,
-				);
-				applyIfBoolean(
-					payload.editor?.rawMarkdownVimMode,
-					setRawMarkdownVimModeChecked,
-				);
-				if (isFocusMode(payload.editor?.focusMode)) {
-					setFocusModeValue(payload.editor.focusMode);
-				}
-				applyIfBoolean(
-					payload.ui?.showNonMarkdownFiles,
-					setNonMarkdownFilesChecked,
-				);
-			},
-			[
-				setClassicAllNotesChecked,
-				setExternalLinkPreviewsChecked,
-				setFocusModeValue,
-				setFolioModeChecked,
-				setNonMarkdownFilesChecked,
-				setRawMarkdownVimModeChecked,
-			],
-		),
-	);
+	useTauriEvent("settings:updated", () => {
+		void queryClient.invalidateQueries({ queryKey: [SETTINGS_QUERY_ROOT] });
+	});
+
+	const displayedError = settingsQuery.error
+		? extractErrorMessage(settingsQuery.error)
+		: error;
 
 	return (
 		<div className="settingsPane">
-			{error ? <div className="settingsError">{error}</div> : null}
+			{displayedError ? (
+				<div className="settingsError">{displayedError}</div>
+			) : null}
 			<div className="settingsGrid">
 				<SettingsSection
 					title={t("experimental.sectionTitle")}
@@ -167,6 +136,7 @@ export function ExperimentalSettingsPane() {
 							</span>
 						}
 						description={t("editor.vimMode.description")}
+						interactive={false}
 					>
 						<SettingsToggle
 							checked={rawMarkdownVimMode.checked}

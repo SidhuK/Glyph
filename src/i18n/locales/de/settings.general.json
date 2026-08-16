@@ -138,6 +138,11 @@
 			"description": "Tippfehler beim Tippen unterstreichen. Rechtsklick auf ein Wort zeigt Vorschläge.",
 			"ariaLabel": "Rechtschreibprüfung"
 		},
+		"externalLinkPreviews": {
+			"label": "Vorschauen für externe Links",
+			"description": "Eigenständige Weblinks in den Modi Rich und Vorschau als Karten anzeigen. Glyph holt die Vorschaudaten direkt von der verlinkten Seite.",
+			"ariaLabel": "Vorschauen für externe Links anzeigen"
+		},
 		"vimMode": {
 			"title": "Vim-Modus",
 			"label": "Vim-Modus",

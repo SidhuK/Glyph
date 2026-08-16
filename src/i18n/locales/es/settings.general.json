@@ -138,6 +138,11 @@
 			"description": "Subrayar errores tipográficos al escribir. Haz clic derecho en una palabra para ver sugerencias.",
 			"ariaLabel": "Corrector ortográfico"
 		},
+		"externalLinkPreviews": {
+			"label": "Vistas previas de enlaces externos",
+			"description": "Mostrar los enlaces web independientes como tarjetas en los modos Enriquecido y Vista previa. Glyph obtiene los datos de vista previa directamente de cada sitio enlazado.",
+			"ariaLabel": "Mostrar vistas previas de enlaces externos"
+		},
 		"vimMode": {
 			"title": "Modo Vim",
 			"label": "Modo Vim",

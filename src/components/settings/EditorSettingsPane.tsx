@@ -119,13 +119,21 @@ export function EditorSettingsPane() {
 	);
 
 	const setShowTocChecked = showToc.setChecked;
+	const setInitialShowToc = showToc.setInitialChecked;
 	const setShowFrontmatterChecked = showFrontmatter.setChecked;
+	const setInitialShowFrontmatter = showFrontmatter.setInitialChecked;
 	const setColorfulHeadingsChecked = colorfulHeadings.setChecked;
+	const setInitialColorfulHeadings = colorfulHeadings.setInitialChecked;
 	const setHeadingPrefixesChecked = headingPrefixes.setChecked;
+	const setInitialHeadingPrefixes = headingPrefixes.setInitialChecked;
 	const setCollapsibleHeadingsChecked = collapsibleHeadings.setChecked;
+	const setInitialCollapsibleHeadings = collapsibleHeadings.setInitialChecked;
 	const setCollapsibleListsChecked = collapsibleLists.setChecked;
+	const setInitialCollapsibleLists = collapsibleLists.setInitialChecked;
 	const setSpellCheckChecked = spellCheck.setChecked;
+	const setInitialSpellCheck = spellCheck.setInitialChecked;
 	const setBeautifulTagsChecked = beautifulTags.setChecked;
+	const setInitialBeautifulTags = beautifulTags.setInitialChecked;
 	const setInitialDefaultEditorMode = defaultEditorMode.setInitialValue;
 	const setDefaultEditorModeValue = defaultEditorMode.setValue;
 	const setInitialHeadingPalette = headingPalette.setInitialValue;
@@ -161,15 +169,15 @@ export function EditorSettingsPane() {
 				if (cancelled) return;
 				setInitialDefaultEditorMode(settings.editor.defaultEditorMode);
 				setInitialEditorWidthMode(settings.editor.editorWidthMode);
-				setShowTocChecked(settings.ui.showToc);
-				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
-				setColorfulHeadingsChecked(settings.editor.colorfulHeadings);
-				setHeadingPrefixesChecked(settings.editor.showHeadingPrefixes);
+				setInitialShowToc(settings.ui.showToc);
+				setInitialShowFrontmatter(settings.editor.showFrontmatterInEditor);
+				setInitialColorfulHeadings(settings.editor.colorfulHeadings);
+				setInitialHeadingPrefixes(settings.editor.showHeadingPrefixes);
 				setInitialHeadingPalette(settings.editor.headingPaletteId);
-				setCollapsibleHeadingsChecked(settings.editor.showCollapsibleHeadings);
-				setCollapsibleListsChecked(settings.editor.showCollapsibleLists);
-				setSpellCheckChecked(settings.editor.spellCheck);
-				setBeautifulTagsChecked(settings.editor.beautifulTags);
+				setInitialCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				setInitialCollapsibleLists(settings.editor.showCollapsibleLists);
+				setInitialSpellCheck(settings.editor.spellCheck);
+				setInitialBeautifulTags(settings.editor.beautifulTags);
 				setInitialEditorFontFamily(settings.ui.editorFontFamily);
 				setInitialEditorFontSize(settings.ui.editorFontSize);
 			})
@@ -182,19 +190,19 @@ export function EditorSettingsPane() {
 			cancelled = true;
 		};
 	}, [
-		setBeautifulTagsChecked,
-		setCollapsibleHeadingsChecked,
-		setCollapsibleListsChecked,
-		setColorfulHeadingsChecked,
-		setHeadingPrefixesChecked,
+		setInitialBeautifulTags,
+		setInitialCollapsibleHeadings,
+		setInitialCollapsibleLists,
+		setInitialColorfulHeadings,
+		setInitialHeadingPrefixes,
 		setInitialDefaultEditorMode,
 		setInitialEditorFontFamily,
 		setInitialEditorFontSize,
 		setInitialEditorWidthMode,
 		setInitialHeadingPalette,
-		setShowFrontmatterChecked,
-		setShowTocChecked,
-		setSpellCheckChecked,
+		setInitialShowFrontmatter,
+		setInitialShowToc,
+		setInitialSpellCheck,
 	]);
 
 	useTauriEvent(

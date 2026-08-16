@@ -138,6 +138,11 @@
 			"description": "Sublinhar erros de digitação enquanto você escreve. Clique com o botão direito em uma palavra para ver sugestões.",
 			"ariaLabel": "Verificação ortográfica"
 		},
+		"externalLinkPreviews": {
+			"label": "Pré-visualizações de links externos",
+			"description": "Mostrar links da web avulsos como cartões nos modos Rico e Pré-visualização. O Glyph busca os detalhes da pré-visualização diretamente em cada site vinculado.",
+			"ariaLabel": "Mostrar pré-visualizações de links externos"
+		},
 		"vimMode": {
 			"title": "Modo Vim",
 			"label": "Modo Vim",

@@ -28,7 +28,7 @@ interface FontSizeControlProps {
 	value: UiFontSize;
 	min: number;
 	max: number;
-	onChange: (size: UiFontSize) => Promise<void>;
+	onChange: (size: UiFontSize) => void;
 }
 
 function clampFontSize(value: number, min: number, max: number): UiFontSize {

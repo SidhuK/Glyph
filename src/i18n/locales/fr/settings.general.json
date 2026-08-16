@@ -138,6 +138,11 @@
 			"description": "Souligner les fautes de frappe pendant la saisie. Cliquez avec le bouton droit sur un mot pour voir des suggestions.",
 			"ariaLabel": "Vérification orthographique"
 		},
+		"externalLinkPreviews": {
+			"label": "Aperçus des liens externes",
+			"description": "Afficher les liens web autonomes sous forme de cartes en modes Enrichi et Aperçu. Glyph récupère les détails de l’aperçu directement sur chaque site lié.",
+			"ariaLabel": "Afficher les aperçus des liens externes"
+		},
 		"vimMode": {
 			"title": "Mode Vim",
 			"label": "Mode Vim",
