@@ -581,7 +581,6 @@
 	color: var(--text-primary);
 	opacity: 1;
 	box-shadow: none;
-	transform: translateY(-50%);
 }
 
 .mainTabClose:active {
@@ -631,7 +630,6 @@
 @media (prefers-reduced-motion: reduce) {
 	.mainTab,
 	.mainTab::before,
-	.mainTabClose,
 	.mainTabPin,
 	.mainTabAdd,
 	.mainTabActiveTitle,
@@ -645,10 +643,6 @@
 	.mainTab,
 	.mainTab::before {
 		animation: none;
-	}
-
-	.mainTabClose:hover {
-		transform: translateY(-50%);
 	}
 
 	.mainTabPin:hover {
