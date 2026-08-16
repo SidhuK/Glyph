@@ -134,7 +134,6 @@
 }
 
 .markdownEditorModeSwitch:hover .markdownEditorModeBubble,
-.markdownEditorModeSwitch:focus-within .markdownEditorModeBubble,
 .markdownEditorModeSwitch[data-open="true"] .markdownEditorModeBubble {
 	opacity: 1;
 	visibility: visible;

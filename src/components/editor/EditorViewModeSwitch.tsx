@@ -35,12 +35,32 @@ export function EditorViewModeSwitch({
 }: EditorViewModeSwitchProps) {
 	const { t } = useTranslation("editor");
 	const [isPinnedOpen, setIsPinnedOpen] = useState(false);
+	const [largeNoteDismissal, setLargeNoteDismissal] = useState({
+		largeNote,
+		mode,
+		dismissed: false,
+	});
+	if (
+		largeNoteDismissal.largeNote !== largeNote ||
+		largeNoteDismissal.mode !== mode
+	) {
+		setLargeNoteDismissal({ largeNote, mode, dismissed: false });
+	}
 	const activeMode = VIEW_MODES.find((item) => item.id === mode);
 
 	if (!activeMode) return null;
 
 	const activeLabel = t(activeMode.labelKey);
-	const shouldShowBubble = isPinnedOpen || (largeNote && mode !== "plain");
+	const shouldOpenForLargeNote = largeNote && mode !== "plain";
+	const shouldShowBubble =
+		isPinnedOpen || (shouldOpenForLargeNote && !largeNoteDismissal.dismissed);
+	const closeBubble = () => {
+		setIsPinnedOpen(false);
+		if (shouldOpenForLargeNote) {
+			setLargeNoteDismissal((current) => ({ ...current, dismissed: true }));
+		}
+	};
+
 	return (
 		<div
 			className="markdownEditorModeSwitch"
@@ -55,16 +75,17 @@ export function EditorViewModeSwitch({
 				) {
 					return;
 				}
-				setIsPinnedOpen(false);
+				closeBubble();
 			}}
-			onMouseLeave={() => setIsPinnedOpen(false)}
+			onFocus={() => setIsPinnedOpen(true)}
+			onMouseLeave={closeBubble}
 		>
 			<button
 				type="button"
 				className="markdownEditorModeBtn markdownEditorModeCurrentBtn"
 				aria-label={activeLabel}
 				aria-expanded={shouldShowBubble}
-				onClick={() => setIsPinnedOpen((open) => !open)}
+				onClick={() => setIsPinnedOpen(true)}
 			>
 				<HugeiconsIcon icon={activeMode.icon} size="var(--icon-md)" />
 			</button>

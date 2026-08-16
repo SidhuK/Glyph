@@ -193,10 +193,6 @@
 	color: var(--text-primary);
 }
 
-.externalMarkdownModeSwitch .markdownEditorModeBubble {
-	top: calc(100% + var(--markdown-editor-mode-bubble-offset));
-}
-
 .externalMarkdownBody {
 	flex: 1;
 	min-height: 0;
