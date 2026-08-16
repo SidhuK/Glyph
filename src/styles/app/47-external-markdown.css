@@ -186,6 +186,21 @@
 	border-radius: var(--radius-full);
 }
 
+.externalMarkdownModeSwitch .markdownEditorModeBubble {
+	left: auto;
+	right: 0;
+	transform: translateY(-2px);
+}
+
+.externalMarkdownModeSwitch
+	.markdownEditorModeSwitch:hover
+	.markdownEditorModeBubble,
+.externalMarkdownModeSwitch
+	.markdownEditorModeSwitch[data-open="true"]
+	.markdownEditorModeBubble {
+	transform: translateY(0);
+}
+
 .externalMarkdownModeSwitch
 	.markdownEditorModeBubble
 	.markdownEditorModeBtn[data-active="true"] {
