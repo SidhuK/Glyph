@@ -142,6 +142,7 @@ pub struct UsageInsights {
     pub active_day_count: u32,
     pub longest_activity_streak: u32,
     pub activity: Vec<UsageActivityDay>,
+    pub folder_weeks: Vec<UsageFolderWeek>,
     pub folders: Vec<UsageFolder>,
     pub tags: Vec<UsageTag>,
 }
@@ -156,11 +157,20 @@ pub struct UsageActivityDay {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct UsageFolderWeek {
+    pub week: String,
+    pub folder: String,
+    pub count: u32,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UsageFolder {
     pub name: String,
     pub note_count: u32,
     pub task_total: u32,
     pub task_completed: u32,
+    pub isolated_note_count: u32,
 }
 
 #[derive(Serialize)]

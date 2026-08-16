@@ -1,5 +1,9 @@
-use std::{collections::BTreeMap, path::Path};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    path::Path,
+};
 
+use chrono::{Datelike, Duration, Local, NaiveDate};
 use rusqlite::Connection;
 use tauri::{State, WebviewWindow};
 
@@ -7,7 +11,7 @@ use crate::space::SpaceState;
 
 use super::{
     db::open_db,
-    types::{UsageActivityDay, UsageFolder, UsageInsights, UsageTag},
+    types::{UsageActivityDay, UsageFolder, UsageFolderWeek, UsageInsights, UsageTag},
 };
 
 fn count(conn: &Connection, sql: &str) -> Result<u32, String> {
@@ -82,6 +86,107 @@ fn longest_streak(activity: &BTreeMap<String, UsageActivityDay>) -> u32 {
     longest
 }
 
+const STREAM_WEEKS: i64 = 12;
+const STREAM_DAYS: i64 = 84;
+const STREAM_TOP_FOLDERS: usize = 7;
+const OTHER_FOLDER: &str = "__other__";
+
+fn folder_created_by_week(conn: &Connection) -> Result<Vec<UsageFolderWeek>, String> {
+    let today = Local::now().date_naive();
+    let start = today - Duration::days(today.weekday().num_days_from_sunday() as i64 + 77);
+    let end = start + Duration::days(STREAM_DAYS - 1);
+    let mut statement = conn
+        .prepare(
+            "SELECT substr(created, 1, 10), \
+             CASE WHEN instr(path, '/') = 0 THEN '/' ELSE substr(path, 1, instr(path, '/') - 1) END, \
+             COUNT(*) \
+             FROM notes WHERE length(created) >= 10 GROUP BY 1, 2",
+        )
+        .map_err(|error| error.to_string())?;
+    let query_rows = statement
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, i64>(2)?,
+            ))
+        })
+        .map_err(|error| error.to_string())?;
+
+    let mut folder_totals = BTreeMap::<String, u32>::new();
+    let mut cells = BTreeMap::<(String, String), u32>::new();
+    for row in query_rows {
+        let (date, folder, signed) = row.map_err(|error| error.to_string())?;
+        let Ok(parsed) = NaiveDate::parse_from_str(&date, "%Y-%m-%d") else {
+            continue;
+        };
+        if parsed < start || parsed > end {
+            continue;
+        }
+        let week_index = (parsed - start).num_days() / 7;
+        if week_index < 0 || week_index >= STREAM_WEEKS {
+            continue;
+        }
+        let week = (start + Duration::days(week_index * 7))
+            .format("%Y-%m-%d")
+            .to_string();
+        let count = signed.max(0) as u32;
+        *folder_totals.entry(folder.clone()).or_insert(0) += count;
+        *cells.entry((week, folder)).or_insert(0) += count;
+    }
+
+    let mut ranked: Vec<(String, u32)> = folder_totals.into_iter().collect();
+    ranked.sort_by(|left, right| {
+        right
+            .1
+            .cmp(&left.1)
+            .then_with(|| left.0.to_lowercase().cmp(&right.0.to_lowercase()))
+    });
+    let keep: Vec<String> = ranked
+        .iter()
+        .take(STREAM_TOP_FOLDERS)
+        .map(|(name, _)| name.clone())
+        .collect();
+    let keep_set: BTreeSet<String> = keep.iter().cloned().collect();
+    let mut folders = keep;
+    if ranked.len() > STREAM_TOP_FOLDERS {
+        folders.push(OTHER_FOLDER.to_string());
+    }
+
+    let weeks: Vec<String> = (0..STREAM_WEEKS)
+        .map(|index| {
+            (start + Duration::days(index * 7))
+                .format("%Y-%m-%d")
+                .to_string()
+        })
+        .collect();
+
+    let mut remapped = BTreeMap::<(String, String), u32>::new();
+    for ((week, folder), count) in cells {
+        let name = if keep_set.contains(&folder) {
+            folder
+        } else {
+            OTHER_FOLDER.to_string()
+        };
+        *remapped.entry((week, name)).or_insert(0) += count;
+    }
+
+    let mut output = Vec::with_capacity(weeks.len() * folders.len());
+    for week in &weeks {
+        for folder in &folders {
+            output.push(UsageFolderWeek {
+                week: week.clone(),
+                folder: folder.clone(),
+                count: remapped
+                    .get(&(week.clone(), folder.clone()))
+                    .copied()
+                    .unwrap_or(0),
+            });
+        }
+    }
+    Ok(output)
+}
+
 fn usage_insights_for_conn(conn: &Connection, root: &Path) -> Result<UsageInsights, String> {
     let note_count = count(conn, "SELECT COUNT(*) FROM notes")?;
     let task_total = count(conn, "SELECT COALESCE(SUM(checklist_total), 0) FROM notes")?;
@@ -124,7 +229,17 @@ fn usage_insights_for_conn(conn: &Connection, root: &Path) -> Result<UsageInsigh
     let active_day_count = activity.len() as u32;
     let longest_activity_streak = longest_streak(&activity);
 
-    let mut folder_statement = conn.prepare("SELECT CASE WHEN instr(path, '/') = 0 THEN '/' ELSE substr(path, 1, instr(path, '/') - 1) END, COUNT(*), COALESCE(SUM(checklist_total), 0), COALESCE(SUM(checklist_completed), 0) FROM notes GROUP BY 1 ORDER BY COUNT(*) DESC, 1 COLLATE NOCASE ASC").map_err(|error| error.to_string())?;
+    let mut folder_statement = conn.prepare(
+        "SELECT CASE WHEN instr(n.path, '/') = 0 THEN '/' ELSE substr(n.path, 1, instr(n.path, '/') - 1) END, \
+         COUNT(*), \
+         COALESCE(SUM(n.checklist_total), 0), \
+         COALESCE(SUM(n.checklist_completed), 0), \
+         COALESCE(SUM(CASE WHEN NOT EXISTS (SELECT 1 FROM links l WHERE l.from_id = n.id OR l.to_id = n.id) \
+           AND NOT EXISTS (SELECT 1 FROM note_relationships r WHERE r.from_id = n.id OR r.to_id = n.id) \
+           THEN 1 ELSE 0 END), 0) \
+         FROM notes n GROUP BY 1 ORDER BY COUNT(*) DESC, 1 COLLATE NOCASE ASC",
+    )
+    .map_err(|error| error.to_string())?;
     let folders = folder_statement
         .query_map([], |row| {
             Ok(UsageFolder {
@@ -132,6 +247,7 @@ fn usage_insights_for_conn(conn: &Connection, root: &Path) -> Result<UsageInsigh
                 note_count: row.get::<_, i64>(1)?.max(0) as u32,
                 task_total: row.get::<_, i64>(2)?.max(0) as u32,
                 task_completed: row.get::<_, i64>(3)?.max(0) as u32,
+                isolated_note_count: row.get::<_, i64>(4)?.max(0) as u32,
             })
         })
         .map_err(|error| error.to_string())?
@@ -150,6 +266,8 @@ fn usage_insights_for_conn(conn: &Connection, root: &Path) -> Result<UsageInsigh
         .collect::<Result<Vec<_>, _>>()
         .map_err(|error| error.to_string())?;
 
+    let folder_weeks = folder_created_by_week(conn)?;
+
     Ok(UsageInsights {
         note_count,
         task_total,
@@ -162,6 +280,7 @@ fn usage_insights_for_conn(conn: &Connection, root: &Path) -> Result<UsageInsigh
         active_day_count,
         longest_activity_streak,
         activity: activity.into_values().collect(),
+        folder_weeks,
         folders,
         tags,
     })

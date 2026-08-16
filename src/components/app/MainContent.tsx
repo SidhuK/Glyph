@@ -60,7 +60,7 @@ const ShortcutsSettingsPane = lazy(() =>
 	})),
 );
 const UsageSettingsPane = lazy(() =>
-	import("../settings/UsageSettingsPane").then((module) => ({
+	import("../settings/usage/UsageSettingsPane").then((module) => ({
 		default: module.UsageSettingsPane,
 	})),
 );

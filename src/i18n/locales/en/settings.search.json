@@ -608,6 +608,11 @@
 			"description": "Notes created and last edited over time.",
 			"keywords": ["activity", "streak", "editing"]
 		},
+		"usage-folder-activity": {
+			"title": "Notes created by folder",
+			"description": "Where new notes appeared over the last twelve weeks.",
+			"keywords": ["folders", "stream", "created"]
+		},
 		"usage-tasks": {
 			"title": "Tasks",
 			"description": "Current task totals and completion progress.",

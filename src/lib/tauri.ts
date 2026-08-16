@@ -401,6 +401,7 @@ export interface UsageInsights {
 	activeDayCount: number;
 	longestActivityStreak: number;
 	activity: UsageActivityDay[];
+	folderWeeks: UsageFolderWeek[];
 	folders: UsageFolder[];
 	tags: UsageTag[];
 }
@@ -411,11 +412,18 @@ export interface UsageActivityDay {
 	lastEdited: number;
 }
 
+export interface UsageFolderWeek {
+	week: string;
+	folder: string;
+	count: number;
+}
+
 export interface UsageFolder {
 	name: string;
 	noteCount: number;
 	taskTotal: number;
 	taskCompleted: number;
+	isolatedNoteCount: number;
 }
 
 export interface UsageTag {
