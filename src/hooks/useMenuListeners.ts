@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useUILayoutContext } from "../contexts";
 import { dispatchAppCommand } from "../lib/commands/commandDispatcher";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { buildHelpMenuCommandHandlers } from "../lib/helpMenu";
 import type { PeriodKind } from "../lib/periodNotes";
 import { invoke } from "../lib/tauri";
-import { listenTauriEvent, useTauriEvent } from "../lib/tauriEvents";
+import { useTauriEvent } from "../lib/tauriEvents";
 import { toast } from "../lib/toast";
 
 interface UseMenuListenersProps {
@@ -30,6 +30,10 @@ interface UseMenuListenersProps {
 	onAttachAllOpenNotesToAi: () => void;
 	onOpenAiSettings: () => void;
 	onEditorAction: (action: string) => void;
+}
+
+interface AppMenuCommand {
+	command_id: string;
 }
 
 export function useMenuListeners({
@@ -67,7 +71,7 @@ export function useMenuListeners({
 		[onOpenRecentSpaceAtPath],
 	);
 	const handleAppCommand = useCallback(
-		(payload: { command_id: string }) => {
+		(payload: AppMenuCommand) => {
 			void dispatchAppCommand(payload.command_id, {
 				"new-note": onNewNote,
 				"create-from-template": onCreateFromTemplate,
@@ -175,36 +179,46 @@ export function useMenuListeners({
 			openSettings,
 		],
 	);
+	const replayingPendingCommandsRef = useRef(true);
+	const bufferedLiveCommandsRef = useRef<AppMenuCommand[]>([]);
+	const handleMenuCommand = useCallback(
+		(command: AppMenuCommand) => {
+			if (replayingPendingCommandsRef.current) {
+				bufferedLiveCommandsRef.current.push(command);
+				return;
+			}
+			handleAppCommand(command);
+		},
+		[handleAppCommand],
+	);
 
-	useTauriEvent("menu:open_recent_space", handleOpenRecentSpace);
-
-	useEffect(() => {
+	const replayPendingMenuCommands = useCallback(() => {
 		let cancelled = false;
-		let unlisten: (() => void) | null = null;
-
-		void listenTauriEvent("menu:app_command", handleAppCommand)
-			.then(async (stop) => {
-				unlisten = stop;
-				if (cancelled) {
-					stop();
-					return;
-				}
-
-				const commands = await invoke("menu_take_pending_commands");
+		void invoke("menu_take_pending_commands")
+			.then((commands) => {
 				if (cancelled) return;
-				for (const command of commands) {
+				for (const command of commands) handleAppCommand(command);
+				for (const command of bufferedLiveCommandsRef.current) {
 					handleAppCommand(command);
 				}
+				bufferedLiveCommandsRef.current = [];
+				replayingPendingCommandsRef.current = false;
 			})
 			.catch((error: unknown) => {
 				if (cancelled) return;
+				replayingPendingCommandsRef.current = false;
 				console.error("Failed to replay pending menu commands", error);
 				toast.error(extractErrorMessage(error));
 			});
-
 		return () => {
 			cancelled = true;
-			unlisten?.();
 		};
 	}, [handleAppCommand]);
+
+	useTauriEvent(
+		"menu:app_command",
+		handleMenuCommand,
+		replayPendingMenuCommands,
+	);
+	useTauriEvent("menu:open_recent_space", handleOpenRecentSpace);
 }
