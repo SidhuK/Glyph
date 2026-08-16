@@ -1,15 +1,15 @@
 {
-  "version": "0.8.14-alpha.9",
-  "notes": "## What's Changed\n* Refine editor mode switch and toolbar labels by @SidhuK in https://github.com/SidhuK/Glyph/pull/504\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.14-alpha.8...v0.8.14-alpha.9",
-  "pub_date": "2026-08-16T07:59:41.482Z",
+  "version": "0.8.14",
+  "notes": "## What's Changed\n* ci: split frontend and Rust PR checks by @SidhuK in https://github.com/SidhuK/Glyph/pull/475\n* fix: remove dim-chrome-while-typing from external editor by @SidhuK in https://github.com/SidhuK/Glyph/pull/476\n* Add Polish translation (#477) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/477\n* Add keep running on last window close setting (#478)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/478\n* Icons: 1.5 stroke width, DEV badge, separate dev build config (#479) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/479\n* Deepen shared modules: theme previews, settings persistence, suggestions, inline rename by @SidhuK in https://github.com/SidhuK/Glyph/pull/487\n* Consolidate settings definitions (#485) by @SidhuK in https://github.com/SidhuK/Glyph/pull/488\n* Centralize Space change commits and renderer apply by @SidhuK in https://github.com/SidhuK/Glyph/pull/490\n* Add Cursor CLI as an AI provider by @SidhuK in https://github.com/SidhuK/Glyph/pull/491\n* Treat version suffixes as note names, not file extensions by @SidhuK in https://github.com/SidhuK/Glyph/pull/493\n* Add weekly, monthly, and quarterly notes by @SidhuK in https://github.com/SidhuK/Glyph/pull/499\n* Fix raw editor caret positioning and selection layering by @SidhuK in https://github.com/SidhuK/Glyph/pull/500\n* Fix tab close button positioning by @SidhuK in https://github.com/SidhuK/Glyph/pull/501\n* Refactor settings into categorized editor and experimental tabs by @SidhuK in https://github.com/SidhuK/Glyph/pull/502\n* Fix pending app menu commands by @SidhuK in https://github.com/SidhuK/Glyph/pull/503\n* Refine editor mode switch and toolbar labels by @SidhuK in https://github.com/SidhuK/Glyph/pull/504\n* Improve settings usage charts and space insights by @SidhuK in https://github.com/SidhuK/Glyph/pull/505\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.13...v0.8.14",
+  "pub_date": "2026-08-16T11:41:30.994Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDhHUHh1OTNNTUNpZ1NESXpCZEl4YkVmbVcyRGc4SHBuMWs5OWhMTjR5OXhLSzZMMlRrWXBETGVxMkh2T0dJcWlrcjUxU2dZYmJXVkNKQklabmNZZGdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2ODY3MTc2CWZpbGU6R2x5cGguYXBwLnRhci5negozcnFjQkFOTUlEWG9RZWljUWJDcE56TEV0SnMrZXowUEU4bHkxZSs2WHd3VFh6OGtjbEFPc3EwdUhIcXd4QTM4Z2x3UC9VRkI0WDBLZnRlS0lSYkRBUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.14-alpha.9/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDMzTEF4ZjI1Q0xwRUk5N29zRXNDVFJLNi9BQ0VTK3BFaWJ3N1FVS3VnSVlCTnRqVmdaTjRmMm1oY01NbjdLelhRQWV6WGpOV2dWSjQ3NXB0MGNMaFFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2ODgwNDg1CWZpbGU6R2x5cGguYXBwLnRhci5negpyRkZIenJhb3NBdXF4T1Y2Z3ZtbElDTlFhUTBCUSs4UXJhUkVBMEhYeVk2K1ZraG1xTk10MlVYcFBaSWdIS0pBNHZmS3ZkWmxvUWQxaE93V0MwY1pBdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.14/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDhHUHh1OTNNTUNpZ1NESXpCZEl4YkVmbVcyRGc4SHBuMWs5OWhMTjR5OXhLSzZMMlRrWXBETGVxMkh2T0dJcWlrcjUxU2dZYmJXVkNKQklabmNZZGdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2ODY3MTc2CWZpbGU6R2x5cGguYXBwLnRhci5negozcnFjQkFOTUlEWG9RZWljUWJDcE56TEV0SnMrZXowUEU4bHkxZSs2WHd3VFh6OGtjbEFPc3EwdUhIcXd4QTM4Z2x3UC9VRkI0WDBLZnRlS0lSYkRBUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.14-alpha.9/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDMzTEF4ZjI1Q0xwRUk5N29zRXNDVFJLNi9BQ0VTK3BFaWJ3N1FVS3VnSVlCTnRqVmdaTjRmMm1oY01NbjdLelhRQWV6WGpOV2dWSjQ3NXB0MGNMaFFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2ODgwNDg1CWZpbGU6R2x5cGguYXBwLnRhci5negpyRkZIenJhb3NBdXF4T1Y2Z3ZtbElDTlFhUTBCUSs4UXJhUkVBMEhYeVk2K1ZraG1xTk10MlVYcFBaSWdIS0pBNHZmS3ZkWmxvUWQxaE93V0MwY1pBdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.14/Glyph_aarch64.app.tar.gz"
     }
   }
 }
