@@ -11,12 +11,15 @@ import {
 	isHeadingPaletteId,
 } from "../../lib/headingPalettes";
 import {
+	DURABLE_SETTINGS,
 	type EditorWidthMode,
 	MAX_EDITOR_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
+	type UiFontFamily,
+	type UiFontSize,
+	isEditorWidthMode,
 	loadSettings,
 } from "../../lib/settings";
-import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { FontSizeControl } from "./AppearanceTypographyCard";
 import { HeadingPalettePicker } from "./HeadingPalettePicker";
@@ -26,7 +29,7 @@ import {
 	SettingsToggle,
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
-import { useAppearanceTypography } from "./useAppearanceTypography";
+import { DEFAULT_FONT_FAMILY, loadAvailableFonts } from "./appearanceOptions";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
 
@@ -46,17 +49,19 @@ export function EditorSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const { t: tAppearance } = useTranslation("settings.appearance");
 	const [error, setError] = useState("");
-	const [isHydrated, setIsHydrated] = useState(false);
-	const {
-		editorFontFamily,
-		editorFontSize,
-		availableFonts,
-		onEditorFontFamilyChange,
-		onEditorFontSizeChange,
-		setInitialTypography,
-		setEditorFontFamily,
-		setEditorFontSize,
-	} = useAppearanceTypography({ setError, isHydrated });
+	const [availableFonts, setAvailableFonts] = useState<string[]>([
+		DEFAULT_FONT_FAMILY,
+	]);
+	const editorFontFamily = useSettingsValue<UiFontFamily>(
+		DEFAULT_FONT_FAMILY,
+		DURABLE_SETTINGS.editorFontFamily.write,
+		setError,
+	);
+	const editorFontSize = useSettingsValue<UiFontSize>(
+		16,
+		DURABLE_SETTINGS.editorFontSize.write,
+		setError,
+	);
 	const defaultEditorMode = useSettingsValue<EditorViewMode>(
 		getDefaultEditorViewMode,
 		DURABLE_SETTINGS.editorDefaultEditorMode.write,
@@ -127,6 +132,26 @@ export function EditorSettingsPane() {
 	const setHeadingPaletteValue = headingPalette.setValue;
 	const setInitialEditorWidthMode = editorWidthMode.setInitialValue;
 	const setEditorWidthModeValue = editorWidthMode.setValue;
+	const setInitialEditorFontFamily = editorFontFamily.setInitialValue;
+	const setEditorFontFamilyValue = editorFontFamily.setValue;
+	const setInitialEditorFontSize = editorFontSize.setInitialValue;
+	const setEditorFontSizeValue = editorFontSize.setValue;
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadAvailableFonts()
+			.then((fonts) => {
+				if (!cancelled) setAvailableFonts(fonts);
+			})
+			.catch((cause: unknown) => {
+				if (!cancelled) {
+					setError(cause instanceof Error ? cause.message : String(cause));
+				}
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -145,8 +170,8 @@ export function EditorSettingsPane() {
 				setCollapsibleListsChecked(settings.editor.showCollapsibleLists);
 				setSpellCheckChecked(settings.editor.spellCheck);
 				setBeautifulTagsChecked(settings.editor.beautifulTags);
-				setInitialTypography(settings);
-				setIsHydrated(true);
+				setInitialEditorFontFamily(settings.ui.editorFontFamily);
+				setInitialEditorFontSize(settings.ui.editorFontSize);
 			})
 			.catch((cause) => {
 				if (!cancelled) {
@@ -163,9 +188,10 @@ export function EditorSettingsPane() {
 		setColorfulHeadingsChecked,
 		setHeadingPrefixesChecked,
 		setInitialDefaultEditorMode,
+		setInitialEditorFontFamily,
+		setInitialEditorFontSize,
 		setInitialEditorWidthMode,
 		setInitialHeadingPalette,
-		setInitialTypography,
 		setShowFrontmatterChecked,
 		setShowTocChecked,
 		setSpellCheckChecked,
@@ -176,10 +202,10 @@ export function EditorSettingsPane() {
 		useCallback(
 			(payload) => {
 				if (typeof payload.ui?.editorFontFamily === "string") {
-					setEditorFontFamily(payload.ui.editorFontFamily);
+					setEditorFontFamilyValue(payload.ui.editorFontFamily);
 				}
 				if (typeof payload.ui?.editorFontSize === "number") {
-					setEditorFontSize(payload.ui.editorFontSize);
+					setEditorFontSizeValue(payload.ui.editorFontSize);
 				}
 				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
 					setDefaultEditorModeValue(payload.editor.defaultEditorMode);
@@ -187,11 +213,7 @@ export function EditorSettingsPane() {
 				if (isHeadingPaletteId(payload.editor?.headingPaletteId)) {
 					setHeadingPaletteValue(payload.editor.headingPaletteId);
 				}
-				if (
-					payload.editor?.editorWidthMode === "compact" ||
-					payload.editor?.editorWidthMode === "comfortable" ||
-					payload.editor?.editorWidthMode === "wide"
-				) {
+				if (isEditorWidthMode(payload.editor?.editorWidthMode)) {
 					setEditorWidthModeValue(payload.editor.editorWidthMode);
 				}
 				applyIfBoolean(payload.ui?.showToc, setShowTocChecked);
@@ -224,8 +246,8 @@ export function EditorSettingsPane() {
 				setCollapsibleListsChecked,
 				setColorfulHeadingsChecked,
 				setDefaultEditorModeValue,
-				setEditorFontFamily,
-				setEditorFontSize,
+				setEditorFontFamilyValue,
+				setEditorFontSizeValue,
 				setEditorWidthModeValue,
 				setHeadingPaletteValue,
 				setHeadingPrefixesChecked,
@@ -251,12 +273,15 @@ export function EditorSettingsPane() {
 					>
 						<SettingsSelect
 							id="settingsEditorFontFamily"
-							value={editorFontFamily}
+							value={editorFontFamily.value}
 							onChange={(event) =>
-								void onEditorFontFamilyChange(event.target.value)
+								editorFontFamily.onChange(event.target.value)
 							}
 						>
-							{availableFonts.map((font) => (
+							{(availableFonts.includes(editorFontFamily.value)
+								? availableFonts
+								: [editorFontFamily.value, ...availableFonts]
+							).map((font) => (
 								<option key={font} value={font}>
 									{font}
 								</option>
@@ -270,10 +295,10 @@ export function EditorSettingsPane() {
 						valueAriaLabel={tAppearance(
 							"typography.editorFontSize.valueAriaLabel",
 						)}
-						value={editorFontSize}
+						value={editorFontSize.value}
 						min={MIN_EDITOR_FONT_SIZE}
 						max={MAX_EDITOR_FONT_SIZE}
-						onChange={onEditorFontSizeChange}
+						onChange={editorFontSize.onChange}
 					/>
 				</SettingsSection>
 				<SettingsSection
@@ -423,15 +448,8 @@ export function EditorSettingsPane() {
 							value={editorWidthMode.value}
 							disabled={editorWidthMode.isSaving}
 							onChange={(event) => {
-								const nextMode = event.currentTarget.value;
-								if (
-									nextMode !== "compact" &&
-									nextMode !== "comfortable" &&
-									nextMode !== "wide"
-								) {
-									return;
-								}
-								editorWidthMode.onChange(nextMode);
+								if (!isEditorWidthMode(event.currentTarget.value)) return;
+								editorWidthMode.onChange(event.currentTarget.value);
 							}}
 						>
 							{EDITOR_WIDTH_VALUES.map((value) => (

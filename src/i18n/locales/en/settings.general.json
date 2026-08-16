@@ -3,6 +3,7 @@
 		"tab": "General",
 		"panelTitle": "General",
 		"groupApplication": "Application",
+		"groupWorkspace": "Workspace",
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Search settings",
 		"searchAriaLabel": "Search settings",

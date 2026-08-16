@@ -120,7 +120,6 @@ export function useAppearanceTypography({
 		...typography,
 		availableFonts: includeSelectedFonts(availableFonts, [
 			typography.fontFamily,
-			typography.editorFontFamily,
 		]),
 		availableMonospaceFonts: includeSelectedFonts(availableMonospaceFonts, [
 			typography.monoFontFamily,

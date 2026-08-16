@@ -3,6 +3,7 @@
 		"tab": "일반",
 		"panelTitle": "일반",
 		"groupApplication": "애플리케이션",
+		"groupWorkspace": "워크스페이스",
 		"groupLabs": "랩",
 		"searchPlaceholder": "설정 검색",
 		"searchAriaLabel": "설정 검색",

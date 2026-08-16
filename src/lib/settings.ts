@@ -57,6 +57,7 @@ export {
 	MIN_UI_FONT_SIZE,
 	SPACE_SETTINGS,
 	isAttachmentStorageMode,
+	isEditorWidthMode,
 	isFileTreeSortMode,
 	isFocusMode,
 	isUiCornerRadiusStyle,

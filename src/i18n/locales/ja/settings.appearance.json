@@ -109,8 +109,6 @@
 		}
 	},
 	"layout": {
-		"sectionTitle": "レイアウト",
-		"sectionDescription": "ワークスペースとすべてのノートの表示方法を選びます。",
 		"folioMode": {
 			"label": "Folio モード",
 			"description": "ナビゲーション、ノート、エディタを 3 列のワークスペースで表示します。",

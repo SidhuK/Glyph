@@ -109,8 +109,6 @@
 		}
 	},
 	"layout": {
-		"sectionTitle": "Layout",
-		"sectionDescription": "Choose how Glyph presents your workspace and All Notes.",
 		"folioMode": {
 			"label": "Folio Mode",
 			"description": "Show navigation, notes, and editor in a three-column workspace.",

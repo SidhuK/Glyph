@@ -3,6 +3,7 @@
 		"tab": "Général",
 		"panelTitle": "Général",
 		"groupApplication": "Application",
+		"groupWorkspace": "Espace de travail",
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Rechercher dans les réglages",
 		"searchAriaLabel": "Rechercher dans les réglages",

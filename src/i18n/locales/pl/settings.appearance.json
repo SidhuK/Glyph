@@ -109,8 +109,6 @@
 		}
 	},
 	"layout": {
-		"sectionTitle": "Układ",
-		"sectionDescription": "Wybierz sposób prezentacji przestrzeni roboczej i wszystkich notatek w programie Glyph.",
 		"folioMode": {
 			"label": "Tryb Folio",
 			"description": "Wyświetl nawigację, notatki i edytor w trójkolumnowej przestrzeni roboczej.",
