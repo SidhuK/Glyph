@@ -7,6 +7,7 @@ import {
 	lazy,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -468,11 +469,21 @@ export function AppShell() {
 	}, [periodNotesEnabled, settingsSpacePath, spacePath]);
 
 	const spacePathRef = useRef(spacePath);
-	spacePathRef.current = spacePath;
+	useLayoutEffect(() => {
+		spacePathRef.current = spacePath;
+	}, [spacePath]);
 
-	useEffect(() => {
-		setNotePeek(null);
-	}, [activeTabPath, spacePath]);
+	const [peekNavigation, setPeekNavigation] = useState({
+		spacePath,
+		activeTabPath,
+	});
+	if (
+		spacePath !== peekNavigation.spacePath ||
+		activeTabPath !== peekNavigation.activeTabPath
+	) {
+		setPeekNavigation({ spacePath, activeTabPath });
+		if (notePeek) setNotePeek(null);
+	}
 
 	const closeNotePeek = useCallback(() => {
 		setNotePeek(null);

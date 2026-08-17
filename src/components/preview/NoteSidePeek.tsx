@@ -10,13 +10,8 @@ import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { noteDocumentQueryOptions } from "../../lib/navigationPrefetch";
 import { parseNotePreview } from "../../lib/notePreview";
-import { basename, parentDir } from "../../utils/path";
+import { displayNameFromPath, parentDir } from "../../utils/path";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
-
-function titleFromPath(relPath: string): string {
-	const name = basename(relPath);
-	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
-}
 
 interface NoteSidePeekProps {
 	relPath: string;
@@ -33,7 +28,7 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 	const markdown = noteQuery.data?.text ?? "";
 	const title = noteQuery.data
 		? parseNotePreview(relPath, noteQuery.data.text).title
-		: titleFromPath(relPath);
+		: displayNameFromPath(relPath);
 	const folder = parentDir(relPath);
 	const error = noteQuery.error ? extractErrorMessage(noteQuery.error) : "";
 	const isPending = noteQuery.isPending;
