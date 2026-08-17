@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
+import { invoke } from "../../lib/tauri";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { Plus } from "../Icons";
 import { InlineRenameInput } from "../InlineRenameInput";
@@ -123,6 +124,13 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		},
 		[draggableRef, handleRef, rowDroppableRef],
 	);
+	const handleRevealInFinder = useCallback(async () => {
+		try {
+			await invoke("space_reveal_path", { path: entry.rel_path });
+		} catch (error) {
+			console.error("Failed to show folder in Finder", error);
+		}
+	}, [entry.rel_path]);
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
 			void showNativeContextMenu(event, [
@@ -147,6 +155,10 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					action: () => void onImportFolderInDir(entry.rel_path),
 				},
 				{ type: "separator" },
+				{
+					label: t("fileTree.showInFinder"),
+					action: () => void handleRevealInFinder(),
+				},
 				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
@@ -165,6 +177,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		},
 		[
 			entry.rel_path,
+			handleRevealInFinder,
 			onOpenAppearancePicker,
 			onCreateFromTemplateInDir,
 			onDeletePath,
