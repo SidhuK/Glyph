@@ -265,9 +265,6 @@ pub async fn space_reveal_path(
         if !abs.exists() {
             return Err("path does not exist".to_string());
         }
-        if !abs.is_file() {
-            return Err("path is not a file".to_string());
-        }
         reveal_file_manager_path(&abs)
     })
     .await
