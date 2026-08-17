@@ -557,20 +557,6 @@
 			"section": "Experimental",
 			"keywords": ["peek", "pré-visualização", "wiki", "todas as notas", "arc"]
 		},
-		"appearance-layout-classic-all-notes": {
-			"title": "Grade clássica de Todas as notas",
-			"section": "Experimental",
-			"keywords": [
-				"todas as notas",
-				"atividade",
-				"linha do tempo",
-				"grade",
-				"all notes",
-				"activity",
-				"timeline",
-				"grid"
-			]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "Mostrar contagem de arquivos por pasta",
 			"section": "Árvore de arquivos",

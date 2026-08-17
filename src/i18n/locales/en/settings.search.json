@@ -518,11 +518,6 @@
 			"section": "Experimental",
 			"keywords": ["peek", "preview", "wiki", "all notes", "arc"]
 		},
-		"appearance-layout-classic-all-notes": {
-			"title": "Classic All Notes grid",
-			"section": "Experimental",
-			"keywords": ["all notes", "activity", "timeline", "grid"]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "Show folder file counts",
 			"section": "File tree",

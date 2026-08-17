@@ -500,8 +500,6 @@ export async function loadSettings(
 	const fileTreeSortMode = DURABLE_SETTINGS.fileTreeSortMode.load(entries);
 	const folioMode = DURABLE_SETTINGS.folioMode.load(entries);
 	const noteSidePeek = DURABLE_SETTINGS.noteSidePeek.load(entries);
-	const classicAllNotesByDefault =
-		DURABLE_SETTINGS.classicAllNotesByDefault.load(entries);
 	const resumeLastSession = DURABLE_SETTINGS.resumeLastSession.load(entries);
 	const keepRunningOnLastWindowClose =
 		DURABLE_SETTINGS.keepRunningOnLastWindowClose.load(entries);
@@ -639,7 +637,6 @@ export async function loadSettings(
 			fileTreeSortMode,
 			folioMode,
 			noteSidePeek,
-			classicAllNotesByDefault,
 			resumeLastSession,
 			keepRunningOnLastWindowClose,
 			aiAssistantMode,

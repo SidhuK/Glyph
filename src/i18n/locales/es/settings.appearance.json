@@ -113,11 +113,6 @@
 			"label": "Modo Folio",
 			"description": "Mostrar navegación, notas y editor en un espacio de trabajo de tres columnas.",
 			"ariaLabel": "Modo Folio"
-		},
-		"classicAllNotes": {
-			"label": "Cuadrícula clásica de Todas las notas",
-			"description": "Abrir Todas las notas como la cuadrícula simple en lugar de la línea de tiempo de actividad.",
-			"ariaLabel": "Cuadrícula clásica de Todas las notas"
 		}
 	},
 	"editorPresentation": {

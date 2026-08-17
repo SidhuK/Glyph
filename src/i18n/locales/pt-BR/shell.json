@@ -42,15 +42,6 @@
 		"unpinNamed": "Desafixar {{name}}",
 		"unpinFailed": "Não foi possível desafixar a coleção"
 	},
-	"allNotes": {
-		"title": "Todas as notas",
-		"showActivity": "Mostrar atividade",
-		"today": "Hoje",
-		"yesterday": "Ontem",
-		"thisWeek": "Esta semana",
-		"thisMonth": "Este mês",
-		"earlier": "Anteriores"
-	},
 	"tags": {
 		"header": "Tags",
 		"collapse": "Recolher tags",

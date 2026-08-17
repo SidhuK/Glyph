@@ -42,15 +42,6 @@
 		"unpinNamed": "{{name}} lösen",
 		"unpinFailed": "Sammlung konnte nicht gelöst werden"
 	},
-	"allNotes": {
-		"title": "Alle Notizen",
-		"showActivity": "Aktivität anzeigen",
-		"today": "Heute",
-		"yesterday": "Gestern",
-		"thisWeek": "Diese Woche",
-		"thisMonth": "Dieser Monat",
-		"earlier": "Früher"
-	},
 	"tags": {
 		"header": "Tags",
 		"collapse": "Tags einklappen",

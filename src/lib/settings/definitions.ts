@@ -531,13 +531,6 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.noteSidePeek,
 		change: (value) => ({ ui: { noteSidePeek: value } }),
 	}),
-	classicAllNotesByDefault: booleanSetting({
-		key: "ui.classicAllNotesByDefault",
-		defaultValue: false,
-		discovery: searchable("appearance-layout-classic-all-notes"),
-		read: (settings) => settings.ui.classicAllNotesByDefault,
-		change: (value) => ({ ui: { classicAllNotesByDefault: value } }),
-	}),
 	resumeLastSession: booleanSetting({
 		key: "ui.resumeLastSession",
 		defaultValue: false,

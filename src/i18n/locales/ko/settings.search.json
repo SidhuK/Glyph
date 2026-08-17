@@ -543,20 +543,6 @@
 			"section": "실험적",
 			"keywords": ["peek", "미리보기", "wiki", "모든 노트", "arc"]
 		},
-		"appearance-layout-classic-all-notes": {
-			"title": "클래식 모든 노트 그리드",
-			"section": "실험적",
-			"keywords": [
-				"모든 노트",
-				"활동",
-				"타임라인",
-				"그리드",
-				"all notes",
-				"activity",
-				"timeline",
-				"grid"
-			]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "폴더 파일 수 표시",
 			"section": "파일 트리",

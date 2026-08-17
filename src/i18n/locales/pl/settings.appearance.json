@@ -113,11 +113,6 @@
 			"label": "Tryb Folio",
 			"description": "Wyświetl nawigację, notatki i edytor w trójkolumnowej przestrzeni roboczej.",
 			"ariaLabel": "Tryb Folio"
-		},
-		"classicAllNotes": {
-			"label": "Klasyczna siatka wszystkich notatek",
-			"description": "Otwórz widok wszystkich notatek jako prostą siatkę zamiast osi czasu aktywności.",
-			"ariaLabel": "Klasyczna siatka wszystkich notatek"
 		}
 	},
 	"editorPresentation": {

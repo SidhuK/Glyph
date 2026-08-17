@@ -531,11 +531,6 @@
 			"section": "Eksperymentalne",
 			"keywords": ["peek", "podgląd", "wiki", "wszystkie notatki", "arc"]
 		},
-		"appearance-layout-classic-all-notes": {
-			"title": "Klasyczna siatka wszystkich notatek",
-			"section": "Eksperymentalne",
-			"keywords": ["wszystkie notatki", "aktywność", "oś czasu", "siatka"]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "Pokaż liczbę plików w folderach",
 			"section": "Drzewo plików",

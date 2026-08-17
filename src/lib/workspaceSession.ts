@@ -1,4 +1,5 @@
 import { isMarkdownPath, normalizeRelPath } from "../utils/path";
+import { ACTIVITY_TIMELINE_TAB_ID } from "./activityTimeline";
 import { getSettingsStore, saveSettingsStore } from "./settingsStore";
 import {
 	MAX_SPLIT_RATIO,
@@ -7,6 +8,12 @@ import {
 	type SplitEditorNode,
 	paneIdsInLayout,
 } from "./splitEditor";
+
+const LEGACY_ALL_DOCS_TAB_ID = "__glyph_all_docs__";
+
+function normalizeSpecialTabTarget(target: string): string {
+	return target === LEGACY_ALL_DOCS_TAB_ID ? ACTIVITY_TIMELINE_TAB_ID : target;
+}
 
 const WORKSPACE_SESSION_BY_SPACE_KEY = "workspace.sessionBySpace";
 
@@ -55,7 +62,7 @@ function normalizeWorkspaceSessionTab(
 		return { kind: "file", target, paneId, isPinned: value.isPinned === true };
 	}
 
-	const target = value.target.trim();
+	const target = normalizeSpecialTabTarget(value.target.trim());
 	if (!target || target.length > 120) return null;
 	const key = `${paneId}\0${target}`;
 	if (seenTargets.has(key)) return null;
@@ -122,10 +129,14 @@ function normalizeWorkspaceSessionSnapshot(
 	const tabs = value.tabs
 		.map((tab) => normalizeWorkspaceSessionTab(tab, seenTargets))
 		.filter((tab): tab is WorkspaceSessionTabSnapshot => tab !== null);
+	const requestedActiveTarget =
+		typeof value.activeTabTarget === "string"
+			? normalizeSpecialTabTarget(value.activeTabTarget)
+			: null;
 	const activeTabTarget =
-		typeof value.activeTabTarget === "string" &&
-		tabs.some((tab) => tab.target === value.activeTabTarget)
-			? value.activeTabTarget
+		requestedActiveTarget &&
+		tabs.some((tab) => tab.target === requestedActiveTarget)
+			? requestedActiveTarget
 			: null;
 	const splitLayout = normalizeSplitEditorNode(
 		value.splitLayout,
@@ -140,9 +151,12 @@ function normalizeWorkspaceSessionSnapshot(
 		? value.activeTabTargetByPane
 		: {};
 	for (const paneId of layoutPaneIds) {
-		const target = rawActiveTargets[paneId];
+		const target =
+			typeof rawActiveTargets[paneId] === "string"
+				? normalizeSpecialTabTarget(rawActiveTargets[paneId])
+				: null;
 		activeTabTargetByPane[paneId] =
-			typeof target === "string" &&
+			target &&
 			tabs.some((tab) => tab.paneId === paneId && tab.target === target)
 				? target
 				: null;

@@ -105,7 +105,6 @@ export interface AppSettings {
 		fileTreeSortMode: FileTreeSortMode;
 		folioMode: boolean;
 		noteSidePeek: boolean;
-		classicAllNotesByDefault: boolean;
 		resumeLastSession: boolean;
 		keepRunningOnLastWindowClose: boolean;
 		aiAssistantMode: AiAssistantMode;

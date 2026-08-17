@@ -113,11 +113,6 @@
 			"label": "Folio Mode",
 			"description": "Show navigation, notes, and editor in a three-column workspace.",
 			"ariaLabel": "Folio Mode"
-		},
-		"classicAllNotes": {
-			"label": "Classic All Notes grid",
-			"description": "Open All Notes as the simple grid instead of the activity timeline.",
-			"ariaLabel": "Classic All Notes grid"
 		}
 	},
 	"editorPresentation": {
