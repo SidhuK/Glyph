@@ -113,11 +113,6 @@
 			"label": "Folio 모드",
 			"description": "탐색, 노트, 편집기를 3열 작업 공간으로 표시합니다.",
 			"ariaLabel": "Folio 모드"
-		},
-		"classicAllNotes": {
-			"label": "클래식 모든 노트 그리드",
-			"description": "활동 타임라인 대신 단순 그리드로 모든 노트를 엽니다.",
-			"ariaLabel": "클래식 모든 노트 그리드"
 		}
 	},
 	"editorPresentation": {

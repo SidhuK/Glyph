@@ -42,15 +42,6 @@
 		"unpinNamed": "Désépingler {{name}}",
 		"unpinFailed": "Impossible de désépingler la collection"
 	},
-	"allNotes": {
-		"title": "Toutes les notes",
-		"showActivity": "Afficher l’activité",
-		"today": "Aujourd’hui",
-		"yesterday": "Hier",
-		"thisWeek": "Cette semaine",
-		"thisMonth": "Ce mois-ci",
-		"earlier": "Plus tôt"
-	},
 	"tags": {
 		"header": "Étiquettes",
 		"collapse": "Réduire les étiquettes",

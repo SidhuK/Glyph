@@ -42,15 +42,6 @@
 		"unpinNamed": "Unpin {{name}}",
 		"unpinFailed": "Could not unpin collection"
 	},
-	"allNotes": {
-		"title": "All Notes",
-		"showActivity": "Show activity",
-		"today": "Today",
-		"yesterday": "Yesterday",
-		"thisWeek": "This Week",
-		"thisMonth": "This Month",
-		"earlier": "Earlier"
-	},
 	"tags": {
 		"header": "Tags",
 		"collapse": "Collapse Tags",

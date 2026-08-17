@@ -113,11 +113,6 @@
 			"label": "Folio モード",
 			"description": "ナビゲーション、ノート、エディタを 3 列のワークスペースで表示します。",
 			"ariaLabel": "Folio モード"
-		},
-		"classicAllNotes": {
-			"label": "クラシックなすべてのノートグリッド",
-			"description": "アクティビティタイムラインではなく、シンプルなグリッドですべてのノートを開きます。",
-			"ariaLabel": "クラシックなすべてのノートグリッド"
 		}
 	},
 	"editorPresentation": {

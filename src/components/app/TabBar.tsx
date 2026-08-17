@@ -13,7 +13,6 @@ import { useTranslation } from "react-i18next";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
-import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
@@ -63,7 +62,6 @@ const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
 
 function isPathSpecial(path: string): boolean {
 	return (
-		path === ALL_DOCS_TAB_ID ||
 		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === DATABASES_TAB_ID ||
 		path === PINNED_DOCS_TAB_ID ||
@@ -124,7 +122,6 @@ export function TabBar({
 	const tabLabel = useCallback(
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
-			if (tab.target === ALL_DOCS_TAB_ID) return t("tabs.allNotes");
 			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
 			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
 			if (tab.target === PINNED_DOCS_TAB_ID) return t("tabs.pinned");

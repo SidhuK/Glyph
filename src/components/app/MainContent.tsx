@@ -178,8 +178,6 @@ interface MainContentProps {
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenFolioFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
-	onOpenActivity: () => void;
-	onPrefetchActivity: () => void;
 	onOpenDatabase: (databaseId: string) => void;
 	panes: Record<string, WorkspaceEditorPane>;
 	splitLayout: SplitEditorNode;
@@ -229,8 +227,6 @@ export const MainContent = memo(function MainContent({
 	onOpenFileInNewTab,
 	onOpenFolioFileInNewTab,
 	onOpenCommandPalette,
-	onOpenActivity,
-	onPrefetchActivity,
 	onOpenDatabase,
 	panes,
 	splitLayout,
@@ -389,8 +385,6 @@ export const MainContent = memo(function MainContent({
 					onOpenFile={onOpenFile}
 					onBrowseFile={onBrowseFile}
 					onOpenFileInNewTab={onOpenFileInNewTab}
-					onOpenActivity={onOpenActivity}
-					onPrefetchActivity={onPrefetchActivity}
 					onOpenDatabase={onOpenDatabase}
 					onStartRenamePath={onStartRenamePath}
 					onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
@@ -423,7 +417,6 @@ export const MainContent = memo(function MainContent({
 			onConsumeDatabasesOpenRequest,
 			onLoadBreadcrumbDir,
 			onNavigateBreadcrumbPath,
-			onOpenActivity,
 			onOpenDatabase,
 			onOpenFile,
 			onBrowseFile,
@@ -431,7 +424,6 @@ export const MainContent = memo(function MainContent({
 			onOpenCommandPalette,
 			onGoBackInPane,
 			onGoForwardInPane,
-			onPrefetchActivity,
 			onStartRenamePath,
 			openBlankTabInPane,
 			panes,

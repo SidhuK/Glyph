@@ -557,20 +557,6 @@
 			"section": "実験的",
 			"keywords": ["peek", "プレビュー", "wiki", "すべてのノート", "arc"]
 		},
-		"appearance-layout-classic-all-notes": {
-			"title": "クラシックなすべてのノートグリッド",
-			"section": "実験的",
-			"keywords": [
-				"すべてのノート",
-				"アクティビティ",
-				"タイムライン",
-				"グリッド",
-				"all notes",
-				"activity",
-				"timeline",
-				"grid"
-			]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "フォルダのファイル数を表示",
 			"section": "ファイルツリー",

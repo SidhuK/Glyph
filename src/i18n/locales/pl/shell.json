@@ -42,15 +42,6 @@
 		"unpinNamed": "Odepnij {{name}}",
 		"unpinFailed": "Nie można odpiąć kolekcji"
 	},
-	"allNotes": {
-		"title": "Wszystkie notatki",
-		"showActivity": "Pokaż aktywność",
-		"today": "Dziś",
-		"yesterday": "Wczoraj",
-		"thisWeek": "Ten tydzień",
-		"thisMonth": "Ten miesiąc",
-		"earlier": "Wcześniej"
-	},
 	"tags": {
 		"header": "Tagi",
 		"collapse": "Zwiń tagi",

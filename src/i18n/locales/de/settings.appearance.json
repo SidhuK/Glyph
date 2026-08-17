@@ -113,11 +113,6 @@
 			"label": "Folio-Modus",
 			"description": "Navigation, Notizen und Editor in einem dreispaltigen Arbeitsbereich anzeigen.",
 			"ariaLabel": "Folio-Modus"
-		},
-		"classicAllNotes": {
-			"label": "Klassisches Raster „Alle Notizen“",
-			"description": "Alle Notizen als einfaches Raster statt der Aktivitätszeitleiste öffnen.",
-			"ariaLabel": "Klassisches Raster „Alle Notizen“"
 		}
 	},
 	"editorPresentation": {

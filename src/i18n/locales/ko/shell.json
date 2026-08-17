@@ -42,15 +42,6 @@
 		"unpinNamed": "{{name}} 고정 해제",
 		"unpinFailed": "컬렉션 고정을 해제할 수 없습니다"
 	},
-	"allNotes": {
-		"title": "모든 노트",
-		"showActivity": "활동 표시",
-		"today": "오늘",
-		"yesterday": "어제",
-		"thisWeek": "이번 주",
-		"thisMonth": "이번 달",
-		"earlier": "이전"
-	},
 	"tags": {
 		"header": "태그",
 		"collapse": "태그 접기",

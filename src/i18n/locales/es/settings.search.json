@@ -569,20 +569,6 @@
 			"section": "Experimental",
 			"keywords": ["peek", "vista", "wiki", "todas las notas", "arc"]
 		},
-		"appearance-layout-classic-all-notes": {
-			"title": "Cuadrícula clásica de Todas las notas",
-			"section": "Experimental",
-			"keywords": [
-				"todas las notas",
-				"actividad",
-				"línea de tiempo",
-				"cuadrícula",
-				"all notes",
-				"activity",
-				"timeline",
-				"grid"
-			]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "Mostrar recuento de archivos por carpeta",
 			"section": "Árbol de archivos",

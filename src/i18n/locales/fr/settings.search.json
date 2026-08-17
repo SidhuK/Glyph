@@ -561,20 +561,6 @@
 			"section": "Expérimental",
 			"keywords": ["peek", "aperçu", "wiki", "toutes les notes", "arc"]
 		},
-		"appearance-layout-classic-all-notes": {
-			"title": "Grille classique Toutes les notes",
-			"section": "Expérimental",
-			"keywords": [
-				"toutes les notes",
-				"activité",
-				"chronologie",
-				"grille",
-				"all notes",
-				"activity",
-				"timeline",
-				"grid"
-			]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "Afficher le nombre de fichiers par dossier",
 			"section": "Arborescence des fichiers",

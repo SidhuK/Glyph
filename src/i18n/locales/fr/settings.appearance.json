@@ -113,11 +113,6 @@
 			"label": "Mode Folio",
 			"description": "Afficher la navigation, les notes et l’éditeur dans un espace de travail à trois colonnes.",
 			"ariaLabel": "Mode Folio"
-		},
-		"classicAllNotes": {
-			"label": "Grille classique Toutes les notes",
-			"description": "Ouvrir Toutes les notes en grille simple plutôt qu’en chronologie d’activité.",
-			"ariaLabel": "Grille classique Toutes les notes"
 		}
 	},
 	"editorPresentation": {

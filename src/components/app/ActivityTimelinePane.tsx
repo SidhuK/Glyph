@@ -242,9 +242,7 @@ function countUniqueNotes(days: ActivityDay[]): number {
 }
 
 function useActivityTimelineData(dailyNotesFolder: string | null) {
-	const notesQuery = useInfiniteQuery(
-		allDocsPagesQueryOptions(null, ACTIVITY_DOCS_PAGE_SIZE),
-	);
+	const notesQuery = useInfiniteQuery(allDocsPagesQueryOptions(null));
 	const heatmapNotesQuery = useQuery(allDocsListQueryOptions(null));
 	const feedNotes = useMemo(
 		() => notesQuery.data?.pages.flatMap((page) => page.items) ?? [],

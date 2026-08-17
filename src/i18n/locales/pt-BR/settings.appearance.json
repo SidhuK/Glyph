@@ -113,11 +113,6 @@
 			"label": "Modo Folio",
 			"description": "Mostrar navegação, notas e editor em um espaço de trabalho de três colunas.",
 			"ariaLabel": "Modo Folio"
-		},
-		"classicAllNotes": {
-			"label": "Grade clássica de Todas as notas",
-			"description": "Abrir Todas as notas como a grade simples em vez da linha do tempo de atividade.",
-			"ariaLabel": "Grade clássica de Todas as notas"
 		}
 	},
 	"editorPresentation": {

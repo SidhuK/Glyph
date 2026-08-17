@@ -9,12 +9,9 @@ import {
 	useState,
 } from "react";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
-import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
-	ACTIVITY_DOCS_PAGE_SIZE,
-	getPrefetchedAllDocs,
 	getPrefetchedDatabaseDocument,
 	getPrefetchedNote,
 	prefetchAllDocs,
@@ -35,7 +32,6 @@ import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { TabBar } from "./TabBar";
 import {
 	loadActivityTimelinePane,
-	loadAllDocsPane,
 	loadDatabasesPane,
 } from "./prefetchablePanes";
 import type { WorkspaceEditorPane } from "./useTabManager";
@@ -46,7 +42,6 @@ const PinnedDocsPane = lazy(() =>
 	})),
 );
 const DatabasesPane = lazy(loadDatabasesPane);
-const AllDocsPane = lazy(loadAllDocsPane);
 const ActivityTimelinePane = lazy(loadActivityTimelinePane);
 const SpaceConnectionsView = lazy(() =>
 	import("../connections/SpaceConnectionsView").then((module) => ({
@@ -68,8 +63,6 @@ interface EditorPaneCanvasProps {
 	onOpenFile: (relPath: string) => Promise<void>;
 	onBrowseFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
-	onOpenActivity: () => void;
-	onPrefetchActivity: () => void;
 	onOpenDatabase: (databaseId: string) => void;
 	onStartRenamePath: (path: string) => void;
 	onNavigateBreadcrumbPath: (dirPath: string) => void;
@@ -99,8 +92,6 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	onOpenFile,
 	onBrowseFile,
 	onOpenFileInNewTab,
-	onOpenActivity,
-	onPrefetchActivity,
 	onOpenDatabase,
 	onStartRenamePath,
 	onNavigateBreadcrumbPath,
@@ -122,12 +113,9 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			if (!target) return;
 			if (isMarkdownPath(target)) {
 				prefetchNote(target);
-			} else if (target === ALL_DOCS_TAB_ID) {
-				void loadAllDocsPane();
-				void prefetchAllDocs(null);
 			} else if (target === ACTIVITY_TIMELINE_TAB_ID) {
 				void loadActivityTimelinePane();
-				void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
+				void prefetchAllDocs(null);
 			} else if (target === DATABASES_TAB_ID) {
 				void loadDatabasesPane();
 				void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
@@ -147,8 +135,6 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			onOpenFile={onOpenFile}
 			onBrowseFile={onBrowseFile}
 			onOpenFileInNewTab={onOpenFileInNewTab}
-			onOpenActivity={onOpenActivity}
-			onPrefetchActivity={onPrefetchActivity}
 			onOpenDatabase={onOpenDatabase}
 			setDirtyByPath={setDirtyByPath}
 			onInfoSidebarOpenChange={onInfoSidebarOpenChange}
@@ -165,10 +151,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 				viewerPath === SPACE_CONNECTIONS_TAB_ID ? "true" : undefined
 			}
 			data-all-docs={
-				viewerPath === ALL_DOCS_TAB_ID ||
-				viewerPath === ACTIVITY_TIMELINE_TAB_ID
-					? "true"
-					: undefined
+				viewerPath === ACTIVITY_TIMELINE_TAB_ID ? "true" : undefined
 			}
 			data-databases={viewerPath === DATABASES_TAB_ID ? "true" : undefined}
 		>
@@ -221,8 +204,6 @@ interface EditorPaneContentProps {
 	onOpenFile: EditorPaneCanvasProps["onOpenFile"];
 	onBrowseFile: EditorPaneCanvasProps["onBrowseFile"];
 	onOpenFileInNewTab: EditorPaneCanvasProps["onOpenFileInNewTab"];
-	onOpenActivity: EditorPaneCanvasProps["onOpenActivity"];
-	onPrefetchActivity: EditorPaneCanvasProps["onPrefetchActivity"];
 	onOpenDatabase: EditorPaneCanvasProps["onOpenDatabase"];
 	setDirtyByPath: EditorPaneCanvasProps["setDirtyByPath"];
 	onInfoSidebarOpenChange: EditorPaneCanvasProps["onInfoSidebarOpenChange"];
@@ -238,8 +219,6 @@ function EditorPaneContent({
 	onOpenFile,
 	onBrowseFile,
 	onOpenFileInNewTab,
-	onOpenActivity,
-	onPrefetchActivity,
 	onOpenDatabase,
 	setDirtyByPath,
 	onInfoSidebarOpenChange,
@@ -248,18 +227,6 @@ function EditorPaneContent({
 }: EditorPaneContentProps) {
 	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
 
-	if (viewerPath === ALL_DOCS_TAB_ID) {
-		return (
-			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-				<AllDocsPane
-					onOpenFile={onBrowseFile}
-					onOpenActivity={onOpenActivity}
-					onPrefetchActivity={onPrefetchActivity}
-					initialNotes={getPrefetchedAllDocs(null)}
-				/>
-			</Suspense>
-		);
-	}
 	if (viewerPath === PINNED_DOCS_TAB_ID) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>

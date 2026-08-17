@@ -31,7 +31,6 @@ import { usePeriodNote } from "../../hooks/usePeriodNote";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
-import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	dispatchEditorMenuAction,
 	dispatchFileTreeStartRename,
@@ -43,7 +42,6 @@ import {
 } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
-	ACTIVITY_DOCS_PAGE_SIZE,
 	prefetchAllDocs,
 	prefetchDatabasesLanding,
 	prefetchNote,
@@ -89,7 +87,6 @@ import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import {
 	loadActivityTimelinePane,
-	loadAllDocsPane,
 	loadDatabasesPane,
 } from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
@@ -199,9 +196,6 @@ export function AppShell() {
 		TemplatePickerItem[]
 	>([]);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
-	const [classicAllNotesByDefault, setClassicAllNotesByDefault] = useState<
-		boolean | null
-	>(null);
 	const [noteSidePeekEnabled, setNoteSidePeekEnabled] = useState(false);
 	const [notePeek, setNotePeek] = useState<{
 		spacePath: string;
@@ -282,13 +276,11 @@ export function AppShell() {
 			.then((settings) => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
-				setClassicAllNotesByDefault(settings.ui.classicAllNotesByDefault);
 				setNoteSidePeekEnabled(settings.ui.noteSidePeek);
 				setResumeLastSession(settings.ui.resumeLastSession);
 			})
 			.catch((error) => {
 				console.error("Failed to load workspace display settings", error);
-				if (!cancelled) setClassicAllNotesByDefault(false);
 				if (!cancelled) setResumeLastSession(false);
 			});
 		return () => {
@@ -302,16 +294,12 @@ export function AppShell() {
 			(payload: {
 				editor?: { showCollapsibleHeadings?: boolean };
 				ui?: {
-					classicAllNotesByDefault?: boolean;
 					noteSidePeek?: boolean;
 					resumeLastSession?: boolean;
 				};
 			}) => {
 				if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 					setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
-				}
-				if (typeof payload.ui?.classicAllNotesByDefault === "boolean") {
-					setClassicAllNotesByDefault(payload.ui.classicAllNotesByDefault);
 				}
 				if (typeof payload.ui?.noteSidePeek === "boolean") {
 					setNoteSidePeekEnabled(payload.ui.noteSidePeek);
@@ -974,11 +962,7 @@ export function AppShell() {
 	const activeTopSection = useMemo<
 		"all-notes" | "connections" | "databases" | "pinned-notes" | null
 	>(() => {
-		if (
-			activeTabPath === ALL_DOCS_TAB_ID ||
-			activeTabPath === ACTIVITY_TIMELINE_TAB_ID
-		)
-			return "all-notes";
+		if (activeTabPath === ACTIVITY_TIMELINE_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
 		if (activeTabPath === PINNED_DOCS_TAB_ID) return "pinned-notes";
@@ -995,12 +979,6 @@ export function AppShell() {
 		openPalette("search");
 	}, [openCommandPalette, openPalette, spacePath]);
 	const openAllDocsTab = useCallback(() => {
-		if (classicAllNotesByDefault === null) return;
-		openSpecialTab(
-			classicAllNotesByDefault ? ALL_DOCS_TAB_ID : ACTIVITY_TIMELINE_TAB_ID,
-		);
-	}, [classicAllNotesByDefault, openSpecialTab]);
-	const openActivityTab = useCallback(() => {
 		openSpecialTab(ACTIVITY_TIMELINE_TAB_ID);
 	}, [openSpecialTab]);
 	const openPinnedDocsTab = useCallback(() => {
@@ -1039,18 +1017,8 @@ export function AppShell() {
 		void prefetchDatabasesLanding(databaseId);
 	}, []);
 	const prefetchAllDocsTab = useCallback(() => {
-		if (classicAllNotesByDefault === null) return;
-		if (classicAllNotesByDefault) {
-			void loadAllDocsPane();
-			void prefetchAllDocs(null);
-		} else {
-			void loadActivityTimelinePane();
-			void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
-		}
-	}, [classicAllNotesByDefault]);
-	const prefetchActivityTab = useCallback(() => {
 		void loadActivityTimelinePane();
-		void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
+		void prefetchAllDocs(null);
 	}, []);
 
 	const handleCopyOpenNoteAsMarkdown = useCallback(async () => {
@@ -1503,8 +1471,6 @@ export function AppShell() {
 				onOpenFileInNewTab={openWorkspaceFileInNewTab}
 				onOpenFolioFileInNewTab={openFolioWorkspaceFileInNewTab}
 				onOpenCommandPalette={openCommandPalette}
-				onOpenActivity={openActivityTab}
-				onPrefetchActivity={prefetchActivityTab}
 				onOpenDatabase={(databaseId) => openDatabasesTab(databaseId)}
 				panes={panes}
 				splitLayout={splitLayout}

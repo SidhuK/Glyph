@@ -20,6 +20,9 @@ import { invoke } from "./tauri";
 
 const NOTE_PREFETCH_GC_TIME_MS = 60 * 1000;
 const NAVIGATION_STALE_TIME_MS = 5 * 60 * 1000;
+const ALL_DOCS_LIST_LIMIT = 2000;
+const ALL_DOCS_PAGE_SIZE = 48;
+export const ACTIVITY_DOCS_PAGE_SIZE = 40;
 
 const normalizeAllDocsFolder = (folderPrefix?: string | null) => {
 	const normalized = folderPrefix
@@ -82,7 +85,10 @@ export const navigationQueryKeys = {
 			...navigationQueryKeys.allDocs(),
 			normalizeAllDocsFolder(folderPrefix),
 		] as const,
-	allDocsPages: (folderPrefix?: string | null, pageSize = ALL_DOCS_PAGE_SIZE) =>
+	allDocsPages: (
+		folderPrefix?: string | null,
+		pageSize = ACTIVITY_DOCS_PAGE_SIZE,
+	) =>
 		[
 			...navigationQueryKeys.allDocs(),
 			"pages",
@@ -247,17 +253,13 @@ export async function prefetchDatabasesLanding(
 	await prefetchDatabaseDocument(databaseId);
 }
 
-export const ALL_DOCS_LIST_LIMIT = 2000;
-export const ALL_DOCS_PAGE_SIZE = 48;
-export const ACTIVITY_DOCS_PAGE_SIZE = 40;
-
 export function formatAllDocsCountLabel(count: number): string | null {
 	if (count <= 0) return null;
 	if (count > ALL_DOCS_LIST_LIMIT) return `${ALL_DOCS_LIST_LIMIT}+`;
 	return String(count);
 }
 
-export async function loadAllDocsCount(folderPrefix?: string | null) {
+async function loadAllDocsCount(folderPrefix?: string | null) {
 	return invoke("all_docs_count", {
 		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
 	});
@@ -273,7 +275,7 @@ interface AllDocsPagesData {
 	pageParams: unknown[];
 }
 
-export async function loadAllDocsPage(
+async function loadAllDocsPage(
 	folderPrefix?: string | null,
 	offset = 0,
 	limit = ALL_DOCS_PAGE_SIZE,
@@ -308,7 +310,7 @@ export async function loadAllDocs(folderPrefix?: string | null) {
 
 export function allDocsPagesQueryOptions(
 	folderPrefix?: string | null,
-	pageSize = ALL_DOCS_PAGE_SIZE,
+	pageSize = ACTIVITY_DOCS_PAGE_SIZE,
 ) {
 	return {
 		queryKey: navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
@@ -341,29 +343,10 @@ export function allDocsCountQueryOptions(folderPrefix?: string | null) {
 
 export function prefetchAllDocs(
 	folderPrefix?: string | null,
-	pageSize = ALL_DOCS_PAGE_SIZE,
+	pageSize = ACTIVITY_DOCS_PAGE_SIZE,
 ) {
 	return queryClient.prefetchInfiniteQuery(
 		allDocsPagesQueryOptions(folderPrefix, pageSize),
-	);
-}
-
-export function prefetchAllDocsList(folderPrefix?: string | null) {
-	return queryClient.prefetchQuery(allDocsListQueryOptions(folderPrefix));
-}
-
-export function getPrefetchedAllDocs(
-	folderPrefix?: string | null,
-	pageSize = ALL_DOCS_PAGE_SIZE,
-) {
-	const pages = queryClient.getQueryData<AllDocsPagesData>(
-		navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
-	);
-	if (pages) return pages.pages.flatMap((page) => page.items);
-	return (
-		queryClient.getQueryData<AllDocsItem[]>(
-			navigationQueryKeys.allDocsList(folderPrefix),
-		) ?? null
 	);
 }
 
@@ -457,7 +440,7 @@ function updateAllDocsCaches(
 		const pageSize =
 			typeof rawPageSize === "number" && rawPageSize > 0
 				? rawPageSize
-				: ALL_DOCS_PAGE_SIZE;
+				: ACTIVITY_DOCS_PAGE_SIZE;
 		const current = queryClient.getQueryData<AllDocsPagesData>(query.queryKey);
 		if (!current) continue;
 		const nextItems = updater(

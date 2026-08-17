@@ -560,20 +560,6 @@
 			"section": "Experimentell",
 			"keywords": ["peek", "vorschau", "wiki", "alle notizen", "arc"]
 		},
-		"appearance-layout-classic-all-notes": {
-			"title": "Klassisches Raster „Alle Notizen“",
-			"section": "Experimentell",
-			"keywords": [
-				"alle notizen",
-				"aktivität",
-				"zeitleiste",
-				"raster",
-				"all notes",
-				"activity",
-				"timeline",
-				"grid"
-			]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "Dateianzahl in Ordnern anzeigen",
 			"section": "Dateibaum",

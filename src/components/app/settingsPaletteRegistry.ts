@@ -274,10 +274,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		defaultVisible: true,
 	},
 	{
-		...bindApplicationSetting(DURABLE_SETTINGS.classicAllNotesByDefault),
-		control: "toggle",
-	},
-	{
 		...bindApplicationSetting(DURABLE_SETTINGS.showFileTreeFolderCounts),
 		control: "toggle",
 	},

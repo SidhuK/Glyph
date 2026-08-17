@@ -51,11 +51,6 @@ export function ExperimentalSettingsPane() {
 		DURABLE_SETTINGS.noteSidePeek.write,
 		setError,
 	);
-	const classicAllNotes = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.classicAllNotesByDefault.write,
-		setError,
-	);
 	const externalLinkPreviews = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.editorShowExternalLinkPreviews.write,
@@ -79,7 +74,6 @@ export function ExperimentalSettingsPane() {
 
 	const setInitialFolioMode = folioMode.setInitialChecked;
 	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
-	const setInitialClassicAllNotes = classicAllNotes.setInitialChecked;
 	const setInitialExternalLinkPreviews = externalLinkPreviews.setInitialChecked;
 	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
 	const setInitialFocusMode = focusMode.setInitialValue;
@@ -90,14 +84,12 @@ export function ExperimentalSettingsPane() {
 		if (!settings) return;
 		setInitialFolioMode(settings.ui.folioMode);
 		setInitialNoteSidePeek(settings.ui.noteSidePeek);
-		setInitialClassicAllNotes(settings.ui.classicAllNotesByDefault);
 		setInitialExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
 		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
 		setInitialFocusMode(settings.editor.focusMode);
 		setInitialNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
 	}, [
 		settings,
-		setInitialClassicAllNotes,
 		setInitialExternalLinkPreviews,
 		setInitialFolioMode,
 		setInitialNoteSidePeek,
@@ -197,17 +189,6 @@ export function ExperimentalSettingsPane() {
 								</option>
 							))}
 						</SettingsSelect>
-					</SettingsRow>
-					<SettingsRow
-						label={tAppearance("layout.classicAllNotes.label")}
-						description={tAppearance("layout.classicAllNotes.description")}
-					>
-						<SettingsToggle
-							checked={classicAllNotes.checked}
-							disabled={classicAllNotes.isSaving}
-							ariaLabel={tAppearance("layout.classicAllNotes.ariaLabel")}
-							onCheckedChange={classicAllNotes.onCheckedChange}
-						/>
 					</SettingsRow>
 					<SettingsRow
 						label={t("fileTree.nonMarkdownFiles.label")}
