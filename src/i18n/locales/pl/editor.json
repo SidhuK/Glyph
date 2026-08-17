@@ -294,5 +294,12 @@
 			"title": "Wyróżnienie: Brak",
 			"description": "Usuń wyróżnienie tekstu"
 		}
+	},
+	"sidePeek": {
+		"dialogLabel": "Podgląd notatki",
+		"open": "Otwórz notatkę",
+		"close": "Zamknij podgląd",
+		"loading": "Wczytywanie notatki…",
+		"empty": "Ta notatka jest pusta."
 	}
 }

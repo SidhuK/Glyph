@@ -104,6 +104,7 @@ export interface AppSettings {
 		showNonMarkdownFiles: boolean;
 		fileTreeSortMode: FileTreeSortMode;
 		folioMode: boolean;
+		noteSidePeek: boolean;
 		classicAllNotesByDefault: boolean;
 		resumeLastSession: boolean;
 		keepRunningOnLastWindowClose: boolean;

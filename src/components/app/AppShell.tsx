@@ -201,6 +201,11 @@ export function AppShell() {
 	const [classicAllNotesByDefault, setClassicAllNotesByDefault] = useState<
 		boolean | null
 	>(null);
+	const [noteSidePeekEnabled, setNoteSidePeekEnabled] = useState(false);
+	const [notePeek, setNotePeek] = useState<{
+		spacePath: string;
+		relPath: string;
+	} | null>(null);
 	const [resumeLastSession, setResumeLastSession] = useState<boolean | null>(
 		null,
 	);
@@ -277,6 +282,7 @@ export function AppShell() {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 				setClassicAllNotesByDefault(settings.ui.classicAllNotesByDefault);
+				setNoteSidePeekEnabled(settings.ui.noteSidePeek);
 				setResumeLastSession(settings.ui.resumeLastSession);
 			})
 			.catch((error) => {
@@ -296,6 +302,7 @@ export function AppShell() {
 				editor?: { showCollapsibleHeadings?: boolean };
 				ui?: {
 					classicAllNotesByDefault?: boolean;
+					noteSidePeek?: boolean;
 					resumeLastSession?: boolean;
 				};
 			}) => {
@@ -304,6 +311,10 @@ export function AppShell() {
 				}
 				if (typeof payload.ui?.classicAllNotesByDefault === "boolean") {
 					setClassicAllNotesByDefault(payload.ui.classicAllNotesByDefault);
+				}
+				if (typeof payload.ui?.noteSidePeek === "boolean") {
+					setNoteSidePeekEnabled(payload.ui.noteSidePeek);
+					if (!payload.ui.noteSidePeek) setNotePeek(null);
 				}
 				if (typeof payload.ui?.resumeLastSession === "boolean") {
 					setResumeLastSession(payload.ui.resumeLastSession);
@@ -456,9 +467,13 @@ export function AppShell() {
 		}).catch(() => {});
 	}, [periodNotesEnabled, settingsSpacePath, spacePath]);
 
+	const closeNotePeek = useCallback(() => {
+		setNotePeek(null);
+	}, []);
 	const openWorkspaceFile = useCallback(
 		async (path: string) => {
 			if (!path) return;
+			closeNotePeek();
 			if (isMarkdownPath(path)) {
 				setActiveDirPath(parentDir(path));
 				openFileTab(path);
@@ -466,8 +481,24 @@ export function AppShell() {
 			}
 			await fileTree.openFile(path);
 		},
-		[fileTree, openFileTab, setActiveDirPath],
+		[closeNotePeek, fileTree, openFileTab, setActiveDirPath],
 	);
+	const openBrowseNote = useCallback(
+		async (path: string) => {
+			if (!path) return;
+			if (noteSidePeekEnabled && spacePath && isMarkdownPath(path)) {
+				prefetchNote(path);
+				setNotePeek({ spacePath, relPath: path });
+				return;
+			}
+			await openWorkspaceFile(path);
+		},
+		[noteSidePeekEnabled, openWorkspaceFile, spacePath],
+	);
+	const openPeekedNote = useCallback(async () => {
+		if (!notePeek) return;
+		await openWorkspaceFile(notePeek.relPath);
+	}, [notePeek, openWorkspaceFile]);
 	const { importFilesInto, importFolderInto, importPathsInto } = useFileImport({
 		loadDir: fileTree.loadDir,
 		openWorkspaceFile,
@@ -499,6 +530,7 @@ export function AppShell() {
 	const openFolioWorkspaceFile = useCallback(
 		async (path: string) => {
 			if (!path) return;
+			closeNotePeek();
 			if (!isMarkdownPath(path)) {
 				await fileTree.openFile(path);
 				return;
@@ -506,7 +538,7 @@ export function AppShell() {
 			setActiveDirPath(parentDir(path));
 			openFileTab(path);
 		},
-		[fileTree, openFileTab, setActiveDirPath],
+		[closeNotePeek, fileTree, openFileTab, setActiveDirPath],
 	);
 
 	const openWorkspaceFileInNewTab = useCallback(
@@ -787,6 +819,7 @@ export function AppShell() {
 		fileTree,
 		openPalette,
 		openWorkspaceFile,
+		openBrowseNote,
 		setError,
 	});
 
@@ -1445,6 +1478,7 @@ export function AppShell() {
 					onDeletePath: fileTree.onDeletePath,
 				}}
 				onOpenFile={openWorkspaceFile}
+				onBrowseFile={openBrowseNote}
 				onOpenFolioFile={openFolioWorkspaceFile}
 				onOpenFileInNewTab={openWorkspaceFileInNewTab}
 				onOpenFolioFileInNewTab={openFolioWorkspaceFileInNewTab}
@@ -1479,6 +1513,13 @@ export function AppShell() {
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
+				peekNotePath={
+					notePeek && notePeek.spacePath === spacePath ? notePeek.relPath : null
+				}
+				onCloseNotePeek={closeNotePeek}
+				onOpenPeekedNote={() => {
+					void openPeekedNote();
+				}}
 			/>
 			{commandPaletteMounted ? (
 				<Suspense fallback={null}>

@@ -237,5 +237,12 @@
 			"title": "Hervorhebung: Entfernen",
 			"description": "Texthervorhebung entfernen"
 		}
+	},
+	"sidePeek": {
+		"dialogLabel": "Notiz-Peek",
+		"open": "Notiz öffnen",
+		"close": "Peek schließen",
+		"loading": "Notiz wird geladen…",
+		"empty": "Diese Notiz ist leer."
 	}
 }

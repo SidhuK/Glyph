@@ -513,6 +513,11 @@
 			"section": "Experimental",
 			"keywords": ["layout", "reading"]
 		},
+		"appearance-layout-note-side-peek": {
+			"title": "Note peek",
+			"section": "Experimental",
+			"keywords": ["peek", "preview", "wiki", "all notes", "arc"]
+		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Classic All Notes grid",
 			"section": "Experimental",

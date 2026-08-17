@@ -77,7 +77,12 @@
 	},
 	"experimental": {
 		"sectionTitle": "実験的",
-		"sectionDescription": "まだ作り込みが足りない実験的な機能です。今後の Glyph のバージョンで変更または削除されることがあります。"
+		"sectionDescription": "まだ作り込みが足りない実験的な機能です。今後の Glyph のバージョンで変更または削除されることがあります。",
+		"noteSidePeek": {
+			"label": "ノートピーク",
+			"description": "Wiki リンクやすべてのノートは、現在のタブを置き換えず Peek として重ねて開きます。Peek を広げるとそのノートへ移動し、閉じると今の場所に残ります。ファイルツリーとコマンドパレットはこれまでどおりタブで開きます。",
+			"ariaLabel": "ノートピーク"
+		}
 	},
 	"editor": {
 		"sectionTitle": "エディタ",

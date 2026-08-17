@@ -237,5 +237,12 @@
 			"title": "Destaque: Limpar",
 			"description": "Remover o destaque do texto"
 		}
+	},
+	"sidePeek": {
+		"dialogLabel": "Peek da nota",
+		"open": "Abrir nota",
+		"close": "Fechar peek",
+		"loading": "Carregando nota…",
+		"empty": "Esta nota está vazia."
 	}
 }

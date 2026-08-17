@@ -499,6 +499,7 @@ export async function loadSettings(
 		DURABLE_SETTINGS.showNonMarkdownFiles.load(entries);
 	const fileTreeSortMode = DURABLE_SETTINGS.fileTreeSortMode.load(entries);
 	const folioMode = DURABLE_SETTINGS.folioMode.load(entries);
+	const noteSidePeek = DURABLE_SETTINGS.noteSidePeek.load(entries);
 	const classicAllNotesByDefault =
 		DURABLE_SETTINGS.classicAllNotesByDefault.load(entries);
 	const resumeLastSession = DURABLE_SETTINGS.resumeLastSession.load(entries);
@@ -637,6 +638,7 @@ export async function loadSettings(
 			showNonMarkdownFiles,
 			fileTreeSortMode,
 			folioMode,
+			noteSidePeek,
 			classicAllNotesByDefault,
 			resumeLastSession,
 			keepRunningOnLastWindowClose,

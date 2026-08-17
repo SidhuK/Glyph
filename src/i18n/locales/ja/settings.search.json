@@ -552,6 +552,11 @@
 			"section": "実験的",
 			"keywords": ["レイアウト", "読書", "layout", "reading", "folio"]
 		},
+		"appearance-layout-note-side-peek": {
+			"title": "ノートピーク",
+			"section": "実験的",
+			"keywords": ["peek", "プレビュー", "wiki", "すべてのノート", "arc"]
+		},
 		"appearance-layout-classic-all-notes": {
 			"title": "クラシックなすべてのノートグリッド",
 			"section": "実験的",

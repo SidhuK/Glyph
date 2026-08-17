@@ -237,5 +237,12 @@
 			"title": "Resaltado: Quitar",
 			"description": "Quitar el resaltado del texto"
 		}
+	},
+	"sidePeek": {
+		"dialogLabel": "Vista de nota",
+		"open": "Abrir nota",
+		"close": "Cerrar vista",
+		"loading": "Cargando nota…",
+		"empty": "Esta nota está vacía."
 	}
 }

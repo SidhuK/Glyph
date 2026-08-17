@@ -237,5 +237,12 @@
 			"title": "Surlignage : Effacer",
 			"description": "Supprimer le surlignage du texte"
 		}
+	},
+	"sidePeek": {
+		"dialogLabel": "Aperçu de note",
+		"open": "Ouvrir la note",
+		"close": "Fermer l’aperçu",
+		"loading": "Chargement de la note…",
+		"empty": "Cette note est vide."
 	}
 }

@@ -27,6 +27,7 @@ interface UseWorkspaceLinkEventsArgs {
 	fileTree: UseFileTreeResult;
 	openPalette: (mode: "commands" | "search", query?: string) => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
+	openBrowseNote: (path: string) => Promise<void>;
 	setError: (error: string) => void;
 }
 
@@ -35,6 +36,7 @@ export function useWorkspaceLinkEvents({
 	fileTree,
 	openPalette,
 	openWorkspaceFile,
+	openBrowseNote,
 	setError,
 }: UseWorkspaceLinkEventsArgs) {
 	const openOrCreateWikiLinkTarget = useCallback(
@@ -62,7 +64,7 @@ export function useWorkspaceLinkEvents({
 				target: normalizedTarget,
 			});
 			if (resolved) {
-				await openWorkspaceFile(resolved);
+				await openBrowseNote(resolved);
 				return;
 			}
 
@@ -92,13 +94,19 @@ export function useWorkspaceLinkEvents({
 				target: normalizedTarget,
 			});
 			if (fallbackResolved) {
-				await openWorkspaceFile(fallbackResolved);
+				await openBrowseNote(fallbackResolved);
 				return;
 			}
 
 			setError(`Could not resolve wikilink: ${rawTarget}`);
 		},
-		[activeMarkdownTabPath, fileTree, openWorkspaceFile, setError],
+		[
+			activeMarkdownTabPath,
+			fileTree,
+			openBrowseNote,
+			openWorkspaceFile,
+			setError,
+		],
 	);
 
 	useEffect(() => {
@@ -157,14 +165,14 @@ export function useWorkspaceLinkEvents({
 						sourcePath: detail.sourcePath,
 					});
 					if (resolved) {
-						await openWorkspaceFile(resolved);
+						await openBrowseNote(resolved);
 						return;
 					}
 					const wikiFallback = await invoke("space_resolve_wikilink", {
 						target: detail.href,
 					});
 					if (wikiFallback) {
-						await openWorkspaceFile(wikiFallback);
+						await openBrowseNote(wikiFallback);
 						return;
 					}
 					setError(`Could not resolve markdown link: ${detail.href}`);
@@ -202,5 +210,11 @@ export function useWorkspaceLinkEvents({
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 			window.removeEventListener(PERSON_CLICK_EVENT, onPersonClick);
 		};
-	}, [openOrCreateWikiLinkTarget, openPalette, openWorkspaceFile, setError]);
+	}, [
+		openBrowseNote,
+		openOrCreateWikiLinkTarget,
+		openPalette,
+		openWorkspaceFile,
+		setError,
+	]);
 }

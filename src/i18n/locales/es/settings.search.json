@@ -564,6 +564,11 @@
 			"section": "Experimental",
 			"keywords": ["diseño", "lectura", "layout", "reading", "folio"]
 		},
+		"appearance-layout-note-side-peek": {
+			"title": "Peek de nota",
+			"section": "Experimental",
+			"keywords": ["peek", "vista", "wiki", "todas las notas", "arc"]
+		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Cuadrícula clásica de Todas las notas",
 			"section": "Experimental",

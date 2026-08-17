@@ -77,7 +77,12 @@
 	},
 	"experimental": {
 		"sectionTitle": "Expérimental",
-		"sectionDescription": "Fonctionnalités expérimentales encore inachevées. Une version ultérieure de Glyph peut les modifier ou les retirer."
+		"sectionDescription": "Fonctionnalités expérimentales encore inachevées. Une version ultérieure de Glyph peut les modifier ou les retirer.",
+		"noteSidePeek": {
+			"label": "Peek de note",
+			"description": "Les wiki-liens et Toutes les notes s’ouvrent en Peek au-dessus de l’onglet actuel au lieu de le remplacer. Agrandissez le Peek pour aller à cette note, ou fermez-le pour rester. L’arborescence et la palette de commandes ouvrent toujours des onglets.",
+			"ariaLabel": "Peek de note"
+		}
 	},
 	"editor": {
 		"sectionTitle": "Éditeur",

@@ -538,6 +538,11 @@
 			"section": "실험적",
 			"keywords": ["레이아웃", "읽기", "layout", "reading", "folio"]
 		},
+		"appearance-layout-note-side-peek": {
+			"title": "노트 피크",
+			"section": "실험적",
+			"keywords": ["peek", "미리보기", "wiki", "모든 노트", "arc"]
+		},
 		"appearance-layout-classic-all-notes": {
 			"title": "클래식 모든 노트 그리드",
 			"section": "실험적",

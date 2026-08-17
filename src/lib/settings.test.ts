@@ -158,6 +158,36 @@ describe("settings Raw Markdown Vim Mode", () => {
 	});
 });
 
+describe("settings note side peek", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults note side peek to false", async () => {
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.noteSidePeek).toBe(false);
+	});
+
+	it("loads note side peek from the store", async () => {
+		storeState.set("ui.noteSidePeek", true);
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.noteSidePeek).toBe(true);
+	});
+
+	it("persists and emits note side peek changes", async () => {
+		const { DURABLE_SETTINGS } = await import("./settings");
+		await DURABLE_SETTINGS.noteSidePeek.write(true);
+		expect(storeState.get("ui.noteSidePeek")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { noteSidePeek: true },
+		});
+	});
+});
+
 describe("settings Folio Mode", () => {
 	beforeEach(() => {
 		vi.resetModules();

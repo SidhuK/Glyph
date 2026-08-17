@@ -524,6 +524,13 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.folioMode,
 		change: (value) => ({ ui: { folioMode: value } }),
 	}),
+	noteSidePeek: booleanSetting({
+		key: "ui.noteSidePeek",
+		defaultValue: false,
+		discovery: searchable("appearance-layout-note-side-peek"),
+		read: (settings) => settings.ui.noteSidePeek,
+		change: (value) => ({ ui: { noteSidePeek: value } }),
+	}),
 	classicAllNotesByDefault: booleanSetting({
 		key: "ui.classicAllNotesByDefault",
 		defaultValue: false,

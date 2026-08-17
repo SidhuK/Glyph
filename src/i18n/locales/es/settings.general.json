@@ -77,7 +77,12 @@
 	},
 	"experimental": {
 		"sectionTitle": "Experimental",
-		"sectionDescription": "Funciones experimentales que aún no están del todo definidas. Una versión posterior de Glyph puede cambiarlas o quitarlas."
+		"sectionDescription": "Funciones experimentales que aún no están del todo definidas. Una versión posterior de Glyph puede cambiarlas o quitarlas.",
+		"noteSidePeek": {
+			"label": "Peek de nota",
+			"description": "Los wiki-enlaces y Todas las notas se abren como un Peek sobre la pestaña actual en lugar de reemplazarla. Amplía el Peek para ir a esa nota, o ciérralo para quedarte. El árbol de archivos y la paleta de comandos siguen abriendo pestañas.",
+			"ariaLabel": "Peek de nota"
+		}
 	},
 	"editor": {
 		"sectionTitle": "Editor",
