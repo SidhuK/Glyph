@@ -44,9 +44,9 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 			event.preventDefault();
 			onClose();
 		};
-		window.addEventListener("keydown", onKeyDown, true);
+		window.addEventListener("keydown", onKeyDown);
 		return () => {
-			window.removeEventListener("keydown", onKeyDown, true);
+			window.removeEventListener("keydown", onKeyDown);
 		};
 	}, [onClose]);
 

@@ -93,7 +93,10 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			if (wikiLink) {
 				const parsed = parseWikiLink(wikiLink.dataset.rawWikiLink ?? "");
 				if (!parsed) return false;
-				dispatchWikiLinkClick(parsed);
+				dispatchWikiLinkClick({
+					...parsed,
+					sourcePath: getRelPath(),
+				});
 				return true;
 			}
 

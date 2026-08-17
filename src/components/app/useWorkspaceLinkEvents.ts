@@ -40,7 +40,7 @@ export function useWorkspaceLinkEvents({
 	setError,
 }: UseWorkspaceLinkEventsArgs) {
 	const openOrCreateWikiLinkTarget = useCallback(
-		async (rawTarget: string) => {
+		async (rawTarget: string, sourcePath: string | null) => {
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 			if (!normalizedTarget) return;
@@ -68,9 +68,7 @@ export function useWorkspaceLinkEvents({
 				return;
 			}
 
-			const sourceDir = activeMarkdownTabPath
-				? parentDir(activeMarkdownTabPath)
-				: "";
+			const sourceDir = sourcePath ? parentDir(sourcePath) : "";
 			const hasExplicitPath = normalizedTarget.includes("/");
 			const nextRelPathBase =
 				hasExplicitPath || !sourceDir
@@ -100,13 +98,7 @@ export function useWorkspaceLinkEvents({
 
 			setError(`Could not resolve wikilink: ${rawTarget}`);
 		},
-		[
-			activeMarkdownTabPath,
-			fileTree,
-			openBrowseNote,
-			openWorkspaceFile,
-			setError,
-		],
+		[fileTree, openBrowseNote, openWorkspaceFile, setError],
 	);
 
 	useEffect(() => {
@@ -132,8 +124,9 @@ export function useWorkspaceLinkEvents({
 						return;
 					}
 
+					const sourcePath = detail.sourcePath ?? activeMarkdownTabPath;
 					if (isPdfPath(normalizedTarget)) {
-						await openOrCreateWikiLinkTarget(detail.target);
+						await openOrCreateWikiLinkTarget(detail.target, sourcePath);
 						return;
 					}
 
@@ -143,7 +136,7 @@ export function useWorkspaceLinkEvents({
 						);
 						return;
 					}
-					await openOrCreateWikiLinkTarget(detail.target);
+					await openOrCreateWikiLinkTarget(detail.target, sourcePath);
 				} catch (e) {
 					setError(
 						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
@@ -211,6 +204,7 @@ export function useWorkspaceLinkEvents({
 			window.removeEventListener(PERSON_CLICK_EVENT, onPersonClick);
 		};
 	}, [
+		activeMarkdownTabPath,
 		openBrowseNote,
 		openOrCreateWikiLinkTarget,
 		openPalette,

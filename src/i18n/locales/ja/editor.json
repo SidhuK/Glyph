@@ -239,9 +239,9 @@
 		}
 	},
 	"sidePeek": {
-		"dialogLabel": "ノートのピーク",
+		"dialogLabel": "ノートのプレビュー",
 		"open": "ノートを開く",
-		"close": "ピークを閉じる",
+		"close": "プレビューを閉じる",
 		"loading": "ノートを読み込み中…",
 		"empty": "このノートは空です。"
 	}

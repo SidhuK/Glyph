@@ -178,6 +178,13 @@ describe("settings note side peek", () => {
 		expect(settings.ui.noteSidePeek).toBe(true);
 	});
 
+	it("falls back to false for invalid note side peek values", async () => {
+		storeState.set("ui.noteSidePeek", "yes");
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.noteSidePeek).toBe(false);
+	});
+
 	it("persists and emits note side peek changes", async () => {
 		const { DURABLE_SETTINGS } = await import("./settings");
 		await DURABLE_SETTINGS.noteSidePeek.write(true);

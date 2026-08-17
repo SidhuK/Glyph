@@ -467,6 +467,13 @@ export function AppShell() {
 		}).catch(() => {});
 	}, [periodNotesEnabled, settingsSpacePath, spacePath]);
 
+	const spacePathRef = useRef(spacePath);
+	spacePathRef.current = spacePath;
+
+	useEffect(() => {
+		setNotePeek(null);
+	}, [activeTabPath, spacePath]);
+
 	const closeNotePeek = useCallback(() => {
 		setNotePeek(null);
 	}, []);
@@ -486,9 +493,11 @@ export function AppShell() {
 	const openBrowseNote = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (noteSidePeekEnabled && spacePath && isMarkdownPath(path)) {
+			const browseSpacePath = spacePath;
+			if (noteSidePeekEnabled && browseSpacePath && isMarkdownPath(path)) {
 				prefetchNote(path);
-				setNotePeek({ spacePath, relPath: path });
+				if (spacePathRef.current !== browseSpacePath) return;
+				setNotePeek({ spacePath: browseSpacePath, relPath: path });
 				return;
 			}
 			await openWorkspaceFile(path);

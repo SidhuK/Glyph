@@ -553,7 +553,7 @@
 			"keywords": ["レイアウト", "読書", "layout", "reading", "folio"]
 		},
 		"appearance-layout-note-side-peek": {
-			"title": "ノートピーク",
+			"title": "ノートプレビュー",
 			"section": "実験的",
 			"keywords": ["peek", "プレビュー", "wiki", "すべてのノート", "arc"]
 		},

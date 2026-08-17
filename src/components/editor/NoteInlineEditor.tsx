@@ -570,6 +570,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 									anchor: parsed.anchor,
 									unresolved: parsed.unresolved,
 									embed: parsed.embed,
+									sourcePath: relPath,
 								});
 							}}
 						>
