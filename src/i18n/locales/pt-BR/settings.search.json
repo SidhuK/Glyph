@@ -552,6 +552,11 @@
 			"section": "Experimental",
 			"keywords": ["layout", "leitura", "reading", "folio"]
 		},
+		"appearance-layout-note-side-peek": {
+			"title": "Peek de nota",
+			"section": "Experimental",
+			"keywords": ["peek", "pré-visualização", "wiki", "todas as notas", "arc"]
+		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Grade clássica de Todas as notas",
 			"section": "Experimental",

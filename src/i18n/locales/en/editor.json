@@ -271,5 +271,12 @@
 			"title": "Highlight: Clear",
 			"description": "Remove text highlight"
 		}
+	},
+	"sidePeek": {
+		"dialogLabel": "Note peek",
+		"open": "Open note",
+		"close": "Close peek",
+		"loading": "Loading note…",
+		"empty": "This note is empty."
 	}
 }

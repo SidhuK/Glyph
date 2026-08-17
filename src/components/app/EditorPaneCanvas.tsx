@@ -66,6 +66,7 @@ interface EditorPaneCanvasProps {
 	) => Promise<string | null>;
 	onRenameFile: (path: string, nextName: string) => Promise<string | null>;
 	onOpenFile: (relPath: string) => Promise<void>;
+	onBrowseFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenActivity: () => void;
 	onPrefetchActivity: () => void;
@@ -96,6 +97,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	createMarkdownFileAtPath,
 	onRenameFile,
 	onOpenFile,
+	onBrowseFile,
 	onOpenFileInNewTab,
 	onOpenActivity,
 	onPrefetchActivity,
@@ -143,6 +145,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			createMarkdownFileAtPath={createMarkdownFileAtPath}
 			onRenameFile={onRenameFile}
 			onOpenFile={onOpenFile}
+			onBrowseFile={onBrowseFile}
 			onOpenFileInNewTab={onOpenFileInNewTab}
 			onOpenActivity={onOpenActivity}
 			onPrefetchActivity={onPrefetchActivity}
@@ -216,6 +219,7 @@ interface EditorPaneContentProps {
 	createMarkdownFileAtPath: EditorPaneCanvasProps["createMarkdownFileAtPath"];
 	onRenameFile: EditorPaneCanvasProps["onRenameFile"];
 	onOpenFile: EditorPaneCanvasProps["onOpenFile"];
+	onBrowseFile: EditorPaneCanvasProps["onBrowseFile"];
 	onOpenFileInNewTab: EditorPaneCanvasProps["onOpenFileInNewTab"];
 	onOpenActivity: EditorPaneCanvasProps["onOpenActivity"];
 	onPrefetchActivity: EditorPaneCanvasProps["onPrefetchActivity"];
@@ -232,6 +236,7 @@ function EditorPaneContent({
 	createMarkdownFileAtPath,
 	onRenameFile,
 	onOpenFile,
+	onBrowseFile,
 	onOpenFileInNewTab,
 	onOpenActivity,
 	onPrefetchActivity,
@@ -247,7 +252,7 @@ function EditorPaneContent({
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
 				<AllDocsPane
-					onOpenFile={onOpenFile}
+					onOpenFile={onBrowseFile}
 					onOpenActivity={onOpenActivity}
 					onPrefetchActivity={onPrefetchActivity}
 					initialNotes={getPrefetchedAllDocs(null)}
@@ -259,7 +264,7 @@ function EditorPaneContent({
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
 				<PinnedDocsPane
-					onOpenFile={onOpenFile}
+					onOpenFile={onBrowseFile}
 					onOpenDatabase={onOpenDatabase}
 				/>
 			</Suspense>
@@ -268,7 +273,7 @@ function EditorPaneContent({
 	if (viewerPath === ACTIVITY_TIMELINE_TAB_ID) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-				<ActivityTimelinePane onOpenFile={onOpenFile} />
+				<ActivityTimelinePane onOpenFile={onBrowseFile} />
 			</Suspense>
 		);
 	}
@@ -277,7 +282,7 @@ function EditorPaneContent({
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="databases" />}>
 				<DatabasesPane
-					onOpenFile={onOpenFile}
+					onOpenFile={onBrowseFile}
 					onRenameNotePath={onRenameFile}
 					databasesOpenRequest={databasesOpenRequest}
 					onConsumeOpenRequest={onConsumeDatabasesOpenRequest}

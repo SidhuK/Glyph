@@ -555,6 +555,11 @@
 			"section": "Experimentell",
 			"keywords": ["layout", "lesen", "reading", "folio"]
 		},
+		"appearance-layout-note-side-peek": {
+			"title": "Notiz-Peek",
+			"section": "Experimentell",
+			"keywords": ["peek", "vorschau", "wiki", "alle notizen", "arc"]
+		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Klassisches Raster „Alle Notizen“",
 			"section": "Experimentell",

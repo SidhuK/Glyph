@@ -104,15 +104,20 @@ async function fetchNote(path: string): Promise<TextFileDoc> {
 	return doc;
 }
 
+export function noteDocumentQueryOptions(path: string) {
+	const normalized = path.trim();
+	return {
+		queryKey: navigationQueryKeys.note(normalized),
+		queryFn: () => fetchNote(normalized),
+		staleTime: NAVIGATION_STALE_TIME_MS,
+		gcTime: NOTE_PREFETCH_GC_TIME_MS,
+	};
+}
+
 export function prefetchNote(path: string) {
 	const normalized = path.trim();
 	if (!normalized) return;
-	void queryClient.prefetchQuery({
-		queryKey: navigationQueryKeys.note(normalized),
-		queryFn: () => fetchNote(normalized),
-		gcTime: NOTE_PREFETCH_GC_TIME_MS,
-		staleTime: NAVIGATION_STALE_TIME_MS,
-	});
+	void queryClient.prefetchQuery(noteDocumentQueryOptions(normalized));
 }
 
 export function getPrefetchedNote(path: string): TextFileDoc | null {

@@ -147,3 +147,211 @@
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 }
+
+.noteSidePeek {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	bottom: 10px;
+	z-index: 40;
+	width: min(520px, 48%);
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+	border: 0;
+	border-radius: var(--radius-2xl);
+	background: var(--bg-primary);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 88%, transparent), 0 18px 48px
+		color-mix(in srgb, #000 14%, transparent);
+	color: var(--text-primary);
+	animation: noteSidePeekIn 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-translucent-sidebar="true"] .noteSidePeek {
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	backdrop-filter: blur(22px);
+	-webkit-backdrop-filter: blur(22px);
+}
+
+.dark .noteSidePeek {
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 88%, transparent), 0 18px 48px
+		color-mix(in srgb, #000 38%, transparent);
+}
+
+@keyframes noteSidePeekIn {
+	from {
+		opacity: 0;
+		transform: translateX(16px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.noteSidePeek {
+		animation: none;
+	}
+}
+
+.noteSidePeekHeader {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-shrink: 0;
+	padding: 12px 12px 12px 14px;
+}
+
+.noteSidePeekIdentity {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	flex: 1;
+}
+
+.noteSidePeekGlyph {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+	color: var(--text-tertiary);
+}
+
+.noteSidePeekCopy {
+	min-width: 0;
+	flex: 1;
+}
+
+.noteSidePeekTitle {
+	margin: 0;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.3;
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.noteSidePeekPath {
+	margin: 2px 0 0;
+	font-size: calc(var(--text-sm) * 0.85);
+	line-height: 1.25;
+	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.noteSidePeekActions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+.noteSidePeekIconBtn {
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-tertiary);
+}
+
+.noteSidePeekBody {
+	flex: 1 1 0;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+.noteSidePeekStatus {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 40%;
+	padding: 32px 24px;
+	text-align: center;
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+}
+
+.noteSidePeekSkeleton {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 22px 20px;
+}
+
+.noteSidePeekSkeletonLine {
+	display: block;
+	height: 10px;
+	width: 78%;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-tertiary) 80%, var(--border-light));
+	animation: noteSidePeekPulse 1.2s ease-in-out infinite;
+}
+
+.noteSidePeekSkeletonLine.is-wide {
+	width: 92%;
+}
+
+.noteSidePeekSkeletonLine.is-short {
+	width: 46%;
+}
+
+@keyframes noteSidePeekPulse {
+	0%,
+	100% {
+		opacity: 0.55;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.noteSidePeekSkeletonLine {
+		animation: none;
+	}
+}
+
+.noteSidePeekDocument {
+	padding: 18px 20px 40px;
+}
+
+.noteSidePeekDocument .rfNodeNoteEditor {
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	min-height: 0;
+}
+
+.noteSidePeekDocument .rfNodeNoteEditorBody {
+	padding: 0;
+	background: transparent;
+	min-height: 0;
+}
+
+.noteSidePeekDocument .tiptapContentInline {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	min-height: 0;
+}
+
+.noteSidePeekDocument .ProseMirror {
+	min-height: 0;
+	padding: 0;
+	font-size: var(--text-base);
+	line-height: 1.6;
+	color: var(--text-primary);
+}

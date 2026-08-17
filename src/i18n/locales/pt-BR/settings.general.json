@@ -77,7 +77,12 @@
 	},
 	"experimental": {
 		"sectionTitle": "Experimental",
-		"sectionDescription": "Recursos experimentais ainda incompletos. Uma versão posterior do Glyph pode alterá-los ou removê-los."
+		"sectionDescription": "Recursos experimentais ainda incompletos. Uma versão posterior do Glyph pode alterá-los ou removê-los.",
+		"noteSidePeek": {
+			"label": "Peek de nota",
+			"description": "Wiki-links e Todas as notas abrem como um Peek sobre a aba atual em vez de substituí-la. Amplie o Peek para ir até essa nota, ou feche para ficar onde está. A árvore de arquivos e a paleta de comandos ainda abrem abas.",
+			"ariaLabel": "Peek de nota"
+		}
 	},
 	"editor": {
 		"sectionTitle": "Editor",

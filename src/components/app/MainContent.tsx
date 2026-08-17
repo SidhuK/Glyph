@@ -34,6 +34,7 @@ import { cn } from "../../lib/utils";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
+import { NoteSidePeek } from "../preview/NoteSidePeek";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
 import { AiSettingsPane } from "../settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "../settings/AppearanceSettingsPane";
@@ -172,6 +173,7 @@ interface MainContentProps {
 		onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	};
 	onOpenFile: (relPath: string) => Promise<void>;
+	onBrowseFile: (relPath: string) => Promise<void>;
 	onOpenFolioFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenFolioFileInNewTab: (relPath: string) => Promise<void>;
@@ -214,11 +216,15 @@ interface MainContentProps {
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
 	onRightSidebarOpenChange?: (open: boolean) => void;
+	peekNotePath: string | null;
+	onCloseNotePeek: () => void;
+	onOpenPeekedNote: () => void;
 }
 
 export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenFile,
+	onBrowseFile,
 	onOpenFolioFile,
 	onOpenFileInNewTab,
 	onOpenFolioFileInNewTab,
@@ -253,6 +259,9 @@ export const MainContent = memo(function MainContent({
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
+	peekNotePath,
+	onCloseNotePeek,
+	onOpenPeekedNote,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { folioMode, settingsMode, settingsTab } = useUILayoutContext();
@@ -378,6 +387,7 @@ export const MainContent = memo(function MainContent({
 					createMarkdownFileAtPath={fileTree.createMarkdownFileAtPath}
 					onRenameFile={handleRenameFile}
 					onOpenFile={onOpenFile}
+					onBrowseFile={onBrowseFile}
 					onOpenFileInNewTab={onOpenFileInNewTab}
 					onOpenActivity={onOpenActivity}
 					onPrefetchActivity={onPrefetchActivity}
@@ -416,6 +426,7 @@ export const MainContent = memo(function MainContent({
 			onOpenActivity,
 			onOpenDatabase,
 			onOpenFile,
+			onBrowseFile,
 			onOpenFileInNewTab,
 			onOpenCommandPalette,
 			onGoBackInPane,
@@ -524,6 +535,13 @@ export const MainContent = memo(function MainContent({
 					) : (
 						editorCanvas
 					)}
+					{peekNotePath ? (
+						<NoteSidePeek
+							relPath={peekNotePath}
+							onClose={onCloseNotePeek}
+							onOpen={onOpenPeekedNote}
+						/>
+					) : null}
 				</div>
 			</main>
 			{rightSidebarSurface}

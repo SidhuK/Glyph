@@ -237,5 +237,12 @@
 			"title": "강조: 지우기",
 			"description": "텍스트 강조 제거"
 		}
+	},
+	"sidePeek": {
+		"dialogLabel": "노트 피크",
+		"open": "노트 열기",
+		"close": "피크 닫기",
+		"loading": "노트를 불러오는 중…",
+		"empty": "이 노트는 비어 있습니다."
 	}
 }

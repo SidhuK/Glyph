@@ -526,6 +526,11 @@
 			"section": "Eksperymentalne",
 			"keywords": ["układ", "czytanie"]
 		},
+		"appearance-layout-note-side-peek": {
+			"title": "Peek notatki",
+			"section": "Eksperymentalne",
+			"keywords": ["peek", "podgląd", "wiki", "wszystkie notatki", "arc"]
+		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Klasyczna siatka wszystkich notatek",
 			"section": "Eksperymentalne",

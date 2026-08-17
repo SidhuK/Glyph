@@ -46,6 +46,11 @@ export function ExperimentalSettingsPane() {
 		DURABLE_SETTINGS.folioMode.write,
 		setError,
 	);
+	const noteSidePeek = useSettingsBoolean(
+		false,
+		DURABLE_SETTINGS.noteSidePeek.write,
+		setError,
+	);
 	const classicAllNotes = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.classicAllNotesByDefault.write,
@@ -73,6 +78,7 @@ export function ExperimentalSettingsPane() {
 	);
 
 	const setInitialFolioMode = folioMode.setInitialChecked;
+	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
 	const setInitialClassicAllNotes = classicAllNotes.setInitialChecked;
 	const setInitialExternalLinkPreviews = externalLinkPreviews.setInitialChecked;
 	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
@@ -83,6 +89,7 @@ export function ExperimentalSettingsPane() {
 	useEffect(() => {
 		if (!settings) return;
 		setInitialFolioMode(settings.ui.folioMode);
+		setInitialNoteSidePeek(settings.ui.noteSidePeek);
 		setInitialClassicAllNotes(settings.ui.classicAllNotesByDefault);
 		setInitialExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
 		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
@@ -93,6 +100,7 @@ export function ExperimentalSettingsPane() {
 		setInitialClassicAllNotes,
 		setInitialExternalLinkPreviews,
 		setInitialFolioMode,
+		setInitialNoteSidePeek,
 		setInitialFocusMode,
 		setInitialNonMarkdownFiles,
 		setInitialRawMarkdownVimMode,
@@ -125,6 +133,18 @@ export function ExperimentalSettingsPane() {
 							disabled={folioMode.isSaving}
 							ariaLabel={tAppearance("layout.folioMode.ariaLabel")}
 							onCheckedChange={folioMode.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("experimental.noteSidePeek.label")}
+						description={t("experimental.noteSidePeek.description")}
+						searchId="appearance-layout-note-side-peek"
+					>
+						<SettingsToggle
+							checked={noteSidePeek.checked}
+							disabled={noteSidePeek.isSaving}
+							ariaLabel={t("experimental.noteSidePeek.ariaLabel")}
+							onCheckedChange={noteSidePeek.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

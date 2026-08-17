@@ -134,6 +134,7 @@ export function handleEditorClick(
 			anchor: wikiLink.getAttribute("data-anchor") || null,
 			unresolved: wikiLink.getAttribute("data-unresolved") === "true",
 			embed: wikiLink.getAttribute("data-wikilink-embed") === "true",
+			sourcePath: relPath,
 		});
 		return true;
 	}

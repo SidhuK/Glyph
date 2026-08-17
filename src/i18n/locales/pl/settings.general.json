@@ -77,7 +77,12 @@
 	},
 	"experimental": {
 		"sectionTitle": "Eksperymentalne",
-		"sectionDescription": "Funkcje eksperymentalne, które nie są jeszcze dopracowane. Późniejsza wersja Glyph może je zmienić lub usunąć."
+		"sectionDescription": "Funkcje eksperymentalne, które nie są jeszcze dopracowane. Późniejsza wersja Glyph może je zmienić lub usunąć.",
+		"noteSidePeek": {
+			"label": "Peek notatki",
+			"description": "Wiki-linki i Wszystkie notatki otwierają się jako Peek nad bieżącą kartą zamiast ją zastępować. Rozwiń Peek, aby przejść do notatki, albo zamknij, aby zostać. Drzewo plików i paleta poleceń nadal otwierają karty.",
+			"ariaLabel": "Peek notatki"
+		}
 	},
 	"editor": {
 		"sectionTitle": "Edytor",

@@ -77,7 +77,12 @@
 	},
 	"experimental": {
 		"sectionTitle": "실험적",
-		"sectionDescription": "아직 다듬어지지 않은 실험적 기능입니다. 이후 Glyph 버전에서 바뀌거나 제거될 수 있습니다."
+		"sectionDescription": "아직 다듬어지지 않은 실험적 기능입니다. 이후 Glyph 버전에서 바뀌거나 제거될 수 있습니다.",
+		"noteSidePeek": {
+			"label": "노트 피크",
+			"description": "위키 링크와 모든 노트는 현재 탭을 바꾸지 않고 Peek으로 겹쳐 엽니다. Peek을 펼치면 그 노트로 가고, 닫으면 지금 자리에 남습니다. 파일 트리와 명령 팔레트는 여전히 탭으로 엽니다.",
+			"ariaLabel": "노트 피크"
+		}
 	},
 	"editor": {
 		"sectionTitle": "편집기",

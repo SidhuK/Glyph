@@ -556,6 +556,11 @@
 			"section": "Expérimental",
 			"keywords": ["disposition", "lecture", "layout", "reading", "folio"]
 		},
+		"appearance-layout-note-side-peek": {
+			"title": "Peek de note",
+			"section": "Expérimental",
+			"keywords": ["peek", "aperçu", "wiki", "toutes les notes", "arc"]
+		},
 		"appearance-layout-classic-all-notes": {
 			"title": "Grille classique Toutes les notes",
 			"section": "Expérimental",

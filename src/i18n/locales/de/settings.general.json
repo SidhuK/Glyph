@@ -77,7 +77,12 @@
 	},
 	"experimental": {
 		"sectionTitle": "Experimentell",
-		"sectionDescription": "Experimentelle Funktionen, die noch nicht ausgereift sind. Eine spätere Glyph-Version kann sie ändern oder entfernen."
+		"sectionDescription": "Experimentelle Funktionen, die noch nicht ausgereift sind. Eine spätere Glyph-Version kann sie ändern oder entfernen.",
+		"noteSidePeek": {
+			"label": "Notiz-Peek",
+			"description": "Wiki-Links und Alle Notizen öffnen als Peek über dem aktuellen Tab, statt ihn zu ersetzen. Erweitere den Peek, um zur Notiz zu wechseln, oder schließe ihn, um zu bleiben. Dateibaum und Befehlspalette öffnen weiter Tabs.",
+			"ariaLabel": "Notiz-Peek"
+		}
 	},
 	"editor": {
 		"sectionTitle": "Editor",

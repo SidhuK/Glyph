@@ -12,6 +12,7 @@ export interface WikiLinkClickDetail {
 	anchor: string | null;
 	unresolved: boolean;
 	embed?: boolean;
+	sourcePath?: string;
 }
 
 export interface TagClickDetail {
