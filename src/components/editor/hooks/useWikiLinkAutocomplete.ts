@@ -89,7 +89,7 @@ export function useWikiLinkAutocomplete({
 			}
 			const opening = wikiLinkOpening(value, range.from);
 			const replaceFrom = opening === "![[" ? range.from - 1 : range.from;
-			const commit = cause === "enter" || item.kind === "heading";
+			const commit = cause !== "tab" || item.kind === "heading";
 			const markdown = commit
 				? `${opening}${item.insertText}]]`
 				: `${opening}${item.insertText}`;
@@ -108,6 +108,6 @@ export function useWikiLinkAutocomplete({
 		findRange: findActiveWikiLinkRange,
 		onSelect: handleSelect,
 		closeAfterSelect: (item, cause) =>
-			Boolean(onSelectItem) || cause === "enter" || item.kind === "heading",
+			Boolean(onSelectItem) || cause !== "tab" || item.kind === "heading",
 	});
 }
