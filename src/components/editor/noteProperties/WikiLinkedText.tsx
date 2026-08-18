@@ -29,7 +29,7 @@ export function WikiLinkedText({ value }: { value: string }) {
 					data-target={detail.target}
 					data-unresolved={String(detail.unresolved)}
 					onClick={() => dispatchWikiLinkClick(detail)}
-					title={detail.target}
+					title={label}
 				>
 					<span className="wikiLinkIcon" aria-hidden="true" />
 					<span className="wikiLinkLabel">{label}</span>

@@ -197,6 +197,7 @@ export function useMarkdownDocumentSession({
 		setAutosaveBusy(false);
 		clearPulse();
 		clearMarkdownDocCache();
+		setLoadedRelPath("");
 	}, [clearPulse, spacePath]);
 
 	const loadDoc = useCallback(
@@ -225,6 +226,7 @@ export function useMarkdownDocumentSession({
 				mtimeRef.current = doc.mtime_ms;
 				setSavedText(doc.text);
 				setLastSavedMtimeMs(doc.mtime_ms);
+				setLoadedRelPath(relPath);
 				setPrefetchedNote(relPath, doc);
 				if (showRefreshFeedback) {
 					flashPulse("reloaded");

@@ -5,7 +5,6 @@ import {
 import { splitYamlFrontmatter } from "../../../lib/notePreview";
 import { invoke } from "../../../lib/tauri";
 import { isMarkdownPath } from "../../../utils/path";
-import { peekCachedMarkdownDoc } from "../../preview/markdownCache";
 import { analyzeNoteInfo } from "../../preview/noteInfoAnalysis";
 import { queryMatchesText } from "../suggestions/suggestionEngine";
 import { splitWikiLinkQuery } from "./wikiLinkCodec";
@@ -35,9 +34,7 @@ async function suggestWikiLinkHeadings(options: {
 	const path = await resolveWikiLinkPath(options.target);
 	if (!path) return [];
 	try {
-		const text =
-			peekCachedMarkdownDoc(path) ??
-			(await invoke("space_read_text", { path })).text;
+		const text = (await invoke("space_read_text", { path })).text;
 		const { body } = splitYamlFrontmatter(text);
 		const headings = analyzeNoteInfo(body, body, true).headings;
 		return headings

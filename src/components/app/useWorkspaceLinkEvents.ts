@@ -27,6 +27,7 @@ import { requestHeadingNavigation } from "../editor/markdown/headingAnchor";
 interface UseWorkspaceLinkEventsArgs {
 	activeMarkdownTabPath: string | null;
 	fileTree: UseFileTreeResult;
+	noteSidePeekEnabled: boolean;
 	openPalette: (mode: "commands" | "search", query?: string) => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
 	openBrowseNote: (path: string) => Promise<void>;
@@ -36,6 +37,7 @@ interface UseWorkspaceLinkEventsArgs {
 export function useWorkspaceLinkEvents({
 	activeMarkdownTabPath,
 	fileTree,
+	noteSidePeekEnabled,
 	openPalette,
 	openWorkspaceFile,
 	openBrowseNote,
@@ -47,7 +49,7 @@ export function useWorkspaceLinkEvents({
 			sourcePath: string | null,
 			headingAnchor?: string | null,
 		): Promise<string | null> => {
-			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
+			const targetWithoutAnchor = rawTarget.split("#", 1)[0];
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 			if (!normalizedTarget) return null;
 			if (isPdfPath(normalizedTarget)) {
@@ -127,8 +129,7 @@ export function useWorkspaceLinkEvents({
 			if (!detail.target) return;
 			void (async () => {
 				try {
-					const targetWithoutAnchor =
-						detail.target.split("#", 1)[0] ?? detail.target;
+					const targetWithoutAnchor = detail.target.split("#", 1)[0];
 					const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 					if (!normalizedTarget) return;
 
@@ -163,7 +164,7 @@ export function useWorkspaceLinkEvents({
 						sourcePath,
 						headingAnchor,
 					);
-					if (openedPath && headingAnchor) {
+					if (openedPath && headingAnchor && !noteSidePeekEnabled) {
 						dispatchInternalAnchorClick({
 							anchor: `#${headingAnchor}`,
 							sourcePath: openedPath,
@@ -237,6 +238,7 @@ export function useWorkspaceLinkEvents({
 		};
 	}, [
 		activeMarkdownTabPath,
+		noteSidePeekEnabled,
 		openBrowseNote,
 		openOrCreateWikiLinkTarget,
 		openPalette,
