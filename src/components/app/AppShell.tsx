@@ -157,6 +157,7 @@ export function AppShell() {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		defaultNewNoteFolder,
 		templateFolder,
 		periodNoteTemplates,
 		periodNotesEnabled,
@@ -877,14 +878,15 @@ export function AppShell() {
 		await attachContextFiles(tabs);
 	}, [attachContextFiles, openMarkdownTabs, setError]);
 
+	const newNoteFolder =
+		settingsSpacePath === spacePath && defaultNewNoteFolder
+			? defaultNewNoteFolder
+			: (activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : ""));
+
 	const createNoteInSelectedFolder = useCallback(async () => {
 		if (!spacePath) return null;
-		const nextDir =
-			dailyNotesFolder && activeDirPath === dailyNotesFolder
-				? ""
-				: (activeDirPath ?? "");
-		return fileTree.onNewFileInDir(nextDir);
-	}, [activeDirPath, dailyNotesFolder, fileTree, spacePath]);
+		return fileTree.onNewFileInDir(newNoteFolder);
+	}, [fileTree, newNoteFolder, spacePath]);
 
 	const handleNewNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -1419,6 +1421,7 @@ export function AppShell() {
 				onSelectDir={setActiveDirPath}
 				onOpenFile={(p) => void openWorkspaceFile(p)}
 				onNewNote={() => void createNoteInSelectedFolder()}
+				newNoteFolder={newNoteFolder}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
 				onImportFilesInDir={importFilesInto}

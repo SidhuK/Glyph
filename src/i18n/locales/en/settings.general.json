@@ -9,6 +9,17 @@
 		"searchAriaLabel": "Search settings",
 		"clearSearchAriaLabel": "Clear settings search"
 	},
+	"newNotes": {
+		"sectionTitle": "New notes",
+		"sectionDescription": "Choose where Glyph creates new notes in this space.",
+		"root": "Not configured",
+		"browse": "Browse",
+		"clear": "Clear default folder",
+		"defaultFolder": {
+			"label": "Default folder",
+			"description": "New Note and Cmd+N create notes here when a folder is set."
+		}
+	},
 	"usage": {
 		"loading": "Loading insights…",
 		"noSpace": "Open a space to view insights.",

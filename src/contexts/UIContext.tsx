@@ -52,11 +52,12 @@ interface UILayoutContextValue {
 	activeMarkdownTabPath: string | null;
 	setActiveMarkdownTabPath: (path: string | null) => void;
 	dailyNotesFolder: string | null;
+	defaultNewNoteFolder: string | null;
 	templateFolder: string | null;
 	periodNoteTemplates: PeriodNoteTemplatePaths;
 	periodNotesEnabled: PeriodNotesEnabled;
 	/**
-	 * The space whose settings `dailyNotesFolder`, `templateFolder` and
+	 * The space whose folder and template settings
 	 * period note templates currently describe. Hydration is async, so after a
 	 * space switch those values lag until this matches the new space path.
 	 */
@@ -95,6 +96,7 @@ type UIState = {
 	openMarkdownTabs: string[];
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
+	defaultNewNoteFolder: string | null;
 	templateFolder: string | null;
 	periodNoteTemplates: PeriodNoteTemplatePaths;
 	periodNotesEnabled: PeriodNotesEnabled;
@@ -117,6 +119,7 @@ type UIAction =
 	| { type: "setOpenMarkdownTabs"; value: SetStateAction<string[]> }
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
+	| { type: "setDefaultNewNoteFolder"; value: string | null }
 	| { type: "setTemplateFolder"; value: string | null }
 	| {
 			type: "setPeriodNoteEnabled";
@@ -145,6 +148,7 @@ type UIAction =
 			aiEnabled: boolean;
 			aiAssistantMode: AiAssistantMode;
 			dailyNotesFolder: string | null;
+			defaultNewNoteFolder: string | null;
 			templateFolder: string | null;
 			periodNoteTemplates: PeriodNoteTemplatePaths;
 			periodNotesEnabled: PeriodNotesEnabled;
@@ -156,6 +160,7 @@ type UIAction =
 			type: "hydrateSpaceSettings";
 			spacePath: string;
 			dailyNotesFolder: string | null;
+			defaultNewNoteFolder: string | null;
 			templateFolder: string | null;
 			periodNoteTemplates: PeriodNoteTemplatePaths;
 			periodNotesEnabled: PeriodNotesEnabled;
@@ -168,6 +173,7 @@ const initialUIState: UIState = {
 	openMarkdownTabs: [],
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
+	defaultNewNoteFolder: null,
 	templateFolder: null,
 	periodNoteTemplates: EMPTY_PERIOD_NOTE_TEMPLATES,
 	periodNotesEnabled: DEFAULT_PERIOD_NOTES_ENABLED,
@@ -203,6 +209,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, activeMarkdownTabPath: action.value };
 		case "setDailyNotesFolder":
 			return { ...state, dailyNotesFolder: action.value };
+		case "setDefaultNewNoteFolder":
+			return { ...state, defaultNewNoteFolder: action.value };
 		case "setTemplateFolder":
 			return { ...state, templateFolder: action.value };
 		case "setPeriodNoteTemplate":
@@ -277,6 +285,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				...state,
 				settingsSpacePath: action.spacePath,
 				dailyNotesFolder: action.dailyNotesFolder,
+				defaultNewNoteFolder: action.defaultNewNoteFolder,
 				templateFolder: action.templateFolder,
 				periodNoteTemplates: action.periodNoteTemplates,
 				periodNotesEnabled: action.periodNotesEnabled,
@@ -289,6 +298,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				aiPanelOpen: action.aiEnabled ? state.aiPanelOpen : false,
 				aiAssistantMode: action.aiAssistantMode,
 				dailyNotesFolder: action.dailyNotesFolder,
+				defaultNewNoteFolder: action.defaultNewNoteFolder,
 				templateFolder: action.templateFolder,
 				periodNoteTemplates: action.periodNoteTemplates,
 				periodNotesEnabled: action.periodNotesEnabled,
@@ -312,6 +322,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		defaultNewNoteFolder,
 		templateFolder,
 		periodNoteTemplates,
 		periodNotesEnabled,
@@ -360,6 +371,12 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dispatch({
 				type: "setDailyNotesFolder",
 				value: payload.dailyNotes.folder ?? null,
+			});
+		}
+		if (payload.noteCreation && "defaultFolder" in payload.noteCreation) {
+			dispatch({
+				type: "setDefaultNewNoteFolder",
+				value: payload.noteCreation.defaultFolder ?? null,
 			});
 		}
 		if (typeof payload.dailyNotes?.weeklyNotes === "boolean") {
@@ -434,6 +451,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					aiEnabled: s.ui.aiEnabled,
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
+					defaultNewNoteFolder: s.noteCreation.defaultFolder,
 					templateFolder: s.templates?.folder ?? null,
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
@@ -480,6 +498,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					type: "hydrateSpaceSettings",
 					spacePath,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
+					defaultNewNoteFolder: s.noteCreation.defaultFolder,
 					templateFolder: s.templates?.folder ?? null,
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
@@ -574,6 +593,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
+			defaultNewNoteFolder,
 			templateFolder,
 			periodNoteTemplates,
 			periodNotesEnabled,
@@ -602,6 +622,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
+			defaultNewNoteFolder,
 			templateFolder,
 			periodNoteTemplates,
 			periodNotesEnabled,

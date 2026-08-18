@@ -728,6 +728,21 @@ export const SPACE_SETTINGS = {
 		patch: (value) => ({ quickNotesFolder: value }),
 		change: (value) => ({ quickNotes: { folder: value } }),
 	}),
+	noteCreationDefaultFolder: defineSpaceSetting({
+		legacyKey: "noteCreation.defaultFolder",
+		field: "noteCreationDefaultFolder",
+		defaultValue: null,
+		discovery: searchable("space-default-new-note-folder"),
+		normalize: nullablePath,
+		parse: (value) =>
+			typeof value === "string" || value === null
+				? parsed(value)
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.noteCreation.defaultFolder,
+		patch: (value) => ({ noteCreationDefaultFolder: value }),
+		change: (value) => ({ noteCreation: { defaultFolder: value } }),
+		validate: (value) => (value === null ? null : validateRelFolderPath(value)),
+	}),
 	templatesDailyNoteTemplate: defineSpaceSetting({
 		legacyKey: "templates.dailyNoteTemplate",
 		field: "templatesDailyNoteTemplate",

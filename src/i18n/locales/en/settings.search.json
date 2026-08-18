@@ -352,6 +352,12 @@
 			"description": "Choose where quick notes are saved.",
 			"keywords": ["capture", "inbox"]
 		},
+		"space-default-new-note-folder": {
+			"title": "Default folder",
+			"section": "New notes",
+			"description": "Choose where new notes are created.",
+			"keywords": ["new note", "create", "folder", "location"]
+		},
 		"space-attachments-location": {
 			"title": "Location",
 			"section": "Attachments",
