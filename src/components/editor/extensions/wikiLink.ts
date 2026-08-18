@@ -254,6 +254,7 @@ export const WikiLink = Node.create({
 			"span",
 			mergeAttributes(HTMLAttributes, {
 				"data-wikilink": "true",
+				"data-wikilink-embed": String(Boolean(node.attrs.embed)),
 				"data-target": node.attrs.target,
 				"data-anchor-kind": node.attrs.anchorKind,
 				"data-anchor": node.attrs.anchor ?? "",

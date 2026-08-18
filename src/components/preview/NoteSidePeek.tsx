@@ -6,28 +6,24 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/react";
-import { useCallback, useEffect, useRef } from "react";
+import {
+	type MouseEvent as ReactMouseEvent,
+	useCallback,
+	useEffect,
+	useRef,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { noteDocumentQueryOptions } from "../../lib/navigationPrefetch";
 import { parseNotePreview } from "../../lib/notePreview";
-import {
-	displayNameFromPath,
-	normalizeRelPath,
-	parentDir,
-} from "../../utils/path";
+import { displayNameFromPath, parentDir } from "../../utils/path";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import {
 	extractHeadingsFromDoc,
 	scrollEditorToHeading,
 } from "../editor/hooks/useTableOfContents";
 import {
-	INTERNAL_ANCHOR_CLICK_EVENT,
-	isInternalAnchorClickEvent,
-} from "../editor/markdown/editorEvents";
-import {
 	applyPendingHeadingJump,
-	discardPendingHeadingJump,
 	resolveAnchorHeading,
 } from "../editor/markdown/headingAnchor";
 
@@ -64,32 +60,22 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 		[relPath],
 	);
 
-	useEffect(() => {
-		const onInternalAnchorClick = (event: Event) => {
-			if (!isInternalAnchorClickEvent(event)) return;
-			if (
-				normalizeRelPath(event.detail.sourcePath) !== normalizeRelPath(relPath)
-			) {
-				return;
-			}
+	const handleInternalAnchorClick = useCallback(
+		(event: ReactMouseEvent<HTMLElement>) => {
+			const target = event.target instanceof Element ? event.target : null;
+			const anchor = target?.closest("a")?.getAttribute("href");
+			if (!anchor?.startsWith("#")) return;
 			const editor = editorRef.current;
 			if (!editor || editor.isDestroyed) return;
 			const heading = resolveAnchorHeading(
 				extractHeadingsFromDoc(editor.state.doc),
-				event.detail.anchor,
+				anchor,
 			);
 			if (!heading) return;
-			discardPendingHeadingJump(relPath);
 			scrollEditorToHeading(editor, heading);
-		};
-		window.addEventListener(INTERNAL_ANCHOR_CLICK_EVENT, onInternalAnchorClick);
-		return () => {
-			window.removeEventListener(
-				INTERNAL_ANCHOR_CLICK_EVENT,
-				onInternalAnchorClick,
-			);
-		};
-	}, [relPath]);
+		},
+		[],
+	);
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -147,7 +133,10 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 					</button>
 				</div>
 			</header>
-			<div className="noteSidePeekBody">
+			<div
+				className="noteSidePeekBody"
+				onClickCapture={handleInternalAnchorClick}
+			>
 				{error ? (
 					<div className="noteSidePeekStatus">{error}</div>
 				) : isPending ? (

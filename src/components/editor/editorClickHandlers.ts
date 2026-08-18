@@ -11,7 +11,6 @@ import {
 	dispatchTagClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
-import { parseWikiLink } from "./markdown/wikiLinkCodec";
 
 function isExpandedMarkdownUrlLink(link: HTMLAnchorElement): boolean {
 	const href = link.getAttribute("href")?.trim() ?? "";
@@ -131,17 +130,6 @@ export function handleEditorClick(
 				: "none";
 		const anchorAttr = wikiLink.getAttribute("data-anchor");
 		const anchor = anchorAttr ? anchorAttr : null;
-		const parsed = parseWikiLink(wikiLink.getAttribute("data-raw") ?? "");
-		if (parsed) {
-			dispatchWikiLinkClick({
-				...parsed,
-				anchorKind,
-				anchor,
-				unresolved,
-				sourcePath: relPath,
-			});
-			return true;
-		}
 		dispatchWikiLinkClick({
 			raw: wikiLink.getAttribute("data-raw") ?? wikiLink.textContent ?? "",
 			target: wikiLink.getAttribute("data-target") ?? "",
