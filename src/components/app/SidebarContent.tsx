@@ -43,6 +43,7 @@ interface SidebarContentProps {
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
 	onNewNote: () => void;
+	newNoteFolder: string;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onImportFilesInDir: (dirPath: string) => void;
@@ -141,6 +142,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onSelectDir,
 	onOpenFile,
 	onNewNote,
+	newNoteFolder,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
 	onImportFilesInDir,
@@ -195,6 +197,9 @@ export const SidebarContent = memo(function SidebarContent({
 		},
 	});
 	const newNoteShortcut = getBinding("new-note");
+	const newNoteTitle = newNoteFolder
+		? t("sidebar.newNoteInFolder", { folder: newNoteFolder })
+		: t("sidebar.newNoteInRoot");
 	const {
 		cancelHoverPrefetch: cancelAllDocsHoverPrefetch,
 		hoverPrefetchProps: allDocsHoverPrefetchProps,
@@ -376,7 +381,7 @@ export const SidebarContent = memo(function SidebarContent({
 							data-kind="new-note"
 							aria-label={t("sidebar.newNote")}
 							onClick={onNewNote}
-							title={`${t("sidebar.newNote")}${
+							title={`${newNoteTitle}${
 								newNoteShortcut
 									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
 									: ""

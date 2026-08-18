@@ -37,6 +37,10 @@ export interface QuickNotesSettings {
 	folder: string;
 }
 
+export interface NoteCreationSettings {
+	defaultFolder: string | null;
+}
+
 export interface EditorSettings {
 	showCollapsibleHeadings: boolean;
 	showCollapsibleLists: boolean;
@@ -117,6 +121,7 @@ export interface AppSettings {
 		quarterlyNotes: boolean;
 	};
 	quickNotes: QuickNotesSettings;
+	noteCreation: NoteCreationSettings;
 	templates: {
 		folder: string | null;
 		dailyNoteTemplate: string | null;
@@ -135,6 +140,7 @@ export interface SpaceScopedSettings {
 	dailyNotesMonthlyNotes?: boolean;
 	dailyNotesQuarterlyNotes?: boolean;
 	quickNotesFolder?: string;
+	noteCreationDefaultFolder?: string | null;
 	templatesFolder?: string | null;
 	templatesDailyNoteTemplate?: string | null;
 	templatesWeeklyNoteTemplate?: string | null;
@@ -150,6 +156,7 @@ interface SettingsChangeSections {
 	ui: AppSettings["ui"];
 	dailyNotes: AppSettings["dailyNotes"];
 	quickNotes: AppSettings["quickNotes"];
+	noteCreation: AppSettings["noteCreation"];
 	templates: AppSettings["templates"];
 	database: AppSettings["database"];
 	editor: AppSettings["editor"];

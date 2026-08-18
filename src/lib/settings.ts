@@ -261,6 +261,12 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 			value.quickNotesFolder,
 		);
 	}
+	if ("noteCreationDefaultFolder" in value) {
+		out.noteCreationDefaultFolder =
+			SPACE_SETTINGS.noteCreationDefaultFolder.normalize(
+				value.noteCreationDefaultFolder,
+			);
+	}
 	if ("templatesFolder" in value) {
 		out.templatesFolder =
 			typeof value.templatesFolder === "string"
@@ -533,6 +539,12 @@ export async function loadSettings(
 		activeScopedSettings,
 		hasActiveSpace,
 	);
+	const noteCreationDefaultFolder = loadSpaceSettingValue(
+		SPACE_SETTINGS.noteCreationDefaultFolder,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
 	const legacyTemplatesFolder = entries.get(
 		INTERNAL_SETTING_KEYS.templatesFolder,
 	);
@@ -650,6 +662,9 @@ export async function loadSettings(
 		},
 		quickNotes: {
 			folder: quickNotesFolder,
+		},
+		noteCreation: {
+			defaultFolder: noteCreationDefaultFolder,
 		},
 		templates: {
 			folder: templatesFolder,

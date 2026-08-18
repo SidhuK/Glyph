@@ -71,6 +71,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "space-monthly-notes", tab: "space" },
 	{ id: "space-quarterly-notes", tab: "space" },
 	{ id: "space-quick-notes-folder", tab: "space" },
+	{ id: "space-default-new-note-folder", tab: "space" },
 	{ id: "space-attachments-location", tab: "space" },
 	{ id: "space-template-folder", tab: "space" },
 	{ id: "space-default-daily-template", tab: "space" },

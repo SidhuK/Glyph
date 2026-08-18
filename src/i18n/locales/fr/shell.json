@@ -4,6 +4,8 @@
 		"expand": "Développer la barre latérale",
 		"devBadge": "DEV",
 		"newNote": "Nouvelle note",
+		"newNoteInFolder": "Créer une note dans {{folder}}",
+		"newNoteInRoot": "Créer une note à la racine de l’espace",
 		"pinned": "Épinglées",
 		"allNotes": "Toutes les notes",
 		"collections": "Collections",

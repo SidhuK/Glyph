@@ -4,6 +4,8 @@
 		"expand": "Expand sidebar",
 		"devBadge": "DEV",
 		"newNote": "New Note",
+		"newNoteInFolder": "Create new note in {{folder}}",
+		"newNoteInRoot": "Create new note in the workspace root",
 		"pinned": "Pinned",
 		"allNotes": "All Notes",
 		"collections": "Collections",

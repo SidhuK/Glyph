@@ -74,6 +74,12 @@ export function SpaceSettingsPane() {
 		null,
 	);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
+	const [defaultNewNoteFolder, setDefaultNewNoteFolder] = useState<
+		string | null
+	>(null);
+	const [defaultNewNoteError, setDefaultNewNoteError] = useState<string | null>(
+		null,
+	);
 	const [periodNotesError, setPeriodNotesError] = useState<string | null>(null);
 	const [periodNotesEnabled, setPeriodNotesEnabled] = useState(
 		DEFAULT_PERIOD_NOTES_ENABLED,
@@ -121,6 +127,7 @@ export function SpaceSettingsPane() {
 			const settings = await loadSettings(settingsScope);
 			setCurrentSpacePath(currentSpace);
 			setDailyNotesFolderState(settings.dailyNotes.folder);
+			setDefaultNewNoteFolder(settings.noteCreation?.defaultFolder ?? null);
 			setPeriodNotesEnabled(
 				periodNotesEnabledFromSettings(settings.dailyNotes),
 			);
@@ -140,6 +147,9 @@ export function SpaceSettingsPane() {
 	}, [refresh]);
 
 	useTauriEvent("settings:updated", (payload) => {
+		if (payload.noteCreation && "defaultFolder" in payload.noteCreation) {
+			setDefaultNewNoteFolder(payload.noteCreation.defaultFolder ?? null);
+		}
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setEnablePeopleMentionsAsTags(payload.editor.enablePeopleMentionsAsTags);
 		}
@@ -203,6 +213,36 @@ export function SpaceSettingsPane() {
 			setDailyNotesError(
 				cause instanceof Error ? cause.message : "Failed to clear folder",
 			);
+		}
+	}, [currentSpacePath]);
+
+	const handleBrowseDefaultNewNoteFolder = useCallback(async () => {
+		setDefaultNewNoteError(null);
+		try {
+			const selection = await selectFolderRelativeToSpace();
+			if (selection === null) return;
+			await writeSpaceSetting(
+				SPACE_SETTINGS.noteCreationDefaultFolder,
+				selection.relativePath || null,
+				{ spacePath: selection.spacePath },
+			);
+			setCurrentSpacePath(selection.spacePath);
+			setDefaultNewNoteFolder(selection.relativePath || null);
+		} catch (cause) {
+			setDefaultNewNoteError(extractErrorMessage(cause));
+		}
+	}, []);
+
+	const handleClearDefaultNewNoteFolder = useCallback(async () => {
+		setDefaultNewNoteError(null);
+		try {
+			const spacePath = requireSpacePath(currentSpacePath);
+			await writeSpaceSetting(SPACE_SETTINGS.noteCreationDefaultFolder, null, {
+				spacePath,
+			});
+			setDefaultNewNoteFolder(null);
+		} catch (cause) {
+			setDefaultNewNoteError(extractErrorMessage(cause));
 		}
 	}, [currentSpacePath]);
 
@@ -371,6 +411,32 @@ export function SpaceSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
+				<SettingsSection
+					title={t("newNotes.sectionTitle")}
+					description={t("newNotes.sectionDescription")}
+				>
+					<SettingsRow
+						searchId="space-default-new-note-folder"
+						label={t("newNotes.defaultFolder.label")}
+						description={t("newNotes.defaultFolder.description")}
+						stacked
+						interactive={false}
+					>
+						<SettingsFolderPicker
+							path={defaultNewNoteFolder ?? t("newNotes.root")}
+							browseLabel={t("newNotes.browse")}
+							clearLabel={t("newNotes.clear")}
+							onBrowse={() => void handleBrowseDefaultNewNoteFolder()}
+							onClear={
+								defaultNewNoteFolder
+									? () => void handleClearDefaultNewNoteFolder()
+									: undefined
+							}
+							error={defaultNewNoteError}
+						/>
+					</SettingsRow>
+				</SettingsSection>
+
 				<SettingsSection
 					title="Daily Notes"
 					description="Choose where dated notes are created in the current space."
