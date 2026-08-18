@@ -100,7 +100,7 @@ export function SpaceSettingsPane() {
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
 		useState(false);
 	const [isSavingPeopleMentions, setIsSavingPeopleMentions] = useState(false);
-	const { startIndexRebuild } = useSpace();
+	const { spacePath, startIndexRebuild } = useSpace();
 
 	const onRebuildIndex = useCallback(async () => {
 		if (!currentSpacePath) {
@@ -122,7 +122,7 @@ export function SpaceSettingsPane() {
 	const refresh = useCallback(async () => {
 		setError("");
 		try {
-			const currentSpace = await invoke("space_get_current");
+			const currentSpace = spacePath ?? (await invoke("space_get_current"));
 			const settingsScope = { spacePath: currentSpace };
 			const settings = await loadSettings(settingsScope);
 			setCurrentSpacePath(currentSpace);
@@ -140,13 +140,14 @@ export function SpaceSettingsPane() {
 		} catch (e) {
 			setError(extractErrorMessage(e));
 		}
-	}, []);
+	}, [spacePath]);
 
 	useEffect(() => {
 		void refresh();
 	}, [refresh]);
 
 	useTauriEvent("settings:updated", (payload) => {
+		if (payload.spacePath && payload.spacePath !== spacePath) return;
 		if (payload.noteCreation && "defaultFolder" in payload.noteCreation) {
 			setDefaultNewNoteFolder(payload.noteCreation.defaultFolder ?? null);
 		}
@@ -236,15 +237,15 @@ export function SpaceSettingsPane() {
 	const handleClearDefaultNewNoteFolder = useCallback(async () => {
 		setDefaultNewNoteError(null);
 		try {
-			const spacePath = requireSpacePath(currentSpacePath);
+			const activeSpacePath = requireSpacePath(spacePath);
 			await writeSpaceSetting(SPACE_SETTINGS.noteCreationDefaultFolder, null, {
-				spacePath,
+				spacePath: activeSpacePath,
 			});
 			setDefaultNewNoteFolder(null);
 		} catch (cause) {
 			setDefaultNewNoteError(extractErrorMessage(cause));
 		}
-	}, [currentSpacePath]);
+	}, [spacePath]);
 
 	const handlePeriodNoteToggle = useCallback(
 		async (kind: OptionalPeriodKind, checked: boolean) => {

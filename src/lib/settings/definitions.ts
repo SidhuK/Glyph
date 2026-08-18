@@ -200,6 +200,11 @@ function nullablePath(value: unknown): string | null {
 	return typeof value === "string" ? normalizeRelPath(value) || null : null;
 }
 
+function normalizeDefaultNewNoteFolder(value: unknown): string | null {
+	const path = nullablePath(value);
+	return path && !validateRelFolderPath(path) ? path : null;
+}
+
 function isThemeMode(value: unknown): value is ThemeMode {
 	return value === "system" || value === "light" || value === "dark";
 }
@@ -733,7 +738,7 @@ export const SPACE_SETTINGS = {
 		field: "noteCreationDefaultFolder",
 		defaultValue: null,
 		discovery: searchable("space-default-new-note-folder"),
-		normalize: nullablePath,
+		normalize: normalizeDefaultNewNoteFolder,
 		parse: (value) =>
 			typeof value === "string" || value === null
 				? parsed(value)
