@@ -119,31 +119,42 @@ export function SpaceSettingsPane() {
 		}
 	}, [currentSpacePath]);
 
-	const refresh = useCallback(async () => {
-		setError("");
-		try {
-			const currentSpace = spacePath ?? (await invoke("space_get_current"));
-			const settingsScope = { spacePath: currentSpace };
-			const settings = await loadSettings(settingsScope);
-			setCurrentSpacePath(currentSpace);
-			setDailyNotesFolderState(settings.dailyNotes.folder);
-			setDefaultNewNoteFolder(settings.noteCreation?.defaultFolder ?? null);
-			setPeriodNotesEnabled(
-				periodNotesEnabledFromSettings(settings.dailyNotes),
-			);
-			setQuickNotesFolderState(settings.quickNotes.folder);
-			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
-			setAttachmentFolderState(
-				settings.editor.attachmentFolder ?? DEFAULT_ATTACHMENT_FOLDER,
-			);
-			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
-		} catch (e) {
-			setError(extractErrorMessage(e));
-		}
-	}, [spacePath]);
+	const refresh = useCallback(
+		async (isCurrent: () => boolean) => {
+			setError("");
+			try {
+				const currentSpace = spacePath ?? (await invoke("space_get_current"));
+				const settingsScope = { spacePath: currentSpace };
+				const settings = await loadSettings(settingsScope);
+				if (!isCurrent()) return;
+				setCurrentSpacePath(currentSpace);
+				setDailyNotesFolderState(settings.dailyNotes.folder);
+				setDefaultNewNoteFolder(settings.noteCreation?.defaultFolder ?? null);
+				setPeriodNotesEnabled(
+					periodNotesEnabledFromSettings(settings.dailyNotes),
+				);
+				setQuickNotesFolderState(settings.quickNotes.folder);
+				setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
+				setAttachmentFolderState(
+					settings.editor.attachmentFolder ?? DEFAULT_ATTACHMENT_FOLDER,
+				);
+				setEnablePeopleMentionsAsTags(
+					settings.editor.enablePeopleMentionsAsTags,
+				);
+			} catch (e) {
+				if (!isCurrent()) return;
+				setError(extractErrorMessage(e));
+			}
+		},
+		[spacePath],
+	);
 
 	useEffect(() => {
-		void refresh();
+		let cancelled = false;
+		void refresh(() => !cancelled);
+		return () => {
+			cancelled = true;
+		};
 	}, [refresh]);
 
 	useTauriEvent("settings:updated", (payload) => {
