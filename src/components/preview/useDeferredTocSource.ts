@@ -9,8 +9,9 @@ interface TocSource {
 	contentRoot: HTMLElement;
 }
 
-export function useDeferredTocSource() {
+export function useDeferredTocSource(noteKey: string) {
 	const [tocSource, setTocSource] = useState<TocSource | null>(null);
+	const appliedNoteKeyRef = useRef(noteKey);
 	const tocReadyFrameRef = useRef<number | null>(null);
 	const tocReadyResizeObserverRef = useRef<ResizeObserver | null>(null);
 	const tocReadyGenerationRef = useRef(0);
@@ -31,6 +32,12 @@ export function useDeferredTocSource() {
 		cancelPendingTocReady();
 		disconnectPendingTocResizeObserver();
 	}, [cancelPendingTocReady, disconnectPendingTocResizeObserver]);
+
+	if (appliedNoteKeyRef.current !== noteKey) {
+		appliedNoteKeyRef.current = noteKey;
+		resetPendingTocReady();
+		setTocSource(null);
+	}
 
 	const handleEditorReady = useCallback(
 		(editor: Editor | null, contentRoot: HTMLElement | null) => {

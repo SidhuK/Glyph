@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
 	findWikiLinkSpans,
 	parseWikiLink,
+	splitWikiLinkQuery,
 	wikiLinkAttrsToMarkdown,
+	wikiLinkDisplayName,
 } from "./wikiLinkCodec";
 
 describe("wikiLinkCodec", () => {
@@ -35,6 +37,39 @@ describe("wikiLinkCodec", () => {
 			anchorKind: "block",
 			anchor: "abc123",
 		});
+		expect(parseWikiLink("[[link#heading-3]]")).toMatchObject({
+			target: "link",
+			anchorKind: "heading",
+			anchor: "heading-3",
+		});
+	});
+
+	it("splits an in-progress wikilink query at the heading hash", () => {
+		expect(splitWikiLinkQuery("Daily Note")).toEqual({
+			kind: "file",
+			target: "Daily Note",
+		});
+		expect(splitWikiLinkQuery("Daily Note#")).toEqual({
+			kind: "heading",
+			target: "Daily Note",
+			headingQuery: "",
+		});
+		expect(splitWikiLinkQuery("link#heading-3")).toEqual({
+			kind: "heading",
+			target: "link",
+			headingQuery: "heading-3",
+		});
+	});
+
+	it("includes heading anchors in the display name", () => {
+		expect(
+			wikiLinkDisplayName({
+				target: "link.md",
+				alias: null,
+				anchorKind: "heading",
+				anchor: "heading-3",
+			}),
+		).toBe("link#heading-3");
 	});
 
 	it("rejects malformed wikilinks", () => {

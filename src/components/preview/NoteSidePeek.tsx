@@ -5,13 +5,27 @@ import {
 	NoteIcon,
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import type { Editor } from "@tiptap/react";
+import {
+	type MouseEvent as ReactMouseEvent,
+	useCallback,
+	useEffect,
+	useRef,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { noteDocumentQueryOptions } from "../../lib/navigationPrefetch";
 import { parseNotePreview } from "../../lib/notePreview";
 import { displayNameFromPath, parentDir } from "../../utils/path";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import {
+	extractHeadingsFromDoc,
+	scrollEditorToHeading,
+} from "../editor/hooks/useTableOfContents";
+import {
+	applyPendingHeadingJump,
+	resolveAnchorHeading,
+} from "../editor/markdown/headingAnchor";
 
 interface NoteSidePeekProps {
 	relPath: string;
@@ -32,6 +46,36 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 	const folder = parentDir(relPath);
 	const error = noteQuery.error ? extractErrorMessage(noteQuery.error) : "";
 	const isPending = noteQuery.isPending;
+	const editorRef = useRef<Editor | null>(null);
+	const handleEditorReady = useCallback(
+		(editor: Editor | null) => {
+			editorRef.current = editor;
+			if (!editor) return;
+			applyPendingHeadingJump({
+				path: relPath,
+				headings: extractHeadingsFromDoc(editor.state.doc),
+				selectHeading: (heading) => scrollEditorToHeading(editor, heading),
+			});
+		},
+		[relPath],
+	);
+
+	const handleInternalAnchorClick = useCallback(
+		(event: ReactMouseEvent<HTMLElement>) => {
+			const target = event.target instanceof Element ? event.target : null;
+			const anchor = target?.closest("a")?.getAttribute("href");
+			if (!anchor?.startsWith("#")) return;
+			const editor = editorRef.current;
+			if (!editor || editor.isDestroyed) return;
+			const heading = resolveAnchorHeading(
+				extractHeadingsFromDoc(editor.state.doc),
+				anchor,
+			);
+			if (!heading) return;
+			scrollEditorToHeading(editor, heading);
+		},
+		[],
+	);
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -89,7 +133,10 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 					</button>
 				</div>
 			</header>
-			<div className="noteSidePeekBody">
+			<div
+				className="noteSidePeekBody"
+				onClickCapture={handleInternalAnchorClick}
+			>
 				{error ? (
 					<div className="noteSidePeekStatus">{error}</div>
 				) : isPending ? (
@@ -110,6 +157,7 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 							onChange={() => {}}
 							interactive
 							acceptSearchJumps={false}
+							onEditorReady={handleEditorReady}
 							deferHeavyFeatures
 						/>
 					</div>

@@ -238,6 +238,15 @@ export function useTableOfContents(
 	const activeFrameRef = useRef<number | null>(null);
 	const headingsRef = useRef<TOCHeading[]>([]);
 	const headingsFrameRef = useRef<number | null>(null);
+	const headingsEditorRef = useRef<Editor | null>(editor);
+
+	if (headingsEditorRef.current !== editor) {
+		headingsEditorRef.current = editor;
+		const next = editor ? extractHeadingsFromDoc(editor.state.doc) : [];
+		headingsRef.current = next;
+		setHeadings((prev) => (isSameHeadingList(prev, next) ? prev : next));
+		if (!editor) setActiveId(null);
+	}
 
 	const publishHeadings = useCallback(() => {
 		if (headingsFrameRef.current !== null) return;
@@ -336,22 +345,7 @@ export function useTableOfContents(
 	const scrollToHeading = useCallback(
 		(heading: TOCHeading) => {
 			if (!editor) return;
-			editor.commands.expandHeadingAncestors(heading.pos);
-			window.requestAnimationFrame(() => {
-				const el = getHeadingElement(editor, heading);
-				if (!el) return;
-				const scrollContainer = findScrollParent(el);
-				if (scrollContainer) {
-					const containerRect = scrollContainer.getBoundingClientRect();
-					const elRect = el.getBoundingClientRect();
-					const offset =
-						elRect.top - containerRect.top + scrollContainer.scrollTop - 20;
-					scrollContainer.scrollTo({ top: offset, behavior: "smooth" });
-				} else {
-					el.scrollIntoView({ behavior: "smooth", block: "start" });
-				}
-				setActiveId(heading.id);
-			});
+			scrollEditorToHeading(editor, heading, () => setActiveId(heading.id));
 		},
 		[editor],
 	);
@@ -372,4 +366,27 @@ export function useTableOfContents(
 	);
 
 	return { headings, activeId, scrollToHeading, getPreviewForHeading };
+}
+
+export function scrollEditorToHeading(
+	editor: Editor,
+	heading: TOCHeading,
+	onVisible?: () => void,
+): void {
+	editor.commands.expandHeadingAncestors(heading.pos);
+	window.requestAnimationFrame(() => {
+		const el = getHeadingElement(editor, heading);
+		if (!el) return;
+		onVisible?.();
+		const scrollContainer = findScrollParent(el);
+		if (scrollContainer) {
+			const containerRect = scrollContainer.getBoundingClientRect();
+			const elRect = el.getBoundingClientRect();
+			const offset =
+				elRect.top - containerRect.top + scrollContainer.scrollTop - 20;
+			scrollContainer.scrollTo({ top: offset, behavior: "smooth" });
+			return;
+		}
+		el.scrollIntoView({ behavior: "smooth", block: "start" });
+	});
 }

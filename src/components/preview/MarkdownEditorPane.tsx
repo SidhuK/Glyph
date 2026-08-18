@@ -3,6 +3,7 @@ import {
 	AiBrain04Icon,
 	LayoutAlignRightIcon,
 } from "@hugeicons/core-free-icons";
+import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -192,7 +193,8 @@ export function MarkdownEditorPane({
 	const activeNoteKey = `${spacePath ?? ""}\0${relPath}`;
 	const activeNoteKeyRef = useRef(activeNoteKey);
 	activeNoteKeyRef.current = activeNoteKey;
-	const { tocSource, handleEditorReady } = useDeferredTocSource();
+	const { tocSource, handleEditorReady: handleTocEditorReady } =
+		useDeferredTocSource(activeNoteKey);
 	const handleDocumentTextReplaced = useCallback((nextText: string) => {
 		if (infoPanelOpenRef.current) setInfoPanelText(nextText);
 	}, []);
@@ -211,6 +213,8 @@ export function MarkdownEditorPane({
 		saveLabel,
 		text,
 		textRef,
+		loadedRelPath,
+		rawEditorReady,
 	} = useMarkdownDocumentSession({
 		initialDoc,
 		initialError,
@@ -366,14 +370,27 @@ export function MarkdownEditorPane({
 		[mode, rawEditorRef, scrollToHeading],
 	);
 
-	const getPlainText = useCallback(() => textRef.current, [textRef]);
+	const navigationHeadings = useMemo(
+		() =>
+			mode === "plain"
+				? analyzeNoteInfo(text, text, true).headings
+				: tocHeadings,
+		[mode, text, tocHeadings],
+	);
 	useInternalAnchorNavigation({
 		relPath,
-		mode,
-		getPlainText,
-		tocHeadings,
+		headings: navigationHeadings,
 		selectVisibleHeading,
+		headingsReady:
+			loadedRelPath === relPath &&
+			(mode === "plain" ? rawEditorReady : tocSource !== null),
 	});
+	const handleEditorReady = useCallback(
+		(editor: Editor | null, contentRoot: HTMLElement | null) => {
+			handleTocEditorReady(editor, contentRoot);
+		},
+		[handleTocEditorReady],
+	);
 
 	useEffect(() => {
 		if (!infoPanelOpen) return;

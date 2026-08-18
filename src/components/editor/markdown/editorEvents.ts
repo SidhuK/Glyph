@@ -34,6 +34,65 @@ export interface InternalAnchorClickDetail {
 	sourcePath: string;
 }
 
+function isInternalAnchorClickDetail(
+	value: unknown,
+): value is InternalAnchorClickDetail {
+	if (typeof value !== "object" || value === null) return false;
+	if (!("anchor" in value) || !("sourcePath" in value)) return false;
+	return (
+		typeof value.anchor === "string" && typeof value.sourcePath === "string"
+	);
+}
+
+export function isInternalAnchorClickEvent(
+	event: Event,
+): event is CustomEvent<InternalAnchorClickDetail> {
+	return (
+		event.type === INTERNAL_ANCHOR_CLICK_EVENT &&
+		event instanceof CustomEvent &&
+		isInternalAnchorClickDetail(event.detail)
+	);
+}
+
+function isWikiLinkClickDetail(value: unknown): value is WikiLinkClickDetail {
+	if (typeof value !== "object" || value === null) return false;
+	if (!("target" in value) || typeof value.target !== "string") return false;
+	if (!("raw" in value) || typeof value.raw !== "string") return false;
+	if (!("unresolved" in value) || typeof value.unresolved !== "boolean") {
+		return false;
+	}
+	if (
+		!("alias" in value) ||
+		(value.alias !== null && typeof value.alias !== "string")
+	) {
+		return false;
+	}
+	if (!("anchorKind" in value)) return false;
+	const kind = value.anchorKind;
+	if (kind !== "none" && kind !== "heading" && kind !== "block") return false;
+	if (
+		!("anchor" in value) ||
+		(value.anchor !== null && typeof value.anchor !== "string")
+	) {
+		return false;
+	}
+	if ("embed" in value && typeof value.embed !== "boolean") return false;
+	if ("sourcePath" in value && typeof value.sourcePath !== "string") {
+		return false;
+	}
+	return true;
+}
+
+export function isWikiLinkClickEvent(
+	event: Event,
+): event is CustomEvent<WikiLinkClickDetail> {
+	return (
+		event.type === WIKI_LINK_CLICK_EVENT &&
+		event instanceof CustomEvent &&
+		isWikiLinkClickDetail(event.detail)
+	);
+}
+
 export function dispatchWikiLinkClick(detail: WikiLinkClickDetail): void {
 	window.dispatchEvent(
 		new CustomEvent<WikiLinkClickDetail>(WIKI_LINK_CLICK_EVENT, { detail }),

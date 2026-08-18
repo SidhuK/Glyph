@@ -1,27 +1,10 @@
 import type { ReactNode } from "react";
+import { dispatchWikiLinkClick } from "../markdown/editorEvents";
 import {
-	type WikiLinkClickDetail,
-	dispatchWikiLinkClick,
-} from "../markdown/editorEvents";
-import { findWikiLinkSpans, parseWikiLink } from "../markdown/wikiLinkCodec";
-
-function displayNameForTarget(target: string): string {
-	return target.split("/").pop()?.replace(/\.md$/i, "") || target;
-}
-
-function clickDetailFromRaw(raw: string): WikiLinkClickDetail | null {
-	const parsed = parseWikiLink(raw);
-	if (!parsed) return null;
-	return {
-		raw: parsed.raw,
-		target: parsed.target,
-		alias: parsed.alias,
-		anchorKind: parsed.anchorKind,
-		anchor: parsed.anchor,
-		unresolved: parsed.unresolved,
-		embed: parsed.embed,
-	};
-}
+	findWikiLinkSpans,
+	parseWikiLink,
+	wikiLinkDisplayName,
+} from "../markdown/wikiLinkCodec";
 
 export function WikiLinkedText({ value }: { value: string }) {
 	const spans = findWikiLinkSpans(value);
@@ -33,10 +16,11 @@ export function WikiLinkedText({ value }: { value: string }) {
 		if (cursor < span.start) {
 			nodes.push(value.slice(cursor, span.start));
 		}
-		const detail = clickDetailFromRaw(span.raw);
+		const detail = parseWikiLink(span.raw);
 		if (!detail) {
 			nodes.push(span.raw);
 		} else {
+			const label = wikiLinkDisplayName(detail);
 			nodes.push(
 				<button
 					key={`${span.start}:${span.end}`}
@@ -45,12 +29,10 @@ export function WikiLinkedText({ value }: { value: string }) {
 					data-target={detail.target}
 					data-unresolved={String(detail.unresolved)}
 					onClick={() => dispatchWikiLinkClick(detail)}
-					title={detail.target}
+					title={label}
 				>
 					<span className="wikiLinkIcon" aria-hidden="true" />
-					<span className="wikiLinkLabel">
-						{detail.alias || displayNameForTarget(detail.target)}
-					</span>
+					<span className="wikiLinkLabel">{label}</span>
 				</button>,
 			);
 		}

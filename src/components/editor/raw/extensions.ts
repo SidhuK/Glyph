@@ -49,7 +49,10 @@ import {
 	embeddedLatexCompletionSource,
 	latexSnippetCompletionSource,
 } from "./latexCompletions";
-import { createRawLinkCompletionSource } from "./linkCompletions";
+import {
+	acceptWikiLinkCompletion,
+	createRawLinkCompletionSource,
+} from "./linkCompletions";
 import {
 	embeddedMathLinter,
 	markdownMathExtension,
@@ -278,6 +281,14 @@ export function createRawMarkdownExtensions(
 			}
 		}),
 		keymap.of([
+			{
+				key: "Tab",
+				run: acceptWikiLinkCompletion("tab"),
+			},
+			{
+				key: "Enter",
+				run: acceptWikiLinkCompletion("enter"),
+			},
 			...completionKeymap,
 			{ key: "Mod-b", run: wrapSelection("**") },
 			{ key: "Mod-i", run: wrapSelection("*") },

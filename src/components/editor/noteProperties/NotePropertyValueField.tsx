@@ -340,7 +340,11 @@ export function NotePropertyValueField({
 				<div className="wikiLinkSuggestionMenu notePropertyWikiLinkSuggestions">
 					{wikiLinkAutocomplete.items.map((item, itemIndex) => (
 						<button
-							key={item.path}
+							key={
+								item.kind === "heading"
+									? `${item.kind}:${item.path}#${item.slug}`
+									: `${item.kind}:${item.path}`
+							}
 							type="button"
 							className={[
 								"wikiLinkSuggestionItem",

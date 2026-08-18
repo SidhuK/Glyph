@@ -10,12 +10,14 @@ import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
 import {
 	type EditorLinkSuggestion,
 	isImageTarget,
-	suggestWikiLinks,
 } from "../../../lib/linkSuggestions";
 import {
 	parseWikiLink,
+	splitWikiLinkQuery,
 	wikiLinkAttrsToMarkdown,
+	wikiLinkDisplayName,
 } from "../markdown/wikiLinkCodec";
+import { suggestWikiLinkItems } from "../markdown/wikiLinkHeadingSuggest";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
@@ -71,6 +73,94 @@ function isEmbedSuggestionContextFromQuery(
 	const cursor = editor.state.selection.from;
 	const startOfOpenBrackets = cursor - query.length - 2;
 	return isEmbedSuggestionContext(editor, startOfOpenBrackets);
+}
+
+function insertWikiLinkNode(
+	editor: SuggestionProps<EditorLinkSuggestion>["editor"],
+	range: { from: number; to: number },
+	inner: string,
+	asEmbed: boolean,
+): boolean {
+	const replaceFrom = asEmbed
+		? getEmbedReplacementFrom(editor, range.from)
+		: range.from;
+	const raw = asEmbed ? `![[${inner}]]` : `[[${inner}]]`;
+	const parsed = parseWikiLink(raw);
+	if (!parsed) return false;
+	editor
+		.chain()
+		.focus()
+		.deleteRange({
+			from: replaceFrom,
+			to: range.to,
+		})
+		.insertContent({
+			type: "wikiLink",
+			attrs: parsed,
+		})
+		.insertContent(" ")
+		.run();
+	return true;
+}
+
+function completeWikiLinkTarget(
+	editor: SuggestionProps<EditorLinkSuggestion>["editor"],
+	range: { from: number; to: number },
+	insertText: string,
+	asEmbed: boolean,
+): void {
+	const replaceFrom = asEmbed
+		? getEmbedReplacementFrom(editor, range.from)
+		: range.from;
+	const next = `${asEmbed ? "![[" : "[["}${insertText}`;
+	editor
+		.chain()
+		.focus()
+		.deleteRange({
+			from: replaceFrom,
+			to: range.to,
+		})
+		.insertContent(next)
+		.run();
+}
+
+function commitWikiLinkQuery(
+	editor: SuggestionProps<EditorLinkSuggestion>["editor"],
+	range: { from: number; to: number },
+	query: string,
+	asEmbed: boolean,
+): boolean {
+	const parsed = splitWikiLinkQuery(query);
+	if (!parsed.target) return false;
+	switch (parsed.kind) {
+		case "file":
+			return insertWikiLinkNode(editor, range, parsed.target, asEmbed);
+		case "heading": {
+			const heading = parsed.headingQuery.trim();
+			const inner = heading ? `${parsed.target}#${heading}` : parsed.target;
+			return insertWikiLinkNode(editor, range, inner, asEmbed);
+		}
+		default: {
+			const _exhaustive: never = parsed;
+			return _exhaustive;
+		}
+	}
+}
+
+function acceptWikiLinkSuggestion(
+	item: EditorLinkSuggestion,
+	props: SuggestionProps<EditorLinkSuggestion>,
+): void {
+	if (item.kind === "heading") {
+		props.command(item);
+		return;
+	}
+	completeWikiLinkTarget(
+		props.editor,
+		props.range,
+		item.insertText,
+		isEmbedSuggestionContext(props.editor, props.range.from),
+	);
 }
 
 declare module "@tiptap/core" {
@@ -154,16 +244,22 @@ export const WikiLink = Node.create({
 			];
 		}
 
-		const targetName = target.split("/").pop()?.replace(/\.md$/i, "") || target;
-		const displayName = alias || targetName;
+		const displayName = wikiLinkDisplayName({
+			target: node.attrs.target,
+			alias: node.attrs.alias,
+			anchor: node.attrs.anchor,
+			anchorKind: node.attrs.anchorKind,
+		});
 		return [
 			"span",
 			mergeAttributes(HTMLAttributes, {
 				"data-wikilink": "true",
+				"data-wikilink-embed": String(Boolean(node.attrs.embed)),
 				"data-target": node.attrs.target,
 				"data-anchor-kind": node.attrs.anchorKind,
 				"data-anchor": node.attrs.anchor ?? "",
 				"data-alias": node.attrs.alias ?? "",
+				"data-raw": node.attrs.raw ?? "",
 				"data-unresolved": String(Boolean(node.attrs.unresolved)),
 				class: "wikiLink",
 			}),
@@ -248,17 +344,6 @@ export const WikiLink = Node.create({
 		];
 	},
 	addProseMirrorPlugins() {
-		const getSuggestions = async (
-			query: string,
-			includeImagesOnly: boolean,
-		): Promise<EditorLinkSuggestion[]> => {
-			return suggestWikiLinks({
-				query,
-				embedOnly: includeImagesOnly,
-				limit: this.options.suggestionLimit,
-			});
-		};
-
 		return [
 			Suggestion<EditorLinkSuggestion>({
 				editor: this.editor,
@@ -283,39 +368,32 @@ export const WikiLink = Node.create({
 				},
 				items: async ({ editor, query }) => {
 					const asEmbed = isEmbedSuggestionContextFromQuery(editor, query);
-					return getSuggestions(query, asEmbed);
+					return suggestWikiLinkItems({
+						query,
+						embedOnly: asEmbed,
+						limit: this.options.suggestionLimit,
+					});
 				},
 				command: ({ editor, range, props }) => {
 					const asEmbed = isEmbedSuggestionContext(editor, range.from);
-					const replaceFrom = asEmbed
-						? getEmbedReplacementFrom(editor, range.from)
-						: range.from;
-					const raw = asEmbed
-						? `![[${props.insertText}]]`
-						: `[[${props.insertText}]]`;
-					const parsed = parseWikiLink(raw);
-					if (!parsed) return;
-					editor
-						.chain()
-						.focus()
-						.deleteRange({
-							from: replaceFrom,
-							to: range.to,
-						})
-						.insertContent({
-							type: "wikiLink",
-							attrs: parsed,
-						})
-						.insertContent(" ")
-						.run();
+					insertWikiLinkNode(editor, range, props.insertText, asEmbed);
 				},
 				render: () =>
 					createTipTapTextSuggestionMenu<EditorLinkSuggestion>({
 						menuClassName: "wikiLinkSuggestionMenu",
 						itemContent: (item) => ({
 							title: item.title,
-							description: item.path,
+							description:
+								item.kind === "heading" ? `#${item.slug}` : item.path,
 						}),
+						onTab: acceptWikiLinkSuggestion,
+						onEmptyEnter: (props) =>
+							commitWikiLinkQuery(
+								props.editor,
+								props.range,
+								props.query,
+								isEmbedSuggestionContextFromQuery(props.editor, props.query),
+							),
 					}),
 			}),
 		];

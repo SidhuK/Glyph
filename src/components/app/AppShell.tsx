@@ -825,6 +825,7 @@ export function AppShell() {
 	useWorkspaceLinkEvents({
 		activeMarkdownTabPath,
 		fileTree,
+		noteSidePeekEnabled,
 		openPalette,
 		openWorkspaceFile,
 		openBrowseNote,

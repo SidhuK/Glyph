@@ -122,17 +122,21 @@ export function handleEditorClick(
 			return true;
 		}
 		event.preventDefault();
+		const unresolved = wikiLink.getAttribute("data-unresolved") === "true";
+		const anchorKindAttr = wikiLink.getAttribute("data-anchor-kind");
+		const anchorKind =
+			anchorKindAttr === "heading" || anchorKindAttr === "block"
+				? anchorKindAttr
+				: "none";
+		const anchorAttr = wikiLink.getAttribute("data-anchor");
+		const anchor = anchorAttr ? anchorAttr : null;
 		dispatchWikiLinkClick({
 			raw: wikiLink.getAttribute("data-raw") ?? wikiLink.textContent ?? "",
 			target: wikiLink.getAttribute("data-target") ?? "",
 			alias: wikiLink.getAttribute("data-alias") || null,
-			anchorKind:
-				(wikiLink.getAttribute("data-anchor-kind") as
-					| "none"
-					| "heading"
-					| "block") ?? "none",
-			anchor: wikiLink.getAttribute("data-anchor") || null,
-			unresolved: wikiLink.getAttribute("data-unresolved") === "true",
+			anchorKind,
+			anchor,
+			unresolved,
 			embed: wikiLink.getAttribute("data-wikilink-embed") === "true",
 			sourcePath: relPath,
 		});
