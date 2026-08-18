@@ -17,6 +17,8 @@ export interface SuggestionRange {
 	query: string;
 }
 
+export type SuggestionSelectCause = "enter" | "tab" | "pointer";
+
 export interface UseInputSuggestionEngineOptions<T> {
 	enabled: boolean;
 	inputRef: RefObject<HTMLInputElement | null>;
@@ -26,7 +28,12 @@ export interface UseInputSuggestionEngineOptions<T> {
 		value: string,
 		selectionStart: number | null,
 	) => SuggestionRange | null;
-	onSelect: (item: T, range: SuggestionRange) => void;
+	onSelect: (
+		item: T,
+		range: SuggestionRange,
+		cause: SuggestionSelectCause,
+	) => void;
+	closeAfterSelect?: (item: T, cause: SuggestionSelectCause) => boolean;
 }
 
 export function clampSuggestionIndex(index: number, itemCount: number): number {
@@ -82,6 +89,7 @@ export function useInputSuggestionEngine<T>({
 	provider,
 	findRange,
 	onSelect,
+	closeAfterSelect,
 }: UseInputSuggestionEngineOptions<T>) {
 	const requestIdRef = useRef(0);
 	const [range, setRange] = useState<SuggestionRange | null>(null);
@@ -135,12 +143,12 @@ export function useInputSuggestionEngine<T>({
 	}, [inputRef, refresh, value]);
 
 	const select = useCallback(
-		(item: T) => {
+		(item: T, cause: SuggestionSelectCause = "pointer") => {
 			if (!range) return;
-			onSelect(item, range);
-			close();
+			onSelect(item, range, cause);
+			if (closeAfterSelect?.(item, cause) ?? true) close();
 		},
-		[close, onSelect, range],
+		[close, closeAfterSelect, onSelect, range],
 	);
 
 	const handleKeyDown = useCallback(
@@ -165,9 +173,14 @@ export function useInputSuggestionEngine<T>({
 				);
 				return true;
 			}
-			if (event.key === "Enter" || event.key === "Tab") {
+			if (event.key === "Enter") {
 				event.preventDefault();
-				select(items[activeIndex] ?? items[0]);
+				select(items[activeIndex] ?? items[0], "enter");
+				return true;
+			}
+			if (event.key === "Tab") {
+				event.preventDefault();
+				select(items[activeIndex] ?? items[0], "tab");
 				return true;
 			}
 			return false;

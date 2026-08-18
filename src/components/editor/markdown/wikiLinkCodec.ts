@@ -57,6 +57,36 @@ export function parseWikiLink(raw: string): WikiLinkAttrs | null {
 	};
 }
 
+export type WikiLinkQuery =
+	| { kind: "file"; target: string }
+	| { kind: "heading"; target: string; headingQuery: string };
+
+export function splitWikiLinkQuery(query: string): WikiLinkQuery {
+	const hashIdx = findUnescapedIndex(query, "#");
+	if (hashIdx < 0) {
+		return { kind: "file", target: query.trim() };
+	}
+	return {
+		kind: "heading",
+		target: query.slice(0, hashIdx).trim(),
+		headingQuery: query.slice(hashIdx + 1),
+	};
+}
+
+export function wikiLinkDisplayName(
+	attrs: Pick<WikiLinkAttrs, "target" | "alias" | "anchor" | "anchorKind">,
+): string {
+	const alias = typeof attrs.alias === "string" ? attrs.alias.trim() : "";
+	if (alias) return alias;
+	const target = typeof attrs.target === "string" ? attrs.target.trim() : "";
+	const targetName = target.split("/").pop()?.replace(/\.md$/i, "") || target;
+	const anchor = typeof attrs.anchor === "string" ? attrs.anchor.trim() : "";
+	if (attrs.anchorKind === "heading" && anchor)
+		return `${targetName}#${anchor}`;
+	if (attrs.anchorKind === "block" && anchor) return `${targetName}#^${anchor}`;
+	return targetName;
+}
+
 export function wikiLinkAttrsToMarkdown(attrs: Partial<WikiLinkAttrs>): string {
 	const raw = typeof attrs.raw === "string" ? attrs.raw : "";
 	const target = typeof attrs.target === "string" ? attrs.target.trim() : "";

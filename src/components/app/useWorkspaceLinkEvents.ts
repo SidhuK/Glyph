@@ -19,8 +19,10 @@ import {
 	TAG_CLICK_EVENT,
 	type TagClickDetail,
 	WIKI_LINK_CLICK_EVENT,
-	type WikiLinkClickDetail,
+	dispatchInternalAnchorClick,
+	isWikiLinkClickEvent,
 } from "../editor/markdown/editorEvents";
+import { requestHeadingNavigation } from "../editor/markdown/headingAnchor";
 
 interface UseWorkspaceLinkEventsArgs {
 	activeMarkdownTabPath: string | null;
@@ -40,32 +42,42 @@ export function useWorkspaceLinkEvents({
 	setError,
 }: UseWorkspaceLinkEventsArgs) {
 	const openOrCreateWikiLinkTarget = useCallback(
-		async (rawTarget: string, sourcePath: string | null) => {
+		async (
+			rawTarget: string,
+			sourcePath: string | null,
+			headingAnchor?: string | null,
+		): Promise<string | null> => {
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
-			if (!normalizedTarget) return;
+			if (!normalizedTarget) return null;
 			if (isPdfPath(normalizedTarget)) {
 				const resolved = await invoke("space_resolve_wikilink", {
 					target: normalizedTarget,
 				});
 				if (resolved) {
 					await openWorkspaceFile(resolved);
-					return;
+					return resolved;
 				}
 				setError(`Could not resolve PDF wikilink: ${rawTarget}`);
-				return;
+				return null;
 			}
 			if (!isMarkdownCreatablePath(normalizedTarget)) {
 				setError(`Only markdown notes are creatable via [[...]]: ${rawTarget}`);
-				return;
+				return null;
 			}
 
 			const resolved = await invoke("space_resolve_wikilink", {
 				target: normalizedTarget,
 			});
 			if (resolved) {
+				if (headingAnchor) {
+					requestHeadingNavigation({
+						path: resolved,
+						anchor: headingAnchor,
+					});
+				}
 				await openBrowseNote(resolved);
-				return;
+				return resolved;
 			}
 
 			const sourceDir = sourcePath ? parentDir(sourcePath) : "";
@@ -84,7 +96,7 @@ export function useWorkspaceLinkEvents({
 			});
 			if (createdPath) {
 				await openWorkspaceFile(createdPath);
-				return;
+				return createdPath;
 			}
 
 			setError("");
@@ -92,24 +104,30 @@ export function useWorkspaceLinkEvents({
 				target: normalizedTarget,
 			});
 			if (fallbackResolved) {
+				if (headingAnchor) {
+					requestHeadingNavigation({
+						path: fallbackResolved,
+						anchor: headingAnchor,
+					});
+				}
 				await openBrowseNote(fallbackResolved);
-				return;
+				return fallbackResolved;
 			}
 
 			setError(`Could not resolve wikilink: ${rawTarget}`);
+			return null;
 		},
 		[fileTree, openBrowseNote, openWorkspaceFile, setError],
 	);
 
 	useEffect(() => {
 		const onWikiLinkClick = (event: Event) => {
-			const detail = (event as CustomEvent<WikiLinkClickDetail>).detail;
-			if (!detail?.target) return;
+			if (!isWikiLinkClickEvent(event)) return;
+			const detail = event.detail;
+			if (!detail.target) return;
 			void (async () => {
 				try {
-					const targetWithoutAnchor =
-						detail.target.split("#", 1)[0] ?? detail.target;
-					const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
+					const normalizedTarget = normalizeRelPath(detail.target);
 					if (!normalizedTarget) return;
 
 					if (detail.embed || isImagePath(normalizedTarget)) {
@@ -136,7 +154,19 @@ export function useWorkspaceLinkEvents({
 						);
 						return;
 					}
-					await openOrCreateWikiLinkTarget(detail.target, sourcePath);
+					const headingAnchor =
+						detail.anchorKind === "heading" ? detail.anchor : null;
+					const openedPath = await openOrCreateWikiLinkTarget(
+						detail.target,
+						sourcePath,
+						headingAnchor,
+					);
+					if (openedPath && headingAnchor) {
+						dispatchInternalAnchorClick({
+							anchor: `#${headingAnchor}`,
+							sourcePath: openedPath,
+						});
+					}
 				} catch (e) {
 					setError(
 						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,

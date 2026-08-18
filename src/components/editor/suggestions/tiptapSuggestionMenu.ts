@@ -22,6 +22,8 @@ interface TipTapSuggestionMenuOptions<T> {
 	lockEditorScroll?: boolean;
 	resetSelectionOnUpdate?: boolean;
 	onEscape?: (view: EditorView) => void;
+	onTab?: (item: T, props: SuggestionProps<T>) => void;
+	onEmptyEnter?: (props: SuggestionProps<T>) => boolean;
 }
 
 interface TipTapTextSuggestionMenuOptions<T>
@@ -88,6 +90,8 @@ export function createTipTapSuggestionMenu<T>({
 	lockEditorScroll = true,
 	resetSelectionOnUpdate = false,
 	onEscape,
+	onTab,
+	onEmptyEnter,
 }: TipTapSuggestionMenuOptions<T>) {
 	let menu: HTMLDivElement | null = null;
 	let selectedIndex = 0;
@@ -125,7 +129,13 @@ export function createTipTapSuggestionMenu<T>({
 					item,
 					index,
 					isActive: index === selectedIndex,
-					select: (nextItem) => props.command(nextItem),
+					select: (nextItem) => {
+						if (onTab) {
+							onTab(nextItem, props);
+							return;
+						}
+						props.command(nextItem);
+					},
 				}),
 			);
 		}
@@ -172,6 +182,10 @@ export function createTipTapSuggestionMenu<T>({
 				}
 				return true;
 			}
+			if (event.key === "Enter" && !items.length) {
+				event.preventDefault();
+				return current ? (onEmptyEnter?.(current) ?? false) : false;
+			}
 			if (!items.length) return false;
 			if (event.key === "ArrowDown") {
 				event.preventDefault();
@@ -185,9 +199,21 @@ export function createTipTapSuggestionMenu<T>({
 				updateSelection(items);
 				return true;
 			}
-			if (event.key === "Enter" || event.key === "Tab") {
+			if (event.key === "Enter") {
 				event.preventDefault();
 				current?.command(items[selectedIndex] ?? items[0]);
+				return true;
+			}
+			if (event.key === "Tab") {
+				event.preventDefault();
+				if (!items.length) return false;
+				const item = items[selectedIndex] ?? items[0];
+				if (!item || !current) return false;
+				if (onTab) {
+					onTab(item, current);
+					return true;
+				}
+				current.command(item);
 				return true;
 			}
 			return false;

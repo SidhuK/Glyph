@@ -336,22 +336,8 @@ export function useTableOfContents(
 	const scrollToHeading = useCallback(
 		(heading: TOCHeading) => {
 			if (!editor) return;
-			editor.commands.expandHeadingAncestors(heading.pos);
-			window.requestAnimationFrame(() => {
-				const el = getHeadingElement(editor, heading);
-				if (!el) return;
-				const scrollContainer = findScrollParent(el);
-				if (scrollContainer) {
-					const containerRect = scrollContainer.getBoundingClientRect();
-					const elRect = el.getBoundingClientRect();
-					const offset =
-						elRect.top - containerRect.top + scrollContainer.scrollTop - 20;
-					scrollContainer.scrollTo({ top: offset, behavior: "smooth" });
-				} else {
-					el.scrollIntoView({ behavior: "smooth", block: "start" });
-				}
-				setActiveId(heading.id);
-			});
+			scrollEditorToHeading(editor, heading);
+			setActiveId(heading.id);
 		},
 		[editor],
 	);
@@ -372,4 +358,25 @@ export function useTableOfContents(
 	);
 
 	return { headings, activeId, scrollToHeading, getPreviewForHeading };
+}
+
+export function scrollEditorToHeading(
+	editor: Editor,
+	heading: TOCHeading,
+): void {
+	editor.commands.expandHeadingAncestors(heading.pos);
+	window.requestAnimationFrame(() => {
+		const el = getHeadingElement(editor, heading);
+		if (!el) return;
+		const scrollContainer = findScrollParent(el);
+		if (scrollContainer) {
+			const containerRect = scrollContainer.getBoundingClientRect();
+			const elRect = el.getBoundingClientRect();
+			const offset =
+				elRect.top - containerRect.top + scrollContainer.scrollTop - 20;
+			scrollContainer.scrollTo({ top: offset, behavior: "smooth" });
+			return;
+		}
+		el.scrollIntoView({ behavior: "smooth", block: "start" });
+	});
 }

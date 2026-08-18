@@ -1,3 +1,4 @@
+import { normalizeRelPath } from "../../../utils/path";
 import type { TOCHeading } from "../hooks/useTableOfContents";
 
 /**
@@ -67,4 +68,40 @@ export function resolveAnchorHeading(
 			(heading) => heading.text.trim().toLowerCase() === normalized,
 		) ?? null
 	);
+}
+
+type PendingHeadingJump = {
+	path: string;
+	anchor: string;
+};
+
+let pendingHeadingJump: PendingHeadingJump | null = null;
+
+export function requestHeadingNavigation(jump: PendingHeadingJump): void {
+	const path = normalizeRelPath(jump.path);
+	const anchor = jump.anchor.trim();
+	if (!path || !anchor) return;
+	pendingHeadingJump = { path, anchor };
+}
+
+export function discardPendingHeadingJump(path: string): void {
+	const normalized = normalizeRelPath(path);
+	if (pendingHeadingJump?.path === normalized) pendingHeadingJump = null;
+}
+
+export function applyPendingHeadingJump(options: {
+	path: string;
+	headings: readonly TOCHeading[];
+	selectHeading: (heading: TOCHeading) => void;
+}): boolean {
+	const path = normalizeRelPath(options.path);
+	if (!pendingHeadingJump || pendingHeadingJump.path !== path) return false;
+	const heading = resolveAnchorHeading(
+		options.headings,
+		pendingHeadingJump.anchor,
+	);
+	if (!heading) return false;
+	pendingHeadingJump = null;
+	options.selectHeading(heading);
+	return true;
 }

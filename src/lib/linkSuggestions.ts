@@ -1,11 +1,20 @@
-import { isImagePath, isPdfPath } from "../utils/path";
+import { isImagePath } from "../utils/path";
 import { invoke } from "./tauri";
 
-export interface EditorLinkSuggestion {
-	path: string;
-	title: string;
-	insertText: string;
-}
+export type EditorLinkSuggestion =
+	| {
+			kind: "file";
+			path: string;
+			title: string;
+			insertText: string;
+	  }
+	| {
+			kind: "heading";
+			path: string;
+			title: string;
+			insertText: string;
+			slug: string;
+	  };
 
 interface SuggestWikiLinksOptions {
 	embedOnly?: boolean;
@@ -24,10 +33,6 @@ export function isImageTarget(path: string): boolean {
 	return isImagePath(path);
 }
 
-export function isPdfTarget(path: string): boolean {
-	return isPdfPath(path);
-}
-
 function titleFromPath(path: string): string {
 	const name = path.split("/").pop() ?? path;
 	return name.replace(/\.md$/i, "") || name;
@@ -39,6 +44,7 @@ function toEditorSuggestion(item: {
 	insert_text: string;
 }): EditorLinkSuggestion {
 	return {
+		kind: "file",
 		path: item.path,
 		title: item.title || titleFromPath(item.path),
 		insertText: item.insert_text,

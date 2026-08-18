@@ -5,13 +5,19 @@ import {
 	NoteIcon,
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import type { Editor } from "@tiptap/react";
+import { useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { noteDocumentQueryOptions } from "../../lib/navigationPrefetch";
 import { parseNotePreview } from "../../lib/notePreview";
 import { displayNameFromPath, parentDir } from "../../utils/path";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import {
+	extractHeadingsFromDoc,
+	scrollEditorToHeading,
+} from "../editor/hooks/useTableOfContents";
+import { applyPendingHeadingJump } from "../editor/markdown/headingAnchor";
 
 interface NoteSidePeekProps {
 	relPath: string;
@@ -32,6 +38,17 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 	const folder = parentDir(relPath);
 	const error = noteQuery.error ? extractErrorMessage(noteQuery.error) : "";
 	const isPending = noteQuery.isPending;
+	const handleEditorReady = useCallback(
+		(editor: Editor | null) => {
+			if (!editor) return;
+			applyPendingHeadingJump({
+				path: relPath,
+				headings: extractHeadingsFromDoc(editor.state.doc),
+				selectHeading: (heading) => scrollEditorToHeading(editor, heading),
+			});
+		},
+		[relPath],
+	);
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -110,6 +127,7 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 							onChange={() => {}}
 							interactive
 							acceptSearchJumps={false}
+							onEditorReady={handleEditorReady}
 							deferHeavyFeatures
 						/>
 					</div>

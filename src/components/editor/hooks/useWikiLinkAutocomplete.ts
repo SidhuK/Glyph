@@ -1,11 +1,11 @@
 import type { RefObject } from "react";
 import { useCallback, useMemo } from "react";
-import {
-	type EditorLinkSuggestion,
-	suggestWikiLinks,
-} from "../../../lib/linkSuggestions";
+import type { EditorLinkSuggestion } from "../../../lib/linkSuggestions";
+import { splitWikiLinkQuery } from "../markdown/wikiLinkCodec";
+import { suggestWikiLinkItems } from "../markdown/wikiLinkHeadingSuggest";
 import {
 	type SuggestionRange,
+	type SuggestionSelectCause,
 	useInputSuggestionEngine,
 } from "../suggestions/suggestionEngine";
 
@@ -39,6 +39,10 @@ function findActiveWikiLinkRange(
 	};
 }
 
+function wikiLinkOpening(value: string, from: number): "![[" | "[[" {
+	return from > 0 && value[from - 1] === "!" ? "![[" : "[[";
+}
+
 export function useWikiLinkAutocomplete({
 	enabled,
 	inputRef,
@@ -50,26 +54,19 @@ export function useWikiLinkAutocomplete({
 		() => ({
 			id: "wiki-link",
 			limit: WIKI_LINK_SUGGESTION_LIMIT,
-			getItems: (query: string) =>
-				suggestWikiLinks({
-					query,
+			getItems: (query: string) => {
+				const parsed = splitWikiLinkQuery(query);
+				return suggestWikiLinkItems({
+					query: onSelectItem ? parsed.target : query,
 					includeAttachments: false,
 					limit: WIKI_LINK_SUGGESTION_LIMIT,
-				}),
+				});
+			},
 		}),
-		[],
+		[onSelectItem],
 	);
-	const handleSelect = useCallback(
-		(item: EditorLinkSuggestion, range: SuggestionRange) => {
-			if (onSelectItem) {
-				onSelectItem(item);
-				return;
-			}
-			const markdown = `[[${item.insertText}]]`;
-			const nextValue = `${value.slice(0, range.from)}${markdown}${value.slice(
-				range.to,
-			)}`;
-			const nextCursor = range.from + markdown.length;
+	const applyMarkdown = useCallback(
+		(nextValue: string, nextCursor: number) => {
 			onChange(nextValue);
 			requestAnimationFrame(() => {
 				const input = inputRef.current;
@@ -78,7 +75,30 @@ export function useWikiLinkAutocomplete({
 				input.setSelectionRange(nextCursor, nextCursor);
 			});
 		},
-		[inputRef, onChange, onSelectItem, value],
+		[inputRef, onChange],
+	);
+	const handleSelect = useCallback(
+		(
+			item: EditorLinkSuggestion,
+			range: SuggestionRange,
+			cause: SuggestionSelectCause,
+		) => {
+			if (onSelectItem) {
+				onSelectItem(item);
+				return;
+			}
+			const opening = wikiLinkOpening(value, range.from);
+			const replaceFrom = opening === "![[" ? range.from - 1 : range.from;
+			const commit = cause === "enter" || item.kind === "heading";
+			const markdown = commit
+				? `${opening}${item.insertText}]]`
+				: `${opening}${item.insertText}`;
+			const nextValue = `${value.slice(0, replaceFrom)}${markdown}${value.slice(
+				range.to,
+			)}`;
+			applyMarkdown(nextValue, replaceFrom + markdown.length);
+		},
+		[applyMarkdown, onSelectItem, value],
 	);
 	return useInputSuggestionEngine({
 		enabled,
@@ -87,5 +107,7 @@ export function useWikiLinkAutocomplete({
 		provider,
 		findRange: findActiveWikiLinkRange,
 		onSelect: handleSelect,
+		closeAfterSelect: (item, cause) =>
+			Boolean(onSelectItem) || cause === "enter" || item.kind === "heading",
 	});
 }

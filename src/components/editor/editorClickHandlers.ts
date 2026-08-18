@@ -11,6 +11,7 @@ import {
 	dispatchTagClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
+import { parseWikiLink } from "./markdown/wikiLinkCodec";
 
 function isExpandedMarkdownUrlLink(link: HTMLAnchorElement): boolean {
 	const href = link.getAttribute("href")?.trim() ?? "";
@@ -122,16 +123,17 @@ export function handleEditorClick(
 			return true;
 		}
 		event.preventDefault();
+		const parsed = parseWikiLink(wikiLink.getAttribute("data-raw") ?? "");
+		if (parsed) {
+			dispatchWikiLinkClick({ ...parsed, sourcePath: relPath });
+			return true;
+		}
 		dispatchWikiLinkClick({
 			raw: wikiLink.getAttribute("data-raw") ?? wikiLink.textContent ?? "",
 			target: wikiLink.getAttribute("data-target") ?? "",
 			alias: wikiLink.getAttribute("data-alias") || null,
-			anchorKind:
-				(wikiLink.getAttribute("data-anchor-kind") as
-					| "none"
-					| "heading"
-					| "block") ?? "none",
-			anchor: wikiLink.getAttribute("data-anchor") || null,
+			anchorKind: "none",
+			anchor: null,
 			unresolved: wikiLink.getAttribute("data-unresolved") === "true",
 			embed: wikiLink.getAttribute("data-wikilink-embed") === "true",
 			sourcePath: relPath,

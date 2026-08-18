@@ -68,7 +68,7 @@ Repo extras: agents may read `docs/agents/` and `docs/architecture/adr/`. All ot
 
 Agents and reviewers should flag these patterns unless the change includes a clear justification and there is no simpler React/Tauri-safe alternative:
 
-- `useEffect`: avoid unless synchronizing with an external system. Prefer deriving values during render, event handlers for user actions, keys for reset behavior, and React Query for async server/IPC/filesystem state. See https://react.dev/learn/you-might-not-need-an-effect.
+- `useEffect`: UseEffect is completely banned. UseEffect is a code smell and should be avoided at all costs. Use derived values during render, event handlers for user actions, keys for reset behavior, and React Query for async server/IPC/filesystem state. See https://react.dev/learn/you-might-not-need-an-effect.
 - TanStack Query: prefer queries/mutations for async server, IPC, filesystem, loading, error, retry, cache, and invalidation flows instead of hand-rolled `useState`/`useEffect` state machines.
 - TanStack Virtual: use the existing virtualizer patterns for large lists, tables, boards, timelines, and scroll-heavy surfaces instead of rendering everything or inventing custom windowing logic.
 - `setTimeout`: do not use to sequence React state, paper over races, or wait for rendering. If used for debounce, retry, focus, or transient UI, use cleanup, a named delay constant, and explain why the delay is needed.

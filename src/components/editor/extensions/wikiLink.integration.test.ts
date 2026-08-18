@@ -22,6 +22,20 @@ describe("WikiLink markdown manager integration", () => {
 		return null;
 	}
 
+	it("round-trips heading-anchored wikilinks", () => {
+		const manager = new MarkdownManager({
+			extensions: [StarterKit, WikiLink],
+		});
+		const json = manager.parse("See [[Home#reference-library]]");
+		const wikiLinkNode = findWikiLinkNode(json);
+		expect(wikiLinkNode?.attrs).toMatchObject({
+			target: "Home",
+			anchorKind: "heading",
+			anchor: "reference-library",
+		});
+		expect(manager.serialize(json)).toContain("[[Home#reference-library]]");
+	});
+
 	it("round-trips wikilinks through parse/serialize", () => {
 		const manager = new MarkdownManager({
 			extensions: [StarterKit, WikiLink],
