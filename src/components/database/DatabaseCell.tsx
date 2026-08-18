@@ -830,7 +830,11 @@ function DatabaseCellEditor({
 					<div className="wikiLinkSuggestionMenu databaseWikiLinkSuggestions">
 						{linkedNoteListAutocomplete.items.map((item, index) => (
 							<button
-								key={item.path}
+								key={
+									item.kind === "heading"
+										? `${item.kind}:${item.path}#${item.slug}`
+										: `${item.kind}:${item.path}`
+								}
 								type="button"
 								className={[
 									"wikiLinkSuggestionItem",
@@ -932,7 +936,11 @@ function DatabaseCellEditor({
 				<div className="wikiLinkSuggestionMenu databaseWikiLinkSuggestions">
 					{wikiLinkAutocomplete.items.map((item, index) => (
 						<button
-							key={item.path}
+							key={
+								item.kind === "heading"
+									? `${item.kind}:${item.path}#${item.slug}`
+									: `${item.kind}:${item.path}`
+							}
 							type="button"
 							className={[
 								"wikiLinkSuggestionItem",

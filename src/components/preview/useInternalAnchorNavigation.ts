@@ -15,12 +15,14 @@ interface UseInternalAnchorNavigationArgs {
 	relPath: string;
 	headings: readonly TOCHeading[];
 	selectVisibleHeading: (heading: TOCHeading) => void;
+	headingsReady: boolean;
 }
 
 export function useInternalAnchorNavigation({
 	relPath,
 	headings,
 	selectVisibleHeading,
+	headingsReady,
 }: UseInternalAnchorNavigationArgs) {
 	const selectVisibleHeadingRef = useRef(selectVisibleHeading);
 	selectVisibleHeadingRef.current = selectVisibleHeading;
@@ -28,11 +30,13 @@ export function useInternalAnchorNavigation({
 	headingsRef.current = headings;
 
 	useEffect(() => {
-		applyPendingHeadingJump({
-			path: relPath,
-			headings,
-			selectHeading: (heading) => selectVisibleHeadingRef.current(heading),
-		});
+		if (headingsReady) {
+			applyPendingHeadingJump({
+				path: relPath,
+				headings,
+				selectHeading: (heading) => selectVisibleHeadingRef.current(heading),
+			});
+		}
 
 		const onInternalAnchorClick = (event: Event) => {
 			if (!isInternalAnchorClickEvent(event)) return;
@@ -57,5 +61,5 @@ export function useInternalAnchorNavigation({
 				onInternalAnchorClick,
 			);
 		};
-	}, [headings, relPath]);
+	}, [headings, headingsReady, relPath]);
 }

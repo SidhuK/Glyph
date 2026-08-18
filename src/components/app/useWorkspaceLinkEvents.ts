@@ -127,7 +127,9 @@ export function useWorkspaceLinkEvents({
 			if (!detail.target) return;
 			void (async () => {
 				try {
-					const normalizedTarget = normalizeRelPath(detail.target);
+					const targetWithoutAnchor =
+						detail.target.split("#", 1)[0] ?? detail.target;
+					const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 					if (!normalizedTarget) return;
 
 					if (detail.embed || isImagePath(normalizedTarget)) {

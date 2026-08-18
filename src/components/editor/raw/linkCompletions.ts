@@ -2,10 +2,10 @@ import {
 	type Completion,
 	type CompletionContext,
 	type CompletionResult,
-	acceptCompletion,
 	pickedCompletion,
 	selectedCompletion,
 } from "@codemirror/autocomplete";
+import { syntaxTree } from "@codemirror/language";
 import type { EditorView } from "@codemirror/view";
 import { suggestMarkdownLinks } from "../../../lib/linkSuggestions";
 import { suggestWikiLinkItems } from "../markdown/wikiLinkHeadingSuggest";
@@ -97,17 +97,38 @@ function wikiLinkApply(meta: WikiLinkCompletionMeta) {
 	};
 }
 
+function isInTableOrCode(view: EditorView, pos: number): boolean {
+	let node = syntaxTree(view.state).resolveInner(pos, -1);
+	while (node) {
+		if (node.name === "Table") return true;
+		if (
+			node.name === "FencedCode" ||
+			node.name === "CodeBlock" ||
+			node.name === "InlineCode"
+		) {
+			return true;
+		}
+		if (!node.parent) return false;
+		node = node.parent;
+	}
+	return false;
+}
+
 function closeOpenWikiLink(view: EditorView): boolean {
 	const pos = view.state.selection.main.head;
-	const doc = view.state.doc.toString();
-	const before = doc.slice(0, pos);
+	if (isInTableOrCode(view, pos)) return false;
+	const line = view.state.doc.lineAt(pos);
+	const before = line.text.slice(0, pos - line.from);
 	const openIndex = before.lastIndexOf("[[");
 	if (openIndex < 0) return false;
+	const tokenStart = before[openIndex - 1] === "!" ? openIndex - 1 : openIndex;
+	const charBefore = tokenStart > 0 ? before[tokenStart - 1] : "";
+	if (charBefore && /[A-Za-z0-9]/.test(charBefore)) return false;
 	const afterOpen = before.slice(openIndex + 2);
 	if (afterOpen.includes("]]") || afterOpen.includes("\n")) return false;
 	if (afterOpen.includes("[") || afterOpen.includes("]")) return false;
 	if (!afterOpen.trim()) return false;
-	const existingClosing = doc.slice(pos, pos + 2);
+	const existingClosing = view.state.doc.sliceString(pos, pos + 2);
 	if (existingClosing === "]]") {
 		view.dispatch({ selection: { anchor: pos + 2 } });
 		return true;
@@ -214,7 +235,7 @@ export function acceptWikiLinkCompletion(cause: "tab" | "enter") {
 			});
 			return true;
 		}
-		if (acceptCompletion(view)) return true;
+		if (completion) return false;
 		if (cause === "enter") return closeOpenWikiLink(view);
 		return false;
 	};

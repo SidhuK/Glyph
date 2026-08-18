@@ -183,8 +183,11 @@ export function createTipTapSuggestionMenu<T>({
 				return true;
 			}
 			if (event.key === "Enter" && !items.length) {
+				if (!current || !onEmptyEnter) return false;
+				const handled = onEmptyEnter(current);
+				if (!handled) return false;
 				event.preventDefault();
-				return current ? (onEmptyEnter?.(current) ?? false) : false;
+				return true;
 			}
 			if (!items.length) return false;
 			if (event.key === "ArrowDown") {

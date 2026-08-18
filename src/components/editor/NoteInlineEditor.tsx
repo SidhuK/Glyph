@@ -781,11 +781,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		setTiptapHostNode(node);
 	}, []);
 	useEffect(() => {
+		void relPath;
 		const contentRoot = getMountedEditorContentRoot(tiptapHostNode);
 		const mountedEditor = liveEditor && contentRoot ? liveEditor : null;
 		onEditorReady?.(mountedEditor, mountedEditor ? contentRoot : null);
 		return () => onEditorReady?.(null, null);
-	}, [liveEditor, onEditorReady, tiptapHostNode]);
+	}, [liveEditor, onEditorReady, relPath, tiptapHostNode]);
 
 	const copySelectedCodeBlock = useCallback(() => {
 		if (!selectedCodeBlock) return;

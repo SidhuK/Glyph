@@ -5,7 +5,6 @@ import { splitWikiLinkQuery } from "../markdown/wikiLinkCodec";
 import { suggestWikiLinkItems } from "../markdown/wikiLinkHeadingSuggest";
 import {
 	type SuggestionRange,
-	type SuggestionSelectCause,
 	useInputSuggestionEngine,
 } from "../suggestions/suggestionEngine";
 
@@ -78,21 +77,14 @@ export function useWikiLinkAutocomplete({
 		[inputRef, onChange],
 	);
 	const handleSelect = useCallback(
-		(
-			item: EditorLinkSuggestion,
-			range: SuggestionRange,
-			cause: SuggestionSelectCause,
-		) => {
+		(item: EditorLinkSuggestion, range: SuggestionRange) => {
 			if (onSelectItem) {
 				onSelectItem(item);
 				return;
 			}
 			const opening = wikiLinkOpening(value, range.from);
 			const replaceFrom = opening === "![[" ? range.from - 1 : range.from;
-			const commit = cause === "enter" || item.kind === "heading";
-			const markdown = commit
-				? `${opening}${item.insertText}]]`
-				: `${opening}${item.insertText}`;
+			const markdown = `${opening}${item.insertText}]]`;
 			const nextValue = `${value.slice(0, replaceFrom)}${markdown}${value.slice(
 				range.to,
 			)}`;
@@ -107,7 +99,5 @@ export function useWikiLinkAutocomplete({
 		provider,
 		findRange: findActiveWikiLinkRange,
 		onSelect: handleSelect,
-		closeAfterSelect: (item, cause) =>
-			Boolean(onSelectItem) || cause === "enter" || item.kind === "heading",
 	});
 }

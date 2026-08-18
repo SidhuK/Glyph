@@ -57,14 +57,27 @@ export function isInternalAnchorClickEvent(
 function isWikiLinkClickDetail(value: unknown): value is WikiLinkClickDetail {
 	if (typeof value !== "object" || value === null) return false;
 	if (!("target" in value) || typeof value.target !== "string") return false;
+	if (!("raw" in value) || typeof value.raw !== "string") return false;
+	if (!("unresolved" in value) || typeof value.unresolved !== "boolean") {
+		return false;
+	}
+	if (
+		!("alias" in value) ||
+		(value.alias !== null && typeof value.alias !== "string")
+	) {
+		return false;
+	}
 	if (!("anchorKind" in value)) return false;
 	const kind = value.anchorKind;
 	if (kind !== "none" && kind !== "heading" && kind !== "block") return false;
 	if (
-		"anchor" in value &&
-		value.anchor !== null &&
-		typeof value.anchor !== "string"
+		!("anchor" in value) ||
+		(value.anchor !== null && typeof value.anchor !== "string")
 	) {
+		return false;
+	}
+	if ("embed" in value && typeof value.embed !== "boolean") return false;
+	if ("sourcePath" in value && typeof value.sourcePath !== "string") {
 		return false;
 	}
 	return true;

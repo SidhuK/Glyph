@@ -6,18 +6,30 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { noteDocumentQueryOptions } from "../../lib/navigationPrefetch";
 import { parseNotePreview } from "../../lib/notePreview";
-import { displayNameFromPath, parentDir } from "../../utils/path";
+import {
+	displayNameFromPath,
+	normalizeRelPath,
+	parentDir,
+} from "../../utils/path";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import {
 	extractHeadingsFromDoc,
 	scrollEditorToHeading,
 } from "../editor/hooks/useTableOfContents";
-import { applyPendingHeadingJump } from "../editor/markdown/headingAnchor";
+import {
+	INTERNAL_ANCHOR_CLICK_EVENT,
+	isInternalAnchorClickEvent,
+} from "../editor/markdown/editorEvents";
+import {
+	applyPendingHeadingJump,
+	discardPendingHeadingJump,
+	resolveAnchorHeading,
+} from "../editor/markdown/headingAnchor";
 
 interface NoteSidePeekProps {
 	relPath: string;
@@ -38,8 +50,10 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 	const folder = parentDir(relPath);
 	const error = noteQuery.error ? extractErrorMessage(noteQuery.error) : "";
 	const isPending = noteQuery.isPending;
+	const editorRef = useRef<Editor | null>(null);
 	const handleEditorReady = useCallback(
 		(editor: Editor | null) => {
+			editorRef.current = editor;
 			if (!editor) return;
 			applyPendingHeadingJump({
 				path: relPath,
@@ -49,6 +63,33 @@ export function NoteSidePeek({ relPath, onClose, onOpen }: NoteSidePeekProps) {
 		},
 		[relPath],
 	);
+
+	useEffect(() => {
+		const onInternalAnchorClick = (event: Event) => {
+			if (!isInternalAnchorClickEvent(event)) return;
+			if (
+				normalizeRelPath(event.detail.sourcePath) !== normalizeRelPath(relPath)
+			) {
+				return;
+			}
+			const editor = editorRef.current;
+			if (!editor || editor.isDestroyed) return;
+			const heading = resolveAnchorHeading(
+				extractHeadingsFromDoc(editor.state.doc),
+				event.detail.anchor,
+			);
+			if (!heading) return;
+			discardPendingHeadingJump(relPath);
+			scrollEditorToHeading(editor, heading);
+		};
+		window.addEventListener(INTERNAL_ANCHOR_CLICK_EVENT, onInternalAnchorClick);
+		return () => {
+			window.removeEventListener(
+				INTERNAL_ANCHOR_CLICK_EVENT,
+				onInternalAnchorClick,
+			);
+		};
+	}, [relPath]);
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {

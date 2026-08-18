@@ -137,10 +137,7 @@ function commitWikiLinkQuery(
 			return insertWikiLinkNode(editor, range, parsed.target, asEmbed);
 		case "heading": {
 			const heading = parsed.headingQuery.trim();
-			const inner =
-				heading && !heading.startsWith("^")
-					? `${parsed.target}#${heading}`
-					: parsed.target;
+			const inner = heading ? `${parsed.target}#${heading}` : parsed.target;
 			return insertWikiLinkNode(editor, range, inner, asEmbed);
 		}
 		default: {

@@ -123,18 +123,32 @@ export function handleEditorClick(
 			return true;
 		}
 		event.preventDefault();
+		const unresolved = wikiLink.getAttribute("data-unresolved") === "true";
+		const anchorKindAttr = wikiLink.getAttribute("data-anchor-kind");
+		const anchorKind =
+			anchorKindAttr === "heading" || anchorKindAttr === "block"
+				? anchorKindAttr
+				: "none";
+		const anchorAttr = wikiLink.getAttribute("data-anchor");
+		const anchor = anchorAttr ? anchorAttr : null;
 		const parsed = parseWikiLink(wikiLink.getAttribute("data-raw") ?? "");
 		if (parsed) {
-			dispatchWikiLinkClick({ ...parsed, sourcePath: relPath });
+			dispatchWikiLinkClick({
+				...parsed,
+				anchorKind,
+				anchor,
+				unresolved,
+				sourcePath: relPath,
+			});
 			return true;
 		}
 		dispatchWikiLinkClick({
 			raw: wikiLink.getAttribute("data-raw") ?? wikiLink.textContent ?? "",
 			target: wikiLink.getAttribute("data-target") ?? "",
 			alias: wikiLink.getAttribute("data-alias") || null,
-			anchorKind: "none",
-			anchor: null,
-			unresolved: wikiLink.getAttribute("data-unresolved") === "true",
+			anchorKind,
+			anchor,
+			unresolved,
 			embed: wikiLink.getAttribute("data-wikilink-embed") === "true",
 			sourcePath: relPath,
 		});

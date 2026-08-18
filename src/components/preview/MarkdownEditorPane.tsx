@@ -194,7 +194,7 @@ export function MarkdownEditorPane({
 	const activeNoteKeyRef = useRef(activeNoteKey);
 	activeNoteKeyRef.current = activeNoteKey;
 	const { tocSource, handleEditorReady: handleTocEditorReady } =
-		useDeferredTocSource();
+		useDeferredTocSource(activeNoteKey);
 	const handleDocumentTextReplaced = useCallback((nextText: string) => {
 		if (infoPanelOpenRef.current) setInfoPanelText(nextText);
 	}, []);
@@ -213,6 +213,8 @@ export function MarkdownEditorPane({
 		saveLabel,
 		text,
 		textRef,
+		loadedRelPath,
+		rawEditorReady,
 	} = useMarkdownDocumentSession({
 		initialDoc,
 		initialError,
@@ -379,6 +381,9 @@ export function MarkdownEditorPane({
 		relPath,
 		headings: navigationHeadings,
 		selectVisibleHeading,
+		headingsReady:
+			loadedRelPath === relPath &&
+			(mode === "plain" ? rawEditorReady : tocSource !== null),
 	});
 	const handleEditorReady = useCallback(
 		(editor: Editor | null, contentRoot: HTMLElement | null) => {
