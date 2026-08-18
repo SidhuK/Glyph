@@ -262,10 +262,13 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 		);
 	}
 	if ("noteCreationDefaultFolder" in value) {
+		const folder = SPACE_SETTINGS.noteCreationDefaultFolder.normalize(
+			value.noteCreationDefaultFolder,
+		);
 		out.noteCreationDefaultFolder =
-			SPACE_SETTINGS.noteCreationDefaultFolder.normalize(
-				value.noteCreationDefaultFolder,
-			);
+			SPACE_SETTINGS.noteCreationDefaultFolder.validate?.(folder)
+				? null
+				: folder;
 	}
 	if ("templatesFolder" in value) {
 		out.templatesFolder =
@@ -433,7 +436,10 @@ function loadSpaceSettingValue<Value>(
 	const storedValue = hasActiveSpace
 		? activeSettings?.[definition.field]
 		: entries.get(definition.legacyKey);
-	return definition.normalize(storedValue);
+	const normalized = definition.normalize(storedValue);
+	return definition.validate?.(normalized)
+		? definition.defaultValue
+		: normalized;
 }
 
 export async function loadSettings(
