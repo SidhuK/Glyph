@@ -27,4 +27,5 @@ dist-ssr
 *.sw?
 .amp/
 .pi/
+.sc/
 plans/

@@ -5,9 +5,7 @@ import {
 } from "./connectionsLayout";
 
 interface ConnectionsWorkerScope {
-	onmessage:
-		| ((event: MessageEvent<ConnectionsLayoutGraph>) => void)
-		| null;
+	onmessage: ((event: MessageEvent<ConnectionsLayoutGraph>) => void) | null;
 	postMessage: (response: ConnectionsLayoutResponse) => void;
 }
 

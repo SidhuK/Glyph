@@ -14,6 +14,7 @@ import type {
 	ConnectionsLayoutResponse,
 	GraphPosition,
 } from "./connectionsLayout";
+import { hashString } from "./connectionsRandom";
 
 function layoutSpaceConnections(
 	payload: SpaceConnections,
@@ -60,9 +61,7 @@ function layoutSpaceConnections(
 				reject(new Error(response.error));
 				return;
 			}
-			resolve(
-				new Map(response.positions.map(([id, x, y]) => [id, { x, y }])),
-			);
+			resolve(new Map(response.positions.map(([id, x, y]) => [id, { x, y }])));
 		};
 		worker.onerror = (event) => {
 			signal.removeEventListener("abort", abort);
@@ -81,9 +80,30 @@ function noteLinkDegrees(payload: SpaceConnections) {
 		neighbors.get(edge.from_id)?.add(edge.to_id);
 		neighbors.get(edge.to_id)?.add(edge.from_id);
 	}
+	for (const edge of payload.tag_edges) {
+		neighbors.get(edge.note_id)?.add(edge.tag_id);
+	}
 	const degrees = new Map<string, number>();
 	for (const [id, linked] of neighbors) degrees.set(id, linked.size);
 	return degrees;
+}
+
+function spaceConnectionsLayoutFingerprint(payload: SpaceConnections) {
+	const parts: string[] = [
+		String(payload.nodes.length),
+		String(payload.edges.length),
+		String(payload.tags.length),
+		String(payload.tag_edges.length),
+	];
+	for (const node of payload.nodes) parts.push(node.id);
+	for (const edge of payload.edges) {
+		parts.push(edge.from_id, edge.to_id, edge.kind, String(edge.weight));
+	}
+	for (const tag of payload.tags) parts.push(tag.id);
+	for (const edge of payload.tag_edges) {
+		parts.push(edge.tag_id, edge.note_id);
+	}
+	return String(hashString(parts.join("\0")));
 }
 
 function filterSpaceConnections(
@@ -123,17 +143,14 @@ export function useSpaceConnectionsGraph(
 		() => (payload ? filterSpaceConnections(payload, options) : null),
 		[options, payload],
 	);
+	const layoutFingerprint = useMemo(
+		() =>
+			filteredPayload ? spaceConnectionsLayoutFingerprint(filteredPayload) : "",
+		[filteredPayload],
+	);
 
 	const layoutQuery = useQuery({
-		queryKey: [
-			"space-connections-layout",
-			spacePath,
-			filteredPayload?.nodes.length ?? 0,
-			filteredPayload?.edges.length ?? 0,
-			filteredPayload?.tags.length ?? 0,
-			filteredPayload?.nodes[0]?.id ?? "",
-			filteredPayload?.nodes[filteredPayload.nodes.length - 1]?.id ?? "",
-		],
+		queryKey: ["space-connections-layout", spacePath, layoutFingerprint],
 		enabled: Boolean(filteredPayload && filteredPayload.nodes.length > 0),
 		staleTime: Number.POSITIVE_INFINITY,
 		retry: false,
@@ -170,5 +187,6 @@ export function useSpaceConnectionsGraph(
 				filteredPayload.nodes.length > 0 &&
 				layoutQuery.isPending,
 		),
+		refetchLayout: layoutQuery.refetch,
 	};
 }

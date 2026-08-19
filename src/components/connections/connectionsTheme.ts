@@ -215,10 +215,7 @@ export function buildEdgeReducer(
 		const display = getDisplayState();
 		const { hoveredNode, selectedNodeId, searchMatchIds } = getFocusState();
 		const activeFocusId = selectedNodeId ?? hoveredNode;
-		const matchEdge =
-			searchMatchIds !== null &&
-			searchMatchIds.has(source) &&
-			searchMatchIds.has(target);
+		const matchEdge = searchMatchIds?.has(source) && searchMatchIds.has(target);
 		const isHighlighted =
 			searchMatchIds === null && isEdgeInFocus(source, target);
 		const isFaded =

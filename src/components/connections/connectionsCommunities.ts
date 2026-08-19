@@ -46,10 +46,7 @@ type CommunityGraph = Graph<
 >;
 
 function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
-	const graph = new Graph<
-		Record<string, never>,
-		CommunityGraphEdgeAttributes
-	>({
+	const graph = new Graph<Record<string, never>, CommunityGraphEdgeAttributes>({
 		type: "undirected",
 		multi: false,
 		allowSelfLoops: false,

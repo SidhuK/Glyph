@@ -159,7 +159,14 @@ export function SpaceConnectionsView() {
 		enabled: Boolean(spacePath),
 		queryFn: async () => {
 			const payload = await invoke("space_connections");
-			await warnAboutLargeGraph(payload);
+			const existing = queryClient.getQueryData<SpaceConnections>([
+				CONNECTIONS_QUERY_ROOT,
+				scopedSpacePath,
+			]);
+			const alreadyWarned =
+				existing !== undefined &&
+				existing.nodes.length > LARGE_GRAPH_NOTE_THRESHOLD;
+			if (!alreadyWarned) await warnAboutLargeGraph(payload);
 			return payload;
 		},
 	});
@@ -183,7 +190,7 @@ export function SpaceConnectionsView() {
 			: String(connectionsQuery.error)
 		: "";
 
-	const { filteredPayload, graph, layoutError, layoutLoading } =
+	const { filteredPayload, graph, layoutError, layoutLoading, refetchLayout } =
 		useSpaceConnectionsGraph(payload, scopedSpacePath, options);
 	const loading = dataLoading || layoutLoading;
 	const visibleError = error || layoutError;
@@ -225,7 +232,7 @@ export function SpaceConnectionsView() {
 			return;
 		}
 		if (event.altKey || event.shiftKey) return;
-		if (!(event.metaKey || event.ctrlKey)) return;
+		if (!event.metaKey) return;
 		if (event.key.toLowerCase() !== "f" && event.code !== "KeyF") return;
 		event.preventDefault();
 		setSearchOpen(true);
@@ -298,7 +305,10 @@ export function SpaceConnectionsView() {
 					<Button
 						type="button"
 						size="sm"
-						onClick={() => void connectionsQuery.refetch()}
+						onClick={() => {
+							void connectionsQuery.refetch();
+							void refetchLayout();
+						}}
 					>
 						<HugeiconsIcon
 							icon={Refresh01Icon}

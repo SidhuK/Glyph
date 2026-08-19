@@ -6,6 +6,7 @@
 			".claude",
 			".pi",
 			".pnpm-store",
+			".sc",
 			"dist",
 			"src-tauri/gen",
 			"src-tauri/target"

@@ -39,6 +39,25 @@ function clearanceToPacked(
 	return clearance;
 }
 
+function packFallbackCenter(
+	radius: number,
+	packed: readonly PackedCircle[],
+): GraphPosition {
+	let outer = 0;
+	for (const circle of packed) {
+		outer = Math.max(
+			outer,
+			Math.hypot(circle.center.x, circle.center.y) + circle.radius,
+		);
+	}
+	const ring = outer + radius + COMMUNITY_GAP;
+	const angle = packed.length * GOLDEN_ANGLE;
+	return {
+		x: Math.cos(angle) * ring,
+		y: Math.sin(angle) * ring,
+	};
+}
+
 function placeCommunityCenters(
 	cores: readonly ConnectionsCommunity[],
 	communityBridges: ReadonlyMap<string, number>,
@@ -60,8 +79,7 @@ function placeCommunityCenters(
 
 		const linked = packed.flatMap((circle) => {
 			const weight =
-				communityBridges.get(communityBridgeKey(community.id, circle.id)) ??
-				0;
+				communityBridges.get(communityBridgeKey(community.id, circle.id)) ?? 0;
 			return weight > 0 ? [{ circle, weight }] : [];
 		});
 		const seed = hashString(`community:${community.hubId}`);
@@ -75,11 +93,7 @@ function placeCommunityCenters(
 				x: Math.cos(angle) * radius,
 				y: Math.sin(angle) * radius,
 			};
-			const clearance = clearanceToPacked(
-				candidate,
-				community.radius,
-				packed,
-			);
+			const clearance = clearanceToPacked(candidate, community.radius, packed);
 			if (clearance < COMMUNITY_GAP * 0.2) continue;
 			let bridgeCost = 0;
 			for (const neighbor of linked) {
@@ -103,7 +117,7 @@ function placeCommunityCenters(
 			}
 		}
 
-		const center = bestPosition ?? packed[0]?.center ?? { x: 0, y: 0 };
+		const center = bestPosition ?? packFallbackCenter(community.radius, packed);
 		centers.set(community.id, center);
 		packed.push({
 			id: community.id,
@@ -174,6 +188,7 @@ function placeDust(
 		if (placed) continue;
 		const radius = spacing * Math.sqrt(slot + 1);
 		const angle = slot * GOLDEN_ANGLE;
+		slot += 1;
 		positions.set(id, {
 			x: Math.cos(angle) * radius,
 			y: Math.sin(angle) * radius,
