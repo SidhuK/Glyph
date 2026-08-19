@@ -47,5 +47,5 @@ export function computeSpaceConnectionsLayout(
 			weight: Math.max(1, edge.weight) * strength,
 		})),
 	});
-	return placeConnectionsCommunities(communities, nodeCount, forces);
+	return placeConnectionsCommunities(communities, forces);
 }

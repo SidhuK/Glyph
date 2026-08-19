@@ -15,7 +15,6 @@ export interface ConnectionsPalette {
 	weekly: string;
 	tag: string;
 	tagMuted: string;
-	center: string;
 	edgeDefault: string;
 	edgeAccent: string;
 	edgeInternal: string;
@@ -73,13 +72,13 @@ export function resolveConnectionsPalette(
 ): ConnectionsPalette {
 	const accent = cssColor(container, "--interactive-accent", "#888888");
 	const text = cssColor(container, "--local-connections-text", "#1f2328");
-	const note = cssColor(container, "--local-connections-note-bg", "#b8bcc4");
+	const note = cssColor(container, "--local-connections-note-bg", "#9aa0a8");
 	const noteMuted = cssColor(
 		container,
 		"--local-connections-note-muted",
 		"#d7d7d2",
 	);
-	const daily = cssColor(container, "--local-connections-daily-bg", "#c4b8a8");
+	const daily = cssColor(container, "--local-connections-daily-bg", "#c4a574");
 	const weekly = cssColor(
 		container,
 		"--local-connections-weekly-bg",
@@ -94,7 +93,7 @@ export function resolveConnectionsPalette(
 	const edgeDefault = cssColor(
 		container,
 		"--local-connections-edge",
-		"#a8b0bc",
+		"#c5c8ce",
 	);
 	const edgeAccent = cssColor(
 		container,
@@ -146,7 +145,6 @@ export function resolveConnectionsPalette(
 		weekly,
 		tag,
 		tagMuted,
-		center: accent,
 		edgeDefault,
 		edgeAccent,
 		edgeInternal: edgeMuted,
@@ -163,7 +161,7 @@ function nodeColorForAttributes(
 	attrs: ConnectionsNodeAttributes,
 	palette: ConnectionsPalette,
 ) {
-	if (attrs.isCenter) return palette.center;
+	if (attrs.isCenter) return palette.accent;
 	if (attrs.isIsolated) {
 		if (attrs.kind === "tag") return palette.tagMuted;
 		return palette.noteMuted;
@@ -235,7 +233,7 @@ export function buildNodeReducer(
 			);
 			zIndex = 30;
 			if (data.isCenter && variant === "local") {
-				color = palette.center;
+				color = palette.accent;
 			}
 		} else if (activeFocusId && isNeighbor) {
 			forceLabel = true;

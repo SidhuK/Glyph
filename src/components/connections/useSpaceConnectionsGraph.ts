@@ -85,6 +85,19 @@ function layoutSpaceConnections(
 	});
 }
 
+function noteLinkDegrees(payload: SpaceConnections) {
+	const neighbors = new Map<string, Set<string>>();
+	for (const node of payload.nodes) neighbors.set(node.id, new Set());
+	for (const edge of payload.edges) {
+		if (edge.from_id === edge.to_id) continue;
+		neighbors.get(edge.from_id)?.add(edge.to_id);
+		neighbors.get(edge.to_id)?.add(edge.from_id);
+	}
+	const degrees = new Map<string, number>();
+	for (const [id, linked] of neighbors) degrees.set(id, linked.size);
+	return degrees;
+}
+
 function filterSpaceConnections(
 	payload: SpaceConnections,
 	options: ConnectionsGraphOptions,
@@ -92,39 +105,24 @@ function filterSpaceConnections(
 	const minimumDegree = connectionsMinimumVisibleDegree(options);
 	if (minimumDegree <= 0) return payload;
 
-	const degrees = new Map<string, number>();
-	const bump = (id: string) => degrees.set(id, (degrees.get(id) ?? 0) + 1);
-	for (const node of payload.nodes) degrees.set(node.id, 0);
-	for (const tag of payload.tags) degrees.set(tag.id, 0);
-	for (const edge of payload.edges) {
-		bump(edge.from_id);
-		bump(edge.to_id);
-	}
-	for (const edge of payload.tag_edges) {
-		bump(edge.tag_id);
-		bump(edge.note_id);
-	}
-
-	const visibleIds = new Set(
-		[...degrees.entries()]
-			.filter(([, degree]) => degree >= minimumDegree)
-			.map(([id]) => id),
+	const degrees = noteLinkDegrees(payload);
+	const nodes = payload.nodes.filter(
+		(node) => (degrees.get(node.id) ?? 0) >= minimumDegree,
 	);
-	const nodes = payload.nodes.filter((node) => visibleIds.has(node.id));
 	const visibleNotes = new Set(nodes.map((node) => node.id));
-	const tags = payload.tags.filter((tag) => visibleIds.has(tag.id));
-	const tagIds = new Set(tags.map((tag) => tag.id));
+	const tag_edges = payload.tag_edges.filter((edge) =>
+		visibleNotes.has(edge.note_id),
+	);
+	const remainingTagIds = new Set(tag_edges.map((edge) => edge.tag_id));
 
 	return {
 		...payload,
 		nodes,
-		tags,
+		tags: payload.tags.filter((tag) => remainingTagIds.has(tag.id)),
 		edges: payload.edges.filter(
 			(edge) => visibleNotes.has(edge.from_id) && visibleNotes.has(edge.to_id),
 		),
-		tag_edges: payload.tag_edges.filter(
-			(edge) => visibleNotes.has(edge.note_id) && tagIds.has(edge.tag_id),
-		),
+		tag_edges,
 	};
 }
 
@@ -135,35 +133,35 @@ export function useSpaceConnectionsGraph(
 	dailyNotesFolder: string | null,
 	weeklyNotesEnabled: boolean,
 ) {
+	const filteredPayload = useMemo(
+		() => (payload ? filterSpaceConnections(payload, options) : null),
+		[options, payload],
+	);
+
 	const layoutQuery = useQuery({
 		queryKey: [
 			"space-connections-layout",
 			spacePath,
-			payload?.nodes.length ?? 0,
-			payload?.edges.length ?? 0,
-			payload?.tags.length ?? 0,
-			payload?.nodes[0]?.id ?? "",
-			payload?.nodes[payload.nodes.length - 1]?.id ?? "",
+			filteredPayload?.nodes.length ?? 0,
+			filteredPayload?.edges.length ?? 0,
+			filteredPayload?.tags.length ?? 0,
+			filteredPayload?.nodes[0]?.id ?? "",
+			filteredPayload?.nodes[filteredPayload.nodes.length - 1]?.id ?? "",
 			options.repelForce,
 			options.linkDistance,
 			options.linkStrength,
 			options.centerForce,
 		],
-		enabled: Boolean(payload && payload.nodes.length > 0),
+		enabled: Boolean(filteredPayload && filteredPayload.nodes.length > 0),
 		staleTime: Number.POSITIVE_INFINITY,
 		retry: false,
 		queryFn: ({ signal }) => {
-			if (!payload) {
+			if (!filteredPayload) {
 				return Promise.reject(new Error("Missing connections payload"));
 			}
-			return layoutSpaceConnections(payload, options, signal);
+			return layoutSpaceConnections(filteredPayload, options, signal);
 		},
 	});
-
-	const filteredPayload = useMemo(
-		() => (payload ? filterSpaceConnections(payload, options) : null),
-		[options, payload],
-	);
 
 	const graph = useMemo<ConnectionsGraph | null>(() => {
 		if (
@@ -197,7 +195,9 @@ export function useSpaceConnectionsGraph(
 				: String(layoutQuery.error)
 			: "",
 		layoutLoading: Boolean(
-			payload && payload.nodes.length > 0 && layoutQuery.isPending,
+			filteredPayload &&
+				filteredPayload.nodes.length > 0 &&
+				layoutQuery.isPending,
 		),
 	};
 }

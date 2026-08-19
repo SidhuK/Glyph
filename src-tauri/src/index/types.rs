@@ -75,7 +75,6 @@ pub struct LocalNoteConnections {
 pub struct SpaceConnectionsNode {
     pub id: String,
     pub title: String,
-    pub is_isolated: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]

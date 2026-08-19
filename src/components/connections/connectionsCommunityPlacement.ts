@@ -5,7 +5,6 @@ import {
 	type ConnectionsLayoutForces,
 	communityBridgeKey,
 } from "./connectionsCommunities";
-import { spaceConnectionsDensityProfile } from "./connectionsDensity";
 import type {
 	GraphPosition,
 	SerializedGraphPosition,
@@ -14,6 +13,7 @@ import { hashString, randomUnit } from "./connectionsRandom";
 
 const COMMUNITY_GAP = 340;
 const CLUSTER_CANDIDATE_COUNT = 36;
+const MEMBER_CANDIDATE_COUNT = 8;
 
 function distance(left: GraphPosition, right: GraphPosition) {
 	return Math.hypot(left.x - right.x, left.y - right.y);
@@ -131,7 +131,6 @@ function placeCommunityMembers(
 	community: ConnectionsCommunity,
 	center: GraphPosition,
 	model: ConnectionsCommunityModel,
-	candidateCount: number,
 	linkDistance: number,
 ) {
 	const positions = new Map<string, GraphPosition>();
@@ -187,7 +186,7 @@ function placeCommunityMembers(
 			depth <= 1 ? 0.48 : depth === 2 ? 0.72 : depth === 3 ? 0.88 : 1;
 		let bestPosition: GraphPosition | null = null;
 		let bestDistance = -1;
-		for (let index = 0; index < candidateCount; index += 1) {
+		for (let index = 0; index < MEMBER_CANDIDATE_COUNT; index += 1) {
 			const angle = randomUnit(seed, index * 3) * Math.PI * 2;
 			const radiusFactor =
 				minimumRadius +
@@ -221,14 +220,9 @@ function placeCommunityMembers(
 
 export function placeConnectionsCommunities(
 	model: ConnectionsCommunityModel,
-	nodeCount: number,
 	forces: ConnectionsLayoutForces,
 ): SerializedGraphPosition[] {
 	const centers = placeCommunityCenters(model, forces);
-	const candidateCount = spaceConnectionsDensityProfile(
-		nodeCount,
-		0,
-	).layoutCandidateCount;
 	const positions: SerializedGraphPosition[] = [];
 	for (const community of model.communities) {
 		const center = centers.get(community.id);
@@ -237,7 +231,6 @@ export function placeConnectionsCommunities(
 			community,
 			center,
 			model,
-			candidateCount,
 			forces.linkDistance,
 		)) {
 			positions.push([id, position.x, position.y]);

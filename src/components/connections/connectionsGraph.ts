@@ -43,7 +43,7 @@ const MIN_TAG_NODE_SIZE = 6;
 const MAX_TAG_NODE_SIZE = 13;
 const REDUCER_COLOR_PLACEHOLDER = "#000000";
 
-export function spaceNoteKind(
+function spaceNoteKind(
 	noteId: string,
 	dailyNotesFolder: string | null,
 	weeklyNotesEnabled: boolean,
@@ -83,17 +83,22 @@ function maxConnectionCount(counts: Map<string, number>) {
 }
 
 function spaceConnectionCounts(payload: SpaceConnections) {
+	const neighbors = new Map<string, Set<string>>();
 	const counts = new Map<string, number>();
-	for (const node of payload.nodes) counts.set(node.id, 0);
+	for (const node of payload.nodes) {
+		neighbors.set(node.id, new Set());
+		counts.set(node.id, 0);
+	}
 	for (const tag of payload.tags) counts.set(tag.id, 0);
 
 	for (const edge of payload.edges) {
-		incrementConnectionCount(counts, edge.from_id);
-		incrementConnectionCount(counts, edge.to_id);
+		if (edge.from_id === edge.to_id) continue;
+		neighbors.get(edge.from_id)?.add(edge.to_id);
+		neighbors.get(edge.to_id)?.add(edge.from_id);
 	}
+	for (const [id, linked] of neighbors) counts.set(id, linked.size);
 	for (const edge of payload.tag_edges) {
 		incrementConnectionCount(counts, edge.tag_id);
-		incrementConnectionCount(counts, edge.note_id);
 	}
 
 	return counts;
@@ -114,14 +119,6 @@ function localConnectionCounts(payload: LocalNoteConnections) {
 	}
 
 	return counts;
-}
-
-function nodeSizeFromRange(
-	weight: number,
-	maxWeight: number,
-	range: readonly [number, number],
-) {
-	return scaledNodeSize(weight, range[0], range[1], maxWeight);
 }
 
 function seedLocalPositions(graph: LocalNoteConnections) {
@@ -185,10 +182,11 @@ export function buildSpaceConnectionsGraph(
 			x: position.x,
 			y: position.y,
 			label: node.title || node.id,
-			size: nodeSizeFromRange(
+			size: scaledNodeSize(
 				connectionCount,
+				density.noteSizeRange[0],
+				density.noteSizeRange[1],
 				maxConnections,
-				density.noteSizeRange,
 			),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: spaceNoteKind(node.id, dailyNotesFolder, weeklyNotesEnabled),
@@ -204,10 +202,11 @@ export function buildSpaceConnectionsGraph(
 			x: position.x,
 			y: position.y,
 			label: tag.title,
-			size: nodeSizeFromRange(
+			size: scaledNodeSize(
 				connectionCount,
+				density.tagSizeRange[0],
+				density.tagSizeRange[1],
 				maxConnections,
-				density.tagSizeRange,
 			),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
@@ -221,12 +220,11 @@ export function buildSpaceConnectionsGraph(
 	for (const [index, edge] of payload.edges.entries()) {
 		if (!graph.hasNode(edge.from_id) || !graph.hasNode(edge.to_id)) continue;
 		const edgeId = `${edge.kind}:${edge.from_id}->${edge.to_id}:${index}`;
-		const isRelationship = edge.kind === "relationship";
-		const weightScale = 1 + Math.log1p(Math.max(edge.weight, 1)) * 0.35;
+		const weightScale = 1 + Math.log1p(Math.max(edge.weight, 1)) * 0.2;
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
-			colorRole: isRelationship ? "accent" : "default",
+			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: (isRelationship ? 1.0 : 0.65) * edgeScale * weightScale,
+			size: 0.42 * edgeScale * weightScale,
 		});
 	}
 
@@ -236,7 +234,7 @@ export function buildSpaceConnectionsGraph(
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
 			colorRole: "tag",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.6 * edgeScale,
+			size: 0.32 * edgeScale,
 		});
 	}
 

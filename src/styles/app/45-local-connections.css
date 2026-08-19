@@ -253,107 +253,127 @@
 
 .spaceConnectionsHost .localNoteConnectionsViewport {
 	z-index: 0;
+	--local-connections-surface: color-mix(
+		in srgb,
+		var(--bg-canvas, var(--bg-secondary)) 96%,
+		#f4f1ea
+	);
+	--local-connections-dot: color-mix(
+		in srgb,
+		var(--text-tertiary) 14%,
+		transparent
+	);
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 68%,
+		var(--text-tertiary) 28%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 82%,
+		var(--text-secondary) 55%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--interactive-accent) 72%,
+		var(--text-tertiary) 22%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-tertiary) 44%,
+		var(--text-tertiary) 16%,
 		var(--local-connections-surface)
 	);
 	--local-connections-note-bg: color-mix(
 		in srgb,
-		var(--text-secondary) 75%,
+		#8b9098 42%,
 		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 75%,
+		#8b9098 28%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-node: color-mix(
 		in srgb,
-		var(--interactive-accent) 58%,
+		#8b9098 36%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--interactive-accent) 24%,
-		color-mix(in srgb, var(--text-secondary) 40%, var(--bg-primary))
+		#8b9098 22%,
+		var(--bg-primary)
 	);
 	--local-connections-daily-bg: color-mix(
 		in srgb,
-		#c4a574 55%,
+		#c4a574 78%,
 		var(--bg-primary)
 	);
 	--local-connections-weekly-bg: color-mix(
 		in srgb,
-		#6f93c4 52%,
+		#8aa0b8 62%,
 		var(--bg-primary)
 	);
 }
 
 :root.dark .spaceConnectionsHost .localNoteConnectionsViewport {
+	--local-connections-surface: color-mix(
+		in srgb,
+		var(--bg-canvas, var(--bg-secondary)) 94%,
+		var(--bg-primary)
+	);
+	--local-connections-dot: color-mix(
+		in srgb,
+		var(--text-secondary) 10%,
+		transparent
+	);
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 60%,
+		var(--text-secondary) 22%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 78%,
+		var(--text-secondary) 48%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--interactive-accent) 66%,
+		var(--text-secondary) 16%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 38%,
+		var(--text-secondary) 12%,
 		var(--local-connections-surface)
 	);
 	--local-connections-note-bg: color-mix(
 		in srgb,
-		var(--text-secondary) 34%,
+		#9aa0a8 32%,
 		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 28%,
+		#9aa0a8 20%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-node: color-mix(
 		in srgb,
-		var(--interactive-accent) 62%,
+		#9aa0a8 26%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--interactive-accent) 14%,
-		color-mix(in srgb, var(--text-secondary) 30%, var(--bg-primary))
+		#9aa0a8 16%,
+		var(--bg-primary)
 	);
 	--local-connections-daily-bg: color-mix(
 		in srgb,
-		#c4a574 38%,
+		#c4a574 48%,
 		var(--bg-primary)
 	);
 	--local-connections-weekly-bg: color-mix(
 		in srgb,
-		#6f93c4 36%,
+		#8aa0b8 40%,
 		var(--bg-primary)
 	);
 }
@@ -480,10 +500,6 @@
 	white-space: nowrap;
 }
 
-.localNoteConnectionsLegend.is-space {
-	grid-template-columns: max-content;
-}
-
 .localNoteConnectionsLegendNode {
 	display: inline-block;
 	width: 12px;
@@ -517,50 +533,12 @@
 	);
 }
 
-.localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-note {
-	border-color: color-mix(
-		in srgb,
-		var(--text-secondary) 60%,
-		var(--border-default)
-	);
-	background: color-mix(in srgb, var(--text-secondary) 75%, var(--bg-primary));
-}
-
-.localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-tag {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 82%,
-		var(--border-default)
-	);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 74%,
-		var(--bg-primary)
-	);
-}
-
 .localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-daily {
 	background: var(--local-connections-daily-bg, #c4a574);
 }
 
 .localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-weekly {
 	background: var(--local-connections-weekly-bg, #6f93c4);
-}
-
-:root.dark
-	.localNoteConnectionsLegend.is-space
-	.localNoteConnectionsLegendNode.is-note {
-	background: color-mix(in srgb, var(--text-secondary) 52%, var(--bg-primary));
-}
-
-:root.dark
-	.localNoteConnectionsLegend.is-space
-	.localNoteConnectionsLegendNode.is-tag {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 82%,
-		var(--bg-primary)
-	);
 }
 
 .localNoteConnectionsLegendEdge {

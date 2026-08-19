@@ -9,7 +9,6 @@ interface SpaceDensityTier {
 	minNodes: number;
 	noteSize: SpaceNodeSizeRange;
 	tagSize: SpaceNodeSizeRange;
-	layoutCandidateCount: number;
 }
 
 const SPACE_NODE_DENSITY_TIERS: readonly SpaceDensityTier[] = [
@@ -17,37 +16,31 @@ const SPACE_NODE_DENSITY_TIERS: readonly SpaceDensityTier[] = [
 		minNodes: 10_000,
 		noteSize: [0.35, 1.4],
 		tagSize: [0.55, 2],
-		layoutCandidateCount: 5,
 	},
 	{
 		minNodes: 5_000,
 		noteSize: [0.5, 1.8],
 		tagSize: [0.7, 2.4],
-		layoutCandidateCount: 8,
 	},
 	{
 		minNodes: 2_000,
 		noteSize: [0.7, 2.4],
 		tagSize: [0.95, 3.2],
-		layoutCandidateCount: 8,
 	},
 	{
 		minNodes: 1_000,
 		noteSize: [1, 3.2],
 		tagSize: [1.3, 4.2],
-		layoutCandidateCount: 8,
 	},
 	{
 		minNodes: 400,
-		noteSize: [1.4, 4.5],
-		tagSize: [1.8, 5.5],
-		layoutCandidateCount: 8,
+		noteSize: [1.2, 7],
+		tagSize: [1.6, 5],
 	},
 	{
 		minNodes: 0,
-		noteSize: [2.5, 8],
-		tagSize: [3.5, 10],
-		layoutCandidateCount: 8,
+		noteSize: [2, 11],
+		tagSize: [2.4, 7],
 	},
 ];
 
@@ -141,7 +134,6 @@ interface ConnectionsDensityProfile {
 	noteSizeRange: SpaceNodeSizeRange;
 	tagSizeRange: SpaceNodeSizeRange;
 	edgeScale: number;
-	layoutCandidateCount: number;
 }
 
 export function spaceConnectionsDensityProfile(
@@ -161,7 +153,6 @@ export function spaceConnectionsDensityProfile(
 		noteSizeRange: nodeTier.noteSize,
 		tagSizeRange: nodeTier.tagSize,
 		edgeScale,
-		layoutCandidateCount: nodeTier.layoutCandidateCount,
 	};
 }
 
@@ -186,7 +177,7 @@ export function sigmaSettingsForVariant(
 			maxCameraRatio: LOCAL_SIGMA.maxCameraRatio,
 			stagePadding: LOCAL_SIGMA.stagePadding,
 			zoomingRatio: LOCAL_SIGMA.zoomingRatio,
-			minEdgeThickness: 0.52,
+			minEdgeThickness: LOCAL_SIGMA.minEdgeThickness,
 			zIndex: true,
 			allowInvalidContainer: false,
 		};

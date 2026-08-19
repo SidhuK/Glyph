@@ -257,11 +257,6 @@ export function SpaceConnectionsView({
 	};
 
 	const handleHostKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-		if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
-			event.preventDefault();
-			setSearchOpen(true);
-			return;
-		}
 		if (event.key === "Escape" && searchOpen) {
 			event.preventDefault();
 			setSearchOpen(false);

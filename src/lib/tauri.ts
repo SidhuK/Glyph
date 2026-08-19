@@ -505,7 +505,6 @@ export interface LocalNoteConnections {
 export interface SpaceConnectionsNode {
 	id: string;
 	title: string;
-	is_isolated: boolean;
 }
 
 export interface SpaceConnectionsEdge {
