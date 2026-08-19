@@ -84,17 +84,11 @@ function searchMatchIds(graph: ConnectionsGraph, query: string) {
 	return matches;
 }
 
-function SpaceConnectionsLegend({
-	showDaily,
-	showWeekly,
-}: {
-	showDaily: boolean;
-	showWeekly: boolean;
-}) {
+function SpaceConnectionsLegend() {
 	const { t } = useTranslation("shell");
 	return (
 		<div
-			className="localNoteConnectionsLegend is-space"
+			className="localNoteConnectionsLegend"
 			aria-label={t("connections.legendAria")}
 		>
 			<span className="localNoteConnectionsLegendItem">
@@ -104,24 +98,6 @@ function SpaceConnectionsLegend({
 				/>
 				{t("connections.legendNote")}
 			</span>
-			{showDaily ? (
-				<span className="localNoteConnectionsLegendItem">
-					<span
-						className="localNoteConnectionsLegendNode is-daily"
-						aria-hidden="true"
-					/>
-					{t("connections.legendDaily")}
-				</span>
-			) : null}
-			{showWeekly ? (
-				<span className="localNoteConnectionsLegendItem">
-					<span
-						className="localNoteConnectionsLegendNode is-weekly"
-						aria-hidden="true"
-					/>
-					{t("connections.legendWeekly")}
-				</span>
-			) : null}
 			<span className="localNoteConnectionsLegendItem">
 				<span
 					className="localNoteConnectionsLegendNode is-tag"
@@ -154,9 +130,6 @@ export function SpaceConnectionsView({
 	});
 	const options =
 		settingsQuery.data?.connectionsGraph ?? DEFAULT_CONNECTIONS_GRAPH_OPTIONS;
-	const dailyNotesFolder = settingsQuery.data?.dailyNotes.folder ?? null;
-	const weeklyNotesEnabled =
-		settingsQuery.data?.dailyNotes.weeklyNotes === true;
 
 	const optionsMutation = useMutation({
 		mutationFn: (next: ConnectionsGraphOptions) =>
@@ -211,13 +184,7 @@ export function SpaceConnectionsView({
 		: "";
 
 	const { filteredPayload, graph, layoutError, layoutLoading } =
-		useSpaceConnectionsGraph(
-			payload,
-			scopedSpacePath,
-			options,
-			dailyNotesFolder,
-			weeklyNotesEnabled,
-		);
+		useSpaceConnectionsGraph(payload, scopedSpacePath, options);
 	const loading = dataLoading || layoutLoading;
 	const visibleError = error || layoutError;
 	const display = useMemo(
@@ -288,10 +255,7 @@ export function SpaceConnectionsView({
 					overlay.current.setLabelZoomThreshold(next.labelZoomThreshold);
 				}}
 			/>
-			<SpaceConnectionsLegend
-				showDaily={dailyNotesFolder !== null}
-				showWeekly={weeklyNotesEnabled && dailyNotesFolder !== null}
-			/>
+			<SpaceConnectionsLegend />
 		</>
 	);
 

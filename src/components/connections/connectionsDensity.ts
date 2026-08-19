@@ -50,11 +50,11 @@ interface SpaceEdgeScaleTier {
 }
 
 const SPACE_EDGE_SCALE_TIERS: readonly SpaceEdgeScaleTier[] = [
-	{ minEdges: 10_000, scale: 0.37 },
-	{ minEdges: 5_000, scale: 0.48 },
-	{ minEdges: 2_000, scale: 0.6 },
-	{ minEdges: 1_000, scale: 0.72 },
-	{ minEdges: 400, scale: 0.84 },
+	{ minEdges: 10_000, scale: 0.62 },
+	{ minEdges: 5_000, scale: 0.72 },
+	{ minEdges: 2_000, scale: 0.82 },
+	{ minEdges: 1_000, scale: 0.9 },
+	{ minEdges: 400, scale: 0.96 },
 ];
 
 interface SpaceSigmaTier {
@@ -74,7 +74,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 280,
 		labelRenderedSizeThreshold: 18,
 		stagePadding: 36,
-		minEdgeThickness: 0.5,
+		minEdgeThickness: 1.15,
 		minCameraRatio: 0.05,
 	},
 	{
@@ -83,7 +83,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 200,
 		labelRenderedSizeThreshold: 14,
 		stagePadding: 40,
-		minEdgeThickness: 0.58,
+		minEdgeThickness: 1.25,
 		minCameraRatio: 0.18,
 	},
 	{
@@ -92,7 +92,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 165,
 		labelRenderedSizeThreshold: 11,
 		stagePadding: 48,
-		minEdgeThickness: 0.7,
+		minEdgeThickness: 1.4,
 		minCameraRatio: 0.18,
 	},
 	{
@@ -101,7 +101,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 120,
 		labelRenderedSizeThreshold: 11,
 		stagePadding: 56,
-		minEdgeThickness: 0.75,
+		minEdgeThickness: 1.55,
 		minCameraRatio: 0.18,
 	},
 ];
@@ -111,7 +111,7 @@ const LOCAL_SIGMA = {
 	labelGridCellSize: 88,
 	labelRenderedSizeThreshold: 0,
 	stagePadding: 72,
-	minEdgeThickness: 0.7,
+	minEdgeThickness: 1.35,
 	minCameraRatio: 0.35,
 	maxCameraRatio: 2.2,
 	zoomingRatio: 1.7,
@@ -146,7 +146,7 @@ export function spaceConnectionsDensityProfile(
 	if (edgeTier) {
 		edgeScale = edgeTier.scale;
 	} else if (nodeCount >= 150) {
-		edgeScale = 0.94;
+		edgeScale = 0.98;
 	}
 
 	return {

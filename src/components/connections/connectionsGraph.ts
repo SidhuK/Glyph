@@ -1,5 +1,4 @@
 import Graph from "graphology";
-import { periodKindFromFilename } from "../../lib/periodNotes";
 import type { LocalNoteConnections, SpaceConnections } from "../../lib/tauri";
 import {
 	LOCAL_CENTER_NODE_SIZE,
@@ -8,12 +7,8 @@ import {
 import type { GraphPosition } from "./connectionsLayout";
 import { hashString, randomUnit } from "./connectionsRandom";
 
-export type ConnectionsNodeKind = "note" | "daily" | "weekly" | "tag";
-export type ConnectionsEdgeColorRole =
-	| "default"
-	| "accent"
-	| "internal"
-	| "tag";
+export type ConnectionsNodeKind = "note" | "tag";
+export type ConnectionsEdgeColorRole = "default" | "accent" | "internal";
 
 export type ConnectionsGraphVariant = "space" | "local";
 
@@ -25,7 +20,6 @@ export interface ConnectionsNodeAttributes {
 	color: string;
 	kind: ConnectionsNodeKind;
 	isCenter: boolean;
-	isIsolated: boolean;
 }
 
 export interface ConnectionsEdgeAttributes {
@@ -42,24 +36,6 @@ export type ConnectionsGraph = Graph<
 const MIN_TAG_NODE_SIZE = 6;
 const MAX_TAG_NODE_SIZE = 13;
 const REDUCER_COLOR_PLACEHOLDER = "#000000";
-
-function spaceNoteKind(
-	noteId: string,
-	dailyNotesFolder: string | null,
-	weeklyNotesEnabled: boolean,
-): Exclude<ConnectionsNodeKind, "tag"> {
-	if (dailyNotesFolder === null) return "note";
-	const folder = dailyNotesFolder.replace(/\\/g, "/").replace(/\/+$/g, "");
-	const id = noteId.replace(/\\/g, "/");
-	const prefix = folder ? `${folder}/` : "";
-	if (prefix && !id.startsWith(prefix)) return "note";
-	const filename = prefix ? id.slice(prefix.length) : id;
-	if (!filename || filename.includes("/")) return "note";
-	const periodKind = periodKindFromFilename(filename);
-	if (periodKind === "day") return "daily";
-	if (periodKind === "week" && weeklyNotesEnabled) return "weekly";
-	return "note";
-}
 
 function scaledNodeSize(
 	weight: number,
@@ -165,8 +141,6 @@ function createGraph() {
 export function buildSpaceConnectionsGraph(
 	payload: SpaceConnections,
 	positions: ReadonlyMap<string, GraphPosition>,
-	dailyNotesFolder: string | null,
-	weeklyNotesEnabled: boolean,
 ): ConnectionsGraph {
 	const graph = createGraph();
 	const nodeCount = payload.nodes.length + payload.tags.length;
@@ -189,9 +163,8 @@ export function buildSpaceConnectionsGraph(
 				maxConnections,
 			),
 			color: REDUCER_COLOR_PLACEHOLDER,
-			kind: spaceNoteKind(node.id, dailyNotesFolder, weeklyNotesEnabled),
+			kind: "note",
 			isCenter: false,
-			isIsolated: connectionCount === 0,
 		});
 	}
 
@@ -211,7 +184,6 @@ export function buildSpaceConnectionsGraph(
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
 			isCenter: false,
-			isIsolated: connectionCount === 0,
 		});
 	}
 
@@ -224,7 +196,7 @@ export function buildSpaceConnectionsGraph(
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
 			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.7 * edgeScale * weightScale,
+			size: 1.45 * edgeScale * weightScale,
 		});
 	}
 
@@ -232,9 +204,9 @@ export function buildSpaceConnectionsGraph(
 		if (!graph.hasNode(edge.tag_id) || !graph.hasNode(edge.note_id)) continue;
 		const edgeId = `tag:${edge.tag_id}->${edge.note_id}:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
-			colorRole: "tag",
+			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.52 * edgeScale,
+			size: 1.15 * edgeScale,
 		});
 	}
 
@@ -261,7 +233,6 @@ export function buildLocalConnectionsGraph(
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "note",
 			isCenter: node.is_center,
-			isIsolated: connectionCount === 0,
 		});
 	}
 
@@ -281,7 +252,6 @@ export function buildLocalConnectionsGraph(
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
 			isCenter: false,
-			isIsolated: connectionCount === 0,
 		});
 	}
 
@@ -291,13 +261,13 @@ export function buildLocalConnectionsGraph(
 		const isToCenter = edge.target === payload.center.id;
 		const isInternal = !isFromCenter && !isToCenter;
 		let colorRole: ConnectionsEdgeColorRole = "default";
-		let size = 0.8;
+		let size = 1.25;
 		if (isFromCenter) {
 			colorRole = "accent";
-			size = 1.25;
+			size = 1.9;
 		} else if (isToCenter) {
 			colorRole = "default";
-			size = 1.05;
+			size = 1.55;
 		} else if (isInternal) {
 			colorRole = "internal";
 		}
@@ -312,9 +282,9 @@ export function buildLocalConnectionsGraph(
 	for (const [index, edge] of payload.tag_edges.entries()) {
 		const edgeId = `${edge.tag_id}->${edge.note_id}:tag:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
-			colorRole: "tag",
+			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.7,
+			size: 1.15,
 		});
 	}
 

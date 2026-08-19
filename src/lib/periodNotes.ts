@@ -183,15 +183,6 @@ export function getPeriodNoteFilename(id: PeriodId): string {
 	return `${periodStem(id)}.md`;
 }
 
-export function periodKindFromFilename(filename: string): PeriodKind | null {
-	const stem = filename.replace(/\.md$/i, "");
-	if (/^\d{4}-\d{2}-\d{2}$/.test(stem)) return "day";
-	if (/^\d{4}-W\d{2}$/.test(stem)) return "week";
-	if (/^\d{4}-Q[1-4]$/.test(stem)) return "quarter";
-	if (/^\d{4}-\d{2}$/.test(stem)) return "month";
-	return null;
-}
-
 export function getPeriodNotePath(folder: string, id: PeriodId): string {
 	const filename = getPeriodNoteFilename(id);
 	const normalizedFolder = folder.replace(/\\/g, "/").replace(/\/+$/g, "");

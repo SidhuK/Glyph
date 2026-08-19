@@ -74,28 +74,15 @@
 	height: 100%;
 }
 
-.localNoteConnectionsViewport,
-.spaceConnectionsHost {
-	--local-connections-surface: var(--bg-primary);
+.localNoteConnectionsViewport {
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-primary) 52%,
+		var(--text-primary) 72%,
 		var(--bg-primary)
 	);
-	--local-connections-edge-active: var(--interactive-accent);
-	--local-connections-edge-tag: var(--glyph-inline-color-green);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-primary) 28%,
-		var(--bg-primary)
-	);
-	--local-connections-note-bg: var(--text-primary);
-	--local-connections-daily-bg: var(--glyph-inline-color-red);
-	--local-connections-weekly-bg: var(--glyph-inline-color-blue);
-	--local-connections-tag-node: var(--glyph-inline-color-green);
-	--local-connections-tag-muted: color-mix(
-		in srgb,
-		var(--glyph-inline-color-green) 42%,
+		var(--text-primary) 42%,
 		var(--bg-primary)
 	);
 	--local-connections-node-faded: color-mix(
@@ -103,7 +90,6 @@
 		var(--text-primary) 18%,
 		var(--bg-primary)
 	);
-	--local-connections-text: var(--text-primary);
 	--local-connections-label-bg: color-mix(
 		in srgb,
 		var(--bg-primary) 88%,
@@ -114,23 +100,10 @@
 		var(--border-strong) 48%,
 		transparent
 	);
-	--local-connections-hover-halo: color-mix(
-		in srgb,
-		var(--interactive-accent) 28%,
-		transparent
-	);
-	--local-connections-hover-halo-soft: color-mix(
-		in srgb,
-		var(--interactive-accent) 12%,
-		transparent
-	);
-}
-
-.localNoteConnectionsViewport {
 	width: 100%;
 	height: 100%;
 	cursor: grab;
-	background-color: var(--local-connections-surface);
+	background-color: var(--bg-primary);
 }
 
 .localNoteConnectionsStage .localNoteConnectionsViewport {
@@ -231,13 +204,6 @@
 	padding: 0 8px;
 }
 
-.spaceConnectionsHost .localNoteConnectionsLegend.is-space {
-	display: flex;
-	flex-wrap: wrap;
-	max-width: min(90vw, 420px);
-	justify-content: center;
-}
-
 .localNoteConnectionsLegend {
 	position: absolute;
 	right: 14px;
@@ -283,24 +249,13 @@
 }
 
 .localNoteConnectionsLegendNode.is-note {
-	border-color: var(--local-connections-note-bg);
-	background: var(--local-connections-note-bg);
+	border-color: var(--text-primary);
+	background: var(--text-primary);
 }
 
 .localNoteConnectionsLegendNode.is-tag {
-	border-style: solid;
-	border-color: var(--local-connections-tag-node);
-	background: var(--local-connections-tag-node);
-}
-
-.localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-daily {
-	border-color: var(--local-connections-daily-bg);
-	background: var(--local-connections-daily-bg);
-}
-
-.localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-weekly {
-	border-color: var(--local-connections-weekly-bg);
-	background: var(--local-connections-weekly-bg);
+	border-color: var(--text-secondary);
+	background: var(--text-secondary);
 }
 
 .localNoteConnectionsLegendEdge {

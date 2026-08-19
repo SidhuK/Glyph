@@ -127,8 +127,6 @@ export function useSpaceConnectionsGraph(
 	payload: SpaceConnections | null,
 	spacePath: string,
 	options: ConnectionsGraphOptions,
-	dailyNotesFolder: string | null,
-	weeklyNotesEnabled: boolean,
 ) {
 	const filteredPayload = useMemo(
 		() => (payload ? filterSpaceConnections(payload, options) : null),
@@ -170,19 +168,8 @@ export function useSpaceConnectionsGraph(
 		) {
 			return null;
 		}
-		return buildSpaceConnectionsGraph(
-			filteredPayload,
-			layoutQuery.data,
-			dailyNotesFolder,
-			weeklyNotesEnabled,
-		);
-	}, [
-		dailyNotesFolder,
-		filteredPayload,
-		layoutQuery.data,
-		layoutQuery.error,
-		weeklyNotesEnabled,
-	]);
+		return buildSpaceConnectionsGraph(filteredPayload, layoutQuery.data);
+	}, [filteredPayload, layoutQuery.data, layoutQuery.error]);
 
 	return {
 		filteredPayload,

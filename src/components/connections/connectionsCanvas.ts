@@ -85,9 +85,8 @@ export function drawConnectionsNodeHover(
 }
 
 /**
- * Restrained floating labels. Emphasized labels (focused / forced) get a soft
- * pill; ordinary space-graph labels use a cheaper text veil to stay legible
- * without turning the full vault into a wall of boxes.
+ * Restrained floating labels. Hovered/selected nodes get a soft pill;
+ * search matches and ordinary space-graph labels use a text veil.
  */
 export function drawConnectionsNodeLabel(
 	context: CanvasRenderingContext2D,
@@ -100,9 +99,10 @@ export function drawConnectionsNodeLabel(
 	if (!label) return;
 
 	const size = data.size ?? 1;
-	const emphasized = Boolean(data.highlighted || data.forceLabel);
+	const emphasized = Boolean(data.highlighted);
 	const fontSize = settings.labelSize;
-	const weight = emphasized ? "600" : settings.labelWeight;
+	const weight =
+		data.highlighted || data.forceLabel ? "600" : settings.labelWeight;
 
 	context.save();
 	context.font = `${weight} ${fontSize}px ${settings.labelFont}`;

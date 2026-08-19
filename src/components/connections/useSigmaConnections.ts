@@ -72,54 +72,6 @@ function fitGraphToViewport(
 	renderer.refresh();
 }
 
-function zoomToNodes(
-	renderer: Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>,
-	nodeIds: ReadonlySet<string>,
-	maxZoom: boolean,
-) {
-	const camera = renderer.getCamera();
-	if (nodeIds.size === 0) {
-		fitGraphToViewport(renderer);
-		return;
-	}
-
-	const viewportPoints: Array<{ x: number; y: number }> = [];
-	for (const nodeId of nodeIds) {
-		const display = renderer.getNodeDisplayData(nodeId);
-		if (!display) continue;
-		viewportPoints.push(
-			renderer.graphToViewport({ x: display.x, y: display.y }),
-		);
-	}
-	if (viewportPoints.length === 0) return;
-
-	let minX = viewportPoints[0]?.x ?? 0;
-	let minY = viewportPoints[0]?.y ?? 0;
-	let maxX = minX;
-	let maxY = minY;
-	for (const point of viewportPoints) {
-		minX = Math.min(minX, point.x);
-		minY = Math.min(minY, point.y);
-		maxX = Math.max(maxX, point.x);
-		maxY = Math.max(maxY, point.y);
-	}
-
-	const { width, height } = renderer.getDimensions();
-	const minRatio = renderer.getSettings().minCameraRatio ?? 0.05;
-	const span = Math.max(
-		(maxX - minX) / Math.max(width, 1),
-		(maxY - minY) / Math.max(height, 1),
-		0.04,
-	);
-	const nextRatio = maxZoom
-		? minRatio
-		: Math.min(1, Math.max(minRatio, span * 1.8));
-	const center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
-	void camera.animate(renderer.getViewportZoomedState(center, nextRatio), {
-		duration: 280,
-	});
-}
-
 export function useSigmaConnections({
 	graph,
 	containerRef,
@@ -304,7 +256,6 @@ export function useSigmaConnections({
 
 			const fitToView = () => {
 				if (disposed) return;
-				if (searchMatchIdsRef.current) return;
 				fitGraphToViewport(activeRenderer);
 			};
 
@@ -313,15 +264,8 @@ export function useSigmaConnections({
 
 			overlayRef.current = {
 				setSearchMatches: (matchIds) => {
-					const next = matchIds ? new Set(matchIds) : null;
-					setFocus(activeRenderer, { searchMatchIds: next });
-					window.requestAnimationFrame(() => {
-						if (disposed) return;
-						if (!next) {
-							fitGraphToViewport(activeRenderer);
-							return;
-						}
-						zoomToNodes(activeRenderer, next, next.size === 1);
+					setFocus(activeRenderer, {
+						searchMatchIds: matchIds ? new Set(matchIds) : null,
 					});
 				},
 				setDisplay: (nextDisplay) => {
@@ -391,7 +335,6 @@ export function useSigmaConnections({
 
 			resizeObserver = new ResizeObserver(() => {
 				activeRenderer.resize();
-				if (focusState.searchMatchIds) return;
 				fitToView();
 			});
 			resizeObserver.observe(container);

@@ -9,15 +9,9 @@ import type {
 export interface ConnectionsPalette {
 	accent: string;
 	text: string;
-	note: string;
-	daily: string;
-	weekly: string;
 	tag: string;
-	tagMuted: string;
 	edgeDefault: string;
-	edgeAccent: string;
 	edgeInternal: string;
-	edgeTag: string;
 	faded: string;
 	labelBackground: string;
 	labelBorder: string;
@@ -66,43 +60,30 @@ function cssColor(element: HTMLElement, name: string, fallback: string) {
 	return sigmaCompatibleColor(color || fallback, fallback);
 }
 
+function withAlpha(color: string, alpha: number) {
+	const clamped = Math.min(1, Math.max(0, alpha));
+	const rgb = color.match(
+		/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i,
+	);
+	if (!rgb) return color;
+	return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${Math.round(clamped * 1000) / 1000})`;
+}
+
 export function resolveConnectionsPalette(
 	container: HTMLElement,
 ): ConnectionsPalette {
 	const accent = cssColor(container, "--interactive-accent", "#888888");
-	const text = cssColor(container, "--local-connections-text", "#1f2328");
-	const note = cssColor(container, "--local-connections-note-bg", "#3f434a");
-	const daily = cssColor(container, "--local-connections-daily-bg", "#c45c4a");
-	const weekly = cssColor(
-		container,
-		"--local-connections-weekly-bg",
-		"#3d6bb3",
-	);
-	const tag = cssColor(container, "--local-connections-tag-node", "#448361");
-	const tagMuted = cssColor(
-		container,
-		"--local-connections-tag-muted",
-		"#9bb396",
-	);
+	const text = cssColor(container, "--text-primary", "#1f2328");
+	const tag = cssColor(container, "--text-secondary", "#6b6f76");
 	const edgeDefault = cssColor(
 		container,
 		"--local-connections-edge",
-		"#9aa0a8",
-	);
-	const edgeAccent = cssColor(
-		container,
-		"--local-connections-edge-active",
-		accent,
-	);
-	const edgeTag = cssColor(
-		container,
-		"--local-connections-edge-tag",
-		edgeDefault,
+		"#6e737b",
 	);
 	const edgeMuted = cssColor(
 		container,
 		"--local-connections-edge-muted",
-		"#c5c9d0",
+		"#9aa0a8",
 	);
 	const faded = cssColor(
 		container,
@@ -119,34 +100,18 @@ export function resolveConnectionsPalette(
 		"--local-connections-label-border",
 		"rgba(148, 163, 184, 0.38)",
 	);
-	const hoverHalo = cssColor(
-		container,
-		"--local-connections-hover-halo",
-		"rgba(136, 136, 136, 0.28)",
-	);
-	const hoverHaloSoft = cssColor(
-		container,
-		"--local-connections-hover-halo-soft",
-		"rgba(136, 136, 136, 0.12)",
-	);
 
 	return {
 		accent,
 		text,
-		note,
-		daily,
-		weekly,
 		tag,
-		tagMuted,
 		edgeDefault,
-		edgeAccent,
 		edgeInternal: edgeMuted,
-		edgeTag,
 		faded,
 		labelBackground,
 		labelBorder,
-		hoverHalo,
-		hoverHaloSoft,
+		hoverHalo: withAlpha(accent, 0.28),
+		hoverHaloSoft: withAlpha(accent, 0.12),
 	};
 }
 
@@ -155,30 +120,8 @@ function nodeColorForAttributes(
 	palette: ConnectionsPalette,
 ) {
 	if (attrs.isCenter) return palette.accent;
-	if (attrs.isIsolated && attrs.kind === "tag") return palette.tagMuted;
-	switch (attrs.kind) {
-		case "tag":
-			return palette.tag;
-		case "daily":
-			return palette.daily;
-		case "weekly":
-			return palette.weekly;
-		case "note":
-			return palette.note;
-		default: {
-			const _exhaustive: never = attrs.kind;
-			return _exhaustive;
-		}
-	}
-}
-
-function withAlpha(color: string, alpha: number) {
-	const clamped = Math.min(1, Math.max(0, alpha));
-	const rgb = color.match(
-		/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i,
-	);
-	if (!rgb) return color;
-	return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${Math.round(clamped * 1000) / 1000})`;
+	if (attrs.kind === "tag") return palette.tag;
+	return palette.text;
 }
 
 export function buildNodeReducer(
@@ -222,12 +165,10 @@ export function buildNodeReducer(
 				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : size * 1.15,
 			);
 			zIndex = 30;
-			if (data.isCenter && variant === "local") {
-				color = palette.accent;
-			}
-		} else if (activeFocusId && isNeighbor) {
-			forceLabel = true;
 		} else if (isSearchMatch) {
+			forceLabel = true;
+			zIndex = 20;
+		} else if (activeFocusId && isNeighbor) {
 			forceLabel = true;
 		} else if (data.isCenter) {
 			forceLabel = true;
@@ -240,7 +181,7 @@ export function buildNodeReducer(
 			label,
 			color,
 			zIndex,
-			highlighted: isFocus || isSearchMatch,
+			highlighted: isFocus,
 			...(forceLabel ? { forceLabel } : {}),
 		};
 	};
@@ -250,16 +191,9 @@ function edgeColorForRole(
 	role: ConnectionsEdgeAttributes["colorRole"],
 	palette: ConnectionsPalette,
 ) {
-	switch (role) {
-		case "accent":
-			return palette.edgeAccent;
-		case "internal":
-			return palette.edgeInternal;
-		case "tag":
-			return palette.edgeTag;
-		default:
-			return palette.edgeDefault;
-	}
+	if (role === "internal") return palette.edgeInternal;
+	if (role === "accent") return palette.accent;
+	return palette.edgeDefault;
 }
 
 export function buildEdgeReducer(
@@ -279,26 +213,29 @@ export function buildEdgeReducer(
 		const display = getDisplayState();
 		const { hoveredNode, selectedNodeId, searchMatchIds } = getFocusState();
 		const activeFocusId = selectedNodeId ?? hoveredNode;
-		const searching = searchMatchIds !== null;
-		const isHighlighted = searching
-			? searchMatchIds.has(source) && searchMatchIds.has(target)
-			: isEdgeInFocus(source, target);
-		const isFaded = searching
-			? !isHighlighted
-			: Boolean(activeFocusId) && !isHighlighted;
+		const matchEdge =
+			searchMatchIds !== null &&
+			searchMatchIds.has(source) &&
+			searchMatchIds.has(target);
+		const isHighlighted =
+			searchMatchIds === null && isEdgeInFocus(source, target);
+		const isFaded =
+			searchMatchIds !== null
+				? !matchEdge
+				: Boolean(activeFocusId) && !isHighlighted;
 		const baseColor = edgeColorForRole(data.colorRole, palette);
 
 		let color = withAlpha(baseColor, display.linkOpacity);
 		let size = data.size * display.linkThicknessScale;
 
 		if (isHighlighted) {
-			color = palette.edgeAccent;
-			size = Math.max(size, 1.7);
+			color = palette.accent;
+			size = Math.max(size, 2.2);
 		}
 
 		if (isFaded) {
-			color = withAlpha(palette.edgeInternal, display.linkOpacity * 0.45);
-			size = Math.max(0.28, size * 0.6);
+			color = withAlpha(palette.edgeInternal, display.linkOpacity * 0.7);
+			size = Math.max(0.9, size * 0.75);
 		}
 
 		return {
