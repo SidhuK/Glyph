@@ -18,18 +18,15 @@ export type SerializedGraphPosition = readonly [
 ];
 
 export interface ConnectionsLayoutRequest {
-	requestId: number;
 	graph: ConnectionsLayoutGraph;
 	forces: ConnectionsLayoutForces;
 }
 
 export type ConnectionsLayoutResponse =
 	| {
-			requestId: number;
 			positions: SerializedGraphPosition[];
 	  }
 	| {
-			requestId: number;
 			error: string;
 	  };
 

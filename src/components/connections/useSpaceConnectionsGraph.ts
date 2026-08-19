@@ -26,7 +26,6 @@ function layoutSpaceConnections(
 			{ type: "module" },
 		);
 		const request: ConnectionsLayoutRequest = {
-			requestId: 1,
 			forces: {
 				repel: options.repelForce,
 				linkDistance: options.linkDistance,
@@ -71,9 +70,7 @@ function layoutSpaceConnections(
 				return;
 			}
 			resolve(
-				new Map(
-					response.positions.map(([id, x, y]) => [id, { x, y }] as const),
-				),
+				new Map(response.positions.map(([id, x, y]) => [id, { x, y }])),
 			);
 		};
 		worker.onerror = (event) => {
@@ -141,6 +138,7 @@ export function useSpaceConnectionsGraph(
 	const layoutQuery = useQuery({
 		queryKey: [
 			"space-connections-layout",
+			"inward-pack",
 			spacePath,
 			filteredPayload?.nodes.length ?? 0,
 			filteredPayload?.edges.length ?? 0,

@@ -14,33 +14,33 @@ interface SpaceDensityTier {
 const SPACE_NODE_DENSITY_TIERS: readonly SpaceDensityTier[] = [
 	{
 		minNodes: 10_000,
-		noteSize: [0.35, 1.4],
-		tagSize: [0.55, 2],
+		noteSize: [0.5, 2.4],
+		tagSize: [0.7, 2.8],
 	},
 	{
 		minNodes: 5_000,
-		noteSize: [0.5, 1.8],
-		tagSize: [0.7, 2.4],
+		noteSize: [0.7, 3.2],
+		tagSize: [0.9, 3.6],
 	},
 	{
 		minNodes: 2_000,
-		noteSize: [0.7, 2.4],
-		tagSize: [0.95, 3.2],
+		noteSize: [1, 4.8],
+		tagSize: [1.2, 5.2],
 	},
 	{
 		minNodes: 1_000,
-		noteSize: [1, 3.2],
-		tagSize: [1.3, 4.2],
+		noteSize: [1.6, 7],
+		tagSize: [1.8, 6.2],
 	},
 	{
 		minNodes: 400,
-		noteSize: [1.2, 7],
-		tagSize: [1.6, 5],
+		noteSize: [2.4, 11],
+		tagSize: [2.6, 8],
 	},
 	{
 		minNodes: 0,
-		noteSize: [2, 11],
-		tagSize: [2.4, 7],
+		noteSize: [3.2, 14],
+		tagSize: [3.4, 9],
 	},
 ];
 
@@ -74,7 +74,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 280,
 		labelRenderedSizeThreshold: 18,
 		stagePadding: 36,
-		minEdgeThickness: 0.32,
+		minEdgeThickness: 0.5,
 		minCameraRatio: 0.05,
 	},
 	{
@@ -83,7 +83,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 200,
 		labelRenderedSizeThreshold: 14,
 		stagePadding: 40,
-		minEdgeThickness: 0.37,
+		minEdgeThickness: 0.58,
 		minCameraRatio: 0.18,
 	},
 	{
@@ -92,7 +92,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 165,
 		labelRenderedSizeThreshold: 11,
 		stagePadding: 48,
-		minEdgeThickness: 0.44,
+		minEdgeThickness: 0.7,
 		minCameraRatio: 0.18,
 	},
 	{
@@ -101,7 +101,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 120,
 		labelRenderedSizeThreshold: 11,
 		stagePadding: 56,
-		minEdgeThickness: 0.44,
+		minEdgeThickness: 0.75,
 		minCameraRatio: 0.18,
 	},
 ];
@@ -111,7 +111,7 @@ const LOCAL_SIGMA = {
 	labelGridCellSize: 88,
 	labelRenderedSizeThreshold: 0,
 	stagePadding: 72,
-	minEdgeThickness: 0.52,
+	minEdgeThickness: 0.7,
 	minCameraRatio: 0.35,
 	maxCameraRatio: 2.2,
 	zoomingRatio: 1.7,

@@ -21,8 +21,8 @@ export const DEFAULT_CONNECTIONS_GRAPH_OPTIONS: ConnectionsGraphOptions = {
 	linkStrength: 50,
 	centerForce: 50,
 	nodeSize: 50,
-	linkOpacity: 38,
-	linkThickness: 32,
+	linkOpacity: 58,
+	linkThickness: 42,
 	labelZoomThreshold: 50,
 	hideOrphanNodes: true,
 	minConnections: 0,
@@ -122,7 +122,7 @@ export function connectionsNodeSizeScale(value: number) {
 }
 
 export function connectionsLinkOpacity(value: number) {
-	return unitScale(value, 0.12, 1);
+	return unitScale(value, 0.22, 1);
 }
 
 export function connectionsLinkThicknessScale(value: number) {

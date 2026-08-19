@@ -10,7 +10,6 @@ export interface ConnectionsPalette {
 	accent: string;
 	text: string;
 	note: string;
-	noteMuted: string;
 	daily: string;
 	weekly: string;
 	tag: string;
@@ -72,28 +71,23 @@ export function resolveConnectionsPalette(
 ): ConnectionsPalette {
 	const accent = cssColor(container, "--interactive-accent", "#888888");
 	const text = cssColor(container, "--local-connections-text", "#1f2328");
-	const note = cssColor(container, "--local-connections-note-bg", "#9aa0a8");
-	const noteMuted = cssColor(
-		container,
-		"--local-connections-note-muted",
-		"#d7d7d2",
-	);
-	const daily = cssColor(container, "--local-connections-daily-bg", "#c4a574");
+	const note = cssColor(container, "--local-connections-note-bg", "#3f434a");
+	const daily = cssColor(container, "--local-connections-daily-bg", "#c45c4a");
 	const weekly = cssColor(
 		container,
 		"--local-connections-weekly-bg",
-		"#a8b8c4",
+		"#3d6bb3",
 	);
-	const tag = cssColor(container, "--local-connections-tag-node", accent);
+	const tag = cssColor(container, "--local-connections-tag-node", "#448361");
 	const tagMuted = cssColor(
 		container,
 		"--local-connections-tag-muted",
-		noteMuted,
+		"#9bb396",
 	);
 	const edgeDefault = cssColor(
 		container,
 		"--local-connections-edge",
-		"#c5c8ce",
+		"#9aa0a8",
 	);
 	const edgeAccent = cssColor(
 		container,
@@ -108,12 +102,12 @@ export function resolveConnectionsPalette(
 	const edgeMuted = cssColor(
 		container,
 		"--local-connections-edge-muted",
-		"#c8cdd4",
+		"#c5c9d0",
 	);
 	const faded = cssColor(
 		container,
 		"--local-connections-node-faded",
-		noteMuted,
+		"#d4d6da",
 	);
 	const labelBackground = cssColor(
 		container,
@@ -140,7 +134,6 @@ export function resolveConnectionsPalette(
 		accent,
 		text,
 		note,
-		noteMuted,
 		daily,
 		weekly,
 		tag,
@@ -162,10 +155,7 @@ function nodeColorForAttributes(
 	palette: ConnectionsPalette,
 ) {
 	if (attrs.isCenter) return palette.accent;
-	if (attrs.isIsolated) {
-		if (attrs.kind === "tag") return palette.tagMuted;
-		return palette.noteMuted;
-	}
+	if (attrs.isIsolated && attrs.kind === "tag") return palette.tagMuted;
 	switch (attrs.kind) {
 		case "tag":
 			return palette.tag;

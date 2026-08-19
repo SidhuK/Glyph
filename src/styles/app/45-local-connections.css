@@ -74,71 +74,40 @@
 	height: 100%;
 }
 
-.localNoteConnectionsViewport {
-	--local-connections-surface: color-mix(
-		in srgb,
-		var(--bg-canvas, var(--bg-secondary)) 92%,
-		var(--bg-primary)
-	);
-	--local-connections-dot: color-mix(
-		in srgb,
-		var(--text-tertiary) 9%,
-		transparent
-	);
+.localNoteConnectionsViewport,
+.spaceConnectionsHost {
+	--local-connections-surface: var(--bg-primary);
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 72%,
-		var(--local-connections-surface)
+		var(--text-primary) 52%,
+		var(--bg-primary)
 	);
-	--local-connections-edge-active: color-mix(
-		in srgb,
-		var(--interactive-accent) 84%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-tag: color-mix(
-		in srgb,
-		var(--interactive-accent) 76%,
-		var(--local-connections-surface)
-	);
+	--local-connections-edge-active: var(--interactive-accent);
+	--local-connections-edge-tag: var(--glyph-inline-color-green);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-tertiary) 48%,
-		var(--local-connections-surface)
-	);
-	--local-connections-note-bg: color-mix(
-		in srgb,
-		var(--text-secondary) 44%,
+		var(--text-primary) 28%,
 		var(--bg-primary)
 	);
-	--local-connections-note-muted: color-mix(
-		in srgb,
-		var(--text-secondary) 28%,
-		var(--bg-primary)
-	);
-	--local-connections-tag-node: color-mix(
-		in srgb,
-		var(--interactive-accent) 62%,
-		var(--bg-primary)
-	);
+	--local-connections-note-bg: var(--text-primary);
+	--local-connections-daily-bg: var(--glyph-inline-color-red);
+	--local-connections-weekly-bg: var(--glyph-inline-color-blue);
+	--local-connections-tag-node: var(--glyph-inline-color-green);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--interactive-accent) 18%,
-		color-mix(in srgb, var(--text-secondary) 26%, var(--bg-primary))
+		var(--glyph-inline-color-green) 42%,
+		var(--bg-primary)
 	);
 	--local-connections-node-faded: color-mix(
 		in srgb,
-		var(--text-tertiary) 22%,
+		var(--text-primary) 18%,
 		var(--bg-primary)
 	);
-	--local-connections-text: color-mix(
-		in srgb,
-		var(--text-primary) 88%,
-		var(--text-secondary)
-	);
+	--local-connections-text: var(--text-primary);
 	--local-connections-label-bg: color-mix(
 		in srgb,
-		var(--bg-secondary) 88%,
-		var(--bg-primary)
+		var(--bg-primary) 88%,
+		var(--bg-secondary)
 	);
 	--local-connections-label-border: color-mix(
 		in srgb,
@@ -155,18 +124,13 @@
 		var(--interactive-accent) 12%,
 		transparent
 	);
+}
 
+.localNoteConnectionsViewport {
 	width: 100%;
 	height: 100%;
 	cursor: grab;
 	background-color: var(--local-connections-surface);
-	background-image: radial-gradient(
-		circle at center,
-		var(--local-connections-dot) 0.6px,
-		transparent 1.15px
-	);
-	background-position: 0 0;
-	background-size: 24px 24px;
 }
 
 .localNoteConnectionsStage .localNoteConnectionsViewport {
@@ -178,204 +142,8 @@
 	cursor: grabbing;
 }
 
-:root.dark .localNoteConnectionsViewport {
-	--local-connections-dot: color-mix(
-		in srgb,
-		var(--text-secondary) 8%,
-		transparent
-	);
-	--local-connections-edge: color-mix(
-		in srgb,
-		var(--text-secondary) 64%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-active: color-mix(
-		in srgb,
-		var(--interactive-accent) 80%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-tag: color-mix(
-		in srgb,
-		var(--interactive-accent) 70%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-muted: color-mix(
-		in srgb,
-		var(--text-secondary) 42%,
-		var(--local-connections-surface)
-	);
-	--local-connections-note-bg: color-mix(
-		in srgb,
-		var(--text-secondary) 38%,
-		var(--bg-primary)
-	);
-	--local-connections-note-muted: color-mix(
-		in srgb,
-		var(--text-secondary) 20%,
-		var(--bg-primary)
-	);
-	--local-connections-tag-node: color-mix(
-		in srgb,
-		var(--interactive-accent) 58%,
-		var(--bg-primary)
-	);
-	--local-connections-node-faded: color-mix(
-		in srgb,
-		var(--text-secondary) 12%,
-		var(--bg-primary)
-	);
-	--local-connections-text: color-mix(
-		in srgb,
-		var(--text-primary) 82%,
-		var(--text-secondary)
-	);
-	--local-connections-label-bg: color-mix(
-		in srgb,
-		var(--bg-primary) 82%,
-		var(--bg-secondary)
-	);
-	--local-connections-label-border: color-mix(
-		in srgb,
-		var(--border-default) 32%,
-		transparent
-	);
-	--local-connections-hover-halo: color-mix(
-		in srgb,
-		var(--interactive-accent) 36%,
-		transparent
-	);
-	--local-connections-hover-halo-soft: color-mix(
-		in srgb,
-		var(--interactive-accent) 18%,
-		transparent
-	);
-}
-
 .spaceConnectionsHost .localNoteConnectionsViewport {
 	z-index: 0;
-	--local-connections-surface: color-mix(
-		in srgb,
-		var(--bg-canvas, var(--bg-secondary)) 96%,
-		#f4f1ea
-	);
-	--local-connections-dot: color-mix(
-		in srgb,
-		var(--text-tertiary) 14%,
-		transparent
-	);
-	--local-connections-edge: color-mix(
-		in srgb,
-		var(--text-tertiary) 28%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-active: color-mix(
-		in srgb,
-		var(--text-secondary) 55%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-tag: color-mix(
-		in srgb,
-		var(--text-tertiary) 22%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-muted: color-mix(
-		in srgb,
-		var(--text-tertiary) 16%,
-		var(--local-connections-surface)
-	);
-	--local-connections-note-bg: color-mix(
-		in srgb,
-		#8b9098 42%,
-		var(--bg-primary)
-	);
-	--local-connections-note-muted: color-mix(
-		in srgb,
-		#8b9098 28%,
-		var(--bg-primary)
-	);
-	--local-connections-tag-node: color-mix(
-		in srgb,
-		#8b9098 36%,
-		var(--bg-primary)
-	);
-	--local-connections-tag-muted: color-mix(
-		in srgb,
-		#8b9098 22%,
-		var(--bg-primary)
-	);
-	--local-connections-daily-bg: color-mix(
-		in srgb,
-		#c4a574 78%,
-		var(--bg-primary)
-	);
-	--local-connections-weekly-bg: color-mix(
-		in srgb,
-		#8aa0b8 62%,
-		var(--bg-primary)
-	);
-}
-
-:root.dark .spaceConnectionsHost .localNoteConnectionsViewport {
-	--local-connections-surface: color-mix(
-		in srgb,
-		var(--bg-canvas, var(--bg-secondary)) 94%,
-		var(--bg-primary)
-	);
-	--local-connections-dot: color-mix(
-		in srgb,
-		var(--text-secondary) 10%,
-		transparent
-	);
-	--local-connections-edge: color-mix(
-		in srgb,
-		var(--text-secondary) 22%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-active: color-mix(
-		in srgb,
-		var(--text-secondary) 48%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-tag: color-mix(
-		in srgb,
-		var(--text-secondary) 16%,
-		var(--local-connections-surface)
-	);
-	--local-connections-edge-muted: color-mix(
-		in srgb,
-		var(--text-secondary) 12%,
-		var(--local-connections-surface)
-	);
-	--local-connections-note-bg: color-mix(
-		in srgb,
-		#9aa0a8 32%,
-		var(--bg-primary)
-	);
-	--local-connections-note-muted: color-mix(
-		in srgb,
-		#9aa0a8 20%,
-		var(--bg-primary)
-	);
-	--local-connections-tag-node: color-mix(
-		in srgb,
-		#9aa0a8 26%,
-		var(--bg-primary)
-	);
-	--local-connections-tag-muted: color-mix(
-		in srgb,
-		#9aa0a8 16%,
-		var(--bg-primary)
-	);
-	--local-connections-daily-bg: color-mix(
-		in srgb,
-		#c4a574 48%,
-		var(--bg-primary)
-	);
-	--local-connections-weekly-bg: color-mix(
-		in srgb,
-		#8aa0b8 40%,
-		var(--bg-primary)
-	);
 }
 
 .spaceConnectionsToolbar {
@@ -515,30 +283,24 @@
 }
 
 .localNoteConnectionsLegendNode.is-note {
-	border-color: color-mix(
-		in srgb,
-		var(--text-secondary) 56%,
-		var(--border-default)
-	);
-	background: color-mix(in srgb, var(--text-secondary) 34%, var(--bg-primary));
+	border-color: var(--local-connections-note-bg);
+	background: var(--local-connections-note-bg);
 }
 
 .localNoteConnectionsLegendNode.is-tag {
 	border-style: solid;
-	border-color: var(--interactive-accent);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 42%,
-		var(--bg-primary)
-	);
+	border-color: var(--local-connections-tag-node);
+	background: var(--local-connections-tag-node);
 }
 
 .localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-daily {
-	background: var(--local-connections-daily-bg, #c4a574);
+	border-color: var(--local-connections-daily-bg);
+	background: var(--local-connections-daily-bg);
 }
 
 .localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-weekly {
-	background: var(--local-connections-weekly-bg, #6f93c4);
+	border-color: var(--local-connections-weekly-bg);
+	background: var(--local-connections-weekly-bg);
 }
 
 .localNoteConnectionsLegendEdge {

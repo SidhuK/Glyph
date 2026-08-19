@@ -204,7 +204,7 @@ export function detectConnectionsCommunities(
 			id,
 			members,
 			hubId: members[0] ?? "",
-			radius: Math.max(210, Math.sqrt(members.length) * 118),
+			radius: Math.max(18, 18 * Math.sqrt(members.length / Math.PI) * 1.15),
 		};
 	});
 

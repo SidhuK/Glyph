@@ -68,7 +68,7 @@ function scaledNodeSize(
 	maxWeight: number,
 ) {
 	if (weight <= 0) return minSize;
-	const normalized = Math.log1p(weight) / Math.log1p(Math.max(maxWeight, 1));
+	const normalized = (weight / Math.max(maxWeight, 1)) ** 0.6;
 	return minSize + normalized * (maxSize - minSize);
 }
 
@@ -224,7 +224,7 @@ export function buildSpaceConnectionsGraph(
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
 			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.42 * edgeScale * weightScale,
+			size: 0.7 * edgeScale * weightScale,
 		});
 	}
 
@@ -234,7 +234,7 @@ export function buildSpaceConnectionsGraph(
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
 			colorRole: "tag",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.32 * edgeScale,
+			size: 0.52 * edgeScale,
 		});
 	}
 

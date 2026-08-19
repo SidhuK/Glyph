@@ -842,15 +842,6 @@ fn local_connections_tag_id(tag: &str) -> String {
     format!("glyph:tag:{tag}")
 }
 
-fn empty_space_connections() -> SpaceConnections {
-    SpaceConnections {
-        nodes: Vec::new(),
-        edges: Vec::new(),
-        tags: Vec::new(),
-        tag_edges: Vec::new(),
-    }
-}
-
 fn local_connections_tag_expansion_for_seed_nodes(
     conn: &rusqlite::Connection,
     seed_node_ids: &[String],
@@ -987,7 +978,12 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
     }
 
     if nodes.is_empty() {
-        return Ok(empty_space_connections());
+        return Ok(SpaceConnections {
+            nodes: Vec::new(),
+            edges: Vec::new(),
+            tags: Vec::new(),
+            tag_edges: Vec::new(),
+        });
     }
 
     let edge_query = "SELECT from_id, to_id, kind, SUM(weight) AS weight

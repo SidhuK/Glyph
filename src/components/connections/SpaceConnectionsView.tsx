@@ -295,13 +295,14 @@ export function SpaceConnectionsView({
 		</>
 	);
 
-	if (dataLoading) {
+	if (dataLoading || layoutLoading) {
 		return (
 			<section className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden">
 				<div
 					className="localNoteConnectionsViewport absolute inset-0"
 					aria-hidden="true"
 				/>
+				{layoutLoading ? toolbar : null}
 				<div className="absolute inset-0 flex items-center justify-center">
 					<div className="flex items-center gap-2 text-sm text-muted-foreground">
 						<HugeiconsIcon
@@ -309,29 +310,9 @@ export function SpaceConnectionsView({
 							className="animate-spin"
 							size="var(--icon-sm)"
 						/>
-						{t("connections.loading")}
-					</div>
-				</div>
-			</section>
-		);
-	}
-
-	if (layoutLoading) {
-		return (
-			<section className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden">
-				<div
-					className="localNoteConnectionsViewport absolute inset-0"
-					aria-hidden="true"
-				/>
-				{toolbar}
-				<div className="absolute inset-0 flex items-center justify-center">
-					<div className="flex items-center gap-2 text-sm text-muted-foreground">
-						<HugeiconsIcon
-							icon={LoaderCircle}
-							className="animate-spin"
-							size="var(--icon-sm)"
-						/>
-						{t("connections.arranging")}
+						{dataLoading
+							? t("connections.loading")
+							: t("connections.arranging")}
 					</div>
 				</div>
 			</section>
