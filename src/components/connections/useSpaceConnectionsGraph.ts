@@ -89,12 +89,7 @@ function noteLinkDegrees(payload: SpaceConnections) {
 }
 
 function spaceConnectionsLayoutFingerprint(payload: SpaceConnections) {
-	const parts: string[] = [
-		String(payload.nodes.length),
-		String(payload.edges.length),
-		String(payload.tags.length),
-		String(payload.tag_edges.length),
-	];
+	const parts: string[] = [];
 	for (const node of payload.nodes) parts.push(node.id);
 	for (const edge of payload.edges) {
 		parts.push(edge.from_id, edge.to_id, edge.kind, String(edge.weight));

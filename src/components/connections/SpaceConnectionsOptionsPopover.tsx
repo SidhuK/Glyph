@@ -1,3 +1,9 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
+import {
+	ColorsIcon,
+	FilterIcon,
+	ReloadIcon,
+} from "@hugeicons/core-free-icons";
 import type { CSSProperties, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -103,6 +109,7 @@ export function SpaceConnectionsOptionsPopover({
 			>
 				<div className="databaseViewOptionsMenu spaceConnectionsOptionsMenu">
 					<h3 className="spaceConnectionsOptionsHeading">
+						<HugeiconsIcon icon={ColorsIcon} size="var(--icon-sm)" />
 						{t("connections.display")}
 					</h3>
 					<GraphOptionSlider
@@ -130,6 +137,7 @@ export function SpaceConnectionsOptionsPopover({
 						onChange={(labelZoomThreshold) => patch({ labelZoomThreshold })}
 					/>
 					<h3 className="spaceConnectionsOptionsHeading">
+						<HugeiconsIcon icon={FilterIcon} size="var(--icon-sm)" />
 						{t("connections.filters")}
 					</h3>
 					<Toggle
@@ -150,10 +158,11 @@ export function SpaceConnectionsOptionsPopover({
 					<Button
 						type="button"
 						size="sm"
-						variant="ghost"
-						className="mt-1"
+						variant="outline"
+						className="mx-auto mt-1 flex"
 						onClick={() => onOptionsChange(DEFAULT_CONNECTIONS_GRAPH_OPTIONS)}
 					>
+						<HugeiconsIcon icon={ReloadIcon} size="var(--icon-sm)" />
 						{t("connections.resetDefaults")}
 					</Button>
 				</div>
