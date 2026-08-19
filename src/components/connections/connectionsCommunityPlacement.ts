@@ -41,7 +41,7 @@ function clearanceToPacked(
 
 function placeCommunityCenters(
 	cores: readonly ConnectionsCommunity[],
-	model: ConnectionsCommunityModel,
+	communityBridges: ReadonlyMap<string, number>,
 ) {
 	const centers = new Map<number, GraphPosition>();
 	const packed: PackedCircle[] = [];
@@ -60,9 +60,8 @@ function placeCommunityCenters(
 
 		const linked = packed.flatMap((circle) => {
 			const weight =
-				model.communityBridges.get(
-					communityBridgeKey(community.id, circle.id),
-				) ?? 0;
+				communityBridges.get(communityBridgeKey(community.id, circle.id)) ??
+				0;
 			return weight > 0 ? [{ circle, weight }] : [];
 		});
 		const seed = hashString(`community:${community.hubId}`);
@@ -194,7 +193,7 @@ export function placeConnectionsCommunities(
 		.flatMap((community) => community.members);
 	const toPack = cores.length > 0 ? cores : model.communities;
 	const dust = cores.length > 0 ? leftover : [];
-	const centers = placeCommunityCenters(toPack, model);
+	const centers = placeCommunityCenters(toPack, model.communityBridges);
 	const packedCores: PackedCircle[] = [];
 	const positions: SerializedGraphPosition[] = [];
 

@@ -5,11 +5,11 @@ import {
 	connectionsMinimumVisibleDegree,
 } from "../../lib/connectionsGraphOptions";
 import type { SpaceConnections } from "../../lib/tauri";
+import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 import {
 	type ConnectionsGraph,
 	buildSpaceConnectionsGraph,
 } from "./connectionsGraph";
-import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 import type {
 	ConnectionsLayoutResponse,
 	GraphPosition,

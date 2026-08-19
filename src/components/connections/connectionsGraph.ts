@@ -192,7 +192,7 @@ export function buildSpaceConnectionsGraph(
 	for (const [index, edge] of payload.edges.entries()) {
 		if (!graph.hasNode(edge.from_id) || !graph.hasNode(edge.to_id)) continue;
 		const edgeId = `${edge.kind}:${edge.from_id}->${edge.to_id}:${index}`;
-		const weightScale = 1 + Math.log1p(Math.max(edge.weight, 1)) * 0.2;
+		const weightScale = 1 + Math.log1p(edge.weight) * 0.2;
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
 			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,

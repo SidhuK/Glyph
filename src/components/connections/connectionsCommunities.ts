@@ -40,33 +40,23 @@ export function communityBridgeKey(left: number, right: number) {
 	return left < right ? `${left}:${right}` : `${right}:${left}`;
 }
 
-function addAdjacencyWeight(
-	adjacency: Map<string, Map<string, number>>,
-	left: string,
-	right: string,
-	weight: number,
-) {
-	const leftNeighbors = adjacency.get(left);
-	const rightNeighbors = adjacency.get(right);
-	if (!leftNeighbors || !rightNeighbors || left === right) return;
-	leftNeighbors.set(right, (leftNeighbors.get(right) ?? 0) + weight);
-	rightNeighbors.set(left, (rightNeighbors.get(left) ?? 0) + weight);
-}
+type CommunityGraph = Graph<
+	Record<string, never>,
+	CommunityGraphEdgeAttributes
+>;
 
 function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
-	const graph = new Graph<Record<string, never>, CommunityGraphEdgeAttributes>(
-		{ type: "undirected", multi: false, allowSelfLoops: false },
-	);
-	const adjacency = new Map<string, Map<string, number>>();
+	const graph = new Graph<
+		Record<string, never>,
+		CommunityGraphEdgeAttributes
+	>({
+		type: "undirected",
+		multi: false,
+		allowSelfLoops: false,
+	});
 
-	for (const nodeId of layoutGraph.nodeIds) {
-		graph.addNode(nodeId);
-		adjacency.set(nodeId, new Map());
-	}
-	for (const tag of layoutGraph.tags) {
-		graph.addNode(tag.id);
-		adjacency.set(tag.id, new Map());
-	}
+	for (const nodeId of layoutGraph.nodeIds) graph.addNode(nodeId);
+	for (const tag of layoutGraph.tags) graph.addNode(tag.id);
 
 	const mergeEdge = (left: string, right: string, weight: number) => {
 		if (!graph.hasNode(left) || !graph.hasNode(right) || left === right) return;
@@ -77,10 +67,9 @@ function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
 				"weight",
 				(current = 0) => current + weight,
 			);
-		} else {
-			graph.addUndirectedEdge(left, right, { weight });
+			return;
 		}
-		addAdjacencyWeight(adjacency, left, right, weight);
+		graph.addUndirectedEdge(left, right, { weight });
 	};
 
 	for (const edge of layoutGraph.edges) {
@@ -88,7 +77,7 @@ function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
 			edge.source,
 			edge.target,
 			(edge.kind === "relationship" ? RELATIONSHIP_WEIGHT : NOTE_LINK_WEIGHT) *
-				Math.max(edge.weight, 1),
+				edge.weight,
 		);
 	}
 
@@ -104,12 +93,12 @@ function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
 		);
 	}
 
-	return { adjacency, graph };
+	return graph;
 }
 
 function splitDisconnectedCommunities(
 	assignments: Readonly<Record<string, number>>,
-	adjacency: ReadonlyMap<string, ReadonlyMap<string, number>>,
+	graph: CommunityGraph,
 ) {
 	const groups = new Map<number, Set<string>>();
 	for (const [nodeId, communityId] of Object.entries(assignments)) {
@@ -130,12 +119,12 @@ function splitDisconnectedCommunities(
 			for (let index = 0; index < component.length; index += 1) {
 				const current = component[index];
 				if (!current) continue;
-				for (const neighbor of adjacency.get(current)?.keys() ?? []) {
+				for (const neighbor of graph.neighbors(current)) {
 					if (!members.has(neighbor) || !remaining.delete(neighbor)) continue;
 					component.push(neighbor);
 				}
 			}
-			if (component.length === 1 && (adjacency.get(first)?.size ?? 0) === 0) {
+			if (component.length === 1 && graph.degree(first) === 0) {
 				isolated.push(first);
 			} else {
 				components.push(component);
@@ -150,19 +139,20 @@ function splitDisconnectedCommunities(
 function internalWeightedDegree(
 	nodeId: string,
 	members: ReadonlySet<string>,
-	adjacency: ReadonlyMap<string, ReadonlyMap<string, number>>,
+	graph: CommunityGraph,
 ) {
 	let degree = 0;
-	for (const [neighbor, weight] of adjacency.get(nodeId) ?? []) {
-		if (members.has(neighbor)) degree += weight;
-	}
+	graph.forEachEdge(nodeId, (_edge, attributes, source, target) => {
+		const neighbor = source === nodeId ? target : source;
+		if (members.has(neighbor)) degree += attributes.weight;
+	});
 	return degree;
 }
 
 export function detectConnectionsCommunities(
 	layoutGraph: ConnectionsLayoutGraph,
 ): ConnectionsCommunityModel {
-	const { adjacency, graph } = buildWeightedGraph(layoutGraph);
+	const graph = buildWeightedGraph(layoutGraph);
 	const assignments =
 		graph.size > 0
 			? louvain(graph, {
@@ -171,7 +161,7 @@ export function detectConnectionsCommunities(
 					rng: seededRandom(hashString("glyph-connections-communities")),
 				})
 			: Object.fromEntries(graph.nodes().map((id, index) => [id, index]));
-	const components = splitDisconnectedCommunities(assignments, adjacency);
+	const components = splitDisconnectedCommunities(assignments, graph);
 	components.sort((left, right) => {
 		if (left.length !== right.length) return right.length - left.length;
 		return hashString(left[0] ?? "") - hashString(right[0] ?? "");
@@ -182,8 +172,8 @@ export function detectConnectionsCommunities(
 		const memberSet = new Set(members);
 		members.sort((left, right) => {
 			const degreeDifference =
-				internalWeightedDegree(right, memberSet, adjacency) -
-				internalWeightedDegree(left, memberSet, adjacency);
+				internalWeightedDegree(right, memberSet, graph) -
+				internalWeightedDegree(left, memberSet, graph);
 			return degreeDifference || hashString(left) - hashString(right);
 		});
 		for (const member of members) nodeCommunity.set(member, id);
@@ -196,22 +186,22 @@ export function detectConnectionsCommunities(
 	});
 
 	const communityBridges = new Map<string, number>();
-	for (const [nodeId, neighbors] of adjacency) {
-		const sourceCommunity = nodeCommunity.get(nodeId);
-		if (sourceCommunity === undefined) continue;
-		for (const [neighbor, weight] of neighbors) {
-			if (nodeId >= neighbor) continue;
-			const targetCommunity = nodeCommunity.get(neighbor);
-			if (
-				targetCommunity === undefined ||
-				sourceCommunity === targetCommunity
-			) {
-				continue;
-			}
-			const key = communityBridgeKey(sourceCommunity, targetCommunity);
-			communityBridges.set(key, (communityBridges.get(key) ?? 0) + weight);
+	graph.forEachEdge((_edge, attributes, source, target) => {
+		const sourceCommunity = nodeCommunity.get(source);
+		const targetCommunity = nodeCommunity.get(target);
+		if (
+			sourceCommunity === undefined ||
+			targetCommunity === undefined ||
+			sourceCommunity === targetCommunity
+		) {
+			return;
 		}
-	}
+		const key = communityBridgeKey(sourceCommunity, targetCommunity);
+		communityBridges.set(
+			key,
+			(communityBridges.get(key) ?? 0) + attributes.weight,
+		);
+	});
 
 	return { communities, communityBridges };
 }

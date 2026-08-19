@@ -1,8 +1,8 @@
+import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 import {
 	type ConnectionsLayoutResponse,
 	computeSpaceConnectionsLayout,
 } from "./connectionsLayout";
-import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 
 interface ConnectionsWorkerScope {
 	onmessage:

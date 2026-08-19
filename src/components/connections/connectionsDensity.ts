@@ -126,10 +126,6 @@ function tierForCount<T extends { minNodes: number }>(
 	);
 }
 
-function tierForEdgeCount(count: number) {
-	return SPACE_EDGE_SCALE_TIERS.find((tier) => count >= tier.minEdges) ?? null;
-}
-
 interface ConnectionsDensityProfile {
 	noteSizeRange: SpaceNodeSizeRange;
 	tagSizeRange: SpaceNodeSizeRange;
@@ -141,12 +137,13 @@ export function spaceConnectionsDensityProfile(
 	edgeCount: number,
 ): ConnectionsDensityProfile {
 	const nodeTier = tierForCount(SPACE_NODE_DENSITY_TIERS, nodeCount);
-	const edgeTier = tierForEdgeCount(edgeCount);
 
 	return {
 		noteSizeRange: nodeTier.noteSize,
 		tagSizeRange: nodeTier.tagSize,
-		edgeScale: edgeTier?.scale ?? 1,
+		edgeScale:
+			SPACE_EDGE_SCALE_TIERS.find((tier) => edgeCount >= tier.minEdges)
+				?.scale ?? 1,
 	};
 }
 
