@@ -357,6 +357,12 @@
 			"section": "Załączniki",
 			"keywords": ["zasoby", "pliki", "obrazy", "folder"]
 		},
+		"space-connections-graph": {
+			"title": "Graf połączeń",
+			"section": "Przestrzeń",
+			"description": "Rozmiar notatek, tytuły i filtry w widoku Połączeń.",
+			"keywords": ["graf", "linki", "tytuły"]
+		},
 		"space-template-folder": {
 			"title": "Folder szablonów",
 			"section": "Szablony",

@@ -835,9 +835,7 @@ export const SPACE_SETTINGS = {
 		legacyKey: "connections.graph",
 		field: "connectionsGraph",
 		defaultValue: DEFAULT_CONNECTIONS_GRAPH_OPTIONS,
-		discovery: hidden(
-			"Graph options are controlled from the connections view.",
-		),
+		discovery: searchable("space-connections-graph"),
 		normalize: normalizeConnectionsGraphOptions,
 		parse: (value) =>
 			value === null || typeof value === "object"

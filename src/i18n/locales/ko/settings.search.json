@@ -381,6 +381,12 @@
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
 		},
+		"space-connections-graph": {
+			"title": "연결 그래프",
+			"section": "스페이스",
+			"description": "연결 보기에서 노트 크기, 제목, 필터를 바꿉니다.",
+			"keywords": ["그래프", "링크", "제목"]
+		},
 		"space-template-folder": {
 			"title": "Template folder",
 			"section": "Templates",

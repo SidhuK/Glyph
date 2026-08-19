@@ -29,8 +29,6 @@ interface UseSigmaConnectionsOptions {
 	display: ConnectionsDisplayState;
 	labelZoomThreshold: number;
 	searchMatchIds?: ReadonlySet<string> | null;
-	findShortcutEnabled?: boolean;
-	onFindShortcut?: () => void;
 	onNoteOpen?: (nodeId: string) => void;
 	onTagActivate?: (tagId: string, label: string) => void;
 }
@@ -80,8 +78,6 @@ export function useSigmaConnections({
 	display,
 	labelZoomThreshold,
 	searchMatchIds = null,
-	findShortcutEnabled = false,
-	onFindShortcut,
 	onNoteOpen,
 	onTagActivate,
 }: UseSigmaConnectionsOptions): RefObject<ConnectionsOverlayApi> {
@@ -97,8 +93,6 @@ export function useSigmaConnections({
 	labelZoomRef.current = labelZoomThreshold;
 	const searchMatchIdsRef = useRef(searchMatchIds);
 	searchMatchIdsRef.current = searchMatchIds;
-	const onFindShortcutRef = useRef(onFindShortcut);
-	onFindShortcutRef.current = onFindShortcut;
 	const paletteRef = useRef<ConnectionsPalette | null>(null);
 	const refreshScheduledRef = useRef(false);
 	const overlayRef = useRef<ConnectionsOverlayApi>({
@@ -356,31 +350,6 @@ export function useSigmaConnections({
 
 		return cleanup;
 	}, [containerRef, enabled, graph, onNoteOpen, onTagActivate, variant]);
-
-	useEffect(() => {
-		if (!findShortcutEnabled) return;
-		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.altKey || event.shiftKey) return;
-			if (!(event.metaKey || event.ctrlKey)) return;
-			if (event.key.toLowerCase() !== "f" && event.code !== "KeyF") return;
-			const target = event.target;
-			const inHost =
-				target instanceof Element &&
-				Boolean(target.closest(".spaceConnectionsHost"));
-			const inForeignEditable =
-				target instanceof HTMLElement &&
-				(target.tagName === "INPUT" ||
-					target.tagName === "TEXTAREA" ||
-					target.isContentEditable) &&
-				!inHost;
-			if (inForeignEditable) return;
-			event.preventDefault();
-			event.stopPropagation();
-			onFindShortcutRef.current?.();
-		};
-		window.addEventListener("keydown", onKeyDown, true);
-		return () => window.removeEventListener("keydown", onKeyDown, true);
-	}, [findShortcutEnabled]);
 
 	return overlayRef;
 }

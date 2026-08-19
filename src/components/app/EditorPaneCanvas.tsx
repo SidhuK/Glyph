@@ -265,7 +265,7 @@ function EditorPaneContent({
 	if (viewerPath === SPACE_CONNECTIONS_TAB_ID) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="connections" />}>
-				<SpaceConnectionsView focused={focused} />
+				<SpaceConnectionsView />
 			</Suspense>
 		);
 	}

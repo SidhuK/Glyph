@@ -388,6 +388,12 @@
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
 		},
+		"space-connections-graph": {
+			"title": "コネクションのグラフ",
+			"section": "スペース",
+			"description": "コネクション画面でノートの大きさ、タイトル、フィルターを変更します。",
+			"keywords": ["グラフ", "リンク", "タイトル"]
+		},
 		"space-template-folder": {
 			"title": "Template folder",
 			"section": "Templates",

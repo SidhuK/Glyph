@@ -12,6 +12,7 @@ import {
 	connectionsLinkThicknessScale,
 	connectionsNodeSizeScale,
 } from "../../lib/connectionsGraphOptions";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AppSettings,
 	SPACE_SETTINGS,
@@ -21,6 +22,7 @@ import {
 import type { SpaceConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { toast } from "../../lib/toast";
 import {
 	dispatchTagClick,
 	dispatchWikiLinkClick,
@@ -109,11 +111,7 @@ function SpaceConnectionsLegend() {
 	);
 }
 
-export function SpaceConnectionsView({
-	focused = true,
-}: {
-	focused?: boolean;
-}) {
+export function SpaceConnectionsView() {
 	const { t } = useTranslation("shell");
 	const { spacePath } = useSpace();
 	const queryClient = useQueryClient();
@@ -148,9 +146,11 @@ export function SpaceConnectionsView({
 			);
 			return { previous, queryKey };
 		},
-		onError: (_cause, _next, context) => {
-			if (!context) return;
-			queryClient.setQueryData(context.queryKey, context.previous);
+		onError: (cause, _next, context) => {
+			if (context) queryClient.setQueryData(context.queryKey, context.previous);
+			toast.error(t("commandPalette.settingUpdateFailed"), {
+				description: extractErrorMessage(cause),
+			});
 		},
 	});
 
@@ -204,12 +204,6 @@ export function SpaceConnectionsView({
 		display,
 		labelZoomThreshold: options.labelZoomThreshold,
 		searchMatchIds: graph ? searchMatchIds(graph, searchQuery) : null,
-		findShortcutEnabled: focused,
-		onFindShortcut: () => {
-			setSearchOpen(true);
-			searchInputRef.current?.focus();
-			searchInputRef.current?.select();
-		},
 		onNoteOpen: openNote,
 		onTagActivate: openTagSearch,
 	});
@@ -228,7 +222,15 @@ export function SpaceConnectionsView({
 			event.preventDefault();
 			setSearchOpen(false);
 			applySearch("");
+			return;
 		}
+		if (event.altKey || event.shiftKey) return;
+		if (!(event.metaKey || event.ctrlKey)) return;
+		if (event.key.toLowerCase() !== "f" && event.code !== "KeyF") return;
+		event.preventDefault();
+		setSearchOpen(true);
+		searchInputRef.current?.focus();
+		searchInputRef.current?.select();
 	};
 
 	const toolbar = (
@@ -261,7 +263,10 @@ export function SpaceConnectionsView({
 
 	if (dataLoading || layoutLoading) {
 		return (
-			<section className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden">
+			<section
+				className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden"
+				onKeyDown={handleHostKeyDown}
+			>
 				<div
 					className="localNoteConnectionsViewport absolute inset-0"
 					aria-hidden="true"
