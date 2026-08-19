@@ -201,7 +201,6 @@ export function useSigmaConnections({
 			);
 			const edgeReducer = buildEdgeReducer(
 				() => paletteRef.current ?? palette,
-				variant,
 				() => focusState,
 				() => displayRef.current,
 				(source, target) =>

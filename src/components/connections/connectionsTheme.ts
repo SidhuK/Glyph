@@ -9,6 +9,7 @@ import type {
 export interface ConnectionsPalette {
 	accent: string;
 	text: string;
+	note: string;
 	tag: string;
 	edgeDefault: string;
 	edgeInternal: string;
@@ -74,7 +75,8 @@ export function resolveConnectionsPalette(
 ): ConnectionsPalette {
 	const accent = cssColor(container, "--interactive-accent", "#888888");
 	const text = cssColor(container, "--text-primary", "#1f2328");
-	const tag = cssColor(container, "--text-secondary", "#6b6f76");
+	const note = cssColor(container, "--local-connections-note-bg", "#4269d0");
+	const tag = cssColor(container, "--local-connections-tag-node", "#a463f2");
 	const edgeDefault = cssColor(
 		container,
 		"--local-connections-edge",
@@ -104,6 +106,7 @@ export function resolveConnectionsPalette(
 	return {
 		accent,
 		text,
+		note,
 		tag,
 		edgeDefault,
 		edgeInternal: edgeMuted,
@@ -121,7 +124,7 @@ function nodeColorForAttributes(
 ) {
 	if (attrs.isCenter) return palette.accent;
 	if (attrs.kind === "tag") return palette.tag;
-	return palette.text;
+	return palette.note;
 }
 
 export function buildNodeReducer(
@@ -198,7 +201,6 @@ function edgeColorForRole(
 
 export function buildEdgeReducer(
 	getPalette: () => ConnectionsPalette,
-	_variant: ConnectionsGraphVariant,
 	getFocusState: () => ConnectionsFocusState,
 	getDisplayState: () => ConnectionsDisplayState,
 	isEdgeInFocus: (source: string, target: string) => boolean,
@@ -230,12 +232,12 @@ export function buildEdgeReducer(
 
 		if (isHighlighted) {
 			color = palette.accent;
-			size = Math.max(size, 2.2);
+			size = Math.max(size, 1.5);
 		}
 
 		if (isFaded) {
 			color = withAlpha(palette.edgeInternal, display.linkOpacity * 0.7);
-			size = Math.max(0.9, size * 0.75);
+			size = Math.max(0.45, size * 0.7);
 		}
 
 		return {

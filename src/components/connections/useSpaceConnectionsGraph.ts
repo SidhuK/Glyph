@@ -9,15 +9,14 @@ import {
 	type ConnectionsGraph,
 	buildSpaceConnectionsGraph,
 } from "./connectionsGraph";
+import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 import type {
-	ConnectionsLayoutRequest,
 	ConnectionsLayoutResponse,
 	GraphPosition,
 } from "./connectionsLayout";
 
 function layoutSpaceConnections(
 	payload: SpaceConnections,
-	options: ConnectionsGraphOptions,
 	signal: AbortSignal,
 ) {
 	return new Promise<ReadonlyMap<string, GraphPosition>>((resolve, reject) => {
@@ -25,30 +24,22 @@ function layoutSpaceConnections(
 			new URL("./connectionsLayout.worker.ts", import.meta.url),
 			{ type: "module" },
 		);
-		const request: ConnectionsLayoutRequest = {
-			forces: {
-				repel: options.repelForce,
-				linkDistance: options.linkDistance,
-				linkStrength: options.linkStrength,
-				center: options.centerForce,
-			},
-			graph: {
-				nodeIds: payload.nodes.map((node) => node.id),
-				tags: payload.tags.map((tag) => ({
-					id: tag.id,
-					noteCount: tag.note_count,
-				})),
-				edges: payload.edges.map((edge) => ({
-					source: edge.from_id,
-					target: edge.to_id,
-					kind: edge.kind,
-					weight: edge.weight,
-				})),
-				tagEdges: payload.tag_edges.map((edge) => ({
-					tagId: edge.tag_id,
-					noteId: edge.note_id,
-				})),
-			},
+		const request: ConnectionsLayoutGraph = {
+			nodeIds: payload.nodes.map((node) => node.id),
+			tags: payload.tags.map((tag) => ({
+				id: tag.id,
+				noteCount: tag.note_count,
+			})),
+			edges: payload.edges.map((edge) => ({
+				source: edge.from_id,
+				target: edge.to_id,
+				kind: edge.kind,
+				weight: edge.weight,
+			})),
+			tagEdges: payload.tag_edges.map((edge) => ({
+				tagId: edge.tag_id,
+				noteId: edge.note_id,
+			})),
 		};
 
 		const abort = () => {
@@ -136,17 +127,12 @@ export function useSpaceConnectionsGraph(
 	const layoutQuery = useQuery({
 		queryKey: [
 			"space-connections-layout",
-			"inward-pack",
 			spacePath,
 			filteredPayload?.nodes.length ?? 0,
 			filteredPayload?.edges.length ?? 0,
 			filteredPayload?.tags.length ?? 0,
 			filteredPayload?.nodes[0]?.id ?? "",
 			filteredPayload?.nodes[filteredPayload.nodes.length - 1]?.id ?? "",
-			options.repelForce,
-			options.linkDistance,
-			options.linkStrength,
-			options.centerForce,
 		],
 		enabled: Boolean(filteredPayload && filteredPayload.nodes.length > 0),
 		staleTime: Number.POSITIVE_INFINITY,
@@ -155,7 +141,7 @@ export function useSpaceConnectionsGraph(
 			if (!filteredPayload) {
 				return Promise.reject(new Error("Missing connections payload"));
 			}
-			return layoutSpaceConnections(filteredPayload, options, signal);
+			return layoutSpaceConnections(filteredPayload, signal);
 		},
 	});
 

@@ -74,6 +74,12 @@
 	height: 100%;
 }
 
+.localNoteConnectionsViewport,
+.localNoteConnectionsLegend {
+	--local-connections-note-bg: #4269d0;
+	--local-connections-tag-node: #a463f2;
+}
+
 .localNoteConnectionsViewport {
 	--local-connections-edge: color-mix(
 		in srgb,
@@ -249,13 +255,13 @@
 }
 
 .localNoteConnectionsLegendNode.is-note {
-	border-color: var(--text-primary);
-	background: var(--text-primary);
+	border-color: var(--local-connections-note-bg);
+	background: var(--local-connections-note-bg);
 }
 
 .localNoteConnectionsLegendNode.is-tag {
-	border-color: var(--text-secondary);
-	background: var(--text-secondary);
+	border-color: var(--local-connections-tag-node);
+	background: var(--local-connections-tag-node);
 }
 
 .localNoteConnectionsLegendEdge {

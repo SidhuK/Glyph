@@ -103,33 +103,6 @@ export function SpaceConnectionsOptionsPopover({
 			>
 				<div className="databaseViewOptionsMenu spaceConnectionsOptionsMenu">
 					<h3 className="spaceConnectionsOptionsHeading">
-						{t("connections.forces")}
-					</h3>
-					<GraphOptionSlider
-						id="connections-repel"
-						label={t("connections.repelForce")}
-						value={options.repelForce}
-						onChange={(repelForce) => patch({ repelForce })}
-					/>
-					<GraphOptionSlider
-						id="connections-link-distance"
-						label={t("connections.linkDistance")}
-						value={options.linkDistance}
-						onChange={(linkDistance) => patch({ linkDistance })}
-					/>
-					<GraphOptionSlider
-						id="connections-link-strength"
-						label={t("connections.linkStrength")}
-						value={options.linkStrength}
-						onChange={(linkStrength) => patch({ linkStrength })}
-					/>
-					<GraphOptionSlider
-						id="connections-center-force"
-						label={t("connections.centerForce")}
-						value={options.centerForce}
-						onChange={(centerForce) => patch({ centerForce })}
-					/>
-					<h3 className="spaceConnectionsOptionsHeading">
 						{t("connections.display")}
 					</h3>
 					<GraphOptionSlider

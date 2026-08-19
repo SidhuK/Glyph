@@ -74,7 +74,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 280,
 		labelRenderedSizeThreshold: 18,
 		stagePadding: 36,
-		minEdgeThickness: 1.15,
+		minEdgeThickness: 0.7,
 		minCameraRatio: 0.05,
 	},
 	{
@@ -83,7 +83,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 200,
 		labelRenderedSizeThreshold: 14,
 		stagePadding: 40,
-		minEdgeThickness: 1.25,
+		minEdgeThickness: 0.78,
 		minCameraRatio: 0.18,
 	},
 	{
@@ -92,7 +92,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 165,
 		labelRenderedSizeThreshold: 11,
 		stagePadding: 48,
-		minEdgeThickness: 1.4,
+		minEdgeThickness: 0.85,
 		minCameraRatio: 0.18,
 	},
 	{
@@ -101,7 +101,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 120,
 		labelRenderedSizeThreshold: 11,
 		stagePadding: 56,
-		minEdgeThickness: 1.55,
+		minEdgeThickness: 0.9,
 		minCameraRatio: 0.18,
 	},
 ];
@@ -111,7 +111,7 @@ const LOCAL_SIGMA = {
 	labelGridCellSize: 88,
 	labelRenderedSizeThreshold: 0,
 	stagePadding: 72,
-	minEdgeThickness: 1.35,
+	minEdgeThickness: 0.85,
 	minCameraRatio: 0.35,
 	maxCameraRatio: 2.2,
 	zoomingRatio: 1.7,
@@ -142,17 +142,11 @@ export function spaceConnectionsDensityProfile(
 ): ConnectionsDensityProfile {
 	const nodeTier = tierForCount(SPACE_NODE_DENSITY_TIERS, nodeCount);
 	const edgeTier = tierForEdgeCount(edgeCount);
-	let edgeScale = 1;
-	if (edgeTier) {
-		edgeScale = edgeTier.scale;
-	} else if (nodeCount >= 150) {
-		edgeScale = 0.98;
-	}
 
 	return {
 		noteSizeRange: nodeTier.noteSize,
 		tagSizeRange: nodeTier.tagSize,
-		edgeScale,
+		edgeScale: edgeTier?.scale ?? 1,
 	};
 }
 

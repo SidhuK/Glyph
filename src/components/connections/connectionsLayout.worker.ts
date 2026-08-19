@@ -1,23 +1,24 @@
 import {
-	type ConnectionsLayoutRequest,
 	type ConnectionsLayoutResponse,
 	computeSpaceConnectionsLayout,
 } from "./connectionsLayout";
+import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 
 interface ConnectionsWorkerScope {
-	onmessage: ((event: MessageEvent<ConnectionsLayoutRequest>) => void) | null;
+	onmessage:
+		| ((event: MessageEvent<ConnectionsLayoutGraph>) => void)
+		| null;
 	postMessage: (response: ConnectionsLayoutResponse) => void;
 }
 
 const workerScope = self as unknown as ConnectionsWorkerScope;
 
 workerScope.onmessage = (event) => {
-	const { graph, forces } = event.data;
 	let response: ConnectionsLayoutResponse;
 
 	try {
 		response = {
-			positions: computeSpaceConnectionsLayout(graph, forces),
+			positions: computeSpaceConnectionsLayout(event.data),
 		};
 	} catch (cause) {
 		response = {

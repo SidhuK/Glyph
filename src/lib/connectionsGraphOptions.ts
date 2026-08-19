@@ -3,10 +3,6 @@ export const CONNECTIONS_GRAPH_SLIDER_MAX = 100;
 export const CONNECTIONS_GRAPH_MIN_CONNECTIONS_MAX = 12;
 
 export interface ConnectionsGraphOptions {
-	readonly repelForce: number;
-	readonly linkDistance: number;
-	readonly linkStrength: number;
-	readonly centerForce: number;
 	readonly nodeSize: number;
 	readonly linkOpacity: number;
 	readonly linkThickness: number;
@@ -16,15 +12,11 @@ export interface ConnectionsGraphOptions {
 }
 
 export const DEFAULT_CONNECTIONS_GRAPH_OPTIONS: ConnectionsGraphOptions = {
-	repelForce: 50,
-	linkDistance: 50,
-	linkStrength: 50,
-	centerForce: 50,
 	nodeSize: 50,
 	linkOpacity: 72,
-	linkThickness: 58,
+	linkThickness: 40,
 	labelZoomThreshold: 50,
-	hideOrphanNodes: true,
+	hideOrphanNodes: false,
 	minConnections: 0,
 };
 
@@ -47,30 +39,6 @@ export function normalizeConnectionsGraphOptions(
 ): ConnectionsGraphOptions {
 	const source = isRecord(value) ? value : {};
 	return {
-		repelForce: clampNumber(
-			source.repelForce,
-			DEFAULT_CONNECTIONS_GRAPH_OPTIONS.repelForce,
-			CONNECTIONS_GRAPH_SLIDER_MIN,
-			CONNECTIONS_GRAPH_SLIDER_MAX,
-		),
-		linkDistance: clampNumber(
-			source.linkDistance,
-			DEFAULT_CONNECTIONS_GRAPH_OPTIONS.linkDistance,
-			CONNECTIONS_GRAPH_SLIDER_MIN,
-			CONNECTIONS_GRAPH_SLIDER_MAX,
-		),
-		linkStrength: clampNumber(
-			source.linkStrength,
-			DEFAULT_CONNECTIONS_GRAPH_OPTIONS.linkStrength,
-			CONNECTIONS_GRAPH_SLIDER_MIN,
-			CONNECTIONS_GRAPH_SLIDER_MAX,
-		),
-		centerForce: clampNumber(
-			source.centerForce,
-			DEFAULT_CONNECTIONS_GRAPH_OPTIONS.centerForce,
-			CONNECTIONS_GRAPH_SLIDER_MIN,
-			CONNECTIONS_GRAPH_SLIDER_MAX,
-		),
 		nodeSize: clampNumber(
 			source.nodeSize,
 			DEFAULT_CONNECTIONS_GRAPH_OPTIONS.nodeSize,
@@ -113,10 +81,6 @@ function unitScale(value: number, min: number, max: number) {
 	return min + t * (max - min);
 }
 
-export function connectionsForceScale(value: number) {
-	return unitScale(value, 0.4, 1.6);
-}
-
 export function connectionsNodeSizeScale(value: number) {
 	return unitScale(value, 0.45, 2);
 }
@@ -126,7 +90,7 @@ export function connectionsLinkOpacity(value: number) {
 }
 
 export function connectionsLinkThicknessScale(value: number) {
-	return unitScale(value, 0.8, 2.4);
+	return unitScale(value, 0.5, 1.8);
 }
 
 export function connectionsLabelRenderedSizeThreshold(

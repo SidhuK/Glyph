@@ -8,19 +8,8 @@ const TAG_WEIGHT_SCALE = 1.8;
 const TAG_FREQUENCY_DISCOUNT = 0.72;
 const LOUVAIN_RESOLUTION = 1.15;
 
-interface CommunityGraphNodeAttributes {
-	kind: "note" | "tag";
-}
-
 interface CommunityGraphEdgeAttributes {
 	weight: number;
-}
-
-export interface ConnectionsLayoutForces {
-	repel: number;
-	linkDistance: number;
-	linkStrength: number;
-	center: number;
 }
 
 export interface ConnectionsLayoutGraph {
@@ -43,12 +32,11 @@ export interface ConnectionsCommunity {
 }
 
 export interface ConnectionsCommunityModel {
-	adjacency: ReadonlyMap<string, ReadonlyMap<string, number>>;
 	communities: ConnectionsCommunity[];
 	communityBridges: ReadonlyMap<string, number>;
 }
 
-function communityPairKey(left: number, right: number) {
+export function communityBridgeKey(left: number, right: number) {
 	return left < right ? `${left}:${right}` : `${right}:${left}`;
 }
 
@@ -66,18 +54,17 @@ function addAdjacencyWeight(
 }
 
 function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
-	const graph = new Graph<
-		CommunityGraphNodeAttributes,
-		CommunityGraphEdgeAttributes
-	>({ type: "undirected", multi: false, allowSelfLoops: false });
+	const graph = new Graph<Record<string, never>, CommunityGraphEdgeAttributes>(
+		{ type: "undirected", multi: false, allowSelfLoops: false },
+	);
 	const adjacency = new Map<string, Map<string, number>>();
 
 	for (const nodeId of layoutGraph.nodeIds) {
-		graph.addNode(nodeId, { kind: "note" });
+		graph.addNode(nodeId);
 		adjacency.set(nodeId, new Map());
 	}
 	for (const tag of layoutGraph.tags) {
-		graph.addNode(tag.id, { kind: "tag" });
+		graph.addNode(tag.id);
 		adjacency.set(tag.id, new Map());
 	}
 
@@ -221,14 +208,10 @@ export function detectConnectionsCommunities(
 			) {
 				continue;
 			}
-			const key = communityPairKey(sourceCommunity, targetCommunity);
+			const key = communityBridgeKey(sourceCommunity, targetCommunity);
 			communityBridges.set(key, (communityBridges.get(key) ?? 0) + weight);
 		}
 	}
 
-	return { adjacency, communities, communityBridges };
-}
-
-export function communityBridgeKey(left: number, right: number) {
-	return communityPairKey(left, right);
+	return { communities, communityBridges };
 }

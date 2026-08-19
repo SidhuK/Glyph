@@ -1,8 +1,6 @@
-import { connectionsForceScale } from "../../lib/connectionsGraphOptions";
 import {
 	type ConnectionsCommunity,
 	type ConnectionsCommunityModel,
-	type ConnectionsLayoutForces,
 	communityBridgeKey,
 } from "./connectionsCommunities";
 import type {
@@ -44,12 +42,9 @@ function clearanceToPacked(
 function placeCommunityCenters(
 	cores: readonly ConnectionsCommunity[],
 	model: ConnectionsCommunityModel,
-	forces: ConnectionsLayoutForces,
 ) {
 	const centers = new Map<number, GraphPosition>();
 	const packed: PackedCircle[] = [];
-	const gap = COMMUNITY_GAP * connectionsForceScale(forces.repel);
-	const centerPull = connectionsForceScale(forces.center);
 
 	for (const community of cores) {
 		if (packed.length === 0) {
@@ -71,7 +66,7 @@ function placeCommunityCenters(
 			return weight > 0 ? [{ circle, weight }] : [];
 		});
 		const seed = hashString(`community:${community.hubId}`);
-		const step = Math.max(community.radius * 0.38, gap);
+		const step = Math.max(community.radius * 0.38, COMMUNITY_GAP);
 		let bestPosition: GraphPosition | null = null;
 		let bestScore = Number.NEGATIVE_INFINITY;
 		for (let index = 0; index < PACK_SLOT_COUNT; index += 1) {
@@ -86,7 +81,7 @@ function placeCommunityCenters(
 				community.radius,
 				packed,
 			);
-			if (clearance < gap * 0.2) continue;
+			if (clearance < COMMUNITY_GAP * 0.2) continue;
 			let bridgeCost = 0;
 			for (const neighbor of linked) {
 				bridgeCost +=
@@ -98,9 +93,9 @@ function placeCommunityCenters(
 							neighbor.circle.radius,
 					);
 			}
-			const extraGap = Math.max(0, clearance - gap);
+			const extraGap = Math.max(0, clearance - COMMUNITY_GAP);
 			const score =
-				-Math.hypot(candidate.x, candidate.y) * 0.12 * centerPull -
+				-Math.hypot(candidate.x, candidate.y) * 0.12 -
 				extraGap * 1.6 -
 				bridgeCost * 0.05;
 			if (score > bestScore) {
@@ -124,7 +119,6 @@ function placeCommunityCenters(
 function placeCommunityMembers(
 	community: ConnectionsCommunity,
 	center: GraphPosition,
-	linkDistance: number,
 ) {
 	const positions = new Map<string, GraphPosition>();
 	positions.set(community.hubId, center);
@@ -133,9 +127,8 @@ function placeCommunityMembers(
 		.sort((left, right) => hashString(left) - hashString(right));
 	if (members.length === 0) return positions;
 
-	const spacing = MEMBER_SPACING * connectionsForceScale(linkDistance);
 	const radialStep = Math.min(
-		spacing,
+		MEMBER_SPACING,
 		community.radius / Math.sqrt(members.length),
 	);
 	members.forEach((id, index) => {
@@ -192,7 +185,6 @@ function placeDust(
 
 export function placeConnectionsCommunities(
 	model: ConnectionsCommunityModel,
-	forces: ConnectionsLayoutForces,
 ): SerializedGraphPosition[] {
 	const cores = model.communities.filter(
 		(community) => community.members.length >= 2,
@@ -202,7 +194,7 @@ export function placeConnectionsCommunities(
 		.flatMap((community) => community.members);
 	const toPack = cores.length > 0 ? cores : model.communities;
 	const dust = cores.length > 0 ? leftover : [];
-	const centers = placeCommunityCenters(toPack, model, forces);
+	const centers = placeCommunityCenters(toPack, model);
 	const packedCores: PackedCircle[] = [];
 	const positions: SerializedGraphPosition[] = [];
 
@@ -214,17 +206,12 @@ export function placeConnectionsCommunities(
 			center,
 			radius: community.radius,
 		});
-		for (const [id, position] of placeCommunityMembers(
-			community,
-			center,
-			forces.linkDistance,
-		)) {
+		for (const [id, position] of placeCommunityMembers(community, center)) {
 			positions.push([id, position.x, position.y]);
 		}
 	}
 
-	const spacing = MEMBER_SPACING * connectionsForceScale(forces.linkDistance);
-	for (const [id, position] of placeDust(dust, packedCores, spacing)) {
+	for (const [id, position] of placeDust(dust, packedCores, MEMBER_SPACING)) {
 		positions.push([id, position.x, position.y]);
 	}
 	return positions;

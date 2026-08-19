@@ -196,7 +196,7 @@ export function buildSpaceConnectionsGraph(
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
 			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 1.45 * edgeScale * weightScale,
+			size: 0.95 * edgeScale * weightScale,
 		});
 	}
 
@@ -206,7 +206,7 @@ export function buildSpaceConnectionsGraph(
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
 			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 1.15 * edgeScale,
+			size: 0.78 * edgeScale,
 		});
 	}
 
@@ -261,13 +261,13 @@ export function buildLocalConnectionsGraph(
 		const isToCenter = edge.target === payload.center.id;
 		const isInternal = !isFromCenter && !isToCenter;
 		let colorRole: ConnectionsEdgeColorRole = "default";
-		let size = 1.25;
+		let size = 0.95;
 		if (isFromCenter) {
 			colorRole = "accent";
-			size = 1.9;
+			size = 1.35;
 		} else if (isToCenter) {
 			colorRole = "default";
-			size = 1.55;
+			size = 1.1;
 		} else if (isInternal) {
 			colorRole = "internal";
 		}
@@ -284,7 +284,7 @@ export function buildLocalConnectionsGraph(
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
 			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 1.15,
+			size: 0.85,
 		});
 	}
 
