@@ -1,4 +1,5 @@
 import Graph from "graphology";
+import { periodKindFromFilename } from "../../lib/periodNotes";
 import type { LocalNoteConnections, SpaceConnections } from "../../lib/tauri";
 import {
 	LOCAL_CENTER_NODE_SIZE,
@@ -7,7 +8,7 @@ import {
 import type { GraphPosition } from "./connectionsLayout";
 import { hashString, randomUnit } from "./connectionsRandom";
 
-export type ConnectionsNodeKind = "note" | "tag";
+export type ConnectionsNodeKind = "note" | "daily" | "weekly" | "tag";
 export type ConnectionsEdgeColorRole =
 	| "default"
 	| "accent"
@@ -41,6 +42,24 @@ export type ConnectionsGraph = Graph<
 const MIN_TAG_NODE_SIZE = 6;
 const MAX_TAG_NODE_SIZE = 13;
 const REDUCER_COLOR_PLACEHOLDER = "#000000";
+
+export function spaceNoteKind(
+	noteId: string,
+	dailyNotesFolder: string | null,
+	weeklyNotesEnabled: boolean,
+): Exclude<ConnectionsNodeKind, "tag"> {
+	if (dailyNotesFolder === null) return "note";
+	const folder = dailyNotesFolder.replace(/\\/g, "/").replace(/\/+$/g, "");
+	const id = noteId.replace(/\\/g, "/");
+	const prefix = folder ? `${folder}/` : "";
+	if (prefix && !id.startsWith(prefix)) return "note";
+	const filename = prefix ? id.slice(prefix.length) : id;
+	if (!filename || filename.includes("/")) return "note";
+	const periodKind = periodKindFromFilename(filename);
+	if (periodKind === "day") return "daily";
+	if (periodKind === "week" && weeklyNotesEnabled) return "weekly";
+	return "note";
+}
 
 function scaledNodeSize(
 	weight: number,
@@ -149,6 +168,8 @@ function createGraph() {
 export function buildSpaceConnectionsGraph(
 	payload: SpaceConnections,
 	positions: ReadonlyMap<string, GraphPosition>,
+	dailyNotesFolder: string | null,
+	weeklyNotesEnabled: boolean,
 ): ConnectionsGraph {
 	const graph = createGraph();
 	const nodeCount = payload.nodes.length + payload.tags.length;
@@ -170,7 +191,7 @@ export function buildSpaceConnectionsGraph(
 				density.noteSizeRange,
 			),
 			color: REDUCER_COLOR_PLACEHOLDER,
-			kind: "note",
+			kind: spaceNoteKind(node.id, dailyNotesFolder, weeklyNotesEnabled),
 			isCenter: false,
 			isIsolated: connectionCount === 0,
 		});
@@ -198,16 +219,19 @@ export function buildSpaceConnectionsGraph(
 	const edgeScale = density.edgeScale;
 
 	for (const [index, edge] of payload.edges.entries()) {
+		if (!graph.hasNode(edge.from_id) || !graph.hasNode(edge.to_id)) continue;
 		const edgeId = `${edge.kind}:${edge.from_id}->${edge.to_id}:${index}`;
 		const isRelationship = edge.kind === "relationship";
+		const weightScale = 1 + Math.log1p(Math.max(edge.weight, 1)) * 0.35;
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
-			colorRole: "default",
+			colorRole: isRelationship ? "accent" : "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: (isRelationship ? 1.0 : 0.65) * edgeScale,
+			size: (isRelationship ? 1.0 : 0.65) * edgeScale * weightScale,
 		});
 	}
 
 	for (const [index, edge] of payload.tag_edges.entries()) {
+		if (!graph.hasNode(edge.tag_id) || !graph.hasNode(edge.note_id)) continue;
 		const edgeId = `tag:${edge.tag_id}->${edge.note_id}:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
 			colorRole: "tag",

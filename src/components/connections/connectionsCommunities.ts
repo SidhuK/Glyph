@@ -16,6 +16,13 @@ interface CommunityGraphEdgeAttributes {
 	weight: number;
 }
 
+export interface ConnectionsLayoutForces {
+	repel: number;
+	linkDistance: number;
+	linkStrength: number;
+	center: number;
+}
+
 export interface ConnectionsLayoutGraph {
 	nodeIds: string[];
 	tags: Array<{ id: string; noteCount: number }>;
@@ -23,6 +30,7 @@ export interface ConnectionsLayoutGraph {
 		source: string;
 		target: string;
 		kind: "link" | "relationship";
+		weight: number;
 	}>;
 	tagEdges: Array<{ tagId: string; noteId: string }>;
 }
@@ -92,7 +100,8 @@ function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
 		mergeEdge(
 			edge.source,
 			edge.target,
-			edge.kind === "relationship" ? RELATIONSHIP_WEIGHT : NOTE_LINK_WEIGHT,
+			(edge.kind === "relationship" ? RELATIONSHIP_WEIGHT : NOTE_LINK_WEIGHT) *
+				Math.max(edge.weight, 1),
 		);
 	}
 

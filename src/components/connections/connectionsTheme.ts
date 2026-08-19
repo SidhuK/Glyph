@@ -11,6 +11,8 @@ export interface ConnectionsPalette {
 	text: string;
 	note: string;
 	noteMuted: string;
+	daily: string;
+	weekly: string;
 	tag: string;
 	tagMuted: string;
 	center: string;
@@ -29,6 +31,13 @@ export interface ConnectionsFocusState {
 	hoveredNode: string | null;
 	neighborIds: Set<string> | null;
 	selectedNodeId: string | null;
+	searchMatchIds: Set<string> | null;
+}
+
+export interface ConnectionsDisplayState {
+	nodeSizeScale: number;
+	linkOpacity: number;
+	linkThicknessScale: number;
 }
 
 const sigmaColorContext = document.createElement("canvas").getContext("2d");
@@ -69,6 +78,12 @@ export function resolveConnectionsPalette(
 		container,
 		"--local-connections-note-muted",
 		"#d7d7d2",
+	);
+	const daily = cssColor(container, "--local-connections-daily-bg", "#c4b8a8");
+	const weekly = cssColor(
+		container,
+		"--local-connections-weekly-bg",
+		"#a8b8c4",
 	);
 	const tag = cssColor(container, "--local-connections-tag-node", accent);
 	const tagMuted = cssColor(
@@ -127,6 +142,8 @@ export function resolveConnectionsPalette(
 		text,
 		note,
 		noteMuted,
+		daily,
+		weekly,
 		tag,
 		tagMuted,
 		center: accent,
@@ -148,33 +165,62 @@ function nodeColorForAttributes(
 ) {
 	if (attrs.isCenter) return palette.center;
 	if (attrs.isIsolated) {
-		return attrs.kind === "tag" ? palette.tagMuted : palette.noteMuted;
+		if (attrs.kind === "tag") return palette.tagMuted;
+		return palette.noteMuted;
 	}
-	if (attrs.kind === "tag") return palette.tag;
-	return palette.note;
+	switch (attrs.kind) {
+		case "tag":
+			return palette.tag;
+		case "daily":
+			return palette.daily;
+		case "weekly":
+			return palette.weekly;
+		case "note":
+			return palette.note;
+		default: {
+			const _exhaustive: never = attrs.kind;
+			return _exhaustive;
+		}
+	}
+}
+
+function withAlpha(color: string, alpha: number) {
+	const clamped = Math.min(1, Math.max(0, alpha));
+	const rgb = color.match(
+		/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i,
+	);
+	if (!rgb) return color;
+	return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${Math.round(clamped * 1000) / 1000})`;
 }
 
 export function buildNodeReducer(
 	getPalette: () => ConnectionsPalette,
 	variant: ConnectionsGraphVariant,
 	getFocusState: () => ConnectionsFocusState,
+	getDisplayState: () => ConnectionsDisplayState,
 ) {
 	return (
 		nodeKey: string,
 		data: ConnectionsNodeAttributes,
 	): Partial<NodeDisplayData> => {
 		const palette = getPalette();
-		const { hoveredNode, neighborIds, selectedNodeId } = getFocusState();
+		const { hoveredNode, neighborIds, selectedNodeId, searchMatchIds } =
+			getFocusState();
+		const display = getDisplayState();
 		const activeFocusId = selectedNodeId ?? hoveredNode;
 		const activeNeighbors = neighborIds;
+		const searching = searchMatchIds !== null;
+		const isSearchMatch = searching && searchMatchIds.has(nodeKey);
 		const isFocus = activeFocusId === nodeKey;
 		const isNeighbor = activeNeighbors?.has(nodeKey) ?? false;
-		const isFaded = Boolean(activeFocusId) && !isFocus && !isNeighbor;
+		const isFaded = searching
+			? !isSearchMatch
+			: Boolean(activeFocusId) && !isFocus && !isNeighbor;
 
 		let color = nodeColorForAttributes(data, palette);
 		let label = data.label;
-		let size = data.size;
-		let zIndex = isFocus ? 30 : isNeighbor ? 20 : 0;
+		let size = data.size * display.nodeSizeScale;
+		let zIndex = isFocus ? 30 : isNeighbor || isSearchMatch ? 20 : 0;
 		let forceLabel: boolean | undefined;
 
 		if (isFaded) {
@@ -184,14 +230,16 @@ export function buildNodeReducer(
 		} else if (isFocus) {
 			forceLabel = true;
 			size = Math.max(
-				data.size,
-				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : data.size * 1.15,
+				size,
+				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : size * 1.15,
 			);
 			zIndex = 30;
 			if (data.isCenter && variant === "local") {
 				color = palette.center;
 			}
 		} else if (activeFocusId && isNeighbor) {
+			forceLabel = true;
+		} else if (isSearchMatch) {
 			forceLabel = true;
 		} else if (data.isCenter) {
 			forceLabel = true;
@@ -204,7 +252,7 @@ export function buildNodeReducer(
 			label,
 			color,
 			zIndex,
-			highlighted: isFocus,
+			highlighted: isFocus || isSearchMatch,
 			...(forceLabel ? { forceLabel } : {}),
 		};
 	};
@@ -230,6 +278,7 @@ export function buildEdgeReducer(
 	getPalette: () => ConnectionsPalette,
 	_variant: ConnectionsGraphVariant,
 	getFocusState: () => ConnectionsFocusState,
+	getDisplayState: () => ConnectionsDisplayState,
 	isEdgeInFocus: (source: string, target: string) => boolean,
 ) {
 	return (
@@ -239,23 +288,29 @@ export function buildEdgeReducer(
 		target: string,
 	): Partial<EdgeDisplayData> => {
 		const palette = getPalette();
-		const { hoveredNode, selectedNodeId } = getFocusState();
+		const display = getDisplayState();
+		const { hoveredNode, selectedNodeId, searchMatchIds } = getFocusState();
 		const activeFocusId = selectedNodeId ?? hoveredNode;
-		const isHighlighted = isEdgeInFocus(source, target);
-		const isFaded = Boolean(activeFocusId) && !isHighlighted;
+		const searching = searchMatchIds !== null;
+		const isHighlighted = searching
+			? searchMatchIds.has(source) && searchMatchIds.has(target)
+			: isEdgeInFocus(source, target);
+		const isFaded = searching
+			? !isHighlighted
+			: Boolean(activeFocusId) && !isHighlighted;
 		const baseColor = edgeColorForRole(data.colorRole, palette);
 
-		let color = baseColor;
-		let size = data.size;
+		let color = withAlpha(baseColor, display.linkOpacity);
+		let size = data.size * display.linkThicknessScale;
 
 		if (isHighlighted) {
 			color = palette.edgeAccent;
-			size = Math.max(data.size, 1.7);
+			size = Math.max(size, 1.7);
 		}
 
 		if (isFaded) {
-			color = palette.edgeInternal;
-			size = Math.max(0.28, data.size * 0.6);
+			color = withAlpha(palette.edgeInternal, display.linkOpacity * 0.45);
+			size = Math.max(0.28, size * 0.6);
 		}
 
 		return {

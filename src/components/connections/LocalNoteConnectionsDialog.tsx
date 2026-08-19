@@ -89,6 +89,12 @@ export function LocalNoteConnectionsDialog({
 		containerRef,
 		variant: "local",
 		enabled: Boolean(open && graph && !error),
+		display: {
+			nodeSizeScale: 1,
+			linkOpacity: 1,
+			linkThicknessScale: 1,
+		},
+		labelZoomThreshold: 0,
 		onNoteOpen: openNode,
 		onTagActivate: openTagSearch,
 	});

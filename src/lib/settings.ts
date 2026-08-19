@@ -310,6 +310,11 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 			value.attachmentFolder,
 		);
 	}
+	if ("connectionsGraph" in value) {
+		out.connectionsGraph = SPACE_SETTINGS.connectionsGraph.normalize(
+			value.connectionsGraph,
+		);
+	}
 	return out;
 }
 
@@ -601,6 +606,12 @@ export async function loadSettings(
 		activeScopedSettings,
 		hasActiveSpace,
 	);
+	const connectionsGraph = loadSpaceSettingValue(
+		SPACE_SETTINGS.connectionsGraph,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
 	const editor: AppSettings["editor"] = {
 		showCollapsibleHeadings:
 			DURABLE_SETTINGS.editorShowCollapsibleHeadings.load(entries),
@@ -682,6 +693,7 @@ export async function loadSettings(
 		shortcuts,
 		editor,
 		database,
+		connectionsGraph,
 	};
 }
 

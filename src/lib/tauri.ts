@@ -512,6 +512,7 @@ export interface SpaceConnectionsEdge {
 	from_id: string;
 	to_id: string;
 	kind: "link" | "relationship";
+	weight: number;
 }
 
 export interface SpaceConnectionsTagNode {

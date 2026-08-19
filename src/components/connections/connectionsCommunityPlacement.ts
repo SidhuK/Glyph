@@ -1,6 +1,8 @@
+import { connectionsForceScale } from "../../lib/connectionsGraphOptions";
 import {
 	type ConnectionsCommunity,
 	type ConnectionsCommunityModel,
+	type ConnectionsLayoutForces,
 	communityBridgeKey,
 } from "./connectionsCommunities";
 import { spaceConnectionsDensityProfile } from "./connectionsDensity";
@@ -17,9 +19,14 @@ function distance(left: GraphPosition, right: GraphPosition) {
 	return Math.hypot(left.x - right.x, left.y - right.y);
 }
 
-function placeCommunityCenters(model: ConnectionsCommunityModel) {
+function placeCommunityCenters(
+	model: ConnectionsCommunityModel,
+	forces: ConnectionsLayoutForces,
+) {
 	const centers = new Map<number, GraphPosition>();
 	const placed: ConnectionsCommunity[] = [];
+	const gap = COMMUNITY_GAP * connectionsForceScale(forces.repel);
+	const centerPull = connectionsForceScale(forces.center);
 
 	for (const community of model.communities) {
 		if (placed.length === 0) {
@@ -52,7 +59,7 @@ function placeCommunityCenters(model: ConnectionsCommunityModel) {
 			const separation =
 				community.radius +
 				anchorCommunity.radius +
-				COMMUNITY_GAP * (0.9 + randomUnit(seed, index * 3 + 1) * 1.5);
+				gap * (0.9 + randomUnit(seed, index * 3 + 1) * 1.5);
 			const candidate = {
 				x: anchor.x + Math.cos(angle) * separation,
 				y: anchor.y + Math.sin(angle) * separation,
@@ -81,11 +88,11 @@ function placeCommunityCenters(model: ConnectionsCommunityModel) {
 							neighbor.community.radius,
 					);
 			}
-			const overlapPenalty = clearance < COMMUNITY_GAP * 0.55 ? 1_000_000 : 0;
+			const overlapPenalty = clearance < gap * 0.55 ? 1_000_000 : 0;
 			const score =
-				Math.min(clearance, COMMUNITY_GAP * 2) -
+				Math.min(clearance, gap * 2) -
 				bridgeDistanceCost * 0.012 -
-				Math.hypot(candidate.x, candidate.y) * 0.015 -
+				Math.hypot(candidate.x, candidate.y) * 0.015 * centerPull -
 				overlapPenalty;
 			if (score > bestScore) {
 				bestScore = score;
@@ -125,6 +132,7 @@ function placeCommunityMembers(
 	center: GraphPosition,
 	model: ConnectionsCommunityModel,
 	candidateCount: number,
+	linkDistance: number,
 ) {
 	const positions = new Map<string, GraphPosition>();
 	positions.set(community.hubId, center);
@@ -133,7 +141,9 @@ function placeCommunityMembers(
 	const depths = graphDepths(community, model.adjacency);
 	const spacing = Math.max(
 		42,
-		(community.radius / Math.sqrt(community.members.length)) * 0.68,
+		(community.radius / Math.sqrt(community.members.length)) *
+			0.68 *
+			connectionsForceScale(linkDistance),
 	);
 	const cellSize = spacing;
 	const grid = new Map<string, GraphPosition[]>();
@@ -212,8 +222,9 @@ function placeCommunityMembers(
 export function placeConnectionsCommunities(
 	model: ConnectionsCommunityModel,
 	nodeCount: number,
+	forces: ConnectionsLayoutForces,
 ): SerializedGraphPosition[] {
-	const centers = placeCommunityCenters(model);
+	const centers = placeCommunityCenters(model, forces);
 	const candidateCount = spaceConnectionsDensityProfile(
 		nodeCount,
 		0,
@@ -227,6 +238,7 @@ export function placeConnectionsCommunities(
 			center,
 			model,
 			candidateCount,
+			forces.linkDistance,
 		)) {
 			positions.push([id, position.x, position.y]);
 		}

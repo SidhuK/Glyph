@@ -90,6 +90,7 @@ pub struct SpaceConnectionsEdge {
     pub from_id: String,
     pub to_id: String,
     pub kind: SpaceConnectionKind,
+    pub weight: u32,
 }
 
 #[derive(Serialize)]

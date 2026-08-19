@@ -842,6 +842,15 @@ fn local_connections_tag_id(tag: &str) -> String {
     format!("glyph:tag:{tag}")
 }
 
+fn empty_space_connections() -> SpaceConnections {
+    SpaceConnections {
+        nodes: Vec::new(),
+        edges: Vec::new(),
+        tags: Vec::new(),
+        tag_edges: Vec::new(),
+    }
+}
+
 fn local_connections_tag_expansion_for_seed_nodes(
     conn: &rusqlite::Connection,
     seed_node_ids: &[String],
@@ -1020,28 +1029,26 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
     }
 
     if nodes.is_empty() {
-        return Ok(SpaceConnections {
-            nodes: Vec::new(),
-            edges: Vec::new(),
-            tags: Vec::new(),
-            tag_edges: Vec::new(),
-        });
+        return Ok(empty_space_connections());
     }
 
-    let edge_query = "SELECT DISTINCT from_id, to_id, kind
+    let edge_query = "SELECT from_id, to_id, kind, SUM(weight) AS weight
          FROM (
-            SELECT l.from_id, l.to_id, 'link' AS kind
+            SELECT l.from_id, l.to_id, 'link' AS kind, COUNT(*) AS weight
             FROM links l
             JOIN notes source ON source.id = l.from_id
             JOIN notes target ON target.id = l.to_id
             WHERE l.to_id IS NOT NULL AND l.from_id <> l.to_id
-            UNION
-            SELECT r.from_id, r.to_id, 'relationship' AS kind
+            GROUP BY l.from_id, l.to_id
+            UNION ALL
+            SELECT r.from_id, r.to_id, 'relationship' AS kind, COUNT(*) AS weight
             FROM note_relationships r
             JOIN notes source ON source.id = r.from_id
             JOIN notes target ON target.id = r.to_id
             WHERE r.to_id IS NOT NULL AND r.from_id <> r.to_id
+            GROUP BY r.from_id, r.to_id
          )
+         GROUP BY from_id, to_id, kind
          ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC";
     let mut edge_stmt = conn.prepare(edge_query).map_err(|e| e.to_string())?;
     let mut edge_rows = edge_stmt.query([]).map_err(|e| e.to_string())?;
@@ -1058,6 +1065,7 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
             from_id,
             to_id,
             kind,
+            weight: row.get::<_, i64>(3).map_err(|e| e.to_string())?.max(1) as u32,
         });
     }
 
