@@ -15,7 +15,7 @@ export const DEFAULT_CONNECTIONS_GRAPH_OPTIONS: ConnectionsGraphOptions = {
 	nodeSize: 50,
 	linkOpacity: 72,
 	linkThickness: 40,
-	labelZoomThreshold: 50,
+	labelZoomThreshold: 20,
 	hideOrphanNodes: false,
 	minConnections: 0,
 };
@@ -93,11 +93,21 @@ export function connectionsLinkThicknessScale(value: number) {
 	return unitScale(value, 0.5, 1.8);
 }
 
-export function connectionsLabelRenderedSizeThreshold(
-	value: number,
-	base: number,
-) {
-	return base * unitScale(value, 0.35, 2.4);
+export function connectionsLabelVisibility(value: number) {
+	if (value <= 0) {
+		return {
+			labelDensity: 0,
+			labelGridCellSize: 320,
+			labelRenderedSizeThreshold: Number.POSITIVE_INFINITY,
+		};
+	}
+	const t = Math.min(100, value) / 100;
+	const eased = t * t * t;
+	return {
+		labelDensity: 0.03 + eased * 16,
+		labelGridCellSize: Math.round(320 - t * 288),
+		labelRenderedSizeThreshold: 0,
+	};
 }
 
 export function connectionsMinimumVisibleDegree(

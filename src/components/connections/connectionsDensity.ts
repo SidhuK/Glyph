@@ -59,9 +59,6 @@ const SPACE_EDGE_SCALE_TIERS: readonly SpaceEdgeScaleTier[] = [
 
 interface SpaceSigmaTier {
 	minNodes: number;
-	labelDensity: number;
-	labelGridCellSize: number;
-	labelRenderedSizeThreshold: number;
 	stagePadding: number;
 	minEdgeThickness: number;
 	minCameraRatio: number;
@@ -70,36 +67,24 @@ interface SpaceSigmaTier {
 const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 	{
 		minNodes: 5_000,
-		labelDensity: 0.08,
-		labelGridCellSize: 280,
-		labelRenderedSizeThreshold: 18,
 		stagePadding: 36,
 		minEdgeThickness: 0.7,
 		minCameraRatio: 0.05,
 	},
 	{
 		minNodes: 1_000,
-		labelDensity: 0.22,
-		labelGridCellSize: 200,
-		labelRenderedSizeThreshold: 14,
 		stagePadding: 40,
 		minEdgeThickness: 0.78,
 		minCameraRatio: 0.18,
 	},
 	{
 		minNodes: 150,
-		labelDensity: 0.16,
-		labelGridCellSize: 165,
-		labelRenderedSizeThreshold: 11,
 		stagePadding: 48,
 		minEdgeThickness: 0.85,
 		minCameraRatio: 0.18,
 	},
 	{
 		minNodes: 0,
-		labelDensity: 0.75,
-		labelGridCellSize: 120,
-		labelRenderedSizeThreshold: 11,
 		stagePadding: 56,
 		minEdgeThickness: 0.9,
 		minCameraRatio: 0.18,
@@ -182,9 +167,6 @@ export function sigmaSettingsForVariant(
 		enableEdgeEvents: false,
 		hideLabelsOnMove: true,
 		hideEdgesOnMove: edgeCount > 5000,
-		labelDensity: sigmaTier.labelDensity,
-		labelGridCellSize: sigmaTier.labelGridCellSize,
-		labelRenderedSizeThreshold: sigmaTier.labelRenderedSizeThreshold,
 		defaultNodeType: "circle",
 		defaultEdgeType: "line",
 		minCameraRatio: sigmaTier.minCameraRatio,

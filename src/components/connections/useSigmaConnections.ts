@@ -1,6 +1,6 @@
 import { type RefObject, useEffect, useRef } from "react";
 import Sigma from "sigma";
-import { connectionsLabelRenderedSizeThreshold } from "../../lib/connectionsGraphOptions";
+import { connectionsLabelVisibility } from "../../lib/connectionsGraphOptions";
 import {
 	drawConnectionsNodeHover,
 	drawConnectionsNodeLabel,
@@ -216,10 +216,9 @@ export function useSigmaConnections({
 				ConnectionsEdgeAttributes
 			>(graph, container, {
 				...sigmaSettings,
-				labelRenderedSizeThreshold: connectionsLabelRenderedSizeThreshold(
-					labelZoomRef.current,
-					sigmaSettings.labelRenderedSizeThreshold,
-				),
+				...(variant === "space"
+					? connectionsLabelVisibility(labelZoomRef.current)
+					: {}),
 				labelColor: { color: palette.text },
 				labelFont,
 				labelSize: variant === "local" ? 11.5 : 10.5,
@@ -272,12 +271,7 @@ export function useSigmaConnections({
 					scheduleRefresh(activeRenderer);
 				},
 				setLabelZoomThreshold: (value) => {
-					activeRenderer.setSettings({
-						labelRenderedSizeThreshold: connectionsLabelRenderedSizeThreshold(
-							value,
-							sigmaSettings.labelRenderedSizeThreshold,
-						),
-					});
+					activeRenderer.setSettings(connectionsLabelVisibility(value));
 					scheduleRefresh(activeRenderer);
 				},
 			};
