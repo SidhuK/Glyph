@@ -363,6 +363,12 @@
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
 		},
+		"space-connections-graph": {
+			"title": "Connections graph",
+			"section": "Space",
+			"description": "Note size, titles, and filters in the Connections view.",
+			"keywords": ["graph", "links", "titles", "orphans"]
+		},
 		"space-template-folder": {
 			"title": "Template folder",
 			"section": "Templates",

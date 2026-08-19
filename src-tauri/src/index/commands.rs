@@ -964,58 +964,16 @@ fn local_connections_tag_expansion_for_seed_nodes(
 
 fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnections, String> {
     let people_tag_like = format!("{PEOPLE_TAG_NAMESPACE}%");
-    let node_query = "WITH edge_counts AS (
-            SELECT note_id, COUNT(*) AS link_count
-            FROM (
-                SELECT l.from_id AS note_id
-                FROM links l
-                JOIN notes target ON target.id = l.to_id
-                WHERE l.to_id IS NOT NULL AND l.from_id <> l.to_id
-                UNION ALL
-                SELECT l.to_id AS note_id
-                FROM links l
-                JOIN notes source ON source.id = l.from_id
-                WHERE l.to_id IS NOT NULL AND l.from_id <> l.to_id
-                UNION ALL
-                SELECT r.from_id AS note_id
-                FROM note_relationships r
-                JOIN notes target ON target.id = r.to_id
-                WHERE r.to_id IS NOT NULL AND r.from_id <> r.to_id
-                UNION ALL
-                SELECT r.to_id AS note_id
-                FROM note_relationships r
-                JOIN notes source ON source.id = r.from_id
-                WHERE r.to_id IS NOT NULL AND r.from_id <> r.to_id
-            )
-            GROUP BY note_id
-         ),
-         tag_counts AS (
-            SELECT note_id, COUNT(DISTINCT tag) AS tag_count
-            FROM tags
-            WHERE is_explicit = 1
-              AND tag NOT LIKE ?1
-            GROUP BY note_id
-         )
-         SELECT n.id,
-                n.title,
-                COALESCE(edge_counts.link_count, 0) AS link_count,
-                COALESCE(tag_counts.tag_count, 0) AS tag_count
+    let node_query = "SELECT n.id, n.title
          FROM notes n
-         LEFT JOIN edge_counts ON edge_counts.note_id = n.id
-         LEFT JOIN tag_counts ON tag_counts.note_id = n.id
          ORDER BY n.title COLLATE NOCASE ASC, n.id ASC";
     let mut node_stmt = conn.prepare(node_query).map_err(|e| e.to_string())?;
-    let mut node_rows = node_stmt
-        .query([&people_tag_like])
-        .map_err(|e| e.to_string())?;
+    let mut node_rows = node_stmt.query([]).map_err(|e| e.to_string())?;
     let mut nodes = Vec::new();
     while let Some(row) = node_rows.next().map_err(|e| e.to_string())? {
-        let link_count = row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32;
-        let tag_count = row.get::<_, i64>(3).map_err(|e| e.to_string())? as u32;
         nodes.push(SpaceConnectionsNode {
             id: row.get(0).map_err(|e| e.to_string())?,
             title: row.get(1).map_err(|e| e.to_string())?,
-            is_isolated: link_count == 0 && tag_count == 0,
         });
     }
 
@@ -1028,20 +986,23 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         });
     }
 
-    let edge_query = "SELECT DISTINCT from_id, to_id, kind
+    let edge_query = "SELECT from_id, to_id, kind, SUM(weight) AS weight
          FROM (
-            SELECT l.from_id, l.to_id, 'link' AS kind
+            SELECT l.from_id, l.to_id, 'link' AS kind, COUNT(*) AS weight
             FROM links l
             JOIN notes source ON source.id = l.from_id
             JOIN notes target ON target.id = l.to_id
             WHERE l.to_id IS NOT NULL AND l.from_id <> l.to_id
-            UNION
-            SELECT r.from_id, r.to_id, 'relationship' AS kind
+            GROUP BY l.from_id, l.to_id
+            UNION ALL
+            SELECT r.from_id, r.to_id, 'relationship' AS kind, COUNT(*) AS weight
             FROM note_relationships r
             JOIN notes source ON source.id = r.from_id
             JOIN notes target ON target.id = r.to_id
             WHERE r.to_id IS NOT NULL AND r.from_id <> r.to_id
+            GROUP BY r.from_id, r.to_id
          )
+         GROUP BY from_id, to_id, kind
          ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC";
     let mut edge_stmt = conn.prepare(edge_query).map_err(|e| e.to_string())?;
     let mut edge_rows = edge_stmt.query([]).map_err(|e| e.to_string())?;
@@ -1058,6 +1019,7 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
             from_id,
             to_id,
             kind,
+            weight: row.get::<_, i64>(3).map_err(|e| e.to_string())?.max(1) as u32,
         });
     }
 
@@ -1383,20 +1345,12 @@ mod space_connections_tests {
         assert_eq!(graph.edges[0].kind, SpaceConnectionKind::Link);
         assert_eq!(graph.tags.len(), 1);
         assert_eq!(graph.tag_edges.len(), 2);
-
-        let isolated = graph
-            .nodes
-            .iter()
-            .find(|node| node.id == "notes/isolated.md")
-            .unwrap();
-        assert!(isolated.is_isolated);
-
-        let tagged = graph
-            .nodes
-            .iter()
-            .find(|node| node.id == "notes/tagged.md")
-            .unwrap();
-        assert!(!tagged.is_isolated);
+        assert!(
+            graph
+                .nodes
+                .iter()
+                .any(|node| node.id == "notes/isolated.md")
+        );
     }
 
     #[test]
@@ -1464,7 +1418,7 @@ mod space_connections_tests {
 
         let graph = space_connections_for_conn(&conn).unwrap();
         assert!(graph.edges.is_empty());
-        assert!(graph.nodes[0].is_isolated);
+        assert_eq!(graph.nodes.len(), 1);
     }
 
     #[test]

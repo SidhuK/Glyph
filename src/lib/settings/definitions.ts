@@ -3,6 +3,10 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isAppLanguage, normalizeAppLanguage } from "../../i18n/locales";
 import { normalizeRelPath, validateRelFolderPath } from "../../utils/path";
 import { DEFAULT_ATTACHMENT_FOLDER } from "../attachmentStorage";
+import {
+	DEFAULT_CONNECTIONS_GRAPH_OPTIONS,
+	normalizeConnectionsGraphOptions,
+} from "../connectionsGraphOptions";
 import { type CustomTheme, normalizeCustomThemes } from "../customThemes";
 import {
 	DEFAULT_DATE_DISPLAY_FORMAT,
@@ -826,6 +830,20 @@ export const SPACE_SETTINGS = {
 		patch: (value) => ({ attachmentFolder: value }),
 		change: (value) => ({ editor: { attachmentFolder: value } }),
 		validate: (value) => validateRelFolderPath(value ?? ""),
+	}),
+	connectionsGraph: defineSpaceSetting({
+		legacyKey: "connections.graph",
+		field: "connectionsGraph",
+		defaultValue: DEFAULT_CONNECTIONS_GRAPH_OPTIONS,
+		discovery: searchable("space-connections-graph"),
+		normalize: normalizeConnectionsGraphOptions,
+		parse: (value) =>
+			value === null || typeof value === "object"
+				? parsed(normalizeConnectionsGraphOptions(value))
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.connectionsGraph,
+		patch: (value) => ({ connectionsGraph: value }),
+		change: (value) => ({ connectionsGraph: value }),
 	}),
 } as const;
 

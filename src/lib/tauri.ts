@@ -505,13 +505,13 @@ export interface LocalNoteConnections {
 export interface SpaceConnectionsNode {
 	id: string;
 	title: string;
-	is_isolated: boolean;
 }
 
 export interface SpaceConnectionsEdge {
 	from_id: string;
 	to_id: string;
 	kind: "link" | "relationship";
+	weight: number;
 }
 
 export interface SpaceConnectionsTagNode {

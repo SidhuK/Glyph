@@ -8,11 +8,7 @@ import type { GraphPosition } from "./connectionsLayout";
 import { hashString, randomUnit } from "./connectionsRandom";
 
 export type ConnectionsNodeKind = "note" | "tag";
-export type ConnectionsEdgeColorRole =
-	| "default"
-	| "accent"
-	| "internal"
-	| "tag";
+export type ConnectionsEdgeColorRole = "default" | "accent" | "internal";
 
 export type ConnectionsGraphVariant = "space" | "local";
 
@@ -24,7 +20,6 @@ export interface ConnectionsNodeAttributes {
 	color: string;
 	kind: ConnectionsNodeKind;
 	isCenter: boolean;
-	isIsolated: boolean;
 }
 
 export interface ConnectionsEdgeAttributes {
@@ -49,7 +44,7 @@ function scaledNodeSize(
 	maxWeight: number,
 ) {
 	if (weight <= 0) return minSize;
-	const normalized = Math.log1p(weight) / Math.log1p(Math.max(maxWeight, 1));
+	const normalized = (weight / Math.max(maxWeight, 1)) ** 0.6;
 	return minSize + normalized * (maxSize - minSize);
 }
 
@@ -64,17 +59,22 @@ function maxConnectionCount(counts: Map<string, number>) {
 }
 
 function spaceConnectionCounts(payload: SpaceConnections) {
+	const neighbors = new Map<string, Set<string>>();
 	const counts = new Map<string, number>();
-	for (const node of payload.nodes) counts.set(node.id, 0);
+	for (const node of payload.nodes) {
+		neighbors.set(node.id, new Set());
+		counts.set(node.id, 0);
+	}
 	for (const tag of payload.tags) counts.set(tag.id, 0);
 
 	for (const edge of payload.edges) {
-		incrementConnectionCount(counts, edge.from_id);
-		incrementConnectionCount(counts, edge.to_id);
+		if (edge.from_id === edge.to_id) continue;
+		neighbors.get(edge.from_id)?.add(edge.to_id);
+		neighbors.get(edge.to_id)?.add(edge.from_id);
 	}
+	for (const [id, linked] of neighbors) counts.set(id, linked.size);
 	for (const edge of payload.tag_edges) {
 		incrementConnectionCount(counts, edge.tag_id);
-		incrementConnectionCount(counts, edge.note_id);
 	}
 
 	return counts;
@@ -95,14 +95,6 @@ function localConnectionCounts(payload: LocalNoteConnections) {
 	}
 
 	return counts;
-}
-
-function nodeSizeFromRange(
-	weight: number,
-	maxWeight: number,
-	range: readonly [number, number],
-) {
-	return scaledNodeSize(weight, range[0], range[1], maxWeight);
 }
 
 function seedLocalPositions(graph: LocalNoteConnections) {
@@ -164,15 +156,15 @@ export function buildSpaceConnectionsGraph(
 			x: position.x,
 			y: position.y,
 			label: node.title || node.id,
-			size: nodeSizeFromRange(
+			size: scaledNodeSize(
 				connectionCount,
+				density.noteSizeRange[0],
+				density.noteSizeRange[1],
 				maxConnections,
-				density.noteSizeRange,
 			),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "note",
 			isCenter: false,
-			isIsolated: connectionCount === 0,
 		});
 	}
 
@@ -183,36 +175,38 @@ export function buildSpaceConnectionsGraph(
 			x: position.x,
 			y: position.y,
 			label: tag.title,
-			size: nodeSizeFromRange(
+			size: scaledNodeSize(
 				connectionCount,
+				density.tagSizeRange[0],
+				density.tagSizeRange[1],
 				maxConnections,
-				density.tagSizeRange,
 			),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
 			isCenter: false,
-			isIsolated: connectionCount === 0,
 		});
 	}
 
 	const edgeScale = density.edgeScale;
 
 	for (const [index, edge] of payload.edges.entries()) {
+		if (!graph.hasNode(edge.from_id) || !graph.hasNode(edge.to_id)) continue;
 		const edgeId = `${edge.kind}:${edge.from_id}->${edge.to_id}:${index}`;
-		const isRelationship = edge.kind === "relationship";
+		const weightScale = 1 + Math.log1p(edge.weight) * 0.2;
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
 			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: (isRelationship ? 1.0 : 0.65) * edgeScale,
+			size: 0.95 * edgeScale * weightScale,
 		});
 	}
 
 	for (const [index, edge] of payload.tag_edges.entries()) {
+		if (!graph.hasNode(edge.tag_id) || !graph.hasNode(edge.note_id)) continue;
 		const edgeId = `tag:${edge.tag_id}->${edge.note_id}:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
-			colorRole: "tag",
+			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.6 * edgeScale,
+			size: 0.78 * edgeScale,
 		});
 	}
 
@@ -239,7 +233,6 @@ export function buildLocalConnectionsGraph(
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "note",
 			isCenter: node.is_center,
-			isIsolated: connectionCount === 0,
 		});
 	}
 
@@ -259,7 +252,6 @@ export function buildLocalConnectionsGraph(
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
 			isCenter: false,
-			isIsolated: connectionCount === 0,
 		});
 	}
 
@@ -269,13 +261,13 @@ export function buildLocalConnectionsGraph(
 		const isToCenter = edge.target === payload.center.id;
 		const isInternal = !isFromCenter && !isToCenter;
 		let colorRole: ConnectionsEdgeColorRole = "default";
-		let size = 0.8;
+		let size = 0.95;
 		if (isFromCenter) {
 			colorRole = "accent";
-			size = 1.25;
+			size = 1.35;
 		} else if (isToCenter) {
 			colorRole = "default";
-			size = 1.05;
+			size = 1.1;
 		} else if (isInternal) {
 			colorRole = "internal";
 		}
@@ -290,9 +282,9 @@ export function buildLocalConnectionsGraph(
 	for (const [index, edge] of payload.tag_edges.entries()) {
 		const edgeId = `${edge.tag_id}->${edge.note_id}:tag:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
-			colorRole: "tag",
+			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.7,
+			size: 0.85,
 		});
 	}
 

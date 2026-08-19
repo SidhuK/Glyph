@@ -148,5 +148,38 @@
 	},
 	"ai": {
 		"toolFailed": "{{tool}} に失敗しました"
+	},
+	"connections": {
+		"loading": "ノートとリンクを読み込み中…",
+		"arranging": "接続を配置しています…",
+		"loadFailed": "接続を読み込めませんでした: {{error}}",
+		"retry": "再試行",
+		"empty": "このスペースにはまだノートがありません。",
+		"noConnected": "このスペースには接続されたノートがありません。",
+		"graphAria": "スペースの接続",
+		"legendAria": "接続の凡例",
+		"legendNote": "ノート",
+		"legendTag": "タグ",
+		"legendCurrent": "選択中のノート",
+		"legendLink": "ノートリンク",
+		"legendTagShare": "タグを共有",
+		"localTitle": "つながっているノート",
+		"closeAria": "コネクションを閉じる",
+		"localGraphAria": "ローカルのコネクション",
+		"searchPlaceholder": "つながりを検索",
+		"searchAria": "つながりを検索",
+		"optionsAria": "グラフのオプション",
+		"display": "見た目",
+		"nodeSize": "ノートの大きさ",
+		"linkOpacity": "線の不透明度",
+		"linkThickness": "線の太さ",
+		"labelZoomThreshold": "タイトルの見え方",
+		"filters": "フィルター",
+		"hideOrphans": "つながりのないノートを隠す",
+		"minConnections": "最小のつながり数",
+		"resetDefaults": "デフォルトに戻す",
+		"largeGraphTitle": "大きな接続グラフ",
+		"largeGraphBody": "このスペースには {{count}} 件のノートがあります。グラフの構築に時間がかかり、Glyph の反応が遅くなることがあります。",
+		"largeGraphContinue": "続ける"
 	}
 }

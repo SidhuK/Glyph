@@ -149,5 +149,38 @@
 	},
 	"ai": {
 		"toolFailed": "{{tool}} ist fehlgeschlagen"
+	},
+	"connections": {
+		"loading": "Notizen und Verknüpfungen werden geladen…",
+		"arranging": "Verbindungen werden angeordnet…",
+		"loadFailed": "Verbindungen konnten nicht geladen werden: {{error}}",
+		"retry": "Erneut versuchen",
+		"empty": "In diesem Bereich gibt es noch keine Notizen.",
+		"noConnected": "In diesem Bereich gibt es keine verbundenen Notizen.",
+		"graphAria": "Bereichsverbindungen",
+		"legendAria": "Verbindungslegende",
+		"legendNote": "Notiz",
+		"legendTag": "Tag",
+		"legendCurrent": "Ausgewählte Notiz",
+		"legendLink": "Notizlink",
+		"legendTagShare": "Gemeinsames Tag",
+		"localTitle": "Verknüpfte Notizen",
+		"closeAria": "Verbindungen schließen",
+		"localGraphAria": "Lokale Verbindungen",
+		"searchPlaceholder": "Verbindungen durchsuchen",
+		"searchAria": "Verbindungen durchsuchen",
+		"optionsAria": "Graphoptionen",
+		"display": "Darstellung",
+		"nodeSize": "Notizgröße",
+		"linkOpacity": "Liniendeckkraft",
+		"linkThickness": "Linienstärke",
+		"labelZoomThreshold": "Titel sichtbar",
+		"filters": "Filter",
+		"hideOrphans": "Unverbundene Notizen ausblenden",
+		"minConnections": "Mindestverbindungen",
+		"resetDefaults": "Standardwerte wiederherstellen",
+		"largeGraphTitle": "Großer Verbindungsgraph",
+		"largeGraphBody": "Dieser Bereich enthält {{count}} Notizen. Der vollständige Graph kann eine Weile dauern und Glyph vorübergehend weniger reaktionsschnell machen.",
+		"largeGraphContinue": "Weiter"
 	}
 }

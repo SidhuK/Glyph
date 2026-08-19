@@ -176,5 +176,38 @@
 	},
 	"ai": {
 		"toolFailed": "{{tool}} failed"
+	},
+	"connections": {
+		"loading": "Loading notes and links…",
+		"arranging": "Arranging connections…",
+		"loadFailed": "Could not load connections: {{error}}",
+		"retry": "Retry",
+		"empty": "No notes in this space yet.",
+		"noConnected": "No connected notes in this space.",
+		"graphAria": "Space connections",
+		"legendAria": "Connections legend",
+		"legendNote": "Note",
+		"legendTag": "Tag",
+		"legendCurrent": "Selected note",
+		"legendLink": "Note link",
+		"legendTagShare": "Shares tag",
+		"localTitle": "Connected Notes",
+		"closeAria": "Close connections",
+		"localGraphAria": "Local connections",
+		"searchPlaceholder": "Search Connections",
+		"searchAria": "Search Connections",
+		"optionsAria": "Graph options",
+		"display": "Appearance",
+		"nodeSize": "Note size",
+		"linkOpacity": "Line opacity",
+		"linkThickness": "Line thickness",
+		"labelZoomThreshold": "Title visibility",
+		"filters": "Filters",
+		"hideOrphans": "Hide unconnected notes",
+		"minConnections": "Min. Connections",
+		"resetDefaults": "Reset to defaults",
+		"largeGraphTitle": "Large connections graph",
+		"largeGraphBody": "This space contains {{count}} notes. Building the full connections graph may take a while and make Glyph temporarily less responsive.",
+		"largeGraphContinue": "Continue"
 	}
 }

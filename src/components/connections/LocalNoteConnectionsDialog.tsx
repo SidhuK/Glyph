@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { LocalNoteConnections } from "../../lib/tauri";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import {
 	dispatchTagClick,
@@ -30,9 +32,18 @@ export function LocalNoteConnectionsDialog({
 	noteId,
 	connectionsRefreshKey = 0,
 }: LocalNoteConnectionsDialogProps) {
-	const [payload, setPayload] = useState<LocalNoteConnections | null>(null);
-	const [error, setError] = useState("");
+	const { t } = useTranslation("shell");
 	const containerRef = useRef<HTMLDivElement | null>(null);
+
+	const connectionsQuery = useQuery({
+		queryKey: ["note-local-connections", noteId, connectionsRefreshKey],
+		enabled: open && Boolean(noteId),
+		queryFn: () => invoke("note_local_connections", { note_id: noteId }),
+	});
+	const payload = connectionsQuery.data ?? null;
+	const error = connectionsQuery.error
+		? extractErrorMessage(connectionsQuery.error)
+		: "";
 
 	const openNode = useCallback(
 		(nodeId: string) => {
@@ -56,29 +67,6 @@ export function LocalNoteConnectionsDialog({
 		[onOpenChange],
 	);
 
-	useEffect(() => {
-		if (!open || !noteId) return;
-		void connectionsRefreshKey;
-		let cancelled = false;
-		setPayload(null);
-		setError("");
-
-		void invoke("note_local_connections", { note_id: noteId })
-			.then((nextGraph) => {
-				if (cancelled) return;
-				setPayload(nextGraph);
-			})
-			.catch((cause) => {
-				if (cancelled) return;
-				setPayload(null);
-				setError(cause instanceof Error ? cause.message : String(cause));
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [connectionsRefreshKey, noteId, open]);
-
 	const graph = useMemo<ConnectionsGraph | null>(() => {
 		if (!payload) return null;
 		return buildLocalConnectionsGraph(payload);
@@ -89,6 +77,12 @@ export function LocalNoteConnectionsDialog({
 		containerRef,
 		variant: "local",
 		enabled: Boolean(open && graph && !error),
+		display: {
+			nodeSizeScale: 1,
+			linkOpacity: 1,
+			linkThicknessScale: 1,
+		},
+		labelZoomThreshold: 0,
 		onNoteOpen: openNode,
 		onTagActivate: openTagSearch,
 	});
@@ -99,67 +93,69 @@ export function LocalNoteConnectionsDialog({
 				className="localNoteConnectionsDialog"
 				showCloseButton={false}
 			>
-				<DialogTitle className="sr-only">Connected Notes</DialogTitle>
+				<DialogTitle className="sr-only">
+					{t("connections.localTitle")}
+				</DialogTitle>
 
 				<div className="localNoteConnectionsBody">
 					<DialogClose asChild>
 						<button
 							type="button"
 							className="localNoteConnectionsClose"
-							aria-label="Close connections"
+							aria-label={t("connections.closeAria")}
 						>
 							×
 						</button>
 					</DialogClose>
 					{error ? (
 						<div className="localNoteConnectionsState">
-							Could not load connections: {error}
+							{t("connections.loadFailed", { error })}
 						</div>
 					) : (
 						<div className="localNoteConnectionsStage">
 							<div
 								ref={containerRef}
 								className="localNoteConnectionsViewport"
-								aria-label="Local connections"
+								aria-label={t("connections.localGraphAria")}
 							/>
 							<div
 								className="localNoteConnectionsLegend"
-								aria-label="Connections legend"
+								aria-label={t("connections.legendAria")}
 							>
 								<span className="localNoteConnectionsLegendItem">
 									<span
 										className="localNoteConnectionsLegendNode is-current"
 										aria-hidden="true"
 									/>
-									Selected note
+									{t("connections.legendCurrent")}
 								</span>
 								<span className="localNoteConnectionsLegendItem">
 									<span
 										className="localNoteConnectionsLegendNode is-note"
 										aria-hidden="true"
 									/>
-									Note
+									{t("connections.legendNote")}
 								</span>
 								<span className="localNoteConnectionsLegendItem">
 									<span
 										className="localNoteConnectionsLegendNode is-tag"
 										aria-hidden="true"
 									/>
-									Tag
+									{t("connections.legendTag")}
 								</span>
 								<span className="localNoteConnectionsLegendItem">
 									<span
 										className="localNoteConnectionsLegendEdge is-link"
 										aria-hidden="true"
 									/>
-									Note link
+									{t("connections.legendLink")}
 								</span>
 								<span className="localNoteConnectionsLegendItem">
 									<span
 										className="localNoteConnectionsLegendEdge is-tag-link"
 										aria-hidden="true"
 									/>
-									Shares tag
+									{t("connections.legendTagShare")}
 								</span>
 							</div>
 						</div>

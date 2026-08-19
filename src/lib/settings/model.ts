@@ -1,4 +1,5 @@
 import type { AppLanguage } from "../../i18n/locales";
+import type { ConnectionsGraphOptions } from "../connectionsGraphOptions";
 import type { CustomTheme } from "../customThemes";
 import type { DateDisplayFormat } from "../dateDisplayFormat";
 import type { EditorViewMode } from "../editorMode";
@@ -132,6 +133,7 @@ export interface AppSettings {
 	shortcuts: ShortcutSettings;
 	editor: EditorSettings;
 	database: DatabaseSettings;
+	connectionsGraph: ConnectionsGraphOptions;
 }
 
 export interface SpaceScopedSettings {
@@ -148,6 +150,7 @@ export interface SpaceScopedSettings {
 	templatesQuarterlyNoteTemplate?: string | null;
 	attachmentStorageMode?: AttachmentStorageMode;
 	attachmentFolder?: string | null;
+	connectionsGraph?: ConnectionsGraphOptions;
 }
 
 export type SpaceScopedSettingsMap = Record<string, SpaceScopedSettings>;
@@ -160,6 +163,7 @@ interface SettingsChangeSections {
 	templates: AppSettings["templates"];
 	database: AppSettings["database"];
 	editor: AppSettings["editor"];
+	connectionsGraph: AppSettings["connectionsGraph"];
 	shortcuts: Pick<ShortcutSettings, "bindings">;
 }
 

@@ -183,5 +183,38 @@
 	},
 	"ai": {
 		"toolFailed": "Narzędzie {{tool}} nie powiodło się"
+	},
+	"connections": {
+		"loading": "Wczytywanie notatek i łączy…",
+		"arranging": "Układanie połączeń…",
+		"loadFailed": "Nie udało się wczytać połączeń: {{error}}",
+		"retry": "Spróbuj ponownie",
+		"empty": "W tej przestrzeni nie ma jeszcze notatek.",
+		"noConnected": "W tej przestrzeni nie ma połączonych notatek.",
+		"graphAria": "Połączenia przestrzeni",
+		"legendAria": "Legenda połączeń",
+		"legendNote": "Notatka",
+		"legendTag": "Tag",
+		"legendCurrent": "Wybrana notatka",
+		"legendLink": "Link do notatki",
+		"legendTagShare": "Wspólny tag",
+		"localTitle": "Połączone notatki",
+		"closeAria": "Zamknij połączenia",
+		"localGraphAria": "Lokalne połączenia",
+		"searchPlaceholder": "Szukaj połączeń",
+		"searchAria": "Szukaj połączeń",
+		"optionsAria": "Opcje grafu",
+		"display": "Wygląd",
+		"nodeSize": "Rozmiar notatek",
+		"linkOpacity": "Krycie linii",
+		"linkThickness": "Grubość linii",
+		"labelZoomThreshold": "Widoczność tytułów",
+		"filters": "Filtry",
+		"hideOrphans": "Ukryj niepołączone notatki",
+		"minConnections": "Minimalna liczba połączeń",
+		"resetDefaults": "Przywróć domyślne",
+		"largeGraphTitle": "Duży graf połączeń",
+		"largeGraphBody": "Ta przestrzeń zawiera {{count}} notatek. Zbudowanie pełnego grafu może chwilę potrwać i spowolnić Glyph.",
+		"largeGraphContinue": "Kontynuuj"
 	}
 }

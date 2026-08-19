@@ -75,7 +75,6 @@ pub struct LocalNoteConnections {
 pub struct SpaceConnectionsNode {
     pub id: String,
     pub title: String,
-    pub is_isolated: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -90,6 +89,7 @@ pub struct SpaceConnectionsEdge {
     pub from_id: String,
     pub to_id: String,
     pub kind: SpaceConnectionKind,
+    pub weight: u32,
 }
 
 #[derive(Serialize)]

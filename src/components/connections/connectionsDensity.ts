@@ -9,45 +9,38 @@ interface SpaceDensityTier {
 	minNodes: number;
 	noteSize: SpaceNodeSizeRange;
 	tagSize: SpaceNodeSizeRange;
-	layoutCandidateCount: number;
 }
 
 const SPACE_NODE_DENSITY_TIERS: readonly SpaceDensityTier[] = [
 	{
 		minNodes: 10_000,
-		noteSize: [0.35, 1.4],
-		tagSize: [0.55, 2],
-		layoutCandidateCount: 5,
+		noteSize: [0.5, 2.4],
+		tagSize: [0.7, 2.8],
 	},
 	{
 		minNodes: 5_000,
-		noteSize: [0.5, 1.8],
-		tagSize: [0.7, 2.4],
-		layoutCandidateCount: 8,
+		noteSize: [0.7, 3.2],
+		tagSize: [0.9, 3.6],
 	},
 	{
 		minNodes: 2_000,
-		noteSize: [0.7, 2.4],
-		tagSize: [0.95, 3.2],
-		layoutCandidateCount: 8,
+		noteSize: [1, 4.8],
+		tagSize: [1.2, 5.2],
 	},
 	{
 		minNodes: 1_000,
-		noteSize: [1, 3.2],
-		tagSize: [1.3, 4.2],
-		layoutCandidateCount: 8,
+		noteSize: [1.6, 7],
+		tagSize: [1.8, 6.2],
 	},
 	{
 		minNodes: 400,
-		noteSize: [1.4, 4.5],
-		tagSize: [1.8, 5.5],
-		layoutCandidateCount: 8,
+		noteSize: [2.4, 11],
+		tagSize: [2.6, 8],
 	},
 	{
 		minNodes: 0,
-		noteSize: [2.5, 8],
-		tagSize: [3.5, 10],
-		layoutCandidateCount: 8,
+		noteSize: [3.2, 14],
+		tagSize: [3.4, 9],
 	},
 ];
 
@@ -57,18 +50,15 @@ interface SpaceEdgeScaleTier {
 }
 
 const SPACE_EDGE_SCALE_TIERS: readonly SpaceEdgeScaleTier[] = [
-	{ minEdges: 10_000, scale: 0.37 },
-	{ minEdges: 5_000, scale: 0.48 },
-	{ minEdges: 2_000, scale: 0.6 },
-	{ minEdges: 1_000, scale: 0.72 },
-	{ minEdges: 400, scale: 0.84 },
+	{ minEdges: 10_000, scale: 0.62 },
+	{ minEdges: 5_000, scale: 0.72 },
+	{ minEdges: 2_000, scale: 0.82 },
+	{ minEdges: 1_000, scale: 0.9 },
+	{ minEdges: 400, scale: 0.96 },
 ];
 
 interface SpaceSigmaTier {
 	minNodes: number;
-	labelDensity: number;
-	labelGridCellSize: number;
-	labelRenderedSizeThreshold: number;
 	stagePadding: number;
 	minEdgeThickness: number;
 	minCameraRatio: number;
@@ -77,38 +67,26 @@ interface SpaceSigmaTier {
 const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 	{
 		minNodes: 5_000,
-		labelDensity: 0.08,
-		labelGridCellSize: 280,
-		labelRenderedSizeThreshold: 18,
 		stagePadding: 36,
-		minEdgeThickness: 0.32,
+		minEdgeThickness: 0.7,
 		minCameraRatio: 0.05,
 	},
 	{
 		minNodes: 1_000,
-		labelDensity: 0.22,
-		labelGridCellSize: 200,
-		labelRenderedSizeThreshold: 14,
 		stagePadding: 40,
-		minEdgeThickness: 0.37,
+		minEdgeThickness: 0.78,
 		minCameraRatio: 0.18,
 	},
 	{
 		minNodes: 150,
-		labelDensity: 0.16,
-		labelGridCellSize: 165,
-		labelRenderedSizeThreshold: 11,
 		stagePadding: 48,
-		minEdgeThickness: 0.44,
+		minEdgeThickness: 0.85,
 		minCameraRatio: 0.18,
 	},
 	{
 		minNodes: 0,
-		labelDensity: 0.75,
-		labelGridCellSize: 120,
-		labelRenderedSizeThreshold: 11,
 		stagePadding: 56,
-		minEdgeThickness: 0.44,
+		minEdgeThickness: 0.9,
 		minCameraRatio: 0.18,
 	},
 ];
@@ -118,7 +96,7 @@ const LOCAL_SIGMA = {
 	labelGridCellSize: 88,
 	labelRenderedSizeThreshold: 0,
 	stagePadding: 72,
-	minEdgeThickness: 0.52,
+	minEdgeThickness: 0.85,
 	minCameraRatio: 0.35,
 	maxCameraRatio: 2.2,
 	zoomingRatio: 1.7,
@@ -133,15 +111,10 @@ function tierForCount<T extends { minNodes: number }>(
 	);
 }
 
-function tierForEdgeCount(count: number) {
-	return SPACE_EDGE_SCALE_TIERS.find((tier) => count >= tier.minEdges) ?? null;
-}
-
 interface ConnectionsDensityProfile {
 	noteSizeRange: SpaceNodeSizeRange;
 	tagSizeRange: SpaceNodeSizeRange;
 	edgeScale: number;
-	layoutCandidateCount: number;
 }
 
 export function spaceConnectionsDensityProfile(
@@ -149,19 +122,13 @@ export function spaceConnectionsDensityProfile(
 	edgeCount: number,
 ): ConnectionsDensityProfile {
 	const nodeTier = tierForCount(SPACE_NODE_DENSITY_TIERS, nodeCount);
-	const edgeTier = tierForEdgeCount(edgeCount);
-	let edgeScale = 1;
-	if (edgeTier) {
-		edgeScale = edgeTier.scale;
-	} else if (nodeCount >= 150) {
-		edgeScale = 0.94;
-	}
 
 	return {
 		noteSizeRange: nodeTier.noteSize,
 		tagSizeRange: nodeTier.tagSize,
-		edgeScale,
-		layoutCandidateCount: nodeTier.layoutCandidateCount,
+		edgeScale:
+			SPACE_EDGE_SCALE_TIERS.find((tier) => edgeCount >= tier.minEdges)
+				?.scale ?? 1,
 	};
 }
 
@@ -186,7 +153,7 @@ export function sigmaSettingsForVariant(
 			maxCameraRatio: LOCAL_SIGMA.maxCameraRatio,
 			stagePadding: LOCAL_SIGMA.stagePadding,
 			zoomingRatio: LOCAL_SIGMA.zoomingRatio,
-			minEdgeThickness: 0.52,
+			minEdgeThickness: LOCAL_SIGMA.minEdgeThickness,
 			zIndex: true,
 			allowInvalidContainer: false,
 		};
@@ -200,9 +167,6 @@ export function sigmaSettingsForVariant(
 		enableEdgeEvents: false,
 		hideLabelsOnMove: true,
 		hideEdgesOnMove: edgeCount > 5000,
-		labelDensity: sigmaTier.labelDensity,
-		labelGridCellSize: sigmaTier.labelGridCellSize,
-		labelRenderedSizeThreshold: sigmaTier.labelRenderedSizeThreshold,
 		defaultNodeType: "circle",
 		defaultEdgeType: "line",
 		minCameraRatio: sigmaTier.minCameraRatio,

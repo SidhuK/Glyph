@@ -15,24 +15,15 @@ export type SerializedGraphPosition = readonly [
 	y: number,
 ];
 
-export interface ConnectionsLayoutRequest {
-	requestId: number;
-	graph: ConnectionsLayoutGraph;
-}
-
 export type ConnectionsLayoutResponse =
 	| {
-			requestId: number;
 			positions: SerializedGraphPosition[];
 	  }
 	| {
-			requestId: number;
 			error: string;
 	  };
 
 export function computeSpaceConnectionsLayout(graph: ConnectionsLayoutGraph) {
-	const nodeCount = graph.nodeIds.length + graph.tags.length;
-	if (nodeCount === 0) return [];
-	const communities = detectConnectionsCommunities(graph);
-	return placeConnectionsCommunities(communities, nodeCount);
+	if (graph.nodeIds.length + graph.tags.length === 0) return [];
+	return placeConnectionsCommunities(detectConnectionsCommunities(graph));
 }

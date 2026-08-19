@@ -384,6 +384,12 @@
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
 		},
+		"space-connections-graph": {
+			"title": "Graphe des connexions",
+			"section": "Espace",
+			"description": "Taille, titres et filtres dans la vue Connexions.",
+			"keywords": ["graphe", "liens", "titres"]
+		},
 		"space-template-folder": {
 			"title": "Template folder",
 			"section": "Templates",

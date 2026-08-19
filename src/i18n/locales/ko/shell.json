@@ -148,5 +148,38 @@
 	},
 	"ai": {
 		"toolFailed": "{{tool}} 실패"
+	},
+	"connections": {
+		"loading": "노트와 링크를 불러오는 중…",
+		"arranging": "연결을 배치하는 중…",
+		"loadFailed": "연결을 불러올 수 없습니다: {{error}}",
+		"retry": "다시 시도",
+		"empty": "이 스페이스에는 아직 노트가 없습니다.",
+		"noConnected": "이 스페이스에는 연결된 노트가 없습니다.",
+		"graphAria": "스페이스 연결",
+		"legendAria": "연결 범례",
+		"legendNote": "노트",
+		"legendTag": "태그",
+		"legendCurrent": "선택한 노트",
+		"legendLink": "노트 링크",
+		"legendTagShare": "태그 공유",
+		"localTitle": "연결된 노트",
+		"closeAria": "연결 닫기",
+		"localGraphAria": "로컬 연결",
+		"searchPlaceholder": "연결 검색",
+		"searchAria": "연결 검색",
+		"optionsAria": "그래프 옵션",
+		"display": "모양",
+		"nodeSize": "노트 크기",
+		"linkOpacity": "선 투명도",
+		"linkThickness": "선 두께",
+		"labelZoomThreshold": "제목 표시",
+		"filters": "필터",
+		"hideOrphans": "연결 없는 노트 숨기기",
+		"minConnections": "최소 연결 수",
+		"resetDefaults": "기본값으로 재설정",
+		"largeGraphTitle": "큰 연결 그래프",
+		"largeGraphBody": "이 스페이스에는 노트가 {{count}}개 있습니다. 전체 그래프를 만드는 데 시간이 걸리고 Glyph가 잠시 느려질 수 있습니다.",
+		"largeGraphContinue": "계속"
 	}
 }

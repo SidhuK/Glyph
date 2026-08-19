@@ -1,5 +1,6 @@
 import { type RefObject, useEffect, useRef } from "react";
 import Sigma from "sigma";
+import { connectionsLabelVisibility } from "../../lib/connectionsGraphOptions";
 import {
 	drawConnectionsNodeHover,
 	drawConnectionsNodeLabel,
@@ -12,6 +13,7 @@ import type {
 	ConnectionsNodeAttributes,
 } from "./connectionsGraph";
 import {
+	type ConnectionsDisplayState,
 	type ConnectionsFocusState,
 	type ConnectionsPalette,
 	buildEdgeReducer,
@@ -24,8 +26,17 @@ interface UseSigmaConnectionsOptions {
 	containerRef: RefObject<HTMLDivElement | null>;
 	variant: ConnectionsGraphVariant;
 	enabled: boolean;
+	display: ConnectionsDisplayState;
+	labelZoomThreshold: number;
+	searchMatchIds?: ReadonlySet<string> | null;
 	onNoteOpen?: (nodeId: string) => void;
 	onTagActivate?: (tagId: string, label: string) => void;
+}
+
+export interface ConnectionsOverlayApi {
+	setSearchMatches: (matchIds: ReadonlySet<string> | null) => void;
+	setDisplay: (display: ConnectionsDisplayState) => void;
+	setLabelZoomThreshold: (value: number) => void;
 }
 
 function neighborIdsForNode(graph: ConnectionsGraph, nodeId: string | null) {
@@ -50,8 +61,6 @@ function fitGraphToViewport(
 	const { width, height } = renderer.getDimensions();
 	if (width <= 0 || height <= 0) return;
 
-	// Sigma normalizes graph coordinates before applying the camera. Its reset
-	// state therefore fits the full graph using the configured stage padding.
 	renderer.getCamera().setState({
 		x: 0.5,
 		y: 0.5,
@@ -66,16 +75,31 @@ export function useSigmaConnections({
 	containerRef,
 	variant,
 	enabled,
+	display,
+	labelZoomThreshold,
+	searchMatchIds = null,
 	onNoteOpen,
 	onTagActivate,
-}: UseSigmaConnectionsOptions) {
+}: UseSigmaConnectionsOptions): RefObject<ConnectionsOverlayApi> {
 	const focusRef = useRef<ConnectionsFocusState>({
 		hoveredNode: null,
 		neighborIds: null,
 		selectedNodeId: null,
+		searchMatchIds: null,
 	});
+	const displayRef = useRef(display);
+	displayRef.current = display;
+	const labelZoomRef = useRef(labelZoomThreshold);
+	labelZoomRef.current = labelZoomThreshold;
+	const searchMatchIdsRef = useRef(searchMatchIds);
+	searchMatchIdsRef.current = searchMatchIds;
 	const paletteRef = useRef<ConnectionsPalette | null>(null);
 	const refreshScheduledRef = useRef(false);
+	const overlayRef = useRef<ConnectionsOverlayApi>({
+		setSearchMatches: () => {},
+		setDisplay: () => {},
+		setLabelZoomThreshold: () => {},
+	});
 
 	useEffect(() => {
 		if (!enabled || !graph || graph.order === 0) return;
@@ -100,6 +124,11 @@ export function useSigmaConnections({
 			focusRef.current.hoveredNode = null;
 			focusRef.current.neighborIds = null;
 			focusRef.current.selectedNodeId = null;
+			overlayRef.current = {
+				setSearchMatches: () => {},
+				setDisplay: () => {},
+				setLabelZoomThreshold: () => {},
+			};
 		};
 
 		const setup = () => {
@@ -114,6 +143,7 @@ export function useSigmaConnections({
 
 			const focusState = focusRef.current;
 			let draggedNode: string | null = null;
+			let didDrag = false;
 
 			const scheduleRefresh = (
 				activeRenderer: Sigma<
@@ -143,6 +173,9 @@ export function useSigmaConnections({
 				if (next.selectedNodeId !== undefined) {
 					focusState.selectedNodeId = next.selectedNodeId;
 				}
+				if (next.searchMatchIds !== undefined) {
+					focusState.searchMatchIds = next.searchMatchIds;
+				}
 				const focusId = focusState.selectedNodeId ?? focusState.hoveredNode;
 				focusState.neighborIds = neighborIdsForNode(graph, focusId);
 				scheduleRefresh(activeRenderer);
@@ -158,11 +191,12 @@ export function useSigmaConnections({
 				() => paletteRef.current ?? palette,
 				variant,
 				() => focusState,
+				() => displayRef.current,
 			);
 			const edgeReducer = buildEdgeReducer(
 				() => paletteRef.current ?? palette,
-				variant,
 				() => focusState,
+				() => displayRef.current,
 				(source, target) =>
 					isEdgeConnectedToFocus(
 						focusState.selectedNodeId ?? focusState.hoveredNode,
@@ -176,6 +210,9 @@ export function useSigmaConnections({
 				ConnectionsEdgeAttributes
 			>(graph, container, {
 				...sigmaSettings,
+				...(variant === "space"
+					? connectionsLabelVisibility(labelZoomRef.current)
+					: {}),
 				labelColor: { color: palette.text },
 				labelFont,
 				labelSize: variant === "local" ? 11.5 : 10.5,
@@ -217,6 +254,24 @@ export function useSigmaConnections({
 			fitToView();
 			fitFrame = window.requestAnimationFrame(fitToView);
 
+			overlayRef.current = {
+				setSearchMatches: (matchIds) => {
+					setFocus(activeRenderer, {
+						searchMatchIds: matchIds ? new Set(matchIds) : null,
+					});
+				},
+				setDisplay: (nextDisplay) => {
+					displayRef.current = nextDisplay;
+					scheduleRefresh(activeRenderer);
+				},
+				setLabelZoomThreshold: (value) => {
+					activeRenderer.setSettings(connectionsLabelVisibility(value));
+					scheduleRefresh(activeRenderer);
+				},
+			};
+
+			overlayRef.current.setSearchMatches(searchMatchIdsRef.current);
+
 			activeRenderer.on("enterNode", ({ node }) => {
 				setFocus(activeRenderer, { hoveredNode: node });
 			});
@@ -225,14 +280,11 @@ export function useSigmaConnections({
 				setFocus(activeRenderer, { hoveredNode: null });
 			});
 			activeRenderer.on("clickNode", ({ node }) => {
-				if (focusState.selectedNodeId !== node) {
-					setFocus(activeRenderer, {
-						selectedNodeId: node,
-						hoveredNode: node,
-					});
-					return;
-				}
-
+				if (didDrag) return;
+				setFocus(activeRenderer, {
+					selectedNodeId: node,
+					hoveredNode: node,
+				});
 				const kind = graph.getNodeAttribute(node, "kind");
 				if (kind === "tag") {
 					onTagActivate?.(node, graph.getNodeAttribute(node, "label"));
@@ -247,12 +299,14 @@ export function useSigmaConnections({
 			activeRenderer.on("downNode", ({ node }) => {
 				if (graph.getNodeAttribute(node, "isCenter")) return;
 				draggedNode = node;
+				didDrag = false;
 				activeRenderer.getCamera().disable();
 			});
 
 			const mouseCaptor = activeRenderer.getMouseCaptor();
 			const handleMouseMove = (coords: { x: number; y: number }) => {
 				if (!draggedNode) return;
+				didDrag = true;
 				const position = activeRenderer.viewportToGraph(coords);
 				graph.setNodeAttribute(draggedNode, "x", position.x);
 				graph.setNodeAttribute(draggedNode, "y", position.y);
@@ -296,4 +350,6 @@ export function useSigmaConnections({
 
 		return cleanup;
 	}, [containerRef, enabled, graph, onNoteOpen, onTagActivate, variant]);
+
+	return overlayRef;
 }
