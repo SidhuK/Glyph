@@ -1,9 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	ColorsIcon,
-	FilterIcon,
-	ReloadIcon,
-} from "@hugeicons/core-free-icons";
+import { ColorsIcon, FilterIcon, ReloadIcon } from "@hugeicons/core-free-icons";
 import type { CSSProperties, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
