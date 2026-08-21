@@ -176,6 +176,8 @@ const {
 	};
 });
 
+type SettingsSnapshot = Awaited<ReturnType<typeof loadSettingsMock>>;
+
 const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
 
 // React 19 expects tests to opt into act-aware scheduling.
@@ -837,9 +839,9 @@ describe("useNoteEditor", () => {
 	it("does not let a stale loadSettings snapshot overwrite a live showFormatBar update", async () => {
 		const onChange = vi.fn();
 		const onState = vi.fn();
-		let resolveSettings!: (value: unknown) => void;
+		let resolveSettings!: (value: SettingsSnapshot) => void;
 		loadSettingsMock.mockReturnValue(
-			new Promise((resolve) => {
+			new Promise<SettingsSnapshot>((resolve) => {
 				resolveSettings = resolve;
 			}),
 		);
