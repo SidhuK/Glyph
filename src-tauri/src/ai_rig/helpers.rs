@@ -31,6 +31,7 @@ pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
         AiProviderKind::Amp => "https://ampcode.com/",
         AiProviderKind::ClaudeCode => "https://code.claude.com/",
         AiProviderKind::Cursor => "https://cursor.com/",
+        AiProviderKind::Grok => "https://x.ai/cli",
         AiProviderKind::Opencode => "http://127.0.0.1:4096",
         AiProviderKind::Pi => "https://pi.dev/",
     }

@@ -622,6 +622,7 @@ pub async fn ai_models_list(
         AiProviderKind::Amp => Ok(crate::ai_amp::list_models()),
         AiProviderKind::ClaudeCode => crate::ai_claude_code::list_models(&space_root, &profile),
         AiProviderKind::Cursor => crate::ai_cursor::list_models(&profile).await,
+        AiProviderKind::Grok => crate::ai_grok::list_models(&profile).await,
         AiProviderKind::Opencode => crate::ai_opencode::list_models(&space_root).await,
         AiProviderKind::Pi => crate::ai_pi::list_models(&space_root).await,
     }

@@ -750,6 +750,7 @@ export type AiProviderKind =
 	| "amp"
 	| "claude_code"
 	| "cursor"
+	| "grok"
 	| "opencode"
 	| "pi";
 
