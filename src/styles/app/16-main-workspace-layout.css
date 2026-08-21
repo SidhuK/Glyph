@@ -150,9 +150,9 @@
 
 .noteSidePeek {
 	position: absolute;
-	top: 10px;
+	top: 0;
 	right: 10px;
-	bottom: 10px;
+	bottom: 0;
 	z-index: 40;
 	width: min(520px, 48%);
 	display: flex;
