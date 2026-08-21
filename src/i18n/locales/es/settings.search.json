@@ -563,7 +563,14 @@
 		"general-editor-format-bar": {
 			"title": "Barra de formato",
 			"section": "Experimental",
-			"keywords": ["formato", "barra", "toolbar", "ribbon", "enriquecido", "editor"]
+			"keywords": [
+				"formato",
+				"barra",
+				"toolbar",
+				"ribbon",
+				"enriquecido",
+				"editor"
+			]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
