@@ -192,7 +192,7 @@ async fn collect_models_from_runtime(
     seen: &mut HashSet<String>,
 ) {
     let mut command = Command::new(binary);
-    command.arg("--help").kill_on_drop(true);
+    command.arg("models").kill_on_drop(true);
     if let Some(path) = cli_runtime_path(binary) {
         command.env("PATH", path);
     }
@@ -248,36 +248,6 @@ async fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
 async fn stop_child(child: &mut Child) {
     let _ = child.kill().await;
     let _ = child.wait().await;
-}
-
-struct KillChildOnDrop {
-    child: Child,
-}
-
-impl KillChildOnDrop {
-    fn new(child: Child) -> Self {
-        Self { child }
-    }
-}
-
-impl Drop for KillChildOnDrop {
-    fn drop(&mut self) {
-        let _ = self.child.start_kill();
-    }
-}
-
-impl std::ops::Deref for KillChildOnDrop {
-    type Target = Child;
-
-    fn deref(&self) -> &Self::Target {
-        &self.child
-    }
-}
-
-impl std::ops::DerefMut for KillChildOnDrop {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.child
-    }
 }
 
 async fn wait_after_result(child: &mut Child, last_stderr: &str) -> Result<(), String> {
@@ -505,11 +475,9 @@ pub async fn run_with_grok(
     }
     command.kill_on_drop(true);
 
-    let mut child = KillChildOnDrop::new(
-        command
-            .spawn()
-            .map_err(|e| format!("failed to start Grok CLI: {e}"))?,
-    );
+    let mut child = command
+        .spawn()
+        .map_err(|e| format!("failed to start Grok CLI: {e}"))?;
     let stdout = child
         .stdout
         .take()
@@ -583,7 +551,13 @@ pub async fn run_with_grok(
                     Ok(value) => value,
                     Err(e) => {
                         stop_child(&mut child).await;
-                        return Err(format!("failed to parse Grok CLI JSON output: {e}"));
+                        return Err(if last_stderr.trim().is_empty() {
+                            format!("failed to parse Grok CLI JSON output: {e}")
+                        } else {
+                            format!(
+                                "failed to parse Grok CLI JSON output: {e} (last stderr: {last_stderr})"
+                            )
+                        });
                     }
                 };
                 match handle_event(app, job_id, &value, &mut full, &mut tool_events) {
