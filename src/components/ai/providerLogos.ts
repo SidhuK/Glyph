@@ -6,6 +6,8 @@ import codexLightThemeLogoUrl from "../../assets/provider-logos/codex-light.svg?
 import cursorDarkThemeLogoUrl from "../../assets/provider-logos/cursor-dark.svg?url";
 import cursorLightThemeLogoUrl from "../../assets/provider-logos/cursor-light.svg?url";
 import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
+import grokDarkThemeLogoUrl from "../../assets/provider-logos/grok-dark.svg?url";
+import grokLightThemeLogoUrl from "../../assets/provider-logos/grok-light.svg?url";
 import llamacppLogoUrl from "../../assets/provider-logos/llamacpp.svg?url";
 import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
@@ -46,6 +48,11 @@ export const providerLogoMeta: Record<
 		src: cursorLightThemeLogoUrl,
 		darkSrc: cursorDarkThemeLogoUrl,
 		label: "Cursor",
+	},
+	grok: {
+		src: grokLightThemeLogoUrl,
+		darkSrc: grokDarkThemeLogoUrl,
+		label: "Grok",
 	},
 	opencode: {
 		src: opencodeLightThemeLogoUrl,
