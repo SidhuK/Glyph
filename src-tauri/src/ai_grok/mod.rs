@@ -140,24 +140,38 @@ fn collect_models_from_text(text: &str, models: &mut Vec<String>, seen: &mut Has
 
 fn grok_config_paths() -> Vec<PathBuf> {
     let mut paths = Vec::new();
+    if let Some(grok_home) = std::env::var_os("GROK_HOME").map(PathBuf::from) {
+        paths.push(grok_home.join("config.toml"));
+    }
     if let Some(home) = std::env::var_os("HOME").map(PathBuf::from) {
-        if let Some(grok_home) = std::env::var_os("GROK_HOME").map(PathBuf::from) {
-            paths.push(grok_home.join("config.toml"));
-        }
         paths.push(home.join(".grok/config.toml"));
     }
     paths
 }
 
-fn collect_models_from_config(models: &mut Vec<String>, seen: &mut HashSet<String>) {
-    for path in grok_config_paths() {
-        let Ok(text) = std::fs::read_to_string(path) else {
-            continue;
-        };
+async fn collect_models_from_config(
+    models: &mut Vec<String>,
+    seen: &mut HashSet<String>,
+) -> Result<(), String> {
+    let texts = tauri::async_runtime::spawn_blocking(|| {
+        grok_config_paths()
+            .into_iter()
+            .filter_map(|path| std::fs::read_to_string(path).ok())
+            .collect::<Vec<_>>()
+    })
+    .await
+    .map_err(|error| format!("failed to read Grok config: {error}"))?;
+
+    for text in texts {
         for line in text.lines() {
             let line = line.trim();
             if let Some(rest) = line.strip_prefix("[model.") {
-                let id = rest.trim_end_matches(']').trim_matches('"').trim();
+                let id = rest
+                    .split_once(']')
+                    .map_or(rest, |(id, _)| id)
+                    .trim()
+                    .trim_matches('"')
+                    .trim();
                 if is_grok_model_id(id) {
                     push_model_id(models, seen, id);
                 }
@@ -169,6 +183,7 @@ fn collect_models_from_config(models: &mut Vec<String>, seen: &mut HashSet<Strin
             collect_models_from_text(line, models, seen);
         }
     }
+    Ok(())
 }
 
 async fn collect_models_from_runtime(
@@ -197,7 +212,7 @@ pub async fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
         push_model_id(&mut ids, &mut seen, id);
     }
     collect_models_from_runtime(&binary, &mut ids, &mut seen).await;
-    collect_models_from_config(&mut ids, &mut seen);
+    collect_models_from_config(&mut ids, &mut seen).await?;
     push_model_id(&mut ids, &mut seen, &profile.model);
 
     Ok(ids.into_iter().map(|id| model_entry_for_id(&id)).collect())
@@ -457,7 +472,6 @@ pub async fn run_with_grok(
         .arg(root)
         .arg("--output-format")
         .arg("streaming-json")
-        .arg("--verbatim")
         .current_dir(root)
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped());
