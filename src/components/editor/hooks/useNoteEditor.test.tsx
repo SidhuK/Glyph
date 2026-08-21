@@ -148,6 +148,7 @@ const {
 					colorfulHeadings: false,
 					showCollapsibleHeadings: false,
 					showFrontmatterInEditor: false,
+					showFormatBar: true,
 					enablePeopleMentionsAsTags: false,
 				},
 			}),
@@ -401,6 +402,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -802,6 +804,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: true,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -1083,6 +1086,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -1164,6 +1168,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -1203,6 +1208,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -1242,6 +1248,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});

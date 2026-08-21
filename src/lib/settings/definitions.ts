@@ -656,6 +656,13 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.editor.showExternalLinkPreviews,
 		change: (value) => ({ editor: { showExternalLinkPreviews: value } }),
 	}),
+	editorShowFormatBar: booleanSetting({
+		key: "editor.showFormatBar",
+		defaultValue: true,
+		discovery: searchable("general-editor-format-bar"),
+		read: (settings) => settings.editor.showFormatBar,
+		change: (value) => ({ editor: { showFormatBar: value } }),
+	}),
 	editorFocusMode: defineApplicationSetting({
 		key: "editor.focusMode",
 		defaultValue: DEFAULT_FOCUS_MODE,

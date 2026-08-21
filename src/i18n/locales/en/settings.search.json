@@ -515,6 +515,11 @@
 			"section": "Experimental",
 			"keywords": ["vim", "raw", "markdown", "keybindings", "keyboard"]
 		},
+		"general-editor-format-bar": {
+			"title": "Formatting bar",
+			"section": "Experimental",
+			"keywords": ["format", "toolbar", "ribbon", "rich", "editor", "hide"]
+		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
 			"section": "Assistant behavior",

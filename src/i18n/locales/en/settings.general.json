@@ -175,6 +175,11 @@
 			"ariaLabel": "Vim Mode",
 			"helpAriaLabel": "About Vim Mode",
 			"info": "Vim Mode is available only in Raw Markdown mode."
+		},
+		"formatBar": {
+			"label": "Formatting bar",
+			"description": "Show the bottom formatting bar in Rich editor mode.",
+			"ariaLabel": "Show formatting bar"
 		}
 	},
 	"fileTree": {

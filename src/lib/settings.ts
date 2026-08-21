@@ -634,6 +634,7 @@ export async function loadSettings(
 		spellCheck: DURABLE_SETTINGS.editorSpellCheck.load(entries),
 		showExternalLinkPreviews:
 			DURABLE_SETTINGS.editorShowExternalLinkPreviews.load(entries),
+		showFormatBar: DURABLE_SETTINGS.editorShowFormatBar.load(entries),
 		focusMode: DURABLE_SETTINGS.editorFocusMode.load(entries),
 	};
 	const database: AppSettings["database"] = {

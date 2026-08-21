@@ -548,6 +548,11 @@
 				"markdown"
 			]
 		},
+		"general-editor-format-bar": {
+			"title": "Barra de formatação",
+			"section": "Experimental",
+			"keywords": ["formatação", "barra", "toolbar", "rico", "editor"]
+		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
 			"section": "Assistant behavior",

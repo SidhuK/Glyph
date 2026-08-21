@@ -534,6 +534,11 @@
 				"markdown"
 			]
 		},
+		"general-editor-format-bar": {
+			"title": "서식 막대",
+			"section": "실험적",
+			"keywords": ["서식", "막대", "툴바", "리치", "editor", "toolbar"]
+		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
 			"section": "Assistant behavior",

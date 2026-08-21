@@ -154,6 +154,11 @@
 			"ariaLabel": "Vim-Modus",
 			"helpAriaLabel": "Über den Vim-Modus",
 			"info": "Der Vim-Modus ist nur im Rohmarkdown-Modus verfügbar."
+		},
+		"formatBar": {
+			"label": "Formatierungsleiste",
+			"description": "Die untere Formatierungsleiste im Rich-Editor anzeigen.",
+			"ariaLabel": "Formatierungsleiste anzeigen"
 		}
 	},
 	"fileTree": {

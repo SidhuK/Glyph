@@ -58,6 +58,7 @@ export interface EditorSettings {
 	rawMarkdownVimMode: boolean;
 	spellCheck: boolean;
 	showExternalLinkPreviews: boolean;
+	showFormatBar: boolean;
 	focusMode: FocusMode;
 }
 

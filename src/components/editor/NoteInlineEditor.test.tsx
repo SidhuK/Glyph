@@ -308,6 +308,8 @@ describe("NoteInlineEditor table controls", () => {
 			editor: mockEditor,
 			frontmatter: getFrontmatter(),
 			showFrontmatterInEditor: getShowFrontmatterInEditor(),
+			showHeadingPrefixes: true,
+			showFormatBar: true,
 			frontmatterRef: { current: getFrontmatter() },
 			lastAppliedBodyRef: { current: "" },
 			lastEmittedMarkdownRef: { current: "" },
