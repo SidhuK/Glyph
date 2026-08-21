@@ -56,6 +56,11 @@ export function ExperimentalSettingsPane() {
 		DURABLE_SETTINGS.editorShowExternalLinkPreviews.write,
 		setError,
 	);
+	const formatBar = useSettingsBoolean(
+		true,
+		DURABLE_SETTINGS.editorShowFormatBar.write,
+		setError,
+	);
 	const rawMarkdownVimMode = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.editorRawMarkdownVimMode.write,
@@ -75,6 +80,7 @@ export function ExperimentalSettingsPane() {
 	const setInitialFolioMode = folioMode.setInitialChecked;
 	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
 	const setInitialExternalLinkPreviews = externalLinkPreviews.setInitialChecked;
+	const setInitialFormatBar = formatBar.setInitialChecked;
 	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
 	const setInitialFocusMode = focusMode.setInitialValue;
 	const setInitialNonMarkdownFiles = nonMarkdownFiles.setInitialChecked;
@@ -85,6 +91,7 @@ export function ExperimentalSettingsPane() {
 		setInitialFolioMode(settings.ui.folioMode);
 		setInitialNoteSidePeek(settings.ui.noteSidePeek);
 		setInitialExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
+		setInitialFormatBar(settings.editor.showFormatBar);
 		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
 		setInitialFocusMode(settings.editor.focusMode);
 		setInitialNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
@@ -92,6 +99,7 @@ export function ExperimentalSettingsPane() {
 		settings,
 		setInitialExternalLinkPreviews,
 		setInitialFolioMode,
+		setInitialFormatBar,
 		setInitialNoteSidePeek,
 		setInitialFocusMode,
 		setInitialNonMarkdownFiles,
@@ -166,6 +174,18 @@ export function ExperimentalSettingsPane() {
 							disabled={externalLinkPreviews.isSaving}
 							ariaLabel={t("editor.externalLinkPreviews.ariaLabel")}
 							onCheckedChange={externalLinkPreviews.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.formatBar.label")}
+						description={t("editor.formatBar.description")}
+						searchId="general-editor-format-bar"
+					>
+						<SettingsToggle
+							checked={formatBar.checked}
+							disabled={formatBar.isSaving}
+							ariaLabel={t("editor.formatBar.ariaLabel")}
+							onCheckedChange={formatBar.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

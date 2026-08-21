@@ -558,6 +558,18 @@
 				"markdown"
 			]
 		},
+		"general-editor-format-bar": {
+			"title": "Barre de formatage",
+			"section": "Expérimental",
+			"keywords": [
+				"formatage",
+				"barre",
+				"toolbar",
+				"ribbon",
+				"enrichi",
+				"éditeur"
+			]
+		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
 			"section": "Assistant behavior",

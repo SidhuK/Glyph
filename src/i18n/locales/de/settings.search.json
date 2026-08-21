@@ -551,6 +551,19 @@
 				"markdown"
 			]
 		},
+		"general-editor-format-bar": {
+			"title": "Formatierungsleiste",
+			"section": "Experimentell",
+			"keywords": [
+				"format",
+				"leiste",
+				"toolbar",
+				"ribbon",
+				"rich",
+				"editor",
+				"ausblenden"
+			]
+		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
 			"section": "Assistant behavior",

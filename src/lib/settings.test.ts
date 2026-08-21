@@ -158,6 +158,36 @@ describe("settings Raw Markdown Vim Mode", () => {
 	});
 });
 
+describe("settings format bar", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults the formatting bar to shown", async () => {
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.editor.showFormatBar).toBe(true);
+	});
+
+	it("loads the formatting bar from the store", async () => {
+		storeState.set("editor.showFormatBar", false);
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.editor.showFormatBar).toBe(false);
+	});
+
+	it("persists and emits formatting bar changes", async () => {
+		const { DURABLE_SETTINGS } = await import("./settings");
+		await DURABLE_SETTINGS.editorShowFormatBar.write(false);
+		expect(storeState.get("editor.showFormatBar")).toBe(false);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			editor: { showFormatBar: false },
+		});
+	});
+});
+
 describe("settings note side peek", () => {
 	beforeEach(() => {
 		vi.resetModules();

@@ -154,6 +154,11 @@
 			"ariaLabel": "Modo Vim",
 			"helpAriaLabel": "Acerca del modo Vim",
 			"info": "El modo Vim solo está disponible en el modo Markdown sin formato."
+		},
+		"formatBar": {
+			"label": "Barra de formato",
+			"description": "Mostrar la barra de formato inferior en el modo Enriquecido.",
+			"ariaLabel": "Mostrar barra de formato"
 		}
 	},
 	"fileTree": {

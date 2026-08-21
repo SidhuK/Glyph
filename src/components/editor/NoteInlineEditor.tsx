@@ -279,6 +279,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		colorfulHeadings,
 		showFrontmatterInEditor,
 		showHeadingPrefixes,
+		showFormatBar,
 	} = useNoteEditor({
 		additionalExtensions: mergedAdditionalExtensions,
 		markdown,
@@ -298,6 +299,17 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	const canEdit = mode === "rich" && Boolean(liveEditor?.isEditable);
 	const showEditorChrome = canEdit && !chromeMinimal;
+	const showEditorFormatBar = showEditorChrome && showFormatBar;
+	const showLiveFormatBar = Boolean(showEditorFormatBar && liveEditor);
+	const showLiveFormatBarRef = useRef(showLiveFormatBar);
+	showLiveFormatBarRef.current = showLiveFormatBar;
+	const [reserveFormatBarSpace, setReserveFormatBarSpace] =
+		useState(showLiveFormatBar);
+	useLayoutEffect(() => {
+		if (showLiveFormatBar) {
+			setReserveFormatBarSpace(true);
+		}
+	}, [showLiveFormatBar]);
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
@@ -883,7 +895,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			className={[
 				"rfNodeNoteEditor",
 				"rfNodeNoteEditorFlatEdges",
-				showEditorChrome ? "rfNodeNoteEditorHasRibbon" : "",
+				reserveFormatBarSpace ? "rfNodeNoteEditorHasRibbon" : "",
 				"nodrag",
 				"nopan",
 			]
@@ -946,8 +958,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 			</div>
-			<AnimatePresence>
-				{showEditorChrome && liveEditor ? (
+			<AnimatePresence
+				onExitComplete={() => {
+					if (!showLiveFormatBarRef.current) {
+						setReserveFormatBarSpace(false);
+					}
+				}}
+			>
+				{showEditorFormatBar && liveEditor ? (
 					<EditorRibbon
 						editor={liveEditor}
 						canEdit={canEdit}

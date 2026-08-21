@@ -529,6 +529,11 @@
 				"klawiatura"
 			]
 		},
+		"general-editor-format-bar": {
+			"title": "Pasek formatowania",
+			"section": "Eksperymentalne",
+			"keywords": ["formatowanie", "pasek", "toolbar", "wzbogacony", "edytor"]
+		},
 		"ai-assistant-behavior-tools": {
 			"title": "Czat AI ma dostęp do narzędzi",
 			"section": "Zachowanie asystenta",

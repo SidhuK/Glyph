@@ -33,6 +33,7 @@ const {
 				enablePeopleMentionsAsTags?: boolean;
 				showFrontmatterInEditor?: boolean;
 				showCollapsibleHeadings?: boolean;
+				showFormatBar?: boolean;
 				spellCheck?: boolean;
 			};
 		}) => void
@@ -131,6 +132,7 @@ const {
 				enablePeopleMentionsAsTags?: boolean;
 				showFrontmatterInEditor?: boolean;
 				showCollapsibleHeadings?: boolean;
+				showFormatBar?: boolean;
 				spellCheck?: boolean;
 			};
 		}) => {
@@ -148,6 +150,7 @@ const {
 					colorfulHeadings: false,
 					showCollapsibleHeadings: false,
 					showFrontmatterInEditor: false,
+					showFormatBar: true,
 					enablePeopleMentionsAsTags: false,
 				},
 			}),
@@ -172,6 +175,8 @@ const {
 		},
 	};
 });
+
+type SettingsSnapshot = Awaited<ReturnType<typeof loadSettingsMock>>;
 
 const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
 
@@ -224,6 +229,7 @@ vi.mock("../../../lib/tauriEvents", () => ({
 				enablePeopleMentionsAsTags?: boolean;
 				showFrontmatterInEditor?: boolean;
 				showCollapsibleHeadings?: boolean;
+				showFormatBar?: boolean;
 				spellCheck?: boolean;
 			};
 		}) => void,
@@ -252,6 +258,7 @@ function Harness({
 	onState?: (state: {
 		colorfulHeadings: boolean;
 		showFrontmatterInEditor: boolean;
+		showFormatBar: boolean;
 	}) => void;
 	pasteMarkdownBehavior?: "plain-text" | "smart-markdown";
 	relPath?: string;
@@ -268,8 +275,14 @@ function Harness({
 		onState?.({
 			colorfulHeadings: state.colorfulHeadings,
 			showFrontmatterInEditor: state.showFrontmatterInEditor,
+			showFormatBar: state.showFormatBar,
 		});
-	}, [onState, state.colorfulHeadings, state.showFrontmatterInEditor]);
+	}, [
+		onState,
+		state.colorfulHeadings,
+		state.showFrontmatterInEditor,
+		state.showFormatBar,
+	]);
 	return null;
 }
 
@@ -401,6 +414,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -735,6 +749,7 @@ describe("useNoteEditor", () => {
 		expect(onState).toHaveBeenLastCalledWith({
 			colorfulHeadings: false,
 			showFrontmatterInEditor: false,
+			showFormatBar: true,
 		});
 
 		await act(async () => {
@@ -746,6 +761,7 @@ describe("useNoteEditor", () => {
 		expect(onState).toHaveBeenLastCalledWith({
 			colorfulHeadings: true,
 			showFrontmatterInEditor: false,
+			showFormatBar: true,
 		});
 	});
 
@@ -760,6 +776,7 @@ describe("useNoteEditor", () => {
 		expect(onState).toHaveBeenLastCalledWith({
 			colorfulHeadings: false,
 			showFrontmatterInEditor: false,
+			showFormatBar: true,
 		});
 
 		await act(async () => {
@@ -771,6 +788,7 @@ describe("useNoteEditor", () => {
 		expect(onState).toHaveBeenLastCalledWith({
 			colorfulHeadings: false,
 			showFrontmatterInEditor: true,
+			showFormatBar: true,
 		});
 	});
 
@@ -802,6 +820,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: true,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -813,6 +832,54 @@ describe("useNoteEditor", () => {
 		expect(onState).toHaveBeenLastCalledWith({
 			colorfulHeadings: false,
 			showFrontmatterInEditor: true,
+			showFormatBar: true,
+		});
+	});
+
+	it("does not let a stale loadSettings snapshot overwrite a live showFormatBar update", async () => {
+		const onChange = vi.fn();
+		const onState = vi.fn();
+		let resolveSettings!: (value: SettingsSnapshot) => void;
+		loadSettingsMock.mockReturnValue(
+			new Promise<SettingsSnapshot>((resolve) => {
+				resolveSettings = resolve;
+			}),
+		);
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} onState={onState} />);
+		});
+
+		await act(async () => {
+			emitSettingsUpdated({
+				editor: { showFormatBar: false },
+			});
+		});
+
+		expect(onState).toHaveBeenLastCalledWith({
+			colorfulHeadings: false,
+			showFrontmatterInEditor: false,
+			showFormatBar: false,
+		});
+
+		await act(async () => {
+			resolveSettings({
+				editor: {
+					attachmentFolder: "assets",
+					attachmentStorageMode: "specific-folder",
+					colorfulHeadings: false,
+					showCollapsibleHeadings: false,
+					showFrontmatterInEditor: false,
+					showFormatBar: true,
+					enablePeopleMentionsAsTags: false,
+				},
+			});
+		});
+
+		expect(onState).toHaveBeenLastCalledWith({
+			colorfulHeadings: false,
+			showFrontmatterInEditor: false,
+			showFormatBar: false,
 		});
 	});
 
@@ -1083,6 +1150,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -1164,6 +1232,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -1203,6 +1272,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -1242,6 +1312,7 @@ describe("useNoteEditor", () => {
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				showFrontmatterInEditor: false,
+				showFormatBar: true,
 				enablePeopleMentionsAsTags: false,
 			},
 		});

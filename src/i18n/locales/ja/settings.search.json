@@ -548,6 +548,11 @@
 				"markdown"
 			]
 		},
+		"general-editor-format-bar": {
+			"title": "書式バー",
+			"section": "実験的",
+			"keywords": ["書式", "バー", "ツールバー", "リッチ", "editor", "toolbar"]
+		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
 			"section": "Assistant behavior",

@@ -17,9 +17,11 @@ export function useNoteEditorSettings() {
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
 	const [showExternalLinkPreviews, setShowExternalLinkPreviews] =
 		useState(false);
+	const [showFormatBar, setShowFormatBar] = useState(true);
 	const [focusMode, setFocusMode] = useState<FocusMode>("off");
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
+	const liveShowFormatBarRef = useRef(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -35,6 +37,9 @@ export function useNoteEditorSettings() {
 				setColorfulHeadings(settings.editor.colorfulHeadings);
 				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
 				setShowExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
+				if (!liveShowFormatBarRef.current) {
+					setShowFormatBar(settings.editor.showFormatBar);
+				}
 				setFocusMode(settings.editor.focusMode);
 				attachmentStorageModeRef.current =
 					settings.editor.attachmentStorageMode;
@@ -49,6 +54,9 @@ export function useNoteEditorSettings() {
 				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
 				setShowExternalLinkPreviews(false);
+				if (!liveShowFormatBarRef.current) {
+					setShowFormatBar(true);
+				}
 				setFocusMode("off");
 				attachmentStorageModeRef.current = "note-folder";
 				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
@@ -80,6 +88,10 @@ export function useNoteEditorSettings() {
 		if (typeof payload.editor?.showExternalLinkPreviews === "boolean") {
 			setShowExternalLinkPreviews(payload.editor.showExternalLinkPreviews);
 		}
+		if (typeof payload.editor?.showFormatBar === "boolean") {
+			liveShowFormatBarRef.current = true;
+			setShowFormatBar(payload.editor.showFormatBar);
+		}
 		if (isFocusMode(payload.editor?.focusMode)) {
 			setFocusMode(payload.editor.focusMode);
 		}
@@ -102,5 +114,6 @@ export function useNoteEditorSettings() {
 		showFrontmatterInEditor,
 		showHeadingPrefixes,
 		showExternalLinkPreviews,
+		showFormatBar,
 	};
 }

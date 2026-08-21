@@ -154,6 +154,11 @@
 			"ariaLabel": "Vim 모드",
 			"helpAriaLabel": "Vim 모드 정보",
 			"info": "Vim 모드는 Raw Markdown 모드에서만 사용할 수 있습니다."
+		},
+		"formatBar": {
+			"label": "서식 막대",
+			"description": "리치 편집기 하단에 서식 막대를 표시합니다.",
+			"ariaLabel": "서식 막대 표시"
 		}
 	},
 	"fileTree": {

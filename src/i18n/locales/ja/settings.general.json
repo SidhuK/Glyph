@@ -154,6 +154,11 @@
 			"ariaLabel": "Vim モード",
 			"helpAriaLabel": "Vim モードについて",
 			"info": "Vim モードは生の Markdown モードでのみ利用できます。"
+		},
+		"formatBar": {
+			"label": "書式バー",
+			"description": "リッチエディターの下部に書式バーを表示します。",
+			"ariaLabel": "書式バーを表示"
 		}
 	},
 	"fileTree": {

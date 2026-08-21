@@ -151,7 +151,7 @@ vi.mock("../../lib/tauri", () => ({
 }));
 
 vi.mock("./EditorRibbon", () => ({
-	EditorRibbon: () => null,
+	EditorRibbon: () => <div data-testid="editor-ribbon" />,
 }));
 
 vi.mock("./NotePropertiesPanel", () => ({
@@ -308,6 +308,8 @@ describe("NoteInlineEditor table controls", () => {
 			editor: mockEditor,
 			frontmatter: getFrontmatter(),
 			showFrontmatterInEditor: getShowFrontmatterInEditor(),
+			showHeadingPrefixes: true,
+			showFormatBar: true,
 			frontmatterRef: { current: getFrontmatter() },
 			lastAppliedBodyRef: { current: "" },
 			lastEmittedMarkdownRef: { current: "" },
@@ -464,6 +466,39 @@ describe("NoteInlineEditor table controls", () => {
 		});
 		expect(chainCommands.addColumnAfter).toHaveBeenCalled();
 		expect(chainCommands.run).toHaveBeenCalled();
+	});
+
+	it("shows the formatting bar by default in rich mode", () => {
+		render("rich");
+
+		expect(
+			container.querySelector('[data-testid="editor-ribbon"]'),
+		).toBeTruthy();
+		expect(container.querySelector(".rfNodeNoteEditor")?.className).toContain(
+			"rfNodeNoteEditorHasRibbon",
+		);
+	});
+
+	it("omits the formatting bar when showFormatBar is false", () => {
+		useNoteEditorMock.mockImplementation(() => ({
+			body: "",
+			colorfulHeadings: getColorfulHeadings(),
+			editor: mockEditor,
+			frontmatter: getFrontmatter(),
+			showFrontmatterInEditor: getShowFrontmatterInEditor(),
+			showHeadingPrefixes: true,
+			showFormatBar: false,
+			frontmatterRef: { current: getFrontmatter() },
+			lastAppliedBodyRef: { current: "" },
+			lastEmittedMarkdownRef: { current: "" },
+		}));
+
+		render("rich");
+
+		expect(container.querySelector('[data-testid="editor-ribbon"]')).toBeNull();
+		expect(
+			container.querySelector(".rfNodeNoteEditor")?.className,
+		).not.toContain("rfNodeNoteEditorHasRibbon");
 	});
 
 	it("keeps frontmatter hidden by default for new notes", () => {

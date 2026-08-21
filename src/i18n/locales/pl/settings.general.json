@@ -164,6 +164,11 @@
 			"ariaLabel": "Tryb Vim",
 			"helpAriaLabel": "O trybie Vim",
 			"info": "Tryb Vim jest dostępny tylko w surowym trybie Markdown."
+		},
+		"formatBar": {
+			"label": "Pasek formatowania",
+			"description": "Pokaż dolny pasek formatowania w trybie wzbogaconym.",
+			"ariaLabel": "Pokaż pasek formatowania"
 		}
 	},
 	"fileTree": {
