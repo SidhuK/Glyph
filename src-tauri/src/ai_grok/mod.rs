@@ -1,5 +1,5 @@
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     time::Duration,
 };
@@ -129,12 +129,31 @@ fn is_grok_model_id(id: &str) -> bool {
 }
 
 fn collect_models_from_text(text: &str, models: &mut Vec<String>, seen: &mut HashSet<String>) {
-    for token in
-        text.split(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '.' || c == '_'))
-    {
+    for line in text.lines() {
+        let Some(token) = line.split_whitespace().next() else {
+            continue;
+        };
         if is_grok_model_id(token) {
             push_model_id(models, seen, token);
         }
+    }
+}
+
+fn collect_default_model_from_config_line(
+    line: &str,
+    models: &mut Vec<String>,
+    seen: &mut HashSet<String>,
+) {
+    let Some((key, value)) = line.split_once('=') else {
+        return;
+    };
+    if key.trim() != "default_model" {
+        return;
+    }
+    let value = value.split_once('#').map_or(value, |(value, _)| value).trim();
+    let value = value.trim_matches(['"', '\'']);
+    if is_grok_model_id(value) {
+        push_model_id(models, seen, value);
     }
 }
 
@@ -177,10 +196,7 @@ async fn collect_models_from_config(
                 }
                 continue;
             }
-            if line.starts_with('#') || !line.contains("default") {
-                continue;
-            }
-            collect_models_from_text(line, models, seen);
+            collect_default_model_from_config_line(line, models, seen);
         }
     }
     Ok(())
@@ -200,7 +216,6 @@ async fn collect_models_from_runtime(
         return;
     };
     collect_models_from_text(&String::from_utf8_lossy(&output.stdout), models, seen);
-    collect_models_from_text(&String::from_utf8_lossy(&output.stderr), models, seen);
 }
 
 pub async fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
@@ -304,7 +319,7 @@ fn event_text(value: &Value) -> Option<&str> {
         .or_else(|| value.get("message").and_then(|v| v.as_str()))
 }
 
-fn tool_name(value: &Value) -> &str {
+fn explicit_tool_name(value: &Value) -> Option<&str> {
     value
         .get("toolName")
         .or_else(|| value.get("tool_name"))
@@ -312,7 +327,6 @@ fn tool_name(value: &Value) -> &str {
         .or_else(|| value.get("kind"))
         .and_then(|v| v.as_str())
         .filter(|name| !name.is_empty())
-        .unwrap_or("tool")
 }
 
 fn tool_call_id(value: &Value) -> Option<String> {
@@ -342,15 +356,30 @@ fn handle_tool_call(
     job_id: &str,
     value: &Value,
     tool_events: &mut Vec<AiStoredToolEvent>,
+    active_tools: &mut HashMap<String, String>,
     phase: &str,
 ) {
+    let call_id = tool_call_id(value);
+    let explicit_name = explicit_tool_name(value);
+    let tool = explicit_name
+        .or_else(|| call_id.as_ref().and_then(|id| active_tools.get(id).map(String::as_str)))
+        .unwrap_or("tool")
+        .to_string();
+    if let Some(call_id) = &call_id {
+        if phase == "call" || explicit_name.is_some() {
+            active_tools.insert(call_id.clone(), tool.clone());
+        }
+        if matches!(phase, "result" | "error") {
+            active_tools.remove(call_id);
+        }
+    }
     emit_tool(
         app,
         job_id,
         tool_events,
-        tool_name(value),
+        &tool,
         phase,
-        tool_call_id(value),
+        call_id,
         Some(value.clone()),
         if phase == "error" {
             tool_error(value)
@@ -366,6 +395,7 @@ fn handle_event(
     value: &Value,
     full: &mut String,
     tool_events: &mut Vec<AiStoredToolEvent>,
+    active_tools: &mut HashMap<String, String>,
 ) -> Result<Option<bool>, String> {
     match value.get("type").and_then(|v| v.as_str()) {
         Some("text") => {
@@ -379,7 +409,7 @@ fn handle_event(
             Ok(None)
         }
         Some("tool_call") => {
-            handle_tool_call(app, job_id, value, tool_events, "call");
+            handle_tool_call(app, job_id, value, tool_events, active_tools, "call");
             Ok(None)
         }
         Some("tool_call_update") => {
@@ -389,7 +419,7 @@ fn handle_event(
                 "in_progress" | "pending" => return Ok(None),
                 _ => "result",
             };
-            handle_tool_call(app, job_id, value, tool_events, phase);
+            handle_tool_call(app, job_id, value, tool_events, active_tools, phase);
             Ok(None)
         }
         Some("end") => {
@@ -491,6 +521,7 @@ pub async fn run_with_grok(
     tokio::pin!(startup_timeout);
     let mut full = String::new();
     let mut tool_events = Vec::new();
+    let mut active_tools = HashMap::new();
     let mut last_stderr = String::new();
     let mut saw_stdout = false;
     let mut stderr_open = true;
@@ -560,7 +591,14 @@ pub async fn run_with_grok(
                         });
                     }
                 };
-                match handle_event(app, job_id, &value, &mut full, &mut tool_events) {
+                match handle_event(
+                    app,
+                    job_id,
+                    &value,
+                    &mut full,
+                    &mut tool_events,
+                    &mut active_tools,
+                ) {
                     Ok(Some(done)) => {
                         wait_after_result(&mut child, &last_stderr).await?;
                         return Ok((full, done, tool_events));
