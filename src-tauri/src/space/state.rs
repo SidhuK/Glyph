@@ -152,11 +152,15 @@ impl SpaceState {
     }
 
     pub fn root_for_window(&self, window: &tauri::WebviewWindow) -> Result<PathBuf, String> {
-        match self.root_for_window_label(window.label()) {
+        self.root_for_webview_label(window.label())
+    }
+
+    pub(crate) fn root_for_webview_label(&self, window_label: &str) -> Result<PathBuf, String> {
+        match self.root_for_window_label(window_label) {
             Ok(root) => Ok(root),
             Err(error)
                 if is_no_space_session_error(&error)
-                    && shares_main_space_session(window.label()) =>
+                    && shares_main_space_session(window_label) =>
             {
                 // Auxiliary editor windows (quick note, external markdown, …)
                 // inherit the main window's active space rather than owning one.

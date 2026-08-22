@@ -4,7 +4,6 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { queryClient } from "../../lib/queryClient";
 import {
 	type AiChatHistoryDetail,
-	type AiChatHistorySummary,
 	type AiStoredToolEvent,
 	invoke,
 } from "../../lib/tauri";
@@ -45,13 +44,34 @@ interface LoadedAiChat {
 	toolEvents: AiStoredToolEvent[];
 }
 
-export function preloadAiHistorySummaries(
-	limit = 20,
-): Promise<AiChatHistorySummary[]> {
+const HISTORY_WRITE_RETRY = 30;
+const HISTORY_WRITE_RETRY_MS = 500;
+
+export function fetchAiHistoryDetail(
+	jobId: string,
+): Promise<AiChatHistoryDetail> {
 	return queryClient.fetchQuery({
-		queryKey: aiHistoryQueryKeys.summaries(limit),
-		queryFn: () => invoke("ai_chat_history_list", { limit }),
+		queryKey: aiHistoryQueryKeys.detail(jobId),
+		queryFn: () => invoke("ai_chat_history_get", { job_id: jobId }),
+		gcTime: 0,
+		staleTime: 0,
+		retry: HISTORY_WRITE_RETRY,
+		retryDelay: HISTORY_WRITE_RETRY_MS,
 	});
+}
+
+export function useRestoredAiChat(jobId: string | null): LoadedAiChat | null {
+	const query = useQuery({
+		queryKey: aiHistoryQueryKeys.detail(jobId ?? ""),
+		queryFn: () => invoke("ai_chat_history_get", { job_id: jobId ?? "" }),
+		enabled: Boolean(jobId),
+		gcTime: 0,
+	});
+	if (!jobId || !query.data) return null;
+	return {
+		messages: toUIMessages(jobId, query.data.messages),
+		toolEvents: query.data.tool_events ?? [],
+	};
 }
 
 interface UseAiHistoryOptions {
@@ -75,6 +95,8 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 			const detail = await localQueryClient.fetchQuery({
 				queryKey: aiHistoryQueryKeys.detail(jobId),
 				queryFn: () => invoke("ai_chat_history_get", { job_id: jobId }),
+				gcTime: 0,
+				staleTime: 0,
 			});
 			return {
 				messages: toUIMessages(jobId, detail.messages),

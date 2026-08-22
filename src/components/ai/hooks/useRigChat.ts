@@ -7,6 +7,11 @@ import {
 	invoke,
 } from "../../../lib/tauri";
 import { listenTauriEvent } from "../../../lib/tauriEvents";
+import {
+	beginAiPanelKeepMounted,
+	endAiPanelKeepMounted,
+	isAiPanelKeepMounted,
+} from "../aiPanelSession";
 
 type UIMessagePart = { type: "text"; text: string };
 
@@ -41,7 +46,7 @@ type SendMessageOptions = {
 };
 
 interface UseRigChatOptions {
-	onComplete?: () => void;
+	onComplete?: (historyId: string, keepAliveEpoch: number) => void;
 }
 
 export type RigChatStatus = "ready" | "submitted" | "streaming" | "error";
@@ -69,6 +74,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	const messagesRef = useRef<UIMessage[]>([]);
 	const activeJobIdRef = useRef<string | null>(null);
 	const activeThreadIdRef = useRef<string | null>(null);
+	const keepAliveEpochRef = useRef(0);
 	const awaitingStartRef = useRef(false);
 	const stopListenersRef = useRef<Array<() => void>>([]);
 	const doneTimerRef = useRef<number | null>(null);
@@ -99,6 +105,8 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	}, []);
 
 	const completeActiveJob = useCallback(() => {
+		const historyId = activeThreadIdRef.current || activeJobIdRef.current;
+		const keepAliveEpoch = keepAliveEpochRef.current;
 		flushStreamingRef.current?.();
 		flushStreamingRef.current = null;
 		clearDoneTimer();
@@ -106,7 +114,12 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 		awaitingStartRef.current = false;
 		cleanupListeners();
 		setStatus("ready");
-		onComplete?.();
+		if (historyId && onComplete) {
+			activeThreadIdRef.current = historyId;
+			onComplete(historyId, keepAliveEpoch);
+			return;
+		}
+		endAiPanelKeepMounted(keepAliveEpoch);
 	}, [cleanupListeners, clearDoneTimer, onComplete]);
 
 	const clearError = useCallback(() => {
@@ -115,6 +128,8 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	}, []);
 
 	const stop = useCallback(() => {
+		const keepAliveEpoch = keepAliveEpochRef.current;
+		keepAliveEpochRef.current = 0;
 		const jobId = activeJobIdRef.current;
 		if (jobId) {
 			void invoke("ai_chat_cancel", { job_id: jobId }).catch(() => {});
@@ -125,6 +140,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 		activeJobIdRef.current = null;
 		awaitingStartRef.current = false;
 		cleanupListeners();
+		endAiPanelKeepMounted(keepAliveEpoch);
 		setStatus("ready");
 	}, [cleanupListeners, clearDoneTimer]);
 
@@ -163,6 +179,11 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 			updateMessages(nextMessages);
 			setStatus("submitted");
 			awaitingStartRef.current = true;
+			const keepAliveEpoch = beginAiPanelKeepMounted();
+			keepAliveEpochRef.current = keepAliveEpoch;
+			const isCurrentSend = () =>
+				keepAliveEpochRef.current === keepAliveEpoch &&
+				isAiPanelKeepMounted(keepAliveEpoch);
 
 			try {
 				clearDoneTimer();
@@ -187,8 +208,12 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				let chunkFrame: number | null = null;
 				let streamingStarted = false;
 				const shouldBufferEvent = (jobId: string) =>
-					awaitingStartRef.current && !activeJobIdRef.current && !!jobId;
-				const isActiveJob = (jobId: string) => jobId === activeJobIdRef.current;
+					isCurrentSend() &&
+					awaitingStartRef.current &&
+					!activeJobIdRef.current &&
+					!!jobId;
+				const isActiveJob = (jobId: string) =>
+					isCurrentSend() && jobId === activeJobIdRef.current;
 				const flushChunks = () => {
 					if (chunkFrame !== null) {
 						window.cancelAnimationFrame(chunkFrame);
@@ -244,6 +269,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					activeJobIdRef.current = null;
 					awaitingStartRef.current = false;
 					cleanupListeners();
+					endAiPanelKeepMounted(keepAliveEpoch);
 					setError(new Error(payload.message));
 					setStatus("error");
 				};
@@ -271,6 +297,12 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					}
 					handleError(payload);
 				});
+				if (!isCurrentSend()) {
+					onChunk();
+					onDone();
+					onError();
+					return;
+				}
 
 				stopListenersRef.current = [
 					onChunk,
@@ -296,8 +328,15 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 						audit: options?.body?.audit ?? true,
 					},
 				});
+				if (!isCurrentSend()) {
+					void invoke("ai_chat_cancel", { job_id: jobId }).catch(() => {});
+					return;
+				}
 
 				activeJobIdRef.current = jobId;
+				if (!activeThreadIdRef.current) {
+					activeThreadIdRef.current = jobId;
+				}
 				awaitingStartRef.current = false;
 				for (const payload of pendingChunks) {
 					handleChunk(payload);
@@ -308,11 +347,13 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					handleDone(pendingDone);
 				}
 			} catch (err) {
+				if (!isCurrentSend()) return;
 				flushStreamingRef.current = null;
 				clearDoneTimer();
 				activeJobIdRef.current = null;
 				awaitingStartRef.current = false;
 				cleanupListeners();
+				endAiPanelKeepMounted(keepAliveEpoch);
 				setError(err instanceof Error ? err : new Error(String(err)));
 				setStatus("error");
 			}

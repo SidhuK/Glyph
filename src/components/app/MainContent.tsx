@@ -1,6 +1,5 @@
 import { m } from "motion/react";
 import {
-	Activity,
 	type CSSProperties,
 	type Dispatch,
 	type SetStateAction,
@@ -32,6 +31,7 @@ import type { FsEntry } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { cn } from "../../lib/utils";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
+import { useAiPanelSession } from "../ai/aiPanelSession";
 import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
 import { NoteSidePeek } from "../preview/NoteSidePeek";
@@ -262,11 +262,13 @@ export const MainContent = memo(function MainContent({
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { folioMode, settingsMode, settingsTab } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
+	const { keepMounted: aiPanelKeepMounted } = useAiPanelSession();
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
 	const handledDailyNoteSetupNoticeRequestRef = useRef(0);
 
 	const aiSidebarVisible = aiEnabled && aiPanelOpen && !infoSidebarOpen;
+	const aiSidebarMounted = aiSidebarVisible || aiPanelKeepMounted;
 	const rightSidebarOpen =
 		Boolean(spacePath) &&
 		!settingsMode &&
@@ -464,25 +466,31 @@ export const MainContent = memo(function MainContent({
 				data-open={rightSidebarOpen ? "true" : undefined}
 				style={notesInfoSidebarHostStyle}
 			>
-				<Activity mode={aiSidebarVisible ? "visible" : "hidden"}>
-					<AIFloatingHost onToggle={() => setAiPanelOpen((open) => !open)} />
-				</Activity>
+				{aiSidebarMounted ? (
+					<AIFloatingHost
+						hidden={!rightSidebarOpen || !aiSidebarVisible}
+						onToggle={() => setAiPanelOpen((open) => !open)}
+					/>
+				) : null}
 			</div>
 		</>
 	);
 
 	if (settingsMode) {
 		return (
-			<main className="mainArea">
-				<div className="settingsTabPanel">
-					<header className="settingsPanelHeader">
-						<div className="settingsPanelTitleRow">
-							<h2 className="settingsPanelTitle">{settingsPanelTitle}</h2>
-						</div>
-					</header>
-					<SettingsTabContent tab={settingsTab} />
-				</div>
-			</main>
+			<>
+				<main className="mainArea">
+					<div className="settingsTabPanel">
+						<header className="settingsPanelHeader">
+							<div className="settingsPanelTitleRow">
+								<h2 className="settingsPanelTitle">{settingsPanelTitle}</h2>
+							</div>
+						</header>
+						<SettingsTabContent tab={settingsTab} />
+					</div>
+				</main>
+				{aiPanelKeepMounted ? rightSidebarSurface : null}
+			</>
 		);
 	}
 

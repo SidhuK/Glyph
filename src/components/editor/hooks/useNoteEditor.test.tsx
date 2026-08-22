@@ -240,7 +240,8 @@ vi.mock("../../../lib/tauriEvents", () => ({
 	},
 }));
 
-vi.mock("./useHydrateInlineImages", () => ({
+vi.mock("./useHydrateInlineImages", async (importOriginal) => ({
+	...(await importOriginal<typeof import("./useHydrateInlineImages")>()),
 	useHydrateInlineImages: () => {},
 }));
 
@@ -1214,7 +1215,7 @@ describe("useNoteEditor", () => {
 			6,
 			undefined,
 			expect.objectContaining({
-				src: "data:image/png;base64,abc",
+				src: "glyphasset://localhost/assets/image.png",
 				alt: "paste.png",
 				title: "",
 				originSrc: "../assets/image.png",
