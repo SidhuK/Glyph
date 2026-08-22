@@ -7,11 +7,6 @@ import { type TextFileDoc, invoke } from "../../lib/tauri";
 import { normalizeRelPath } from "../../utils/path";
 import type { RawMarkdownEditorHandle } from "../editor/raw/types";
 import type { NoteInlineEditorMode } from "../editor/types";
-import {
-	clearMarkdownDocCache,
-	getCachedMarkdownDoc,
-	peekCachedMarkdownDoc,
-} from "./markdownCache";
 
 /** Debounce typing before persisting so rapid keystrokes coalesce. */
 const AUTOSAVE_DEBOUNCE_MS = 900;
@@ -37,7 +32,7 @@ export function useMarkdownDocumentSession({
 	setEditorMode,
 	spacePath,
 }: UseMarkdownDocumentSessionOptions) {
-	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
+	const initialText = initialDoc?.text ?? "";
 	const [text, setText] = useState(() => initialText);
 	const [savedText, setSavedText] = useState(() => initialText);
 	const [saving, setSaving] = useState(false);
@@ -136,7 +131,7 @@ export function useMarkdownDocumentSession({
 		const sessionId = documentSessionRef.current + 1;
 		documentSessionRef.current = sessionId;
 		saveRequestTokenRef.current += 1;
-		const cached = initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "";
+		const cached = initialDoc?.text ?? "";
 		textRef.current = cached;
 		savedTextRef.current = cached;
 		mtimeRef.current = initialDoc?.mtime_ms ?? null;
@@ -196,7 +191,6 @@ export function useMarkdownDocumentSession({
 		setSaving(false);
 		setAutosaveBusy(false);
 		clearPulse();
-		clearMarkdownDocCache();
 		setLoadedRelPath("");
 	}, [clearPulse, spacePath]);
 

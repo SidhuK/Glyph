@@ -4,8 +4,44 @@ import { invoke } from "../../lib/tauri";
 
 const MARKDOWN_PREVIEW_MAX_BYTES = 4096;
 const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
+const FILE_PREVIEW_CACHE_MAX_ENTRIES = 500;
 /** Must match `TEXT_PREVIEW_BATCH_MAX_PATHS` in space_fs preview.rs. */
 const TEXT_PREVIEW_BATCH_MAX_PATHS = 100;
+
+type FilePreview = string | null;
+
+function trimFilePreviewCache(
+	previews: Map<string, FilePreview>,
+	visiblePaths: ReadonlySet<string>,
+): Map<string, FilePreview> {
+	const maxEntries = Math.max(
+		FILE_PREVIEW_CACHE_MAX_ENTRIES,
+		visiblePaths.size,
+	);
+	if (previews.size <= maxEntries) return previews;
+
+	const next = new Map(previews);
+	for (const path of next.keys()) {
+		if (next.size <= maxEntries) break;
+		if (!visiblePaths.has(path)) next.delete(path);
+	}
+	return next;
+}
+
+function promoteVisiblePreviews(
+	previews: Map<string, FilePreview>,
+	visiblePaths: string[],
+): Map<string, FilePreview> {
+	let next = previews;
+	const visiblePathSet = new Set(visiblePaths);
+	for (const [path, preview] of previews) {
+		if (!visiblePathSet.has(path)) continue;
+		if (next === previews) next = new Map(previews);
+		next.delete(path);
+		next.set(path, preview);
+	}
+	return trimFilePreviewCache(next, visiblePathSet);
+}
 
 function plainMarkdownLine(line: string): string {
 	return line
@@ -47,8 +83,8 @@ export function useVisibleFilePreviews(
 	focusedDirPath: string | null,
 ) {
 	const [filePreviewsByPath, setFilePreviewsByPath] = useState<
-		Record<string, string | null | undefined>
-	>({});
+		Map<string, FilePreview>
+	>(() => new Map());
 	const [filePreviewPaths, setFilePreviewPaths] = useState<string[]>([]);
 	const [filePreviewRefreshKey, setFilePreviewRefreshKey] = useState(0);
 	const filePreviewRequestRef = useRef("");
@@ -58,14 +94,10 @@ export function useVisibleFilePreviews(
 		if (previousSpacePathRef.current === spacePath) return;
 		previousSpacePathRef.current = spacePath;
 		setFilePreviewPaths([]);
-		setFilePreviewsByPath({});
+		setFilePreviewsByPath(new Map());
 	}, [spacePath]);
 
-	const clearVisiblePreviewPaths = useCallback(() => {
-		setFilePreviewPaths([]);
-	}, []);
-
-	const handleVisiblePreviewPathsChange = useCallback((paths: string[]) => {
+	const updateVisiblePreviewPaths = useCallback((paths: string[]) => {
 		setFilePreviewPaths((current) => {
 			if (
 				current.length === paths.length &&
@@ -75,14 +107,19 @@ export function useVisibleFilePreviews(
 			}
 			return paths;
 		});
+		setFilePreviewsByPath((current) => promoteVisiblePreviews(current, paths));
 	}, []);
+
+	const clearVisiblePreviewPaths = useCallback(() => {
+		updateVisiblePreviewPaths([]);
+	}, [updateVisiblePreviewPaths]);
 
 	const invalidatePreviewForPath = useCallback(
 		(relPath: string, removed: boolean) => {
 			setFilePreviewsByPath((current) => {
-				if (!(relPath in current)) return current;
-				const next = { ...current };
-				delete next[relPath];
+				if (!current.has(relPath)) return current;
+				const next = new Map(current);
+				next.delete(relPath);
 				return next;
 			});
 			if (!removed && filePreviewPaths.includes(relPath)) {
@@ -104,9 +141,7 @@ export function useVisibleFilePreviews(
 		}
 
 		const missingPaths = filePreviewPaths.filter(
-			(path) =>
-				filePreviewsByPath[path] === undefined ||
-				filePreviewsByPath[path] === "",
+			(path) => !filePreviewsByPath.has(path),
 		);
 		if (missingPaths.length === 0) return;
 
@@ -138,7 +173,7 @@ export function useVisibleFilePreviews(
 			}
 			setFilePreviewsByPath((prev) => {
 				let changed = false;
-				const next = { ...prev };
+				const next = new Map(prev);
 				for (const outcome of settled) {
 					if (outcome.status !== "fulfilled") {
 						console.warn("Failed to load file previews", outcome.reason);
@@ -150,17 +185,17 @@ export function useVisibleFilePreviews(
 						if (!path) continue;
 						if (result.error === null && result.text !== null) {
 							const snippet = markdownPreviewSnippet(result.text) || null;
-							if (next[path] !== snippet) {
-								next[path] = snippet;
-								changed = true;
-							}
-						} else if (path in next) {
-							delete next[path];
+							next.delete(path);
+							next.set(path, snippet);
+							changed = true;
+						} else if (next.delete(path)) {
 							changed = true;
 						}
 					}
 				}
-				return changed ? next : prev;
+				return changed
+					? trimFilePreviewCache(next, new Set(filePreviewPaths))
+					: prev;
 			});
 		});
 
@@ -178,7 +213,7 @@ export function useVisibleFilePreviews(
 	return {
 		filePreviewsByPath,
 		clearVisiblePreviewPaths,
-		handleVisiblePreviewPathsChange,
+		handleVisiblePreviewPathsChange: updateVisiblePreviewPaths,
 		invalidatePreviewForPath,
 	};
 }

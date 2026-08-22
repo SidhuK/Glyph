@@ -1,7 +1,3 @@
-import {
-	clearMarkdownDocCache,
-	setCachedMarkdownDoc,
-} from "../components/preview/markdownCache";
 import { summarizeChecklistsFromMarkdown } from "./checklistSummary";
 import {
 	readStoredSelectedDatabaseId,
@@ -105,9 +101,7 @@ export const navigationQueryKeys = {
 };
 
 async function fetchNote(path: string): Promise<TextFileDoc> {
-	const doc = await invoke("space_read_text", { path });
-	setCachedMarkdownDoc(path, doc.text);
-	return doc;
+	return invoke("space_read_text", { path });
 }
 
 export function noteDocumentQueryOptions(path: string) {
@@ -132,7 +126,6 @@ export function getPrefetchedNote(path: string): TextFileDoc | null {
 
 export function setPrefetchedNote(path: string, doc: TextFileDoc) {
 	queryClient.setQueryData(navigationQueryKeys.note(path), doc);
-	setCachedMarkdownDoc(path, doc.text);
 }
 
 export function invalidatePrefetchedNote(path?: string | null) {
@@ -684,5 +677,4 @@ export async function invalidateTaskSummariesPrefetchForNotes(
 
 export function invalidateNavigationPrefetch() {
 	queryClient.removeQueries({ queryKey: navigationQueryKeys.all });
-	clearMarkdownDocCache();
 }

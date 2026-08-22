@@ -93,6 +93,7 @@ interface FileTreePaneProps {
 
 const springTransition = springPresets.bouncy;
 const FILE_TREE_ROW_ESTIMATE = 32;
+const EMPTY_FILE_PREVIEWS = new Map<string, string | null>();
 const FILE_TREE_PREVIEW_ROW_ESTIMATE = 52;
 const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
 
@@ -298,7 +299,7 @@ interface TreeEntriesProps {
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
 	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
-	filePreviewsByPath?: Record<string, string | null | undefined>;
+	filePreviewsByPath?: ReadonlyMap<string, string | null>;
 	onVisiblePreviewPathsChange?: (paths: string[]) => void;
 	sortMode: FileTreeSortMode;
 }
@@ -385,7 +386,7 @@ function TreeEntries({
 	onMoveClickSuppressRef,
 	taskSummariesByPath = {},
 	showFilePreviews = false,
-	filePreviewsByPath = {},
+	filePreviewsByPath = EMPTY_FILE_PREVIEWS,
 	onVisiblePreviewPathsChange,
 	sortMode,
 }: TreeEntriesProps) {
@@ -581,7 +582,7 @@ function TreeEntries({
 						taskSummary={taskSummariesByPath[entry.rel_path] ?? null}
 						previewText={
 							showFilePreviews && entry.is_markdown
-								? (filePreviewsByPath[entry.rel_path] ?? null)
+								? (filePreviewsByPath.get(entry.rel_path) ?? null)
 								: null
 						}
 					/>

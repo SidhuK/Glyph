@@ -1,20 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { peekCachedMarkdownDoc } from "../components/preview/markdownCache";
 import { summarizeChecklistsFromMarkdown } from "../lib/checklistSummary";
-import { navigationQueryKeys } from "../lib/navigationPrefetch";
+import {
+	getPrefetchedNote,
+	navigationQueryKeys,
+} from "../lib/navigationPrefetch";
 import { type NoteTaskSummary, invoke } from "../lib/tauri";
 
 const EMPTY_TASK_SUMMARIES: Record<string, NoteTaskSummary> = {};
 
-function summarizeFromCachedMarkdown(
+function summarizeFromPrefetchedNotes(
 	paths: string[],
 ): Record<string, NoteTaskSummary> {
 	const next: Record<string, NoteTaskSummary> = {};
 	for (const path of paths) {
-		const cached = peekCachedMarkdownDoc(path);
-		if (!cached) continue;
-		const summary = summarizeChecklistsFromMarkdown(cached);
+		const note = getPrefetchedNote(path);
+		if (!note) continue;
+		const summary = summarizeChecklistsFromMarkdown(note.text);
 		if (summary.total_count > 0) {
 			next[path] = summary;
 		}
@@ -30,8 +32,8 @@ export function useTaskSummariesForPaths(
 		() => Array.from(new Set(paths.filter(Boolean))).sort(),
 		[paths],
 	);
-	const cachedSummaries = useMemo(
-		() => summarizeFromCachedMarkdown(taskSummaryPaths),
+	const prefetchedSummaries = useMemo(
+		() => summarizeFromPrefetchedNotes(taskSummaryPaths),
 		[taskSummaryPaths],
 	);
 	const summariesQuery = useQuery({
@@ -41,7 +43,7 @@ export function useTaskSummariesForPaths(
 		placeholderData: (previousData) =>
 			previousData && Object.keys(previousData).length > 0
 				? previousData
-				: cachedSummaries,
+				: prefetchedSummaries,
 		queryFn: async () => {
 			const items = await invoke("task_summaries_for_paths", {
 				note_paths: taskSummaryPaths,
@@ -62,9 +64,9 @@ export function useTaskSummariesForPaths(
 		if (summariesQuery.isSuccess) {
 			return summariesQuery.data ?? EMPTY_TASK_SUMMARIES;
 		}
-		if (Object.keys(cachedSummaries).length > 0) {
-			return cachedSummaries;
+		if (Object.keys(prefetchedSummaries).length > 0) {
+			return prefetchedSummaries;
 		}
 		return EMPTY_TASK_SUMMARIES;
-	}, [cachedSummaries, summariesQuery.data, summariesQuery.isSuccess]);
+	}, [prefetchedSummaries, summariesQuery.data, summariesQuery.isSuccess]);
 }

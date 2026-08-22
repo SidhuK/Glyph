@@ -52,7 +52,6 @@ import {
 	initialEditorMode,
 	requiresPlainEditorMode,
 } from "./editorModeSelection";
-import { peekCachedMarkdownDoc } from "./markdownCache";
 import { analyzeNoteInfo } from "./noteInfoAnalysis";
 import { useDeferredTocSource } from "./useDeferredTocSource";
 import { useInternalAnchorNavigation } from "./useInternalAnchorNavigation";
@@ -167,7 +166,7 @@ export function MarkdownEditorPane({
 	const { t } = useTranslation("editor");
 	const [infoPanelText, setInfoPanelText] = useState("");
 	const preferredEditorModeRef = useRef<NoteInlineEditorMode | null>(null);
-	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
+	const initialText = initialDoc?.text ?? "";
 	const [mode, setMode] = useState<NoteInlineEditorMode>(() =>
 		initialEditorMode(initialText),
 	);
