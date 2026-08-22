@@ -39,13 +39,6 @@ export function clearAiProfilesCache() {
 	queryClient.removeQueries({ queryKey: aiProfilesQueryKey });
 }
 
-export function preloadAiProfilesData(): Promise<AiProfilesBootstrap> {
-	return queryClient.fetchQuery({
-		queryKey: aiProfilesQueryKey,
-		queryFn: fetchAiProfilesBootstrap,
-	});
-}
-
 function updateProfilesCache(
 	updater: (current: AiProfilesBootstrap) => AiProfilesBootstrap,
 ) {

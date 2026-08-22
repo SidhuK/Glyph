@@ -30,7 +30,10 @@ import {
 	applyEditorSpellCheck,
 	useEditorSpellCheck,
 } from "./useEditorSpellCheck";
-import { useHydrateInlineImages } from "./useHydrateInlineImages";
+import {
+	spaceAssetUrl,
+	useHydrateInlineImages,
+} from "./useHydrateInlineImages";
 import { useNoteEditorSettings } from "./useNoteEditorSettings";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
@@ -630,7 +633,7 @@ export function useNoteEditor({
 											continue;
 										}
 										replacePlaceholderWithImage(editorInstance, item.uploadId, {
-											src: dataUrl,
+											src: spaceAssetUrl(saved.asset_rel_path),
 											alt: item.file.name || "",
 											title: "",
 											originSrc: saved.href,

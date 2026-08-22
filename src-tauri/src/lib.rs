@@ -33,6 +33,7 @@ mod pinned_files;
 mod print;
 mod release_channels;
 mod space;
+mod space_asset_protocol;
 mod space_fs;
 mod system_fonts;
 mod tag_appearance;
@@ -1612,6 +1613,9 @@ pub fn run() {
                 warn!("Failed to focus main window for second instance: {error}");
             }
         }))
+        .register_asynchronous_uri_scheme_protocol("glyphasset", |ctx, request, responder| {
+            space_asset_protocol::handle(ctx, request, responder);
+        })
         .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new(), &HashMap::new()))
         .on_menu_event(|app, event| match event.id().as_ref() {
             id if id.starts_with("space.recent.") => {

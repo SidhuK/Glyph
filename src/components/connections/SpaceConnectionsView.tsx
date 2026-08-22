@@ -157,6 +157,7 @@ export function SpaceConnectionsView() {
 	const connectionsQuery = useQuery({
 		queryKey: [CONNECTIONS_QUERY_ROOT, scopedSpacePath],
 		enabled: Boolean(spacePath),
+		gcTime: 0,
 		queryFn: async () => {
 			const payload = await invoke("space_connections");
 			const existing = queryClient.getQueryData<SpaceConnections>([

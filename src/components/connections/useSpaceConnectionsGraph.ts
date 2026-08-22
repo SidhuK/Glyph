@@ -148,6 +148,7 @@ export function useSpaceConnectionsGraph(
 		queryKey: ["space-connections-layout", spacePath, layoutFingerprint],
 		enabled: Boolean(filteredPayload && filteredPayload.nodes.length > 0),
 		staleTime: Number.POSITIVE_INFINITY,
+		gcTime: 0,
 		retry: false,
 		queryFn: ({ signal }) => {
 			if (!filteredPayload) {

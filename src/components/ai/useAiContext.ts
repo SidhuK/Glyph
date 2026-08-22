@@ -59,19 +59,6 @@ function contextKey(kind: ContextEntryKind, path: string): string {
 	return `${kind}:${path}`;
 }
 
-export async function preloadAiContextIndex(): Promise<AiContextIndexData | null> {
-	return queryClient.fetchQuery({
-		queryKey: aiContextIndexQueryKey,
-		queryFn: async () => {
-			const index = await invoke("ai_context_index");
-			return {
-				folders: index.folders,
-				files: index.files,
-			};
-		},
-	});
-}
-
 export function useAiContext(contextSearch = "") {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
 	const attachedContextRef = useRef<ContextEntry[]>([]);

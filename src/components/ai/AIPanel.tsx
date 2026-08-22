@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import type { AiStoredToolEvent } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -19,12 +20,21 @@ import {
 	consumePendingAiSelectionContext,
 } from "./aiContextEvents";
 import { messageText, parseAddTrigger } from "./aiPanelConstants";
+import {
+	endAiPanelKeepMounted,
+	setActiveAiHistoryJobId,
+	useAiPanelSession,
+} from "./aiPanelSession";
 import { useAiActions } from "./hooks/useAiActions";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
 import { useRigChat } from "./hooks/useRigChat";
-import { preloadAiContextIndex, useAiContext } from "./useAiContext";
-import { preloadAiHistorySummaries, useAiHistory } from "./useAiHistory";
-import { preloadAiProfilesData, useAiProfiles } from "./useAiProfiles";
+import { useAiContext } from "./useAiContext";
+import {
+	fetchAiHistoryDetail,
+	useAiHistory,
+	useRestoredAiChat,
+} from "./useAiHistory";
+import { useAiProfiles } from "./useAiProfiles";
 
 const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
 
@@ -32,12 +42,15 @@ interface AIPanelProps {
 	onClose: () => void;
 }
 
-export async function prefetchAIPanelData(): Promise<void> {
-	await Promise.all([
-		preloadAiProfilesData(),
-		preloadAiHistorySummaries(14),
-		preloadAiContextIndex(),
-	]);
+function timelineFromStoredToolEvents(
+	toolEvents: AiStoredToolEvent[],
+): AIActivityTimelineEvent[] {
+	return toolEvents
+		.filter((event) => event.phase === "result")
+		.map((event) => ({
+			kind: "citation",
+			payload: event.payload,
+		}));
 }
 
 function stripChipMarkers(text: string): string {
@@ -58,11 +71,26 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	const [selectionContext, setSelectionContext] =
 		useState<AiSelectionContext | null>(null);
 	const [selectionMessageBaseline, setSelectionMessageBaseline] = useState(0);
+	const [hydratedJobId, setHydratedJobId] = useState<string | null>(null);
 
+	const session = useAiPanelSession();
 	const history = useAiHistory(14, { enabled: historyExpanded });
 	const chat = useRigChat({
-		onComplete: () => void history.refresh(),
+		onComplete: (historyId, keepAliveEpoch) => {
+			setActiveAiHistoryJobId(historyId);
+			setHydratedJobId(historyId);
+			void history.refresh();
+			void fetchAiHistoryDetail(historyId).finally(() => {
+				endAiPanelKeepMounted(keepAliveEpoch);
+			});
+		},
 	});
+	const shouldRestore =
+		Boolean(session.jobId) &&
+		chat.messages.length === 0 &&
+		chat.status === "ready" &&
+		hydratedJobId !== session.jobId;
+	const restored = useRestoredAiChat(shouldRestore ? session.jobId : null);
 	const profiles = useAiProfiles();
 	const trigger = parseAddTrigger(input);
 	const showAddPanel = addPanelOpen || Boolean(trigger);
@@ -70,6 +98,18 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	const context = useAiContext(panelQuery);
 	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
+
+	if (restored && session.jobId && hydratedJobId !== session.jobId) {
+		setHydratedJobId(session.jobId);
+		chat.setThreadId(session.jobId);
+		chat.setMessages(restored.messages);
+		toolEvents.resetToolState();
+		toolEvents.setResponsePhase("idle");
+		toolEvents.setActivityTimeline(
+			timelineFromStoredToolEvents(restored.toolEvents),
+		);
+		chat.clearError();
+	}
 
 	const composerInputRef = useRef<HTMLDivElement | null>(null);
 	const scheduleResize = useCallback(() => {
@@ -275,15 +315,14 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			}
 			const loaded = await history.loadChatMessages(jobId);
 			if (!loaded) return;
+			setActiveAiHistoryJobId(jobId);
+			setHydratedJobId(jobId);
 			toolEvents.resetToolState();
 			toolEvents.setResponsePhase("idle");
-			const restoredTimeline: AIActivityTimelineEvent[] = loaded.toolEvents
-				.filter((event) => event.phase === "result")
-				.map((event) => ({
-					kind: "citation",
-					payload: event.payload,
-				}));
-			toolEvents.setActivityTimeline(restoredTimeline);
+			toolEvents.setActivityTimeline(
+				timelineFromStoredToolEvents(loaded.toolEvents),
+			);
+			chat.setThreadId(jobId);
 			chat.setMessages(loaded.messages);
 			chat.clearError();
 			setSelectionContext(null);
@@ -310,6 +349,8 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		chat.setMessages([]);
 		chat.clearError();
 		setSelectionMessageBaseline(0);
+		setHydratedJobId(null);
+		setActiveAiHistoryJobId(null);
 	}, [actions, chat, scheduleResize, toolEvents]);
 
 	const latestSelectionAssistantText = useMemo(() => {
