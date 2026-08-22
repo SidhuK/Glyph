@@ -10,13 +10,18 @@ const LazyAIPanel = lazy(loadAIPanel);
 
 interface AIFloatingHostProps {
 	onToggle: () => void;
+	hidden?: boolean;
 }
 
-export function AIFloatingHost({ onToggle }: AIFloatingHostProps) {
+export function AIFloatingHost({ onToggle, hidden }: AIFloatingHostProps) {
 	const shouldReduceMotion = useReducedMotion();
 
 	return (
-		<div className="aiFloatingWindowHost" data-window-drag-ignore>
+		<div
+			className="aiFloatingWindowHost"
+			data-window-drag-ignore
+			hidden={hidden}
+		>
 			<m.div
 				className="aiFloatingWindow"
 				initial={shouldReduceMotion ? false : { opacity: 0, x: 8, scale: 0.99 }}

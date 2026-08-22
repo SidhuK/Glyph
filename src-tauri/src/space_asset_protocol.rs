@@ -73,11 +73,13 @@ fn load_image<R: Runtime>(
         .root_for_webview_label(webview_label)
         .map_err(|_| StatusCode::NOT_FOUND)?;
     let abs = paths::join_under(&root, &rel).map_err(|_| StatusCode::NOT_FOUND)?;
-    if !abs.is_file() {
+    let canonical_root = root.canonicalize().map_err(|_| StatusCode::NOT_FOUND)?;
+    let canonical_path = abs.canonicalize().map_err(|_| StatusCode::NOT_FOUND)?;
+    if !canonical_path.starts_with(&canonical_root) || !canonical_path.is_file() {
         return Err(StatusCode::NOT_FOUND);
     }
 
-    let bytes = std::fs::read(&abs).map_err(|_| StatusCode::NOT_FOUND)?;
+    let bytes = std::fs::read(&canonical_path).map_err(|_| StatusCode::NOT_FOUND)?;
     Ok((mime, bytes))
 }
 

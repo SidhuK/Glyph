@@ -40,6 +40,14 @@ export function endAiPanelKeepMounted(epoch: number): void {
 	emit();
 }
 
+export function clearAiPanelSession(): void {
+	keepAliveEpoch += 1;
+	if (!jobId && !keepMounted) return;
+	jobId = null;
+	keepMounted = false;
+	emit();
+}
+
 function subscribe(listener: () => void): () => void {
 	listeners.add(listener);
 	return () => {

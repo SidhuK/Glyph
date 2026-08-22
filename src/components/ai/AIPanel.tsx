@@ -80,9 +80,11 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			setActiveAiHistoryJobId(historyId);
 			setHydratedJobId(historyId);
 			void history.refresh();
-			void fetchAiHistoryDetail(historyId).finally(() => {
-				endAiPanelKeepMounted(keepAliveEpoch);
-			});
+			void fetchAiHistoryDetail(historyId)
+				.catch(() => {})
+				.finally(() => {
+					endAiPanelKeepMounted(keepAliveEpoch);
+				});
 		},
 	});
 	const shouldRestore =

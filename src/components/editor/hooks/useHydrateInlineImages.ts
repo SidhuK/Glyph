@@ -16,7 +16,6 @@ let nextSourceGeneration = 1;
 
 export function spaceAssetUrl(relPath: string): string {
 	const encoded = relPath
-		.trim()
 		.replace(/\\/g, "/")
 		.replace(/^\/+/, "")
 		.split("/")

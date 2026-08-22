@@ -176,7 +176,9 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 			updateMessages(nextMessages);
 			setStatus("submitted");
 			awaitingStartRef.current = true;
-			keepAliveEpochRef.current = beginAiPanelKeepMounted();
+			const keepAliveEpoch = beginAiPanelKeepMounted();
+			keepAliveEpochRef.current = keepAliveEpoch;
+			const isCurrentSend = () => keepAliveEpochRef.current === keepAliveEpoch;
 
 			try {
 				clearDoneTimer();
@@ -201,8 +203,12 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				let chunkFrame: number | null = null;
 				let streamingStarted = false;
 				const shouldBufferEvent = (jobId: string) =>
-					awaitingStartRef.current && !activeJobIdRef.current && !!jobId;
-				const isActiveJob = (jobId: string) => jobId === activeJobIdRef.current;
+					isCurrentSend() &&
+					awaitingStartRef.current &&
+					!activeJobIdRef.current &&
+					!!jobId;
+				const isActiveJob = (jobId: string) =>
+					isCurrentSend() && jobId === activeJobIdRef.current;
 				const flushChunks = () => {
 					if (chunkFrame !== null) {
 						window.cancelAnimationFrame(chunkFrame);
@@ -258,7 +264,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					activeJobIdRef.current = null;
 					awaitingStartRef.current = false;
 					cleanupListeners();
-					endAiPanelKeepMounted(keepAliveEpochRef.current);
+					endAiPanelKeepMounted(keepAliveEpoch);
 					setError(new Error(payload.message));
 					setStatus("error");
 				};
@@ -286,6 +292,12 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					}
 					handleError(payload);
 				});
+				if (!isCurrentSend()) {
+					onChunk();
+					onDone();
+					onError();
+					return;
+				}
 
 				stopListenersRef.current = [
 					onChunk,
@@ -311,6 +323,10 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 						audit: options?.body?.audit ?? true,
 					},
 				});
+				if (!isCurrentSend()) {
+					void invoke("ai_chat_cancel", { job_id: jobId }).catch(() => {});
+					return;
+				}
 
 				activeJobIdRef.current = jobId;
 				if (!activeThreadIdRef.current) {
@@ -326,12 +342,13 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					handleDone(pendingDone);
 				}
 			} catch (err) {
+				if (!isCurrentSend()) return;
 				flushStreamingRef.current = null;
 				clearDoneTimer();
 				activeJobIdRef.current = null;
 				awaitingStartRef.current = false;
 				cleanupListeners();
-				endAiPanelKeepMounted(keepAliveEpochRef.current);
+				endAiPanelKeepMounted(keepAliveEpoch);
 				setError(err instanceof Error ? err : new Error(String(err)));
 				setStatus("error");
 			}

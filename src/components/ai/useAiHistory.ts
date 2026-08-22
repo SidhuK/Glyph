@@ -53,6 +53,8 @@ export function fetchAiHistoryDetail(
 	return queryClient.fetchQuery({
 		queryKey: aiHistoryQueryKeys.detail(jobId),
 		queryFn: () => invoke("ai_chat_history_get", { job_id: jobId }),
+		gcTime: 0,
+		staleTime: 0,
 		retry: HISTORY_WRITE_RETRY,
 		retryDelay: HISTORY_WRITE_RETRY_MS,
 	});
@@ -63,6 +65,7 @@ export function useRestoredAiChat(jobId: string | null): LoadedAiChat | null {
 		queryKey: aiHistoryQueryKeys.detail(jobId ?? ""),
 		queryFn: () => invoke("ai_chat_history_get", { job_id: jobId ?? "" }),
 		enabled: Boolean(jobId),
+		gcTime: 0,
 	});
 	if (!jobId || !query.data) return null;
 	return {
@@ -92,6 +95,8 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 			const detail = await localQueryClient.fetchQuery({
 				queryKey: aiHistoryQueryKeys.detail(jobId),
 				queryFn: () => invoke("ai_chat_history_get", { job_id: jobId }),
+				gcTime: 0,
+				staleTime: 0,
 			});
 			return {
 				messages: toUIMessages(jobId, detail.messages),

@@ -36,6 +36,7 @@ import { useSpaceConnectionsGraph } from "./useSpaceConnectionsGraph";
 const LARGE_GRAPH_NOTE_THRESHOLD = 5_000;
 const CONNECTIONS_QUERY_ROOT = "space-connections";
 const CONNECTIONS_SETTINGS_QUERY_ROOT = "space-connections-settings";
+const warnedLargeGraphSpaces = new Set<string>();
 
 async function warnAboutLargeGraph(payload: SpaceConnections) {
 	const noteCount = payload.nodes.length;
@@ -160,14 +161,13 @@ export function SpaceConnectionsView() {
 		gcTime: 0,
 		queryFn: async () => {
 			const payload = await invoke("space_connections");
-			const existing = queryClient.getQueryData<SpaceConnections>([
-				CONNECTIONS_QUERY_ROOT,
-				scopedSpacePath,
-			]);
-			const alreadyWarned =
-				existing !== undefined &&
-				existing.nodes.length > LARGE_GRAPH_NOTE_THRESHOLD;
-			if (!alreadyWarned) await warnAboutLargeGraph(payload);
+			if (
+				payload.nodes.length > LARGE_GRAPH_NOTE_THRESHOLD &&
+				!warnedLargeGraphSpaces.has(scopedSpacePath)
+			) {
+				warnedLargeGraphSpaces.add(scopedSpacePath);
+				await warnAboutLargeGraph(payload);
+			}
 			return payload;
 		},
 	});
