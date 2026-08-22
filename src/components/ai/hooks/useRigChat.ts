@@ -10,6 +10,7 @@ import { listenTauriEvent } from "../../../lib/tauriEvents";
 import {
 	beginAiPanelKeepMounted,
 	endAiPanelKeepMounted,
+	isAiPanelKeepMounted,
 } from "../aiPanelSession";
 
 type UIMessagePart = { type: "text"; text: string };
@@ -127,6 +128,8 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	}, []);
 
 	const stop = useCallback(() => {
+		const keepAliveEpoch = keepAliveEpochRef.current;
+		keepAliveEpochRef.current = 0;
 		const jobId = activeJobIdRef.current;
 		if (jobId) {
 			void invoke("ai_chat_cancel", { job_id: jobId }).catch(() => {});
@@ -137,7 +140,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 		activeJobIdRef.current = null;
 		awaitingStartRef.current = false;
 		cleanupListeners();
-		endAiPanelKeepMounted(keepAliveEpochRef.current);
+		endAiPanelKeepMounted(keepAliveEpoch);
 		setStatus("ready");
 	}, [cleanupListeners, clearDoneTimer]);
 
@@ -178,7 +181,9 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 			awaitingStartRef.current = true;
 			const keepAliveEpoch = beginAiPanelKeepMounted();
 			keepAliveEpochRef.current = keepAliveEpoch;
-			const isCurrentSend = () => keepAliveEpochRef.current === keepAliveEpoch;
+			const isCurrentSend = () =>
+				keepAliveEpochRef.current === keepAliveEpoch &&
+				isAiPanelKeepMounted(keepAliveEpoch);
 
 			try {
 				clearDoneTimer();

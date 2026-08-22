@@ -40,6 +40,10 @@ export function endAiPanelKeepMounted(epoch: number): void {
 	emit();
 }
 
+export function isAiPanelKeepMounted(epoch: number): boolean {
+	return epoch === keepAliveEpoch && keepMounted;
+}
+
 export function clearAiPanelSession(): void {
 	keepAliveEpoch += 1;
 	if (!jobId && !keepMounted) return;

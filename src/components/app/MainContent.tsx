@@ -468,7 +468,7 @@ export const MainContent = memo(function MainContent({
 			>
 				{aiSidebarMounted ? (
 					<AIFloatingHost
-						hidden={!aiSidebarVisible}
+						hidden={!rightSidebarOpen || !aiSidebarVisible}
 						onToggle={() => setAiPanelOpen((open) => !open)}
 					/>
 				) : null}

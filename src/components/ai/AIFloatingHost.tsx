@@ -20,7 +20,7 @@ export function AIFloatingHost({ onToggle, hidden }: AIFloatingHostProps) {
 		<div
 			className="aiFloatingWindowHost"
 			data-window-drag-ignore
-			hidden={hidden}
+			style={hidden ? { display: "none" } : undefined}
 		>
 			<m.div
 				className="aiFloatingWindow"
