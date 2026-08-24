@@ -1,15 +1,15 @@
 {
-  "version": "0.8.15-alpha.4",
-  "notes": "## What's Changed\n* Align side peek with workspace edges by @SidhuK in https://github.com/SidhuK/Glyph/pull/517\n* Cut RAM from inline images, closed AI panel, and graph cache by @SidhuK in https://github.com/SidhuK/Glyph/pull/519\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.15-alpha.3...v0.8.15-alpha.4",
-  "pub_date": "2026-08-22T08:06:16.068Z",
+  "version": "0.8.15",
+  "notes": "## What's Changed\n* Add Show in Finder to file tree folders by @SidhuK in https://github.com/SidhuK/Glyph/pull/506\n* Add experimental Note peek (#508) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/508\n* Remove classic All Notes grid by @SidhuK in https://github.com/SidhuK/Glyph/pull/509\n* Add heading-level wiki links with autocomplete and scroll by @SidhuK in https://github.com/SidhuK/Glyph/pull/511\n* Add default folder for new notes by @SidhuK in https://github.com/SidhuK/Glyph/pull/512\n* Improve connections graph controls and search by @SidhuK in https://github.com/SidhuK/Glyph/pull/513\n* Add Grok Build CLI as an Agents provider by @SidhuK in https://github.com/SidhuK/Glyph/pull/514\n* Add formatting bar visibility setting (#515) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/515\n* Align side peek with workspace edges by @SidhuK in https://github.com/SidhuK/Glyph/pull/517\n* Cut RAM from inline images, closed AI panel, and graph cache by @SidhuK in https://github.com/SidhuK/Glyph/pull/519\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.14...v0.8.15",
+  "pub_date": "2026-08-24T04:15:43.889Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDdkbExMNzZFME1CaE0yYTFHZ01Wd2wvZWVzQ2tFOVgwb205T2JMdEc2ODUwbi92TmhJdmIzUTMyTnlVNkRzM0F4bVZiN1NDMmtmenlzcFBPZk9wYXc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg3Mzg1OTcyCWZpbGU6R2x5cGguYXBwLnRhci5negpWTjJXQkdtWHRzZ1VBZ2d2bi8xdnJSdisxSTNqemxNYzZNK29JWUdBdmRLVFpSOFZPTUtyUmc0TExFMXJpZ2hQb1JxM3pucHdDbHl3VnkvVlNXMkREdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.15-alpha.4/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHkyOXNwdmQ5L3p1WG1lTDRZbmJHdEcvVGpmNmNyMFI2eDJpcmtweWMxTExaOGlGYnBscXBsWTlZRUtGdmxOVUhEeU9XdW5EajVYQitNbFNqc3B0OXdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg3NTQ0OTM4CWZpbGU6R2x5cGguYXBwLnRhci5negpnSzQ3Rm9qaEMxUkVZaVJJbUdYdUY1N291RnlTbDVxUDlkc1phOVZ5QmhUVVpmMmxTV3BKSXlLSlQ3eGVZN1EzQy83THY4bDR5cDhPZWw2dGJWS2pBZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.15/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDdkbExMNzZFME1CaE0yYTFHZ01Wd2wvZWVzQ2tFOVgwb205T2JMdEc2ODUwbi92TmhJdmIzUTMyTnlVNkRzM0F4bVZiN1NDMmtmenlzcFBPZk9wYXc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg3Mzg1OTcyCWZpbGU6R2x5cGguYXBwLnRhci5negpWTjJXQkdtWHRzZ1VBZ2d2bi8xdnJSdisxSTNqemxNYzZNK29JWUdBdmRLVFpSOFZPTUtyUmc0TExFMXJpZ2hQb1JxM3pucHdDbHl3VnkvVlNXMkREdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.15-alpha.4/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHkyOXNwdmQ5L3p1WG1lTDRZbmJHdEcvVGpmNmNyMFI2eDJpcmtweWMxTExaOGlGYnBscXBsWTlZRUtGdmxOVUhEeU9XdW5EajVYQitNbFNqc3B0OXdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg3NTQ0OTM4CWZpbGU6R2x5cGguYXBwLnRhci5negpnSzQ3Rm9qaEMxUkVZaVJJbUdYdUY1N291RnlTbDVxUDlkc1phOVZ5QmhUVVpmMmxTV3BKSXlLSlQ3eGVZN1EzQy83THY4bDR5cDhPZWw2dGJWS2pBZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.15/Glyph_aarch64.app.tar.gz"
     }
   }
 }
