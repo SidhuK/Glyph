@@ -8,6 +8,7 @@ import { PropertyOptionPicker } from "../../status/PropertyOptionPicker";
 import { StatusPropertyPill } from "../../status/StatusPropertyPill";
 import type { EditorTextColor } from "../textColors";
 import { TextPropertyValueField } from "./TextPropertyValueField";
+import { WikiLinkedText } from "./WikiLinkedText";
 import {
 	buildTagSuggestions,
 	formatPropertyDate,

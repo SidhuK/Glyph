@@ -33,8 +33,7 @@ export function TextPropertyValueField({
 		value: draft,
 		onChange: setDraft,
 	});
-	const hasWikiLinks =
-		isTextProperty && findWikiLinkSpans(draft).length > 0;
+	const hasWikiLinks = isTextProperty && findWikiLinkSpans(draft).length > 0;
 
 	const commitDraft = () => {
 		wikiLinkAutocomplete.close();
