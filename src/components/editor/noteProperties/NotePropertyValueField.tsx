@@ -274,7 +274,7 @@ export function NotePropertyValueField({
 
 	return (
 		<TextPropertyValueField
-			key={property.value_text ?? ""}
+			key={`${property.kind}:${property.value_text ?? ""}`}
 			property={property}
 			sourcePath={sourcePath}
 			onUpdate={(patch) => onUpdate(index, patch)}
