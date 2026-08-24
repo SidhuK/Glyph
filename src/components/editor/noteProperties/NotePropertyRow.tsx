@@ -13,6 +13,7 @@ interface NotePropertyRowProps {
 	index: number;
 	property: NoteProperty;
 	readOnly: boolean;
+	sourcePath?: string | null;
 	availableTags: TagCount[];
 	tagDraft: string;
 	statusColors: Record<string, EditorTextColor>;
@@ -31,6 +32,7 @@ export function NotePropertyRow({
 	index,
 	property,
 	readOnly,
+	sourcePath,
 	availableTags,
 	tagDraft,
 	statusColors,
@@ -102,6 +104,7 @@ export function NotePropertyRow({
 					index={index}
 					property={property}
 					readOnly={readOnly}
+					sourcePath={sourcePath}
 					availableTags={availableTags}
 					tagDraft={tagDraft}
 					statusColors={statusColors}

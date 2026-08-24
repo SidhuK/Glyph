@@ -351,6 +351,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						<section className="markdownEditorInfoSection markdownEditorInfoSectionFrontmatter">
 							<NotePropertiesPanel
 								frontmatter={frontmatter}
+								sourcePath={relPath}
 								onChange={onFrontmatterChange}
 							/>
 						</section>

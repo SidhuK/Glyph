@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import { useEffect, useRef, useState } from "react";
 import { useDateDisplayFormat } from "../../../contexts";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
@@ -7,9 +6,8 @@ import { Toggle } from "../../base/toggle/toggle";
 import { PriorityPropertyPill } from "../../status/PriorityPropertyPill";
 import { PropertyOptionPicker } from "../../status/PropertyOptionPicker";
 import { StatusPropertyPill } from "../../status/StatusPropertyPill";
-import { Input } from "../../ui/shadcn/input";
-import { useWikiLinkAutocomplete } from "../hooks/useWikiLinkAutocomplete";
 import type { EditorTextColor } from "../textColors";
+import { TextPropertyValueField } from "./TextPropertyValueField";
 import { WikiLinkedText } from "./WikiLinkedText";
 import {
 	buildTagSuggestions,
@@ -23,6 +21,7 @@ interface NotePropertyValueFieldProps {
 	index: number;
 	property: NoteProperty;
 	readOnly: boolean;
+	sourcePath?: string | null;
 	availableTags: TagCount[];
 	tagDraft: string;
 	statusColors: Record<string, EditorTextColor>;
@@ -40,6 +39,7 @@ export function NotePropertyValueField({
 	index,
 	property,
 	readOnly,
+	sourcePath,
 	availableTags,
 	tagDraft,
 	statusColors,
@@ -52,24 +52,6 @@ export function NotePropertyValueField({
 	tagInputRef,
 }: NotePropertyValueFieldProps) {
 	const dateDisplayFormat = useDateDisplayFormat();
-	const textValue = property.value_text ?? "";
-	const [textDraft, setTextDraft] = useState(textValue);
-	const textInputRef = useRef<HTMLInputElement | null>(null);
-	const wikiLinkAutocomplete = useWikiLinkAutocomplete({
-		enabled: property.kind === "text" && !readOnly,
-		inputRef: textInputRef,
-		value: textDraft,
-		onChange: setTextDraft,
-	});
-
-	useEffect(() => {
-		setTextDraft(textValue);
-	}, [textValue]);
-
-	const commitTextDraft = () => {
-		if (textDraft === textValue) return;
-		onUpdate(index, { value_text: textDraft });
-	};
 
 	if (readOnly) {
 		if (property.kind === "status") {
@@ -154,7 +136,7 @@ export function NotePropertyValueField({
 		}
 		return (
 			<span className="notePropertyTextValue">
-				<WikiLinkedText value={text} />
+				<WikiLinkedText value={text} sourcePath={sourcePath} />
 			</span>
 		);
 	}
@@ -291,78 +273,11 @@ export function NotePropertyValueField({
 	}
 
 	return (
-		<div className="notePropertyTextEditor">
-			<Input
-				ref={(node) => {
-					textInputRef.current = node;
-				}}
-				className="plainTextInput notePropertyFieldInput"
-				style={{ color: "var(--text-primary)" }}
-				type={
-					property.kind === "date"
-						? "date"
-						: property.kind === "url"
-							? "url"
-							: "text"
-				}
-				value={textDraft}
-				placeholder={textDraft ? "" : "—"}
-				aria-label={`${property.key || "Property"} value`}
-				onChange={(event) => {
-					const nextValue = event.target.value;
-					setTextDraft(nextValue);
-					wikiLinkAutocomplete.refresh(
-						nextValue,
-						event.currentTarget.selectionStart,
-					);
-				}}
-				onBlur={commitTextDraft}
-				onFocus={(event) => {
-					wikiLinkAutocomplete.refresh(
-						event.currentTarget.value,
-						event.currentTarget.selectionStart,
-					);
-				}}
-				onClick={(event) => {
-					wikiLinkAutocomplete.refresh(
-						event.currentTarget.value,
-						event.currentTarget.selectionStart,
-					);
-				}}
-				onKeyDown={(event) => {
-					if (wikiLinkAutocomplete.handleKeyDown(event)) return;
-					if (event.key !== "Enter") return;
-					event.preventDefault();
-					event.currentTarget.blur();
-				}}
-			/>
-			{wikiLinkAutocomplete.items.length > 0 ? (
-				<div className="wikiLinkSuggestionMenu notePropertyWikiLinkSuggestions">
-					{wikiLinkAutocomplete.items.map((item, itemIndex) => (
-						<button
-							key={
-								item.kind === "heading"
-									? `${item.kind}:${item.path}#${item.slug}`
-									: `${item.kind}:${item.path}`
-							}
-							type="button"
-							className={[
-								"wikiLinkSuggestionItem",
-								itemIndex === wikiLinkAutocomplete.activeIndex ? "active" : "",
-							]
-								.filter(Boolean)
-								.join(" ")}
-							onMouseDown={(event) => {
-								event.preventDefault();
-								wikiLinkAutocomplete.select(item);
-							}}
-						>
-							<span className="wikiLinkSuggestionTitle">{item.title}</span>
-							<span className="wikiLinkSuggestionPath">{item.path}</span>
-						</button>
-					))}
-				</div>
-			) : null}
-		</div>
+		<TextPropertyValueField
+			key={`${property.kind}:${property.value_text ?? ""}`}
+			property={property}
+			sourcePath={sourcePath}
+			onUpdate={(patch) => onUpdate(index, patch)}
+		/>
 	);
 }

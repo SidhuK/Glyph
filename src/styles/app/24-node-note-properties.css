@@ -312,6 +312,23 @@ input.notePropertyValue {
 	vertical-align: baseline;
 }
 
+.notePropertyWikiLinkDisplay {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	min-height: 30px;
+}
+
+.notePropertyWikiLinkEdit {
+	color: var(--text-tertiary);
+	margin-left: 2px;
+}
+
+.notePropertyWikiLinkEdit:hover,
+.notePropertyWikiLinkEdit:focus-visible {
+	color: var(--text-primary);
+}
+
 .notePropertyRow:has(.notePropertyWikiLinkSuggestions) {
 	z-index: 5;
 }
