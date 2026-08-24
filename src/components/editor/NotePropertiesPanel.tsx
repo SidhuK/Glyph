@@ -22,6 +22,7 @@ function normalizeFrontmatter(fm: string | null): string | null {
 interface NotePropertiesPanelProps {
 	frontmatter: string | null;
 	readOnly?: boolean;
+	sourcePath?: string | null;
 	onChange: (frontmatter: string | null) => void;
 	onErrorChange?: (message: string) => void;
 }
@@ -35,6 +36,7 @@ interface NotePropertiesEditorState {
 export function NotePropertiesPanel({
 	frontmatter,
 	readOnly = false,
+	sourcePath,
 	onChange,
 	onErrorChange,
 }: NotePropertiesPanelProps) {
@@ -207,6 +209,7 @@ export function NotePropertiesPanel({
 								index={index}
 								property={property}
 								readOnly={readOnly}
+								sourcePath={sourcePath}
 								availableTags={availableTags}
 								tagDraft={tagDrafts[rowId] ?? ""}
 								statusColors={statusColors}

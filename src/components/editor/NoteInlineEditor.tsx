@@ -934,6 +934,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					<div className="frontmatterPreview mono">
 						<NotePropertiesPanel
 							frontmatter={frontmatterDraft}
+							sourcePath={relPath}
 							onChange={handleFrontmatterChange}
 						/>
 					</div>

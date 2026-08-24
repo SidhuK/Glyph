@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import { useState } from "react";
 import { useDateDisplayFormat } from "../../../contexts";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
@@ -21,6 +20,7 @@ interface NotePropertyValueFieldProps {
 	index: number;
 	property: NoteProperty;
 	readOnly: boolean;
+	sourcePath?: string | null;
 	availableTags: TagCount[];
 	tagDraft: string;
 	statusColors: Record<string, EditorTextColor>;
@@ -38,6 +38,7 @@ export function NotePropertyValueField({
 	index,
 	property,
 	readOnly,
+	sourcePath,
 	availableTags,
 	tagDraft,
 	statusColors,
@@ -134,7 +135,7 @@ export function NotePropertyValueField({
 		}
 		return (
 			<span className="notePropertyTextValue">
-				<WikiLinkedText value={text} />
+				<WikiLinkedText value={text} sourcePath={sourcePath} />
 			</span>
 		);
 	}
@@ -274,6 +275,7 @@ export function NotePropertyValueField({
 		<TextPropertyValueField
 			key={property.value_text ?? ""}
 			property={property}
+			sourcePath={sourcePath}
 			onUpdate={(patch) => onUpdate(index, patch)}
 		/>
 	);

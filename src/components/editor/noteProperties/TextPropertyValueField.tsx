@@ -10,37 +10,42 @@ import { WikiLinkedText } from "./WikiLinkedText";
 
 interface TextPropertyValueFieldProps {
 	property: NoteProperty;
+	sourcePath?: string | null;
 	onUpdate: (patch: Partial<NoteProperty>) => void;
 }
 
 export function TextPropertyValueField({
 	property,
+	sourcePath,
 	onUpdate,
 }: TextPropertyValueFieldProps) {
 	const { t } = useTranslation("menu");
 	const value = property.value_text ?? "";
+	const isTextProperty = property.kind === "text";
+	const containsWikiLinks =
+		isTextProperty && findWikiLinkSpans(value).length > 0;
 	const [draft, setDraft] = useState(value);
-	const [isEditing, setIsEditing] = useState(
-		() => findWikiLinkSpans(value).length === 0,
-	);
+	const [isEditing, setIsEditing] = useState(() => !containsWikiLinks);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const wikiLinkAutocomplete = useWikiLinkAutocomplete({
-		enabled: property.kind === "text" && isEditing,
+		enabled: isTextProperty && isEditing,
 		inputRef,
 		value: draft,
 		onChange: setDraft,
 	});
-	const hasWikiLinks = findWikiLinkSpans(draft).length > 0;
+	const hasWikiLinks =
+		isTextProperty && findWikiLinkSpans(draft).length > 0;
 
 	const commitDraft = () => {
+		wikiLinkAutocomplete.close();
 		if (draft !== value) onUpdate({ value_text: draft });
-		setIsEditing(false);
+		setIsEditing(!hasWikiLinks);
 	};
 
 	if (!isEditing && hasWikiLinks) {
 		return (
 			<div className="notePropertyWikiLinkDisplay">
-				<WikiLinkedText value={draft} />
+				<WikiLinkedText value={draft} sourcePath={sourcePath} />
 				<Button
 					type="button"
 					variant="ghost"
@@ -95,13 +100,14 @@ export function TextPropertyValueField({
 					);
 				}}
 				onKeyDown={(event) => {
-					if (wikiLinkAutocomplete.handleKeyDown(event)) return;
 					if (event.key === "Escape") {
 						event.preventDefault();
+						wikiLinkAutocomplete.close();
 						setDraft(value);
-						setIsEditing(false);
+						setIsEditing(!containsWikiLinks);
 						return;
 					}
+					if (wikiLinkAutocomplete.handleKeyDown(event)) return;
 					if (event.key !== "Enter") return;
 					event.preventDefault();
 					event.currentTarget.blur();

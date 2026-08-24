@@ -6,7 +6,12 @@ import {
 	wikiLinkDisplayName,
 } from "../markdown/wikiLinkCodec";
 
-export function WikiLinkedText({ value }: { value: string }) {
+interface WikiLinkedTextProps {
+	value: string;
+	sourcePath?: string | null;
+}
+
+export function WikiLinkedText({ value, sourcePath }: WikiLinkedTextProps) {
 	const spans = findWikiLinkSpans(value);
 	if (!spans.length) return <>{value}</>;
 
@@ -28,7 +33,11 @@ export function WikiLinkedText({ value }: { value: string }) {
 					className="wikiLink notePropertyWikiLink"
 					data-target={detail.target}
 					data-unresolved={String(detail.unresolved)}
-					onClick={() => dispatchWikiLinkClick(detail)}
+					onClick={() =>
+						dispatchWikiLinkClick(
+							sourcePath == null ? detail : { ...detail, sourcePath },
+						)
+					}
 					title={label}
 				>
 					<span className="wikiLinkIcon" aria-hidden="true" />
