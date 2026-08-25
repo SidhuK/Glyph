@@ -104,7 +104,9 @@ export function useGitSync({
 	const syncNow = useCallback(async () => {
 		const syncSpacePath = activeSpacePathRef.current;
 		const promptForCommitMessage =
-			status?.prompt_for_commit_message ??
+			(statusSpaceRef.current === syncSpacePath
+				? status?.prompt_for_commit_message
+				: undefined) ??
 			(await invoke("git_sync_config_read"))?.prompt_for_commit_message ??
 			false;
 		if (activeSpacePathRef.current !== syncSpacePath) return null;

@@ -445,12 +445,16 @@ fn run_git_sync_background(
     let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime), runtime_key(&space_root));
     let mut config = load_config(&space_root)?;
     let is_auto = request.mode == GitSyncRunMode::Auto;
-    let commit_message = request
-        .commit_message
-        .as_deref()
-        .map(str::trim)
-        .filter(|message| !message.is_empty())
-        .unwrap_or("Glyph sync");
+    let commit_message = if !is_auto && config.prompt_for_commit_message {
+        request
+            .commit_message
+            .as_deref()
+            .map(str::trim)
+            .filter(|message| !message.is_empty())
+            .unwrap_or("Glyph sync")
+    } else {
+        "Glyph sync"
+    };
 
     let run_result = (|| -> Result<(), String> {
         let inspection = inspect_repo(&space_root)?;
