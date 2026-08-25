@@ -4,8 +4,8 @@ use crate::space::state::SpaceState;
 
 use super::service;
 use super::types::{
-    GitCommitDiff, GitHistoryCommit, GitSyncConfig, GitSyncConfigPatch, GitSyncRunRequest,
-    GitSyncStatus,
+    GitCommitDiff, GitHistoryCommit, GitSyncCommitMessagePromptRequest, GitSyncConfig,
+    GitSyncConfigPatch, GitSyncRunRequest, GitSyncStatus,
 };
 use super::GitSyncState;
 
@@ -46,6 +46,36 @@ pub async fn git_sync_run(
     request: GitSyncRunRequest,
 ) -> Result<GitSyncStatus, String> {
     service::run_git_sync(app, &git_state, &space_state, window.label(), request)
+}
+
+#[tauri::command]
+pub async fn git_sync_commit_message_prompt(
+    app: AppHandle,
+    request: GitSyncCommitMessagePromptRequest,
+) -> Result<Option<String>, String> {
+    #[cfg(target_os = "macos")]
+    {
+        let (sender, receiver) = std::sync::mpsc::sync_channel(1);
+        app.run_on_main_thread(move || {
+            let result = super::native::prompt_commit_message(request);
+            let _ = sender.send(result);
+        })
+        .map_err(|error| format!("failed to open commit message prompt: {error}"))?;
+
+        return tauri::async_runtime::spawn_blocking(move || {
+            receiver
+                .recv()
+                .map_err(|error| format!("commit message prompt failed: {error}"))?
+        })
+        .await
+        .map_err(|error| format!("commit message prompt failed: {error}"))?;
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (app, request);
+        Err("commit message prompts are only available on macOS".to_string())
+    }
 }
 
 #[tauri::command]

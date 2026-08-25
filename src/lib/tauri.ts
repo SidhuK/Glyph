@@ -642,6 +642,7 @@ export interface GitSyncConfig {
 	consecutive_auto_sync_failures: number;
 	paused: boolean;
 	auto_sync_prompted: boolean;
+	prompt_for_commit_message: boolean;
 }
 
 export interface GitSyncStatus {
@@ -656,6 +657,7 @@ export interface GitSyncStatus {
 	enabled: boolean;
 	paused: boolean;
 	auto_sync_prompted: boolean;
+	prompt_for_commit_message: boolean;
 	phase: GitSyncPhase;
 	is_syncing: boolean;
 	interval_minutes: number;
@@ -702,6 +704,15 @@ interface GitSyncContext {
 interface GitSyncRunRequest {
 	mode: GitSyncRunMode;
 	context: GitSyncContext;
+	commit_message?: string | null;
+}
+
+interface GitSyncCommitMessagePromptRequest {
+	title: string;
+	description: string;
+	placeholder: string;
+	confirm_label: string;
+	cancel_label: string;
 }
 
 interface GitSyncConfigPatch {
@@ -711,6 +722,7 @@ interface GitSyncConfigPatch {
 	inclusions?: GitSyncInclusionSettings;
 	paused?: boolean;
 	auto_sync_prompted?: boolean;
+	prompt_for_commit_message?: boolean;
 }
 
 type LicenseMode =
@@ -1220,6 +1232,10 @@ interface TauriCommands {
 		GitSyncConfig
 	>;
 	git_sync_run: CommandDef<{ request: GitSyncRunRequest }, GitSyncStatus>;
+	git_sync_commit_message_prompt: CommandDef<
+		{ request: GitSyncCommitMessagePromptRequest },
+		string | null
+	>;
 	git_sync_disconnect: CommandDef<void, GitSyncStatus>;
 	git_history_list: CommandDef<
 		{ path: string; limit?: number | null },

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../contexts";
 import {
 	completeAutoSyncPrompt,
@@ -15,12 +16,12 @@ interface UseGitSyncOptions {
 	saveEditors: () => Promise<boolean>;
 }
 
-interface GitSyncController {
+export interface GitSyncController {
 	status: GitSyncStatus | null;
 	loading: boolean;
 	error: string;
 	refreshStatus: () => Promise<void>;
-	syncNow: () => Promise<GitSyncStatus>;
+	syncNow: () => Promise<GitSyncStatus | null>;
 	resumeAutoSync: () => Promise<void>;
 	openGitSettings: () => void;
 }
@@ -42,6 +43,7 @@ export function useGitSync({
 	saveEditors,
 }: UseGitSyncOptions): GitSyncController {
 	const { openSettings } = useUILayoutContext();
+	const { t } = useTranslation();
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -83,12 +85,12 @@ export function useGitSync({
 	}, [spacePath]);
 
 	const runSync = useCallback(
-		async (mode: GitSyncRunMode) => {
+		async (mode: GitSyncRunMode, commitMessage?: string) => {
 			const runSpacePath = activeSpacePathRef.current;
 			await saveEditors();
 			const context = await buildRunContext();
 			const nextStatus = await invoke("git_sync_run", {
-				request: { mode, context },
+				request: { mode, context, commit_message: commitMessage },
 			});
 			if (runSpacePath && activeSpacePathRef.current === runSpacePath) {
 				statusSpaceRef.current = runSpacePath;
@@ -99,7 +101,35 @@ export function useGitSync({
 		[saveEditors],
 	);
 
-	const syncNow = useCallback(async () => runSync("manual"), [runSync]);
+	const syncNow = useCallback(async () => {
+		const syncSpacePath = activeSpacePathRef.current;
+		const promptForCommitMessage =
+			(statusSpaceRef.current === syncSpacePath
+				? status?.prompt_for_commit_message
+				: undefined) ??
+			(await invoke("git_sync_config_read"))?.prompt_for_commit_message ??
+			false;
+		if (activeSpacePathRef.current !== syncSpacePath) return null;
+		if (!promptForCommitMessage) {
+			return runSync("manual");
+		}
+		const commitMessage = await invoke("git_sync_commit_message_prompt", {
+			request: {
+				title: t("gitSync.commitTitle"),
+				description: t("gitSync.commitDescription"),
+				placeholder: t("gitSync.commitMessagePlaceholder"),
+				confirm_label: t("gitSync.sync"),
+				cancel_label: t("gitSync.cancel"),
+			},
+		});
+		if (
+			commitMessage === null ||
+			activeSpacePathRef.current !== syncSpacePath
+		) {
+			return null;
+		}
+		return runSync("manual", commitMessage.trim());
+	}, [runSync, status?.prompt_for_commit_message, t]);
 
 	const resumeAutoSync = useCallback(async () => {
 		const resumeSpacePath = activeSpacePathRef.current;

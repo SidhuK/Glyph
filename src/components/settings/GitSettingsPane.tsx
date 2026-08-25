@@ -6,6 +6,8 @@ import {
 	Link01Icon,
 } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useGitSyncContext } from "../../contexts/GitSyncContext";
 import { ATTACHMENT_LOCATION_OPTIONS } from "../../lib/attachmentStorage";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -53,6 +55,8 @@ const CONFLICT_POLICY_OPTIONS = [
 }[];
 
 export function GitSettingsPane() {
+	const gitSync = useGitSyncContext();
+	const { t } = useTranslation();
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
 	const [config, setConfig] = useState<GitSyncConfig | null>(null);
 	const [attachmentStorageMode, setAttachmentStorageMode] =
@@ -92,6 +96,7 @@ export function GitSettingsPane() {
 	const updatePatch = useCallback(
 		async (patch: {
 			enabled?: boolean;
+			prompt_for_commit_message?: boolean;
 			conflict_policy?: GitSyncConflictPolicy;
 			interval_minutes?: number;
 			inclusions?: GitSyncInclusionSettings;
@@ -117,27 +122,14 @@ export function GitSettingsPane() {
 		setBusy(true);
 		setError("");
 		try {
-			const settings = await loadSettings();
-			const nextStatus = await invoke("git_sync_run", {
-				request: {
-					mode: "manual",
-					context: {
-						templates_folder: settings.templates.folder,
-						attachment_storage_mode: settings.editor.attachmentStorageMode,
-						attachment_folder:
-							settings.editor.attachmentStorageMode === "specific-folder"
-								? settings.editor.attachmentFolder
-								: null,
-					},
-				},
-			});
-			setStatus(nextStatus);
+			const nextStatus = await gitSync.syncNow();
+			if (nextStatus) setStatus(nextStatus);
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
 		} finally {
 			setBusy(false);
 		}
-	}, []);
+	}, [gitSync]);
 
 	const inclusions = config?.inclusions ?? DEFAULT_INCLUSIONS;
 	const gitEnabledForSpace =
@@ -250,6 +242,19 @@ export function GitSettingsPane() {
 							disabled={!gitEnabledForSpace || busy}
 							onCheckedChange={(checked) => {
 								void updatePatch({ enabled: checked });
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("gitSync.manualCommitMessages")}
+						description={t("gitSync.manualCommitMessagesDescription")}
+					>
+						<SettingsToggle
+							ariaLabel={t("gitSync.manualCommitMessages")}
+							checked={config?.prompt_for_commit_message ?? false}
+							disabled={!gitEnabledForSpace || busy}
+							onCheckedChange={(checked) => {
+								void updatePatch({ prompt_for_commit_message: checked });
 							}}
 						/>
 					</SettingsRow>

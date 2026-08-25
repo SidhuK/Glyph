@@ -85,6 +85,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "git-how-it-works", tab: "git" },
 	{ id: "git-branch", tab: "git" },
 	{ id: "git-automatic-sync", tab: "git" },
+	{ id: "git-manual-commit-messages", tab: "git" },
 	{ id: "git-sync-interval", tab: "git" },
 	{ id: "git-sync-actions", tab: "git" },
 	{ id: "git-conflict-policy", tab: "git" },
