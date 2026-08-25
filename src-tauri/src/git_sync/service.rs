@@ -219,6 +219,7 @@ fn config_to_status(
         status.enabled = config.enabled;
         status.paused = config.paused;
         status.auto_sync_prompted = config.auto_sync_prompted;
+        status.prompt_for_commit_message = config.prompt_for_commit_message;
         status.interval_minutes = config.interval_minutes;
         status.conflict_policy = config.conflict_policy;
         status.inclusions = config.inclusions;
@@ -357,6 +358,9 @@ pub fn update_git_sync_config(
     if let Some(auto_sync_prompted) = patch.auto_sync_prompted {
         config.auto_sync_prompted = auto_sync_prompted;
     }
+    if let Some(prompt_for_commit_message) = patch.prompt_for_commit_message {
+        config.prompt_for_commit_message = prompt_for_commit_message;
+    }
     if patch.enabled.is_some() || patch.paused.is_some() {
         config.auto_sync_prompted = true;
     }
@@ -441,6 +445,12 @@ fn run_git_sync_background(
     let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime), runtime_key(&space_root));
     let mut config = load_config(&space_root)?;
     let is_auto = request.mode == GitSyncRunMode::Auto;
+    let commit_message = request
+        .commit_message
+        .as_deref()
+        .map(str::trim)
+        .filter(|message| !message.is_empty())
+        .unwrap_or("Glyph sync");
 
     let run_result = (|| -> Result<(), String> {
         let inspection = inspect_repo(&space_root)?;
@@ -495,7 +505,7 @@ fn run_git_sync_background(
         )?;
         stage_for_sync(&space_root)?;
         if working_tree_dirty(&space_root)? {
-            commit_all(&space_root, "Glyph sync")?;
+            commit_all(&space_root, commit_message)?;
         }
 
         if remote_branch_exists(&space_root, remote_name, &branch)? {

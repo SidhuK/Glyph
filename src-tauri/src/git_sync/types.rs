@@ -81,6 +81,8 @@ pub struct GitSyncConfig {
     pub paused: bool,
     #[serde(default)]
     pub auto_sync_prompted: bool,
+    #[serde(default)]
+    pub prompt_for_commit_message: bool,
 }
 
 impl GitSyncConfig {
@@ -99,6 +101,7 @@ impl GitSyncConfig {
             consecutive_auto_sync_failures: 0,
             paused: false,
             auto_sync_prompted: false,
+            prompt_for_commit_message: false,
         }
     }
 }
@@ -122,6 +125,17 @@ pub struct GitSyncRunRequest {
     pub mode: GitSyncRunMode,
     #[serde(default)]
     pub context: GitSyncContext,
+    #[serde(default)]
+    pub commit_message: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct GitSyncCommitMessagePromptRequest {
+    pub title: String,
+    pub description: String,
+    pub placeholder: String,
+    pub confirm_label: String,
+    pub cancel_label: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -132,6 +146,7 @@ pub struct GitSyncConfigPatch {
     pub inclusions: Option<GitSyncInclusionSettings>,
     pub paused: Option<bool>,
     pub auto_sync_prompted: Option<bool>,
+    pub prompt_for_commit_message: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -147,6 +162,7 @@ pub struct GitSyncStatus {
     pub enabled: bool,
     pub paused: bool,
     pub auto_sync_prompted: bool,
+    pub prompt_for_commit_message: bool,
     pub phase: GitSyncPhase,
     pub is_syncing: bool,
     pub interval_minutes: u32,
@@ -180,6 +196,7 @@ impl Default for GitSyncStatus {
             enabled: false,
             paused: false,
             auto_sync_prompted: false,
+            prompt_for_commit_message: false,
             phase: GitSyncPhase::Idle,
             is_syncing: false,
             interval_minutes: DEFAULT_GIT_SYNC_INTERVAL_MINUTES,

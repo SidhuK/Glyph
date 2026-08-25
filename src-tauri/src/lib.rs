@@ -1938,6 +1938,7 @@ pub fn run() {
             git_sync::commands::git_sync_config_read,
             git_sync::commands::git_sync_config_update,
             git_sync::commands::git_sync_run,
+            git_sync::commands::git_sync_commit_message_prompt,
             git_sync::commands::git_sync_disconnect,
             git_sync::commands::git_history_list,
             git_sync::commands::git_history_diff,

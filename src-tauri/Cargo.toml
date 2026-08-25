@@ -57,6 +57,14 @@ tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 core-text = "20"
 objc2-app-kit = { version = "0.3", default-features = false, features = [
   "std",
+  "NSAlert",
+  "NSApplication",
+  "NSButton",
+  "NSControl",
+  "NSResponder",
+  "NSTextField",
+  "NSView",
+  "NSWindow",
   "NSPasteboard",
 ] }
 objc2-foundation = { version = "0.3", default-features = false, features = [

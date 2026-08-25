@@ -425,6 +425,11 @@
 			"section": "Sync",
 			"keywords": ["auto", "git"]
 		},
+		"git-manual-commit-messages": {
+			"title": "Manual commit messages",
+			"section": "Sync",
+			"keywords": ["commit", "message", "manual", "git"]
+		},
 		"git-sync-interval": {
 			"title": "Interval",
 			"section": "Sync",
