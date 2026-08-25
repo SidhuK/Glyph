@@ -102,7 +102,13 @@ export function useGitSync({
 	);
 
 	const syncNow = useCallback(async () => {
-		if (!status?.prompt_for_commit_message) {
+		const syncSpacePath = activeSpacePathRef.current;
+		const promptForCommitMessage =
+			status?.prompt_for_commit_message ??
+			(await invoke("git_sync_config_read"))?.prompt_for_commit_message ??
+			false;
+		if (activeSpacePathRef.current !== syncSpacePath) return null;
+		if (!promptForCommitMessage) {
 			return runSync("manual");
 		}
 		const commitMessage = await invoke("git_sync_commit_message_prompt", {
@@ -114,7 +120,12 @@ export function useGitSync({
 				cancel_label: t("gitSync.cancel"),
 			},
 		});
-		if (commitMessage === null) return null;
+		if (
+			commitMessage === null ||
+			activeSpacePathRef.current !== syncSpacePath
+		) {
+			return null;
+		}
 		return runSync("manual", commitMessage.trim());
 	}, [runSync, status?.prompt_for_commit_message, t]);
 
