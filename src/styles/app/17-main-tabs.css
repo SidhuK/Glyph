@@ -536,9 +536,17 @@
 		var(--transition-fast);
 }
 
+button.mainTabClose {
+	background: radial-gradient(
+		circle,
+		var(--text-primary) 0 5px,
+		transparent 5px
+	);
+	color: var(--bg-primary);
+}
+
 .mainTabWrap:hover .mainTabClose {
-	opacity: 0.9;
-	color: var(--text-primary);
+	opacity: 1;
 }
 
 .mainTabPin {
@@ -546,7 +554,13 @@
 	color: var(--text-secondary);
 }
 
-.mainTabClose > svg,
+.mainTabClose > svg {
+	display: block;
+	width: 6px;
+	height: 6px;
+	flex: 0 0 auto;
+}
+
 .mainTabPin > .mainTabPinIcon {
 	display: block;
 	width: 14px;
@@ -573,18 +587,6 @@
 	opacity: 1;
 	box-shadow: none;
 	transform: translateY(-50%);
-}
-
-.mainTabClose:hover {
-	background: transparent;
-	border-color: transparent;
-	color: var(--text-primary);
-	opacity: 1;
-	box-shadow: none;
-}
-
-.mainTabClose:active {
-	background: color-mix(in srgb, var(--bg-hover) 94%, transparent);
 }
 
 .mainTabAdd {
