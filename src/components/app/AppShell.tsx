@@ -169,6 +169,8 @@ export function AppShell() {
 		openSettings,
 		closeSettings,
 	} = useUILayoutContext();
+	const zenModeRef = useRef(zenMode);
+	zenModeRef.current = zenMode;
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
 	const {
 		getCurrentMarkdown,
@@ -294,7 +296,10 @@ export function AppShell() {
 		"settings:updated",
 		useCallback(
 			(payload: {
-				editor?: { showCollapsibleHeadings?: boolean };
+				editor?: {
+					showCollapsibleHeadings?: boolean;
+					zenMode?: boolean;
+				};
 				ui?: {
 					noteSidePeek?: boolean;
 					resumeLastSession?: boolean;
@@ -302,6 +307,11 @@ export function AppShell() {
 			}) => {
 				if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 					setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+				}
+				if (payload.editor?.zenMode) {
+					setPaletteOpen(false);
+					setCalendarOpen(false);
+					setTemplatePickerOpen(false);
 				}
 				if (typeof payload.ui?.noteSidePeek === "boolean") {
 					setNoteSidePeekEnabled(payload.ui.noteSidePeek);
@@ -311,7 +321,7 @@ export function AppShell() {
 					setResumeLastSession(payload.ui.resumeLastSession);
 				}
 			},
-			[],
+			[setPaletteOpen],
 		),
 	);
 
@@ -620,6 +630,7 @@ export function AppShell() {
 
 	const openTemplatePicker = useCallback(
 		async (dirPath?: string) => {
+			if (zenModeRef.current) return;
 			if (!spacePath) return;
 			if (templateFolder === null) {
 				setError("Set a template folder in Settings -> Space first.");
@@ -628,6 +639,7 @@ export function AppShell() {
 			}
 			try {
 				const templates = await listTemplates(templateFolder);
+				if (zenModeRef.current) return;
 				if (!templates.length) {
 					setError("No markdown templates were found in the template folder.");
 					openTemplatesSettings();
@@ -746,6 +758,7 @@ export function AppShell() {
 	}, [requestOpenPeriodNote]);
 
 	const openCalendar = useCallback(() => {
+		if (zenModeRef.current) return;
 		if (!spacePath) return;
 		setCalendarOpen(true);
 	}, [spacePath]);
@@ -775,6 +788,7 @@ export function AppShell() {
 
 	const openPalette = useCallback(
 		(mode: "commands" | "search", query = "") => {
+			if (zenModeRef.current) return;
 			setPaletteLaunchMode(mode);
 			setPaletteInitialQuery(query);
 			setCommandPaletteSessionId((value) => value + 1);

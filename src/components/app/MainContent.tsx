@@ -491,7 +491,7 @@ export const MainContent = memo(function MainContent({
 						<SettingsTabContent tab={settingsTab} />
 					</div>
 				</main>
-				{!zenMode && aiPanelKeepMounted ? rightSidebarSurface : null}
+				{aiPanelKeepMounted ? rightSidebarSurface : null}
 			</>
 		);
 	}
@@ -546,7 +546,7 @@ export const MainContent = memo(function MainContent({
 					) : null}
 				</div>
 			</main>
-			{!zenMode ? rightSidebarSurface : null}
+			{rightSidebarSurface}
 		</>
 	);
 });

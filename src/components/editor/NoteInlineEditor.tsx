@@ -240,7 +240,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		mode === "plain",
 	);
 	useEffect(() => {
-		if (chromeMinimal || mode === "plain" || mathExtensions.length > 0) {
+		if (mode === "plain" || mathExtensions.length > 0) {
 			setMathExtensionsReady(true);
 			return;
 		}
@@ -262,7 +262,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		return () => {
 			cancelled = true;
 		};
-	}, [chromeMinimal, mathExtensions.length, mathNodeEditor.open, mode]);
+	}, [mathExtensions.length, mathNodeEditor.open, mode]);
 
 	const mergedAdditionalExtensions = useMemo(
 		() => [...mathExtensions, ...additionalExtensionsProp],

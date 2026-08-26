@@ -323,6 +323,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const { spacePath } = useSpace();
 	const [state, dispatch] = useReducer(uiReducer, initialUIState);
 	const spacePathRef = useRef(spacePath);
+	const zenModeRef = useRef(initialUIState.zenMode);
+	const zenModeRevisionRef = useRef(0);
 	const {
 		sidebarCollapsed,
 		sidebarWidth,
@@ -368,6 +370,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		}
 		const nextZenMode = payload.editor?.zenMode;
 		if (typeof nextZenMode === "boolean") {
+			zenModeRevisionRef.current += 1;
+			zenModeRef.current = nextZenMode;
 			dispatch({ type: "setZenMode", value: nextZenMode });
 		}
 		const nextFolioMode = payload.ui?.folioMode;
@@ -454,10 +458,16 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const loadAndApplySettings = async () => {
 			try {
 				const requestedSpacePath = spacePathRef.current;
+				const zenModeRevision = zenModeRevisionRef.current;
 				const s = await loadSettings({ spacePath: requestedSpacePath });
 				// Discard if unmounted or the active space changed mid-load so we
 				// never stamp the previous space's folders/template as the new one.
 				if (cancelled || requestedSpacePath !== spacePathRef.current) return;
+				const nextZenMode =
+					zenModeRevision === zenModeRevisionRef.current
+						? s.editor.zenMode
+						: zenModeRef.current;
+				zenModeRef.current = nextZenMode;
 				dispatch({
 					type: "hydrateSettings",
 					spacePath: requestedSpacePath,
@@ -469,7 +479,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
 					showToc: s.ui.showToc,
-					zenMode: s.editor.zenMode,
+					zenMode: nextZenMode,
 					folioMode: s.ui.folioMode,
 					dateDisplayFormat: s.ui.dateDisplayFormat,
 				});
