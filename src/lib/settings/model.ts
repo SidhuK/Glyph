@@ -59,6 +59,7 @@ export interface EditorSettings {
 	spellCheck: boolean;
 	showExternalLinkPreviews: boolean;
 	showFormatBar: boolean;
+	zenMode: boolean;
 	focusMode: FocusMode;
 }
 

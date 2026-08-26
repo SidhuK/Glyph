@@ -635,6 +635,7 @@ export async function loadSettings(
 		showExternalLinkPreviews:
 			DURABLE_SETTINGS.editorShowExternalLinkPreviews.load(entries),
 		showFormatBar: DURABLE_SETTINGS.editorShowFormatBar.load(entries),
+		zenMode: DURABLE_SETTINGS.editorZenMode.load(entries),
 		focusMode: DURABLE_SETTINGS.editorFocusMode.load(entries),
 	};
 	const database: AppSettings["database"] = {

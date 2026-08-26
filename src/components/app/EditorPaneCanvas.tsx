@@ -8,6 +8,7 @@ import {
 	useCallback,
 	useState,
 } from "react";
+import { useUILayoutContext } from "../../contexts";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
@@ -108,6 +109,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	databasesOpenRequest,
 	onConsumeDatabasesOpenRequest,
 }: EditorPaneCanvasProps) {
+	const { zenMode } = useUILayoutContext();
 	const handlePrefetchTab = useCallback(
 		(target: string | null) => {
 			if (!target) return;
@@ -155,7 +157,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			}
 			data-databases={viewerPath === DATABASES_TAB_ID ? "true" : undefined}
 		>
-			{pane.tabs.length > 0 ? (
+			{!zenMode && pane.tabs.length > 0 ? (
 				<div className="mainTabBarTransition">
 					<TabBar
 						paneId={pane.id}
@@ -187,6 +189,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 				<div
 					aria-hidden="true"
 					className="mainTabsEmptyDragRegion"
+					data-zen-mode={zenMode ? "true" : undefined}
 					data-tauri-drag-region={allowWindowDrag ? "" : undefined}
 					onMouseDown={allowWindowDrag ? onWindowDragMouseDown : undefined}
 				/>
