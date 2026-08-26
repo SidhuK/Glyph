@@ -256,7 +256,7 @@ export function MarkdownEditorPane({
 	const [previewContext, setPreviewContext] =
 		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const [linkRefreshKey, setLinkRefreshKey] = useState(0);
-	const { openSettings, showToc } = useUILayoutContext();
+	const { showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { status: gitSyncStatus } = useGitSyncContext();
 	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
@@ -559,24 +559,22 @@ export function MarkdownEditorPane({
 						onModeChange={requestEditorMode}
 					/>
 					<div className="markdownEditorToolbarActions">
-						<button
-							type="button"
-							className="markdownEditorToolbarBtn"
-							data-active={isAiPanelActive || undefined}
-							onClick={() => {
-								if (!aiEnabled) {
-									openSettings("ai");
-									return;
-								}
-								setInfoPanelOpen(() => false);
-								setAiPanelOpen((open) => !open);
-							}}
-							aria-label={t("toolbar.aiPanel")}
-							title={t("toolbar.aiPanel")}
-							aria-pressed={aiEnabled ? aiPanelOpen : undefined}
-						>
-							<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
-						</button>
+						{aiEnabled ? (
+							<button
+								type="button"
+								className="markdownEditorToolbarBtn"
+								data-active={isAiPanelActive || undefined}
+								onClick={() => {
+									setInfoPanelOpen(() => false);
+									setAiPanelOpen((open) => !open);
+								}}
+								aria-label={t("toolbar.aiPanel")}
+								title={t("toolbar.aiPanel")}
+								aria-pressed={aiPanelOpen}
+							>
+								<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
+							</button>
+						) : null}
 						<button
 							type="button"
 							className="markdownEditorToolbarBtn"
