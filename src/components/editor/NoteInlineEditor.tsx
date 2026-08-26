@@ -215,6 +215,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	acceptSearchJumps = true,
 	deferHeavyFeatures = false,
 	chrome = "full",
+	enableMath = chrome === "full",
 	additionalExtensions: additionalExtensionsProp = EMPTY_ADDITIONAL_EXTENSIONS,
 	placeholder,
 	pasteMarkdownBehavior = "plain-text",
@@ -237,10 +238,10 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		import("@tiptap/core").AnyExtension[]
 	>([]);
 	const [mathExtensionsReady, setMathExtensionsReady] = useState(
-		mode === "plain",
+		mode === "plain" || !enableMath,
 	);
 	useEffect(() => {
-		if (mode === "plain" || mathExtensions.length > 0) {
+		if (!enableMath || mode === "plain" || mathExtensions.length > 0) {
 			setMathExtensionsReady(true);
 			return;
 		}
@@ -262,7 +263,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		return () => {
 			cancelled = true;
 		};
-	}, [mathExtensions.length, mathNodeEditor.open, mode]);
+	}, [enableMath, mathExtensions.length, mathNodeEditor.open, mode]);
 
 	const mergedAdditionalExtensions = useMemo(
 		() => [...mathExtensions, ...additionalExtensionsProp],
@@ -944,7 +945,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					</div>
 				) : null}
 				{mode !== "plain" &&
-				(mathExtensionsReady || !markdown.includes("$")) ? (
+				(!enableMath || mathExtensionsReady || !markdown.includes("$")) ? (
 					<NoteEditorSurface
 						editor={liveEditor}
 						mode={mode}

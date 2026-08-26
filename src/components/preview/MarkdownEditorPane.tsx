@@ -623,6 +623,7 @@ export function MarkdownEditorPane({
 										relPath={relPath}
 										mode={mode}
 										chrome={zenMode ? "minimal" : "full"}
+										enableMath={zenMode}
 										enableFocusMode
 										aiEnabled={aiEnabled && !zenMode}
 										onOpenAiPanel={() => setAiPanelOpen(true)}
