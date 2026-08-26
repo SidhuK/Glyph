@@ -663,6 +663,13 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.editor.showFormatBar,
 		change: (value) => ({ editor: { showFormatBar: value } }),
 	}),
+	editorZenMode: booleanSetting({
+		key: "editor.zenMode",
+		defaultValue: false,
+		discovery: searchable("general-editor-zen-mode"),
+		read: (settings) => settings.editor.zenMode,
+		change: (value) => ({ editor: { zenMode: value } }),
+	}),
 	editorFocusMode: defineApplicationSetting({
 		key: "editor.focusMode",
 		defaultValue: DEFAULT_FOCUS_MODE,

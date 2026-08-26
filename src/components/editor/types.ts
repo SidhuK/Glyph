@@ -48,6 +48,8 @@ export interface NoteInlineEditorProps {
 	acceptSearchJumps?: boolean;
 	deferHeavyFeatures?: boolean;
 	chrome?: NoteInlineEditorChrome;
+	/** Loads equation extensions even when this surface uses minimal chrome. */
+	enableMath?: boolean;
 	additionalExtensions?: AnyExtension[];
 	placeholder?: string;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;

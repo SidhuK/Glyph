@@ -13,6 +13,10 @@
 	background: var(--bg-canvas, var(--bg-primary));
 }
 
+.mainTabsEmptyDragRegion[data-zen-mode="true"] {
+	background: var(--bg-primary);
+}
+
 .mainTabsBar {
 	--main-tabs-right-reserve: 168px;
 	--main-tabs-left-reserve: var(--space-3);

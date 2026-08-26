@@ -256,7 +256,7 @@ export function MarkdownEditorPane({
 	const [previewContext, setPreviewContext] =
 		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const [linkRefreshKey, setLinkRefreshKey] = useState(0);
-	const { showToc } = useUILayoutContext();
+	const { showToc, zenMode } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { status: gitSyncStatus } = useGitSyncContext();
 	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
@@ -551,47 +551,49 @@ export function MarkdownEditorPane({
 
 	return (
 		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
-			<div className="markdownEditorFloatActions">
-				<div className="markdownEditorToolbar">
-					<EditorViewModeSwitch
-						mode={mode}
-						largeNote={isLargeNote}
-						onModeChange={requestEditorMode}
-					/>
-					<div className="markdownEditorToolbarActions">
-						{aiEnabled ? (
+			{!zenMode ? (
+				<div className="markdownEditorFloatActions">
+					<div className="markdownEditorToolbar">
+						<EditorViewModeSwitch
+							mode={mode}
+							largeNote={isLargeNote}
+							onModeChange={requestEditorMode}
+						/>
+						<div className="markdownEditorToolbarActions">
+							{aiEnabled ? (
+								<button
+									type="button"
+									className="markdownEditorToolbarBtn"
+									data-active={isAiPanelActive || undefined}
+									onClick={() => {
+										setInfoPanelOpen(() => false);
+										setAiPanelOpen((open) => !open);
+									}}
+									aria-label={t("toolbar.aiPanel")}
+									title={t("toolbar.aiPanel")}
+									aria-pressed={aiPanelOpen}
+								>
+									<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
+								</button>
+							) : null}
 							<button
 								type="button"
 								className="markdownEditorToolbarBtn"
-								data-active={isAiPanelActive || undefined}
-								onClick={() => {
-									setInfoPanelOpen(() => false);
-									setAiPanelOpen((open) => !open);
-								}}
-								aria-label={t("toolbar.aiPanel")}
-								title={t("toolbar.aiPanel")}
-								aria-pressed={aiPanelOpen}
+								data-active={infoPanelOpen || undefined}
+								onClick={toggleInfoPanel}
+								aria-label={t("toolbar.info")}
+								title={t("toolbar.info")}
+								aria-pressed={infoPanelOpen}
 							>
-								<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
+								<HugeiconsIcon
+									icon={LayoutAlignRightIcon}
+									size="var(--icon-md)"
+								/>
 							</button>
-						) : null}
-						<button
-							type="button"
-							className="markdownEditorToolbarBtn"
-							data-active={infoPanelOpen || undefined}
-							onClick={toggleInfoPanel}
-							aria-label={t("toolbar.info")}
-							title={t("toolbar.info")}
-							aria-pressed={infoPanelOpen}
-						>
-							<HugeiconsIcon
-								icon={LayoutAlignRightIcon}
-								size="var(--icon-md)"
-							/>
-						</button>
+						</div>
 					</div>
 				</div>
-			</div>
+			) : null}
 			{error ? (
 				<div className="filePreviewMeta">
 					<div className="filePreviewHint">{error}</div>
@@ -620,8 +622,10 @@ export function MarkdownEditorPane({
 										markdown={text}
 										relPath={relPath}
 										mode={mode}
+										chrome={zenMode ? "minimal" : "full"}
+										enableMath
 										enableFocusMode
-										aiEnabled={aiEnabled}
+										aiEnabled={aiEnabled && !zenMode}
 										onOpenAiPanel={() => setAiPanelOpen(true)}
 										pasteMarkdownBehavior="smart-markdown"
 										onChange={(nextText) => {
@@ -646,47 +650,55 @@ export function MarkdownEditorPane({
 				getHeadingPreview={getPreviewForHeading}
 				onSelectHeading={scrollToHeading}
 				visible={
-					showToc && !infoPanelOpen && !gitDiff && !error && mode !== "plain"
+					!zenMode &&
+					showToc &&
+					!infoPanelOpen &&
+					!gitDiff &&
+					!error &&
+					mode !== "plain"
 				}
 			/>
 
-			<NotesInfoSidebar
-				open={infoPanelOpen}
-				hasError={Boolean(error)}
-				relPath={relPath}
-				frontmatter={currentFrontmatter}
-				onFrontmatterChange={handleInfoFrontmatterChange}
-				stats={infoAnalysis.stats}
-				taskSummary={infoAnalysis.taskSummary}
-				tocHeadings={visibleHeadings}
-				tocActiveId={visibleActiveHeadingId}
-				onSelectHeading={selectVisibleHeading}
-				backlinks={sidebarBacklinks}
-				unlinkedMentions={{
-					...unlinkedMentions,
-					onLink: unlinkedMentions.linkMention,
-					onLinkAll: unlinkedMentions.linkAll,
-				}}
-				linkedNotes={linkedNotes}
-				relationshipGroups={relationshipGroups}
-				previewContext={previewContext}
-				lastSavedMtimeMs={lastSavedMtimeMs}
-				lineCount={infoAnalysis.lineCount}
-				utf8SizeBytes={utf8SizeBytes}
-				saveLabel={saveLabel}
-				gitSyncStatus={gitSyncStatus}
-				selectedGitCommitHash={gitDiff?.commit.hash ?? null}
-				onSelectGitDiff={onGitDiffChange ?? undefined}
-				onClose={closeInfoPanel}
-			/>
-			<LinkedNotePreviewSheet />
-
-			<LocalNoteConnectionsDialog
-				open={localConnectionsOpen}
-				onOpenChange={setLocalConnectionsOpen}
-				noteId={relPath}
-				connectionsRefreshKey={(lastSavedMtimeMs ?? 0) + linkRefreshKey}
-			/>
+			{!zenMode ? (
+				<>
+					<NotesInfoSidebar
+						open={infoPanelOpen}
+						hasError={Boolean(error)}
+						relPath={relPath}
+						frontmatter={currentFrontmatter}
+						onFrontmatterChange={handleInfoFrontmatterChange}
+						stats={infoAnalysis.stats}
+						taskSummary={infoAnalysis.taskSummary}
+						tocHeadings={visibleHeadings}
+						tocActiveId={visibleActiveHeadingId}
+						onSelectHeading={selectVisibleHeading}
+						backlinks={sidebarBacklinks}
+						unlinkedMentions={{
+							...unlinkedMentions,
+							onLink: unlinkedMentions.linkMention,
+							onLinkAll: unlinkedMentions.linkAll,
+						}}
+						linkedNotes={linkedNotes}
+						relationshipGroups={relationshipGroups}
+						previewContext={previewContext}
+						lastSavedMtimeMs={lastSavedMtimeMs}
+						lineCount={infoAnalysis.lineCount}
+						utf8SizeBytes={utf8SizeBytes}
+						saveLabel={saveLabel}
+						gitSyncStatus={gitSyncStatus}
+						selectedGitCommitHash={gitDiff?.commit.hash ?? null}
+						onSelectGitDiff={onGitDiffChange ?? undefined}
+						onClose={closeInfoPanel}
+					/>
+					<LinkedNotePreviewSheet />
+					<LocalNoteConnectionsDialog
+						open={localConnectionsOpen}
+						onOpenChange={setLocalConnectionsOpen}
+						noteId={relPath}
+						connectionsRefreshKey={(lastSavedMtimeMs ?? 0) + linkRefreshKey}
+					/>
+				</>
+			) : null}
 		</section>
 	);
 }

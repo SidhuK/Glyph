@@ -64,6 +64,7 @@ interface UILayoutContextValue {
 	settingsSpacePath: string | null;
 	showToc: boolean;
 	setShowToc: (show: boolean) => void;
+	zenMode: boolean;
 	folioMode: boolean;
 	setFolioMode: (enabled: boolean) => void;
 	folioScope: FolioScope;
@@ -102,6 +103,7 @@ type UIState = {
 	periodNotesEnabled: PeriodNotesEnabled;
 	settingsSpacePath: string | null;
 	showToc: boolean;
+	zenMode: boolean;
 	folioMode: boolean;
 	folioScope: FolioScope;
 	settingsMode: boolean;
@@ -132,6 +134,7 @@ type UIAction =
 			value: string | null;
 	  }
 	| { type: "setShowToc"; value: boolean }
+	| { type: "setZenMode"; value: boolean }
 	| { type: "setFolioMode"; value: boolean }
 	| { type: "setFolioScope"; value: FolioScope }
 	| { type: "setAiEnabled"; value: boolean }
@@ -153,6 +156,7 @@ type UIAction =
 			periodNoteTemplates: PeriodNoteTemplatePaths;
 			periodNotesEnabled: PeriodNotesEnabled;
 			showToc: boolean;
+			zenMode: boolean;
 			folioMode: boolean;
 			dateDisplayFormat: DateDisplayFormat;
 	  }
@@ -179,6 +183,7 @@ const initialUIState: UIState = {
 	periodNotesEnabled: DEFAULT_PERIOD_NOTES_ENABLED,
 	settingsSpacePath: null,
 	showToc: true,
+	zenMode: false,
 	folioMode: false,
 	folioScope: DEFAULT_FOLIO_SCOPE,
 	settingsMode: false,
@@ -231,6 +236,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			};
 		case "setShowToc":
 			return { ...state, showToc: action.value };
+		case "setZenMode":
+			return { ...state, zenMode: action.value };
 		case "setFolioMode":
 			return {
 				...state,
@@ -303,6 +310,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				periodNoteTemplates: action.periodNoteTemplates,
 				periodNotesEnabled: action.periodNotesEnabled,
 				showToc: action.showToc,
+				zenMode: action.zenMode,
 				folioMode: action.folioMode,
 				dateDisplayFormat: action.dateDisplayFormat,
 			};
@@ -315,6 +323,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const { spacePath } = useSpace();
 	const [state, dispatch] = useReducer(uiReducer, initialUIState);
 	const spacePathRef = useRef(spacePath);
+	const zenModeRef = useRef(initialUIState.zenMode);
+	const zenModeRevisionRef = useRef(0);
 	const {
 		sidebarCollapsed,
 		sidebarWidth,
@@ -328,6 +338,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		periodNotesEnabled,
 		settingsSpacePath,
 		showToc,
+		zenMode,
 		folioMode,
 		folioScope,
 		settingsMode,
@@ -356,6 +367,12 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const nextShowToc = payload.ui?.showToc;
 		if (typeof nextShowToc === "boolean") {
 			dispatch({ type: "setShowToc", value: nextShowToc });
+		}
+		const nextZenMode = payload.editor?.zenMode;
+		if (typeof nextZenMode === "boolean") {
+			zenModeRevisionRef.current += 1;
+			zenModeRef.current = nextZenMode;
+			dispatch({ type: "setZenMode", value: nextZenMode });
 		}
 		const nextFolioMode = payload.ui?.folioMode;
 		if (typeof nextFolioMode === "boolean") {
@@ -441,10 +458,16 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const loadAndApplySettings = async () => {
 			try {
 				const requestedSpacePath = spacePathRef.current;
+				const zenModeRevision = zenModeRevisionRef.current;
 				const s = await loadSettings({ spacePath: requestedSpacePath });
 				// Discard if unmounted or the active space changed mid-load so we
 				// never stamp the previous space's folders/template as the new one.
 				if (cancelled || requestedSpacePath !== spacePathRef.current) return;
+				const nextZenMode =
+					zenModeRevision === zenModeRevisionRef.current
+						? s.editor.zenMode
+						: zenModeRef.current;
+				zenModeRef.current = nextZenMode;
 				dispatch({
 					type: "hydrateSettings",
 					spacePath: requestedSpacePath,
@@ -456,6 +479,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
 					showToc: s.ui.showToc,
+					zenMode: nextZenMode,
 					folioMode: s.ui.folioMode,
 					dateDisplayFormat: s.ui.dateDisplayFormat,
 				});
@@ -600,6 +624,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			settingsSpacePath,
 			showToc,
 			setShowToc,
+			zenMode,
 			folioMode,
 			setFolioMode,
 			folioScope,
@@ -629,6 +654,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			settingsSpacePath,
 			showToc,
 			setShowToc,
+			zenMode,
 			folioMode,
 			setFolioMode,
 			folioScope,

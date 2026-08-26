@@ -165,9 +165,12 @@ export function AppShell() {
 		sidebarWidth,
 		setSidebarWidth,
 		settingsMode,
+		zenMode,
 		openSettings,
 		closeSettings,
 	} = useUILayoutContext();
+	const zenModeRef = useRef(zenMode);
+	zenModeRef.current = zenMode;
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
 	const {
 		getCurrentMarkdown,
@@ -293,7 +296,10 @@ export function AppShell() {
 		"settings:updated",
 		useCallback(
 			(payload: {
-				editor?: { showCollapsibleHeadings?: boolean };
+				editor?: {
+					showCollapsibleHeadings?: boolean;
+					zenMode?: boolean;
+				};
 				ui?: {
 					noteSidePeek?: boolean;
 					resumeLastSession?: boolean;
@@ -301,6 +307,11 @@ export function AppShell() {
 			}) => {
 				if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 					setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+				}
+				if (payload.editor?.zenMode) {
+					setPaletteOpen(false);
+					setCalendarOpen(false);
+					setTemplatePickerOpen(false);
 				}
 				if (typeof payload.ui?.noteSidePeek === "boolean") {
 					setNoteSidePeekEnabled(payload.ui.noteSidePeek);
@@ -310,7 +321,7 @@ export function AppShell() {
 					setResumeLastSession(payload.ui.resumeLastSession);
 				}
 			},
-			[],
+			[setPaletteOpen],
 		),
 	);
 
@@ -619,6 +630,7 @@ export function AppShell() {
 
 	const openTemplatePicker = useCallback(
 		async (dirPath?: string) => {
+			if (zenModeRef.current) return;
 			if (!spacePath) return;
 			if (templateFolder === null) {
 				setError("Set a template folder in Settings -> Space first.");
@@ -627,6 +639,7 @@ export function AppShell() {
 			}
 			try {
 				const templates = await listTemplates(templateFolder);
+				if (zenModeRef.current) return;
 				if (!templates.length) {
 					setError("No markdown templates were found in the template folder.");
 					openTemplatesSettings();
@@ -745,6 +758,7 @@ export function AppShell() {
 	}, [requestOpenPeriodNote]);
 
 	const openCalendar = useCallback(() => {
+		if (zenModeRef.current) return;
 		if (!spacePath) return;
 		setCalendarOpen(true);
 	}, [spacePath]);
@@ -774,6 +788,7 @@ export function AppShell() {
 
 	const openPalette = useCallback(
 		(mode: "commands" | "search", query = "") => {
+			if (zenModeRef.current) return;
 			setPaletteLaunchMode(mode);
 			setPaletteInitialQuery(query);
 			setCommandPaletteSessionId((value) => value + 1);
@@ -1380,14 +1395,14 @@ export function AppShell() {
 				rightSidebarOpen && "appShellRightSidebarOpen",
 			)}
 		>
-			{isIndexing ? <IndexingNotice /> : null}
+			{!zenMode && isIndexing ? <IndexingNotice /> : null}
 			<div
 				aria-hidden="true"
 				className="windowDragStrip"
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
-			{sidebarCollapsed && (
+			{(!zenMode || settingsMode) && sidebarCollapsed ? (
 				<div className="sidebarCollapsedToggle">
 					<WindowChromeIconButton
 						ariaLabel={
@@ -1416,52 +1431,56 @@ export function AppShell() {
 						onInstallUpdate={autoUpdater.installAndRelaunch}
 					/>
 				</div>
-			)}
-			<Sidebar
-				onSelectDir={setActiveDirPath}
-				onOpenFile={(p) => void openWorkspaceFile(p)}
-				onNewNote={() => void createNoteInSelectedFolder()}
-				newNoteFolder={newNoteFolder}
-				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
-				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onImportFilesInDir={importFilesInto}
-				onImportFolderInDir={importFolderInto}
-				onImportPathsInDir={importPathsInto}
-				onRequestCreateFolder={(dirPath) =>
-					fileTree.requestCreateFolder(dirPath)
-				}
-				onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
-				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
-				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
-				onMovePath={(fromPath, toDirPath, kind) =>
-					fileTree.onMovePath(fromPath, toDirPath, kind)
-				}
-				onToggleDir={fileTree.toggleDir}
-				onLoadDir={fileTree.loadDir}
-				onExpandAllDirs={fileTree.expandAllDirs}
-				onCollapseAllDirs={fileTree.collapseAllDirs}
-				onSelectTag={(t) => openTagSearchPalette(t)}
-				sidebarCollapsed={sidebarCollapsed}
-				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-				spacePath={spacePath}
-				onOpenAllDocs={openAllDocsTab}
-				onOpenPinnedDocs={openPinnedDocsTab}
-				onOpenConnections={openConnectionsView}
-				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
-				activeTopSection={activeTopSection}
-				onPrefetchDatabases={prefetchDatabasesTab}
-				onPrefetchAllDocs={prefetchAllDocsTab}
-				onPrefetchFile={prefetchWorkspaceFile}
-			/>
-			<div
-				ref={sidebarResize.resizeRef}
-				className="sidebarResizeHandle"
-				onPointerDown={sidebarResize.handlePointerDown}
-				onPointerMove={sidebarResize.handlePointerMove}
-				onPointerUp={sidebarResize.handlePointerUp}
-				data-window-drag-ignore
-				style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
-			/>
+			) : null}
+			{!zenMode || settingsMode ? (
+				<>
+					<Sidebar
+						onSelectDir={setActiveDirPath}
+						onOpenFile={(p) => void openWorkspaceFile(p)}
+						onNewNote={() => void createNoteInSelectedFolder()}
+						newNoteFolder={newNoteFolder}
+						onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
+						onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
+						onImportFilesInDir={importFilesInto}
+						onImportFolderInDir={importFolderInto}
+						onImportPathsInDir={importPathsInto}
+						onRequestCreateFolder={(dirPath) =>
+							fileTree.requestCreateFolder(dirPath)
+						}
+						onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
+						onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
+						onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
+						onMovePath={(fromPath, toDirPath, kind) =>
+							fileTree.onMovePath(fromPath, toDirPath, kind)
+						}
+						onToggleDir={fileTree.toggleDir}
+						onLoadDir={fileTree.loadDir}
+						onExpandAllDirs={fileTree.expandAllDirs}
+						onCollapseAllDirs={fileTree.collapseAllDirs}
+						onSelectTag={(t) => openTagSearchPalette(t)}
+						sidebarCollapsed={sidebarCollapsed}
+						onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+						spacePath={spacePath}
+						onOpenAllDocs={openAllDocsTab}
+						onOpenPinnedDocs={openPinnedDocsTab}
+						onOpenConnections={openConnectionsView}
+						onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
+						activeTopSection={activeTopSection}
+						onPrefetchDatabases={prefetchDatabasesTab}
+						onPrefetchAllDocs={prefetchAllDocsTab}
+						onPrefetchFile={prefetchWorkspaceFile}
+					/>
+					<div
+						ref={sidebarResize.resizeRef}
+						className="sidebarResizeHandle"
+						onPointerDown={sidebarResize.handlePointerDown}
+						onPointerMove={sidebarResize.handlePointerMove}
+						onPointerUp={sidebarResize.handlePointerUp}
+						data-window-drag-ignore
+						style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
+					/>
+				</>
+			) : null}
 			<MainContent
 				fileTree={{
 					createMarkdownFileAtPath: fileTree.createMarkdownFileAtPath,
@@ -1511,7 +1530,7 @@ export function AppShell() {
 					void openPeekedNote();
 				}}
 			/>
-			{commandPaletteMounted ? (
+			{!zenMode && commandPaletteMounted ? (
 				<Suspense fallback={null}>
 					<LazyCommandPalette
 						key={`${commandPaletteSessionId}:${paletteLaunchMode}:${paletteInitialQuery}`}
@@ -1548,23 +1567,27 @@ export function AppShell() {
 					/>
 				</Suspense>
 			) : null}
-			<CalendarPaletteController
-				open={calendarOpen}
-				onClose={closeCalendar}
-				spacePath={spacePath}
-				dailyNoteFolder={dailyNotesFolder}
-				onOpenNote={(path) => void openWorkspaceFile(path)}
-				onOpenPeriodNoteAtDate={(kind, date) =>
-					void handleOpenPeriodNoteAtDate(kind, date)
-				}
-			/>
-			<TemplatePickerDialog
-				open={templatePickerOpen}
-				templates={templatePickerItems}
-				onClose={() => setTemplatePickerOpen(false)}
-				onPick={(template) => void handlePickTemplate(template)}
-				onOpenSettings={openTemplatesSettings}
-			/>
+			{!zenMode ? (
+				<>
+					<CalendarPaletteController
+						open={calendarOpen}
+						onClose={closeCalendar}
+						spacePath={spacePath}
+						dailyNoteFolder={dailyNotesFolder}
+						onOpenNote={(path) => void openWorkspaceFile(path)}
+						onOpenPeriodNoteAtDate={(kind, date) =>
+							void handleOpenPeriodNoteAtDate(kind, date)
+						}
+					/>
+					<TemplatePickerDialog
+						open={templatePickerOpen}
+						templates={templatePickerItems}
+						onClose={() => setTemplatePickerOpen(false)}
+						onPick={(template) => void handlePickTemplate(template)}
+						onOpenSettings={openTemplatesSettings}
+					/>
+				</>
+			) : null}
 		</div>
 	);
 }

@@ -525,6 +525,18 @@
 			"section": "Experimental",
 			"keywords": ["format", "toolbar", "ribbon", "rich", "editor", "hide"]
 		},
+		"general-editor-zen-mode": {
+			"title": "Zen mode",
+			"section": "Experimental",
+			"keywords": [
+				"focus",
+				"distraction",
+				"minimal",
+				"sidebar",
+				"tabs",
+				"editor"
+			]
+		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
 			"section": "Assistant behavior",

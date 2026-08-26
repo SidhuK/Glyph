@@ -61,6 +61,11 @@ export function ExperimentalSettingsPane() {
 		DURABLE_SETTINGS.editorShowFormatBar.write,
 		setError,
 	);
+	const zenMode = useSettingsBoolean(
+		false,
+		DURABLE_SETTINGS.editorZenMode.write,
+		setError,
+	);
 	const rawMarkdownVimMode = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.editorRawMarkdownVimMode.write,
@@ -81,6 +86,7 @@ export function ExperimentalSettingsPane() {
 	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
 	const setInitialExternalLinkPreviews = externalLinkPreviews.setInitialChecked;
 	const setInitialFormatBar = formatBar.setInitialChecked;
+	const setInitialZenMode = zenMode.setInitialChecked;
 	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
 	const setInitialFocusMode = focusMode.setInitialValue;
 	const setInitialNonMarkdownFiles = nonMarkdownFiles.setInitialChecked;
@@ -92,6 +98,7 @@ export function ExperimentalSettingsPane() {
 		setInitialNoteSidePeek(settings.ui.noteSidePeek);
 		setInitialExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
 		setInitialFormatBar(settings.editor.showFormatBar);
+		setInitialZenMode(settings.editor.zenMode);
 		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
 		setInitialFocusMode(settings.editor.focusMode);
 		setInitialNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
@@ -100,6 +107,7 @@ export function ExperimentalSettingsPane() {
 		setInitialExternalLinkPreviews,
 		setInitialFolioMode,
 		setInitialFormatBar,
+		setInitialZenMode,
 		setInitialNoteSidePeek,
 		setInitialFocusMode,
 		setInitialNonMarkdownFiles,
@@ -174,6 +182,18 @@ export function ExperimentalSettingsPane() {
 							disabled={externalLinkPreviews.isSaving}
 							ariaLabel={t("editor.externalLinkPreviews.ariaLabel")}
 							onCheckedChange={externalLinkPreviews.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("experimental.zenMode.label")}
+						description={t("experimental.zenMode.description")}
+						searchId="general-editor-zen-mode"
+					>
+						<SettingsToggle
+							checked={zenMode.checked}
+							disabled={zenMode.isSaving}
+							ariaLabel={t("experimental.zenMode.ariaLabel")}
+							onCheckedChange={zenMode.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

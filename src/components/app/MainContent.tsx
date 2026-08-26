@@ -260,19 +260,21 @@ export const MainContent = memo(function MainContent({
 	onOpenPeekedNote,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
-	const { folioMode, settingsMode, settingsTab } = useUILayoutContext();
+	const { folioMode, settingsMode, settingsTab, zenMode } =
+		useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { keepMounted: aiPanelKeepMounted } = useAiPanelSession();
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
 	const handledDailyNoteSetupNoticeRequestRef = useRef(0);
 
-	const aiSidebarVisible = aiEnabled && aiPanelOpen && !infoSidebarOpen;
+	const aiSidebarVisible =
+		!zenMode && aiEnabled && aiPanelOpen && !infoSidebarOpen;
 	const aiSidebarMounted = aiSidebarVisible || aiPanelKeepMounted;
 	const rightSidebarOpen =
 		Boolean(spacePath) &&
 		!settingsMode &&
-		(aiSidebarVisible || infoSidebarOpen);
+		(aiSidebarVisible || (!zenMode && infoSidebarOpen));
 	const infoSidebarResize = useResizablePanel({
 		min: 260,
 		max: 620,
@@ -535,7 +537,7 @@ export const MainContent = memo(function MainContent({
 					) : (
 						editorCanvas
 					)}
-					{peekNotePath ? (
+					{!zenMode && peekNotePath ? (
 						<NoteSidePeek
 							relPath={peekNotePath}
 							onClose={onCloseNotePeek}

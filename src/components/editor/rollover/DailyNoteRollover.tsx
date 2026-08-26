@@ -40,12 +40,14 @@ export function DailyNoteRollover({
 	const { t } = useTranslation("editor");
 	const [summaryOpen, setSummaryOpen] = useState(false);
 	const { spacePath } = useSpace();
-	const { dailyNotesFolder, periodNoteTemplates } = useUILayoutContext();
+	const { dailyNotesFolder, periodNoteTemplates, zenMode } =
+		useUILayoutContext();
 	const today = getTodayDateString();
 	const noteDate = dailyNotesFolder
 		? getDailyNoteDateFromPath(relPath, dailyNotesFolder)
 		: null;
-	const enabled =
+	const rolloverEnabled =
+		!zenMode &&
 		mode === "rich" &&
 		Boolean(dailyNotesFolder && noteDate && noteDate <= today);
 	const overdueQuery = useQuery({
@@ -55,7 +57,7 @@ export function DailyNoteRollover({
 				folder: dailyNotesFolder ?? "",
 				before_date: today,
 			}),
-		enabled: enabled && noteDate === today,
+		enabled: rolloverEnabled && noteDate === today,
 	});
 	const noteQuery = useQuery({
 		queryKey: ["daily-note-rollover-note", dailyNotesFolder, noteDate],
@@ -65,7 +67,7 @@ export function DailyNoteRollover({
 				before_date: today,
 				source_date: noteDate,
 			}),
-		enabled,
+		enabled: rolloverEnabled,
 	});
 
 	const moveMutation = useMutation({
@@ -237,7 +239,7 @@ export function DailyNoteRollover({
 		});
 	};
 
-	if (!enabled) return children(null);
+	if (!rolloverEnabled) return children(null);
 	const overdue = overdueQuery.data ?? [];
 	const taskActions: RolloverTaskActions = {
 		targets: noteDate === today ? ["tomorrow"] : ["today", "tomorrow"],

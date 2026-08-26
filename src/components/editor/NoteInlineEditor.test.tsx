@@ -4,6 +4,7 @@ import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NoteInlineEditor } from "./NoteInlineEditor";
+import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 
 vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
@@ -331,14 +332,23 @@ describe("NoteInlineEditor table controls", () => {
 		vi.unstubAllGlobals();
 	});
 
-	function render(mode: "plain" | "rich" | "preview" = "rich") {
+	function render(
+		mode: "plain" | "rich" | "preview" = "rich",
+		options: {
+			chrome?: "full" | "minimal";
+			enableMath?: boolean;
+			markdown?: string;
+		} = {},
+	) {
 		act(() => {
 			root.render(
 				<NoteInlineEditor
-					markdown=""
+					markdown={options.markdown ?? ""}
 					mode={mode}
 					onChange={() => {}}
 					relPath=""
+					chrome={options.chrome}
+					enableMath={options.enableMath}
 				/>,
 			);
 		});
@@ -383,6 +393,24 @@ describe("NoteInlineEditor table controls", () => {
 		expect(container.querySelector('[data-axis="column"]')).toBeInstanceOf(
 			HTMLButtonElement,
 		);
+	});
+
+	it("loads equations in minimal chrome only when the caller opts in", async () => {
+		const loadMathExtensions = vi.mocked(loadMathExtensionFactory);
+		render("rich", { chrome: "minimal", markdown: "$x$" });
+
+		expect(loadMathExtensions).not.toHaveBeenCalled();
+
+		render("rich", {
+			chrome: "minimal",
+			enableMath: true,
+			markdown: "$x$",
+		});
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(loadMathExtensions).toHaveBeenCalledOnce();
 	});
 
 	it("hides table controls when selection moves outside the table", async () => {
