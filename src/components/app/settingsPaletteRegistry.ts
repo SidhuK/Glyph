@@ -10,6 +10,7 @@ import {
 	MIN_EDITOR_FONT_SIZE,
 	MIN_UI_FONT_SIZE,
 	SPACE_SETTINGS,
+	loadSettings,
 	setTemplatesFolder,
 	writeSpaceSetting,
 } from "../../lib/settings";
@@ -394,13 +395,22 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 			const result =
 				DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.parse(value);
 			if (!result.ok) invalidValue();
-			await invoke("index_set_people_mentions_as_tags_enabled", {
-				enabled: result.value,
-			});
-			if (spacePath) await invoke("index_rebuild");
-			await DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.write(
-				result.value,
-			);
+			const previous = (await loadSettings({ spacePath })).editor
+				.enablePeopleMentionsAsTags;
+			try {
+				await invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: result.value,
+				});
+				if (spacePath) await invoke("index_rebuild");
+				await DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.write(
+					result.value,
+				);
+			} catch (cause) {
+				await invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: previous,
+				}).catch(() => undefined);
+				throw cause;
+			}
 		},
 	},
 	{
