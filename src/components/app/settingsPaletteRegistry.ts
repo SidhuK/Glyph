@@ -1,5 +1,6 @@
 import { i18n } from "../../i18n";
 import { LANGUAGE_OPTIONS } from "../../i18n/locales";
+import { HEADING_PALETTE_OPTIONS } from "../../lib/headingPalettes";
 import {
 	type AppSettings,
 	DATE_DISPLAY_FORMAT_OPTIONS,
@@ -189,6 +190,18 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "path",
 	},
 	{
+		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesWeeklyNotes),
+		control: "toggle",
+	},
+	{
+		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesMonthlyNotes),
+		control: "toggle",
+	},
+	{
+		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesQuarterlyNotes),
+		control: "toggle",
+	},
+	{
 		...bindSpaceSetting(SPACE_SETTINGS.quickNotesFolder),
 		control: "path",
 	},
@@ -231,8 +244,22 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 	},
 	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorShowHeadingPrefixes),
+		control: "toggle",
+	},
+	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorColorfulHeadings),
 		control: "toggle",
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorHeadingPaletteId),
+		control: "choice",
+		options: HEADING_PALETTE_OPTIONS.map(({ id }) => ({
+			value: id,
+			label: i18n.t(
+				`settings.general:editor.colorfulHeadings.palette.options.${id}`,
+			),
+		})),
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorBeautifulTags),
@@ -261,6 +288,28 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		defaultVisible: true,
 	},
 	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorDefaultEditorMode),
+		control: "choice",
+		options: [
+			{
+				value: "rich",
+				label: i18n.t("settings.general:editor.defaultEditorMode.options.rich"),
+			},
+			{
+				value: "preview",
+				label: i18n.t(
+					"settings.general:editor.defaultEditorMode.options.preview",
+				),
+			},
+			{
+				value: "plain",
+				label: i18n.t(
+					"settings.general:editor.defaultEditorMode.options.plain",
+				),
+			},
+		],
+	},
+	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorShowExternalLinkPreviews),
 		control: "toggle",
 	},
@@ -269,9 +318,39 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 	},
 	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorShowFormatBar),
+		control: "toggle",
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorZenMode),
+		control: "toggle",
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorFocusMode),
+		control: "choice",
+		options: [
+			{
+				value: "off",
+				label: i18n.t("settings.general:editor.focusMode.options.off"),
+			},
+			{
+				value: "paragraph",
+				label: i18n.t("settings.general:editor.focusMode.options.paragraph"),
+			},
+			{
+				value: "sentence",
+				label: i18n.t("settings.general:editor.focusMode.options.sentence"),
+			},
+		],
+	},
+	{
 		...bindApplicationSetting(DURABLE_SETTINGS.folioMode),
 		control: "toggle",
 		defaultVisible: true,
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.noteSidePeek),
+		control: "toggle",
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.showFileTreeFolderCounts),
@@ -296,6 +375,12 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.databaseShowColumnColor),
+		control: "toggle",
+	},
+	{
+		...bindApplicationSetting(
+			DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags,
+		),
 		control: "toggle",
 	},
 	{

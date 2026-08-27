@@ -591,7 +591,7 @@ export const DURABLE_SETTINGS = {
 	editorHeadingPaletteId: defineApplicationSetting({
 		key: "editor.headingPaletteId",
 		defaultValue: DEFAULT_HEADING_PALETTE_ID,
-		discovery: hidden("The heading palette is grouped with colorful headings."),
+		discovery: searchable("general-editor-heading-palette"),
 		normalize: asHeadingPaletteId,
 		parse: (value) =>
 			isHeadingPaletteId(value) ? parsed(value) : INVALID_PARSE_RESULT,
@@ -619,7 +619,7 @@ export const DURABLE_SETTINGS = {
 	editorDefaultEditorMode: defineApplicationSetting({
 		key: "editor.defaultEditorMode",
 		defaultValue: DEFAULT_EDITOR_VIEW_MODE,
-		discovery: hidden("The default editor mode is not exposed in search."),
+		discovery: searchable("general-editor-default-mode"),
 		normalize: (value) =>
 			isEditorViewMode(value) ? value : DEFAULT_EDITOR_VIEW_MODE,
 		parse: (value) =>
@@ -673,7 +673,7 @@ export const DURABLE_SETTINGS = {
 	editorFocusMode: defineApplicationSetting({
 		key: "editor.focusMode",
 		defaultValue: DEFAULT_FOCUS_MODE,
-		discovery: hidden("Focus mode is controlled from the editor."),
+		discovery: searchable("general-editor-focus-mode"),
 		normalize: (value) => (isFocusMode(value) ? value : DEFAULT_FOCUS_MODE),
 		parse: (value) =>
 			isFocusMode(value) ? parsed(value) : INVALID_PARSE_RESULT,
