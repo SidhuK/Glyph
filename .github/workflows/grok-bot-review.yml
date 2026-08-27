@@ -1,0 +1,84 @@
+name: Grok Bot review comments
+
+on:
+  repository_dispatch:
+    types:
+      - grok-bot-review
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post review as github-actions[bot]
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLIENT_PAYLOAD: ${{ toJSON(github.event.client_payload) }}
+        run: |
+          python3 << 'PY'
+          import json, os, urllib.request, urllib.error
+
+          footer = "Grok Bot Review Agent"
+          payload = json.loads(os.environ["CLIENT_PAYLOAD"])
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          pr = payload["pr_number"]
+          commit_id = payload.get("commit_id")
+          event = payload.get("event") or "COMMENT"
+          if event not in ("COMMENT", "REQUEST_CHANGES"):
+              event = "COMMENT"
+
+          def with_footer(text):
+              text = (text or "").rstrip()
+              if footer not in text:
+                  text = f"{text}\n\n{footer}"
+              return text
+
+          comments = []
+          for c in payload.get("comments") or []:
+              item = {
+                  "path": c["path"],
+                  "body": with_footer(c["body"]),
+                  "side": c.get("side") or "RIGHT",
+              }
+              if c.get("start_line"):
+                  item["start_line"] = int(c["start_line"])
+                  item["start_side"] = c.get("start_side") or item["side"]
+              item["line"] = int(c["line"])
+              comments.append(item)
+
+          body = {
+              "event": event,
+              "body": with_footer(payload.get("body") or "Grok Bot review."),
+          }
+          if commit_id:
+              body["commit_id"] = commit_id
+          if comments:
+              body["comments"] = comments
+
+          data = json.dumps(body).encode()
+          req = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/pulls/{pr}/reviews",
+              data=data,
+              method="POST",
+              headers={
+                  "Authorization": f"Bearer {token}",
+                  "Accept": "application/vnd.github+json",
+                  "User-Agent": "grok-bot-review",
+                  "X-GitHub-Api-Version": "2022-11-28",
+                  "Content-Type": "application/json",
+              },
+          )
+          try:
+              with urllib.request.urlopen(req) as r:
+                  out = json.loads(r.read().decode())
+                  print("review", out.get("html_url"), "state", out.get("state"))
+          except urllib.error.HTTPError as e:
+              err = e.read().decode()
+              print("http", e.code)
+              print(err)
+              raise SystemExit(1)
+          PY
