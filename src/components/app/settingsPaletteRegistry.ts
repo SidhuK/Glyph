@@ -409,6 +409,9 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 				await invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: previous,
 				}).catch(() => undefined);
+				if (spacePath) {
+					await invoke("index_rebuild").catch(() => undefined);
+				}
 				throw cause;
 			}
 		},
