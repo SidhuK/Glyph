@@ -500,6 +500,21 @@
 			"section": "편집기",
 			"keywords": ["편집기", "색상", "editor", "color"]
 		},
+		"general-editor-heading-palette": {
+			"title": "제목 팔레트",
+			"section": "편집기",
+			"keywords": ["제목", "색상", "팔레트"]
+		},
+		"general-editor-default-mode": {
+			"title": "기본 편집기 모드",
+			"section": "편집기",
+			"keywords": ["리치", "미리보기", "markdown"]
+		},
+		"general-editor-focus-mode": {
+			"title": "집중 모드",
+			"section": "실험적",
+			"keywords": ["집중", "문단", "문장"]
+		},
 		"appearance-editor-presentation-beautiful-tags": {
 			"title": "Beautiful Tags",
 			"section": "편집기 표시",

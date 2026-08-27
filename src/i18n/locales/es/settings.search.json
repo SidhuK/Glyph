@@ -506,6 +506,21 @@
 			"section": "Editor",
 			"keywords": ["editor", "color", "encabezados"]
 		},
+		"general-editor-heading-palette": {
+			"title": "Paleta de encabezados",
+			"section": "Editor",
+			"keywords": ["encabezado", "color", "paleta"]
+		},
+		"general-editor-default-mode": {
+			"title": "Modo de editor predeterminado",
+			"section": "Editor",
+			"keywords": ["enriquecido", "vista previa", "markdown"]
+		},
+		"general-editor-focus-mode": {
+			"title": "Modo de enfoque",
+			"section": "Experimental",
+			"keywords": ["enfoque", "párrafo", "oración"]
+		},
 		"appearance-editor-presentation-beautiful-tags": {
 			"title": "Etiquetas bonitas",
 			"section": "Presentación del editor",

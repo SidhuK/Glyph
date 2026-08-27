@@ -485,6 +485,11 @@
 			"section": "Editor",
 			"keywords": ["editor", "color"]
 		},
+		"general-editor-heading-palette": {
+			"title": "Heading palette",
+			"section": "Editor",
+			"keywords": ["heading", "color", "palette"]
+		},
 		"appearance-editor-presentation-beautiful-tags": {
 			"title": "Beautiful Tags",
 			"section": "Editor presentation",
@@ -509,6 +514,11 @@
 			"title": "Spell check",
 			"section": "Editor",
 			"keywords": ["spelling", "typo", "dictionary"]
+		},
+		"general-editor-default-mode": {
+			"title": "Default editor mode",
+			"section": "Editor",
+			"keywords": ["rich", "preview", "raw", "markdown"]
 		},
 		"general-editor-external-link-previews": {
 			"title": "External link previews",
@@ -536,6 +546,11 @@
 				"tabs",
 				"editor"
 			]
+		},
+		"general-editor-focus-mode": {
+			"title": "Focus mode",
+			"section": "Experimental",
+			"keywords": ["focus", "paragraph", "sentence", "writing"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",

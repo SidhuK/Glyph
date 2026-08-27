@@ -481,6 +481,21 @@
 			"section": "Edytor",
 			"keywords": ["edytor", "kolor"]
 		},
+		"general-editor-heading-palette": {
+			"title": "Paleta nagłówków",
+			"section": "Edytor",
+			"keywords": ["nagłówek", "kolor", "paleta"]
+		},
+		"general-editor-default-mode": {
+			"title": "Domyślny tryb edytora",
+			"section": "Edytor",
+			"keywords": ["wzbogacony", "podgląd", "markdown"]
+		},
+		"general-editor-focus-mode": {
+			"title": "Tryb skupienia",
+			"section": "Eksperymentalne",
+			"keywords": ["skupienie", "akapit", "zdanie"]
+		},
 		"appearance-editor-presentation-beautiful-tags": {
 			"title": "Ładne tagi",
 			"section": "Prezentacja edytora",

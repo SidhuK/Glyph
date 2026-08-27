@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { SettingsSearchEntry } from "../settings/settingsSearch";
-import type {
-	PaletteSettingDefinition,
-	PaletteSettingOption,
+import {
+	type PaletteSettingDefinition,
+	type PaletteSettingOption,
+	paletteSettingOptionLabel,
 } from "./settingsPaletteRegistry";
 
 interface PaletteSettingEditorProps {
@@ -50,7 +51,9 @@ export function PaletteSettingEditor({
 	const visibleOptions =
 		definition.control === "path" && pathQuery.trim()
 			? options.filter((option) =>
-					option.label.toLowerCase().includes(pathQuery.trim().toLowerCase()),
+					paletteSettingOptionLabel(option)
+						.toLowerCase()
+						.includes(pathQuery.trim().toLowerCase()),
 				)
 			: options;
 	useEffect(() => {
@@ -174,7 +177,7 @@ export function PaletteSettingEditor({
 								disabled={pending}
 								onClick={() => onChange(option.value)}
 							>
-								<span>{option.label}</span>
+								<span>{paletteSettingOptionLabel(option)}</span>
 								{selected ? <span aria-hidden="true">✓</span> : null}
 							</button>
 						);

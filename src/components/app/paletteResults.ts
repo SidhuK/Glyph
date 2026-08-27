@@ -21,6 +21,7 @@ import {
 	PALETTE_SETTINGS_REGISTRY,
 	type PaletteSettingControl,
 	type PaletteSettingDefinition,
+	paletteSettingOptionLabel,
 } from "./settingsPaletteRegistry";
 import type { WorkspaceTab } from "./useTabManager";
 
@@ -109,7 +110,7 @@ function displaySettingValue(
 	const option = definition.options?.find(
 		(candidate) => candidate.value === value,
 	);
-	if (option) return option.label;
+	if (option) return paletteSettingOptionLabel(option);
 	return String(value);
 }
 

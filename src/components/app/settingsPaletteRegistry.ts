@@ -1,5 +1,6 @@
 import { i18n } from "../../i18n";
 import { LANGUAGE_OPTIONS } from "../../i18n/locales";
+import { HEADING_PALETTE_OPTIONS } from "../../lib/headingPalettes";
 import {
 	type AppSettings,
 	DATE_DISPLAY_FORMAT_OPTIONS,
@@ -9,6 +10,7 @@ import {
 	MIN_EDITOR_FONT_SIZE,
 	MIN_UI_FONT_SIZE,
 	SPACE_SETTINGS,
+	loadSettings,
 	setTemplatesFolder,
 	writeSpaceSetting,
 } from "../../lib/settings";
@@ -33,7 +35,13 @@ export type PaletteSettingControl =
 
 export interface PaletteSettingOption {
 	value: string | number;
-	label: string;
+	label: string | (() => string);
+}
+
+export function paletteSettingOptionLabel(
+	option: PaletteSettingOption,
+): string {
+	return typeof option.label === "function" ? option.label() : option.label;
 }
 
 export interface PaletteSettingDefinition {
@@ -189,6 +197,18 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "path",
 	},
 	{
+		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesWeeklyNotes),
+		control: "toggle",
+	},
+	{
+		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesMonthlyNotes),
+		control: "toggle",
+	},
+	{
+		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesQuarterlyNotes),
+		control: "toggle",
+	},
+	{
 		...bindSpaceSetting(SPACE_SETTINGS.quickNotesFolder),
 		control: "path",
 	},
@@ -231,8 +251,23 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 	},
 	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorShowHeadingPrefixes),
+		control: "toggle",
+	},
+	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorColorfulHeadings),
 		control: "toggle",
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorHeadingPaletteId),
+		control: "choice",
+		options: HEADING_PALETTE_OPTIONS.map(({ id }) => ({
+			value: id,
+			label: () =>
+				i18n.t(
+					`settings.general:editor.colorfulHeadings.palette.options.${id}`,
+				),
+		})),
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorBeautifulTags),
@@ -261,6 +296,27 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		defaultVisible: true,
 	},
 	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorDefaultEditorMode),
+		control: "choice",
+		options: [
+			{
+				value: "rich",
+				label: () =>
+					i18n.t("settings.general:editor.defaultEditorMode.options.rich"),
+			},
+			{
+				value: "preview",
+				label: () =>
+					i18n.t("settings.general:editor.defaultEditorMode.options.preview"),
+			},
+			{
+				value: "plain",
+				label: () =>
+					i18n.t("settings.general:editor.defaultEditorMode.options.plain"),
+			},
+		],
+	},
+	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorShowExternalLinkPreviews),
 		control: "toggle",
 	},
@@ -269,9 +325,41 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 	},
 	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorShowFormatBar),
+		control: "toggle",
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorZenMode),
+		control: "toggle",
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.editorFocusMode),
+		control: "choice",
+		options: [
+			{
+				value: "off",
+				label: () => i18n.t("settings.general:editor.focusMode.options.off"),
+			},
+			{
+				value: "paragraph",
+				label: () =>
+					i18n.t("settings.general:editor.focusMode.options.paragraph"),
+			},
+			{
+				value: "sentence",
+				label: () =>
+					i18n.t("settings.general:editor.focusMode.options.sentence"),
+			},
+		],
+	},
+	{
 		...bindApplicationSetting(DURABLE_SETTINGS.folioMode),
 		control: "toggle",
 		defaultVisible: true,
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.noteSidePeek),
+		control: "toggle",
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.showFileTreeFolderCounts),
@@ -297,6 +385,36 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.databaseShowColumnColor),
 		control: "toggle",
+	},
+	{
+		id: searchableId(DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags),
+		scope: "application",
+		control: "toggle",
+		read: DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.read,
+		write: async (value, spacePath) => {
+			const result =
+				DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.parse(value);
+			if (!result.ok) invalidValue();
+			const previous = (await loadSettings({ spacePath })).editor
+				.enablePeopleMentionsAsTags;
+			try {
+				await invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: result.value,
+				});
+				if (spacePath) await invoke("index_rebuild");
+				await DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.write(
+					result.value,
+				);
+			} catch (cause) {
+				await invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: previous,
+				}).catch(() => undefined);
+				if (spacePath) {
+					await invoke("index_rebuild").catch(() => undefined);
+				}
+				throw cause;
+			}
+		},
 	},
 	{
 		id: "about-alpha-releases",

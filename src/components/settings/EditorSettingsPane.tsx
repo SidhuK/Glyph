@@ -350,6 +350,7 @@ export function EditorSettingsPane() {
 						label={t("editor.colorfulHeadings.label")}
 						description={t("editor.colorfulHeadings.description")}
 						interactive={false}
+						searchId="general-editor-heading-palette"
 					>
 						<div className="colorfulHeadingsControls">
 							{colorfulHeadings.checked ? (
@@ -404,6 +405,7 @@ export function EditorSettingsPane() {
 						label={t("editor.defaultEditorMode.label")}
 						description={t("editor.defaultEditorMode.description")}
 						interactive={false}
+						searchId="general-editor-default-mode"
 					>
 						<SettingsSelect
 							aria-label={t("editor.defaultEditorMode.ariaLabel")}
