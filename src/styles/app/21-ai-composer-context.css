@@ -118,26 +118,34 @@
 }
 
 .aiComposerSuggestionHint {
-	position: absolute;
-	top: 6px;
-	left: 12px;
-	z-index: 3;
-	pointer-events: auto;
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: calc(100% - 20px);
+	min-height: 28px;
+	margin: 0 auto -1px;
+	padding: 3px 8px 0;
+	border: 1px solid color-mix(in srgb, var(--border-default) 30%, transparent);
+	border-bottom: 0;
+	border-radius: var(--radius-md) var(--radius-md) 0 0;
+	background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
 }
 
 .aiComposerSuggestionButton {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	height: 20px;
+	height: 24px;
 	padding: 0 6px 0 4px;
 	border-radius: var(--radius-sm);
 	font-size: calc(var(--text-base) * 0.8);
 	font-weight: 500;
 	line-height: 1;
-	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
+	background: transparent;
 	color: var(--text-tertiary);
-	border: 1px solid color-mix(in srgb, var(--border-default) 30%, transparent);
+	border: none;
 	cursor: pointer;
 	opacity: 0.7;
 	transition: opacity var(--transition-fast), background var(--transition-fast);
@@ -156,6 +164,12 @@
 .aiComposerSuggestionIcon {
 	display: inline-flex;
 	align-items: center;
+}
+
+.aiComposerSuggestionAddIcon {
+	display: inline-flex;
+	align-items: center;
+	color: var(--text-secondary);
 }
 
 .aiComposerSuggestionLabel {

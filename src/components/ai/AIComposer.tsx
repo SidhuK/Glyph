@@ -12,10 +12,11 @@ import {
 	useMemo,
 	useRef,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import { APP_TAGLINE } from "../../lib/copy";
 import { normalizeRelPath } from "../../utils/path";
-import { File, X } from "../Icons";
+import { File, Plus, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
 import { truncateLabel } from "./modelSelectorConstants";
@@ -250,6 +251,7 @@ export function AIComposer({
 	onRemoveContext,
 }: AIComposerProps) {
 	const isDarkTheme = useIsDarkTheme();
+	const { t } = useTranslation("shell");
 	const hasDraftText = Boolean(input.replace(CHIP_RE, "").trim());
 	const beamSize = isStreamingResponse ? "pulse-inner" : "md";
 	const beamStrength = isStreamingResponse ? 0.3 : hasDraftText ? 0.28 : 0.7;
@@ -479,6 +481,33 @@ export function AIComposer({
 				</div>
 			) : null}
 			<div className="aiComposer">
+				{showActiveFileSuggestion ? (
+					<div
+						className="aiComposerSuggestionHint"
+						aria-label={t("ai.activeFile")}
+					>
+						<button
+							type="button"
+							className="aiComposerSuggestionButton"
+							onClick={() => onAddContext("file", suggestedFilePath)}
+							aria-label={t("ai.addToContext", {
+								name: fileNameFromPath(suggestedFilePath),
+							})}
+							title={t("ai.addToContext", { name: suggestedFilePath })}
+							disabled={isAwaitingResponse}
+						>
+							<span className="aiComposerSuggestionIcon">
+								<File size="var(--icon-sm)" />
+							</span>
+							<span className="aiComposerSuggestionLabel">
+								{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
+							</span>
+							<span className="aiComposerSuggestionAddIcon">
+								<Plus size="var(--icon-sm)" aria-hidden="true" />
+							</span>
+						</button>
+					</div>
+				) : null}
 				<BorderBeam
 					className="aiComposerBeam"
 					size={beamSize}
@@ -488,28 +517,6 @@ export function AIComposer({
 					duration={isStreamingResponse ? 3.4 : 5.2}
 				>
 					<div className="aiComposerInputShell">
-						{showActiveFileSuggestion ? (
-							<div
-								className="aiComposerSuggestionHint"
-								aria-label="Active file"
-							>
-								<button
-									type="button"
-									className="aiComposerSuggestionButton"
-									onClick={() => onAddContext("file", suggestedFilePath)}
-									aria-label={`Add ${fileNameFromPath(suggestedFilePath)} to context`}
-									title={`Add ${suggestedFilePath} to context`}
-									disabled={isAwaitingResponse}
-								>
-									<span className="aiComposerSuggestionIcon">
-										<File size="var(--icon-sm)" />
-									</span>
-									<span className="aiComposerSuggestionLabel">
-										{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
-									</span>
-								</button>
-							</div>
-						) : null}
 						<div
 							ref={composerInputRef}
 							className="aiComposerInput"

@@ -184,7 +184,9 @@
 		"manualCommitMessagesDescription": "Ask for a message before each manual sync. When off, Glyph uses \"Glyph sync\"."
 	},
 	"ai": {
-		"toolFailed": "{{tool}} failed"
+		"toolFailed": "{{tool}} failed",
+		"activeFile": "Active file",
+		"addToContext": "Add {{name}} to context"
 	},
 	"connections": {
 		"loading": "Loading notes and links…",

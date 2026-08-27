@@ -148,7 +148,9 @@
 		"pinned": "Fijadas"
 	},
 	"ai": {
-		"toolFailed": "Falló {{tool}}"
+		"toolFailed": "Falló {{tool}}",
+		"activeFile": "Archivo activo",
+		"addToContext": "Añadir {{name}} al contexto"
 	},
 	"connections": {
 		"loading": "Cargando notas y enlaces…",

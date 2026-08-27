@@ -148,7 +148,9 @@
 		"pinned": "Angeheftet"
 	},
 	"ai": {
-		"toolFailed": "{{tool}} ist fehlgeschlagen"
+		"toolFailed": "{{tool}} ist fehlgeschlagen",
+		"activeFile": "Aktive Datei",
+		"addToContext": "{{name}} zum Kontext hinzufügen"
 	},
 	"connections": {
 		"loading": "Notizen und Verknüpfungen werden geladen…",
