@@ -34,7 +34,13 @@ export type PaletteSettingControl =
 
 export interface PaletteSettingOption {
 	value: string | number;
-	label: string;
+	label: string | (() => string);
+}
+
+export function paletteSettingOptionLabel(
+	option: PaletteSettingOption,
+): string {
+	return typeof option.label === "function" ? option.label() : option.label;
 }
 
 export interface PaletteSettingDefinition {
@@ -256,9 +262,10 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "choice",
 		options: HEADING_PALETTE_OPTIONS.map(({ id }) => ({
 			value: id,
-			label: i18n.t(
-				`settings.general:editor.colorfulHeadings.palette.options.${id}`,
-			),
+			label: () =>
+				i18n.t(
+					`settings.general:editor.colorfulHeadings.palette.options.${id}`,
+				),
 		})),
 	},
 	{
@@ -293,19 +300,18 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		options: [
 			{
 				value: "rich",
-				label: i18n.t("settings.general:editor.defaultEditorMode.options.rich"),
+				label: () =>
+					i18n.t("settings.general:editor.defaultEditorMode.options.rich"),
 			},
 			{
 				value: "preview",
-				label: i18n.t(
-					"settings.general:editor.defaultEditorMode.options.preview",
-				),
+				label: () =>
+					i18n.t("settings.general:editor.defaultEditorMode.options.preview"),
 			},
 			{
 				value: "plain",
-				label: i18n.t(
-					"settings.general:editor.defaultEditorMode.options.plain",
-				),
+				label: () =>
+					i18n.t("settings.general:editor.defaultEditorMode.options.plain"),
 			},
 		],
 	},
@@ -331,15 +337,17 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		options: [
 			{
 				value: "off",
-				label: i18n.t("settings.general:editor.focusMode.options.off"),
+				label: () => i18n.t("settings.general:editor.focusMode.options.off"),
 			},
 			{
 				value: "paragraph",
-				label: i18n.t("settings.general:editor.focusMode.options.paragraph"),
+				label: () =>
+					i18n.t("settings.general:editor.focusMode.options.paragraph"),
 			},
 			{
 				value: "sentence",
-				label: i18n.t("settings.general:editor.focusMode.options.sentence"),
+				label: () =>
+					i18n.t("settings.general:editor.focusMode.options.sentence"),
 			},
 		],
 	},
@@ -378,10 +386,22 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 	},
 	{
-		...bindApplicationSetting(
-			DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags,
-		),
+		id: searchableId(DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags),
+		scope: "application",
 		control: "toggle",
+		read: DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.read,
+		write: async (value, spacePath) => {
+			const result =
+				DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.parse(value);
+			if (!result.ok) invalidValue();
+			await invoke("index_set_people_mentions_as_tags_enabled", {
+				enabled: result.value,
+			});
+			if (spacePath) await invoke("index_rebuild");
+			await DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.write(
+				result.value,
+			);
+		},
 	},
 	{
 		id: "about-alpha-releases",

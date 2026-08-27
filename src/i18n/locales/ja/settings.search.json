@@ -507,6 +507,21 @@
 			"section": "エディタ",
 			"keywords": ["エディタ", "色", "editor", "color"]
 		},
+		"general-editor-heading-palette": {
+			"title": "見出しパレット",
+			"section": "エディタ",
+			"keywords": ["見出し", "色", "パレット"]
+		},
+		"general-editor-default-mode": {
+			"title": "デフォルトのエディタモード",
+			"section": "エディタ",
+			"keywords": ["リッチ", "プレビュー", "markdown"]
+		},
+		"general-editor-focus-mode": {
+			"title": "フォーカスモード",
+			"section": "実験的",
+			"keywords": ["フォーカス", "段落", "文"]
+		},
 		"appearance-editor-presentation-beautiful-tags": {
 			"title": "Beautiful Tags",
 			"section": "エディタの表示",

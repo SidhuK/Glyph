@@ -212,6 +212,7 @@ export function ExperimentalSettingsPane() {
 						label={t("editor.focusMode.label")}
 						description={t("editor.focusMode.description")}
 						interactive={false}
+						searchId="general-editor-focus-mode"
 					>
 						<SettingsSelect
 							aria-label={t("editor.focusMode.ariaLabel")}
