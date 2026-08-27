@@ -15,7 +15,7 @@ import {
 import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import { APP_TAGLINE } from "../../lib/copy";
 import { normalizeRelPath } from "../../utils/path";
-import { File, X } from "../Icons";
+import { File, Plus, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
 import { truncateLabel } from "./modelSelectorConstants";
@@ -479,6 +479,28 @@ export function AIComposer({
 				</div>
 			) : null}
 			<div className="aiComposer">
+				{showActiveFileSuggestion ? (
+					<div className="aiComposerSuggestionHint" aria-label="Active file">
+						<button
+							type="button"
+							className="aiComposerSuggestionButton"
+							onClick={() => onAddContext("file", suggestedFilePath)}
+							aria-label={`Add ${fileNameFromPath(suggestedFilePath)} to context`}
+							title={`Add ${suggestedFilePath} to context`}
+							disabled={isAwaitingResponse}
+						>
+							<span className="aiComposerSuggestionIcon">
+								<File size="var(--icon-sm)" />
+							</span>
+							<span className="aiComposerSuggestionLabel">
+								{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
+							</span>
+							<span className="aiComposerSuggestionAddIcon">
+								<Plus size="var(--icon-sm)" aria-hidden="true" />
+							</span>
+						</button>
+					</div>
+				) : null}
 				<BorderBeam
 					className="aiComposerBeam"
 					size={beamSize}
@@ -488,28 +510,6 @@ export function AIComposer({
 					duration={isStreamingResponse ? 3.4 : 5.2}
 				>
 					<div className="aiComposerInputShell">
-						{showActiveFileSuggestion ? (
-							<div
-								className="aiComposerSuggestionHint"
-								aria-label="Active file"
-							>
-								<button
-									type="button"
-									className="aiComposerSuggestionButton"
-									onClick={() => onAddContext("file", suggestedFilePath)}
-									aria-label={`Add ${fileNameFromPath(suggestedFilePath)} to context`}
-									title={`Add ${suggestedFilePath} to context`}
-									disabled={isAwaitingResponse}
-								>
-									<span className="aiComposerSuggestionIcon">
-										<File size="var(--icon-sm)" />
-									</span>
-									<span className="aiComposerSuggestionLabel">
-										{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
-									</span>
-								</button>
-							</div>
-						) : null}
 						<div
 							ref={composerInputRef}
 							className="aiComposerInput"
