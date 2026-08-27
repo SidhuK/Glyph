@@ -182,7 +182,9 @@
 		"switchSaveFailed": "Nie udało się zapisać bieżącej przestrzeni. Spróbuj ponownie."
 	},
 	"ai": {
-		"toolFailed": "Narzędzie {{tool}} nie powiodło się"
+		"toolFailed": "Narzędzie {{tool}} nie powiodło się",
+		"activeFile": "Aktywny plik",
+		"addToContext": "Dodaj {{name}} do kontekstu"
 	},
 	"connections": {
 		"loading": "Wczytywanie notatek i łączy…",

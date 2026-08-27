@@ -150,7 +150,9 @@
 		"pinned": "Épinglées"
 	},
 	"ai": {
-		"toolFailed": "Échec de {{tool}}"
+		"toolFailed": "Échec de {{tool}}",
+		"activeFile": "Fichier actif",
+		"addToContext": "Ajouter {{name}} au contexte"
 	},
 	"connections": {
 		"loading": "Chargement des notes et des liens…",

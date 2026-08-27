@@ -147,7 +147,9 @@
 		"pinned": "고정됨"
 	},
 	"ai": {
-		"toolFailed": "{{tool}} 실패"
+		"toolFailed": "{{tool}} 실패",
+		"activeFile": "활성 파일",
+		"addToContext": "{{name}}을(를) 컨텍스트에 추가"
 	},
 	"connections": {
 		"loading": "노트와 링크를 불러오는 중…",

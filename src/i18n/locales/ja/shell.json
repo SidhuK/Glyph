@@ -147,7 +147,9 @@
 		"pinned": "ピン留め"
 	},
 	"ai": {
-		"toolFailed": "{{tool}} に失敗しました"
+		"toolFailed": "{{tool}} に失敗しました",
+		"activeFile": "アクティブなファイル",
+		"addToContext": "{{name}} をコンテキストに追加"
 	},
 	"connections": {
 		"loading": "ノートとリンクを読み込み中…",

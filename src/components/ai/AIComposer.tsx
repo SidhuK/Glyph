@@ -12,6 +12,7 @@ import {
 	useMemo,
 	useRef,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import { APP_TAGLINE } from "../../lib/copy";
 import { normalizeRelPath } from "../../utils/path";
@@ -250,6 +251,7 @@ export function AIComposer({
 	onRemoveContext,
 }: AIComposerProps) {
 	const isDarkTheme = useIsDarkTheme();
+	const { t } = useTranslation("shell");
 	const hasDraftText = Boolean(input.replace(CHIP_RE, "").trim());
 	const beamSize = isStreamingResponse ? "pulse-inner" : "md";
 	const beamStrength = isStreamingResponse ? 0.3 : hasDraftText ? 0.28 : 0.7;
@@ -480,13 +482,18 @@ export function AIComposer({
 			) : null}
 			<div className="aiComposer">
 				{showActiveFileSuggestion ? (
-					<div className="aiComposerSuggestionHint" aria-label="Active file">
+					<div
+						className="aiComposerSuggestionHint"
+						aria-label={t("ai.activeFile")}
+					>
 						<button
 							type="button"
 							className="aiComposerSuggestionButton"
 							onClick={() => onAddContext("file", suggestedFilePath)}
-							aria-label={`Add ${fileNameFromPath(suggestedFilePath)} to context`}
-							title={`Add ${suggestedFilePath} to context`}
+							aria-label={t("ai.addToContext", {
+								name: fileNameFromPath(suggestedFilePath),
+							})}
+							title={t("ai.addToContext", { name: suggestedFilePath })}
 							disabled={isAwaitingResponse}
 						>
 							<span className="aiComposerSuggestionIcon">
