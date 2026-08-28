@@ -418,6 +418,10 @@
 			"label": "Liste de tâches",
 			"description": "Activer ou désactiver une liste de tâches."
 		},
+		"toggle_heading_or_list_collapse": {
+			"label": "Plier/déplier le titre ou la liste",
+			"description": "Plie ou déplie la section de titre actuelle ou la branche de liste imbriquée."
+		},
 		"toggle-ai": {
 			"label": "Afficher/masquer le panneau IA",
 			"description": "Afficher ou masquer le panneau de l’assistant IA."

@@ -15,6 +15,7 @@ interface BuildEditorCommandsOptions {
 	aiEnabled: boolean;
 	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	showCollapsibleHeadings: boolean;
+	showCollapsibleLists: boolean;
 }
 
 const VIEW_MODE_COMMANDS = [
@@ -40,6 +41,7 @@ export function buildEditorCommands({
 	aiEnabled,
 	setCurrentEditorMode,
 	showCollapsibleHeadings,
+	showCollapsibleLists,
 }: BuildEditorCommandsOptions): Command[] {
 	const enabled = Boolean(activeMarkdownTabPath);
 	const formattingCommands = EDITOR_ACTIONS.filter(
@@ -49,7 +51,11 @@ export function buildEditorCommands({
 			(aiEnabled || action !== "ai_selection_to_context"),
 	).map((action) => ({
 		id: action,
-		enabled,
+		enabled:
+			enabled &&
+			(action !== "toggle_heading_or_list_collapse" ||
+				showCollapsibleHeadings ||
+				showCollapsibleLists),
 		allowInEditable: true,
 		action: () => dispatchEditorMenuAction({ action }),
 	}));

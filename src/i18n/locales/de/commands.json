@@ -418,6 +418,10 @@
 			"label": "Aufgabenliste",
 			"description": "Eine Aufgabenliste umschalten."
 		},
+		"toggle_heading_or_list_collapse": {
+			"label": "Überschriften-/Listenbereich umschalten",
+			"description": "Den aktuellen Überschriftenbereich oder verschachtelten Listenbereich umschalten."
+		},
 		"toggle-ai": {
 			"label": "KI-Panel umschalten",
 			"description": "Das KI-Assistentenpanel ein- oder ausblenden."
