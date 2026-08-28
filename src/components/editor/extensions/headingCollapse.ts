@@ -333,9 +333,38 @@ function mapPositions(
 	return mapped;
 }
 
+function findListBranchAtPosition(
+	doc: ProseMirrorNode,
+	pos: number,
+): ListBranch | null {
+	const resolved = doc.resolve(pos);
+	const branches = extractListBranches(doc);
+
+	for (let depth = resolved.depth; depth > 0; depth -= 1) {
+		const node = resolved.node(depth);
+		if (!LIST_ITEM_NODE_NAMES.has(node.type.name)) continue;
+		const branchPos = resolved.before(depth);
+		const branch = branches.find((candidate) => candidate.pos === branchPos);
+		if (branch) return branch;
+	}
+
+	return null;
+}
+
+function findHeadingAtPosition(
+	headings: HeadingRange[],
+	pos: number,
+): HeadingRange | null {
+	const containingHeadings = headings.filter(
+		(heading) => pos > heading.pos && pos < heading.end,
+	);
+	return containingHeadings[containingHeadings.length - 1] ?? null;
+}
+
 declare module "@tiptap/core" {
 	interface Commands<ReturnType> {
 		headingCollapse: {
+			toggleCurrentCollapse: () => ReturnType;
 			toggleHeadingCollapse: (pos: number) => ReturnType;
 			expandHeadingAncestors: (pos: number) => ReturnType;
 			setHeadingCollapseEnabled: (enabled: boolean) => ReturnType;
@@ -355,7 +384,43 @@ export const HeadingCollapse = Extension.create<{
 		return { onListCollapseToggle: () => {} };
 	},
 	addCommands() {
+		const onListCollapseToggle = this.options.onListCollapseToggle;
 		return {
+			toggleCurrentCollapse:
+				() =>
+				({ state, dispatch }) => {
+					const collapseState = headingCollapsePluginKey.getState(state);
+					if (!collapseState) return false;
+
+					const listBranch = collapseState.listsEnabled
+						? findListBranchAtPosition(state.doc, state.selection.from)
+						: null;
+					const heading = collapseState.headingsEnabled
+						? findHeadingAtPosition(
+								extractHeadingRanges(state.doc),
+								state.selection.from,
+							)
+						: null;
+					const meta: HeadingCollapseMeta | null = listBranch
+						? { type: "list-toggle", pos: listBranch.pos }
+						: heading
+							? { type: "heading-toggle", pos: heading.pos }
+							: null;
+
+					if (!meta) return false;
+					dispatch?.(state.tr.setMeta(headingCollapsePluginKey, meta));
+					if (listBranch && dispatch) {
+						const nextState = this.editor.state;
+						const nextCollapseState =
+							headingCollapsePluginKey.getState(nextState);
+						if (nextCollapseState) {
+							onListCollapseToggle(
+								collapsedListBranchKeys(nextState.doc, nextCollapseState),
+							);
+						}
+					}
+					return true;
+				},
 			toggleHeadingCollapse:
 				(pos: number) =>
 				({ state, dispatch }) => {

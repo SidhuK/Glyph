@@ -418,6 +418,10 @@
 			"label": "할 일 목록",
 			"description": "할 일 목록을 전환합니다."
 		},
+		"toggle_heading_or_list_collapse": {
+			"label": "제목/목록 접기 전환",
+			"description": "현재 제목 섹션 또는 중첩 목록을 접거나 펼칩니다."
+		},
 		"toggle-ai": {
 			"label": "AI 패널 전환",
 			"description": "AI 어시스턴트 패널을 표시하거나 숨깁니다."
