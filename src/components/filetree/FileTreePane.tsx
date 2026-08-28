@@ -289,7 +289,6 @@ interface TreeEntriesProps {
 	onCancelRename: () => void;
 	itemAppearance: Record<string, FileTreeAppearance>;
 	folderFileCounts: Record<string, number>;
-	showFolderFileCounts: boolean;
 	showNonMarkdownFiles: boolean;
 	externalDropTargetPath: string | null;
 	onOpenAppearancePicker: (entry: FsEntry) => void;
@@ -376,7 +375,6 @@ function TreeEntries({
 	onCancelRename,
 	itemAppearance,
 	folderFileCounts,
-	showFolderFileCounts,
 	showNonMarkdownFiles,
 	externalDropTargetPath,
 	onOpenAppearancePicker,
@@ -536,11 +534,7 @@ function TreeEntries({
 							onRequestCreateFolder={onRequestCreateFolder}
 							onDeletePath={onDeletePath}
 							appearance={itemAppearance[entry.rel_path] ?? null}
-							fileCount={
-								showFolderFileCounts
-									? (folderFileCounts[entry.rel_path] ?? null)
-									: null
-							}
+							fileCount={folderFileCounts[entry.rel_path] ?? null}
 							isExternalDropTarget={externalDropTargetPath === entry.rel_path}
 							onOpenAppearancePicker={() => onOpenAppearancePicker(entry)}
 							onStartRename={() => onStartRename(entry.rel_path)}
@@ -738,7 +732,7 @@ export const FileTreePane = memo(function FileTreePane({
 	}, [childrenByDir, rootEntries, summaryParentDirs]);
 
 	useEffect(() => {
-		if (!spacePath || !showFolderFileCounts || showNonMarkdownFiles === null) {
+		if (!spacePath || showNonMarkdownFiles === null) {
 			setFolderFileCounts({});
 			return;
 		}
@@ -776,7 +770,6 @@ export const FileTreePane = memo(function FileTreePane({
 		};
 	}, [
 		spacePath,
-		showFolderFileCounts,
 		showNonMarkdownFiles,
 		summaryParentDirs,
 		folderCountTreeRevision,
@@ -1072,6 +1065,7 @@ export const FileTreePane = memo(function FileTreePane({
 		<m.aside
 			ref={paneRef}
 			className="fileTreePane"
+			data-folder-counts={showFolderFileCounts ? undefined : "hover"}
 			initial={{ y: 10 }}
 			animate={{ y: 0 }}
 			transition={springTransition}
@@ -1140,7 +1134,6 @@ export const FileTreePane = memo(function FileTreePane({
 							onCancelRename={onCancelRename}
 							itemAppearance={itemAppearance}
 							folderFileCounts={folderFileCounts}
-							showFolderFileCounts={showFolderFileCounts}
 							showNonMarkdownFiles={showNonMarkdownFilesSetting}
 							externalDropTargetPath={externalDropTargetPath}
 							onOpenAppearancePicker={handleOpenAppearancePicker}
@@ -1191,7 +1184,6 @@ export const FileTreePane = memo(function FileTreePane({
 						onCancelRename={onCancelRename}
 						itemAppearance={itemAppearance}
 						folderFileCounts={folderFileCounts}
-						showFolderFileCounts={showFolderFileCounts}
 						showNonMarkdownFiles={showNonMarkdownFilesSetting}
 						externalDropTargetPath={externalDropTargetPath}
 						onOpenAppearancePicker={handleOpenAppearancePicker}
