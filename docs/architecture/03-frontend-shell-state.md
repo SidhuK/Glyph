@@ -53,6 +53,7 @@ Do not move providers without checking their hooks. A provider that calls `useSp
 - onboarding note path
 - indexing flag
 - open/create/close actions
+- current window's space session; Rust resolves roots per window, and auxiliary note windows inherit the main window's space session
 
 On startup, it:
 
@@ -90,7 +91,7 @@ When `spacePath` changes, it clears file tree state, lists the root with `space_
 It listens for:
 
 - `settings:updated`: refresh tag behavior and tag rendering flags
-- `space:fs_changed`: refresh pinned files after removals
+- `space:fs_changed`: handled by centralized `useSpaceChangePropagation()` from `src/lib/spaceChange.ts`, which applies typed changes to directories, pinned paths, tabs, tags, and derived caches
 
 ## UI Provider
 
@@ -183,7 +184,7 @@ type WorkspaceTab = {
 
 Special tabs use stable ids such as:
 
-- all docs
+- activity timeline / All Notes
 - calendar
 - databases
 - templates
@@ -223,6 +224,8 @@ Responsibilities:
 
 The hook uses refs for request versions and loaded directories because those values must not retrigger renders on every filesystem load.
 
+Folder rows can display recursive counts from `useFolderFileCounts()` (`src/hooks/useFolderFileCounts.ts`). The hook queries `space_dir_children_summary` in `src-tauri/src/space_fs/summary.rs` for visible parent directories and selects either all-file or Markdown-only totals. When configured for hover display, `FileTreePane` marks the tree with `data-folder-counts="hover"`; counts remain query-backed derived data rather than file-tree state.
+
 ## Command Routing
 
 Global commands live in three layers:
@@ -245,13 +248,13 @@ When adding a command, update:
 `src/lib/navigationPrefetch.ts` caches expensive next-view data:
 
 - markdown note docs
-- all-docs data
+- activity timeline / All Notes data
 - calendar data
 - database landing and rows
 
 `AppShell` prefetches when users hover or navigate. It invalidates cache on:
 
-- `notes:external_changed`
+- `space:fs_changed`
 - space changes
 - explicit note path changes
 
@@ -261,6 +264,14 @@ This cache improves navigation but must not become a source of truth. Every pref
 
 Settings render inside the main app surface rather than as a separate route. `UIProvider` stores `settingsMode` and `settingsTab`. `AppShell` opens settings from menus, commands, and panes.
 
+`src/components/settings/settingsConfig.tsx` groups settings navigation into three categories:
+
+- `application`: general, appearance, editor, shortcuts, and about
+- `workspace`: space, Git, AI, and usage
+- `experimental`: the experimental settings pane
+
+The experimental pane includes Note Peek and Zen mode alongside Folio mode, raw Markdown Vim mode, external link previews, formatting-bar visibility, focus mode, and non-Markdown file visibility. Search routing in `src/components/settings/settingsSearch.ts` must continue to point each setting at its owning tab.
+
 Some settings change Rust behavior:
 
 - people mentions as tags call `index_set_people_mentions_as_tags_enabled`
@@ -269,6 +280,20 @@ Some settings change Rust behavior:
 - translucent app calls `set_window_vibrancy_theme`
 
 Keep UI settings and native runtime settings in sync when adding a preference.
+
+### Note Peek and Zen Mode
+
+When `ui.noteSidePeek` is enabled, browse navigation from wiki links, the activity timeline, and other preview-oriented surfaces calls `openBrowseNote()` in `AppShell`. Markdown notes are prefetched and shown in the interactive `NoteSidePeek` overlay; expanding it opens the note as a normal workspace tab, while closing it preserves the current tab. Explicit workspace opens from the file tree and command palette continue to open tabs. The overlay is rendered by `MainContent` and implemented in `src/components/preview/NoteSidePeek.tsx`.
+
+When `editor.zenMode` is active, `AppShell`, `MainContent`, `EditorPaneCanvas`, and `MarkdownEditorPane` suppress shell/editor chrome such as the sidebar, tabs, indexing notice, command palette, auxiliary panels, and editor toolbar surfaces as appropriate. The note remains editable; Zen mode is a layout state, not a separate editor or space.
+
+### Activity Timeline / All Notes
+
+The classic `AllDocsPane` grid was removed in `d7a8d49c`. The All Notes command and tab now render `ActivityTimelinePane`, which groups notes by activity date, includes a recent-activity summary and heatmap, and loads rows through query-backed paginated All Notes data. Browse clicks use the Note Peek behavior above when enabled.
+
+### Space-specific new-note folder
+
+`SpaceSettingsPane` stores `noteCreation.defaultFolder` as a space setting. `AppShell` uses it for sidebar and global new-note actions when it belongs to the currently open space; otherwise it falls back to the active directory or active file's parent. The setting is loaded and updated with the space path so a folder preference cannot leak between spaces (`src/components/settings/SpaceSettingsPane.tsx`, `src/lib/settings.ts`).
 
 ## AI Panel State
 

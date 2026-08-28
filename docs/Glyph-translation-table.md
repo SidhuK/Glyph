@@ -53,6 +53,8 @@ This is a simple worksheet for translating Glyph into any language. Leave the En
 | Attach the current note to AI. | |
 | AI: Use Selection as Context | |
 | Send the selected text to the AI panel as its main context. | |
+| Active file | |
+| Add {{name}} to context | |
 | Bold | |
 | Toggle bold formatting for the current selection. | |
 | Bullet List | |
@@ -585,6 +587,10 @@ This is a simple worksheet for translating Glyph into any language. Leave the En
 | Off | |
 | Paragraph | |
 | Sentence | |
+| Note peek | |
+| Wiki links and All Notes open as a Peek over the current tab instead of replacing it. Expand the Peek to go to that note, or close it to stay where you were. The file tree and command palette still open tabs. | |
+| Zen mode | |
+| Hide the sidebars, tabs, editor controls, and formatting ribbon so only your note remains. | |
 | Table of contents | |
 | Show a floating table of contents for each note. | |
 | Table of contents | |

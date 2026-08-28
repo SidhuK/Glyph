@@ -130,7 +130,7 @@ See `02-spaces-storage-filesystem.md` for the details.
 3. `NoteInlineEditor` owns the TipTap editor instance.
 4. User edits update Markdown text in React state.
 5. Autosave calls `space_write_text` with the last known `mtime_ms`.
-6. Rust validates the path, checks conflicts, writes atomically, indexes the note, and emits `notes:external_changed`.
+6. Rust validates the path, checks conflicts, writes atomically, indexes the note, and emits a typed `space:fs_changed` payload.
 
 See `05-editor-markdown-autosave.md`.
 

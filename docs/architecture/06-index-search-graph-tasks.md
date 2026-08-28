@@ -21,10 +21,11 @@ Backend:
 - `src-tauri/src/index/search_advanced.rs`: structured search
 - `src-tauri/src/index/search_hybrid.rs`: FTS plus local semantic-ish ranking
 - `src-tauri/src/index/checklists/`: markdown checklist parsing and summary queries
+- `src-tauri/src/index/insights.rs`: usage metrics, folder summaries, creation streams, and visible-space byte totals
 
 Frontend consumers:
 
-- `src/components/app/AllDocsPane.tsx`
+- `src/components/app/ActivityTimelinePane.tsx`: activity timeline / All Notes view
 - `src/components/checklists/TaskProgressIndicator.tsx`
 - `src/components/TagsPane.tsx`
 - `src/components/connections/SpaceConnectionsView.tsx`
@@ -161,10 +162,12 @@ The indexer:
 10. Reindexes frontmatter properties.
 11. Reindexes relationships.
 12. Stores checklist total/completed counts on the `notes` row.
-13. Parses outgoing links.
+13. Parses outgoing links. File links with `#heading` or `#^block` are indexed against the file target; the anchor is resolved by the editor/navigation layer.
 14. Resolves wiki titles to note ids when the title is unique.
 15. Inserts link rows.
 16. Commits the transaction.
+
+Frontmatter relationship extraction also recognizes wiki links inside scalar text properties and sequences. It strips the optional heading or block anchor for relationship target resolution while retaining the property's field key and ordinal.
 
 The etag short path matters. If content did not change, derived rows are skipped while note updated time can refresh.
 
@@ -292,6 +295,17 @@ Markdown remains the source of truth. The index only caches counts for progress 
 `all_docs_count` uses the same folder prefix logic.
 
 All-docs UI should treat this as an index view. If a note is missing, run or inspect `index_rebuild`.
+
+## Usage insights
+
+`usage_insights` returns aggregate metrics for the active space through `src-tauri/src/index/insights.rs`. The expanded folder and byte accounting landed in `06fb5a24`. In addition to note, task, link, tag, activity, and daily-note counts, the result includes:
+
+- `isolatedNoteCount`, counting notes with no link or relationship edge
+- `folders`, grouped by the first path component, with note, task, completed-task, and isolated-note counts
+- `folderWeeks`, a 12-week creation stream by first-level folder. The seven busiest folders are kept and the rest are grouped under `__other__`.
+- `totalFileBytes`, computed by walking visible regular files under the space root. Hidden entries and symlinks do not contribute.
+
+The Rust response uses camelCase through `src-tauri/src/index/types.rs`; the matching frontend types live in `src/lib/tauri.ts`. The usage settings UI renders the folder stream and folder summary from these fields. These values are space-scoped and the frontend invalidates the `usage-insights` query when it receives `space:fs_changed`.
 
 ## Index Consumers
 

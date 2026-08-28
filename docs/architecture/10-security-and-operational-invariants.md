@@ -13,6 +13,7 @@ Backend safety:
 - `src-tauri/src/ai_rig/helpers.rs`: AI base URL validation and HTTP helpers
 - `src-tauri/src/ai_rig/tools.rs`: AI tool path and size limits
 - `src-tauri/src/ai_rig/local_secrets.rs`: per-space AI secrets store
+- `src-tauri/src/space_asset_protocol.rs`: space-scoped `glyphasset://` image protocol
 - `src-tauri/src/license/`: license storage and Gumroad verification
 - `src-tauri/src/glyph_paths.rs`: controlled `.glyph/` paths
 - `src-tauri/src/space/watcher.rs`: watcher and local-change suppression
@@ -107,7 +108,7 @@ Do not remove `base_mtime_ms` from editor saves.
 
 Markdown writes call `mark_recent_local_change()` before writing. The watcher checks `has_recent_local_change()` and skips external reindex/event handling for recent local writes.
 
-The writer then emits `notes:external_changed` after indexing.
+The mutation boundary emits `space:fs_changed` with a typed content/create payload after indexing.
 
 This prevents duplicate indexing and reload loops while keeping the UI informed.
 
@@ -177,7 +178,13 @@ It resolves DNS for non-literal hosts and rejects any forbidden address. It only
 
 User-supplied network features should use `net::validate_url_host()` or a stricter wrapper.
 
-## Invariant 11: Secrets Stay Out of Logs and Normal File APIs
+## Invariant 11: Asset URLs Stay in the Requesting Space
+
+`glyphasset://localhost/<relative-path>` is the canonical asset form. Hostless forms such as `glyphasset:///image.png` are also accepted because a missing host defaults to `localhost`. `space_asset_protocol.rs` rejects other hosts, invalid hexadecimal percent escapes, absolute paths, hidden components, unsupported extensions, and paths that do not resolve under the space root. Its current percent-decoding behavior accepts an incomplete trailing `%`. It resolves the root from the requesting webview label, joins with `paths::join_under()`, canonicalizes the result, verifies that the canonical path is an existing file under that root, and serves only allowlisted image MIME types for `png`, `jpg`/`jpeg`, `webp`, `gif`, `svg`, `bmp`, `avif`, `tif`, and `tiff`.
+
+Do not turn asset URLs into unrestricted file URLs or resolve them against a global active-space path. The webview-to-space lookup is part of the isolation boundary.
+
+## Invariant 12: Secrets Stay Out of Logs and Normal File APIs
 
 Current AI secrets are stored per space by `ai_rig/local_secrets.rs` in:
 
@@ -195,7 +202,7 @@ Rules:
 - Never expose `.glyph/Glyph/ai_secrets.json` through previews or file tree commands.
 - Consider OS keychain migration separately if the product requires encrypted local secret storage.
 
-## Invariant 12: License Keys Are Hashed and Masked
+## Invariant 13: License Keys Are Hashed and Masked
 
 License activation verifies through Gumroad. Local license records live in Tauri app config as `license.json`.
 
@@ -210,7 +217,7 @@ The local record stores:
 
 It does not store the raw license key after activation. Activation failures record error state without storing the submitted raw key.
 
-## Invariant 13: Git Sync Flushes the Editor
+## Invariant 14: Git Sync Flushes the Editor
 
 `useGitSync()` calls `saveCurrentEditor()` before `git_sync_run`.
 
@@ -218,7 +225,7 @@ This keeps the active editor from being left out of a commit. Preserve this call
 
 Git sync also refuses unsupported repository states and pauses auto-sync after repeated failures.
 
-## Invariant 14: Command Types Must Match Rust
+## Invariant 15: Command Types Must Match Rust
 
 The TypeScript command map and Rust command registration must stay aligned.
 
@@ -231,16 +238,17 @@ When adding commands:
 
 When changing payload casing, check Rust command attributes such as `rename_all = "snake_case"`.
 
-## Invariant 15: Events Are Part of State Consistency
+## Invariant 16: Events Are Part of State Consistency
 
 Events keep surfaces synchronized:
 
-- `space:fs_changed`: file tree and removal handling
-- `notes:external_changed`: editor reload and cache invalidation
+- `space:fs_changed`: file tree, editor reload, and cache invalidation
 - `settings:updated`: live settings propagation
 - `git_sync:status`: sync status updates
 - `ai:*`: chat streaming and timeline
 - `menu:*`: native menu actions
+
+Cursor and Grok CLI runtimes also follow the event contract. Their subprocess parsers emit only job-scoped `ai:status`, `ai:chunk`, `ai:tool`, `ai:done`, and `ai:error` events, and cancellation must terminate the child process rather than merely dropping the reader.
 
 If a backend command mutates data that multiple UI areas cache, emit an event or invalidate through the existing event path.
 

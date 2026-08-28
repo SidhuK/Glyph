@@ -8,6 +8,7 @@ Frontend:
 
 - `src/lib/tauri.ts`: typed `invoke()` wrapper and command result types
 - `src/lib/tauriEvents.ts`: typed event helpers
+- `src/lib/spaceChange.ts`: typed `space:fs_changed` propagation and cache invalidation
 - `src/hooks/useMenuListeners.ts`: native menu event consumers
 - `src/lib/shortcuts/`: shortcut normalization and registry
 - `src/shared/appCommandManifest.json`: app command metadata shared with native menu code
@@ -15,6 +16,7 @@ Frontend:
 Rust:
 
 - `src-tauri/src/lib.rs`: Tauri builder, command registration, menus, windows, plugins
+- `src-tauri/src/note_mutation.rs`: shared Markdown write, index, and change-event flow
 - `src-tauri/src/menu_manifest.rs`: native menu command lookup and accelerators
 - feature modules under `src-tauri/src/*/commands.rs`: command handlers
 
@@ -86,6 +88,12 @@ The command map covers these groups:
 - AI: profiles, secrets, models, chat, context, history, provider support, Codex account and rate limits
 
 Keep command names descriptive. Most existing commands use a module prefix: `space_`, `index_`-style index names, `databases_`, `ai_`, `codex_`, `git_sync_`, `git_history_`, `external_markdown_`.
+
+## Note mutation boundary
+
+Markdown writes use the shared helpers in `src-tauri/src/note_mutation.rs`. `commit_markdown()` validates the relative path, checks the expected mtime when replacing an existing note, writes atomically, and calls `index_written_markdown()` before returning. Commands emit the returned `SpaceChange` through `space:fs_changed` after the blocking work completes. Text writes, imports, database cell edits, and path operations use this boundary, so a successful note mutation updates the derived index before frontend consumers refresh. This boundary was introduced in the note mutation work that landed after `8f2d0446`.
+
+`SpaceChange` is a tagged, serialized enum with `content`, `create`, `remove`, `rename`, and `batch` variants. Each payload carries the canonical `space_path`; path-specific variants carry `rel_path`, or `from_path` and `to_path`, plus `recursive` where needed. Keep the Rust enum and `src/lib/spaceChange.ts` union in sync when adding a change kind.
 
 ## Tauri Builder
 
@@ -208,8 +216,7 @@ Backend-to-frontend events include:
 
 - `menu:open_recent_space`
 - `menu:app_command`
-- `space:fs_changed`
-- `notes:external_changed`
+- `space:fs_changed` with a typed `SpaceChange` payload. `useSpaceChangePropagation()` batches delivery for 50ms, refreshes affected directories and tags, invalidates derived query data, and reloads open-note content for `content` changes.
 - `settings:updated`
 - `index:progress`
 - `ai:chunk`

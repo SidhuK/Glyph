@@ -11,6 +11,9 @@ Frontend:
 - `src/components/editor/hooks/useNoteEditor.ts`: TipTap instance, Markdown conversion, paste handling, image paste
 - `src/components/editor/extensions/index.ts`: extension composition
 - `src/components/editor/markdown/`: wiki link and Markdown bridge helpers
+- `src/components/editor/markdown/wikiLinkCodec.ts`: parses and serializes file, heading, and block wiki-link anchors
+- `src/components/editor/markdown/wikiLinkHeadingSuggest.ts`: resolves a target note and suggests its headings
+- `src/components/editor/noteProperties/TextPropertyValueField.tsx`: source-aware text-property wiki-link display and editing
 - `src/components/editor/hooks/useHydrateInlineImages.ts`: image path hydration
 - `src/components/editor/hooks/useTaskInlineDates.ts`: inline task date editing
 - `src/components/editor/hooks/useExtractSelectionToNote.ts`: extract selection flow
@@ -64,6 +67,8 @@ It knows:
 - image upload placeholders
 - settings that change editor features
 
+Editor settings arrive through `settings:updated`, not only on the initial settings load. In particular, `showFormatBar` is applied live by `useNoteEditorSettings()` and controls the rich editor formatting bar while the note remains open. `NoteInlineEditor` renders the bar only when the editor is editable and the setting is enabled. The setting is defined and persisted as `editor.showFormatBar` in `src/lib/settings/definitions.ts`.
+
 Keep those roles separate. File persistence should stay in `MarkdownEditorPane`. TipTap transaction logic should stay in `useNoteEditor`.
 
 ## Document Load Flow
@@ -103,6 +108,8 @@ The durable file includes optional YAML frontmatter and Markdown body.
 
 Wiki links need bridge logic because TipTap and Markdown need different representations for editing and serialization.
 
+`parseWikiLink()` splits the target from an optional `#heading` or `#^block` anchor and preserves aliases and embeds. Heading links such as `[[Note#heading]]` use the target note's heading slug for insertion and navigation. Rich mode uses the TipTap wiki-link extension and `wikiLinkHeadingSuggest.ts`; raw mode uses CodeMirror decorations and `raw/interactions.ts`. Both modes pass the current note as `sourcePath` when dispatching a click so relative links resolve from the note that contains them. `headingAnchor.ts` and `useInternalAnchorNavigation.ts` apply the anchor after the target note loads. This behavior was added in `e3ccf8cb` and its follow-up link handling commits.
+
 Use the bridge helpers rather than ad hoc string replacement when changing wiki-link Markdown behavior.
 
 ## TipTap Extensions
@@ -136,6 +143,8 @@ Feature settings can enable or disable parts of this list:
 - people mentions as tags
 - markdown link autocomplete
 - collapsible headings
+
+The AI toolbar action is conditional as well. `MarkdownEditorPane` renders the AI toolbar button only when `aiEnabled` is true and passes the same gate to `NoteInlineEditor`; the AI sidebar and AI command group use the setting too. Disabling AI therefore removes the editor entry point instead of leaving a button that cannot open a panel.
 
 The extension list should stay centralized. Adding extensions from a component creates inconsistent editor behavior across rich editor surfaces.
 
@@ -228,9 +237,9 @@ This strategy favors the user's current editor text after one refresh. It does n
 
 ## External Changes
 
-Rust emits `notes:external_changed` after external markdown changes and after local writes that the watcher suppresses.
+Rust emits `space:fs_changed` with a typed content payload after external markdown changes and after backend writes that the watcher suppresses. `useSpaceChangePropagation()` batches that event for 50ms and passes affected open-note paths through `applySpaceChange()` and the open-note listener registry. `useMarkdownDocumentSession` subscribes to that registry and owns the 180ms `EXTERNAL_RELOAD_DEBOUNCE_MS` debounce and `pendingExternalReloadRef` handling. `MarkdownEditorPane` does not listen to `space:fs_changed` directly.
 
-`MarkdownEditorPane` handles it:
+`useMarkdownDocumentSession` handles the propagated change:
 
 1. Normalize the event path and current path.
 2. Ignore events for other notes.
@@ -279,6 +288,8 @@ Frontmatter appears in two ways:
 
 `NoteInlineEditor` keeps a frontmatter draft. Property tools call frontmatter render/parse commands or local helpers depending on the path. On frontmatter commit, `MarkdownEditorPane` runs autosave immediately.
 
+Text properties can contain wiki links. `TextPropertyValueField` detects links in text-valued properties, shows them through `WikiLinkedText` when not editing, and passes the containing note's `sourcePath` so relative targets resolve correctly. While editing, the same wiki-link autocomplete supports file and heading suggestions. This path is separate from body editing but uses the same codec and click event shape. The interactive behavior was added in `1e5525f6` and the follow-up fixes `2e41d4d5` and `86f507a4`.
+
 Database cell edits also update note frontmatter from the backend. See `07-databases-frontmatter.md`.
 
 ## Links and Navigation
@@ -297,6 +308,8 @@ It dispatches app events:
 - `dispatchPersonClick()`
 - `dispatchWikiLinkClick()`
 - `dispatchMarkdownLinkClick()`
+
+Wiki-link clicks carry the parsed anchor kind and anchor when present. Rich and raw modes both support heading-addressed links and use the source path for resolution. Frontmatter text-property links follow the same source-aware dispatch through `WikiLinkedText`.
 
 `AppShell` listens through `useWorkspaceLinkEvents()` and decides whether to open a note, open search, or open an external URL.
 
@@ -348,7 +361,7 @@ When changing editor behavior:
 3. Use Markdown bridge helpers for wiki-link serialization.
 4. Preserve `base_mtime_ms` conflict checks.
 5. Reindex notes after backend writes.
-6. Emit or handle `notes:external_changed` when note-derived UI must refresh.
+6. Emit or handle `space:fs_changed` when note-derived UI must refresh.
 7. Avoid programmatic content replacement loops by using suppression refs.
 8. Flush the editor before operations that duplicate, sync, or export the current note.
 9. Keep image paste storage tied to a real space file.
@@ -400,7 +413,7 @@ The failure sequence:
   `requestAnimationFrame`. macOS suspends rAF for occluded windows, which
   could strand a pending sync — and the text it carried — indefinitely.
 
-A considered-and-rejected change: tagging the self-emitted
+A considered-and-rejected change was tagging the self-emitted legacy
 `notes:external_changed` event from `space_write_text` so the session could
 ignore its own saves. AI actions and quick notes also write the open note
 via `space_write_text` in the same window, and the session must keep

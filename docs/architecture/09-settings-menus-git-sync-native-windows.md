@@ -6,7 +6,10 @@ Glyph keeps most preferences in a Tauri store, mirrors live changes through even
 
 Settings and shortcuts:
 
-- `src/lib/settings.ts`: settings store, defaults, migrations, update helpers
+- `src/lib/settings.ts`: settings loading, normalization, persistence, and update helpers
+- `src/lib/settings/definitions.ts`: centralized application and space setting definitions
+- `src/lib/settings/model.ts`: persisted settings types, including `SpaceScopedSettingsMap`
+- `src/components/settings/settingsSearch.ts`: searchable settings tabs and entries
 - `src/components/settings/`: settings panes
 - `src/components/settings/ai/`: AI settings sections
 - `src/lib/shortcuts/`: shortcut types, registry, platform normalization
@@ -50,13 +53,13 @@ Settings include:
 - template folder and daily note template
 - attachment folder and attachment storage mode
 - date display format
-- editor settings: default editor mode, focus mode, spell check, editor width, raw Markdown Vim mode, frontmatter visibility, collapsible headings, TOC
+- editor settings: default editor mode, focus mode, spell check, editor width, raw Markdown Vim mode, frontmatter visibility, collapsible headings, TOC, formatting bar, Zen mode, and people mentions as tags
 - file tree settings: sort mode, folder counts, non-Markdown file visibility, beautiful tags, people mentions
 - database UI settings
 - shortcut bindings
 - onboarding flags
 
-Defaults live in the same file. The loader normalizes older values into current shapes.
+`DURABLE_SETTINGS` defines application settings and `SPACE_SETTINGS` defines settings that belong to a space. `settings.json` stores application values and the `spaceScopedSettings` entry stores a normalized map keyed by space path. The loader applies each definition's default and normalizer, validates paths and enum values, and reads legacy keys when needed. Writers normalize before persistence and emit the relevant change payload. `settingsSearch.ts` checks that every searchable definition has a matching localized search entry.
 
 ## Live Settings Event
 
@@ -68,7 +71,7 @@ settings:updated
 
 Listeners include:
 
-- `UIProvider`: AI, TOC, folio, daily notes, templates
+- `UIProvider`: AI, TOC, folio, daily notes, templates, note peek, and period-note state
 - `FileTreeProvider`: people mentions and beautiful tags
 - `useNoteEditor`: editor feature flags and attachment settings
 - `AppShell`: collapsible headings
@@ -84,6 +87,7 @@ Some settings must be sent to Rust:
 - menu shortcuts: `set_menu_shortcuts`
 - quick note global shortcut: `set_quick_note_global_shortcut`
 - window vibrancy: `set_window_vibrancy_theme`
+- period-note menu state: `set_period_note_menu_enabled`
 
 Keep the Tauri runtime synchronized after settings load and after updates.
 
@@ -116,7 +120,7 @@ The command palette is lazy-loaded:
 
 `AppShell` preloads it after 500ms idle time. Commands come from `useAppCommands()`, which receives current shell state and returns action objects with enablement.
 
-Command search uses the index for note search and the command registry for command results.
+Command search uses the index for note search and the command registry for command results. The palette also exposes registered setting editors. The current registry includes application and space settings such as weekly/monthly/quarterly note cadence, default editor mode, formatting bar, Zen mode, focus mode, note peek, and people mentions as tags. These entries use the same setting definitions and write paths as the settings panes.
 
 When adding a command:
 
@@ -146,6 +150,8 @@ Rust builds the main menu in `src-tauri/src/lib.rs`. Menu events follow one of t
 - editor formatting actions
 
 This lets native menus call the same functions as keyboard shortcuts and command palette commands.
+
+The weekly, monthly, and quarterly note menu items are enabled only when a space is open and the corresponding setting is enabled. Rust keeps these three flags in `MenuState`; the frontend updates them through `set_period_note_menu_enabled`, and menu rebuilds reapply the flags.
 
 ## Window Runtime
 
@@ -246,10 +252,12 @@ Background run:
 5. Upsert managed `.gitignore`.
 6. Fetch remote.
 7. Stage sync inclusions.
-8. Commit local changes as `Glyph sync`.
+8. Commit local changes.
 9. Merge remote branch if it exists.
 10. Push branch, setting upstream when needed.
 11. Record success and emit status.
+
+For a manual run with `prompt_for_commit_message` enabled, the frontend first calls `git_sync_commit_message_prompt`. On macOS this schedules an `NSAlert` with a text field on the main thread. A confirmed, trimmed response becomes `GitSyncRunRequest.commit_message`; an empty response uses `Glyph sync`, and cancellation aborts the run. Auto runs never prompt. The choice is persisted per space as `prompt_for_commit_message` in the Git sync config.
 
 On auto-sync failure, consecutive failures increment. After three auto failures, Git sync pauses itself.
 
