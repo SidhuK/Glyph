@@ -356,7 +356,7 @@ function findHeadingAtPosition(
 	pos: number,
 ): HeadingRange | null {
 	const containingHeadings = headings.filter(
-		(heading) => pos > heading.pos && pos < heading.end,
+		(heading) => pos >= heading.pos && pos < heading.end,
 	);
 	return containingHeadings[containingHeadings.length - 1] ?? null;
 }
@@ -408,9 +408,10 @@ export const HeadingCollapse = Extension.create<{
 							: null;
 
 					if (!meta) return false;
-					dispatch?.(state.tr.setMeta(headingCollapsePluginKey, meta));
+					const transaction = state.tr.setMeta(headingCollapsePluginKey, meta);
+					dispatch?.(transaction);
 					if (listBranch && dispatch) {
-						const nextState = this.editor.state;
+						const nextState = state.apply(transaction);
 						const nextCollapseState =
 							headingCollapsePluginKey.getState(nextState);
 						if (nextCollapseState) {

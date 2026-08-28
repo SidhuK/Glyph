@@ -43,6 +43,32 @@ describe("shortcuts", () => {
 		expect(isShortcutMatch(keyEvent("K"), { key: "k" })).toBe(true);
 	});
 
+	it("matches shifted US bracket characters to [ and ] bindings", () => {
+		expect(
+			isShortcutMatch(keyEvent("{", { meta: true, shift: true }), {
+				key: "[",
+				meta: true,
+				shift: true,
+			}),
+		).toBe(true);
+		expect(
+			isShortcutMatch(keyEvent("}", { meta: true, shift: true }), {
+				key: "]",
+				meta: true,
+				shift: true,
+			}),
+		).toBe(true);
+	});
+
+	it("does not match unrelated characters produced by physical bracket keys", () => {
+		expect(
+			isShortcutMatch(keyEvent("ü", { meta: true, code: "BracketLeft" }), {
+				key: "[",
+				meta: true,
+			}),
+		).toBe(false);
+	});
+
 	it("normalizes shortcut keys before building signatures", () => {
 		expect(normalizeShortcutKey(" ")).toBe("Space");
 		const normalized = normalizeShortcut({

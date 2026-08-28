@@ -113,8 +113,8 @@ export function isShortcutMatch(
 	const eventKey = normalizeShortcutKey(event.key);
 	return (
 		eventKey === normalized.key ||
-		(normalized.key === "[" && event.code === "BracketLeft") ||
-		(normalized.key === "]" && event.code === "BracketRight")
+		(normalized.key === "[" && eventKey === "{") ||
+		(normalized.key === "]" && eventKey === "}")
 	);
 }
 

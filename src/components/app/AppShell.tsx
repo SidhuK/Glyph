@@ -200,6 +200,7 @@ export function AppShell() {
 		TemplatePickerItem[]
 	>([]);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [showCollapsibleLists, setShowCollapsibleLists] = useState(false);
 	const [noteSidePeekEnabled, setNoteSidePeekEnabled] = useState(false);
 	const [notePeek, setNotePeek] = useState<{
 		spacePath: string;
@@ -280,6 +281,7 @@ export function AppShell() {
 			.then((settings) => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				setShowCollapsibleLists(settings.editor.showCollapsibleLists);
 				setNoteSidePeekEnabled(settings.ui.noteSidePeek);
 				setResumeLastSession(settings.ui.resumeLastSession);
 			})
@@ -298,6 +300,7 @@ export function AppShell() {
 			(payload: {
 				editor?: {
 					showCollapsibleHeadings?: boolean;
+					showCollapsibleLists?: boolean;
 					zenMode?: boolean;
 				};
 				ui?: {
@@ -307,6 +310,9 @@ export function AppShell() {
 			}) => {
 				if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 					setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+				}
+				if (typeof payload.editor?.showCollapsibleLists === "boolean") {
+					setShowCollapsibleLists(payload.editor.showCollapsibleLists);
 				}
 				if (payload.editor?.zenMode) {
 					setPaletteOpen(false);
@@ -1285,6 +1291,7 @@ export function AppShell() {
 		setMovePickerSourcePath,
 		setSidebarCollapsed,
 		showCollapsibleHeadings,
+		showCollapsibleLists,
 		sidebarCollapsed,
 		spacePath,
 		tabsLength: tabs.length,

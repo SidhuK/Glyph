@@ -122,6 +122,7 @@ interface UseAppCommandsDeps {
 	setMovePickerSourcePath: (path: string | null) => void;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	showCollapsibleHeadings: boolean;
+	showCollapsibleLists: boolean;
 	sidebarCollapsed: boolean;
 	spacePath: string | null;
 	tabsLength: number;
@@ -269,6 +270,7 @@ export function useAppCommands({
 	setMovePickerSourcePath,
 	setSidebarCollapsed,
 	showCollapsibleHeadings,
+	showCollapsibleLists,
 	sidebarCollapsed,
 	spacePath,
 	tabsLength,
@@ -301,6 +303,7 @@ export function useAppCommands({
 			aiEnabled,
 			setCurrentEditorMode,
 			showCollapsibleHeadings,
+			showCollapsibleLists,
 		});
 		const baseCommands: Command[] = [
 			{
@@ -734,6 +737,7 @@ export function useAppCommands({
 		setSidebarCollapsed,
 		sidebarCollapsed,
 		showCollapsibleHeadings,
+		showCollapsibleLists,
 		spacePath,
 		openAllDocsTab,
 		openSearchPalette,
