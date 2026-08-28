@@ -396,6 +396,21 @@
 	margin-left: auto;
 }
 
+.fileTreePane[data-folder-counts="hover"] .fileTreeCounts {
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--transition-fast);
+}
+
+.fileTreePane[data-folder-counts="hover"]
+	.fileTreeRowShell:hover
+	.fileTreeCounts,
+.fileTreePane[data-folder-counts="hover"]
+	.fileTreeRowShell:focus-within
+	.fileTreeCounts {
+	opacity: 1;
+}
+
 .fileTreeExtBadge {
 	flex-shrink: 0;
 	font-size: calc(var(--text-base) * 0.8);
