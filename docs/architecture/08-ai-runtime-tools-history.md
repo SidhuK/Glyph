@@ -29,7 +29,7 @@ Backend:
 - `src-tauri/src/ai_rig/history.rs`: chat history readers
 - `src-tauri/src/ai_rig/audit.rs`: audit/history writes
 - `src-tauri/src/ai_codex/`: Codex account and chat runtime
-- `src-tauri/src/ai_amp/`, `ai_claude_code/`, `ai_opencode/`, `ai_pi/`: dedicated provider runtimes
+- `src-tauri/src/ai_amp/`, `ai_claude_code/`, `ai_cursor/`, `ai_grok/`, `ai_opencode/`, `ai_pi/`: dedicated provider runtimes
 
 ## Provider Model
 
@@ -47,6 +47,8 @@ Backend:
 - Claude Code
 - OpenCode
 - Pi
+- Cursor
+- Grok
 
 Profiles store:
 
@@ -59,7 +61,7 @@ Profiles store:
 
 Profiles live in app config at `ai.json`, not in the space. API keys live per space through `local_secrets.rs` so each space can have separate credentials.
 
-Default profiles are generated in `ensure_default_profiles()`. Provider ids are stable provider keys such as `openai`, `anthropic`, and `codex_chatgpt`.
+Default profiles are generated in `ensure_default_profiles()`. Provider ids are stable provider keys such as `openai`, `anthropic`, `codex_chatgpt`, `cursor`, and `grok`. Cursor defaults to `auto`; Grok defaults to `grok-build`.
 
 ## Profile Store
 
@@ -143,6 +145,8 @@ Cancellation calls `ai_chat_cancel`, which cancels the token by job id.
 - `Amp`: `ai_amp::run_with_amp`
 - `ClaudeCode`: `ai_claude_code::run_with_claude_code`
 - `Pi`: `ai_pi::run_with_pi`
+- `Cursor`: `ai_cursor::run_with_cursor`
+- `Grok`: `ai_grok::run_with_grok`
 - everything else: `runtime::run_with_rig`
 
 Dedicated runtimes return the same tuple as Rig:
@@ -152,6 +156,10 @@ Dedicated runtimes return the same tuple as Rig:
 ```
 
 That keeps the command and history path shared even when provider internals differ.
+
+Cursor and Grok run their installed CLIs as child processes. Both require an open space, use that space as the process working directory, parse JSON lines from stdout, forward text and tool events through the shared `ai:*` events, and kill the child on cancellation. Requests have a 30-second startup limit and a 10-minute run limit. Cursor discovers models with `agent --list-models`, always including `auto`. Grok combines models from `grok models`, Grok config files, and built-in aliases such as `grok-build`, `grok-4.6`, `grok-4.5`, and `grok-code-fast-1`.
+
+Cursor chat uses ask mode; create mode passes `--force --sandbox disabled`. Grok chat allows `read_file,grep,list_dir`; create mode passes `--yolo`. Grok also forwards the profile reasoning effort. CLI paths can be overridden with `CURSOR_CLI_PATH` or `GROK_CLI_PATH`.
 
 ## Rig Runtime
 

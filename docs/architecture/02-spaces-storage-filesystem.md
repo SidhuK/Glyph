@@ -43,6 +43,7 @@ Code ownership:
 - `src-tauri/src/space/helpers.rs`: create/open implementation and onboarding helpers
 - `src-tauri/src/space/state.rs`: active root, watcher handle, local-change tracking, store mutexes
 - `src-tauri/src/space/watcher.rs`: recursive filesystem watcher and index refresh
+- `src-tauri/src/note_mutation.rs`: centralized note commit, indexing, unindexing, rename handling, and change payload construction (introduced in `4aa71d69`)
 - `src-tauri/src/glyph_paths.rs`: `.glyph/` paths in the space folder
 - `src-tauri/src/index/paths.rs`: app-support SQLite index paths and space-key manifest
 - `src-tauri/src/space_fs/`: file tree, read/write, preview, rename, delete, link resolution
@@ -52,29 +53,30 @@ Code ownership:
 - `src/contexts/FileTreeContext.tsx`: frontend tree state tied to a space
 - `src/hooks/useFileTree.ts`: frontend filesystem operations and tree loading
 - `src/hooks/useFileTreeCRUD.ts`: create, rename, move, delete UI actions
+- `src/lib/spaceChange.ts`: renderer-side application of typed filesystem changes and derived-cache invalidation
 
 ## Space State
 
-Rust stores active space state in `SpaceState`:
+Rust stores per-window space sessions in `SpaceState`:
 
 ```rust
 pub struct SpaceState {
-    pub(crate) current: Mutex<Option<PathBuf>>,
-    pub(crate) notes_watcher: Mutex<Option<notify::RecommendedWatcher>>,
-    recent_local_changes: RecentLocalChanges,
+    pub(crate) sessions: Mutex<HashMap<String, SpaceSession>>,
     db_store_mutex: Arc<Mutex<()>>,
     file_tree_appearance_mutex: Arc<Mutex<()>>,
+    list_collapse_state_mutex: Arc<Mutex<()>>,
+    note_mutation_mutex: Arc<Mutex<()>>,
     pinned_files_mutex: Arc<Mutex<()>>,
 }
 ```
 
 The state has three jobs:
 
-1. Hold the active root path.
-2. Hold the watcher so it stays alive for the current space.
-3. Share mutexes for JSON stores that live under `.glyph/`.
+1. Map each window label to its space root, watcher, and recent-local-change set.
+2. Share mutexes for JSON stores and note mutations that live under `.glyph/` or the derived index.
+3. Resolve auxiliary editor windows against the main window's session when they share its space (`quick-note`, `quick-task`, and `external-markdown-*`).
 
-`current_root()` returns an error when no space is open. Most commands call it first, so the backend enforces "no active space, no workspace operation."
+Commands call `root_for_window(&window)`, so the backend enforces "no space session for this window, no workspace operation" while retaining independent sessions for windows that own their space.
 
 ## Opening a Space
 
@@ -93,7 +95,7 @@ Rust flow in `space_open` and `space_create`:
 3. Register the space in the app-support index manifest and remove any stale in-space `glyph.sqlite` sidecars.
 4. Create or open Glyph metadata in `.glyph/`.
 5. Reset the index schema cache with `index::db::reset_schema_cache()`.
-6. Store the canonical root in `SpaceState.current`.
+6. Store the canonical root and watcher in the calling window's `SpaceState` session.
 7. Install the notes watcher with `set_notes_watcher()`.
 8. Enable the native Close Space menu item.
 
@@ -154,15 +156,14 @@ Frontend loading uses `useFileTree()`:
 
 ## Writing Text
 
-`space_write_text` handles note and text writes:
+`space_write_text` handles note and text writes through the centralized mutation helpers in `src-tauri/src/note_mutation.rs`:
 
 1. Validates the relative path.
 2. Checks `base_mtime_ms` when the caller supplies it.
 3. Creates parent folders.
-4. Marks markdown writes as recent local changes.
-5. Writes bytes through `io_atomic::write_atomic()`.
-6. Reindexes markdown content with `index::index_note()`.
-7. Emits `notes:external_changed` for markdown files because the watcher suppresses local writes.
+4. Writes bytes through `io_atomic::write_atomic()` (or reserves a new path with the create-new mode).
+5. Reindexes markdown content and marks the local change together.
+6. Returns a typed `SpaceChange::create` or `SpaceChange::content` result for one propagation path.
 
 The `base_mtime_ms` check protects an open editor from silently overwriting a file changed outside the app. `MarkdownEditorPane` handles the conflict path by reading the latest file and retrying once with the new mtime.
 
@@ -178,10 +179,16 @@ Use `io_atomic::copy_atomic()` when duplicating a file. Use `OpenOptions::create
 
 `set_notes_watcher()` installs a recursive watcher with `notify`.
 
-The watcher emits two event types:
+The watcher and all backend writers now converge on one typed event, `space:fs_changed`. `SpaceChange` is defined in Rust in `src-tauri/src/note_mutation.rs` and mirrored in `src/lib/spaceChange.ts`:
 
-- `space:fs_changed`: any visible create, modify, or remove event
-- `notes:external_changed`: markdown events that should refresh note-backed UI
+- `content` and `create` identify one changed path
+- `remove` includes whether the removal is recursive
+- `rename` includes source, destination, and recursive state
+- `batch` groups changes from one operation
+
+The watcher emits this event type for visible filesystem changes:
+
+- `space:fs_changed`: any visible create, modify, remove, or rename event, with a `SpaceChange` payload
 
 The watcher also updates the SQLite index for markdown files. It debounces index work for 100ms and collapses repeated events by relative path.
 
@@ -190,14 +197,10 @@ Recent local changes prevent a loop:
 1. Local markdown writes call `mark_recent_local_change()`.
 2. The watcher sees the filesystem event.
 3. `has_recent_local_change()` returns true for about two seconds.
-4. The watcher skips the external note event and index work.
-5. The writer emits the needed `notes:external_changed` event after indexing.
+4. The watcher skips duplicate index work and change propagation for that recent local path.
+5. The mutation commit emits the needed `space:fs_changed` event after indexing. The renderer applies the same payload to the file tree, tabs, pinned paths, open-note content, and derived query/prefetch caches.
 
-Frontend consumers:
-
-- `FileTreeContext` refreshes pinned files after remove events.
-- `AppShell` queues changed paths, reloads affected file tree directories after 150ms, and invalidates prefetch caches.
-- `MarkdownEditorPane` reloads the active note after `notes:external_changed` when the editor is clean.
+Frontend application is centralized in `applySpaceChange()` and `useSpaceChangePropagation()` in `src/lib/spaceChange.ts`. It ignores changes for another space, recursively applies batches, reloads affected directories, retargets or closes tabs and pinned paths, refreshes tags, notifies open-note listeners, and invalidates note, calendar, All Notes/activity, database, usage, folio, and unlinked-mention data. The renderer event map in `src/lib/tauriEvents.ts` types `space:fs_changed` as `SpaceChange`.
 
 ## Rename, Duplicate, Delete
 
@@ -212,7 +215,7 @@ Frontend consumers:
 - uses case-insensitive sibling names to choose `Copy`, `Copy 2`, and so on
 - copies with `copy_atomic()`
 - indexes the duplicate if it is markdown
-- emits `notes:external_changed`
+- emits a typed `space:fs_changed` create payload
 
 ### Rename
 
@@ -286,7 +289,7 @@ When you change filesystem behavior:
 4. Mark local markdown changes before writes that the watcher will see.
 5. Reindex markdown changes before emitting UI refresh events.
 6. Update pinned files, appearance paths, and tabs for path moves.
-7. Add or adjust events when the frontend needs to refresh cached state.
+7. Return or emit a `SpaceChange` through `note_mutation.rs`; do not add a second note/filesystem event path.
 8. Keep `.glyph/` inaccessible through normal space file commands.
 
 ## Failure Modes
