@@ -99,7 +99,7 @@ Rust flow in `space_open` and `space_create`:
 7. Install the notes watcher with `set_notes_watcher()`.
 8. Enable the native Close Space menu item.
 
-`space_close` clears `current`, drops the watcher, resets the schema cache, and disables Close Space.
+`space_close` clears the calling window's session with `remove_window_session`, drops its watcher, resets the schema cache, and updates the Close Space menu through `update_close_space_menu`.
 
 ## Path Safety
 

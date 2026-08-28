@@ -237,9 +237,9 @@ This strategy favors the user's current editor text after one refresh. It does n
 
 ## External Changes
 
-Rust emits `space:fs_changed` with a typed content payload after external markdown changes and after backend writes that the watcher suppresses.
+Rust emits `space:fs_changed` with a typed content payload after external markdown changes and after backend writes that the watcher suppresses. `useSpaceChangePropagation()` batches that event for 50ms and passes affected open-note paths through `applySpaceChange()` and the open-note listener registry. `useMarkdownDocumentSession` subscribes to that registry and owns the 180ms `EXTERNAL_RELOAD_DEBOUNCE_MS` debounce and `pendingExternalReloadRef` handling. `MarkdownEditorPane` does not listen to `space:fs_changed` directly.
 
-`MarkdownEditorPane` handles it:
+`useMarkdownDocumentSession` handles the propagated change:
 
 1. Normalize the event path and current path.
 2. Ignore events for other notes.

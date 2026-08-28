@@ -180,7 +180,7 @@ User-supplied network features should use `net::validate_url_host()` or a strict
 
 ## Invariant 11: Asset URLs Stay in the Requesting Space
 
-`glyphasset://localhost/<relative-path>` is the only accepted asset form. `space_asset_protocol.rs` rejects other hosts, malformed percent encoding, absolute paths, hidden components, unsupported extensions, and paths that do not resolve under the space root. It resolves the root from the requesting webview label, joins with `paths::join_under()`, canonicalizes the result, checks that the canonical file remains under that root, and serves only allowlisted image MIME types for `png`, `jpg`/`jpeg`, `webp`, `gif`, `svg`, `bmp`, `avif`, `tif`, and `tiff`.
+`glyphasset://localhost/<relative-path>` is the canonical asset form. Hostless forms such as `glyphasset:///image.png` are also accepted because a missing host defaults to `localhost`. `space_asset_protocol.rs` rejects other hosts, invalid hexadecimal percent escapes, absolute paths, hidden components, unsupported extensions, and paths that do not resolve under the space root. Its current percent-decoding behavior accepts an incomplete trailing `%`. It resolves the root from the requesting webview label, joins with `paths::join_under()`, canonicalizes the result, verifies that the canonical path is an existing file under that root, and serves only allowlisted image MIME types for `png`, `jpg`/`jpeg`, `webp`, `gif`, `svg`, `bmp`, `avif`, `tif`, and `tiff`.
 
 Do not turn asset URLs into unrestricted file URLs or resolve them against a global active-space path. The webview-to-space lookup is part of the isolation boundary.
 

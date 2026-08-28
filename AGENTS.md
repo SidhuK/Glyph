@@ -57,7 +57,7 @@ Repo extras: agents may read `docs/agents/` and `docs/architecture/adr/`. All ot
 - Multi-window: resolve the space per window via `space_state.root_for_window(&window)` in commands; never assume a single global active space.
 - Never call `invoke()` in a loop over paths/notes; use the existing batch commands (`space_read_texts_batch`, `space_read_text_previews_batch`, `task_summaries_for_paths`) or add a batch command.
 - New settings require all of: default value, load-time normalization of legacy/invalid values, `settings:updated` emit, Rust runtime sync when native code consumes it, and a `settingsSearch.ts` entry.
-- Any Rust code path that writes a note must reindex it and emit the change event (`notes:external_changed` / `space:fs_changed`); the SQLite index is derived and must never go stale after a write.
+- Any Rust code path that writes a note must reindex it and emit a typed `space:fs_changed` change event; the SQLite index is derived and must never go stale after a write.
 - All user-facing strings go through the i18n translation layer (menu labels via `set_menu_labels`); no hardcoded UI text.
 - Make sure we don't over-engineer CSS and use default components as much as possible unless explicitly stated.
 - Hard subtraction pass: always attempt the fix by deleting or narrowing existing code first, and only add LOC when the existing code provably cannot support the fix. Never add new abstractions, command entries, shortcuts, files, or wiring as a patch around code that should have been narrowed.
