@@ -418,6 +418,10 @@
 			"label": "Lista de tarefas",
 			"description": "Alternar uma lista de tarefas."
 		},
+		"toggle_heading_or_list_collapse": {
+			"label": "Alternar recolhimento de título/lista",
+			"description": "Alterna o recolhimento da seção de título atual ou da ramificação de lista aninhada."
+		},
 		"toggle-ai": {
 			"label": "Alternar painel de IA",
 			"description": "Mostrar ou ocultar o painel do assistente de IA."

@@ -418,6 +418,10 @@
 			"label": "To-do リスト",
 			"description": "タスクリストを切り替えます。"
 		},
+		"toggle_heading_or_list_collapse": {
+			"label": "見出し／リストの折りたたみを切り替え",
+			"description": "現在の見出しセクションまたは入れ子のリストを折りたたむか展開します。"
+		},
 		"toggle-ai": {
 			"label": "AI パネルの表示切替",
 			"description": "AI アシスタントパネルの表示／非表示を切り替えます。"

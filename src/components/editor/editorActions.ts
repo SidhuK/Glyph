@@ -22,6 +22,7 @@ const BASE_EDITOR_ACTION_IDS = [
 	"heading_3",
 	"collapse_all_headings",
 	"expand_all_headings",
+	"toggle_heading_or_list_collapse",
 	"bullet_list",
 	"numbered_list",
 	"todo_list",
@@ -114,6 +115,8 @@ export function executeEditorAction({
 			return chain.collapseAllHeadings().run();
 		case "expand_all_headings":
 			return chain.expandAllHeadings().run();
+		case "toggle_heading_or_list_collapse":
+			return editor.commands.toggleCurrentCollapse();
 		case "bullet_list":
 			return chain.toggleBulletList().run();
 		case "numbered_list":

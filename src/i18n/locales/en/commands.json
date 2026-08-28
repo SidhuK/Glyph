@@ -426,6 +426,10 @@
 			"label": "To-do List",
 			"description": "Toggle a task list."
 		},
+		"toggle_heading_or_list_collapse": {
+			"label": "Toggle Heading/List Collapse",
+			"description": "Toggle the current heading section or nested list branch."
+		},
 		"toggle-ai": {
 			"label": "Toggle AI Panel",
 			"description": "Show or hide the AI assistant panel."
