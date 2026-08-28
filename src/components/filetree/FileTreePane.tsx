@@ -29,6 +29,7 @@ import {
 	filterVisibleFileTreeEntries,
 	hasVisibleFileTreeEntries,
 } from "../../hooks/fileTreeHelpers";
+import { useFolderFileCounts } from "../../hooks/useFolderFileCounts";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
@@ -40,7 +41,6 @@ import type {
 	FsEntry,
 	NoteTaskSummary,
 } from "../../lib/tauri";
-import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
 import { parentDir } from "../../utils/path";
@@ -625,9 +625,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
 		boolean | null
 	>(null);
-	const [folderFileCounts, setFolderFileCounts] = useState<
-		Record<string, number>
-	>({});
 	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(
 		activeDirPath,
 	);
@@ -731,49 +728,12 @@ export const FileTreePane = memo(function FileTreePane({
 			.join("||");
 	}, [childrenByDir, rootEntries, summaryParentDirs]);
 
-	useEffect(() => {
-		if (!spacePath || showNonMarkdownFiles === null) {
-			setFolderFileCounts({});
-			return;
-		}
-
-		const requestRevision = folderCountTreeRevision;
-		if (!requestRevision) {
-			setFolderFileCounts({});
-			return;
-		}
-
-		let cancelled = false;
-		void invoke("space_dir_children_summary", {
-			dirs: summaryParentDirs,
-		})
-			.then((summaries) => {
-				if (cancelled) return;
-				const nextCounts: Record<string, number> = {};
-				for (const summary of summaries) {
-					nextCounts[summary.dir_rel_path] = showNonMarkdownFiles
-						? summary.total_files_recursive
-						: summary.total_markdown_recursive;
-				}
-				setFolderFileCounts((prev) => ({
-					...prev,
-					...nextCounts,
-				}));
-			})
-			.catch((error: unknown) => {
-				if (cancelled) return;
-				console.warn("Failed to load folder file counts", error);
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [
+	const folderFileCounts = useFolderFileCounts({
 		spacePath,
-		showNonMarkdownFiles,
-		summaryParentDirs,
-		folderCountTreeRevision,
-	]);
+		includeNonMarkdown: showNonMarkdownFiles,
+		parentDirs: summaryParentDirs,
+		treeRevision: folderCountTreeRevision,
+	});
 
 	const taskSummaryPaths = useMemo(() => {
 		const paths = new Set<string>();
