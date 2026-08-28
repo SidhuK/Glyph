@@ -1227,6 +1227,20 @@
 			"commandPalette": true,
 			"menuId": "editor.todo_list"
 		},
+		"toggle_heading_or_list_collapse": {
+			"id": "toggle_heading_or_list_collapse",
+			"label": "Toggle Heading/List Collapse",
+			"description": "Toggle the current heading section or nested list branch.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "["
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
 		"toggle-ai": {
 			"id": "toggle-ai",
 			"label": "Toggle AI Panel",

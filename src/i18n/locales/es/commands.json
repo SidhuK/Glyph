@@ -418,6 +418,10 @@
 			"label": "Lista de tareas",
 			"description": "Alternar una lista de tareas."
 		},
+		"toggle_heading_or_list_collapse": {
+			"label": "Alternar contraer/expandir encabezado o lista",
+			"description": "Alterna la sección de encabezado actual o la rama de lista anidada."
+		},
 		"toggle-ai": {
 			"label": "Mostrar u ocultar panel de IA",
 			"description": "Mostrar u ocultar el panel del asistente de IA."

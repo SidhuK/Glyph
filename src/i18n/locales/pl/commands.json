@@ -426,6 +426,10 @@
 			"label": "Lista zadań",
 			"description": "Włącz lub wyłącz listę zadań."
 		},
+		"toggle_heading_or_list_collapse": {
+			"label": "Przełącz zwijanie nagłówka/listy",
+			"description": "Przełącz zwijanie bieżącej sekcji nagłówka lub zagnieżdżonej gałęzi listy."
+		},
 		"toggle-ai": {
 			"label": "Przełącz panel AI",
 			"description": "Pokaż lub ukryj panel asystenta AI."

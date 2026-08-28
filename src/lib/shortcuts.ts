@@ -110,7 +110,12 @@ export function isShortcutMatch(
 	if (!(normalized.meta && !isMac)) {
 		if (event.ctrlKey !== Boolean(normalized.ctrl)) return false;
 	}
-	return normalizeShortcutKey(event.key) === normalized.key;
+	const eventKey = normalizeShortcutKey(event.key);
+	return (
+		eventKey === normalized.key ||
+		(normalized.key === "[" && eventKey === "{") ||
+		(normalized.key === "]" && eventKey === "}")
+	);
 }
 
 export function getShortcutTooltip(shortcut: Shortcut): string {
