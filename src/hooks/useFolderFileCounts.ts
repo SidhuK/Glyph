@@ -50,7 +50,11 @@ export function useFolderFileCounts({
 			treeRevision,
 		],
 		enabled,
-		placeholderData: (previousData) => previousData,
+		placeholderData: (previousData, previousQuery) =>
+			previousQuery?.queryKey[1] === spacePath &&
+			previousQuery.queryKey[2] === includeNonMarkdown
+				? previousData
+				: undefined,
 		queryFn: async () => {
 			const summaries = await invoke("space_dir_children_summary", {
 				dirs,
