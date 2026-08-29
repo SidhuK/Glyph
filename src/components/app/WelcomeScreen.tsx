@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import glyphIconUrl from "../../../src-tauri/icons/icon.png";
+import { GlyphBloom } from "../easter-eggs/glyph-bloom/GlyphBloom";
 
 interface WelcomeScreenProps {
 	onOpenSpace: () => Promise<void> | void;
@@ -26,12 +27,7 @@ export function WelcomeScreen({ onOpenSpace }: WelcomeScreenProps) {
 	return (
 		<div className="welcomeScreen">
 			<div className="welcomeScreenBody">
-				<img
-					className="welcomeScreenIcon"
-					src={glyphIconUrl}
-					alt=""
-					aria-hidden="true"
-				/>
+				<GlyphBloom iconUrl={glyphIconUrl} />
 				<h1 className="welcomeScreenTitle">
 					Glyph
 					<span className="welcomeScreenTitleSub">
