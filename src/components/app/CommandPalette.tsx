@@ -14,6 +14,7 @@ import {
 import { invoke } from "../../lib/tauri";
 import { listTemplates } from "../../lib/templates";
 import { toast } from "../../lib/toast";
+import { SecretPaletteReveal } from "../easter-eggs/secret-palette/SecretPaletteReveal";
 import { NotePreviewContent } from "../preview/NotePreviewContent";
 import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
 import { useNotePreview } from "../preview/useNotePreview";
@@ -99,6 +100,9 @@ export function CommandPalette({
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const restoreFocusRef = useRef<HTMLElement | null>(null);
 	const parsedQuery = useMemo(() => parsePaletteQuery(query), [query]);
+	const normalizedQuery = query.trim();
+	const normalizedSecretQuery = normalizedQuery.toLowerCase();
+	const isSecretPalettePhrase = normalizedSecretQuery === "glyphglyph";
 	const {
 		settings,
 		valueFor: settingValue,
@@ -122,9 +126,10 @@ export function CommandPalette({
 	}, [onClose]);
 
 	const searchEnabled =
-		parsedQuery.scope === "all" ||
-		parsedQuery.scope === "tags" ||
-		parsedQuery.scope === "people";
+		!isSecretPalettePhrase &&
+		(parsedQuery.scope === "all" ||
+			parsedQuery.scope === "tags" ||
+			parsedQuery.scope === "people");
 	const searchQuery =
 		parsedQuery.scope === "tags" || parsedQuery.scope === "people"
 			? parsedQuery.raw
@@ -215,7 +220,9 @@ export function CommandPalette({
 	}, [results, selectedId]);
 	const selectedResult = results[resolvedSelectedIndex];
 	const selectedPreviewPath =
-		initialMode === "search" ? (selectedResult?.previewPath ?? null) : null;
+		!isSecretPalettePhrase && initialMode === "search"
+			? (selectedResult?.previewPath ?? null)
+			: null;
 	const notePreview = useNotePreview(selectedPreviewPath, {
 		delayMs: NOTE_PREVIEW_OPEN_DELAY_MS,
 	});
@@ -346,6 +353,7 @@ export function CommandPalette({
 			) {
 				return;
 			}
+			if (isSecretPalettePhrase && event.key !== "Escape") return;
 			if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 				event.preventDefault();
 				if (!results.length) return;
@@ -394,7 +402,14 @@ export function CommandPalette({
 				}
 			}
 		},
-		[results, resolvedSelectedIndex, selectResult, query, closeAndRestoreFocus],
+		[
+			results,
+			resolvedSelectedIndex,
+			selectResult,
+			query,
+			closeAndRestoreFocus,
+			isSecretPalettePhrase,
+		],
 	);
 
 	const activeSetting = activeSettingId
@@ -418,11 +433,11 @@ export function CommandPalette({
 			inputRef.current?.focus();
 		}
 	}, [activeSettingId, activeTemplatePath, open]);
-	const normalizedQuery = query.trim();
 	const canSaveSearch =
-		parsedQuery.scope === "all" ||
-		parsedQuery.scope === "tags" ||
-		parsedQuery.scope === "people";
+		!isSecretPalettePhrase &&
+		(parsedQuery.scope === "all" ||
+			parsedQuery.scope === "tags" ||
+			parsedQuery.scope === "people");
 	const isCurrentSearchSaved = databaseSummaries.data?.some(
 		(collection) =>
 			collection.source.kind === "search" &&
@@ -577,14 +592,18 @@ export function CommandPalette({
 										{settingAnnouncement}
 									</output>
 								) : null}
-								<CommandList
-									results={results}
-									selectedIndex={resolvedSelectedIndex}
-									onSetSelectedIndex={(index) =>
-										setSelectedId(results[index]?.id ?? null)
-									}
-									onSelectResult={selectResult}
-								/>
+								{isSecretPalettePhrase ? (
+									<SecretPaletteReveal />
+								) : (
+									<CommandList
+										results={results}
+										selectedIndex={resolvedSelectedIndex}
+										onSetSelectedIndex={(index) =>
+											setSelectedId(results[index]?.id ?? null)
+										}
+										onSelectResult={selectResult}
+									/>
+								)}
 							</div>
 							{selectedPreviewPath ? (
 								<aside

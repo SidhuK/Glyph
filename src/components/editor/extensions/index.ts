@@ -15,6 +15,7 @@ import type { EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
+import { AsteriskDividerBloom } from "./asteriskDividerBloom";
 import {
 	type ChangedRange,
 	changedRangesFromTransactions,
@@ -719,6 +720,7 @@ export function createEditorExtensions(
 		CalloutDecorations.configure({
 			enableShortcutTransform: enableEditingExtensions,
 		}),
+		...(enableEditingExtensions ? [AsteriskDividerBloom] : []),
 		TagDecorations.configure({ enablePeopleMentions }),
 		FootnoteDecorations,
 		...(enableFocusMode ? [FocusModeDecorations] : []),
