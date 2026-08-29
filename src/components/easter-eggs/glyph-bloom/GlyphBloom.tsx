@@ -1,4 +1,4 @@
-import type { AnimationEvent, KeyboardEvent, MouseEvent } from "react";
+import type { AnimationEvent, MouseEvent } from "react";
 import { useState } from "react";
 import styles from "./GlyphBloom.module.css";
 
@@ -9,20 +9,9 @@ interface GlyphBloomProps {
 export function GlyphBloom({ iconUrl }: GlyphBloomProps) {
 	const [bloomId, setBloomId] = useState<number | null>(null);
 
-	const triggerBloom = () => {
+	const handleMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+		if (event.detail !== 3) return;
 		setBloomId((currentId) => (currentId ?? 0) + 1);
-	};
-
-	const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-		if (event.detail === 3) {
-			triggerBloom();
-		}
-	};
-
-	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-		if (event.key === "Enter" || event.key === " ") {
-			triggerBloom();
-		}
 	};
 
 	const handleBloomAnimationEnd = (event: AnimationEvent<HTMLSpanElement>) => {
@@ -32,13 +21,7 @@ export function GlyphBloom({ iconUrl }: GlyphBloomProps) {
 	};
 
 	return (
-		<button
-			type="button"
-			className={styles.trigger}
-			aria-label="Glyph"
-			onClick={handleClick}
-			onKeyDown={handleKeyDown}
-		>
+		<div className={styles.trigger} onMouseDown={handleMouseDown}>
 			<img
 				className={`${styles.icon} welcomeScreenIcon`}
 				src={iconUrl}
@@ -55,6 +38,6 @@ export function GlyphBloom({ iconUrl }: GlyphBloomProps) {
 					<span className={styles.spark} />
 				</span>
 			) : null}
-		</button>
+		</div>
 	);
 }

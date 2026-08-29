@@ -21,6 +21,7 @@ type AsteriskBloomMeta =
 
 interface AsteriskBloomState {
 	blooms: Map<string, number>;
+	decorations: DecorationSet;
 }
 
 function isAsteriskDivider(node: ProseMirrorNode): boolean {
@@ -36,6 +37,17 @@ function prefersReducedMotion(): boolean {
 	);
 }
 
+function isBloomPayload(value: unknown): value is { id: string; pos: number } {
+	return (
+		value !== null &&
+		typeof value === "object" &&
+		"id" in value &&
+		typeof value.id === "string" &&
+		"pos" in value &&
+		typeof value.pos === "number"
+	);
+}
+
 function isAsteriskBloomMeta(value: unknown): value is AsteriskBloomMeta {
 	if (!value || typeof value !== "object" || !("kind" in value)) return false;
 	if (value.kind === "finish") {
@@ -48,14 +60,16 @@ function isAsteriskBloomMeta(value: unknown): value is AsteriskBloomMeta {
 	) {
 		return false;
 	}
-	return value.blooms.every(
-		(bloom: unknown) =>
-			Boolean(bloom) &&
-			typeof bloom === "object" &&
-			"id" in bloom &&
-			typeof bloom.id === "string" &&
-			"pos" in bloom &&
-			typeof bloom.pos === "number",
+	return value.blooms.every(isBloomPayload);
+}
+
+function dispatchBloomFinish(view: EditorView, id: string): void {
+	if (view.isDestroyed) return;
+	view.dispatch(
+		view.state.tr.setMeta(ASTERISK_DIVIDER_BLOOM_KEY, {
+			kind: "finish",
+			id,
+		} satisfies AsteriskBloomMeta),
 	);
 }
 
@@ -82,6 +96,12 @@ function createBloomAsterisks(view: EditorView, id: string): HTMLElement {
 		bloom.append(asterisk);
 	}
 
+	let finished = false;
+	const finish = () => {
+		if (finished) return;
+		finished = true;
+		dispatchBloomFinish(view, id);
+	};
 	const animation = bloom.animate(
 		[
 			{ opacity: 0, transform: "translateY(0.18em) scale(0.7)" },
@@ -90,16 +110,8 @@ function createBloomAsterisks(view: EditorView, id: string): HTMLElement {
 		],
 		{ duration: BLOOM_DURATION_MS, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
 	);
-	animation.onfinish = () => {
-		if (!view.isDestroyed) {
-			view.dispatch(
-				view.state.tr.setMeta(ASTERISK_DIVIDER_BLOOM_KEY, {
-					kind: "finish",
-					id,
-				} satisfies AsteriskBloomMeta),
-			);
-		}
-	};
+	animation.onfinish = finish;
+	animation.oncancel = finish;
 	return bloom;
 }
 
@@ -117,6 +129,7 @@ function buildBloomDecorations(
 			}),
 			Decoration.widget(pos + 1, (view) => createBloomAsterisks(view, id), {
 				side: -1,
+				key: id,
 			}),
 		);
 	}
@@ -132,25 +145,50 @@ const AsteriskDividerBloom = Extension.create({
 			new Plugin<AsteriskBloomState>({
 				key: ASTERISK_DIVIDER_BLOOM_KEY,
 				state: {
-					init: () => ({ blooms: new Map() }),
+					init: () => ({
+						blooms: new Map(),
+						decorations: DecorationSet.empty,
+					}),
 					apply(transaction, previous) {
 						const rawMeta: unknown = transaction.getMeta(
 							ASTERISK_DIVIDER_BLOOM_KEY,
 						);
 						const meta = isAsteriskBloomMeta(rawMeta) ? rawMeta : undefined;
 						const blooms = new Map<string, number>();
+						let bloomsChanged = false;
 						for (const [id, pos] of previous.blooms) {
-							if (meta?.kind === "finish" && meta.id === id) continue;
+							if (meta?.kind === "finish" && meta.id === id) {
+								bloomsChanged = true;
+								continue;
+							}
 							const mappedPos = transaction.docChanged
 								? transaction.mapping.map(pos, -1)
 								: pos;
 							const node = transaction.doc.nodeAt(mappedPos);
-							if (node && isAsteriskDivider(node)) blooms.set(id, mappedPos);
+							if (node && isAsteriskDivider(node)) {
+								blooms.set(id, mappedPos);
+							} else {
+								bloomsChanged = true;
+							}
 						}
 						if (meta?.kind === "activate") {
 							for (const bloom of meta.blooms) blooms.set(bloom.id, bloom.pos);
+							bloomsChanged = true;
 						}
-						return { blooms };
+						if (bloomsChanged) {
+							return {
+								blooms,
+								decorations: buildBloomDecorations(transaction.doc, blooms),
+							};
+						}
+						if (!transaction.docChanged) return previous;
+						return {
+							blooms,
+							decorations: previous.decorations.map(
+								transaction.mapping,
+								transaction.doc,
+							),
+						};
 					},
 				},
 				appendTransaction(transactions, _oldState, newState) {
@@ -160,6 +198,10 @@ const AsteriskDividerBloom = Extension.create({
 					) {
 						return null;
 					}
+					const activePositions = new Set(
+						ASTERISK_DIVIDER_BLOOM_KEY.getState(newState)?.blooms.values() ??
+							[],
+					);
 					const blooms: Array<{ id: string; pos: number }> = [];
 					const ranges = changedRangesFromTransactions(
 						transactions,
@@ -168,6 +210,7 @@ const AsteriskDividerBloom = Extension.create({
 					visitNodesInRanges(newState, ranges, (node, pos) => {
 						if (
 							!isAsteriskDivider(node) ||
+							activePositions.has(pos) ||
 							pos + node.nodeSize - 1 !== newState.selection.from
 						) {
 							return;
@@ -182,10 +225,10 @@ const AsteriskDividerBloom = Extension.create({
 				},
 				props: {
 					decorations(state) {
-						const pluginState = ASTERISK_DIVIDER_BLOOM_KEY.getState(state);
-						return pluginState
-							? buildBloomDecorations(state.doc, pluginState.blooms)
-							: DecorationSet.empty;
+						return (
+							ASTERISK_DIVIDER_BLOOM_KEY.getState(state)?.decorations ??
+							DecorationSet.empty
+						);
 					},
 				},
 			}),
