@@ -1,15 +1,15 @@
 {
-  "version": "0.8.16",
-  "notes": "## What's Changed\n* Make frontmatter wikilinks clickable by @SidhuK in https://github.com/SidhuK/Glyph/pull/520\n* Add manual commit message prompts for Git sync (#521) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/521\n* Hide the AI toolbar button when AI is disabled by @SidhuK in https://github.com/SidhuK/Glyph/pull/522\n* Improve main tab close button styling by @SidhuK in https://github.com/SidhuK/Glyph/pull/523\n* Add Zen mode for focused note editing by @SidhuK in https://github.com/SidhuK/Glyph/pull/524\n* Add missing command palette settings by @SidhuK in https://github.com/SidhuK/Glyph/pull/525\n* Fix AI composer active file suggestion box layout (#526) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/526\n* fix: replace placeholder Grok logo with official xAI Grok mark by @SidhuK in https://github.com/SidhuK/Glyph/pull/527\n* Show folder file counts on hover by @SidhuK in https://github.com/SidhuK/Glyph/pull/528\n* Add heading and nested list collapse command by @SidhuK in https://github.com/SidhuK/Glyph/pull/529\n* docs: update architecture for recent changes by @SidhuK in https://github.com/SidhuK/Glyph/pull/530\n* feat: add hidden easter eggs by @SidhuK in https://github.com/SidhuK/Glyph/pull/531\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.15...v0.8.16",
-  "pub_date": "2026-08-30T11:31:37.913Z",
+  "version": "0.8.17-alpha.1",
+  "notes": "## What's Changed\n* Fix TOC preview range crash (#532) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/532\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.16...v0.8.17-alpha.1",
+  "pub_date": "2026-08-31T07:44:39.678Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDV2QVZPUGpuYkpHSlFZRGw1MTZpSUNwVFVyN2VKSDVwY1VOSTNhWkxINjlZcy9rRzJheWQ2TmxKUnFMQ1p5SXA3OU9ndHAvSW5jcUN0dnNUdjZXdXdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg4MDg5NDkzCWZpbGU6R2x5cGguYXBwLnRhci5negpodVBqQ1BWbkFIcG5jY1MyUVBMdC9VOU1YWGxPQjdhTGlvYkxSSi8xR0ZiRFp4cFd3bW9nQzRCZENzTklYUUlEU2tHS2JkVEhpZUsyZ2E3S0txUlREZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.16/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDZuelZlRFR0SmxPeFZuVThUWExiYTB3aDdEcGthV1hFSHRTeWk5ZU9WWFJMUmFxcE1HbnM1VUh6cDY4V1F2MHRrK3B4WjRDcGhkWVFGbkhJTnl1VVFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg4MTYyMjczCWZpbGU6R2x5cGguYXBwLnRhci5negphRU5oYjZZTjZPTGVOQXMxK3NyR0p6dWhYVGErVVprRUtrZUV5MXF1MkQ5cXBieHlwWUNTTmhscHJQTjRCWlNMZXBoVDV5L2M0QXlOcEE0SU5qOVpDQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.17-alpha.1/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDV2QVZPUGpuYkpHSlFZRGw1MTZpSUNwVFVyN2VKSDVwY1VOSTNhWkxINjlZcy9rRzJheWQ2TmxKUnFMQ1p5SXA3OU9ndHAvSW5jcUN0dnNUdjZXdXdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg4MDg5NDkzCWZpbGU6R2x5cGguYXBwLnRhci5negpodVBqQ1BWbkFIcG5jY1MyUVBMdC9VOU1YWGxPQjdhTGlvYkxSSi8xR0ZiRFp4cFd3bW9nQzRCZENzTklYUUlEU2tHS2JkVEhpZUsyZ2E3S0txUlREZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.16/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDZuelZlRFR0SmxPeFZuVThUWExiYTB3aDdEcGthV1hFSHRTeWk5ZU9WWFJMUmFxcE1HbnM1VUh6cDY4V1F2MHRrK3B4WjRDcGhkWVFGbkhJTnl1VVFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg4MTYyMjczCWZpbGU6R2x5cGguYXBwLnRhci5negphRU5oYjZZTjZPTGVOQXMxK3NyR0p6dWhYVGErVVprRUtrZUV5MXF1MkQ5cXBieHlwWUNTTmhscHJQTjRCWlNMZXBoVDV5L2M0QXlOcEE0SU5qOVpDQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.17-alpha.1/Glyph_aarch64.app.tar.gz"
     }
   }
 }
