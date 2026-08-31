@@ -134,6 +134,75 @@
 			}
 		}
 	},
+	"sidebar": {
+		"sectionTitle": "Sidebar",
+		"sectionDescription": "Choose which navigation items appear in the sidebar and set their order. Hiding an item does not disable its feature.",
+		"resetToDefaults": "Restore default sidebar layout",
+		"moveUp": "Move {{label}} up",
+		"moveDown": "Move {{label}} down",
+		"items": {
+			"newNote": {
+				"label": "New Note",
+				"description": "Show the New Note action in the sidebar.",
+				"ariaLabel": "Show New Note in sidebar"
+			},
+			"pinned": {
+				"label": "Pinned",
+				"description": "Show pinned notes and collections in the sidebar.",
+				"ariaLabel": "Show Pinned in sidebar"
+			},
+			"allNotes": {
+				"label": "All Notes",
+				"description": "Show the All Notes view in the sidebar.",
+				"ariaLabel": "Show All Notes in sidebar"
+			},
+			"databases": {
+				"label": "Collections / Databases",
+				"description": "Show collections and databases in the sidebar.",
+				"ariaLabel": "Show Collections and Databases in sidebar"
+			},
+			"connections": {
+				"label": "Connections",
+				"description": "Show the Connections view in the sidebar.",
+				"ariaLabel": "Show Connections in sidebar"
+			},
+			"tags": {
+				"label": "Tags / People",
+				"description": "Show tags and people navigation in the sidebar.",
+				"ariaLabel": "Show Tags and People in sidebar"
+			},
+			"calendar": {
+				"label": "Calendar",
+				"description": "Show the Calendar action in the sidebar.",
+				"ariaLabel": "Show Calendar in sidebar"
+			},
+			"search": {
+				"label": "Search / Quick Open",
+				"description": "Show Search and Quick Open in the sidebar.",
+				"ariaLabel": "Show Search and Quick Open in sidebar"
+			},
+			"periodNotes": {
+				"label": "Daily, Weekly, Monthly, Quarterly Notes",
+				"description": "Show shortcuts for the enabled daily and period notes in the sidebar.",
+				"ariaLabel": "Show daily and period notes in sidebar"
+			},
+			"quickNote": {
+				"label": "Quick Note",
+				"description": "Show the Quick Note action in the sidebar.",
+				"ariaLabel": "Show Quick Note in sidebar"
+			},
+			"templates": {
+				"label": "Templates",
+				"description": "Show the Create from Template action in the sidebar.",
+				"ariaLabel": "Show Templates in sidebar"
+			},
+			"gitSync": {
+				"label": "Git Sync",
+				"description": "Show the Git Sync action in the sidebar.",
+				"ariaLabel": "Show Git Sync in sidebar"
+			}
+		}
+	},
 	"database": {
 		"sectionTitle": "Database",
 		"sectionDescription": "Choose how databases are presented across Glyph.",

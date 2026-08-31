@@ -47,6 +47,12 @@ import type {
 	UiFontFamily,
 	UiFontSize,
 } from "./model";
+import {
+	DEFAULT_SIDEBAR_ORDER,
+	DEFAULT_SIDEBAR_VISIBILITY,
+	normalizeSidebarOrder,
+	normalizeSidebarVisibility,
+} from "./model";
 
 export const MIN_UI_FONT_SIZE = 7;
 export const MAX_UI_FONT_SIZE = 40;
@@ -495,6 +501,30 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("general-editor-table-of-contents"),
 		read: (settings) => settings.ui.showToc,
 		change: (value) => ({ ui: { showToc: value } }),
+	}),
+	sidebarVisibility: defineApplicationSetting({
+		key: "ui.sidebarVisibility",
+		defaultValue: DEFAULT_SIDEBAR_VISIBILITY,
+		discovery: searchable("appearance-sidebar"),
+		normalize: normalizeSidebarVisibility,
+		parse: (value) =>
+			value !== null && typeof value === "object" && !Array.isArray(value)
+				? parsed(normalizeSidebarVisibility(value))
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.sidebarVisibility,
+		change: (value) => ({ ui: { sidebarVisibility: value } }),
+	}),
+	sidebarOrder: defineApplicationSetting({
+		key: "ui.sidebarOrder",
+		defaultValue: DEFAULT_SIDEBAR_ORDER,
+		discovery: searchable("appearance-sidebar"),
+		normalize: normalizeSidebarOrder,
+		parse: (value) =>
+			Array.isArray(value)
+				? parsed(normalizeSidebarOrder(value))
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.sidebarOrder,
+		change: (value) => ({ ui: { sidebarOrder: value } }),
 	}),
 	showFileTreeFolderCounts: booleanSetting({
 		key: "ui.fileTree.showFolderFileCounts",

@@ -162,6 +162,50 @@
 	width: 100%;
 }
 
+.settingsSidebarItemControls {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 4px;
+}
+
+.settingsOrderButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast), opacity var(--transition-fast);
+}
+
+.settingsOrderButton:hover:not(:disabled) {
+	background: var(--settings-surface-soft);
+	color: var(--text-primary);
+}
+
+.settingsOrderButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline-offset: 2px;
+}
+
+.settingsOrderButton:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.settingsOrderButton svg {
+	width: var(--icon-sm);
+	height: var(--icon-sm);
+}
+
 .settingsFieldControlStacked {
 	flex-direction: column;
 	align-items: stretch;

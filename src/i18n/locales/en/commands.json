@@ -286,6 +286,10 @@
 			"label": "Open All Notes",
 			"description": "Open the all notes view."
 		},
+		"open-pinned": {
+			"label": "Open Pinned",
+			"description": "Open pinned notes and collections."
+		},
 		"open-command-palette": {
 			"label": "Open Command Palette",
 			"description": "Open the command palette."

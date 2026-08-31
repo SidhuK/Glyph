@@ -30,6 +30,110 @@ export type UiFontSize = number;
 export type EditorWidthMode = "compact" | "comfortable" | "wide";
 export type FocusMode = "off" | "paragraph" | "sentence";
 
+export const SIDEBAR_VISIBILITY_KEYS = [
+	"newNote",
+	"pinned",
+	"allNotes",
+	"databases",
+	"connections",
+	"tags",
+	"calendar",
+	"search",
+	"periodNotes",
+	"quickNote",
+	"templates",
+	"gitSync",
+] as const;
+
+export type SidebarVisibilityKey = (typeof SIDEBAR_VISIBILITY_KEYS)[number];
+
+export type SidebarVisibility = {
+	[Key in SidebarVisibilityKey]: boolean;
+};
+
+export type SidebarOrder = readonly SidebarVisibilityKey[];
+
+export const DEFAULT_SIDEBAR_ORDER: SidebarOrder = [
+	"newNote",
+	"pinned",
+	"allNotes",
+	"databases",
+	"connections",
+	"calendar",
+	"search",
+	"quickNote",
+	"templates",
+	"gitSync",
+	"periodNotes",
+	"tags",
+];
+
+export const DEFAULT_SIDEBAR_VISIBILITY = {
+	newNote: true,
+	pinned: true,
+	allNotes: true,
+	databases: true,
+	connections: true,
+	tags: true,
+	calendar: false,
+	search: false,
+	periodNotes: false,
+	quickNote: false,
+	templates: false,
+	gitSync: false,
+} satisfies SidebarVisibility;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function normalizeSidebarVisibility(value: unknown): SidebarVisibility {
+	const record = isRecord(value) ? value : {};
+	const read = (key: SidebarVisibilityKey): boolean => {
+		const current = record[key];
+		return typeof current === "boolean"
+			? current
+			: DEFAULT_SIDEBAR_VISIBILITY[key];
+	};
+	return {
+		newNote: read("newNote"),
+		pinned: read("pinned"),
+		allNotes: read("allNotes"),
+		databases: read("databases"),
+		connections: read("connections"),
+		tags: read("tags"),
+		calendar: read("calendar"),
+		search: read("search"),
+		periodNotes: read("periodNotes"),
+		quickNote: read("quickNote"),
+		templates: read("templates"),
+		gitSync: read("gitSync"),
+	};
+}
+
+const SIDEBAR_VISIBILITY_KEY_SET = new Set<string>(SIDEBAR_VISIBILITY_KEYS);
+
+function isSidebarVisibilityKey(value: unknown): value is SidebarVisibilityKey {
+	return typeof value === "string" && SIDEBAR_VISIBILITY_KEY_SET.has(value);
+}
+
+export function normalizeSidebarOrder(value: unknown): SidebarOrder {
+	const seen = new Set<SidebarVisibilityKey>();
+	const order: SidebarVisibilityKey[] = [];
+	const input = Array.isArray(value) ? value : [];
+	for (const key of input) {
+		if (!isSidebarVisibilityKey(key) || seen.has(key)) continue;
+		seen.add(key);
+		order.push(key);
+	}
+	for (const key of DEFAULT_SIDEBAR_ORDER) {
+		if (seen.has(key)) continue;
+		seen.add(key);
+		order.push(key);
+	}
+	return order;
+}
+
 export interface DatabaseSettings {
 	showColumnColor: boolean;
 }
@@ -116,6 +220,8 @@ export interface AppSettings {
 		keepRunningOnLastWindowClose: boolean;
 		aiAssistantMode: AiAssistantMode;
 		dateDisplayFormat: DateDisplayFormat;
+		sidebarVisibility: SidebarVisibility;
+		sidebarOrder: SidebarOrder;
 	};
 	dailyNotes: {
 		folder: string | null;

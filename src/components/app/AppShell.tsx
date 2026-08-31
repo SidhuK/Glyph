@@ -1193,6 +1193,10 @@ export function AppShell() {
 		showGitSyncErrorToast(message);
 	}, []);
 
+	const handleGitSyncNow = useCallback(() => {
+		void gitSync.syncNow().catch(handleGitSyncFailure);
+	}, [gitSync, handleGitSyncFailure]);
+
 	const handleCloseTabOrWindow = useCallback(async () => {
 		if (tabs.length > 0) {
 			closeActiveTab();
@@ -1220,9 +1224,7 @@ export function AppShell() {
 		closeSpace: handleCloseSpace,
 		onRevealSpace: handleRevealSpaceFromMenu,
 		onOpenSpaceSettings: handleOpenSpaceSettings,
-		onGitSyncNow: () => {
-			void gitSync.syncNow().catch(handleGitSyncFailure);
-		},
+		onGitSyncNow: handleGitSyncNow,
 		onOpenGitSettings: gitSync.openGitSettings,
 		onToggleAiPane: handleToggleAiPaneFromMenu,
 		onAttachCurrentNoteToAi: handleAttachCurrentNoteFromMenu,
@@ -1270,6 +1272,7 @@ export function AppShell() {
 		onCreateSpace: handleCreateSpace,
 		onOpenSpace: handleOpenSpace,
 		openAllDocsTab,
+		openPinnedDocsTab,
 		openBlankTab,
 		splitPaneWithBlank,
 		openDatabasesTab,
@@ -1472,6 +1475,12 @@ export function AppShell() {
 						onOpenPinnedDocs={openPinnedDocsTab}
 						onOpenConnections={openConnectionsView}
 						onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
+						onOpenCalendar={openCalendar}
+						onOpenSearch={openSearchPalette}
+						onOpenPeriodNote={requestOpenPeriodNote}
+						onOpenQuickNote={openQuickNoteWindow}
+						onCreateFromTemplate={handleCreateFromTemplateFromMenu}
+						onGitSyncNow={handleGitSyncNow}
 						activeTopSection={activeTopSection}
 						onPrefetchDatabases={prefetchDatabasesTab}
 						onPrefetchAllDocs={prefetchAllDocsTab}

@@ -19,6 +19,15 @@ import {
 	loadSettings,
 } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
+import {
+	DEFAULT_SIDEBAR_ORDER,
+	DEFAULT_SIDEBAR_VISIBILITY,
+	type SidebarOrder,
+	type SidebarVisibility,
+	type SidebarVisibilityKey,
+	normalizeSidebarOrder,
+	normalizeSidebarVisibility,
+} from "../../lib/settings/model";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
 	DARK_THEME_OPTIONS,
@@ -31,6 +40,8 @@ import {
 	getUiDarkThemeOption,
 	getUiLightThemeOption,
 } from "../../lib/uiThemes";
+import { ChevronDown, ChevronUp, RefreshCw } from "../Icons";
+import { Button } from "../ui/shadcn/button";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
@@ -69,6 +80,16 @@ export function AppearanceSettingsPane() {
 	const translucentApp = useSettingsValue<boolean>(
 		DEFAULT_UI_TRANSLUCENT_APP,
 		DURABLE_SETTINGS.translucentApp.write,
+		setError,
+	);
+	const sidebarVisibility = useSettingsValue<SidebarVisibility>(
+		DEFAULT_SIDEBAR_VISIBILITY,
+		DURABLE_SETTINGS.sidebarVisibility.write,
+		setError,
+	);
+	const sidebarOrder = useSettingsValue<SidebarOrder>(
+		DEFAULT_SIDEBAR_ORDER,
+		DURABLE_SETTINGS.sidebarOrder.write,
 		setError,
 	);
 	const showColumnColor = useSettingsBoolean(
@@ -111,6 +132,8 @@ export function AppearanceSettingsPane() {
 				lightThemeId.setInitialValue(settings.ui.lightThemeId);
 				darkThemeId.setInitialValue(settings.ui.darkThemeId);
 				translucentApp.setInitialValue(settings.ui.translucentApp);
+				sidebarVisibility.setInitialValue(settings.ui.sidebarVisibility);
+				sidebarOrder.setInitialValue(settings.ui.sidebarOrder);
 				setCustomThemesState(settings.ui.customThemes);
 				setShowColumnColorChecked(settings.database.showColumnColor);
 				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
@@ -131,6 +154,8 @@ export function AppearanceSettingsPane() {
 		lightThemeId.setInitialValue,
 		setInitialCornerRadiusStyle,
 		setInitialTypography,
+		sidebarVisibility.setInitialValue,
+		sidebarOrder.setInitialValue,
 		themeMode.setInitialValue,
 		translucentApp.setInitialValue,
 	]);
@@ -158,6 +183,14 @@ export function AppearanceSettingsPane() {
 	useTauriEvent("settings:updated", (payload) => {
 		if (payload.ui?.customThemes) {
 			setCustomThemesState(payload.ui.customThemes);
+		}
+		if (payload.ui?.sidebarVisibility) {
+			sidebarVisibility.setValue(
+				normalizeSidebarVisibility(payload.ui.sidebarVisibility),
+			);
+		}
+		if (payload.ui?.sidebarOrder) {
+			sidebarOrder.setValue(normalizeSidebarOrder(payload.ui.sidebarOrder));
 		}
 		if (
 			payload.ui?.theme === "system" ||
@@ -193,6 +226,40 @@ export function AppearanceSettingsPane() {
 			setShowColumnColorChecked,
 		);
 	});
+
+	const onSidebarVisibilityChange = useCallback(
+		(key: SidebarVisibilityKey, visible: boolean) => {
+			sidebarVisibility.onChange({
+				...sidebarVisibility.value,
+				[key]: visible,
+			});
+		},
+		[sidebarVisibility.onChange, sidebarVisibility.value],
+	);
+
+	const onSidebarOrderChange = useCallback(
+		(key: SidebarVisibilityKey, direction: -1 | 1) => {
+			const currentIndex = sidebarOrder.value.indexOf(key);
+			const nextIndex = currentIndex + direction;
+			if (
+				currentIndex < 0 ||
+				nextIndex < 0 ||
+				nextIndex >= sidebarOrder.value.length
+			)
+				return;
+			const next = [...sidebarOrder.value];
+			const [moved] = next.splice(currentIndex, 1);
+			if (!moved) return;
+			next.splice(nextIndex, 0, moved);
+			sidebarOrder.onChange(next);
+		},
+		[sidebarOrder.onChange, sidebarOrder.value],
+	);
+
+	const onResetSidebar = useCallback(() => {
+		sidebarVisibility.onChange(DEFAULT_SIDEBAR_VISIBILITY);
+		sidebarOrder.onChange(DEFAULT_SIDEBAR_ORDER);
+	}, [sidebarOrder.onChange, sidebarVisibility.onChange]);
 
 	const onThemeModeChange = useCallback(
 		async (next: ThemeMode) => {
@@ -336,6 +403,69 @@ export function AppearanceSettingsPane() {
 							onCheckedChange={showColumnColor.onCheckedChange}
 						/>
 					</SettingsRow>
+				</SettingsSection>
+				<SettingsSection
+					title={t("sidebar.sectionTitle")}
+					description={t("sidebar.sectionDescription")}
+					searchId="appearance-sidebar"
+					aside={
+						<Button
+							type="button"
+							variant="outline"
+							size="icon-sm"
+							aria-label={t("sidebar.resetToDefaults")}
+							title={t("sidebar.resetToDefaults")}
+							disabled={sidebarVisibility.isSaving || sidebarOrder.isSaving}
+							onClick={onResetSidebar}
+						>
+							<RefreshCw size="var(--icon-md)" aria-hidden="true" />
+						</Button>
+					}
+				>
+					{sidebarOrder.value.map((key, index) => {
+						const label = t(`sidebar.items.${key}.label`);
+						return (
+							<SettingsRow
+								key={key}
+								label={label}
+								description={t(`sidebar.items.${key}.description`)}
+							>
+								<div className="settingsSidebarItemControls">
+									<button
+										type="button"
+										className="settingsOrderButton"
+										disabled={sidebarOrder.isSaving || index === 0}
+										aria-label={t("sidebar.moveUp", { label })}
+										title={t("sidebar.moveUp", { label })}
+										onClick={() => onSidebarOrderChange(key, -1)}
+									>
+										<ChevronUp size="var(--icon-sm)" />
+									</button>
+									<button
+										type="button"
+										className="settingsOrderButton"
+										disabled={
+											sidebarOrder.isSaving ||
+											index === sidebarOrder.value.length - 1
+										}
+										aria-label={t("sidebar.moveDown", { label })}
+										title={t("sidebar.moveDown", { label })}
+										onClick={() => onSidebarOrderChange(key, 1)}
+									>
+										<ChevronDown size="var(--icon-sm)" />
+									</button>
+									<SettingsToggle
+										checked={sidebarVisibility.value[key]}
+										disabled={sidebarVisibility.isSaving}
+										ariaLabel={t(`sidebar.items.${key}.ariaLabel`)}
+										onCheckedChange={(visible) =>
+											onSidebarVisibilityChange(key, visible)
+										}
+									/>
+								</div>
+							</SettingsRow>
+						);
+					})}
 				</SettingsSection>
 			</div>
 		</div>

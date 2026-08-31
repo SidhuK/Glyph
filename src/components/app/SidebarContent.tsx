@@ -2,10 +2,16 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	Archive04Icon,
 	ArrowShrinkIcon,
+	Calendar03Icon,
+	CalendarAdd01Icon,
 	ChartRelationshipIcon,
+	ColorsIcon,
 	CursorAddSelection02Icon,
 	ExpandParagraphIcon,
 	LibraryIcon,
+	Link01Icon,
+	NoteIcon,
+	SearchIcon,
 	Sorting01Icon,
 	StarIcon,
 } from "@hugeicons/core-free-icons";
@@ -28,7 +34,12 @@ import {
 	formatAllDocsCountLabel,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
+import type { PeriodKind } from "../../lib/periodNotes";
 import { isFileTreeSortMode } from "../../lib/settings";
+import {
+	DEFAULT_SIDEBAR_ORDER,
+	type SidebarVisibilityKey,
+} from "../../lib/settings/model";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
@@ -77,6 +88,12 @@ interface SidebarContentProps {
 		| "databases"
 		| "pinned-notes"
 		| null;
+	onOpenCalendar: () => void;
+	onOpenSearch: () => void;
+	onOpenPeriodNote: (kind: PeriodKind) => void;
+	onOpenQuickNote: () => void;
+	onCreateFromTemplate: () => void;
+	onGitSyncNow: () => void;
 }
 
 function formatSpaceLabel(path: string): string {
@@ -134,6 +151,8 @@ function PinnedCountBadge({ noteCount }: { noteCount: number }) {
 	return <span className="sidebarQuickActionCount">{count}</span>;
 }
 
+const SIDEBAR_FILE_TREE_ORDER_INDEX = DEFAULT_SIDEBAR_ORDER.length - 1;
+
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onLoadDir,
@@ -163,6 +182,12 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenConnections,
 	spacePath,
 	activeTopSection,
+	onOpenCalendar,
+	onOpenSearch,
+	onOpenPeriodNote,
+	onOpenQuickNote,
+	onCreateFromTemplate,
+	onGitSyncNow,
 }: SidebarContentProps) {
 	const { t } = useTranslation("shell");
 	// Contexts
@@ -183,7 +208,14 @@ export const SidebarContent = memo(function SidebarContent({
 		ensureTagsFresh,
 		setTagAppearance,
 	} = useFileTreeContext();
-	const { folioMode, folioScope, setFolioScope } = useUILayoutContext();
+	const {
+		folioMode,
+		folioScope,
+		periodNotesEnabled,
+		sidebarOrder,
+		setFolioScope,
+		sidebarVisibility,
+	} = useUILayoutContext();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
@@ -373,129 +405,311 @@ export const SidebarContent = memo(function SidebarContent({
 	return (
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
-				<div className="sidebarSectionContent">
+				<div className="sidebarSectionContent sidebarOrderedContent">
 					<div className="sidebarNavRow">
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="new-note"
-							aria-label={t("sidebar.newNote")}
-							onClick={onNewNote}
-							title={`${newNoteTitle}${
-								newNoteShortcut
-									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
-									: ""
-							}`}
-						>
-							<HugeiconsIcon
-								icon={CursorAddSelection02Icon}
-								size="var(--icon-lg)"
-							/>
-							<span className="sidebarQuickActionLabel">
-								{t("sidebar.newNote")}
-							</span>
-							{newNoteShortcut ? (
-								<span className="sidebarQuickActionShortcut">
-									{formatShortcutForPlatform(newNoteShortcut)}
+						{sidebarVisibility.newNote ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("newNote") }}
+								data-kind="new-note"
+								aria-label={t("sidebar.newNote")}
+								onClick={onNewNote}
+								title={`${newNoteTitle}${
+									newNoteShortcut
+										? ` (${formatShortcutForPlatform(newNoteShortcut)})`
+										: ""
+								}`}
+							>
+								<HugeiconsIcon
+									icon={CursorAddSelection02Icon}
+									size="var(--icon-lg)"
+								/>
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.newNote")}
 								</span>
-							) : null}
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="pinned-notes"
-							data-active={
-								activeTopSection === "pinned-notes" ? "true" : "false"
-							}
-							aria-label={t("sidebar.pinned")}
-							aria-pressed={activeTopSection === "pinned-notes"}
-							aria-current={
-								activeTopSection === "pinned-notes" ? "page" : undefined
-							}
-							onClick={onOpenPinnedDocs}
-							title={t("sidebar.pinned")}
-						>
-							<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
-							<span className="sidebarQuickActionLabel">
-								{t("sidebar.pinned")}
-							</span>
-							<PinnedCountBadge noteCount={pinnedFiles.length} />
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="all-notes"
-							data-active={activeTopSection === "all-notes" ? "true" : "false"}
-							aria-label={t("sidebar.allNotes")}
-							aria-pressed={activeTopSection === "all-notes"}
-							aria-current={
-								activeTopSection === "all-notes" ? "page" : undefined
-							}
-							onClick={() => {
-								cancelAllDocsHoverPrefetch();
-								handleOpenAllNotes();
-							}}
-							{...allDocsHoverPrefetchProps}
-							onFocus={onPrefetchAllDocs}
-							title={t("sidebar.allNotes")}
-						>
-							<HugeiconsIcon icon={Archive04Icon} size="var(--icon-md)" />
-							<span className="sidebarQuickActionLabel">
-								{t("sidebar.allNotes")}
-							</span>
-							<AllNotesCountBadge />
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="databases"
-							data-active={activeTopSection === "databases" ? "true" : "false"}
-							aria-label={t("sidebar.collections")}
-							aria-pressed={activeTopSection === "databases"}
-							aria-current={
-								activeTopSection === "databases" ? "page" : undefined
-							}
-							onClick={() => {
-								cancelDatabasesHoverPrefetch();
-								onOpenDatabases();
-							}}
-							{...databasesHoverPrefetchProps}
-							onFocus={() => onPrefetchDatabases()}
-							title={t("sidebar.collections")}
-						>
-							<HugeiconsIcon icon={LibraryIcon} size="var(--icon-md)" />
-							<span className="sidebarQuickActionLabel">
-								{t("sidebar.collections")}
-							</span>
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="connections"
-							data-active={
-								activeTopSection === "connections" ? "true" : "false"
-							}
-							aria-label={t("sidebar.connections")}
-							aria-pressed={activeTopSection === "connections"}
-							aria-current={
-								activeTopSection === "connections" ? "page" : undefined
-							}
-							onClick={onOpenConnections}
-							title={t("sidebar.connections")}
-						>
-							<HugeiconsIcon
-								icon={ChartRelationshipIcon}
-								size="var(--icon-md)"
-							/>
-							<span className="sidebarQuickActionLabel">
-								{t("sidebar.connections")}
-							</span>
-						</button>
+								{newNoteShortcut ? (
+									<span className="sidebarQuickActionShortcut">
+										{formatShortcutForPlatform(newNoteShortcut)}
+									</span>
+								) : null}
+							</button>
+						) : null}
+						{sidebarVisibility.pinned ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("pinned") }}
+								data-kind="pinned-notes"
+								data-active={
+									activeTopSection === "pinned-notes" ? "true" : "false"
+								}
+								aria-label={t("sidebar.pinned")}
+								aria-pressed={activeTopSection === "pinned-notes"}
+								aria-current={
+									activeTopSection === "pinned-notes" ? "page" : undefined
+								}
+								onClick={onOpenPinnedDocs}
+								title={t("sidebar.pinned")}
+							>
+								<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.pinned")}
+								</span>
+								<PinnedCountBadge noteCount={pinnedFiles.length} />
+							</button>
+						) : null}
+						{sidebarVisibility.allNotes ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("allNotes") }}
+								data-kind="all-notes"
+								data-active={
+									activeTopSection === "all-notes" ? "true" : "false"
+								}
+								aria-label={t("sidebar.allNotes")}
+								aria-pressed={activeTopSection === "all-notes"}
+								aria-current={
+									activeTopSection === "all-notes" ? "page" : undefined
+								}
+								onClick={() => {
+									cancelAllDocsHoverPrefetch();
+									handleOpenAllNotes();
+								}}
+								{...allDocsHoverPrefetchProps}
+								onFocus={onPrefetchAllDocs}
+								title={t("sidebar.allNotes")}
+							>
+								<HugeiconsIcon icon={Archive04Icon} size="var(--icon-md)" />
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.allNotes")}
+								</span>
+								<AllNotesCountBadge />
+							</button>
+						) : null}
+						{sidebarVisibility.databases ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("databases") }}
+								data-kind="databases"
+								data-active={
+									activeTopSection === "databases" ? "true" : "false"
+								}
+								aria-label={t("sidebar.collections")}
+								aria-pressed={activeTopSection === "databases"}
+								aria-current={
+									activeTopSection === "databases" ? "page" : undefined
+								}
+								onClick={() => {
+									cancelDatabasesHoverPrefetch();
+									onOpenDatabases();
+								}}
+								{...databasesHoverPrefetchProps}
+								onFocus={() => onPrefetchDatabases()}
+								title={t("sidebar.collections")}
+							>
+								<HugeiconsIcon icon={LibraryIcon} size="var(--icon-md)" />
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.collections")}
+								</span>
+							</button>
+						) : null}
+						{sidebarVisibility.connections ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("connections") }}
+								data-kind="connections"
+								data-active={
+									activeTopSection === "connections" ? "true" : "false"
+								}
+								aria-label={t("sidebar.connections")}
+								aria-pressed={activeTopSection === "connections"}
+								aria-current={
+									activeTopSection === "connections" ? "page" : undefined
+								}
+								onClick={onOpenConnections}
+								title={t("sidebar.connections")}
+							>
+								<HugeiconsIcon
+									icon={ChartRelationshipIcon}
+									size="var(--icon-md)"
+								/>
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.connections")}
+								</span>
+							</button>
+						) : null}
+						{sidebarVisibility.calendar ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("calendar") }}
+								data-kind="calendar"
+								aria-label={t("sidebar.calendar")}
+								onClick={onOpenCalendar}
+								title={t("sidebar.calendar")}
+							>
+								<HugeiconsIcon icon={Calendar03Icon} size="var(--icon-md)" />
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.calendar")}
+								</span>
+							</button>
+						) : null}
+						{sidebarVisibility.search ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("search") }}
+								data-kind="search"
+								aria-label={t("sidebar.search")}
+								onClick={onOpenSearch}
+								title={t("sidebar.search")}
+							>
+								<HugeiconsIcon icon={SearchIcon} size="var(--icon-md)" />
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.search")}
+								</span>
+							</button>
+						) : null}
+						{sidebarVisibility.quickNote ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("quickNote") }}
+								data-kind="quick-note"
+								aria-label={t("sidebar.quickNote")}
+								onClick={onOpenQuickNote}
+								title={t("sidebar.quickNote")}
+							>
+								<HugeiconsIcon icon={NoteIcon} size="var(--icon-md)" />
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.quickNote")}
+								</span>
+							</button>
+						) : null}
+						{sidebarVisibility.templates ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("templates") }}
+								data-kind="templates"
+								aria-label={t("sidebar.templates")}
+								onClick={onCreateFromTemplate}
+								title={t("sidebar.templates")}
+							>
+								<HugeiconsIcon icon={ColorsIcon} size="var(--icon-md)" />
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.templates")}
+								</span>
+							</button>
+						) : null}
+						{sidebarVisibility.gitSync ? (
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								style={{ order: sidebarOrder.indexOf("gitSync") }}
+								data-kind="git-sync"
+								aria-label={t("sidebar.gitSync")}
+								onClick={onGitSyncNow}
+								title={t("sidebar.gitSync")}
+							>
+								<HugeiconsIcon icon={Link01Icon} size="var(--icon-md)" />
+								<span className="sidebarQuickActionLabel">
+									{t("sidebar.gitSync")}
+								</span>
+							</button>
+						) : null}
 					</div>
+					{sidebarVisibility.periodNotes ? (
+						<section
+							className="sidebarStackItem"
+							data-section="period-notes"
+							style={{ order: sidebarOrder.indexOf("periodNotes") }}
+						>
+							<div className="sidebarStackHeader">
+								<span className="tagsHeaderTitle">
+									{t("sidebar.periodNotes")}
+								</span>
+							</div>
+							<div className="sidebarNavRow">
+								<button
+									type="button"
+									className="sidebarQuickActionBtn sidebarNavBtn"
+									data-kind="daily-note"
+									aria-label={t("sidebar.dailyNote")}
+									onClick={() => onOpenPeriodNote("day")}
+									title={t("sidebar.dailyNote")}
+								>
+									<HugeiconsIcon
+										icon={CalendarAdd01Icon}
+										size="var(--icon-md)"
+									/>
+									<span className="sidebarQuickActionLabel">
+										{t("sidebar.dailyNote")}
+									</span>
+								</button>
+								<button
+									type="button"
+									className="sidebarQuickActionBtn sidebarNavBtn"
+									data-kind="weekly-note"
+									aria-label={t("sidebar.weeklyNote")}
+									onClick={() => onOpenPeriodNote("week")}
+									disabled={!periodNotesEnabled.week}
+									title={t("sidebar.weeklyNote")}
+								>
+									<HugeiconsIcon
+										icon={CalendarAdd01Icon}
+										size="var(--icon-md)"
+									/>
+									<span className="sidebarQuickActionLabel">
+										{t("sidebar.weeklyNote")}
+									</span>
+								</button>
+								<button
+									type="button"
+									className="sidebarQuickActionBtn sidebarNavBtn"
+									data-kind="monthly-note"
+									aria-label={t("sidebar.monthlyNote")}
+									onClick={() => onOpenPeriodNote("month")}
+									disabled={!periodNotesEnabled.month}
+									title={t("sidebar.monthlyNote")}
+								>
+									<HugeiconsIcon
+										icon={CalendarAdd01Icon}
+										size="var(--icon-md)"
+									/>
+									<span className="sidebarQuickActionLabel">
+										{t("sidebar.monthlyNote")}
+									</span>
+								</button>
+								<button
+									type="button"
+									className="sidebarQuickActionBtn sidebarNavBtn"
+									data-kind="quarterly-note"
+									aria-label={t("sidebar.quarterlyNote")}
+									onClick={() => onOpenPeriodNote("quarter")}
+									disabled={!periodNotesEnabled.quarter}
+									title={t("sidebar.quarterlyNote")}
+								>
+									<HugeiconsIcon
+										icon={CalendarAdd01Icon}
+										size="var(--icon-md)"
+									/>
+									<span className="sidebarQuickActionLabel">
+										{t("sidebar.quarterlyNote")}
+									</span>
+								</button>
+							</div>
+						</section>
+					) : null}
 					<div className="sidebarStack">
 						<section
 							className="sidebarStackItem sidebarStackItemGrow"
 							data-section="files"
+							style={{ order: SIDEBAR_FILE_TREE_ORDER_INDEX }}
 						>
 							<div className="sidebarStackHeader">
 								<button
@@ -599,19 +813,25 @@ export const SidebarContent = memo(function SidebarContent({
 								/>
 							) : null}
 						</section>
-						<section className="sidebarStackItem" data-section="tags">
-							<TagsPane
-								tags={tags}
-								people={people}
-								onSelectTag={handleSelectTag}
-								onSelectPerson={handleSelectPerson}
-								beautifulTags={beautifulTags}
-								tagAppearance={tagAppearance}
-								tagsError={tagsError}
-								onEnsureTagsFresh={ensureTagsFresh}
-								onChangeTagIcon={handleChangeTagIcon}
-							/>
-						</section>
+						{sidebarVisibility.tags ? (
+							<section
+								className="sidebarStackItem"
+								data-section="tags"
+								style={{ order: sidebarOrder.indexOf("tags") }}
+							>
+								<TagsPane
+									tags={tags}
+									people={people}
+									onSelectTag={handleSelectTag}
+									onSelectPerson={handleSelectPerson}
+									beautifulTags={beautifulTags}
+									tagAppearance={tagAppearance}
+									tagsError={tagsError}
+									onEnsureTagsFresh={ensureTagsFresh}
+									onChangeTagIcon={handleChangeTagIcon}
+								/>
+							</section>
+						) : null}
 					</div>
 				</div>
 			</div>

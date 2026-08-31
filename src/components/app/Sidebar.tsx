@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
+import type { PeriodKind } from "../../lib/periodNotes";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
@@ -42,6 +43,12 @@ interface SidebarProps {
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
+	onOpenCalendar: () => void;
+	onOpenSearch: () => void;
+	onOpenPeriodNote: (kind: PeriodKind) => void;
+	onOpenQuickNote: () => void;
+	onCreateFromTemplate: () => void;
+	onGitSyncNow: () => void;
 	activeTopSection:
 		| "all-notes"
 		| "connections"
@@ -80,6 +87,12 @@ export const Sidebar = memo(function Sidebar({
 	onOpenPinnedDocs,
 	onOpenConnections,
 	onOpenDatabases,
+	onOpenCalendar,
+	onOpenSearch,
+	onOpenPeriodNote,
+	onOpenQuickNote,
+	onCreateFromTemplate,
+	onGitSyncNow,
 	activeTopSection,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
@@ -160,6 +173,12 @@ export const Sidebar = memo(function Sidebar({
 									onOpenAllDocs={onOpenAllDocs}
 									onOpenPinnedDocs={onOpenPinnedDocs}
 									onOpenConnections={onOpenConnections}
+									onOpenCalendar={onOpenCalendar}
+									onOpenSearch={onOpenSearch}
+									onOpenPeriodNote={onOpenPeriodNote}
+									onOpenQuickNote={onOpenQuickNote}
+									onCreateFromTemplate={onCreateFromTemplate}
+									onGitSyncNow={onGitSyncNow}
 									spacePath={spacePath}
 									activeTopSection={activeTopSection}
 								/>

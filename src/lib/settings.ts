@@ -73,6 +73,8 @@ export type {
 	RecentFile,
 	ReleaseChannel,
 	SettingsUpdatedPayload,
+	SidebarOrder,
+	SidebarVisibility,
 	ShortcutBindings,
 	ShortcutSettings,
 	ThemeMode,
@@ -510,6 +512,8 @@ export async function loadSettings(
 	const translucentApp = DURABLE_SETTINGS.translucentApp.load(entries);
 	const cornerRadiusStyle = DURABLE_SETTINGS.cornerRadiusStyle.load(entries);
 	const showToc = DURABLE_SETTINGS.showToc.load(entries);
+	const sidebarVisibility = DURABLE_SETTINGS.sidebarVisibility.load(entries);
+	const sidebarOrder = DURABLE_SETTINGS.sidebarOrder.load(entries);
 	const showFileTreeFolderCounts =
 		DURABLE_SETTINGS.showFileTreeFolderCounts.load(entries);
 	const showNonMarkdownFiles =
@@ -663,6 +667,8 @@ export async function loadSettings(
 			translucentApp,
 			cornerRadiusStyle,
 			showToc,
+			sidebarVisibility,
+			sidebarOrder,
 			showFileTreeFolderCounts,
 			showNonMarkdownFiles,
 			fileTreeSortMode,
