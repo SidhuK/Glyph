@@ -1,3 +1,4 @@
+import type { EditorEvents } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import type { Transaction } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
@@ -78,7 +79,13 @@ export function getHeadingPreview(
 	nextHeading: TOCHeading | undefined,
 ): string | null {
 	const chunks: string[] = [];
-	const to = nextHeading?.pos ?? doc.content.size;
+	const docEnd = doc.content.size;
+	if (heading.pos < 0 || heading.pos >= docEnd) return null;
+	const to = Math.min(
+		Math.max(nextHeading?.pos ?? docEnd, heading.pos),
+		docEnd,
+	);
+	if (heading.pos >= to) return null;
 
 	doc.nodesBetween(heading.pos, to, (node) => {
 		if (node.type.name === "heading") return false;
@@ -267,14 +274,19 @@ export function useTableOfContents(
 		publishHeadings();
 		const updateHeadings = ({
 			transaction,
-		}: {
-			transaction: Transaction;
-		}) => {
-			if (!transaction.docChanged) return;
-			headingsRef.current = updateHeadingsFromTransaction(
-				headingsRef.current,
+			appendedTransactions,
+		}: EditorEvents["transaction"]) => {
+			const documentTransactions = [
 				transaction,
-			);
+				...appendedTransactions,
+			].filter((item) => item.docChanged);
+			if (documentTransactions.length === 0) return;
+			for (const documentTransaction of documentTransactions) {
+				headingsRef.current = updateHeadingsFromTransaction(
+					headingsRef.current,
+					documentTransaction,
+				);
+			}
 			publishHeadings();
 		};
 		editor.on("transaction", updateHeadings);
