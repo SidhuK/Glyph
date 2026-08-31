@@ -278,6 +278,10 @@
 			"label": "Alle Notizen öffnen",
 			"description": "Die Ansicht „Alle Notizen“ öffnen."
 		},
+		"open-pinned": {
+			"label": "Angeheftete öffnen",
+			"description": "Angeheftete Notizen und Sammlungen öffnen."
+		},
 		"open-command-palette": {
 			"label": "Befehlspalette öffnen",
 			"description": "Die Befehlspalette öffnen."

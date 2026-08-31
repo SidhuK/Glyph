@@ -156,6 +156,21 @@
 			"description": "Masquer la dernière fenêtre sans quitter Glyph.",
 			"keywords": ["fermer", "fenêtre", "quitter", "masquer", "dock"]
 		},
+		"appearance-sidebar": {
+			"title": "Barre latérale",
+			"section": "Apparence",
+			"description": "Configurer les éléments de navigation visibles et leur ordre.",
+			"keywords": [
+				"barre latérale",
+				"navigation",
+				"afficher",
+				"masquer",
+				"calendrier",
+				"recherche",
+				"modèles",
+				"synchronisation git"
+			]
+		},
 		"appearance-theme-mode": {
 			"title": "Sélectionner le thème",
 			"section": "Thèmes",

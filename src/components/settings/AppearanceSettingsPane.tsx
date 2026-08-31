@@ -18,7 +18,10 @@ import {
 	type UiLightThemeId,
 	loadSettings,
 } from "../../lib/settings";
-import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
+import {
+	DURABLE_SETTINGS,
+	writeSidebarLayout,
+} from "../../lib/settings/definitions";
 import {
 	DEFAULT_SIDEBAR_ORDER,
 	DEFAULT_SIDEBAR_VISIBILITY,
@@ -257,9 +260,21 @@ export function AppearanceSettingsPane() {
 	);
 
 	const onResetSidebar = useCallback(() => {
-		sidebarVisibility.onChange(DEFAULT_SIDEBAR_VISIBILITY);
-		sidebarOrder.onChange(DEFAULT_SIDEBAR_ORDER);
-	}, [sidebarOrder.onChange, sidebarVisibility.onChange]);
+		setError("");
+		void writeSidebarLayout({
+			visibility: DEFAULT_SIDEBAR_VISIBILITY,
+			order: DEFAULT_SIDEBAR_ORDER,
+		})
+			.then(() => {
+				sidebarVisibility.setValue(DEFAULT_SIDEBAR_VISIBILITY);
+				sidebarOrder.setValue(DEFAULT_SIDEBAR_ORDER);
+			})
+			.catch((cause) => {
+				setError(
+					cause instanceof Error ? cause.message : t("sidebar.resetError"),
+				);
+			});
+	}, [sidebarOrder.setValue, sidebarVisibility.setValue, t]);
 
 	const onThemeModeChange = useCallback(
 		async (next: ThemeMode) => {

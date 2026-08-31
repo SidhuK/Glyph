@@ -156,6 +156,21 @@
 			"description": "Ocultar la última ventana sin salir de Glyph.",
 			"keywords": ["cerrar", "ventana", "salir", "ocultar", "dock"]
 		},
+		"appearance-sidebar": {
+			"title": "Barra lateral",
+			"section": "Apariencia",
+			"description": "Configura los elementos de navegación visibles y su orden.",
+			"keywords": [
+				"barra lateral",
+				"navegación",
+				"mostrar",
+				"ocultar",
+				"calendario",
+				"buscar",
+				"plantillas",
+				"sincronización git"
+			]
+		},
 		"appearance-theme-mode": {
 			"title": "Seleccionar tema",
 			"section": "Temas",

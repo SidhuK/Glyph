@@ -138,6 +138,7 @@
 		"sectionTitle": "Sidebar",
 		"sectionDescription": "Choose which navigation items appear in the sidebar and set their order. Hiding an item does not disable its feature.",
 		"resetToDefaults": "Restore default sidebar layout",
+		"resetError": "Failed to restore the default sidebar layout.",
 		"moveUp": "Move {{label}} up",
 		"moveDown": "Move {{label}} down",
 		"items": {
@@ -165,11 +166,6 @@
 				"label": "Connections",
 				"description": "Show the Connections view in the sidebar.",
 				"ariaLabel": "Show Connections in sidebar"
-			},
-			"tags": {
-				"label": "Tags / People",
-				"description": "Show tags and people navigation in the sidebar.",
-				"ariaLabel": "Show Tags and People in sidebar"
 			},
 			"calendar": {
 				"label": "Calendar",

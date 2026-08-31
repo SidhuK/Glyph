@@ -347,6 +347,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const { spacePath } = useSpace();
 	const [state, dispatch] = useReducer(uiReducer, initialUIState);
 	const spacePathRef = useRef(spacePath);
+	const sidebarVisibilityRef = useRef(initialUIState.sidebarVisibility);
+	const sidebarVisibilityRevisionRef = useRef(0);
+	const sidebarOrderRef = useRef(initialUIState.sidebarOrder);
+	const sidebarOrderRevisionRef = useRef(0);
 	const zenModeRef = useRef(initialUIState.zenMode);
 	const zenModeRevisionRef = useRef(0);
 	const {
@@ -387,15 +391,23 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dispatch({ type: "setAiEnabled", value: nextEnabled });
 		}
 		if (payload.ui?.sidebarVisibility) {
+			const nextSidebarVisibility = normalizeSidebarVisibility(
+				payload.ui.sidebarVisibility,
+			);
+			sidebarVisibilityRevisionRef.current += 1;
+			sidebarVisibilityRef.current = nextSidebarVisibility;
 			dispatch({
 				type: "setSidebarVisibility",
-				value: normalizeSidebarVisibility(payload.ui.sidebarVisibility),
+				value: nextSidebarVisibility,
 			});
 		}
 		if (payload.ui?.sidebarOrder) {
+			const nextSidebarOrder = normalizeSidebarOrder(payload.ui.sidebarOrder);
+			sidebarOrderRevisionRef.current += 1;
+			sidebarOrderRef.current = nextSidebarOrder;
 			dispatch({
 				type: "setSidebarOrder",
-				value: normalizeSidebarOrder(payload.ui.sidebarOrder),
+				value: nextSidebarOrder,
 			});
 		}
 		const nextMode = payload.ui?.aiAssistantMode;
@@ -496,6 +508,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const loadAndApplySettings = async () => {
 			try {
 				const requestedSpacePath = spacePathRef.current;
+				const sidebarVisibilityRevision = sidebarVisibilityRevisionRef.current;
+				const sidebarOrderRevision = sidebarOrderRevisionRef.current;
 				const zenModeRevision = zenModeRevisionRef.current;
 				const s = await loadSettings({ spacePath: requestedSpacePath });
 				// Discard if unmounted or the active space changed mid-load so we
@@ -506,6 +520,16 @@ export function UIProvider({ children }: { children: ReactNode }) {
 						? s.editor.zenMode
 						: zenModeRef.current;
 				zenModeRef.current = nextZenMode;
+				const nextSidebarVisibility =
+					sidebarVisibilityRevision === sidebarVisibilityRevisionRef.current
+						? s.ui.sidebarVisibility
+						: sidebarVisibilityRef.current;
+				const nextSidebarOrder =
+					sidebarOrderRevision === sidebarOrderRevisionRef.current
+						? s.ui.sidebarOrder
+						: sidebarOrderRef.current;
+				sidebarVisibilityRef.current = nextSidebarVisibility;
+				sidebarOrderRef.current = nextSidebarOrder;
 				dispatch({
 					type: "hydrateSettings",
 					spacePath: requestedSpacePath,
@@ -516,8 +540,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					templateFolder: s.templates?.folder ?? null,
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
-					sidebarVisibility: s.ui.sidebarVisibility,
-					sidebarOrder: s.ui.sidebarOrder,
+					sidebarVisibility: nextSidebarVisibility,
+					sidebarOrder: nextSidebarOrder,
 					showToc: s.ui.showToc,
 					zenMode: nextZenMode,
 					folioMode: s.ui.folioMode,

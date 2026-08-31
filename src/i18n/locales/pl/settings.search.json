@@ -152,6 +152,21 @@
 			"description": "Ukryj ostatnie okno bez kończenia Glyph.",
 			"keywords": ["zamknij", "okno", "zakończ", "ukryj", "dock"]
 		},
+		"appearance-sidebar": {
+			"title": "Pasek boczny",
+			"section": "Wygląd",
+			"description": "Ustaw widoczne elementy nawigacji i ich kolejność.",
+			"keywords": [
+				"pasek boczny",
+				"nawigacja",
+				"pokaż",
+				"ukryj",
+				"kalendarz",
+				"szukaj",
+				"szablony",
+				"synchronizacja git"
+			]
+		},
 		"appearance-theme-mode": {
 			"title": "Wybierz motyw",
 			"section": "Motyw",

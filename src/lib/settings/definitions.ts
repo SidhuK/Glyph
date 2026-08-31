@@ -41,6 +41,8 @@ import type {
 	FocusMode,
 	ReleaseChannel,
 	SettingsUpdatedPayload,
+	SidebarOrder,
+	SidebarVisibility,
 	SpaceScopedSettings,
 	ThemeMode,
 	UiCornerRadiusStyle,
@@ -718,6 +720,27 @@ export const DURABLE_SETTINGS = {
 		change: (value) => ({ database: { showColumnColor: value } }),
 	}),
 } as const;
+
+export async function writeSidebarLayout({
+	visibility,
+	order,
+}: {
+	visibility: SidebarVisibility;
+	order: SidebarOrder;
+}): Promise<void> {
+	const normalizedVisibility = normalizeSidebarVisibility(visibility);
+	const normalizedOrder = normalizeSidebarOrder(order);
+	const store = await getSettingsStore();
+	await store.set(DURABLE_SETTINGS.sidebarVisibility.key, normalizedVisibility);
+	await store.set(DURABLE_SETTINGS.sidebarOrder.key, normalizedOrder);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({
+		ui: {
+			sidebarVisibility: normalizedVisibility,
+			sidebarOrder: normalizedOrder,
+		},
+	});
+}
 
 export const SPACE_SETTINGS = {
 	dailyNotesFolder: defineSpaceSetting({

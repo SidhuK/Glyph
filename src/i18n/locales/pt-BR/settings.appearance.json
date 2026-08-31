@@ -134,6 +134,71 @@
 			}
 		}
 	},
+	"sidebar": {
+		"sectionTitle": "Barra lateral",
+		"sectionDescription": "Escolha os itens de navegação visíveis e a ordem deles.",
+		"resetToDefaults": "Restaurar o layout padrão da barra lateral",
+		"resetError": "Não foi possível restaurar o layout padrão da barra lateral.",
+		"moveUp": "Mover {{label}} para cima",
+		"moveDown": "Mover {{label}} para baixo",
+		"items": {
+			"newNote": {
+				"label": "Nova nota",
+				"description": "Mostrar a ação Nova nota.",
+				"ariaLabel": "Mostrar Nova nota na barra lateral"
+			},
+			"pinned": {
+				"label": "Fixadas",
+				"description": "Mostrar notas e coleções fixadas.",
+				"ariaLabel": "Mostrar Fixadas na barra lateral"
+			},
+			"allNotes": {
+				"label": "Todas as notas",
+				"description": "Mostrar a visualização Todas as notas.",
+				"ariaLabel": "Mostrar Todas as notas na barra lateral"
+			},
+			"databases": {
+				"label": "Coleções / Bancos de dados",
+				"description": "Mostrar coleções e bancos de dados.",
+				"ariaLabel": "Mostrar coleções e bancos de dados na barra lateral"
+			},
+			"connections": {
+				"label": "Conexões",
+				"description": "Mostrar a visualização Conexões.",
+				"ariaLabel": "Mostrar Conexões na barra lateral"
+			},
+			"calendar": {
+				"label": "Calendário",
+				"description": "Mostrar a ação Calendário.",
+				"ariaLabel": "Mostrar Calendário na barra lateral"
+			},
+			"search": {
+				"label": "Pesquisar / Abertura rápida",
+				"description": "Mostrar pesquisa e abertura rápida.",
+				"ariaLabel": "Mostrar pesquisa e abertura rápida na barra lateral"
+			},
+			"periodNotes": {
+				"label": "Notas diárias, semanais, mensais e trimestrais",
+				"description": "Mostrar atalhos para as notas datadas ativadas.",
+				"ariaLabel": "Mostrar notas datadas na barra lateral"
+			},
+			"quickNote": {
+				"label": "Nota rápida",
+				"description": "Mostrar a ação Nota rápida.",
+				"ariaLabel": "Mostrar Nota rápida na barra lateral"
+			},
+			"templates": {
+				"label": "Modelos",
+				"description": "Mostrar a ação Criar a partir de modelo.",
+				"ariaLabel": "Mostrar Modelos na barra lateral"
+			},
+			"gitSync": {
+				"label": "Sincronização Git",
+				"description": "Mostrar a ação Sincronização Git.",
+				"ariaLabel": "Mostrar Sincronização Git na barra lateral"
+			}
+		}
+	},
 	"database": {
 		"sectionTitle": "Banco de dados",
 		"sectionDescription": "Escolha como os bancos de dados são apresentados no Glyph.",

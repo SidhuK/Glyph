@@ -278,6 +278,10 @@
 			"label": "すべてのノートを開く",
 			"description": "すべてのノートビューを開きます。"
 		},
+		"open-pinned": {
+			"label": "ピン留めを開く",
+			"description": "ピン留めしたノートとコレクションを開きます。"
+		},
 		"open-command-palette": {
 			"label": "コマンドパレットを開く",
 			"description": "コマンドパレットを開きます。"

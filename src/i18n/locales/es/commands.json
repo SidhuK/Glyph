@@ -278,6 +278,10 @@
 			"label": "Abrir todas las notas",
 			"description": "Abrir la vista de todas las notas."
 		},
+		"open-pinned": {
+			"label": "Abrir fijadas",
+			"description": "Abrir notas y colecciones fijadas."
+		},
 		"open-command-palette": {
 			"label": "Abrir paleta de comandos",
 			"description": "Abrir la paleta de comandos."

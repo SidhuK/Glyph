@@ -36,7 +36,6 @@ export const SIDEBAR_VISIBILITY_KEYS = [
 	"allNotes",
 	"databases",
 	"connections",
-	"tags",
 	"calendar",
 	"search",
 	"periodNotes",
@@ -65,7 +64,6 @@ export const DEFAULT_SIDEBAR_ORDER: SidebarOrder = [
 	"templates",
 	"gitSync",
 	"periodNotes",
-	"tags",
 ];
 
 export const DEFAULT_SIDEBAR_VISIBILITY = {
@@ -74,7 +72,6 @@ export const DEFAULT_SIDEBAR_VISIBILITY = {
 	allNotes: true,
 	databases: true,
 	connections: true,
-	tags: true,
 	calendar: false,
 	search: false,
 	periodNotes: false,
@@ -101,7 +98,6 @@ export function normalizeSidebarVisibility(value: unknown): SidebarVisibility {
 		allNotes: read("allNotes"),
 		databases: read("databases"),
 		connections: read("connections"),
-		tags: read("tags"),
 		calendar: read("calendar"),
 		search: read("search"),
 		periodNotes: read("periodNotes"),

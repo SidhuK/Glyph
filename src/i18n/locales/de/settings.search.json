@@ -155,6 +155,21 @@
 			"description": "Das letzte Fenster ausblenden, ohne Glyph zu beenden.",
 			"keywords": ["schließen", "fenster", "beenden", "ausblenden", "dock"]
 		},
+		"appearance-sidebar": {
+			"title": "Seitenleiste",
+			"section": "Darstellung",
+			"description": "Sichtbare Navigationseinträge und ihre Reihenfolge festlegen.",
+			"keywords": [
+				"Seitenleiste",
+				"Navigation",
+				"anzeigen",
+				"ausblenden",
+				"Kalender",
+				"Suche",
+				"Vorlagen",
+				"Git-Synchronisierung"
+			]
+		},
 		"appearance-theme-mode": {
 			"title": "Design auswählen",
 			"section": "Designs",

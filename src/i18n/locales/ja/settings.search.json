@@ -149,6 +149,21 @@
 			"description": "Glyph を終了せずに最後のウインドウを非表示にします。",
 			"keywords": ["閉じる", "ウインドウ", "終了", "非表示", "Dock"]
 		},
+		"appearance-sidebar": {
+			"title": "サイドバー",
+			"section": "外観",
+			"description": "表示するナビゲーション項目と順序を設定します。",
+			"keywords": [
+				"サイドバー",
+				"ナビゲーション",
+				"表示",
+				"非表示",
+				"カレンダー",
+				"検索",
+				"テンプレート",
+				"Git 同期"
+			]
+		},
 		"appearance-theme-mode": {
 			"title": "テーマを選択",
 			"section": "テーマ",

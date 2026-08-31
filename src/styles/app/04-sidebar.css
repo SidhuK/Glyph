@@ -214,12 +214,7 @@
 	padding-top: 10px;
 }
 
-.sidebarOrderedContent > .sidebarNavRow,
-.sidebarOrderedContent > .sidebarStack {
-	display: contents;
-}
-
-.sidebarOrderedContent > .sidebarNavRow > .sidebarQuickActionBtn {
+.sidebarOrderedContent > .sidebarQuickActionBtn {
 	width: calc(100% - 16px);
 	margin-inline: 8px;
 }

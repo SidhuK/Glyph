@@ -16,7 +16,16 @@ import {
 	StarIcon,
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+	Children,
+	type ReactNode,
+	isValidElement,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
@@ -36,9 +45,9 @@ import {
 } from "../../lib/navigationPrefetch";
 import type { PeriodKind } from "../../lib/periodNotes";
 import { isFileTreeSortMode } from "../../lib/settings";
-import {
-	DEFAULT_SIDEBAR_ORDER,
-	type SidebarVisibilityKey,
+import type {
+	SidebarOrder,
+	SidebarVisibilityKey,
 } from "../../lib/settings/model";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { type FsEntry, invoke } from "../../lib/tauri";
@@ -151,7 +160,25 @@ function PinnedCountBadge({ noteCount }: { noteCount: number }) {
 	return <span className="sidebarQuickActionCount">{count}</span>;
 }
 
-const SIDEBAR_FILE_TREE_ORDER_INDEX = DEFAULT_SIDEBAR_ORDER.length - 1;
+function OrderedSidebarItems({
+	children,
+	order,
+}: {
+	children: ReactNode;
+	order: SidebarOrder;
+}) {
+	return Children.toArray(children).sort((left, right) => {
+		if (
+			!isValidElement<{ "data-sidebar-key": SidebarVisibilityKey }>(left) ||
+			!isValidElement<{ "data-sidebar-key": SidebarVisibilityKey }>(right)
+		)
+			return 0;
+		return (
+			order.indexOf(left.props["data-sidebar-key"]) -
+			order.indexOf(right.props["data-sidebar-key"])
+		);
+	});
+}
 
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
@@ -406,12 +433,13 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarSectionContent sidebarOrderedContent">
-					<div className="sidebarNavRow">
+					<OrderedSidebarItems order={sidebarOrder}>
 						{sidebarVisibility.newNote ? (
 							<button
+								key="newNote"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("newNote") }}
+								data-sidebar-key="newNote"
 								data-kind="new-note"
 								aria-label={t("sidebar.newNote")}
 								onClick={onNewNote}
@@ -437,9 +465,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.pinned ? (
 							<button
+								key="pinned"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("pinned") }}
+								data-sidebar-key="pinned"
 								data-kind="pinned-notes"
 								data-active={
 									activeTopSection === "pinned-notes" ? "true" : "false"
@@ -461,9 +490,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.allNotes ? (
 							<button
+								key="allNotes"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("allNotes") }}
+								data-sidebar-key="allNotes"
 								data-kind="all-notes"
 								data-active={
 									activeTopSection === "all-notes" ? "true" : "false"
@@ -490,9 +520,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.databases ? (
 							<button
+								key="databases"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("databases") }}
+								data-sidebar-key="databases"
 								data-kind="databases"
 								data-active={
 									activeTopSection === "databases" ? "true" : "false"
@@ -518,9 +549,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.connections ? (
 							<button
+								key="connections"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("connections") }}
+								data-sidebar-key="connections"
 								data-kind="connections"
 								data-active={
 									activeTopSection === "connections" ? "true" : "false"
@@ -544,9 +576,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.calendar ? (
 							<button
+								key="calendar"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("calendar") }}
+								data-sidebar-key="calendar"
 								data-kind="calendar"
 								aria-label={t("sidebar.calendar")}
 								onClick={onOpenCalendar}
@@ -560,9 +593,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.search ? (
 							<button
+								key="search"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("search") }}
+								data-sidebar-key="search"
 								data-kind="search"
 								aria-label={t("sidebar.search")}
 								onClick={onOpenSearch}
@@ -576,9 +610,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.quickNote ? (
 							<button
+								key="quickNote"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("quickNote") }}
+								data-sidebar-key="quickNote"
 								data-kind="quick-note"
 								aria-label={t("sidebar.quickNote")}
 								onClick={onOpenQuickNote}
@@ -592,9 +627,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.templates ? (
 							<button
+								key="templates"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("templates") }}
+								data-sidebar-key="templates"
 								data-kind="templates"
 								aria-label={t("sidebar.templates")}
 								onClick={onCreateFromTemplate}
@@ -608,9 +644,10 @@ export const SidebarContent = memo(function SidebarContent({
 						) : null}
 						{sidebarVisibility.gitSync ? (
 							<button
+								key="gitSync"
 								type="button"
 								className="sidebarQuickActionBtn sidebarNavBtn"
-								style={{ order: sidebarOrder.indexOf("gitSync") }}
+								data-sidebar-key="gitSync"
 								data-kind="git-sync"
 								aria-label={t("sidebar.gitSync")}
 								onClick={onGitSyncNow}
@@ -622,94 +659,94 @@ export const SidebarContent = memo(function SidebarContent({
 								</span>
 							</button>
 						) : null}
-					</div>
-					{sidebarVisibility.periodNotes ? (
-						<section
-							className="sidebarStackItem"
-							data-section="period-notes"
-							style={{ order: sidebarOrder.indexOf("periodNotes") }}
-						>
-							<div className="sidebarStackHeader">
-								<span className="tagsHeaderTitle">
-									{t("sidebar.periodNotes")}
-								</span>
-							</div>
-							<div className="sidebarNavRow">
-								<button
-									type="button"
-									className="sidebarQuickActionBtn sidebarNavBtn"
-									data-kind="daily-note"
-									aria-label={t("sidebar.dailyNote")}
-									onClick={() => onOpenPeriodNote("day")}
-									title={t("sidebar.dailyNote")}
-								>
-									<HugeiconsIcon
-										icon={CalendarAdd01Icon}
-										size="var(--icon-md)"
-									/>
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.dailyNote")}
+						{sidebarVisibility.periodNotes ? (
+							<section
+								key="periodNotes"
+								className="sidebarStackItem"
+								data-sidebar-key="periodNotes"
+								data-section="period-notes"
+							>
+								<div className="sidebarStackHeader">
+									<span className="tagsHeaderTitle">
+										{t("sidebar.periodNotes")}
 									</span>
-								</button>
-								<button
-									type="button"
-									className="sidebarQuickActionBtn sidebarNavBtn"
-									data-kind="weekly-note"
-									aria-label={t("sidebar.weeklyNote")}
-									onClick={() => onOpenPeriodNote("week")}
-									disabled={!periodNotesEnabled.week}
-									title={t("sidebar.weeklyNote")}
-								>
-									<HugeiconsIcon
-										icon={CalendarAdd01Icon}
-										size="var(--icon-md)"
-									/>
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.weeklyNote")}
-									</span>
-								</button>
-								<button
-									type="button"
-									className="sidebarQuickActionBtn sidebarNavBtn"
-									data-kind="monthly-note"
-									aria-label={t("sidebar.monthlyNote")}
-									onClick={() => onOpenPeriodNote("month")}
-									disabled={!periodNotesEnabled.month}
-									title={t("sidebar.monthlyNote")}
-								>
-									<HugeiconsIcon
-										icon={CalendarAdd01Icon}
-										size="var(--icon-md)"
-									/>
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.monthlyNote")}
-									</span>
-								</button>
-								<button
-									type="button"
-									className="sidebarQuickActionBtn sidebarNavBtn"
-									data-kind="quarterly-note"
-									aria-label={t("sidebar.quarterlyNote")}
-									onClick={() => onOpenPeriodNote("quarter")}
-									disabled={!periodNotesEnabled.quarter}
-									title={t("sidebar.quarterlyNote")}
-								>
-									<HugeiconsIcon
-										icon={CalendarAdd01Icon}
-										size="var(--icon-md)"
-									/>
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.quarterlyNote")}
-									</span>
-								</button>
-							</div>
-						</section>
-					) : null}
+								</div>
+								<div className="sidebarNavRow">
+									<button
+										type="button"
+										className="sidebarQuickActionBtn sidebarNavBtn"
+										data-kind="daily-note"
+										aria-label={t("sidebar.dailyNote")}
+										onClick={() => onOpenPeriodNote("day")}
+										title={t("sidebar.dailyNote")}
+									>
+										<HugeiconsIcon
+											icon={CalendarAdd01Icon}
+											size="var(--icon-md)"
+										/>
+										<span className="sidebarQuickActionLabel">
+											{t("sidebar.dailyNote")}
+										</span>
+									</button>
+									<button
+										type="button"
+										className="sidebarQuickActionBtn sidebarNavBtn"
+										data-kind="weekly-note"
+										aria-label={t("sidebar.weeklyNote")}
+										onClick={() => onOpenPeriodNote("week")}
+										disabled={!periodNotesEnabled.week}
+										title={t("sidebar.weeklyNote")}
+									>
+										<HugeiconsIcon
+											icon={CalendarAdd01Icon}
+											size="var(--icon-md)"
+										/>
+										<span className="sidebarQuickActionLabel">
+											{t("sidebar.weeklyNote")}
+										</span>
+									</button>
+									<button
+										type="button"
+										className="sidebarQuickActionBtn sidebarNavBtn"
+										data-kind="monthly-note"
+										aria-label={t("sidebar.monthlyNote")}
+										onClick={() => onOpenPeriodNote("month")}
+										disabled={!periodNotesEnabled.month}
+										title={t("sidebar.monthlyNote")}
+									>
+										<HugeiconsIcon
+											icon={CalendarAdd01Icon}
+											size="var(--icon-md)"
+										/>
+										<span className="sidebarQuickActionLabel">
+											{t("sidebar.monthlyNote")}
+										</span>
+									</button>
+									<button
+										type="button"
+										className="sidebarQuickActionBtn sidebarNavBtn"
+										data-kind="quarterly-note"
+										aria-label={t("sidebar.quarterlyNote")}
+										onClick={() => onOpenPeriodNote("quarter")}
+										disabled={!periodNotesEnabled.quarter}
+										title={t("sidebar.quarterlyNote")}
+									>
+										<HugeiconsIcon
+											icon={CalendarAdd01Icon}
+											size="var(--icon-md)"
+										/>
+										<span className="sidebarQuickActionLabel">
+											{t("sidebar.quarterlyNote")}
+										</span>
+									</button>
+								</div>
+							</section>
+						) : null}
+					</OrderedSidebarItems>
 					<div className="sidebarStack">
 						<section
 							className="sidebarStackItem sidebarStackItemGrow"
 							data-section="files"
-							style={{ order: SIDEBAR_FILE_TREE_ORDER_INDEX }}
 						>
 							<div className="sidebarStackHeader">
 								<button
@@ -813,25 +850,19 @@ export const SidebarContent = memo(function SidebarContent({
 								/>
 							) : null}
 						</section>
-						{sidebarVisibility.tags ? (
-							<section
-								className="sidebarStackItem"
-								data-section="tags"
-								style={{ order: sidebarOrder.indexOf("tags") }}
-							>
-								<TagsPane
-									tags={tags}
-									people={people}
-									onSelectTag={handleSelectTag}
-									onSelectPerson={handleSelectPerson}
-									beautifulTags={beautifulTags}
-									tagAppearance={tagAppearance}
-									tagsError={tagsError}
-									onEnsureTagsFresh={ensureTagsFresh}
-									onChangeTagIcon={handleChangeTagIcon}
-								/>
-							</section>
-						) : null}
+						<section className="sidebarStackItem" data-section="tags">
+							<TagsPane
+								tags={tags}
+								people={people}
+								onSelectTag={handleSelectTag}
+								onSelectPerson={handleSelectPerson}
+								beautifulTags={beautifulTags}
+								tagAppearance={tagAppearance}
+								tagsError={tagsError}
+								onEnsureTagsFresh={ensureTagsFresh}
+								onChangeTagIcon={handleChangeTagIcon}
+							/>
+						</section>
 					</div>
 				</div>
 			</div>
