@@ -44,7 +44,7 @@ import {
 	formatAllDocsCountLabel,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
-import type { PeriodKind } from "../../lib/periodNotes";
+import { isPeriodNoteEnabled, type PeriodKind } from "../../lib/periodNotes";
 import { isFileTreeSortMode } from "../../lib/settings";
 import type {
 	SidebarOrder,
@@ -700,27 +700,30 @@ export const SidebarContent = memo(function SidebarContent({
 									icon={CalendarAdd01Icon}
 									onClick={() => onOpenPeriodNote("day")}
 								/>
-								<SidebarActionButton
-									kind="weekly-note"
-									label={t("sidebar.weeklyNote")}
-									icon={CalendarAdd01Icon}
-									onClick={() => onOpenPeriodNote("week")}
-									disabled={!periodNotesEnabled.week}
-								/>
-								<SidebarActionButton
-									kind="monthly-note"
-									label={t("sidebar.monthlyNote")}
-									icon={CalendarAdd01Icon}
-									onClick={() => onOpenPeriodNote("month")}
-									disabled={!periodNotesEnabled.month}
-								/>
-								<SidebarActionButton
-									kind="quarterly-note"
-									label={t("sidebar.quarterlyNote")}
-									icon={CalendarAdd01Icon}
-									onClick={() => onOpenPeriodNote("quarter")}
-									disabled={!periodNotesEnabled.quarter}
-								/>
+								{isPeriodNoteEnabled("week", periodNotesEnabled) ? (
+									<SidebarActionButton
+										kind="weekly-note"
+										label={t("sidebar.weeklyNote")}
+										icon={CalendarAdd01Icon}
+										onClick={() => onOpenPeriodNote("week")}
+									/>
+								) : null}
+								{isPeriodNoteEnabled("month", periodNotesEnabled) ? (
+									<SidebarActionButton
+										kind="monthly-note"
+										label={t("sidebar.monthlyNote")}
+										icon={CalendarAdd01Icon}
+										onClick={() => onOpenPeriodNote("month")}
+									/>
+								) : null}
+								{isPeriodNoteEnabled("quarter", periodNotesEnabled) ? (
+									<SidebarActionButton
+										kind="quarterly-note"
+										label={t("sidebar.quarterlyNote")}
+										icon={CalendarAdd01Icon}
+										onClick={() => onOpenPeriodNote("quarter")}
+									/>
+								) : null}
 							</div>
 						) : null}
 					</OrderedSidebarItems>
