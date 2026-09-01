@@ -44,7 +44,7 @@ import {
 	formatAllDocsCountLabel,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
-import { isPeriodNoteEnabled, type PeriodKind } from "../../lib/periodNotes";
+import { type PeriodKind, isPeriodNoteEnabled } from "../../lib/periodNotes";
 import { isFileTreeSortMode } from "../../lib/settings";
 import type {
 	SidebarOrder,

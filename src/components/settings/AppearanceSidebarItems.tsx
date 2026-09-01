@@ -79,11 +79,7 @@ export function AppearanceSidebarItems({
 				) {
 					return;
 				}
-				const next = moveSidebarItem(
-					order,
-					source.initialIndex,
-					source.index,
-				);
+				const next = moveSidebarItem(order, source.initialIndex, source.index);
 				if (next) onReorder(next);
 			},
 		}),

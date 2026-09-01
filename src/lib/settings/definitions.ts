@@ -731,9 +731,21 @@ export async function writeSidebarLayout({
 	const normalizedVisibility = normalizeSidebarVisibility(visibility);
 	const normalizedOrder = normalizeSidebarOrder(order);
 	const store = await getSettingsStore();
-	await store.set(DURABLE_SETTINGS.sidebarVisibility.key, normalizedVisibility);
-	await store.set(DURABLE_SETTINGS.sidebarOrder.key, normalizedOrder);
-	await saveSettingsStore(store);
+	try {
+		await store.set(
+			DURABLE_SETTINGS.sidebarVisibility.key,
+			normalizedVisibility,
+		);
+		await store.set(DURABLE_SETTINGS.sidebarOrder.key, normalizedOrder);
+		await saveSettingsStore(store);
+	} catch (error) {
+		try {
+			await store.reload();
+		} catch {
+			// Keep the original error; in-memory rollback is best effort.
+		}
+		throw error;
+	}
 	void emitSettingsUpdated({
 		ui: {
 			sidebarVisibility: normalizedVisibility,
