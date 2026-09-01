@@ -172,7 +172,7 @@
 .settingsSidebarItemRow {
 	position: relative;
 	display: flex;
-	align-items: stretch;
+	align-items: flex-start;
 }
 
 .settingsSidebarItemRow::after {
@@ -192,11 +192,18 @@
 .settingsSidebarItemRow .settingsSidebarItemField {
 	flex: 1 1 auto;
 	min-width: 0;
-	padding-left: 8px;
+	align-items: center;
 }
 
 .settingsSidebarItemRow .settingsSidebarItemField::after {
 	display: none;
+}
+
+.settingsSidebarItemLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
 }
 
 .settingsSidebarDragHandle {
@@ -204,13 +211,15 @@
 	align-items: center;
 	justify-content: center;
 	flex: 0 0 auto;
-	width: 28px;
-	margin: 16px 0 16px 10px;
+	width: 20px;
+	height: 20px;
+	margin: 0;
 	padding: 0;
 	border: 0;
 	border-radius: var(--radius-sm);
 	background: transparent;
 	color: var(--text-tertiary);
+	line-height: 0;
 	cursor: grab;
 }
 

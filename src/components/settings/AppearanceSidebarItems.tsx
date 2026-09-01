@@ -142,20 +142,28 @@ function AppearanceSidebarItem({
 			className="settingsSidebarItemRow"
 			data-dragging={isDragging ? "true" : undefined}
 		>
-			<button
-				ref={handleRef}
-				type="button"
-				className="settingsSidebarDragHandle"
-				tabIndex={-1}
-				disabled={disabled}
-				aria-label={reorderLabel}
-				title={reorderLabel}
-			>
-				<HugeiconsIcon icon={DragDropVerticalIcon} size="var(--icon-md)" />
-			</button>
 			<SettingsRow
 				className="settingsSidebarItemField"
-				label={label}
+				title={label}
+				label={
+					<span className="settingsSidebarItemLabel">
+						<button
+							ref={handleRef}
+							type="button"
+							className="settingsSidebarDragHandle"
+							tabIndex={-1}
+							disabled={disabled}
+							aria-label={reorderLabel}
+							title={reorderLabel}
+						>
+							<HugeiconsIcon
+								icon={DragDropVerticalIcon}
+								size="var(--icon-md)"
+							/>
+						</button>
+						{label}
+					</span>
+				}
 				interactive={false}
 			>
 				<div className="settingsSidebarItemControls">
