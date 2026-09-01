@@ -141,61 +141,40 @@
 		"resetError": "Failed to restore the default sidebar layout.",
 		"moveUp": "Move {{label}} up",
 		"moveDown": "Move {{label}} down",
+		"showItem": "Show {{label}} in sidebar",
 		"items": {
 			"newNote": {
-				"label": "New Note",
-				"description": "Show the New Note action in the sidebar.",
-				"ariaLabel": "Show New Note in sidebar"
+				"label": "New Note"
 			},
 			"pinned": {
-				"label": "Pinned",
-				"description": "Show pinned notes and collections in the sidebar.",
-				"ariaLabel": "Show Pinned in sidebar"
+				"label": "Pinned"
 			},
 			"allNotes": {
-				"label": "All Notes",
-				"description": "Show the All Notes view in the sidebar.",
-				"ariaLabel": "Show All Notes in sidebar"
+				"label": "All Notes"
 			},
 			"databases": {
-				"label": "Collections / Databases",
-				"description": "Show collections and databases in the sidebar.",
-				"ariaLabel": "Show Collections and Databases in sidebar"
+				"label": "Collections / Databases"
 			},
 			"connections": {
-				"label": "Connections",
-				"description": "Show the Connections view in the sidebar.",
-				"ariaLabel": "Show Connections in sidebar"
+				"label": "Connections"
 			},
 			"calendar": {
-				"label": "Calendar",
-				"description": "Show the Calendar action in the sidebar.",
-				"ariaLabel": "Show Calendar in sidebar"
+				"label": "Calendar"
 			},
 			"search": {
-				"label": "Search / Quick Open",
-				"description": "Show Search and Quick Open in the sidebar.",
-				"ariaLabel": "Show Search and Quick Open in sidebar"
+				"label": "Search / Quick Open"
 			},
 			"periodNotes": {
-				"label": "Daily, Weekly, Monthly, Quarterly Notes",
-				"description": "Show shortcuts for the enabled daily and period notes in the sidebar.",
-				"ariaLabel": "Show daily and period notes in sidebar"
+				"label": "Daily, Weekly, Monthly, Quarterly Notes"
 			},
 			"quickNote": {
-				"label": "Quick Note",
-				"description": "Show the Quick Note action in the sidebar.",
-				"ariaLabel": "Show Quick Note in sidebar"
+				"label": "Quick Note"
 			},
 			"templates": {
-				"label": "Templates",
-				"description": "Show the Create from Template action in the sidebar.",
-				"ariaLabel": "Show Templates in sidebar"
+				"label": "Templates"
 			},
 			"gitSync": {
-				"label": "Git Sync",
-				"description": "Show the Git Sync action in the sidebar.",
-				"ariaLabel": "Show Git Sync in sidebar"
+				"label": "Git Sync"
 			}
 		}
 	},

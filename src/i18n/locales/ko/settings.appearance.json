@@ -141,61 +141,40 @@
 		"resetError": "기본 사이드바 배치를 복원하지 못했습니다.",
 		"moveUp": "{{label}} 위로 이동",
 		"moveDown": "{{label}} 아래로 이동",
+		"showItem": "사이드바에 {{label}} 표시",
 		"items": {
 			"newNote": {
-				"label": "새 노트",
-				"description": "새 노트 동작을 표시합니다.",
-				"ariaLabel": "사이드바에 새 노트 표시"
+				"label": "새 노트"
 			},
 			"pinned": {
-				"label": "고정됨",
-				"description": "고정된 노트와 컬렉션을 표시합니다.",
-				"ariaLabel": "사이드바에 고정 항목 표시"
+				"label": "고정됨"
 			},
 			"allNotes": {
-				"label": "모든 노트",
-				"description": "모든 노트 보기를 표시합니다.",
-				"ariaLabel": "사이드바에 모든 노트 표시"
+				"label": "모든 노트"
 			},
 			"databases": {
-				"label": "컬렉션 / 데이터베이스",
-				"description": "컬렉션과 데이터베이스를 표시합니다.",
-				"ariaLabel": "사이드바에 컬렉션과 데이터베이스 표시"
+				"label": "컬렉션 / 데이터베이스"
 			},
 			"connections": {
-				"label": "연결",
-				"description": "연결 보기를 표시합니다.",
-				"ariaLabel": "사이드바에 연결 표시"
+				"label": "연결"
 			},
 			"calendar": {
-				"label": "캘린더",
-				"description": "캘린더 동작을 표시합니다.",
-				"ariaLabel": "사이드바에 캘린더 표시"
+				"label": "캘린더"
 			},
 			"search": {
-				"label": "검색 / 빠른 열기",
-				"description": "검색과 빠른 열기를 표시합니다.",
-				"ariaLabel": "사이드바에 검색과 빠른 열기 표시"
+				"label": "검색 / 빠른 열기"
 			},
 			"periodNotes": {
-				"label": "일간, 주간, 월간, 분기 노트",
-				"description": "활성화된 날짜별 노트 바로가기를 표시합니다.",
-				"ariaLabel": "사이드바에 날짜별 노트 표시"
+				"label": "일간, 주간, 월간, 분기 노트"
 			},
 			"quickNote": {
-				"label": "빠른 노트",
-				"description": "빠른 노트 동작을 표시합니다.",
-				"ariaLabel": "사이드바에 빠른 노트 표시"
+				"label": "빠른 노트"
 			},
 			"templates": {
-				"label": "템플릿",
-				"description": "템플릿에서 만들기 동작을 표시합니다.",
-				"ariaLabel": "사이드바에 템플릿 표시"
+				"label": "템플릿"
 			},
 			"gitSync": {
-				"label": "Git 동기화",
-				"description": "Git 동기화 동작을 표시합니다.",
-				"ariaLabel": "사이드바에 Git 동기화 표시"
+				"label": "Git 동기화"
 			}
 		}
 	},

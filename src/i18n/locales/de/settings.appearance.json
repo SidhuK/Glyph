@@ -141,61 +141,40 @@
 		"resetError": "Das Standardlayout der Seitenleiste konnte nicht wiederhergestellt werden.",
 		"moveUp": "{{label}} nach oben verschieben",
 		"moveDown": "{{label}} nach unten verschieben",
+		"showItem": "{{label}} in der Seitenleiste anzeigen",
 		"items": {
 			"newNote": {
-				"label": "Neue Notiz",
-				"description": "Aktion Neue Notiz anzeigen.",
-				"ariaLabel": "Neue Notiz in der Seitenleiste anzeigen"
+				"label": "Neue Notiz"
 			},
 			"pinned": {
-				"label": "Angeheftet",
-				"description": "Angeheftete Notizen und Sammlungen anzeigen.",
-				"ariaLabel": "Angeheftete in der Seitenleiste anzeigen"
+				"label": "Angeheftet"
 			},
 			"allNotes": {
-				"label": "Alle Notizen",
-				"description": "Ansicht Alle Notizen anzeigen.",
-				"ariaLabel": "Alle Notizen in der Seitenleiste anzeigen"
+				"label": "Alle Notizen"
 			},
 			"databases": {
-				"label": "Sammlungen / Datenbanken",
-				"description": "Sammlungen und Datenbanken anzeigen.",
-				"ariaLabel": "Sammlungen und Datenbanken in der Seitenleiste anzeigen"
+				"label": "Sammlungen / Datenbanken"
 			},
 			"connections": {
-				"label": "Verbindungen",
-				"description": "Ansicht Verbindungen anzeigen.",
-				"ariaLabel": "Verbindungen in der Seitenleiste anzeigen"
+				"label": "Verbindungen"
 			},
 			"calendar": {
-				"label": "Kalender",
-				"description": "Aktion Kalender anzeigen.",
-				"ariaLabel": "Kalender in der Seitenleiste anzeigen"
+				"label": "Kalender"
 			},
 			"search": {
-				"label": "Suche / Schnell öffnen",
-				"description": "Suche und Schnell öffnen anzeigen.",
-				"ariaLabel": "Suche und Schnell öffnen in der Seitenleiste anzeigen"
+				"label": "Suche / Schnell öffnen"
 			},
 			"periodNotes": {
-				"label": "Tages-, Wochen-, Monats- und Quartalsnotizen",
-				"description": "Kurzbefehle für aktivierte datierte Notizen anzeigen.",
-				"ariaLabel": "Datierte Notizen in der Seitenleiste anzeigen"
+				"label": "Tages-, Wochen-, Monats- und Quartalsnotizen"
 			},
 			"quickNote": {
-				"label": "Schnelle Notiz",
-				"description": "Aktion Schnelle Notiz anzeigen.",
-				"ariaLabel": "Schnelle Notiz in der Seitenleiste anzeigen"
+				"label": "Schnelle Notiz"
 			},
 			"templates": {
-				"label": "Vorlagen",
-				"description": "Aktion Aus Vorlage erstellen anzeigen.",
-				"ariaLabel": "Vorlagen in der Seitenleiste anzeigen"
+				"label": "Vorlagen"
 			},
 			"gitSync": {
-				"label": "Git-Synchronisierung",
-				"description": "Aktion Git-Synchronisierung anzeigen.",
-				"ariaLabel": "Git-Synchronisierung in der Seitenleiste anzeigen"
+				"label": "Git-Synchronisierung"
 			}
 		}
 	},

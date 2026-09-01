@@ -141,61 +141,40 @@
 		"resetError": "Nie udało się przywrócić domyślnego układu paska bocznego.",
 		"moveUp": "Przenieś {{label}} wyżej",
 		"moveDown": "Przenieś {{label}} niżej",
+		"showItem": "Pokaż {{label}} na pasku bocznym",
 		"items": {
 			"newNote": {
-				"label": "Nowa notatka",
-				"description": "Pokaż akcję Nowa notatka.",
-				"ariaLabel": "Pokaż Nową notatkę na pasku bocznym"
+				"label": "Nowa notatka"
 			},
 			"pinned": {
-				"label": "Przypięte",
-				"description": "Pokaż przypięte notatki i kolekcje.",
-				"ariaLabel": "Pokaż Przypięte na pasku bocznym"
+				"label": "Przypięte"
 			},
 			"allNotes": {
-				"label": "Wszystkie notatki",
-				"description": "Pokaż widok Wszystkie notatki.",
-				"ariaLabel": "Pokaż Wszystkie notatki na pasku bocznym"
+				"label": "Wszystkie notatki"
 			},
 			"databases": {
-				"label": "Kolekcje / Bazy danych",
-				"description": "Pokaż kolekcje i bazy danych.",
-				"ariaLabel": "Pokaż kolekcje i bazy danych na pasku bocznym"
+				"label": "Kolekcje / Bazy danych"
 			},
 			"connections": {
-				"label": "Graf",
-				"description": "Pokaż widok grafu połączeń.",
-				"ariaLabel": "Pokaż graf na pasku bocznym"
+				"label": "Graf"
 			},
 			"calendar": {
-				"label": "Kalendarz",
-				"description": "Pokaż akcję Kalendarz.",
-				"ariaLabel": "Pokaż Kalendarz na pasku bocznym"
+				"label": "Kalendarz"
 			},
 			"search": {
-				"label": "Szukaj / Szybkie otwieranie",
-				"description": "Pokaż wyszukiwanie i szybkie otwieranie.",
-				"ariaLabel": "Pokaż wyszukiwanie i szybkie otwieranie na pasku bocznym"
+				"label": "Szukaj / Szybkie otwieranie"
 			},
 			"periodNotes": {
-				"label": "Notatki dzienne, tygodniowe, miesięczne i kwartalne",
-				"description": "Pokaż skróty do włączonych notatek okresowych.",
-				"ariaLabel": "Pokaż notatki okresowe na pasku bocznym"
+				"label": "Notatki dzienne, tygodniowe, miesięczne i kwartalne"
 			},
 			"quickNote": {
-				"label": "Szybka notatka",
-				"description": "Pokaż akcję Szybka notatka.",
-				"ariaLabel": "Pokaż Szybką notatkę na pasku bocznym"
+				"label": "Szybka notatka"
 			},
 			"templates": {
-				"label": "Szablony",
-				"description": "Pokaż akcję Utwórz z szablonu.",
-				"ariaLabel": "Pokaż Szablony na pasku bocznym"
+				"label": "Szablony"
 			},
 			"gitSync": {
-				"label": "Synchronizacja Git",
-				"description": "Pokaż akcję synchronizacji Git.",
-				"ariaLabel": "Pokaż synchronizację Git na pasku bocznym"
+				"label": "Synchronizacja Git"
 			}
 		}
 	},

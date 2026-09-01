@@ -11,7 +11,6 @@ interface SettingsSectionProps {
 	children: ReactNode;
 	className?: string;
 	id?: string;
-	searchId?: string;
 	aside?: ReactNode;
 }
 
@@ -41,7 +40,6 @@ export function SettingsSection({
 	children,
 	className,
 	id,
-	searchId,
 	aside,
 }: SettingsSectionProps) {
 	return (
@@ -49,7 +47,6 @@ export function SettingsSection({
 			id={id}
 			className={cn("settingsSection", className)}
 			data-settings-section-title={title}
-			data-settings-search-id={searchId}
 		>
 			<div className="settingsSectionHeader">
 				<div className="settingsSectionHeaderCopy">

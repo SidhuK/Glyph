@@ -278,10 +278,6 @@
 			"label": "모든 노트 열기",
 			"description": "모든 노트 보기를 엽니다."
 		},
-		"open-pinned": {
-			"label": "고정 항목 열기",
-			"description": "고정된 노트와 컬렉션을 엽니다."
-		},
 		"open-command-palette": {
 			"label": "명령 팔레트 열기",
 			"description": "명령 팔레트를 엽니다."

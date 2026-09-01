@@ -30,7 +30,6 @@ import {
 	Settings01Icon,
 	SidebarLeftIcon,
 	SquareLock02Icon,
-	StarIcon,
 	TableIcon,
 } from "@hugeicons/core-free-icons";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -102,7 +101,6 @@ interface UseAppCommandsDeps {
 	onCreateSpace: () => void;
 	onOpenSpace: () => void;
 	openAllDocsTab: () => void;
-	openPinnedDocsTab: () => void;
 	openBlankTab: () => void;
 	splitPaneWithBlank: (edge: SplitDropEdge) => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
@@ -251,7 +249,6 @@ export function useAppCommands({
 	onCreateSpace,
 	onOpenSpace,
 	openAllDocsTab,
-	openPinnedDocsTab,
 	openBlankTab,
 	splitPaneWithBlank,
 	openDatabasesTab,
@@ -582,12 +579,6 @@ export function useAppCommands({
 				action: openAllDocsTab,
 			},
 			{
-				id: "open-pinned",
-				icon: <HugeiconsIcon icon={StarIcon} size="var(--icon-lg)" />,
-				enabled: Boolean(spacePath),
-				action: openPinnedDocsTab,
-			},
-			{
 				id: "open-connections",
 				label: "Open Connections",
 				icon: (
@@ -749,7 +740,6 @@ export function useAppCommands({
 		showCollapsibleLists,
 		spacePath,
 		openAllDocsTab,
-		openPinnedDocsTab,
 		openSearchPalette,
 		openDatabasesTab,
 		openCalendar,

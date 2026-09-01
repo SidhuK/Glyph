@@ -816,16 +816,6 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
-		"open-pinned": {
-			"id": "open-pinned",
-			"label": "Open Pinned",
-			"description": "Open pinned notes and collections.",
-			"category": "navigation",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
 		"open-command-palette": {
 			"id": "open-command-palette",
 			"label": "Open Command Palette",

@@ -141,61 +141,40 @@
 		"resetError": "サイドバーを既定の配置に戻せませんでした。",
 		"moveUp": "{{label}}を上へ移動",
 		"moveDown": "{{label}}を下へ移動",
+		"showItem": "サイドバーに{{label}}を表示",
 		"items": {
 			"newNote": {
-				"label": "新規ノート",
-				"description": "新規ノート操作を表示します。",
-				"ariaLabel": "サイドバーに新規ノートを表示"
+				"label": "新規ノート"
 			},
 			"pinned": {
-				"label": "ピン留め",
-				"description": "ピン留めしたノートとコレクションを表示します。",
-				"ariaLabel": "サイドバーにピン留めを表示"
+				"label": "ピン留め"
 			},
 			"allNotes": {
-				"label": "すべてのノート",
-				"description": "すべてのノートビューを表示します。",
-				"ariaLabel": "サイドバーにすべてのノートを表示"
+				"label": "すべてのノート"
 			},
 			"databases": {
-				"label": "コレクション / データベース",
-				"description": "コレクションとデータベースを表示します。",
-				"ariaLabel": "サイドバーにコレクションとデータベースを表示"
+				"label": "コレクション / データベース"
 			},
 			"connections": {
-				"label": "接続",
-				"description": "接続ビューを表示します。",
-				"ariaLabel": "サイドバーに接続を表示"
+				"label": "接続"
 			},
 			"calendar": {
-				"label": "カレンダー",
-				"description": "カレンダー操作を表示します。",
-				"ariaLabel": "サイドバーにカレンダーを表示"
+				"label": "カレンダー"
 			},
 			"search": {
-				"label": "検索 / クイックオープン",
-				"description": "検索とクイックオープンを表示します。",
-				"ariaLabel": "サイドバーに検索とクイックオープンを表示"
+				"label": "検索 / クイックオープン"
 			},
 			"periodNotes": {
-				"label": "日次・週次・月次・四半期ノート",
-				"description": "有効な日付付きノートへのショートカットを表示します。",
-				"ariaLabel": "サイドバーに日付付きノートを表示"
+				"label": "日次・週次・月次・四半期ノート"
 			},
 			"quickNote": {
-				"label": "クイックノート",
-				"description": "クイックノート操作を表示します。",
-				"ariaLabel": "サイドバーにクイックノートを表示"
+				"label": "クイックノート"
 			},
 			"templates": {
-				"label": "テンプレート",
-				"description": "テンプレートから作成する操作を表示します。",
-				"ariaLabel": "サイドバーにテンプレートを表示"
+				"label": "テンプレート"
 			},
 			"gitSync": {
-				"label": "Git 同期",
-				"description": "Git 同期操作を表示します。",
-				"ariaLabel": "サイドバーに Git 同期を表示"
+				"label": "Git 同期"
 			}
 		}
 	},

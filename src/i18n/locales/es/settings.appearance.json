@@ -141,61 +141,40 @@
 		"resetError": "No se pudo restaurar el diseño predeterminado de la barra lateral.",
 		"moveUp": "Mover {{label}} hacia arriba",
 		"moveDown": "Mover {{label}} hacia abajo",
+		"showItem": "Mostrar {{label}} en la barra lateral",
 		"items": {
 			"newNote": {
-				"label": "Nueva nota",
-				"description": "Mostrar la acción Nueva nota.",
-				"ariaLabel": "Mostrar Nueva nota en la barra lateral"
+				"label": "Nueva nota"
 			},
 			"pinned": {
-				"label": "Fijadas",
-				"description": "Mostrar notas y colecciones fijadas.",
-				"ariaLabel": "Mostrar Fijadas en la barra lateral"
+				"label": "Fijadas"
 			},
 			"allNotes": {
-				"label": "Todas las notas",
-				"description": "Mostrar la vista Todas las notas.",
-				"ariaLabel": "Mostrar Todas las notas en la barra lateral"
+				"label": "Todas las notas"
 			},
 			"databases": {
-				"label": "Colecciones / Bases de datos",
-				"description": "Mostrar colecciones y bases de datos.",
-				"ariaLabel": "Mostrar colecciones y bases de datos en la barra lateral"
+				"label": "Colecciones / Bases de datos"
 			},
 			"connections": {
-				"label": "Conexiones",
-				"description": "Mostrar la vista Conexiones.",
-				"ariaLabel": "Mostrar Conexiones en la barra lateral"
+				"label": "Conexiones"
 			},
 			"calendar": {
-				"label": "Calendario",
-				"description": "Mostrar la acción Calendario.",
-				"ariaLabel": "Mostrar Calendario en la barra lateral"
+				"label": "Calendario"
 			},
 			"search": {
-				"label": "Buscar / Apertura rápida",
-				"description": "Mostrar Buscar y Apertura rápida.",
-				"ariaLabel": "Mostrar Buscar y Apertura rápida en la barra lateral"
+				"label": "Buscar / Apertura rápida"
 			},
 			"periodNotes": {
-				"label": "Notas diarias, semanales, mensuales y trimestrales",
-				"description": "Mostrar accesos a las notas fechadas activadas.",
-				"ariaLabel": "Mostrar notas fechadas en la barra lateral"
+				"label": "Notas diarias, semanales, mensuales y trimestrales"
 			},
 			"quickNote": {
-				"label": "Nota rápida",
-				"description": "Mostrar la acción Nota rápida.",
-				"ariaLabel": "Mostrar Nota rápida en la barra lateral"
+				"label": "Nota rápida"
 			},
 			"templates": {
-				"label": "Plantillas",
-				"description": "Mostrar la acción Crear desde plantilla.",
-				"ariaLabel": "Mostrar Plantillas en la barra lateral"
+				"label": "Plantillas"
 			},
 			"gitSync": {
-				"label": "Sincronización con Git",
-				"description": "Mostrar la acción Sincronización con Git.",
-				"ariaLabel": "Mostrar Sincronización con Git en la barra lateral"
+				"label": "Sincronización con Git"
 			}
 		}
 	},

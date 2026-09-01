@@ -278,10 +278,6 @@
 			"label": "Ouvrir toutes les notes",
 			"description": "Ouvrir la vue de toutes les notes."
 		},
-		"open-pinned": {
-			"label": "Ouvrir les éléments épinglés",
-			"description": "Ouvrir les notes et collections épinglées."
-		},
 		"open-command-palette": {
 			"label": "Ouvrir la palette de commandes",
 			"description": "Ouvrir la palette de commandes."

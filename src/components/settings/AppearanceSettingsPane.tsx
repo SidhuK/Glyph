@@ -28,8 +28,6 @@ import {
 	type SidebarOrder,
 	type SidebarVisibility,
 	type SidebarVisibilityKey,
-	normalizeSidebarOrder,
-	normalizeSidebarVisibility,
 } from "../../lib/settings/model";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -188,12 +186,10 @@ export function AppearanceSettingsPane() {
 			setCustomThemesState(payload.ui.customThemes);
 		}
 		if (payload.ui?.sidebarVisibility) {
-			sidebarVisibility.setValue(
-				normalizeSidebarVisibility(payload.ui.sidebarVisibility),
-			);
+			sidebarVisibility.setValue(payload.ui.sidebarVisibility);
 		}
 		if (payload.ui?.sidebarOrder) {
-			sidebarOrder.setValue(normalizeSidebarOrder(payload.ui.sidebarOrder));
+			sidebarOrder.setValue(payload.ui.sidebarOrder);
 		}
 		if (
 			payload.ui?.theme === "system" ||
@@ -422,7 +418,6 @@ export function AppearanceSettingsPane() {
 				<SettingsSection
 					title={t("sidebar.sectionTitle")}
 					description={t("sidebar.sectionDescription")}
-					searchId="appearance-sidebar"
 					aside={
 						<Button
 							type="button"
@@ -440,25 +435,23 @@ export function AppearanceSettingsPane() {
 					{sidebarOrder.value.map((key, index) => {
 						const label = t(`sidebar.items.${key}.label`);
 						return (
-							<SettingsRow
-								key={key}
-								label={label}
-								description={t(`sidebar.items.${key}.description`)}
-							>
+							<SettingsRow key={key} label={label}>
 								<div className="settingsSidebarItemControls">
-									<button
+									<Button
 										type="button"
-										className="settingsOrderButton"
+										variant="ghost"
+										size="icon-xs"
 										disabled={sidebarOrder.isSaving || index === 0}
 										aria-label={t("sidebar.moveUp", { label })}
 										title={t("sidebar.moveUp", { label })}
 										onClick={() => onSidebarOrderChange(key, -1)}
 									>
 										<ChevronUp size="var(--icon-sm)" />
-									</button>
-									<button
+									</Button>
+									<Button
 										type="button"
-										className="settingsOrderButton"
+										variant="ghost"
+										size="icon-xs"
 										disabled={
 											sidebarOrder.isSaving ||
 											index === sidebarOrder.value.length - 1
@@ -468,11 +461,11 @@ export function AppearanceSettingsPane() {
 										onClick={() => onSidebarOrderChange(key, 1)}
 									>
 										<ChevronDown size="var(--icon-sm)" />
-									</button>
+									</Button>
 									<SettingsToggle
 										checked={sidebarVisibility.value[key]}
 										disabled={sidebarVisibility.isSaving}
-										ariaLabel={t(`sidebar.items.${key}.ariaLabel`)}
+										ariaLabel={t("sidebar.showItem", { label })}
 										onCheckedChange={(visible) =>
 											onSidebarVisibilityChange(key, visible)
 										}

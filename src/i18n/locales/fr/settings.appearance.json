@@ -141,61 +141,40 @@
 		"resetError": "Impossible de restaurer la disposition par défaut de la barre latérale.",
 		"moveUp": "Déplacer {{label}} vers le haut",
 		"moveDown": "Déplacer {{label}} vers le bas",
+		"showItem": "Afficher {{label}} dans la barre latérale",
 		"items": {
 			"newNote": {
-				"label": "Nouvelle note",
-				"description": "Afficher l’action Nouvelle note.",
-				"ariaLabel": "Afficher Nouvelle note dans la barre latérale"
+				"label": "Nouvelle note"
 			},
 			"pinned": {
-				"label": "Épinglées",
-				"description": "Afficher les notes et collections épinglées.",
-				"ariaLabel": "Afficher les éléments épinglés dans la barre latérale"
+				"label": "Épinglées"
 			},
 			"allNotes": {
-				"label": "Toutes les notes",
-				"description": "Afficher la vue Toutes les notes.",
-				"ariaLabel": "Afficher Toutes les notes dans la barre latérale"
+				"label": "Toutes les notes"
 			},
 			"databases": {
-				"label": "Collections / Bases de données",
-				"description": "Afficher les collections et bases de données.",
-				"ariaLabel": "Afficher les collections et bases de données dans la barre latérale"
+				"label": "Collections / Bases de données"
 			},
 			"connections": {
-				"label": "Connexions",
-				"description": "Afficher la vue Connexions.",
-				"ariaLabel": "Afficher Connexions dans la barre latérale"
+				"label": "Connexions"
 			},
 			"calendar": {
-				"label": "Calendrier",
-				"description": "Afficher l’action Calendrier.",
-				"ariaLabel": "Afficher Calendrier dans la barre latérale"
+				"label": "Calendrier"
 			},
 			"search": {
-				"label": "Recherche / Ouverture rapide",
-				"description": "Afficher Recherche et Ouverture rapide.",
-				"ariaLabel": "Afficher Recherche et Ouverture rapide dans la barre latérale"
+				"label": "Recherche / Ouverture rapide"
 			},
 			"periodNotes": {
-				"label": "Notes quotidiennes, hebdomadaires, mensuelles et trimestrielles",
-				"description": "Afficher les raccourcis des notes datées activées.",
-				"ariaLabel": "Afficher les notes datées dans la barre latérale"
+				"label": "Notes quotidiennes, hebdomadaires, mensuelles et trimestrielles"
 			},
 			"quickNote": {
-				"label": "Note rapide",
-				"description": "Afficher l’action Note rapide.",
-				"ariaLabel": "Afficher Note rapide dans la barre latérale"
+				"label": "Note rapide"
 			},
 			"templates": {
-				"label": "Modèles",
-				"description": "Afficher l’action Créer à partir d’un modèle.",
-				"ariaLabel": "Afficher Modèles dans la barre latérale"
+				"label": "Modèles"
 			},
 			"gitSync": {
-				"label": "Synchronisation Git",
-				"description": "Afficher l’action Synchronisation Git.",
-				"ariaLabel": "Afficher Synchronisation Git dans la barre latérale"
+				"label": "Synchronisation Git"
 			}
 		}
 	},

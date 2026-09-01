@@ -30,7 +30,7 @@ export type UiFontSize = number;
 export type EditorWidthMode = "compact" | "comfortable" | "wide";
 export type FocusMode = "off" | "paragraph" | "sentence";
 
-export const SIDEBAR_VISIBILITY_KEYS = [
+const SIDEBAR_VISIBILITY_KEYS = [
 	"newNote",
 	"pinned",
 	"allNotes",

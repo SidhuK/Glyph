@@ -286,10 +286,6 @@
 			"label": "Otwórz wszystkie notatki",
 			"description": "Otwórz widok wszystkich notatek."
 		},
-		"open-pinned": {
-			"label": "Otwórz przypięte",
-			"description": "Otwórz przypięte notatki i kolekcje."
-		},
 		"open-command-palette": {
 			"label": "Otwórz paletę poleceń",
 			"description": "Otwórz paletę poleceń."

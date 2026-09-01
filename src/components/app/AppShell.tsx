@@ -1272,7 +1272,6 @@ export function AppShell() {
 		onCreateSpace: handleCreateSpace,
 		onOpenSpace: handleOpenSpace,
 		openAllDocsTab,
-		openPinnedDocsTab,
 		openBlankTab,
 		splitPaneWithBlank,
 		openDatabasesTab,
