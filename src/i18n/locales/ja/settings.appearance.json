@@ -134,6 +134,49 @@
 			}
 		}
 	},
+	"sidebar": {
+		"sectionTitle": "サイドバー",
+		"sectionDescription": "表示するナビゲーション項目と順序を選択します。",
+		"resetToDefaults": "サイドバーを既定の配置に戻す",
+		"resetError": "サイドバーを既定の配置に戻せませんでした。",
+		"reorder": "{{label}}の順序を変更",
+		"showItem": "サイドバーに{{label}}を表示",
+		"items": {
+			"newNote": {
+				"label": "新規ノート"
+			},
+			"pinned": {
+				"label": "ピン留め"
+			},
+			"allNotes": {
+				"label": "すべてのノート"
+			},
+			"databases": {
+				"label": "コレクション / データベース"
+			},
+			"connections": {
+				"label": "接続"
+			},
+			"calendar": {
+				"label": "カレンダー"
+			},
+			"search": {
+				"label": "検索 / クイックオープン"
+			},
+			"periodNotes": {
+				"label": "日次・週次・月次・四半期ノート"
+			},
+			"quickNote": {
+				"label": "クイックノート"
+			},
+			"templates": {
+				"label": "テンプレート"
+			},
+			"gitSync": {
+				"label": "Git 同期"
+			}
+		}
+	},
 	"database": {
 		"sectionTitle": "データベース",
 		"sectionDescription": "Glyph 全体でのデータベースの表示方法を選びます。",

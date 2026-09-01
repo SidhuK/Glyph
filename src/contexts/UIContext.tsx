@@ -37,6 +37,14 @@ import {
 	reloadFromDisk,
 } from "../lib/settings";
 import { DURABLE_SETTINGS } from "../lib/settings/definitions";
+import {
+	DEFAULT_SIDEBAR_ORDER,
+	DEFAULT_SIDEBAR_VISIBILITY,
+	type SidebarOrder,
+	type SidebarVisibility,
+	normalizeSidebarOrder,
+	normalizeSidebarVisibility,
+} from "../lib/settings/model";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
@@ -56,6 +64,8 @@ interface UILayoutContextValue {
 	templateFolder: string | null;
 	periodNoteTemplates: PeriodNoteTemplatePaths;
 	periodNotesEnabled: PeriodNotesEnabled;
+	sidebarVisibility: SidebarVisibility;
+	sidebarOrder: SidebarOrder;
 	/**
 	 * The space whose folder and template settings
 	 * period note templates currently describe. Hydration is async, so after a
@@ -101,6 +111,8 @@ type UIState = {
 	templateFolder: string | null;
 	periodNoteTemplates: PeriodNoteTemplatePaths;
 	periodNotesEnabled: PeriodNotesEnabled;
+	sidebarVisibility: SidebarVisibility;
+	sidebarOrder: SidebarOrder;
 	settingsSpacePath: string | null;
 	showToc: boolean;
 	zenMode: boolean;
@@ -141,6 +153,8 @@ type UIAction =
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
 	| { type: "setDateDisplayFormat"; value: DateDisplayFormat }
+	| { type: "setSidebarVisibility"; value: SidebarVisibility }
+	| { type: "setSidebarOrder"; value: SidebarOrder }
 	| { type: "openSettings"; tab?: SettingsTab }
 	| { type: "closeSettings" }
 	| { type: "setSettingsTab"; value: SettingsTab }
@@ -155,6 +169,8 @@ type UIAction =
 			templateFolder: string | null;
 			periodNoteTemplates: PeriodNoteTemplatePaths;
 			periodNotesEnabled: PeriodNotesEnabled;
+			sidebarVisibility: SidebarVisibility;
+			sidebarOrder: SidebarOrder;
 			showToc: boolean;
 			zenMode: boolean;
 			folioMode: boolean;
@@ -181,6 +197,8 @@ const initialUIState: UIState = {
 	templateFolder: null,
 	periodNoteTemplates: EMPTY_PERIOD_NOTE_TEMPLATES,
 	periodNotesEnabled: DEFAULT_PERIOD_NOTES_ENABLED,
+	sidebarVisibility: DEFAULT_SIDEBAR_VISIBILITY,
+	sidebarOrder: DEFAULT_SIDEBAR_ORDER,
 	settingsSpacePath: null,
 	showToc: true,
 	zenMode: false,
@@ -265,6 +283,10 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, aiAssistantMode: action.value };
 		case "setDateDisplayFormat":
 			return { ...state, dateDisplayFormat: action.value };
+		case "setSidebarVisibility":
+			return { ...state, sidebarVisibility: action.value };
+		case "setSidebarOrder":
+			return { ...state, sidebarOrder: action.value };
 		case "openSettings":
 			return {
 				...state,
@@ -309,6 +331,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				templateFolder: action.templateFolder,
 				periodNoteTemplates: action.periodNoteTemplates,
 				periodNotesEnabled: action.periodNotesEnabled,
+				sidebarVisibility: action.sidebarVisibility,
+				sidebarOrder: action.sidebarOrder,
 				showToc: action.showToc,
 				zenMode: action.zenMode,
 				folioMode: action.folioMode,
@@ -323,6 +347,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const { spacePath } = useSpace();
 	const [state, dispatch] = useReducer(uiReducer, initialUIState);
 	const spacePathRef = useRef(spacePath);
+	const sidebarVisibilityRef = useRef(initialUIState.sidebarVisibility);
+	const sidebarVisibilityRevisionRef = useRef(0);
+	const sidebarOrderRef = useRef(initialUIState.sidebarOrder);
+	const sidebarOrderRevisionRef = useRef(0);
 	const zenModeRef = useRef(initialUIState.zenMode);
 	const zenModeRevisionRef = useRef(0);
 	const {
@@ -336,6 +364,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		templateFolder,
 		periodNoteTemplates,
 		periodNotesEnabled,
+		sidebarVisibility,
+		sidebarOrder,
 		settingsSpacePath,
 		showToc,
 		zenMode,
@@ -359,6 +389,26 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const nextEnabled = payload.ui?.aiEnabled;
 		if (typeof nextEnabled === "boolean") {
 			dispatch({ type: "setAiEnabled", value: nextEnabled });
+		}
+		if (payload.ui?.sidebarVisibility) {
+			const nextSidebarVisibility = normalizeSidebarVisibility(
+				payload.ui.sidebarVisibility,
+			);
+			sidebarVisibilityRevisionRef.current += 1;
+			sidebarVisibilityRef.current = nextSidebarVisibility;
+			dispatch({
+				type: "setSidebarVisibility",
+				value: nextSidebarVisibility,
+			});
+		}
+		if (payload.ui?.sidebarOrder) {
+			const nextSidebarOrder = normalizeSidebarOrder(payload.ui.sidebarOrder);
+			sidebarOrderRevisionRef.current += 1;
+			sidebarOrderRef.current = nextSidebarOrder;
+			dispatch({
+				type: "setSidebarOrder",
+				value: nextSidebarOrder,
+			});
 		}
 		const nextMode = payload.ui?.aiAssistantMode;
 		if (nextMode === "chat" || nextMode === "create") {
@@ -458,6 +508,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const loadAndApplySettings = async () => {
 			try {
 				const requestedSpacePath = spacePathRef.current;
+				const sidebarVisibilityRevision = sidebarVisibilityRevisionRef.current;
+				const sidebarOrderRevision = sidebarOrderRevisionRef.current;
 				const zenModeRevision = zenModeRevisionRef.current;
 				const s = await loadSettings({ spacePath: requestedSpacePath });
 				// Discard if unmounted or the active space changed mid-load so we
@@ -468,6 +520,16 @@ export function UIProvider({ children }: { children: ReactNode }) {
 						? s.editor.zenMode
 						: zenModeRef.current;
 				zenModeRef.current = nextZenMode;
+				const nextSidebarVisibility =
+					sidebarVisibilityRevision === sidebarVisibilityRevisionRef.current
+						? s.ui.sidebarVisibility
+						: sidebarVisibilityRef.current;
+				const nextSidebarOrder =
+					sidebarOrderRevision === sidebarOrderRevisionRef.current
+						? s.ui.sidebarOrder
+						: sidebarOrderRef.current;
+				sidebarVisibilityRef.current = nextSidebarVisibility;
+				sidebarOrderRef.current = nextSidebarOrder;
 				dispatch({
 					type: "hydrateSettings",
 					spacePath: requestedSpacePath,
@@ -478,6 +540,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					templateFolder: s.templates?.folder ?? null,
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
+					sidebarVisibility: nextSidebarVisibility,
+					sidebarOrder: nextSidebarOrder,
 					showToc: s.ui.showToc,
 					zenMode: nextZenMode,
 					folioMode: s.ui.folioMode,
@@ -621,6 +685,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			templateFolder,
 			periodNoteTemplates,
 			periodNotesEnabled,
+			sidebarVisibility,
+			sidebarOrder,
 			settingsSpacePath,
 			showToc,
 			setShowToc,
@@ -651,6 +717,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			templateFolder,
 			periodNoteTemplates,
 			periodNotesEnabled,
+			sidebarVisibility,
+			sidebarOrder,
 			settingsSpacePath,
 			showToc,
 			setShowToc,

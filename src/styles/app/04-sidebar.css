@@ -209,6 +209,17 @@
 	padding-bottom: var(--space-2);
 }
 
+.sidebarOrderedContent {
+	gap: 2px;
+	padding-top: 10px;
+}
+
+.sidebarOrderedContent > .sidebarQuickActionBtn,
+.sidebarOrderedContent > .sidebarNavRow .sidebarQuickActionBtn {
+	width: calc(100% - 16px);
+	margin-inline: 8px;
+}
+
 .sidebarSectionContent * {
 	-webkit-app-region: no-drag;
 }

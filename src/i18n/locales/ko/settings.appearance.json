@@ -134,6 +134,49 @@
 			}
 		}
 	},
+	"sidebar": {
+		"sectionTitle": "사이드바",
+		"sectionDescription": "표시할 탐색 항목과 순서를 선택합니다.",
+		"resetToDefaults": "기본 사이드바 배치 복원",
+		"resetError": "기본 사이드바 배치를 복원하지 못했습니다.",
+		"reorder": "{{label}} 순서 변경",
+		"showItem": "사이드바에 {{label}} 표시",
+		"items": {
+			"newNote": {
+				"label": "새 노트"
+			},
+			"pinned": {
+				"label": "고정됨"
+			},
+			"allNotes": {
+				"label": "모든 노트"
+			},
+			"databases": {
+				"label": "컬렉션 / 데이터베이스"
+			},
+			"connections": {
+				"label": "연결"
+			},
+			"calendar": {
+				"label": "캘린더"
+			},
+			"search": {
+				"label": "검색 / 빠른 열기"
+			},
+			"periodNotes": {
+				"label": "일간, 주간, 월간, 분기 노트"
+			},
+			"quickNote": {
+				"label": "빠른 노트"
+			},
+			"templates": {
+				"label": "템플릿"
+			},
+			"gitSync": {
+				"label": "Git 동기화"
+			}
+		}
+	},
 	"database": {
 		"sectionTitle": "데이터베이스",
 		"sectionDescription": "Glyph 전반에서 데이터베이스가 표시되는 방식을 선택합니다.",

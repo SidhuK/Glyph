@@ -41,11 +41,19 @@ import type {
 	FocusMode,
 	ReleaseChannel,
 	SettingsUpdatedPayload,
+	SidebarOrder,
+	SidebarVisibility,
 	SpaceScopedSettings,
 	ThemeMode,
 	UiCornerRadiusStyle,
 	UiFontFamily,
 	UiFontSize,
+} from "./model";
+import {
+	DEFAULT_SIDEBAR_ORDER,
+	DEFAULT_SIDEBAR_VISIBILITY,
+	normalizeSidebarOrder,
+	normalizeSidebarVisibility,
 } from "./model";
 
 export const MIN_UI_FONT_SIZE = 7;
@@ -496,6 +504,30 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.showToc,
 		change: (value) => ({ ui: { showToc: value } }),
 	}),
+	sidebarVisibility: defineApplicationSetting({
+		key: "ui.sidebarVisibility",
+		defaultValue: DEFAULT_SIDEBAR_VISIBILITY,
+		discovery: searchable("appearance-sidebar"),
+		normalize: normalizeSidebarVisibility,
+		parse: (value) =>
+			value !== null && typeof value === "object" && !Array.isArray(value)
+				? parsed(normalizeSidebarVisibility(value))
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.sidebarVisibility,
+		change: (value) => ({ ui: { sidebarVisibility: value } }),
+	}),
+	sidebarOrder: defineApplicationSetting({
+		key: "ui.sidebarOrder",
+		defaultValue: DEFAULT_SIDEBAR_ORDER,
+		discovery: searchable("appearance-sidebar"),
+		normalize: normalizeSidebarOrder,
+		parse: (value) =>
+			Array.isArray(value)
+				? parsed(normalizeSidebarOrder(value))
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.sidebarOrder,
+		change: (value) => ({ ui: { sidebarOrder: value } }),
+	}),
 	showFileTreeFolderCounts: booleanSetting({
 		key: "ui.fileTree.showFolderFileCounts",
 		defaultValue: false,
@@ -688,6 +720,39 @@ export const DURABLE_SETTINGS = {
 		change: (value) => ({ database: { showColumnColor: value } }),
 	}),
 } as const;
+
+export async function writeSidebarLayout({
+	visibility,
+	order,
+}: {
+	visibility: SidebarVisibility;
+	order: SidebarOrder;
+}): Promise<void> {
+	const normalizedVisibility = normalizeSidebarVisibility(visibility);
+	const normalizedOrder = normalizeSidebarOrder(order);
+	const store = await getSettingsStore();
+	try {
+		await store.set(
+			DURABLE_SETTINGS.sidebarVisibility.key,
+			normalizedVisibility,
+		);
+		await store.set(DURABLE_SETTINGS.sidebarOrder.key, normalizedOrder);
+		await saveSettingsStore(store);
+	} catch (error) {
+		try {
+			await store.reload();
+		} catch {
+			// Keep the original error; in-memory rollback is best effort.
+		}
+		throw error;
+	}
+	void emitSettingsUpdated({
+		ui: {
+			sidebarVisibility: normalizedVisibility,
+			sidebarOrder: normalizedOrder,
+		},
+	});
+}
 
 export const SPACE_SETTINGS = {
 	dailyNotesFolder: defineSpaceSetting({

@@ -134,6 +134,49 @@
 			}
 		}
 	},
+	"sidebar": {
+		"sectionTitle": "Sidebar",
+		"sectionDescription": "Choose which navigation items appear in the sidebar and set their order. Hiding an item does not disable its feature.",
+		"resetToDefaults": "Restore default sidebar layout",
+		"resetError": "Failed to restore the default sidebar layout.",
+		"reorder": "Reorder {{label}}",
+		"showItem": "Show {{label}} in sidebar",
+		"items": {
+			"newNote": {
+				"label": "New Note"
+			},
+			"pinned": {
+				"label": "Pinned"
+			},
+			"allNotes": {
+				"label": "All Notes"
+			},
+			"databases": {
+				"label": "Collections / Databases"
+			},
+			"connections": {
+				"label": "Connections"
+			},
+			"calendar": {
+				"label": "Calendar"
+			},
+			"search": {
+				"label": "Search / Quick Open"
+			},
+			"periodNotes": {
+				"label": "Daily, Weekly, Monthly, Quarterly Notes"
+			},
+			"quickNote": {
+				"label": "Quick Note"
+			},
+			"templates": {
+				"label": "Templates"
+			},
+			"gitSync": {
+				"label": "Git Sync"
+			}
+		}
+	},
 	"database": {
 		"sectionTitle": "Database",
 		"sectionDescription": "Choose how databases are presented across Glyph.",

@@ -134,6 +134,49 @@
 			}
 		}
 	},
+	"sidebar": {
+		"sectionTitle": "Seitenleiste",
+		"sectionDescription": "Wähle sichtbare Navigationseinträge und ihre Reihenfolge.",
+		"resetToDefaults": "Standardlayout der Seitenleiste wiederherstellen",
+		"resetError": "Das Standardlayout der Seitenleiste konnte nicht wiederhergestellt werden.",
+		"reorder": "{{label}} neu anordnen",
+		"showItem": "{{label}} in der Seitenleiste anzeigen",
+		"items": {
+			"newNote": {
+				"label": "Neue Notiz"
+			},
+			"pinned": {
+				"label": "Angeheftet"
+			},
+			"allNotes": {
+				"label": "Alle Notizen"
+			},
+			"databases": {
+				"label": "Sammlungen / Datenbanken"
+			},
+			"connections": {
+				"label": "Verbindungen"
+			},
+			"calendar": {
+				"label": "Kalender"
+			},
+			"search": {
+				"label": "Suche / Schnell öffnen"
+			},
+			"periodNotes": {
+				"label": "Tages-, Wochen-, Monats- und Quartalsnotizen"
+			},
+			"quickNote": {
+				"label": "Schnelle Notiz"
+			},
+			"templates": {
+				"label": "Vorlagen"
+			},
+			"gitSync": {
+				"label": "Git-Synchronisierung"
+			}
+		}
+	},
 	"database": {
 		"sectionTitle": "Datenbank",
 		"sectionDescription": "Wähle, wie Datenbanken in Glyph dargestellt werden.",

@@ -181,6 +181,25 @@
 			"description": "Import a JSON palette as a new theme.",
 			"keywords": ["theme", "json", "import", "custom"]
 		},
+		"appearance-sidebar": {
+			"title": "Sidebar",
+			"section": "Appearance",
+			"description": "Choose which navigation items appear in the sidebar and set their order.",
+			"keywords": [
+				"sidebar",
+				"navigation",
+				"show",
+				"hide",
+				"calendar",
+				"search",
+				"quick open",
+				"pinned",
+				"databases",
+				"connections",
+				"templates",
+				"git sync"
+			]
+		},
 		"appearance-interface-font": {
 			"title": "Interface font",
 			"section": "Typography",

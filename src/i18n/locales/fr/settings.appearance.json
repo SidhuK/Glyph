@@ -134,6 +134,49 @@
 			}
 		}
 	},
+	"sidebar": {
+		"sectionTitle": "Barre latérale",
+		"sectionDescription": "Choisissez les éléments de navigation visibles et leur ordre.",
+		"resetToDefaults": "Restaurer la disposition par défaut de la barre latérale",
+		"resetError": "Impossible de restaurer la disposition par défaut de la barre latérale.",
+		"reorder": "Réorganiser {{label}}",
+		"showItem": "Afficher {{label}} dans la barre latérale",
+		"items": {
+			"newNote": {
+				"label": "Nouvelle note"
+			},
+			"pinned": {
+				"label": "Épinglées"
+			},
+			"allNotes": {
+				"label": "Toutes les notes"
+			},
+			"databases": {
+				"label": "Collections / Bases de données"
+			},
+			"connections": {
+				"label": "Connexions"
+			},
+			"calendar": {
+				"label": "Calendrier"
+			},
+			"search": {
+				"label": "Recherche / Ouverture rapide"
+			},
+			"periodNotes": {
+				"label": "Notes quotidiennes, hebdomadaires, mensuelles et trimestrielles"
+			},
+			"quickNote": {
+				"label": "Note rapide"
+			},
+			"templates": {
+				"label": "Modèles"
+			},
+			"gitSync": {
+				"label": "Synchronisation Git"
+			}
+		}
+	},
 	"database": {
 		"sectionTitle": "Base de données",
 		"sectionDescription": "Choisissez comment les bases de données sont présentées dans Glyph.",

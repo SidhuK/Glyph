@@ -162,6 +162,104 @@
 	width: 100%;
 }
 
+.settingsSidebarItemControls {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 4px;
+}
+
+.settingsSidebarItemRow {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+}
+
+.settingsSidebarItemRow::after {
+	content: "";
+	position: absolute;
+	left: 18px;
+	right: 18px;
+	bottom: 0;
+	height: 1px;
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.settingsCard .settingsSidebarItemRow:last-of-type::after {
+	display: none;
+}
+
+.settingsSidebarItemRow .settingsSidebarItemField {
+	flex: 1 1 auto;
+	min-width: 0;
+	align-items: center;
+}
+
+.settingsSidebarItemRow .settingsSidebarItemField::after {
+	display: none;
+}
+
+.settingsSidebarItemLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.settingsSidebarDragHandle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 20px;
+	height: 20px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	line-height: 0;
+	cursor: grab;
+}
+
+.settingsSidebarDragHandle:hover,
+.settingsSidebarDragHandle:focus-visible {
+	color: var(--text-secondary);
+}
+
+.settingsSidebarDragHandle:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.settingsSidebarDragHandle:disabled {
+	cursor: default;
+	opacity: 0.5;
+}
+
+.settingsSidebarItemRow[data-dragging="true"] .settingsSidebarDragHandle {
+	cursor: grabbing;
+}
+
+.settingsSidebarItemRow[data-dragging="true"]:not([data-dnd-placeholder]) {
+	z-index: 2;
+	pointer-events: none;
+	background: var(--settings-surface);
+	box-shadow: 0 8px 24px
+		color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+
+.settingsSidebarItemRow[data-dnd-placeholder] {
+	opacity: 0.34;
+	pointer-events: none;
+}
+
+.settingsSidebarItemRow[data-drop-target="true"]:not([data-dragging="true"]) {
+	background: color-mix(in srgb, var(--bg-secondary) 38%, transparent);
+}
+
 .settingsFieldControlStacked {
 	flex-direction: column;
 	align-items: stretch;

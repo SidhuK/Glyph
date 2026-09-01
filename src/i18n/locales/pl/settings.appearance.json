@@ -134,6 +134,49 @@
 			}
 		}
 	},
+	"sidebar": {
+		"sectionTitle": "Pasek boczny",
+		"sectionDescription": "Wybierz widoczne elementy nawigacji i ich kolejność.",
+		"resetToDefaults": "Przywróć domyślny układ paska bocznego",
+		"resetError": "Nie udało się przywrócić domyślnego układu paska bocznego.",
+		"reorder": "Zmień kolejność: {{label}}",
+		"showItem": "Pokaż {{label}} na pasku bocznym",
+		"items": {
+			"newNote": {
+				"label": "Nowa notatka"
+			},
+			"pinned": {
+				"label": "Przypięte"
+			},
+			"allNotes": {
+				"label": "Wszystkie notatki"
+			},
+			"databases": {
+				"label": "Kolekcje / Bazy danych"
+			},
+			"connections": {
+				"label": "Graf"
+			},
+			"calendar": {
+				"label": "Kalendarz"
+			},
+			"search": {
+				"label": "Szukaj / Szybkie otwieranie"
+			},
+			"periodNotes": {
+				"label": "Notatki dzienne, tygodniowe, miesięczne i kwartalne"
+			},
+			"quickNote": {
+				"label": "Szybka notatka"
+			},
+			"templates": {
+				"label": "Szablony"
+			},
+			"gitSync": {
+				"label": "Synchronizacja Git"
+			}
+		}
+	},
 	"database": {
 		"sectionTitle": "Baza danych",
 		"sectionDescription": "Wybierz sposób prezentacji baz danych w programie Glyph.",

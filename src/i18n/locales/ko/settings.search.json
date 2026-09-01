@@ -149,6 +149,21 @@
 			"description": "Glyph를 종료하지 않고 마지막 창을 숨깁니다.",
 			"keywords": ["닫기", "창", "종료", "숨기기", "dock"]
 		},
+		"appearance-sidebar": {
+			"title": "사이드바",
+			"section": "모양",
+			"description": "표시할 탐색 항목과 순서를 설정합니다.",
+			"keywords": [
+				"사이드바",
+				"탐색",
+				"표시",
+				"숨기기",
+				"캘린더",
+				"검색",
+				"템플릿",
+				"Git 동기화"
+			]
+		},
 		"appearance-theme-mode": {
 			"title": "테마 선택",
 			"section": "테마",

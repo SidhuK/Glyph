@@ -39,6 +39,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "appearance-dark-theme", tab: "appearance" },
 	{ id: "appearance-translucent-app", tab: "appearance" },
 	{ id: "appearance-custom-themes", tab: "appearance" },
+	{ id: "appearance-sidebar", tab: "appearance" },
 	{ id: "appearance-interface-font", tab: "appearance" },
 	{ id: "appearance-monospace-font", tab: "appearance" },
 	{ id: "appearance-editor-font", tab: "editor" },
