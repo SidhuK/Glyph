@@ -93,6 +93,7 @@ export function AppearanceSettingsPane() {
 		DURABLE_SETTINGS.sidebarOrder.write,
 		setError,
 	);
+	const [isResettingSidebar, setIsResettingSidebar] = useState(false);
 	const showColumnColor = useSettingsBoolean(
 		true,
 		DURABLE_SETTINGS.databaseShowColumnColor.write,
@@ -257,6 +258,7 @@ export function AppearanceSettingsPane() {
 
 	const onResetSidebar = useCallback(() => {
 		setError("");
+		setIsResettingSidebar(true);
 		void writeSidebarLayout({
 			visibility: DEFAULT_SIDEBAR_VISIBILITY,
 			order: DEFAULT_SIDEBAR_ORDER,
@@ -269,6 +271,9 @@ export function AppearanceSettingsPane() {
 				setError(
 					cause instanceof Error ? cause.message : t("sidebar.resetError"),
 				);
+			})
+			.finally(() => {
+				setIsResettingSidebar(false);
 			});
 	}, [sidebarOrder.setValue, sidebarVisibility.setValue, t]);
 
@@ -425,7 +430,11 @@ export function AppearanceSettingsPane() {
 							size="icon-sm"
 							aria-label={t("sidebar.resetToDefaults")}
 							title={t("sidebar.resetToDefaults")}
-							disabled={sidebarVisibility.isSaving || sidebarOrder.isSaving}
+							disabled={
+								sidebarVisibility.isSaving ||
+								sidebarOrder.isSaving ||
+								isResettingSidebar
+							}
 							onClick={onResetSidebar}
 						>
 							<RefreshCw size="var(--icon-md)" aria-hidden="true" />
@@ -435,13 +444,15 @@ export function AppearanceSettingsPane() {
 					{sidebarOrder.value.map((key, index) => {
 						const label = t(`sidebar.items.${key}.label`);
 						return (
-							<SettingsRow key={key} label={label}>
+							<SettingsRow key={key} label={label} interactive={false}>
 								<div className="settingsSidebarItemControls">
 									<Button
 										type="button"
 										variant="ghost"
 										size="icon-xs"
-										disabled={sidebarOrder.isSaving || index === 0}
+										disabled={
+											sidebarOrder.isSaving || isResettingSidebar || index === 0
+										}
 										aria-label={t("sidebar.moveUp", { label })}
 										title={t("sidebar.moveUp", { label })}
 										onClick={() => onSidebarOrderChange(key, -1)}
@@ -454,6 +465,7 @@ export function AppearanceSettingsPane() {
 										size="icon-xs"
 										disabled={
 											sidebarOrder.isSaving ||
+											isResettingSidebar ||
 											index === sidebarOrder.value.length - 1
 										}
 										aria-label={t("sidebar.moveDown", { label })}
@@ -464,7 +476,7 @@ export function AppearanceSettingsPane() {
 									</Button>
 									<SettingsToggle
 										checked={sidebarVisibility.value[key]}
-										disabled={sidebarVisibility.isSaving}
+										disabled={sidebarVisibility.isSaving || isResettingSidebar}
 										ariaLabel={t("sidebar.showItem", { label })}
 										onCheckedChange={(visible) =>
 											onSidebarVisibilityChange(key, visible)

@@ -12,6 +12,7 @@
 		"connections": "Connexions",
 		"calendar": "Calendrier",
 		"search": "Recherche / Ouverture rapide",
+		"searchPlaceholder": "Rechercher",
 		"periodNotes": "Notes datées",
 		"dailyNote": "Note quotidienne",
 		"weeklyNote": "Note hebdomadaire",

@@ -152,3 +152,75 @@
 	font-weight: var(--font-normal);
 	line-height: 1;
 }
+
+/* ── Search bar: input-like field that opens palette ── */
+.sidebarSearchBar {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	width: calc(100% - 16px);
+	margin: 2px 8px;
+	min-height: 30px;
+	padding: 6px 8px 6px 9px;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-8);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	text-align: left;
+	cursor: pointer;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sidebarSearchBar:hover {
+	border-color: var(--border-default);
+	background: var(--bg-primary);
+}
+
+.sidebarSearchBar:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+	border-color: var(--border-default);
+}
+
+.sidebarSearchBar:active {
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+}
+
+.sidebarSearchBarIcon {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.sidebarSearchBarLabel {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-tertiary);
+	font-weight: var(--font-normal);
+	line-height: 1;
+}
+
+.sidebarSearchBarShortcut {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 18px;
+	padding: 2px 5px;
+	margin-left: 4px;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-6);
+	color: var(--text-tertiary);
+	font-size: 11px;
+	font-weight: var(--font-medium);
+	font-family: var(--font-sans);
+	line-height: 1;
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+}

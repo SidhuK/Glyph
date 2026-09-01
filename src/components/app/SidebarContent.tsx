@@ -289,6 +289,15 @@ export const SidebarContent = memo(function SidebarContent({
 		},
 	});
 	const newNoteShortcut = getBinding("new-note");
+	const searchShortcut =
+		getBinding("open-command-palette") ?? getBinding("quick-open");
+	const searchShortcutLabel = searchShortcut
+		? formatShortcutForPlatform(searchShortcut)
+		: "";
+	const searchPlaceholder =
+		t("sidebar.searchPlaceholder") !== "sidebar.searchPlaceholder"
+			? t("sidebar.searchPlaceholder")
+			: t("sidebar.search");
 	const newNoteTitle = newNoteFolder
 		? t("sidebar.newNoteInFolder", { folder: newNoteFolder })
 		: t("sidebar.newNoteInRoot");
@@ -618,14 +627,35 @@ export const SidebarContent = memo(function SidebarContent({
 							/>
 						) : null}
 						{sidebarVisibility.search ? (
-							<SidebarActionButton
+							<button
 								key="search"
+								type="button"
+								className="sidebarSearchBar"
 								data-sidebar-key="search"
-								kind="search"
-								label={t("sidebar.search")}
-								icon={SearchIcon}
+								data-kind="search"
+								aria-label={t("sidebar.search")}
+								title={
+									searchShortcutLabel
+										? `${t("sidebar.search")} (${searchShortcutLabel})`
+										: t("sidebar.search")
+								}
 								onClick={onOpenSearch}
-							/>
+							>
+								<HugeiconsIcon
+									icon={SearchIcon}
+									size="var(--icon-sm)"
+									className="sidebarSearchBarIcon"
+									aria-hidden="true"
+								/>
+								<span className="sidebarSearchBarLabel">
+									{searchPlaceholder}
+								</span>
+								{searchShortcutLabel ? (
+									<span className="sidebarSearchBarShortcut" aria-hidden="true">
+										{searchShortcutLabel}
+									</span>
+								) : null}
+							</button>
 						) : null}
 						{sidebarVisibility.quickNote ? (
 							<SidebarActionButton
