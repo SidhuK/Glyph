@@ -139,8 +139,7 @@
 		"sectionDescription": "표시할 탐색 항목과 순서를 선택합니다.",
 		"resetToDefaults": "기본 사이드바 배치 복원",
 		"resetError": "기본 사이드바 배치를 복원하지 못했습니다.",
-		"moveUp": "{{label}} 위로 이동",
-		"moveDown": "{{label}} 아래로 이동",
+		"reorder": "{{label}} 순서 변경",
 		"showItem": "사이드바에 {{label}} 표시",
 		"items": {
 			"newNote": {

@@ -139,8 +139,7 @@
 		"sectionDescription": "表示するナビゲーション項目と順序を選択します。",
 		"resetToDefaults": "サイドバーを既定の配置に戻す",
 		"resetError": "サイドバーを既定の配置に戻せませんでした。",
-		"moveUp": "{{label}}を上へ移動",
-		"moveDown": "{{label}}を下へ移動",
+		"reorder": "{{label}}の順序を変更",
 		"showItem": "サイドバーに{{label}}を表示",
 		"items": {
 			"newNote": {

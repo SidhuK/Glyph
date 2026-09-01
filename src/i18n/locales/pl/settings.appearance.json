@@ -139,8 +139,7 @@
 		"sectionDescription": "Wybierz widoczne elementy nawigacji i ich kolejność.",
 		"resetToDefaults": "Przywróć domyślny układ paska bocznego",
 		"resetError": "Nie udało się przywrócić domyślnego układu paska bocznego.",
-		"moveUp": "Przenieś {{label}} wyżej",
-		"moveDown": "Przenieś {{label}} niżej",
+		"reorder": "Zmień kolejność: {{label}}",
 		"showItem": "Pokaż {{label}} na pasku bocznym",
 		"items": {
 			"newNote": {

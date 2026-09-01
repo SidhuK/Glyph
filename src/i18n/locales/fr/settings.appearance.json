@@ -139,8 +139,7 @@
 		"sectionDescription": "Choisissez les éléments de navigation visibles et leur ordre.",
 		"resetToDefaults": "Restaurer la disposition par défaut de la barre latérale",
 		"resetError": "Impossible de restaurer la disposition par défaut de la barre latérale.",
-		"moveUp": "Déplacer {{label}} vers le haut",
-		"moveDown": "Déplacer {{label}} vers le bas",
+		"reorder": "Réorganiser {{label}}",
 		"showItem": "Afficher {{label}} dans la barre latérale",
 		"items": {
 			"newNote": {

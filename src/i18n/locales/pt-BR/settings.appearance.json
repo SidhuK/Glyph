@@ -139,8 +139,7 @@
 		"sectionDescription": "Escolha os itens de navegação visíveis e a ordem deles.",
 		"resetToDefaults": "Restaurar o layout padrão da barra lateral",
 		"resetError": "Não foi possível restaurar o layout padrão da barra lateral.",
-		"moveUp": "Mover {{label}} para cima",
-		"moveDown": "Mover {{label}} para baixo",
+		"reorder": "Reordenar {{label}}",
 		"showItem": "Mostrar {{label}} na barra lateral",
 		"items": {
 			"newNote": {

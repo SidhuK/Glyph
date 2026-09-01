@@ -139,8 +139,7 @@
 		"sectionDescription": "Choose which navigation items appear in the sidebar and set their order. Hiding an item does not disable its feature.",
 		"resetToDefaults": "Restore default sidebar layout",
 		"resetError": "Failed to restore the default sidebar layout.",
-		"moveUp": "Move {{label}} up",
-		"moveDown": "Move {{label}} down",
+		"reorder": "Reorder {{label}}",
 		"showItem": "Show {{label}} in sidebar",
 		"items": {
 			"newNote": {

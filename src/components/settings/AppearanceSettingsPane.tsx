@@ -41,10 +41,11 @@ import {
 	getUiDarkThemeOption,
 	getUiLightThemeOption,
 } from "../../lib/uiThemes";
-import { ChevronDown, ChevronUp, RefreshCw } from "../Icons";
+import { RefreshCw } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
+import { AppearanceSidebarItems } from "./AppearanceSidebarItems";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
@@ -237,25 +238,6 @@ export function AppearanceSettingsPane() {
 		[sidebarVisibility.onChange, sidebarVisibility.value],
 	);
 
-	const onSidebarOrderChange = useCallback(
-		(key: SidebarVisibilityKey, direction: -1 | 1) => {
-			const currentIndex = sidebarOrder.value.indexOf(key);
-			const nextIndex = currentIndex + direction;
-			if (
-				currentIndex < 0 ||
-				nextIndex < 0 ||
-				nextIndex >= sidebarOrder.value.length
-			)
-				return;
-			const next = [...sidebarOrder.value];
-			const [moved] = next.splice(currentIndex, 1);
-			if (!moved) return;
-			next.splice(nextIndex, 0, moved);
-			sidebarOrder.onChange(next);
-		},
-		[sidebarOrder.onChange, sidebarOrder.value],
-	);
-
 	const onResetSidebar = useCallback(() => {
 		setError("");
 		setIsResettingSidebar(true);
@@ -441,51 +423,17 @@ export function AppearanceSettingsPane() {
 						</Button>
 					}
 				>
-					{sidebarOrder.value.map((key, index) => {
-						const label = t(`sidebar.items.${key}.label`);
-						return (
-							<SettingsRow key={key} label={label} interactive={false}>
-								<div className="settingsSidebarItemControls">
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon-xs"
-										disabled={
-											sidebarOrder.isSaving || isResettingSidebar || index === 0
-										}
-										aria-label={t("sidebar.moveUp", { label })}
-										title={t("sidebar.moveUp", { label })}
-										onClick={() => onSidebarOrderChange(key, -1)}
-									>
-										<ChevronUp size="var(--icon-sm)" />
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon-xs"
-										disabled={
-											sidebarOrder.isSaving ||
-											isResettingSidebar ||
-											index === sidebarOrder.value.length - 1
-										}
-										aria-label={t("sidebar.moveDown", { label })}
-										title={t("sidebar.moveDown", { label })}
-										onClick={() => onSidebarOrderChange(key, 1)}
-									>
-										<ChevronDown size="var(--icon-sm)" />
-									</Button>
-									<SettingsToggle
-										checked={sidebarVisibility.value[key]}
-										disabled={sidebarVisibility.isSaving || isResettingSidebar}
-										ariaLabel={t("sidebar.showItem", { label })}
-										onCheckedChange={(visible) =>
-											onSidebarVisibilityChange(key, visible)
-										}
-									/>
-								</div>
-							</SettingsRow>
-						);
-					})}
+					<AppearanceSidebarItems
+						order={sidebarOrder.value}
+						visibility={sidebarVisibility.value}
+						disabled={
+							sidebarOrder.isSaving ||
+							sidebarVisibility.isSaving ||
+							isResettingSidebar
+						}
+						onReorder={sidebarOrder.onChange}
+						onVisibilityChange={onSidebarVisibilityChange}
+					/>
 				</SettingsSection>
 			</div>
 		</div>

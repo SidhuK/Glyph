@@ -139,8 +139,7 @@
 		"sectionDescription": "Wähle sichtbare Navigationseinträge und ihre Reihenfolge.",
 		"resetToDefaults": "Standardlayout der Seitenleiste wiederherstellen",
 		"resetError": "Das Standardlayout der Seitenleiste konnte nicht wiederhergestellt werden.",
-		"moveUp": "{{label}} nach oben verschieben",
-		"moveDown": "{{label}} nach unten verschieben",
+		"reorder": "{{label}} neu anordnen",
 		"showItem": "{{label}} in der Seitenleiste anzeigen",
 		"items": {
 			"newNote": {
