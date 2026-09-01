@@ -688,47 +688,40 @@ export const SidebarContent = memo(function SidebarContent({
 							/>
 						) : null}
 						{sidebarVisibility.periodNotes ? (
-							<section
+							<div
 								key="periodNotes"
-								className="sidebarStackItem"
+								className="sidebarNavRow"
 								data-sidebar-key="periodNotes"
 								data-section="period-notes"
 							>
-								<div className="sidebarStackHeader">
-									<span className="tagsHeaderTitle">
-										{t("sidebar.periodNotes")}
-									</span>
-								</div>
-								<div className="sidebarNavRow">
-									<SidebarActionButton
-										kind="daily-note"
-										label={t("sidebar.dailyNote")}
-										icon={CalendarAdd01Icon}
-										onClick={() => onOpenPeriodNote("day")}
-									/>
-									<SidebarActionButton
-										kind="weekly-note"
-										label={t("sidebar.weeklyNote")}
-										icon={CalendarAdd01Icon}
-										onClick={() => onOpenPeriodNote("week")}
-										disabled={!periodNotesEnabled.week}
-									/>
-									<SidebarActionButton
-										kind="monthly-note"
-										label={t("sidebar.monthlyNote")}
-										icon={CalendarAdd01Icon}
-										onClick={() => onOpenPeriodNote("month")}
-										disabled={!periodNotesEnabled.month}
-									/>
-									<SidebarActionButton
-										kind="quarterly-note"
-										label={t("sidebar.quarterlyNote")}
-										icon={CalendarAdd01Icon}
-										onClick={() => onOpenPeriodNote("quarter")}
-										disabled={!periodNotesEnabled.quarter}
-									/>
-								</div>
-							</section>
+								<SidebarActionButton
+									kind="daily-note"
+									label={t("sidebar.dailyNote")}
+									icon={CalendarAdd01Icon}
+									onClick={() => onOpenPeriodNote("day")}
+								/>
+								<SidebarActionButton
+									kind="weekly-note"
+									label={t("sidebar.weeklyNote")}
+									icon={CalendarAdd01Icon}
+									onClick={() => onOpenPeriodNote("week")}
+									disabled={!periodNotesEnabled.week}
+								/>
+								<SidebarActionButton
+									kind="monthly-note"
+									label={t("sidebar.monthlyNote")}
+									icon={CalendarAdd01Icon}
+									onClick={() => onOpenPeriodNote("month")}
+									disabled={!periodNotesEnabled.month}
+								/>
+								<SidebarActionButton
+									kind="quarterly-note"
+									label={t("sidebar.quarterlyNote")}
+									icon={CalendarAdd01Icon}
+									onClick={() => onOpenPeriodNote("quarter")}
+									disabled={!periodNotesEnabled.quarter}
+								/>
+							</div>
 						) : null}
 					</OrderedSidebarItems>
 					<div className="sidebarStack">

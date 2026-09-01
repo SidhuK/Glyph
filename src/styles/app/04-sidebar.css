@@ -214,7 +214,8 @@
 	padding-top: 10px;
 }
 
-.sidebarOrderedContent > .sidebarQuickActionBtn {
+.sidebarOrderedContent > .sidebarQuickActionBtn,
+.sidebarOrderedContent > .sidebarNavRow .sidebarQuickActionBtn {
 	width: calc(100% - 16px);
 	margin-inline: 8px;
 }
