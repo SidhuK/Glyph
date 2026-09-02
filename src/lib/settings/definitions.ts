@@ -576,7 +576,7 @@ export const DURABLE_SETTINGS = {
 	}),
 	keepRunningOnLastWindowClose: booleanSetting({
 		key: "ui.keepRunningOnLastWindowClose",
-		defaultValue: false,
+		defaultValue: true,
 		discovery: searchable("general-keep-running-on-close"),
 		nativeConsumption: {
 			kind: "settings-store",
