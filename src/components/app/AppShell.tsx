@@ -41,6 +41,7 @@ import {
 	nextDatabasesOpenRequest,
 } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
+import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
 import {
 	prefetchAllDocs,
 	prefetchDatabasesLanding,
@@ -1151,13 +1152,19 @@ export function AppShell() {
 
 			const dirsToLoad = nextPath ? ["", ...ancestorDirs] : [""];
 			void (async () => {
-				for (const dir of dirsToLoad) {
-					await fileTree.loadDir(dir);
+				try {
+					for (const dir of dirsToLoad) {
+						await fileTree.loadDir(dir);
+					}
+					if (nextPath) scheduleScrollFileTreePathIntoView(nextPath);
+				} catch (error) {
+					setError(error instanceof Error ? error.message : String(error));
 				}
 			})();
 		},
 		[
 			fileTree.loadDir,
+			setError,
 			setActiveDirPath,
 			setSidebarCollapsed,
 			updateExpandedDirs,
