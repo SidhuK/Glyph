@@ -23,8 +23,13 @@ export function useMathNodeEditor() {
 		const editor = editorRef.current;
 		if (!editor || editor.isDestroyed) return null;
 		const node = editor.state.doc.nodeAt(pos);
-		const expectedName = kind === "inline" ? "inlineMath" : "blockMath";
-		return node?.type.name === expectedName ? { editor, node } : null;
+		if (!node) return null;
+		const isInline = node.type.name === "inlineMath" && !node.attrs.display;
+		const isBlock =
+			node.type.name === "blockMath" ||
+			(node.type.name === "inlineMath" && node.attrs.display === true);
+		if (kind === "inline") return isInline ? { editor, node } : null;
+		return isBlock ? { editor, node } : null;
 	}, []);
 
 	const apply = useCallback(
