@@ -1188,7 +1188,7 @@ fn keep_running_on_last_window_close(app: &tauri::AppHandle) -> bool {
         .ok()
         .and_then(|store| store.get(KEEP_RUNNING_ON_LAST_WINDOW_CLOSE_SETTING_KEY))
         .and_then(|value| value.as_bool())
-        .unwrap_or(false)
+        .unwrap_or(true)
 }
 
 fn emit_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
