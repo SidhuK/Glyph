@@ -65,6 +65,7 @@
 	"fileTree": {
 		"open": "Open",
 		"openInNewWindow": "Open in New Window",
+		"showInFolder": "Show in Folder",
 		"showInFinder": "Show in Finder",
 		"copyRelativePath": "Copy Relative Path",
 		"copyAbsolutePath": "Copy Absolute Path",

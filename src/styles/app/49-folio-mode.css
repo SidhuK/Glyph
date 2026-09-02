@@ -279,6 +279,7 @@
 	height: var(--icon-lg);
 	color: var(--folio-file-color, var(--text-tertiary));
 	opacity: 0.72;
+	cursor: pointer;
 }
 
 .folioNoteRenameInput {

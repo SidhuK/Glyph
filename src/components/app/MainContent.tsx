@@ -527,6 +527,7 @@ export const MainContent = memo(function MainContent({
 							activeTabPath={activeTabPath}
 							onOpenFile={onOpenFolioFile}
 							onOpenFileInNewTab={onOpenFolioFileInNewTab}
+							onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
 							onRenameFile={(path, nextName) =>
 								fileTree.onRenameDir(path, nextName, "file")
 							}

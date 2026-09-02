@@ -1149,8 +1149,12 @@ export function AppShell() {
 				return next;
 			});
 
-			const dirsToLoad = nextPath ? ancestorDirs : [""];
-			void Promise.all(dirsToLoad.map((dir) => fileTree.loadDir(dir)));
+			const dirsToLoad = nextPath ? ["", ...ancestorDirs] : [""];
+			void (async () => {
+				for (const dir of dirsToLoad) {
+					await fileTree.loadDir(dir);
+				}
+			})();
 		},
 		[
 			fileTree.loadDir,

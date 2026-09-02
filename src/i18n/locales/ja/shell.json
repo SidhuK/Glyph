@@ -63,6 +63,7 @@
 	"fileTree": {
 		"open": "開く",
 		"openInNewWindow": "新しいウィンドウで開く",
+		"showInFolder": "フォルダで表示",
 		"showInFinder": "Finder で表示",
 		"copyRelativePath": "相対パスをコピー",
 		"copyAbsolutePath": "絶対パスをコピー",

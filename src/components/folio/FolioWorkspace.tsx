@@ -13,6 +13,7 @@ interface FolioWorkspaceProps {
 	activeTabPath: string | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
+	onNavigateBreadcrumbPath: (dirPath: string) => void;
 	onRenameFile: (relPath: string, nextName: string) => Promise<string | null>;
 	onDeleteFile: (relPath: string) => Promise<boolean>;
 }
@@ -22,6 +23,7 @@ export const FolioWorkspace = memo(function FolioWorkspace({
 	activeTabPath,
 	onOpenFile,
 	onOpenFileInNewTab,
+	onNavigateBreadcrumbPath,
 	onRenameFile,
 	onDeleteFile,
 }: FolioWorkspaceProps) {
@@ -47,6 +49,7 @@ export const FolioWorkspace = memo(function FolioWorkspace({
 				activeTabPath={activeTabPath}
 				onOpenFile={onOpenFile}
 				onOpenFileInNewTab={onOpenFileInNewTab}
+				onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
 				onRenameFile={onRenameFile}
 				onDeleteFile={onDeleteFile}
 			/>
