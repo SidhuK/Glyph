@@ -42,7 +42,7 @@ export function GeneralSettingsPane() {
 		setError,
 	);
 	const keepRunningOnLastWindowClose = useSettingsBoolean(
-		false,
+		DURABLE_SETTINGS.keepRunningOnLastWindowClose.defaultValue,
 		DURABLE_SETTINGS.keepRunningOnLastWindowClose.write,
 		setError,
 	);
