@@ -20,7 +20,7 @@ import {
 } from "../../lib/tagIcons";
 import type { FileTreeAppearance } from "../../lib/tauri";
 import { isDeleteKey } from "../../utils/keyboard";
-import { basename } from "../../utils/path";
+import { basename, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { FolioNoteListItem } from "./FolioNoteListItem";
@@ -32,6 +32,7 @@ interface FolioNotesListPaneProps {
 	activeTabPath: string | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
+	onNavigateBreadcrumbPath?: (dirPath: string) => void;
 	onRenameFile?: (relPath: string, nextName: string) => Promise<string | null>;
 	onDeleteFile: (relPath: string) => Promise<boolean>;
 }
@@ -145,12 +146,18 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	activeTabPath,
 	onOpenFile,
 	onOpenFileInNewTab,
+	onNavigateBreadcrumbPath,
 	onRenameFile,
 	onDeleteFile,
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
-	const { beautifulTags, itemAppearance, setItemAppearance, tagAppearance } =
-		useFileTreeContext();
+	const {
+		beautifulTags,
+		itemAppearance,
+		setActiveDirPath,
+		setItemAppearance,
+		tagAppearance,
+	} = useFileTreeContext();
 	const { notes, filesTruncated, error, nonMarkdownFileLimit } =
 		useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -255,6 +262,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			void onOpenFileInNewTab(path);
 		},
 		[onOpenFileInNewTab],
+	);
+	const showNoteInFolder = useCallback(
+		(path: string) => {
+			(onNavigateBreadcrumbPath ?? setActiveDirPath)(parentDir(path));
+		},
+		[onNavigateBreadcrumbPath, setActiveDirPath],
 	);
 	const renameNote = useCallback((path: string) => {
 		setRenamingPath(path);
@@ -386,6 +399,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								selected={activeTabPath === row.note.note_path}
 								onOpen={openNote}
 								onOpenInNewTab={openNoteInNewTab}
+								onShowInFolder={showNoteInFolder}
 								onPrefetch={prefetchNote}
 								onRename={onRenameFile ? renameNote : undefined}
 								onDelete={deleteNote}

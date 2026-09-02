@@ -63,6 +63,7 @@
 	"fileTree": {
 		"open": "열기",
 		"openInNewWindow": "새 창에서 열기",
+		"showInFolder": "폴더에서 보기",
 		"showInFinder": "Finder에서 보기",
 		"copyRelativePath": "상대 경로 복사",
 		"copyAbsolutePath": "절대 경로 복사",

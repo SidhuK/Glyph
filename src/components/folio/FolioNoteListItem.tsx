@@ -1,6 +1,7 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
 	type CSSProperties,
+	type KeyboardEvent,
 	type MouseEvent,
 	forwardRef,
 	memo,
@@ -9,6 +10,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
@@ -34,6 +36,7 @@ interface FolioNoteListItemProps {
 	selected: boolean;
 	onOpen: (path: string) => void;
 	onOpenInNewTab: (path: string) => void;
+	onShowInFolder: (path: string) => void;
 	onPrefetch: (path: string) => void;
 	onRename?: (path: string) => void;
 	onDelete: (path: string) => void;
@@ -339,6 +342,7 @@ export const FolioNoteListItem = memo(
 			selected,
 			onOpen,
 			onOpenInNewTab,
+			onShowInFolder,
 			onPrefetch,
 			onRename,
 			onDelete,
@@ -356,6 +360,7 @@ export const FolioNoteListItem = memo(
 		},
 		ref,
 	) {
+		const { t } = useTranslation("shell");
 		const title = note.title.trim() || titleFromPath(note.note_path);
 		const isMarkdown = note.is_markdown;
 		const { spacePath } = useSpace();
@@ -464,7 +469,24 @@ export const FolioNoteListItem = memo(
 			/>
 		);
 		const noteTitleIcon = (
-			<span className="folioNoteTitleIcon" aria-hidden="true">
+			// biome-ignore lint/a11y/useSemanticElements: nested inside button row
+			<span
+				role="button"
+				tabIndex={0}
+				className="folioNoteTitleIcon"
+				aria-label={t("fileTree.showInFolder")}
+				onClick={(event) => {
+					event.preventDefault();
+					event.stopPropagation();
+					onShowInFolder(note.note_path);
+				}}
+				onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
+					if (event.key !== "Enter" && event.key !== " ") return;
+					event.preventDefault();
+					event.stopPropagation();
+					onShowInFolder(note.note_path);
+				}}
+			>
 				{fileIcon}
 			</span>
 		);
@@ -595,7 +617,8 @@ export const FolioNoteListItem = memo(
 							if (event.button === 1) onOpenInNewTab(note.note_path);
 						}}
 						{...hoverPrefetchProps}
-						onFocus={() => {
+						onFocus={(event) => {
+							if (event.target !== event.currentTarget) return;
 							onFocus();
 							if (isMarkdown) onPrefetch(note.note_path);
 						}}

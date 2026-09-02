@@ -270,7 +270,6 @@ export const SidebarContent = memo(function SidebarContent({
 	} = useFileTreeContext();
 	const {
 		folioMode,
-		folioScope,
 		periodNotesEnabled,
 		sidebarOrder,
 		setFolioScope,
@@ -311,8 +310,6 @@ export const SidebarContent = memo(function SidebarContent({
 	} = useHoverPrefetch(() => {
 		onPrefetchDatabases();
 	});
-	const activeFolioFolder =
-		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
 	const folioSpaceContainerPath = useMemo(() => {
 		if (!folioMode) return null;
@@ -807,7 +804,7 @@ export const SidebarContent = memo(function SidebarContent({
 									childrenByDir={folioMode ? folioChildrenByDir : childrenByDir}
 									expandedDirs={expandedDirs}
 									activeFilePath={folioMode ? null : activeFilePath}
-									activeDirPath={folioMode ? activeFolioFolder : activeDirPath}
+									activeDirPath={activeDirPath}
 									onToggleDir={onToggleDir}
 									onLoadDir={onLoadDir}
 									onSelectDir={
