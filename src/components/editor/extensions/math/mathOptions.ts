@@ -65,7 +65,8 @@ export function matchBlockMath(source: string): RegExpMatchArray | null {
 export function matchInlineDisplayMath(
 	source: string,
 ): RegExpMatchArray | null {
-	return source.match(INLINE_DISPLAY_MATH_RE);
+	const match = source.match(INLINE_DISPLAY_MATH_RE);
+	return match?.[1]?.trim() ? match : null;
 }
 
 export function inlineMathMarkdown(latex: string): string {
