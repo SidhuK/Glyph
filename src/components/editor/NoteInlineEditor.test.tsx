@@ -4,7 +4,6 @@ import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NoteInlineEditor } from "./NoteInlineEditor";
-import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 
 vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
@@ -161,10 +160,6 @@ vi.mock("./NotePropertiesPanel", () => ({
 
 vi.mock("./hooks/useNoteEditor", () => ({
 	useNoteEditor: useNoteEditorMock,
-}));
-
-vi.mock("./math/loadMathExtensions", () => ({
-	loadMathExtensionFactory: vi.fn(async () => () => []),
 }));
 
 vi.mock("./hooks/useResetScrollOnChange", () => ({
@@ -395,22 +390,22 @@ describe("NoteInlineEditor table controls", () => {
 		);
 	});
 
-	it("loads equations in minimal chrome only when the caller opts in", async () => {
-		const loadMathExtensions = vi.mocked(loadMathExtensionFactory);
+	it("registers equations in minimal chrome only when the caller opts in", () => {
 		render("rich", { chrome: "minimal", markdown: "$x$" });
 
-		expect(loadMathExtensions).not.toHaveBeenCalled();
+		expect(
+			useNoteEditorMock.mock.lastCall?.[0].additionalExtensions,
+		).toHaveLength(0);
 
 		render("rich", {
 			chrome: "minimal",
 			enableMath: true,
 			markdown: "$x$",
 		});
-		await act(async () => {
-			await Promise.resolve();
-		});
 
-		expect(loadMathExtensions).toHaveBeenCalledOnce();
+		expect(
+			useNoteEditorMock.mock.lastCall?.[0].additionalExtensions,
+		).toHaveLength(2);
 	});
 
 	it("hides table controls when selection moves outside the table", async () => {

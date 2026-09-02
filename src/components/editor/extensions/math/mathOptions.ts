@@ -45,6 +45,8 @@ export const GLYPH_KATEX_OPTIONS = {
 // TipTap math attributes may contain soft line breaks. They remain inline
 // Markdown until a blank line, so retain them across Edit -> Raw -> Edit.
 const INLINE_MATH_RE = /^\$(?!\$)(?!\s)((?:\\.|[^$\\])+?)(?<!\s)\$(?!\$)/;
+const INLINE_DISPLAY_MATH_RE =
+	/^\$\$[\t ]*((?:\\.|[^$\\\n])+?)[\t ]*\$\$(?!\$)/;
 const BLOCK_MATH_RE = /^\$\$[\t ]*\n([\s\S]*?)\n\$\$(?:[\t ]*(?:\n|$))/;
 
 export function matchInlineMath(source: string): RegExpMatchArray | null {
@@ -60,8 +62,19 @@ export function matchBlockMath(source: string): RegExpMatchArray | null {
 	return source.match(BLOCK_MATH_RE);
 }
 
+export function matchInlineDisplayMath(
+	source: string,
+): RegExpMatchArray | null {
+	const match = source.match(INLINE_DISPLAY_MATH_RE);
+	return match?.[1]?.trim() ? match : null;
+}
+
 export function inlineMathMarkdown(latex: string): string {
 	return `$${latex}$`;
+}
+
+export function inlineDisplayMathMarkdown(latex: string): string {
+	return `$$${latex}$$`;
 }
 
 export function blockMathMarkdown(latex: string): string {

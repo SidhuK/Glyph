@@ -109,13 +109,23 @@ function insertMathAndOpen(
 	kind: "inline" | "block",
 	onMathEditRequest?: (request: MathEditRequest) => void,
 ) {
-	const type = kind === "inline" ? "inlineMath" : "blockMath";
+	const resolved = editor.state.doc.resolve(range.from);
+	let insideTableCell = false;
+	for (let depth = resolved.depth; depth > 0; depth -= 1) {
+		const name = resolved.node(depth).type.name;
+		if (name === "tableCell" || name === "tableHeader") {
+			insideTableCell = true;
+			break;
+		}
+	}
+	const tableDisplay = kind === "block" && insideTableCell;
+	const type = kind === "inline" || tableDisplay ? "inlineMath" : "blockMath";
 	const latex = kind === "inline" ? INLINE_MATH_STARTER : BLOCK_MATH_STARTER;
 	const inserted = editor
 		.chain()
 		.focus()
 		.deleteRange(range)
-		.insertContent({ type, attrs: { latex } })
+		.insertContent({ type, attrs: { display: tableDisplay, latex } })
 		.run();
 	if (!inserted) return;
 	const candidates: number[] = [];

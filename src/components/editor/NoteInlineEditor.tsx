@@ -43,6 +43,7 @@ import {
 	clearCodeBlockPreviews,
 	enableCodeBlockPreviewAt,
 } from "./extensions/codeBlockPreviewPlugin";
+import { createGlyphMathExtensions } from "./extensions/math/markdownMath";
 import {
 	getMountedEditorContentRoot,
 	getOffsetWithinAncestor,
@@ -61,7 +62,6 @@ import {
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
 import { preprocessMarkdownForEditor } from "./markdown/wikiLinkMarkdownBridge";
-import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
 import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";
@@ -234,36 +234,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const { t } = useTranslation("editor");
 	const chromeMinimal = chrome === "minimal";
 	const mathNodeEditor = useMathNodeEditor();
-	const [mathExtensions, setMathExtensions] = useState<
-		import("@tiptap/core").AnyExtension[]
-	>([]);
-	const [mathExtensionsReady, setMathExtensionsReady] = useState(
-		mode === "plain" || !enableMath,
+	const mathExtensions = useMemo(
+		() =>
+			enableMath
+				? createGlyphMathExtensions({ onEditRequest: mathNodeEditor.open })
+				: [],
+		[enableMath, mathNodeEditor.open],
 	);
-	useEffect(() => {
-		if (!enableMath || mode === "plain" || mathExtensions.length > 0) {
-			setMathExtensionsReady(true);
-			return;
-		}
-		let cancelled = false;
-		setMathExtensionsReady(false);
-		void loadMathExtensionFactory()
-			.then((createExtensions) => {
-				if (cancelled) return;
-				setMathExtensions(
-					createExtensions({ onEditRequest: mathNodeEditor.open }),
-				);
-				setMathExtensionsReady(true);
-			})
-			.catch((error: unknown) => {
-				if (cancelled) return;
-				console.error("Failed to load equation support.", error);
-				setMathExtensionsReady(true);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [enableMath, mathExtensions.length, mathNodeEditor.open, mode]);
 
 	const mergedAdditionalExtensions = useMemo(
 		() => [...mathExtensions, ...additionalExtensionsProp],
@@ -944,8 +921,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}
-				{mode !== "plain" &&
-				(!enableMath || mathExtensionsReady || !markdown.includes("$")) ? (
+				{mode !== "plain" ? (
 					<NoteEditorSurface
 						editor={liveEditor}
 						mode={mode}
