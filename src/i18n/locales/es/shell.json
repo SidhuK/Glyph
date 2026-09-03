@@ -122,6 +122,7 @@
 		"templateBreadcrumb": "Plantillas / Crear nota",
 		"createFromTemplate": "Crear nota desde plantilla",
 		"templateFolderRequired": "Primero configura una carpeta de plantillas en los ajustes del espacio.",
+		"noTemplates": "No se encontraron plantillas Markdown en la carpeta de plantillas.",
 		"templateSelectionInvalid": "Elige una plantilla Markdown de la carpeta de plantillas configurada.",
 		"templateSelectionFailed": "No se pudo abrir el selector de plantillas",
 		"groups": {

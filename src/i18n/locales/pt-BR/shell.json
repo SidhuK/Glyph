@@ -122,6 +122,7 @@
 		"templateBreadcrumb": "Modelos / Criar nota",
 		"createFromTemplate": "Criar nota a partir do modelo",
 		"templateFolderRequired": "Primeiro defina uma pasta de modelos nas configurações do espaço.",
+		"noTemplates": "Nenhum modelo Markdown foi encontrado na pasta de modelos.",
 		"templateSelectionInvalid": "Escolha um modelo Markdown na pasta de modelos configurada.",
 		"templateSelectionFailed": "Não foi possível abrir o seletor de modelos",
 		"groups": {

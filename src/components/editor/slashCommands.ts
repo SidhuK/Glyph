@@ -3,6 +3,7 @@ import { MarkdownManager } from "@tiptap/markdown";
 import type { EditorState } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
 import { i18n } from "../../i18n";
+import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { type EditorActionId, executeEditorAction } from "./editorActions";
 import {
 	BLOCK_MATH_STARTER,
@@ -152,11 +153,12 @@ function insertMathAndOpen(
 }
 
 function parseTemplateContent(editor: Editor, markdown: string): JSONContent[] {
+	const { body } = splitYamlFrontmatter(markdown);
 	const manager = new MarkdownManager({
 		extensions: editor.extensionManager.extensions,
 		markedOptions: { gfm: true, breaks: false },
 	});
-	const parsed = manager.parse(preprocessMarkdownForEditor(markdown));
+	const parsed = manager.parse(preprocessMarkdownForEditor(body));
 	const content = Array.isArray(parsed.content) ? parsed.content : [];
 	if (content.length !== 1 || content[0]?.type !== "paragraph") return content;
 	return Array.isArray(content[0].content) ? content[0].content : [];
@@ -178,28 +180,30 @@ function requestTemplateInsertion({
 	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
 }) {
 	if (!onTemplateInsertRequest) return;
-	const deleted = editor.chain().focus().deleteRange(range).run();
-	if (!deleted) return;
 	const position = range.from;
+	const requestDocument = editor.state.doc;
 	onTemplateInsertRequest({
-		cancel: () => restoreTemplateInsertionPoint(editor, position),
+		cancel: () => restoreTemplateInsertionPoint(editor, range.to),
 		insert: (markdown) => {
-			if (editor.isDestroyed) return false;
+			if (editor.isDestroyed || !editor.state.doc.eq(requestDocument)) {
+				return false;
+			}
 			try {
 				const content = parseTemplateContent(editor, markdown);
 				if (!content.length) {
-					restoreTemplateInsertionPoint(editor, position);
+					restoreTemplateInsertionPoint(editor, range.to);
 					return false;
 				}
 				const inserted = editor
 					.chain()
 					.focus()
+					.deleteRange(range)
 					.insertContentAt(position, content)
 					.run();
-				if (!inserted) restoreTemplateInsertionPoint(editor, position);
+				if (!inserted) restoreTemplateInsertionPoint(editor, range.to);
 				return inserted;
 			} catch {
-				restoreTemplateInsertionPoint(editor, position);
+				restoreTemplateInsertionPoint(editor, range.to);
 				return false;
 			}
 		},

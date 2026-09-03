@@ -122,6 +122,7 @@
 		"templateBreadcrumb": "Vorlagen / Notiz erstellen",
 		"createFromTemplate": "Notiz aus Vorlage erstellen",
 		"templateFolderRequired": "Lege zuerst in den Bereichseinstellungen einen Vorlagenordner fest.",
+		"noTemplates": "Im Vorlagenordner wurden keine Markdown-Vorlagen gefunden.",
 		"templateSelectionInvalid": "Wähle eine Markdown-Vorlage aus dem festgelegten Vorlagenordner.",
 		"templateSelectionFailed": "Die Vorlagenauswahl konnte nicht geöffnet werden",
 		"groups": {

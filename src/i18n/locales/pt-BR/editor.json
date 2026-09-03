@@ -110,6 +110,7 @@
 			"description": "Insere um modelo com variáveis de data e título",
 			"settingsLoading": "As configurações de modelos ainda estão carregando.",
 			"folderRequired": "Primeiro defina uma pasta de modelos nas configurações do espaço.",
+			"noTemplates": "Nenhum modelo Markdown foi encontrado na pasta de modelos.",
 			"selectionInvalid": "Escolha um modelo Markdown na pasta de modelos configurada.",
 			"loadFailed": "Não foi possível carregar os modelos",
 			"insertFailed": "Não foi possível inserir o modelo"

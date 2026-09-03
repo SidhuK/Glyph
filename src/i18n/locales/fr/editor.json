@@ -110,6 +110,7 @@
 			"description": "Insérer un modèle avec des variables de date et de titre",
 			"settingsLoading": "Les réglages des modèles sont encore en cours de chargement.",
 			"folderRequired": "Définissez d'abord un dossier de modèles dans les réglages de l'espace.",
+			"noTemplates": "Aucun modèle Markdown n'a été trouvé dans le dossier des modèles.",
 			"selectionInvalid": "Choisissez un modèle Markdown dans le dossier de modèles configuré.",
 			"loadFailed": "Impossible de charger les modèles",
 			"insertFailed": "Impossible d'insérer le modèle"

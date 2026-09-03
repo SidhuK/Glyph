@@ -20,6 +20,7 @@ export interface TemplateRenderContext {
 
 export type NativeTemplateSelection =
 	| { kind: "cancelled" }
+	| { kind: "empty" }
 	| { kind: "invalid" }
 	| { kind: "selected"; template: TemplateEntry };
 
@@ -128,13 +129,20 @@ export async function selectTemplateFile({
 	templateFolder: string;
 	title: string;
 }): Promise<NativeTemplateSelection> {
+	const templates = await listTemplates(templateFolder);
+	if (!templates.length) return { kind: "empty" };
+
 	const [{ join }, { open }] = await Promise.all([
 		import("@tauri-apps/api/path"),
 		import("@tauri-apps/plugin-dialog"),
 	]);
+	const defaultPath = await join(spaceRootPath, templateFolder);
+	const canonicalFolder = normalizeRelPath(
+		await invoke("space_relativize_path", { abs_path: defaultPath }),
+	);
 	const selection = await open({
 		title,
-		defaultPath: await join(spaceRootPath, templateFolder),
+		defaultPath,
 		filters: [{ name: "Markdown", extensions: ["md", "markdown"] }],
 		multiple: false,
 		directory: false,
@@ -152,10 +160,9 @@ export async function selectTemplateFile({
 		return { kind: "invalid" };
 	}
 	const relPath = normalizeRelPath(selectedPath);
-	const folder = normalizeRelPath(templateFolder);
 	if (
 		!isMarkdownPath(relPath) ||
-		(folder.length > 0 && !relPath.startsWith(`${folder}/`))
+		(canonicalFolder.length > 0 && !relPath.startsWith(`${canonicalFolder}/`))
 	) {
 		return { kind: "invalid" };
 	}

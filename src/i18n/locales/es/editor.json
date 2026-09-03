@@ -110,6 +110,7 @@
 			"description": "Inserta una plantilla con variables de fecha y título",
 			"settingsLoading": "Los ajustes de plantillas todavía se están cargando.",
 			"folderRequired": "Primero configura una carpeta de plantillas en los ajustes del espacio.",
+			"noTemplates": "No se encontraron plantillas Markdown en la carpeta de plantillas.",
 			"selectionInvalid": "Elige una plantilla Markdown de la carpeta de plantillas configurada.",
 			"loadFailed": "No se pudieron cargar las plantillas",
 			"insertFailed": "No se pudo insertar la plantilla"

@@ -309,7 +309,6 @@ export function AppShell() {
 				if (payload.editor?.zenMode) {
 					setPaletteOpen(false);
 					setCalendarOpen(false);
-					setTemplatePickerOpen(false);
 				}
 				if (typeof payload.ui?.noteSidePeek === "boolean") {
 					setNoteSidePeekEnabled(payload.ui.noteSidePeek);
@@ -700,6 +699,11 @@ export function AppShell() {
 					title: t("commandPalette.createFromTemplate"),
 				});
 				if (zenModeRef.current || selection.kind === "cancelled") return;
+				if (selection.kind === "empty") {
+					setError(t("commandPalette.noTemplates"));
+					openTemplatesSettings();
+					return;
+				}
 				if (selection.kind === "invalid") {
 					setError(t("commandPalette.templateSelectionInvalid"));
 					return;

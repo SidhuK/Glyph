@@ -124,6 +124,7 @@
 		"templateBreadcrumb": "Modèles / Créer une note",
 		"createFromTemplate": "Créer une note depuis un modèle",
 		"templateFolderRequired": "Définissez d'abord un dossier de modèles dans les réglages de l'espace.",
+		"noTemplates": "Aucun modèle Markdown n'a été trouvé dans le dossier des modèles.",
 		"templateSelectionInvalid": "Choisissez un modèle Markdown dans le dossier de modèles configuré.",
 		"templateSelectionFailed": "Impossible d'ouvrir le sélecteur de modèles",
 		"groups": {
