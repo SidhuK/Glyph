@@ -650,7 +650,7 @@ pub async fn run_with_claude_code(
         .stderr(std::process::Stdio::piped());
 
     match mode {
-        AiAssistantMode::Chat => {
+        AiAssistantMode::Chat | AiAssistantMode::Naming => {
             command
                 .arg("--permission-mode")
                 .arg("dontAsk")

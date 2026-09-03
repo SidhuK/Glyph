@@ -778,6 +778,7 @@ export interface AiProfile {
 	name: string;
 	provider: AiProviderKind;
 	model: string;
+	chat_naming_model?: string | null;
 	base_url: string | null;
 	headers: AiHeader[];
 	allow_private_hosts: boolean;

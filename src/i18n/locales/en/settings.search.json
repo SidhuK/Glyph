@@ -298,6 +298,11 @@
 			"section": "Connection",
 			"keywords": ["provider", "model", "assistant"]
 		},
+		"ai-chat-naming-model": {
+			"title": "Chat Naming Model",
+			"section": "Connection",
+			"keywords": ["rename", "title", "chat", "naming", "agent", "model"]
+		},
 		"ai-reasoning-level": {
 			"title": "Reasoning level",
 			"section": "Connection",

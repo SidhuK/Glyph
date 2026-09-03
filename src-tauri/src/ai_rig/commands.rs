@@ -26,6 +26,8 @@ use tokio_util::sync::CancellationToken;
 const PROVIDER_SUPPORT_URL: &str =
     "https://raw.githubusercontent.com/BerriAI/litellm/refs/heads/main/provider_endpoints_support.json";
 const PROVIDER_SUPPORT_CACHE_FILE: &str = "provider_endpoints_support.json";
+const CHAT_NAMING_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(45);
+const CHAT_NAMING_CLEANUP_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 
 fn is_transient_ai_error(message: &str) -> bool {
     let msg = message.to_lowercase();
@@ -194,6 +196,12 @@ pub async fn ai_profile_upsert(
     }
     write_store(&path, &store)?;
     emit_profiles_updated(&app);
+    let _ = app.emit(
+        "settings:updated",
+        serde_json::json!({
+            "spacePath": space_root,
+        }),
+    );
     Ok(next)
 }
 
@@ -210,6 +218,7 @@ pub async fn ai_profile_delete(
     let _ = local_secrets::secret_clear(&space_root, &id);
     if let Some(profile) = store.profiles.iter_mut().find(|profile| profile.id == id) {
         profile.model.clear();
+        profile.chat_naming_model = None;
         profile.base_url = None;
         profile.headers.clear();
         profile.reasoning_effort = None;
@@ -406,6 +415,50 @@ pub async fn ai_chat_start(
 
         match result {
             Ok((full, cancelled, tool_events)) => {
+                let title = if cancelled || cancel.is_cancelled() {
+                    None
+                } else {
+                    let naming_cancel = cancel.child_token();
+                    let naming = runtime::generate_chat_title(
+                        &profile,
+                        api_key.as_deref(),
+                        &request,
+                        &full,
+                        &app_for_task,
+                        &naming_cancel,
+                        &space_root,
+                    );
+                    tokio::pin!(naming);
+                    tokio::select! {
+                        result = &mut naming => result.map_err(|_| {
+                            warn!(job_id = %job_id_for_task, "Chat naming failed");
+                        }).ok(),
+                        _ = tokio::time::sleep(CHAT_NAMING_TIMEOUT) => {
+                            naming_cancel.cancel();
+                            let _ = tokio::time::timeout(CHAT_NAMING_CLEANUP_TIMEOUT, &mut naming).await;
+                            warn!(job_id = %job_id_for_task, "Chat naming timed out");
+                            None
+                        }
+                    }
+                };
+                let saved_job_id = job_id_for_task.clone();
+                let saved = tauri::async_runtime::spawn_blocking(move || {
+                    write_audit_log(&AuditLogParams {
+                        space_root: &space_root,
+                        job_id: &saved_job_id,
+                        history_id: &history_id,
+                        profile: &profile,
+                        request: &request,
+                        response: &full,
+                        title: title.as_deref(),
+                        cancelled,
+                        tool_events: &tool_events,
+                    });
+                })
+                .await;
+                if let Err(error) = saved {
+                    warn!(%error, "Chat history write failed");
+                }
                 let _ = app_for_task.emit(
                     "ai:done",
                     AiDoneEvent {
@@ -413,26 +466,6 @@ pub async fn ai_chat_start(
                         cancelled,
                     },
                 );
-                let title = runtime::generate_chat_title_with_rig(
-                    &profile,
-                    api_key.as_deref(),
-                    request.context.as_deref(),
-                    &request.messages,
-                    &full,
-                )
-                .await
-                .ok();
-                write_audit_log(&AuditLogParams {
-                    space_root: &space_root,
-                    job_id: &job_id_for_task,
-                    history_id: &history_id,
-                    profile: &profile,
-                    request: &request,
-                    response: &full,
-                    title: title.as_deref(),
-                    cancelled,
-                    tool_events: &tool_events,
-                });
                 ai_state_for_task.finish(&job_id_for_task);
             }
             Err(message) => {

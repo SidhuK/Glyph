@@ -88,6 +88,43 @@ export function AiProviderSection({
 				/>
 			</SettingsRow>
 
+			{["codex_chatgpt", "claude_code", "cursor", "opencode"].includes(
+				profileDraft.provider,
+			) ? (
+				<SettingsRow
+					label={t("chatNaming.label")}
+					searchId="ai-chat-naming-model"
+					htmlFor="aiChatNamingModel"
+					description={t("chatNaming.description")}
+				>
+					<SettingsSelect
+						id="aiChatNamingModel"
+						value={profileDraft.chat_naming_model ?? ""}
+						onChange={(event) =>
+							void onPersistDraft({
+								...profileDraft,
+								chat_naming_model: event.target.value || null,
+							})
+						}
+					>
+						<option value="">{t("chatNaming.sameModel")}</option>
+						{profileDraft.chat_naming_model &&
+						!availableModels?.some(
+							(model) => model.id === profileDraft.chat_naming_model,
+						) ? (
+							<option value={profileDraft.chat_naming_model}>
+								{profileDraft.chat_naming_model}
+							</option>
+						) : null}
+						{availableModels?.map((model) => (
+							<option key={model.id} value={model.id}>
+								{model.name}
+							</option>
+						))}
+					</SettingsSelect>
+				</SettingsRow>
+			) : null}
+
 			{shouldShowReasoningSelect ? (
 				<SettingsRow
 					label="Reasoning level"

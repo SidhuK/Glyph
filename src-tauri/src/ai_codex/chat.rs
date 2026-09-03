@@ -6,8 +6,8 @@ use tokio_util::sync::CancellationToken;
 use crate::ai_rig::events::AiStatusEvent;
 use crate::ai_rig::providers::build_transcript;
 use crate::ai_rig::types::{
-    AiAssistantMode, AiChunkEvent, AiDoneEvent, AiErrorEvent, AiMessage, AiProfile,
-    AiStoredToolEvent, AiToolEvent,
+    AiAssistantMode, AiChunkEvent, AiErrorEvent, AiMessage, AiProfile, AiStoredToolEvent,
+    AiToolEvent,
 };
 
 use super::transport::{latest_seq, rpc_call, wait_notification_after};
@@ -159,7 +159,7 @@ pub async fn run_with_codex(
     profile: &AiProfile,
     system: &str,
     messages: &[AiMessage],
-    _mode: &AiAssistantMode,
+    mode: &AiAssistantMode,
     space_root: Option<&std::path::Path>,
     thread_hint: Option<&str>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
@@ -183,18 +183,39 @@ pub async fn run_with_codex(
     let input_text = as_text_input(system, messages);
     let root_str = root.to_string_lossy().to_string();
 
-    async fn start_thread(app: AppHandle, model: &str, cwd: &str) -> Result<String, String> {
-        let started = rpc_call(
-            app,
-            "thread/start",
-            json!({
-                "model": model,
-                "cwd": cwd,
-                "approvalPolicy": "never"
-            }),
-            Duration::from_secs(20),
-        )
-        .await?;
+    async fn start_thread(
+        app: AppHandle,
+        model: &str,
+        cwd: &str,
+        naming: bool,
+    ) -> Result<String, String> {
+        let mut params = json!({"model": model, "cwd": cwd, "approvalPolicy": "never"});
+        if naming {
+            let config = rpc_call(
+                app.clone(),
+                "config/read",
+                json!({"cwd": cwd, "includeLayers": false}),
+                Duration::from_secs(10),
+            )
+            .await?;
+            let mut disabled_servers = serde_json::Map::new();
+            if let Some(servers) = config
+                .pointer("/config/mcp_servers")
+                .and_then(Value::as_object)
+            {
+                for name in servers.keys() {
+                    disabled_servers.insert(name.clone(), json!({"enabled": false}));
+                }
+            }
+            params["sandbox"] = json!("read-only");
+            params["ephemeral"] = json!(true);
+            params["config"] = json!({
+                "web_search": "disabled",
+                "features": {"shell_tool": false, "apps": false},
+                "mcp_servers": disabled_servers
+            });
+        }
+        let started = rpc_call(app, "thread/start", params, Duration::from_secs(20)).await?;
         extract_thread_id(&started)
             .or_else(|| {
                 started
@@ -205,6 +226,7 @@ pub async fn run_with_codex(
             .ok_or_else(|| "missing thread id from codex thread/start".to_string())
     }
 
+    let naming = matches!(mode, AiAssistantMode::Naming);
     let thread_id = match thread_hint.map(str::trim).filter(|id| !id.is_empty()) {
         Some(existing) => {
             let resumed = rpc_call(
@@ -219,13 +241,13 @@ pub async fn run_with_codex(
                     if let Some(thread_id) = extract_thread_id(&resumed) {
                         thread_id
                     } else {
-                        start_thread(app.clone(), model, &root_str).await?
+                        start_thread(app.clone(), model, &root_str, naming).await?
                     }
                 }
-                Err(_) => start_thread(app.clone(), model, &root_str).await?,
+                Err(_) => start_thread(app.clone(), model, &root_str, naming).await?,
             }
         }
-        None => start_thread(app.clone(), model, &root_str).await?,
+        None => start_thread(app.clone(), model, &root_str, naming).await?,
     };
 
     let mut seq = latest_seq(app.clone()).await?;
@@ -246,6 +268,9 @@ pub async fn run_with_codex(
             "networkAccess": true
         }
     });
+    if naming {
+        turn_params["sandboxPolicy"] = json!({"type": "readOnly"});
+    }
     if let Some(effort) = profile
         .reasoning_effort
         .as_deref()
@@ -303,6 +328,16 @@ pub async fn run_with_codex(
         seq = notification.seq;
         let method = notification.method.as_str();
         let params = &notification.params;
+
+        // Notifications are shared by every Codex turn, including naming requests.
+        if method != "codex/process/exited" {
+            if extract_thread_id(params).as_deref() != Some(thread_id.as_str()) {
+                continue;
+            }
+            if extract_turn_id(params).is_some_and(|id| id != turn_id) {
+                continue;
+            }
+        }
 
         if method == "item/agentMessage/delta" {
             if let Some(delta) = extract_delta(params) {
@@ -400,13 +435,6 @@ pub async fn run_with_codex(
                         .unwrap_or_else(|| "codex turn failed".to_string()));
                 }
                 let cancelled = interrupted || status == "interrupted" || status == "cancelled";
-                let _ = app.emit(
-                    "ai:done",
-                    AiDoneEvent {
-                        job_id: job_id.to_string(),
-                        cancelled,
-                    },
-                );
                 return Ok((full, cancelled, tool_events));
             }
             continue;
