@@ -121,6 +121,10 @@
 		"runAction": "アクションを実行",
 		"templateBreadcrumb": "テンプレート / ノートを作成",
 		"createFromTemplate": "テンプレートからノートを作成",
+		"templateFolderRequired": "先にスペース設定でテンプレートフォルダを設定してください。",
+		"noTemplates": "テンプレートフォルダに Markdown テンプレートが見つかりませんでした。",
+		"templateSelectionInvalid": "設定されたテンプレートフォルダ内の Markdown テンプレートを選択してください。",
+		"templateSelectionFailed": "テンプレート選択画面を開けませんでした",
 		"groups": {
 			"command": "コマンド",
 			"setting": "設定",

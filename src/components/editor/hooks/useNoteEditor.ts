@@ -25,6 +25,7 @@ import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
 } from "../markdown/wikiLinkMarkdownBridge";
+import type { TemplateInsertRequest } from "../slashCommands";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import {
 	applyEditorSpellCheck,
@@ -242,6 +243,7 @@ interface UseNoteEditorOptions {
 	placeholder?: string;
 	onChange: (nextMarkdown: string) => void;
 	onMathEditRequest?: (request: MathEditRequest) => void;
+	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
 }
 
 interface PendingMarkdownSync {
@@ -320,6 +322,7 @@ export function useNoteEditor({
 	placeholder = "Start writing or press / for commands",
 	onChange,
 	onMathEditRequest,
+	onTemplateInsertRequest,
 }: UseNoteEditorOptions) {
 	const { frontmatter, editorBody } = useMemo(() => {
 		if (mode === "plain") {
@@ -397,6 +400,7 @@ export function useNoteEditor({
 				enableExternalLinkPreviews: externalLinkPreviewsEnabled,
 				onListCollapseToggle: handleListCollapseChange,
 				onMathEditRequest,
+				onTemplateInsertRequest,
 				placeholder,
 			}),
 		[
@@ -406,6 +410,7 @@ export function useNoteEditor({
 			externalLinkPreviewsEnabled,
 			handleListCollapseChange,
 			onMathEditRequest,
+			onTemplateInsertRequest,
 			peopleMentionsEnabled,
 			placeholder,
 		],

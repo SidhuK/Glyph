@@ -62,7 +62,7 @@ import { useSpaceChangePropagation } from "../../lib/spaceChange";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { listTemplates, renderTemplate } from "../../lib/templates";
+import { renderTemplate, selectTemplateFile } from "../../lib/templates";
 import { toast } from "../../lib/toast";
 import {
 	displayNameFromPath,
@@ -80,10 +80,6 @@ import {
 import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
-import {
-	TemplatePickerDialog,
-	type TemplatePickerItem,
-} from "./TemplatePickerDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import {
@@ -195,11 +191,6 @@ export function AppShell() {
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
 	const [calendarOpen, setCalendarOpen] = useState(false);
-	const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
-	const [templatePickerDirPath, setTemplatePickerDirPath] = useState("");
-	const [templatePickerItems, setTemplatePickerItems] = useState<
-		TemplatePickerItem[]
-	>([]);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showCollapsibleLists, setShowCollapsibleLists] = useState(false);
 	const [noteSidePeekEnabled, setNoteSidePeekEnabled] = useState(false);
@@ -318,7 +309,6 @@ export function AppShell() {
 				if (payload.editor?.zenMode) {
 					setPaletteOpen(false);
 					setCalendarOpen(false);
-					setTemplatePickerOpen(false);
 				}
 				if (typeof payload.ui?.noteSidePeek === "boolean") {
 					setNoteSidePeekEnabled(payload.ui.noteSidePeek);
@@ -635,51 +625,9 @@ export function AppShell() {
 		openSettings("space");
 	}, [openSettings]);
 
-	const openTemplatePicker = useCallback(
-		async (dirPath?: string) => {
-			if (zenModeRef.current) return;
-			if (!spacePath) return;
-			if (templateFolder === null) {
-				setError("Set a template folder in Settings -> Space first.");
-				openTemplatesSettings();
-				return;
-			}
-			try {
-				const templates = await listTemplates(templateFolder);
-				if (zenModeRef.current) return;
-				if (!templates.length) {
-					setError("No markdown templates were found in the template folder.");
-					openTemplatesSettings();
-					return;
-				}
-				setTemplatePickerItems(
-					templates.map((template) => ({
-						relPath: template.relPath,
-						label: template.relPath.startsWith(`${templateFolder}/`)
-							? template.relPath.slice(templateFolder.length + 1)
-							: template.relPath,
-					})),
-				);
-				setTemplatePickerDirPath(dirPath ?? "");
-				setTemplatePickerOpen(true);
-			} catch (cause) {
-				setError(
-					cause instanceof Error
-						? cause.message
-						: "Failed to load the template library.",
-				);
-			}
-		},
-		[openTemplatesSettings, setError, spacePath, templateFolder],
-	);
-
 	const handlePickTemplate = useCallback(
-		async (
-			template: TemplatePickerItem,
-			destinationDirPath = templatePickerDirPath,
-		) => {
+		async (template: { relPath: string }, destinationDirPath: string) => {
 			if (!spacePath) return;
-			setTemplatePickerOpen(false);
 			try {
 				const { save } = await import("@tauri-apps/plugin-dialog");
 				const suggestedFileName =
@@ -733,7 +681,50 @@ export function AppShell() {
 				);
 			}
 		},
-		[fileTree, openWorkspaceFile, setError, spacePath, templatePickerDirPath],
+		[fileTree, openWorkspaceFile, setError, spacePath],
+	);
+
+	const openTemplatePicker = useCallback(
+		async (dirPath?: string) => {
+			if (zenModeRef.current || !spacePath) return;
+			if (templateFolder === null) {
+				setError(t("commandPalette.templateFolderRequired"));
+				openTemplatesSettings();
+				return;
+			}
+			try {
+				const selection = await selectTemplateFile({
+					spaceRootPath: spacePath,
+					templateFolder,
+					title: t("commandPalette.createFromTemplate"),
+				});
+				if (zenModeRef.current || selection.kind === "cancelled") return;
+				if (selection.kind === "empty") {
+					setError(t("commandPalette.noTemplates"));
+					openTemplatesSettings();
+					return;
+				}
+				if (selection.kind === "invalid") {
+					setError(t("commandPalette.templateSelectionInvalid"));
+					return;
+				}
+				await handlePickTemplate(selection.template, dirPath ?? "");
+			} catch (cause) {
+				setError(
+					cause instanceof Error
+						? cause.message
+						: t("commandPalette.templateSelectionFailed"),
+				);
+			}
+		},
+		[
+			handlePickTemplate,
+			openTemplatesSettings,
+			setError,
+			spacePath,
+			t,
+			templateFolder,
+		],
 	);
 
 	const handleOpenPeriodNote = useCallback(
@@ -1604,13 +1595,6 @@ export function AppShell() {
 						onOpenPeriodNoteAtDate={(kind, date) =>
 							void handleOpenPeriodNoteAtDate(kind, date)
 						}
-					/>
-					<TemplatePickerDialog
-						open={templatePickerOpen}
-						templates={templatePickerItems}
-						onClose={() => setTemplatePickerOpen(false)}
-						onPick={(template) => void handlePickTemplate(template)}
-						onOpenSettings={openTemplatesSettings}
 					/>
 				</>
 			) : null}

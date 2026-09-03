@@ -1,7 +1,9 @@
-import { type Editor, Extension } from "@tiptap/core";
+import { type Editor, Extension, type JSONContent } from "@tiptap/core";
+import { MarkdownManager } from "@tiptap/markdown";
 import type { EditorState } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
 import { i18n } from "../../i18n";
+import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { type EditorActionId, executeEditorAction } from "./editorActions";
 import {
 	BLOCK_MATH_STARTER,
@@ -9,6 +11,7 @@ import {
 	type MathEditRequest,
 } from "./extensions/math/mathOptions";
 import { INLINE_TOC_EDITOR_MARKER } from "./markdown/inlineTocMarkdown";
+import { preprocessMarkdownForEditor } from "./markdown/wikiLinkMarkdownBridge";
 import {
 	createTipTapSuggestionMenu,
 	exitTipTapSuggestion,
@@ -23,8 +26,14 @@ interface SlashCommandDef {
 	command: (ctx: {
 		editor: Editor;
 		onMathEditRequest?: (request: MathEditRequest) => void;
+		onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
 		range: { from: number; to: number };
 	}) => void;
+}
+
+export interface TemplateInsertRequest {
+	cancel: () => void;
+	insert: (markdown: string) => boolean;
 }
 
 interface SlashCommandItem extends SlashCommandDef {
@@ -143,6 +152,64 @@ function insertMathAndOpen(
 	onMathEditRequest?.({ kind, latex, pos: nearestPos });
 }
 
+function parseTemplateContent(editor: Editor, markdown: string): JSONContent[] {
+	const { body } = splitYamlFrontmatter(markdown);
+	const manager = new MarkdownManager({
+		extensions: editor.extensionManager.extensions,
+		markedOptions: { gfm: true, breaks: false },
+	});
+	const parsed = manager.parse(preprocessMarkdownForEditor(body));
+	const content = Array.isArray(parsed.content) ? parsed.content : [];
+	if (content.length !== 1 || content[0]?.type !== "paragraph") return content;
+	return Array.isArray(content[0].content) ? content[0].content : [];
+}
+
+function restoreTemplateInsertionPoint(editor: Editor, position: number) {
+	if (editor.isDestroyed) return;
+	const resolvedPosition = Math.min(position, editor.state.doc.content.size);
+	editor.chain().focus().setTextSelection(resolvedPosition).run();
+}
+
+function requestTemplateInsertion({
+	editor,
+	range,
+	onTemplateInsertRequest,
+}: {
+	editor: Editor;
+	range: { from: number; to: number };
+	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
+}) {
+	if (!onTemplateInsertRequest) return;
+	const position = range.from;
+	const requestDocument = editor.state.doc;
+	onTemplateInsertRequest({
+		cancel: () => restoreTemplateInsertionPoint(editor, range.to),
+		insert: (markdown) => {
+			if (editor.isDestroyed || !editor.state.doc.eq(requestDocument)) {
+				return false;
+			}
+			try {
+				const content = parseTemplateContent(editor, markdown);
+				if (!content.length) {
+					restoreTemplateInsertionPoint(editor, range.to);
+					return false;
+				}
+				const inserted = editor
+					.chain()
+					.focus()
+					.deleteRange(range)
+					.insertContentAt(position, content)
+					.run();
+				if (!inserted) restoreTemplateInsertionPoint(editor, range.to);
+				return inserted;
+			} catch {
+				restoreTemplateInsertionPoint(editor, range.to);
+				return false;
+			}
+		},
+	});
+}
+
 const SLASH_COMMANDS: SlashCommandDef[] = [
 	createEditorActionSlashCommand({
 		id: "heading1",
@@ -162,6 +229,12 @@ const SLASH_COMMANDS: SlashCommandDef[] = [
 		keywords: ["h3", "header"],
 		action: "heading_3",
 	}),
+	{
+		id: "insertTemplate",
+		icon: "T",
+		keywords: ["template", "snippet", "date", "time", "title", "title_slug"],
+		command: requestTemplateInsertion,
+	},
 	createEditorActionSlashCommand({
 		id: "bulletList",
 		icon: "•",
@@ -329,6 +402,9 @@ export const SlashCommand = Extension.create({
 	addOptions() {
 		return {
 			onMathEditRequest: null as ((request: MathEditRequest) => void) | null,
+			onTemplateInsertRequest: null as
+				| ((request: TemplateInsertRequest) => void)
+				| null,
 			suggestion: {
 				char: "/",
 				startOfLine: false,
@@ -336,11 +412,6 @@ export const SlashCommand = Extension.create({
 				allow: ({ state }: { state: EditorState }) => {
 					const { $from } = state.selection;
 					return $from.parent.type.name === "paragraph";
-				},
-				items: ({ query }: { query: string }) => {
-					return SLASH_COMMANDS.map(localizeSlashCommandItem).filter((item) =>
-						slashCommandMatchesQuery(item, query),
-					);
 				},
 				render: () =>
 					createTipTapSuggestionMenu<SlashCommandItem>({
@@ -369,11 +440,19 @@ export const SlashCommand = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
-		const { suggestion, onMathEditRequest } = this.options;
+		const { suggestion, onMathEditRequest, onTemplateInsertRequest } =
+			this.options;
 		return [
 			Suggestion({
 				editor: this.editor,
 				...suggestion,
+				items: ({ query }: { query: string }) =>
+					SLASH_COMMANDS.filter(
+						(item) =>
+							item.id !== "insertTemplate" || Boolean(onTemplateInsertRequest),
+					)
+						.map(localizeSlashCommandItem)
+						.filter((item) => slashCommandMatchesQuery(item, query)),
 				command: ({
 					editor,
 					range,
@@ -387,6 +466,7 @@ export const SlashCommand = Extension.create({
 						editor,
 						range,
 						onMathEditRequest: onMathEditRequest ?? undefined,
+						onTemplateInsertRequest: onTemplateInsertRequest ?? undefined,
 					});
 				},
 			}),

@@ -105,6 +105,16 @@
 			"title": "Überschrift 3",
 			"description": "Unterüberschrift"
 		},
+		"insertTemplate": {
+			"title": "Vorlage einfügen",
+			"description": "Vorlage mit Datums- und Titelvariablen einfügen",
+			"settingsLoading": "Die Vorlageneinstellungen werden noch geladen.",
+			"folderRequired": "Lege zuerst in den Bereichseinstellungen einen Vorlagenordner fest.",
+			"noTemplates": "Im Vorlagenordner wurden keine Markdown-Vorlagen gefunden.",
+			"selectionInvalid": "Wähle eine Markdown-Vorlage aus dem festgelegten Vorlagenordner.",
+			"loadFailed": "Vorlagen konnten nicht geladen werden",
+			"insertFailed": "Vorlage konnte nicht eingefügt werden"
+		},
 		"bulletList": {
 			"title": "Aufzählungsliste",
 			"description": "Eine Aufzählungsliste starten"

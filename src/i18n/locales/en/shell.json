@@ -140,6 +140,10 @@
 		"runAction": "Run action",
 		"templateBreadcrumb": "Templates / Create note",
 		"createFromTemplate": "Create note from template",
+		"templateFolderRequired": "Set a template folder in Space settings first.",
+		"noTemplates": "No Markdown templates were found in the template folder.",
+		"templateSelectionInvalid": "Choose a Markdown template from the configured template folder.",
+		"templateSelectionFailed": "Could not open the template picker",
 		"groups": {
 			"command": "Commands",
 			"setting": "Settings",

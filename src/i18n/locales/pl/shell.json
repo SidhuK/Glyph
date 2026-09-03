@@ -145,6 +145,10 @@
 		"runAction": "Uruchom akcję",
 		"templateBreadcrumb": "Szablony / Utwórz notatkę",
 		"createFromTemplate": "Utwórz notatkę z szablonu",
+		"templateFolderRequired": "Najpierw ustaw folder szablonów w ustawieniach przestrzeni.",
+		"noTemplates": "W folderze szablonów nie znaleziono szablonów Markdown.",
+		"templateSelectionInvalid": "Wybierz szablon Markdown ze skonfigurowanego folderu szablonów.",
+		"templateSelectionFailed": "Nie udało się otworzyć selektora szablonów",
 		"groups": {
 			"command": "Polecenia",
 			"setting": "Ustawienia",

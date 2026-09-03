@@ -37,6 +37,7 @@ import { normalizeRelPath } from "../../utils/path";
 import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
 import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import { useInlineTemplateInsertion } from "../editor/hooks/useInlineTemplateInsertion";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
 import { DailyNoteRollover } from "../editor/rollover/DailyNoteRollover";
@@ -260,6 +261,7 @@ export function MarkdownEditorPane({
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { status: gitSyncStatus } = useGitSyncContext();
 	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
+	const onTemplateInsertRequest = useInlineTemplateInsertion(relPath);
 	const refreshBacklinks = useCallback(async () => {
 		if (!infoPanelOpen) return;
 		const requestNoteKey = activeNoteKey;
@@ -632,6 +634,7 @@ export function MarkdownEditorPane({
 											markUserEdit(nextText);
 										}}
 										onFrontmatterCommit={runAutosave}
+										onTemplateInsertRequest={onTemplateInsertRequest}
 										onEditorReady={handleEditorReady}
 										onRawEditorReady={handleRawEditorReady}
 										onFlushPendingEditsReady={handleRichEditorFlushReady}

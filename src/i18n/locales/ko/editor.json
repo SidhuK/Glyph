@@ -105,6 +105,16 @@
 			"title": "제목 3",
 			"description": "소제목"
 		},
+		"insertTemplate": {
+			"title": "템플릿 삽입",
+			"description": "날짜와 제목 변수를 적용해 템플릿 삽입",
+			"settingsLoading": "템플릿 설정을 불러오는 중입니다.",
+			"folderRequired": "먼저 스페이스 설정에서 템플릿 폴더를 지정하세요.",
+			"noTemplates": "템플릿 폴더에서 Markdown 템플릿을 찾지 못했습니다.",
+			"selectionInvalid": "설정된 템플릿 폴더에서 Markdown 템플릿을 선택하세요.",
+			"loadFailed": "템플릿을 불러오지 못했습니다",
+			"insertFailed": "템플릿을 삽입하지 못했습니다"
+		},
 		"bulletList": {
 			"title": "글머리 기호 목록",
 			"description": "글머리 기호 목록 시작"
