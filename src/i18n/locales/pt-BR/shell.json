@@ -121,6 +121,9 @@
 		"runAction": "Executar ação",
 		"templateBreadcrumb": "Modelos / Criar nota",
 		"createFromTemplate": "Criar nota a partir do modelo",
+		"templateFolderRequired": "Primeiro defina uma pasta de modelos nas configurações do espaço.",
+		"templateSelectionInvalid": "Escolha um modelo Markdown na pasta de modelos configurada.",
+		"templateSelectionFailed": "Não foi possível abrir o seletor de modelos",
 		"groups": {
 			"command": "Comandos",
 			"setting": "Configurações",

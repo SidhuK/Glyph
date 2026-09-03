@@ -139,6 +139,15 @@
 			"title": "Heading 3",
 			"description": "Subheading"
 		},
+		"insertTemplate": {
+			"title": "Insert template",
+			"description": "Insert a template with date and title tokens",
+			"settingsLoading": "Template settings are still loading.",
+			"folderRequired": "Set a template folder in Space settings first.",
+			"selectionInvalid": "Choose a Markdown template from the configured template folder.",
+			"loadFailed": "Could not load templates",
+			"insertFailed": "Could not insert the template"
+		},
 		"bulletList": {
 			"title": "Bullet list",
 			"description": "Start a bullet list"

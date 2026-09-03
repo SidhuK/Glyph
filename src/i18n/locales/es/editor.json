@@ -105,6 +105,15 @@
 			"title": "Encabezado 3",
 			"description": "Subencabezado"
 		},
+		"insertTemplate": {
+			"title": "Insertar plantilla",
+			"description": "Inserta una plantilla con variables de fecha y título",
+			"settingsLoading": "Los ajustes de plantillas todavía se están cargando.",
+			"folderRequired": "Primero configura una carpeta de plantillas en los ajustes del espacio.",
+			"selectionInvalid": "Elige una plantilla Markdown de la carpeta de plantillas configurada.",
+			"loadFailed": "No se pudieron cargar las plantillas",
+			"insertFailed": "No se pudo insertar la plantilla"
+		},
 		"bulletList": {
 			"title": "Lista con viñetas",
 			"description": "Iniciar una lista con viñetas"

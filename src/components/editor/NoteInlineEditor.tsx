@@ -222,6 +222,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	enableFocusMode = false,
 	aiEnabled = false,
 	onOpenAiPanel,
+	onTemplateInsertRequest,
 	onRegisterCalloutInserter,
 	onEditorReady,
 	onRawEditorReady,
@@ -271,6 +272,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		placeholder,
 		onChange,
 		onMathEditRequest: mathNodeEditor.open,
+		onTemplateInsertRequest,
 	});
 	const liveEditor = editor && !editor.isDestroyed ? editor : null;
 	mathNodeEditor.connect(liveEditor, mode === "rich" && !chromeMinimal);

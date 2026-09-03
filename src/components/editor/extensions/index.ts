@@ -14,7 +14,7 @@ import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import type { EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
-import { SlashCommand } from "../slashCommands";
+import { SlashCommand, type TemplateInsertRequest } from "../slashCommands";
 import { AsteriskDividerBloom } from "./asteriskDividerBloom";
 import {
 	type ChangedRange,
@@ -621,6 +621,7 @@ interface CreateEditorExtensionsOptions {
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
 	onMathEditRequest?: (request: MathEditRequest) => void;
+	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
 	onListCollapseToggle?: (branches: string[]) => void;
 }
 
@@ -640,6 +641,7 @@ export function createEditorExtensions(
 		currentPathResolver = null,
 		placeholder = null,
 		onMathEditRequest,
+		onTemplateInsertRequest,
 		onListCollapseToggle,
 	} = options ?? {};
 	const headingCollapse = onListCollapseToggle
@@ -715,7 +717,12 @@ export function createEditorExtensions(
 			: []),
 		...(enableEditingExtensions ? [TagAutocomplete] : []),
 		...(enableEditingExtensions && enableSlashCommand
-			? [SlashCommand.configure({ onMathEditRequest })]
+			? [
+					SlashCommand.configure({
+						onMathEditRequest,
+						onTemplateInsertRequest,
+					}),
+				]
 			: []),
 		CalloutDecorations.configure({
 			enableShortcutTransform: enableEditingExtensions,

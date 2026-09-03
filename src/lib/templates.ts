@@ -1,4 +1,9 @@
-import { basename, parentDir } from "../utils/path";
+import {
+	basename,
+	isMarkdownPath,
+	normalizeRelPath,
+	parentDir,
+} from "../utils/path";
 import { isoWeekFromDate } from "./periodNotes";
 import { invoke } from "./tauri";
 
@@ -12,6 +17,11 @@ export interface TemplateRenderContext {
 	spaceRootPath?: string | null;
 	date?: Date;
 }
+
+export type NativeTemplateSelection =
+	| { kind: "cancelled" }
+	| { kind: "invalid" }
+	| { kind: "selected"; template: TemplateEntry };
 
 const TEMPLATE_TOKEN_RE = /\{\{\s*([a-zA-Z0-9._-]+)\s*\}\}/g;
 
@@ -107,6 +117,52 @@ export function listTemplates(folder: string): Promise<TemplateEntry[]> {
 			name: entry.name,
 		})),
 	);
+}
+
+export async function selectTemplateFile({
+	spaceRootPath,
+	templateFolder,
+	title,
+}: {
+	spaceRootPath: string;
+	templateFolder: string;
+	title: string;
+}): Promise<NativeTemplateSelection> {
+	const [{ join }, { open }] = await Promise.all([
+		import("@tauri-apps/api/path"),
+		import("@tauri-apps/plugin-dialog"),
+	]);
+	const selection = await open({
+		title,
+		defaultPath: await join(spaceRootPath, templateFolder),
+		filters: [{ name: "Markdown", extensions: ["md", "markdown"] }],
+		multiple: false,
+		directory: false,
+		canCreateDirectories: false,
+		fileAccessMode: "scoped",
+	});
+	if (typeof selection !== "string") return { kind: "cancelled" };
+
+	let selectedPath: string;
+	try {
+		selectedPath = await invoke("space_relativize_path", {
+			abs_path: selection,
+		});
+	} catch {
+		return { kind: "invalid" };
+	}
+	const relPath = normalizeRelPath(selectedPath);
+	const folder = normalizeRelPath(templateFolder);
+	if (
+		!isMarkdownPath(relPath) ||
+		(folder.length > 0 && !relPath.startsWith(`${folder}/`))
+	) {
+		return { kind: "invalid" };
+	}
+	return {
+		kind: "selected",
+		template: { relPath, name: basename(relPath) },
+	};
 }
 
 export function buildTemplateVariables(

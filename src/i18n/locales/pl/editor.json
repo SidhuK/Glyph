@@ -162,6 +162,15 @@
 			"title": "Nagłówek 3",
 			"description": "Nagłówek 3"
 		},
+		"insertTemplate": {
+			"title": "Wstaw szablon",
+			"description": "Wstaw szablon ze zmiennymi daty i tytułu",
+			"settingsLoading": "Ustawienia szablonów są jeszcze wczytywane.",
+			"folderRequired": "Najpierw ustaw folder szablonów w ustawieniach przestrzeni.",
+			"selectionInvalid": "Wybierz szablon Markdown ze skonfigurowanego folderu szablonów.",
+			"loadFailed": "Nie udało się wczytać szablonów",
+			"insertFailed": "Nie udało się wstawić szablonu"
+		},
 		"bulletList": {
 			"title": "Lista wypunktowana",
 			"description": "Rozpocznij listę wypunktowaną"

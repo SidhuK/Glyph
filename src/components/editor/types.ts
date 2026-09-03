@@ -1,6 +1,7 @@
 import type { AnyExtension, Editor } from "@tiptap/core";
 import type { EditorViewMode } from "../../lib/editorMode";
 import type { RawMarkdownEditorHandle } from "./raw/types";
+import type { TemplateInsertRequest } from "./slashCommands";
 
 export type NoteInlineEditorMode = EditorViewMode;
 export type NoteInlineEditorChrome = "full" | "minimal";
@@ -57,6 +58,7 @@ export interface NoteInlineEditorProps {
 	/** Selection→AI is only wired when the host provides both of these. */
 	aiEnabled?: boolean;
 	onOpenAiPanel?: () => void;
+	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;
