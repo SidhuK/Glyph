@@ -71,6 +71,9 @@ pub struct AiProfile {
     pub name: String,
     pub provider: AiProviderKind,
     pub model: String,
+    /// None follows the chat model. The provider always remains unchanged.
+    #[serde(default, deserialize_with = "deserialize_chat_naming_model")]
+    pub chat_naming_model: Option<String>,
     pub base_url: Option<String>,
     #[serde(default)]
     pub headers: Vec<AiHeader>,
@@ -98,8 +101,23 @@ pub struct AiMessageContextItem {
 #[serde(rename_all = "snake_case")]
 pub enum AiAssistantMode {
     Chat,
+    /// Internal, tool-restricted request. Cannot be selected over IPC.
+    #[serde(skip)]
+    Naming,
     #[default]
     Create,
+}
+
+fn deserialize_chat_naming_model<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = serde_json::Value::deserialize(deserializer)?;
+    Ok(value
+        .as_str()
+        .map(str::trim)
+        .filter(|model| !model.is_empty())
+        .map(str::to_string))
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

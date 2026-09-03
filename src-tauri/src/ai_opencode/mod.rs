@@ -112,6 +112,7 @@ async fn start_server_on_port(root: &Path, binary: &Path) -> Result<OpenCodeServ
         .current_dir(root)
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
+        .kill_on_drop(true)
         .spawn()
         .map_err(|e| format!("failed to start opencode: {e}"))?;
 
@@ -417,9 +418,13 @@ async fn create_session(
     root: &Path,
     profile: &AiProfile,
     prompt: &str,
+    mode: &AiAssistantMode,
 ) -> Result<String, String> {
     let root_str = root.to_string_lossy().to_string();
     let mut body = json!({ "title": title_from_prompt(prompt) });
+    if matches!(mode, AiAssistantMode::Naming) {
+        body["permission"] = json!([{"permission": "*", "pattern": "*", "action": "deny"}]);
+    }
     if let Some(model) = opencode_model(profile) {
         body["model"] = json!({
             "providerID": model["providerID"].clone(),
@@ -613,10 +618,17 @@ pub async fn run_with_opencode(
     profile: &AiProfile,
     system: &str,
     messages: &[AiMessage],
-    _mode: &AiAssistantMode,
+    mode: &AiAssistantMode,
     space_root: Option<&Path>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     let root = space_root.ok_or_else(|| "No space is open".to_string())?;
+    if matches!(mode, AiAssistantMode::Naming)
+        && !profile.model.trim().is_empty()
+        && profile.model.trim() != DEFAULT_MODEL_ID
+        && opencode_model(profile).is_none()
+    {
+        return Err("OpenCode naming model must include its provider and model ID".to_string());
+    }
     let _ = app.emit(
         "ai:status",
         AiStatusEvent {
@@ -628,14 +640,22 @@ pub async fn run_with_opencode(
 
     let server = start_server(root).await?;
     let prompt = input_text(messages);
-    let session_id =
-        match create_session(&server.client, &server.base_url, root, profile, &prompt).await {
-            Ok(session_id) => session_id,
-            Err(err) => {
-                server.stop().await;
-                return Err(err);
-            }
-        };
+    let session_id = match create_session(
+        &server.client,
+        &server.base_url,
+        root,
+        profile,
+        &prompt,
+        mode,
+    )
+    .await
+    {
+        Ok(session_id) => session_id,
+        Err(err) => {
+            server.stop().await;
+            return Err(err);
+        }
+    };
 
     let _ = app.emit(
         "ai:status",

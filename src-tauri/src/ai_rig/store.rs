@@ -83,6 +83,7 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
                 name: provider.display_name().to_string(),
                 provider: provider.clone(),
                 model: model.to_string(),
+                chat_naming_model: None,
                 base_url: base_url.map(str::to_string),
                 headers: Vec::new(),
                 allow_private_hosts,

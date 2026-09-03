@@ -386,7 +386,6 @@ pub async fn run_with_cursor(
         .arg("stream-json")
         .arg("--stream-partial-output")
         .arg("--trust")
-        .arg("--approve-mcps")
         .arg("--workspace")
         .arg(root)
         .current_dir(root)
@@ -397,11 +396,22 @@ pub async fn run_with_cursor(
     }
 
     match mode {
+        AiAssistantMode::Naming => {
+            command
+                .arg("--mode")
+                .arg("ask")
+                .arg("--sandbox")
+                .arg("enabled");
+        }
         AiAssistantMode::Chat => {
-            command.arg("--mode").arg("ask");
+            command.arg("--mode").arg("ask").arg("--approve-mcps");
         }
         AiAssistantMode::Create => {
-            command.arg("--force").arg("--sandbox").arg("disabled");
+            command
+                .arg("--force")
+                .arg("--sandbox")
+                .arg("disabled")
+                .arg("--approve-mcps");
         }
     }
 

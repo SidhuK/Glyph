@@ -1,4 +1,9 @@
 {
+	"chatNaming": {
+		"label": "Chat Naming Model",
+		"description": "Name chats from the conversation after each reply. Uses this agent and account only, with one extra model request.",
+		"sameModel": "Same as chat model"
+	},
 	"connection": {
 		"sectionTitle": "Connection",
 		"sectionDescription": "Choose how Glyph connects to AI, then configure the provider and model.",

@@ -249,6 +249,7 @@ export function useAiToolEvents({
 	}, [chatStatus, flushPendingChunk, isChatMode]);
 
 	useTauriEvent("ai:tool", (payload) => {
+		if (payload.job_id.startsWith("naming:")) return;
 		if (isChatMode) return;
 		if (chatStatus !== "submitted" && chatStatus !== "streaming") return;
 		if (
@@ -282,6 +283,7 @@ export function useAiToolEvents({
 	});
 
 	useTauriEvent("ai:chunk", (payload) => {
+		if (payload.job_id.startsWith("naming:")) return;
 		if (isChatMode) return;
 		if (chatStatus !== "submitted" && chatStatus !== "streaming") return;
 		if (

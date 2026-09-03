@@ -208,6 +208,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				let chunkFrame: number | null = null;
 				let streamingStarted = false;
 				const shouldBufferEvent = (jobId: string) =>
+					!jobId.startsWith("naming:") &&
 					isCurrentSend() &&
 					awaitingStartRef.current &&
 					!activeJobIdRef.current &&

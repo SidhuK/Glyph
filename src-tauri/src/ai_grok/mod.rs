@@ -480,7 +480,7 @@ pub async fn run_with_grok(
     }
 
     match mode {
-        AiAssistantMode::Chat => {
+        AiAssistantMode::Chat | AiAssistantMode::Naming => {
             command.arg("--tools").arg(CHAT_TOOLS);
         }
         AiAssistantMode::Create => {
