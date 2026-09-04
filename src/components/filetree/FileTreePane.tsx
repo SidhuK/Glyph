@@ -411,7 +411,9 @@ function TreeEntries({
 	const listRef = useCallback((element: HTMLUListElement | null) => {
 		setListElement(element);
 		setScrollElement(
-			element?.closest<HTMLElement>(".sidebarSectionContent") ??
+			element?.closest<HTMLElement>(".sidebarViewPanel") ??
+				element?.closest<HTMLElement>(".sidebarViewContent") ??
+				element?.closest<HTMLElement>(".sidebarSectionContent") ??
 				element?.parentElement ??
 				null,
 		);
@@ -430,7 +432,10 @@ function TreeEntries({
 		getScrollElement: () => scrollElement,
 		getItemKey: (index) => virtualRows[index]?.id ?? index,
 		overscan: 4,
-		scrollMargin: listElement?.offsetTop ?? 0,
+		scrollMargin:
+			listElement && scrollElement
+				? listElement.offsetTop - scrollElement.offsetTop
+				: (listElement?.offsetTop ?? 0),
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 	const visiblePreviewPathKey = useMemo(() => {

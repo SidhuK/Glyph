@@ -20,9 +20,7 @@
 		"quickNote": "Quick Note",
 		"templates": "Templates",
 		"gitSync": "Git Sync",
-		"notes": "Notes",
-		"collapseNotes": "Collapse Notes",
-		"expandNotes": "Expand Notes",
+		"files": "Files",
 		"sortNotes": "Sort notes",
 		"sort": "Sort",
 		"expandAllFolders": "Expand all folders",
@@ -56,8 +54,6 @@
 	},
 	"tags": {
 		"header": "Tags",
-		"collapse": "Collapse Tags",
-		"expand": "Expand Tags",
 		"people": "People",
 		"showLess": "Show less",
 		"showMore": "Show {{count}} more"

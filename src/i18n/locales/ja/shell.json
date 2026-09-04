@@ -18,9 +18,7 @@
 		"quickNote": "クイックノート",
 		"templates": "テンプレート",
 		"gitSync": "Git 同期",
-		"notes": "ノート",
-		"collapseNotes": "ノートを折りたたむ",
-		"expandNotes": "ノートを展開",
+		"files": "ファイル",
 		"sortNotes": "ノートを並べ替え",
 		"sort": "並べ替え",
 		"expandAllFolders": "すべてのフォルダを展開",
@@ -54,8 +52,6 @@
 	},
 	"tags": {
 		"header": "タグ",
-		"collapse": "タグを折りたたむ",
-		"expand": "タグを展開",
 		"people": "人物",
 		"showLess": "表示を減らす",
 		"showMore": "あと {{count}} 件表示"

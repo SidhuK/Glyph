@@ -18,9 +18,7 @@
 		"quickNote": "빠른 노트",
 		"templates": "템플릿",
 		"gitSync": "Git 동기화",
-		"notes": "노트",
-		"collapseNotes": "노트 접기",
-		"expandNotes": "노트 펼치기",
+		"files": "파일",
 		"sortNotes": "노트 정렬",
 		"sort": "정렬",
 		"expandAllFolders": "모든 폴더 펼치기",
@@ -54,8 +52,6 @@
 	},
 	"tags": {
 		"header": "태그",
-		"collapse": "태그 접기",
-		"expand": "태그 펼치기",
 		"people": "사람",
 		"showLess": "간략히",
 		"showMore": "{{count}}개 더 보기"

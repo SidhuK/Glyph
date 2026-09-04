@@ -26,7 +26,6 @@ interface TagsPaneProps {
 	tagAppearance?: Record<string, TagAppearance>;
 	onChangeTagIcon?: (tag: string, iconName: string | null) => Promise<void>;
 	tagsError?: string;
-	onEnsureTagsFresh: () => Promise<void>;
 }
 
 const springTransition = springPresets.bouncy;
@@ -87,7 +86,6 @@ export const TagsPane = memo(function TagsPane({
 	tagAppearance = {},
 	onChangeTagIcon,
 	tagsError = "",
-	onEnsureTagsFresh,
 }: TagsPaneProps) {
 	const { t } = useTranslation("shell");
 	const onClick = useCallback(
@@ -100,14 +98,6 @@ export const TagsPane = memo(function TagsPane({
 		[onSelectPerson],
 	);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
-	const [sectionExpanded, setSectionExpanded] = useState(false);
-	const handleSectionToggle = useCallback(() => {
-		const nextExpanded = !sectionExpanded;
-		setSectionExpanded(nextExpanded);
-		if (nextExpanded) {
-			void onEnsureTagsFresh();
-		}
-	}, [onEnsureTagsFresh, sectionExpanded]);
 	const rows = buildTagTreeRows(tags);
 	const peopleRows = buildPeopleRows(people);
 	const tagIconOverrides = useMemo(
@@ -118,6 +108,33 @@ export const TagsPane = memo(function TagsPane({
 	const TAG_LIMIT = 5;
 	const hasMoreTags = rows.length > TAG_LIMIT;
 	const visibleRows = tagsExpanded ? rows : rows.slice(0, TAG_LIMIT);
+	const peopleSection = peopleRows.length ? (
+		<>
+			<div className="tagsHeader tagsSubheader">
+				<div className="tagsHeaderTitle">{t("tags.people")}</div>
+			</div>
+			<ul className="tagsList">
+				{peopleRows.map((person) => (
+					<li key={person.handle} className="tagsItem">
+						<button
+							type="button"
+							className="tagsButton"
+							data-explicit="true"
+							onClick={() => onPersonClick(person.handle)}
+							title={`@${person.handle} · ${person.count} note${
+								person.count === 1 ? "" : "s"
+							}`}
+						>
+							<span className="tagsNameWrap">
+								<span className="tagsName">@{person.handle}</span>
+							</span>
+							<span className="tagsCount">{person.count}</span>
+						</button>
+					</li>
+				))}
+			</ul>
+		</>
+	) : null;
 
 	return (
 		<m.section
@@ -127,18 +144,7 @@ export const TagsPane = memo(function TagsPane({
 			animate={{ y: 0 }}
 			transition={springTransition}
 		>
-			<div className="tagsHeader">
-				<button
-					type="button"
-					className="tagsHeaderTitle tagsHeaderToggle"
-					onClick={handleSectionToggle}
-					aria-expanded={sectionExpanded}
-					aria-label={sectionExpanded ? t("tags.collapse") : t("tags.expand")}
-				>
-					<span>{t("tags.header")}</span>
-				</button>
-			</div>
-			{!sectionExpanded ? null : tagsError ? (
+			{tagsError ? (
 				<div className="tagsEmpty">{tagsError}</div>
 			) : rows.length ? (
 				<>
@@ -197,60 +203,10 @@ export const TagsPane = memo(function TagsPane({
 								: t("tags.showMore", { count: rows.length - TAG_LIMIT })}
 						</button>
 					) : null}
-					{peopleRows.length ? (
-						<>
-							<div className="tagsHeader tagsSubheader">
-								<div className="tagsHeaderTitle">{t("tags.people")}</div>
-							</div>
-							<ul className="tagsList">
-								{peopleRows.map((person) => (
-									<li key={person.handle} className="tagsItem">
-										<button
-											type="button"
-											className="tagsButton"
-											data-explicit="true"
-											onClick={() => onPersonClick(person.handle)}
-											title={`@${person.handle} · ${person.count} note${
-												person.count === 1 ? "" : "s"
-											}`}
-										>
-											<span className="tagsNameWrap">
-												<span className="tagsName">@{person.handle}</span>
-											</span>
-											<span className="tagsCount">{person.count}</span>
-										</button>
-									</li>
-								))}
-							</ul>
-						</>
-					) : null}
+					{peopleSection}
 				</>
-			) : peopleRows.length ? (
-				<>
-					<div className="tagsHeader tagsSubheader">
-						<div className="tagsHeaderTitle">{t("tags.people")}</div>
-					</div>
-					<ul className="tagsList">
-						{peopleRows.map((person) => (
-							<li key={person.handle} className="tagsItem">
-								<button
-									type="button"
-									className="tagsButton"
-									data-explicit="true"
-									onClick={() => onPersonClick(person.handle)}
-									title={`@${person.handle} · ${person.count} note${
-										person.count === 1 ? "" : "s"
-									}`}
-								>
-									<span className="tagsNameWrap">
-										<span className="tagsName">@{person.handle}</span>
-									</span>
-									<span className="tagsCount">{person.count}</span>
-								</button>
-							</li>
-						))}
-					</ul>
-				</>
+			) : peopleSection ? (
+				peopleSection
 			) : (
 				<div className="tagsEmpty">No tags found.</div>
 			)}
