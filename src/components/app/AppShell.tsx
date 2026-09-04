@@ -137,6 +137,8 @@ export function AppShell() {
 		togglePinnedFile,
 		renamePinnedPath,
 		deletePinnedPath,
+		renameSidebarFolderPath,
+		deleteSidebarFolderPath,
 		renameItemAppearance,
 		deleteItemAppearance,
 		updateRootEntries,
@@ -960,6 +962,8 @@ export function AppShell() {
 			renameTabsForPath,
 			renamePinnedPath,
 			deletePinnedPath,
+			renameSidebarFolderPath,
+			deleteSidebarFolderPath,
 			refreshTags,
 		}),
 		[
@@ -970,6 +974,8 @@ export function AppShell() {
 			renameTabsForPath,
 			renamePinnedPath,
 			deletePinnedPath,
+			renameSidebarFolderPath,
+			deleteSidebarFolderPath,
 			refreshTags,
 		],
 	);

@@ -915,6 +915,20 @@ export const FileTreePane = memo(function FileTreePane({
 			onSelectDir("");
 		}
 	}, [clearVisiblePreviewPaths, onExitFocusedDir, onSelectDir]);
+	const handleNavigateFocusedDir = useCallback(
+		(dirPath: string) => {
+			if (
+				initialFocusedDirPath &&
+				dirPath !== initialFocusedDirPath &&
+				!dirPath.startsWith(`${initialFocusedDirPath}/`)
+			) {
+				handleExitFocusedDir();
+				return;
+			}
+			handleEnterDir(dirPath);
+		},
+		[handleEnterDir, handleExitFocusedDir, initialFocusedDirPath],
+	);
 
 	const focusedEntries = focusedDirPath
 		? (childrenByDir[focusedDirPath] ?? null)
@@ -1092,7 +1106,7 @@ export const FileTreePane = memo(function FileTreePane({
 					<FolderBreadcrumb
 						spacePath={spacePath}
 						dirPath={focusedDirPath}
-						onNavigate={handleEnterDir}
+						onNavigate={handleNavigateFocusedDir}
 						onExit={handleExitFocusedDir}
 					/>
 					{hasVisibleFocusedEntries ===

@@ -463,10 +463,12 @@ export const SidebarContent = memo(function SidebarContent({
 		(view: "files" | "tags") => {
 			if (activeSidebarView.kind === view) return;
 			setSidebarView({ kind: view });
-			if (folioMode) {
-				handleSelectFolioFolder("");
-			} else {
-				onSelectDir("");
+			if (activeSidebarView.kind === "folder") {
+				if (folioMode) {
+					handleSelectFolioFolder("");
+				} else {
+					onSelectDir("");
+				}
 			}
 			if (view === "tags") {
 				void ensureTagsFresh();

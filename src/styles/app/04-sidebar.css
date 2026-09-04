@@ -324,18 +324,6 @@ button.sidebarViewTab:not([aria-selected="true"]) .sidebarViewTabLabel {
 	border: 0;
 }
 
-button.sidebarViewFolderTab .sidebarViewTabLabel {
-	position: static;
-	width: auto;
-	height: auto;
-	padding: 0;
-	margin: 0;
-	overflow: hidden;
-	clip: auto;
-	white-space: nowrap;
-	border: 0;
-}
-
 button.sidebarViewTab:hover,
 button.sidebarViewTab:active {
 	background: var(--bg-hover);
