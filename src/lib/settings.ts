@@ -263,6 +263,11 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 			value.quickNotesFolder,
 		);
 	}
+	if ("sidebarFolderTabs" in value) {
+		out.sidebarFolderTabs = SPACE_SETTINGS.sidebarFolderTabs.normalize(
+			value.sidebarFolderTabs,
+		);
+	}
 	if ("noteCreationDefaultFolder" in value) {
 		const folder = SPACE_SETTINGS.noteCreationDefaultFolder.normalize(
 			value.noteCreationDefaultFolder,
@@ -554,6 +559,12 @@ export async function loadSettings(
 		activeScopedSettings,
 		hasActiveSpace,
 	);
+	const sidebarFolderTabs = loadSpaceSettingValue(
+		SPACE_SETTINGS.sidebarFolderTabs,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
 	const noteCreationDefaultFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.noteCreationDefaultFolder,
 		entries,
@@ -672,6 +683,7 @@ export async function loadSettings(
 			showFileTreeFolderCounts,
 			showNonMarkdownFiles,
 			fileTreeSortMode,
+			sidebarFolderTabs,
 			folioMode,
 			noteSidePeek,
 			resumeLastSession,

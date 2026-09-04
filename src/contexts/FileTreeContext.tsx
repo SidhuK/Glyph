@@ -13,8 +13,14 @@ import {
 	type FileTreeSortMode,
 	isFileTreeSortMode,
 	loadSettings,
+	writeSpaceSetting,
 } from "../lib/settings";
-import { DURABLE_SETTINGS } from "../lib/settings/definitions";
+import {
+	DURABLE_SETTINGS,
+	MAX_SIDEBAR_FOLDER_TABS,
+	SPACE_SETTINGS,
+	normalizeSidebarFolderTabs,
+} from "../lib/settings/definitions";
 import { normalizeTagIconKey } from "../lib/tagIcons";
 import type {
 	FileTreeAppearance,
@@ -25,6 +31,7 @@ import type {
 } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
+import { normalizeRelPath } from "../utils/path";
 import { useSpace } from "./SpaceContext";
 
 interface FileTreeContextValue {
@@ -74,6 +81,14 @@ interface FileTreeContextValue {
 	fileTreeSortMode: FileTreeSortMode;
 	isSavingFileTreeSortMode: boolean;
 	setFileTreeSortMode: (sortMode: FileTreeSortMode) => Promise<void>;
+	sidebarFolderTabs: string[];
+	toggleSidebarFolderTab: (path: string) => Promise<void>;
+	renameSidebarFolderPath: (
+		fromPath: string,
+		toPath: string,
+		recursive: boolean,
+	) => Promise<void>;
+	deleteSidebarFolderPath: (path: string, recursive: boolean) => Promise<void>;
 }
 
 const FileTreeContext = createContext<FileTreeContextValue | null>(null);
@@ -147,6 +162,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		useState<FileTreeSortMode>("name-asc");
 	const [isSavingFileTreeSortMode, setIsSavingFileTreeSortMode] =
 		useState(false);
+	const [sidebarFolderTabs, setSidebarFolderTabs] = useState<string[]>([]);
 	const peopleMentionsEnabledRef = useRef(false);
 	const tagsRequestIdRef = useRef(0);
 	const tagsGenerationRef = useRef(0);
@@ -154,8 +170,17 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const tagsRefreshPromiseRef = useRef<Promise<void> | null>(null);
 	const tagAppearanceRequestIdRef = useRef(0);
 	const fileTreeSortModeRequestVersionRef = useRef(0);
+	const sidebarFolderTabsRef = useRef<string[]>([]);
+	const sidebarFolderTabsMutationVersionRef = useRef(0);
+	const sidebarFolderTabsWriteQueueRef = useRef<Promise<void>>(
+		Promise.resolve(),
+	);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
 	currentSpacePathRef.current = spacePath;
+	const applySidebarFolderTabs = useCallback((next: string[]) => {
+		sidebarFolderTabsRef.current = next;
+		setSidebarFolderTabs(next);
+	}, []);
 
 	const refreshTags = useCallback(() => {
 		const requestId = tagsRequestIdRef.current + 1;
@@ -260,13 +285,23 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		let cancelled = false;
 		const requestVersion = fileTreeSortModeRequestVersionRef.current + 1;
+		const folderTabsMutationVersion =
+			sidebarFolderTabsMutationVersionRef.current;
 		fileTreeSortModeRequestVersionRef.current = requestVersion;
-		void loadSettings()
+		void loadSettings({ spacePath })
 			.then((settings) => {
-				if (cancelled) return;
+				if (cancelled || currentSpacePathRef.current !== spacePath) return;
 				peopleMentionsEnabledRef.current =
 					settings.editor.enablePeopleMentionsAsTags;
 				setBeautifulTags(settings.editor.beautifulTags);
+				if (
+					folderTabsMutationVersion ===
+					sidebarFolderTabsMutationVersionRef.current
+				) {
+					applySidebarFolderTabs(
+						normalizeSidebarFolderTabs(settings.ui.sidebarFolderTabs),
+					);
+				}
 				if (requestVersion === fileTreeSortModeRequestVersionRef.current) {
 					setFileTreeSortModeState(settings.ui.fileTreeSortMode);
 				}
@@ -276,9 +311,15 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				}
 			})
 			.catch(() => {
-				if (cancelled) return;
+				if (cancelled || currentSpacePathRef.current !== spacePath) return;
 				peopleMentionsEnabledRef.current = false;
 				setBeautifulTags(false);
+				if (
+					folderTabsMutationVersion ===
+					sidebarFolderTabsMutationVersionRef.current
+				) {
+					applySidebarFolderTabs([]);
+				}
 				if (currentSpacePathRef.current) {
 					void refreshTags();
 					void refreshTagAppearance();
@@ -287,7 +328,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [refreshTagAppearance, refreshTags]);
+	}, [applySidebarFolderTabs, refreshTagAppearance, refreshTags, spacePath]);
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
@@ -309,6 +350,14 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			setIsSavingFileTreeSortMode(false);
 			setFileTreeSortModeState(nextSortMode);
 		}
+		const nextFolderTabs = payload.ui?.sidebarFolderTabs;
+		if (
+			Array.isArray(nextFolderTabs) &&
+			(payload.spacePath === undefined ||
+				payload.spacePath === currentSpacePathRef.current)
+		) {
+			applySidebarFolderTabs(normalizeSidebarFolderTabs(nextFolderTabs));
+		}
 	});
 
 	useEffect(() => {
@@ -322,6 +371,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setActiveDirPath(null);
 		setActiveFilePath(null);
 		setPinnedFiles([]);
+		applySidebarFolderTabs([]);
 		setItemAppearanceState({});
 		setTags([]);
 		setPeople([]);
@@ -378,7 +428,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [spacePath, startIndexSync, refreshTags]);
+	}, [applySidebarFolderTabs, spacePath, startIndexSync, refreshTags]);
 
 	const refreshPinnedFiles = useCallback(async () => {
 		if (!spacePath) {
@@ -600,6 +650,82 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		[fileTreeSortMode],
 	);
 
+	const updateSidebarFolderTabs = useCallback(
+		(update: (current: readonly string[]) => readonly string[]) => {
+			const currentSpacePath = spacePath;
+			if (!currentSpacePath) return Promise.resolve();
+			sidebarFolderTabsMutationVersionRef.current += 1;
+			const run = sidebarFolderTabsWriteQueueRef.current.then(async () => {
+				if (currentSpacePathRef.current !== currentSpacePath) return;
+				const current = sidebarFolderTabsRef.current;
+				const next = normalizeSidebarFolderTabs(update(current));
+				if (
+					next.length === current.length &&
+					next.every((path, index) => path === current[index])
+				) {
+					return;
+				}
+				await writeSpaceSetting(SPACE_SETTINGS.sidebarFolderTabs, next, {
+					spacePath: currentSpacePath,
+				});
+				if (currentSpacePathRef.current === currentSpacePath) {
+					applySidebarFolderTabs(next);
+				}
+			});
+			sidebarFolderTabsWriteQueueRef.current = run.catch(() => undefined);
+			return run;
+		},
+		[applySidebarFolderTabs, spacePath],
+	);
+
+	const toggleSidebarFolderTab = useCallback<
+		FileTreeContextValue["toggleSidebarFolderTab"]
+	>(
+		async (rawPath) => {
+			const path = normalizeRelPath(rawPath);
+			if (!path) return;
+			await updateSidebarFolderTabs((current) => {
+				const isOpen = current.includes(path);
+				if (!isOpen && current.length >= MAX_SIDEBAR_FOLDER_TABS) {
+					return current;
+				}
+				return isOpen
+					? current.filter((tabPath) => tabPath !== path)
+					: [...current, path];
+			});
+		},
+		[updateSidebarFolderTabs],
+	);
+
+	const renameSidebarFolderPath = useCallback<
+		FileTreeContextValue["renameSidebarFolderPath"]
+	>(
+		(fromPath, toPath, recursive) =>
+			updateSidebarFolderTabs((current) =>
+				current.map((path) => {
+					if (path === fromPath) return toPath;
+					if (recursive && path.startsWith(`${fromPath}/`)) {
+						return `${toPath}/${path.slice(fromPath.length + 1)}`;
+					}
+					return path;
+				}),
+			),
+		[updateSidebarFolderTabs],
+	);
+
+	const deleteSidebarFolderPath = useCallback<
+		FileTreeContextValue["deleteSidebarFolderPath"]
+	>(
+		(path, recursive) =>
+			updateSidebarFolderTabs((current) =>
+				current.filter(
+					(tabPath) =>
+						tabPath !== path && (!recursive || !tabPath.startsWith(`${path}/`)),
+				),
+			),
+		[updateSidebarFolderTabs],
+	);
+
 	const value = useMemo<FileTreeContextValue>(
 		() => ({
 			rootEntries,
@@ -635,6 +761,10 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			fileTreeSortMode,
 			isSavingFileTreeSortMode,
 			setFileTreeSortMode,
+			sidebarFolderTabs,
+			toggleSidebarFolderTab,
+			renameSidebarFolderPath,
+			deleteSidebarFolderPath,
 		}),
 		[
 			rootEntries,
@@ -668,6 +798,10 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			fileTreeSortMode,
 			isSavingFileTreeSortMode,
 			setFileTreeSortMode,
+			sidebarFolderTabs,
+			toggleSidebarFolderTab,
+			renameSidebarFolderPath,
+			deleteSidebarFolderPath,
 		],
 	);
 

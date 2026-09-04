@@ -204,6 +204,11 @@
 			"label": "File tree sort",
 			"description": "Choose how folders and files are ordered in the sidebar tree.",
 			"ariaLabel": "File tree sort"
+		},
+		"folderTabs": {
+			"label": "Quick folders",
+			"description": "Add up to three folders to the Files and Tags switcher from a folder's context menu.",
+			"managed": "Add or remove folders from their context menu"
 		}
 	},
 	"periodNotes": {

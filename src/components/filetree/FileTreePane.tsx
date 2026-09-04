@@ -35,6 +35,7 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
+import { MAX_SIDEBAR_FOLDER_TABS } from "../../lib/settings/definitions";
 import { registerPreviewInvalidator } from "../../lib/spaceChange";
 import type {
 	FileTreeAppearance,
@@ -86,6 +87,10 @@ interface FileTreePaneProps {
 		toDirPath: string,
 		kind?: "dir" | "file",
 	) => Promise<string | null>;
+	initialFocusedDirPath?: string | null;
+	onExitFocusedDir?: () => void;
+	sidebarFolderTabs?: readonly string[];
+	onToggleSidebarFolderTab?: (dirPath: string) => unknown;
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
 	children?: ReactNode;
@@ -295,6 +300,8 @@ interface TreeEntriesProps {
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
+	sidebarFolderTabs: readonly string[];
+	onToggleSidebarFolderTab: (dirPath: string) => unknown;
 	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
@@ -381,6 +388,8 @@ function TreeEntries({
 	pinnedFiles,
 	onTogglePinnedFile,
 	onMoveClickSuppressRef,
+	sidebarFolderTabs,
+	onToggleSidebarFolderTab,
 	taskSummariesByPath = {},
 	showFilePreviews = false,
 	filePreviewsByPath = {},
@@ -544,6 +553,11 @@ function TreeEntries({
 							fileCount={folderFileCounts[entry.rel_path] ?? null}
 							isExternalDropTarget={externalDropTargetPath === entry.rel_path}
 							onOpenAppearancePicker={() => onOpenAppearancePicker(entry)}
+							isSidebarFolderTab={sidebarFolderTabs.includes(entry.rel_path)}
+							canAddSidebarFolderTab={
+								sidebarFolderTabs.length < MAX_SIDEBAR_FOLDER_TABS
+							}
+							onToggleSidebarFolderTab={onToggleSidebarFolderTab}
 							onStartRename={() => onStartRename(entry.rel_path)}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
@@ -617,6 +631,10 @@ export const FileTreePane = memo(function FileTreePane({
 	onCommitFileRename,
 	onCommitDirRename,
 	onMovePath,
+	initialFocusedDirPath,
+	onExitFocusedDir,
+	sidebarFolderTabs = [],
+	onToggleSidebarFolderTab = () => undefined,
 	pinnedFiles,
 	onTogglePinnedFile,
 	children,
@@ -633,7 +651,7 @@ export const FileTreePane = memo(function FileTreePane({
 		boolean | null
 	>(null);
 	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(
-		activeDirPath,
+		initialFocusedDirPath === undefined ? activeDirPath : initialFocusedDirPath,
 	);
 	const {
 		filePreviewsByPath,
@@ -891,8 +909,26 @@ export const FileTreePane = memo(function FileTreePane({
 	const handleExitFocusedDir = useCallback(() => {
 		clearVisiblePreviewPaths();
 		setFocusedDirPath(null);
-		onSelectDir("");
-	}, [clearVisiblePreviewPaths, onSelectDir]);
+		if (onExitFocusedDir) {
+			onExitFocusedDir();
+		} else {
+			onSelectDir("");
+		}
+	}, [clearVisiblePreviewPaths, onExitFocusedDir, onSelectDir]);
+	const handleNavigateFocusedDir = useCallback(
+		(dirPath: string) => {
+			if (
+				initialFocusedDirPath &&
+				dirPath !== initialFocusedDirPath &&
+				!dirPath.startsWith(`${initialFocusedDirPath}/`)
+			) {
+				handleExitFocusedDir();
+				return;
+			}
+			handleEnterDir(dirPath);
+		},
+		[handleEnterDir, handleExitFocusedDir, initialFocusedDirPath],
+	);
 
 	const focusedEntries = focusedDirPath
 		? (childrenByDir[focusedDirPath] ?? null)
@@ -1070,7 +1106,7 @@ export const FileTreePane = memo(function FileTreePane({
 					<FolderBreadcrumb
 						spacePath={spacePath}
 						dirPath={focusedDirPath}
-						onNavigate={handleEnterDir}
+						onNavigate={handleNavigateFocusedDir}
 						onExit={handleExitFocusedDir}
 					/>
 					{hasVisibleFocusedEntries ===
@@ -1107,6 +1143,8 @@ export const FileTreePane = memo(function FileTreePane({
 							pinnedFiles={pinnedFiles}
 							onTogglePinnedFile={onTogglePinnedFile}
 							onMoveClickSuppressRef={moveClickSuppressRef}
+							sidebarFolderTabs={sidebarFolderTabs}
+							onToggleSidebarFolderTab={onToggleSidebarFolderTab}
 							taskSummariesByPath={taskSummariesByPath}
 							showFilePreviews
 							filePreviewsByPath={filePreviewsByPath}
@@ -1157,6 +1195,8 @@ export const FileTreePane = memo(function FileTreePane({
 						pinnedFiles={pinnedFiles}
 						onTogglePinnedFile={onTogglePinnedFile}
 						onMoveClickSuppressRef={moveClickSuppressRef}
+						sidebarFolderTabs={sidebarFolderTabs}
+						onToggleSidebarFolderTab={onToggleSidebarFolderTab}
 						taskSummariesByPath={taskSummariesByPath}
 						sortMode={sortMode}
 					/>

@@ -73,6 +73,8 @@ const DEFAULT_EDITOR_WIDTH_MODE: EditorWidthMode = "compact";
 const DEFAULT_FOCUS_MODE: FocusMode = "off";
 const DEFAULT_ATTACHMENT_STORAGE_MODE: AttachmentStorageMode = "note-folder";
 
+export const MAX_SIDEBAR_FOLDER_TABS = 3;
+
 export const DEFAULT_UI_CORNER_RADIUS_STYLE: UiCornerRadiusStyle = "default";
 
 type SettingDiscovery =
@@ -210,6 +212,21 @@ function booleanSetting(
 
 function nullablePath(value: unknown): string | null {
 	return typeof value === "string" ? normalizeRelPath(value) || null : null;
+}
+
+export function normalizeSidebarFolderTabs(value: unknown): string[] {
+	if (!Array.isArray(value)) return [];
+	const seen = new Set<string>();
+	const tabs: string[] = [];
+	for (const candidate of value) {
+		if (typeof candidate !== "string") continue;
+		const path = normalizeRelPath(candidate);
+		if (!path || seen.has(path) || validateRelFolderPath(path)) continue;
+		seen.add(path);
+		tabs.push(path);
+		if (tabs.length === MAX_SIDEBAR_FOLDER_TABS) break;
+	}
+	return tabs;
 }
 
 function isThemeMode(value: unknown): value is ThemeMode {
@@ -810,6 +827,20 @@ export const SPACE_SETTINGS = {
 		read: (settings) => settings.quickNotes.folder,
 		patch: (value) => ({ quickNotesFolder: value }),
 		change: (value) => ({ quickNotes: { folder: value } }),
+	}),
+	sidebarFolderTabs: defineSpaceSetting<string[]>({
+		legacyKey: "ui.sidebarFolderTabs",
+		field: "sidebarFolderTabs",
+		defaultValue: [],
+		discovery: searchable("general-file-tree-folder-tabs"),
+		normalize: normalizeSidebarFolderTabs,
+		parse: (value) =>
+			Array.isArray(value)
+				? parsed(normalizeSidebarFolderTabs(value))
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.sidebarFolderTabs,
+		patch: (value) => ({ sidebarFolderTabs: value }),
+		change: (value) => ({ ui: { sidebarFolderTabs: value } }),
 	}),
 	noteCreationDefaultFolder: defineSpaceSetting({
 		legacyKey: "noteCreation.defaultFolder",

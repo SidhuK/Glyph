@@ -54,6 +54,9 @@ interface FileTreeDirItemProps {
 	onImportFolderInDir: (dirPath: string) => unknown;
 	onRequestCreateFolder: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
+	isSidebarFolderTab: boolean;
+	canAddSidebarFolderTab: boolean;
+	onToggleSidebarFolderTab: (dirPath: string) => unknown;
 	onEnterDir?: (dirPath: string) => void;
 	appearance?: FileTreeAppearance | null;
 	onOpenAppearancePicker: () => void;
@@ -82,6 +85,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onImportFolderInDir,
 	onRequestCreateFolder,
 	onDeletePath,
+	isSidebarFolderTab,
+	canAddSidebarFolderTab,
+	onToggleSidebarFolderTab,
 	onEnterDir,
 	appearance,
 	onOpenAppearancePicker,
@@ -162,6 +168,13 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
+					label: isSidebarFolderTab
+						? t("fileTree.removeFolderTab")
+						: t("fileTree.addFolderTab"),
+					enabled: isSidebarFolderTab || canAddSidebarFolderTab,
+					action: () => void onToggleSidebarFolderTab(entry.rel_path),
+				},
+				{
 					label: t("fileTree.rename"),
 					action: onStartRename,
 				},
@@ -177,7 +190,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		},
 		[
 			entry.rel_path,
+			canAddSidebarFolderTab,
 			handleRevealInFinder,
+			isSidebarFolderTab,
 			onOpenAppearancePicker,
 			onCreateFromTemplateInDir,
 			onDeletePath,
@@ -186,6 +201,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			onNewFileInDir,
 			onRequestCreateFolder,
 			onStartRename,
+			onToggleSidebarFolderTab,
 			spacePath,
 			t,
 		],

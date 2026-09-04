@@ -47,6 +47,12 @@ export interface SpaceChangeHost {
 	) => void;
 	renamePinnedPath: (fromPath: string, toPath: string) => Promise<void>;
 	deletePinnedPath: (path: string) => Promise<void>;
+	renameSidebarFolderPath: (
+		fromPath: string,
+		toPath: string,
+		recursive: boolean,
+	) => Promise<void>;
+	deleteSidebarFolderPath: (path: string, recursive: boolean) => Promise<void>;
 	refreshTags: () => Promise<void>;
 }
 
@@ -113,6 +119,7 @@ export function applySpaceChange(change: SpaceChange): void {
 		reloadDirs(to, current, true);
 		current.renameTabsForPath(from, to, change.recursive);
 		void current.renamePinnedPath(from, to);
+		void current.renameSidebarFolderPath(from, to, change.recursive);
 		void current.refreshTags();
 		invalidateDerived(from, true);
 		invalidateDerived(to, false);
@@ -125,6 +132,7 @@ export function applySpaceChange(change: SpaceChange): void {
 	if (change.kind === "remove") {
 		current.closeTabsForPathRemoval(path, change.recursive);
 		void current.deletePinnedPath(path);
+		void current.deleteSidebarFolderPath(path, change.recursive);
 		invalidateDerived(path, true);
 		return;
 	}
