@@ -427,14 +427,13 @@ export const SidebarContent = memo(function SidebarContent({
 	}, [onOpenAllDocs, showAllFolioDocs]);
 	const handleSidebarViewChange = useCallback(
 		(view: SidebarView) => {
+			if (view === sidebarView) return;
 			setSidebarView(view);
 			if (view === "tags") {
 				void ensureTagsFresh();
-				return;
 			}
-			showAllFolioDocs();
 		},
-		[ensureTagsFresh, showAllFolioDocs],
+		[ensureTagsFresh, sidebarView],
 	);
 
 	const handleSelectFolioFolder = useCallback(
@@ -786,7 +785,7 @@ export const SidebarContent = memo(function SidebarContent({
 					<div className="sidebarViewContent">
 						<Activity mode={sidebarView === "files" ? "visible" : "hidden"}>
 							<section
-								className="sidebarStackItem sidebarStackItemGrow"
+								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
 								data-section="files"
 								id="sidebar-files-panel"
 								role="tabpanel"
@@ -882,7 +881,7 @@ export const SidebarContent = memo(function SidebarContent({
 						</Activity>
 						<Activity mode={sidebarView === "tags" ? "visible" : "hidden"}>
 							<section
-								className="sidebarStackItem sidebarStackItemGrow"
+								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
 								data-section="tags"
 								id="sidebar-tags-panel"
 								role="tabpanel"

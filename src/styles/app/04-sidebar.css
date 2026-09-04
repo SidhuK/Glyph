@@ -227,6 +227,15 @@
 	flex: 1 1 auto;
 	min-width: 0;
 	min-height: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebarViewContent > .sidebarViewPanel {
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
 	scrollbar-gutter: stable;
