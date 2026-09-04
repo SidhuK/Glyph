@@ -406,17 +406,22 @@ function TreeEntries({
 			sortMode,
 		],
 	);
-	const [listElement, setListElement] = useState<HTMLUListElement | null>(null);
 	const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
+	const scrollMarginRef = useRef(0);
 	const listRef = useCallback((element: HTMLUListElement | null) => {
-		setListElement(element);
-		setScrollElement(
+		const nextScrollElement =
 			element?.closest<HTMLElement>(".sidebarViewPanel") ??
-				element?.closest<HTMLElement>(".sidebarViewContent") ??
-				element?.closest<HTMLElement>(".sidebarSectionContent") ??
-				element?.parentElement ??
-				null,
-		);
+			element?.closest<HTMLElement>(".sidebarViewContent") ??
+			element?.closest<HTMLElement>(".sidebarSectionContent") ??
+			element?.parentElement ??
+			null;
+		scrollMarginRef.current =
+			element && nextScrollElement
+				? element.getBoundingClientRect().top -
+					nextScrollElement.getBoundingClientRect().top +
+					nextScrollElement.scrollTop
+				: 0;
+		setScrollElement(nextScrollElement);
 	}, []);
 	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLLIElement>({
 		count: virtualRows.length,
@@ -432,10 +437,7 @@ function TreeEntries({
 		getScrollElement: () => scrollElement,
 		getItemKey: (index) => virtualRows[index]?.id ?? index,
 		overscan: 4,
-		scrollMargin:
-			listElement && scrollElement
-				? listElement.offsetTop - scrollElement.offsetTop
-				: (listElement?.offsetTop ?? 0),
+		scrollMargin: scrollMarginRef.current,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 	const visiblePreviewPathKey = useMemo(() => {
