@@ -283,14 +283,6 @@ button.tagsIconPicker {
 	white-space: nowrap;
 }
 
-.tagsToggle {
-	padding: 4px 18px;
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-	cursor: pointer;
-	background: transparent;
-}
-
 .tagsEmpty {
 	padding: var(--space-2) var(--space-3) var(--space-3);
 	color: var(--text-tertiary);

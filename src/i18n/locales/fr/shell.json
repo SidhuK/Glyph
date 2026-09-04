@@ -54,9 +54,7 @@
 	},
 	"tags": {
 		"header": "Étiquettes",
-		"people": "Personnes",
-		"showLess": "Afficher moins",
-		"showMore": "Afficher {{count}} de plus"
+		"people": "Personnes"
 	},
 	"fileTree": {
 		"open": "Ouvrir",

@@ -52,9 +52,7 @@
 	},
 	"tags": {
 		"header": "태그",
-		"people": "사람",
-		"showLess": "간략히",
-		"showMore": "{{count}}개 더 보기"
+		"people": "사람"
 	},
 	"fileTree": {
 		"open": "열기",

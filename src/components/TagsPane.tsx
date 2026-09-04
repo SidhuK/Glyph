@@ -1,13 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
-import {
-	type CSSProperties,
-	memo,
-	useCallback,
-	useMemo,
-	useState,
-} from "react";
+import { type CSSProperties, memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	type TagIconOverrides,
@@ -97,7 +91,6 @@ export const TagsPane = memo(function TagsPane({
 			onSelectPerson(handle.startsWith("@") ? handle : `@${handle}`),
 		[onSelectPerson],
 	);
-	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const rows = buildTagTreeRows(tags);
 	const peopleRows = buildPeopleRows(people);
 	const tagIconOverrides = useMemo(
@@ -105,9 +98,6 @@ export const TagsPane = memo(function TagsPane({
 		[tagAppearance],
 	);
 
-	const TAG_LIMIT = 5;
-	const hasMoreTags = rows.length > TAG_LIMIT;
-	const visibleRows = tagsExpanded ? rows : rows.slice(0, TAG_LIMIT);
 	const peopleSection = peopleRows.length ? (
 		<>
 			<div className="tagsHeader tagsSubheader">
@@ -157,7 +147,7 @@ export const TagsPane = memo(function TagsPane({
 							hidden: {},
 						}}
 					>
-						{visibleRows.map((tag) => {
+						{rows.map((tag) => {
 							return (
 								<m.li key={tag.tag} className="tagsItem">
 									<m.div
@@ -192,17 +182,6 @@ export const TagsPane = memo(function TagsPane({
 							);
 						})}
 					</m.ul>
-					{hasMoreTags ? (
-						<button
-							type="button"
-							className="tagsToggle"
-							onClick={() => setTagsExpanded((v) => !v)}
-						>
-							{tagsExpanded
-								? t("tags.showLess")
-								: t("tags.showMore", { count: rows.length - TAG_LIMIT })}
-						</button>
-					) : null}
 					{peopleSection}
 				</>
 			) : peopleSection ? (

@@ -52,9 +52,7 @@
 	},
 	"tags": {
 		"header": "タグ",
-		"people": "人物",
-		"showLess": "表示を減らす",
-		"showMore": "あと {{count}} 件表示"
+		"people": "人物"
 	},
 	"fileTree": {
 		"open": "開く",
