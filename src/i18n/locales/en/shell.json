@@ -54,9 +54,7 @@
 	},
 	"tags": {
 		"header": "Tags",
-		"people": "People",
-		"showLess": "Show less",
-		"showMore": "Show {{count}} more"
+		"people": "People"
 	},
 	"fileTree": {
 		"open": "Open",

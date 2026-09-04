@@ -52,9 +52,7 @@
 	},
 	"tags": {
 		"header": "Tags",
-		"people": "Pessoas",
-		"showLess": "Mostrar menos",
-		"showMore": "Mostrar mais {{count}}"
+		"people": "Pessoas"
 	},
 	"fileTree": {
 		"open": "Abrir",
