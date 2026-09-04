@@ -411,7 +411,8 @@ function TreeEntries({
 	const listRef = useCallback((element: HTMLUListElement | null) => {
 		setListElement(element);
 		setScrollElement(
-			element?.closest<HTMLElement>(".sidebarSectionContent") ??
+			element?.closest<HTMLElement>(".sidebarViewContent") ??
+				element?.closest<HTMLElement>(".sidebarSectionContent") ??
 				element?.parentElement ??
 				null,
 		);
