@@ -596,6 +596,12 @@
 			"section": "File tree",
 			"keywords": ["sidebar", "counts"]
 		},
+		"general-file-tree-folder-tabs": {
+			"title": "Quick folders",
+			"section": "File tree",
+			"description": "Add up to three folder shortcuts to the Files and Tags switcher.",
+			"keywords": ["sidebar", "folders", "quick folders", "shortcuts"]
+		},
 		"general-file-tree-non-markdown-files": {
 			"title": "Show non-Markdown files",
 			"section": "Experimental",

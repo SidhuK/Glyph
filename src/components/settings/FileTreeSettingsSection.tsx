@@ -62,6 +62,14 @@ export function FileTreeSettingsSection({
 					))}
 				</SettingsSelect>
 			</SettingsRow>
+			<SettingsRow
+				searchId="general-file-tree-folder-tabs"
+				label={t("settings.general:fileTree.folderTabs.label")}
+				description={t("settings.general:fileTree.folderTabs.description")}
+				interactive={false}
+			>
+				<span>{t("settings.general:fileTree.folderTabs.managed")}</span>
+			</SettingsRow>
 		</SettingsSection>
 	);
 }

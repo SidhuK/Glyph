@@ -22,6 +22,7 @@ import {
 	Activity,
 	Children,
 	type ComponentProps,
+	type MouseEvent,
 	type ReactNode,
 	isValidElement,
 	memo,
@@ -42,6 +43,7 @@ import {
 	FILE_TREE_SORT_MODES,
 	fileTreeSortLabel,
 } from "../../lib/fileTreeSort";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import {
 	allDocsCountQueryOptions,
 	formatAllDocsCountLabel,
@@ -56,7 +58,13 @@ import type {
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
+import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
+import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
+import {
+	getEditorTextColorOption,
+	isEditorTextColor,
+} from "../editor/textColors";
 import { FileTreePane } from "../filetree";
 
 interface SidebarContentProps {
@@ -109,7 +117,10 @@ interface SidebarContentProps {
 	onGitSyncNow: () => void;
 }
 
-type SidebarView = "files" | "tags";
+type SidebarView =
+	| { kind: "files" }
+	| { kind: "tags" }
+	| { kind: "folder"; path: string };
 
 function formatSpaceLabel(path: string): string {
 	const normalized = path.replace(/\\/g, "/").replace(/\/+$/, "");
@@ -265,6 +276,9 @@ export const SidebarContent = memo(function SidebarContent({
 		activeFilePath,
 		pinnedFiles,
 		togglePinnedFile,
+		itemAppearance,
+		sidebarFolderTabs,
+		toggleSidebarFolderTab,
 		tags,
 		people,
 		beautifulTags,
@@ -284,7 +298,9 @@ export const SidebarContent = memo(function SidebarContent({
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
 	);
-	const [sidebarView, setSidebarView] = useState<SidebarView>("files");
+	const [sidebarView, setSidebarView] = useState<SidebarView>({
+		kind: "files",
+	});
 	const fileTreeSort = useFileTreeSortMode({
 		onError: (message) => {
 			toast.error("Could not update file tree sorting", {
@@ -425,17 +441,13 @@ export const SidebarContent = memo(function SidebarContent({
 		onOpenAllDocs();
 		showAllFolioDocs();
 	}, [onOpenAllDocs, showAllFolioDocs]);
-	const handleSidebarViewChange = useCallback(
-		(view: SidebarView) => {
-			if (view === sidebarView) return;
-			setSidebarView(view);
-			if (view === "tags") {
-				void ensureTagsFresh();
-			}
-		},
-		[ensureTagsFresh, sidebarView],
-	);
-
+	const activeSidebarView: SidebarView =
+		sidebarView.kind === "folder" &&
+		!sidebarFolderTabs.includes(sidebarView.path)
+			? { kind: "files" }
+			: sidebarView;
+	const activeFolderPath =
+		activeSidebarView.kind === "folder" ? activeSidebarView.path : null;
 	const handleSelectFolioFolder = useCallback(
 		(dirPath: string) => {
 			onSelectDir(dirPath);
@@ -446,6 +458,76 @@ export const SidebarContent = memo(function SidebarContent({
 			setFolioScope({ kind: "folder", folderPrefix: dirPath });
 		},
 		[onSelectDir, setFolioScope],
+	);
+	const handleSidebarViewChange = useCallback(
+		(view: "files" | "tags") => {
+			if (activeSidebarView.kind === view) return;
+			setSidebarView({ kind: view });
+			if (folioMode) {
+				handleSelectFolioFolder("");
+			} else {
+				onSelectDir("");
+			}
+			if (view === "tags") {
+				void ensureTagsFresh();
+			}
+		},
+		[
+			activeSidebarView.kind,
+			ensureTagsFresh,
+			folioMode,
+			handleSelectFolioFolder,
+			onSelectDir,
+		],
+	);
+	const handleSelectSidebarFolder = useCallback(
+		(folderPath: string) => {
+			if (!sidebarFolderTabs.includes(folderPath)) return;
+			setSidebarView({ kind: "folder", path: folderPath });
+			if (folioMode) {
+				handleSelectFolioFolder(folderPath);
+				return;
+			}
+			onSelectDir(folderPath);
+		},
+		[folioMode, handleSelectFolioFolder, onSelectDir, sidebarFolderTabs],
+	);
+	const handleToggleSidebarFolderTab = useCallback(
+		async (folderPath: string) => {
+			const isRemoving = sidebarFolderTabs.includes(folderPath);
+			try {
+				await toggleSidebarFolderTab(folderPath);
+				if (isRemoving && activeFolderPath === folderPath) {
+					handleSidebarViewChange("files");
+				}
+			} catch (error) {
+				toast.error(t("sidebar.folderTabUpdateFailed"), {
+					description: extractErrorMessage(error),
+				});
+			}
+		},
+		[
+			activeFolderPath,
+			handleSidebarViewChange,
+			sidebarFolderTabs,
+			t,
+			toggleSidebarFolderTab,
+		],
+	);
+	const handleFolderTabContextMenu = useCallback(
+		(event: MouseEvent<HTMLButtonElement>, folderPath: string) => {
+			void showNativeContextMenu(event, [
+				{
+					label: t("sidebar.removeFolderTab", {
+						folder: basename(folderPath),
+					}),
+					action: () => void handleToggleSidebarFolderTab(folderPath),
+				},
+			]).catch((error: unknown) => {
+				console.error("Failed to show folder tab context menu", error);
+			});
+		},
+		[handleToggleSidebarFolderTab, t],
 	);
 	const handleSelectTag = useCallback(
 		(tag: string) => {
@@ -749,13 +831,13 @@ export const SidebarContent = memo(function SidebarContent({
 								className="sidebarViewTab"
 								id="sidebar-files-tab"
 								role="tab"
-								aria-selected={sidebarView === "files"}
+								aria-selected={activeSidebarView.kind === "files"}
 								aria-controls="sidebar-files-panel"
 								onClick={() => handleSidebarViewChange("files")}
 							>
 								<HugeiconsIcon
 									icon={Folder01Icon}
-									size="var(--icon-sm)"
+									size="var(--icon-md)"
 									className="sidebarViewTabIcon"
 									aria-hidden="true"
 								/>
@@ -768,30 +850,95 @@ export const SidebarContent = memo(function SidebarContent({
 								className="sidebarViewTab"
 								id="sidebar-tags-tab"
 								role="tab"
-								aria-selected={sidebarView === "tags"}
+								aria-selected={activeSidebarView.kind === "tags"}
 								aria-controls="sidebar-tags-panel"
 								onClick={() => handleSidebarViewChange("tags")}
 							>
 								<HugeiconsIcon
 									icon={Tag01Icon}
-									size="var(--icon-sm)"
+									size="var(--icon-md)"
 									className="sidebarViewTabIcon"
 									aria-hidden="true"
 								/>
 								<span className="sidebarViewTabLabel">{t("tags.header")}</span>
 							</button>
+							{sidebarFolderTabs.map((folderPath, index) => {
+								const appearance = itemAppearance[folderPath];
+								const customColor =
+									appearance?.color && isEditorTextColor(appearance.color)
+										? getEditorTextColorOption(appearance.color)
+										: null;
+								return (
+									<button
+										key={folderPath}
+										type="button"
+										className="sidebarViewTab sidebarViewFolderTab"
+										style={
+											customColor
+												? {
+														color: `var(${customColor.cssVar}, ${customColor.fallbackHex})`,
+													}
+												: undefined
+										}
+										id={`sidebar-folder-tab-${index + 1}`}
+										role="tab"
+										aria-label={t("sidebar.openFolderTab", {
+											folder: folderPath,
+										})}
+										aria-selected={
+											activeSidebarView.kind === "folder" &&
+											activeSidebarView.path === folderPath
+										}
+										aria-controls="sidebar-files-panel"
+										title={folderPath}
+										onClick={() => handleSelectSidebarFolder(folderPath)}
+										onContextMenu={(event) =>
+											handleFolderTabContextMenu(event, folderPath)
+										}
+									>
+										{appearance?.icon ? (
+											<DatabaseColumnIcon
+												iconName={appearance.icon}
+												size="var(--icon-md)"
+												className="sidebarViewTabIcon"
+											/>
+										) : (
+											<HugeiconsIcon
+												icon={Folder01Icon}
+												size="var(--icon-md)"
+												className="sidebarViewTabIcon"
+												aria-hidden="true"
+											/>
+										)}
+										<span className="sidebarViewTabLabel">
+											{basename(folderPath)}
+										</span>
+									</button>
+								);
+							})}
 						</div>
 					</div>
 					<div className="sidebarViewContent">
-						<Activity mode={sidebarView === "files" ? "visible" : "hidden"}>
+						<Activity
+							mode={activeSidebarView.kind === "tags" ? "hidden" : "visible"}
+						>
 							<section
 								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
 								data-section="files"
 								id="sidebar-files-panel"
 								role="tabpanel"
-								aria-labelledby="sidebar-files-tab"
+								aria-labelledby={
+									activeSidebarView.kind === "folder"
+										? `sidebar-folder-tab-${sidebarFolderTabs.indexOf(activeSidebarView.path) + 1}`
+										: "sidebar-files-tab"
+								}
 							>
 								<div className="sidebarStackHeader sidebarFileTreeToolbar">
+									<h2 className="sidebarFileTreeToolbarTitle">
+										{activeSidebarView.kind === "folder"
+											? basename(activeSidebarView.path)
+											: t("sidebar.files")}
+									</h2>
 									<div className="sidebarStackHeaderActions">
 										<label className="sidebarStackHeaderSortNative">
 											<span className="sr-only">{t("sidebar.sortNotes")}</span>
@@ -848,6 +995,11 @@ export const SidebarContent = memo(function SidebarContent({
 									</div>
 								</div>
 								<FileTreePane
+									key={
+										activeSidebarView.kind === "folder"
+											? `folder:${activeSidebarView.path}`
+											: "files"
+									}
 									rootEntries={folioMode ? folioRootEntries : rootEntries}
 									childrenByDir={folioMode ? folioChildrenByDir : childrenByDir}
 									expandedDirs={expandedDirs}
@@ -874,12 +1026,26 @@ export const SidebarContent = memo(function SidebarContent({
 									onCommitFileRename={handleCommitFileRename}
 									onCommitDirRename={handleCommitDirRename}
 									onMovePath={onMovePath}
+									initialFocusedDirPath={
+										activeSidebarView.kind === "folder"
+											? activeSidebarView.path
+											: null
+									}
+									onExitFocusedDir={
+										activeSidebarView.kind === "folder"
+											? () => handleSidebarViewChange("files")
+											: undefined
+									}
+									sidebarFolderTabs={sidebarFolderTabs}
+									onToggleSidebarFolderTab={handleToggleSidebarFolderTab}
 									pinnedFiles={folioMode ? [] : pinnedFiles}
 									onTogglePinnedFile={togglePinnedFile}
 								/>
 							</section>
 						</Activity>
-						<Activity mode={sidebarView === "tags" ? "visible" : "hidden"}>
+						<Activity
+							mode={activeSidebarView.kind === "tags" ? "visible" : "hidden"}
+						>
 							<section
 								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
 								data-section="tags"

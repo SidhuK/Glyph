@@ -210,6 +210,7 @@ export interface AppSettings {
 		showFileTreeFolderCounts: boolean;
 		showNonMarkdownFiles: boolean;
 		fileTreeSortMode: FileTreeSortMode;
+		sidebarFolderTabs: string[];
 		folioMode: boolean;
 		noteSidePeek: boolean;
 		resumeLastSession: boolean;
@@ -254,6 +255,7 @@ export interface SpaceScopedSettings {
 	templatesQuarterlyNoteTemplate?: string | null;
 	attachmentStorageMode?: AttachmentStorageMode;
 	attachmentFolder?: string | null;
+	sidebarFolderTabs?: string[];
 	connectionsGraph?: ConnectionsGraphOptions;
 }
 
