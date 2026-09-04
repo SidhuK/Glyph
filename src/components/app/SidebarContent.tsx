@@ -8,15 +8,18 @@ import {
 	ColorsIcon,
 	CursorAddSelection02Icon,
 	ExpandParagraphIcon,
+	Folder01Icon,
 	LibraryIcon,
 	Link01Icon,
 	NoteIcon,
 	SearchIcon,
 	Sorting01Icon,
 	StarIcon,
+	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import {
+	Activity,
 	Children,
 	type ComponentProps,
 	type ReactNode,
@@ -105,6 +108,8 @@ interface SidebarContentProps {
 	onCreateFromTemplate: () => void;
 	onGitSyncNow: () => void;
 }
+
+type SidebarView = "files" | "tags";
 
 function formatSpaceLabel(path: string): string {
 	const normalized = path.replace(/\\/g, "/").replace(/\/+$/, "");
@@ -279,7 +284,7 @@ export const SidebarContent = memo(function SidebarContent({
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
 	);
-	const [notesExpanded, setNotesExpanded] = useState(true);
+	const [sidebarView, setSidebarView] = useState<SidebarView>("files");
 	const fileTreeSort = useFileTreeSortMode({
 		onError: (message) => {
 			toast.error("Could not update file tree sorting", {
@@ -410,20 +415,27 @@ export const SidebarContent = memo(function SidebarContent({
 		},
 		[onOpenFile, onRenameDir, pendingNewNotePath],
 	);
-
-	const handleOpenAllNotes = useCallback(() => {
-		onOpenAllDocs();
-		if (folioMode) {
-			setFolioScope({ kind: "all" });
-			onPrefetchAllDocs();
-		}
-	}, [folioMode, onOpenAllDocs, onPrefetchAllDocs, setFolioScope]);
-	const handleNotesHeaderClick = useCallback(() => {
-		setNotesExpanded((value) => !value);
+	const showAllFolioDocs = useCallback(() => {
 		if (!folioMode) return;
 		setFolioScope({ kind: "all" });
 		onPrefetchAllDocs();
 	}, [folioMode, onPrefetchAllDocs, setFolioScope]);
+
+	const handleOpenAllNotes = useCallback(() => {
+		onOpenAllDocs();
+		showAllFolioDocs();
+	}, [onOpenAllDocs, showAllFolioDocs]);
+	const handleSidebarViewChange = useCallback(
+		(view: SidebarView) => {
+			setSidebarView(view);
+			if (view === "tags") {
+				void ensureTagsFresh();
+				return;
+			}
+			showAllFolioDocs();
+		},
+		[ensureTagsFresh, showAllFolioDocs],
+	);
 
 	const handleSelectFolioFolder = useCallback(
 		(dirPath: string) => {
@@ -724,25 +736,55 @@ export const SidebarContent = memo(function SidebarContent({
 							</div>
 						) : null}
 					</OrderedSidebarItems>
-					<div className="sidebarStack">
+					<div
+						className="sidebarViewTabs"
+						role="tablist"
+						aria-label={`${t("sidebar.files")} / ${t("tags.header")}`}
+					>
+						<button
+							type="button"
+							className="sidebarViewTab"
+							id="sidebar-files-tab"
+							role="tab"
+							aria-selected={sidebarView === "files"}
+							aria-controls="sidebar-files-panel"
+							onClick={() => handleSidebarViewChange("files")}
+						>
+							<HugeiconsIcon
+								icon={Folder01Icon}
+								size="var(--icon-sm)"
+								className="sidebarViewTabIcon"
+								aria-hidden="true"
+							/>
+							<span className="sidebarViewTabLabel">{t("sidebar.files")}</span>
+						</button>
+						<button
+							type="button"
+							className="sidebarViewTab"
+							id="sidebar-tags-tab"
+							role="tab"
+							aria-selected={sidebarView === "tags"}
+							aria-controls="sidebar-tags-panel"
+							onClick={() => handleSidebarViewChange("tags")}
+						>
+							<HugeiconsIcon
+								icon={Tag01Icon}
+								size="var(--icon-sm)"
+								className="sidebarViewTabIcon"
+								aria-hidden="true"
+							/>
+							<span className="sidebarViewTabLabel">{t("tags.header")}</span>
+						</button>
+					</div>
+					<Activity mode={sidebarView === "files" ? "visible" : "hidden"}>
 						<section
 							className="sidebarStackItem sidebarStackItemGrow"
 							data-section="files"
+							id="sidebar-files-panel"
+							role="tabpanel"
+							aria-labelledby="sidebar-files-tab"
 						>
-							<div className="sidebarStackHeader">
-								<button
-									type="button"
-									className="sidebarStackHeaderToggle"
-									onClick={handleNotesHeaderClick}
-									aria-expanded={notesExpanded}
-									aria-label={
-										notesExpanded
-											? t("sidebar.collapseNotes")
-											: t("sidebar.expandNotes")
-									}
-								>
-									<span>{t("sidebar.notes")}</span>
-								</button>
+							<div className="sidebarStackHeader sidebarFileTreeToolbar">
 								<div className="sidebarStackHeaderActions">
 									<label className="sidebarStackHeaderSortNative">
 										<span className="sr-only">{t("sidebar.sortNotes")}</span>
@@ -798,40 +840,44 @@ export const SidebarContent = memo(function SidebarContent({
 									</button>
 								</div>
 							</div>
-							{notesExpanded ? (
-								<FileTreePane
-									rootEntries={folioMode ? folioRootEntries : rootEntries}
-									childrenByDir={folioMode ? folioChildrenByDir : childrenByDir}
-									expandedDirs={expandedDirs}
-									activeFilePath={folioMode ? null : activeFilePath}
-									activeDirPath={activeDirPath}
-									onToggleDir={onToggleDir}
-									onLoadDir={onLoadDir}
-									onSelectDir={
-										folioMode ? handleSelectFolioFolder : onSelectDir
-									}
-									onOpenFile={onOpenFile}
-									onPrefetchFile={onPrefetchFile}
-									onNewFileInDir={onNewFileInDir}
-									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onImportFilesInDir={onImportFilesInDir}
-									onImportFolderInDir={onImportFolderInDir}
-									onImportPathsInDir={onImportPathsInDir}
-									onRequestCreateFolder={onRequestCreateFolder}
-									onDuplicateFile={onDuplicateFile}
-									onDeletePath={onDeletePath}
-									renamingPath={renamingPath}
-									onStartRename={handleStartRename}
-									onCancelRename={handleCancelRename}
-									onCommitFileRename={handleCommitFileRename}
-									onCommitDirRename={handleCommitDirRename}
-									onMovePath={onMovePath}
-									pinnedFiles={folioMode ? [] : pinnedFiles}
-									onTogglePinnedFile={togglePinnedFile}
-								/>
-							) : null}
+							<FileTreePane
+								rootEntries={folioMode ? folioRootEntries : rootEntries}
+								childrenByDir={folioMode ? folioChildrenByDir : childrenByDir}
+								expandedDirs={expandedDirs}
+								activeFilePath={folioMode ? null : activeFilePath}
+								activeDirPath={activeDirPath}
+								onToggleDir={onToggleDir}
+								onLoadDir={onLoadDir}
+								onSelectDir={folioMode ? handleSelectFolioFolder : onSelectDir}
+								onOpenFile={onOpenFile}
+								onPrefetchFile={onPrefetchFile}
+								onNewFileInDir={onNewFileInDir}
+								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+								onImportFilesInDir={onImportFilesInDir}
+								onImportFolderInDir={onImportFolderInDir}
+								onImportPathsInDir={onImportPathsInDir}
+								onRequestCreateFolder={onRequestCreateFolder}
+								onDuplicateFile={onDuplicateFile}
+								onDeletePath={onDeletePath}
+								renamingPath={renamingPath}
+								onStartRename={handleStartRename}
+								onCancelRename={handleCancelRename}
+								onCommitFileRename={handleCommitFileRename}
+								onCommitDirRename={handleCommitDirRename}
+								onMovePath={onMovePath}
+								pinnedFiles={folioMode ? [] : pinnedFiles}
+								onTogglePinnedFile={togglePinnedFile}
+							/>
 						</section>
-						<section className="sidebarStackItem" data-section="tags">
+					</Activity>
+					<Activity mode={sidebarView === "tags" ? "visible" : "hidden"}>
+						<section
+							className="sidebarStackItem sidebarStackItemGrow"
+							data-section="tags"
+							id="sidebar-tags-panel"
+							role="tabpanel"
+							aria-labelledby="sidebar-tags-tab"
+						>
 							<TagsPane
 								tags={tags}
 								people={people}
@@ -840,11 +886,10 @@ export const SidebarContent = memo(function SidebarContent({
 								beautifulTags={beautifulTags}
 								tagAppearance={tagAppearance}
 								tagsError={tagsError}
-								onEnsureTagsFresh={ensureTagsFresh}
 								onChangeTagIcon={handleChangeTagIcon}
 							/>
 						</section>
-					</div>
+					</Activity>
 				</div>
 			</div>
 		</>

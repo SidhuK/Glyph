@@ -4,15 +4,7 @@
 .tagsPane {
 	display: flex;
 	flex-direction: column;
-	padding: var(--space-2) 12px;
-}
-
-.sidebarSectionContent .tagsPane {
-	border-top: none;
-}
-
-.sidebarStackItem .tagsPane {
-	padding: 0 8px 0;
+	padding: 4px 8px var(--space-2);
 }
 
 .tagsHeader {
@@ -33,38 +25,6 @@
 	align-items: center;
 	gap: 6px;
 	color: var(--text-tertiary);
-}
-
-.tagsHeaderTitle svg {
-	flex-shrink: 0;
-	color: currentcolor;
-}
-
-button.tagsHeaderTitle {
-	appearance: none;
-	background: transparent;
-	border: 0;
-	margin: 0;
-	padding: 0;
-	flex: 1;
-	cursor: pointer;
-	text-align: left;
-	font-family: inherit;
-	color: var(--text-tertiary);
-	transition: color var(--transition-fast);
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	justify-content: flex-start;
-}
-
-button.tagsHeaderTitle:hover,
-button.tagsHeaderTitle:focus-visible,
-button.tagsHeaderTitle:active {
-	background: transparent;
-	box-shadow: none;
-	color: var(--text-secondary);
-	outline: none;
 }
 
 .tagsList {

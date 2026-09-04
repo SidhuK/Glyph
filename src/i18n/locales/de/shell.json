@@ -18,9 +18,7 @@
 		"quickNote": "Schnelle Notiz",
 		"templates": "Vorlagen",
 		"gitSync": "Git-Synchronisierung",
-		"notes": "Notizen",
-		"collapseNotes": "Notizen einklappen",
-		"expandNotes": "Notizen ausklappen",
+		"files": "Dateien",
 		"sortNotes": "Notizen sortieren",
 		"sort": "Sortieren",
 		"expandAllFolders": "Alle Ordner ausklappen",
@@ -54,8 +52,6 @@
 	},
 	"tags": {
 		"header": "Tags",
-		"collapse": "Tags einklappen",
-		"expand": "Tags ausklappen",
 		"people": "Personen",
 		"showLess": "Weniger anzeigen",
 		"showMore": "{{count}} weitere anzeigen"

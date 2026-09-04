@@ -18,9 +18,7 @@
 		"quickNote": "Szybka notatka",
 		"templates": "Szablony",
 		"gitSync": "Synchronizacja Git",
-		"notes": "Notatki",
-		"collapseNotes": "Zwiń notatki",
-		"expandNotes": "Rozwiń notatki",
+		"files": "Pliki",
 		"sortNotes": "Sortuj",
 		"sort": "Sortuj",
 		"expandAllFolders": "Rozwiń wszystkie foldery",
@@ -54,8 +52,6 @@
 	},
 	"tags": {
 		"header": "Tagi",
-		"collapse": "Zwiń tagi",
-		"expand": "Rozwiń tagi",
 		"people": "Ludzie",
 		"showLess": "Pokaż mniej",
 		"showMore": "Pokaż {{count}} więcej"

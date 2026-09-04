@@ -18,9 +18,7 @@
 		"quickNote": "Nota rápida",
 		"templates": "Modelos",
 		"gitSync": "Sincronização Git",
-		"notes": "Notas",
-		"collapseNotes": "Recolher notas",
-		"expandNotes": "Expandir notas",
+		"files": "Arquivos",
 		"sortNotes": "Ordenar notas",
 		"sort": "Ordenar",
 		"expandAllFolders": "Expandir todas as pastas",
@@ -54,8 +52,6 @@
 	},
 	"tags": {
 		"header": "Tags",
-		"collapse": "Recolher tags",
-		"expand": "Expandir tags",
 		"people": "Pessoas",
 		"showLess": "Mostrar menos",
 		"showMore": "Mostrar mais {{count}}"
