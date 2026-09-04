@@ -1017,6 +1017,17 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
+		"print-note": {
+			"id": "print-note",
+			"label": "Print Note",
+			"description": "Print the current note.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "file.print_note"
+		},
 		"quick-open": {
 			"id": "quick-open",
 			"label": "Quick Open",
