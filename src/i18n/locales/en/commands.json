@@ -350,6 +350,10 @@
 			"label": "Previous Tab",
 			"description": "Move to the previous tab."
 		},
+		"print-note": {
+			"label": "Print Note",
+			"description": "Print the current note."
+		},
 		"quick-open": {
 			"label": "Quick Open",
 			"description": "Open the command palette directly in file mode."
