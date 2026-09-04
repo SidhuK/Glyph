@@ -434,8 +434,10 @@ function TreeEntries({
 		overscan: 4,
 		scrollMargin:
 			listElement && scrollElement
-				? listElement.offsetTop - scrollElement.offsetTop
-				: (listElement?.offsetTop ?? 0),
+				? listElement.getBoundingClientRect().top -
+					scrollElement.getBoundingClientRect().top +
+					scrollElement.scrollTop
+				: 0,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 	const visiblePreviewPathKey = useMemo(() => {
