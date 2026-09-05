@@ -107,12 +107,8 @@ pub async fn space_dir_children_summary(
                 if file_type.is_symlink() {
                     continue;
                 }
-                let metadata = match entry.metadata() {
-                    Ok(metadata) => metadata,
-                    Err(_) => continue,
-                };
                 let child_rel = rel_dir.join(&name);
-                if metadata.is_dir() {
+                if file_type.is_dir() {
                     if requested_parents.contains(&rel_dir) {
                         summaries
                             .entry(child_rel.clone())
@@ -121,7 +117,7 @@ pub async fn space_dir_children_summary(
                     queue.push_back(child_rel);
                     continue;
                 }
-                if !metadata.is_file() {
+                if !file_type.is_file() {
                     continue;
                 }
 

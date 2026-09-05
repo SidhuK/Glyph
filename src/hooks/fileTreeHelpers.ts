@@ -27,11 +27,16 @@ function compareEntryNames(a: FsEntry, b: FsEntry, direction: 1 | -1): number {
 function timestampValue(
 	entry: FsEntry,
 	field: "created" | "updated",
+	cache: Map<string, number | null>,
 ): number | null {
 	const raw = entry[field];
 	if (!raw) return null;
+	const cached = cache.get(raw);
+	if (cached !== undefined) return cached;
 	const parsed = Date.parse(raw);
-	return Number.isFinite(parsed) ? parsed : null;
+	const value = Number.isFinite(parsed) ? parsed : null;
+	cache.set(raw, value);
+	return value;
 }
 
 function compareEntryTimestamps(
@@ -39,9 +44,10 @@ function compareEntryTimestamps(
 	b: FsEntry,
 	field: "created" | "updated",
 	direction: 1 | -1,
+	cache: Map<string, number | null>,
 ): number {
-	const left = timestampValue(a, field);
-	const right = timestampValue(b, field);
+	const left = timestampValue(a, field, cache);
+	const right = timestampValue(b, field, cache);
 	if (left !== null && right === null) return -1;
 	if (left === null && right !== null) return 1;
 	if (left !== null && right !== null && left !== right) {
@@ -53,6 +59,7 @@ function compareEntryTimestamps(
 export function compareEntriesForSort(
 	mode: FileTreeSortMode,
 ): (a: FsEntry, b: FsEntry) => number {
+	const timestamps = new Map<string, number | null>();
 	return (a, b) => {
 		if (a.kind === "dir" && b.kind === "file") return -1;
 		if (a.kind === "file" && b.kind === "dir") return 1;
@@ -60,13 +67,13 @@ export function compareEntriesForSort(
 			case "name-desc":
 				return compareEntryNames(a, b, -1);
 			case "modified-desc":
-				return compareEntryTimestamps(a, b, "updated", -1);
+				return compareEntryTimestamps(a, b, "updated", -1, timestamps);
 			case "modified-asc":
-				return compareEntryTimestamps(a, b, "updated", 1);
+				return compareEntryTimestamps(a, b, "updated", 1, timestamps);
 			case "created-desc":
-				return compareEntryTimestamps(a, b, "created", -1);
+				return compareEntryTimestamps(a, b, "created", -1, timestamps);
 			case "created-asc":
-				return compareEntryTimestamps(a, b, "created", 1);
+				return compareEntryTimestamps(a, b, "created", 1, timestamps);
 			case "name-asc":
 				return compareEntryNames(a, b, 1);
 		}

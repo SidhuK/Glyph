@@ -92,14 +92,14 @@ function mergeLaneOrder(
 	currentLaneOrder: string[],
 	displayedLaneOrder: string[],
 ): string[] {
+	const currentLaneSet = new Set(currentLaneOrder);
 	return [
 		...currentLaneOrder.filter(
 			(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID,
 		),
 		...displayedLaneOrder.filter(
 			(laneId) =>
-				laneId !== DATABASE_BOARD_EMPTY_LANE_ID &&
-				!currentLaneOrder.includes(laneId),
+				laneId !== DATABASE_BOARD_EMPTY_LANE_ID && !currentLaneSet.has(laneId),
 		),
 	];
 }
@@ -140,11 +140,10 @@ function mergeCardOrder(
 		.map(([laneId, displayedOrder]) => {
 			const displayedSet = new Set(displayedOrder);
 			const currentOrder = currentCardOrder[laneId] ?? [];
+			const currentSet = new Set(currentOrder);
 			const nextOrder = [
 				...currentOrder.filter((notePath) => displayedSet.has(notePath)),
-				...displayedOrder.filter(
-					(notePath) => !currentOrder.includes(notePath),
-				),
+				...displayedOrder.filter((notePath) => !currentSet.has(notePath)),
 			];
 			return [laneId, nextOrder] as const;
 		})

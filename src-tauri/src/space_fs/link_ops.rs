@@ -117,16 +117,16 @@ fn list_files(root: &Path, markdown_only: bool, limit: usize) -> Result<Vec<File
             if should_hide(&name) {
                 continue;
             }
-            let meta = match entry.metadata() {
+            let file_type = match entry.file_type() {
                 Ok(m) => m,
                 Err(_) => continue,
             };
             let child_rel = rel_dir.join(&name);
-            if meta.is_dir() {
+            if file_type.is_dir() {
                 stack.push(child_rel);
                 continue;
             }
-            if !meta.is_file() {
+            if !file_type.is_file() {
                 continue;
             }
             let rel = utils::to_slash(&child_rel);
@@ -615,10 +615,8 @@ pub async fn space_suggest_links(
             ));
         }
 
-        rows.sort_by(|a, b| {
-            b.0.cmp(&a.0)
-                .then_with(|| a.1.path.to_lowercase().cmp(&b.1.path.to_lowercase()))
-        });
+        // list_files already orders paths; stable sorting preserves that order for ties.
+        rows.sort_by(|a, b| b.0.cmp(&a.0));
         Ok(rows.into_iter().take(limit).map(|r| r.1).collect())
     })
     .await

@@ -34,7 +34,10 @@ function readingTime(words: number): string {
 export function analyzeNoteInfo(
 	markdown: string,
 	body: string,
-	includeHeadings: boolean,
+	{
+		includeHeadings,
+		includeStats = true,
+	}: { includeHeadings: boolean; includeStats?: boolean },
 ): NoteInfoAnalysis {
 	let words = 0;
 	const wordPattern = /\S+/gu;
@@ -52,8 +55,10 @@ export function analyzeNoteInfo(
 		const line = markdown.slice(lineStart, end).replace(/\r$/, "");
 		if (lineEnd !== -1) lineCount += 1;
 		if (lineStart >= bodyStart) {
-			while (wordPattern.exec(line)) {
-				words += 1;
+			if (includeStats) {
+				while (wordPattern.exec(line)) {
+					words += 1;
+				}
 			}
 
 			const fenceMatch = line.match(FENCE_PATTERN);
@@ -69,7 +74,7 @@ export function analyzeNoteInfo(
 					fenceMarker = null;
 				}
 			} else if (!fenceMarker) {
-				const taskMatch = line.match(TASK_PATTERN);
+				const taskMatch = includeStats ? line.match(TASK_PATTERN) : null;
 				if (taskMatch?.[1]) {
 					totalTasks += 1;
 					if (taskMatch[1].toLowerCase() === "x") completedTasks += 1;

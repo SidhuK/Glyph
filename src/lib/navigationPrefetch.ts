@@ -285,19 +285,11 @@ async function loadAllDocsPage(
 }
 
 export async function loadAllDocs(folderPrefix?: string | null) {
-	const pages: AllDocsItem[] = [];
-	let offset = 0;
-	while (pages.length < ALL_DOCS_LIST_LIMIT) {
-		const next = await loadAllDocsPage(
-			folderPrefix,
-			offset,
-			Math.min(ALL_DOCS_PAGE_SIZE, ALL_DOCS_LIST_LIMIT - pages.length),
-		);
-		pages.push(...next.items);
-		if (next.nextOffset == null) break;
-		offset = next.nextOffset;
-	}
-	return pages;
+	return invoke("all_docs_list", {
+		limit: ALL_DOCS_LIST_LIMIT,
+		offset: 0,
+		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
+	});
 }
 
 export function allDocsPagesQueryOptions(

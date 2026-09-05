@@ -2,7 +2,9 @@ import {
 	type EditorLinkSuggestion,
 	suggestWikiLinks,
 } from "../../../lib/linkSuggestions";
+import { noteDocumentQueryOptions } from "../../../lib/navigationPrefetch";
 import { splitYamlFrontmatter } from "../../../lib/notePreview";
+import { queryClient } from "../../../lib/queryClient";
 import { invoke } from "../../../lib/tauri";
 import { isMarkdownPath } from "../../../utils/path";
 import { analyzeNoteInfo } from "../../preview/noteInfoAnalysis";
@@ -34,9 +36,14 @@ async function suggestWikiLinkHeadings(options: {
 	const path = await resolveWikiLinkPath(options.target);
 	if (!path) return [];
 	try {
-		const text = (await invoke("space_read_text", { path })).text;
+		const { text } = await queryClient.fetchQuery(
+			noteDocumentQueryOptions(path),
+		);
 		const { body } = splitYamlFrontmatter(text);
-		const headings = analyzeNoteInfo(body, body, true).headings;
+		const headings = analyzeNoteInfo(body, body, {
+			includeHeadings: true,
+			includeStats: false,
+		}).headings;
 		return headings
 			.filter((heading) =>
 				queryMatchesText(

@@ -180,18 +180,22 @@ pub async fn space_list_non_markdown_files(
                 if should_hide(&name) {
                     continue;
                 }
-                let meta = match entry.metadata() {
+                let file_type = match entry.file_type() {
                     Ok(m) => m,
                     Err(_) => continue,
                 };
                 let child_rel = rel_dir.join(&name);
-                if meta.is_dir() {
+                if file_type.is_dir() {
                     stack.push(child_rel);
                     continue;
                 }
-                if !meta.is_file() || utils::is_markdown_path(&child_rel) {
+                if !file_type.is_file() || utils::is_markdown_path(&child_rel) {
                     continue;
                 }
+                let meta = match entry.metadata() {
+                    Ok(meta) => meta,
+                    Err(_) => continue,
+                };
                 let (created, updated) = metadata_timestamps(&meta);
                 out.push(FsEntry {
                     name,
@@ -263,20 +267,12 @@ pub async fn space_list_dir(
                 if should_hide(&name) {
                     continue;
                 }
-                if recursive {
-                    let Ok(file_type) = entry.file_type() else {
-                        continue;
-                    };
-                    if file_type.is_symlink() {
-                        continue;
-                    }
-                }
-                let Ok(meta) = entry.metadata() else {
+                let Ok(file_type) = entry.file_type() else {
                     continue;
                 };
-                let kind = if meta.is_dir() {
+                let kind = if file_type.is_dir() {
                     "dir"
-                } else if meta.is_file() {
+                } else if file_type.is_file() {
                     "file"
                 } else {
                     continue;
@@ -288,6 +284,9 @@ pub async fn space_list_dir(
                 if directories_only && kind != "dir" {
                     continue;
                 }
+                let Ok(meta) = entry.metadata() else {
+                    continue;
+                };
                 let is_markdown = utils::is_markdown_path(&rel_path);
                 let (created, updated) = metadata_timestamps(&meta);
                 entries.push(FsEntry {

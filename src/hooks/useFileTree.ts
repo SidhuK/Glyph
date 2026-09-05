@@ -150,8 +150,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				"space_list_dir",
 				dirPath ? { dir: dirPath } : {},
 			);
-			const normalizedEntries = normalizeEntries(entries);
 			if (loadRequestVersionRef.current.get(dirPath) !== nextVersion) return;
+			const normalizedEntries = normalizeEntries(entries);
 			if (dirPath) {
 				updateChildrenByDir((prev) => {
 					const c = prev[dirPath];

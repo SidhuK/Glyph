@@ -40,27 +40,32 @@ export function findPlainTextSearchRanges(
 	const folded: string[] = [];
 	const sourceStart: number[] = [];
 	const sourceEnd: number[] = [];
-	let index = 0;
-	for (const char of text) {
-		const lowered = char.toLowerCase();
-		const end = index + char.length;
-		for (let i = 0; i < lowered.length; i += 1) {
-			sourceStart.push(index);
-			sourceEnd.push(end);
+	const ascii = /^\p{ASCII}*$/u.test(text);
+	if (!ascii) {
+		let index = 0;
+		for (const char of text) {
+			const lowered = char.toLowerCase();
+			const end = index + char.length;
+			for (let i = 0; i < lowered.length; i += 1) {
+				sourceStart.push(index);
+				sourceEnd.push(end);
+			}
+			folded.push(lowered);
+			index = end;
 		}
-		folded.push(lowered);
-		index = end;
 	}
 
-	const haystack = folded.join("");
+	const haystack = ascii ? text.toLowerCase() : folded.join("");
 	const needle = Array.from(query, (char) => char.toLowerCase()).join("");
 	let cursor = 0;
 	while (cursor <= haystack.length - needle.length) {
 		const found = haystack.indexOf(needle, cursor);
 		if (found === -1) break;
 		ranges.push({
-			from: offset + sourceStart[found],
-			to: offset + sourceEnd[found + needle.length - 1],
+			from: offset + (ascii ? found : sourceStart[found]),
+			to:
+				offset +
+				(ascii ? found + needle.length : sourceEnd[found + needle.length - 1]),
 		});
 		cursor = found + needle.length;
 	}

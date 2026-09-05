@@ -79,6 +79,7 @@ export function getHeadingPreview(
 	nextHeading: TOCHeading | undefined,
 ): string | null {
 	const chunks: string[] = [];
+	let previewLength = 0;
 	const docEnd = doc.content.size;
 	if (heading.pos < 0 || heading.pos >= docEnd) return null;
 	const to = Math.min(
@@ -88,14 +89,16 @@ export function getHeadingPreview(
 	if (heading.pos >= to) return null;
 
 	doc.nodesBetween(heading.pos, to, (node) => {
+		if (previewLength > HEADING_PREVIEW_MAX_LENGTH) return false;
 		if (node.type.name === "heading") return false;
 		if (!node.isTextblock) return;
 
 		const text = normalizePreviewText(node.textContent);
 		if (!text) return false;
 
+		previewLength += text.length + (chunks.length > 0 ? 1 : 0);
 		chunks.push(text);
-		return chunks.join(" ").length < HEADING_PREVIEW_MAX_LENGTH;
+		return false;
 	});
 
 	const preview = normalizePreviewText(chunks.join(" "));
