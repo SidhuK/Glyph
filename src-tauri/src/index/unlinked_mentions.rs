@@ -249,11 +249,13 @@ fn find_mentions_in_markdown(
     let mut mentions = Vec::new();
 
     for (start, _) in body.char_indices() {
+        if !has_word_boundary_before(body, start) {
+            continue;
+        }
         let Some(end) = end_after_char_count(body, start, title_char_count) else {
             break;
         };
-        if !has_word_boundary_before(body, start)
-            || !has_word_boundary_after(body, end)
+        if !has_word_boundary_after(body, end)
             || is_excluded(&excluded_ranges, start..end)
         {
             continue;
@@ -305,7 +307,17 @@ fn excluded_ranges(markdown: &str) -> Vec<Range<usize>> {
     ranges.extend(markdown_link_ranges(markdown));
     ranges.extend(url_ranges(markdown));
     ranges.sort_unstable_by_key(|range| range.start);
-    ranges
+    let mut merged: Vec<Range<usize>> = Vec::new();
+    for range in ranges {
+        if let Some(previous) = merged.last_mut() {
+            if range.start <= previous.end {
+                previous.end = previous.end.max(range.end);
+                continue;
+            }
+        }
+        merged.push(range);
+    }
+    merged
 }
 
 fn fenced_and_indented_code_ranges(markdown: &str) -> Vec<Range<usize>> {
@@ -356,11 +368,11 @@ fn inline_code_ranges(markdown: &str, excluded: &[Range<usize>]) -> Vec<Range<us
     let mut ranges = Vec::new();
     let mut cursor = 0;
     while cursor < bytes.len() {
-        if is_excluded(excluded, cursor..cursor.saturating_add(1)) {
+        if bytes[cursor] != b'`' {
             cursor += 1;
             continue;
         }
-        if bytes[cursor] != b'`' {
+        if is_excluded(excluded, cursor..cursor.saturating_add(1)) {
             cursor += 1;
             continue;
         }
@@ -517,9 +529,10 @@ fn is_word_character(character: char) -> bool {
 }
 
 fn is_excluded(excluded: &[Range<usize>], range: Range<usize>) -> bool {
+    // Both fenced-code ranges and the merged final ranges are ordered and disjoint.
     excluded
-        .iter()
-        .any(|excluded_range| excluded_range.start < range.end && range.start < excluded_range.end)
+        .get(excluded.partition_point(|excluded_range| excluded_range.end <= range.start))
+        .is_some_and(|excluded_range| excluded_range.start < range.end)
 }
 
 fn context_for(markdown: &str, start: usize, end: usize) -> String {

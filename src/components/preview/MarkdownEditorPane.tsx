@@ -121,13 +121,10 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 	for (const match of markdown.matchAll(/\[[^\]\n]+\]\((?:\\.|[^)\n])+\)/g)) {
 		const raw = match[0];
 		const linkMatch = raw.match(
-			/^\[([^\]\n]+)\]\(([^)\n]*?)(?:\s+"[^"\n]*")?\)$/,
+			/^\[([^\]\n]+)\]\(((?:\\.|[^)\n])*?)(?:\s+"[^"\n]*")?\)$/,
 		);
 		const linkText = linkMatch?.[1]?.trim() ?? "";
-		const hrefMatch = raw.match(
-			/^\[[^\]\n]+\]\(([^)\n]*?)(?:\s+"[^"\n]*")?\)$/,
-		);
-		const href = hrefMatch?.[1]?.trim() ?? "";
+		const href = linkMatch?.[2]?.trim().replace(/\\([()])/g, "$1") ?? "";
 		if (!href) continue;
 		if (
 			href.startsWith("#") ||
@@ -315,8 +312,11 @@ export function MarkdownEditorPane({
 		[infoPanelOpen, infoPanelText],
 	);
 	const infoAnalysis = useMemo(
-		() => analyzeNoteInfo(infoPanelText, currentBody, mode === "plain"),
-		[currentBody, infoPanelText, mode],
+		() =>
+			analyzeNoteInfo(infoPanelOpen ? infoPanelText : "", currentBody, {
+				includeHeadings: mode === "plain",
+			}),
+		[currentBody, infoPanelOpen, infoPanelText, mode],
 	);
 	const utf8SizeBytes = useMemo(() => {
 		if (!infoPanelOpen) return 0;
@@ -375,7 +375,10 @@ export function MarkdownEditorPane({
 	const navigationHeadings = useMemo(
 		() =>
 			mode === "plain"
-				? analyzeNoteInfo(text, text, true).headings
+				? analyzeNoteInfo(text, text, {
+						includeHeadings: true,
+						includeStats: false,
+					}).headings
 				: tocHeadings,
 		[mode, text, tocHeadings],
 	);

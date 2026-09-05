@@ -48,7 +48,7 @@ export function parseNotePreview(
 		}
 	}
 	// Limit to first 20 lines for performance
-	const lines = content.split("\n");
+	const lines = content.split("\n", 21);
 	if (lines.length > 20) {
 		content = `${lines.slice(0, 20).join("\n")}\n…`;
 	}

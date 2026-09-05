@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { setPrefetchedNote } from "../../lib/navigationPrefetch";
+import {
+	noteDocumentQueryOptions,
+	setPrefetchedNote,
+} from "../../lib/navigationPrefetch";
+import { queryClient } from "../../lib/queryClient";
 import { subscribeOpenNoteContent } from "../../lib/spaceChange";
 import { type TextFileDoc, invoke } from "../../lib/tauri";
 import { normalizeRelPath } from "../../utils/path";
@@ -201,11 +205,16 @@ export function useMarkdownDocumentSession({
 	}, [clearPulse, spacePath]);
 
 	const loadDoc = useCallback(
-		async (showRefreshFeedback = false) => {
+		async (usePrefetch: boolean) => {
 			const sessionId = documentSessionRef.current;
 			setError("");
 			try {
-				const doc = await invoke("space_read_text", { path: relPath });
+				const doc = usePrefetch
+					? await queryClient.fetchQuery({
+							...noteDocumentQueryOptions(relPath),
+							staleTime: 0,
+						})
+					: await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
 				const shouldReplaceText = textRef.current === savedTextRef.current;
 				const shouldChooseInitialMode =
@@ -227,16 +236,12 @@ export function useMarkdownDocumentSession({
 				setSavedText(doc.text);
 				setLastSavedMtimeMs(doc.mtime_ms);
 				setLoadedRelPath(relPath);
-				if (showRefreshFeedback) {
-					flashPulse("reloaded");
-				}
 			} catch (e) {
 				if (!isCurrentSession(sessionId)) return;
 				setError(extractErrorMessage(e));
 			}
 		},
 		[
-			flashPulse,
 			isCurrentSession,
 			relPath,
 			replaceText,
@@ -293,12 +298,10 @@ export function useMarkdownDocumentSession({
 	useEffect(() => {
 		const spaceChanged = loadedSpacePathRef.current !== spacePath;
 		loadedSpacePathRef.current = spacePath;
-		// A stale `initialDoc` from the previous space must not block a reload:
-		// the space-change effect already cleared local state, so this note
-		// still needs to be fetched from the newly active space.
-		if (initialDoc && !spaceChanged) return;
-		void loadDoc();
-	}, [initialDoc, loadDoc, spacePath]);
+		// Cached text seeds the editor, but opening a note must revalidate disk
+		// content even if its filesystem change event was missed.
+		void loadDoc(!spaceChanged);
+	}, [loadDoc, spacePath]);
 
 	const persistDoc = useCallback(
 		async (

@@ -491,6 +491,7 @@ export function AppShell() {
 			if (!path) return;
 			closeNotePeek();
 			if (isMarkdownPath(path)) {
+				prefetchNote(path);
 				setActiveDirPath(parentDir(path));
 				openFileTab(path);
 				return;

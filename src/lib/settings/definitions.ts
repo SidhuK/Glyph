@@ -506,18 +506,16 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("appearance-app-icon"),
 		nativeConsumption: { kind: "settings-store", consumer: "app-icon" },
 		normalize: (value) =>
-			value === "red-monogram" ||
-			value === "orange-glyph" ||
 			value === "blue-star" ||
-			value === "blue-glyph"
+			value === "blue-glyph" ||
+			value === "confetti-star"
 				? value
 				: "default",
 		parse: (value) =>
 			value === "default" ||
-			value === "red-monogram" ||
-			value === "orange-glyph" ||
 			value === "blue-star" ||
-			value === "blue-glyph"
+			value === "blue-glyph" ||
+			value === "confetti-star"
 				? parsed(value)
 				: INVALID_PARSE_RESULT,
 		read: (settings) => settings.ui.appIcon,

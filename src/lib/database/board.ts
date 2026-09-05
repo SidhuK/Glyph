@@ -15,6 +15,11 @@ import type {
 
 export const DATABASE_BOARD_EMPTY_LANE_ID = "__empty__";
 
+const boardCollator = new Intl.Collator(undefined, {
+	numeric: true,
+	sensitivity: "base",
+});
+
 export type DatabaseBoardWorkflowState = "open" | "done" | "archived";
 
 export interface DatabaseBoardLane {
@@ -159,10 +164,7 @@ function compareBoardRows(left: DatabaseRow, right: DatabaseRow): number {
 	} else if (!Number.isNaN(rightUpdated)) {
 		return 1;
 	}
-	return left.note_path.localeCompare(right.note_path, undefined, {
-		numeric: true,
-		sensitivity: "base",
-	});
+	return boardCollator.compare(left.note_path, right.note_path);
 }
 
 function sortLaneRows(rows: DatabaseRow[]): DatabaseRow[] {
@@ -384,10 +386,7 @@ export function createDatabaseRowGroups(
 	);
 	const emptyGroup = groups.get(DATABASE_BOARD_EMPTY_LANE_ID);
 	filledGroups.sort((left, right) =>
-		left.label.localeCompare(right.label, undefined, {
-			numeric: true,
-			sensitivity: "base",
-		}),
+		boardCollator.compare(left.label, right.label),
 	);
 	if (!ascending) filledGroups.reverse();
 	return emptyGroup ? [...filledGroups, emptyGroup] : filledGroups;
@@ -399,6 +398,7 @@ export function orderBoardLanes(
 ): DatabaseBoardLane[] {
 	if (lanes.length === 0) return [];
 	const laneMap = new Map(lanes.map((lane) => [lane.id, lane]));
+	const previousLaneIdSet = new Set(previousLaneIds);
 	const nextLaneIds = [
 		...previousLaneIds.filter(
 			(laneId) =>
@@ -409,7 +409,7 @@ export function orderBoardLanes(
 			.filter(
 				(laneId) =>
 					laneId !== DATABASE_BOARD_EMPTY_LANE_ID &&
-					!previousLaneIds.includes(laneId),
+					!previousLaneIdSet.has(laneId),
 			),
 	];
 	if (laneMap.has(DATABASE_BOARD_EMPTY_LANE_ID)) {
@@ -467,16 +467,18 @@ export function moveBoardCardToLane(
 	for (const laneId of laneIds) {
 		const knownRows = laneRowsById[laneId] ?? [];
 		const knownRowSet = new Set(knownRows);
+		const previousOrder = cardOrderByLane[laneId] ?? [];
+		const previousOrderSet = new Set(previousOrder);
 		const shouldRemoveFromLane = sourceLaneIds.has(laneId);
 		nextOrder[laneId] = [
-			...(cardOrderByLane[laneId] ?? []).filter(
+			...previousOrder.filter(
 				(path) =>
 					(!shouldRemoveFromLane || path !== notePath) && knownRowSet.has(path),
 			),
 			...knownRows.filter(
 				(path) =>
 					(!shouldRemoveFromLane || path !== notePath) &&
-					!(cardOrderByLane[laneId] ?? []).includes(path),
+					!previousOrderSet.has(path),
 			),
 		];
 	}

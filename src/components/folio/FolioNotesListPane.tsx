@@ -40,6 +40,10 @@ interface FolioNotesListPaneProps {
 const FOLIO_SORT_MODE_STORAGE_KEY = "glyph.folio.sortMode";
 const FOLIO_NOTE_ROW_ESTIMATE = 104;
 const FOLIO_FILE_ROW_ESTIMATE = 42;
+const titleCollator = new Intl.Collator(undefined, {
+	sensitivity: "base",
+	numeric: true,
+});
 type FolioVirtualRow = {
 	id: string;
 	kind: "note";
@@ -106,10 +110,8 @@ function compareNullableDates(
 
 function compareTitles(left: FolioItem, right: FolioItem): number {
 	return (
-		noteTitle(left).localeCompare(noteTitle(right), undefined, {
-			sensitivity: "base",
-			numeric: true,
-		}) || left.note_path.localeCompare(right.note_path)
+		titleCollator.compare(noteTitle(left), noteTitle(right)) ||
+		left.note_path.localeCompare(right.note_path)
 	);
 }
 
@@ -170,13 +172,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
+	const sortedNotes = useMemo(
+		() => [...notes].sort((left, right) => compareNotes(left, right, sortMode)),
+		[notes, sortMode],
+	);
 	const visibleNotes = useMemo(
-		() =>
-			notes
-				.filter((note) => noteMatchesFilter(note, searchQuery))
-				.slice()
-				.sort((left, right) => compareNotes(left, right, sortMode)),
-		[notes, searchQuery, sortMode],
+		() => sortedNotes.filter((note) => noteMatchesFilter(note, searchQuery)),
+		[sortedNotes, searchQuery],
 	);
 	const virtualRows = useMemo<FolioVirtualRow[]>(
 		() =>
