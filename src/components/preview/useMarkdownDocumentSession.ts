@@ -210,7 +210,10 @@ export function useMarkdownDocumentSession({
 			setError("");
 			try {
 				const doc = usePrefetch
-					? await queryClient.fetchQuery(noteDocumentQueryOptions(relPath))
+					? await queryClient.fetchQuery({
+							...noteDocumentQueryOptions(relPath),
+							staleTime: 0,
+						})
 					: await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
 				const shouldReplaceText = textRef.current === savedTextRef.current;
@@ -295,12 +298,10 @@ export function useMarkdownDocumentSession({
 	useEffect(() => {
 		const spaceChanged = loadedSpacePathRef.current !== spacePath;
 		loadedSpacePathRef.current = spacePath;
-		// A stale `initialDoc` from the previous space must not block a reload:
-		// the space-change effect already cleared local state, so this note
-		// still needs to be fetched from the newly active space.
-		if (initialDoc && !spaceChanged) return;
+		// Cached text seeds the editor, but opening a note must revalidate disk
+		// content even if its filesystem change event was missed.
 		void loadDoc(!spaceChanged);
-	}, [initialDoc, loadDoc, spacePath]);
+	}, [loadDoc, spacePath]);
 
 	const persistDoc = useCallback(
 		async (
