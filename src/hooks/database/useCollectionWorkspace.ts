@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
 	collectionFolderBreadcrumbParts,
 	normalizeCollectionFolderPath,
@@ -6,6 +7,7 @@ import {
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import {
 	readStoredSelectedDatabaseId,
+	readStoredSelectedViewId,
 	resolveSelectedDatabaseId,
 	resolveSelectedViewId,
 	writeStoredSelectedDatabaseId,
@@ -14,19 +16,17 @@ import {
 import { shouldReloadSummaries } from "../../lib/database/summaries";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
+	databaseDocumentQueryOptions,
+	databaseSummariesQueryOptions,
 	getPrefetchedDatabaseSummaries,
 	invalidateDatabasePrefetch,
 	invalidateDatabaseSummariesPrefetch,
-	prefetchDatabaseDocument,
-	prefetchDatabaseSummaries,
-	refetchDatabaseDocument,
 	setPrefetchedDatabaseDocument,
 } from "../../lib/navigationPrefetch";
 import type { SpaceChange } from "../../lib/spaceChange";
 import type {
 	WorkspaceDatabaseDefinition,
 	WorkspaceDatabaseDocument,
-	WorkspaceDatabaseSummary,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -37,22 +37,6 @@ export interface UseCollectionWorkspaceOptions extends PaneErrorHandlers {
 	databasesOpenRequest: DatabasesOpenRequest;
 	onConsumeOpenRequest?: () => void;
 	initialDocument?: WorkspaceDatabaseDocument | null;
-}
-
-function resolveInitialViewId(
-	databasesOpenRequest: DatabasesOpenRequest,
-	initialDocument: WorkspaceDatabaseDocument | null,
-): string | null {
-	const databaseId =
-		initialDocument?.database.id ?? databasesOpenRequest.databaseId ?? null;
-	if (
-		!databaseId ||
-		!initialDocument ||
-		initialDocument.database.id !== databaseId
-	) {
-		return null;
-	}
-	return resolveSelectedViewId(databaseId, initialDocument.database.views);
 }
 
 const COLLECTION_DOCUMENT_REFRESH_MS = 200;
@@ -90,6 +74,10 @@ function collectionChangeIsRelevant(
 	);
 }
 
+function requestKey(request: DatabasesOpenRequest) {
+	return `${request.databaseId ?? ""}:${request.nonce}`;
+}
+
 export function useCollectionWorkspace({
 	databasesOpenRequest,
 	onConsumeOpenRequest,
@@ -97,130 +85,107 @@ export function useCollectionWorkspace({
 	clearError,
 	initialDocument = null,
 }: UseCollectionWorkspaceOptions) {
-	const [summaries, setSummaries] = useState<WorkspaceDatabaseSummary[]>(
-		() => getPrefetchedDatabaseSummaries() ?? [],
-	);
-	const [selectedDatabaseId, setSelectedDatabaseIdState] = useState<
+	const queryClient = useQueryClient();
+	const [selectedDatabaseIdState, setSelectedDatabaseIdState] = useState<
 		string | null
 	>(() => databasesOpenRequest.databaseId ?? readStoredSelectedDatabaseId());
-	const [document, setDocument] = useState<WorkspaceDatabaseDocument | null>(
-		initialDocument,
+	const [selectedViewIdState, setSelectedViewIdState] = useState<string | null>(
+		null,
 	);
-	const [loading, setLoading] = useState(() => !initialDocument);
 	const [nameDraft, setNameDraft] = useState(
 		() => initialDocument?.database.name ?? "",
 	);
-	const [selectedViewId, setSelectedViewIdState] = useState<string | null>(() =>
-		resolveInitialViewId(databasesOpenRequest, initialDocument),
+	const [namedDocumentId, setNamedDocumentId] = useState<string | null>(
+		() => initialDocument?.database.id ?? null,
 	);
 	const [createCollectionOpen, setCreateCollectionOpen] = useState(false);
+	const [seenRequestKey, setSeenRequestKey] = useState(() =>
+		requestKey(databasesOpenRequest),
+	);
 
-	const previousOpenRequestRef = useRef(databasesOpenRequest);
-	const previousDatabaseIdRef = useRef(selectedDatabaseId);
-	const documentIdRef = useRef(document?.database.id ?? null);
-	const documentRef = useRef(document);
-	const selectedDatabaseIdRef = useRef(selectedDatabaseId);
 	const saveQueueRef = useRef(Promise.resolve());
-	documentIdRef.current = document?.database.id ?? null;
-	documentRef.current = document;
+	const collectionRefreshTimerRef = useRef<number | null>(null);
+	const selectedDatabaseIdRef = useRef(selectedDatabaseIdState);
+	const documentRef = useRef<WorkspaceDatabaseDocument | null>(initialDocument);
+
+	const summariesQuery = useQuery({
+		...databaseSummariesQueryOptions(),
+		initialData: getPrefetchedDatabaseSummaries() ?? undefined,
+	});
+	const summaries = summariesQuery.data ?? [];
+	const summariesReady = !summariesQuery.isPending || summaries.length > 0;
+	const nextRequestKey = requestKey(databasesOpenRequest);
+	const requestChanged = seenRequestKey !== nextRequestKey;
+	const currentSelection =
+		requestChanged && databasesOpenRequest.databaseId
+			? databasesOpenRequest.databaseId
+			: selectedDatabaseIdState;
+	const selectedDatabaseId = summariesReady
+		? resolveSelectedDatabaseId(summaries, {
+				current: currentSelection,
+				openRequestId: databasesOpenRequest.databaseId,
+				storedId: readStoredSelectedDatabaseId(),
+			})
+		: currentSelection;
 	selectedDatabaseIdRef.current = selectedDatabaseId;
 
-	const loadSummaries = useCallback(async () => {
-		const next = await prefetchDatabaseSummaries();
-		const storedDatabaseId = readStoredSelectedDatabaseId();
-		setSummaries(next);
-		setSelectedDatabaseIdState((current) =>
-			resolveSelectedDatabaseId(next, {
-				current,
-				openRequestId: databasesOpenRequest.databaseId,
-				storedId: storedDatabaseId,
-			}),
-		);
-	}, [databasesOpenRequest.databaseId]);
-
-	useEffect(() => {
-		const previousOpenRequest = previousOpenRequestRef.current;
-		const requestChanged =
-			previousOpenRequest.databaseId !== databasesOpenRequest.databaseId ||
-			previousOpenRequest.nonce !== databasesOpenRequest.nonce;
-		previousOpenRequestRef.current = databasesOpenRequest;
-
-		if (!requestChanged) return;
-
+	if (requestChanged) {
+		setSeenRequestKey(nextRequestKey);
 		if (databasesOpenRequest.databaseId) {
 			setSelectedDatabaseIdState(databasesOpenRequest.databaseId);
 			setSelectedViewIdState(null);
 		}
-
 		if (databasesOpenRequest.openCreateDialog) {
 			setCreateCollectionOpen(true);
-			onConsumeOpenRequest?.();
+			queueMicrotask(() => onConsumeOpenRequest?.());
 		}
-	}, [databasesOpenRequest, onConsumeOpenRequest]);
-
-	useEffect(() => {
-		void loadSummaries().catch((cause) => setError(extractErrorMessage(cause)));
-	}, [loadSummaries, setError]);
-
-	useEffect(() => {
+	} else if (summariesReady && selectedDatabaseId !== selectedDatabaseIdState) {
+		setSelectedDatabaseIdState(selectedDatabaseId);
+		setSelectedViewIdState(null);
+	}
+	if (summariesReady && selectedDatabaseId !== readStoredSelectedDatabaseId()) {
 		writeStoredSelectedDatabaseId(selectedDatabaseId);
-	}, [selectedDatabaseId]);
+	}
 
-	useEffect(() => {
-		const databaseChanged =
-			previousDatabaseIdRef.current !== selectedDatabaseId;
-		previousDatabaseIdRef.current = selectedDatabaseId;
+	const documentQuery = useQuery({
+		...databaseDocumentQueryOptions(selectedDatabaseId ?? ""),
+		initialData:
+			initialDocument && selectedDatabaseId === initialDocument.database.id
+				? initialDocument
+				: undefined,
+	});
+	const document = selectedDatabaseId ? (documentQuery.data ?? null) : null;
+	documentRef.current = document;
 
-		if (!selectedDatabaseId || databaseChanged) {
-			setSelectedViewIdState(null);
-		}
-	}, [selectedDatabaseId]);
+	if (document && document.database.id !== namedDocumentId) {
+		setNamedDocumentId(document.database.id);
+		setNameDraft(document.database.name);
+	} else if (!document && namedDocumentId) {
+		setNamedDocumentId(null);
+		setNameDraft("");
+	}
 
-	useEffect(() => {
-		if (!selectedDatabaseId) {
-			setDocument(null);
-			setNameDraft("");
-			setLoading(false);
-			return;
-		}
+	const selectedViewId =
+		selectedDatabaseId &&
+		document &&
+		document.database.id === selectedDatabaseId
+			? resolveSelectedViewId(
+					selectedDatabaseId,
+					document.database.views,
+					selectedViewIdState,
+				)
+			: selectedViewIdState;
+	if (
+		selectedDatabaseId &&
+		selectedViewId &&
+		document &&
+		document.database.id === selectedDatabaseId &&
+		document.database.views.some((view) => view.id === selectedViewId) &&
+		readStoredSelectedViewId(selectedDatabaseId) !== selectedViewId
+	) {
+		writeStoredSelectedViewId(selectedDatabaseId, selectedViewId);
+	}
 
-		let cancelled = false;
-		const needsFetch = documentIdRef.current !== selectedDatabaseId;
-		setLoading(needsFetch);
-		clearError();
-		if (needsFetch) {
-			setDocument(null);
-			setNameDraft("");
-		}
-
-		void prefetchDatabaseDocument(selectedDatabaseId)
-			.then((next) => {
-				if (cancelled) return;
-				setDocument(next);
-				setNameDraft(next.database.name);
-			})
-			.catch((cause) => {
-				if (cancelled) return;
-				setError(extractErrorMessage(cause));
-				setDocument(null);
-			})
-			.finally(() => {
-				if (!cancelled) setLoading(false);
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [clearError, selectedDatabaseId, setError]);
-
-	const collectionRefreshTimerRef = useRef<number | null>(null);
-	useEffect(() => {
-		return () => {
-			if (collectionRefreshTimerRef.current !== null) {
-				window.clearTimeout(collectionRefreshTimerRef.current);
-			}
-		};
-	}, []);
 	useTauriEvent("space:fs_changed", (change) => {
 		const activeDatabaseId = selectedDatabaseIdRef.current;
 		if (!activeDatabaseId) return;
@@ -237,59 +202,19 @@ export function useCollectionWorkspace({
 		collectionRefreshTimerRef.current = window.setTimeout(() => {
 			collectionRefreshTimerRef.current = null;
 			invalidateDatabasePrefetch(activeDatabaseId);
-			void refetchDatabaseDocument(activeDatabaseId)
-				.then((next) => {
-					if (selectedDatabaseIdRef.current !== activeDatabaseId) return;
-					documentRef.current = next;
-					setDocument(next);
-					clearError();
-				})
-				.catch((cause) => {
-					if (selectedDatabaseIdRef.current !== activeDatabaseId) return;
-					setError(extractErrorMessage(cause));
-				});
 		}, COLLECTION_DOCUMENT_REFRESH_MS);
 	});
 
-	useEffect(() => {
-		if (
-			!selectedDatabaseId ||
-			!document ||
-			document.database.id !== selectedDatabaseId ||
-			document.database.views.length === 0
-		) {
-			return;
-		}
-		setSelectedViewIdState((current) =>
-			resolveSelectedViewId(
-				selectedDatabaseId,
-				document.database.views,
-				current,
-			),
-		);
-	}, [document, selectedDatabaseId]);
-
-	useEffect(() => {
-		if (
-			!selectedDatabaseId ||
-			!selectedViewId ||
-			!document ||
-			document.database.id !== selectedDatabaseId ||
-			document.database.views.length === 0 ||
-			!document.database.views.some((view) => view.id === selectedViewId)
-		) {
-			return;
-		}
-		writeStoredSelectedViewId(selectedDatabaseId, selectedViewId);
-	}, [document, selectedDatabaseId, selectedViewId]);
+	const loadSummaries = useCallback(async () => {
+		invalidateDatabaseSummariesPrefetch();
+		await queryClient.refetchQueries({
+			queryKey: databaseSummariesQueryOptions().queryKey,
+		});
+	}, [queryClient]);
 
 	const setSelectedDatabaseId = useCallback((databaseId: string) => {
 		setSelectedDatabaseIdState(databaseId);
 		setSelectedViewIdState(null);
-	}, []);
-
-	const setSelectedViewId = useCallback((viewId: string | null) => {
-		setSelectedViewIdState(viewId);
 	}, []);
 
 	const openCreateCollectionDialog = useCallback(() => {
@@ -321,15 +246,13 @@ export function useCollectionWorkspace({
 					}
 					clearError();
 					documentRef.current = saved;
-					setDocument(saved);
+					setPrefetchedDatabaseDocument(saved.database.id, saved);
 					setNameDraft(saved.database.name);
 					invalidateDatabasePrefetch(saved.database.id);
-					setPrefetchedDatabaseDocument(saved.database.id, saved);
 					if (
 						!prevDatabase ||
 						shouldReloadSummaries(prevDatabase, saved.database)
 					) {
-						invalidateDatabaseSummariesPrefetch();
 						await loadSummaries();
 					}
 					return saved;
@@ -370,9 +293,7 @@ export function useCollectionWorkspace({
 				});
 				clearError();
 				documentRef.current = saved;
-				setDocument(saved);
 				setPrefetchedDatabaseDocument(saved.database.id, saved);
-				invalidateDatabaseSummariesPrefetch();
 				await loadSummaries();
 			} catch (cause) {
 				setError(extractErrorMessage(cause));
@@ -397,8 +318,8 @@ export function useCollectionWorkspace({
 			await invoke("databases_delete", { database_id: document.database.id });
 			clearError();
 			invalidateDatabasePrefetch(document.database.id);
-			invalidateDatabaseSummariesPrefetch();
-			setDocument(null);
+			setNamedDocumentId(null);
+			setNameDraft("");
 			await loadSummaries();
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
@@ -408,12 +329,10 @@ export function useCollectionWorkspace({
 	const selectCollection = useCallback(
 		async (created: WorkspaceDatabaseDocument) => {
 			clearError();
-			invalidateDatabaseSummariesPrefetch();
 			setPrefetchedDatabaseDocument(created.database.id, created);
 			setSelectedDatabaseIdState(created.database.id);
-			setDocument(created);
+			setNamedDocumentId(created.database.id);
 			setNameDraft(created.database.name);
-			setLoading(false);
 			setSelectedViewIdState(
 				resolveSelectedViewId(created.database.id, created.database.views),
 			);
@@ -429,6 +348,11 @@ export function useCollectionWorkspace({
 		return collectionFolderBreadcrumbParts(document.database.source.value);
 	}, [document]);
 
+	const loadError =
+		(summariesQuery.error && extractErrorMessage(summariesQuery.error)) ||
+		(documentQuery.error && extractErrorMessage(documentQuery.error)) ||
+		"";
+
 	return {
 		summaries,
 		selectedDatabaseId,
@@ -438,7 +362,7 @@ export function useCollectionWorkspace({
 		setCreateCollectionOpen,
 		openCreateCollectionDialog,
 		document,
-		loading,
+		loading: Boolean(selectedDatabaseId) && documentQuery.isPending,
 		nameDraft,
 		setNameDraft,
 		saveDatabase,
@@ -448,6 +372,7 @@ export function useCollectionWorkspace({
 		collectionFolderBreadcrumb,
 		selectCollection,
 		selectedViewId,
-		setSelectedViewId,
+		setSelectedViewId: setSelectedViewIdState,
+		loadError,
 	};
 }

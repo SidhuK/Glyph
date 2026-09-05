@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AppSettings } from "./settings/model";
 
 const { emitMock, listenMock, storeState } = vi.hoisted(() => ({
 	emitMock: vi.fn(() => Promise.resolve()),
@@ -50,232 +51,195 @@ vi.mock("@tauri-apps/plugin-store", () => ({
 	},
 }));
 
-describe("settings colorful headings", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
+function resetSettingsHarness() {
+	vi.resetModules();
+	emitMock.mockClear();
+	storeState.clear();
+}
 
-	it("defaults colorful headings to false", async () => {
-		const { loadSettings } = await import("./settings");
+const DURABLE_SETTING_CASES = [
+	{
+		name: "colorful headings",
+		storeKey: "editor.colorfulHeadings",
+		read: (settings: AppSettings) => settings.editor.colorfulHeadings,
+		defaultValue: false,
+		storedValue: true,
+		writeKey: "editorColorfulHeadings",
+		writes: [{ value: true, payload: { editor: { colorfulHeadings: true } } }],
+	},
+	{
+		name: "spell check",
+		storeKey: "editor.spellCheck",
+		read: (settings: AppSettings) => settings.editor.spellCheck,
+		defaultValue: true,
+		storedValue: false,
+		writeKey: "editorSpellCheck",
+		writes: [{ value: false, payload: { editor: { spellCheck: false } } }],
+	},
+	{
+		name: "Raw Markdown Vim Mode",
+		storeKey: "editor.rawMarkdownVimMode",
+		read: (settings: AppSettings) => settings.editor.rawMarkdownVimMode,
+		defaultValue: false,
+		storedValue: true,
+		writeKey: "editorRawMarkdownVimMode",
+		writes: [
+			{ value: true, payload: { editor: { rawMarkdownVimMode: true } } },
+		],
+	},
+	{
+		name: "formatting bar",
+		storeKey: "editor.showFormatBar",
+		read: (settings: AppSettings) => settings.editor.showFormatBar,
+		defaultValue: true,
+		storedValue: false,
+		writeKey: "editorShowFormatBar",
+		writes: [{ value: false, payload: { editor: { showFormatBar: false } } }],
+	},
+	{
+		name: "note side peek",
+		storeKey: "ui.noteSidePeek",
+		read: (settings: AppSettings) => settings.ui.noteSidePeek,
+		defaultValue: false,
+		storedValue: true,
+		invalidStoredValue: "yes",
+		writeKey: "noteSidePeek",
+		writes: [{ value: true, payload: { ui: { noteSidePeek: true } } }],
+	},
+	{
+		name: "Folio Mode",
+		storeKey: "ui.folioMode",
+		read: (settings: AppSettings) => settings.ui.folioMode,
+		defaultValue: false,
+		storedValue: true,
+		writeKey: "folioMode",
+		writes: [{ value: true, payload: { ui: { folioMode: true } } }],
+	},
+	{
+		name: "resume last session",
+		storeKey: "ui.resumeLastSession",
+		read: (settings: AppSettings) => settings.ui.resumeLastSession,
+		defaultValue: false,
+		writeKey: "resumeLastSession",
+		writes: [{ value: true, payload: { ui: { resumeLastSession: true } } }],
+	},
+	{
+		name: "corner radius style",
+		storeKey: "ui.cornerRadiusStyle",
+		read: (settings: AppSettings) => settings.ui.cornerRadiusStyle,
+		defaultValue: "default",
+		storedValue: "round",
+		invalidStoredValue: "invalid",
+		writeKey: "cornerRadiusStyle",
+		writes: [
+			{ value: "sharp", payload: { ui: { cornerRadiusStyle: "sharp" } } },
+			{ value: "round", payload: { ui: { cornerRadiusStyle: "round" } } },
+		],
+	},
+	{
+		name: "app translucency",
+		storeKey: "ui.translucentApp",
+		read: (settings: AppSettings) => settings.ui.translucentApp,
+		defaultValue: false,
+		storedValue: true,
+		writeKey: "translucentApp",
+		writes: [
+			{ value: true, payload: { ui: { translucentApp: true } } },
+			{ value: false, payload: { ui: { translucentApp: false } } },
+		],
+	},
+	{
+		name: "editor width mode",
+		storeKey: "editor.editorWidthMode",
+		read: (settings: AppSettings) => settings.editor.editorWidthMode,
+		defaultValue: "compact",
+		storedValue: "wide",
+		writeKey: "editorWidthMode",
+		writes: [
+			{
+				value: "comfortable",
+				payload: { editor: { editorWidthMode: "comfortable" } },
+			},
+		],
+	},
+	{
+		name: "frontmatter visibility",
+		storeKey: "editor.showFrontmatterInEditor",
+		read: (settings: AppSettings) => settings.editor.showFrontmatterInEditor,
+		defaultValue: false,
+		storedValue: true,
+		writeKey: "editorShowFrontmatterInEditor",
+		writes: [
+			{
+				value: true,
+				payload: { editor: { showFrontmatterInEditor: true } },
+			},
+		],
+	},
+	{
+		name: "language",
+		storeKey: "ui.language",
+		read: (settings: AppSettings) => settings.ui.language,
+		defaultValue: "en",
+		storedValue: "ja",
+		invalidStoredValue: "system",
+		writeKey: "language",
+		writes: [{ value: "es", payload: { ui: { language: "es" } } }],
+	},
+] as const;
 
-		const settings = await loadSettings();
+describe("durable settings", () => {
+	beforeEach(resetSettingsHarness);
 
-		expect(settings.editor.colorfulHeadings).toBe(false);
-	});
+	it.each(DURABLE_SETTING_CASES)(
+		"defaults $name",
+		async ({ read, defaultValue }) => {
+			const { loadSettings } = await import("./settings");
+			expect(read(await loadSettings())).toBe(defaultValue);
+		},
+	);
 
-	it("loads colorful headings from the store", async () => {
-		storeState.set("editor.colorfulHeadings", true);
-		const { loadSettings } = await import("./settings");
+	it.each(DURABLE_SETTING_CASES.filter((setting) => "storedValue" in setting))(
+		"loads $name from the store",
+		async ({ storeKey, storedValue, read }) => {
+			storeState.set(storeKey, storedValue);
+			const { loadSettings } = await import("./settings");
+			expect(read(await loadSettings())).toBe(storedValue);
+		},
+	);
 
-		const settings = await loadSettings();
+	it.each(
+		DURABLE_SETTING_CASES.filter((setting) => "invalidStoredValue" in setting),
+	)(
+		"falls back to the default for invalid $name values",
+		async ({ storeKey, invalidStoredValue, read, defaultValue }) => {
+			storeState.set(storeKey, invalidStoredValue);
+			const { loadSettings } = await import("./settings");
+			expect(read(await loadSettings())).toBe(defaultValue);
+		},
+	);
 
-		expect(settings.editor.colorfulHeadings).toBe(true);
-	});
-
-	it("persists and emits colorful headings changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-
-		await DURABLE_SETTINGS.editorColorfulHeadings.write(true);
-
-		expect(storeState.get("editor.colorfulHeadings")).toBe(true);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			editor: { colorfulHeadings: true },
-		});
-	});
-});
-
-describe("settings spell check", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults spell check to true", async () => {
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.editor.spellCheck).toBe(true);
-	});
-
-	it("loads spell check from the store", async () => {
-		storeState.set("editor.spellCheck", false);
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.editor.spellCheck).toBe(false);
-	});
-
-	it("persists and emits spell check changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-
-		await DURABLE_SETTINGS.editorSpellCheck.write(false);
-
-		expect(storeState.get("editor.spellCheck")).toBe(false);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			editor: { spellCheck: false },
-		});
-	});
-});
-
-describe("settings Raw Markdown Vim Mode", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults Raw Markdown Vim Mode to false", async () => {
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.editor.rawMarkdownVimMode).toBe(false);
-	});
-
-	it("loads Raw Markdown Vim Mode from the store", async () => {
-		storeState.set("editor.rawMarkdownVimMode", true);
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.editor.rawMarkdownVimMode).toBe(true);
-	});
-
-	it("persists and emits Raw Markdown Vim Mode changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-
-		await DURABLE_SETTINGS.editorRawMarkdownVimMode.write(true);
-
-		expect(storeState.get("editor.rawMarkdownVimMode")).toBe(true);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			editor: { rawMarkdownVimMode: true },
-		});
-	});
-});
-
-describe("settings format bar", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults the formatting bar to shown", async () => {
-		const { loadSettings } = await import("./settings");
-		const settings = await loadSettings();
-		expect(settings.editor.showFormatBar).toBe(true);
-	});
-
-	it("loads the formatting bar from the store", async () => {
-		storeState.set("editor.showFormatBar", false);
-		const { loadSettings } = await import("./settings");
-		const settings = await loadSettings();
-		expect(settings.editor.showFormatBar).toBe(false);
-	});
-
-	it("persists and emits formatting bar changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-		await DURABLE_SETTINGS.editorShowFormatBar.write(false);
-		expect(storeState.get("editor.showFormatBar")).toBe(false);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			editor: { showFormatBar: false },
-		});
-	});
-});
-
-describe("settings note side peek", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults note side peek to false", async () => {
-		const { loadSettings } = await import("./settings");
-		const settings = await loadSettings();
-		expect(settings.ui.noteSidePeek).toBe(false);
-	});
-
-	it("loads note side peek from the store", async () => {
-		storeState.set("ui.noteSidePeek", true);
-		const { loadSettings } = await import("./settings");
-		const settings = await loadSettings();
-		expect(settings.ui.noteSidePeek).toBe(true);
-	});
-
-	it("falls back to false for invalid note side peek values", async () => {
-		storeState.set("ui.noteSidePeek", "yes");
-		const { loadSettings } = await import("./settings");
-		const settings = await loadSettings();
-		expect(settings.ui.noteSidePeek).toBe(false);
-	});
-
-	it("persists and emits note side peek changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-		await DURABLE_SETTINGS.noteSidePeek.write(true);
-		expect(storeState.get("ui.noteSidePeek")).toBe(true);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			ui: { noteSidePeek: true },
-		});
-	});
-});
-
-describe("settings Folio Mode", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults Folio Mode to false", async () => {
-		const { loadSettings } = await import("./settings");
-		const settings = await loadSettings();
-		expect(settings.ui.folioMode).toBe(false);
-	});
-
-	it("loads Folio Mode from the store", async () => {
-		storeState.set("ui.folioMode", true);
-		const { loadSettings } = await import("./settings");
-		const settings = await loadSettings();
-		expect(settings.ui.folioMode).toBe(true);
-	});
-
-	it("persists and emits Folio Mode changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-		await DURABLE_SETTINGS.folioMode.write(true);
-		expect(storeState.get("ui.folioMode")).toBe(true);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			ui: { folioMode: true },
-		});
-	});
+	it.each(DURABLE_SETTING_CASES)(
+		"persists and emits $name changes",
+		async ({ writeKey, writes, storeKey }) => {
+			const { DURABLE_SETTINGS } = await import("./settings");
+			const setting = DURABLE_SETTINGS[writeKey] as {
+				write: (value: unknown) => Promise<unknown>;
+			};
+			for (const write of writes) {
+				await setting.write(write.value);
+				expect(storeState.get(storeKey)).toBe(write.value);
+				expect(emitMock).toHaveBeenCalledWith(
+					"settings:updated",
+					write.payload,
+				);
+			}
+		},
+	);
 });
 
 describe("settings workspace session restore", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults resume last session to false", async () => {
-		const { loadSettings } = await import("./settings");
-		const settings = await loadSettings();
-		expect(settings.ui.resumeLastSession).toBe(false);
-	});
-
-	it("persists and emits resume last session changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-		await DURABLE_SETTINGS.resumeLastSession.write(true);
-		expect(storeState.get("ui.resumeLastSession")).toBe(true);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			ui: { resumeLastSession: true },
-		});
-	});
+	beforeEach(resetSettingsHarness);
 
 	it("saves normalized per-space workspace session snapshots", async () => {
 		const { loadWorkspaceSessionSnapshot, saveWorkspaceSessionSnapshot } =
@@ -392,107 +356,8 @@ describe("settings workspace session restore", () => {
 	});
 });
 
-describe("settings corner radius style", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults corner radius style to default", async () => {
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.ui.cornerRadiusStyle).toBe("default");
-	});
-
-	it("loads corner radius style from the store", async () => {
-		storeState.set("ui.cornerRadiusStyle", "round");
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.ui.cornerRadiusStyle).toBe("round");
-	});
-
-	it("falls back to default for invalid corner radius style values", async () => {
-		storeState.set("ui.cornerRadiusStyle", "invalid");
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.ui.cornerRadiusStyle).toBe("default");
-	});
-
-	it("persists and emits corner radius style changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-
-		await DURABLE_SETTINGS.cornerRadiusStyle.write("sharp");
-
-		expect(storeState.get("ui.cornerRadiusStyle")).toBe("sharp");
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			ui: { cornerRadiusStyle: "sharp" },
-		});
-
-		await DURABLE_SETTINGS.cornerRadiusStyle.write("round");
-
-		expect(storeState.get("ui.cornerRadiusStyle")).toBe("round");
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			ui: { cornerRadiusStyle: "round" },
-		});
-	});
-});
-
-describe("settings app translucency", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults app translucency to false", async () => {
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.ui.translucentApp).toBe(false);
-	});
-
-	it("loads app translucency from the store", async () => {
-		storeState.set("ui.translucentApp", true);
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.ui.translucentApp).toBe(true);
-	});
-
-	it("persists and emits app translucency changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-
-		await DURABLE_SETTINGS.translucentApp.write(true);
-
-		expect(storeState.get("ui.translucentApp")).toBe(true);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			ui: { translucentApp: true },
-		});
-
-		await DURABLE_SETTINGS.translucentApp.write(false);
-
-		expect(storeState.get("ui.translucentApp")).toBe(false);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			ui: { translucentApp: false },
-		});
-	});
-});
-
 describe("settings editor font family", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
+	beforeEach(resetSettingsHarness);
 
 	it("derives the editor font from the UI font when unset", async () => {
 		storeState.set("ui.fontFamily", "Atkinson Hyperlegible");
@@ -528,84 +393,8 @@ describe("settings editor font family", () => {
 	});
 });
 
-describe("settings editor width mode", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults editor width mode to compact", async () => {
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.editor.editorWidthMode).toBe("compact");
-	});
-
-	it("loads editor width mode from the store", async () => {
-		storeState.set("editor.editorWidthMode", "wide");
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.editor.editorWidthMode).toBe("wide");
-	});
-
-	it("persists and emits editor width mode changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-
-		await DURABLE_SETTINGS.editorWidthMode.write("comfortable");
-
-		expect(storeState.get("editor.editorWidthMode")).toBe("comfortable");
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			editor: { editorWidthMode: "comfortable" },
-		});
-	});
-});
-
-describe("settings show frontmatter in editor", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults frontmatter visibility to off", async () => {
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.editor.showFrontmatterInEditor).toBe(false);
-	});
-
-	it("loads frontmatter visibility from the store", async () => {
-		storeState.set("editor.showFrontmatterInEditor", true);
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.editor.showFrontmatterInEditor).toBe(true);
-	});
-
-	it("persists and emits frontmatter visibility changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-
-		await DURABLE_SETTINGS.editorShowFrontmatterInEditor.write(true);
-
-		expect(storeState.get("editor.showFrontmatterInEditor")).toBe(true);
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			editor: { showFrontmatterInEditor: true },
-		});
-	});
-});
-
 describe("attachment storage settings", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
+	beforeEach(resetSettingsHarness);
 
 	it("defaults attachments to note-folder mode for fresh settings", async () => {
 		const { loadSettings } = await import("./settings");
@@ -664,11 +453,7 @@ describe("attachment storage settings", () => {
 });
 
 describe("space-scoped settings", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
+	beforeEach(resetSettingsHarness);
 
 	it("does not inherit legacy global space settings for a fresh space", async () => {
 		storeState.set("dailyNotes.folder", "Old Daily");
@@ -730,11 +515,7 @@ describe("space-scoped settings", () => {
 });
 
 describe("shortcut settings", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
+	beforeEach(resetSettingsHarness);
 
 	it("loads effective defaults when no overrides are stored", async () => {
 		const { loadShortcutSettings, getEffectiveShortcutBindings } = await import(
@@ -852,51 +633,6 @@ describe("shortcut settings", () => {
 		expect(storeState.has("shortcuts.bindings")).toBe(false);
 		expect(emitMock).toHaveBeenLastCalledWith("settings:updated", {
 			shortcuts: { bindings: {} },
-		});
-	});
-});
-
-describe("settings language", () => {
-	beforeEach(() => {
-		vi.resetModules();
-		emitMock.mockClear();
-		storeState.clear();
-	});
-
-	it("defaults language to en", async () => {
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.ui.language).toBe("en");
-	});
-
-	it("loads language from the store", async () => {
-		storeState.set("ui.language", "ja");
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.ui.language).toBe("ja");
-	});
-
-	it("falls back to en for unsupported language values", async () => {
-		storeState.set("ui.language", "system");
-		const { loadSettings } = await import("./settings");
-
-		const settings = await loadSettings();
-
-		expect(settings.ui.language).toBe("en");
-	});
-
-	it("persists and emits language changes", async () => {
-		const { DURABLE_SETTINGS } = await import("./settings");
-
-		await DURABLE_SETTINGS.language.write("es");
-
-		expect(storeState.get("ui.language")).toBe("es");
-		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			ui: { language: "es" },
 		});
 	});
 });

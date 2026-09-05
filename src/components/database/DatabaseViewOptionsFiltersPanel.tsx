@@ -1,4 +1,9 @@
 import type { MutableRefObject } from "react";
+import {
+	isBooleanColumn,
+	isDateColumn,
+	isNumberColumn,
+} from "../../lib/database/columns";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
@@ -67,23 +72,6 @@ function isSupportedFilterOperator(
 
 function isTagFilterColumn(column?: DatabaseColumn | null): boolean {
 	return column?.type === "tags" || column?.property_kind === "tags";
-}
-
-function isBooleanColumn(column?: DatabaseColumn | null): boolean {
-	return column?.property_kind === "checkbox";
-}
-
-function isNumberColumn(column?: DatabaseColumn | null): boolean {
-	return column?.property_kind === "number";
-}
-
-function isDateColumn(column?: DatabaseColumn | null): boolean {
-	return (
-		column?.type === "created" ||
-		column?.type === "updated" ||
-		column?.property_kind === "date" ||
-		column?.property_kind === "datetime"
-	);
 }
 
 function defaultOperatorForColumn(

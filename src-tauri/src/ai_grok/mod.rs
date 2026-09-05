@@ -5,20 +5,19 @@ use std::{
 };
 
 use serde_json::Value;
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     process::{Child, Command},
-    sync::mpsc,
 };
 use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::{
-    events::AiStatusEvent,
-    helpers::{cli_runtime_path, emit_tool, find_cli_binary},
+    events::{emit_chunk, emit_status},
+    helpers::{cli_runtime_path, emit_tool, find_cli_binary, pipe_stderr},
     providers::build_transcript,
     types::{
-        AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiReasoningEffortOption,
+        AiAssistantMode, AiMessage, AiModel, AiProfile, AiReasoningEffortOption,
         AiStoredToolEvent,
     },
 };
@@ -233,33 +232,6 @@ pub async fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
     Ok(ids.into_iter().map(|id| model_entry_for_id(&id)).collect())
 }
 
-fn prompt_text(messages: &[AiMessage]) -> String {
-    let transcript = build_transcript("", messages);
-    if transcript.trim().is_empty() {
-        messages
-            .iter()
-            .rev()
-            .find(|message| message.role == "user")
-            .map(|message| message.content.clone())
-            .unwrap_or_default()
-    } else {
-        transcript
-    }
-}
-
-async fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
-    let (tx, rx) = mpsc::channel::<String>(64);
-    if let Some(stderr) = child.stderr.take() {
-        tokio::spawn(async move {
-            let mut lines = BufReader::new(stderr).lines();
-            while let Ok(Some(line)) = lines.next_line().await {
-                let _ = tx.send(line).await;
-            }
-        });
-    }
-    rx
-}
-
 async fn stop_child(child: &mut Child) {
     let _ = child.kill().await;
     let _ = child.wait().await;
@@ -284,31 +256,6 @@ fn grok_cli_failure(action: &str, status: impl std::fmt::Display, stderr: &str) 
     } else {
         format!("Grok CLI {action} exited with {status}: {stderr}")
     }
-}
-
-fn emit_chunk(app: &AppHandle, job_id: &str, full: &mut String, delta: &str) {
-    if delta.is_empty() {
-        return;
-    }
-    full.push_str(delta);
-    let _ = app.emit(
-        "ai:chunk",
-        AiChunkEvent {
-            job_id: job_id.to_string(),
-            delta: delta.to_string(),
-        },
-    );
-}
-
-fn emit_status(app: &AppHandle, job_id: &str, status: &str, detail: Option<String>) {
-    let _ = app.emit(
-        "ai:status",
-        AiStatusEvent {
-            job_id: job_id.to_string(),
-            status: status.to_string(),
-            detail,
-        },
-    );
 }
 
 fn event_text(value: &Value) -> Option<&str> {
@@ -450,7 +397,7 @@ pub async fn run_with_grok(
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     let root = space_root.ok_or_else(|| "No space is open".to_string())?;
     let binary = find_grok_binary()?;
-    let prompt = prompt_text(messages);
+    let prompt = build_transcript("", messages);
     if prompt.trim().is_empty() {
         return Err("Grok CLI needs a prompt".to_string());
     }
@@ -513,7 +460,7 @@ pub async fn run_with_grok(
         .take()
         .ok_or_else(|| "failed to capture Grok CLI stdout".to_string())?;
     let mut stdout_lines = BufReader::new(stdout).lines();
-    let mut stderr_lines = pipe_stderr(&mut child).await;
+    let mut stderr_lines = pipe_stderr(&mut child);
 
     let timeout = tokio::time::sleep(RUN_TIMEOUT);
     tokio::pin!(timeout);

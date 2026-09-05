@@ -1294,7 +1294,7 @@ mod local_connections_tests {
 
 #[cfg(test)]
 mod space_connections_tests {
-    use std::{env, time::Instant};
+    use std::env;
 
     use rusqlite::Connection;
 
@@ -1486,7 +1486,7 @@ mod space_connections_tests {
     }
 
     #[test]
-    fn space_connections_synthetic_scale_stays_under_spike_budget() {
+    fn space_connections_synthetic_scale_returns_all_nodes() {
         if env::var("RUN_PERF_TESTS").ok().as_deref() != Some("1") {
             return;
         }
@@ -1529,12 +1529,7 @@ mod space_connections_tests {
         }
         tx.commit().unwrap();
 
-        let started = Instant::now();
         let graph = space_connections_for_conn(&conn).unwrap();
-        let elapsed = started.elapsed();
-        println!("space_connections synthetic scale duration: {elapsed:?}");
-
         assert_eq!(graph.nodes.len(), 2_000);
-        assert!(!graph.nodes.is_empty());
     }
 }

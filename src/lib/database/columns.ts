@@ -20,6 +20,23 @@ export function isReservedDatabasePropertyKey(key: string): boolean {
 	return RESERVED_PROPERTY_KEYS.has(normalizeDatabasePropertyKey(key));
 }
 
+export function isBooleanColumn(column?: DatabaseColumn | null): boolean {
+	return column?.property_kind === "checkbox";
+}
+
+export function isNumberColumn(column?: DatabaseColumn | null): boolean {
+	return column?.property_kind === "number";
+}
+
+export function isDateColumn(column?: DatabaseColumn | null): boolean {
+	return (
+		column?.type === "created" ||
+		column?.type === "updated" ||
+		column?.property_kind === "date" ||
+		column?.property_kind === "datetime"
+	);
+}
+
 export function resolveDatabaseColumns(
 	columns: DatabaseColumn[],
 	availableProperties: DatabasePropertyOption[] = [],

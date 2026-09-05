@@ -4,19 +4,18 @@ use std::{
 };
 
 use serde_json::Value;
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     process::{Child, Command},
-    sync::mpsc,
 };
 use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::{
-    events::AiStatusEvent,
-    helpers::{candidate_cli_paths, cli_runtime_path, emit_tool, executable_exists},
+    events::{emit_chunk, emit_status},
+    helpers::{candidate_cli_paths, cli_runtime_path, emit_tool, executable_exists, pipe_stderr},
     providers::build_transcript,
-    types::{AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiStoredToolEvent},
+    types::{AiAssistantMode, AiMessage, AiModel, AiProfile, AiStoredToolEvent},
 };
 
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
@@ -118,66 +117,9 @@ pub async fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
     Ok(models)
 }
 
-fn prompt_text(system: &str, messages: &[AiMessage]) -> String {
-    let transcript = build_transcript(system, messages);
-    if transcript.trim().is_empty() {
-        messages
-            .iter()
-            .rev()
-            .find(|message| message.role == "user")
-            .map(|message| message.content.clone())
-            .unwrap_or_default()
-    } else {
-        transcript
-    }
-}
-
-async fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
-    let (tx, rx) = mpsc::channel::<String>(64);
-    if let Some(stderr) = child.stderr.take() {
-        tokio::spawn(async move {
-            let mut lines = BufReader::new(stderr).lines();
-            while let Ok(Some(line)) = lines.next_line().await {
-                let _ = tx.send(line).await;
-            }
-        });
-    }
-    rx
-}
-
 async fn stop_child(child: &mut Child) {
     let _ = child.kill().await;
     let _ = child.wait().await;
-}
-
-struct KillChildOnDrop {
-    child: Child,
-}
-
-impl KillChildOnDrop {
-    fn new(child: Child) -> Self {
-        Self { child }
-    }
-}
-
-impl Drop for KillChildOnDrop {
-    fn drop(&mut self) {
-        let _ = self.child.start_kill();
-    }
-}
-
-impl std::ops::Deref for KillChildOnDrop {
-    type Target = Child;
-
-    fn deref(&self) -> &Self::Target {
-        &self.child
-    }
-}
-
-impl std::ops::DerefMut for KillChildOnDrop {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.child
-    }
 }
 
 async fn wait_after_result(child: &mut Child, last_stderr: &str) -> Result<(), String> {
@@ -194,31 +136,6 @@ async fn wait_after_result(child: &mut Child, last_stderr: &str) -> Result<(), S
             Ok(())
         }
     }
-}
-
-fn emit_chunk(app: &AppHandle, job_id: &str, full: &mut String, delta: &str) {
-    if delta.is_empty() {
-        return;
-    }
-    full.push_str(delta);
-    let _ = app.emit(
-        "ai:chunk",
-        AiChunkEvent {
-            job_id: job_id.to_string(),
-            delta: delta.to_string(),
-        },
-    );
-}
-
-fn emit_status(app: &AppHandle, job_id: &str, status: &str, detail: Option<String>) {
-    let _ = app.emit(
-        "ai:status",
-        AiStatusEvent {
-            job_id: job_id.to_string(),
-            status: status.to_string(),
-            detail,
-        },
-    );
 }
 
 fn assistant_text(value: &Value) -> String {
@@ -367,7 +284,7 @@ pub async fn run_with_cursor(
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     let root = space_root.ok_or_else(|| "No space is open".to_string())?;
     let binary = find_cursor_binary()?;
-    let prompt = prompt_text(system, messages);
+    let prompt = build_transcript(system, messages);
     if prompt.trim().is_empty() {
         return Err("Cursor CLI needs a prompt".to_string());
     }
@@ -421,17 +338,15 @@ pub async fn run_with_cursor(
     }
     command.arg(prompt).kill_on_drop(true);
 
-    let mut child = KillChildOnDrop::new(
-        command
-            .spawn()
-            .map_err(|e| format!("failed to start Cursor CLI: {e}"))?,
-    );
+    let mut child = command
+        .spawn()
+        .map_err(|e| format!("failed to start Cursor CLI: {e}"))?;
     let stdout = child
         .stdout
         .take()
         .ok_or_else(|| "failed to capture Cursor CLI stdout".to_string())?;
     let mut stdout_lines = BufReader::new(stdout).lines();
-    let mut stderr_lines = pipe_stderr(&mut child).await;
+    let mut stderr_lines = pipe_stderr(&mut child);
 
     let timeout = tokio::time::sleep(RUN_TIMEOUT);
     tokio::pin!(timeout);

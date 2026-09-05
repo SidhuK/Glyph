@@ -728,12 +728,6 @@ export async function setCurrentSpacePath(path: string): Promise<void> {
 	await saveSettingsStore(store);
 }
 
-export async function clearCurrentSpacePath(): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(INTERNAL_SETTING_KEYS.currentSpacePath, null);
-	await saveSettingsStore(store);
-}
-
 async function saveShortcutBindingsToStore(bindings: ShortcutBindings) {
 	const store = await getSettingsStore();
 	const sanitized = sanitizeShortcutBindings(bindings);

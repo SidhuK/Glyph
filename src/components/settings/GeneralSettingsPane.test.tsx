@@ -6,13 +6,10 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeneralSettingsPane } from "./GeneralSettingsPane";
 
-const { settingWriter, useLicenseStatusMock, useTauriEventMock } = vi.hoisted(
-	() => ({
-		settingWriter: () => ({ write: vi.fn(() => Promise.resolve()) }),
-		useLicenseStatusMock: vi.fn(),
-		useTauriEventMock: vi.fn(),
-	}),
-);
+const { settingWriter, useTauriEventMock } = vi.hoisted(() => ({
+	settingWriter: () => ({ write: vi.fn(() => Promise.resolve()) }),
+	useTauriEventMock: vi.fn(),
+}));
 
 vi.mock("../../lib/settings", () => ({
 	DATE_DISPLAY_FORMAT_OPTIONS: [
@@ -60,10 +57,6 @@ vi.mock("react-i18next", () => ({
 
 vi.mock("../../lib/tauriEvents", () => ({
 	useTauriEvent: useTauriEventMock,
-}));
-
-vi.mock("../../lib/license", () => ({
-	useLicenseStatus: useLicenseStatusMock,
 }));
 
 vi.mock("../../lib/tauri", () => ({
@@ -158,33 +151,7 @@ describe("GeneralSettingsPane", () => {
 		container.remove();
 	});
 
-	it("shows license settings without automatic update check copy", async () => {
-		useLicenseStatusMock.mockReturnValue({
-			status: undefined,
-			loading: true,
-			error: "",
-			reload: vi.fn(),
-		} as never);
-
-		await act(async () => {
-			root.render(<GeneralSettingsPane />);
-		});
-
-		expect(container.textContent).not.toContain("Automatic update checks");
-		expect(container.textContent).not.toContain(
-			"Automatic updates are always on.",
-		);
-		expect(container.textContent).toContain("License Card Stub");
-	});
-
 	it("syncs resume last session from settings update events", async () => {
-		useLicenseStatusMock.mockReturnValue({
-			status: undefined,
-			loading: true,
-			error: "",
-			reload: vi.fn(),
-		} as never);
-
 		await act(async () => {
 			root.render(<GeneralSettingsPane />);
 		});

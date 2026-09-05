@@ -67,7 +67,7 @@ import {
 } from "../editor/textColors";
 import { FileTreePane } from "../filetree";
 
-interface SidebarContentProps {
+export interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
 	onLoadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	onExpandAllDirs: () => Promise<void>;

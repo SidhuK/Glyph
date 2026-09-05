@@ -10,15 +10,13 @@ import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { parentDir } from "../../utils/path";
+import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
 import { ChevronRight } from "../Icons";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 
@@ -122,78 +120,6 @@ function breadcrumbPartsForPath(path: string | null): BreadcrumbPart[] {
 				};
 			}),
 	];
-}
-
-function entryLabel(entry: FsEntry) {
-	return entry.is_markdown ? entry.name.replace(/\.[^./]+$/, "") : entry.name;
-}
-
-function BreadcrumbMenuItem({
-	entry,
-	childrenByDir,
-	onLoadDir,
-	onNavigateDir,
-	onOpenFile,
-}: {
-	entry: FsEntry;
-	childrenByDir: Record<string, FsEntry[] | undefined>;
-	onLoadDir: (dirPath: string) => Promise<void>;
-	onNavigateDir: (dirPath: string) => void;
-	onOpenFile: (relPath: string) => Promise<void>;
-}) {
-	const childEntries = childrenByDir[entry.rel_path];
-	const loading = childEntries === undefined;
-	const isDir = entry.kind === "dir";
-
-	if (!isDir) {
-		return (
-			<DropdownMenuItem
-				key={entry.rel_path || ROOT_PATH_KEY}
-				className="mainTabsBreadcrumbMenuItem"
-				title={entry.rel_path || entry.name}
-				onSelect={() => void onOpenFile(entry.rel_path)}
-			>
-				<span className="mainTabsBreadcrumbMenuItemLabel">
-					{entryLabel(entry)}
-				</span>
-			</DropdownMenuItem>
-		);
-	}
-
-	return (
-		<DropdownMenuSub
-			onOpenChange={(open) => {
-				if (open && loading) void onLoadDir(entry.rel_path);
-			}}
-		>
-			<DropdownMenuSubTrigger className="mainTabsBreadcrumbMenuItem">
-				<span className="mainTabsBreadcrumbMenuItemLabel">{entry.name}</span>
-			</DropdownMenuSubTrigger>
-			<DropdownMenuSubContent className="mainTabsBreadcrumbMenu" sideOffset={4}>
-				{loading ? null : childEntries.length === 0 ? (
-					<div className="mainTabsBreadcrumbMenuState">Empty folder</div>
-				) : (
-					<>
-						{childEntries.slice(0, 40).map((child) => (
-							<BreadcrumbMenuItem
-								key={child.rel_path || ROOT_PATH_KEY}
-								entry={child}
-								childrenByDir={childrenByDir}
-								onLoadDir={onLoadDir}
-								onNavigateDir={onNavigateDir}
-								onOpenFile={onOpenFile}
-							/>
-						))}
-						{childEntries.length > 40 ? (
-							<div className="mainTabsBreadcrumbMenuState">
-								+{childEntries.length - 40} more
-							</div>
-						) : null}
-					</>
-				)}
-			</DropdownMenuSubContent>
-		</DropdownMenuSub>
-	);
 }
 
 export function MainTabsBreadcrumbs({
@@ -330,7 +256,6 @@ export function MainTabsBreadcrumbs({
 									setMenuOpen(open);
 								}}
 								onLoadDir={onLoadBreadcrumbDir}
-								onNavigateDir={onNavigateBreadcrumbPath}
 								onOpenFile={onOpenBreadcrumbFile}
 								childrenByDir={childrenByDir}
 							/>
@@ -425,7 +350,6 @@ function BreadcrumbEntryMenu({
 	loading,
 	onOpenChange,
 	onLoadDir,
-	onNavigateDir,
 	onOpenFile,
 	childrenByDir,
 }: {
@@ -435,7 +359,6 @@ function BreadcrumbEntryMenu({
 	loading: boolean;
 	onOpenChange: (open: boolean) => void;
 	onLoadDir: (dirPath: string) => Promise<void>;
-	onNavigateDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => Promise<void>;
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 }) {
@@ -473,13 +396,16 @@ function BreadcrumbEntryMenu({
 				) : (
 					<>
 						{entries.map((entry) => (
-							<BreadcrumbMenuItem
+							<DirectoryBreadcrumbMenuItem
 								key={entry.rel_path || ROOT_PATH_KEY}
 								entry={entry}
 								childrenByDir={childrenByDir}
 								onLoadDir={onLoadDir}
-								onNavigateDir={onNavigateDir}
-								onOpenFile={onOpenFile}
+								onSelectFile={(relPath) => void onOpenFile(relPath)}
+								itemClassName="mainTabsBreadcrumbMenuItem"
+								labelClassName="mainTabsBreadcrumbMenuItemLabel"
+								menuClassName="mainTabsBreadcrumbMenu"
+								stateClassName="mainTabsBreadcrumbMenuState"
 							/>
 						))}
 					</>

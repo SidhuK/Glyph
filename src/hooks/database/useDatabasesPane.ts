@@ -110,7 +110,7 @@ export function useDatabasesPane({
 		},
 		activeCollection,
 		actions: rowActions,
-		ui: { error, setError, clearError },
+		ui: { error: error || workspace.loadError, setError, clearError },
 	};
 }
 
