@@ -48,9 +48,3 @@ pub fn secret_clear(space_root: &Path, profile_id: &str) -> Result<(), String> {
 pub fn secret_status(space_root: &Path, profile_id: &str) -> Result<bool, String> {
     Ok(secret_get(space_root, profile_id)?.is_some())
 }
-
-pub fn secret_ids(space_root: &Path) -> Result<Vec<String>, String> {
-    let path = secrets_path(space_root)?;
-    let map = read_map(&path);
-    Ok(map.keys().cloned().collect())
-}

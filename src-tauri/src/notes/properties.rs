@@ -80,12 +80,12 @@ fn normalized_status_text(value: &str) -> String {
         .join(" ")
 }
 
-fn is_status_key(key: &str) -> bool {
+pub(crate) fn is_status_key(key: &str) -> bool {
     let normalized = normalized_status_text(key);
     normalized == "status" || normalized.ends_with(" status")
 }
 
-fn is_priority_key(key: &str) -> bool {
+pub(crate) fn is_priority_key(key: &str) -> bool {
     let normalized = normalized_status_text(key);
     normalized == "priority" || normalized.ends_with(" priority")
 }
@@ -97,79 +97,77 @@ fn priority_text(value: &Value) -> String {
     }
 }
 
-fn yaml_value_to_property(key: &str, value: &Value) -> Result<NoteProperty, String> {
+fn yaml_value_to_property(key: &str, value: &Value) -> NoteProperty {
     if is_status_key(key) {
-        return Ok(NoteProperty {
+        return NoteProperty {
             key: key.to_string(),
             kind: "status".to_string(),
             value_text: Some(property_text(value)),
             value_bool: None,
             value_list: Vec::new(),
-        });
+        };
     }
     if is_priority_key(key) {
-        return Ok(NoteProperty {
+        return NoteProperty {
             key: key.to_string(),
             kind: "priority".to_string(),
             value_text: Some(priority_text(value)),
             value_bool: None,
             value_list: Vec::new(),
-        });
+        };
     }
 
     match value {
-        Value::Bool(v) => Ok(NoteProperty {
+        Value::Bool(v) => NoteProperty {
             key: key.to_string(),
             kind: "checkbox".to_string(),
             value_text: None,
             value_bool: Some(*v),
             value_list: Vec::new(),
-        }),
+        },
         Value::Sequence(items) if key.eq_ignore_ascii_case("tags") => {
             let Some(values) = items.iter().map(scalar_text).collect::<Option<Vec<_>>>() else {
-                return Ok(NoteProperty {
+                return NoteProperty {
                     key: key.to_string(),
                     kind: "text".to_string(),
                     value_text: Some(property_text(value)),
                     value_bool: None,
                     value_list: Vec::new(),
-                });
+                };
             };
-            Ok(NoteProperty {
+            NoteProperty {
                 key: key.to_string(),
                 kind: "tags".to_string(),
                 value_text: None,
                 value_bool: None,
                 value_list: values,
-            })
+            }
         }
         _ => {
             let text = property_text(value);
             let kind = infer_string_kind(&text);
-            Ok(NoteProperty {
+            NoteProperty {
                 key: key.to_string(),
                 kind: kind.to_string(),
                 value_text: Some(text),
                 value_bool: None,
                 value_list: Vec::new(),
-            })
+            }
         }
     }
 }
 
-fn property_to_yaml_value(property: &NoteProperty) -> Result<Value, String> {
+fn property_to_yaml_value(property: &NoteProperty) -> Value {
     match property.kind.as_str() {
-        "checkbox" => Ok(Value::Bool(property.value_bool.unwrap_or(false))),
-        "tags" => Ok(Value::Sequence(
+        "checkbox" => Value::Bool(property.value_bool.unwrap_or(false)),
+        "tags" => Value::Sequence(
             property
                 .value_list
                 .iter()
                 .map(|value| Value::String(value.clone()))
                 .collect(),
-        )),
-        _ => Ok(Value::String(
-            property.value_text.clone().unwrap_or_default(),
-        )),
+        ),
+        _ => Value::String(property.value_text.clone().unwrap_or_default()),
     }
 }
 
@@ -184,7 +182,7 @@ pub fn note_frontmatter_parse_properties(
             let key = key
                 .as_str()
                 .ok_or_else(|| "frontmatter keys must be strings".to_string())?;
-            yaml_value_to_property(key, value)
+            Ok(yaml_value_to_property(key, value))
         })
         .collect()
 }
@@ -205,7 +203,7 @@ pub fn note_frontmatter_render_properties(
         if !seen.insert(normalized) {
             return Err(format!("duplicate property key '{}'", key));
         }
-        mapping.insert(Value::String(key), property_to_yaml_value(&property)?);
+        mapping.insert(Value::String(key), property_to_yaml_value(&property));
     }
 
     if mapping.is_empty() {

@@ -79,16 +79,6 @@ pub async fn git_sync_commit_message_prompt(
 }
 
 #[tauri::command]
-pub fn git_sync_disconnect(
-    app: AppHandle,
-    window: WebviewWindow,
-    git_state: State<'_, GitSyncState>,
-    space_state: State<'_, SpaceState>,
-) -> Result<GitSyncStatus, String> {
-    service::disconnect_git_sync(app, &git_state, &space_state, window.label())
-}
-
-#[tauri::command]
 pub fn git_history_list(
     window: WebviewWindow,
     space_state: State<'_, SpaceState>,

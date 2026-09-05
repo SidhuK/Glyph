@@ -55,7 +55,6 @@
 		"@tiptap/extension-table": "3.27.4",
 		"@tiptap/extension-task-item": "3.27.4",
 		"@tiptap/extension-task-list": "3.27.4",
-		"@tiptap/extension-text-style": "3.27.4",
 		"@tiptap/markdown": "3.27.4",
 		"@tiptap/pm": "3.27.4",
 		"@tiptap/react": "3.27.4",

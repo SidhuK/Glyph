@@ -1,11 +1,5 @@
 import type { NoteTaskSummary } from "./tauri";
 
-export const EMPTY_CHECKLIST_SUMMARY: NoteTaskSummary = {
-	total_count: 0,
-	completed_count: 0,
-	open_count: 0,
-};
-
 export function summarizeChecklistsFromMarkdown(
 	markdown: string,
 ): NoteTaskSummary {

@@ -14,7 +14,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::ai_rig::{
     events::{emit_chunk, emit_status},
-    helpers::{cli_runtime_path, emit_tool, find_cli_binary, pipe_stderr},
+    helpers::{cli_runtime_path, emit_tool, find_cli_binary, pipe_stderr, price_string, value_as_u32},
     providers::build_transcript,
     types::{
         AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiReasoningEffortOption,
@@ -68,25 +68,6 @@ async fn abort_and_stop(child: &mut Child, stdin: &mut Option<ChildStdin>) {
         warn!(?pid, "PI did not stop after abort request");
         stop_child(child).await;
     }
-}
-
-fn value_as_u32(value: Option<&Value>) -> Option<u32> {
-    value
-        .and_then(|v| v.as_u64())
-        .and_then(|v| u32::try_from(v).ok())
-}
-
-fn price_string(value: Option<&Value>) -> Option<String> {
-    value
-        .and_then(|v| v.as_f64())
-        .map(|v| {
-            if v.fract() == 0.0 {
-                format!("{v:.0}")
-            } else {
-                v.to_string()
-            }
-        })
-        .filter(|v| v != "0")
 }
 
 fn string_list(value: Option<&Value>) -> Option<Vec<String>> {

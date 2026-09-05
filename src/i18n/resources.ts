@@ -14,8 +14,6 @@ export const namespaces = [
 	"menu",
 ] as const;
 
-export type I18nNamespace = (typeof namespaces)[number];
-
 const localeModules = import.meta.glob("./locales/*/*.json", {
 	eager: true,
 	import: "default",

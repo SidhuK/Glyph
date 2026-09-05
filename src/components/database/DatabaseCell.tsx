@@ -16,7 +16,10 @@ import {
 } from "../../lib/tagIcons";
 import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
-import { useWikiLinkAutocomplete } from "../editor/hooks/useWikiLinkAutocomplete";
+import {
+	WikiLinkSuggestionList,
+	useWikiLinkAutocomplete,
+} from "../editor/hooks/useWikiLinkAutocomplete";
 import {
 	normalizeTagDraftPrefix,
 	normalizeTagToken,
@@ -827,33 +830,12 @@ function DatabaseCellEditor({
 					/>
 				</div>
 				{linkedNoteListAutocomplete.items.length > 0 ? (
-					<div className="wikiLinkSuggestionMenu databaseWikiLinkSuggestions">
-						{linkedNoteListAutocomplete.items.map((item, index) => (
-							<button
-								key={
-									item.kind === "heading"
-										? `${item.kind}:${item.path}#${item.slug}`
-										: `${item.kind}:${item.path}`
-								}
-								type="button"
-								className={[
-									"wikiLinkSuggestionItem",
-									index === linkedNoteListAutocomplete.activeIndex
-										? "active"
-										: "",
-								]
-									.filter(Boolean)
-									.join(" ")}
-								onMouseDown={(event) => {
-									event.preventDefault();
-									linkedNoteListAutocomplete.select(item);
-								}}
-							>
-								<span className="wikiLinkSuggestionTitle">{item.title}</span>
-								<span className="wikiLinkSuggestionPath">{item.path}</span>
-							</button>
-						))}
-					</div>
+					<WikiLinkSuggestionList
+						items={linkedNoteListAutocomplete.items}
+						activeIndex={linkedNoteListAutocomplete.activeIndex}
+						className="databaseWikiLinkSuggestions"
+						onSelect={linkedNoteListAutocomplete.select}
+					/>
 				) : valueSuggestions.length > 0 ? (
 					<div className="notePropertySuggestions databaseTagSuggestions">
 						<div className="notePropertySuggestionsLabel">Suggested values</div>
@@ -933,31 +915,12 @@ function DatabaseCellEditor({
 				}}
 			/>
 			{wikiLinkAutocomplete.items.length > 0 ? (
-				<div className="wikiLinkSuggestionMenu databaseWikiLinkSuggestions">
-					{wikiLinkAutocomplete.items.map((item, index) => (
-						<button
-							key={
-								item.kind === "heading"
-									? `${item.kind}:${item.path}#${item.slug}`
-									: `${item.kind}:${item.path}`
-							}
-							type="button"
-							className={[
-								"wikiLinkSuggestionItem",
-								index === wikiLinkAutocomplete.activeIndex ? "active" : "",
-							]
-								.filter(Boolean)
-								.join(" ")}
-							onMouseDown={(event) => {
-								event.preventDefault();
-								wikiLinkAutocomplete.select(item);
-							}}
-						>
-							<span className="wikiLinkSuggestionTitle">{item.title}</span>
-							<span className="wikiLinkSuggestionPath">{item.path}</span>
-						</button>
-					))}
-				</div>
+				<WikiLinkSuggestionList
+					items={wikiLinkAutocomplete.items}
+					activeIndex={wikiLinkAutocomplete.activeIndex}
+					className="databaseWikiLinkSuggestions"
+					onSelect={wikiLinkAutocomplete.select}
+				/>
 			) : textSuggestions.length > 0 ? (
 				<div className="notePropertySuggestions databaseTagSuggestions">
 					<div className="notePropertySuggestionsLabel">Suggested values</div>

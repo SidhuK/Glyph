@@ -1,5 +1,4 @@
 import { normalizeShortcutKey } from "./shortcuts/normalize";
-import { isMacOS } from "./shortcuts/platform";
 import type { Shortcut, ShortcutValidationResult } from "./shortcuts/types";
 
 export type { Shortcut, ShortcutValidationResult } from "./shortcuts/types";
@@ -98,18 +97,14 @@ export function isShortcutMatch(
 	shortcut: Shortcut,
 ): boolean {
 	const normalized = normalizeShortcut(shortcut);
-	const isMac = isMacOS();
 	if (normalized.meta) {
-		const primaryPressed = isMac ? event.metaKey : event.ctrlKey;
-		if (!primaryPressed) return false;
+		if (!event.metaKey) return false;
 	} else if (event.metaKey) {
 		return false;
 	}
 	if (event.shiftKey !== Boolean(normalized.shift)) return false;
 	if (event.altKey !== Boolean(normalized.alt)) return false;
-	if (!(normalized.meta && !isMac)) {
-		if (event.ctrlKey !== Boolean(normalized.ctrl)) return false;
-	}
+	if (event.ctrlKey !== Boolean(normalized.ctrl)) return false;
 	const eventKey = normalizeShortcutKey(event.key);
 	return (
 		eventKey === normalized.key ||
@@ -119,21 +114,18 @@ export function isShortcutMatch(
 }
 
 export function getShortcutTooltip(shortcut: Shortcut): string {
-	const isMac = isMacOS();
 	const parts: string[] = [];
 	const normalized = normalizeShortcut(shortcut);
 
-	if (normalized.meta) parts.push(isMac ? "⌘" : "Ctrl");
-	if (normalized.ctrl && (isMac || !normalized.meta)) {
-		parts.push(isMac ? "⌃" : "Ctrl");
-	}
-	if (normalized.alt) parts.push(isMac ? "⌥" : "Alt");
-	if (normalized.shift) parts.push(isMac ? "⇧" : "Shift");
+	if (normalized.meta) parts.push("⌘");
+	if (normalized.ctrl) parts.push("⌃");
+	if (normalized.alt) parts.push("⌥");
+	if (normalized.shift) parts.push("⇧");
 	parts.push(
 		normalized.key.length === 1 ? normalized.key.toUpperCase() : normalized.key,
 	);
 
-	return parts.join(isMac ? "" : "+");
+	return parts.join("");
 }
 
 function toTauriKey(key: string): string | null {
@@ -169,9 +161,8 @@ export function toTauriAccelerator(shortcut: Shortcut | null): string | null {
 	const key = toTauriKey(normalized.key);
 	if (!key) return null;
 	const parts: string[] = [];
-	const isMac = isMacOS();
 	if (normalized.meta) parts.push("CmdOrCtrl");
-	if (normalized.ctrl && (isMac || !normalized.meta)) parts.push("Ctrl");
+	if (normalized.ctrl) parts.push("Ctrl");
 	if (normalized.alt) parts.push("Alt");
 	if (normalized.shift) parts.push("Shift");
 	parts.push(key);

@@ -177,7 +177,7 @@ pub(crate) fn index_note_with_conn(
         }
     }
     let title_for_fts = title.clone();
-    let preview = preview_from_markdown(note_id, markdown);
+    let preview = preview_from_markdown(markdown);
     let rel_path = note_id.to_string();
     let (checklist_total, checklist_completed) = checklist_counts(markdown);
 
@@ -386,7 +386,7 @@ where
             }
         }
         let etag = sha256_hex(markdown.as_bytes());
-        let preview = preview_from_markdown(rel, &markdown);
+        let preview = preview_from_markdown(&markdown);
         let (checklist_total, checklist_completed) = checklist_counts(&markdown);
 
         tx.execute(

@@ -627,15 +627,3 @@
 .extractToNoteActions {
 	margin-top: 4px;
 }
-
-.extractToNoteToastTitle,
-.extractToNoteToastDescription {
-	max-width: 100%;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.extractToNoteToastButton {
-	white-space: nowrap;
-}

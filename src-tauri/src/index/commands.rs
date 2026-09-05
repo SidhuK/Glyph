@@ -632,6 +632,46 @@ pub async fn task_summaries_for_paths(
     .map_err(|e| e.to_string())?
 }
 
+pub(crate) fn query_backlinks(
+    conn: &rusqlite::Connection,
+    note_id: &str,
+) -> Result<Vec<BacklinkItem>, String> {
+    let stem = Path::new(note_id)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_string();
+    let mut stmt = conn
+        .prepare(
+            "SELECT DISTINCT n.id, n.title, n.updated
+             FROM notes n
+             JOIN (
+                SELECT l.from_id
+                FROM links l
+                WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
+                UNION
+                SELECT r.from_id
+                FROM note_relationships r
+                WHERE r.to_id = ? OR r.to_title = ? OR r.target_title = ?
+             ) refs ON refs.from_id = n.id
+             ORDER BY n.updated DESC
+             LIMIT 100",
+        )
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt
+        .query(rusqlite::params![note_id, stem, note_id, stem, stem])
+        .map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        out.push(BacklinkItem {
+            id: row.get(0).map_err(|e| e.to_string())?,
+            title: row.get(1).map_err(|e| e.to_string())?,
+            updated: row.get(2).map_err(|e| e.to_string())?,
+        });
+    }
+    Ok(out)
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn backlinks(
     window: WebviewWindow,
@@ -642,40 +682,7 @@ pub async fn backlinks(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<BacklinkItem>, String> {
         let conn = open_db(&root)?;
-        let stem = Path::new(&note_id)
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("")
-            .to_string();
-        let mut stmt = conn
-            .prepare(
-                "SELECT DISTINCT n.id, n.title, n.updated
-                 FROM notes n
-                 JOIN (
-                    SELECT l.from_id
-                    FROM links l
-                    WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
-                    UNION
-                    SELECT r.from_id
-                    FROM note_relationships r
-                    WHERE r.to_id = ? OR r.to_title = ? OR r.target_title = ?
-                 ) refs ON refs.from_id = n.id
-                 ORDER BY n.updated DESC
-                 LIMIT 100",
-            )
-            .map_err(|e| e.to_string())?;
-        let mut rows = stmt
-            .query(rusqlite::params![note_id, stem, note_id, stem, stem])
-            .map_err(|e| e.to_string())?;
-        let mut out = Vec::new();
-        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-            out.push(BacklinkItem {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                updated: row.get(2).map_err(|e| e.to_string())?,
-            });
-        }
-        Ok(out)
+        query_backlinks(&conn, &note_id)
     })
     .await
     .map_err(|e| e.to_string())?

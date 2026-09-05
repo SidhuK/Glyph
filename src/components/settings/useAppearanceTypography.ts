@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { applyUiTypography } from "../../lib/appearance";
 import type { AppSettings, UiFontFamily, UiFontSize } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import {
@@ -21,12 +20,10 @@ function includeSelectedFonts(
 
 interface UseAppearanceTypographyOptions {
 	setError: (message: string) => void;
-	isHydrated: boolean;
 }
 
 export function useAppearanceTypography({
 	setError,
-	isHydrated,
 }: UseAppearanceTypographyOptions) {
 	const fontFamily = useSettingsValue<UiFontFamily>(
 		DEFAULT_FONT_FAMILY,
@@ -78,11 +75,6 @@ export function useAppearanceTypography({
 	);
 
 	useEffect(() => {
-		if (!isHydrated) return;
-		applyUiTypography(typography);
-	}, [isHydrated, typography]);
-
-	useEffect(() => {
 		let cancelled = false;
 		void Promise.all([loadAvailableFonts(), loadAvailableMonospaceFonts()])
 			.then(([fonts, monospaceFonts]) => {
@@ -130,13 +122,8 @@ export function useAppearanceTypography({
 		setMonoFontFamily: monoFontFamily.setValue,
 		setUiFontSize: uiFontSize.setValue,
 		setEditorFontSize: editorFontSize.setValue,
-		onFontFamilyChange: async (next: UiFontFamily) => fontFamily.onChange(next),
-		onEditorFontFamilyChange: async (next: UiFontFamily) =>
-			editorFontFamily.onChange(next),
-		onMonoFontFamilyChange: async (next: UiFontFamily) =>
-			monoFontFamily.onChange(next),
-		onUiFontSizeChange: async (next: UiFontSize) => uiFontSize.onChange(next),
-		onEditorFontSizeChange: async (next: UiFontSize) =>
-			editorFontSize.onChange(next),
+		onFontFamilyChange: fontFamily.onChange,
+		onMonoFontFamilyChange: monoFontFamily.onChange,
+		onUiFontSizeChange: uiFontSize.onChange,
 	};
 }

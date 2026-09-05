@@ -1,13 +1,7 @@
-import { useTheme } from "next-themes";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-	applyUiSurfacePreferences,
-	applyUiThemeSelection,
-} from "../../lib/appearance";
-import {
 	type CustomTheme,
-	applyCustomThemes,
 	customThemeId,
 	customThemeOptions,
 } from "../../lib/customThemes";
@@ -60,10 +54,8 @@ import { useSettingsValue } from "./useSettingsValue";
 
 export function AppearanceSettingsPane() {
 	const { t } = useTranslation("settings.appearance");
-	const { setTheme } = useTheme();
 	const [customThemes, setCustomThemesState] = useState<CustomTheme[]>([]);
 	const [error, setError] = useState("");
-	const [isHydrated, setIsHydrated] = useState(false);
 	const themeMode = useSettingsValue<ThemeMode>(
 		"system",
 		DURABLE_SETTINGS.theme.write,
@@ -105,7 +97,7 @@ export function AppearanceSettingsPane() {
 		setCornerRadiusStyle,
 		setInitialCornerRadiusStyle,
 		onCornerRadiusStyleChange,
-	} = useAppearanceCornerRadius({ setError, isHydrated });
+	} = useAppearanceCornerRadius({ setError });
 	const {
 		fontFamily,
 		monoFontFamily,
@@ -121,7 +113,7 @@ export function AppearanceSettingsPane() {
 		setMonoFontFamily,
 		setUiFontSize,
 		setEditorFontSize,
-	} = useAppearanceTypography({ setError, isHydrated });
+	} = useAppearanceTypography({ setError });
 
 	const setShowColumnColorChecked = showColumnColor.setChecked;
 
@@ -141,7 +133,6 @@ export function AppearanceSettingsPane() {
 				setShowColumnColorChecked(settings.database.showColumnColor);
 				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
 				setInitialTypography(settings);
-				setIsHydrated(true);
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -162,26 +153,6 @@ export function AppearanceSettingsPane() {
 		themeMode.setInitialValue,
 		translucentApp.setInitialValue,
 	]);
-
-	useEffect(() => {
-		if (!isHydrated) return;
-		setTheme(themeMode.value);
-	}, [isHydrated, setTheme, themeMode.value]);
-
-	useEffect(() => {
-		if (!isHydrated) return;
-		applyUiThemeSelection(lightThemeId.value, darkThemeId.value);
-	}, [darkThemeId.value, isHydrated, lightThemeId.value]);
-
-	useEffect(() => {
-		if (!isHydrated) return;
-		applyUiSurfacePreferences({ translucentApp: translucentApp.value });
-	}, [isHydrated, translucentApp.value]);
-
-	useEffect(() => {
-		if (!isHydrated) return;
-		applyCustomThemes(customThemes);
-	}, [customThemes, isHydrated]);
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (payload.ui?.customThemes) {

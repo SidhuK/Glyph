@@ -13,7 +13,7 @@ use super::git::{
     remote_branch_exists, stage_for_sync, upsert_managed_gitignore, working_tree_change_count,
     working_tree_dirty, RepoInspection,
 };
-use super::store::{delete_store, load_store, save_store};
+use super::store::{load_store, save_store};
 use super::types::{
     GitSyncConfig, GitSyncConfigPatch, GitSyncPhase, GitSyncRepoMode, GitSyncRunMode,
     GitSyncRunRequest, GitSyncStatus, DEFAULT_GIT_SYNC_BRANCH,
@@ -368,26 +368,6 @@ pub fn update_git_sync_config(
     let status = read_status_internal(git_state, space_state, window_label)?;
     emit_status(&app, window_label, &status);
     Ok(config)
-}
-
-pub fn disconnect_git_sync(
-    app: AppHandle,
-    git_state: &GitSyncState,
-    space_state: &SpaceState,
-    window_label: &str,
-) -> Result<GitSyncStatus, String> {
-    let space_root = space_state.root_for_window_label(window_label)?;
-    delete_store(&space_root)?;
-    {
-        let mut runtimes = git_state
-            .runtime
-            .lock()
-            .map_err(|_| "git sync state poisoned".to_string())?;
-        runtimes.insert(runtime_key(&space_root), RuntimeStatus::default());
-    }
-    let status = read_status_internal(git_state, space_state, window_label)?;
-    emit_status(&app, window_label, &status);
-    Ok(status)
 }
 
 pub fn run_git_sync(

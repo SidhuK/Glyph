@@ -111,3 +111,44 @@ export function useWikiLinkAutocomplete({
 			Boolean(onSelectItem) || cause !== "tab" || item.kind === "heading",
 	});
 }
+
+export function WikiLinkSuggestionList({
+	items,
+	activeIndex,
+	className,
+	onSelect,
+}: {
+	items: EditorLinkSuggestion[];
+	activeIndex: number;
+	className: string;
+	onSelect: (item: EditorLinkSuggestion) => void;
+}) {
+	if (items.length === 0) return null;
+	return (
+		<div className={`wikiLinkSuggestionMenu ${className}`}>
+			{items.map((item, index) => (
+				<button
+					key={
+						item.kind === "heading"
+							? `${item.kind}:${item.path}#${item.slug}`
+							: `${item.kind}:${item.path}`
+					}
+					type="button"
+					className={[
+						"wikiLinkSuggestionItem",
+						index === activeIndex ? "active" : "",
+					]
+						.filter(Boolean)
+						.join(" ")}
+					onMouseDown={(event) => {
+						event.preventDefault();
+						onSelect(item);
+					}}
+				>
+					<span className="wikiLinkSuggestionTitle">{item.title}</span>
+					<span className="wikiLinkSuggestionPath">{item.path}</span>
+				</button>
+			))}
+		</div>
+	);
+}

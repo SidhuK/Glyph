@@ -10,7 +10,7 @@ import {
 	groupRelationshipsByField,
 } from "../src/lib/relationships";
 import type { NoteRelationship } from "../src/lib/tauri";
-import { countWords, formatReadingTime } from "../src/lib/textStats";
+import { countWords } from "../src/lib/textStats";
 import {
 	displayFolderFromPath,
 	fileExtension,
@@ -54,10 +54,6 @@ const paths = Array.from(
 describe("textStats", () => {
 	bench("countWords on a large document", () => {
 		countWords(plainText);
-	});
-
-	bench("formatReadingTime", () => {
-		formatReadingTime(1234);
 	});
 });
 

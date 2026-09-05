@@ -616,23 +616,4 @@ describe("shortcut settings", () => {
 		});
 		expect(effective["open-search-palette"]).toBeNull();
 	});
-
-	it("resets all shortcut overrides back to defaults", async () => {
-		const { resetAllShortcutBindings, setShortcutBinding } = await import(
-			"./settings"
-		);
-
-		await setShortcutBinding("open-command-palette", {
-			meta: true,
-			shift: true,
-			key: "k",
-		});
-		await resetAllShortcutBindings();
-
-		expect(storeState.has("shortcuts.version")).toBe(false);
-		expect(storeState.has("shortcuts.bindings")).toBe(false);
-		expect(emitMock).toHaveBeenLastCalledWith("settings:updated", {
-			shortcuts: { bindings: {} },
-		});
-	});
 });

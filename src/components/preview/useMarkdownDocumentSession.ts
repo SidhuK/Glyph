@@ -227,7 +227,6 @@ export function useMarkdownDocumentSession({
 				setSavedText(doc.text);
 				setLastSavedMtimeMs(doc.mtime_ms);
 				setLoadedRelPath(relPath);
-				setPrefetchedNote(relPath, doc);
 				if (showRefreshFeedback) {
 					flashPulse("reloaded");
 				}

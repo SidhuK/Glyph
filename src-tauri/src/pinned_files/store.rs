@@ -115,28 +115,15 @@ pub fn toggle_file(store: &mut PinnedFilesStore, path: &str) -> Result<(), Strin
     Ok(())
 }
 
-pub fn rewrite_entry_path(path: &str, from_path: &str, to_path: &str) -> Option<String> {
-    if path == from_path {
-        return Some(to_path.to_string());
-    }
-    let prefix = format!("{from_path}/");
-    path.strip_prefix(&prefix)
-        .map(|suffix| format!("{to_path}/{suffix}"))
-}
-
-pub fn should_remove_entry(path: &str, target_path: &str) -> bool {
-    path == target_path || path.starts_with(&format!("{target_path}/"))
-}
-
 #[cfg(test)]
 mod tests {
     use std::fs;
     use std::path::Path;
     use std::time::{SystemTime, UNIX_EPOCH};
 
-    use super::{load_store, rewrite_entry_path, save_store, should_remove_entry, toggle_file};
+    use super::{load_store, save_store, toggle_file};
     use crate::glyph_paths::ensure_glyph_dir;
-    use crate::paths;
+    use crate::paths::{self, rewrite_entry_path, should_remove_entry};
     use crate::pinned_files::types::PinnedFilesStore;
 
     fn unique_temp_dir() -> std::path::PathBuf {

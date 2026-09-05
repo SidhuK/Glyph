@@ -6,7 +6,7 @@ import {
 } from "./markdownCache";
 
 describe("markdownCache", () => {
-	it("promotes a cached document when read", () => {
+	it("promotes a cached document and evicts by entry count", () => {
 		clearMarkdownDocCache();
 		setCachedMarkdownDoc("a.md", "a");
 		setCachedMarkdownDoc("b.md", "b");
@@ -17,9 +17,7 @@ describe("markdownCache", () => {
 		setCachedMarkdownDoc("last.md", "last");
 		expect(getCachedMarkdownDoc("a.md")).toBe("a");
 		expect(getCachedMarkdownDoc("b.md")).toBeUndefined();
-	});
 
-	it("evicts old entries when the entry limit is exceeded", () => {
 		clearMarkdownDocCache();
 		for (let i = 0; i < 12; i += 1) {
 			setCachedMarkdownDoc(`doc-${i}.md`, `${i}`);

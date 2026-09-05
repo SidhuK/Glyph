@@ -163,12 +163,6 @@ export interface EditorSettings {
 	focusMode: FocusMode;
 }
 
-export interface FileTreeSettings {
-	showFolderFileCounts: boolean;
-	showNonMarkdownFiles: boolean;
-	sortMode: FileTreeSortMode;
-}
-
 export interface ShortcutSettings {
 	version: 1;
 	bindings: Partial<Record<ShortcutActionId, Shortcut | null>>;

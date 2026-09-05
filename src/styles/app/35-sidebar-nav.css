@@ -42,33 +42,6 @@
 	color: var(--text-primary);
 }
 
-.sidebarTopIconButton {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex: 0 0 26px;
-	width: var(--icon-3xl);
-	height: var(--icon-3xl);
-	padding: 0;
-	border: 0;
-	border-radius: var(--radius-8);
-	background: transparent;
-	color: var(--text-secondary);
-	cursor: pointer;
-	transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.sidebarTopIconButton:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-	color: var(--text-primary);
-}
-
-.sidebarTopIconButton:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: 2px;
-}
-
 .sidebarNavRow {
 	display: flex;
 	flex-direction: column;

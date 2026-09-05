@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { PaintBucketIcon } from "@hugeicons/core-free-icons";
+import { HighlighterIcon, PaintBucketIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -10,9 +10,12 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
-import { getTextColorButton } from "./ribbonButtonConfigs";
+import {
+	getTextColorButton,
+	getTextHighlightButton,
+} from "./ribbonButtonConfigs";
 
-interface RibbonColorPopoverProps {
+interface RibbonSwatchPopoverProps {
 	editor: Editor;
 	canEdit: boolean;
 	runCommand: (fn: () => void) => void;
@@ -20,16 +23,21 @@ interface RibbonColorPopoverProps {
 	preventMouseDown: (e: React.MouseEvent) => void;
 }
 
-export function RibbonColorPopover({
-	editor,
+function RibbonSwatchPopover({
+	icon,
+	menuLabel,
+	clearLabel,
+	button,
 	canEdit,
-	runCommand,
-	focusChain,
 	preventMouseDown,
-}: RibbonColorPopoverProps) {
-	const { t } = useTranslation("editor");
-	const button = getTextColorButton(editor, runCommand, focusChain);
-
+}: {
+	icon: typeof PaintBucketIcon;
+	menuLabel: string;
+	clearLabel: string;
+	button: ReturnType<typeof getTextColorButton>;
+	canEdit: boolean;
+	preventMouseDown: (e: React.MouseEvent) => void;
+}) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -43,7 +51,7 @@ export function RibbonColorPopover({
 					whileTap={canEdit ? { scale: 0.97 } : undefined}
 					transition={springPresets.snappy}
 				>
-					<HugeiconsIcon icon={PaintBucketIcon} size="var(--icon-md)" />
+					<HugeiconsIcon icon={icon} size="var(--icon-md)" />
 				</m.button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
@@ -53,17 +61,13 @@ export function RibbonColorPopover({
 				className="editorColorDropdown"
 				onCloseAutoFocus={(event) => event.preventDefault()}
 			>
-				<div
-					className="editorColorGrid"
-					role="menu"
-					aria-label={t("ribbon.textColor")}
-				>
+				<div className="editorColorGrid" role="menu" aria-label={menuLabel}>
 					{button.options.map((option) => (
 						<button
 							key={option.id}
 							type="button"
 							className={`editorColorSwatchButton ${
-								button.activeColor === option.id ? "active" : ""
+								button.activeId === option.id ? "active" : ""
 							}`}
 							title={option.label}
 							aria-label={option.label}
@@ -82,8 +86,8 @@ export function RibbonColorPopover({
 					<button
 						type="button"
 						className="editorColorSwatchButton editorColorClearButton"
-						title={t("ribbon.clearColor")}
-						aria-label={t("ribbon.clearColor")}
+						title={clearLabel}
+						aria-label={clearLabel}
 						onMouseDown={preventMouseDown}
 						onClick={button.onClear}
 					>
@@ -92,5 +96,45 @@ export function RibbonColorPopover({
 				</div>
 			</DropdownMenuContent>
 		</DropdownMenu>
+	);
+}
+
+export function RibbonColorPopover({
+	editor,
+	canEdit,
+	runCommand,
+	focusChain,
+	preventMouseDown,
+}: RibbonSwatchPopoverProps) {
+	const { t } = useTranslation("editor");
+	return (
+		<RibbonSwatchPopover
+			icon={PaintBucketIcon}
+			menuLabel={t("ribbon.textColor")}
+			clearLabel={t("ribbon.clearColor")}
+			button={getTextColorButton(editor, runCommand, focusChain)}
+			canEdit={canEdit}
+			preventMouseDown={preventMouseDown}
+		/>
+	);
+}
+
+export function RibbonHighlightPopover({
+	editor,
+	canEdit,
+	runCommand,
+	focusChain,
+	preventMouseDown,
+}: RibbonSwatchPopoverProps) {
+	const { t } = useTranslation("editor");
+	return (
+		<RibbonSwatchPopover
+			icon={HighlighterIcon}
+			menuLabel={t("ribbon.textHighlight")}
+			clearLabel={t("ribbon.clearHighlight")}
+			button={getTextHighlightButton(editor, runCommand, focusChain)}
+			canEdit={canEdit}
+			preventMouseDown={preventMouseDown}
+		/>
 	);
 }

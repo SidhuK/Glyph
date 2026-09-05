@@ -316,33 +316,3 @@ pub async fn ai_context_build(
     .await
     .map_err(|e| e.to_string())?
 }
-
-#[tauri::command]
-pub async fn ai_context_resolve_paths(
-    window: WebviewWindow,
-    state: State<'_, SpaceState>,
-    attachments: Vec<AiContextAttachment>,
-) -> Result<Vec<String>, String> {
-    let root = state.root_for_window(&window)?;
-    tauri::async_runtime::spawn_blocking(move || {
-        let mut out: Vec<String> = Vec::new();
-        let mut seen = std::collections::BTreeSet::<String>::new();
-        for attachment in attachments {
-            let Some(path) = normalize_rel(&attachment.path) else {
-                continue;
-            };
-            if attachment.kind == "folder" {
-                for rel in list_files(&root, &path, DEFAULT_FILE_LIST_LIMIT)? {
-                    if seen.insert(rel.clone()) {
-                        out.push(rel);
-                    }
-                }
-            } else if !path.is_empty() && seen.insert(path.clone()) {
-                out.push(path);
-            }
-        }
-        Ok(out)
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}

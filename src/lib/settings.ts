@@ -807,16 +807,6 @@ export async function resetShortcutBinding(
 	});
 }
 
-export async function resetAllShortcutBindings(): Promise<void> {
-	return withShortcutBindingsWriteLock(async () => {
-		const store = await getSettingsStore();
-		await store.delete(INTERNAL_SETTING_KEYS.shortcutsVersion);
-		await store.delete(INTERNAL_SETTING_KEYS.shortcutsBindings);
-		await saveSettingsStore(store);
-		void emitSettingsUpdated({ shortcuts: { bindings: {} } });
-	});
-}
-
 export async function setTemplatesFolder(
 	folder: string | null,
 	scope?: SettingsScope,

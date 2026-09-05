@@ -26,7 +26,7 @@ export interface UseActiveViewConfigOptions {
 	selectedViewId: string | null;
 }
 
-export function deriveActiveViewConfig(
+function deriveActiveViewConfig(
 	document: WorkspaceDatabaseDocument | null,
 	selectedViewId: string | null,
 ): ActiveViewConfig {

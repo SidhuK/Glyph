@@ -7,7 +7,7 @@ import { getCornerRadiusOptions } from "./cornerRadiusOptions";
 
 interface AppearanceCornerRadiusCardProps {
 	cornerRadiusStyle: UiCornerRadiusStyle;
-	onCornerRadiusStyleChange: (style: UiCornerRadiusStyle) => Promise<void>;
+	onCornerRadiusStyleChange: (style: UiCornerRadiusStyle) => void;
 }
 
 export function AppearanceCornerRadiusCard({

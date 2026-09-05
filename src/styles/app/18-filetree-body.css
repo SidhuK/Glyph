@@ -15,15 +15,6 @@
 	background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
 }
 
-.fileTreePinnedSection {
-	position: relative;
-	margin-bottom: var(--space-2);
-}
-
-.fileTreePinnedList {
-	margin-bottom: 0;
-}
-
 .fileTreeBreadcrumb {
 	display: flex;
 	align-items: center;
@@ -91,50 +82,6 @@
 	height: var(--icon-xs);
 	color: var(--text-quaternary);
 	flex-shrink: 0;
-}
-
-.fileTreePinToggle {
-	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background: none;
-	border: none;
-	padding: 0;
-	outline: none;
-}
-
-.fileTreePinToggle:hover,
-.fileTreePinToggle:focus-visible {
-	background: none;
-	outline: none;
-	box-shadow: none;
-}
-
-.fileTreePinnedLeadingPin:is(:hover, :focus-visible) .fileTreePinIcon,
-.fileTreePinnedLeadingPin:not(:is(:hover, :focus-visible)) .fileTreePinOffIcon {
-	display: none;
-}
-
-.fileTreePinnedRow {
-	flex: 1;
-	justify-content: flex-start;
-	gap: 6px;
-	min-width: 0;
-	text-align: left;
-}
-
-.fileTreePinnedPath {
-	flex-shrink: 0;
-	margin-left: auto;
-	font-family: inherit;
-	font-size: var(--text-sm);
-	line-height: 1.4;
-	color: var(--text-tertiary);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	max-width: 42%;
 }
 
 .fileTreeList {

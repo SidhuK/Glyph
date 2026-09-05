@@ -139,7 +139,7 @@ export function invalidatePrefetchedNote(path?: string | null) {
 	queryClient.removeQueries({ queryKey: navigationQueryKeys.note(path) });
 }
 
-export function prefetchDatabaseSummaries() {
+function prefetchDatabaseSummaries() {
 	return queryClient.fetchQuery(databaseSummariesQueryOptions());
 }
 
@@ -165,7 +165,7 @@ export function invalidateDatabaseSummariesPrefetch() {
 	});
 }
 
-export function prefetchDatabaseDocument(databaseId: string) {
+function prefetchDatabaseDocument(databaseId: string) {
 	const normalized = databaseId.trim();
 	if (!normalized) {
 		return Promise.reject(new Error("Database id is required."));
@@ -181,20 +181,6 @@ export function databaseDocumentQueryOptions(databaseId: string) {
 		staleTime: NAVIGATION_STALE_TIME_MS,
 		enabled: Boolean(normalized),
 	};
-}
-
-export async function refetchDatabaseDocument(databaseId: string) {
-	const normalized = databaseId.trim();
-	if (!normalized) {
-		return Promise.reject(new Error("Database id is required."));
-	}
-	const queryKey = navigationQueryKeys.databaseDocument(normalized);
-	await queryClient.cancelQueries({ queryKey });
-	return queryClient.fetchQuery({
-		queryKey,
-		queryFn: () => invoke("databases_get", { database_id: normalized }),
-		staleTime: 0,
-	});
 }
 
 export function getPrefetchedDatabaseDocument(databaseId: string) {
