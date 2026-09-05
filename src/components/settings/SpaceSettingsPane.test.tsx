@@ -6,58 +6,34 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SpaceSettingsPane } from "./SpaceSettingsPane";
 
-const {
-	invokeMock,
-	loadSettingsMock,
-	setDailyNotesFolderMock,
-	setEditorAttachmentFolderMock,
-	setEditorAttachmentStorageModeMock,
-	setEditorEnablePeopleMentionsAsTagsMock,
-	setQuickNotesFolderMock,
-	writeSpaceSettingMock,
-} = vi.hoisted(() => ({
-	invokeMock: vi.fn(),
-	loadSettingsMock: vi.fn(() =>
-		Promise.resolve({
-			currentSpacePath: "/spaces/test",
-			dailyNotes: {
-				folder: null,
-			},
-			editor: {
-				attachmentStorageMode: "note-folder",
-				attachmentFolder: "assets",
-				enablePeopleMentionsAsTags: false,
-			},
-			quickNotes: {
-				folder: "Quick Notes",
-			},
-		}),
-	),
-	setDailyNotesFolderMock: vi.fn(
-		(_value: unknown, _scope: { spacePath?: string | null }) =>
-			Promise.resolve(),
-	),
-	setEditorAttachmentFolderMock: vi.fn(
-		(_value: unknown, _scope: { spacePath?: string | null }) =>
-			Promise.resolve(),
-	),
-	setEditorAttachmentStorageModeMock: vi.fn(
-		(_value: unknown, _scope: { spacePath?: string | null }) =>
-			Promise.resolve(),
-	),
-	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
-	setQuickNotesFolderMock: vi.fn(
-		(_value: unknown, _scope: { spacePath?: string | null }) =>
-			Promise.resolve(),
-	),
-	writeSpaceSettingMock: vi.fn(
-		(
-			_definition: { field: string },
-			_value: unknown,
-			_scope: { spacePath?: string | null },
-		) => Promise.resolve(),
-	),
-}));
+const { invokeMock, loadSettingsMock, writeSpaceSettingMock } = vi.hoisted(
+	() => ({
+		invokeMock: vi.fn(),
+		loadSettingsMock: vi.fn(() =>
+			Promise.resolve({
+				currentSpacePath: "/spaces/test",
+				dailyNotes: {
+					folder: null,
+				},
+				editor: {
+					attachmentStorageMode: "note-folder",
+					attachmentFolder: "assets",
+					enablePeopleMentionsAsTags: false,
+				},
+				quickNotes: {
+					folder: "Quick Notes",
+				},
+			}),
+		),
+		writeSpaceSettingMock: vi.fn(
+			(
+				_definition: { field: string },
+				_value: unknown,
+				_scope: { spacePath?: string | null },
+			) => Promise.resolve(),
+		),
+	}),
+);
 
 (
 	globalThis as typeof globalThis & {
@@ -86,7 +62,7 @@ vi.mock("../../lib/settings", async (importOriginal) => {
 vi.mock("../../lib/settings/definitions", () => ({
 	DURABLE_SETTINGS: {
 		editorEnablePeopleMentionsAsTags: {
-			write: setEditorEnablePeopleMentionsAsTagsMock,
+			write: vi.fn(() => Promise.resolve()),
 		},
 	},
 	SPACE_SETTINGS: {
@@ -194,6 +170,22 @@ describe("SpaceSettingsPane", () => {
 	let container: HTMLDivElement;
 	let root: Root;
 
+	function spaceSettingCalls(field: string) {
+		return writeSpaceSettingMock.mock.calls.filter(
+			(call) => call[0].field === field,
+		);
+	}
+
+	function expectSpaceSetting(
+		field: string,
+		value: unknown,
+		spacePath = "/spaces/test",
+	) {
+		expect(writeSpaceSettingMock).toHaveBeenCalledWith({ field }, value, {
+			spacePath,
+		});
+	}
+
 	function getAttachmentsSection(): HTMLElement {
 		const heading = Array.from(container.querySelectorAll("h2")).find(
 			(node) => node.textContent === "Attachments",
@@ -207,24 +199,6 @@ describe("SpaceSettingsPane", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		invokeMock.mockResolvedValue("/spaces/test");
-		writeSpaceSettingMock.mockImplementation(
-			(
-				definition: { field: string },
-				value: unknown,
-				scope: { spacePath?: string | null },
-			) => {
-				if (definition.field === "attachmentStorageMode") {
-					return setEditorAttachmentStorageModeMock(value, scope);
-				}
-				if (definition.field === "attachmentFolder") {
-					return setEditorAttachmentFolderMock(value, scope);
-				}
-				if (definition.field === "dailyNotesFolder") {
-					return setDailyNotesFolderMock(value, scope);
-				}
-				return setQuickNotesFolderMock(value, scope);
-			},
-		);
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -280,10 +254,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		expect(setEditorAttachmentStorageModeMock).toHaveBeenCalledWith(
-			"specific-folder",
-			{ spacePath: "/spaces/test" },
-		);
+		expectSpaceSetting("attachmentStorageMode", "specific-folder");
 		expect(getAttachmentsSection().textContent).toContain("Browse");
 		expect(getAttachmentsSection().textContent).toContain("assets");
 
@@ -293,10 +264,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		expect(setEditorAttachmentStorageModeMock).toHaveBeenCalledWith(
-			"space-root",
-			{ spacePath: "/spaces/test" },
-		);
+		expectSpaceSetting("attachmentStorageMode", "space-root");
 		expect(getAttachmentsSection().textContent).not.toContain("Browse");
 	});
 
@@ -316,10 +284,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		expect(setEditorAttachmentStorageModeMock).toHaveBeenCalledWith(
-			"note-subfolder",
-			{ spacePath: "/spaces/test" },
-		);
+		expectSpaceSetting("attachmentStorageMode", "note-subfolder");
 		expect(
 			container.querySelector('input[aria-label="Attachment subfolder name"]'),
 		).not.toBeNull();
@@ -356,9 +321,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		expect(setEditorAttachmentFolderMock).toHaveBeenCalledWith("assets", {
-			spacePath: "/spaces/test",
-		});
+		expectSpaceSetting("attachmentFolder", "assets");
 	});
 
 	it("preserves the attachment folder when switching back to specific-folder", async () => {
@@ -388,7 +351,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		setEditorAttachmentFolderMock.mockClear();
+		writeSpaceSettingMock.mockClear();
 
 		await act(async () => {
 			select.value = "specific-folder";
@@ -396,7 +359,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		expect(setEditorAttachmentFolderMock).not.toHaveBeenCalled();
+		expect(spaceSettingCalls("attachmentFolder")).toHaveLength(0);
 		expect(getAttachmentsSection().textContent).toContain("Projects/Media");
 	});
 
@@ -427,7 +390,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		expect(setEditorAttachmentFolderMock).not.toHaveBeenCalled();
+		expect(spaceSettingCalls("attachmentFolder")).toHaveLength(0);
 		const input = container.querySelector(
 			'input[aria-label="Attachment subfolder name"]',
 		) as HTMLInputElement | null;
@@ -464,7 +427,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		expect(setEditorAttachmentFolderMock).not.toHaveBeenCalled();
+		expect(spaceSettingCalls("attachmentFolder")).toHaveLength(0);
 		expect(
 			container.querySelector("#attachmentSubfolderError")?.textContent,
 		).toContain("Folder path cannot contain '..'.");

@@ -82,7 +82,6 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 	const enabled = options?.enabled ?? true;
 	const localQueryClient = useQueryClient();
 	const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-	const [loadError, setLoadError] = useState("");
 
 	const summariesQuery = useQuery({
 		queryKey: aiHistoryQueryKeys.summaries(limit),
@@ -103,14 +102,8 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 				toolEvents: detail.tool_events ?? [],
 			};
 		},
-		onMutate: () => {
-			setLoadError("");
-		},
 		onSuccess: (_data, jobId) => {
 			setSelectedJobId(jobId);
-		},
-		onError: (error) => {
-			setLoadError(extractErrorMessage(error));
 		},
 	});
 
@@ -133,7 +126,7 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 
 	const summaries = summariesQuery.data ?? [];
 	const error =
-		loadError ||
+		(loadChatMutation.error && extractErrorMessage(loadChatMutation.error)) ||
 		(summariesQuery.error && extractErrorMessage(summariesQuery.error)) ||
 		"";
 

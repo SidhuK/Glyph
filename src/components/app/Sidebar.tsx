@@ -2,101 +2,20 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
-import type { PeriodKind } from "../../lib/periodNotes";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
-import { SidebarContent } from "./SidebarContent";
+import { SidebarContent, type SidebarContentProps } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSettingsContent } from "./SidebarSettingsContent";
 
-interface SidebarProps {
-	onToggleDir: (dirPath: string) => void;
-	onLoadDir: (dirPath: string, force?: boolean) => Promise<void>;
-	onExpandAllDirs: () => Promise<void>;
-	onCollapseAllDirs: () => void;
-	onSelectDir: (dirPath: string) => void;
-	onOpenFile: (relPath: string) => void;
-	onNewNote: () => void;
-	newNoteFolder: string;
-	onNewFileInDir: (dirPath: string) => void;
-	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onImportFilesInDir: (dirPath: string) => void;
-	onImportFolderInDir: (dirPath: string) => void;
-	onImportPathsInDir: (paths: string[], dirPath: string) => void;
-	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
-	onDuplicateFile: (path: string) => Promise<string | null>;
-	onRenameDir: (
-		dirPath: string,
-		nextName: string,
-		kind: "dir" | "file",
-	) => Promise<string | null>;
-	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
-	onMovePath: (
-		fromPath: string,
-		toDirPath: string,
-		kind?: "dir" | "file",
-	) => Promise<string | null>;
-	onSelectTag: (tag: string) => void;
+interface SidebarProps extends SidebarContentProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
-	spacePath: string | null;
-	onOpenAllDocs: () => void;
-	onOpenPinnedDocs: () => void;
-	onOpenConnections: () => void;
-	onOpenDatabases: (databaseId?: string | null) => void;
-	onOpenCalendar: () => void;
-	onOpenSearch: () => void;
-	onOpenPeriodNote: (kind: PeriodKind) => void;
-	onOpenQuickNote: () => void;
-	onCreateFromTemplate: () => void;
-	onGitSyncNow: () => void;
-	activeTopSection:
-		| "all-notes"
-		| "connections"
-		| "databases"
-		| "pinned-notes"
-		| null;
-	onPrefetchDatabases: (databaseId?: string | null) => void;
-	onPrefetchAllDocs: () => void;
-	onPrefetchFile: (relPath: string) => void;
 }
 
 export const Sidebar = memo(function Sidebar({
-	onToggleDir,
-	onLoadDir,
-	onExpandAllDirs,
-	onCollapseAllDirs,
-	onSelectDir,
-	onOpenFile,
-	onNewNote,
-	newNoteFolder,
-	onNewFileInDir,
-	onCreateFromTemplateInDir,
-	onImportFilesInDir,
-	onImportFolderInDir,
-	onImportPathsInDir,
-	onRequestCreateFolder,
-	onDuplicateFile,
-	onRenameDir,
-	onDeletePath,
-	onMovePath,
-	onSelectTag,
 	sidebarCollapsed,
 	onToggleSidebar,
-	spacePath,
-	onOpenAllDocs,
-	onOpenPinnedDocs,
-	onOpenConnections,
-	onOpenDatabases,
-	onOpenCalendar,
-	onOpenSearch,
-	onOpenPeriodNote,
-	onOpenQuickNote,
-	onCreateFromTemplate,
-	onGitSyncNow,
-	activeTopSection,
-	onPrefetchDatabases,
-	onPrefetchAllDocs,
-	onPrefetchFile,
+	...contentProps
 }: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
@@ -146,42 +65,7 @@ export const Sidebar = memo(function Sidebar({
 									sidebarCollapsed={sidebarCollapsed}
 									onToggleSidebar={onToggleSidebar}
 								/>
-								<SidebarContent
-									onToggleDir={onToggleDir}
-									onLoadDir={onLoadDir}
-									onExpandAllDirs={onExpandAllDirs}
-									onCollapseAllDirs={onCollapseAllDirs}
-									onSelectDir={onSelectDir}
-									onOpenFile={onOpenFile}
-									onNewNote={onNewNote}
-									newNoteFolder={newNoteFolder}
-									onNewFileInDir={onNewFileInDir}
-									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onImportFilesInDir={onImportFilesInDir}
-									onImportFolderInDir={onImportFolderInDir}
-									onImportPathsInDir={onImportPathsInDir}
-									onRequestCreateFolder={onRequestCreateFolder}
-									onDuplicateFile={onDuplicateFile}
-									onRenameDir={onRenameDir}
-									onDeletePath={onDeletePath}
-									onMovePath={onMovePath}
-									onSelectTag={onSelectTag}
-									onOpenDatabases={onOpenDatabases}
-									onPrefetchDatabases={onPrefetchDatabases}
-									onPrefetchAllDocs={onPrefetchAllDocs}
-									onPrefetchFile={onPrefetchFile}
-									onOpenAllDocs={onOpenAllDocs}
-									onOpenPinnedDocs={onOpenPinnedDocs}
-									onOpenConnections={onOpenConnections}
-									onOpenCalendar={onOpenCalendar}
-									onOpenSearch={onOpenSearch}
-									onOpenPeriodNote={onOpenPeriodNote}
-									onOpenQuickNote={onOpenQuickNote}
-									onCreateFromTemplate={onCreateFromTemplate}
-									onGitSyncNow={onGitSyncNow}
-									spacePath={spacePath}
-									activeTopSection={activeTopSection}
-								/>
+								<SidebarContent {...contentProps} />
 								<LicenseStatusFooter />
 							</>
 						)}

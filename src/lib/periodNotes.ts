@@ -1,4 +1,8 @@
-import { getTodayDateString, parseIsoDate } from "./dailyNotes";
+import {
+	getTodayDateString,
+	joinDatedNotePath,
+	parseIsoDate,
+} from "./dailyNotes";
 
 export const PERIOD_KINDS = ["day", "week", "month", "quarter"] as const;
 export type PeriodKind = (typeof PERIOD_KINDS)[number];
@@ -75,10 +79,6 @@ export function periodNoteTemplatesFromSettings(
 
 function pad2(value: number): string {
 	return String(value).padStart(2, "0");
-}
-
-function isAbsolutePath(p: string): boolean {
-	return /^\/|^[A-Za-z]:[/\\]/.test(p);
 }
 
 export function isoWeekFromDate(date: Date): { isoYear: number; week: number } {
@@ -184,34 +184,9 @@ export function getPeriodNoteFilename(id: PeriodId): string {
 }
 
 export function getPeriodNotePath(folder: string, id: PeriodId): string {
-	const filename = getPeriodNoteFilename(id);
-	const normalizedFolder = folder.replace(/\\/g, "/").replace(/\/+$/g, "");
-	if (isAbsolutePath(normalizedFolder)) {
-		throw new Error(
-			`Dated note folder must be a relative path, got: ${folder}`,
-		);
-	}
-	const hasTraversal = normalizedFolder
-		.split("/")
-		.some((segment) => segment === "..");
-	if (hasTraversal) {
-		throw new Error(
-			`Dated note folder cannot include parent traversal segments: ${folder}`,
-		);
-	}
-	if (!normalizedFolder) {
-		return filename;
-	}
-	return `${normalizedFolder}/${filename}`;
+	return joinDatedNotePath(folder, getPeriodNoteFilename(id));
 }
 
 export function getPeriodNoteContent(id: PeriodId): string {
 	return `# ${periodStem(id)}\n`;
 }
-
-export const PERIOD_OPEN_COMMAND_IDS = {
-	day: "open-daily-note",
-	week: "open-weekly-note",
-	month: "open-monthly-note",
-	quarter: "open-quarterly-note",
-} as const satisfies Record<PeriodKind, string>;

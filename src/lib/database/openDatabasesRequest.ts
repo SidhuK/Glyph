@@ -34,27 +34,18 @@ export function nextDatabasesOpenRequest(
 		patch.openCreateDialog !== current.openCreateDialog;
 	const paneIdChanged =
 		patch.paneId !== undefined && patch.paneId !== current.paneId;
+	const openCreateRequested = patch.openCreateDialog === true;
 
 	return {
 		databaseId,
 		openCreateDialog,
 		paneId,
 		nonce:
-			databaseIdChanged || openCreateDialogChanged || paneIdChanged
+			databaseIdChanged ||
+			openCreateDialogChanged ||
+			paneIdChanged ||
+			openCreateRequested
 				? current.nonce + 1
 				: current.nonce,
-	};
-}
-
-/** Clears a one-shot open-create-dialog intent after it has been consumed. */
-export function consumeCreateCollectionDialog(
-	request: DatabasesOpenRequest,
-): DatabasesOpenRequest {
-	if (!request.openCreateDialog) {
-		return request;
-	}
-	return {
-		...request,
-		openCreateDialog: false,
 	};
 }

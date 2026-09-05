@@ -27,36 +27,34 @@ export function parseIsoDate(iso: string): Date | null {
 	return value;
 }
 
-function getDailyNoteFilename(date?: string): string {
-	const d = date ?? getTodayDateString();
-	return `${d}.md`;
-}
-
 function isAbsolutePath(p: string): boolean {
 	return /^\/|^[A-Za-z]:[/\\]/.test(p);
 }
 
-export function getDailyNotePath(folder: string, date?: string): string {
-	if (isAbsolutePath(folder)) {
+export function joinDatedNotePath(folder: string, filename: string): string {
+	const normalizedFolder = folder.replace(/\\/g, "/").replace(/\/+$/g, "");
+	if (isAbsolutePath(folder) || isAbsolutePath(normalizedFolder)) {
 		throw new Error(
-			`Daily note folder must be a relative path, got: ${folder}`,
+			`Dated note folder must be a relative path, got: ${folder}`,
 		);
 	}
-	const d = date ?? getTodayDateString();
-	const filename = getDailyNoteFilename(d);
-	const normalizedFolder = folder.replace(/\\/g, "/").replace(/\/+$/g, "");
 	const hasTraversal = normalizedFolder
 		.split("/")
 		.some((segment) => segment === "..");
 	if (hasTraversal) {
 		throw new Error(
-			`Daily note folder cannot include parent traversal segments: ${folder}`,
+			`Dated note folder cannot include parent traversal segments: ${folder}`,
 		);
 	}
 	if (!normalizedFolder) {
 		return filename;
 	}
 	return `${normalizedFolder}/${filename}`;
+}
+
+export function getDailyNotePath(folder: string, date?: string): string {
+	const d = date ?? getTodayDateString();
+	return joinDatedNotePath(folder, `${d}.md`);
 }
 
 export function getDailyNoteContent(date: string): string {

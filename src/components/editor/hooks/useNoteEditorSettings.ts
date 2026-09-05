@@ -8,17 +8,52 @@ import {
 } from "../../../lib/settings";
 import { useTauriEvent } from "../../../lib/tauriEvents";
 
+interface NoteEditorSettings {
+	showCollapsibleHeadings: boolean;
+	showCollapsibleLists: boolean;
+	showFrontmatterInEditor: boolean;
+	showHeadingPrefixes: boolean;
+	colorfulHeadings: boolean;
+	peopleMentionsEnabled: boolean;
+	showExternalLinkPreviews: boolean;
+	showFormatBar: boolean;
+	focusMode: FocusMode;
+	spellCheck: boolean;
+}
+
+const DEFAULT_NOTE_EDITOR_SETTINGS: NoteEditorSettings = {
+	showCollapsibleHeadings: false,
+	showCollapsibleLists: false,
+	showFrontmatterInEditor: false,
+	showHeadingPrefixes: true,
+	colorfulHeadings: false,
+	peopleMentionsEnabled: false,
+	showExternalLinkPreviews: false,
+	showFormatBar: true,
+	focusMode: "off",
+	spellCheck: true,
+};
+
+function sameNoteEditorSettings(
+	left: NoteEditorSettings,
+	right: NoteEditorSettings,
+) {
+	return (
+		left.showCollapsibleHeadings === right.showCollapsibleHeadings &&
+		left.showCollapsibleLists === right.showCollapsibleLists &&
+		left.showFrontmatterInEditor === right.showFrontmatterInEditor &&
+		left.showHeadingPrefixes === right.showHeadingPrefixes &&
+		left.colorfulHeadings === right.colorfulHeadings &&
+		left.peopleMentionsEnabled === right.peopleMentionsEnabled &&
+		left.showExternalLinkPreviews === right.showExternalLinkPreviews &&
+		left.showFormatBar === right.showFormatBar &&
+		left.focusMode === right.focusMode &&
+		left.spellCheck === right.spellCheck
+	);
+}
+
 export function useNoteEditorSettings() {
-	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
-	const [showCollapsibleLists, setShowCollapsibleLists] = useState(false);
-	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
-	const [showHeadingPrefixes, setShowHeadingPrefixes] = useState(true);
-	const [colorfulHeadings, setColorfulHeadings] = useState(false);
-	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
-	const [showExternalLinkPreviews, setShowExternalLinkPreviews] =
-		useState(false);
-	const [showFormatBar, setShowFormatBar] = useState(true);
-	const [focusMode, setFocusMode] = useState<FocusMode>("off");
+	const [settings, setSettings] = useState(DEFAULT_NOTE_EDITOR_SETTINGS);
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const liveShowFormatBarRef = useRef(false);
@@ -26,38 +61,41 @@ export function useNoteEditorSettings() {
 	useEffect(() => {
 		let cancelled = false;
 		void loadSettings()
-			.then((settings) => {
+			.then((loaded) => {
 				if (cancelled) return;
-				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
-				setShowCollapsibleLists(settings.editor.showCollapsibleLists);
-				setShowFrontmatterInEditor(
-					settings.editor.showFrontmatterInEditor === true,
-				);
-				setShowHeadingPrefixes(settings.editor.showHeadingPrefixes);
-				setColorfulHeadings(settings.editor.colorfulHeadings);
-				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
-				setShowExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
-				if (!liveShowFormatBarRef.current) {
-					setShowFormatBar(settings.editor.showFormatBar);
-				}
-				setFocusMode(settings.editor.focusMode);
-				attachmentStorageModeRef.current =
-					settings.editor.attachmentStorageMode;
-				attachmentFolderRef.current = settings.editor.attachmentFolder;
+				setSettings((current) => ({
+					showCollapsibleHeadings: loaded.editor.showCollapsibleHeadings,
+					showCollapsibleLists: loaded.editor.showCollapsibleLists,
+					showFrontmatterInEditor:
+						loaded.editor.showFrontmatterInEditor === true,
+					showHeadingPrefixes: loaded.editor.showHeadingPrefixes,
+					colorfulHeadings: loaded.editor.colorfulHeadings,
+					peopleMentionsEnabled: loaded.editor.enablePeopleMentionsAsTags,
+					showExternalLinkPreviews: loaded.editor.showExternalLinkPreviews,
+					showFormatBar: liveShowFormatBarRef.current
+						? current.showFormatBar
+						: loaded.editor.showFormatBar,
+					focusMode: isFocusMode(loaded.editor.focusMode)
+						? loaded.editor.focusMode
+						: current.focusMode,
+					spellCheck:
+						typeof loaded.editor.spellCheck === "boolean"
+							? loaded.editor.spellCheck
+							: current.spellCheck,
+				}));
+				attachmentStorageModeRef.current = loaded.editor.attachmentStorageMode;
+				attachmentFolderRef.current = loaded.editor.attachmentFolder;
 			})
 			.catch(() => {
 				if (cancelled) return;
-				setShowCollapsibleHeadings(false);
-				setShowCollapsibleLists(false);
-				setShowFrontmatterInEditor(false);
-				setShowHeadingPrefixes(true);
-				setColorfulHeadings(false);
-				setPeopleMentionsEnabled(false);
-				setShowExternalLinkPreviews(false);
-				if (!liveShowFormatBarRef.current) {
-					setShowFormatBar(true);
-				}
-				setFocusMode("off");
+				setSettings((current) =>
+					liveShowFormatBarRef.current
+						? {
+								...DEFAULT_NOTE_EDITOR_SETTINGS,
+								showFormatBar: current.showFormatBar,
+							}
+						: DEFAULT_NOTE_EDITOR_SETTINGS,
+				);
 				attachmentStorageModeRef.current = "note-folder";
 				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
 			});
@@ -67,53 +105,66 @@ export function useNoteEditorSettings() {
 	}, []);
 
 	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
-			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
-		}
-		if (typeof payload.editor?.showCollapsibleLists === "boolean") {
-			setShowCollapsibleLists(payload.editor.showCollapsibleLists);
-		}
-		if (typeof payload.editor?.showFrontmatterInEditor === "boolean") {
-			setShowFrontmatterInEditor(payload.editor.showFrontmatterInEditor);
-		}
-		if (typeof payload.editor?.showHeadingPrefixes === "boolean") {
-			setShowHeadingPrefixes(payload.editor.showHeadingPrefixes);
-		}
-		if (typeof payload.editor?.colorfulHeadings === "boolean") {
-			setColorfulHeadings(payload.editor.colorfulHeadings);
-		}
-		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
-			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
-		}
-		if (typeof payload.editor?.showExternalLinkPreviews === "boolean") {
-			setShowExternalLinkPreviews(payload.editor.showExternalLinkPreviews);
-		}
-		if (typeof payload.editor?.showFormatBar === "boolean") {
+		const editor = payload.editor;
+		if (!editor) return;
+		if (typeof editor.showFormatBar === "boolean") {
 			liveShowFormatBarRef.current = true;
-			setShowFormatBar(payload.editor.showFormatBar);
 		}
-		if (isFocusMode(payload.editor?.focusMode)) {
-			setFocusMode(payload.editor.focusMode);
+		setSettings((current) => {
+			const next = {
+				showCollapsibleHeadings:
+					typeof editor.showCollapsibleHeadings === "boolean"
+						? editor.showCollapsibleHeadings
+						: current.showCollapsibleHeadings,
+				showCollapsibleLists:
+					typeof editor.showCollapsibleLists === "boolean"
+						? editor.showCollapsibleLists
+						: current.showCollapsibleLists,
+				showFrontmatterInEditor:
+					typeof editor.showFrontmatterInEditor === "boolean"
+						? editor.showFrontmatterInEditor
+						: current.showFrontmatterInEditor,
+				showHeadingPrefixes:
+					typeof editor.showHeadingPrefixes === "boolean"
+						? editor.showHeadingPrefixes
+						: current.showHeadingPrefixes,
+				colorfulHeadings:
+					typeof editor.colorfulHeadings === "boolean"
+						? editor.colorfulHeadings
+						: current.colorfulHeadings,
+				peopleMentionsEnabled:
+					typeof editor.enablePeopleMentionsAsTags === "boolean"
+						? editor.enablePeopleMentionsAsTags
+						: current.peopleMentionsEnabled,
+				showExternalLinkPreviews:
+					typeof editor.showExternalLinkPreviews === "boolean"
+						? editor.showExternalLinkPreviews
+						: current.showExternalLinkPreviews,
+				showFormatBar:
+					typeof editor.showFormatBar === "boolean"
+						? editor.showFormatBar
+						: current.showFormatBar,
+				focusMode: isFocusMode(editor.focusMode)
+					? editor.focusMode
+					: current.focusMode,
+				spellCheck:
+					typeof editor.spellCheck === "boolean"
+						? editor.spellCheck
+						: current.spellCheck,
+			};
+			return sameNoteEditorSettings(current, next) ? current : next;
+		});
+		if (editor.attachmentStorageMode) {
+			attachmentStorageModeRef.current = editor.attachmentStorageMode;
 		}
-		if (payload.editor?.attachmentStorageMode) {
-			attachmentStorageModeRef.current = payload.editor.attachmentStorageMode;
-		}
-		if ("attachmentFolder" in (payload.editor ?? {})) {
-			attachmentFolderRef.current = payload.editor?.attachmentFolder ?? null;
+		if ("attachmentFolder" in editor) {
+			attachmentFolderRef.current = editor.attachmentFolder ?? null;
 		}
 	});
 
 	return {
 		attachmentFolderRef,
 		attachmentStorageModeRef,
-		colorfulHeadings,
-		focusMode,
-		peopleMentionsEnabled,
-		showCollapsibleHeadings,
-		showCollapsibleLists,
-		showFrontmatterInEditor,
-		showHeadingPrefixes,
-		showExternalLinkPreviews,
-		showFormatBar,
+		...settings,
 	};
 }

@@ -3,39 +3,26 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { extractErrorMessage } from "../../../lib/errorUtils";
 import { invoke } from "../../../lib/tauri";
 
-interface ApiKeyState {
-	apiKeyDraft: string;
-	secretConfigured: boolean | null;
-	keySaved: boolean;
-	error: string;
+const KEY_SAVED_FEEDBACK_MS = 3000;
+
+function secretStatusQueryKey(profileId: string) {
+	return ["ai", "secret-status", profileId] as const;
 }
 
 export function useApiKeySettings(activeProfileId: string | null) {
-	const [apiState, setApiState] = useState<ApiKeyState>({
-		apiKeyDraft: "",
-		secretConfigured: null,
-		keySaved: false,
-		error: "",
-	});
+	const [apiKeyDraft, setApiKeyDraftState] = useState("");
+	const [keySaved, setKeySaved] = useState(false);
+	const [error, setError] = useState("");
 	const queryClient = useQueryClient();
 	const keySavedTimeoutRef = useRef<number | null>(null);
 	const secretStatusQuery = useQuery({
-		queryKey: ["ai", "secret-status", activeProfileId],
+		queryKey: secretStatusQueryKey(activeProfileId ?? ""),
 		queryFn: () =>
 			invoke("ai_secret_status", {
 				profile_id: activeProfileId ?? "",
 			}),
 		enabled: Boolean(activeProfileId),
 	});
-
-	useEffect(() => {
-		setApiState((prev) => ({
-			...prev,
-			secretConfigured: activeProfileId
-				? (secretStatusQuery.data ?? null)
-				: null,
-		}));
-	}, [activeProfileId, secretStatusQuery.data]);
 
 	useEffect(
 		() => () => {
@@ -47,8 +34,12 @@ export function useApiKeySettings(activeProfileId: string | null) {
 	);
 
 	const setApiKeyDraft = useCallback((value: string) => {
-		setApiState((prev) => ({ ...prev, apiKeyDraft: value }));
+		setApiKeyDraftState(value);
 	}, []);
+
+	const secretWriteScope = {
+		id: secretStatusQueryKey(activeProfileId ?? "").join(":"),
+	};
 
 	const setApiKeyMutation = useMutation({
 		mutationFn: ({
@@ -59,10 +50,11 @@ export function useApiKeySettings(activeProfileId: string | null) {
 				profile_id: profileId,
 				api_key: apiKey,
 			}),
+		scope: secretWriteScope,
 		onSuccess: async (_result, variables) => {
-			await queryClient.invalidateQueries({
-				queryKey: ["ai", "secret-status", variables.profileId],
-			});
+			const queryKey = secretStatusQueryKey(variables.profileId);
+			await queryClient.cancelQueries({ queryKey });
+			queryClient.setQueryData(queryKey, true);
 			await queryClient.invalidateQueries({
 				queryKey: ["ai", "models", variables.profileId],
 			});
@@ -72,10 +64,11 @@ export function useApiKeySettings(activeProfileId: string | null) {
 	const clearApiKeyMutation = useMutation({
 		mutationFn: (profileId: string) =>
 			invoke("ai_secret_clear", { profile_id: profileId }),
+		scope: secretWriteScope,
 		onSuccess: async (_result, profileId) => {
-			await queryClient.invalidateQueries({
-				queryKey: ["ai", "secret-status", profileId],
-			});
+			const queryKey = secretStatusQueryKey(profileId);
+			await queryClient.cancelQueries({ queryKey });
+			queryClient.setQueryData(queryKey, false);
 			await queryClient.invalidateQueries({
 				queryKey: ["ai", "models", profileId],
 			});
@@ -83,48 +76,48 @@ export function useApiKeySettings(activeProfileId: string | null) {
 	});
 
 	const handleSetApiKey = useCallback(async () => {
-		if (!activeProfileId || !apiState.apiKeyDraft.trim()) return;
+		if (!activeProfileId || !apiKeyDraft.trim()) return;
 		const profileId = activeProfileId;
-		const apiKey = apiState.apiKeyDraft;
-		setApiState((prev) => ({ ...prev, error: "" }));
+		setError("");
 		try {
-			await setApiKeyMutation.mutateAsync({ profileId, apiKey });
-			setApiState((prev) => ({
-				...prev,
-				apiKeyDraft: "",
-				secretConfigured: true,
-				keySaved: true,
-			}));
+			await setApiKeyMutation.mutateAsync({
+				profileId,
+				apiKey: apiKeyDraft,
+			});
+			setApiKeyDraftState("");
+			setKeySaved(true);
 			if (keySavedTimeoutRef.current !== null) {
 				window.clearTimeout(keySavedTimeoutRef.current);
 			}
-			const timeout = window.setTimeout(() => {
-				setApiState((prev) => ({ ...prev, keySaved: false }));
-			}, 3000);
-			keySavedTimeoutRef.current = timeout;
-		} catch (error) {
-			setApiState((prev) => ({ ...prev, error: extractErrorMessage(error) }));
+			keySavedTimeoutRef.current = window.setTimeout(() => {
+				setKeySaved(false);
+			}, KEY_SAVED_FEEDBACK_MS);
+		} catch (cause) {
+			setError(extractErrorMessage(cause));
 		}
-	}, [activeProfileId, apiState.apiKeyDraft, setApiKeyMutation]);
+	}, [activeProfileId, apiKeyDraft, setApiKeyMutation]);
 
 	const handleClearApiKey = useCallback(async () => {
 		if (!activeProfileId) return;
 		const profileId = activeProfileId;
-		setApiState((prev) => ({ ...prev, error: "" }));
+		setError("");
 		try {
 			await clearApiKeyMutation.mutateAsync(profileId);
-			setApiState((prev) => ({
-				...prev,
-				apiKeyDraft: "",
-				secretConfigured: false,
-			}));
-		} catch (error) {
-			setApiState((prev) => ({ ...prev, error: extractErrorMessage(error) }));
+			setApiKeyDraftState("");
+		} catch (cause) {
+			setError(extractErrorMessage(cause));
 		}
 	}, [activeProfileId, clearApiKeyMutation]);
 
 	return {
-		apiState,
+		apiState: {
+			apiKeyDraft,
+			secretConfigured: activeProfileId
+				? (secretStatusQuery.data ?? null)
+				: null,
+			keySaved,
+			error,
+		},
 		setApiKeyDraft,
 		handleSetApiKey,
 		handleClearApiKey,

@@ -9,6 +9,11 @@ use std::{
 
 use serde_json::Value;
 use tauri::{AppHandle, Emitter};
+use tokio::{
+    io::{AsyncBufReadExt, BufReader},
+    process::Child,
+    sync::mpsc,
+};
 use url::Url;
 
 use super::types::{AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent, AiToolEvent};
@@ -259,6 +264,21 @@ pub fn find_cli_binary(
     Err(format!(
         "{display_name} CLI not found. Install {binary_name} or set {env_var_name} to the native binary."
     ))
+}
+
+pub fn pipe_stderr(child: &mut Child) -> mpsc::UnboundedReceiver<String> {
+    let (tx, rx) = mpsc::unbounded_channel::<String>();
+    if let Some(stderr) = child.stderr.take() {
+        tokio::spawn(async move {
+            let mut lines = BufReader::new(stderr).lines();
+            while let Ok(Some(line)) = lines.next_line().await {
+                if tx.send(line).is_err() {
+                    break;
+                }
+            }
+        });
+    }
+    rx
 }
 
 pub fn emit_tool(

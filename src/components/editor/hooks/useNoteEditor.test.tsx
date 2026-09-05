@@ -178,6 +178,23 @@ const {
 
 type SettingsSnapshot = Awaited<ReturnType<typeof loadSettingsMock>>;
 
+function editorSettings(
+	overrides: Partial<SettingsSnapshot["editor"]> = {},
+): SettingsSnapshot {
+	return {
+		editor: {
+			attachmentFolder: "assets",
+			attachmentStorageMode: "specific-folder",
+			colorfulHeadings: false,
+			showCollapsibleHeadings: false,
+			showFrontmatterInEditor: false,
+			showFormatBar: true,
+			enablePeopleMentionsAsTags: false,
+			...overrides,
+		},
+	};
+}
+
 const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
 
 // React 19 expects tests to opt into act-aware scheduling.
@@ -408,17 +425,7 @@ describe("useNoteEditor", () => {
 			href: "../assets/image.png",
 		});
 		loadSettingsMock.mockReset();
-		loadSettingsMock.mockResolvedValue({
-			editor: {
-				attachmentFolder: "assets",
-				attachmentStorageMode: "specific-folder",
-				colorfulHeadings: false,
-				showCollapsibleHeadings: false,
-				showFrontmatterInEditor: false,
-				showFormatBar: true,
-				enablePeopleMentionsAsTags: false,
-			},
-		});
+		loadSettingsMock.mockResolvedValue(editorSettings());
 		parseMock.mockReset();
 		parseMock.mockReturnValue({
 			content: [
@@ -814,17 +821,9 @@ describe("useNoteEditor", () => {
 	it("hydrates frontmatter visibility from persisted settings on mount", async () => {
 		const onChange = vi.fn();
 		const onState = vi.fn();
-		loadSettingsMock.mockResolvedValue({
-			editor: {
-				attachmentFolder: "assets",
-				attachmentStorageMode: "specific-folder",
-				colorfulHeadings: false,
-				showCollapsibleHeadings: false,
-				showFrontmatterInEditor: true,
-				showFormatBar: true,
-				enablePeopleMentionsAsTags: false,
-			},
-		});
+		loadSettingsMock.mockResolvedValue(
+			editorSettings({ showFrontmatterInEditor: true }),
+		);
 
 		await act(async () => {
 			root.render(<Harness onChange={onChange} onState={onState} />);
@@ -1142,207 +1141,119 @@ describe("useNoteEditor", () => {
 		);
 	});
 
-	it("saves pasted images to the configured specific folder", async () => {
-		const onChange = vi.fn();
-		loadSettingsMock.mockResolvedValue({
-			editor: {
-				attachmentFolder: "assets/uploads",
-				attachmentStorageMode: "specific-folder",
-				colorfulHeadings: false,
-				showCollapsibleHeadings: false,
-				showFrontmatterInEditor: false,
-				showFormatBar: true,
-				enablePeopleMentionsAsTags: false,
-			},
-		});
-
-		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+	it.each([
+		{
+			name: "the configured specific folder",
+			folder: "assets/uploads",
+			mode: "specific-folder" as const,
+			targetDir: "assets/uploads",
+			assertMarkup: true,
+		},
+		{
+			name: "the space root when that mode is selected",
+			folder: "assets",
+			mode: "space-root" as const,
+			targetDir: "",
+		},
+		{
+			name: "the note folder in note-folder mode",
+			folder: "assets",
+			mode: "note-folder" as const,
+			targetDir: "notes",
+		},
+		{
+			name: "a subfolder under the note folder in note-subfolder mode",
+			folder: "attachments",
+			mode: "note-subfolder" as const,
+			targetDir: "notes/attachments",
+		},
+	])(
+		"saves pasted images to $name",
+		async ({ folder, mode, targetDir, assertMarkup }) => {
+			loadSettingsMock.mockResolvedValue(
+				editorSettings({
+					attachmentFolder: folder,
+					attachmentStorageMode: mode,
+				}),
 			);
-		});
 
-		const options = getEditorOptions() as EditorOptionsWithPaste;
-		const paste = options?.editorProps?.handleDOMEvents?.paste;
-		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
-		const event = createClipboardEvent({
-			items: [{ type: "image/png", getAsFile: () => file }],
-		});
-		mockEditor.state.doc.descendants.mockImplementation(
-			(
-				visit: (
-					node: { type: { name: string }; attrs: Record<string, unknown> },
-					pos: number,
-				) => void,
-			) => {
-				const insertContentAtCalls = chainCommands.insertContentAt.mock
-					.calls as unknown as Array<[unknown, unknown]>;
-				const lastInsertCall =
-					insertContentAtCalls[insertContentAtCalls.length - 1];
-				const insertedNodes = lastInsertCall?.[1] as
-					| Array<{ attrs?: { uploadId?: string } }>
-					| undefined;
-				const uploadId = insertedNodes?.[0]?.attrs?.uploadId;
-				if (!uploadId) return;
-				visit(
-					{
-						type: { name: "image" },
-						attrs: {
-							src: "blob:preview",
-							alt: "paste.png",
-							title: "",
-							originSrc: "",
-							uploadId,
-						},
-					},
-					6,
+			await act(async () => {
+				root.render(
+					<Harness onChange={vi.fn()} pasteMarkdownBehavior="smart-markdown" />,
 				);
-			},
-		);
+			});
 
-		await act(async () => {
-			expect(paste?.({}, event)).toBe(true);
-			await flushImageUploadWork();
-		});
+			const options = getEditorOptions() as EditorOptionsWithPaste;
+			const paste = options?.editorProps?.handleDOMEvents?.paste;
+			const file = new File(["image-bytes"], "paste.png", {
+				type: "image/png",
+			});
+			const event = createClipboardEvent({
+				items: [{ type: "image/png", getAsFile: () => file }],
+			});
+			if (assertMarkup) {
+				mockEditor.state.doc.descendants.mockImplementation(
+					(
+						visit: (
+							node: {
+								type: { name: string };
+								attrs: Record<string, unknown>;
+							},
+							pos: number,
+						) => void,
+					) => {
+						const insertContentAtCalls = chainCommands.insertContentAt.mock
+							.calls as unknown as Array<[unknown, unknown]>;
+						const lastInsertCall =
+							insertContentAtCalls[insertContentAtCalls.length - 1];
+						const insertedNodes = lastInsertCall?.[1] as
+							| Array<{ attrs?: { uploadId?: string } }>
+							| undefined;
+						const uploadId = insertedNodes?.[0]?.attrs?.uploadId;
+						if (!uploadId) return;
+						visit(
+							{
+								type: { name: "image" },
+								attrs: {
+									src: "blob:preview",
+									alt: "paste.png",
+									title: "",
+									originSrc: "",
+									uploadId,
+								},
+							},
+							6,
+						);
+					},
+				);
+			}
 
-		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
-			source_path: "notes/test.md",
-			target_dir: "assets/uploads",
-			data_url: "data:image/png;base64,abc",
-			original_filename: "paste.png",
-		});
-		expect(mockEditor.state.tr.setNodeMarkup).toHaveBeenCalledWith(
-			6,
-			undefined,
-			expect.objectContaining({
-				src: "glyphasset://localhost/assets/image.png",
-				alt: "paste.png",
-				title: "",
-				originSrc: "../assets/image.png",
-				uploadId: null,
-			}),
-		);
-	});
+			await act(async () => {
+				expect(paste?.({}, event)).toBe(true);
+				await flushImageUploadWork();
+			});
 
-	it("saves pasted images to the space root when that mode is selected", async () => {
-		const onChange = vi.fn();
-		loadSettingsMock.mockResolvedValue({
-			editor: {
-				attachmentFolder: "assets",
-				attachmentStorageMode: "space-root",
-				colorfulHeadings: false,
-				showCollapsibleHeadings: false,
-				showFrontmatterInEditor: false,
-				showFormatBar: true,
-				enablePeopleMentionsAsTags: false,
-			},
-		});
-
-		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
-		});
-
-		const options = getEditorOptions() as EditorOptionsWithPaste;
-		const paste = options?.editorProps?.handleDOMEvents?.paste;
-		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
-		const event = createClipboardEvent({
-			items: [{ type: "image/png", getAsFile: () => file }],
-		});
-
-		await act(async () => {
-			expect(paste?.({}, event)).toBe(true);
-			await flushImageUploadWork();
-		});
-
-		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
-			source_path: "notes/test.md",
-			target_dir: "",
-			data_url: "data:image/png;base64,abc",
-			original_filename: "paste.png",
-		});
-	});
-
-	it("saves pasted images beside the current note in note-folder mode", async () => {
-		const onChange = vi.fn();
-		loadSettingsMock.mockResolvedValue({
-			editor: {
-				attachmentFolder: "assets",
-				attachmentStorageMode: "note-folder",
-				colorfulHeadings: false,
-				showCollapsibleHeadings: false,
-				showFrontmatterInEditor: false,
-				showFormatBar: true,
-				enablePeopleMentionsAsTags: false,
-			},
-		});
-
-		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
-		});
-
-		const options = getEditorOptions() as EditorOptionsWithPaste;
-		const paste = options?.editorProps?.handleDOMEvents?.paste;
-		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
-		const event = createClipboardEvent({
-			items: [{ type: "image/png", getAsFile: () => file }],
-		});
-
-		await act(async () => {
-			expect(paste?.({}, event)).toBe(true);
-			await flushImageUploadWork();
-		});
-
-		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
-			source_path: "notes/test.md",
-			target_dir: "notes",
-			data_url: "data:image/png;base64,abc",
-			original_filename: "paste.png",
-		});
-	});
-
-	it("saves pasted images in a subfolder under the note folder in note-subfolder mode", async () => {
-		const onChange = vi.fn();
-		loadSettingsMock.mockResolvedValue({
-			editor: {
-				attachmentFolder: "attachments",
-				attachmentStorageMode: "note-subfolder",
-				colorfulHeadings: false,
-				showCollapsibleHeadings: false,
-				showFrontmatterInEditor: false,
-				showFormatBar: true,
-				enablePeopleMentionsAsTags: false,
-			},
-		});
-
-		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
-		});
-
-		const options = getEditorOptions() as EditorOptionsWithPaste;
-		const paste = options?.editorProps?.handleDOMEvents?.paste;
-		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
-		const event = createClipboardEvent({
-			items: [{ type: "image/png", getAsFile: () => file }],
-		});
-
-		await act(async () => {
-			expect(paste?.({}, event)).toBe(true);
-			await flushImageUploadWork();
-		});
-
-		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
-			source_path: "notes/test.md",
-			target_dir: "notes/attachments",
-			data_url: "data:image/png;base64,abc",
-			original_filename: "paste.png",
-		});
-	});
+			expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
+				source_path: "notes/test.md",
+				target_dir: targetDir,
+				data_url: "data:image/png;base64,abc",
+				original_filename: "paste.png",
+			});
+			if (assertMarkup) {
+				expect(mockEditor.state.tr.setNodeMarkup).toHaveBeenCalledWith(
+					6,
+					undefined,
+					expect.objectContaining({
+						src: "glyphasset://localhost/assets/image.png",
+						alt: "paste.png",
+						title: "",
+						originSrc: "../assets/image.png",
+						uploadId: null,
+					}),
+				);
+			}
+		},
+	);
 
 	it("does not start image uploads when image placeholders cannot be inserted", async () => {
 		const onChange = vi.fn();

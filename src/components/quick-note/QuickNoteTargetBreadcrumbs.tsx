@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type FsEntry, invoke } from "../../lib/tauri";
+import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
 import { ChevronDown, ChevronRight } from "../Icons";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 
@@ -100,75 +98,6 @@ function todayQuickNoteTarget(todayQuickNotePath: string): QuickNoteTarget {
 		path: todayQuickNotePath,
 		label: "Today's quick note",
 	};
-}
-
-function entryLabel(entry: FsEntry) {
-	return entry.is_markdown ? entry.name.replace(/\.[^./]+$/, "") : entry.name;
-}
-
-function TargetBreadcrumbMenuItem({
-	entry,
-	childrenByDir,
-	onLoadDir,
-	onSelectTarget,
-}: {
-	entry: FsEntry;
-	childrenByDir: Record<string, FsEntry[] | undefined>;
-	onLoadDir: (dirPath: string) => Promise<void>;
-	onSelectTarget: (target: QuickNoteTarget) => void;
-}) {
-	const childEntries = childrenByDir[entry.rel_path];
-	const loading = childEntries === undefined;
-	const isDir = entry.kind === "dir";
-
-	if (!isDir) {
-		return (
-			<DropdownMenuItem
-				key={entry.rel_path || ROOT_PATH_KEY}
-				className="quickNoteTargetMenuItem"
-				title={entry.rel_path || entry.name}
-				onSelect={() => onSelectTarget(fileTarget(entry.rel_path))}
-			>
-				<span className="quickNoteTargetMenuItemLabel">
-					{entryLabel(entry)}
-				</span>
-			</DropdownMenuItem>
-		);
-	}
-
-	return (
-		<DropdownMenuSub
-			onOpenChange={(open) => {
-				if (open && loading) void onLoadDir(entry.rel_path);
-			}}
-		>
-			<DropdownMenuSubTrigger className="quickNoteTargetMenuItem">
-				<span className="quickNoteTargetMenuItemLabel">{entry.name}</span>
-			</DropdownMenuSubTrigger>
-			<DropdownMenuSubContent className="quickNoteTargetMenu" sideOffset={4}>
-				{loading ? null : childEntries.length === 0 ? (
-					<div className="quickNoteTargetMenuState">Empty folder</div>
-				) : (
-					<>
-						{childEntries.slice(0, 40).map((child) => (
-							<TargetBreadcrumbMenuItem
-								key={child.rel_path || ROOT_PATH_KEY}
-								entry={child}
-								childrenByDir={childrenByDir}
-								onLoadDir={onLoadDir}
-								onSelectTarget={onSelectTarget}
-							/>
-						))}
-						{childEntries.length > 40 ? (
-							<div className="quickNoteTargetMenuState">
-								+{childEntries.length - 40} more
-							</div>
-						) : null}
-					</>
-				)}
-			</DropdownMenuSubContent>
-		</DropdownMenuSub>
-	);
 }
 
 function TargetBreadcrumbEntryMenu({
@@ -267,12 +196,16 @@ function TargetBreadcrumbEntryMenu({
 					<div className="quickNoteTargetMenuState">Empty folder</div>
 				) : (
 					entries.map((entry) => (
-						<TargetBreadcrumbMenuItem
+						<DirectoryBreadcrumbMenuItem
 							key={entry.rel_path || ROOT_PATH_KEY}
 							entry={entry}
 							childrenByDir={childrenByDir}
 							onLoadDir={onLoadDir}
-							onSelectTarget={onSelectTarget}
+							onSelectFile={(relPath) => onSelectTarget(fileTarget(relPath))}
+							itemClassName="quickNoteTargetMenuItem"
+							labelClassName="quickNoteTargetMenuItemLabel"
+							menuClassName="quickNoteTargetMenu"
+							stateClassName="quickNoteTargetMenuState"
 						/>
 					))
 				)}
@@ -312,10 +245,6 @@ export function QuickNoteTargetBreadcrumbs({
 			}));
 		} catch (cause) {
 			console.error("Failed to load quick note target directory", cause);
-			setChildrenByDir((current) => ({
-				...current,
-				[dirPath]: [],
-			}));
 		}
 	}, []);
 

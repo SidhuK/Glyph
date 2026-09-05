@@ -37,7 +37,6 @@ import {
 } from "../../lib/appEvents";
 import {
 	INITIAL_DATABASES_OPEN_REQUEST,
-	consumeCreateCollectionDialog,
 	nextDatabasesOpenRequest,
 } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
@@ -1025,11 +1024,6 @@ export function AppShell() {
 	const createDatabaseAndOpen = useCallback(() => {
 		openDatabasesTab(null, { openCreateDialog: true });
 	}, [openDatabasesTab]);
-	const consumeDatabasesOpenRequest = useCallback(() => {
-		setDatabasesOpenRequest((current) =>
-			consumeCreateCollectionDialog(current),
-		);
-	}, []);
 	const prefetchWorkspaceFile = useCallback((path: string) => {
 		if (!isMarkdownPath(path)) return;
 		prefetchNote(path);
@@ -1541,7 +1535,6 @@ export function AppShell() {
 				onGoBackInPane={goBackInPane}
 				onGoForwardInPane={goForwardInPane}
 				databasesOpenRequest={databasesOpenRequest}
-				onConsumeDatabasesOpenRequest={consumeDatabasesOpenRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}

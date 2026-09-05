@@ -49,12 +49,6 @@ describe("app command manifest", () => {
 			.filter((menuId): menuId is string => Boolean(menuId));
 
 		expect(new Set(menuIds).size).toBe(menuIds.length);
-		for (const menuId of menuIds) {
-			expect(
-				listCommandDefinitions().find((command) => command.menuId === menuId)
-					?.menuId,
-			).toBe(menuId);
-		}
 	});
 
 	it("contains every renderer-handled native menu command", () => {

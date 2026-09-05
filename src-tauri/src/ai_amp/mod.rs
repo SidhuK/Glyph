@@ -4,19 +4,18 @@ use std::{
 };
 
 use serde_json::Value;
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     process::{Child, Command},
-    sync::mpsc,
 };
 use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::{
-    events::AiStatusEvent,
-    helpers::{emit_tool, find_cli_binary},
+    events::{emit_chunk, emit_status},
+    helpers::{emit_tool, find_cli_binary, pipe_stderr},
     providers::build_transcript,
-    types::{AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiStoredToolEvent},
+    types::{AiAssistantMode, AiMessage, AiModel, AiProfile, AiStoredToolEvent},
 };
 
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
@@ -32,33 +31,6 @@ fn mode_from_profile(profile: &AiProfile) -> &str {
     } else {
         mode
     }
-}
-
-fn prompt_text(system: &str, messages: &[AiMessage]) -> String {
-    let transcript = build_transcript(system, messages);
-    if transcript.trim().is_empty() {
-        messages
-            .iter()
-            .rev()
-            .find(|message| message.role == "user")
-            .map(|message| message.content.clone())
-            .unwrap_or_default()
-    } else {
-        transcript
-    }
-}
-
-fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
-    let (tx, rx) = mpsc::channel::<String>(64);
-    if let Some(stderr) = child.stderr.take() {
-        tokio::spawn(async move {
-            let mut lines = BufReader::new(stderr).lines();
-            while let Ok(Some(line)) = lines.next_line().await {
-                let _ = tx.send(line).await;
-            }
-        });
-    }
-    rx
 }
 
 async fn stop_child(child: &mut Child) {
@@ -84,16 +56,7 @@ fn handle_amp_event(
                     match part.get("type").and_then(|v| v.as_str()) {
                         Some("text") if parent_tool_id.is_none() => {
                             if let Some(text) = part.get("text").and_then(|v| v.as_str()) {
-                                if !text.is_empty() {
-                                    full.push_str(text);
-                                    let _ = app.emit(
-                                        "ai:chunk",
-                                        AiChunkEvent {
-                                            job_id: job_id.to_string(),
-                                            delta: text.to_string(),
-                                        },
-                                    );
-                                }
+                                emit_chunk(app, job_id, full, text);
                             }
                         }
                         Some("tool_use") => {
@@ -165,14 +128,7 @@ fn handle_amp_event(
             }
             if full.trim().is_empty() {
                 if let Some(result) = value.get("result").and_then(|v| v.as_str()) {
-                    full.push_str(result);
-                    let _ = app.emit(
-                        "ai:chunk",
-                        AiChunkEvent {
-                            job_id: job_id.to_string(),
-                            delta: result.to_string(),
-                        },
-                    );
+                    emit_chunk(app, job_id, full, result);
                 }
             }
             Ok(Some(false))
@@ -231,16 +187,14 @@ pub async fn run_with_amp(
     space_root: Option<&Path>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     let root = space_root.ok_or_else(|| "No space is open".to_string())?;
-    let prompt = prompt_text(system, messages);
+    let prompt = build_transcript(system, messages);
     let binary = find_amp_binary()?;
 
-    let _ = app.emit(
-        "ai:status",
-        AiStatusEvent {
-            job_id: job_id.to_string(),
-            status: "thinking".to_string(),
-            detail: Some("Starting Amp".to_string()),
-        },
+    emit_status(
+        app,
+        job_id,
+        "thinking",
+        Some("Starting Amp".to_string()),
     );
 
     let mut child = Command::new(binary)
@@ -269,6 +223,7 @@ pub async fn run_with_amp(
     let mut full = String::new();
     let mut tool_events = Vec::new();
     let mut last_stderr = String::new();
+    let mut stderr_open = true;
 
     loop {
         tokio::select! {
@@ -280,11 +235,14 @@ pub async fn run_with_amp(
                 stop_child(&mut child).await;
                 return Err("Amp request timed out".to_string());
             }
-            maybe_err = stderr_lines.recv() => {
-                if let Some(line) = maybe_err {
-                    if !line.trim().is_empty() {
-                        last_stderr = line;
+            maybe_err = stderr_lines.recv(), if stderr_open => {
+                match maybe_err {
+                    Some(line) => {
+                        if !line.trim().is_empty() {
+                            last_stderr = line;
+                        }
                     }
+                    None => stderr_open = false,
                 }
             }
             line = stdout_lines.next_line() => {

@@ -9,7 +9,6 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 type AiProfilesBootstrap = {
 	profiles: AiProfile[];
 	activeProfileId: string | null;
-	secretConfigured: boolean | null;
 };
 
 const aiProfilesQueryKey = ["ai", "profiles", "bootstrap"] as const;
@@ -23,15 +22,9 @@ async function fetchAiProfilesBootstrap(): Promise<AiProfilesBootstrap> {
 	if (active !== nextActive && nextActive) {
 		await invoke("ai_active_profile_set", { id: nextActive });
 	}
-	const secretConfigured = nextActive
-		? await invoke("ai_secret_status", { profile_id: nextActive }).catch(
-				() => null,
-			)
-		: null;
 	return {
 		profiles: list,
 		activeProfileId: nextActive,
-		secretConfigured,
 	};
 }
 
@@ -47,7 +40,6 @@ function updateProfilesCache(
 			current ?? {
 				profiles: [],
 				activeProfileId: null,
-				secretConfigured: null,
 			},
 		),
 	);

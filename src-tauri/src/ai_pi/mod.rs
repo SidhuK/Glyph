@@ -8,14 +8,13 @@ use tauri::{AppHandle, Emitter};
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
     process::{Child, ChildStdin, Command},
-    sync::mpsc,
 };
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, error, info, warn};
 
 use crate::ai_rig::{
-    events::AiStatusEvent,
-    helpers::{cli_runtime_path, emit_tool, find_cli_binary},
+    events::{emit_chunk, emit_status},
+    helpers::{cli_runtime_path, emit_tool, find_cli_binary, pipe_stderr},
     providers::build_transcript,
     types::{
         AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiReasoningEffortOption,
@@ -31,20 +30,6 @@ fn find_pi_binary() -> Result<PathBuf, String> {
     find_cli_binary("PI", "PI_CLI_PATH", "pi")
 }
 
-fn prompt_text(system: &str, messages: &[AiMessage]) -> String {
-    let transcript = build_transcript(system, messages);
-    if transcript.trim().is_empty() {
-        messages
-            .iter()
-            .rev()
-            .find(|message| message.role == "user")
-            .map(|message| message.content.clone())
-            .unwrap_or_default()
-    } else {
-        transcript
-    }
-}
-
 async fn write_rpc(stdin: &mut ChildStdin, value: Value) -> Result<(), String> {
     let mut line = serde_json::to_vec(&value).map_err(|e| e.to_string())?;
     line.push(b'\n');
@@ -56,19 +41,6 @@ async fn write_rpc(stdin: &mut ChildStdin, value: Value) -> Result<(), String> {
         .flush()
         .await
         .map_err(|e| format!("failed flushing PI RPC: {e}"))
-}
-
-async fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
-    let (tx, rx) = mpsc::channel::<String>(64);
-    if let Some(stderr) = child.stderr.take() {
-        tokio::spawn(async move {
-            let mut lines = BufReader::new(stderr).lines();
-            while let Ok(Some(line)) = lines.next_line().await {
-                let _ = tx.send(line).await;
-            }
-        });
-    }
-    rx
 }
 
 async fn stop_child(child: &mut Child) {
@@ -272,7 +244,7 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
         .take()
         .ok_or_else(|| "failed to capture PI stdout".to_string())?;
     let mut stdout_lines = BufReader::new(stdout).lines();
-    let mut stderr_lines = pipe_stderr(&mut child).await;
+    let mut stderr_lines = pipe_stderr(&mut child);
     let deadline = tokio::time::sleep(CONTROL_TIMEOUT);
     tokio::pin!(deadline);
 
@@ -283,6 +255,7 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
     .await?;
 
     let mut last_stderr = String::new();
+    let mut stderr_open = true;
     loop {
         tokio::select! {
             _ = &mut deadline => {
@@ -297,11 +270,14 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
                     format!("Timed out waiting for PI models: {last_stderr}")
                 });
             }
-            maybe_err = stderr_lines.recv() => {
-                if let Some(line) = maybe_err {
-                    if !line.trim().is_empty() {
-                        last_stderr = line;
+            maybe_err = stderr_lines.recv(), if stderr_open => {
+                match maybe_err {
+                    Some(line) => {
+                        if !line.trim().is_empty() {
+                            last_stderr = line;
+                        }
                     }
+                    None => stderr_open = false,
                 }
             }
             line = stdout_lines.next_line() => {
@@ -406,20 +382,6 @@ fn agent_end_text(value: &Value) -> String {
         .unwrap_or_default()
 }
 
-fn emit_chunk(app: &AppHandle, job_id: &str, full: &mut String, delta: String) {
-    if delta.is_empty() {
-        return;
-    }
-    full.push_str(&delta);
-    let _ = app.emit(
-        "ai:chunk",
-        AiChunkEvent {
-            job_id: job_id.to_string(),
-            delta,
-        },
-    );
-}
-
 fn push_thinking_block(out: &mut String, thinking: &str) {
     if !out.ends_with("\n\n") && !out.is_empty() {
         out.push_str("\n\n");
@@ -464,7 +426,7 @@ fn handle_message_update(
     match event.get("type").and_then(|v| v.as_str()) {
         Some("text_delta") => {
             if let Some(delta) = event.get("delta").and_then(|v| v.as_str()) {
-                emit_chunk(app, job_id, full, delta.to_string());
+                emit_chunk(app, job_id, full, delta);
             }
         }
         Some("thinking_start") => {
@@ -485,11 +447,11 @@ fn handle_message_update(
                 } else {
                     if !*thinking_has_content {
                         if !full.ends_with("\n\n") && !full.is_empty() {
-                            emit_chunk(app, job_id, full, "\n\n".to_string());
+                            emit_chunk(app, job_id, full, "\n\n");
                         }
-                        emit_chunk(app, job_id, full, "> Thinking\n".to_string());
+                        emit_chunk(app, job_id, full, "> Thinking\n");
                     }
-                    emit_chunk(app, job_id, full, delta);
+                    emit_chunk(app, job_id, full, &delta);
                     *thinking_has_content = true;
                 }
             }
@@ -497,7 +459,7 @@ fn handle_message_update(
         Some("thinking_end") => {
             if *in_thinking {
                 if *thinking_has_content {
-                    emit_chunk(app, job_id, full, "\n\n".to_string());
+                    emit_chunk(app, job_id, full, "\n\n");
                 }
                 *in_thinking = false;
                 *thinking_line_start = false;
@@ -569,7 +531,7 @@ pub async fn run_with_pi(
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     let started = Instant::now();
     let root = space_root.ok_or_else(|| "No space is open".to_string())?;
-    let prompt = prompt_text(system, messages);
+    let prompt = build_transcript(system, messages);
     debug!(
         job_id,
         model = profile.model.as_str(),
@@ -577,13 +539,11 @@ pub async fn run_with_pi(
         "starting PI prompt"
     );
 
-    let _ = app.emit(
-        "ai:status",
-        AiStatusEvent {
-            job_id: job_id.to_string(),
-            status: "thinking".to_string(),
-            detail: Some("Starting PI".to_string()),
-        },
+    emit_status(
+        app,
+        job_id,
+        "thinking",
+        Some("Starting PI".to_string()),
     );
 
     let mut child = spawn_rpc(root, false, Some(profile)).await?;
@@ -593,7 +553,7 @@ pub async fn run_with_pi(
         .take()
         .ok_or_else(|| "failed to capture PI stdout".to_string())?;
     let mut stdout_lines = BufReader::new(stdout).lines();
-    let mut stderr_lines = pipe_stderr(&mut child).await;
+    let mut stderr_lines = pipe_stderr(&mut child);
     let deadline = tokio::time::sleep(RUN_TIMEOUT);
     tokio::pin!(deadline);
 
@@ -611,18 +571,17 @@ pub async fn run_with_pi(
         return Err("failed to capture PI stdin".to_string());
     }
 
-    let _ = app.emit(
-        "ai:status",
-        AiStatusEvent {
-            job_id: job_id.to_string(),
-            status: "thinking".to_string(),
-            detail: Some("PI is running".to_string()),
-        },
+    emit_status(
+        app,
+        job_id,
+        "thinking",
+        Some("PI is running".to_string()),
     );
 
     let mut full = String::new();
     let mut tool_events = Vec::new();
     let mut last_stderr = String::new();
+    let mut stderr_open = true;
     let mut in_thinking = false;
     let mut thinking_line_start = false;
     let mut thinking_has_content = false;
@@ -647,11 +606,14 @@ pub async fn run_with_pi(
                 abort_and_stop(&mut child, &mut stdin).await;
                 return Err("PI request timed out".to_string());
             }
-            maybe_err = stderr_lines.recv() => {
-                if let Some(line) = maybe_err {
-                    if !line.trim().is_empty() {
-                        last_stderr = line;
+            maybe_err = stderr_lines.recv(), if stderr_open => {
+                match maybe_err {
+                    Some(line) => {
+                        if !line.trim().is_empty() {
+                            last_stderr = line;
+                        }
                     }
+                    None => stderr_open = false,
                 }
             }
             line = stdout_lines.next_line() => {

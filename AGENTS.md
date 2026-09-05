@@ -1,7 +1,6 @@
-# AGENTS.md
+# [AGENTS.md](http://AGENTS.md)
 
 ## Commands
-
 
 **Reference only — do not run these unless specifically stated by the user:**
 
@@ -24,25 +23,7 @@ GLYPH_DEV_FORCE_TRIAL=1 pnpm tauri dev # Force trial mode to check licensing
 
 **Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check` # use this when you are ready to push your changes to the main branch, and the user has requested you to do so.
 
-Run the narrowest permitted verification during development and the full permitted verification suite once at the end. Do not announce every check separately, only when users asks you to.
-
-**Never run a dev server (Vite, `pnpm dev`, `pnpm tauri dev`, or otherwise) — the user handles dev.**
-
-## Architecture
-
-**Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat plus Codex/ChatGPT account integration. UI: shadcn/ui + Radix + Motion. Storage: Markdown and space metadata in `.glyph/`; derived SQLite index in app support.
-
-Repo extras: agents may read `docs/agents/` and `docs/architecture/adr/`. All other content under `docs/` is human-only and must not be used to understand or work with the code.
-
-## Frontend Overview (`src/`)
-
-- App entry is `main.tsx` / `App.tsx`; app-wide state lives in `contexts/`; feature UI lives under `components/`; shared hooks/utilities live in `hooks/`, `lib/`, and `utils/`.
-- Use `src/lib/tauri.ts` for typed IPC, `components/ui/shadcn/` for shared primitives, and `src/design-tokens.css` plus `styles/` for styling.
-
-## Backend Overview (`src-tauri/src/`)
-
-- Tauri setup and command registration live in `lib.rs` / `main.rs`; native features are grouped by domain such as `space`, `space_fs`, `notes`, `index`, `databases`, `ai_*` (`ai_rig`, `ai_codex`, `ai_amp`, `ai_claude_code`, `ai_cursor`, `ai_grok`, `ai_opencode`, `ai_pi`), `git_sync`, `license`, and `external_markdown`.
-- Use `paths::join_under()` for safe space paths, `io_atomic::write_atomic()` for durable writes, and `net.rs` checks for user-supplied URLs.
+**Never run a dev server or use the computer use tool - the user handles dev.**
 
 ## Code Style & Safety
 
@@ -59,16 +40,17 @@ Repo extras: agents may read `docs/agents/` and `docs/architecture/adr/`. All ot
 - New settings require all of: default value, load-time normalization of legacy/invalid values, `settings:updated` emit, Rust runtime sync when native code consumes it, and a `settingsSearch.ts` entry.
 - Any Rust code path that writes a note must reindex it and emit a typed `space:fs_changed` change event; the SQLite index is derived and must never go stale after a write.
 - All user-facing strings go through the i18n translation layer (menu labels via `set_menu_labels`); no hardcoded UI text.
-- Make sure we don't over-engineer CSS and use default components as much as possible unless explicitly stated.
 - Hard subtraction pass: always attempt the fix by deleting or narrowing existing code first, and only add LOC when the existing code provably cannot support the fix. Never add new abstractions, command entries, shortcuts, files, or wiring as a patch around code that should have been narrowed.
 - NEVER make test files unless specifically requested by users.
 - For TSX files extract hooks/subcomponents when rendering, state, effects, and commands start mixing.
+
+
 
 ## React Code Practices
 
 Agents and reviewers should flag these patterns unless the change includes a clear justification and there is no simpler React/Tauri-safe alternative:
 
-- `useEffect`: UseEffect is completely banned. UseEffect is a code smell and should be avoided at all costs. Use derived values during render, event handlers for user actions, keys for reset behavior, and React Query for async server/IPC/filesystem state. See https://react.dev/learn/you-might-not-need-an-effect.
+- `useEffect`: UseEffect is completely banned. UseEffect is a code smell and should be avoided at all costs. Use derived values during render, event handlers for user actions, keys for reset behavior, and React Query for async server/IPC/filesystem state. See [https://react.dev/learn/you-might-not-need-an-effect](https://react.dev/learn/you-might-not-need-an-effect).
 - TanStack Query: prefer queries/mutations for async server, IPC, filesystem, loading, error, retry, cache, and invalidation flows instead of hand-rolled `useState`/`useEffect` state machines.
 - TanStack Virtual: use the existing virtualizer patterns for large lists, tables, boards, timelines, and scroll-heavy surfaces instead of rendering everything or inventing custom windowing logic.
 - `setTimeout`: do not use to sequence React state, paper over races, or wait for rendering. If used for debounce, retry, focus, or transient UI, use cleanup, a named delay constant, and explain why the delay is needed.
@@ -82,38 +64,22 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 - Async action booleans like `isSaving`, `isLoadingFoo`, or `isDeleting`: prefer React Query mutations/queries for server, IPC, filesystem, and durable async work. Local UI-only state is fine.
 - Lint/type suppression comments such as `eslint-disable`, `biome-ignore`, `@ts-ignore`, or `@ts-expect-error` require explicit human approval.
 
+
+
 ## Migration Policy
 
 - Use a hard cutover approach and never implement backward compatibility. However ask before you decided to do a hard cutover.
 - Unless a core functionality is broken, never suggest adding backward compatibility.
 
+
+
 ## Sub-agents
 
 - Never spawn sub-agents by default. Before spawning any sub-agent, including when you are ready to spawn one or think delegation would help, ask the user which agents to spawn and which base model each should use. Spawn them only after the user explicitly provides that direction.
 
-## Version Control
 
-- Use `git` for repository operations, including push, pull, fetch, commit, squash, and rebase.
-- Use the native `gh` CLI for GitHub issues, pull requests, reviews, and other GitHub-hosted operations.
-
-## Tool Restrictions
-
-- Browser and computer-use tools are completely forbidden. Do not use them under any circumstances.
 
 ## Development Platform
 
 - Glyph is a macOS-only app. It is not being developed for Linux or Windows. Focus code, suggestions, and comments solely on macOS development.
 
-## Agent skills
-
-### Issue tracker
-
-Issues live as GitHub issues on this repo, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Five canonical labels, each named after its role: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Read relevant decisions in `docs/architecture/adr/`. See `docs/agents/domain.md` for the domain-doc workflow.

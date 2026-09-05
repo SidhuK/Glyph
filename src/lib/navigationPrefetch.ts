@@ -2,7 +2,6 @@ import {
 	clearMarkdownDocCache,
 	setCachedMarkdownDoc,
 } from "../components/preview/markdownCache";
-import { summarizeChecklistsFromMarkdown } from "./checklistSummary";
 import {
 	readStoredSelectedDatabaseId,
 	resolveSelectedDatabaseId,
@@ -11,7 +10,6 @@ import { parseNotePreview } from "./notePreview";
 import { queryClient } from "./queryClient";
 import type {
 	AllDocsItem,
-	NoteTaskSummary,
 	TextFileDoc,
 	WorkspaceDatabaseDocument,
 	WorkspaceDatabaseSummary,
@@ -54,8 +52,6 @@ const allDocsFolderContainsPath = (folderKey: string, path: string) => {
 const compareAllDocsItems = (left: AllDocsItem, right: AllDocsItem) =>
 	Date.parse(right.updated) - Date.parse(left.updated) ||
 	left.note_path.localeCompare(right.note_path);
-
-type TaskSummaryCache = Record<string, NoteTaskSummary>;
 
 export const navigationQueryKeys = {
 	all: ["navigation"] as const,
@@ -144,11 +140,15 @@ export function invalidatePrefetchedNote(path?: string | null) {
 }
 
 export function prefetchDatabaseSummaries() {
-	return queryClient.fetchQuery({
+	return queryClient.fetchQuery(databaseSummariesQueryOptions());
+}
+
+export function databaseSummariesQueryOptions() {
+	return {
 		queryKey: navigationQueryKeys.databaseSummaries(),
 		queryFn: () => invoke("databases_list"),
 		staleTime: NAVIGATION_STALE_TIME_MS,
-	});
+	};
 }
 
 export function getPrefetchedDatabaseSummaries() {
@@ -170,11 +170,17 @@ export function prefetchDatabaseDocument(databaseId: string) {
 	if (!normalized) {
 		return Promise.reject(new Error("Database id is required."));
 	}
-	return queryClient.fetchQuery({
+	return queryClient.fetchQuery(databaseDocumentQueryOptions(normalized));
+}
+
+export function databaseDocumentQueryOptions(databaseId: string) {
+	const normalized = databaseId.trim();
+	return {
 		queryKey: navigationQueryKeys.databaseDocument(normalized),
 		queryFn: () => invoke("databases_get", { database_id: normalized }),
 		staleTime: NAVIGATION_STALE_TIME_MS,
-	});
+		enabled: Boolean(normalized),
+	};
 }
 
 export async function refetchDatabaseDocument(databaseId: string) {
@@ -612,74 +618,6 @@ export function invalidateTaskSummariesPrefetch() {
 	void queryClient.invalidateQueries({
 		queryKey: navigationQueryKeys.taskSummaries(),
 	});
-}
-
-function cachedTaskSummaryForPath(path: string): NoteTaskSummary | undefined {
-	const summaries = queryClient.getQueriesData<TaskSummaryCache>({
-		queryKey: navigationQueryKeys.taskSummaries(),
-	});
-	for (const [, data] of summaries) {
-		const summary = data?.[path];
-		if (summary) return summary;
-	}
-	return undefined;
-}
-
-function taskSummariesEqual(left: NoteTaskSummary, right: NoteTaskSummary) {
-	return (
-		left?.total_count === right.total_count &&
-		left.completed_count === right.completed_count &&
-		left.open_count === right.open_count
-	);
-}
-
-export async function invalidateTaskSummariesPrefetchForNotes(
-	changes: ReadonlyMap<string, boolean>,
-) {
-	const paths: string[] = [];
-	for (const [path, removed] of changes) {
-		const normalizedPath = normalizeAllDocsPath(path);
-		if (!normalizedPath) continue;
-		const cachedSummary = cachedTaskSummaryForPath(normalizedPath);
-		if (removed) {
-			if (cachedSummary) {
-				invalidateTaskSummariesPrefetch();
-				return;
-			}
-			continue;
-		}
-		paths.push(normalizedPath);
-	}
-	if (paths.length === 0) return;
-
-	const docs = await invoke("space_read_texts_batch", { paths }).catch(
-		() => null,
-	);
-	if (!docs) {
-		if (paths.some((path) => cachedTaskSummaryForPath(path))) {
-			invalidateTaskSummariesPrefetch();
-		}
-		return;
-	}
-	for (const doc of docs) {
-		const cachedSummary = cachedTaskSummaryForPath(doc.rel_path);
-		if (doc.error || doc.text === null) {
-			if (cachedSummary) {
-				invalidateTaskSummariesPrefetch();
-				return;
-			}
-			continue;
-		}
-		const nextSummary = summarizeChecklistsFromMarkdown(doc.text);
-		if (
-			cachedSummary
-				? !taskSummariesEqual(cachedSummary, nextSummary)
-				: nextSummary.total_count > 0
-		) {
-			invalidateTaskSummariesPrefetch();
-			return;
-		}
-	}
 }
 
 export function invalidateNavigationPrefetch() {

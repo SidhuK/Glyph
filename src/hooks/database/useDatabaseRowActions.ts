@@ -14,15 +14,11 @@ import type { PaneErrorHandlers } from "./types";
 
 function fileNameFromTitle(notePath: string, nextTitle: string): string {
 	const currentName = notePath.split("/").pop()?.trim() || "Untitled.md";
-	const trimmedTitle = nextTitle.trim();
 	const fallbackDotIndex = currentName.lastIndexOf(".");
 	if (fallbackDotIndex <= 0 || fallbackDotIndex === currentName.length - 1) {
-		return trimmedTitle || currentName;
+		return nextTitle;
 	}
-	const ext = currentName.slice(fallbackDotIndex);
-	const fallbackStem = currentName.slice(0, fallbackDotIndex).trim();
-	const stem = trimmedTitle || fallbackStem || "Untitled";
-	return `${stem}${ext}`;
+	return `${nextTitle}${currentName.slice(fallbackDotIndex)}`;
 }
 
 export interface UseDatabaseRowActionsOptions extends PaneErrorHandlers {

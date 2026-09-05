@@ -27,10 +27,7 @@ import {
 } from "../markdown/wikiLinkMarkdownBridge";
 import type { TemplateInsertRequest } from "../slashCommands";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
-import {
-	applyEditorSpellCheck,
-	useEditorSpellCheck,
-} from "./useEditorSpellCheck";
+import { applyEditorSpellCheck } from "./useEditorSpellCheck";
 import {
 	spaceAssetUrl,
 	useHydrateInlineImages,
@@ -356,8 +353,8 @@ export function useNoteEditor({
 		showCollapsibleLists,
 		showFrontmatterInEditor,
 		showHeadingPrefixes,
+		spellCheck: spellCheckEnabled,
 	} = useNoteEditorSettings();
-	const spellCheckEnabled = useEditorSpellCheck();
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const committedEditorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const pendingMarkdownSyncRef = useRef<PendingMarkdownSync | null>(null);

@@ -210,7 +210,6 @@ interface MainContentProps {
 	onGoBackInPane: (paneId: string) => void;
 	onGoForwardInPane: (paneId: string) => void;
 	databasesOpenRequest: DatabasesOpenRequest;
-	onConsumeDatabasesOpenRequest?: () => void;
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
 	onRightSidebarOpenChange?: (open: boolean) => void;
@@ -251,7 +250,6 @@ export const MainContent = memo(function MainContent({
 	onGoBackInPane,
 	onGoForwardInPane,
 	databasesOpenRequest,
-	onConsumeDatabasesOpenRequest,
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
@@ -403,11 +401,6 @@ export const MainContent = memo(function MainContent({
 					setDirtyByPath={setDirtyByPath}
 					onInfoSidebarOpenChange={setInfoSidebarOpen}
 					databasesOpenRequest={paneDatabasesOpenRequest}
-					onConsumeDatabasesOpenRequest={
-						handlesDatabasesOpenRequest
-							? onConsumeDatabasesOpenRequest
-							: undefined
-					}
 				/>
 			);
 		},
@@ -418,7 +411,6 @@ export const MainContent = memo(function MainContent({
 			databasesOpenRequest,
 			fileTree,
 			handleRenameFile,
-			onConsumeDatabasesOpenRequest,
 			onLoadBreadcrumbDir,
 			onNavigateBreadcrumbPath,
 			onOpenDatabase,

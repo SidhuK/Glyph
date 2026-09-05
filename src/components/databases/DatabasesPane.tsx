@@ -26,7 +26,6 @@ interface DatabasesPaneProps {
 		nextName: string,
 	) => Promise<string | null>;
 	databasesOpenRequest: DatabasesOpenRequest;
-	onConsumeOpenRequest?: () => void;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 }
 
@@ -34,7 +33,6 @@ function DatabasesPaneContent({
 	onOpenFile,
 	onRenameNotePath,
 	databasesOpenRequest,
-	onConsumeOpenRequest,
 	initialDocument = null,
 }: DatabasesPaneProps) {
 	const reduceMotion = useReducedMotion();
@@ -52,7 +50,6 @@ function DatabasesPaneContent({
 		onOpenFile,
 		onRenameNotePath,
 		databasesOpenRequest,
-		onConsumeOpenRequest,
 		initialDocument,
 	});
 
