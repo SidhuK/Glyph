@@ -9,8 +9,6 @@ use tauri_plugin_store::StoreExt;
 pub enum AppIcon {
     #[default]
     Default,
-    #[serde(rename = "red-monogram")]
-    RedMonogram,
     #[serde(rename = "orange-glyph")]
     OrangeGlyph,
     #[serde(rename = "blue-star")]
@@ -25,7 +23,6 @@ fn apply(app: &tauri::AppHandle, icon: AppIcon) -> Result<(), String> {
         // Development runs do not have an installed app bundle to reset to.
         AppIcon::Default if tauri::is_dev() => Some(include_bytes!("../icons/icon.png")),
         AppIcon::Default => None,
-        AppIcon::RedMonogram => Some(include_bytes!("../icons/alternates/red-monogram.png")),
         AppIcon::OrangeGlyph => Some(include_bytes!("../icons/alternates/orange-glyph.png")),
         AppIcon::BlueStar => Some(include_bytes!("../icons/alternates/blue-star.png")),
         AppIcon::BlueGlyph => Some(include_bytes!("../icons/alternates/blue-glyph.png")),

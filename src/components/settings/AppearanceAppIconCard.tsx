@@ -6,13 +6,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow } from "./SettingsScaffold";
 
-const ICONS = [
-	"default",
-	"red-monogram",
-	"orange-glyph",
-	"blue-star",
-	"blue-glyph",
-] as const;
+const ICONS = ["default", "orange-glyph", "blue-star", "blue-glyph"] as const;
 const QUERY_KEY = ["appearance-app-icon"] as const;
 
 export function AppearanceAppIconCard() {

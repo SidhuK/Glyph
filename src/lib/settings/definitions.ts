@@ -506,7 +506,6 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("appearance-app-icon"),
 		nativeConsumption: { kind: "settings-store", consumer: "app-icon" },
 		normalize: (value) =>
-			value === "red-monogram" ||
 			value === "orange-glyph" ||
 			value === "blue-star" ||
 			value === "blue-glyph"
@@ -514,7 +513,6 @@ export const DURABLE_SETTINGS = {
 				: "default",
 		parse: (value) =>
 			value === "default" ||
-			value === "red-monogram" ||
 			value === "orange-glyph" ||
 			value === "blue-star" ||
 			value === "blue-glyph"

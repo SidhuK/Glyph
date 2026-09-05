@@ -3,7 +3,6 @@
 		"title": "Dock icon",
 		"description": "Choose the icon Glyph shows in the Dock while running.",
 		"default": "Automatic (Normal, Dev or Alpha)",
-		"red-monogram": "Red Monogram",
 		"orange-glyph": "Indigo Glyph",
 		"blue-star": "Blue Star",
 		"blue-glyph": "Blue Glyph",
