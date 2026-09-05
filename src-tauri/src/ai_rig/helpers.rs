@@ -266,13 +266,15 @@ pub fn find_cli_binary(
     ))
 }
 
-pub fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
-    let (tx, rx) = mpsc::channel::<String>(64);
+pub fn pipe_stderr(child: &mut Child) -> mpsc::UnboundedReceiver<String> {
+    let (tx, rx) = mpsc::unbounded_channel::<String>();
     if let Some(stderr) = child.stderr.take() {
         tokio::spawn(async move {
             let mut lines = BufReader::new(stderr).lines();
             while let Ok(Some(line)) = lines.next_line().await {
-                let _ = tx.send(line).await;
+                if tx.send(line).is_err() {
+                    break;
+                }
             }
         });
     }

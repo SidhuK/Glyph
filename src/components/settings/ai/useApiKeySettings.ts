@@ -37,6 +37,10 @@ export function useApiKeySettings(activeProfileId: string | null) {
 		setApiKeyDraftState(value);
 	}, []);
 
+	const secretWriteScope = {
+		id: secretStatusQueryKey(activeProfileId ?? "").join(":"),
+	};
+
 	const setApiKeyMutation = useMutation({
 		mutationFn: ({
 			profileId,
@@ -46,8 +50,11 @@ export function useApiKeySettings(activeProfileId: string | null) {
 				profile_id: profileId,
 				api_key: apiKey,
 			}),
+		scope: secretWriteScope,
 		onSuccess: async (_result, variables) => {
-			queryClient.setQueryData(secretStatusQueryKey(variables.profileId), true);
+			const queryKey = secretStatusQueryKey(variables.profileId);
+			await queryClient.cancelQueries({ queryKey });
+			queryClient.setQueryData(queryKey, true);
 			await queryClient.invalidateQueries({
 				queryKey: ["ai", "models", variables.profileId],
 			});
@@ -57,8 +64,11 @@ export function useApiKeySettings(activeProfileId: string | null) {
 	const clearApiKeyMutation = useMutation({
 		mutationFn: (profileId: string) =>
 			invoke("ai_secret_clear", { profile_id: profileId }),
+		scope: secretWriteScope,
 		onSuccess: async (_result, profileId) => {
-			queryClient.setQueryData(secretStatusQueryKey(profileId), false);
+			const queryKey = secretStatusQueryKey(profileId);
+			await queryClient.cancelQueries({ queryKey });
+			queryClient.setQueryData(queryKey, false);
 			await queryClient.invalidateQueries({
 				queryKey: ["ai", "models", profileId],
 			});

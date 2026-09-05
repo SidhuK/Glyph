@@ -10,7 +10,9 @@ const DIRECTORY_BREADCRUMB_CHILD_LIMIT = 40;
 const ROOT_PATH_KEY = "__root__";
 
 export function directoryEntryLabel(entry: FsEntry) {
-	return entry.is_markdown ? entry.name.replace(/\.[^./]+$/, "") : entry.name;
+	if (!entry.is_markdown || entry.name.startsWith(".")) return entry.name;
+	const withoutExtension = entry.name.replace(/\.[^./]+$/, "");
+	return withoutExtension || entry.name;
 }
 
 export function DirectoryBreadcrumbMenuItem({

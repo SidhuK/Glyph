@@ -18,14 +18,12 @@ export interface UseDatabasesPaneOptions {
 		nextName: string,
 	) => Promise<string | null>;
 	databasesOpenRequest: DatabasesOpenRequest;
-	onConsumeOpenRequest?: () => void;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 }
 
 export function useDatabasesPane({
 	onRenameNotePath,
 	databasesOpenRequest,
-	onConsumeOpenRequest,
 	initialDocument = null,
 }: UseDatabasesPaneOptions) {
 	const [error, setError] = useState("");
@@ -33,7 +31,6 @@ export function useDatabasesPane({
 
 	const workspace = useCollectionWorkspace({
 		databasesOpenRequest,
-		onConsumeOpenRequest,
 		setError,
 		clearError,
 		initialDocument,

@@ -34,6 +34,24 @@ const DEFAULT_NOTE_EDITOR_SETTINGS: NoteEditorSettings = {
 	spellCheck: true,
 };
 
+function sameNoteEditorSettings(
+	left: NoteEditorSettings,
+	right: NoteEditorSettings,
+) {
+	return (
+		left.showCollapsibleHeadings === right.showCollapsibleHeadings &&
+		left.showCollapsibleLists === right.showCollapsibleLists &&
+		left.showFrontmatterInEditor === right.showFrontmatterInEditor &&
+		left.showHeadingPrefixes === right.showHeadingPrefixes &&
+		left.colorfulHeadings === right.colorfulHeadings &&
+		left.peopleMentionsEnabled === right.peopleMentionsEnabled &&
+		left.showExternalLinkPreviews === right.showExternalLinkPreviews &&
+		left.showFormatBar === right.showFormatBar &&
+		left.focusMode === right.focusMode &&
+		left.spellCheck === right.spellCheck
+	);
+}
+
 export function useNoteEditorSettings() {
 	const [settings, setSettings] = useState(DEFAULT_NOTE_EDITOR_SETTINGS);
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
@@ -92,47 +110,50 @@ export function useNoteEditorSettings() {
 		if (typeof editor.showFormatBar === "boolean") {
 			liveShowFormatBarRef.current = true;
 		}
-		setSettings((current) => ({
-			showCollapsibleHeadings:
-				typeof editor.showCollapsibleHeadings === "boolean"
-					? editor.showCollapsibleHeadings
-					: current.showCollapsibleHeadings,
-			showCollapsibleLists:
-				typeof editor.showCollapsibleLists === "boolean"
-					? editor.showCollapsibleLists
-					: current.showCollapsibleLists,
-			showFrontmatterInEditor:
-				typeof editor.showFrontmatterInEditor === "boolean"
-					? editor.showFrontmatterInEditor
-					: current.showFrontmatterInEditor,
-			showHeadingPrefixes:
-				typeof editor.showHeadingPrefixes === "boolean"
-					? editor.showHeadingPrefixes
-					: current.showHeadingPrefixes,
-			colorfulHeadings:
-				typeof editor.colorfulHeadings === "boolean"
-					? editor.colorfulHeadings
-					: current.colorfulHeadings,
-			peopleMentionsEnabled:
-				typeof editor.enablePeopleMentionsAsTags === "boolean"
-					? editor.enablePeopleMentionsAsTags
-					: current.peopleMentionsEnabled,
-			showExternalLinkPreviews:
-				typeof editor.showExternalLinkPreviews === "boolean"
-					? editor.showExternalLinkPreviews
-					: current.showExternalLinkPreviews,
-			showFormatBar:
-				typeof editor.showFormatBar === "boolean"
-					? editor.showFormatBar
-					: current.showFormatBar,
-			focusMode: isFocusMode(editor.focusMode)
-				? editor.focusMode
-				: current.focusMode,
-			spellCheck:
-				typeof editor.spellCheck === "boolean"
-					? editor.spellCheck
-					: current.spellCheck,
-		}));
+		setSettings((current) => {
+			const next = {
+				showCollapsibleHeadings:
+					typeof editor.showCollapsibleHeadings === "boolean"
+						? editor.showCollapsibleHeadings
+						: current.showCollapsibleHeadings,
+				showCollapsibleLists:
+					typeof editor.showCollapsibleLists === "boolean"
+						? editor.showCollapsibleLists
+						: current.showCollapsibleLists,
+				showFrontmatterInEditor:
+					typeof editor.showFrontmatterInEditor === "boolean"
+						? editor.showFrontmatterInEditor
+						: current.showFrontmatterInEditor,
+				showHeadingPrefixes:
+					typeof editor.showHeadingPrefixes === "boolean"
+						? editor.showHeadingPrefixes
+						: current.showHeadingPrefixes,
+				colorfulHeadings:
+					typeof editor.colorfulHeadings === "boolean"
+						? editor.colorfulHeadings
+						: current.colorfulHeadings,
+				peopleMentionsEnabled:
+					typeof editor.enablePeopleMentionsAsTags === "boolean"
+						? editor.enablePeopleMentionsAsTags
+						: current.peopleMentionsEnabled,
+				showExternalLinkPreviews:
+					typeof editor.showExternalLinkPreviews === "boolean"
+						? editor.showExternalLinkPreviews
+						: current.showExternalLinkPreviews,
+				showFormatBar:
+					typeof editor.showFormatBar === "boolean"
+						? editor.showFormatBar
+						: current.showFormatBar,
+				focusMode: isFocusMode(editor.focusMode)
+					? editor.focusMode
+					: current.focusMode,
+				spellCheck:
+					typeof editor.spellCheck === "boolean"
+						? editor.spellCheck
+						: current.spellCheck,
+			};
+			return sameNoteEditorSettings(current, next) ? current : next;
+		});
 		if (editor.attachmentStorageMode) {
 			attachmentStorageModeRef.current = editor.attachmentStorageMode;
 		}

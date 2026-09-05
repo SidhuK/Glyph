@@ -78,7 +78,6 @@ interface EditorPaneCanvasProps {
 	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
 	onInfoSidebarOpenChange: (open: boolean) => void;
 	databasesOpenRequest: DatabasesOpenRequest;
-	onConsumeDatabasesOpenRequest?: () => void;
 }
 
 export const EditorPaneCanvas = memo(function EditorPaneCanvas({
@@ -107,7 +106,6 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	setDirtyByPath,
 	onInfoSidebarOpenChange,
 	databasesOpenRequest,
-	onConsumeDatabasesOpenRequest,
 }: EditorPaneCanvasProps) {
 	const { zenMode } = useUILayoutContext();
 	const handlePrefetchTab = useCallback(
@@ -141,7 +139,6 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			setDirtyByPath={setDirtyByPath}
 			onInfoSidebarOpenChange={onInfoSidebarOpenChange}
 			databasesOpenRequest={databasesOpenRequest}
-			onConsumeDatabasesOpenRequest={onConsumeDatabasesOpenRequest}
 		/>
 	) : null;
 
@@ -211,7 +208,6 @@ interface EditorPaneContentProps {
 	setDirtyByPath: EditorPaneCanvasProps["setDirtyByPath"];
 	onInfoSidebarOpenChange: EditorPaneCanvasProps["onInfoSidebarOpenChange"];
 	databasesOpenRequest: DatabasesOpenRequest;
-	onConsumeDatabasesOpenRequest?: () => void;
 }
 
 function EditorPaneContent({
@@ -226,7 +222,6 @@ function EditorPaneContent({
 	setDirtyByPath,
 	onInfoSidebarOpenChange,
 	databasesOpenRequest,
-	onConsumeDatabasesOpenRequest,
 }: EditorPaneContentProps) {
 	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
 
@@ -255,7 +250,6 @@ function EditorPaneContent({
 					onOpenFile={onBrowseFile}
 					onRenameNotePath={onRenameFile}
 					databasesOpenRequest={databasesOpenRequest}
-					onConsumeOpenRequest={onConsumeDatabasesOpenRequest}
 					initialDocument={
 						initialDatabaseId
 							? getPrefetchedDatabaseDocument(initialDatabaseId)

@@ -35,7 +35,6 @@ import type { PaneErrorHandlers, SaveDatabaseInput } from "./types";
 
 export interface UseCollectionWorkspaceOptions extends PaneErrorHandlers {
 	databasesOpenRequest: DatabasesOpenRequest;
-	onConsumeOpenRequest?: () => void;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 }
 
@@ -80,7 +79,6 @@ function requestKey(request: DatabasesOpenRequest) {
 
 export function useCollectionWorkspace({
 	databasesOpenRequest,
-	onConsumeOpenRequest,
 	setError,
 	clearError,
 	initialDocument = null,
@@ -137,7 +135,6 @@ export function useCollectionWorkspace({
 		}
 		if (databasesOpenRequest.openCreateDialog) {
 			setCreateCollectionOpen(true);
-			queueMicrotask(() => onConsumeOpenRequest?.());
 		}
 	} else if (summariesReady && selectedDatabaseId !== selectedDatabaseIdState) {
 		setSelectedDatabaseIdState(selectedDatabaseId);
@@ -314,17 +311,24 @@ export function useCollectionWorkspace({
 			},
 		);
 		if (!confirmed) return;
+		const deletedId = document.database.id;
 		try {
-			await invoke("databases_delete", { database_id: document.database.id });
+			await invoke("databases_delete", { database_id: deletedId });
 			clearError();
-			invalidateDatabasePrefetch(document.database.id);
-			setNamedDocumentId(null);
-			setNameDraft("");
+			queryClient.setQueryData(
+				databaseSummariesQueryOptions().queryKey,
+				(getPrefetchedDatabaseSummaries() ?? []).filter(
+					(summary) => summary.id !== deletedId,
+				),
+			);
 			await loadSummaries();
+			queryClient.removeQueries({
+				queryKey: databaseDocumentQueryOptions(deletedId).queryKey,
+			});
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
 		}
-	}, [clearError, document, loadSummaries, setError]);
+	}, [clearError, document, loadSummaries, queryClient, setError]);
 
 	const selectCollection = useCallback(
 		async (created: WorkspaceDatabaseDocument) => {

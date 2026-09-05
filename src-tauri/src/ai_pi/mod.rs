@@ -255,6 +255,7 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
     .await?;
 
     let mut last_stderr = String::new();
+    let mut stderr_open = true;
     loop {
         tokio::select! {
             _ = &mut deadline => {
@@ -269,11 +270,14 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
                     format!("Timed out waiting for PI models: {last_stderr}")
                 });
             }
-            maybe_err = stderr_lines.recv() => {
-                if let Some(line) = maybe_err {
-                    if !line.trim().is_empty() {
-                        last_stderr = line;
+            maybe_err = stderr_lines.recv(), if stderr_open => {
+                match maybe_err {
+                    Some(line) => {
+                        if !line.trim().is_empty() {
+                            last_stderr = line;
+                        }
                     }
+                    None => stderr_open = false,
                 }
             }
             line = stdout_lines.next_line() => {
@@ -577,6 +581,7 @@ pub async fn run_with_pi(
     let mut full = String::new();
     let mut tool_events = Vec::new();
     let mut last_stderr = String::new();
+    let mut stderr_open = true;
     let mut in_thinking = false;
     let mut thinking_line_start = false;
     let mut thinking_has_content = false;
@@ -601,11 +606,14 @@ pub async fn run_with_pi(
                 abort_and_stop(&mut child, &mut stdin).await;
                 return Err("PI request timed out".to_string());
             }
-            maybe_err = stderr_lines.recv() => {
-                if let Some(line) = maybe_err {
-                    if !line.trim().is_empty() {
-                        last_stderr = line;
+            maybe_err = stderr_lines.recv(), if stderr_open => {
+                match maybe_err {
+                    Some(line) => {
+                        if !line.trim().is_empty() {
+                            last_stderr = line;
+                        }
                     }
+                    None => stderr_open = false,
                 }
             }
             line = stdout_lines.next_line() => {
