@@ -64,6 +64,24 @@
 		}
 	},
 	"entries": {
+		"appearance-app-icon": {
+			"title": "Dock icon",
+			"section": "Appearance",
+			"description": "Choose the icon Glyph shows in the Dock while running.",
+			"keywords": [
+				"app",
+				"icon",
+				"dock",
+				"monogram",
+				"red",
+				"indigo",
+				"purple",
+				"blue",
+				"star",
+				"glyph",
+				"appearance"
+			]
+		},
 		"general-license": {
 			"title": "License",
 			"description": "Trial status, license key, activation, and official build.",

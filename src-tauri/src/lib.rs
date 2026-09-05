@@ -7,6 +7,7 @@ mod ai_opencode;
 mod ai_pi;
 mod ai_rig;
 mod app_exit;
+mod app_icon;
 mod custom_theme;
 mod databases;
 mod daily_note_rollover;
@@ -1504,6 +1505,9 @@ fn set_menu_labels(
         .menu_labels
         .lock()
         .map_err(|_| "failed to lock menu labels state".to_string())? = labels;
+    if let Err(error) = app_icon::refresh_badge(&app) {
+        warn!("Failed to refresh app icon badge: {error}");
+    }
     Ok(())
 }
 
@@ -1678,6 +1682,9 @@ pub fn run() {
             }
         })
         .setup(|app| {
+            if let Err(error) = app_icon::restore(app.handle()) {
+                warn!("Failed to restore app icon: {error}");
+            }
             if let Err(error) = index::paths::init_index_root(app.handle()) {
                 error!("Failed to initialize app-support index root: {error}");
                 return Err(std::io::Error::other(error).into());
@@ -1811,6 +1818,7 @@ pub fn run() {
             set_recent_spaces_menu,
             set_menu_shortcuts,
             set_menu_labels,
+            app_icon::app_set_icon,
             menu_take_pending_commands,
             set_window_vibrancy_theme,
             external_markdown::open_external_markdown_path,

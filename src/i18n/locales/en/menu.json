@@ -1,7 +1,9 @@
 {
 	"app": {
 		"about": "About Glyph",
-		"settings": "Settings…"
+		"settings": "Settings…",
+		"devBadge": "DEV",
+		"alphaBadge": "ALPHA"
 	},
 	"submenus": {
 		"file": "File",
