@@ -19,7 +19,6 @@ import {
 import {
 	formatShortcutForPlatform,
 	formatShortcutPartsForPlatform,
-	isMacOS,
 } from "../../lib/shortcuts/platform";
 import {
 	SHORTCUT_CATEGORIES,
@@ -46,7 +45,7 @@ function formatRecordingPrompt(draft: Shortcut | null) {
 		...draft,
 		key: "",
 	}).filter(Boolean);
-	return `${parts.join(isMacOS() ? "" : "+")}...`;
+	return `${parts.join("")}...`;
 }
 
 interface ShortcutCaptureEvent {

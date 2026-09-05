@@ -6,7 +6,8 @@ use tauri::{State, WebviewWindow};
 use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
-use super::store::{load_store, rewrite_entry_path, save_store, should_remove_entry};
+use super::store::{load_store, save_store};
+use crate::paths::{rewrite_entry_path, should_remove_entry};
 use super::types::FileTreeAppearance;
 
 #[tauri::command]

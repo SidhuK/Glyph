@@ -48,7 +48,7 @@ export function fileExtension(path: string): string {
 	return name.slice(dotIndex + 1).toLowerCase();
 }
 
-export function hasExplicitFileExtension(path: string): boolean {
+function hasExplicitFileExtension(path: string): boolean {
 	const ext = fileExtension(path);
 	return ext.length > 0 && !/\s/.test(ext) && /[a-z]/i.test(ext);
 }

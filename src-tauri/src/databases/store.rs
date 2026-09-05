@@ -7,8 +7,7 @@ use crate::glyph_paths::ensure_glyph_dir;
 use crate::io_atomic;
 
 use super::types::{
-    DatabaseCellValue, DatabaseColumn, DatabaseStore, DatabaseSummary, DatabaseViewDefinition,
-    DatabaseViewGrouping,
+    DatabaseCellValue, DatabaseStore, DatabaseSummary, DatabaseViewDefinition, DatabaseViewGrouping,
 };
 
 const DATABASES_STORE_FILE: &str = "databases.json";
@@ -23,6 +22,7 @@ fn databases_store_path(space_root: &Path) -> Result<PathBuf, String> {
 
 pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
     let now = now_iso();
+    let catalog = super::query::built_in_columns();
     DatabaseViewDefinition {
         id: Uuid::new_v4().to_string(),
         name: name.to_string(),
@@ -30,38 +30,10 @@ pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
         search: String::new(),
         icon: None,
         color: None,
-        columns: vec![
-            DatabaseColumn {
-                id: "title".to_string(),
-                column_type: "title".to_string(),
-                label: "Title".to_string(),
-                icon: Some("document".to_string()),
-                width: Some(320),
-                visible: true,
-                property_key: None,
-                property_kind: None,
-            },
-            DatabaseColumn {
-                id: "tags".to_string(),
-                column_type: "tags".to_string(),
-                label: "Tags".to_string(),
-                icon: Some("tag".to_string()),
-                width: Some(220),
-                visible: true,
-                property_key: None,
-                property_kind: None,
-            },
-            DatabaseColumn {
-                id: "updated".to_string(),
-                column_type: "updated".to_string(),
-                label: "Updated".to_string(),
-                icon: Some("clock".to_string()),
-                width: Some(180),
-                visible: true,
-                property_key: None,
-                property_kind: None,
-            },
-        ],
+        columns: ["title", "tags", "updated"]
+            .into_iter()
+            .filter_map(|id| catalog.iter().find(|column| column.id == id).cloned())
+            .collect(),
         sorts: Vec::new(),
         filters: Vec::new(),
         grouping: Some(DatabaseViewGrouping {

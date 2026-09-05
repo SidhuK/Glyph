@@ -15,9 +15,9 @@ interface AppearanceTypographyCardProps {
 	uiFontSize: UiFontSize;
 	availableFonts: string[];
 	availableMonospaceFonts: string[];
-	onFontFamilyChange: (font: UiFontFamily) => Promise<void>;
-	onMonoFontFamilyChange: (font: UiFontFamily) => Promise<void>;
-	onUiFontSizeChange: (size: UiFontSize) => Promise<void>;
+	onFontFamilyChange: (font: UiFontFamily) => void;
+	onMonoFontFamilyChange: (font: UiFontFamily) => void;
+	onUiFontSizeChange: (size: UiFontSize) => void;
 }
 
 interface FontSizeControlProps {

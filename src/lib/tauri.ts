@@ -1237,7 +1237,6 @@ interface TauriCommands {
 		{ request: GitSyncCommitMessagePromptRequest },
 		string | null
 	>;
-	git_sync_disconnect: CommandDef<void, GitSyncStatus>;
 	git_history_list: CommandDef<
 		{ path: string; limit?: number | null },
 		GitHistoryCommit[]
@@ -1251,11 +1250,9 @@ interface TauriCommands {
 	ai_active_profile_get: CommandDef<void, string | null>;
 	ai_active_profile_set: CommandDef<{ id: string | null }, void>;
 	ai_profile_upsert: CommandDef<{ profile: AiProfile }, AiProfile>;
-	ai_profile_delete: CommandDef<{ id: string }, void>;
 	ai_secret_set: CommandDef<{ profile_id: string; api_key: string }, void>;
 	ai_secret_clear: CommandDef<{ profile_id: string }, void>;
 	ai_secret_status: CommandDef<{ profile_id: string }, boolean>;
-	ai_secret_list: CommandDef<void, string[]>;
 	ai_provider_support: CommandDef<void, ProviderSupportDocument>;
 	ai_chat_start: CommandDef<
 		{
@@ -1314,10 +1311,6 @@ interface TauriCommands {
 			};
 		},
 		AiContextBuildResponse
-	>;
-	ai_context_resolve_paths: CommandDef<
-		{ attachments: AiContextAttachment[] },
-		string[]
 	>;
 }
 

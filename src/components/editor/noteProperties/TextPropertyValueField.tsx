@@ -4,7 +4,10 @@ import type { NoteProperty } from "../../../lib/tauri";
 import { Edit } from "../../Icons";
 import { Button } from "../../ui/shadcn/button";
 import { Input } from "../../ui/shadcn/input";
-import { useWikiLinkAutocomplete } from "../hooks/useWikiLinkAutocomplete";
+import {
+	WikiLinkSuggestionList,
+	useWikiLinkAutocomplete,
+} from "../hooks/useWikiLinkAutocomplete";
 import { findWikiLinkSpans } from "../markdown/wikiLinkCodec";
 import { WikiLinkedText } from "./WikiLinkedText";
 
@@ -113,31 +116,12 @@ export function TextPropertyValueField({
 				}}
 			/>
 			{wikiLinkAutocomplete.items.length > 0 ? (
-				<div className="wikiLinkSuggestionMenu notePropertyWikiLinkSuggestions">
-					{wikiLinkAutocomplete.items.map((item, itemIndex) => (
-						<button
-							key={
-								item.kind === "heading"
-									? `${item.kind}:${item.path}#${item.slug}`
-									: `${item.kind}:${item.path}`
-							}
-							type="button"
-							className={[
-								"wikiLinkSuggestionItem",
-								itemIndex === wikiLinkAutocomplete.activeIndex ? "active" : "",
-							]
-								.filter(Boolean)
-								.join(" ")}
-							onMouseDown={(event) => {
-								event.preventDefault();
-								wikiLinkAutocomplete.select(item);
-							}}
-						>
-							<span className="wikiLinkSuggestionTitle">{item.title}</span>
-							<span className="wikiLinkSuggestionPath">{item.path}</span>
-						</button>
-					))}
-				</div>
+				<WikiLinkSuggestionList
+					items={wikiLinkAutocomplete.items}
+					activeIndex={wikiLinkAutocomplete.activeIndex}
+					className="notePropertyWikiLinkSuggestions"
+					onSelect={wikiLinkAutocomplete.select}
+				/>
 			) : null}
 		</div>
 	);

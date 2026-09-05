@@ -50,16 +50,3 @@ pub fn save_store(space_root: &Path, store: &FileTreeAppearanceStore) -> Result<
     let bytes = serde_json::to_vec_pretty(store).map_err(|error| error.to_string())?;
     io_atomic::write_atomic(&path, &bytes).map_err(|error| error.to_string())
 }
-
-pub fn rewrite_entry_path(path: &str, from_path: &str, to_path: &str) -> Option<String> {
-    if path == from_path {
-        return Some(to_path.to_string());
-    }
-    let prefix = format!("{from_path}/");
-    path.strip_prefix(&prefix)
-        .map(|suffix| format!("{to_path}/{suffix}"))
-}
-
-pub fn should_remove_entry(path: &str, target_path: &str) -> bool {
-    path == target_path || path.starts_with(&format!("{target_path}/"))
-}

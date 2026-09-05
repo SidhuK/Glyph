@@ -5,8 +5,10 @@ import { m } from "motion/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { springPresets } from "../ui/animations";
-import { RibbonColorPopover } from "./RibbonColorPopover";
-import { RibbonHighlightPopover } from "./RibbonHighlightPopover";
+import {
+	RibbonColorPopover,
+	RibbonHighlightPopover,
+} from "./RibbonColorPopover";
 import { RibbonLinkPopover } from "./RibbonLinkPopover";
 import {
 	type RibbonButtonConfig,

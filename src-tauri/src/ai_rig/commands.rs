@@ -205,41 +205,6 @@ pub async fn ai_profile_upsert(
     Ok(next)
 }
 
-#[tauri::command]
-pub async fn ai_profile_delete(
-    app: AppHandle,
-    window: WebviewWindow,
-    space_state: State<'_, SpaceState>,
-    id: String,
-) -> Result<(), String> {
-    let space_root = ai_space_root(&space_state, &window)?;
-    let path = store_path_for_space(&app, Some(&space_root))?;
-    let mut store = normalized_store_for_space(&app, Some(&space_root))?;
-    let _ = local_secrets::secret_clear(&space_root, &id);
-    if let Some(profile) = store.profiles.iter_mut().find(|profile| profile.id == id) {
-        profile.model.clear();
-        profile.chat_naming_model = None;
-        profile.base_url = None;
-        profile.headers.clear();
-        profile.reasoning_effort = None;
-        profile.allow_private_hosts = matches!(
-            profile.provider,
-            super::types::AiProviderKind::Ollama
-                | super::types::AiProviderKind::LlamaCpp
-                | super::types::AiProviderKind::Amp
-                | super::types::AiProviderKind::ClaudeCode
-                | super::types::AiProviderKind::Cursor
-                | super::types::AiProviderKind::Grok
-                | super::types::AiProviderKind::Opencode
-                | super::types::AiProviderKind::Pi
-        );
-    }
-    ensure_default_profiles(&mut store);
-    write_store(&path, &store)?;
-    emit_profiles_updated(&app);
-    Ok(())
-}
-
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_set(
     app: AppHandle,
@@ -282,19 +247,6 @@ pub async fn ai_secret_status(
     };
     let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_status(&root, &profile_id)
-}
-
-#[tauri::command]
-pub async fn ai_secret_list(
-    app: AppHandle,
-    window: WebviewWindow,
-    space_state: State<'_, SpaceState>,
-) -> Result<Vec<String>, String> {
-    let root = space_state
-        .root_for_window(&window)
-        .map_err(|_| "Open a space to manage API keys".to_string())?;
-    let _ = normalized_store_for_space(&app, Some(&root))?;
-    local_secrets::secret_ids(&root)
 }
 
 #[tauri::command]

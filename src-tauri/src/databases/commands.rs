@@ -549,36 +549,10 @@ const MAX_ROW_CREATE_COLLISION_INDEX: usize = 1_000;
 
 fn backlink_note_paths(root: &Path, note_path: &str) -> Result<Vec<String>, String> {
     let conn = open_db(root)?;
-    let stem = Path::new(note_path)
-        .file_stem()
-        .and_then(|value| value.to_str())
-        .unwrap_or("")
-        .to_string();
-    let mut stmt = conn
-        .prepare(
-            "SELECT DISTINCT n.id
-             FROM notes n
-             JOIN (
-                SELECT l.from_id
-                FROM links l
-                WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
-                UNION
-                SELECT r.from_id
-                FROM note_relationships r
-                WHERE r.to_id = ? OR r.to_title = ? OR r.target_title = ?
-             ) refs ON refs.from_id = n.id
-             ORDER BY n.updated DESC
-             LIMIT 100",
-        )
-        .map_err(|e| e.to_string())?;
-    let mut rows = stmt
-        .query(rusqlite::params![note_path, stem, note_path, stem, stem])
-        .map_err(|e| e.to_string())?;
-    let mut out = Vec::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        out.push(row.get::<_, String>(0).map_err(|e| e.to_string())?);
-    }
-    Ok(out)
+    Ok(crate::index::commands::query_backlinks(&conn, note_path)?
+        .into_iter()
+        .map(|item| item.id)
+        .collect())
 }
 
 #[tauri::command(rename_all = "snake_case")]

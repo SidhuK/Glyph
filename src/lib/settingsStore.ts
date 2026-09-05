@@ -39,7 +39,7 @@ function ensureSettingsInvalidationListener() {
 		});
 }
 
-export function disposeSettingsInvalidationListener(): void {
+function disposeSettingsInvalidationListener(): void {
 	const unlisten = settingsInvalidationUnlisten;
 	const unlistenPromise = settingsInvalidationUnlistenPromise;
 	settingsInvalidationUnlisten = null;

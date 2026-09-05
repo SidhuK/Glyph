@@ -1,6 +1,8 @@
 use chrono::NaiveDate;
 use serde_yaml::Value;
 
+use crate::notes::properties::{is_priority_key, is_status_key};
+
 use super::frontmatter::split_frontmatter;
 
 fn property_summary(value: &Value) -> String {
@@ -57,26 +59,6 @@ fn infer_string_kind(value: &str) -> &'static str {
         return "date";
     }
     "text"
-}
-
-fn normalized_status_text(value: &str) -> String {
-    value
-        .trim()
-        .to_lowercase()
-        .replace(['_', '-'], " ")
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
-}
-
-fn is_status_key(key: &str) -> bool {
-    let normalized = normalized_status_text(key);
-    normalized == "status" || normalized.ends_with(" status")
-}
-
-fn is_priority_key(key: &str) -> bool {
-    let normalized = normalized_status_text(key);
-    normalized == "priority" || normalized.ends_with(" priority")
 }
 
 pub fn reindex_note_properties(

@@ -130,6 +130,25 @@ pub fn apply_extra_headers(
     req
 }
 
+pub fn value_as_u32(value: Option<&Value>) -> Option<u32> {
+    value
+        .and_then(|v| v.as_u64())
+        .and_then(|v| u32::try_from(v).ok())
+}
+
+pub fn price_string(value: Option<&Value>) -> Option<String> {
+    value
+        .and_then(|v| v.as_f64())
+        .map(|v| {
+            if v.fract() == 0.0 {
+                format!("{v:.0}")
+            } else {
+                v.to_string()
+            }
+        })
+        .filter(|v| v != "0")
+}
+
 pub fn split_system_and_messages(
     mut messages: Vec<AiMessage>,
     context: Option<String>,

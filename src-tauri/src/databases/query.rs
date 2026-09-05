@@ -18,7 +18,7 @@ use super::types::{
 const SOURCE_SCAN_LIMIT: usize = 2_000;
 const SQLITE_BATCH_SIZE: usize = 500;
 
-fn built_in_columns() -> Vec<DatabaseColumn> {
+pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
     vec![
         DatabaseColumn {
             id: "title".to_string(),

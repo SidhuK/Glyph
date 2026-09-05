@@ -16,7 +16,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::{
     events::AiStatusEvent,
-    helpers::{emit_tool, find_cli_binary},
+    helpers::{emit_tool, find_cli_binary, price_string, value_as_u32},
     providers::build_transcript,
     types::AiModel,
     types::{AiAssistantMode, AiChunkEvent, AiMessage, AiProfile, AiStoredToolEvent},
@@ -185,25 +185,6 @@ async fn get_json(
         ));
     }
     response.json::<Value>().await.map_err(|e| e.to_string())
-}
-
-fn value_as_u32(value: Option<&Value>) -> Option<u32> {
-    value
-        .and_then(|v| v.as_u64())
-        .and_then(|v| u32::try_from(v).ok())
-}
-
-fn price_string(value: Option<&Value>) -> Option<String> {
-    value
-        .and_then(|v| v.as_f64())
-        .map(|v| {
-            if v.fract() == 0.0 {
-                format!("{v:.0}")
-            } else {
-                v.to_string()
-            }
-        })
-        .filter(|v| v != "0")
 }
 
 fn modality_list(capabilities: &Value, key: &str) -> Option<Vec<String>> {

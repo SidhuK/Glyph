@@ -41,15 +41,6 @@ pub fn save_store(space_root: &Path, config: &GitSyncConfig) -> Result<(), Strin
     io_atomic::write_atomic(&path, &bytes).map_err(|error| error.to_string())
 }
 
-pub fn delete_store(space_root: &Path) -> Result<(), String> {
-    let path = store_path(space_root)?;
-    match std::fs::remove_file(&path) {
-        Ok(()) => Ok(()),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(error) => Err(error.to_string()),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
@@ -58,7 +49,7 @@ mod tests {
         GitSyncConfig, GitSyncConflictPolicy, GitSyncRepoMode, GitSyncStore,
     };
 
-    use super::{delete_store, load_store, save_store};
+    use super::{load_store, save_store};
 
     fn temp_root() -> PathBuf {
         let root =
@@ -102,19 +93,6 @@ mod tests {
             GitSyncRepoMode::ManagedNewRepo,
         );
         assert!(config.enabled);
-    }
-
-    #[test]
-    fn deletes_store() {
-        let root = temp_root();
-        let config = GitSyncConfig::with_remote(
-            "https://github.com/team/repo".to_string(),
-            "main".to_string(),
-            GitSyncRepoMode::AdoptedExistingRepo,
-        );
-        save_store(&root, &config).expect("save store");
-        delete_store(&root).expect("delete store");
-        assert!(load_store(&root).expect("load store").is_none());
     }
 
     #[test]

@@ -84,7 +84,6 @@ AI API keys are managed through commands:
 - `ai_secret_set`
 - `ai_secret_clear`
 - `ai_secret_status`
-- `ai_secret_list`
 
 These commands require an open space. They store secrets outside note content and outside `ai.json`.
 
@@ -247,7 +246,6 @@ Commands:
 
 - `ai_context_index`: list folders and files available for attachment
 - `ai_context_build`: read selected files/folders into a bounded text payload
-- `ai_context_resolve_paths`: expand attachments into concrete paths
 
 Defaults and limits:
 

@@ -106,7 +106,7 @@ export function getTextColorButton(
 	return {
 		title: i18n.t("editor:ribbon.textColor"),
 		isActive: () => editor.isActive("coloredText"),
-		activeColor: activeOption?.id ?? null,
+		activeId: activeOption?.id ?? null,
 		options: EDITOR_TEXT_COLORS.map((option) => ({
 			id: option.id,
 			label: getEditorTextColorLabel(option.id),
@@ -139,12 +139,12 @@ export function getTextHighlightButton(
 	return {
 		title: i18n.t("editor:ribbon.textHighlight"),
 		isActive: () => editor.isActive("highlightedText"),
-		activeHighlight: activeOption?.id ?? null,
+		activeId: activeOption?.id ?? null,
 		options: EDITOR_TEXT_HIGHLIGHTS.map((option) => ({
 			id: option.id,
 			label: getEditorTextHighlightLabel(option.id),
-			swatchCssVar: option.swatchCssVar,
-			swatchFallback: option.swatchFallback,
+			cssVar: option.swatchCssVar,
+			fallbackHex: option.swatchFallback,
 			onSelect: runEditorAction(
 				`highlight_${option.id}`,
 				editor,
