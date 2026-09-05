@@ -1505,7 +1505,10 @@ fn set_menu_labels(
         .menu_labels
         .lock()
         .map_err(|_| "failed to lock menu labels state".to_string())? = labels;
-    app_icon::refresh_badge(&app)
+    if let Err(error) = app_icon::refresh_badge(&app) {
+        warn!("Failed to refresh app icon badge: {error}");
+    }
+    Ok(())
 }
 
 #[cfg(target_os = "macos")]
@@ -1679,7 +1682,9 @@ pub fn run() {
             }
         })
         .setup(|app| {
-            app_icon::restore(app.handle()).map_err(std::io::Error::other)?;
+            if let Err(error) = app_icon::restore(app.handle()) {
+                warn!("Failed to restore app icon: {error}");
+            }
             if let Err(error) = index::paths::init_index_root(app.handle()) {
                 error!("Failed to initialize app-support index root: {error}");
                 return Err(std::io::Error::other(error).into());
