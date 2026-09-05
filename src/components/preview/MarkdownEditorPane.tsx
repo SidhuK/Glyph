@@ -121,10 +121,10 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 	for (const match of markdown.matchAll(/\[[^\]\n]+\]\((?:\\.|[^)\n])+\)/g)) {
 		const raw = match[0];
 		const linkMatch = raw.match(
-			/^\[([^\]\n]+)\]\(([^)\n]*?)(?:\s+"[^"\n]*")?\)$/,
+			/^\[([^\]\n]+)\]\(((?:\\.|[^)\n])*?)(?:\s+"[^"\n]*")?\)$/,
 		);
 		const linkText = linkMatch?.[1]?.trim() ?? "";
-		const href = linkMatch?.[2]?.trim() ?? "";
+		const href = linkMatch?.[2]?.trim().replace(/\\([()])/g, "$1") ?? "";
 		if (!href) continue;
 		if (
 			href.startsWith("#") ||
