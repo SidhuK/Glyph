@@ -24,6 +24,7 @@ import {
 	isHeadingPaletteId,
 } from "../headingPalettes";
 import { getSettingsStore, saveSettingsStore } from "../settingsStore";
+import { invoke } from "../tauri";
 import {
 	GLYPH_DEFAULT_DARK_THEME_ID,
 	GLYPH_DEFAULT_LIGHT_THEME_ID,
@@ -83,7 +84,7 @@ type SettingDiscovery =
 
 interface NativeConsumption {
 	readonly kind: "settings-store";
-	readonly consumer: "last-window-close-policy";
+	readonly consumer: "last-window-close-policy" | "app-icon";
 }
 
 export type SettingParseResult<Value> =
@@ -111,7 +112,7 @@ interface ApplicationSettingConfig<Value> {
 	readonly parse: (value: unknown) => SettingParseResult<Value>;
 	readonly read: (settings: AppSettings) => Value;
 	readonly change: (value: Value) => SettingsUpdatedPayload;
-	readonly afterSave?: (value: Value) => void;
+	readonly afterSave?: (value: Value) => void | Promise<void>;
 }
 
 export interface SpaceSettingDefinition<Value> {
@@ -163,8 +164,11 @@ function defineApplicationSetting<Value>(
 		const store = await getSettingsStore();
 		await store.set(config.key, normalized);
 		await saveSettingsStore(store);
-		config.afterSave?.(normalized);
-		void emitSettingsUpdated(config.change(normalized));
+		try {
+			await config.afterSave?.(normalized);
+		} finally {
+			void emitSettingsUpdated(config.change(normalized));
+		}
 	};
 
 	return {
@@ -495,6 +499,30 @@ export const DURABLE_SETTINGS = {
 		parse: parseFiniteNumber,
 		read: (settings) => settings.ui.editorFontSize,
 		change: (value) => ({ ui: { editorFontSize: value } }),
+	}),
+	appIcon: defineApplicationSetting<AppSettings["ui"]["appIcon"]>({
+		key: "ui.appIcon",
+		defaultValue: "default",
+		discovery: searchable("appearance-app-icon"),
+		nativeConsumption: { kind: "settings-store", consumer: "app-icon" },
+		normalize: (value) =>
+			value === "red-monogram" ||
+			value === "orange-glyph" ||
+			value === "blue-star" ||
+			value === "blue-glyph"
+				? value
+				: "default",
+		parse: (value) =>
+			value === "default" ||
+			value === "red-monogram" ||
+			value === "orange-glyph" ||
+			value === "blue-star" ||
+			value === "blue-glyph"
+				? parsed(value)
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.appIcon,
+		change: (value) => ({ ui: { appIcon: value } }),
+		afterSave: (icon) => invoke("app_set_icon", { icon }),
 	}),
 	translucentApp: booleanSetting({
 		key: "ui.translucentApp",

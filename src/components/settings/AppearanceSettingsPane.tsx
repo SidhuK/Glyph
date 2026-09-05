@@ -37,6 +37,7 @@ import {
 } from "../../lib/uiThemes";
 import { RefreshCw } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import { AppearanceAppIconCard } from "./AppearanceAppIconCard";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
 import { AppearanceSidebarItems } from "./AppearanceSidebarItems";
@@ -326,6 +327,7 @@ export function AppearanceSettingsPane() {
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
+				<AppearanceAppIconCard />
 				<AppearanceThemeCard
 					themeMode={themeMode.value}
 					lightTheme={lightTheme}

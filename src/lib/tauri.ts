@@ -1,5 +1,5 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
-import type { AttachmentStorageMode } from "./settings";
+import type { AppSettings, AttachmentStorageMode } from "./settings";
 
 export interface AppInfo {
 	name: string;
@@ -937,6 +937,7 @@ interface TauriCommands {
 		void
 	>;
 	set_menu_labels: CommandDef<{ labels: Record<string, string> }, void>;
+	app_set_icon: CommandDef<{ icon: AppSettings["ui"]["appIcon"] }, void>;
 	menu_take_pending_commands: CommandDef<void, { command_id: string }[]>;
 	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
 	external_link_preview: CommandDef<{ url: string }, ExternalLinkPreview>;

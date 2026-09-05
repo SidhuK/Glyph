@@ -676,6 +676,7 @@ export async function loadSettings(
 			fontSize,
 			editorFontSize,
 			translucentApp,
+			appIcon: DURABLE_SETTINGS.appIcon.load(entries),
 			cornerRadiusStyle,
 			showToc,
 			sidebarVisibility,
