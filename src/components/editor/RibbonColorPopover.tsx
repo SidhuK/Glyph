@@ -34,7 +34,9 @@ function RibbonSwatchPopover({
 	icon: typeof PaintBucketIcon;
 	menuLabel: string;
 	clearLabel: string;
-	button: ReturnType<typeof getTextColorButton>;
+	button:
+		| ReturnType<typeof getTextColorButton>
+		| ReturnType<typeof getTextHighlightButton>;
 	canEdit: boolean;
 	preventMouseDown: (e: React.MouseEvent) => void;
 }) {
