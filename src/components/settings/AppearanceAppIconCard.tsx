@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getVersion } from "@tauri-apps/api/app";
 import { useTranslation } from "react-i18next";
 import { DURABLE_SETTINGS, loadSettings } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -16,16 +15,6 @@ export function AppearanceAppIconCard() {
 		queryKey: QUERY_KEY,
 		queryFn: async () => (await loadSettings()).ui.appIcon,
 	});
-	const version = useQuery({
-		queryKey: ["app-version"],
-		queryFn: getVersion,
-		staleTime: Number.POSITIVE_INFINITY,
-	});
-	const badge = import.meta.env.DEV
-		? "dev"
-		: version.data?.split("-")[1]?.split("+")[0]?.split(".").includes("alpha")
-			? "alpha"
-			: null;
 	const mutation = useMutation({
 		mutationFn: DURABLE_SETTINGS.appIcon.write,
 		onSettled: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
@@ -81,9 +70,9 @@ export function AppearanceAppIconCard() {
 										height={40}
 										className="size-10 object-contain"
 									/>
-									{icon === "default" && badge && (
+									{icon === "default" && import.meta.env.DEV && (
 										<span className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1 py-0.5 text-[8px] leading-none font-semibold text-white">
-											{t(`menu:app.${badge}Badge`)}
+											{t("menu:app.devBadge")}
 										</span>
 									)}
 								</span>

@@ -46,7 +46,7 @@
 					"image-name": "07-orange-asterisk.png",
 					"name": "07-orange-asterisk",
 					"position": {
-						"scale": 0.38,
+						"scale": 0.55,
 						"translation-in-points": [276.754296875, 269.64328125]
 					}
 				},
@@ -55,7 +55,7 @@
 					"image-name": "06-red-asterisk.png",
 					"name": "06-red-asterisk",
 					"position": {
-						"scale": 0.38,
+						"scale": 0.55,
 						"translation-in-points": [-55.26328125, 269.64328125]
 					}
 				},
@@ -64,7 +64,7 @@
 					"image-name": "05-blue-asterisk.png",
 					"name": "05-blue-asterisk",
 					"position": {
-						"scale": 0.38,
+						"scale": 0.55,
 						"translation-in-points": [109.75171875, 269.64328125]
 					}
 				},
@@ -73,7 +73,7 @@
 					"image-name": "03-textured-panel.png",
 					"name": "03-textured-panel",
 					"position": {
-						"scale": 0.38,
+						"scale": 0.4,
 						"translation-in-points": [109.56171875, 269.64328125]
 					}
 				},
@@ -82,7 +82,7 @@
 					"image-name": "04-panel-overlay.svg",
 					"name": "04-panel-overlay",
 					"position": {
-						"scale": 0.38,
+						"scale": 0.4,
 						"translation-in-points": [109.56171875, 269.64328125]
 					}
 				},

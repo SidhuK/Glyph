@@ -51,16 +51,8 @@ fn saved_icon(app: &tauri::AppHandle) -> Result<AppIcon, String> {
 }
 
 fn apply_badge(app: &tauri::AppHandle, icon: AppIcon) -> Result<(), String> {
-    let is_alpha = app
-        .package_info()
-        .version
-        .pre
-        .as_str()
-        .split('.')
-        .any(|part| part == "alpha");
     let key = match icon {
         AppIcon::Default if tauri::is_dev() => Some("app.devBadge"),
-        AppIcon::Default if is_alpha => Some("app.alphaBadge"),
         _ => None,
     };
     let state = app.state::<crate::MenuState>();

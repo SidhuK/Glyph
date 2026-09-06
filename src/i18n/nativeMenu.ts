@@ -6,7 +6,6 @@ const NATIVE_MENU_CHROME_KEYS = [
 	["app.about", "app.about"],
 	["app.settings", "app.settings"],
 	["app.devBadge", "app.devBadge"],
-	["app.alphaBadge", "app.alphaBadge"],
 	["menu.file", "submenus.file"],
 	["menu.edit", "submenus.edit"],
 	["menu.markdown", "submenus.markdown"],
