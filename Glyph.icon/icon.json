@@ -1,54 +1,103 @@
 {
-	"fill": {
-		"automatic-gradient": "extended-gray:1.00000,1.00000"
-	},
+	"fill-specializations": [
+		{
+			"value": {
+				"linear-gradient": [
+					"extended-gray:0.25000,1.00000",
+					"extended-gray:0.00000,1.00000"
+				],
+				"orientation": {
+					"start": {
+						"x": 0.5,
+						"y": 0
+					},
+					"stop": {
+						"x": 0.5,
+						"y": 0.7
+					}
+				}
+			}
+		},
+		{
+			"appearance": "dark",
+			"value": {
+				"linear-gradient": [
+					"extended-gray:0.25000,1.00000",
+					"extended-gray:0.00000,1.00000"
+				],
+				"orientation": {
+					"start": {
+						"x": 0.5,
+						"y": 0
+					},
+					"stop": {
+						"x": 0.5,
+						"y": 0.7
+					}
+				}
+			}
+		}
+	],
 	"groups": [
 		{
 			"layers": [
 				{
 					"glass": false,
-					"image-name": "_-2.png",
-					"name": "_-2",
+					"image-name": "07-orange-asterisk.png",
+					"name": "07-orange-asterisk",
 					"position": {
-						"scale": 0.8,
-						"translation-in-points": [0.39999999999997726, 192.3750000000001]
+						"scale": 0.38,
+						"translation-in-points": [276.754296875, 269.64328125]
 					}
 				},
 				{
 					"glass": false,
-					"image-name": "_-4.png",
-					"name": "_-4",
+					"image-name": "06-red-asterisk.png",
+					"name": "06-red-asterisk",
 					"position": {
-						"scale": 0.8,
-						"translation-in-points": [255.4794996282542, 192.375]
+						"scale": 0.38,
+						"translation-in-points": [-55.26328125, 269.64328125]
 					}
 				},
 				{
 					"glass": false,
-					"image-name": "_-3.png",
-					"name": "_-3",
+					"image-name": "05-blue-asterisk.png",
+					"name": "05-blue-asterisk",
 					"position": {
-						"scale": 0.8,
-						"translation-in-points": [-244.59970642547694, 192.3750000000001]
+						"scale": 0.38,
+						"translation-in-points": [109.75171875, 269.64328125]
 					}
 				},
 				{
 					"glass": false,
-					"image-name": "Rectangle 2-2 2.png",
-					"name": "Rectangle 2-2 2",
+					"image-name": "03-textured-panel.png",
+					"name": "03-textured-panel",
 					"position": {
-						"scale": 0.6,
-						"translation-in-points": [1.5, 199.0750000000005]
+						"scale": 0.38,
+						"translation-in-points": [109.56171875, 269.64328125]
 					}
 				},
 				{
 					"glass": false,
-					"image-name": "Rectangle 3-2.svg",
-					"name": "Rectangle 3-2",
+					"image-name": "04-panel-overlay.svg",
+					"name": "04-panel-overlay",
 					"position": {
-						"scale": 0.6,
-						"translation-in-points": [0, 198.07500000000027]
+						"scale": 0.38,
+						"translation-in-points": [109.56171875, 269.64328125]
 					}
+				},
+				{
+					"glass": false,
+					"image-name": "02-white-folder-draft.png",
+					"name": "02-white-folder-draft",
+					"position": {
+						"scale": 0.76,
+						"translation-in-points": [0, 0]
+					}
+				},
+				{
+					"image-name": "01-charcoal-background 2.png",
+					"name": "01-charcoal-background 2"
 				}
 			],
 			"shadow": {
