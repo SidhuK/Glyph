@@ -282,6 +282,21 @@
 			"description": "Remove text highlight"
 		}
 	},
+	"tableControls": {
+		"rowOptions": "Row options",
+		"columnOptions": "Column options",
+		"addRowAbove": "Add row above",
+		"addRowBelow": "Add row below",
+		"deleteRow": "Delete row",
+		"moveRowUp": "Move row up",
+		"moveRowDown": "Move row down",
+		"addColumnLeft": "Add column left",
+		"addColumnRight": "Add column right",
+		"deleteColumn": "Delete column",
+		"moveColumnLeft": "Move column left",
+		"moveColumnRight": "Move column right",
+		"unavailable": "The table changed. Open the menu again and retry."
+	},
 	"sidePeek": {
 		"dialogLabel": "Note peek",
 		"open": "Open note",

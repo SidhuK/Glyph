@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/core";
+import { useEditorState } from "@tiptap/react";
 import {
 	type MouseEvent as ReactMouseEvent,
 	type RefObject,
@@ -8,17 +9,25 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "../../../lib/toast";
 import type {
 	SelectedTableState,
-	TableEditorCommand,
+	TableActionTarget,
+	TableEditorAction,
 	TableInlineControlsProps,
 } from "../noteEditorOverlayTypes";
+import { DISABLED_TABLE_CAPABILITIES } from "../noteEditorOverlayTypes";
 import type { NoteInlineEditorMode } from "../types";
 import {
 	getMountedEditorContentRoot,
 	getOffsetWithinAncestor,
 } from "./editorDomUtils";
-import { runTableEditorCommand } from "./tableEditorCommands";
+import {
+	runTableEditorAction,
+	tableEditorSnapshot,
+	tableSnapshotsEqual,
+} from "./tableEditorCommands";
 
 const TABLE_INLINE_CONTROL_OFFSET_PX = 20;
 const TABLE_INLINE_CONTROL_EDGE_PADDING_PX = 10;
@@ -36,12 +45,25 @@ export function useTableInlineControls({
 	hostRef,
 	mode,
 }: UseTableInlineControlsArgs): TableInlineControlsProps | null {
+	const { t } = useTranslation("editor");
 	const syncRafRef = useRef<number | null>(null);
 	const [selectedTable, setSelectedTable] = useState<SelectedTableState | null>(
 		null,
 	);
-	const [canDeleteRow, setCanDeleteRow] = useState(false);
-	const [canDeleteColumn, setCanDeleteColumn] = useState(false);
+
+	const snapshot = useEditorState({
+		editor,
+		selector: ({ editor: instance }) => {
+			if (!instance || instance.isDestroyed || mode !== "rich" || !canEdit) {
+				return null;
+			}
+			return tableEditorSnapshot(instance.state, {
+				column: instance.can().deleteColumn(),
+				row: instance.can().deleteRow(),
+			});
+		},
+		equalityFn: tableSnapshotsEqual,
+	});
 
 	const onControlMouseDown = useCallback(
 		(event: ReactMouseEvent<HTMLElement>) => {
@@ -49,43 +71,18 @@ export function useTableInlineControls({
 		},
 		[],
 	);
+	const captureTarget = useCallback((): TableActionTarget | null => {
+		return snapshot?.target ?? null;
+	}, [snapshot]);
 	const onCommand = useCallback(
-		(command: TableEditorCommand) => {
+		(action: TableEditorAction) => {
 			if (!editor || editor.isDestroyed) return;
-			runTableEditorCommand(editor, command);
-		},
-		[editor],
-	);
-
-	useEffect(() => {
-		const clearDeleteCapabilities = () => {
-			setCanDeleteRow(false);
-			setCanDeleteColumn(false);
-		};
-		if (!editor || editor.isDestroyed || mode !== "rich" || !canEdit) {
-			clearDeleteCapabilities();
-			return;
-		}
-
-		const syncDeleteCapabilities = () => {
-			if (editor.isDestroyed) {
-				clearDeleteCapabilities();
-				return;
+			if (!runTableEditorAction(editor, action)) {
+				toast.error(t("tableControls.unavailable"));
 			}
-			setCanDeleteRow(editor.can().deleteRow());
-			setCanDeleteColumn(editor.can().deleteColumn());
-		};
-
-		syncDeleteCapabilities();
-		editor.on("transaction", syncDeleteCapabilities);
-		editor.on("selectionUpdate", syncDeleteCapabilities);
-		editor.on("destroy", clearDeleteCapabilities);
-		return () => {
-			editor.off("transaction", syncDeleteCapabilities);
-			editor.off("selectionUpdate", syncDeleteCapabilities);
-			editor.off("destroy", clearDeleteCapabilities);
-		};
-	}, [canEdit, editor, mode]);
+		},
+		[editor, t],
+	);
 
 	useEffect(() => {
 		const clearSelectedTable = () => {
@@ -115,14 +112,19 @@ export function useTableInlineControls({
 				return;
 			}
 
-			const activeCell = anchorElement.closest("td, th") as HTMLElement | null;
+			const closestCell = anchorElement.closest("td, th");
+			const activeCell =
+				closestCell instanceof HTMLElement ? closestCell : null;
 			if (!activeCell || !contentRoot.contains(activeCell)) {
 				setSelectedTable(null);
 				return;
 			}
 
-			const activeRow = activeCell.closest("tr") as HTMLElement | null;
-			const activeTable = activeCell.closest("table") as HTMLElement | null;
+			const closestRow = activeCell.closest("tr");
+			const closestTable = activeCell.closest("table");
+			const activeRow = closestRow instanceof HTMLElement ? closestRow : null;
+			const activeTable =
+				closestTable instanceof HTMLElement ? closestTable : null;
 			if (!activeRow || !activeTable || !contentRoot.contains(activeTable)) {
 				setSelectedTable(null);
 				return;
@@ -199,14 +201,8 @@ export function useTableInlineControls({
 			selected: selectedTable,
 			onControlMouseDown,
 			onCommand,
-			canDeleteRow,
-			canDeleteColumn,
+			captureTarget,
+			capabilities: snapshot?.capabilities ?? DISABLED_TABLE_CAPABILITIES,
 		};
-	}, [
-		canDeleteColumn,
-		canDeleteRow,
-		onCommand,
-		onControlMouseDown,
-		selectedTable,
-	]);
+	}, [captureTarget, onCommand, onControlMouseDown, selectedTable, snapshot]);
 }
