@@ -20,12 +20,45 @@ export type TableEditorCommand =
 	| "deleteRow"
 	| "addColumnBefore"
 	| "addColumnAfter"
-	| "deleteColumn";
+	| "deleteColumn"
+	| "moveRowUp"
+	| "moveRowDown"
+	| "moveColumnLeft"
+	| "moveColumnRight";
+
+export interface TableActionTarget {
+	tablePos: number;
+	rowIndex: number;
+	columnIndex: number;
+}
+
+export interface TableEditorAction {
+	kind: TableEditorCommand;
+	target: TableActionTarget;
+}
+
+export interface TableEditorCapabilities {
+	canDeleteRow: boolean;
+	canDeleteColumn: boolean;
+	canMoveRowUp: boolean;
+	canMoveRowDown: boolean;
+	canMoveColumnLeft: boolean;
+	canMoveColumnRight: boolean;
+}
+
+export const DISABLED_TABLE_CAPABILITIES: TableEditorCapabilities = {
+	canDeleteRow: false,
+	canDeleteColumn: false,
+	canMoveRowUp: false,
+	canMoveRowDown: false,
+	canMoveColumnLeft: false,
+	canMoveColumnRight: false,
+};
 
 export interface TableInlineControlsProps {
 	selected: SelectedTableState;
 	onControlMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
-	onCommand: (command: TableEditorCommand) => void;
-	canDeleteRow: boolean;
-	canDeleteColumn: boolean;
+	onCommand: (action: TableEditorAction) => void;
+	captureTarget: () => TableActionTarget | null;
+	capabilities: TableEditorCapabilities;
 }

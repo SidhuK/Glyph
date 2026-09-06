@@ -132,14 +132,21 @@ vi.mock("@tiptap/react", () => ({
 			<p>Outside table</p>
 		</div>
 	),
-	useEditorState: ({
-		selector,
-	}: {
-		selector: (snapshot: {
-			editor: unknown;
-			transactionNumber: number;
-		}) => unknown;
-	}) => selector({ editor: null, transactionNumber: 0 }),
+	useEditorState: () => ({
+		target: {
+			tablePos: 1,
+			rowIndex: 1,
+			columnIndex: 0,
+		},
+		capabilities: {
+			canDeleteRow: true,
+			canDeleteColumn: true,
+			canMoveRowUp: true,
+			canMoveRowDown: true,
+			canMoveColumnLeft: true,
+			canMoveColumnRight: true,
+		},
+	}),
 }));
 
 vi.mock("motion/react", () => ({
@@ -454,7 +461,7 @@ describe("NoteInlineEditor table controls", () => {
 			?.closest('[data-testid="dropdown-menu"]');
 		const addRowBelow = Array.from(
 			rowMenu?.querySelectorAll('[data-slot="dropdown-menu-item"]') ?? [],
-		).find((element) => element.textContent === "Add row below") as
+		).find((element) => element.textContent === "tableControls.addRowBelow") as
 			| HTMLButtonElement
 			| undefined;
 		expect(addRowBelow).toBeTruthy();
@@ -476,9 +483,9 @@ describe("NoteInlineEditor table controls", () => {
 			?.closest('[data-testid="dropdown-menu"]');
 		const addColumnRight = Array.from(
 			columnMenu?.querySelectorAll('[data-slot="dropdown-menu-item"]') ?? [],
-		).find((element) => element.textContent === "Add column right") as
-			| HTMLButtonElement
-			| undefined;
+		).find(
+			(element) => element.textContent === "tableControls.addColumnRight",
+		) as HTMLButtonElement | undefined;
 		expect(addColumnRight).toBeTruthy();
 
 		await act(async () => {

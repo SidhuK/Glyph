@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LocationAdd01Icon } from "@hugeicons/core-free-icons";
-import { type MouseEvent, memo, useCallback, useMemo } from "react";
+import { type MouseEvent, memo, useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	type NativeContextMenuItem,
 	isNativeContextMenuAvailable,
@@ -14,6 +15,8 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 import type {
+	TableActionTarget,
+	TableEditorAction,
 	TableEditorCommand,
 	TableInlineControlsProps,
 } from "./noteEditorOverlayTypes";
@@ -23,29 +26,64 @@ type TableAxisMenuItem =
 			type: "action";
 			label: string;
 			command: TableEditorCommand;
-			enabled?: boolean;
+			enabled: boolean;
 			destructive?: boolean;
 	  }
-	| { type: "separator" };
+	| { type: "separator"; id: string };
 
 function buildAxisMenuItems(
-	beforeLabel: string,
-	afterLabel: string,
-	deleteLabel: string,
-	beforeCommand: TableEditorCommand,
-	afterCommand: TableEditorCommand,
-	deleteCommand: TableEditorCommand,
-	canDelete: boolean,
+	labels: {
+		addBefore: string;
+		addAfter: string;
+		moveBefore: string;
+		moveAfter: string;
+		deleteItem: string;
+	},
+	commands: {
+		addBefore: TableEditorCommand;
+		addAfter: TableEditorCommand;
+		moveBefore: TableEditorCommand;
+		moveAfter: TableEditorCommand;
+		deleteItem: TableEditorCommand;
+	},
+	enabled: {
+		moveBefore: boolean;
+		moveAfter: boolean;
+		deleteItem: boolean;
+	},
 ): TableAxisMenuItem[] {
 	return [
-		{ type: "action", label: beforeLabel, command: beforeCommand },
-		{ type: "action", label: afterLabel, command: afterCommand },
-		{ type: "separator" },
 		{
 			type: "action",
-			label: deleteLabel,
-			command: deleteCommand,
-			enabled: canDelete,
+			label: labels.addBefore,
+			command: commands.addBefore,
+			enabled: true,
+		},
+		{
+			type: "action",
+			label: labels.addAfter,
+			command: commands.addAfter,
+			enabled: true,
+		},
+		{ type: "separator", id: `${commands.deleteItem}-insert` },
+		{
+			type: "action",
+			label: labels.moveBefore,
+			command: commands.moveBefore,
+			enabled: enabled.moveBefore,
+		},
+		{
+			type: "action",
+			label: labels.moveAfter,
+			command: commands.moveAfter,
+			enabled: enabled.moveAfter,
+		},
+		{ type: "separator", id: `${commands.deleteItem}-move` },
+		{
+			type: "action",
+			label: labels.deleteItem,
+			command: commands.deleteItem,
+			enabled: enabled.deleteItem,
 			destructive: true,
 		},
 	];
@@ -74,7 +112,8 @@ interface TableAxisControlProps {
 	ariaLabel: string;
 	menuItems: TableAxisMenuItem[];
 	onControlMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
-	onCommand: (command: TableEditorCommand) => void;
+	onCommand: (action: TableEditorAction) => void;
+	captureTarget: () => TableActionTarget | null;
 	nativeMenusEnabled: boolean;
 }
 
@@ -86,21 +125,42 @@ const TableAxisControl = memo(function TableAxisControl({
 	menuItems,
 	onControlMouseDown,
 	onCommand,
+	captureTarget,
 	nativeMenusEnabled,
 }: TableAxisControlProps) {
-	const nativeMenuItems = useMemo(
-		() => toNativeMenuItems(menuItems, onCommand),
-		[menuItems, onCommand],
+	const capturedTargetRef = useRef<TableActionTarget | null>(null);
+
+	const runCapturedCommand = useCallback(
+		(command: TableEditorCommand) => {
+			const target = capturedTargetRef.current ?? captureTarget();
+			if (!target) return;
+			onCommand({ kind: command, target });
+		},
+		[captureTarget, onCommand],
 	);
+
 	const handleNativeMenuClick = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
+			const target = captureTarget();
+			capturedTargetRef.current = target;
+			if (!target) return;
+			const nativeMenuItems = toNativeMenuItems(menuItems, runCapturedCommand);
 			void showNativePopupMenu(event, nativeMenuItems).catch(
 				(error: unknown) => {
 					console.error(`Failed to show table ${axis} menu`, error);
 				},
 			);
 		},
-		[axis, nativeMenuItems],
+		[axis, captureTarget, menuItems, runCapturedCommand],
+	);
+
+	const handleOpenChange = useCallback(
+		(open: boolean) => {
+			if (open) {
+				capturedTargetRef.current = captureTarget();
+			}
+		},
+		[captureTarget],
 	);
 
 	const triggerButton = (
@@ -126,19 +186,19 @@ const TableAxisControl = memo(function TableAxisControl({
 	}
 
 	return (
-		<DropdownMenu>
+		<DropdownMenu onOpenChange={handleOpenChange}>
 			<DropdownMenuTrigger asChild>{triggerButton}</DropdownMenuTrigger>
 			<DropdownMenuContent className="tableInlineControlsMenu" align="start">
 				{menuItems.map((item) => {
 					if (item.type === "separator") {
-						return <DropdownMenuSeparator key="separator" />;
+						return <DropdownMenuSeparator key={item.id} />;
 					}
 					return (
 						<DropdownMenuItem
 							key={item.command}
-							disabled={item.enabled === false}
+							disabled={!item.enabled}
 							variant={item.destructive ? "destructive" : "default"}
-							onSelect={() => onCommand(item.command)}
+							onSelect={() => runCapturedCommand(item.command)}
 						>
 							{item.label}
 						</DropdownMenuItem>
@@ -153,35 +213,60 @@ export const TableInlineControls = memo(function TableInlineControls({
 	selected,
 	onControlMouseDown,
 	onCommand,
-	canDeleteRow,
-	canDeleteColumn,
+	captureTarget,
+	capabilities,
 }: TableInlineControlsProps) {
+	const { t } = useTranslation("editor");
 	const nativeMenusEnabled = isNativeContextMenuAvailable();
 	const rowMenuItems = useMemo(
 		() =>
 			buildAxisMenuItems(
-				"Add row above",
-				"Add row below",
-				"Delete row",
-				"addRowBefore",
-				"addRowAfter",
-				"deleteRow",
-				canDeleteRow,
+				{
+					addBefore: t("tableControls.addRowAbove"),
+					addAfter: t("tableControls.addRowBelow"),
+					moveBefore: t("tableControls.moveRowUp"),
+					moveAfter: t("tableControls.moveRowDown"),
+					deleteItem: t("tableControls.deleteRow"),
+				},
+				{
+					addBefore: "addRowBefore",
+					addAfter: "addRowAfter",
+					moveBefore: "moveRowUp",
+					moveAfter: "moveRowDown",
+					deleteItem: "deleteRow",
+				},
+				{
+					moveBefore: capabilities.canMoveRowUp,
+					moveAfter: capabilities.canMoveRowDown,
+					deleteItem: capabilities.canDeleteRow,
+				},
 			),
-		[canDeleteRow],
+		[capabilities, t],
 	);
 	const columnMenuItems = useMemo(
 		() =>
 			buildAxisMenuItems(
-				"Add column left",
-				"Add column right",
-				"Delete column",
-				"addColumnBefore",
-				"addColumnAfter",
-				"deleteColumn",
-				canDeleteColumn,
+				{
+					addBefore: t("tableControls.addColumnLeft"),
+					addAfter: t("tableControls.addColumnRight"),
+					moveBefore: t("tableControls.moveColumnLeft"),
+					moveAfter: t("tableControls.moveColumnRight"),
+					deleteItem: t("tableControls.deleteColumn"),
+				},
+				{
+					addBefore: "addColumnBefore",
+					addAfter: "addColumnAfter",
+					moveBefore: "moveColumnLeft",
+					moveAfter: "moveColumnRight",
+					deleteItem: "deleteColumn",
+				},
+				{
+					moveBefore: capabilities.canMoveColumnLeft,
+					moveAfter: capabilities.canMoveColumnRight,
+					deleteItem: capabilities.canDeleteColumn,
+				},
 			),
-		[canDeleteColumn],
+		[capabilities, t],
 	);
 
 	return (
@@ -190,20 +275,22 @@ export const TableInlineControls = memo(function TableInlineControls({
 				axis="row"
 				left={selected.rowControlLeft}
 				top={selected.rowControlTop}
-				ariaLabel="Row options"
+				ariaLabel={t("tableControls.rowOptions")}
 				menuItems={rowMenuItems}
 				onControlMouseDown={onControlMouseDown}
 				onCommand={onCommand}
+				captureTarget={captureTarget}
 				nativeMenusEnabled={nativeMenusEnabled}
 			/>
 			<TableAxisControl
 				axis="column"
 				left={selected.columnControlLeft}
 				top={selected.columnControlTop}
-				ariaLabel="Column options"
+				ariaLabel={t("tableControls.columnOptions")}
 				menuItems={columnMenuItems}
 				onControlMouseDown={onControlMouseDown}
 				onCommand={onCommand}
+				captureTarget={captureTarget}
 				nativeMenusEnabled={nativeMenusEnabled}
 			/>
 		</>
