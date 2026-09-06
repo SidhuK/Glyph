@@ -185,8 +185,10 @@ export function runTableEditorAction(
 ): boolean {
 	if (editor.isDestroyed) return false;
 
-	const node = editor.state?.doc?.nodeAt(action.target.tablePos);
+	const doc = editor.state?.doc;
+	const node = doc?.nodeAt(action.target.tablePos);
 	const table = node?.type.name === "table" ? node : null;
+	if (doc && !table) return false;
 	if (table) {
 		if (!canMove(action.kind, table, action.target)) return false;
 		if (!restoreSelection(editor, table, action.target)) return false;

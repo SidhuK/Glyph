@@ -17,7 +17,6 @@ import {
 import type {
 	TableActionTarget,
 	TableEditorAction,
-	TableEditorCapabilities,
 	TableEditorCommand,
 	TableInlineControlsProps,
 } from "./noteEditorOverlayTypes";
