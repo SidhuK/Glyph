@@ -5,7 +5,7 @@ use std::{
 
 use serde::Serialize;
 
-use crate::{index, paths, utils};
+use crate::{paths, utils};
 
 #[derive(Debug, Clone)]
 pub struct LinkRewritePlan {
@@ -36,7 +36,17 @@ pub fn rewrite_links_after_rename(
 
     for rel_path in markdown_files {
         let abs = paths::join_under(space_root, Path::new(&rel_path))?;
-        let original = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
+        let original = match std::fs::read_to_string(&abs) {
+            Ok(markdown) => markdown,
+            Err(error) => {
+                tracing::warn!(
+                    note_id = %rel_path,
+                    error = %error,
+                    "failed to read note for link rewrite after rename"
+                );
+                continue;
+            }
+        };
         let rewrite = rewrite_markdown_links_for_path(&original, plan, &rel_path);
 
         if rewrite.markdown != original {
@@ -514,11 +524,8 @@ pub fn plan_for_rename(
     } else {
         None
     };
-    let from_title =
-        note_title_for_path(root, from_path).unwrap_or_else(|| title_from_rel_path(from_path));
-    let to_title = note_title_for_path(root, to_path)
-        .or_else(|| note_title_for_path(root, from_path))
-        .unwrap_or_else(|| title_from_rel_path(to_path));
+    let from_title = title_from_rel_path(from_path);
+    let to_title = title_from_rel_path(to_path);
     LinkRewritePlan {
         from_rel_path: if is_dir {
             from_path.trim_end_matches('/').to_string()
@@ -597,16 +604,6 @@ fn collect_markdown_files_and_basename_counts(
     }
     markdown_files.sort();
     Ok((markdown_files, basename_counts))
-}
-
-fn note_title_for_path(root: &Path, rel_path: &str) -> Option<String> {
-    let conn = index::open_db(root).ok()?;
-    conn.query_row(
-        "SELECT title FROM notes WHERE id = ? LIMIT 1",
-        [rel_path],
-        |row| row.get(0),
-    )
-    .ok()
 }
 
 fn is_external_target(target: &str) -> bool {
