@@ -22,6 +22,7 @@ pub struct LinkRewritePlan {
 pub struct LinkRewriteResult {
     pub changed_files: Vec<String>,
     pub changed_links: usize,
+    pub skipped_files: Vec<String>,
 }
 
 pub fn rewrite_links_after_rename(
@@ -33,6 +34,7 @@ pub fn rewrite_links_after_rename(
         None => collect_markdown_files(space_root)?,
     };
     let mut rewrites = Vec::new();
+    let mut result = LinkRewriteResult::default();
 
     for rel_path in markdown_files {
         let abs = paths::join_under(space_root, Path::new(&rel_path))?;
@@ -44,6 +46,7 @@ pub fn rewrite_links_after_rename(
                     error = %error,
                     "failed to read note for link rewrite after rename"
                 );
+                result.skipped_files.push(rel_path);
                 continue;
             }
         };
@@ -54,7 +57,6 @@ pub fn rewrite_links_after_rename(
         }
     }
 
-    let mut result = LinkRewriteResult::default();
     for (rel_path, abs, markdown, changed_links) in rewrites {
         match crate::io_atomic::write_atomic(&abs, markdown.as_bytes()) {
             Ok(()) => {
@@ -67,6 +69,7 @@ pub fn rewrite_links_after_rename(
                     error = %error,
                     "failed to write rewritten links after rename"
                 );
+                result.skipped_files.push(rel_path);
             }
         }
     }
@@ -255,7 +258,11 @@ fn rewrite_target(target: &str, plan: &LinkRewritePlan, markdown_link: bool) -> 
     {
         return Some(plan.to_rel_path.clone());
     }
-    if is_markdown_rename && !markdown_link && target == plan.from_title {
+    if is_markdown_rename
+        && !markdown_link
+        && plan.from_basename_is_unique
+        && target == plan.from_title
+    {
         return Some(plan.to_title.clone());
     }
     None
@@ -504,10 +511,9 @@ pub fn is_supported_attachment_path(path: &Path) -> bool {
 }
 
 fn title_from_rel_path(path: &str) -> String {
-    Path::new(path)
-        .file_stem()
-        .and_then(|value| value.to_str())
-        .unwrap_or(path)
+    basename(path)
+        .trim_end_matches(".md")
+        .trim_end_matches(".MD")
         .to_string()
 }
 
@@ -519,7 +525,7 @@ pub fn plan_for_rename(
 ) -> LinkRewritePlan {
     let is_dir = from_abs.is_dir();
     let is_markdown_rename = is_markdown_rel_path(from_path);
-    let attachment_link_context = if !is_dir && !is_markdown_rename {
+    let link_context = if !is_dir {
         collect_markdown_files_and_basename_counts(root).ok()
     } else {
         None
@@ -540,10 +546,11 @@ pub fn plan_for_rename(
         from_title,
         to_title,
         is_dir,
-        from_basename_is_unique: attachment_link_context.as_ref().is_some_and(
+        from_basename_is_unique: link_context.as_ref().is_some_and(
             |(_markdown_files, basename_counts)| basename_is_unique(basename_counts, from_path),
         ),
-        markdown_files: attachment_link_context
+        markdown_files: link_context
+            .filter(|_| !is_markdown_rename)
             .map(|(markdown_files, _basename_counts)| markdown_files),
     }
 }
