@@ -15,6 +15,7 @@ pub enum AppIcon {
     BlueGlyph,
     #[serde(rename = "confetti-star")]
     ConfettiStar,
+    Blueprint,
 }
 
 fn apply(app: &tauri::AppHandle, icon: AppIcon) -> Result<(), String> {
@@ -26,6 +27,7 @@ fn apply(app: &tauri::AppHandle, icon: AppIcon) -> Result<(), String> {
         AppIcon::BlueStar => Some(include_bytes!("../icons/alternates/blue-star.png")),
         AppIcon::BlueGlyph => Some(include_bytes!("../icons/alternates/blue-glyph.png")),
         AppIcon::ConfettiStar => Some(include_bytes!("../icons/alternates/confetti-star.png")),
+        AppIcon::Blueprint => Some(include_bytes!("../icons/alternates/blueprint.png")),
     };
     let image = bytes
         .map(|bytes| {

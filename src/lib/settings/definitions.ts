@@ -508,14 +508,16 @@ export const DURABLE_SETTINGS = {
 		normalize: (value) =>
 			value === "blue-star" ||
 			value === "blue-glyph" ||
-			value === "confetti-star"
+			value === "confetti-star" ||
+			value === "blueprint"
 				? value
 				: "default",
 		parse: (value) =>
 			value === "default" ||
 			value === "blue-star" ||
 			value === "blue-glyph" ||
-			value === "confetti-star"
+			value === "confetti-star" ||
+			value === "blueprint"
 				? parsed(value)
 				: INVALID_PARSE_RESULT,
 		read: (settings) => settings.ui.appIcon,
