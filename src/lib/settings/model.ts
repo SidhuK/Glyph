@@ -198,7 +198,12 @@ export interface AppSettings {
 		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;
-		appIcon: "default" | "blue-star" | "blue-glyph" | "confetti-star";
+		appIcon:
+			| "default"
+			| "blue-star"
+			| "blue-glyph"
+			| "confetti-star"
+			| "blueprint";
 		translucentApp: boolean;
 		cornerRadiusStyle: UiCornerRadiusStyle;
 		showToc: boolean;
