@@ -1,4 +1,8 @@
 {
+	"linkRewrite": {
+		"incomplete": "Rename or move completed, but some links could not be updated",
+		"skipped": "Could not read or write these files. Their links may need manual updates:\n{{paths}}"
+	},
 	"sidebar": {
 		"collapse": "Collapse sidebar",
 		"expand": "Expand sidebar",

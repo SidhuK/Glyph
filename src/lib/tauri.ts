@@ -48,6 +48,7 @@ export interface FsEntryList {
 export interface LinkRewriteResult {
 	changed_files: string[];
 	changed_links: number;
+	skipped_files: string[];
 }
 
 export interface FileTreeAppearance {

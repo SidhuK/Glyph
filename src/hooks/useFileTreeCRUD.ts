@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { i18n } from "../i18n";
 import { dispatchFileTreeStartRename } from "../lib/appEvents";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { isMissingFileError } from "../lib/fsErrors";
@@ -50,6 +51,14 @@ export interface CreateMarkdownFileOptions {
 }
 
 function showLinkRewriteToast(result: LinkRewriteResult) {
+	if (result.skipped_files.length > 0) {
+		toast.warning(i18n.t("shell:linkRewrite.incomplete"), {
+			description: i18n.t("shell:linkRewrite.skipped", {
+				paths: result.skipped_files.join("\n"),
+			}),
+		});
+		return;
+	}
 	if (result.changed_files.length === 0) return;
 	const linkLabel = result.changed_links === 1 ? "link" : "links";
 	const fileLabel = result.changed_files.length === 1 ? "file" : "files";
