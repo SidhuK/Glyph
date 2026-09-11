@@ -3,6 +3,14 @@ import {
 	detectConnectionsCommunities,
 } from "./connectionsCommunities";
 import { placeConnectionsCommunities } from "./connectionsCommunityPlacement";
+import { placeLegacyConnectionsCommunities } from "./connectionsLegacyCommunityPlacement";
+
+export type ConnectionsLayoutMode = "bundled" | "legacy";
+
+export interface ConnectionsLayoutRequest {
+	readonly graph: ConnectionsLayoutGraph;
+	readonly mode: ConnectionsLayoutMode;
+}
 
 export interface GraphPosition {
 	readonly x: number;
@@ -27,7 +35,13 @@ export type ConnectionsLayoutResponse =
 			readonly error: string;
 	  };
 
-export function computeSpaceConnectionsLayout(graph: ConnectionsLayoutGraph) {
+export function computeSpaceConnectionsLayout({
+	graph,
+	mode,
+}: ConnectionsLayoutRequest) {
 	if (graph.nodeIds.length + graph.tags.length === 0) return [];
-	return placeConnectionsCommunities(detectConnectionsCommunities(graph));
+	const model = detectConnectionsCommunities(graph);
+	return mode === "legacy"
+		? placeLegacyConnectionsCommunities(model)
+		: placeConnectionsCommunities(model);
 }

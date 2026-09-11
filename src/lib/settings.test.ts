@@ -116,6 +116,16 @@ const DURABLE_SETTING_CASES = [
 		writes: [{ value: true, payload: { ui: { folioMode: true } } }],
 	},
 	{
+		name: "legacy connections",
+		storeKey: "ui.legacyConnections",
+		read: (settings: AppSettings) => settings.ui.legacyConnections,
+		defaultValue: false,
+		storedValue: true,
+		invalidStoredValue: "yes",
+		writeKey: "legacyConnections",
+		writes: [{ value: true, payload: { ui: { legacyConnections: true } } }],
+	},
+	{
 		name: "resume last session",
 		storeKey: "ui.resumeLastSession",
 		read: (settings: AppSettings) => settings.ui.resumeLastSession,

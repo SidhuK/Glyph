@@ -1,4 +1,7 @@
-import type { ConnectionsCommunity } from "./connectionsCommunities";
+import type {
+	ConnectionsCommunity,
+	ConnectionsCommunityModel,
+} from "./connectionsCommunities";
 import type { SerializedGraphPosition } from "./connectionsLayout";
 import { hashString } from "./connectionsRandom";
 
@@ -94,9 +97,9 @@ function communityBundlePoints(slots: readonly (RadialMember | undefined)[]) {
 }
 
 export function placeConnectionsCommunities(
-	communities: readonly ConnectionsCommunity[],
+	model: ConnectionsCommunityModel,
 ): SerializedGraphPosition[] {
-	const { connected, disconnected } = partitionMembers(communities);
+	const { connected, disconnected } = partitionMembers(model.communities);
 	const slots = distributeAroundRing(connected, disconnected);
 	if (slots.length === 0) return [];
 

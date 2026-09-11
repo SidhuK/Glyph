@@ -584,6 +584,11 @@
 			"section": "실험적",
 			"keywords": ["peek", "미리보기", "wiki", "모든 노트", "arc"]
 		},
+		"experimental-legacy-connections": {
+			"title": "기존 연결 그래프",
+			"section": "실험적",
+			"keywords": ["연결", "그래프", "기존", "레이아웃"]
+		},
 		"general-file-tree-folder-counts": {
 			"title": "폴더 파일 수 표시",
 			"section": "파일 트리",

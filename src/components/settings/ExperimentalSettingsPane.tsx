@@ -51,6 +51,11 @@ export function ExperimentalSettingsPane() {
 		DURABLE_SETTINGS.noteSidePeek.write,
 		setError,
 	);
+	const legacyConnections = useSettingsBoolean(
+		false,
+		DURABLE_SETTINGS.legacyConnections.write,
+		setError,
+	);
 	const externalLinkPreviews = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.editorShowExternalLinkPreviews.write,
@@ -84,6 +89,7 @@ export function ExperimentalSettingsPane() {
 
 	const setInitialFolioMode = folioMode.setInitialChecked;
 	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
+	const setInitialLegacyConnections = legacyConnections.setInitialChecked;
 	const setInitialExternalLinkPreviews = externalLinkPreviews.setInitialChecked;
 	const setInitialFormatBar = formatBar.setInitialChecked;
 	const setInitialZenMode = zenMode.setInitialChecked;
@@ -96,6 +102,7 @@ export function ExperimentalSettingsPane() {
 		if (!settings) return;
 		setInitialFolioMode(settings.ui.folioMode);
 		setInitialNoteSidePeek(settings.ui.noteSidePeek);
+		setInitialLegacyConnections(settings.ui.legacyConnections);
 		setInitialExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
 		setInitialFormatBar(settings.editor.showFormatBar);
 		setInitialZenMode(settings.editor.zenMode);
@@ -109,6 +116,7 @@ export function ExperimentalSettingsPane() {
 		setInitialFormatBar,
 		setInitialZenMode,
 		setInitialNoteSidePeek,
+		setInitialLegacyConnections,
 		setInitialFocusMode,
 		setInitialNonMarkdownFiles,
 		setInitialRawMarkdownVimMode,
@@ -141,6 +149,18 @@ export function ExperimentalSettingsPane() {
 							disabled={folioMode.isSaving}
 							ariaLabel={tAppearance("layout.folioMode.ariaLabel")}
 							onCheckedChange={folioMode.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("experimental.legacyConnections.label")}
+						description={t("experimental.legacyConnections.description")}
+						searchId="experimental-legacy-connections"
+					>
+						<SettingsToggle
+							checked={legacyConnections.checked}
+							disabled={legacyConnections.isSaving}
+							ariaLabel={t("experimental.legacyConnections.ariaLabel")}
+							onCheckedChange={legacyConnections.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

@@ -598,6 +598,11 @@
 			"section": "実験的",
 			"keywords": ["peek", "プレビュー", "wiki", "すべてのノート", "arc"]
 		},
+		"experimental-legacy-connections": {
+			"title": "従来の接続グラフ",
+			"section": "実験的",
+			"keywords": ["接続", "グラフ", "従来", "配置"]
+		},
 		"general-file-tree-folder-counts": {
 			"title": "フォルダのファイル数を表示",
 			"section": "ファイルツリー",

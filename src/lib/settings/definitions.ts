@@ -612,6 +612,13 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.noteSidePeek,
 		change: (value) => ({ ui: { noteSidePeek: value } }),
 	}),
+	legacyConnections: booleanSetting({
+		key: "ui.legacyConnections",
+		defaultValue: false,
+		discovery: searchable("experimental-legacy-connections"),
+		read: (settings) => settings.ui.legacyConnections,
+		change: (value) => ({ ui: { legacyConnections: value } }),
+	}),
 	resumeLastSession: booleanSetting({
 		key: "ui.resumeLastSession",
 		defaultValue: false,
