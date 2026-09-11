@@ -3,8 +3,8 @@
 		{
 			"value": {
 				"linear-gradient": [
-					"extended-gray:0.07500,1.00000",
-					"extended-gray:0.07500,1.00000"
+					"extended-gray:1.00000,1.00000",
+					"extended-gray:0.75000,1.00000"
 				],
 				"orientation": {
 					"start": {
@@ -22,8 +22,8 @@
 			"appearance": "dark",
 			"value": {
 				"linear-gradient": [
-					"extended-gray:0.07500,1.00000",
-					"extended-gray:0.07500,1.00000"
+					"extended-srgb:0.98500,0.97700,0.95000,1.00000",
+					"extended-srgb:0.95500,0.94300,0.91000,1.00000"
 				],
 				"orientation": {
 					"start": {
@@ -43,83 +43,56 @@
 			"layers": [
 				{
 					"glass": false,
-					"image-name": "08-amber-asterisk.png",
-					"name": "08-amber-asterisk",
+					"image-name": "05-indigo-pocket.png",
+					"name": "05-indigo-pocket",
 					"position": {
-						"scale": 1.22,
-						"translation-in-points": [0, -3.66]
+						"scale": 1.16,
+						"translation-in-points": [0, 0]
 					}
 				},
 				{
 					"glass": false,
-					"image-name": "07-blue-asterisk.png",
-					"name": "07-blue-asterisk",
+					"image-name": "04-ivory-asterisk.png",
+					"name": "04-ivory-asterisk",
 					"position": {
-						"scale": 1.22,
-						"translation-in-points": [0, -3.66]
+						"scale": 1.16,
+						"translation-in-points": [0, 0]
 					}
 				},
 				{
 					"glass": false,
-					"image-name": "06-red-asterisk.png",
-					"name": "06-red-asterisk",
+					"image-name": "03-violet-page.png",
+					"name": "03-violet-page",
 					"position": {
-						"scale": 1.22,
-						"translation-in-points": [0, -3.66]
+						"scale": 1.16,
+						"translation-in-points": [0, 0]
 					}
 				},
 				{
 					"glass": false,
-					"image-name": "05-recessed-badge.png",
-					"name": "05-recessed-badge",
+					"image-name": "02-coral-page.png",
+					"name": "02-coral-page",
 					"position": {
-						"scale": 1.22,
-						"translation-in-points": [0, -3.66]
+						"scale": 1.16,
+						"translation-in-points": [0, 0]
 					}
 				},
 				{
 					"glass": false,
-					"image-name": "04-front-folder.png",
-					"name": "04-front-folder",
+					"image-name": "01-blue-page.png",
+					"name": "01-blue-page",
 					"position": {
-						"scale": 1.22,
-						"translation-in-points": [0, -3.66]
-					}
-				},
-				{
-					"glass": false,
-					"image-name": "03-middle-sheet.png",
-					"name": "03-middle-sheet",
-					"position": {
-						"scale": 1.22,
-						"translation-in-points": [0, -3.66]
-					}
-				},
-				{
-					"glass": false,
-					"image-name": "02-rear-sheet.png",
-					"name": "02-rear-sheet",
-					"position": {
-						"scale": 1.22,
-						"translation-in-points": [0, -3.66]
-					}
-				},
-				{
-					"glass": false,
-					"image-name": "01-black-base.png",
-					"name": "01-black-base",
-					"position": {
-						"scale": 1.22,
-						"translation-in-points": [0, -3.66]
+						"scale": 1.16,
+						"translation-in-points": [17.4, 2.32]
 					}
 				}
 			],
 			"shadow": {
 				"kind": "neutral",
-				"opacity": 0
+				"opacity": 0.35
 			},
 			"translucency": {
-				"enabled": false,
+				"enabled": true,
 				"value": 0.5
 			}
 		}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Compiles the Glyph.icon (Liquid Glass) into an Assets.car for macOS 26+
+# Compiles Glyph.icon and exports the app's macOS icon assets.
 # Requires Xcode to be installed (actool depends on it)
 
 set -euo pipefail
@@ -12,6 +12,8 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ICON_PATH="$ROOT_DIR/Glyph.icon"
 OUTPUT_PATH="$ROOT_DIR/src-tauri/icons"
 PLIST_PATH="$OUTPUT_PATH/assetcatalog_generated_info.plist"
+TEMP_PATH="$(mktemp -d)"
+trap 'rm -rf "$TEMP_PATH"; rm -f "$PLIST_PATH"' EXIT
 
 actool "$ICON_PATH" --compile "$OUTPUT_PATH" \
   --output-format human-readable-text --notices --warnings --errors \
@@ -23,6 +25,17 @@ actool "$ICON_PATH" --compile "$OUTPUT_PATH" \
   --minimum-deployment-target 26.0 \
   --platform macosx
 
-rm -f "$PLIST_PATH"
+ICONSET_PATH="$TEMP_PATH/Glyph.iconset"
+iconutil -c iconset "$OUTPUT_PATH/Glyph.icns" -o "$ICONSET_PATH"
+cp "$OUTPUT_PATH/Glyph.icns" "$OUTPUT_PATH/icon.icns"
 
-echo "✅ Assets.car created at $OUTPUT_PATH/Assets.car"
+# Use Apple's rendered margins consistently in the Dock and in-app previews.
+cp "$ICONSET_PATH/icon_128x128@2x.png" "$OUTPUT_PATH/icon.png"
+cp "$ICONSET_PATH/icon_128x128@2x.png" "$ROOT_DIR/public/glyph-app-icon.png"
+for size in 32 64 128; do
+  sips -z "$size" "$size" "$OUTPUT_PATH/icon.png" \
+    --out "$OUTPUT_PATH/${size}x${size}.png" >/dev/null
+done
+cp "$ICONSET_PATH/icon_128x128@2x.png" "$OUTPUT_PATH/128x128@2x.png"
+
+echo "Exported Assets.car, ICNS, PNG sizes, and the in-app icon preview."
