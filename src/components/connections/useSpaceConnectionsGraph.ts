@@ -61,7 +61,14 @@ function layoutSpaceConnections(
 				reject(new Error(response.error));
 				return;
 			}
-			resolve(new Map(response.positions.map(([id, x, y]) => [id, { x, y }])));
+			resolve(
+				new Map(
+					response.positions.map(([id, x, y, bundleX, bundleY]) => [
+						id,
+						{ x, y, bundleX, bundleY },
+					]),
+				),
+			);
 		};
 		worker.onerror = (event) => {
 			signal.removeEventListener("abort", abort);

@@ -1,9 +1,12 @@
+import type Sigma from "sigma";
 import type {
 	NodeHoverDrawingFunction,
 	NodeLabelDrawingFunction,
 } from "sigma/rendering";
+import type { Coordinates, EdgeDisplayData } from "sigma/types";
 import type {
 	ConnectionsEdgeAttributes,
+	ConnectionsGraph,
 	ConnectionsGraphVariant,
 	ConnectionsNodeAttributes,
 } from "./connectionsGraph";
@@ -20,6 +23,95 @@ type NodeHoverData = Parameters<
 >[1];
 
 const TRANSPARENT = "rgba(0, 0, 0, 0)";
+
+interface BundledEdgesDrawingOptions {
+	readonly canvas: HTMLCanvasElement;
+	readonly context: CanvasRenderingContext2D;
+	readonly renderer: Sigma<
+		ConnectionsNodeAttributes,
+		ConnectionsEdgeAttributes
+	>;
+	readonly graph: ConnectionsGraph;
+	readonly resolveStyle: (
+		edge: string,
+		data: ConnectionsEdgeAttributes,
+		source: string,
+		target: string,
+	) => Partial<EdgeDisplayData>;
+}
+
+interface BundledNodePoints {
+	readonly node: Coordinates;
+	readonly bundle: Coordinates;
+}
+
+export function drawBundledConnectionsEdges({
+	canvas,
+	context,
+	renderer,
+	graph,
+	resolveStyle,
+}: BundledEdgesDrawingOptions) {
+	const { width, height } = renderer.getDimensions();
+	const { pixelRatio } = renderer.getRenderParams();
+	const renderWidth = Math.max(1, Math.round(width * pixelRatio));
+	const renderHeight = Math.max(1, Math.round(height * pixelRatio));
+	const cssWidth = `${width}px`;
+	const cssHeight = `${height}px`;
+	if (canvas.style.width !== cssWidth) canvas.style.width = cssWidth;
+	if (canvas.style.height !== cssHeight) canvas.style.height = cssHeight;
+	if (canvas.width !== renderWidth || canvas.height !== renderHeight) {
+		canvas.width = renderWidth;
+		canvas.height = renderHeight;
+	}
+
+	context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+	context.clearRect(0, 0, width, height);
+
+	const mouse = renderer.getMouseCaptor();
+	const moving =
+		renderer.getCamera().isAnimated() ||
+		mouse.isMoving ||
+		mouse.draggedEvents > 0 ||
+		mouse.currentWheelDirection !== 0;
+	if (graph.size > 5_000 && moving) return;
+
+	context.lineCap = "round";
+	context.lineJoin = "round";
+	const pointsByNode = new Map<string, BundledNodePoints>();
+	graph.forEachNode((node, data) => {
+		pointsByNode.set(node, {
+			node: renderer.graphToViewport(data),
+			bundle: renderer.graphToViewport({
+				x: data.bundleX,
+				y: data.bundleY,
+			}),
+		});
+	});
+
+	graph.forEachEdge((edge, data, source, target) => {
+		const style = resolveStyle(edge, data, source, target);
+		if (style.hidden) return;
+
+		const sourcePoints = pointsByNode.get(source);
+		const targetPoints = pointsByNode.get(target);
+		if (!sourcePoints || !targetPoints) return;
+
+		context.strokeStyle = style.color ?? data.color;
+		context.lineWidth = Math.max(0.35, style.size ?? data.size);
+		context.beginPath();
+		context.moveTo(sourcePoints.node.x, sourcePoints.node.y);
+		context.bezierCurveTo(
+			sourcePoints.bundle.x,
+			sourcePoints.bundle.y,
+			targetPoints.bundle.x,
+			targetPoints.bundle.y,
+			targetPoints.node.x,
+			targetPoints.node.y,
+		);
+		context.stroke();
+	});
+}
 
 function roundedRectPath(
 	context: CanvasRenderingContext2D,
@@ -94,6 +186,7 @@ export function drawConnectionsNodeLabel(
 	settings: NodeLabelSettings,
 	palette: ConnectionsPalette,
 	variant: ConnectionsGraphVariant,
+	graphCenter?: Coordinates,
 ) {
 	const label = data.label;
 	if (!label) return;
@@ -107,6 +200,26 @@ export function drawConnectionsNodeLabel(
 	context.save();
 	context.font = `${weight} ${fontSize}px ${settings.labelFont}`;
 	context.textBaseline = "alphabetic";
+
+	if (variant === "space" && !emphasized) {
+		const centerX = graphCenter?.x ?? context.canvas.clientWidth / 2;
+		const centerY = graphCenter?.y ?? context.canvas.clientHeight / 2;
+		const angle = Math.atan2(data.y - centerY, data.x - centerX);
+		const onLeft = Math.cos(angle) < 0;
+		const labelOffset = size + 6;
+		context.translate(data.x, data.y);
+		context.rotate(onLeft ? angle + Math.PI : angle);
+		context.textAlign = onLeft ? "right" : "left";
+		context.textBaseline = "middle";
+		context.lineJoin = "round";
+		context.lineWidth = 3;
+		context.strokeStyle = palette.labelBackground;
+		context.strokeText(label, onLeft ? -labelOffset : labelOffset, 0);
+		context.fillStyle = palette.text;
+		context.fillText(label, onLeft ? -labelOffset : labelOffset, 0);
+		context.restore();
+		return;
+	}
 
 	const textWidth = context.measureText(label).width;
 	const offsetX = variant === "local" ? 8 : 6;

@@ -5,22 +5,26 @@ import {
 import { placeConnectionsCommunities } from "./connectionsCommunityPlacement";
 
 export interface GraphPosition {
-	x: number;
-	y: number;
+	readonly x: number;
+	readonly y: number;
+	readonly bundleX: number;
+	readonly bundleY: number;
 }
 
 export type SerializedGraphPosition = readonly [
 	id: string,
 	x: number,
 	y: number,
+	bundleX: number,
+	bundleY: number,
 ];
 
 export type ConnectionsLayoutResponse =
 	| {
-			positions: SerializedGraphPosition[];
+			readonly positions: readonly SerializedGraphPosition[];
 	  }
 	| {
-			error: string;
+			readonly error: string;
 	  };
 
 export function computeSpaceConnectionsLayout(graph: ConnectionsLayoutGraph) {

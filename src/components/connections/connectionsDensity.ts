@@ -60,7 +60,6 @@ const SPACE_EDGE_SCALE_TIERS: readonly SpaceEdgeScaleTier[] = [
 interface SpaceSigmaTier {
 	minNodes: number;
 	stagePadding: number;
-	minEdgeThickness: number;
 	minCameraRatio: number;
 }
 
@@ -68,25 +67,21 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 	{
 		minNodes: 5_000,
 		stagePadding: 36,
-		minEdgeThickness: 0.7,
 		minCameraRatio: 0.05,
 	},
 	{
 		minNodes: 1_000,
 		stagePadding: 40,
-		minEdgeThickness: 0.78,
 		minCameraRatio: 0.18,
 	},
 	{
 		minNodes: 150,
 		stagePadding: 48,
-		minEdgeThickness: 0.85,
 		minCameraRatio: 0.18,
 	},
 	{
 		minNodes: 0,
 		stagePadding: 56,
-		minEdgeThickness: 0.9,
 		minCameraRatio: 0.18,
 	},
 ];
@@ -166,14 +161,12 @@ export function sigmaSettingsForVariant(
 		renderEdgeLabels: false,
 		enableEdgeEvents: false,
 		hideLabelsOnMove: true,
-		hideEdgesOnMove: edgeCount > 5000,
 		defaultNodeType: "circle",
 		defaultEdgeType: "line",
 		minCameraRatio: sigmaTier.minCameraRatio,
 		maxCameraRatio: 2.1,
 		stagePadding: sigmaTier.stagePadding,
 		zoomingRatio: 1.6,
-		minEdgeThickness: sigmaTier.minEdgeThickness,
 		zIndex: true,
 		allowInvalidContainer: false,
 	};

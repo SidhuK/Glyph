@@ -13,31 +13,26 @@ interface CommunityGraphEdgeAttributes {
 }
 
 export interface ConnectionsLayoutGraph {
-	nodeIds: string[];
-	tags: Array<{ id: string; noteCount: number }>;
-	edges: Array<{
-		source: string;
-		target: string;
-		kind: "link" | "relationship";
-		weight: number;
-	}>;
-	tagEdges: Array<{ tagId: string; noteId: string }>;
+	readonly nodeIds: readonly string[];
+	readonly tags: readonly {
+		readonly id: string;
+		readonly noteCount: number;
+	}[];
+	readonly edges: readonly {
+		readonly source: string;
+		readonly target: string;
+		readonly kind: "link" | "relationship";
+		readonly weight: number;
+	}[];
+	readonly tagEdges: readonly {
+		readonly tagId: string;
+		readonly noteId: string;
+	}[];
 }
 
 export interface ConnectionsCommunity {
-	id: number;
-	members: string[];
-	hubId: string;
-	radius: number;
-}
-
-export interface ConnectionsCommunityModel {
-	communities: ConnectionsCommunity[];
-	communityBridges: ReadonlyMap<string, number>;
-}
-
-export function communityBridgeKey(left: number, right: number) {
-	return left < right ? `${left}:${right}` : `${right}:${left}`;
+	readonly members: readonly string[];
+	readonly hubId: string;
 }
 
 type CommunityGraph = Graph<
@@ -148,7 +143,7 @@ function internalWeightedDegree(
 
 export function detectConnectionsCommunities(
 	layoutGraph: ConnectionsLayoutGraph,
-): ConnectionsCommunityModel {
+): readonly ConnectionsCommunity[] {
 	const graph = buildWeightedGraph(layoutGraph);
 	const assignments =
 		graph.size > 0
@@ -164,8 +159,7 @@ export function detectConnectionsCommunities(
 		return hashString(left[0] ?? "") - hashString(right[0] ?? "");
 	});
 
-	const nodeCommunity = new Map<string, number>();
-	const communities = components.map((members, id) => {
+	return components.map((members) => {
 		const memberSet = new Set(members);
 		members.sort((left, right) => {
 			const degreeDifference =
@@ -173,32 +167,9 @@ export function detectConnectionsCommunities(
 				internalWeightedDegree(left, memberSet, graph);
 			return degreeDifference || hashString(left) - hashString(right);
 		});
-		for (const member of members) nodeCommunity.set(member, id);
 		return {
-			id,
 			members,
 			hubId: members[0] ?? "",
-			radius: Math.max(18, 18 * Math.sqrt(members.length / Math.PI) * 1.15),
 		};
 	});
-
-	const communityBridges = new Map<string, number>();
-	graph.forEachEdge((_edge, attributes, source, target) => {
-		const sourceCommunity = nodeCommunity.get(source);
-		const targetCommunity = nodeCommunity.get(target);
-		if (
-			sourceCommunity === undefined ||
-			targetCommunity === undefined ||
-			sourceCommunity === targetCommunity
-		) {
-			return;
-		}
-		const key = communityBridgeKey(sourceCommunity, targetCommunity);
-		communityBridges.set(
-			key,
-			(communityBridges.get(key) ?? 0) + attributes.weight,
-		);
-	});
-
-	return { communities, communityBridges };
 }
