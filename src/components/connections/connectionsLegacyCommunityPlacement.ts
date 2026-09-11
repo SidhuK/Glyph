@@ -166,6 +166,13 @@ function placeDust(
 	const ordered = [...ids].sort(
 		(left, right) => hashString(left) - hashString(right),
 	);
+	let packedOuterRadius = 0;
+	for (const core of cores) {
+		packedOuterRadius = Math.max(
+			packedOuterRadius,
+			Math.hypot(core.center.x, core.center.y) + core.radius,
+		);
+	}
 	let slot = 0;
 	for (const id of ordered) {
 		let placed = false;
@@ -188,7 +195,7 @@ function placeDust(
 			}
 		}
 		if (placed) continue;
-		const radius = spacing * Math.sqrt(slot + 1);
+		const radius = packedOuterRadius + spacing * Math.sqrt(slot + 1);
 		const angle = slot * GOLDEN_ANGLE;
 		slot += 1;
 		positions.set(id, {
@@ -208,13 +215,11 @@ export function placeLegacyConnectionsCommunities(
 	const leftover = model.communities
 		.filter((community) => community.members.length < 2)
 		.flatMap((community) => community.members);
-	const toPack = cores.length > 0 ? cores : model.communities;
-	const dust = cores.length > 0 ? leftover : [];
-	const centers = placeCommunityCenters(toPack, model.communityBridges);
+	const centers = placeCommunityCenters(cores, model.communityBridges);
 	const packedCores: PackedCircle[] = [];
 	const positions: SerializedGraphPosition[] = [];
 
-	for (const community of toPack) {
+	for (const community of cores) {
 		const center = centers.get(community.id);
 		if (!center) continue;
 		packedCores.push({
@@ -227,7 +232,11 @@ export function placeLegacyConnectionsCommunities(
 		}
 	}
 
-	for (const [id, position] of placeDust(dust, packedCores, MEMBER_SPACING)) {
+	for (const [id, position] of placeDust(
+		leftover,
+		packedCores,
+		MEMBER_SPACING,
+	)) {
 		positions.push([id, position.x, position.y, position.x, position.y]);
 	}
 	return positions;
