@@ -56,7 +56,7 @@ import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { buildPrintHtml } from "../../lib/printHtml";
 import { requestSearchJump } from "../../lib/searchJump";
 import { loadSettings } from "../../lib/settings";
-import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
+import { toTauriAccelerator } from "../../lib/shortcuts";
 import { useSpaceChangePropagation } from "../../lib/spaceChange";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { invoke } from "../../lib/tauri";
@@ -70,7 +70,6 @@ import {
 	parentDir,
 } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
 	CalendarPaletteController,
@@ -79,7 +78,6 @@ import {
 import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
-import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import {
 	loadActivityTimelinePane,
@@ -1376,8 +1374,6 @@ export function AppShell() {
 		paletteOpen,
 		onClosePalette: closePalette,
 	});
-	const toggleSidebarShortcut = getBinding("toggle-sidebar");
-
 	useEffect(() => {
 		const accelerators = Object.fromEntries(
 			actionsWithBindings
@@ -1416,27 +1412,6 @@ export function AppShell() {
 			/>
 			{(!zenMode || settingsMode) && sidebarCollapsed ? (
 				<div className="sidebarCollapsedToggle">
-					<WindowChromeIconButton
-						ariaLabel={
-							sidebarAutoCollapsed
-								? "Sidebar hidden while window is narrow"
-								: "Expand sidebar"
-						}
-						ariaPressed={false}
-						disabled={sidebarAutoCollapsed}
-						onClick={() => setSidebarCollapsed(false)}
-						title={
-							sidebarAutoCollapsed
-								? "Widen the window to show the sidebar"
-								: `Expand sidebar${
-										toggleSidebarShortcut
-											? ` (${getShortcutTooltip(toggleSidebarShortcut)})`
-											: ""
-									}`
-						}
-					>
-						<LayoutAlignLeft size="var(--icon-md)" />
-					</WindowChromeIconButton>
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}
 						updateVersion={autoUpdater.updateVersion}
@@ -1471,7 +1446,6 @@ export function AppShell() {
 						onCollapseAllDirs={fileTree.collapseAllDirs}
 						onSelectTag={(t) => openTagSearchPalette(t)}
 						sidebarCollapsed={sidebarCollapsed}
-						onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 						spacePath={spacePath}
 						onOpenAllDocs={openAllDocsTab}
 						onOpenPinnedDocs={openPinnedDocsTab}

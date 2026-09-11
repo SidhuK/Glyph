@@ -77,69 +77,6 @@
 	z-index: 30;
 }
 
-.windowChromeSidebarToggle {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-	width: 26px;
-	height: 26px;
-	padding: 0;
-	border: none;
-	border-radius: var(--radius-md);
-	background: transparent;
-	box-shadow: none;
-	color: var(--text-secondary);
-	appearance: none;
-	-webkit-appearance: none;
-	cursor: pointer;
-	-webkit-app-region: no-drag;
-	transition: background-color 120ms ease, color 120ms ease;
-}
-
-.sidebarDevBadge {
-	position: absolute;
-	right: -4px;
-	bottom: -4px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 22px;
-	height: 13px;
-	padding: 0 3px;
-	border: 2px solid var(--bg-sidebar);
-	border-radius: 999px;
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	font-size: 7px;
-	font-weight: var(--font-bold);
-	line-height: 1;
-	letter-spacing: 0.08em;
-	pointer-events: none;
-}
-
-.windowChromeSidebarToggle:hover,
-.windowChromeSidebarToggle:focus-visible,
-.windowChromeSidebarToggle[data-state="open"] {
-	background: var(--bg-hover);
-	color: var(--text-primary);
-}
-
-.windowChromeSidebarToggle:disabled {
-	opacity: 0.45;
-	cursor: default;
-}
-
-.windowChromeSidebarToggle:disabled:hover {
-	background: transparent;
-	color: var(--text-secondary);
-}
-
-.windowChromeSidebarToggle svg {
-	width: var(--icon-lg);
-	height: var(--icon-lg);
-}
-
 .windowChromeUpdateButton {
 	display: inline-flex;
 	gap: 3px;

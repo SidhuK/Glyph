@@ -9,12 +9,10 @@ import { SidebarSettingsContent } from "./SidebarSettingsContent";
 
 interface SidebarProps extends SidebarContentProps {
 	sidebarCollapsed: boolean;
-	onToggleSidebar: () => void;
 }
 
 export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
-	onToggleSidebar,
 	...contentProps
 }: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
@@ -61,10 +59,7 @@ export const Sidebar = memo(function Sidebar({
 							</>
 						) : (
 							<>
-								<SidebarHeader
-									sidebarCollapsed={sidebarCollapsed}
-									onToggleSidebar={onToggleSidebar}
-								/>
+								<SidebarHeader />
 								<SidebarContent {...contentProps} />
 								<LicenseStatusFooter />
 							</>
