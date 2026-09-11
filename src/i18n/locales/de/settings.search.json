@@ -609,6 +609,11 @@
 			"section": "Experimentell",
 			"keywords": ["peek", "vorschau", "wiki", "alle notizen", "arc"]
 		},
+		"experimental-legacy-connections": {
+			"title": "Klassische Verbindungen",
+			"section": "Experimentell",
+			"keywords": ["verbindungen", "graph", "klassisch", "layout"]
+		},
 		"general-file-tree-folder-counts": {
 			"title": "Dateianzahl in Ordnern anzeigen",
 			"section": "Dateibaum",

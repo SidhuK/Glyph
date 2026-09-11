@@ -2,6 +2,7 @@ import { type RefObject, useEffect, useRef } from "react";
 import Sigma from "sigma";
 import { connectionsLabelVisibility } from "../../lib/connectionsGraphOptions";
 import {
+	drawBundledConnectionsEdges,
 	drawConnectionsNodeHover,
 	drawConnectionsNodeLabel,
 } from "./connectionsCanvas";
@@ -93,6 +94,10 @@ export function useSigmaConnections({
 	labelZoomRef.current = labelZoomThreshold;
 	const searchMatchIdsRef = useRef(searchMatchIds);
 	searchMatchIdsRef.current = searchMatchIds;
+	const onNoteOpenRef = useRef(onNoteOpen);
+	onNoteOpenRef.current = onNoteOpen;
+	const onTagActivateRef = useRef(onTagActivate);
+	onTagActivateRef.current = onTagActivate;
 	const paletteRef = useRef<ConnectionsPalette | null>(null);
 	const refreshScheduledRef = useRef(false);
 	const overlayRef = useRef<ConnectionsOverlayApi>({
@@ -204,6 +209,12 @@ export function useSigmaConnections({
 						target,
 					),
 			);
+			const resolveEdgeStyle = (
+				edge: string,
+				data: ConnectionsEdgeAttributes,
+				source: string,
+				target: string,
+			) => edgeReducer(edge, data, source, target);
 
 			const activeRenderer = new Sigma<
 				ConnectionsNodeAttributes,
@@ -224,6 +235,7 @@ export function useSigmaConnections({
 						labelSettings,
 						paletteRef.current ?? palette,
 						variant,
+						renderer?.graphToViewport({ x: 0, y: 0 }),
 					),
 				defaultDrawNodeHover: (context, data) =>
 					drawConnectionsNodeHover(
@@ -239,12 +251,36 @@ export function useSigmaConnections({
 						y: graph.getNodeAttribute(node, "y"),
 					}),
 				edgeReducer: (edge, data) => {
+					if (variant === "space") return { hidden: true };
 					const source = graph.source(edge);
 					const target = graph.target(edge);
-					return edgeReducer(edge, data, source, target);
+					return resolveEdgeStyle(edge, data, source, target);
 				},
 			});
 			renderer = activeRenderer;
+
+			if (variant === "space") {
+				const bundledEdgesCanvas = activeRenderer.createCanvas("bundledEdges", {
+					afterLayer: "edges",
+					style: {
+						left: "0",
+						pointerEvents: "none",
+						top: "0",
+					},
+				});
+				const bundledEdgesContext = bundledEdgesCanvas.getContext("2d");
+				if (bundledEdgesContext) {
+					activeRenderer.on("afterRender", () => {
+						drawBundledConnectionsEdges({
+							canvas: bundledEdgesCanvas,
+							context: bundledEdgesContext,
+							renderer: activeRenderer,
+							graph,
+							resolveStyle: resolveEdgeStyle,
+						});
+					});
+				}
+			}
 
 			const fitToView = () => {
 				if (disposed) return;
@@ -281,22 +317,28 @@ export function useSigmaConnections({
 			});
 			activeRenderer.on("clickNode", ({ node }) => {
 				if (didDrag) return;
+				const shouldOpen = focusState.selectedNodeId === node;
 				setFocus(activeRenderer, {
 					selectedNodeId: node,
 					hoveredNode: node,
 				});
+				if (!shouldOpen) return;
 				const kind = graph.getNodeAttribute(node, "kind");
 				if (kind === "tag") {
-					onTagActivate?.(node, graph.getNodeAttribute(node, "label"));
+					onTagActivateRef.current?.(
+						node,
+						graph.getNodeAttribute(node, "label"),
+					);
 					return;
 				}
-				onNoteOpen?.(node);
+				onNoteOpenRef.current?.(node);
 			});
 			activeRenderer.on("clickStage", () => {
 				setFocus(activeRenderer, { hoveredNode: null, selectedNodeId: null });
 			});
 
 			activeRenderer.on("downNode", ({ node }) => {
+				if (variant === "space") return;
 				if (graph.getNodeAttribute(node, "isCenter")) return;
 				draggedNode = node;
 				didDrag = false;
@@ -349,7 +391,7 @@ export function useSigmaConnections({
 		setup();
 
 		return cleanup;
-	}, [containerRef, enabled, graph, onNoteOpen, onTagActivate, variant]);
+	}, [containerRef, enabled, graph, variant]);
 
 	return overlayRef;
 }

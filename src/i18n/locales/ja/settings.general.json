@@ -78,6 +78,11 @@
 	"experimental": {
 		"sectionTitle": "実験的",
 		"sectionDescription": "まだ作り込みが足りない実験的な機能です。今後の Glyph のバージョンで変更または削除されることがあります。",
+		"legacyConnections": {
+			"label": "従来の接続グラフ",
+			"description": "直線のエッジとドラッグ可能なノードを使う、以前の自由配置の接続グラフを使用します。",
+			"ariaLabel": "従来の接続グラフ"
+		},
 		"noteSidePeek": {
 			"label": "ノートプレビュー",
 			"description": "Wiki リンクやすべてのノートは、現在のタブを置き換えず Peek として重ねて開きます。Peek を広げるとそのノートへ移動し、閉じると今の場所に残ります。ファイルツリーとコマンドパレットはこれまでどおりタブで開きます。",

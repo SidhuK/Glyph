@@ -11,6 +11,7 @@ import {
 	connectionsLinkOpacity,
 	connectionsLinkThicknessScale,
 	connectionsNodeSizeScale,
+	legacyConnectionsLinkOpacity,
 } from "../../lib/connectionsGraphOptions";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -129,6 +130,8 @@ export function SpaceConnectionsView() {
 	});
 	const options =
 		settingsQuery.data?.connectionsGraph ?? DEFAULT_CONNECTIONS_GRAPH_OPTIONS;
+	const legacyConnections = settingsQuery.data?.ui.legacyConnections ?? false;
+	const layoutMode = legacyConnections ? "legacy" : "bundled";
 
 	const optionsMutation = useMutation({
 		mutationFn: (next: ConnectionsGraphOptions) =>
@@ -192,22 +195,29 @@ export function SpaceConnectionsView() {
 		: "";
 
 	const { filteredPayload, graph, layoutError, layoutLoading, refetchLayout } =
-		useSpaceConnectionsGraph(payload, scopedSpacePath, options);
+		useSpaceConnectionsGraph(payload, scopedSpacePath, options, layoutMode);
 	const loading = dataLoading || layoutLoading;
 	const visibleError = error || layoutError;
 	const display = useMemo(
 		() => ({
 			nodeSizeScale: connectionsNodeSizeScale(options.nodeSize),
-			linkOpacity: connectionsLinkOpacity(options.linkOpacity),
+			linkOpacity: legacyConnections
+				? legacyConnectionsLinkOpacity(options.linkOpacity)
+				: connectionsLinkOpacity(options.linkOpacity),
 			linkThicknessScale: connectionsLinkThicknessScale(options.linkThickness),
 		}),
-		[options.linkOpacity, options.linkThickness, options.nodeSize],
+		[
+			legacyConnections,
+			options.linkOpacity,
+			options.linkThickness,
+			options.nodeSize,
+		],
 	);
 
 	const overlay = useSigmaConnections({
 		graph,
 		containerRef,
-		variant: "space",
+		variant: legacyConnections ? "space-legacy" : "space",
 		enabled: Boolean(graph && !loading && !visibleError),
 		display,
 		labelZoomThreshold: options.labelZoomThreshold,
@@ -257,7 +267,9 @@ export function SpaceConnectionsView() {
 					optionsMutation.mutate(next);
 					overlay.current.setDisplay({
 						nodeSizeScale: connectionsNodeSizeScale(next.nodeSize),
-						linkOpacity: connectionsLinkOpacity(next.linkOpacity),
+						linkOpacity: legacyConnections
+							? legacyConnectionsLinkOpacity(next.linkOpacity)
+							: connectionsLinkOpacity(next.linkOpacity),
 						linkThicknessScale: connectionsLinkThicknessScale(
 							next.linkThickness,
 						),

@@ -3,27 +3,45 @@ import {
 	detectConnectionsCommunities,
 } from "./connectionsCommunities";
 import { placeConnectionsCommunities } from "./connectionsCommunityPlacement";
+import { placeLegacyConnectionsCommunities } from "./connectionsLegacyCommunityPlacement";
+
+export type ConnectionsLayoutMode = "bundled" | "legacy";
+
+export interface ConnectionsLayoutRequest {
+	readonly graph: ConnectionsLayoutGraph;
+	readonly mode: ConnectionsLayoutMode;
+}
 
 export interface GraphPosition {
-	x: number;
-	y: number;
+	readonly x: number;
+	readonly y: number;
+	readonly bundleX: number;
+	readonly bundleY: number;
 }
 
 export type SerializedGraphPosition = readonly [
 	id: string,
 	x: number,
 	y: number,
+	bundleX: number,
+	bundleY: number,
 ];
 
 export type ConnectionsLayoutResponse =
 	| {
-			positions: SerializedGraphPosition[];
+			readonly positions: readonly SerializedGraphPosition[];
 	  }
 	| {
-			error: string;
+			readonly error: string;
 	  };
 
-export function computeSpaceConnectionsLayout(graph: ConnectionsLayoutGraph) {
+export function computeSpaceConnectionsLayout({
+	graph,
+	mode,
+}: ConnectionsLayoutRequest) {
 	if (graph.nodeIds.length + graph.tags.length === 0) return [];
-	return placeConnectionsCommunities(detectConnectionsCommunities(graph));
+	const model = detectConnectionsCommunities(graph);
+	return mode === "legacy"
+		? placeLegacyConnectionsCommunities(model)
+		: placeConnectionsCommunities(model);
 }

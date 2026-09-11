@@ -89,6 +89,11 @@
 	"experimental": {
 		"sectionTitle": "Experimental",
 		"sectionDescription": "Experimental features that are not fully fleshed out. A later version of Glyph may change or remove them.",
+		"legacyConnections": {
+			"label": "Legacy Connections",
+			"description": "Use the previous freeform Connections layout with straight edges and draggable nodes.",
+			"ariaLabel": "Legacy Connections"
+		},
 		"noteSidePeek": {
 			"label": "Note peek",
 			"description": "Wiki links and All Notes open as a Peek over the current tab instead of replacing it. Expand the Peek to go to that note, or close it to stay where you were. The file tree and command palette still open tabs.",

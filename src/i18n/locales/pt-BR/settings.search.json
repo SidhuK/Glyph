@@ -598,6 +598,11 @@
 			"section": "Experimental",
 			"keywords": ["peek", "pré-visualização", "wiki", "todas as notas", "arc"]
 		},
+		"experimental-legacy-connections": {
+			"title": "Conexões clássicas",
+			"section": "Experimental",
+			"keywords": ["conexões", "grafo", "clássico", "layout"]
+		},
 		"general-file-tree-folder-counts": {
 			"title": "Mostrar contagem de arquivos por pasta",
 			"section": "Árvore de arquivos",

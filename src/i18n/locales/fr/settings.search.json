@@ -615,6 +615,11 @@
 			"section": "Expérimental",
 			"keywords": ["peek", "aperçu", "wiki", "toutes les notes", "arc"]
 		},
+		"experimental-legacy-connections": {
+			"title": "Connexions classiques",
+			"section": "Expérimental",
+			"keywords": ["connexions", "graphe", "classique", "disposition"]
+		},
 		"general-file-tree-folder-counts": {
 			"title": "Afficher le nombre de fichiers par dossier",
 			"section": "Arborescence des fichiers",

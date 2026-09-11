@@ -526,6 +526,7 @@ export async function loadSettings(
 	const fileTreeSortMode = DURABLE_SETTINGS.fileTreeSortMode.load(entries);
 	const folioMode = DURABLE_SETTINGS.folioMode.load(entries);
 	const noteSidePeek = DURABLE_SETTINGS.noteSidePeek.load(entries);
+	const legacyConnections = DURABLE_SETTINGS.legacyConnections.load(entries);
 	const resumeLastSession = DURABLE_SETTINGS.resumeLastSession.load(entries);
 	const keepRunningOnLastWindowClose =
 		DURABLE_SETTINGS.keepRunningOnLastWindowClose.load(entries);
@@ -687,6 +688,7 @@ export async function loadSettings(
 			sidebarFolderTabs,
 			folioMode,
 			noteSidePeek,
+			legacyConnections,
 			resumeLastSession,
 			keepRunningOnLastWindowClose,
 			aiAssistantMode,

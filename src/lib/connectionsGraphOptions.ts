@@ -86,6 +86,10 @@ export function connectionsNodeSizeScale(value: number) {
 }
 
 export function connectionsLinkOpacity(value: number) {
+	return unitScale(value, 0.07, 0.55);
+}
+
+export function legacyConnectionsLinkOpacity(value: number) {
 	return unitScale(value, 0.55, 1);
 }
 

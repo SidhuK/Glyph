@@ -10,11 +10,13 @@ import { hashString, randomUnit } from "./connectionsRandom";
 export type ConnectionsNodeKind = "note" | "tag";
 export type ConnectionsEdgeColorRole = "default" | "accent" | "internal";
 
-export type ConnectionsGraphVariant = "space" | "local";
+export type ConnectionsGraphVariant = "space" | "space-legacy" | "local";
 
 export interface ConnectionsNodeAttributes {
 	x: number;
 	y: number;
+	bundleX: number;
+	bundleY: number;
 	label: string;
 	size: number;
 	color: string;
@@ -150,11 +152,18 @@ export function buildSpaceConnectionsGraph(
 	const maxConnections = maxConnectionCount(connectionCounts);
 
 	for (const node of payload.nodes) {
-		const position = positions.get(node.id) ?? { x: 1, y: 1 };
+		const position = positions.get(node.id) ?? {
+			x: 1,
+			y: 1,
+			bundleX: 0,
+			bundleY: 0,
+		};
 		const connectionCount = connectionCounts.get(node.id) ?? 0;
 		graph.addNode(node.id, {
 			x: position.x,
 			y: position.y,
+			bundleX: position.bundleX,
+			bundleY: position.bundleY,
 			label: node.title || node.id,
 			size: scaledNodeSize(
 				connectionCount,
@@ -169,11 +178,18 @@ export function buildSpaceConnectionsGraph(
 	}
 
 	for (const tag of payload.tags) {
-		const position = positions.get(tag.id) ?? { x: -1, y: 1 };
+		const position = positions.get(tag.id) ?? {
+			x: -1,
+			y: 1,
+			bundleX: 0,
+			bundleY: 0,
+		};
 		const connectionCount = connectionCounts.get(tag.id) ?? 0;
 		graph.addNode(tag.id, {
 			x: position.x,
 			y: position.y,
+			bundleX: position.bundleX,
+			bundleY: position.bundleY,
 			label: tag.title,
 			size: scaledNodeSize(
 				connectionCount,
@@ -226,6 +242,8 @@ export function buildLocalConnectionsGraph(
 		graph.addNode(node.id, {
 			x: position.x,
 			y: position.y,
+			bundleX: position.x,
+			bundleY: position.y,
 			label: node.title || node.id,
 			size: node.is_center
 				? LOCAL_CENTER_NODE_SIZE
@@ -242,6 +260,8 @@ export function buildLocalConnectionsGraph(
 		graph.addNode(tag.id, {
 			x: position.x,
 			y: position.y,
+			bundleX: position.x,
+			bundleY: position.y,
 			label: tag.title,
 			size: scaledNodeSize(
 				connectionCount,

@@ -213,6 +213,7 @@ export interface AppSettings {
 		sidebarFolderTabs: string[];
 		folioMode: boolean;
 		noteSidePeek: boolean;
+		legacyConnections: boolean;
 		resumeLastSession: boolean;
 		keepRunningOnLastWindowClose: boolean;
 		aiAssistantMode: AiAssistantMode;

@@ -609,6 +609,11 @@
 			"section": "Experimental",
 			"keywords": ["peek", "preview", "wiki", "all notes", "arc"]
 		},
+		"experimental-legacy-connections": {
+			"title": "Legacy Connections",
+			"section": "Experimental",
+			"keywords": ["connections", "graph", "legacy", "classic", "layout"]
+		},
 		"general-file-tree-folder-counts": {
 			"title": "Show folder file counts",
 			"section": "File tree",

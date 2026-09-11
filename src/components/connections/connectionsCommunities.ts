@@ -13,27 +13,33 @@ interface CommunityGraphEdgeAttributes {
 }
 
 export interface ConnectionsLayoutGraph {
-	nodeIds: string[];
-	tags: Array<{ id: string; noteCount: number }>;
-	edges: Array<{
-		source: string;
-		target: string;
-		kind: "link" | "relationship";
-		weight: number;
-	}>;
-	tagEdges: Array<{ tagId: string; noteId: string }>;
+	readonly nodeIds: readonly string[];
+	readonly tags: readonly {
+		readonly id: string;
+		readonly noteCount: number;
+	}[];
+	readonly edges: readonly {
+		readonly source: string;
+		readonly target: string;
+		readonly kind: "link" | "relationship";
+		readonly weight: number;
+	}[];
+	readonly tagEdges: readonly {
+		readonly tagId: string;
+		readonly noteId: string;
+	}[];
 }
 
 export interface ConnectionsCommunity {
-	id: number;
-	members: string[];
-	hubId: string;
-	radius: number;
+	readonly id: number;
+	readonly members: readonly string[];
+	readonly hubId: string;
+	readonly radius: number;
 }
 
 export interface ConnectionsCommunityModel {
-	communities: ConnectionsCommunity[];
-	communityBridges: ReadonlyMap<string, number>;
+	readonly communities: readonly ConnectionsCommunity[];
+	readonly communityBridges: ReadonlyMap<string, number>;
 }
 
 export function communityBridgeKey(left: number, right: number) {

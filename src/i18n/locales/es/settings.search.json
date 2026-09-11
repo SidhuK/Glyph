@@ -617,6 +617,11 @@
 			"section": "Experimental",
 			"keywords": ["peek", "vista", "wiki", "todas las notas", "arc"]
 		},
+		"experimental-legacy-connections": {
+			"title": "Conexiones clásicas",
+			"section": "Experimental",
+			"keywords": ["conexiones", "grafo", "clásico", "diseño"]
+		},
 		"general-file-tree-folder-counts": {
 			"title": "Mostrar recuento de archivos por carpeta",
 			"section": "Árbol de archivos",
