@@ -221,7 +221,7 @@ export function useSigmaConnections({
 				ConnectionsEdgeAttributes
 			>(graph, container, {
 				...sigmaSettings,
-				...(variant !== "local"
+				...(variant === "space"
 					? connectionsLabelVisibility(labelZoomRef.current)
 					: {}),
 				labelColor: { color: palette.text },
