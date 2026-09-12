@@ -8,9 +8,7 @@ use crate::index::unlinked_mentions::{
     mention_target, replace_mentions, selected_mentions_are_valid, LinkUnlinkedMentionsResult,
     UnlinkedMention,
 };
-use crate::note_mutation::{
-    commit_markdown, emit_changed, CommitCtx, PersistMode, SpaceChange,
-};
+use crate::note_mutation::{commit_markdown, emit_changed, CommitCtx, PersistMode, SpaceChange};
 use crate::space::state::RecentLocalChanges;
 use crate::{index, io_atomic, paths, space::SpaceState, utils};
 
@@ -29,6 +27,7 @@ fn write_text_under_root(
 ) -> Result<(TextFileWriteResult, Option<SpaceChange>), String> {
     deny_hidden_rel_path(rel)?;
     if utils::is_markdown_path(rel) {
+        let normalized_text = index::checklists::advance_completed_repeats(text)?;
         let committed = commit_markdown(
             &CommitCtx {
                 root,
@@ -36,11 +35,12 @@ fn write_text_under_root(
                 space_path,
             },
             &rel.to_string_lossy(),
-            text,
+            normalized_text.as_deref().unwrap_or(text),
             PersistMode::Replace { expected_mtime_ms },
         )?;
         return Ok((
             TextFileWriteResult {
+                normalized_text,
                 etag: committed.etag,
                 mtime_ms: committed.mtime_ms,
             },
@@ -61,6 +61,7 @@ fn write_text_under_root(
     io_atomic::write_atomic(&abs, bytes).map_err(|error| error.to_string())?;
     Ok((
         TextFileWriteResult {
+            normalized_text: None,
             etag: etag_for(bytes),
             mtime_ms: file_mtime_ms(&abs),
         },
@@ -336,7 +337,8 @@ pub async fn space_open_or_create_text(
             if let Some(parent) = abs.parent() {
                 std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
             }
-            if !io_atomic::write_atomic_create_new(&abs, text.as_bytes()).map_err(|e| e.to_string())?
+            if !io_atomic::write_atomic_create_new(&abs, text.as_bytes())
+                .map_err(|e| e.to_string())?
             {
                 return Ok((
                     OpenOrCreateTextResult {

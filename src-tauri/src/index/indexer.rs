@@ -8,7 +8,7 @@ use std::{
 
 use crate::utils::{self, file_timestamp_strings_if_exists};
 
-use super::checklists::checklist_counts;
+use super::checklists::{checklist_counts, index_checklist};
 use super::db::{open_db, resolve_title_to_id};
 use super::frontmatter::{
     parse_frontmatter_title_created_updated, preview_from_markdown, split_frontmatter,
@@ -157,6 +157,7 @@ pub(crate) fn index_note_with_conn(
         .ok();
     if existing_etag.as_deref() == Some(etag.as_str()) {
         ensure_note_relationships_indexed(conn, note_id, markdown)?;
+        index_checklist(conn, note_id, &etag, markdown)?;
         refresh_indexed_timestamps_if_needed(conn, note_id, file_path)?;
         record_file_fingerprint(conn, note_id, file_path)?;
         return Ok(());
@@ -180,6 +181,7 @@ pub(crate) fn index_note_with_conn(
     let preview = preview_from_markdown(markdown);
     let rel_path = note_id.to_string();
     let (checklist_total, checklist_completed) = checklist_counts(markdown);
+    index_checklist(&tx, note_id, &etag, markdown)?;
 
     tx.execute(
         "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview, checklist_total, checklist_completed) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -311,6 +313,8 @@ pub(crate) fn remove_note_with_conn(
     note_id: &str,
 ) -> Result<(), String> {
     let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM note_checklists WHERE note_id = ?", [note_id])
+        .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM notes WHERE id = ?", [note_id])
         .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM notes_fts WHERE id = ?", [note_id])
@@ -348,6 +352,8 @@ where
     let tx = conn.transaction().map_err(|e| e.to_string())?;
     let people_tags_enabled = people_mentions_as_tags_enabled();
 
+    tx.execute("DELETE FROM note_checklists", [])
+        .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM notes", [])
         .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM notes_fts", [])
@@ -388,6 +394,7 @@ where
         let etag = sha256_hex(markdown.as_bytes());
         let preview = preview_from_markdown(&markdown);
         let (checklist_total, checklist_completed) = checklist_counts(&markdown);
+        index_checklist(&tx, rel, &etag, &markdown)?;
 
         tx.execute(
             "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview, checklist_total, checklist_completed) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",

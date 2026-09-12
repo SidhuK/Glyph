@@ -17,6 +17,7 @@ import { DATABASES_TAB_ID } from "../../lib/databases";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -62,6 +63,7 @@ const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
 
 function isPathSpecial(path: string): boolean {
 	return (
+		path === TASKS_TAB_ID ||
 		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === DATABASES_TAB_ID ||
 		path === PINNED_DOCS_TAB_ID ||
@@ -122,6 +124,7 @@ export function TabBar({
 	const tabLabel = useCallback(
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
+			if (tab.target === TASKS_TAB_ID) return t("tasks.title");
 			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
 			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
 			if (tab.target === PINNED_DOCS_TAB_ID) return t("tabs.pinned");

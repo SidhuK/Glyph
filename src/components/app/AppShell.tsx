@@ -59,6 +59,7 @@ import { loadSettings } from "../../lib/settings";
 import { toTauriAccelerator } from "../../lib/shortcuts";
 import { useSpaceChangePropagation } from "../../lib/spaceChange";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate, selectTemplateFile } from "../../lib/templates";
@@ -980,8 +981,9 @@ export function AppShell() {
 	useSpaceChangePropagation(spaceChangeHost);
 
 	const activeTopSection = useMemo<
-		"all-notes" | "connections" | "databases" | "pinned-notes" | null
+		"all-notes" | "connections" | "databases" | "pinned-notes" | "tasks" | null
 	>(() => {
+		if (activeTabPath === TASKS_TAB_ID) return "tasks";
 		if (activeTabPath === ACTIVITY_TIMELINE_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
@@ -1447,6 +1449,7 @@ export function AppShell() {
 						onSelectTag={(t) => openTagSearchPalette(t)}
 						sidebarCollapsed={sidebarCollapsed}
 						spacePath={spacePath}
+						onOpenTasks={() => openSpecialTab(TASKS_TAB_ID)}
 						onOpenAllDocs={openAllDocsTab}
 						onOpenPinnedDocs={openPinnedDocsTab}
 						onOpenConnections={openConnectionsView}

@@ -26,6 +26,7 @@ pub struct TextFileDoc {
 
 #[derive(Serialize)]
 pub struct TextFileWriteResult {
+    pub normalized_text: Option<String>,
     pub etag: String,
     pub mtime_ms: u64,
 }

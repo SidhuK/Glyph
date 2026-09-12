@@ -1,0 +1,286 @@
+.taskInbox {
+	container-type: inline-size;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+	width: 100%;
+	padding: 28px clamp(20px, 5%, 72px) 16px;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+}
+.taskInboxHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+.taskInboxHeader h1 {
+	margin: 0;
+	font-size: calc(var(--text-base) * 1.6);
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.025em;
+}
+.taskInboxToolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--border-light);
+}
+.taskFilters {
+	min-width: 0;
+	flex: 1;
+}
+.taskViews {
+	display: flex;
+	gap: 20px;
+	overflow-x: auto;
+}
+.taskInbox .taskView {
+	position: relative;
+	flex-shrink: 0;
+	height: 34px;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	gap: 6px;
+}
+.taskInbox .taskView.is-active {
+	color: var(--text-primary);
+}
+.taskView.is-active::after {
+	content: "";
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	height: 2px;
+	background: var(--interactive-accent);
+}
+.taskInbox .taskSearch {
+	flex: 0 1 240px;
+	min-width: 160px;
+	height: 30px;
+	font-size: var(--text-sm);
+	box-shadow: none;
+	background: transparent;
+}
+.taskCount {
+	font-variant-numeric: tabular-nums;
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+}
+.taskList {
+	flex: 1;
+	overflow: auto;
+	min-height: 0;
+	padding-top: 4px;
+}
+.taskVirtualRow {
+	position: absolute;
+	inset-inline: 0;
+	top: 0;
+}
+.taskRow {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 64px;
+	padding: 8px;
+	border-radius: var(--radius-md);
+}
+.taskRow:hover,
+.taskRow:focus-within {
+	background: color-mix(in srgb, var(--bg-hover) 55%, transparent);
+}
+.taskCheckbox {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	margin: 4px 2px;
+	accent-color: var(--interactive-accent);
+	cursor: pointer;
+}
+.taskCheckbox:disabled {
+	cursor: wait;
+}
+.taskInbox .taskSource {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 3px;
+	height: auto;
+	white-space: normal;
+	font-weight: var(--font-normal);
+	border-radius: 0;
+	padding: 4px 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+.taskText {
+	font-size: var(--text-sm);
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+}
+.taskContext {
+	flex-shrink: 0;
+	max-width: 100%;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	line-height: 1.4;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.taskRow[data-checked="true"] .taskText {
+	color: var(--text-secondary);
+	text-decoration: line-through;
+}
+.taskDate {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 5px;
+	flex-shrink: 0;
+	max-width: 190px;
+	min-height: 28px;
+	padding: 5px 8px;
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	border-radius: var(--radius-md);
+	cursor: pointer;
+}
+.taskInbox .taskSource:hover,
+.taskInbox .taskSource:active,
+.taskInbox .taskDate:hover,
+.taskInbox .taskDate:active {
+	background: transparent;
+}
+.taskDate[data-unscheduled="true"] {
+	opacity: 0.45;
+}
+.taskRow:hover .taskDate,
+.taskRow:focus-within .taskDate,
+.taskDate[data-state="open"] {
+	opacity: 1;
+}
+.taskDate[data-overdue="true"] {
+	color: var(--text-error);
+}
+.taskSchedulePopover {
+	width: 260px;
+}
+.taskSchedule {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	gap: 12px;
+}
+.taskSchedule > button[type="submit"] {
+	grid-column: 2;
+	justify-self: end;
+}
+.taskSchedule label {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+.taskDateShortcuts {
+	grid-column: 1 / -1;
+	display: flex;
+	gap: 2px;
+	justify-content: space-between;
+}
+.taskSelect,
+.taskNativeDate {
+	width: 100%;
+	min-height: 34px;
+	padding: 4px;
+	border: revert;
+	border-radius: revert;
+	background: revert;
+	color: revert;
+	font: inherit;
+	font-size: var(--text-sm);
+	appearance: auto;
+	-webkit-appearance: auto;
+}
+.taskScheduleHint {
+	grid-column: 1 / -1;
+	margin: 0;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	line-height: 1.5;
+}
+.taskInboxMessage {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 12px;
+	padding: 32px;
+	text-align: center;
+}
+.taskInboxMessage h2 {
+	font-size: calc(var(--text-base) * 1.15);
+	font-weight: var(--font-medium);
+	margin: 0;
+}
+.taskInboxMessage p {
+	max-width: 360px;
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	margin: 0;
+	line-height: 1.6;
+}
+.taskInboxMessage code {
+	padding: 10px 14px;
+	background: var(--bg-secondary);
+	border-radius: var(--radius-md);
+	font-size: var(--text-sm);
+}
+.taskSource:focus-visible,
+.taskDate:focus-visible,
+.taskCheckbox:focus-visible,
+.taskSelect:focus-visible,
+.taskNativeDate:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+@container (max-width: 600px) {
+	.taskFilters {
+		flex-basis: 100%;
+	}
+	.taskInbox .taskSearch {
+		flex-basis: 100%;
+	}
+	.taskRow {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+	.taskInbox .taskSource {
+		flex-basis: calc(100% - 40px);
+	}
+	.taskDate {
+		margin-inline-start: 28px;
+	}
+	.taskFolder {
+		display: none;
+	}
+}
+
+.taskListItems {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}

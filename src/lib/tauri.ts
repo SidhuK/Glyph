@@ -31,6 +31,39 @@ interface SpaceInfo {
 	welcome_note_path?: string | null;
 }
 
+export type TaskRepeat = "daily" | "weekdays" | "weekly" | "monthly";
+export interface InboxTask {
+	note_path: string;
+	note_title: string;
+	etag: string;
+	start: number;
+	end: number;
+	checkbox_offset: number;
+	content_offset: number;
+	line: number;
+	task_index: number;
+	text: string;
+	context: string;
+	checked: boolean;
+	due: string | null;
+	repeat: TaskRepeat | null;
+}
+export type TaskAction =
+	| { kind: "check"; start: number; checked: boolean }
+	| {
+			kind: "schedule";
+			start: number;
+			due: string | null;
+			repeat: TaskRepeat | null;
+	  }
+	| { kind: "restore"; text: string };
+export interface TaskUpdateResult {
+	note_path: string;
+	etag: string;
+	previous_text: string;
+	next_due: string | null;
+}
+
 export interface FsEntry {
 	name: string;
 	rel_path: string;
@@ -70,6 +103,7 @@ export interface TextFileDoc {
 }
 
 interface TextFileWriteResult {
+	normalized_text: string | null;
 	etag: string;
 	mtime_ms: number;
 }
@@ -1016,6 +1050,11 @@ interface TauriCommands {
 	space_dir_children_summary: CommandDef<{ dirs: string[] }, DirChildSummary[]>;
 	space_read_text: CommandDef<{ path: string }, TextFileDoc>;
 	space_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
+	tasks_list: CommandDef<void, InboxTask[]>;
+	task_update: CommandDef<
+		{ space_path: string; note_path: string; etag: string; action: TaskAction },
+		TaskUpdateResult
+	>;
 	daily_note_rollover_candidates: CommandDef<
 		{ folder: string; before_date: string; source_date?: string | null },
 		RolloverCandidate[]
