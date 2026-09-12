@@ -231,6 +231,7 @@ pub async fn space_list_dir(
     state: State<'_, SpaceState>,
     dir: Option<String>,
     recursive: Option<bool>,
+    expanded_dirs: Option<Vec<String>>,
     directories_only: Option<bool>,
     limit: Option<u32>,
 ) -> Result<Vec<FsEntry>, String> {
@@ -238,9 +239,16 @@ pub async fn space_list_dir(
     let dir = dir.unwrap_or_default();
     let recursive = recursive.unwrap_or(false);
     let directories_only = directories_only.unwrap_or(false);
+    let selective = expanded_dirs.is_some();
+    let expanded_dirs =
+        expanded_dirs.map(|dirs| dirs.into_iter().collect::<std::collections::HashSet<_>>());
     let limit = limit
         .map(|value| value.clamp(1, 50_000) as usize)
-        .unwrap_or(if recursive { 5_000 } else { usize::MAX });
+        .unwrap_or(if recursive && !selective {
+            5_000
+        } else {
+            usize::MAX
+        });
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<FsEntry>, String> {
         let start_rel = if dir.trim().is_empty() {
             PathBuf::new()
@@ -255,7 +263,7 @@ pub async fn space_list_dir(
         while let Some((rel, abs)) = queue.pop_front() {
             let dir_entries = match std::fs::read_dir(&abs) {
                 Ok(entries) => entries,
-                Err(error) if is_start => return Err(error.to_string()),
+                Err(error) if is_start || selective => return Err(error.to_string()),
                 Err(_) => continue,
             };
             is_start = false;
@@ -278,7 +286,12 @@ pub async fn space_list_dir(
                     continue;
                 };
                 let rel_path = rel.join(&name);
-                if recursive && kind == "dir" {
+                if recursive
+                    && kind == "dir"
+                    && expanded_dirs
+                        .as_ref()
+                        .is_none_or(|dirs| dirs.contains(rel_path.to_string_lossy().as_ref()))
+                {
                     queue.push_back((rel_path.clone(), entry.path()));
                 }
                 if directories_only && kind != "dir" {

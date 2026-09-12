@@ -75,6 +75,7 @@ fn keyword_search(
     query: &str,
     tags: &[String],
     limit: i64,
+    folder_prefix: &str,
 ) -> Result<Vec<SearchResult>, String> {
     let mut sql = String::from(
         "SELECT notes_fts.id, notes_fts.title,
@@ -88,7 +89,9 @@ fn keyword_search(
             idx = i
         ));
     }
-    sql.push_str("WHERE notes_fts MATCH ? ORDER BY score LIMIT ?");
+    sql.push_str(
+        "WHERE notes_fts MATCH ? AND substr(notes_fts.id, 1, length(?)) = ? ORDER BY score LIMIT ?",
+    );
 
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let mut params: Vec<rusqlite::types::Value> = tags
@@ -96,6 +99,8 @@ fn keyword_search(
         .map(|t| rusqlite::types::Value::from(t.clone()))
         .collect();
     params.push(rusqlite::types::Value::from(query.to_string()));
+    params.push(folder_prefix.to_string().into());
+    params.push(folder_prefix.to_string().into());
     params.push(rusqlite::types::Value::from(limit));
 
     let mut rows = stmt
@@ -120,6 +125,7 @@ fn semantic_candidates(
     conn: &Connection,
     terms: &[String],
     tags: &[String],
+    folder_prefix: &str,
 ) -> Result<Vec<(String, String, String)>, String> {
     let mut sql = String::from("SELECT n.id, n.title, n.preview FROM notes n ");
     for i in 0..tags.len() {
@@ -129,16 +135,19 @@ fn semantic_candidates(
         ));
     }
     if !terms.is_empty() {
-        sql.push_str("WHERE ");
+        sql.push_str("WHERE (");
         for (i, _) in terms.iter().enumerate() {
             if i > 0 {
                 sql.push_str(" OR ");
             }
             sql.push_str("lower(n.title) LIKE ? OR lower(n.preview) LIKE ?");
         }
-        sql.push(' ');
+        sql.push_str(") AND ");
     }
-    sql.push_str("ORDER BY n.updated DESC LIMIT ?");
+    if terms.is_empty() {
+        sql.push_str("WHERE ");
+    }
+    sql.push_str("substr(n.id, 1, length(?)) = ? ORDER BY n.updated DESC LIMIT ?");
 
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let mut params: Vec<rusqlite::types::Value> = tags
@@ -150,6 +159,8 @@ fn semantic_candidates(
         params.push(rusqlite::types::Value::from(like.clone()));
         params.push(rusqlite::types::Value::from(like));
     }
+    params.push(folder_prefix.to_string().into());
+    params.push(folder_prefix.to_string().into());
     params.push(rusqlite::types::Value::from(CANDIDATE_LIMIT));
 
     let mut rows = stmt
@@ -171,6 +182,7 @@ pub fn hybrid_search(
     query: &str,
     tags: &[String],
     limit: i64,
+    folder_prefix: &str,
 ) -> Result<Vec<SearchResult>, String> {
     let q = query.trim();
     if q.is_empty() {
@@ -179,8 +191,8 @@ pub fn hybrid_search(
     let q_lc = q.to_lowercase();
     let terms = tokenize_query(&q_lc);
 
-    let keyword = keyword_search(conn, q, tags, limit.max(50)).unwrap_or_default();
-    let candidates = semantic_candidates(conn, &terms, tags)?;
+    let keyword = keyword_search(conn, q, tags, limit.max(50), folder_prefix).unwrap_or_default();
+    let candidates = semantic_candidates(conn, &terms, tags, folder_prefix)?;
 
     let mut ranked: HashMap<String, SearchResult> = HashMap::new();
     let keyword_len = keyword.len().max(1) as f64;

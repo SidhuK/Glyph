@@ -134,6 +134,7 @@ export function AppShell() {
 		togglePinnedFile,
 		renamePinnedPath,
 		deletePinnedPath,
+		folderWorkspace,
 		renameSidebarFolderPath,
 		deleteSidebarFolderPath,
 		renameItemAppearance,
@@ -892,9 +893,10 @@ export function AppShell() {
 	}, [attachContextFiles, openMarkdownTabs, setError]);
 
 	const newNoteFolder =
-		settingsSpacePath === spacePath && defaultNewNoteFolder
+		folderWorkspace.folder ??
+		(settingsSpacePath === spacePath && defaultNewNoteFolder
 			? defaultNewNoteFolder
-			: (activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : ""));
+			: (activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "")));
 
 	const createNoteInSelectedFolder = useCallback(async () => {
 		if (!spacePath) return null;
@@ -909,9 +911,17 @@ export function AppShell() {
 	const handleCreateFromTemplateFromMenu = useCallback(() => {
 		if (!spacePath) return;
 		const dir =
-			activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+			folderWorkspace.folder ??
+			activeDirPath ??
+			(activeFilePath ? parentDir(activeFilePath) : "");
 		void openTemplatePicker(dir);
-	}, [activeDirPath, activeFilePath, openTemplatePicker, spacePath]);
+	}, [
+		folderWorkspace.folder,
+		activeDirPath,
+		activeFilePath,
+		openTemplatePicker,
+		spacePath,
+	]);
 
 	const handleOpenPeriodNoteFromMenu = useCallback(
 		(kind: PeriodKind) => {
@@ -1553,7 +1563,7 @@ export function AppShell() {
 						onOpenDatabase={(id) => openDatabasesTab(id)}
 						templateFolder={templateFolder}
 						onCreateFromTemplate={(template) =>
-							void handlePickTemplate(template, "")
+							void handlePickTemplate(template, folderWorkspace.folder ?? "")
 						}
 					/>
 				</Suspense>

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useFileTreeContext } from "../../contexts";
 import { allDocsListQueryOptions } from "../../lib/navigationPrefetch";
 import { loadSettings } from "../../lib/settings";
 import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
@@ -132,7 +133,8 @@ export function useFolioNotes(scope: FolioScope) {
 		boolean | null
 	>(null);
 	const settingsVersionRef = useRef(0);
-	const folderPrefix = folderForScope(scope);
+	const { folderWorkspace } = useFileTreeContext();
+	const folderPrefix = folderWorkspace.folder ?? folderForScope(scope);
 	const includesNonMarkdownFiles =
 		showNonMarkdownFiles === true &&
 		scope.kind !== "tag" &&

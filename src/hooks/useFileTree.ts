@@ -1,6 +1,7 @@
 import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
+import { useFileTreeContext } from "../contexts";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { promptCreateFolderName } from "../lib/promptCreateFolderName";
 import type { FsEntry } from "../lib/tauri";
@@ -64,6 +65,8 @@ interface UseFileTreeDeps {
 }
 
 export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
+	const { folderWorkspace } = useFileTreeContext();
+	const workspaceFolder = folderWorkspace.folder;
 	const {
 		spacePath,
 		expandedDirs,
@@ -101,16 +104,19 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[updateExpandedDirs],
 	);
 
-	const hasCollapsedAncestor = useCallback((dirPath: string) => {
-		if (!dirPath) return false;
-		const expanded = expandedDirsRef.current;
-		let current = parentDir(dirPath);
-		while (current) {
-			if (!expanded.has(current)) return true;
-			current = parentDir(current);
-		}
-		return false;
-	}, []);
+	const hasCollapsedAncestor = useCallback(
+		(dirPath: string) => {
+			if (!dirPath || dirPath === workspaceFolder) return false;
+			const expanded = expandedDirsRef.current;
+			let current = parentDir(dirPath);
+			while (current && current !== workspaceFolder) {
+				if (!expanded.has(current)) return true;
+				current = parentDir(current);
+			}
+			return false;
+		},
+		[workspaceFolder],
+	);
 
 	const evictCollapsedDirState = useCallback(
 		(dirPath: string) => {
@@ -201,7 +207,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			const nextChildrenByDir: Record<string, FsEntry[] | undefined> = {};
 			const nextExpandedDirs = new Set<string>();
 			const loadedDirs = new Set<string>();
-			const pendingDirs = [""];
+			const pendingDirs = [workspaceFolder ?? ""];
 
 			for (let index = 0; index < pendingDirs.length; index += 1) {
 				const dirPath = pendingDirs[index];
@@ -234,6 +240,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		}
 	}, [
 		spacePath,
+		workspaceFolder,
 		setError,
 		updateChildrenByDir,
 		updateExpandedDirsAndRef,

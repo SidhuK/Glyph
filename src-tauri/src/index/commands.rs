@@ -13,8 +13,8 @@ use super::db::open_db;
 use super::indexer::{rebuild_with_progress, sync};
 use super::relationships::{query_note_relationships, NoteRelationship};
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
-use super::search_matches::expand_text_matches;
 use super::search_hybrid::hybrid_search;
+use super::search_matches::expand_text_matches;
 use super::tags::{people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
 use super::types::{
     BacklinkItem, IndexProgress, IndexRebuildResult, LocalConnectionsEdge, LocalConnectionsNode,
@@ -196,7 +196,7 @@ pub async fn search(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
-        let notes = hybrid_search(&conn, &query, &[], 50)?;
+        let notes = hybrid_search(&conn, &query, &[], 50, "")?;
         Ok(expand_text_matches(&root, notes, query.trim(), 200))
     })
     .await
@@ -224,10 +224,12 @@ pub async fn search_parse_and_run(
     state: State<'_, SpaceState>,
     raw_query: String,
     limit: Option<u32>,
+    folder_prefix: Option<String>,
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
-        let req = parse_raw_search_query(&raw_query, limit);
+        let mut req = parse_raw_search_query(&raw_query, limit);
+        req.folder_prefix = folder_prefix;
         let conn = open_db(&root)?;
         run_search_with_matches(&conn, &root, req)
     })
@@ -375,6 +377,7 @@ pub async fn tags_list(
     limit: Option<u32>,
     offset: Option<u32>,
     query: Option<String>,
+    folder_prefix: Option<String>,
 ) -> Result<Vec<TagCount>, String> {
     let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
@@ -384,7 +387,13 @@ pub async fn tags_list(
         .filter(|value| !value.is_empty());
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TagCount>, String> {
         let conn = open_db(&root)?;
-        list_tags(&conn, limit, offset, query.as_deref())
+        list_tags(
+            &conn,
+            limit,
+            offset,
+            query.as_deref(),
+            folder_prefix.as_deref(),
+        )
     })
     .await
     .map_err(|e| e.to_string())?
@@ -395,6 +404,7 @@ fn list_tags(
     limit: i64,
     offset: i64,
     query: Option<&str>,
+    folder_prefix: Option<&str>,
 ) -> Result<Vec<TagCount>, String> {
     let mut sql = String::from(
         "SELECT tag,
@@ -405,6 +415,12 @@ fn list_tags(
          WHERE tag NOT LIKE 'people/%'",
     );
     let mut params: Vec<rusqlite::types::Value> = Vec::new();
+    if let Some(folder) = folder_prefix.filter(|path| !path.is_empty()) {
+        let prefix = format!("{}/", folder.trim_end_matches('/'));
+        sql.push_str(" AND substr(note_id, 1, length(?)) = ?");
+        params.push(prefix.clone().into());
+        params.push(prefix.into());
+    }
     let mut order_by = String::from("tag ASC");
     if let Some(query) = query {
         let escaped = escape_like(query);
@@ -457,13 +473,14 @@ pub async fn people_list(
     state: State<'_, SpaceState>,
     limit: Option<u32>,
     offset: Option<u32>,
+    folder_prefix: Option<String>,
 ) -> Result<Vec<PersonCount>, String> {
     let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
     let offset = offset.unwrap_or(0) as i64;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<PersonCount>, String> {
         let conn = open_db(&root)?;
-        list_people(&conn, limit, offset)
+        list_people(&conn, limit, offset, folder_prefix.as_deref())
     })
     .await
     .map_err(|e| e.to_string())?
@@ -473,15 +490,20 @@ fn list_people(
     conn: &rusqlite::Connection,
     limit: i64,
     offset: i64,
+    folder_prefix: Option<&str>,
 ) -> Result<Vec<PersonCount>, String> {
     if !people_mentions_as_tags_enabled() {
         return Ok(Vec::new());
     }
+    let prefix = folder_prefix
+        .filter(|p| !p.is_empty())
+        .map(|p| format!("{}/", p.trim_end_matches('/')))
+        .unwrap_or_default();
     let mut stmt = conn
         .prepare(
             "SELECT tag, COUNT(*) AS total_count
              FROM tags
-             WHERE tag LIKE ? AND is_explicit = 1
+             WHERE tag LIKE ? AND is_explicit = 1 AND substr(note_id, 1, length(?)) = ?
              GROUP BY tag
              ORDER BY tag ASC
              LIMIT ? OFFSET ?",
@@ -490,6 +512,8 @@ fn list_people(
     let mut rows = stmt
         .query(rusqlite::params![
             format!("{PEOPLE_TAG_NAMESPACE}%"),
+            prefix,
+            prefix,
             limit,
             offset
         ])
@@ -546,7 +570,7 @@ mod tests {
             .unwrap();
         }
 
-        let tags = list_tags(&conn, 50, 0, None).unwrap();
+        let tags = list_tags(&conn, 50, 0, None, None).unwrap();
         assert_eq!(tags.len(), 3);
 
         let root = tags.iter().find(|tag| tag.tag == "work").unwrap();
@@ -592,17 +616,46 @@ mod tests {
             .unwrap();
         }
 
-        let tags = list_tags(&conn, 50, 0, None).unwrap();
+        let tags = list_tags(&conn, 50, 0, None, None).unwrap();
         assert_eq!(
             tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>(),
             vec!["work"]
         );
 
-        let people = list_people(&conn, 50, 0).unwrap();
+        let people = list_people(&conn, 50, 0, None).unwrap();
         assert_eq!(people.len(), 1);
         assert_eq!(people[0].handle, "alice");
         assert_eq!(people[0].count, 1);
         set_people_mentions_as_tags_enabled(false);
+    }
+    #[test]
+    fn folder_workspace_counts_only_descendant_tags_and_people() {
+        let _lock = crate::index::people_mentions_as_tags_test_lock();
+        let previous = super::people_mentions_as_tags_enabled();
+        crate::index::set_people_mentions_as_tags_enabled(true);
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        for path in [
+            "work_%/note.md",
+            "work_%/nested/note.md",
+            "work_%other/note.md",
+            "work_ab/note.md",
+        ] {
+            for tag in ["project", "people/alice"] {
+                conn.execute(
+                    "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, 1)",
+                    rusqlite::params![path, tag],
+                )
+                .unwrap();
+            }
+        }
+        let tags = super::list_tags(&conn, 50, 0, None, Some("work_%")).unwrap();
+        let people = super::list_people(&conn, 50, 0, Some("work_%")).unwrap();
+        crate::index::set_people_mentions_as_tags_enabled(previous);
+        assert_eq!(tags.len(), 1);
+        assert_eq!(tags[0].total_count, 2);
+        assert_eq!(people.len(), 1);
+        assert_eq!(people[0].count, 2);
     }
 }
 

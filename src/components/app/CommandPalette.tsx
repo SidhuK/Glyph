@@ -5,6 +5,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
+import { pathInWorkspace } from "../../hooks/useFolderWorkspace";
+import { useWorkspaceTags } from "../../hooks/useWorkspaceTags";
 import { nextCollectionName } from "../../lib/database/collection";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -89,8 +91,17 @@ export function CommandPalette({
 	onCreateFromTemplate,
 }: CommandPaletteProps) {
 	const { t, i18n } = useTranslation("shell");
-	const { rootEntries, childrenByDir, tags, people, ensureTagsFresh } =
-		useFileTreeContext();
+	const {
+		rootEntries,
+		childrenByDir,
+		tags,
+		people,
+		ensureTagsFresh,
+		folderWorkspace,
+	} = useFileTreeContext();
+	const [searchEntireSpace, setSearchEntireSpace] = useState(false);
+	const folderPrefix = searchEntireSpace ? null : folderWorkspace.folder;
+	const workspaceTags = useWorkspaceTags(spacePath, folderPrefix);
 	const [query, setQuery] = useState(initialQuery);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [activeSettingId, setActiveSettingId] = useState<string | null>(null);
@@ -134,13 +145,19 @@ export function CommandPalette({
 		parsedQuery.scope === "tags" || parsedQuery.scope === "people"
 			? parsedQuery.raw
 			: parsedQuery.text;
-	const { recentFiles, isSearching, titleMatches, contentMatches } =
-		useCommandSearch(
-			searchQuery,
-			spacePath,
-			open && searchEnabled,
-			settings?.editor.enablePeopleMentionsAsTags ?? false,
-		);
+	const {
+		recentFiles,
+		isSearching,
+		titleMatches,
+		contentMatches,
+		error: searchError,
+	} = useCommandSearch(
+		searchQuery,
+		spacePath,
+		open && searchEnabled,
+		settings?.editor.enablePeopleMentionsAsTags ?? false,
+		folderPrefix,
+	);
 
 	const databaseSummaries = useQuery({
 		queryKey: navigationQueryKeys.databaseSummaries(),
@@ -192,14 +209,27 @@ export function CommandPalette({
 			commands,
 			settings,
 			settingValue,
-			tabs,
+			tabs: tabs.filter(
+				(tab) =>
+					!folderPrefix ||
+					(tab.kind === "file" &&
+						tab.target !== null &&
+						pathInWorkspace(tab.target, folderPrefix)),
+			),
 			titleMatches,
 			contentMatches,
 			recentFiles,
-			folders,
-			tags,
-			people,
-			databases: databaseSummaries.data ?? [],
+			folders: folders.filter((folder) =>
+				pathInWorkspace(folder, folderPrefix),
+			),
+			tags: folderPrefix ? (workspaceTags.data?.tags ?? []) : tags,
+			people: folderPrefix ? (workspaceTags.data?.people ?? []) : people,
+			databases: (databaseSummaries.data ?? []).filter(
+				(item) =>
+					!folderPrefix ||
+					(item.source.kind === "folder" &&
+						pathInWorkspace(item.source.value, folderPrefix)),
+			),
 			templates: templatesQuery.data ?? [],
 		},
 	});
@@ -523,6 +553,27 @@ export function CommandPalette({
 					<>
 						<div className="commandPaletteHeader">
 							<div className="commandPaletteInputWrapper">
+								{folderWorkspace.folder ? (
+									<button
+										type="button"
+										className="sidebarWorkspaceSearchScope"
+										onClick={() => {
+											setSearchEntireSpace(!searchEntireSpace);
+											setSelectedId(null);
+										}}
+									>
+										{searchEntireSpace
+											? t("sidebar.workspace.searchIn", {
+													folder: folderWorkspace.folder,
+												})
+											: t("sidebar.workspace.searchAll")}
+									</button>
+								) : null}
+								{searchError ? (
+									<span role="alert">
+										{t("sidebar.workspace.searchFailed")}
+									</span>
+								) : null}
 								<input
 									ref={inputRef}
 									className="commandPaletteInput"
@@ -530,7 +581,13 @@ export function CommandPalette({
 									aria-controls="command-palette-results"
 									aria-expanded="true"
 									aria-activedescendant={selectedResult?.id}
-									placeholder={t("commandPalette.searchEverything")}
+									placeholder={
+										folderPrefix
+											? t("sidebar.workspace.searchIn", {
+													folder: folderPrefix,
+												})
+											: t("commandPalette.searchEverything")
+									}
 									value={query}
 									onChange={(event) => {
 										setQuery(event.target.value);
@@ -541,7 +598,7 @@ export function CommandPalette({
 									spellCheck={false}
 								/>
 							</div>
-							{normalizedQuery && canSaveSearch ? (
+							{normalizedQuery && canSaveSearch && !folderPrefix ? (
 								<div className="commandSearchActions">
 									<button
 										type="button"

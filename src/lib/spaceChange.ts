@@ -90,6 +90,8 @@ function reloadDirs(
 }
 
 function invalidateDerived(path: string | null, removed: boolean): void {
+	void queryClient.invalidateQueries({ queryKey: ["folder-workspace"] });
+	void queryClient.invalidateQueries({ queryKey: ["command-search"] });
 	if (path) {
 		invalidatePrefetchedNote(path);
 		for (const fn of previewInvalidators) fn(path, removed);

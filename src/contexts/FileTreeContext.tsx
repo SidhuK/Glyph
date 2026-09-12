@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useFolderWorkspace } from "../hooks/useFolderWorkspace";
 import { extractErrorMessage } from "../lib/errorUtils";
 import {
 	type FileTreeSortMode,
@@ -35,6 +36,7 @@ import { normalizeRelPath } from "../utils/path";
 import { useSpace } from "./SpaceContext";
 
 interface FileTreeContextValue {
+	folderWorkspace: ReturnType<typeof useFolderWorkspace>;
 	rootEntries: FsEntry[];
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
@@ -142,9 +144,9 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const [childrenByDir, setChildrenByDir] = useState<
 		Record<string, FsEntry[] | undefined>
 	>({});
-	const [expandedDirs, setExpandedDirs] = useState<Set<string>>(
-		() => new Set(),
-	);
+	const folderWorkspace = useFolderWorkspace(spacePath);
+	const { expanded: expandedDirs, setExpanded: setExpandedDirs } =
+		folderWorkspace;
 	const [activeDirPath, setActiveDirPath] = useState<string | null>(null);
 	const [activeFilePath, setActiveFilePath] = useState<string | null>(null);
 	const [pinnedFiles, setPinnedFiles] = useState<string[]>([]);
@@ -367,7 +369,6 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		tagsRefreshPromiseRef.current = null;
 		setRootEntries([]);
 		setChildrenByDir({});
-		setExpandedDirs(new Set());
 		setActiveDirPath(null);
 		setActiveFilePath(null);
 		setPinnedFiles([]);
@@ -615,13 +616,14 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 
 	const updateExpandedDirs = useCallback<
 		FileTreeContextValue["updateExpandedDirs"]
-	>((next) => {
-		setExpandedDirs((prev) =>
-			typeof next === "function"
-				? (next as (value: Set<string>) => Set<string>)(prev)
-				: next,
-		);
-	}, []);
+	>(
+		(next) => {
+			setExpandedDirs((prev) =>
+				typeof next === "function" ? next(prev) : next,
+			);
+		},
+		[setExpandedDirs],
+	);
 
 	const setFileTreeSortMode = useCallback<
 		FileTreeContextValue["setFileTreeSortMode"]
@@ -728,9 +730,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 
 	const value = useMemo<FileTreeContextValue>(
 		() => ({
-			rootEntries,
+			folderWorkspace,
+			rootEntries: folderWorkspace.folder
+				? rootEntries
+				: (folderWorkspace.tree.data?.[""] ?? rootEntries),
 			updateRootEntries,
-			childrenByDir,
+			childrenByDir: { ...childrenByDir, ...folderWorkspace.tree.data },
 			updateChildrenByDir,
 			expandedDirs,
 			updateExpandedDirs,
@@ -758,15 +763,18 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			ensureTagsFresh,
 			refreshTagAppearance,
 			setTagAppearance,
-			fileTreeSortMode,
+			fileTreeSortMode: folderWorkspace.sort ?? fileTreeSortMode,
 			isSavingFileTreeSortMode,
-			setFileTreeSortMode,
+			setFileTreeSortMode: folderWorkspace.folder
+				? async (sort) => folderWorkspace.updateView({ sort })
+				: setFileTreeSortMode,
 			sidebarFolderTabs,
 			toggleSidebarFolderTab,
 			renameSidebarFolderPath,
 			deleteSidebarFolderPath,
 		}),
 		[
+			folderWorkspace,
 			rootEntries,
 			updateRootEntries,
 			childrenByDir,

@@ -433,6 +433,7 @@ export interface UsageTag {
 }
 
 export interface SearchAdvancedRequest {
+	folder_prefix?: string | null;
 	query?: string | null;
 	tags?: string[];
 	people?: string[];
@@ -970,6 +971,7 @@ interface TauriCommands {
 		{
 			dir?: string | null;
 			recursive?: boolean | null;
+			expanded_dirs?: string[] | null;
 			directories_only?: boolean | null;
 			limit?: number | null;
 		},
@@ -1175,7 +1177,7 @@ interface TauriCommands {
 		SearchResult[]
 	>;
 	search_parse_and_run: CommandDef<
-		{ raw_query: string; limit?: number | null },
+		{ raw_query: string; limit?: number | null; folder_prefix?: string | null },
 		SearchResult[]
 	>;
 	index_set_people_mentions_as_tags_enabled: CommandDef<
@@ -1208,11 +1210,20 @@ interface TauriCommands {
 	>;
 	usage_insights: CommandDef<void, UsageInsights>;
 	tags_list: CommandDef<
-		{ limit?: number | null; offset?: number | null; query?: string | null },
+		{
+			limit?: number | null;
+			offset?: number | null;
+			query?: string | null;
+			folder_prefix?: string | null;
+		},
 		TagCount[]
 	>;
 	people_list: CommandDef<
-		{ limit?: number | null; offset?: number | null },
+		{
+			limit?: number | null;
+			offset?: number | null;
+			folder_prefix?: string | null;
+		},
 		PersonCount[]
 	>;
 	task_summary: CommandDef<{ markdown: string }, NoteTaskSummary>;

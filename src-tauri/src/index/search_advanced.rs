@@ -22,12 +22,24 @@ pub struct SearchAdvancedRequest {
     pub tag_only: bool,
     #[serde(default)]
     pub limit: Option<u32>,
+    #[serde(default)]
+    pub folder_prefix: Option<String>,
 }
 
 pub fn run_search_advanced(
     conn: &Connection,
     req: SearchAdvancedRequest,
 ) -> Result<Vec<SearchResult>, String> {
+    let folder_prefix = req
+        .folder_prefix
+        .as_deref()
+        .unwrap_or("")
+        .trim_end_matches('/');
+    let folder_prefix = if folder_prefix.is_empty() {
+        String::new()
+    } else {
+        format!("{folder_prefix}/")
+    };
     let limit = req.limit.unwrap_or(200).clamp(1, 2_000) as usize;
     let text = req.query.unwrap_or_default().trim().to_string();
     let mut tags = normalize_tags(req.tags)?;
@@ -68,6 +80,7 @@ pub fn run_search_advanced(
             &query_text,
             &tags,
             (limit as i64 * 8).clamp(200, 5_000),
+            &folder_prefix,
         )?
     } else {
         select_candidates(
@@ -76,6 +89,7 @@ pub fn run_search_advanced(
             req.title_only,
             &tags,
             (limit as i64 * 8).clamp(200, 5_000),
+            &folder_prefix,
         )?
         .into_iter()
         .map(|item| item.result)
@@ -98,6 +112,7 @@ fn select_candidates(
     title_only: bool,
     tags: &[String],
     limit: i64,
+    folder_prefix: &str,
 ) -> Result<Vec<Candidate>, String> {
     let mut sql = String::from("SELECT n.id, n.title, n.preview FROM notes n ");
     for i in 0..tags.len() {
@@ -110,8 +125,11 @@ fn select_candidates(
         .iter()
         .map(|t| rusqlite::types::Value::from(t.clone()))
         .collect();
+    sql.push_str("WHERE substr(n.id, 1, length(?)) = ? ");
+    params.push(folder_prefix.to_string().into());
+    params.push(folder_prefix.to_string().into());
     if title_only && !text.is_empty() {
-        sql.push_str("WHERE lower(n.title) LIKE ? ");
+        sql.push_str("AND lower(n.title) LIKE ? ");
         params.push(rusqlite::types::Value::from(format!(
             "%{}%",
             text.to_lowercase()
@@ -330,5 +348,56 @@ mod tests {
         .unwrap();
 
         assert!(results.is_empty());
+    }
+    #[test]
+    fn folder_workspace_filters_before_limits_and_treats_wildcards_literally() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        for (id, updated) in [
+            ("work_%/nested/inside.md", "2026-01-01"),
+            ("work_%other/outside.md", "2026-02-01"),
+            ("work_ab/outside.md", "2026-03-01"),
+        ] {
+            seed_note(&conn, id, "Project", updated);
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, 'project', 1)",
+                [id],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO notes_fts(id, title, body) VALUES(?, 'Project', 'Project body')",
+                [id],
+            )
+            .unwrap();
+        }
+        // Cover unfiltered, tag-only, title-only, keyword and semantic candidate paths.
+        for (query, title_only, tags) in [
+            (None, false, vec![]),
+            (None, false, vec!["project".to_string()]),
+            (Some("Project".to_string()), true, vec![]),
+            (Some("Project".to_string()), false, vec![]),
+            (
+                Some("Project".to_string()),
+                false,
+                vec!["project".to_string()],
+            ),
+        ] {
+            let results = run_search_advanced(
+                &conn,
+                SearchAdvancedRequest {
+                    query,
+                    title_only,
+                    tags,
+                    folder_prefix: Some("work_%/".to_string()),
+                    limit: Some(1),
+                    ..SearchAdvancedRequest::default()
+                },
+            )
+            .unwrap();
+            assert_eq!(results.len(), 1);
+            assert_eq!(results[0].id, "work_%/nested/inside.md");
+        }
+        let all = run_search_advanced(&conn, SearchAdvancedRequest::default()).unwrap();
+        assert_eq!(all.len(), 3);
     }
 }

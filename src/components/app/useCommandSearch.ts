@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useDeferredValue, useMemo } from "react";
+import { pathInWorkspace } from "../../hooks/useFolderWorkspace";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { invoke } from "../../lib/tauri";
 import type { SearchResult } from "../../lib/tauri";
@@ -10,80 +12,53 @@ export function useCommandSearch(
 	spacePath: string | null,
 	enabled: boolean,
 	peopleMentionsEnabled: boolean,
+	folderPrefix: string | null = null,
 ) {
-	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-	const [isSearching, setIsSearching] = useState(false);
-	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const requestIdRef = useRef(0);
-	const { recentFiles } = useRecentFiles(spacePath, 8);
+	const deferredQuery = useDeferredValue(query.trim());
+	const { recentFiles } = useRecentFiles(spacePath, 100);
 	const recentPreviewableFiles = useMemo(
-		() => recentFiles.filter((file) => isPreviewableNotePath(file.path)),
-		[recentFiles],
+		() =>
+			recentFiles
+				.filter(
+					(file) =>
+						isPreviewableNotePath(file.path) &&
+						pathInWorkspace(file.path, folderPrefix),
+				)
+				.slice(0, 8),
+		[recentFiles, folderPrefix],
 	);
-
-	useEffect(() => {
-		if (!enabled || !spacePath) {
-			requestIdRef.current += 1;
-			setSearchResults([]);
-			setIsSearching(false);
-			return;
-		}
-		if (debounceRef.current) clearTimeout(debounceRef.current);
-		const trimmed = query.trim();
-		if (!trimmed) {
-			requestIdRef.current += 1;
-			setSearchResults([]);
-			setIsSearching(false);
-			return;
-		}
-		const requestId = requestIdRef.current + 1;
-		requestIdRef.current = requestId;
-		setIsSearching(true);
-		debounceRef.current = setTimeout(() => {
-			void (async () => {
-				try {
-					const parsed = parseSearchQueryWithPeople(
-						trimmed,
-						peopleMentionsEnabled,
-					);
-					let results: SearchResult[];
-					try {
-						if (peopleMentionsEnabled) {
-							results = await invoke("search_parse_and_run", {
-								raw_query: trimmed,
-								limit: 1500,
-							});
-						} else {
-							throw new Error("people mentions disabled");
-						}
-					} catch {
-						results = await invoke("search_advanced", {
-							request: {
-								...parsed.request,
-								limit: 1500,
-							},
-						});
-					}
-					if (requestIdRef.current !== requestId) return;
-					setSearchResults(results);
-				} catch (error) {
-					if (requestIdRef.current !== requestId) return;
-					console.error("Command palette search failed", error);
-					setSearchResults([]);
-				} finally {
-					if (requestIdRef.current === requestId) {
-						setIsSearching(false);
-					}
-				}
-			})();
-		}, 200);
-		return () => {
-			if (debounceRef.current) clearTimeout(debounceRef.current);
-		};
-	}, [query, enabled, spacePath, peopleMentionsEnabled]);
+	const search = useQuery({
+		queryKey: [
+			"command-search",
+			spacePath,
+			folderPrefix,
+			deferredQuery,
+			peopleMentionsEnabled,
+		],
+		enabled:
+			enabled && Boolean(spacePath) && Boolean(deferredQuery || folderPrefix),
+		queryFn: async () => {
+			if (peopleMentionsEnabled)
+				return invoke("search_parse_and_run", {
+					raw_query: deferredQuery,
+					limit: 1500,
+					folder_prefix: folderPrefix,
+				});
+			const parsed = parseSearchQueryWithPeople(deferredQuery, false);
+			return invoke("search_advanced", {
+				request: {
+					...parsed.request,
+					limit: 1500,
+					folder_prefix: folderPrefix,
+				},
+			});
+		},
+	});
+	const searchResults = search.data ?? [];
+	const isSearching = search.isFetching || deferredQuery !== query.trim();
 
 	const { titleMatches, contentMatches } = useMemo(() => {
-		if (!enabled || !query.trim())
+		if (!enabled || (!query.trim() && !folderPrefix))
 			return { titleMatches: [], contentMatches: [] };
 		const parsed = parseSearchQueryWithPeople(
 			query.trim(),
@@ -112,11 +87,12 @@ export function useCommandSearch(
 			}
 		}
 		return { titleMatches: title, contentMatches: content };
-	}, [searchResults, query, enabled, peopleMentionsEnabled]);
+	}, [searchResults, query, enabled, peopleMentionsEnabled, folderPrefix]);
 
 	return {
 		recentFiles: recentPreviewableFiles,
 		isSearching,
+		error: search.error,
 		titleMatches,
 		contentMatches,
 	};

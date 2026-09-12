@@ -31,7 +31,21 @@
 		"sortNotes": "Sort notes",
 		"sort": "Sort",
 		"expandAllFolders": "Expand all folders",
-		"collapseAllFolders": "Collapse all folders"
+		"collapseAllFolders": "Collapse all folders",
+		"workspace": {
+			"location": "Folder workspace",
+			"back": "Parent workspace",
+			"outside": "Open outside this workspace: {{note}}",
+			"noPins": "Pin a note to keep it here.",
+			"allPins": "Show all {{count}} pinned items",
+			"pinsFailed": "Could not load pinned collections.",
+			"filesFailed": "Could not load workspace files.",
+			"tagsFailed": "Could not load workspace tags.",
+			"loading": "Loading workspace tags…",
+			"searchIn": "Search in {{folder}}",
+			"searchAll": "Search entire space",
+			"searchFailed": "Search failed. Try again."
+		}
 	},
 	"sort": {
 		"nameAsc": "Name A-Z",

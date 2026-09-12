@@ -14,7 +14,6 @@ import {
 	NoteIcon,
 	SearchIcon,
 	Sorting01Icon,
-	StarIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +28,7 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,6 +36,7 @@ import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { useWorkspaceTags } from "../../hooks/useWorkspaceTags";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
@@ -47,7 +48,6 @@ import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import {
 	allDocsCountQueryOptions,
 	formatAllDocsCountLabel,
-	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import { type PeriodKind, isPeriodNoteEnabled } from "../../lib/periodNotes";
 import { isFileTreeSortMode } from "../../lib/settings";
@@ -56,9 +56,9 @@ import type {
 	SidebarVisibilityKey,
 } from "../../lib/settings/model";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import { type FsEntry, invoke } from "../../lib/tauri";
+import type { FsEntry } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
-import { basename } from "../../utils/path";
+import { basename, parentDir } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import {
@@ -66,6 +66,8 @@ import {
 	isEditorTextColor,
 } from "../editor/textColors";
 import { FileTreePane } from "../filetree";
+import { SidebarPinnedItems } from "./SidebarPinnedItems";
+import { SidebarWorkspaceHeader } from "./SidebarWorkspaceHeader";
 
 export interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -158,23 +160,11 @@ function folioTreeRootEntries(
 }
 
 function AllNotesCountBadge() {
-	const countQuery = useQuery(allDocsCountQueryOptions());
+	const { folderWorkspace } = useFileTreeContext();
+	const countQuery = useQuery(allDocsCountQueryOptions(folderWorkspace.folder));
 	const label = formatAllDocsCountLabel(countQuery.data ?? 0);
 	if (!label) return null;
 	return <span className="sidebarQuickActionCount">{label}</span>;
-}
-
-function PinnedCountBadge({ noteCount }: { noteCount: number }) {
-	const collectionsQuery = useQuery({
-		queryKey: navigationQueryKeys.databaseSummaries(),
-		queryFn: () => invoke("databases_list"),
-	});
-	const collectionCount =
-		collectionsQuery.data?.filter((collection) => collection.pinned).length ??
-		0;
-	const count = noteCount + collectionCount;
-	if (count === 0) return null;
-	return <span className="sidebarQuickActionCount">{count}</span>;
 }
 
 function SidebarActionButton({
@@ -274,6 +264,7 @@ export const SidebarContent = memo(function SidebarContent({
 		expandedDirs,
 		activeDirPath,
 		activeFilePath,
+		folderWorkspace,
 		pinnedFiles,
 		togglePinnedFile,
 		itemAppearance,
@@ -442,12 +433,24 @@ export const SidebarContent = memo(function SidebarContent({
 		showAllFolioDocs();
 	}, [onOpenAllDocs, showAllFolioDocs]);
 	const activeSidebarView: SidebarView =
-		sidebarView.kind === "folder" &&
-		!sidebarFolderTabs.includes(sidebarView.path)
-			? { kind: "files" }
-			: sidebarView;
-	const activeFolderPath =
-		activeSidebarView.kind === "folder" ? activeSidebarView.path : null;
+		sidebarView.kind === "tags"
+			? sidebarView
+			: folderWorkspace.folder
+				? { kind: "folder", path: folderWorkspace.folder }
+				: { kind: "files" };
+	const activeFolderPath = folderWorkspace.folder;
+	const workspaceTags = useWorkspaceTags(spacePath, activeFolderPath);
+	const hadWorkspaceFocus = useRef(false);
+	const workspacePanelRef = useCallback(
+		(panel: HTMLElement | null) => {
+			if (!panel) return;
+			// Folder entry replaces the focused row; keep keyboard navigation in the tree.
+			if (activeFolderPath || hadWorkspaceFocus.current)
+				panel.focus({ preventScroll: true });
+			hadWorkspaceFocus.current = Boolean(activeFolderPath);
+		},
+		[activeFolderPath],
+	);
 	const handleSelectFolioFolder = useCallback(
 		(dirPath: string) => {
 			onSelectDir(dirPath);
@@ -461,38 +464,24 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 	const handleSidebarViewChange = useCallback(
 		(view: "files" | "tags") => {
-			if (activeSidebarView.kind === view) return;
 			setSidebarView({ kind: view });
-			if (activeSidebarView.kind === "folder") {
-				if (folioMode) {
-					handleSelectFolioFolder("");
-				} else {
-					onSelectDir("");
-				}
-			}
-			if (view === "tags") {
-				void ensureTagsFresh();
-			}
+			if (view === "tags") void ensureTagsFresh();
 		},
-		[
-			activeSidebarView.kind,
-			ensureTagsFresh,
-			folioMode,
-			handleSelectFolioFolder,
-			onSelectDir,
-		],
+		[ensureTagsFresh],
 	);
 	const handleSelectSidebarFolder = useCallback(
-		(folderPath: string) => {
-			if (!sidebarFolderTabs.includes(folderPath)) return;
-			setSidebarView({ kind: "folder", path: folderPath });
-			if (folioMode) {
-				handleSelectFolioFolder(folderPath);
-				return;
-			}
-			onSelectDir(folderPath);
+		(folderPath: string | null) => {
+			folderWorkspace.enter(folderPath);
+			setSidebarView({ kind: "files" });
+			onSelectDir(folderPath ?? "");
+			if (folioMode)
+				setFolioScope(
+					folderPath
+						? { kind: "folder", folderPrefix: folderPath }
+						: { kind: "all" },
+				);
 		},
-		[folioMode, handleSelectFolioFolder, onSelectDir, sidebarFolderTabs],
+		[folderWorkspace, onSelectDir, folioMode, setFolioScope],
 	);
 	const handleToggleSidebarFolderTab = useCallback(
 		async (folderPath: string) => {
@@ -533,23 +522,23 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 	const handleSelectTag = useCallback(
 		(tag: string) => {
-			if (!folioMode) {
+			if (!folioMode || activeFolderPath) {
 				onSelectTag(tag);
 				return;
 			}
 			setFolioScope({ kind: "tag", tag });
 		},
-		[folioMode, onSelectTag, setFolioScope],
+		[folioMode, activeFolderPath, onSelectTag, setFolioScope],
 	);
 	const handleSelectPerson = useCallback(
 		(handle: string) => {
-			if (!folioMode) {
+			if (!folioMode || activeFolderPath) {
 				onSelectTag(handle);
 				return;
 			}
 			setFolioScope({ kind: "person", handle });
 		},
-		[folioMode, onSelectTag, setFolioScope],
+		[folioMode, activeFolderPath, onSelectTag, setFolioScope],
 	);
 
 	if (!spacePath) {
@@ -567,6 +556,10 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarSectionContent">
+					<SidebarWorkspaceHeader
+						spaceLabel={spaceLabel}
+						onNavigate={handleSelectSidebarFolder}
+					/>
 					<div className="sidebarTopNavigation">
 						<OrderedSidebarItems order={sidebarOrder}>
 							{sidebarVisibility.newNote ? (
@@ -599,29 +592,13 @@ export const SidebarContent = memo(function SidebarContent({
 								</button>
 							) : null}
 							{sidebarVisibility.pinned ? (
-								<button
+								<SidebarPinnedItems
 									key="pinned"
-									type="button"
-									className="sidebarQuickActionBtn sidebarNavBtn"
 									data-sidebar-key="pinned"
-									data-kind="pinned-notes"
-									data-active={
-										activeTopSection === "pinned-notes" ? "true" : "false"
-									}
-									aria-label={t("sidebar.pinned")}
-									aria-pressed={activeTopSection === "pinned-notes"}
-									aria-current={
-										activeTopSection === "pinned-notes" ? "page" : undefined
-									}
-									onClick={onOpenPinnedDocs}
-									title={t("sidebar.pinned")}
-								>
-									<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.pinned")}
-									</span>
-									<PinnedCountBadge noteCount={pinnedFiles.length} />
-								</button>
+									onOpenFile={onOpenFile}
+									onOpenDatabase={onOpenDatabases}
+									onShowAll={onOpenPinnedDocs}
+								/>
 							) : null}
 							{sidebarVisibility.allNotes ? (
 								<button
@@ -653,7 +630,7 @@ export const SidebarContent = memo(function SidebarContent({
 									<AllNotesCountBadge />
 								</button>
 							) : null}
-							{sidebarVisibility.databases ? (
+							{sidebarVisibility.databases && !activeFolderPath ? (
 								<button
 									key="databases"
 									type="button"
@@ -682,7 +659,7 @@ export const SidebarContent = memo(function SidebarContent({
 									</span>
 								</button>
 							) : null}
-							{sidebarVisibility.connections ? (
+							{sidebarVisibility.connections && !activeFolderPath ? (
 								<button
 									key="connections"
 									type="button"
@@ -709,7 +686,7 @@ export const SidebarContent = memo(function SidebarContent({
 									</span>
 								</button>
 							) : null}
-							{sidebarVisibility.calendar ? (
+							{sidebarVisibility.calendar && !activeFolderPath ? (
 								<SidebarActionButton
 									key="calendar"
 									data-sidebar-key="calendar"
@@ -753,7 +730,7 @@ export const SidebarContent = memo(function SidebarContent({
 									) : null}
 								</button>
 							) : null}
-							{sidebarVisibility.quickNote ? (
+							{sidebarVisibility.quickNote && !activeFolderPath ? (
 								<SidebarActionButton
 									key="quickNote"
 									data-sidebar-key="quickNote"
@@ -770,7 +747,11 @@ export const SidebarContent = memo(function SidebarContent({
 									kind="templates"
 									label={t("sidebar.templates")}
 									icon={ColorsIcon}
-									onClick={onCreateFromTemplate}
+									onClick={() =>
+										activeFolderPath
+											? onCreateFromTemplateInDir(activeFolderPath)
+											: onCreateFromTemplate()
+									}
 								/>
 							) : null}
 							{sidebarVisibility.gitSync ? (
@@ -783,7 +764,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onClick={onGitSyncNow}
 								/>
 							) : null}
-							{sidebarVisibility.periodNotes ? (
+							{sidebarVisibility.periodNotes && !activeFolderPath ? (
 								<div
 									key="periodNotes"
 									className="sidebarNavRow"
@@ -833,7 +814,7 @@ export const SidebarContent = memo(function SidebarContent({
 								className="sidebarViewTab"
 								id="sidebar-files-tab"
 								role="tab"
-								aria-selected={activeSidebarView.kind === "files"}
+								aria-selected={activeSidebarView.kind !== "tags"}
 								aria-controls="sidebar-files-panel"
 								onClick={() => handleSidebarViewChange("files")}
 							>
@@ -926,14 +907,30 @@ export const SidebarContent = memo(function SidebarContent({
 						>
 							<section
 								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
+								key={activeFolderPath ?? "root"}
+								ref={workspacePanelRef}
+								tabIndex={-1}
+								onKeyDown={(event) => {
+									if (
+										event.target === event.currentTarget &&
+										event.key === "ArrowLeft" &&
+										activeFolderPath
+									) {
+										event.preventDefault();
+										handleSelectSidebarFolder(
+											parentDir(activeFolderPath) || null,
+										);
+									}
+								}}
+								onScroll={(event) =>
+									folderWorkspace.updateView({
+										scroll: event.currentTarget.scrollTop,
+									})
+								}
 								data-section="files"
 								id="sidebar-files-panel"
 								role="tabpanel"
-								aria-labelledby={
-									activeSidebarView.kind === "folder"
-										? `sidebar-folder-tab-${sidebarFolderTabs.indexOf(activeSidebarView.path) + 1}`
-										: "sidebar-files-tab"
-								}
+								aria-labelledby="sidebar-files-tab"
 							>
 								<div className="sidebarStackHeader sidebarFileTreeToolbar">
 									<h2 className="sidebarFileTreeToolbarTitle">
@@ -996,6 +993,11 @@ export const SidebarContent = memo(function SidebarContent({
 										</button>
 									</div>
 								</div>
+								{folderWorkspace.tree.error ? (
+									<p className="sidebarWorkspaceHint" role="alert">
+										{t("sidebar.workspace.filesFailed")}
+									</p>
+								) : null}
 								<FileTreePane
 									key={
 										activeSidebarView.kind === "folder"
@@ -1028,16 +1030,6 @@ export const SidebarContent = memo(function SidebarContent({
 									onCommitFileRename={handleCommitFileRename}
 									onCommitDirRename={handleCommitDirRename}
 									onMovePath={onMovePath}
-									initialFocusedDirPath={
-										activeSidebarView.kind === "folder"
-											? activeSidebarView.path
-											: null
-									}
-									onExitFocusedDir={
-										activeSidebarView.kind === "folder"
-											? () => handleSidebarViewChange("files")
-											: undefined
-									}
 									sidebarFolderTabs={sidebarFolderTabs}
 									onToggleSidebarFolderTab={handleToggleSidebarFolderTab}
 									pinnedFiles={folioMode ? [] : pinnedFiles}
@@ -1056,13 +1048,27 @@ export const SidebarContent = memo(function SidebarContent({
 								aria-labelledby="sidebar-tags-tab"
 							>
 								<TagsPane
-									tags={tags}
-									people={people}
+									tags={
+										activeFolderPath ? (workspaceTags.data?.tags ?? []) : tags
+									}
+									people={
+										activeFolderPath
+											? (workspaceTags.data?.people ?? [])
+											: people
+									}
 									onSelectTag={handleSelectTag}
 									onSelectPerson={handleSelectPerson}
 									beautifulTags={beautifulTags}
 									tagAppearance={tagAppearance}
-									tagsError={tagsError}
+									tagsError={
+										activeFolderPath
+											? workspaceTags.isError
+												? t("sidebar.workspace.tagsFailed")
+												: workspaceTags.isPending
+													? t("sidebar.workspace.loading")
+													: ""
+											: tagsError
+									}
 									onChangeTagIcon={handleChangeTagIcon}
 								/>
 							</section>

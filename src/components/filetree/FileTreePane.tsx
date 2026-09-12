@@ -32,7 +32,6 @@ import {
 import { useFolderFileCounts } from "../../hooks/useFolderFileCounts";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
 import { MAX_SIDEBAR_FOLDER_TABS } from "../../lib/settings/definitions";
@@ -46,7 +45,6 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
 import { parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
-import { ChevronRight } from "../Icons";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -87,8 +85,6 @@ interface FileTreePaneProps {
 		toDirPath: string,
 		kind?: "dir" | "file",
 	) => Promise<string | null>;
-	initialFocusedDirPath?: string | null;
-	onExitFocusedDir?: () => void;
 	sidebarFolderTabs?: readonly string[];
 	onToggleSidebarFolderTab?: (dirPath: string) => unknown;
 	pinnedFiles: string[];
@@ -113,20 +109,6 @@ function sortedVisibleFileTreeEntries(
 	return filterVisibleFileTreeEntries(entries, showNonMarkdownFiles)
 		.slice()
 		.sort(compareEntriesForSort(sortMode));
-}
-
-function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
-	const parts = [
-		{ label: spaceLabelFromAbsPath(spacePath), path: "" },
-		...dirPath
-			.split("/")
-			.filter(Boolean)
-			.map((label, index, segments) => ({
-				label,
-				path: segments.slice(0, index + 1).join("/"),
-			})),
-	];
-	return parts;
 }
 
 interface FileTreeRootDropProps {
@@ -169,13 +151,6 @@ function isEditableTarget(target: EventTarget | null): boolean {
 	);
 }
 
-interface FolderBreadcrumbProps {
-	spacePath: string | null;
-	dirPath: string;
-	onNavigate: (dirPath: string) => void;
-	onExit: () => void;
-}
-
 function fileTreeDropTargetAtPoint(
 	pane: HTMLElement,
 	x: number,
@@ -204,68 +179,6 @@ function fileTreeDropTargetAtPoint(
 		: rowPath
 			? parentDir(rowPath)
 			: fallbackDirPath;
-}
-
-function FolderBreadcrumb({
-	spacePath,
-	dirPath,
-	onNavigate,
-	onExit,
-}: FolderBreadcrumbProps) {
-	const parts = folderBreadcrumbParts(spacePath, dirPath);
-	const navRef = useRef<HTMLElement | null>(null);
-
-	useEffect(() => {
-		const nav = navRef.current;
-		if (!nav) return;
-		if (nav.dataset.dirPath !== dirPath) return;
-		nav.scrollLeft = nav.scrollWidth;
-	}, [dirPath]);
-
-	return (
-		<nav
-			ref={navRef}
-			data-dir-path={dirPath}
-			className="fileTreeBreadcrumb"
-			aria-label="Folder breadcrumb"
-		>
-			{parts.map((part, index) => {
-				const isLast = index === parts.length - 1;
-				const handleClick = () => {
-					if (isLast) return;
-					if (!part.path) {
-						onExit();
-						return;
-					}
-					onNavigate(part.path);
-				};
-
-				return (
-					<span
-						key={part.path || "__root__"}
-						className="fileTreeBreadcrumbPart"
-					>
-						<button
-							type="button"
-							className="fileTreeBreadcrumbButton"
-							aria-current={isLast ? "page" : undefined}
-							disabled={isLast}
-							onClick={handleClick}
-						>
-							{part.label}
-						</button>
-						{!isLast ? (
-							<ChevronRight
-								size="var(--icon-xs)"
-								className="fileTreeBreadcrumbSeparator"
-								aria-hidden="true"
-							/>
-						) : null}
-					</span>
-				);
-			})}
-		</nav>
-	);
 }
 
 interface TreeEntriesProps {
@@ -432,7 +345,9 @@ function TreeEntries({
 				: 0;
 		setScrollElement(nextScrollElement);
 	}, []);
+	const { folderWorkspace } = useFileTreeContext();
 	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLLIElement>({
+		initialOffset: folderWorkspace.scroll,
 		count: virtualRows.length,
 		estimateSize: (index) => {
 			const row = virtualRows[index];
@@ -631,8 +546,6 @@ export const FileTreePane = memo(function FileTreePane({
 	onCommitFileRename,
 	onCommitDirRename,
 	onMovePath,
-	initialFocusedDirPath,
-	onExitFocusedDir,
 	sidebarFolderTabs = [],
 	onToggleSidebarFolderTab = () => undefined,
 	pinnedFiles,
@@ -641,6 +554,7 @@ export const FileTreePane = memo(function FileTreePane({
 }: FileTreePaneProps) {
 	const { t } = useTranslation("shell");
 	const {
+		folderWorkspace,
 		itemAppearance,
 		setItemAppearance,
 		fileTreeSortMode: sortMode,
@@ -650,9 +564,8 @@ export const FileTreePane = memo(function FileTreePane({
 	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
 		boolean | null
 	>(null);
-	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(
-		initialFocusedDirPath === undefined ? activeDirPath : initialFocusedDirPath,
-	);
+	const focusedDirPath = folderWorkspace.folder;
+	const setFocusedDirPath = folderWorkspace.enter;
 	const {
 		filePreviewsByPath,
 		clearVisiblePreviewPaths,
@@ -671,7 +584,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const paneRef = useRef<HTMLElement | null>(null);
 	const focusedDirPathRef = useRef(focusedDirPath);
 	const settingsVersionRef = useRef(0);
-	const previousSpacePathRef = useRef(spacePath);
 	const itemAppearanceRef = useRef(itemAppearance);
 	focusedDirPathRef.current = focusedDirPath;
 	useEffect(() => {
@@ -684,12 +596,6 @@ export const FileTreePane = memo(function FileTreePane({
 	useEffect(() => {
 		itemAppearanceRef.current = itemAppearance;
 	}, [itemAppearance]);
-
-	useEffect(() => {
-		if (previousSpacePathRef.current === spacePath) return;
-		previousSpacePathRef.current = spacePath;
-		setFocusedDirPath(null);
-	}, [spacePath]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -903,31 +809,8 @@ export const FileTreePane = memo(function FileTreePane({
 			onLoadDir,
 			onSelectDir,
 			onToggleDir,
+			setFocusedDirPath,
 		],
-	);
-
-	const handleExitFocusedDir = useCallback(() => {
-		clearVisiblePreviewPaths();
-		setFocusedDirPath(null);
-		if (onExitFocusedDir) {
-			onExitFocusedDir();
-		} else {
-			onSelectDir("");
-		}
-	}, [clearVisiblePreviewPaths, onExitFocusedDir, onSelectDir]);
-	const handleNavigateFocusedDir = useCallback(
-		(dirPath: string) => {
-			if (
-				initialFocusedDirPath &&
-				dirPath !== initialFocusedDirPath &&
-				!dirPath.startsWith(`${initialFocusedDirPath}/`)
-			) {
-				handleExitFocusedDir();
-				return;
-			}
-			handleEnterDir(dirPath);
-		},
-		[handleEnterDir, handleExitFocusedDir, initialFocusedDirPath],
 	);
 
 	const focusedEntries = focusedDirPath
@@ -1103,12 +986,6 @@ export const FileTreePane = memo(function FileTreePane({
 					targetDirPath={focusedDirPath}
 					isExternalDropTarget={externalDropTargetPath === focusedDirPath}
 				>
-					<FolderBreadcrumb
-						spacePath={spacePath}
-						dirPath={focusedDirPath}
-						onNavigate={handleNavigateFocusedDir}
-						onExit={handleExitFocusedDir}
-					/>
 					{hasVisibleFocusedEntries ===
 					null ? null : hasVisibleFocusedEntries ? (
 						<TreeEntries

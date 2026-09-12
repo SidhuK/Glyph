@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useReducedMotion } from "motion/react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useFileTreeContext } from "../../contexts";
+import { useFileTreeContext, useSpace } from "../../contexts";
+import { pathInWorkspace } from "../../hooks/useFolderWorkspace";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -34,11 +35,21 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 	onOpenDatabase,
 }: PinnedDocsPaneProps) {
 	const { t } = useTranslation("shell");
-	const { pinnedFiles, itemAppearance } = useFileTreeContext();
+	const {
+		pinnedFiles: allPinnedFiles,
+		itemAppearance,
+		folderWorkspace,
+	} = useFileTreeContext();
+	const pinnedFiles = useMemo(
+		() =>
+			allPinnedFiles.filter((path) =>
+				pathInWorkspace(path, folderWorkspace.folder),
+			),
+		[allPinnedFiles, folderWorkspace.folder],
+	);
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const [selectedPath, setSelectedPath] = useState<string | null>(null);
-	const [fileData, setFileData] = useState<PinnedFileData[]>([]);
-	const [loading, setLoading] = useState(true);
+	const { spacePath } = useSpace();
 	const queryClient = useQueryClient();
 	const collectionsQuery = useQuery({
 		queryKey: navigationQueryKeys.databaseSummaries(),
@@ -46,8 +57,17 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 	});
 	const pinnedCollections = useMemo(
 		() =>
-			collectionsQuery.data?.filter((collection) => collection.pinned) ?? [],
-		[collectionsQuery.data],
+			collectionsQuery.data?.filter(
+				(collection) =>
+					collection.pinned &&
+					(!folderWorkspace.folder ||
+						(collection.source.kind === "folder" &&
+							pathInWorkspace(
+								collection.source.value,
+								folderWorkspace.folder,
+							))),
+			) ?? [],
+		[collectionsQuery.data, folderWorkspace.folder],
 	);
 	const unpinCollection = useMutation({
 		mutationFn: (databaseId: string) =>
@@ -68,41 +88,26 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		},
 	});
 
-	useEffect(() => {
-		let cancelled = false;
-		setLoading(true);
-
-		void Promise.all(
-			pinnedFiles.map(async (path) => {
-				try {
-					const preview = await invoke("space_read_text_preview", {
-						path,
-						max_bytes: PREVIEW_MAX_BYTES,
-					});
-					return {
-						path,
-						title: titleFromPath(path),
-						previewText: (preview as { text: string }).text,
-					} satisfies PinnedFileData;
-				} catch {
-					return {
-						path,
-						title: titleFromPath(path),
-						previewText: "",
-					} satisfies PinnedFileData;
-				}
-			}),
-		).then((results) => {
-			if (!cancelled) {
-				setFileData(results);
-				setLoading(false);
-			}
-		});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [pinnedFiles]);
+	const previewsQuery = useQuery({
+		queryKey: ["folder-workspace", "pinned-previews", spacePath, pinnedFiles],
+		enabled: Boolean(spacePath),
+		queryFn: async (): Promise<PinnedFileData[]> => {
+			if (pinnedFiles.length === 0) return [];
+			const previews = await invoke("space_read_text_previews_batch", {
+				paths: pinnedFiles,
+				max_bytes: PREVIEW_MAX_BYTES,
+			});
+			const failed = previews.find((preview) => preview.error);
+			if (failed) throw new Error(failed.error ?? t("pinned.loadFailed"));
+			return previews.map((preview) => ({
+				path: preview.rel_path,
+				title: titleFromPath(preview.rel_path),
+				previewText: preview.text ?? "",
+			}));
+		},
+	});
+	const fileData = previewsQuery.data ?? [];
+	const loading = previewsQuery.isLoading;
 
 	const notePaths = useMemo(
 		() => pinnedFiles.filter((p) => p.toLowerCase().endsWith(".md")),
@@ -149,6 +154,11 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 				<h1 className="allDocsTitle">{t("pinned.title")}</h1>
 			</header>
 			<div className="allDocsSections">
+				{previewsQuery.error ? (
+					<div className="databaseLoadingState" role="alert">
+						{t("pinned.loadFailed")}: {extractErrorMessage(previewsQuery.error)}
+					</div>
+				) : null}
 				{collectionsQuery.error ? (
 					<div className="databaseLoadingState">
 						{t("pinned.loadFailed")}:{" "}

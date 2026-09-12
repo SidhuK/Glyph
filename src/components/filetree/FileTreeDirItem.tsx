@@ -246,6 +246,14 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								onSelectDir(entry.rel_path);
 								onToggleDir(entry.rel_path);
 							}}
+							onKeyDown={(event) => {
+								if (event.target !== event.currentTarget || !onEnterDir) return;
+								if (event.key === "Enter" || event.key === "ArrowRight") {
+									event.preventDefault();
+									event.stopPropagation();
+									onEnterDir(entry.rel_path);
+								}
+							}}
 							onContextMenu={handleContextMenu}
 							style={rowStyle}
 							variants={rowVariants}

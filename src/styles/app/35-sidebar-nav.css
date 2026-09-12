@@ -196,3 +196,55 @@
 	letter-spacing: 0.02em;
 	white-space: nowrap;
 }
+
+.sidebarPinnedList {
+	padding-left: 12px;
+}
+
+.sidebarWorkspaceHeader {
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.sidebarWorkspacePath {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 3px;
+	font-size: var(--text-sm);
+}
+
+.sidebarWorkspacePath button {
+	border: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	padding: 4px;
+	overflow-wrap: anywhere;
+}
+
+.sidebarWorkspacePath button[aria-current] {
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+}
+
+.sidebarWorkspaceHint {
+	margin: 6px 8px;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	overflow-wrap: anywhere;
+}
+
+.sidebarWorkspaceSearchScope {
+	border: 0;
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
+	padding: 4px 8px;
+	border-radius: var(--radius-6);
+	cursor: pointer;
+	flex-shrink: 0;
+	max-width: 45%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
