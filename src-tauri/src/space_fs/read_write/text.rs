@@ -27,7 +27,6 @@ fn write_text_under_root(
 ) -> Result<(TextFileWriteResult, Option<SpaceChange>), String> {
     deny_hidden_rel_path(rel)?;
     if utils::is_markdown_path(rel) {
-        let normalized_text = index::checklists::advance_completed_repeats(text)?;
         let committed = commit_markdown(
             &CommitCtx {
                 root,
@@ -35,12 +34,12 @@ fn write_text_under_root(
                 space_path,
             },
             &rel.to_string_lossy(),
-            normalized_text.as_deref().unwrap_or(text),
+            text,
             PersistMode::Replace { expected_mtime_ms },
         )?;
         return Ok((
             TextFileWriteResult {
-                normalized_text,
+                normalized_text: None,
                 etag: committed.etag,
                 mtime_ms: committed.mtime_ms,
             },
@@ -144,6 +143,7 @@ pub async fn space_write_text(
     path: String,
     text: String,
     base_mtime_ms: Option<u64>,
+    advance_repeats: Option<bool>,
 ) -> Result<TextFileWriteResult, String> {
     let root = state.root_for_window(&window)?;
     let space_path = root.to_string_lossy().to_string();
@@ -156,14 +156,23 @@ pub async fn space_write_text(
                 .lock()
                 .map_err(|_| "note mutation mutex poisoned".to_string())?;
             let rel = PathBuf::from(&path);
-            write_text_under_root(
+            // Only editor saves opt into recurrence; unrelated writers preserve task contents.
+            let normalized_text = if advance_repeats == Some(true) && utils::is_markdown_path(&rel)
+            {
+                index::checklists::advance_completed_repeats(&text)?
+            } else {
+                None
+            };
+            let (mut result, change) = write_text_under_root(
                 &root,
                 &recent_local_changes,
                 &space_path,
                 &rel,
-                &text,
+                normalized_text.as_deref().unwrap_or(&text),
                 base_mtime_ms,
-            )
+            )?;
+            result.normalized_text = normalized_text;
+            Ok((result, change))
         },
     )
     .await

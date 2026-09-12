@@ -94,7 +94,7 @@ pub fn query_tasks(root: &std::path::Path) -> Result<Vec<super::types::InboxTask
             Err(error) => return Err(error.to_string()),
         }
     }
-    let mut statement = conn.prepare("SELECT n.path, n.title, c.etag, c.items_json FROM notes n JOIN note_checklists c ON c.note_id = n.id AND c.etag = n.etag ORDER BY n.title COLLATE NOCASE, n.path").map_err(|error| error.to_string())?;
+    let mut statement = conn.prepare("SELECT n.path, n.title, c.etag, c.items_json FROM notes n JOIN note_checklists c ON c.note_id = n.id AND c.etag = n.etag WHERE n.checklist_total > 0 ORDER BY n.title COLLATE NOCASE, n.path").map_err(|error| error.to_string())?;
     let mut rows = statement.query([]).map_err(|error| error.to_string())?;
     let mut tasks = Vec::new();
     while let Some(row) = rows.next().map_err(|error| error.to_string())? {

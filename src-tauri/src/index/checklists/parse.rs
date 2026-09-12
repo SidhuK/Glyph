@@ -25,7 +25,13 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
         offset += segment.len();
         let line = segment.trim_end_matches(['\r', '\n']);
         let trimmed = line.trim_start_matches('\u{feff}').trim_start();
-        if index == 0 && trimmed == "---" {
+        if index == 0
+            && trimmed == "---"
+            && markdown
+                .lines()
+                .skip(1)
+                .any(|line| matches!(line.trim(), "---" | "..."))
+        {
             frontmatter = true;
             continue;
         }

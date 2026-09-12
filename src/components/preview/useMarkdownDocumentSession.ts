@@ -339,6 +339,7 @@ export function useMarkdownDocumentSession({
 			setError("");
 			try {
 				const result = await invoke("space_write_text", {
+					advance_repeats: true,
 					path,
 					text: nextText,
 					base_mtime_ms: mtimeRef.current,
@@ -394,6 +395,7 @@ export function useMarkdownDocumentSession({
 					}
 					if (choice === overwriteLabel || choice === "No") {
 						const retry = await invoke("space_write_text", {
+							advance_repeats: true,
 							path,
 							text: nextText,
 							base_mtime_ms: latest.mtime_ms,

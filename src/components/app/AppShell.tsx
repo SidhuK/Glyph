@@ -54,7 +54,10 @@ import {
 } from "../../lib/periodNotes";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { buildPrintHtml } from "../../lib/printHtml";
-import { requestSearchJump } from "../../lib/searchJump";
+import {
+	type SearchJumpRequest,
+	requestSearchJump,
+} from "../../lib/searchJump";
 import { loadSettings } from "../../lib/settings";
 import { toTauriAccelerator } from "../../lib/shortcuts";
 import { useSpaceChangePropagation } from "../../lib/spaceChange";
@@ -486,10 +489,18 @@ export function AppShell() {
 		setNotePeek(null);
 	}, []);
 	const openWorkspaceFile = useCallback(
-		async (path: string) => {
+		async (path: string, jump?: SearchJumpRequest) => {
 			if (!path) return;
 			closeNotePeek();
 			if (isMarkdownPath(path)) {
+				if (jump) {
+					requestSearchJump({
+						...jump,
+						targetPaneId:
+							tabs.find((tab) => tab.kind === "file" && tab.target === path)
+								?.paneId ?? jump.targetPaneId,
+					});
+				}
 				prefetchNote(path);
 				setActiveDirPath(parentDir(path));
 				openFileTab(path);
@@ -497,7 +508,7 @@ export function AppShell() {
 			}
 			await fileTree.openFile(path);
 		},
-		[closeNotePeek, fileTree, openFileTab, setActiveDirPath],
+		[closeNotePeek, fileTree, openFileTab, setActiveDirPath, tabs],
 	);
 	const openBrowseNote = useCallback(
 		async (path: string) => {

@@ -1,3 +1,4 @@
+import type { SearchJumpRequest } from "../../lib/searchJump";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -9,7 +10,10 @@ import { taskViews, useTaskInbox } from "./useTaskInbox";
 export function TaskInbox({
 	onOpenFile,
 	paneId,
-}: { onOpenFile: (path: string) => Promise<void>; paneId: string }) {
+}: {
+	onOpenFile: (path: string, jump?: SearchJumpRequest) => Promise<void>;
+	paneId: string;
+}) {
 	const { spacePath } = useSpace();
 	return (
 		<TaskInboxContent key={spacePath} onOpenFile={onOpenFile} paneId={paneId} />
@@ -18,7 +22,10 @@ export function TaskInbox({
 function TaskInboxContent({
 	onOpenFile,
 	paneId,
-}: { onOpenFile: (path: string) => Promise<void>; paneId: string }) {
+}: {
+	onOpenFile: (path: string, jump?: SearchJumpRequest) => Promise<void>;
+	paneId: string;
+}) {
 	const { t } = useTranslation("shell");
 	const {
 		query,

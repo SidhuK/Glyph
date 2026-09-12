@@ -1,3 +1,4 @@
+import type { SearchJumpRequest } from "../../lib/searchJump";
 import { m } from "motion/react";
 import {
 	type CSSProperties,
@@ -172,7 +173,7 @@ interface MainContentProps {
 		) => Promise<string | null>;
 		onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	};
-	onOpenFile: (relPath: string) => Promise<void>;
+	onOpenFile: (relPath: string, jump?: SearchJumpRequest) => Promise<void>;
 	onBrowseFile: (relPath: string) => Promise<void>;
 	onOpenFolioFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;

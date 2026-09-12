@@ -1,3 +1,4 @@
+import type { SearchJumpRequest } from "../../lib/searchJump";
 import {
 	type Dispatch,
 	type ReactNode,
@@ -67,7 +68,7 @@ interface EditorPaneCanvasProps {
 		options: CreateMarkdownFileOptions,
 	) => Promise<string | null>;
 	onRenameFile: (path: string, nextName: string) => Promise<string | null>;
-	onOpenFile: (relPath: string) => Promise<void>;
+	onOpenFile: (relPath: string, jump?: SearchJumpRequest) => Promise<void>;
 	onBrowseFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenDatabase: (databaseId: string) => void;

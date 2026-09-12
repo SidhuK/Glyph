@@ -96,7 +96,6 @@ pub async fn task_update(
         )?;
         // Broadcast the typed event so every window showing this space updates.
         let _ = app.emit(CHANGED_EVENT, &committed.change);
-        crate::index::index_note(&root, &note_path, &next)?;
         Ok(TaskUpdateResult {
             note_path,
             etag: committed.etag,

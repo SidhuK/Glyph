@@ -981,7 +981,11 @@ interface TauriCommands {
 	external_markdown_window_rel_path: CommandDef<void, string | null>;
 	external_markdown_read: CommandDef<{ path: string }, ExternalMarkdownDoc>;
 	external_markdown_write: CommandDef<
-		{ path: string; text: string; base_mtime_ms?: number | null },
+		{
+			path: string;
+			text: string;
+			base_mtime_ms?: number | null;
+		},
 		ExternalMarkdownWriteResult
 	>;
 	custom_theme_read: CommandDef<{ path: string }, string>;
@@ -1099,7 +1103,12 @@ interface TauriCommands {
 		SpaceImportResult
 	>;
 	space_write_text: CommandDef<
-		{ path: string; text: string; base_mtime_ms?: number | null },
+		{
+			path: string;
+			text: string;
+			base_mtime_ms?: number | null;
+			advance_repeats?: boolean;
+		},
 		TextFileWriteResult
 	>;
 	space_link_unlinked_mentions: CommandDef<

@@ -1,3 +1,4 @@
+import type { SearchJumpRequest } from "../../lib/searchJump";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
@@ -5,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { useEditorContext, useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
-import { requestSearchJump } from "../../lib/searchJump";
 import { taskQueryKey, tasksQueryOptions } from "../../lib/tasks";
 import {
 	type InboxTask,
@@ -30,7 +30,10 @@ function matchesView(task: InboxTask, view: TaskView, today: string) {
 export function useTaskInbox({
 	onOpenFile,
 	paneId,
-}: { onOpenFile: (path: string) => Promise<void>; paneId: string }) {
+}: {
+	onOpenFile: (path: string, jump?: SearchJumpRequest) => Promise<void>;
+	paneId: string;
+}) {
 	const { spacePath } = useSpace();
 	const { saveAllEditors } = useEditorContext();
 	const queryClient = useQueryClient();
@@ -138,7 +141,7 @@ export function useTaskInbox({
 				await refresh();
 				throw new Error(t("tasks.conflict"));
 			}
-			requestSearchJump({
+			await onOpenFile(task.note_path, {
 				path: task.note_path,
 				query: normalizeInlineMarkdown(task.text) || " ",
 				matchIndex: 0,
@@ -146,7 +149,6 @@ export function useTaskInbox({
 				taskLine: task.line,
 				taskIndex: task.task_index,
 			});
-			await onOpenFile(task.note_path);
 		},
 		onError: (error) =>
 			toast.error(t("tasks.openFailed"), {

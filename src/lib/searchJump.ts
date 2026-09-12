@@ -32,7 +32,7 @@ export function consumeSearchJump(
 	if (
 		!pending ||
 		pending.path !== path ||
-		(pending.taskLine === undefined && pending.targetPaneId !== targetPaneId)
+		pending.targetPaneId !== targetPaneId
 	)
 		return null;
 	const next = pending;

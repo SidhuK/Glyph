@@ -438,12 +438,10 @@ export function useNoteFind({
 
 	const isSearchJumpTarget = useCallback(
 		(jump: SearchJumpRequest) =>
-			jump.taskLine !== undefined
-				? jump.path === relPath
-				: hostRef.current
-						?.closest("[data-editor-pane-id]")
-						?.getAttribute("data-editor-pane-id") === jump.targetPaneId,
-		[hostRef, relPath],
+			hostRef.current
+				?.closest("[data-editor-pane-id]")
+				?.getAttribute("data-editor-pane-id") === jump.targetPaneId,
+		[hostRef],
 	);
 
 	useEffect(() => {
@@ -481,8 +479,8 @@ export function useNoteFind({
 			const detail = (event as CustomEvent<SearchJumpRequest>).detail;
 			if (!detail || detail.path !== relPath || !isSearchJumpTarget(detail))
 				return;
-			consumeSearchJump(relPath, detail.targetPaneId);
-			applySearchJump(detail);
+			const jump = consumeSearchJump(relPath, detail.targetPaneId);
+			if (jump) applySearchJump(jump);
 		};
 		window.addEventListener(SEARCH_JUMP_EVENT, onJump);
 		return () => window.removeEventListener(SEARCH_JUMP_EVENT, onJump);
