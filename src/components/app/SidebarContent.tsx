@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	Archive04Icon,
+	CheckmarkSquare02Icon,
 	ArrowShrinkIcon,
 	Calendar03Icon,
 	CalendarAdd01Icon,
@@ -99,11 +100,13 @@ export interface SidebarContentProps {
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
+	onOpenTasks: () => void;
 	onOpenAllDocs: () => void;
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
 	spacePath: string | null;
 	activeTopSection:
+		| "tasks"
 		| "all-notes"
 		| "connections"
 		| "databases"
@@ -253,6 +256,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
+	onOpenTasks,
 	onOpenAllDocs,
 	onOpenPinnedDocs,
 	onOpenConnections,
@@ -651,6 +655,29 @@ export const SidebarContent = memo(function SidebarContent({
 										{t("sidebar.allNotes")}
 									</span>
 									<AllNotesCountBadge />
+								</button>
+							) : null}
+							{sidebarVisibility.tasks ? (
+								<button
+									key="tasks"
+									type="button"
+									className="sidebarQuickActionBtn sidebarNavBtn"
+									data-sidebar-key="tasks"
+									data-kind="tasks"
+									data-active={activeTopSection === "tasks" ? "true" : "false"}
+									aria-current={
+										activeTopSection === "tasks" ? "page" : undefined
+									}
+									onClick={onOpenTasks}
+									title={t("tasks.title")}
+								>
+									<HugeiconsIcon
+										icon={CheckmarkSquare02Icon}
+										size="var(--icon-md)"
+									/>
+									<span className="sidebarQuickActionLabel">
+										{t("tasks.title")}
+									</span>
 								</button>
 							) : null}
 							{sidebarVisibility.databases ? (

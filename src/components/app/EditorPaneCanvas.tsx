@@ -1,3 +1,4 @@
+import type { SearchJumpRequest } from "../../lib/searchJump";
 import {
 	type Dispatch,
 	type ReactNode,
@@ -21,6 +22,7 @@ import {
 } from "../../lib/navigationPrefetch";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -37,6 +39,11 @@ import {
 } from "./prefetchablePanes";
 import type { WorkspaceEditorPane } from "./useTabManager";
 
+const TaskInbox = lazy(() =>
+	import("../tasks/TaskInbox").then((module) => ({
+		default: module.TaskInbox,
+	})),
+);
 const PinnedDocsPane = lazy(() =>
 	import("./PinnedDocsPane").then((module) => ({
 		default: module.PinnedDocsPane,
@@ -61,7 +68,7 @@ interface EditorPaneCanvasProps {
 		options: CreateMarkdownFileOptions,
 	) => Promise<string | null>;
 	onRenameFile: (path: string, nextName: string) => Promise<string | null>;
-	onOpenFile: (relPath: string) => Promise<void>;
+	onOpenFile: (relPath: string, jump?: SearchJumpRequest) => Promise<void>;
 	onBrowseFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenDatabase: (databaseId: string) => void;
@@ -129,6 +136,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 		<EditorPaneContent
 			key={pane.activeTabId}
 			viewerPath={viewerPath}
+			paneId={pane.id}
 			focused={focused}
 			createMarkdownFileAtPath={createMarkdownFileAtPath}
 			onRenameFile={onRenameFile}
@@ -197,6 +205,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 });
 
 interface EditorPaneContentProps {
+	paneId: string;
 	viewerPath: string;
 	focused: boolean;
 	createMarkdownFileAtPath: EditorPaneCanvasProps["createMarkdownFileAtPath"];
@@ -211,6 +220,7 @@ interface EditorPaneContentProps {
 }
 
 function EditorPaneContent({
+	paneId,
 	viewerPath,
 	focused,
 	createMarkdownFileAtPath,
@@ -225,6 +235,13 @@ function EditorPaneContent({
 }: EditorPaneContentProps) {
 	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
 
+	if (viewerPath === TASKS_TAB_ID) {
+		return (
+			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
+				<TaskInbox onOpenFile={onOpenFile} paneId={paneId} />
+			</Suspense>
+		);
+	}
 	if (viewerPath === PINNED_DOCS_TAB_ID) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>

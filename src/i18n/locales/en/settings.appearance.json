@@ -187,6 +187,9 @@
 			},
 			"gitSync": {
 				"label": "Git Sync"
+			},
+			"tasks": {
+				"label": "Tasks"
 			}
 		}
 	},

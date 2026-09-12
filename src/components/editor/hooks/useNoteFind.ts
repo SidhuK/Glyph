@@ -205,13 +205,41 @@ export function useNoteFind({
 	});
 
 	const findMatches = useMemo(() => {
+		if (
+			findOpen &&
+			searchJump?.taskLine !== undefined &&
+			searchJump.query === findQuery
+		) {
+			if (mode === "plain") {
+				const lines = markdown.split("\n");
+				const line = lines[searchJump.taskLine - 1];
+				if (line === undefined) return [];
+				const from = lines
+					.slice(0, searchJump.taskLine - 1)
+					.reduce((offset, value) => offset + value.length + 1, 0);
+				return [{ from, to: from + line.length }];
+			}
+			const ranges: TextRange[] = [];
+			let index = 0;
+			editorDoc?.descendants((node, position) => {
+				if (node.type.name !== "taskItem") return;
+				if (index === searchJump.taskIndex) {
+					ranges.push({
+						from: position + 2,
+						to: position + 2 + (node.firstChild?.content.size ?? 0),
+					});
+				}
+				index += 1;
+			});
+			return ranges;
+		}
 		if (!findOpen || !findQuery) return [];
 		if (mode === "plain") {
 			return findPlainTextSearchRanges(markdown, findQuery);
 		}
 		if (!editorDoc) return [];
 		return findNoteSearchRanges(editorDoc, findQuery);
-	}, [editorDoc, findOpen, findQuery, markdown, mode]);
+	}, [editorDoc, findOpen, findQuery, markdown, mode, searchJump]);
 	/**
 	 * Search counts occurrences from the note body, but the two editor modes
 	 * search different text: the rich editor's document omits link destinations,
@@ -220,6 +248,7 @@ export function useNoteFind({
 	 */
 	const jumpTargetIndex = useMemo(() => {
 		if (!searchJump || searchJump.query !== findQuery) return null;
+		if (searchJump.taskLine !== undefined) return 0;
 		if (mode !== "plain") return searchJump.matchIndex;
 		const { body, frontmatter } = splitYamlFrontmatter(markdown);
 		const rawMatchIndex = rawMatchIndexForVisibleMatch(
@@ -450,8 +479,8 @@ export function useNoteFind({
 			const detail = (event as CustomEvent<SearchJumpRequest>).detail;
 			if (!detail || detail.path !== relPath || !isSearchJumpTarget(detail))
 				return;
-			consumeSearchJump(relPath, detail.targetPaneId);
-			applySearchJump(detail);
+			const jump = consumeSearchJump(relPath, detail.targetPaneId);
+			if (jump) applySearchJump(jump);
 		};
 		window.addEventListener(SEARCH_JUMP_EVENT, onJump);
 		return () => window.removeEventListener(SEARCH_JUMP_EVENT, onJump);

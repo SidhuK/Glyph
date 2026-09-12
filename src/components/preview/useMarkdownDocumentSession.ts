@@ -311,6 +311,12 @@ export function useMarkdownDocumentSession({
 		): Promise<boolean> => {
 			const applySaveState = (saved: string, mtimeMs: number) => {
 				if (path !== relPath || !isCurrentSession(sessionId)) return;
+				// A completed repeating task can add its next occurrence on save.
+				// Keep edits made while the save was in flight; they'll be saved next.
+				if (saved !== nextText) {
+					flushPendingEdits();
+					if (textRef.current === nextText) replaceText(saved);
+				}
 				setPrefetchedNote(path, {
 					rel_path: path,
 					text: saved,
@@ -333,11 +339,12 @@ export function useMarkdownDocumentSession({
 			setError("");
 			try {
 				const result = await invoke("space_write_text", {
+					advance_repeats: true,
 					path,
 					text: nextText,
 					base_mtime_ms: mtimeRef.current,
 				});
-				applySaveState(nextText, result.mtime_ms);
+				applySaveState(result.normalized_text ?? nextText, result.mtime_ms);
 				return true;
 			} catch (e) {
 				if (!isCurrentSession(sessionId)) return false;
@@ -388,11 +395,12 @@ export function useMarkdownDocumentSession({
 					}
 					if (choice === overwriteLabel || choice === "No") {
 						const retry = await invoke("space_write_text", {
+							advance_repeats: true,
 							path,
 							text: nextText,
 							base_mtime_ms: latest.mtime_ms,
 						});
-						applySaveState(nextText, retry.mtime_ms);
+						applySaveState(retry.normalized_text ?? nextText, retry.mtime_ms);
 						return true;
 					}
 					hasUserEditsRef.current = true;
@@ -407,7 +415,7 @@ export function useMarkdownDocumentSession({
 				}
 			}
 		},
-		[flashPulse, isCurrentSession, relPath, replaceText],
+		[flashPulse, flushPendingEdits, isCurrentSession, relPath, replaceText],
 	);
 
 	const onSave = useCallback(async () => {

@@ -1867,6 +1867,8 @@ pub fn run() {
             databases::commands::databases_preview_context,
             databases::commands::databases_status_colors_get,
             databases::commands::databases_status_color_set,
+            index::checklists::commands::tasks_list,
+            index::checklists::commands::task_update,
             daily_note_rollover::commands::daily_note_rollover_candidates,
             daily_note_rollover::commands::daily_note_rollover_move,
             file_tree_appearance::commands::file_tree_appearance_list,

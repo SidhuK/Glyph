@@ -54,11 +54,15 @@ import {
 } from "../../lib/periodNotes";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { buildPrintHtml } from "../../lib/printHtml";
-import { requestSearchJump } from "../../lib/searchJump";
+import {
+	type SearchJumpRequest,
+	requestSearchJump,
+} from "../../lib/searchJump";
 import { loadSettings } from "../../lib/settings";
 import { toTauriAccelerator } from "../../lib/shortcuts";
 import { useSpaceChangePropagation } from "../../lib/spaceChange";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate, selectTemplateFile } from "../../lib/templates";
@@ -485,10 +489,18 @@ export function AppShell() {
 		setNotePeek(null);
 	}, []);
 	const openWorkspaceFile = useCallback(
-		async (path: string) => {
+		async (path: string, jump?: SearchJumpRequest) => {
 			if (!path) return;
 			closeNotePeek();
 			if (isMarkdownPath(path)) {
+				if (jump) {
+					requestSearchJump({
+						...jump,
+						targetPaneId:
+							tabs.find((tab) => tab.kind === "file" && tab.target === path)
+								?.paneId ?? jump.targetPaneId,
+					});
+				}
 				prefetchNote(path);
 				setActiveDirPath(parentDir(path));
 				openFileTab(path);
@@ -496,7 +508,7 @@ export function AppShell() {
 			}
 			await fileTree.openFile(path);
 		},
-		[closeNotePeek, fileTree, openFileTab, setActiveDirPath],
+		[closeNotePeek, fileTree, openFileTab, setActiveDirPath, tabs],
 	);
 	const openBrowseNote = useCallback(
 		async (path: string) => {
@@ -980,8 +992,9 @@ export function AppShell() {
 	useSpaceChangePropagation(spaceChangeHost);
 
 	const activeTopSection = useMemo<
-		"all-notes" | "connections" | "databases" | "pinned-notes" | null
+		"all-notes" | "connections" | "databases" | "pinned-notes" | "tasks" | null
 	>(() => {
+		if (activeTabPath === TASKS_TAB_ID) return "tasks";
 		if (activeTabPath === ACTIVITY_TIMELINE_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
@@ -1447,6 +1460,7 @@ export function AppShell() {
 						onSelectTag={(t) => openTagSearchPalette(t)}
 						sidebarCollapsed={sidebarCollapsed}
 						spacePath={spacePath}
+						onOpenTasks={() => openSpecialTab(TASKS_TAB_ID)}
 						onOpenAllDocs={openAllDocsTab}
 						onOpenPinnedDocs={openPinnedDocsTab}
 						onOpenConnections={openConnectionsView}

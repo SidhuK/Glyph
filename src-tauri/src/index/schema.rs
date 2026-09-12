@@ -18,6 +18,12 @@ CREATE TABLE IF NOT EXISTS notes (
 CREATE INDEX IF NOT EXISTS notes_title_idx ON notes(title);
 CREATE INDEX IF NOT EXISTS notes_title_nocase_idx ON notes(title COLLATE NOCASE);
 
+CREATE TABLE IF NOT EXISTS note_checklists (
+  note_id TEXT PRIMARY KEY,
+  etag TEXT NOT NULL,
+  items_json TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS links (
   from_id TEXT NOT NULL,
   to_id TEXT,
