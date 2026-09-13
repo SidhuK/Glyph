@@ -21,6 +21,8 @@
 		"templates": "Modèles",
 		"gitSync": "Synchronisation Git",
 		"files": "Fichiers",
+		"recents": "Récents",
+		"noRecentFiles": "Aucun fichier récent.",
 		"sortNotes": "Trier les notes",
 		"sort": "Trier",
 		"expandAllFolders": "Développer tous les dossiers",

@@ -19,6 +19,8 @@
 		"templates": "Szablony",
 		"gitSync": "Synchronizacja Git",
 		"files": "Pliki",
+		"recents": "Ostatnie",
+		"noRecentFiles": "Brak ostatnio otwieranych plików.",
 		"sortNotes": "Sortuj",
 		"sort": "Sortuj",
 		"expandAllFolders": "Rozwiń wszystkie foldery",

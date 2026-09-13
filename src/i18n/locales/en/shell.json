@@ -25,6 +25,8 @@
 		"templates": "Templates",
 		"gitSync": "Git Sync",
 		"files": "Files",
+		"recents": "Recents",
+		"noRecentFiles": "No recent files yet.",
 		"openFolderTab": "Open {{folder}}",
 		"removeFolderTab": "Remove {{folder}} from quick folders",
 		"folderTabUpdateFailed": "Could not update quick folders",
