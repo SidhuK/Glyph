@@ -6,7 +6,7 @@ import {
 	ArrowRight,
 	Calendar03Icon,
 	CalendarAdd01Icon,
-	CheckmarkCircle02Icon,
+	CheckListIcon,
 	ChartRelationshipIcon,
 	ColorsIcon,
 	CursorAddSelection02Icon,
@@ -584,9 +584,7 @@ export function useAppCommands({
 			{
 				id: "open-tasks",
 				labelKey: "shell:tasks.openTasks",
-				icon: (
-					<HugeiconsIcon icon={CheckmarkCircle02Icon} size="var(--icon-lg)" />
-				),
+				icon: <HugeiconsIcon icon={CheckListIcon} size="var(--icon-lg)" />,
 				enabled: Boolean(spacePath),
 				action: openTasksTab,
 			},

@@ -1,7 +1,7 @@
 import {
 	Calendar03Icon,
 	CheckmarkCircle02Icon,
-	File01Icon,
+	CheckListIcon,
 	RefreshIcon,
 	Sun01Icon,
 	ArrowLeft01Icon,
@@ -18,7 +18,7 @@ import { TaskList } from "./TaskList";
 import { taskViews, useTaskInbox } from "./useTaskInbox";
 
 const viewIcons = {
-	all: File01Icon,
+	all: CheckListIcon,
 	today: Sun01Icon,
 	upcoming: Calendar03Icon,
 	completed: CheckmarkCircle02Icon,

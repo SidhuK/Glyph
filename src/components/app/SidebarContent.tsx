@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	Archive04Icon,
-	CheckmarkSquare02Icon,
+	CheckListIcon,
 	ArrowShrinkIcon,
 	Calendar03Icon,
 	CalendarAdd01Icon,
@@ -671,10 +671,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onClick={onOpenTasks}
 									title={t("tasks.title")}
 								>
-									<HugeiconsIcon
-										icon={CheckmarkSquare02Icon}
-										size="var(--icon-md)"
-									/>
+									<HugeiconsIcon icon={CheckListIcon} size="var(--icon-md)" />
 									<span className="sidebarQuickActionLabel">
 										{t("tasks.title")}
 									</span>
