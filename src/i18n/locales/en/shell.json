@@ -241,7 +241,7 @@
 	},
 	"tasks": {
 		"openTasks": "Open Tasks",
-		"notesWithUnscheduledTasks": "In your notes",
+		"notesWithUnscheduledTasks": "Notes with Tasks",
 		"backToOverview": "Overview",
 		"openNote": "Open note",
 		"noteComplete": "All done in this note",
