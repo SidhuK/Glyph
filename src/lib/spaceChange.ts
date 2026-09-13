@@ -8,6 +8,7 @@ import {
 	invalidateTaskSummariesPrefetch,
 } from "./navigationPrefetch";
 import { queryClient } from "./queryClient";
+import { updateRecentFilesForPathChange } from "./settings";
 import { useTauriEvent } from "./tauriEvents";
 
 export type SpaceChange =
@@ -105,6 +106,15 @@ function invalidateDerived(path: string | null, removed: boolean): void {
 	});
 }
 
+async function syncRecentFilesForPathChange(
+	change: Parameters<typeof updateRecentFilesForPathChange>[0],
+): Promise<void> {
+	await updateRecentFilesForPathChange(change);
+	await queryClient.invalidateQueries({
+		queryKey: ["settings", "recent-files"],
+	});
+}
+
 export function applySpaceChange(change: SpaceChange): void {
 	const current = host;
 	if (!current?.spacePath || change.space_path !== current.spacePath) return;
@@ -120,6 +130,13 @@ export function applySpaceChange(change: SpaceChange): void {
 		current.renameTabsForPath(from, to, change.recursive);
 		void current.renamePinnedPath(from, to);
 		void current.renameSidebarFolderPath(from, to, change.recursive);
+		void syncRecentFilesForPathChange({
+			kind: "rename",
+			spacePath: change.space_path,
+			fromPath: from,
+			toPath: to,
+			recursive: change.recursive,
+		});
 		void current.refreshTags();
 		invalidateDerived(from, true);
 		invalidateDerived(to, false);
@@ -133,6 +150,12 @@ export function applySpaceChange(change: SpaceChange): void {
 		current.closeTabsForPathRemoval(path, change.recursive);
 		void current.deletePinnedPath(path);
 		void current.deleteSidebarFolderPath(path, change.recursive);
+		void syncRecentFilesForPathChange({
+			kind: "remove",
+			spacePath: change.space_path,
+			path,
+			recursive: change.recursive,
+		});
 		invalidateDerived(path, true);
 		return;
 	}

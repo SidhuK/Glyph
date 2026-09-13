@@ -24,7 +24,7 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 	const { t } = useTranslation("shell");
 	const { recentFiles } = useRecentFiles(spacePath, RECENT_FILE_LIMIT);
 
-	if (recentFiles.length === 0) {
+	if (!spacePath || recentFiles.length === 0) {
 		return <div className="tagsEmpty">{t("sidebar.noRecentFiles")}</div>;
 	}
 
