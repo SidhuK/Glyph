@@ -75,11 +75,11 @@ pub async fn task_update(
         let relative = Path::new(&note_path);
         deny_hidden_rel_path(relative)?;
         let absolute = paths::join_under(&root, relative)?;
+        let mtime = file_mtime_ms(&absolute);
         let original = std::fs::read_to_string(&absolute).map_err(|error| error.to_string())?;
-        if etag_for(original.as_bytes()) != etag {
+        if file_mtime_ms(&absolute) != mtime || etag_for(original.as_bytes()) != etag {
             return Err("conflict: note changed; refresh tasks and try again".to_string());
         }
-        let mtime = file_mtime_ms(&absolute);
         let (next, next_due) = rewrite_task(&original, action)?;
         let space_path = root.to_string_lossy().to_string();
         let committed = commit_markdown(

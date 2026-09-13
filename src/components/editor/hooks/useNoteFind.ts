@@ -1,3 +1,4 @@
+import { MarkdownManager } from "@tiptap/markdown";
 import { TextSelection } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
 import { useEditorState } from "@tiptap/react";
@@ -20,6 +21,7 @@ import {
 	findNoteSearchRanges,
 	findPlainTextSearchRanges,
 } from "../extensions/noteSearch";
+import { preprocessMarkdownForEditor } from "../markdown/wikiLinkMarkdownBridge";
 import type { RawMarkdownEditorHandle } from "../raw/types";
 import type { NoteInlineEditorMode } from "../types";
 
@@ -219,17 +221,34 @@ export function useNoteFind({
 					.reduce((offset, value) => offset + value.length + 1, 0);
 				return [{ from, to: from + line.length }];
 			}
+			if (!editor || !editorDoc) return [];
+			const lines = markdown.split("\n");
+			const source = lines[searchJump.taskLine - 1];
+			if (source === undefined) return [];
+			// Locate the source line using the same parser as the rich editor.
+			// An ordinal from the checklist scanner can differ from rendered task nodes.
+			let marker = "GLYPHTASKJUMP";
+			while (markdown.includes(marker)) marker += "X";
+			lines[searchJump.taskLine - 1] = source.replace(
+				/(\[[ xX]\][ \t]*)/,
+				`$1${marker}`,
+			);
+			const { body } = splitYamlFrontmatter(lines.join("\n"));
+			const manager = new MarkdownManager({
+				extensions: editor.extensionManager.extensions,
+				markedOptions: { gfm: true, breaks: false },
+			});
+			const parsed = editor.schema.nodeFromJSON(
+				manager.parse(preprocessMarkdownForEditor(body)),
+			);
 			const ranges: TextRange[] = [];
-			let index = 0;
-			editorDoc?.descendants((node, position) => {
-				if (node.type.name !== "taskItem") return;
-				if (index === searchJump.taskIndex) {
-					ranges.push({
-						from: position + 2,
-						to: position + 2 + (node.firstChild?.content.size ?? 0),
-					});
-				}
-				index += 1;
+			parsed.descendants((node, position) => {
+				const index = node.text?.indexOf(marker) ?? -1;
+				if (index < 0) return;
+				const from = position + index;
+				if (from > editorDoc.content.size) return;
+				const resolved = editorDoc.resolve(from);
+				ranges.push({ from, to: resolved.end() });
 			});
 			return ranges;
 		}
@@ -239,7 +258,7 @@ export function useNoteFind({
 		}
 		if (!editorDoc) return [];
 		return findNoteSearchRanges(editorDoc, findQuery);
-	}, [editorDoc, findOpen, findQuery, markdown, mode, searchJump]);
+	}, [editor, editorDoc, findOpen, findQuery, markdown, mode, searchJump]);
 	/**
 	 * Search counts occurrences from the note body, but the two editor modes
 	 * search different text: the rich editor's document omits link destinations,
@@ -497,7 +516,11 @@ export function useNoteFind({
 
 	useEffect(() => {
 		if (!editor || editor.isDestroyed) return;
-		if (mode === "plain" || !findOpen) {
+		if (
+			mode === "plain" ||
+			!findOpen ||
+			(searchJump?.taskLine !== undefined && searchJump.query === findQuery)
+		) {
 			editor.commands.setNoteSearch({ query: "", activeIndex: 0 });
 			return;
 		}
@@ -505,11 +528,15 @@ export function useNoteFind({
 			query: findQuery,
 			activeIndex: effectiveFindActiveIndex,
 		});
-	}, [editor, effectiveFindActiveIndex, findOpen, findQuery, mode]);
+	}, [editor, effectiveFindActiveIndex, findOpen, findQuery, mode, searchJump]);
 
 	useEffect(() => {
 		if (!findOpen || !findQuery || !findMatches.length) return;
-		if (mode === "plain") return;
+		if (
+			mode === "plain" ||
+			(searchJump?.taskLine !== undefined && searchJump.query === findQuery)
+		)
+			return;
 		const frame = requestAnimationFrame(() => {
 			const scrollHost = scrollHostFor(tiptapHostRef.current);
 			const activeMatch = tiptapHostRef.current?.querySelector(
@@ -520,7 +547,14 @@ export function useNoteFind({
 			}
 		});
 		return () => cancelAnimationFrame(frame);
-	}, [findMatches.length, findOpen, findQuery, mode, tiptapHostRef]);
+	}, [
+		findMatches.length,
+		findOpen,
+		findQuery,
+		mode,
+		tiptapHostRef,
+		searchJump,
+	]);
 
 	useEffect(() => {
 		if (!findMatches.length && findActiveIndex === 0) return;

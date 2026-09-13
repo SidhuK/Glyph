@@ -361,7 +361,13 @@ export function useMarkdownDocumentSession({
 					const latest = await invoke("space_read_text", { path });
 					if (!isCurrentSession(sessionId)) return false;
 					if (latest.text === nextText) {
-						applySaveState(nextText, latest.mtime_ms);
+						const retry = await invoke("space_write_text", {
+							advance_repeats: true,
+							path,
+							text: nextText,
+							base_mtime_ms: latest.mtime_ms,
+						});
+						applySaveState(retry.normalized_text ?? nextText, retry.mtime_ms);
 						return true;
 					}
 					const { message: showDialog } = await import(

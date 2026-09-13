@@ -44,16 +44,55 @@ export function useTaskInbox({
 	useTauriEvent("index:progress", (progress) => {
 		if (progress.completed >= progress.total) void refresh();
 	});
+	const saveTaskSource = async (task: InboxTask): Promise<InboxTask> => {
+		if (!(await saveAllEditors())) return task;
+		const latest = await queryClient.fetchQuery({
+			...tasksQueryOptions(spacePath),
+			staleTime: 0,
+		});
+		const candidates = latest.filter(
+			(item) => item.note_path === task.note_path,
+		);
+		if (candidates.some((item) => item.etag === task.etag)) return task;
+		const sameTask = (item: InboxTask) =>
+			item.note_path === task.note_path &&
+			item.text === task.text &&
+			item.context === task.context &&
+			item.checked === task.checked &&
+			item.due === task.due &&
+			item.repeat === task.repeat;
+		const matches = candidates.filter(sameTask);
+		const match = matches[0];
+		if (
+			query.data?.filter(sameTask).length !== 1 ||
+			matches.length !== 1 ||
+			!match
+		) {
+			throw new Error(t("tasks.conflict"));
+		}
+		return match;
+	};
 	const mutation = useMutation({
 		mutationKey: [...taskQueryKey, "update"],
 		mutationFn: async (request: {
 			note_path: string;
 			etag: string;
 			action: TaskAction;
+			task?: InboxTask;
 		}) => {
-			await saveAllEditors();
 			if (!spacePath) throw new Error(t("tasks.loadFailed"));
-			return invoke("task_update", { ...request, space_path: spacePath });
+			const { task, ...args } = request;
+			if (task && args.action.kind !== "restore") {
+				const current = await saveTaskSource(task);
+				return invoke("task_update", {
+					...args,
+					etag: current.etag,
+					action: { ...args.action, start: current.start },
+					space_path: spacePath,
+				});
+			}
+			await saveAllEditors();
+			return invoke("task_update", { ...args, space_path: spacePath });
 		},
 		onSuccess: async () => {
 			await refresh();
@@ -77,6 +116,7 @@ export function useTaskInbox({
 	const update = async (task: InboxTask, action: TaskAction) => {
 		try {
 			const result = await mutation.mutateAsync({
+				task,
 				note_path: task.note_path,
 				etag: task.etag,
 				action,
@@ -134,8 +174,8 @@ export function useTaskInbox({
 			);
 	}, [tasks, search, view, today]);
 	const openSource = useMutation({
-		mutationFn: async (task: InboxTask) => {
-			await saveAllEditors();
+		mutationFn: async (original: InboxTask) => {
+			const task = await saveTaskSource(original);
 			const source = await invoke("space_read_text", { path: task.note_path });
 			if (source.etag !== task.etag) {
 				await refresh();

@@ -6,6 +6,9 @@ use regex::Regex;
 use std::sync::OnceLock;
 
 pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
+    static LIST: OnceLock<Regex> = OnceLock::new();
+    let list_pattern =
+        LIST.get_or_init(|| Regex::new(r"^(?:[-+*]|[0-9]+[.)])[ \t]+").expect("list pattern"));
     static TASK: OnceLock<Regex> = OnceLock::new();
     let task_pattern = TASK.get_or_init(|| {
         Regex::new(r"^(?:[ \t]*>[ \t]?)*[ \t]*(?:[-+*]|[0-9]+[.)])[ \t]+\[([ xX])\](?:[ \t]+|$)")
@@ -51,19 +54,29 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
             comment = !trimmed.contains("-->");
             continue;
         }
-        let mut quoted = trimmed;
-        while let Some(rest) = quoted.strip_prefix('>') {
-            quoted = rest.trim_start();
+        let mut quoted = line;
+        while let Some(rest) = quoted.trim_start().strip_prefix('>') {
+            quoted = rest.strip_prefix(' ').unwrap_or(rest);
         }
+        let fence_indent = quoted
+            .chars()
+            .take_while(|c| *c == ' ' || *c == '\t')
+            .map(|c| if c == '\t' { 4 } else { 1 })
+            .sum::<usize>();
+        let quoted = quoted.trim_start();
         let marker = quoted.chars().next().unwrap_or(' ');
         let count = quoted.chars().take_while(|ch| *ch == marker).count();
         if let Some((open, length)) = fence {
-            if marker == open && count >= length && quoted[count..].trim().is_empty() {
+            if fence_indent <= 3
+                && marker == open
+                && count >= length
+                && quoted[count..].trim().is_empty()
+            {
                 fence = None;
             }
             continue;
         }
-        if matches!(marker, '`' | '~') && count >= 3 {
+        if fence_indent <= 3 && matches!(marker, '`' | '~') && count >= 3 {
             fence = Some((marker, count));
             continue;
         }
@@ -123,10 +136,7 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
                 due,
                 repeat,
             });
-        } else if trimmed.starts_with("- ")
-            || trimmed.starts_with("* ")
-            || trimmed.starts_with("+ ")
-        {
+        } else if list_pattern.is_match(trimmed) {
             list_indent = Some(list_indent.map_or(indent, |parent| parent.min(indent)));
         }
     }
