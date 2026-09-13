@@ -240,6 +240,7 @@
 		"largeGraphContinue": "Continue"
 	},
 	"tasks": {
+		"openTasks": "Open Tasks",
 		"notesWithUnscheduledTasks": "In your notes",
 		"backToOverview": "Overview",
 		"openNote": "Open note",

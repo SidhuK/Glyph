@@ -6,6 +6,7 @@ import {
 	ArrowRight,
 	Calendar03Icon,
 	CalendarAdd01Icon,
+	CheckmarkCircle02Icon,
 	ChartRelationshipIcon,
 	ColorsIcon,
 	CursorAddSelection02Icon,
@@ -101,6 +102,7 @@ interface UseAppCommandsDeps {
 	onCreateSpace: () => void;
 	onOpenSpace: () => void;
 	openAllDocsTab: () => void;
+	openTasksTab: () => void;
 	openBlankTab: () => void;
 	splitPaneWithBlank: (edge: SplitDropEdge) => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
@@ -249,6 +251,7 @@ export function useAppCommands({
 	onCreateSpace,
 	onOpenSpace,
 	openAllDocsTab,
+	openTasksTab,
 	openBlankTab,
 	splitPaneWithBlank,
 	openDatabasesTab,
@@ -579,6 +582,15 @@ export function useAppCommands({
 				action: openAllDocsTab,
 			},
 			{
+				id: "open-tasks",
+				labelKey: "shell:tasks.openTasks",
+				icon: (
+					<HugeiconsIcon icon={CheckmarkCircle02Icon} size="var(--icon-lg)" />
+				),
+				enabled: Boolean(spacePath),
+				action: openTasksTab,
+			},
+			{
 				id: "open-connections",
 				label: "Open Connections",
 				icon: (
@@ -740,6 +752,7 @@ export function useAppCommands({
 		showCollapsibleLists,
 		spacePath,
 		openAllDocsTab,
+		openTasksTab,
 		openSearchPalette,
 		openDatabasesTab,
 		openCalendar,

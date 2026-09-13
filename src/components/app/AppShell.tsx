@@ -1011,6 +1011,9 @@ export function AppShell() {
 		}
 		openPalette("search");
 	}, [openCommandPalette, openPalette, spacePath]);
+	const openTasksTab = useCallback(() => {
+		openSpecialTab(TASKS_TAB_ID);
+	}, [openSpecialTab]);
 	const openAllDocsTab = useCallback(() => {
 		openSpecialTab(ACTIVITY_TIMELINE_TAB_ID);
 	}, [openSpecialTab]);
@@ -1286,6 +1289,7 @@ export function AppShell() {
 		onCreateSpace: handleCreateSpace,
 		onOpenSpace: handleOpenSpace,
 		openAllDocsTab,
+		openTasksTab,
 		openBlankTab,
 		splitPaneWithBlank,
 		openDatabasesTab,
@@ -1460,7 +1464,7 @@ export function AppShell() {
 						onSelectTag={(t) => openTagSearchPalette(t)}
 						sidebarCollapsed={sidebarCollapsed}
 						spacePath={spacePath}
-						onOpenTasks={() => openSpecialTab(TASKS_TAB_ID)}
+						onOpenTasks={openTasksTab}
 						onOpenAllDocs={openAllDocsTab}
 						onOpenPinnedDocs={openPinnedDocsTab}
 						onOpenConnections={openConnectionsView}

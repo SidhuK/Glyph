@@ -72,7 +72,7 @@ export const DEFAULT_SIDEBAR_VISIBILITY = {
 	newNote: true,
 	pinned: true,
 	allNotes: true,
-	tasks: true,
+	tasks: false,
 	databases: true,
 	connections: true,
 	calendar: false,
