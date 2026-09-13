@@ -1,7 +1,7 @@
-import { Calendar03Icon, File01Icon } from "@hugeicons/core-free-icons";
+import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useDateDisplayFormat } from "../../contexts";
+import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
 	formatDisplayDate,
 	parseDisplayDateInput,
@@ -9,6 +9,10 @@ import {
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import type { InboxTask, TaskAction } from "../../lib/tauri";
 import { HugeiconsIcon } from "../HugeiconsIcon";
+import {
+	DatabaseNoteAppearanceIcon,
+	databaseNoteAppearanceStyle,
+} from "../database/DatabaseNoteAppearanceIcon";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { TaskSchedule } from "./TaskSchedule";
 
@@ -30,6 +34,8 @@ export function TaskRow({
 }) {
 	const { t } = useTranslation("shell");
 	const dateFormat = useDateDisplayFormat();
+	const { itemAppearance } = useFileTreeContext();
+	const appearance = itemAppearance[task.note_path];
 	const [scheduleOpen, setScheduleOpen] = useState(false);
 	const date = task.due ? parseDisplayDateInput(task.due) : null;
 	const overdue = !task.checked && task.due !== null && task.due < today;
@@ -69,8 +75,15 @@ export function TaskRow({
 				title={t("tasks.openSource", { path: task.note_path, line: task.line })}
 			>
 				<span className="taskText">{label}</span>
-				<span className="taskContext">
-					<HugeiconsIcon icon={File01Icon} size={12} />
+				<span
+					className="taskContext"
+					style={databaseNoteAppearanceStyle(task.note_path, appearance)}
+				>
+					<DatabaseNoteAppearanceIcon
+						notePath={task.note_path}
+						appearance={appearance}
+						size={12}
+					/>
 					<span>
 						{task.note_title}
 						{task.context ? ` · ${task.context}` : ""}
