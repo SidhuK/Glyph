@@ -240,7 +240,13 @@
 		"largeGraphContinue": "Continue"
 	},
 	"tasks": {
-		"notesWithUnscheduledTasks": "Notes with unscheduled tasks",
+		"notesWithUnscheduledTasks": "In your notes",
+		"overviewHint": "Your next steps, collected from your notes.",
+		"backToOverview": "Overview",
+		"openNote": "Open note",
+		"noteComplete": "All done in this note",
+		"noteCompleteHint": "Head back to your notes to choose what’s next.",
+		"unscheduled": "Unscheduled",
 		"unscheduledCount_one": "{{count}} unscheduled task",
 		"unscheduledCount_other": "{{count}} unscheduled tasks",
 		"title": "Tasks",

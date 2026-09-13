@@ -1,7 +1,8 @@
-import type { SearchJumpRequest } from "../../lib/searchJump";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import type { SearchJumpRequest } from "../../lib/searchJump";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { TaskList } from "./TaskList";
@@ -27,6 +28,7 @@ function TaskInboxContent({
 	paneId: string;
 }) {
 	const { t } = useTranslation("shell");
+	const [selectedNote, setSelectedNote] = useState<string | null>(null);
 	const {
 		query,
 		update,
@@ -41,11 +43,18 @@ function TaskInboxContent({
 		counts,
 		openSource,
 	} = useTaskInbox({ onOpenFile, paneId });
+	const visibleTasks = selectedNote
+		? filtered.filter((task) => task.note_path === selectedNote)
+		: filtered;
+	const selectedTask = query.data?.find(
+		(task) => task.note_path === selectedNote,
+	);
 	return (
 		<section className="taskInbox" aria-label={t("tasks.title")}>
 			<header className="taskInboxHeader">
 				<div>
 					<h1>{t("tasks.title")}</h1>
+					<p className="taskInboxIntro">{t("tasks.overviewHint")}</p>
 				</div>
 				<Button
 					variant="ghost"
@@ -71,7 +80,10 @@ function TaskInboxContent({
 								key={value}
 								className={`taskView${view === value ? " is-active" : ""}`}
 								aria-pressed={view === value}
-								onClick={() => setView(value)}
+								onClick={() => {
+									setSelectedNote(null);
+									setView(value);
+								}}
 							>
 								{t(`tasks.views.${value}`)}
 								<span className="taskCount">{counts[value]}</span>
@@ -88,6 +100,28 @@ function TaskInboxContent({
 					className="taskSearch"
 				/>
 			</div>
+			{selectedNote ? (
+				<div className="taskNoteNavigation">
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => setSelectedNote(null)}
+					>
+						← {t("tasks.backToOverview")}
+					</Button>
+					<h2>{selectedTask?.note_title ?? selectedNote}</h2>
+					<Button
+						variant="ghost"
+						size="sm"
+						disabled={!selectedTask || busy}
+						onClick={() => {
+							if (selectedTask) openSource.mutate(selectedTask);
+						}}
+					>
+						{t("tasks.openNote")}
+					</Button>
+				</div>
+			) : null}
 			{query.isError ? (
 				<div className="taskInboxMessage" role="alert">
 					<h2>{t("tasks.loadFailed")}</h2>
@@ -105,25 +139,39 @@ function TaskInboxContent({
 				<div className="taskInboxMessage" role="status">
 					{t("tasks.loading")}
 				</div>
-			) : filtered.length === 0 ? (
+			) : visibleTasks.length === 0 ? (
 				<div className="taskInboxMessage" role="status">
-					<h2>{t(search ? "tasks.noResults" : `tasks.empty.${view}`)}</h2>
+					<h2>
+						{t(
+							search
+								? "tasks.noResults"
+								: selectedNote
+									? "tasks.noteComplete"
+									: `tasks.empty.${view}`,
+						)}
+					</h2>
 					<p>
 						{t(
 							search
 								? "tasks.searchHint"
-								: view === "all"
-									? "tasks.emptyHint"
-									: view === "today"
-										? "tasks.todayHint"
-										: view === "upcoming"
-											? "tasks.upcomingHint"
-											: "tasks.completedHint",
+								: selectedNote
+									? "tasks.noteCompleteHint"
+									: view === "all"
+										? "tasks.emptyHint"
+										: view === "today"
+											? "tasks.todayHint"
+											: view === "upcoming"
+												? "tasks.upcomingHint"
+												: "tasks.completedHint",
 						)}
 					</p>
 					{search ? (
 						<Button variant="ghost" onClick={() => setSearch("")}>
 							{t("tasks.clearSearch")}
+						</Button>
+					) : selectedNote ? (
+						<Button variant="ghost" onClick={() => setSelectedNote(null)}>
+							{t("tasks.backToOverview")}
 						</Button>
 					) : view !== "all" ? (
 						<Button variant="ghost" onClick={() => setView("all")}>
@@ -135,9 +183,10 @@ function TaskInboxContent({
 				</div>
 			) : (
 				<TaskList
-					key={`${view}:${search}`}
-					tasks={filtered}
-					groupUnscheduled={view === "all"}
+					key={`${view}:${search}:${selectedNote}`}
+					tasks={visibleTasks}
+					groupUnscheduled={view === "all" && !selectedNote}
+					onSelectNote={setSelectedNote}
 					today={today}
 					busy={busy}
 					onUpdate={update}
