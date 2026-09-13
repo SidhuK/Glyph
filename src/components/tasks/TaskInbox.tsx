@@ -1,12 +1,28 @@
+import {
+	Calendar03Icon,
+	CheckmarkCircle02Icon,
+	File01Icon,
+	RefreshIcon,
+	Sun01Icon,
+	ArrowLeft01Icon,
+} from "@hugeicons/core-free-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import type { SearchJumpRequest } from "../../lib/searchJump";
+import { HugeiconsIcon } from "../HugeiconsIcon";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { TaskList } from "./TaskList";
 import { taskViews, useTaskInbox } from "./useTaskInbox";
+
+const viewIcons = {
+	all: File01Icon,
+	today: Sun01Icon,
+	upcoming: Calendar03Icon,
+	completed: CheckmarkCircle02Icon,
+};
 
 export function TaskInbox({
 	onOpenFile,
@@ -54,17 +70,18 @@ function TaskInboxContent({
 			<header className="taskInboxHeader">
 				<div>
 					<h1>{t("tasks.title")}</h1>
-					<p className="taskInboxIntro">{t("tasks.overviewHint")}</p>
 				</div>
 				<Button
 					variant="ghost"
 					size="sm"
+					aria-label={t("tasks.refresh")}
+					title={t("tasks.refresh")}
 					disabled={query.isFetching || busy}
 					onClick={() => {
 						void refresh();
 					}}
 				>
-					{t("tasks.refresh")}
+					<HugeiconsIcon icon={RefreshIcon} size="var(--icon-sm)" />
 				</Button>
 			</header>
 			<div className="taskInboxToolbar">
@@ -85,6 +102,7 @@ function TaskInboxContent({
 									setView(value);
 								}}
 							>
+								<HugeiconsIcon icon={viewIcons[value]} size="var(--icon-sm)" />
 								{t(`tasks.views.${value}`)}
 								<span className="taskCount">{counts[value]}</span>
 							</button>
@@ -107,7 +125,8 @@ function TaskInboxContent({
 						size="sm"
 						onClick={() => setSelectedNote(null)}
 					>
-						← {t("tasks.backToOverview")}
+						<HugeiconsIcon icon={ArrowLeft01Icon} size="var(--icon-sm)" />{" "}
+						{t("tasks.backToOverview")}
 					</Button>
 					<h2>{selectedTask?.note_title ?? selectedNote}</h2>
 					<Button

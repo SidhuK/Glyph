@@ -6,7 +6,7 @@
 	height: 100%;
 	min-height: 0;
 	width: 100%;
-	padding: 40px max(24px, calc((100% - 1080px) / 2)) 20px;
+	padding: 20px max(20px, calc((100% - 1080px) / 2)) 12px;
 	background: var(--bg-primary);
 	color: var(--text-primary);
 }
@@ -15,11 +15,11 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 16px;
-	margin-bottom: 28px;
+	margin-bottom: 12px;
 }
 .taskInboxHeader h1 {
 	margin: 0;
-	font-size: calc(var(--text-base) * 1.6);
+	font-size: calc(var(--text-base) * 1.35);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.025em;
 }
@@ -28,7 +28,7 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 12px;
-	padding-bottom: 12px;
+	padding-bottom: 6px;
 	border-bottom: 1px solid var(--border-light);
 }
 .taskFilters {
@@ -37,7 +37,7 @@
 }
 .taskViews {
 	display: flex;
-	gap: 20px;
+	gap: 14px;
 	overflow-x: auto;
 }
 .taskInbox .taskView {
@@ -77,7 +77,7 @@
 	flex: 1;
 	overflow: auto;
 	min-height: 0;
-	padding-top: 12px;
+	padding-top: 4px;
 }
 .taskVirtualRow {
 	position: absolute;
@@ -88,8 +88,8 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	min-height: 64px;
-	padding: 8px;
+	min-height: 46px;
+	padding: 4px 6px;
 	border-radius: var(--radius-md);
 }
 .taskRow:hover,
@@ -98,8 +98,8 @@
 }
 .taskCheckbox {
 	flex-shrink: 0;
-	width: 20px;
-	height: 20px;
+	width: 16px;
+	height: 16px;
 	margin: 4px 2px;
 	accent-color: var(--interactive-accent);
 	cursor: pointer;
@@ -113,7 +113,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: 3px;
+	gap: 1px;
 	height: auto;
 	white-space: normal;
 	font-weight: var(--font-normal);
@@ -127,10 +127,13 @@
 }
 .taskText {
 	font-size: var(--text-sm);
-	line-height: 1.5;
+	line-height: 1.35;
 	overflow-wrap: anywhere;
 }
 .taskContext {
+	display: flex;
+	align-items: center;
+	gap: 4px;
 	flex-shrink: 0;
 	max-width: 100%;
 	color: var(--text-secondary);
@@ -255,19 +258,6 @@
 	.taskInbox .taskSearch {
 		flex-basis: 100%;
 	}
-	.taskRow {
-		flex-wrap: wrap;
-		gap: 8px;
-	}
-	.taskInbox .taskSource {
-		flex-basis: calc(100% - 40px);
-	}
-	.taskDate {
-		margin-inline-start: 28px;
-	}
-	.taskFolder {
-		display: none;
-	}
 }
 
 .taskListItems {
@@ -278,14 +268,9 @@
 
 .taskNotesHeading {
 	margin: 0;
-	padding: 20px 0 12px;
+	padding: 12px 6px 4px;
 	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
-	color: var(--text-secondary);
-}
-.taskInboxIntro {
-	margin: 8px 0 0;
-	font-size: var(--text-sm);
 	color: var(--text-secondary);
 }
 .taskNoteNavigation {
@@ -318,6 +303,20 @@
 	.taskNoteNavigation h2 {
 		order: 1;
 		flex-basis: 100%;
-		padding: 8px;
+		padding: 4px 6px;
 	}
+}
+
+.taskContext > svg {
+	flex-shrink: 0;
+}
+.taskInbox .taskDate {
+	height: 28px;
+	padding: 6px;
+}
+
+.taskContext > span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }

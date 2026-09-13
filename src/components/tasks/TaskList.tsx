@@ -109,8 +109,8 @@ export function TaskList({
 			entries[index]?.kind === "notes"
 				? 208
 				: entries[index]?.kind === "heading"
-					? 48
-					: 64,
+					? 32
+					: 46,
 		overscan: 8,
 		getItemKey: (index) => {
 			const entry = entries[index];

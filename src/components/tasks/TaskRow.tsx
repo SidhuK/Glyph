@@ -1,4 +1,4 @@
-import { Calendar03Icon } from "@hugeicons/core-free-icons";
+import { Calendar03Icon, File01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat } from "../../contexts";
@@ -67,12 +67,10 @@ export function TaskRow({
 			>
 				<span className="taskText">{label}</span>
 				<span className="taskContext">
-					{task.note_title}
-					{task.context ? ` · ${task.context}` : ""}
-					<span className="taskFolder">
-						{task.note_path.includes("/")
-							? ` · ${task.note_path.slice(0, task.note_path.lastIndexOf("/"))}`
-							: ""}
+					<HugeiconsIcon icon={File01Icon} size={12} />
+					<span>
+						{task.note_title}
+						{task.context ? ` · ${task.context}` : ""}
 					</span>
 				</span>
 			</button>
@@ -84,14 +82,13 @@ export function TaskRow({
 						data-overdue={overdue}
 						data-unscheduled={!task.due}
 						disabled={busy}
-						aria-label={t("tasks.editSchedule", { task: label })}
+						aria-label={`${t("tasks.editSchedule", { task: label })}: ${dateLabel}`}
+						title={
+							overdue ? t("tasks.overdueDate", { date: dateLabel }) : dateLabel
+						}
 					>
 						<HugeiconsIcon icon={Calendar03Icon} size="var(--icon-sm)" />
-						<span>
-							{overdue
-								? t("tasks.overdueDate", { date: dateLabel })
-								: dateLabel}
-						</span>
+						{task.checked && task.due ? <span>{dateLabel}</span> : null}
 					</button>
 				</PopoverTrigger>
 				<PopoverContent align="end" className="taskSchedulePopover">
