@@ -4,7 +4,6 @@ export interface SearchJumpRequest {
 	matchIndex: number;
 	targetPaneId: string;
 	taskLine?: number;
-	taskIndex?: number;
 }
 
 export const SEARCH_JUMP_EVENT = "glyph:search-jump";
@@ -18,7 +17,6 @@ export function requestSearchJump(request: SearchJumpRequest): void {
 		matchIndex: Math.max(0, request.matchIndex),
 		targetPaneId: request.targetPaneId,
 		taskLine: request.taskLine,
-		taskIndex: request.taskIndex,
 	};
 	pending = next;
 	window.dispatchEvent(new CustomEvent(SEARCH_JUMP_EVENT, { detail: next }));

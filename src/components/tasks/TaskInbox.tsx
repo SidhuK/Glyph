@@ -10,7 +10,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import type { SearchJumpRequest } from "../../lib/searchJump";
 import { HugeiconsIcon } from "../HugeiconsIcon";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
@@ -27,10 +26,7 @@ const viewIcons = {
 export function TaskInbox({
 	onOpenFile,
 	paneId,
-}: {
-	onOpenFile: (path: string, jump?: SearchJumpRequest) => Promise<void>;
-	paneId: string;
-}) {
+}: Parameters<typeof useTaskInbox>[0]) {
 	const { spacePath } = useSpace();
 	return (
 		<TaskInboxContent key={spacePath} onOpenFile={onOpenFile} paneId={paneId} />
@@ -39,10 +35,7 @@ export function TaskInbox({
 function TaskInboxContent({
 	onOpenFile,
 	paneId,
-}: {
-	onOpenFile: (path: string, jump?: SearchJumpRequest) => Promise<void>;
-	paneId: string;
-}) {
+}: Parameters<typeof useTaskInbox>[0]) {
 	const { t } = useTranslation("shell");
 	const [selectedNote, setSelectedNote] = useState<string | null>(null);
 	const {
@@ -85,29 +78,23 @@ function TaskInboxContent({
 				</Button>
 			</header>
 			<div className="taskInboxToolbar">
-				<div className="taskFilters">
-					<div
-						className="taskViews"
-						role="group"
-						aria-label={t("tasks.filter")}
-					>
-						{taskViews.map((value) => (
-							<button
-								type="button"
-								key={value}
-								className={`taskView${view === value ? " is-active" : ""}`}
-								aria-pressed={view === value}
-								onClick={() => {
-									setSelectedNote(null);
-									setView(value);
-								}}
-							>
-								<HugeiconsIcon icon={viewIcons[value]} size="var(--icon-sm)" />
-								{t(`tasks.views.${value}`)}
-								<span className="taskCount">{counts[value]}</span>
-							</button>
-						))}
-					</div>
+				<div className="taskViews" role="group" aria-label={t("tasks.filter")}>
+					{taskViews.map((value) => (
+						<button
+							type="button"
+							key={value}
+							className={`taskView${view === value ? " is-active" : ""}`}
+							aria-pressed={view === value}
+							onClick={() => {
+								setSelectedNote(null);
+								setView(value);
+							}}
+						>
+							<HugeiconsIcon icon={viewIcons[value]} size="var(--icon-sm)" />
+							{t(`tasks.views.${value}`)}
+							<span className="taskCount">{counts[value]}</span>
+						</button>
+					))}
 				</div>
 				<Input
 					type="search"
@@ -175,13 +162,7 @@ function TaskInboxContent({
 								? "tasks.searchHint"
 								: selectedNote
 									? "tasks.noteCompleteHint"
-									: view === "all"
-										? "tasks.emptyHint"
-										: view === "today"
-											? "tasks.todayHint"
-											: view === "upcoming"
-												? "tasks.upcomingHint"
-												: "tasks.completedHint",
+									: `tasks.${view}Hint`,
 						)}
 					</p>
 					{search ? (

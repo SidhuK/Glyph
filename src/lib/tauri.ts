@@ -40,7 +40,6 @@ export interface InboxTask {
 	checkbox_offset: number;
 	content_offset: number;
 	line: number;
-	task_index: number;
 	text: string;
 	context: string;
 	checked: boolean;

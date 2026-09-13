@@ -46,24 +46,27 @@ pub fn index_checklist(
     note_id: &str,
     etag: &str,
     markdown: &str,
-) -> Result<(), String> {
+) -> Result<(u32, u32), String> {
     // Parser revisions invalidate derived snapshots without changing source notes.
     let cache_etag = format!("v3:{etag}");
     let current = conn
         .query_row(
-            "SELECT etag FROM note_checklists WHERE note_id = ?",
+            "SELECT c.etag, n.checklist_total, n.checklist_completed FROM note_checklists c JOIN notes n ON n.id = c.note_id WHERE c.note_id = ?",
             [note_id],
-            |row| row.get::<_, String>(0),
+            |row| Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?, row.get::<_, u32>(2)?)),
         )
         .ok();
-    if current.as_deref() == Some(cache_etag.as_str()) {
-        return Ok(());
+    if let Some((current_etag, total, completed)) = current {
+        if current_etag == cache_etag {
+            return Ok((total, completed));
+        }
     }
     let items = super::parse::parse_checklist_items(markdown);
-    let completed = items.iter().filter(|item| item.checked).count();
+    let total = items.len() as u32;
+    let completed = items.iter().filter(|item| item.checked).count() as u32;
     conn.execute(
         "UPDATE notes SET checklist_total = ?, checklist_completed = ? WHERE id = ?",
-        rusqlite::params![items.len(), completed, note_id],
+        rusqlite::params![total, completed, note_id],
     )
     .map_err(|error| error.to_string())?;
     let json = serde_json::to_string(&items).map_err(|error| error.to_string())?;
@@ -72,7 +75,7 @@ pub fn index_checklist(
         rusqlite::params![note_id, cache_etag, json],
     )
     .map_err(|error| error.to_string())?;
-    Ok(())
+    Ok((total, completed))
 }
 
 pub fn query_tasks(root: &std::path::Path) -> Result<Vec<super::types::InboxTask>, String> {
@@ -96,7 +99,7 @@ pub fn query_tasks(root: &std::path::Path) -> Result<Vec<super::types::InboxTask
             Err(error) => return Err(error.to_string()),
         }
     }
-    let mut statement = conn.prepare("SELECT n.path, n.title, n.etag, c.items_json FROM notes n JOIN note_checklists c ON c.note_id = n.id AND c.etag = 'v3:' || n.etag WHERE n.checklist_total > 0 ORDER BY n.title COLLATE NOCASE, n.path").map_err(|error| error.to_string())?;
+    let mut statement = conn.prepare("SELECT n.path, n.title, n.etag, c.items_json FROM notes n JOIN note_checklists c ON c.note_id = n.id AND c.etag = 'v3:' || n.etag WHERE n.checklist_total > 0").map_err(|error| error.to_string())?;
     let mut rows = statement.query([]).map_err(|error| error.to_string())?;
     let mut tasks = Vec::new();
     while let Some(row) = rows.next().map_err(|error| error.to_string())? {

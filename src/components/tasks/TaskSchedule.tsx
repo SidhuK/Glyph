@@ -18,7 +18,9 @@ export function TaskSchedule({
 }: {
 	task: InboxTask;
 	busy: boolean;
-	onSave: (action: TaskAction) => Promise<boolean>;
+	onSave: (
+		action: Extract<TaskAction, { kind: "schedule" }>,
+	) => Promise<boolean>;
 }) {
 	const { t } = useTranslation("shell");
 	const id = useId();

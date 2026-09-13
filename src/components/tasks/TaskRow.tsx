@@ -22,7 +22,10 @@ export function TaskRow({
 	task: InboxTask;
 	today: string;
 	busy: boolean;
-	onUpdate: (task: InboxTask, action: TaskAction) => Promise<boolean>;
+	onUpdate: (
+		task: InboxTask,
+		action: Exclude<TaskAction, { kind: "restore" }>,
+	) => Promise<boolean>;
 	onOpen: (task: InboxTask) => void;
 }) {
 	const { t } = useTranslation("shell");

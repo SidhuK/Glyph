@@ -153,15 +153,14 @@ pub async fn space_write_text(
                 .lock()
                 .map_err(|_| "note mutation mutex poisoned".to_string())?;
             let rel = PathBuf::from(&path);
-            let (result, change) = write_text_under_root(
+            write_text_under_root(
                 &root,
                 &recent_local_changes,
                 &space_path,
                 &rel,
                 &text,
                 base_mtime_ms,
-            )?;
-            Ok((result, change))
+            )
         },
     )
     .await

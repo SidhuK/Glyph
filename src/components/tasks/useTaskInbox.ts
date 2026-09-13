@@ -1,4 +1,3 @@
-import type { SearchJumpRequest } from "../../lib/searchJump";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
@@ -6,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useEditorContext, useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
+import type { SearchJumpRequest } from "../../lib/searchJump";
 import { taskQueryKey, tasksQueryOptions } from "../../lib/tasks";
 import {
 	type InboxTask,
@@ -73,29 +73,30 @@ export function useTaskInbox({
 	};
 	const mutation = useMutation({
 		mutationKey: [...taskQueryKey, "update"],
-		mutationFn: async (request: {
-			note_path: string;
-			etag: string;
-			action: TaskAction;
-			task?: InboxTask;
-		}) => {
+		mutationFn: async (
+			request:
+				| { task: InboxTask; action: Exclude<TaskAction, { kind: "restore" }> }
+				| TaskUpdateResult,
+		) => {
 			if (!spacePath) throw new Error(t("tasks.loadFailed"));
-			const { task, ...args } = request;
-			if (task && args.action.kind !== "restore") {
-				const current = await saveTaskSource(task);
+			if ("task" in request) {
+				const current = await saveTaskSource(request.task);
 				return invoke("task_update", {
-					...args,
+					note_path: current.note_path,
 					etag: current.etag,
-					action: { ...args.action, start: current.start },
+					action: { ...request.action, start: current.start },
 					space_path: spacePath,
 				});
 			}
 			await saveAllEditors();
-			return invoke("task_update", { ...args, space_path: spacePath });
+			return invoke("task_update", {
+				note_path: request.note_path,
+				etag: request.etag,
+				action: { kind: "restore", text: request.previous_text },
+				space_path: spacePath,
+			});
 		},
-		onSuccess: async () => {
-			await refresh();
-		},
+		onSuccess: refresh,
 		onError: (error) => {
 			const detail = extractErrorMessage(error);
 			toast.error(t("tasks.updateFailed"), {
@@ -106,18 +107,13 @@ export function useTaskInbox({
 			void refresh();
 		},
 	});
-	const undo = (result: TaskUpdateResult) =>
-		mutation.mutate({
-			note_path: result.note_path,
-			etag: result.etag,
-			action: { kind: "restore", text: result.previous_text },
-		});
-	const update = async (task: InboxTask, action: TaskAction) => {
+	const update = async (
+		task: InboxTask,
+		action: Exclude<TaskAction, { kind: "restore" }>,
+	) => {
 		try {
 			const result = await mutation.mutateAsync({
 				task,
-				note_path: task.note_path,
-				etag: task.etag,
 				action,
 			});
 			toast.success(
@@ -129,7 +125,10 @@ export function useTaskInbox({
 						: "tasks.scheduled",
 				),
 				{
-					action: { label: t("tasks.undo"), onClick: () => undo(result) },
+					action: {
+						label: t("tasks.undo"),
+						onClick: () => mutation.mutate(result),
+					},
 				},
 			);
 			return true;
@@ -153,15 +152,13 @@ export function useTaskInbox({
 			.split(/\s+/)
 			.filter(Boolean);
 		return tasks
-			.filter(
-				(task) =>
-					matchesView(task, view, today) &&
-					terms.every((term) =>
-						`${task.text} ${task.note_title} ${task.note_path} ${task.context}`
-							.toLocaleLowerCase()
-							.includes(term),
-					),
-			)
+			.filter((task) => {
+				if (!matchesView(task, view, today)) return false;
+				if (!terms.length) return true;
+				const text =
+					`${task.text} ${task.note_title} ${task.note_path} ${task.context}`.toLocaleLowerCase();
+				return terms.every((term) => text.includes(term));
+			})
 			.sort(
 				(a, b) =>
 					(a.due ?? "9999-99-99").localeCompare(b.due ?? "9999-99-99") ||
@@ -184,7 +181,6 @@ export function useTaskInbox({
 				matchIndex: 0,
 				targetPaneId: paneId,
 				taskLine: task.line,
-				taskIndex: task.task_index,
 			});
 		},
 		onError: (error) =>
@@ -192,14 +188,14 @@ export function useTaskInbox({
 				description: extractErrorMessage(error),
 			}),
 	});
-	const counts = {
-		all: tasks.filter((task) => matchesView(task, "all", today)).length,
-		today: tasks.filter((task) => matchesView(task, "today", today)).length,
-		upcoming: tasks.filter((task) => matchesView(task, "upcoming", today))
-			.length,
-		completed: tasks.filter((task) => matchesView(task, "completed", today))
-			.length,
-	};
+	const counts = { all: 0, today: 0, upcoming: 0, completed: 0 };
+	for (const task of tasks) {
+		if (task.checked) counts.completed += 1;
+		else {
+			counts.all += 1;
+			if (task.due) counts[task.due <= today ? "today" : "upcoming"] += 1;
+		}
+	}
 	return {
 		query,
 		update,

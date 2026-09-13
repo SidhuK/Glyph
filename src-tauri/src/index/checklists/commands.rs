@@ -91,43 +91,38 @@ pub async fn task_update(
     .map_err(|error| error.to_string())?
 }
 
-pub(super) fn rewrite_task(original: &str, action: TaskAction) -> Result<String, String> {
-    let (start, schedule, checked) = match action {
+fn rewrite_task(original: &str, action: TaskAction) -> Result<String, String> {
+    let start = match action {
         TaskAction::Restore { text } => return Ok(text),
-        TaskAction::Check { start, checked } => (start, None, Some(checked)),
-        TaskAction::Schedule { start, due } => {
-            if due
-                .as_deref()
-                .is_some_and(|value| metadata::date(value).is_none())
-            {
-                return Err("invalid task date".to_string());
-            }
-            (start, Some(due), None)
-        }
+        TaskAction::Check { start, .. } | TaskAction::Schedule { start, .. } => start,
     };
     let task = parse_checklist_items(original)
         .into_iter()
         .find(|task| task.start == start)
         .ok_or("conflict: task no longer exists")?;
     let mut next = original.to_string();
-    if let Some(due) = schedule {
-        next.replace_range(
-            task.content_offset..task.end,
-            &format!(
-                "{}{}",
-                metadata::with_metadata(&task.text, due.as_deref()),
-                task.suffix
-            ),
-        );
-        return Ok(next);
+    match action {
+        TaskAction::Schedule { due, .. } => {
+            if due
+                .as_deref()
+                .is_some_and(|value| metadata::date(value).is_none())
+            {
+                return Err("invalid task date".to_string());
+            }
+            next.replace_range(
+                task.content_offset..task.end,
+                &format!(
+                    "{}{}",
+                    metadata::with_metadata(&task.text, due.as_deref()),
+                    task.suffix
+                ),
+            );
+        }
+        TaskAction::Check { checked, .. } => next.replace_range(
+            task.checkbox_offset..task.checkbox_offset + 1,
+            if checked { "x" } else { " " },
+        ),
+        TaskAction::Restore { .. } => unreachable!("restore returned before parsing"),
     }
-    let checked = checked.ok_or("missing task action")?;
-    if checked == task.checked {
-        return Ok(next);
-    }
-    next.replace_range(
-        task.checkbox_offset..task.checkbox_offset + 1,
-        if checked { "x" } else { " " },
-    );
     Ok(next)
 }

@@ -8,7 +8,7 @@ use std::{
 
 use crate::utils::{self, file_timestamp_strings_if_exists};
 
-use super::checklists::{checklist_counts, index_checklist};
+use super::checklists::index_checklist;
 use super::db::{open_db, resolve_title_to_id};
 use super::frontmatter::{
     parse_frontmatter_title_created_updated, preview_from_markdown, split_frontmatter,
@@ -180,8 +180,7 @@ pub(crate) fn index_note_with_conn(
     let title_for_fts = title.clone();
     let preview = preview_from_markdown(markdown);
     let rel_path = note_id.to_string();
-    let (checklist_total, checklist_completed) = checklist_counts(markdown);
-    index_checklist(&tx, note_id, &etag, markdown)?;
+    let (checklist_total, checklist_completed) = index_checklist(&tx, note_id, &etag, markdown)?;
 
     tx.execute(
         "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview, checklist_total, checklist_completed) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -393,8 +392,7 @@ where
         }
         let etag = sha256_hex(markdown.as_bytes());
         let preview = preview_from_markdown(&markdown);
-        let (checklist_total, checklist_completed) = checklist_counts(&markdown);
-        index_checklist(&tx, rel, &etag, &markdown)?;
+        let (checklist_total, checklist_completed) = index_checklist(&tx, rel, &etag, &markdown)?;
 
         tx.execute(
             "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview, checklist_total, checklist_completed) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",

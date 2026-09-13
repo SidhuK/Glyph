@@ -31,11 +31,9 @@
 	padding-bottom: 6px;
 	border-bottom: 1px solid var(--border-light);
 }
-.taskFilters {
+.taskViews {
 	min-width: 0;
 	flex: 1;
-}
-.taskViews {
 	display: flex;
 	gap: 14px;
 	overflow-x: auto;
@@ -147,15 +145,15 @@
 	color: var(--text-secondary);
 	text-decoration: line-through;
 }
-.taskDate {
+.taskInbox .taskDate {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
 	gap: 5px;
 	flex-shrink: 0;
 	max-width: 190px;
-	min-height: 28px;
-	padding: 5px 8px;
+	height: 28px;
+	padding: 6px;
 	font-size: var(--text-xs);
 	color: var(--text-secondary);
 	background: transparent;
@@ -259,7 +257,7 @@
 	outline-offset: 2px;
 }
 @container (max-width: 600px) {
-	.taskFilters {
+	.taskViews {
 		flex-basis: 100%;
 	}
 	.taskInbox .taskSearch {
@@ -316,10 +314,6 @@
 
 .taskContext > svg {
 	flex-shrink: 0;
-}
-.taskInbox .taskDate {
-	height: 28px;
-	padding: 6px;
 }
 
 .taskContext > span {

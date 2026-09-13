@@ -8,7 +8,6 @@ pub struct ParsedChecklistItem {
     pub checkbox_offset: usize,
     pub content_offset: usize,
     pub line: usize,
-    pub task_index: usize,
     pub text: String,
     pub suffix: String,
     pub context: String,

@@ -21,7 +21,6 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
     let mut comment = false;
     let mut context = String::new();
     let mut list_indent: Option<usize> = None;
-    let mut task_index = 0;
     let mut moved_indent: Option<usize> = None;
     for (index, segment) in markdown.split_inclusive('\n').enumerate() {
         let start = offset;
@@ -106,8 +105,6 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
             list_indent = Some(list_indent.map_or(indent, |parent| parent.min(indent)));
             // Rollover leaves a checked marker in the old note. It isn't a second task.
             let content = &line[prefix.end()..];
-            let ordinal = task_index;
-            task_index += 1;
             if content.contains("***Moved to*** [[") || content.contains("***Moved to [[") {
                 moved_indent = Some(indent);
                 continue;
@@ -129,7 +126,6 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
                 checkbox_offset: start + status.start(),
                 content_offset: start + prefix.end(),
                 line: index + 1,
-                task_index: ordinal,
                 text,
                 suffix,
                 context: context.clone(),
