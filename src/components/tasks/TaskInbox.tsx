@@ -137,6 +137,7 @@ function TaskInboxContent({
 				<TaskList
 					key={`${view}:${search}`}
 					tasks={filtered}
+					groupUnscheduled={view === "all"}
 					today={today}
 					busy={busy}
 					onUpdate={update}

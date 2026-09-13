@@ -284,3 +284,50 @@
 	padding: 0;
 	margin: 0;
 }
+
+.taskNotesHeading {
+	margin: 0;
+	padding: 20px 0 12px;
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-secondary);
+}
+.taskNoteGrid {
+	display: grid;
+	gap: 16px;
+	padding-bottom: 16px;
+}
+.taskInbox .taskNoteCard {
+	display: flex;
+	justify-content: flex-start;
+	gap: 16px;
+	height: 94px;
+	min-width: 0;
+	padding: 18px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: transparent;
+	text-align: start;
+}
+.taskNoteCard > svg {
+	flex-shrink: 0;
+	color: var(--text-tertiary);
+}
+.taskNoteCardText {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+}
+.taskNoteCardTitle {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+}
+.taskNoteCardCount {
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-normal);
+}

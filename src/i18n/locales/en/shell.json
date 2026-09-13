@@ -240,6 +240,9 @@
 		"largeGraphContinue": "Continue"
 	},
 	"tasks": {
+		"notesWithUnscheduledTasks": "Notes with unscheduled tasks",
+		"unscheduledCount_one": "{{count}} unscheduled task",
+		"unscheduledCount_other": "{{count}} unscheduled tasks",
 		"title": "Tasks",
 		"subtitle": "Every checkbox, together. Each task stays in its note.",
 		"views": {
