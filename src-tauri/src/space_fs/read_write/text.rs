@@ -39,7 +39,6 @@ fn write_text_under_root(
         )?;
         return Ok((
             TextFileWriteResult {
-                normalized_text: None,
                 etag: committed.etag,
                 mtime_ms: committed.mtime_ms,
             },
@@ -60,7 +59,6 @@ fn write_text_under_root(
     io_atomic::write_atomic(&abs, bytes).map_err(|error| error.to_string())?;
     Ok((
         TextFileWriteResult {
-            normalized_text: None,
             etag: etag_for(bytes),
             mtime_ms: file_mtime_ms(&abs),
         },
@@ -143,7 +141,6 @@ pub async fn space_write_text(
     path: String,
     text: String,
     base_mtime_ms: Option<u64>,
-    advance_repeats: Option<bool>,
 ) -> Result<TextFileWriteResult, String> {
     let root = state.root_for_window(&window)?;
     let space_path = root.to_string_lossy().to_string();
@@ -156,22 +153,14 @@ pub async fn space_write_text(
                 .lock()
                 .map_err(|_| "note mutation mutex poisoned".to_string())?;
             let rel = PathBuf::from(&path);
-            // Only editor saves opt into recurrence; unrelated writers preserve task contents.
-            let normalized_text = if advance_repeats == Some(true) && utils::is_markdown_path(&rel)
-            {
-                index::checklists::advance_completed_repeats(&text)?
-            } else {
-                None
-            };
-            let (mut result, change) = write_text_under_root(
+            let (result, change) = write_text_under_root(
                 &root,
                 &recent_local_changes,
                 &space_path,
                 &rel,
-                normalized_text.as_deref().unwrap_or(&text),
+                &text,
                 base_mtime_ms,
             )?;
-            result.normalized_text = normalized_text;
             Ok((result, change))
         },
     )

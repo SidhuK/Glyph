@@ -59,8 +59,7 @@ export function useTaskInbox({
 			item.text === task.text &&
 			item.context === task.context &&
 			item.checked === task.checked &&
-			item.due === task.due &&
-			item.repeat === task.repeat;
+			item.due === task.due;
 		const matches = candidates.filter(sameTask);
 		const match = matches[0];
 		if (
@@ -123,13 +122,11 @@ export function useTaskInbox({
 			});
 			toast.success(
 				t(
-					result.next_due
-						? "tasks.repeated"
-						: action.kind === "check"
-							? action.checked
-								? "tasks.completed"
-								: "tasks.reopened"
-							: "tasks.scheduled",
+					action.kind === "check"
+						? action.checked
+							? "tasks.completed"
+							: "tasks.reopened"
+						: "tasks.scheduled",
 				),
 				{
 					action: { label: t("tasks.undo"), onClick: () => undo(result) },

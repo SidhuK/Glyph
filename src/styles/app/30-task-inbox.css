@@ -200,7 +200,6 @@
 	gap: 2px;
 	justify-content: space-between;
 }
-.taskSelect,
 .taskNativeDate {
 	width: 100%;
 	min-height: 34px;
@@ -213,13 +212,6 @@
 	font-size: var(--text-sm);
 	appearance: auto;
 	-webkit-appearance: auto;
-}
-.taskScheduleHint {
-	grid-column: 1 / -1;
-	margin: 0;
-	color: var(--text-secondary);
-	font-size: var(--text-xs);
-	line-height: 1.5;
 }
 .taskInboxMessage {
 	flex: 1;
@@ -252,7 +244,6 @@
 .taskSource:focus-visible,
 .taskDate:focus-visible,
 .taskCheckbox:focus-visible,
-.taskSelect:focus-visible,
 .taskNativeDate:focus-visible {
 	outline: 2px solid var(--interactive-accent);
 	outline-offset: 2px;

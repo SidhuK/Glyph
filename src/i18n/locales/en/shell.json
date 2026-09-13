@@ -269,18 +269,8 @@
 		"completed": "Task completed",
 		"reopened": "Task reopened",
 		"scheduled": "Schedule updated",
-		"repeated": "Task completed. The next occurrence is ready.",
 		"undo": "Undo",
 		"dueDate": "Due date",
-		"repeat": "Repeat",
-		"repeats": {
-			"none": "Does not repeat",
-			"daily": "Daily",
-			"weekdays": "Weekdays",
-			"weekly": "Weekly",
-			"monthly": "Monthly"
-		},
-		"repeatHint": "Completing this task adds its next occurrence to the same note. Missed dates are skipped.",
 		"tomorrow": "Tomorrow",
 		"noDate": "No date",
 		"save": "Save",

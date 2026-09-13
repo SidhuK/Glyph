@@ -121,7 +121,7 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
                 .min()
                 .unwrap_or(content.trim_end().len());
             let suffix = content[suffix_start..].to_string();
-            let (text, due, repeat) = split_metadata(&content[..suffix_start]);
+            let (text, due) = split_metadata(&content[..suffix_start]);
             out.push(ParsedChecklistItem {
                 checked: status.as_str() != " ",
                 start,
@@ -134,7 +134,6 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
                 suffix,
                 context: context.clone(),
                 due,
-                repeat,
             });
         } else if list_pattern.is_match(trimmed) {
             list_indent = Some(list_indent.map_or(indent, |parent| parent.min(indent)));

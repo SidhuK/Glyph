@@ -267,7 +267,6 @@ describe("MarkdownEditorPane", () => {
 		});
 
 		expect(invokeMock).toHaveBeenCalledWith("space_write_text", {
-			advance_repeats: true,
 			path: "notes/first.md",
 			text: "latest typed text",
 			base_mtime_ms: 1,
@@ -311,7 +310,6 @@ describe("MarkdownEditorPane", () => {
 		});
 
 		expect(invokeMock).toHaveBeenCalledWith("space_write_text", {
-			advance_repeats: true,
 			path: "notes/race.md",
 			text: "latest typed text",
 			base_mtime_ms: 1,

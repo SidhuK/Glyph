@@ -92,9 +92,6 @@ export function TaskRow({
 								? t("tasks.overdueDate", { date: dateLabel })
 								: dateLabel}
 						</span>
-						{task.repeat ? (
-							<span title={t(`tasks.repeats.${task.repeat}`)}>↻</span>
-						) : null}
 					</button>
 				</PopoverTrigger>
 				<PopoverContent align="end" className="taskSchedulePopover">

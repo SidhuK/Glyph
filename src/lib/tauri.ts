@@ -31,7 +31,6 @@ interface SpaceInfo {
 	welcome_note_path?: string | null;
 }
 
-export type TaskRepeat = "daily" | "weekdays" | "weekly" | "monthly";
 export interface InboxTask {
 	note_path: string;
 	note_title: string;
@@ -46,7 +45,6 @@ export interface InboxTask {
 	context: string;
 	checked: boolean;
 	due: string | null;
-	repeat: TaskRepeat | null;
 }
 export type TaskAction =
 	| { kind: "check"; start: number; checked: boolean }
@@ -54,14 +52,12 @@ export type TaskAction =
 			kind: "schedule";
 			start: number;
 			due: string | null;
-			repeat: TaskRepeat | null;
 	  }
 	| { kind: "restore"; text: string };
 export interface TaskUpdateResult {
 	note_path: string;
 	etag: string;
 	previous_text: string;
-	next_due: string | null;
 }
 
 export interface FsEntry {
@@ -103,7 +99,6 @@ export interface TextFileDoc {
 }
 
 interface TextFileWriteResult {
-	normalized_text: string | null;
 	etag: string;
 	mtime_ms: number;
 }
@@ -1107,7 +1102,6 @@ interface TauriCommands {
 			path: string;
 			text: string;
 			base_mtime_ms?: number | null;
-			advance_repeats?: boolean;
 		},
 		TextFileWriteResult
 	>;

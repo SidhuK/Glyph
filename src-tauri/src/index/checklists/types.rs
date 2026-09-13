@@ -1,4 +1,3 @@
-use super::metadata::TaskRepeat;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -14,7 +13,6 @@ pub struct ParsedChecklistItem {
     pub suffix: String,
     pub context: String,
     pub due: Option<String>,
-    pub repeat: Option<TaskRepeat>,
 }
 
 #[derive(Serialize)]
