@@ -1,14 +1,18 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useReducedMotion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useDateDisplayFormat } from "../../contexts";
+import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
+import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import {
 	formatDisplayDate,
 	parseDisplayDateInput,
 } from "../../lib/dateDisplayFormat";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import type { InboxTask } from "../../lib/tauri";
-import { DatabaseNoteAppearanceIcon } from "../database/DatabaseNoteAppearanceIcon";
+import { AllDocsCard } from "../app/AllDocsCard";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
+import { springPresets } from "../ui/animations";
 import { TaskRow } from "./TaskRow";
 
 type TaskListEntry =
@@ -27,6 +31,8 @@ export function TaskList({
 	onSelectNote: (path: string) => void;
 } & Omit<Parameters<typeof TaskRow>[0], "task">) {
 	const { t } = useTranslation("shell");
+	const { itemAppearance } = useFileTreeContext();
+	const shouldReduceMotion = useReducedMotion() ?? false;
 	const dateFormat = useDateDisplayFormat();
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const [columns, setColumns] = useState(1);
@@ -77,6 +83,10 @@ export function TaskList({
 		if (note) note.tasks.push(task);
 		else notes.set(task.note_path, { task, tasks: [task] });
 	}
+	const summaries = useTaskSummariesForPaths(
+		[...notes.keys()],
+		groupUnscheduled,
+	);
 	const grouped = [...notes.values()].sort((a, b) =>
 		a.task.note_title.localeCompare(b.task.note_title),
 	);
@@ -134,43 +144,34 @@ export function TaskList({
 								<h2 className="taskNotesHeading">{entry.label}</h2>
 							) : (
 								<div
-									className="taskNoteGrid"
+									className="allDocsGrid"
 									style={{
 										gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
 									}}
 								>
 									{entry.notes.map(({ task, tasks: noteTasks }) => (
-										<button
+										<AllDocsCard
 											key={task.note_path}
-											type="button"
-											className="taskNoteCard"
-											onClick={() => onSelectNote(task.note_path)}
-											title={task.note_path}
-										>
-											<DatabaseNoteAppearanceIcon
-												notePath={task.note_path}
-												size={22}
-											/>
-											<span className="taskNoteCardText">
-												<span className="taskNoteCardTitle">
-													{task.note_title}
-												</span>
-												<span className="taskNotePreview" aria-hidden="true">
-													{noteTasks.slice(0, 3).map((preview) => (
-														<span key={preview.start}>
-															<span className="taskPreviewCheckbox" />
-															{normalizeInlineMarkdown(preview.text) ||
-																t("tasks.untitled")}
-														</span>
-													))}
-												</span>
-												<span className="taskNoteCardCount">
-													{t("tasks.unscheduledCount", {
-														count: noteTasks.length,
-													})}
-												</span>
-											</span>
-										</button>
+											notePath={task.note_path}
+											noteAppearance={itemAppearance[task.note_path]}
+											title={task.note_title}
+											preview={noteTasks.slice(0, 3).map((preview) => ({
+												key: String(preview.start),
+												kind: "task",
+												text:
+													normalizeInlineMarkdown(preview.text) ||
+													t("tasks.untitled"),
+											}))}
+											taskSummary={summaries[task.note_path]}
+											taskCount={summaries[task.note_path]?.total_count ?? 0}
+											selected={false}
+											animationIndex={item.index}
+											shouldReduceMotion={shouldReduceMotion}
+											springPreset={springPresets.snappy}
+											TaskProgressComponent={TaskProgressIndicator}
+											onSelect={() => onSelectNote(task.note_path)}
+											onOpen={() => rowProps.onOpen(task)}
+										/>
 									))}
 								</div>
 							)}

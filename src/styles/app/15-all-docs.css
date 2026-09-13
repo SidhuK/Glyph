@@ -1,4 +1,4 @@
-:is(.allDocsPane, .activityTimelinePane) {
+:is(.allDocsPane, .activityTimelinePane, .taskInbox) {
 	--all-docs-card-min-width: 184px;
 	--all-docs-card-min-height: 184px;
 	--all-docs-card-gap: 14px;
@@ -324,13 +324,13 @@
 }
 
 @media (max-width: 900px) {
-	:is(.allDocsPane, .activityTimelinePane) {
+	:is(.allDocsPane, .activityTimelinePane, .taskInbox) {
 		--all-docs-card-min-width: 160px;
 	}
 }
 
 @media (max-width: 640px) {
-	:is(.allDocsPane, .activityTimelinePane) {
+	:is(.allDocsPane, .activityTimelinePane, .taskInbox) {
 		--all-docs-card-min-width: 144px;
 		--all-docs-card-min-height: 176px;
 	}
