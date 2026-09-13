@@ -9,6 +9,7 @@ import {
 	CursorAddSelection02Icon,
 	ExpandParagraphIcon,
 	Folder01Icon,
+	HistoryIcon,
 	LibraryIcon,
 	Link01Icon,
 	NoteIcon,
@@ -66,6 +67,7 @@ import {
 	isEditorTextColor,
 } from "../editor/textColors";
 import { FileTreePane } from "../filetree";
+import { RecentFilesPane } from "./RecentFilesPane";
 
 export interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -119,6 +121,7 @@ export interface SidebarContentProps {
 
 type SidebarView =
 	| { kind: "files" }
+	| { kind: "recents" }
 	| { kind: "tags" }
 	| { kind: "folder"; path: string };
 
@@ -318,6 +321,11 @@ export const SidebarContent = memo(function SidebarContent({
 		t("sidebar.searchPlaceholder") !== "sidebar.searchPlaceholder"
 			? t("sidebar.searchPlaceholder")
 			: t("sidebar.search");
+	const sidebarViewTabsLabel = [
+		t("sidebar.files"),
+		t("sidebar.recents"),
+		t("tags.header"),
+	].join(" / ");
 	const newNoteTitle = newNoteFolder
 		? t("sidebar.newNoteInFolder", { folder: newNoteFolder })
 		: t("sidebar.newNoteInRoot");
@@ -460,7 +468,7 @@ export const SidebarContent = memo(function SidebarContent({
 		[onSelectDir, setFolioScope],
 	);
 	const handleSidebarViewChange = useCallback(
-		(view: "files" | "tags") => {
+		(view: "files" | "recents" | "tags") => {
 			if (activeSidebarView.kind === view) return;
 			setSidebarView({ kind: view });
 			if (activeSidebarView.kind === "folder") {
@@ -826,7 +834,7 @@ export const SidebarContent = memo(function SidebarContent({
 						<div
 							className="sidebarViewTabs"
 							role="tablist"
-							aria-label={`${t("sidebar.files")} / ${t("tags.header")}`}
+							aria-label={sidebarViewTabsLabel}
 						>
 							<button
 								type="button"
@@ -845,6 +853,25 @@ export const SidebarContent = memo(function SidebarContent({
 								/>
 								<span className="sidebarViewTabLabel">
 									{t("sidebar.files")}
+								</span>
+							</button>
+							<button
+								type="button"
+								className="sidebarViewTab"
+								id="sidebar-recents-tab"
+								role="tab"
+								aria-selected={activeSidebarView.kind === "recents"}
+								aria-controls="sidebar-recents-panel"
+								onClick={() => handleSidebarViewChange("recents")}
+							>
+								<HugeiconsIcon
+									icon={HistoryIcon}
+									size="var(--icon-md)"
+									className="sidebarViewTabIcon"
+									aria-hidden="true"
+								/>
+								<span className="sidebarViewTabLabel">
+									{t("sidebar.recents")}
 								</span>
 							</button>
 							<button
@@ -922,7 +949,12 @@ export const SidebarContent = memo(function SidebarContent({
 					</div>
 					<div className="sidebarViewContent">
 						<Activity
-							mode={activeSidebarView.kind === "tags" ? "hidden" : "visible"}
+							mode={
+								activeSidebarView.kind === "files" ||
+								activeSidebarView.kind === "folder"
+									? "visible"
+									: "hidden"
+							}
 						>
 							<section
 								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
@@ -1042,6 +1074,23 @@ export const SidebarContent = memo(function SidebarContent({
 									onToggleSidebarFolderTab={handleToggleSidebarFolderTab}
 									pinnedFiles={folioMode ? [] : pinnedFiles}
 									onTogglePinnedFile={togglePinnedFile}
+								/>
+							</section>
+						</Activity>
+						<Activity
+							mode={activeSidebarView.kind === "recents" ? "visible" : "hidden"}
+						>
+							<section
+								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
+								data-section="recents"
+								id="sidebar-recents-panel"
+								role="tabpanel"
+								aria-labelledby="sidebar-recents-tab"
+							>
+								<RecentFilesPane
+									spacePath={spacePath}
+									activeFilePath={activeFilePath}
+									onOpenFile={onOpenFile}
 								/>
 							</section>
 						</Activity>

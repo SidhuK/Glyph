@@ -10,6 +10,7 @@ import { isMarkdownPath, parentDir } from "../utils/path";
 import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
 import type { CreateMarkdownFileOptions } from "./useFileTreeCRUD";
+import { useRecentFiles } from "./useRecentFiles";
 
 export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
@@ -77,6 +78,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		setError,
 		activeFilePath,
 	} = deps;
+	const { addRecentFile } = useRecentFiles(spacePath);
 
 	const loadedDirsRef = useRef(new Set<string>());
 	const loadRequestVersionRef = useRef(new Map<string, number>());
@@ -281,12 +283,15 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			setActiveFilePath(relPath);
 			setActiveDirPath(parentDir(relPath));
 			await openNonMarkdownExternally(relPath);
+			if (spacePath) await addRecentFile(relPath, spacePath);
 		},
 		[
+			addRecentFile,
 			openMarkdownFile,
 			openNonMarkdownExternally,
 			setActiveFilePath,
 			setActiveDirPath,
+			spacePath,
 		],
 	);
 

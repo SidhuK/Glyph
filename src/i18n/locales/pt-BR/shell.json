@@ -19,6 +19,8 @@
 		"templates": "Modelos",
 		"gitSync": "Sincronização Git",
 		"files": "Arquivos",
+		"recents": "Recentes",
+		"noRecentFiles": "Nenhum arquivo recente.",
 		"sortNotes": "Ordenar notas",
 		"sort": "Ordenar",
 		"expandAllFolders": "Expandir todas as pastas",

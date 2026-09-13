@@ -19,6 +19,8 @@
 		"templates": "Plantillas",
 		"gitSync": "Sincronización con Git",
 		"files": "Archivos",
+		"recents": "Recientes",
+		"noRecentFiles": "Aún no hay archivos recientes.",
 		"sortNotes": "Ordenar notas",
 		"sort": "Ordenar",
 		"expandAllFolders": "Expandir todas las carpetas",

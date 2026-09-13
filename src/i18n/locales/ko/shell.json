@@ -19,6 +19,8 @@
 		"templates": "템플릿",
 		"gitSync": "Git 동기화",
 		"files": "파일",
+		"recents": "최근 항목",
+		"noRecentFiles": "최근 파일이 없습니다.",
 		"sortNotes": "노트 정렬",
 		"sort": "정렬",
 		"expandAllFolders": "모든 폴더 펼치기",

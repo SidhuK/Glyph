@@ -19,6 +19,8 @@
 		"templates": "Vorlagen",
 		"gitSync": "Git-Synchronisierung",
 		"files": "Dateien",
+		"recents": "Zuletzt",
+		"noRecentFiles": "Keine kürzlich geöffneten Dateien.",
 		"sortNotes": "Notizen sortieren",
 		"sort": "Sortieren",
 		"expandAllFolders": "Alle Ordner ausklappen",

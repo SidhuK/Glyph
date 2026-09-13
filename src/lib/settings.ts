@@ -901,3 +901,44 @@ export async function addRecentFile(
 	await store.set(INTERNAL_SETTING_KEYS.recentFiles, next);
 	await saveSettingsStore(store);
 }
+
+export async function updateRecentFilesForPathChange(
+	change:
+		| {
+				kind: "remove";
+				spacePath: string;
+				path: string;
+				recursive: boolean;
+		  }
+		| {
+				kind: "rename";
+				spacePath: string;
+				fromPath: string;
+				toPath: string;
+				recursive: boolean;
+		  },
+): Promise<void> {
+	const target = change.kind === "remove" ? change.path : change.fromPath;
+	if (!target) return;
+	const store = await getSettingsStore();
+	const raw = await store.get<unknown>(INTERNAL_SETTING_KEYS.recentFiles);
+	const recent = isRecentFileArray(raw) ? raw : [];
+	const matches = (file: RecentFile) =>
+		file.spacePath === change.spacePath &&
+		(file.path === target ||
+			(change.recursive && file.path.startsWith(`${target}/`)));
+	const next =
+		change.kind === "remove"
+			? recent.filter((file) => !matches(file))
+			: recent.map((file) =>
+					matches(file)
+						? {
+								...file,
+								path: `${change.toPath}${file.path.slice(target.length)}`,
+							}
+						: file,
+				);
+	if (next.every((file, index) => file === recent[index])) return;
+	await store.set(INTERNAL_SETTING_KEYS.recentFiles, next);
+	await saveSettingsStore(store);
+}
