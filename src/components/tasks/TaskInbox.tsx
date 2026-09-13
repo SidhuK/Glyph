@@ -20,7 +20,7 @@ import { taskViews, useTaskInbox } from "./useTaskInbox";
 const viewIcons = {
 	all: CheckListIcon,
 	today: Sun01Icon,
-	upcoming: Calendar03Icon,
+	tomorrow: Calendar03Icon,
 	completed: CheckmarkCircle02Icon,
 };
 
@@ -179,8 +179,8 @@ function TaskInboxContent({
 										? "tasks.emptyHint"
 										: view === "today"
 											? "tasks.todayHint"
-											: view === "upcoming"
-												? "tasks.upcomingHint"
+											: view === "tomorrow"
+												? "tasks.tomorrowHint"
 												: "tasks.completedHint",
 						)}
 					</p>

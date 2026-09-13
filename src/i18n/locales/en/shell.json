@@ -252,7 +252,7 @@
 		"views": {
 			"all": "All",
 			"today": "Today",
-			"upcoming": "Upcoming",
+			"tomorrow": "Tomorrow",
 			"completed": "Completed"
 		},
 		"filter": "Filter tasks",
@@ -282,12 +282,12 @@
 		"empty": {
 			"all": "Your tasks start in your notes",
 			"today": "Nothing due today",
-			"upcoming": "No upcoming tasks",
+			"tomorrow": "Nothing due tomorrow",
 			"completed": "Completed tasks will appear here"
 		},
 		"emptyHint": "Add a checklist in any note. Its tasks will appear here automatically after saving.",
 		"todayHint": "You’re caught up on dated tasks. You can give any undated task a date from All.",
-		"upcomingHint": "Tasks with a future due date appear here. Add a date to plan ahead.",
+		"tomorrowHint": "Tasks due tomorrow appear here. You can schedule tasks from All.",
 		"completedHint": "Check off a task in any note or here. You can reopen it whenever you need.",
 		"noResults": "No matching tasks",
 		"searchHint": "Try a task name, note title, or folder.",
