@@ -1,6 +1,6 @@
 import type { SearchJumpRequest } from "../../lib/searchJump";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addDays, format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useEditorContext, useSpace } from "../../contexts";
@@ -16,15 +16,14 @@ import {
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { toast } from "../../lib/toast";
 
-export const taskViews = ["today", "tomorrow", "all", "completed"] as const;
+export const taskViews = ["today", "upcoming", "all", "completed"] as const;
 type TaskView = (typeof taskViews)[number];
 const DAY_REFRESH_MS = 60_000;
 function matchesView(task: InboxTask, view: TaskView, today: string) {
 	if (view === "completed") return task.checked;
 	if (task.checked) return false;
 	if (view === "today") return task.due !== null && task.due <= today;
-	if (view === "tomorrow")
-		return task.due === format(addDays(parseISO(today), 1), "yyyy-MM-dd");
+	if (view === "upcoming") return task.due !== null && task.due > today;
 	return true;
 }
 
@@ -196,7 +195,7 @@ export function useTaskInbox({
 	const counts = {
 		all: tasks.filter((task) => matchesView(task, "all", today)).length,
 		today: tasks.filter((task) => matchesView(task, "today", today)).length,
-		tomorrow: tasks.filter((task) => matchesView(task, "tomorrow", today))
+		upcoming: tasks.filter((task) => matchesView(task, "upcoming", today))
 			.length,
 		completed: tasks.filter((task) => matchesView(task, "completed", today))
 			.length,
