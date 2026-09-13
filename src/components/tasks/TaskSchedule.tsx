@@ -1,7 +1,14 @@
+import {
+	Calendar03Icon,
+	Cancel01Icon,
+	Sun01Icon,
+	Tick02Icon,
+} from "@hugeicons/core-free-icons";
 import { addDays, format } from "date-fns";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { InboxTask, TaskAction } from "../../lib/tauri";
+import { HugeiconsIcon } from "../HugeiconsIcon";
 import { Button } from "../ui/shadcn/button";
 
 export function TaskSchedule({
@@ -40,56 +47,44 @@ export function TaskSchedule({
 				disabled={busy}
 				onChange={(event) => setDue(event.target.value)}
 			/>
-			<div className="taskDateShortcuts">
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					disabled={busy}
-					onClick={() => {
-						void onSave({
-							kind: "schedule",
-							start: task.start,
-							due: today,
-						});
-					}}
-				>
-					{t("tasks.views.today")}
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					disabled={busy}
-					onClick={() => {
-						void onSave({
-							kind: "schedule",
-							start: task.start,
-							due: format(addDays(new Date(), 1), "yyyy-MM-dd"),
-						});
-					}}
-				>
-					{t("tasks.tomorrow")}
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					disabled={busy}
-					onClick={() => {
-						void onSave({
-							kind: "schedule",
-							start: task.start,
-							due: null,
-						});
-					}}
-				>
-					{t("tasks.noDate")}
-				</Button>
-			</div>
-			<Button type="submit" size="sm" disabled={busy}>
-				{t("tasks.save")}
+			<Button
+				type="submit"
+				size="sm"
+				disabled={busy}
+				aria-label={t("tasks.save")}
+				title={t("tasks.save")}
+			>
+				<HugeiconsIcon icon={Tick02Icon} size="var(--icon-sm)" />
 			</Button>
+			<div className="taskDateShortcuts">
+				{[
+					{ label: t("tasks.views.today"), due: today, icon: Sun01Icon },
+					{
+						label: t("tasks.tomorrow"),
+						due: format(addDays(new Date(), 1), "yyyy-MM-dd"),
+						icon: Calendar03Icon,
+					},
+					{ label: t("tasks.noDate"), due: null, icon: Cancel01Icon },
+				].map((shortcut) => (
+					<Button
+						key={shortcut.label}
+						type="button"
+						variant="ghost"
+						size="sm"
+						disabled={busy}
+						onClick={() => {
+							void onSave({
+								kind: "schedule",
+								start: task.start,
+								due: shortcut.due,
+							});
+						}}
+					>
+						<HugeiconsIcon icon={shortcut.icon} size="var(--icon-sm)" />
+						{shortcut.label}
+					</Button>
+				))}
+			</div>
 		</form>
 	);
 }

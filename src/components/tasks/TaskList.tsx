@@ -107,7 +107,7 @@ export function TaskList({
 		getScrollElement: () => scrollRef.current,
 		estimateSize: (index) =>
 			entries[index]?.kind === "notes"
-				? 208
+				? 138
 				: entries[index]?.kind === "heading"
 					? 32
 					: 46,

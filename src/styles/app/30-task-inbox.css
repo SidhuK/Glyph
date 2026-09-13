@@ -181,23 +181,29 @@
 	color: var(--text-error);
 }
 .taskSchedulePopover {
-	width: 260px;
+	width: 280px;
+	padding: 10px;
 }
 .taskSchedule {
 	display: grid;
-	grid-template-columns: auto minmax(0, 1fr);
+	grid-template-columns: minmax(0, 1fr) auto;
 	align-items: center;
-	gap: 12px;
+	gap: 8px;
 }
 .taskSchedule > button[type="submit"] {
-	grid-column: 2;
-	justify-self: end;
+	width: 30px;
+	height: 30px;
+	padding: 6px;
 }
 .taskSchedule label {
+	grid-column: 1 / -1;
+	color: var(--text-secondary);
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 }
 .taskDateShortcuts {
+	padding-top: 6px;
+	border-top: 1px solid var(--border-light);
 	grid-column: 1 / -1;
 	display: flex;
 	gap: 2px;
@@ -205,12 +211,13 @@
 }
 .taskNativeDate {
 	width: 100%;
-	min-height: 34px;
-	padding: 4px;
-	border: revert;
-	border-radius: revert;
-	background: revert;
-	color: revert;
+	min-width: 0;
+	height: 30px;
+	padding: 4px 8px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	color: var(--text-primary);
 	font: inherit;
 	font-size: var(--text-sm);
 	appearance: auto;
@@ -319,4 +326,15 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.taskInbox .allDocsCardSurface {
+	aspect-ratio: auto;
+	min-height: 0;
+	height: 124px;
+}
+.taskDateShortcuts > button {
+	padding: 4px 6px;
+	gap: 4px;
+	font-size: var(--text-xs);
 }
