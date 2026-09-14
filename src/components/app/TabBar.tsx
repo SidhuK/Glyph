@@ -294,7 +294,9 @@ export function TabBar({
 								>
 									{tabs.map((tab) => (
 										<option key={tab.id} value={tab.id}>
-											{tabLabel(tab)}
+											{tab.target && !isPathSpecial(tab.target)
+												? stripFileExtension(tab.target)
+												: tabLabel(tab)}
 										</option>
 									))}
 								</select>
