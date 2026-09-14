@@ -2,10 +2,7 @@ import type { DatabaseConfig, WorkspaceDatabaseDefinition } from "../tauri";
 
 export const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
 export const EMPTY_BOARD_LANE_ORDER: Record<string, string[]> = {};
-export const EMPTY_BOARD_CARD_ORDER: Record<
-	string,
-	Record<string, string[]>
-> = {};
+export const EMPTY_BOARD_CARD_ORDER: Record<string, Record<string, string[]>> = {};
 export const EMPTY_BOARD_CARD_FIELDS: string[] = [];
 
 export function viewToConfig(
@@ -59,14 +56,10 @@ export function applyConfigToView(
 				layout: config.view.layout,
 				search: config.view.search ?? "",
 				grouping,
-				board_lane_colors:
-					config.view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
-				board_lane_order:
-					config.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
-				board_card_order:
-					config.view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
-				board_card_fields:
-					config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS,
+				board_lane_colors: config.view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
+				board_lane_order: config.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
+				board_card_order: config.view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
+				board_card_fields: config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS,
 				columns: config.columns,
 				sorts: config.sorts,
 				filters: config.filters,
@@ -121,16 +114,11 @@ export function patchBoardMapField(
 	});
 }
 
-export function removeBoardLaneColor(
-	config: DatabaseConfig,
-	laneId: string,
-): DatabaseConfig {
+export function removeBoardLaneColor(config: DatabaseConfig, laneId: string): DatabaseConfig {
 	const laneColors = config.view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS;
 	return patchViewState(config, {
 		board_lane_colors: Object.fromEntries(
-			Object.entries(laneColors).filter(
-				([entryLaneId]) => entryLaneId !== laneId,
-			),
+			Object.entries(laneColors).filter(([entryLaneId]) => entryLaneId !== laneId),
 		),
 	});
 }

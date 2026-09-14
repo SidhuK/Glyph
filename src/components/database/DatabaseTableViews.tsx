@@ -1,10 +1,5 @@
 import { PointerActivationConstraints } from "@dnd-kit/dom";
-import {
-	KeyboardSensor,
-	PointerSensor,
-	useDraggable,
-	useDroppable,
-} from "@dnd-kit/react";
+import { KeyboardSensor, PointerSensor, useDraggable, useDroppable } from "@dnd-kit/react";
 import {
 	type CSSProperties,
 	type MouseEvent,
@@ -17,9 +12,7 @@ import { Plus } from "../Icons";
 
 const DATABASE_TABLE_ROW_SENSORS = [
 	PointerSensor.configure({
-		activationConstraints: [
-			new PointerActivationConstraints.Distance({ value: 6 }),
-		],
+		activationConstraints: [new PointerActivationConstraints.Distance({ value: 6 })],
 	}),
 	KeyboardSensor,
 ];
@@ -28,10 +21,7 @@ const INTERACTIVE_CELL_SELECTOR =
 	"button, a, input, textarea, select, [contenteditable='true'], [role='button'], [role='menuitem'], [role='option']";
 
 function isInteractiveTarget(target: EventTarget | null): boolean {
-	return (
-		target instanceof Element &&
-		Boolean(target.closest(INTERACTIVE_CELL_SELECTOR))
-	);
+	return target instanceof Element && Boolean(target.closest(INTERACTIVE_CELL_SELECTOR));
 }
 
 interface DatabaseTableGroupHeaderProps {

@@ -28,45 +28,30 @@ function tagMatches(noteTags: string[], tag: string): boolean {
 	const normalizedTag = tag.trim().replace(/^[#@]/, "").toLowerCase();
 	if (!normalizedTag) return false;
 	return noteTags.some(
-		(noteTag) =>
-			noteTag.trim().replace(/^[#@]/, "").toLowerCase() === normalizedTag,
+		(noteTag) => noteTag.trim().replace(/^[#@]/, "").toLowerCase() === normalizedTag,
 	);
 }
 
-function personMatches(
-	notePeople: string[] | undefined,
-	handle: string,
-): boolean {
+function personMatches(notePeople: string[] | undefined, handle: string): boolean {
 	const normalizedHandle = handle.trim().replace(/^@/, "").toLowerCase();
 	if (!normalizedHandle) return false;
 	return (notePeople ?? []).some(
-		(notePerson) =>
-			notePerson.trim().replace(/^@/, "").toLowerCase() === normalizedHandle,
+		(notePerson) => notePerson.trim().replace(/^@/, "").toLowerCase() === normalizedHandle,
 	);
 }
 
-function filterNotesForScope(
-	notes: FolioItem[],
-	scope: FolioScope,
-): FolioItem[] {
-	const folderPrefix =
-		scope.kind === "folder" ? normalizeFolioPath(scope.folderPrefix) : "";
+function filterNotesForScope(notes: FolioItem[], scope: FolioScope): FolioItem[] {
+	const folderPrefix = scope.kind === "folder" ? normalizeFolioPath(scope.folderPrefix) : "";
 	switch (scope.kind) {
 		case "folder":
 			return notes.filter((note) => {
 				const notePath = normalizeRelPath(note.note_path);
-				return (
-					notePath === folderPrefix || notePath.startsWith(`${folderPrefix}/`)
-				);
+				return notePath === folderPrefix || notePath.startsWith(`${folderPrefix}/`);
 			});
 		case "tag":
-			return notes.filter(
-				(note) => note.is_markdown && tagMatches(note.tags, scope.tag),
-			);
+			return notes.filter((note) => note.is_markdown && tagMatches(note.tags, scope.tag));
 		case "person":
-			return notes.filter(
-				(note) => note.is_markdown && personMatches(note.people, scope.handle),
-			);
+			return notes.filter((note) => note.is_markdown && personMatches(note.people, scope.handle));
 		default:
 			return notes;
 	}
@@ -103,9 +88,7 @@ async function listNonMarkdownFiles(folderPrefix: string | null) {
 		limit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
 	});
 	const list =
-		result !== null && typeof result === "object"
-			? (result as Partial<FsEntryList>)
-			: {};
+		result !== null && typeof result === "object" ? (result as Partial<FsEntryList>) : {};
 	const files = Array.isArray(list.files) ? list.files : [];
 	return {
 		files: files.map(fileEntryToFolioItem),
@@ -128,15 +111,11 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
 }
 
 export function useFolioNotes(scope: FolioScope) {
-	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
-		boolean | null
-	>(null);
+	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<boolean | null>(null);
 	const settingsVersionRef = useRef(0);
 	const folderPrefix = folderForScope(scope);
 	const includesNonMarkdownFiles =
-		showNonMarkdownFiles === true &&
-		scope.kind !== "tag" &&
-		scope.kind !== "person";
+		showNonMarkdownFiles === true && scope.kind !== "tag" && scope.kind !== "person";
 
 	useEffect(() => {
 		let cancelled = false;
@@ -186,8 +165,7 @@ export function useFolioNotes(scope: FolioScope) {
 
 	return {
 		notes: items,
-		filesTruncated:
-			includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
+		filesTruncated: includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
 		error: query.error ?? filesQuery.error,
 		nonMarkdownFileLimit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
 	};

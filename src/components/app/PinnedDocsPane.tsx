@@ -5,10 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import {
-	invalidateDatabasePrefetch,
-	navigationQueryKeys,
-} from "../../lib/navigationPrefetch";
+import { invalidateDatabasePrefetch, navigationQueryKeys } from "../../lib/navigationPrefetch";
 import { invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
@@ -45,8 +42,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		queryFn: () => invoke("databases_list"),
 	});
 	const pinnedCollections = useMemo(
-		() =>
-			collectionsQuery.data?.filter((collection) => collection.pinned) ?? [],
+		() => collectionsQuery.data?.filter((collection) => collection.pinned) ?? [],
 		[collectionsQuery.data],
 	);
 	const unpinCollection = useMutation({
@@ -128,11 +124,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		);
 	}
 
-	if (
-		!collectionsQuery.error &&
-		pinnedFiles.length === 0 &&
-		pinnedCollections.length === 0
-	) {
+	if (!collectionsQuery.error && pinnedFiles.length === 0 && pinnedCollections.length === 0) {
 		return (
 			<section className="allDocsPane">
 				<header className="allDocsHeader">
@@ -151,8 +143,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 			<div className="allDocsSections">
 				{collectionsQuery.error ? (
 					<div className="databaseLoadingState">
-						{t("pinned.loadFailed")}:{" "}
-						{extractErrorMessage(collectionsQuery.error)}
+						{t("pinned.loadFailed")}: {extractErrorMessage(collectionsQuery.error)}
 					</div>
 				) : null}
 				{pinnedCollections.length > 0 ? (
@@ -170,9 +161,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 						</div>
 					</section>
 				) : null}
-				{fileData.length > 0 ? (
-					<h2 className="allDocsSectionTitle">{t("pinned.notes")}</h2>
-				) : null}
+				{fileData.length > 0 ? <h2 className="allDocsSectionTitle">{t("pinned.notes")}</h2> : null}
 				<div className="allDocsGrid">
 					{fileData.map((data, index) => {
 						const taskSummary = taskSummariesByPath[data.path] ?? undefined;

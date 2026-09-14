@@ -1,7 +1,4 @@
-import {
-	clearMarkdownDocCache,
-	setCachedMarkdownDoc,
-} from "../components/preview/markdownCache";
+import { clearMarkdownDocCache, setCachedMarkdownDoc } from "../components/preview/markdownCache";
 import {
 	readStoredSelectedDatabaseId,
 	resolveSelectedDatabaseId,
@@ -44,9 +41,7 @@ const titleFromAllDocsPath = (path: string) => {
 const allDocsFolderContainsPath = (folderKey: string, path: string) => {
 	if (folderKey === "__all__") return true;
 	const normalizedPath = normalizeAllDocsPath(path);
-	return (
-		normalizedPath === folderKey || normalizedPath.startsWith(`${folderKey}/`)
-	);
+	return normalizedPath === folderKey || normalizedPath.startsWith(`${folderKey}/`);
 };
 
 const compareAllDocsItems = (left: AllDocsItem, right: AllDocsItem) =>
@@ -56,17 +51,11 @@ const compareAllDocsItems = (left: AllDocsItem, right: AllDocsItem) =>
 export const navigationQueryKeys = {
 	all: ["navigation"] as const,
 	notes: () => [...navigationQueryKeys.all, "notes"] as const,
-	note: (path: string) =>
-		[...navigationQueryKeys.notes(), path.trim()] as const,
+	note: (path: string) => [...navigationQueryKeys.notes(), path.trim()] as const,
 	databases: () => [...navigationQueryKeys.all, "databases"] as const,
-	databaseSummaries: () =>
-		[...navigationQueryKeys.databases(), "summaries"] as const,
+	databaseSummaries: () => [...navigationQueryKeys.databases(), "summaries"] as const,
 	databaseDocument: (databaseId: string) =>
-		[
-			...navigationQueryKeys.databases(),
-			"document",
-			databaseId.trim(),
-		] as const,
+		[...navigationQueryKeys.databases(), "document", databaseId.trim()] as const,
 	databaseRowsPages: (databaseId: string, viewId: string, pageSize: number) =>
 		[
 			...navigationQueryKeys.databases(),
@@ -77,14 +66,8 @@ export const navigationQueryKeys = {
 		] as const,
 	allDocs: () => [...navigationQueryKeys.all, "all-docs"] as const,
 	allDocsList: (folderPrefix?: string | null) =>
-		[
-			...navigationQueryKeys.allDocs(),
-			normalizeAllDocsFolder(folderPrefix),
-		] as const,
-	allDocsPages: (
-		folderPrefix?: string | null,
-		pageSize = ACTIVITY_DOCS_PAGE_SIZE,
-	) =>
+		[...navigationQueryKeys.allDocs(), normalizeAllDocsFolder(folderPrefix)] as const,
+	allDocsPages: (folderPrefix?: string | null, pageSize = ACTIVITY_DOCS_PAGE_SIZE) =>
 		[
 			...navigationQueryKeys.allDocs(),
 			"pages",
@@ -92,11 +75,7 @@ export const navigationQueryKeys = {
 			pageSize,
 		] as const,
 	allDocsCount: (folderPrefix?: string | null) =>
-		[
-			...navigationQueryKeys.allDocs(),
-			"count",
-			normalizeAllDocsFolder(folderPrefix),
-		] as const,
+		[...navigationQueryKeys.allDocs(), "count", normalizeAllDocsFolder(folderPrefix)] as const,
 	taskSummaries: () => [...navigationQueryKeys.all, "task-summaries"] as const,
 };
 
@@ -153,9 +132,8 @@ export function databaseSummariesQueryOptions() {
 
 export function getPrefetchedDatabaseSummaries() {
 	return (
-		queryClient.getQueryData<WorkspaceDatabaseSummary[]>(
-			navigationQueryKeys.databaseSummaries(),
-		) ?? null
+		queryClient.getQueryData<WorkspaceDatabaseSummary[]>(navigationQueryKeys.databaseSummaries()) ??
+		null
 	);
 }
 
@@ -195,10 +173,7 @@ export function setPrefetchedDatabaseDocument(
 	databaseId: string,
 	document: WorkspaceDatabaseDocument,
 ) {
-	queryClient.setQueryData(
-		navigationQueryKeys.databaseDocument(databaseId),
-		document,
-	);
+	queryClient.setQueryData(navigationQueryKeys.databaseDocument(databaseId), document);
 }
 
 export function invalidateDatabaseRowsPrefetch(databaseId?: string | null) {
@@ -222,9 +197,7 @@ export function invalidateDatabasePrefetch(databaseId?: string | null) {
 	invalidateDatabaseRowsPrefetch(databaseId);
 }
 
-export async function prefetchDatabasesLanding(
-	initialDatabaseId?: string | null,
-) {
+export async function prefetchDatabasesLanding(initialDatabaseId?: string | null) {
 	const storedId = readStoredSelectedDatabaseId();
 	const candidateId = initialDatabaseId ?? storedId;
 	const summariesPromise = prefetchDatabaseSummaries();
@@ -303,8 +276,7 @@ export function allDocsPagesQueryOptions(
 			return loadAllDocsPage(folderPrefix, offset, pageSize);
 		},
 		initialPageParam: 0,
-		getNextPageParam: (lastPage: AllDocsPage) =>
-			lastPage.nextOffset ?? undefined,
+		getNextPageParam: (lastPage: AllDocsPage) => lastPage.nextOffset ?? undefined,
 		staleTime: NAVIGATION_STALE_TIME_MS,
 	};
 }
@@ -325,13 +297,8 @@ export function allDocsCountQueryOptions(folderPrefix?: string | null) {
 	};
 }
 
-export function prefetchAllDocs(
-	folderPrefix?: string | null,
-	pageSize = ACTIVITY_DOCS_PAGE_SIZE,
-) {
-	return queryClient.prefetchInfiniteQuery(
-		allDocsPagesQueryOptions(folderPrefix, pageSize),
-	);
+export function prefetchAllDocs(folderPrefix?: string | null, pageSize = ACTIVITY_DOCS_PAGE_SIZE) {
+	return queryClient.prefetchInfiniteQuery(allDocsPagesQueryOptions(folderPrefix, pageSize));
 }
 
 function rebuildAllDocsPages(
@@ -367,9 +334,7 @@ function rebuildAllDocsPages(
 	};
 }
 
-function updateAllDocsCountCaches(
-	updater: (current: number, folderKey: string) => number,
-) {
+function updateAllDocsCountCaches(updater: (current: number, folderKey: string) => number) {
 	const queries = queryClient
 		.getQueryCache()
 		.findAll({ queryKey: [...navigationQueryKeys.allDocs(), "count"] });
@@ -380,10 +345,7 @@ function updateAllDocsCountCaches(
 		const folderKey = normalizeAllDocsFolder(String(query.queryKey[3] ?? ""));
 		const current = queryClient.getQueryData<number>(query.queryKey);
 		if (current === undefined) continue;
-		queryClient.setQueryData<number>(
-			query.queryKey,
-			updater(current, folderKey),
-		);
+		queryClient.setQueryData<number>(query.queryKey, updater(current, folderKey));
 	}
 }
 
@@ -399,9 +361,7 @@ function adjustAllDocsCount(path: string, delta: number) {
 function updateAllDocsCaches(
 	updater: (current: AllDocsItem[], folderKey: string) => AllDocsItem[],
 ) {
-	const queries = queryClient
-		.getQueryCache()
-		.findAll({ queryKey: navigationQueryKeys.allDocs() });
+	const queries = queryClient.getQueryCache().findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
 		if (!Array.isArray(query.queryKey)) {
 			continue;
@@ -410,10 +370,7 @@ function updateAllDocsCaches(
 			const folderKey = normalizeAllDocsFolder(String(query.queryKey[2] ?? ""));
 			const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
 			if (!current) continue;
-			queryClient.setQueryData<AllDocsItem[]>(
-				query.queryKey,
-				updater(current, folderKey),
-			);
+			queryClient.setQueryData<AllDocsItem[]>(query.queryKey, updater(current, folderKey));
 			continue;
 		}
 		if (query.queryKey.length !== 5 || query.queryKey[2] !== "pages") {
@@ -422,9 +379,7 @@ function updateAllDocsCaches(
 		const folderKey = normalizeAllDocsFolder(String(query.queryKey[3] ?? ""));
 		const rawPageSize = query.queryKey[4];
 		const pageSize =
-			typeof rawPageSize === "number" && rawPageSize > 0
-				? rawPageSize
-				: ACTIVITY_DOCS_PAGE_SIZE;
+			typeof rawPageSize === "number" && rawPageSize > 0 ? rawPageSize : ACTIVITY_DOCS_PAGE_SIZE;
 		const current = queryClient.getQueryData<AllDocsPagesData>(query.queryKey);
 		if (!current) continue;
 		const nextItems = updater(
@@ -440,9 +395,7 @@ function updateAllDocsCaches(
 
 function findCachedAllDocsItem(path: string): AllDocsItem | null {
 	const normalizedPath = normalizeAllDocsPath(path);
-	const queries = queryClient
-		.getQueryCache()
-		.findAll({ queryKey: navigationQueryKeys.allDocs() });
+	const queries = queryClient.getQueryCache().findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
 		if (!Array.isArray(query.queryKey)) {
 			continue;
@@ -455,9 +408,7 @@ function findCachedAllDocsItem(path: string): AllDocsItem | null {
 							.getQueryData<AllDocsPagesData>(query.queryKey)
 							?.pages.flatMap((page) => page.items)
 					: null;
-		const item = current?.find(
-			(note) => normalizeAllDocsPath(note.note_path) === normalizedPath,
-		);
+		const item = current?.find((note) => normalizeAllDocsPath(note.note_path) === normalizedPath);
 		if (item) return item;
 	}
 	return null;
@@ -470,11 +421,8 @@ function upsertAllDocsPrefetchItem(item: AllDocsItem) {
 		const withoutItem = current.filter(
 			(note) => normalizeAllDocsPath(note.note_path) !== normalizedPath,
 		);
-		if (!allDocsFolderContainsPath(folderKey, normalizedPath))
-			return withoutItem;
-		return [...withoutItem, { ...item, note_path: normalizedPath }].sort(
-			compareAllDocsItems,
-		);
+		if (!allDocsFolderContainsPath(folderKey, normalizedPath)) return withoutItem;
+		return [...withoutItem, { ...item, note_path: normalizedPath }].sort(compareAllDocsItems);
 	});
 }
 
@@ -485,9 +433,7 @@ export function optimisticallyAddAllDocsNote(args: {
 }) {
 	const normalizedPath = normalizeAllDocsPath(args.path);
 	if (!normalizedPath.toLowerCase().endsWith(".md")) return;
-	const source = args.sourcePath
-		? findCachedAllDocsItem(args.sourcePath)
-		: null;
+	const source = args.sourcePath ? findCachedAllDocsItem(args.sourcePath) : null;
 	const preview = parseNotePreview(normalizedPath, args.text ?? "");
 	const now = new Date().toISOString();
 	const alreadyCached = findCachedAllDocsItem(normalizedPath) !== null;
@@ -495,11 +441,8 @@ export function optimisticallyAddAllDocsNote(args: {
 		note_path: normalizedPath,
 		title:
 			source?.title ??
-			(args.text !== undefined
-				? preview.title
-				: titleFromAllDocsPath(normalizedPath)),
-		preview:
-			source?.preview ?? (args.text !== undefined ? preview.content : ""),
+			(args.text !== undefined ? preview.title : titleFromAllDocsPath(normalizedPath)),
+		preview: source?.preview ?? (args.text !== undefined ? preview.content : ""),
 		updated: now,
 		created: now,
 		tags: source?.tags ?? [],
@@ -524,8 +467,7 @@ export function optimisticallyRenameAllDocsPath(
 		const next: AllDocsItem[] = [];
 		for (const note of current) {
 			const notePath = normalizeAllDocsPath(note.note_path);
-			const matches =
-				notePath === from || (recursive && notePath.startsWith(`${from}/`));
+			const matches = notePath === from || (recursive && notePath.startsWith(`${from}/`));
 			const renamedPath = matches
 				? notePath === from
 					? to
@@ -546,10 +488,7 @@ export function optimisticallyRenameAllDocsPath(
 	});
 }
 
-export function optimisticallyRemoveAllDocsPath(
-	path: string,
-	recursive = false,
-) {
+export function optimisticallyRemoveAllDocsPath(path: string, recursive = false) {
 	const normalizedPath = normalizeAllDocsPath(path);
 	if (!normalizedPath) return;
 	const removedMarkdownPaths = new Set<string>();
@@ -560,8 +499,7 @@ export function optimisticallyRemoveAllDocsPath(
 		current.filter((note) => {
 			const notePath = normalizeAllDocsPath(note.note_path);
 			const shouldRemove =
-				notePath === normalizedPath ||
-				(recursive && notePath.startsWith(`${normalizedPath}/`));
+				notePath === normalizedPath || (recursive && notePath.startsWith(`${normalizedPath}/`));
 			if (shouldRemove && notePath.toLowerCase().endsWith(".md")) {
 				removedMarkdownPaths.add(notePath);
 			}
@@ -579,11 +517,7 @@ export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {
 			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		});
 		void queryClient.invalidateQueries({
-			queryKey: [
-				...navigationQueryKeys.allDocs(),
-				"pages",
-				normalizeAllDocsFolder(folderPrefix),
-			],
+			queryKey: [...navigationQueryKeys.allDocs(), "pages", normalizeAllDocsFolder(folderPrefix)],
 		});
 		return;
 	}

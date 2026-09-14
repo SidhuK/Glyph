@@ -5,10 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { createHtmlEmbedWidget } from "./extensions/htmlEmbed/sandbox";
-import {
-	createMermaidCanvas,
-	createMermaidErrorCanvas,
-} from "./extensions/mermaid/canvas";
+import { createMermaidCanvas, createMermaidErrorCanvas } from "./extensions/mermaid/canvas";
 import { renderMermaidCanvasSvg } from "./extensions/mermaid/renderer";
 
 export interface FocusedCodeBlockPreview {
@@ -17,9 +14,7 @@ export interface FocusedCodeBlockPreview {
 	language: string | null;
 }
 
-function getPreviewKind(
-	language: string | null,
-): "mermaid" | HtmlEmbedKind | null {
+function getPreviewKind(language: string | null): "mermaid" | HtmlEmbedKind | null {
 	if (isMermaidCodeBlockLanguage(language)) return "mermaid";
 	return isHtmlEmbedCodeBlockLanguage(language);
 }
@@ -50,13 +45,7 @@ function FocusedMermaidPreview({ source }: { source: string }) {
 	return <div ref={mountRef} className="focusedMermaidPreview" />;
 }
 
-function FocusedHtmlPreview({
-	source,
-	kind,
-}: {
-	source: string;
-	kind: HtmlEmbedKind;
-}) {
+function FocusedHtmlPreview({ source, kind }: { source: string; kind: HtmlEmbedKind }) {
 	const mountRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
@@ -92,9 +81,7 @@ export function FocusedCodeBlockPreviewDialog({
 	useEffect(() => {
 		if (!preview) return;
 		const root = document.documentElement;
-		const observer = new MutationObserver(() =>
-			setThemeVersion((version) => version + 1),
-		);
+		const observer = new MutationObserver(() => setThemeVersion((version) => version + 1));
 		observer.observe(root, {
 			attributes: true,
 			attributeFilter: ["class", "data-theme"],
@@ -108,9 +95,7 @@ export function FocusedCodeBlockPreviewDialog({
 				className="focusedCodeBlockPreviewDialog h-[min(780px,calc(100dvh-2rem))] max-w-[calc(100%-2rem)] p-3 sm:max-w-[min(1000px,calc(100%-2rem))]"
 				showCloseButton={false}
 			>
-				<DialogTitle className="sr-only">
-					{t("codeBlock.runPreview")}
-				</DialogTitle>
+				<DialogTitle className="sr-only">{t("codeBlock.runPreview")}</DialogTitle>
 				<div className="h-full">
 					{preview && kind === "mermaid" ? (
 						<FocusedMermaidPreview

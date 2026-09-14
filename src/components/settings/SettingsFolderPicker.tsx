@@ -53,9 +53,7 @@ export function SettingsFolderPicker({
 				</div>
 			</div>
 			{helper ? <div className="settingsHelp">{helper}</div> : null}
-			{error ? (
-				<div className="settingsError dailyNotesError">{error}</div>
-			) : null}
+			{error ? <div className="settingsError dailyNotesError">{error}</div> : null}
 		</div>
 	);
 }

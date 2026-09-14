@@ -39,9 +39,7 @@ export function nextCollectionName(
 	summaries: WorkspaceDatabaseSummary[],
 	preferred?: string,
 ): string {
-	const existing = new Set(
-		summaries.map((entry) => entry.name.trim().toLowerCase()),
-	);
+	const existing = new Set(summaries.map((entry) => entry.name.trim().toLowerCase()));
 	const base = preferred?.trim() || "New Collection";
 	if (!existing.has(base.toLowerCase())) return base;
 	let suffix = 2;

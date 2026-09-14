@@ -1,15 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
-import {
-	FILE_TREE_SORT_MODES,
-	fileTreeSortLabel,
-} from "../../lib/fileTreeSort";
+import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import { isFileTreeSortMode } from "../../lib/settings";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import type { SettingsBoolean } from "./useSettingsBoolean";
 
@@ -18,10 +11,7 @@ interface FileTreeSettingsSectionProps {
 	setError: (message: string) => void;
 }
 
-export function FileTreeSettingsSection({
-	folderCounts,
-	setError,
-}: FileTreeSettingsSectionProps) {
+export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSettingsSectionProps) {
 	const { t } = useTranslation(["settings.general", "shell"]);
 	const fileTreeSort = useFileTreeSortMode({ onError: setError });
 

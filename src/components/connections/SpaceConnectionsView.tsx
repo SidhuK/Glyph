@@ -24,10 +24,7 @@ import type { SpaceConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { toast } from "../../lib/toast";
-import {
-	dispatchTagClick,
-	dispatchWikiLinkClick,
-} from "../editor/markdown/editorEvents";
+import { dispatchTagClick, dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import { SpaceConnectionsToolbar } from "./SpaceConnectionsToolbar";
 import type { ConnectionsGraph } from "./connectionsGraph";
@@ -44,14 +41,11 @@ async function warnAboutLargeGraph(payload: SpaceConnections) {
 	if (noteCount <= LARGE_GRAPH_NOTE_THRESHOLD) return;
 
 	const { message } = await import("@tauri-apps/plugin-dialog");
-	await message(
-		i18n.t("shell:connections.largeGraphBody", { count: noteCount }),
-		{
-			title: i18n.t("shell:connections.largeGraphTitle"),
-			kind: "warning",
-			okLabel: i18n.t("shell:connections.largeGraphContinue"),
-		},
-	);
+	await message(i18n.t("shell:connections.largeGraphBody", { count: noteCount }), {
+		title: i18n.t("shell:connections.largeGraphTitle"),
+		kind: "warning",
+		okLabel: i18n.t("shell:connections.largeGraphContinue"),
+	});
 }
 
 function openNote(nodeId: string) {
@@ -91,22 +85,13 @@ function searchMatchIds(graph: ConnectionsGraph, query: string) {
 function SpaceConnectionsLegend() {
 	const { t } = useTranslation("shell");
 	return (
-		<div
-			className="localNoteConnectionsLegend"
-			aria-label={t("connections.legendAria")}
-		>
+		<div className="localNoteConnectionsLegend" aria-label={t("connections.legendAria")}>
 			<span className="localNoteConnectionsLegendItem">
-				<span
-					className="localNoteConnectionsLegendNode is-note"
-					aria-hidden="true"
-				/>
+				<span className="localNoteConnectionsLegendNode is-note" aria-hidden="true" />
 				{t("connections.legendNote")}
 			</span>
 			<span className="localNoteConnectionsLegendItem">
-				<span
-					className="localNoteConnectionsLegendNode is-tag"
-					aria-hidden="true"
-				/>
+				<span className="localNoteConnectionsLegendNode is-tag" aria-hidden="true" />
 				{t("connections.legendTag")}
 			</span>
 		</div>
@@ -128,8 +113,7 @@ export function SpaceConnectionsView() {
 		enabled: Boolean(spacePath),
 		queryFn: () => loadSettings({ spacePath: scopedSpacePath }),
 	});
-	const options =
-		settingsQuery.data?.connectionsGraph ?? DEFAULT_CONNECTIONS_GRAPH_OPTIONS;
+	const options = settingsQuery.data?.connectionsGraph ?? DEFAULT_CONNECTIONS_GRAPH_OPTIONS;
 	const legacyConnections = settingsQuery.data?.ui.legacyConnections ?? false;
 	const layoutMode = legacyConnections ? "legacy" : "bundled";
 
@@ -139,10 +123,7 @@ export function SpaceConnectionsView() {
 				spacePath: scopedSpacePath,
 			}),
 		onMutate: async (next) => {
-			const queryKey = [
-				CONNECTIONS_SETTINGS_QUERY_ROOT,
-				scopedSpacePath,
-			] as const;
+			const queryKey = [CONNECTIONS_SETTINGS_QUERY_ROOT, scopedSpacePath] as const;
 			await queryClient.cancelQueries({ queryKey });
 			const previous = queryClient.getQueryData<AppSettings>(queryKey);
 			queryClient.setQueryData<AppSettings>(queryKey, (current) =>
@@ -206,12 +187,7 @@ export function SpaceConnectionsView() {
 				: connectionsLinkOpacity(options.linkOpacity),
 			linkThicknessScale: connectionsLinkThicknessScale(options.linkThickness),
 		}),
-		[
-			legacyConnections,
-			options.linkOpacity,
-			options.linkThickness,
-			options.nodeSize,
-		],
+		[legacyConnections, options.linkOpacity, options.linkThickness, options.nodeSize],
 	);
 
 	const overlay = useSigmaConnections({
@@ -270,9 +246,7 @@ export function SpaceConnectionsView() {
 						linkOpacity: legacyConnections
 							? legacyConnectionsLinkOpacity(next.linkOpacity)
 							: connectionsLinkOpacity(next.linkOpacity),
-						linkThicknessScale: connectionsLinkThicknessScale(
-							next.linkThickness,
-						),
+						linkThicknessScale: connectionsLinkThicknessScale(next.linkThickness),
 					});
 					overlay.current.setLabelZoomThreshold(next.labelZoomThreshold);
 				}}
@@ -287,21 +261,12 @@ export function SpaceConnectionsView() {
 				className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden"
 				onKeyDown={handleHostKeyDown}
 			>
-				<div
-					className="localNoteConnectionsViewport absolute inset-0"
-					aria-hidden="true"
-				/>
+				<div className="localNoteConnectionsViewport absolute inset-0" aria-hidden="true" />
 				{layoutLoading ? toolbar : null}
 				<div className="absolute inset-0 flex items-center justify-center">
 					<div className="flex items-center gap-2 text-sm text-muted-foreground">
-						<HugeiconsIcon
-							icon={LoaderCircle}
-							className="animate-spin"
-							size="var(--icon-sm)"
-						/>
-						{dataLoading
-							? t("connections.loading")
-							: t("connections.arranging")}
+						<HugeiconsIcon icon={LoaderCircle} className="animate-spin" size="var(--icon-sm)" />
+						{dataLoading ? t("connections.loading") : t("connections.arranging")}
 					</div>
 				</div>
 			</section>
@@ -323,11 +288,7 @@ export function SpaceConnectionsView() {
 							void refetchLayout();
 						}}
 					>
-						<HugeiconsIcon
-							icon={Refresh01Icon}
-							data-icon="inline-start"
-							size="var(--icon-md)"
-						/>
+						<HugeiconsIcon icon={Refresh01Icon} data-icon="inline-start" size="var(--icon-md)" />
 						{t("connections.retry")}
 					</Button>
 				</div>
@@ -338,9 +299,7 @@ export function SpaceConnectionsView() {
 	if (!payload || payload.nodes.length === 0) {
 		return (
 			<div className="flex h-full min-h-0 flex-1 items-center justify-center p-6">
-				<p className="text-sm text-muted-foreground">
-					{t("connections.empty")}
-				</p>
+				<p className="text-sm text-muted-foreground">{t("connections.empty")}</p>
 			</div>
 		);
 	}
@@ -351,10 +310,7 @@ export function SpaceConnectionsView() {
 				className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden"
 				onKeyDown={handleHostKeyDown}
 			>
-				<div
-					className="localNoteConnectionsViewport absolute inset-0"
-					aria-hidden="true"
-				/>
+				<div className="localNoteConnectionsViewport absolute inset-0" aria-hidden="true" />
 				{toolbar}
 				<p className="relative z-1 flex h-full items-center justify-center text-sm text-muted-foreground">
 					{t("connections.noConnected")}

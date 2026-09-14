@@ -46,8 +46,7 @@ export function splitEditorPane(
 		return {
 			type: "split",
 			id: splitId,
-			direction:
-				edge === "left" || edge === "right" ? "horizontal" : "vertical",
+			direction: edge === "left" || edge === "right" ? "horizontal" : "vertical",
 			ratio: DEFAULT_SPLIT_RATIO,
 			first: newPaneFirst ? newPane : currentPane,
 			second: newPaneFirst ? currentPane : newPane,
@@ -60,10 +59,7 @@ export function splitEditorPane(
 	return second === node.second ? node : { ...node, second };
 }
 
-export function removeEditorPane(
-	node: SplitEditorNode,
-	paneId: string,
-): SplitEditorNode | null {
+export function removeEditorPane(node: SplitEditorNode, paneId: string): SplitEditorNode | null {
 	if (node.type === "pane") return node.paneId === paneId ? null : node;
 
 	const first = removeEditorPane(node.first, paneId);
@@ -89,7 +85,5 @@ export function updateSplitRatio(
 	}
 	const first = updateSplitRatio(node.first, splitId, ratio);
 	const second = updateSplitRatio(node.second, splitId, ratio);
-	return first === node.first && second === node.second
-		? node
-		: { ...node, first, second };
+	return first === node.first && second === node.second ? node : { ...node, first, second };
 }

@@ -64,10 +64,7 @@ export function CalendarPalette({
 	const [selectedDate, setSelectedDate] = useState(() => getTodayDateString());
 	const canQuery = spacePath !== null;
 
-	const monthRange = useMemo(
-		() => monthDateRange(visibleMonth),
-		[visibleMonth],
-	);
+	const monthRange = useMemo(() => monthDateRange(visibleMonth), [visibleMonth]);
 
 	const activityQuery = useQuery({
 		queryKey: calendarQueryKeys.activity(
@@ -82,28 +79,18 @@ export function CalendarPalette({
 	});
 
 	const notesQuery = useQuery({
-		queryKey: calendarQueryKeys.notesForDate(
-			spacePath ?? "",
-			selectedDate,
-			dailyNoteFolder,
-		),
+		queryKey: calendarQueryKeys.notesForDate(spacePath ?? "", selectedDate, dailyNoteFolder),
 		queryFn: () => loadCalendarNotesForDate(selectedDate, dailyNoteFolder),
 		enabled: open && canQuery,
 		staleTime: 15_000,
 	});
 
-	const notes = useMemo(
-		() => dedupeNotes(notesQuery.data ?? []),
-		[notesQuery.data],
-	);
+	const notes = useMemo(() => dedupeNotes(notesQuery.data ?? []), [notesQuery.data]);
 	const activityByDate = useMemo(
 		() => activityMapFromRows(activityQuery.data ?? []),
 		[activityQuery.data],
 	);
-	const selectedDateValue = useMemo(
-		() => parseISO(selectedDate),
-		[selectedDate],
-	);
+	const selectedDateValue = useMemo(() => parseISO(selectedDate), [selectedDate]);
 	// Recomputed each render so the today highlight survives a midnight rollover.
 	const today = parseISO(getTodayDateString());
 

@@ -43,10 +43,7 @@ function buildDecorations(
 	return DecorationSet.create(doc, decorations);
 }
 
-function expandRangesToTextblocks(
-	doc: Node,
-	ranges: readonly ChangedRange[],
-): ChangedRange[] {
+function expandRangesToTextblocks(doc: Node, ranges: readonly ChangedRange[]): ChangedRange[] {
 	const expanded: ChangedRange[] = [];
 	for (const range of ranges) {
 		doc.nodesBetween(range.from, range.to, (node, pos) => {
@@ -69,9 +66,7 @@ function buildDecorationsInRanges(
 		doc.nodesBetween(range.from, range.to, (node, pos, parent) => {
 			if (seen.has(pos)) return false;
 			seen.add(pos);
-			decorations.push(
-				...collectDecorationsForNode(node, pos, parent, collect),
-			);
+			decorations.push(...collectDecorationsForNode(node, pos, parent, collect));
 		});
 	}
 	return decorations;
@@ -82,16 +77,11 @@ function updateDecorations(
 	decorations: DecorationSet,
 	collect: (context: TextNodeDecorationContext) => Decoration[],
 ): DecorationSet {
-	const changedRanges = changedRangesFromTransactions(
-		[tr],
-		tr.doc.content.size,
-	);
+	const changedRanges = changedRangesFromTransactions([tr], tr.doc.content.size);
 	if (!changedRanges.length) return decorations.map(tr.mapping, tr.doc);
 	const scanRanges = expandRangesToTextblocks(tr.doc, changedRanges);
 	const mapped = decorations.map(tr.mapping, tr.doc);
-	const staleDecorations = scanRanges.flatMap((range) =>
-		mapped.find(range.from, range.to),
-	);
+	const staleDecorations = scanRanges.flatMap((range) => mapped.find(range.from, range.to));
 	const nextDecorations = buildDecorationsInRanges(tr.doc, scanRanges, collect);
 	return mapped.remove(staleDecorations).add(tr.doc, nextDecorations);
 }

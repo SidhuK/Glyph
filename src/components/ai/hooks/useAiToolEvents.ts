@@ -3,11 +3,7 @@ import type { OrbState } from "thinking-orbs";
 import { i18n } from "../../../i18n";
 import { useTauriEvent } from "../../../lib/tauriEvents";
 import type { AIActivityTimelineEvent } from "../AIActivityTimeline";
-import {
-	type ResponsePhase,
-	SLOW_START_MS,
-	type ToolPhase,
-} from "../aiPanelConstants";
+import { type ResponsePhase, SLOW_START_MS, type ToolPhase } from "../aiPanelConstants";
 import type { RigChatStatus } from "./useRigChat";
 
 interface UseAiToolEventsOptions {
@@ -68,10 +64,7 @@ const INITIAL_STATE: ToolState = {
 	isChatMode: false,
 };
 
-function buildTextTimelineEntry(
-	delta: string,
-	at: number,
-): AIActivityTimelineEvent {
+function buildTextTimelineEntry(delta: string, at: number): AIActivityTimelineEvent {
 	return {
 		id: `text-${at}-${crypto.randomUUID()}`,
 		kind: "text",
@@ -112,10 +105,7 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 			}
 
 			if (action.chatStatus === "ready") {
-				if (
-					state.chatStatus === "streaming" ||
-					state.chatStatus === "submitted"
-				) {
+				if (state.chatStatus === "streaming" || state.chatStatus === "submitted") {
 					next.responsePhase = "idle";
 				}
 				next.showSlowStart = false;
@@ -156,19 +146,14 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 						: state.responsePhase,
 				activityTimeline:
 					action.phase === "result"
-						? [
-								...state.activityTimeline,
-								{ kind: "citation", payload: action.payload },
-							]
+						? [...state.activityTimeline, { kind: "citation", payload: action.payload }]
 						: action.phase === "error"
 							? [
 									...state.activityTimeline,
 									{
 										id: `error-${action.at}-${crypto.randomUUID()}`,
 										kind: "error",
-										message:
-											action.error ??
-											i18n.t("shell:ai.toolFailed", { tool: action.tool }),
+										message: action.error ?? i18n.t("shell:ai.toolFailed", { tool: action.tool }),
 										at: action.at,
 									},
 								]
@@ -178,18 +163,12 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 		case "record-chunk": {
 			const last = state.activityTimeline[state.activityTimeline.length - 1];
 			const nextTimeline =
-				last &&
-				last.kind === "text" &&
-				action.at - last.at <= 900 &&
-				last.text.length < 6000
+				last && last.kind === "text" && action.at - last.at <= 900 && last.text.length < 6000
 					? [
 							...state.activityTimeline.slice(0, -1),
 							{ ...last, text: `${last.text}${action.delta}`, at: action.at },
 						]
-					: [
-							...state.activityTimeline,
-							buildTextTimelineEntry(action.delta, action.at),
-						];
+					: [...state.activityTimeline, buildTextTimelineEntry(action.delta, action.at)];
 			return {
 				...state,
 				showSlowStart: false,
@@ -202,10 +181,7 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 	}
 }
 
-export function useAiToolEvents({
-	isChatMode,
-	chatStatus,
-}: UseAiToolEventsOptions) {
+export function useAiToolEvents({ isChatMode, chatStatus }: UseAiToolEventsOptions) {
 	const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 	const activeToolJobIdRef = useRef<string | null>(null);
 	const slowStartTimerRef = useRef<number | null>(null);
@@ -237,8 +213,7 @@ export function useAiToolEvents({
 		});
 	}, [clearPendingChunk]);
 
-	const isAwaitingResponse =
-		chatStatus === "submitted" || chatStatus === "streaming";
+	const isAwaitingResponse = chatStatus === "submitted" || chatStatus === "streaming";
 
 	useEffect(() => {
 		if (isChatMode || chatStatus !== "streaming") {
@@ -252,20 +227,14 @@ export function useAiToolEvents({
 		if (payload.job_id.startsWith("naming:")) return;
 		if (isChatMode) return;
 		if (chatStatus !== "submitted" && chatStatus !== "streaming") return;
-		if (
-			activeToolJobIdRef.current &&
-			payload.job_id !== activeToolJobIdRef.current
-		)
-			return;
+		if (activeToolJobIdRef.current && payload.job_id !== activeToolJobIdRef.current) return;
 		if (!activeToolJobIdRef.current) {
 			activeToolJobIdRef.current = payload.job_id;
 		}
 		flushPendingChunk();
 		const tool = payload.tool?.trim() || "tool";
 		const phase: ToolPhase =
-			payload.phase === "call" ||
-			payload.phase === "result" ||
-			payload.phase === "error"
+			payload.phase === "call" || payload.phase === "result" || payload.phase === "error"
 				? payload.phase
 				: "call";
 		dispatch({
@@ -273,12 +242,8 @@ export function useAiToolEvents({
 			tool,
 			phase,
 			payload: payload.payload,
-			error:
-				phase === "error" ? i18n.t("shell:ai.toolFailed", { tool }) : undefined,
-			at:
-				typeof payload.at_ms === "number" && payload.at_ms > 0
-					? payload.at_ms
-					: Date.now(),
+			error: phase === "error" ? i18n.t("shell:ai.toolFailed", { tool }) : undefined,
+			at: typeof payload.at_ms === "number" && payload.at_ms > 0 ? payload.at_ms : Date.now(),
 		});
 	});
 
@@ -286,11 +251,7 @@ export function useAiToolEvents({
 		if (payload.job_id.startsWith("naming:")) return;
 		if (isChatMode) return;
 		if (chatStatus !== "submitted" && chatStatus !== "streaming") return;
-		if (
-			activeToolJobIdRef.current &&
-			payload.job_id !== activeToolJobIdRef.current
-		)
-			return;
+		if (activeToolJobIdRef.current && payload.job_id !== activeToolJobIdRef.current) return;
 		if (!activeToolJobIdRef.current) {
 			activeToolJobIdRef.current = payload.job_id;
 		}

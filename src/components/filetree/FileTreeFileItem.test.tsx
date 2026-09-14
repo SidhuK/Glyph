@@ -3,7 +3,7 @@
 import { act } from "react";
 import type React from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { FileTreeFileItem } from "./FileTreeFileItem";
 
 const showNativeContextMenuMock = vi.hoisted(() => vi.fn());
@@ -42,9 +42,7 @@ vi.mock("../../lib/pathClipboard", () => ({
 	) => [
 		{ label: "Copy Relative Path", action: () => undefined },
 		{ label: "Copy Absolute Path", action: () => undefined },
-		...(options?.includeDeeplink
-			? [{ label: "Copy Deeplink", action: () => undefined }]
-			: []),
+		...(options?.includeDeeplink ? [{ label: "Copy Deeplink", action: () => undefined }] : []),
 	],
 }));
 
@@ -64,9 +62,7 @@ vi.mock("../../contexts", () => ({
 
 vi.mock("motion/react", async () => {
 	const React = await vi.importActual<typeof import("react")>("react");
-	const stripMotionProps = (
-		props: Record<string, unknown> & { children?: React.ReactNode },
-	) => {
+	const stripMotionProps = (props: Record<string, unknown> & { children?: React.ReactNode }) => {
 		const {
 			animate: _animate,
 			exit: _exit,
@@ -169,15 +165,11 @@ describe("FileTreeFileItem", () => {
 	it("shows the pin action when a file is not pinned", async () => {
 		await renderFileTreeFileItem({ isPinned: false });
 
-		const button = container.querySelector(
-			".fileTreeRow",
-		) as HTMLButtonElement | null;
+		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
 		expect(button).not.toBeNull();
 
 		await act(async () => {
-			button?.dispatchEvent(
-				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
-			);
+			button?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 		});
 
 		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
@@ -190,15 +182,11 @@ describe("FileTreeFileItem", () => {
 	it("shows the unpin action when a file is pinned", async () => {
 		await renderFileTreeFileItem({ isPinned: true });
 
-		const button = container.querySelector(
-			".fileTreeRow",
-		) as HTMLButtonElement | null;
+		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
 		expect(button).not.toBeNull();
 
 		await act(async () => {
-			button?.dispatchEvent(
-				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
-			);
+			button?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 		});
 
 		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
@@ -211,31 +199,21 @@ describe("FileTreeFileItem", () => {
 	it("shows Open in New Window for markdown files", async () => {
 		await renderFileTreeFileItem();
 
-		const button = container.querySelector(
-			".fileTreeRow",
-		) as HTMLButtonElement | null;
+		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
 		expect(button).not.toBeNull();
 
 		await act(async () => {
-			button?.dispatchEvent(
-				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
-			);
+			button?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 		});
 
 		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
 			| Array<{ label?: string; action?: () => void }>
 			| undefined;
-		expect(menuItems?.map((item) => item.label)).toContain(
-			"Open in New Window",
-		);
+		expect(menuItems?.map((item) => item.label)).toContain("Open in New Window");
 
-		const openInNewWindow = menuItems?.find(
-			(item) => item.label === "Open in New Window",
-		);
+		const openInNewWindow = menuItems?.find((item) => item.label === "Open in New Window");
 		openInNewWindow?.action?.();
-		expect(openMarkdownInExternalWindowMock).toHaveBeenCalledWith(
-			"notes/alpha.md",
-		);
+		expect(openMarkdownInExternalWindowMock).toHaveBeenCalledWith("notes/alpha.md");
 	});
 
 	it("hides Open in New Window for non-markdown files", async () => {
@@ -248,38 +226,28 @@ describe("FileTreeFileItem", () => {
 			},
 		});
 
-		const button = container.querySelector(
-			".fileTreeRow",
-		) as HTMLButtonElement | null;
+		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
 		expect(button).not.toBeNull();
 
 		await act(async () => {
-			button?.dispatchEvent(
-				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
-			);
+			button?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 		});
 
 		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
 			| Array<{ label?: string }>
 			| undefined;
-		expect(menuItems?.map((item) => item.label)).not.toContain(
-			"Open in New Window",
-		);
+		expect(menuItems?.map((item) => item.label)).not.toContain("Open in New Window");
 		expect(menuItems?.map((item) => item.label)).not.toContain("Copy Deeplink");
 	});
 
 	it("shows Copy Deeplink for markdown files", async () => {
 		await renderFileTreeFileItem();
 
-		const button = container.querySelector(
-			".fileTreeRow",
-		) as HTMLButtonElement | null;
+		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
 		expect(button).not.toBeNull();
 
 		await act(async () => {
-			button?.dispatchEvent(
-				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
-			);
+			button?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 		});
 
 		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
@@ -292,9 +260,7 @@ describe("FileTreeFileItem", () => {
 		const onArrowNavigate = vi.fn();
 		await renderFileTreeFileItem({ onArrowNavigate });
 
-		const button = container.querySelector(
-			".fileTreeRow",
-		) as HTMLButtonElement | null;
+		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
 		expect(button).not.toBeNull();
 
 		await act(async () => {

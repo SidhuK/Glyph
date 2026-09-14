@@ -1,8 +1,4 @@
-import {
-	type InfiniteData,
-	useInfiniteQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	type Dispatch,
 	type SetStateAction,
@@ -36,9 +32,7 @@ function rebuildRowsPages(
 	rows: DatabaseRow[],
 	pageSize: number,
 ): DatabaseRowsPagesData {
-	const fallbackPage = current?.pages.find(
-		(page) => page.available_properties.length > 0,
-	);
+	const fallbackPage = current?.pages.find((page) => page.available_properties.length > 0);
 	const availableProperties = fallbackPage?.available_properties ?? [];
 	const hadMore = current?.pages[current.pages.length - 1]?.next_offset != null;
 	const totalCount = hadMore
@@ -100,11 +94,7 @@ export function useDatabaseRows({
 	const rowsQueryKey = useMemo(
 		() =>
 			selectedDatabaseId && selectedViewId
-				? navigationQueryKeys.databaseRowsPages(
-						selectedDatabaseId,
-						selectedViewId,
-						pageSize,
-					)
+				? navigationQueryKeys.databaseRowsPages(selectedDatabaseId, selectedViewId, pageSize)
 				: [...navigationQueryKeys.databases(), "rows-pages", "__inactive__"],
 		[pageSize, selectedDatabaseId, selectedViewId],
 	);
@@ -131,15 +121,11 @@ export function useDatabaseRows({
 	const setRows = useCallback<Dispatch<SetStateAction<DatabaseRow[]>>>(
 		(updater) => {
 			if (!selectedDatabaseId || !selectedViewId) return;
-			queryClient.setQueryData<DatabaseRowsPagesData>(
-				rowsQueryKey,
-				(current) => {
-					const currentRows = current?.pages.flatMap((page) => page.rows) ?? [];
-					const nextRows =
-						typeof updater === "function" ? updater(currentRows) : updater;
-					return rebuildRowsPages(current, nextRows, pageSize);
-				},
-			);
+			queryClient.setQueryData<DatabaseRowsPagesData>(rowsQueryKey, (current) => {
+				const currentRows = current?.pages.flatMap((page) => page.rows) ?? [];
+				const nextRows = typeof updater === "function" ? updater(currentRows) : updater;
+				return rebuildRowsPages(current, nextRows, pageSize);
+			});
 		},
 		[pageSize, queryClient, rowsQueryKey, selectedDatabaseId, selectedViewId],
 	);

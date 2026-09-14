@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
 import { dispatchWikiLinkClick } from "../markdown/editorEvents";
-import {
-	findWikiLinkSpans,
-	parseWikiLink,
-	wikiLinkDisplayName,
-} from "../markdown/wikiLinkCodec";
+import { findWikiLinkSpans, parseWikiLink, wikiLinkDisplayName } from "../markdown/wikiLinkCodec";
 
 interface WikiLinkedTextProps {
 	value: string;
@@ -34,9 +30,7 @@ export function WikiLinkedText({ value, sourcePath }: WikiLinkedTextProps) {
 					data-target={detail.target}
 					data-unresolved={String(detail.unresolved)}
 					onClick={() =>
-						dispatchWikiLinkClick(
-							sourcePath == null ? detail : { ...detail, sourcePath },
-						)
+						dispatchWikiLinkClick(sourcePath == null ? detail : { ...detail, sourcePath })
 					}
 					title={label}
 				>

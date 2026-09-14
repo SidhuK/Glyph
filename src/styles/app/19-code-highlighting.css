@@ -4,11 +4,7 @@
 	--code-token-string: var(--color-green-500);
 	--code-token-number: var(--color-yellow-500);
 	--code-token-title: var(--color-blue-600);
-	--code-token-meta: color-mix(
-		in srgb,
-		var(--text-secondary) 84%,
-		var(--interactive-accent)
-	);
+	--code-token-meta: color-mix(in srgb, var(--text-secondary) 84%, var(--interactive-accent));
 	--code-token-variable: var(--color-red-500);
 }
 

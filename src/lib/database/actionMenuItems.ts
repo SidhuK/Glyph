@@ -1,12 +1,6 @@
 import type { NativeContextMenuItem } from "../nativeContextMenu";
 
-export type ActionMenuIconKey =
-	| "table"
-	| "board"
-	| "edit"
-	| "trash"
-	| "library"
-	| "plus";
+export type ActionMenuIconKey = "table" | "board" | "edit" | "trash" | "library" | "plus";
 
 export type ActionMenuItem =
 	| { type: "separator" }
@@ -23,9 +17,7 @@ export type ActionMenuItem =
 			itemClassName?: string;
 	  };
 
-export function toNativeContextMenuItems(
-	items: ActionMenuItem[],
-): NativeContextMenuItem[] {
+export function toNativeContextMenuItems(items: ActionMenuItem[]): NativeContextMenuItem[] {
 	const nativeItems: NativeContextMenuItem[] = [];
 
 	for (const item of items) {

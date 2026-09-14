@@ -2,11 +2,8 @@
 
 import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
-import { describe, expect, it } from "vitest";
-import {
-	postprocessDetailsMarkdown,
-	preprocessDetailsMarkdown,
-} from "../markdown/detailsMarkdown";
+import { describe, expect, it } from "vite-plus/test";
+import { postprocessDetailsMarkdown, preprocessDetailsMarkdown } from "../markdown/detailsMarkdown";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
@@ -37,9 +34,7 @@ Toggle content.
 
 </details>`;
 
-		expect(postprocessDetailsMarkdown(preprocessDetailsMarkdown(input))).toBe(
-			input,
-		);
+		expect(postprocessDetailsMarkdown(preprocessDetailsMarkdown(input))).toBe(input);
 	});
 
 	it("round-trips closed details html", () => {
@@ -50,9 +45,7 @@ Secret content.
 
 </details>`;
 
-		expect(postprocessDetailsMarkdown(preprocessDetailsMarkdown(input))).toBe(
-			input,
-		);
+		expect(postprocessDetailsMarkdown(preprocessDetailsMarkdown(input))).toBe(input);
 	});
 
 	it("escapes angle brackets in summary text on disk", () => {
@@ -237,11 +230,7 @@ Second paragraph.
 			element: document.createElement("div"),
 		});
 
-		const inserted = editor
-			.chain()
-			.focus()
-			.insertContent(createDetailsBlockContent())
-			.run();
+		const inserted = editor.chain().focus().insertContent(createDetailsBlockContent()).run();
 		expect(inserted).toBe(true);
 
 		const output = postprocessMarkdownFromEditor(editor.getMarkdown());
@@ -270,9 +259,7 @@ Second paragraph.
 		(toggle as HTMLButtonElement).click();
 
 		expect(editor.getJSON().content?.[0]?.attrs?.open).toBe(false);
-		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toContain(
-			"<details>",
-		);
+		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toContain("<details>");
 
 		editor.destroy();
 	});

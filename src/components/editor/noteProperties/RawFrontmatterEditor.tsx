@@ -11,11 +11,7 @@ interface RawFrontmatterEditorProps {
 	onChange: (value: string | null, rawText: string) => void;
 }
 
-export function RawFrontmatterEditor({
-	value,
-	readOnly,
-	onChange,
-}: RawFrontmatterEditorProps) {
+export function RawFrontmatterEditor({ value, readOnly, onChange }: RawFrontmatterEditorProps) {
 	const [draft, setDraft] = useState(value);
 
 	useEffect(() => {

@@ -40,15 +40,10 @@ export function useInternalAnchorNavigation({
 
 		const onInternalAnchorClick = (event: Event) => {
 			if (!isInternalAnchorClickEvent(event)) return;
-			if (
-				normalizeRelPath(event.detail.sourcePath) !== normalizeRelPath(relPath)
-			) {
+			if (normalizeRelPath(event.detail.sourcePath) !== normalizeRelPath(relPath)) {
 				return;
 			}
-			const heading = resolveAnchorHeading(
-				headingsRef.current,
-				event.detail.anchor,
-			);
+			const heading = resolveAnchorHeading(headingsRef.current, event.detail.anchor);
 			if (!heading) return;
 			discardPendingHeadingJump(relPath);
 			selectVisibleHeadingRef.current(heading);
@@ -56,10 +51,7 @@ export function useInternalAnchorNavigation({
 
 		window.addEventListener(INTERNAL_ANCHOR_CLICK_EVENT, onInternalAnchorClick);
 		return () => {
-			window.removeEventListener(
-				INTERNAL_ANCHOR_CLICK_EVENT,
-				onInternalAnchorClick,
-			);
+			window.removeEventListener(INTERNAL_ANCHOR_CLICK_EVENT, onInternalAnchorClick);
 		};
 	}, [headings, headingsReady, relPath]);
 }

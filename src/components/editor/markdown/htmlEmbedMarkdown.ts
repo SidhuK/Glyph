@@ -1,7 +1,4 @@
-import {
-	HTML_EMBED_RAW_SENTINEL,
-	postprocessHtmlEmbedFences,
-} from "../../../lib/htmlEmbed";
+import { HTML_EMBED_RAW_SENTINEL, postprocessHtmlEmbedFences } from "../../../lib/htmlEmbed";
 import { preprocessRawHtmlEmbeds } from "./rawHtmlEmbedBridge";
 
 export function preprocessHtmlEmbeds(markdown: string): string {

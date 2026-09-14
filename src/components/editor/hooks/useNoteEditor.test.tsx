@@ -3,7 +3,7 @@
 import { Extension, type Extensions } from "@tiptap/core";
 import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { AttachmentStorageMode } from "../../../lib/settings";
 import { useNoteEditor } from "./useNoteEditor";
 
@@ -165,9 +165,7 @@ const {
 			editorOptions = options;
 		},
 		getActiveEditor: () => activeEditor,
-		setSettingsUpdatedHandler: (
-			handler: (typeof settingsUpdatedHandlers)[number],
-		) => {
+		setSettingsUpdatedHandler: (handler: (typeof settingsUpdatedHandlers)[number]) => {
 			settingsUpdatedHandlers.push(handler);
 		},
 		clearSettingsUpdatedHandlers: () => {
@@ -178,9 +176,7 @@ const {
 
 type SettingsSnapshot = Awaited<ReturnType<typeof loadSettingsMock>>;
 
-function editorSettings(
-	overrides: Partial<SettingsSnapshot["editor"]> = {},
-): SettingsSnapshot {
+function editorSettings(overrides: Partial<SettingsSnapshot["editor"]> = {}): SettingsSnapshot {
 	return {
 		editor: {
 			attachmentFolder: "assets",
@@ -226,8 +222,7 @@ vi.mock("../extensions", () => ({
 }));
 
 vi.mock("../../../lib/settings", () => ({
-	isFocusMode: (value: unknown) =>
-		value === "off" || value === "paragraph" || value === "sentence",
+	isFocusMode: (value: unknown) => value === "off" || value === "paragraph" || value === "sentence",
 	loadSettings: loadSettingsMock,
 }));
 
@@ -295,12 +290,7 @@ function Harness({
 			showFrontmatterInEditor: state.showFrontmatterInEditor,
 			showFormatBar: state.showFormatBar,
 		});
-	}, [
-		onState,
-		state.colorfulHeadings,
-		state.showFrontmatterInEditor,
-		state.showFormatBar,
-	]);
+	}, [onState, state.colorfulHeadings, state.showFrontmatterInEditor, state.showFormatBar]);
 	return null;
 }
 
@@ -340,9 +330,7 @@ async function flushImageUploadWork() {
 }
 
 async function flushMarkdownSyncWork() {
-	await new Promise((resolve) =>
-		setTimeout(resolve, MARKDOWN_SYNC_DEBOUNCE_MS + 20),
-	);
+	await new Promise((resolve) => setTimeout(resolve, MARKDOWN_SYNC_DEBOUNCE_MS + 20));
 	await new Promise((resolve) => requestAnimationFrame(resolve));
 }
 
@@ -391,17 +379,13 @@ describe("useNoteEditor", () => {
 			return mockEditor.state.tr;
 		});
 		mockEditor.state.tr.scrollIntoView.mockReset();
-		mockEditor.state.tr.scrollIntoView.mockImplementation(
-			function scrollIntoView() {
-				return mockEditor.state.tr;
-			},
-		);
+		mockEditor.state.tr.scrollIntoView.mockImplementation(function scrollIntoView() {
+			return mockEditor.state.tr;
+		});
 		mockEditor.state.tr.setSelection.mockReset();
-		mockEditor.state.tr.setSelection.mockImplementation(
-			function setSelection() {
-				return mockEditor.state.tr;
-			},
-		);
+		mockEditor.state.tr.setSelection.mockImplementation(function setSelection() {
+			return mockEditor.state.tr;
+		});
 		mockEditor.state.tr.setNodeMarkup.mockReset();
 		mockEditor.view.dispatch.mockReset();
 		mockEditor.view.dom = document.createElement("div");
@@ -409,8 +393,8 @@ describe("useNoteEditor", () => {
 		mockEditor.view.hasFocus.mockReset();
 		mockEditor.view.hasFocus.mockReturnValue(false);
 		mockEditor.view.posAtDOM.mockReset();
-		mockEditor.view.posAtDOM.mockImplementation(
-			(_node: Node, offset: number) => (offset === 0 ? 5 : 14),
+		mockEditor.view.posAtDOM.mockImplementation((_node: Node, offset: number) =>
+			offset === 0 ? 5 : 14,
 		);
 		chainCommands.focus.mockClear();
 		chainCommands.insertContentAt.mockClear();
@@ -559,9 +543,7 @@ describe("useNoteEditor", () => {
 			);
 		});
 
-		expect(oldOnChange).toHaveBeenCalledWith(
-			"---\ntitle: Old\n---\ntyped old body",
-		);
+		expect(oldOnChange).toHaveBeenCalledWith("---\ntitle: Old\n---\ntyped old body");
 		expect(newOnChange).not.toHaveBeenCalled();
 
 		await act(async () => {
@@ -578,9 +560,7 @@ describe("useNoteEditor", () => {
 		mockEditor.getMarkdown.mockReturnValue("latest pending body");
 
 		await act(async () => {
-			root.render(
-				<Harness additionalExtensions={[firstExtension]} onChange={onChange} />,
-			);
+			root.render(<Harness additionalExtensions={[firstExtension]} onChange={onChange} />);
 		});
 
 		const initialOptions = getEditorOptions() as {
@@ -598,12 +578,7 @@ describe("useNoteEditor", () => {
 		});
 
 		await act(async () => {
-			root.render(
-				<Harness
-					additionalExtensions={[secondExtension]}
-					onChange={onChange}
-				/>,
-			);
+			root.render(<Harness additionalExtensions={[secondExtension]} onChange={onChange} />);
 		});
 
 		const recreatedOptions = getEditorOptions() as { content?: string } | null;
@@ -637,9 +612,7 @@ describe("useNoteEditor", () => {
 		nextEditor.view.state = nextEditor.state;
 
 		await act(async () => {
-			root.render(
-				<Harness additionalExtensions={[firstExtension]} onChange={onChange} />,
-			);
+			root.render(<Harness additionalExtensions={[firstExtension]} onChange={onChange} />);
 		});
 
 		mockEditor.state.selection.from = 12;
@@ -648,12 +621,7 @@ describe("useNoteEditor", () => {
 		setActiveEditor(nextEditor as typeof mockEditor);
 
 		await act(async () => {
-			root.render(
-				<Harness
-					additionalExtensions={[secondExtension]}
-					onChange={onChange}
-				/>,
-			);
+			root.render(<Harness additionalExtensions={[secondExtension]} onChange={onChange} />);
 		});
 
 		expect(nextEditor.commands.setTextSelection).toHaveBeenCalledWith({
@@ -679,12 +647,9 @@ describe("useNoteEditor", () => {
 			root.render(<Harness markdown="changed body" onChange={onChange} />);
 		});
 
-		expect(mockEditor.commands.setContent).toHaveBeenCalledWith(
-			"changed body",
-			{
-				contentType: "markdown",
-			},
-		);
+		expect(mockEditor.commands.setContent).toHaveBeenCalledWith("changed body", {
+			contentType: "markdown",
+		});
 		expect(mockEditor.commands.setTextSelection).toHaveBeenCalledWith({
 			from: 3,
 			to: 3,
@@ -710,12 +675,9 @@ describe("useNoteEditor", () => {
 			root.render(<Harness markdown="changed body" onChange={onChange} />);
 		});
 
-		expect(mockEditor.commands.setContent).toHaveBeenCalledWith(
-			"changed body",
-			{
-				contentType: "markdown",
-			},
-		);
+		expect(mockEditor.commands.setContent).toHaveBeenCalledWith("changed body", {
+			contentType: "markdown",
+		});
 	});
 
 	it("does not crash when the editor view is unavailable during cleanup", async () => {
@@ -731,18 +693,11 @@ describe("useNoteEditor", () => {
 		setActiveEditor(editorWithoutMountedView as typeof mockEditor);
 
 		await act(async () => {
-			root.render(
-				<Harness additionalExtensions={[firstExtension]} onChange={onChange} />,
-			);
+			root.render(<Harness additionalExtensions={[firstExtension]} onChange={onChange} />);
 		});
 
 		await act(async () => {
-			root.render(
-				<Harness
-					additionalExtensions={[secondExtension]}
-					onChange={onChange}
-				/>,
-			);
+			root.render(<Harness additionalExtensions={[secondExtension]} onChange={onChange} />);
 		});
 	});
 
@@ -821,9 +776,7 @@ describe("useNoteEditor", () => {
 	it("hydrates frontmatter visibility from persisted settings on mount", async () => {
 		const onChange = vi.fn();
 		const onState = vi.fn();
-		loadSettingsMock.mockResolvedValue(
-			editorSettings({ showFrontmatterInEditor: true }),
-		);
+		loadSettingsMock.mockResolvedValue(editorSettings({ showFrontmatterInEditor: true }));
 
 		await act(async () => {
 			root.render(<Harness onChange={onChange} onState={onState} />);
@@ -887,9 +840,7 @@ describe("useNoteEditor", () => {
 		const onChange = vi.fn();
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -898,26 +849,20 @@ describe("useNoteEditor", () => {
 
 		expect(paste?.({}, event)).toBe(true);
 		expect(parseMock).toHaveBeenCalledWith("**bold**");
-		expect(canCommands.insertContentAt).toHaveBeenCalledWith(
-			{ from: 2, to: 4 },
-			[
-				{
-					type: "text",
-					text: "bold",
-					marks: [{ type: "bold" }],
-				},
-			],
-		);
-		expect(chainCommands.insertContentAt).toHaveBeenCalledWith(
-			{ from: 2, to: 4 },
-			[
-				{
-					type: "text",
-					text: "bold",
-					marks: [{ type: "bold" }],
-				},
-			],
-		);
+		expect(canCommands.insertContentAt).toHaveBeenCalledWith({ from: 2, to: 4 }, [
+			{
+				type: "text",
+				text: "bold",
+				marks: [{ type: "bold" }],
+			},
+		]);
+		expect(chainCommands.insertContentAt).toHaveBeenCalledWith({ from: 2, to: 4 }, [
+			{
+				type: "text",
+				text: "bold",
+				marks: [{ type: "bold" }],
+			},
+		]);
 		expect(event.defaultPrevented).toBe(true);
 	});
 
@@ -943,11 +888,7 @@ describe("useNoteEditor", () => {
 		expect(event.defaultPrevented).toBe(true);
 		expect(mockEditor.view.dispatch).toHaveBeenCalledTimes(1);
 		const transaction = mockEditor.view.dispatch.mock.calls[0]?.[0];
-		expect(transaction.insertText).toHaveBeenCalledWith(
-			"[Next note](notes/next.md)",
-			5,
-			14,
-		);
+		expect(transaction.insertText).toHaveBeenCalledWith("[Next note](notes/next.md)", 5, 14);
 		expect(mockEditor.view.focus).toHaveBeenCalledTimes(1);
 	});
 
@@ -1002,9 +943,7 @@ describe("useNoteEditor", () => {
 		const onChange = vi.fn();
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -1023,9 +962,7 @@ describe("useNoteEditor", () => {
 		const onChange = vi.fn();
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -1047,9 +984,7 @@ describe("useNoteEditor", () => {
 		mockEditor.isActive.mockReturnValue(true);
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -1066,9 +1001,7 @@ describe("useNoteEditor", () => {
 		canCommands.insertContentAt.mockReturnValue(false);
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -1086,9 +1019,7 @@ describe("useNoteEditor", () => {
 		chainCommands.run.mockReturnValue(false);
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -1104,9 +1035,7 @@ describe("useNoteEditor", () => {
 		const onChange = vi.fn();
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -1124,21 +1053,18 @@ describe("useNoteEditor", () => {
 
 		expect(paste?.({}, event)).toBe(true);
 		expect(parseMock).not.toHaveBeenCalled();
-		expect(chainCommands.insertContentAt).toHaveBeenCalledWith(
-			{ from: 2, to: 4 },
-			[
-				{
-					type: "image",
-					attrs: {
-						src: "blob:preview",
-						alt: "paste.png",
-						title: "",
-						originSrc: "",
-						uploadId: expect.stringContaining("paste-"),
-					},
+		expect(chainCommands.insertContentAt).toHaveBeenCalledWith({ from: 2, to: 4 }, [
+			{
+				type: "image",
+				attrs: {
+					src: "blob:preview",
+					alt: "paste.png",
+					title: "",
+					originSrc: "",
+					uploadId: expect.stringContaining("paste-"),
 				},
-			],
-		);
+			},
+		]);
 	});
 
 	it.each([
@@ -1167,102 +1093,95 @@ describe("useNoteEditor", () => {
 			mode: "note-subfolder" as const,
 			targetDir: "notes/attachments",
 		},
-	])(
-		"saves pasted images to $name",
-		async ({ folder, mode, targetDir, assertMarkup }) => {
-			loadSettingsMock.mockResolvedValue(
-				editorSettings({
-					attachmentFolder: folder,
-					attachmentStorageMode: mode,
+	])("saves pasted images to $name", async ({ folder, mode, targetDir, assertMarkup }) => {
+		loadSettingsMock.mockResolvedValue(
+			editorSettings({
+				attachmentFolder: folder,
+				attachmentStorageMode: mode,
+			}),
+		);
+
+		await act(async () => {
+			root.render(<Harness onChange={vi.fn()} pasteMarkdownBehavior="smart-markdown" />);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const file = new File(["image-bytes"], "paste.png", {
+			type: "image/png",
+		});
+		const event = createClipboardEvent({
+			items: [{ type: "image/png", getAsFile: () => file }],
+		});
+		if (assertMarkup) {
+			mockEditor.state.doc.descendants.mockImplementation(
+				(
+					visit: (
+						node: {
+							type: { name: string };
+							attrs: Record<string, unknown>;
+						},
+						pos: number,
+					) => void,
+				) => {
+					const insertContentAtCalls = chainCommands.insertContentAt.mock.calls as unknown as Array<
+						[unknown, unknown]
+					>;
+					const lastInsertCall = insertContentAtCalls[insertContentAtCalls.length - 1];
+					const insertedNodes = lastInsertCall?.[1] as
+						| Array<{ attrs?: { uploadId?: string } }>
+						| undefined;
+					const uploadId = insertedNodes?.[0]?.attrs?.uploadId;
+					if (!uploadId) return;
+					visit(
+						{
+							type: { name: "image" },
+							attrs: {
+								src: "blob:preview",
+								alt: "paste.png",
+								title: "",
+								originSrc: "",
+								uploadId,
+							},
+						},
+						6,
+					);
+				},
+			);
+		}
+
+		await act(async () => {
+			expect(paste?.({}, event)).toBe(true);
+			await flushImageUploadWork();
+		});
+
+		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
+			source_path: "notes/test.md",
+			target_dir: targetDir,
+			data_url: "data:image/png;base64,abc",
+			original_filename: "paste.png",
+		});
+		if (assertMarkup) {
+			expect(mockEditor.state.tr.setNodeMarkup).toHaveBeenCalledWith(
+				6,
+				undefined,
+				expect.objectContaining({
+					src: "glyphasset://localhost/assets/image.png",
+					alt: "paste.png",
+					title: "",
+					originSrc: "../assets/image.png",
+					uploadId: null,
 				}),
 			);
-
-			await act(async () => {
-				root.render(
-					<Harness onChange={vi.fn()} pasteMarkdownBehavior="smart-markdown" />,
-				);
-			});
-
-			const options = getEditorOptions() as EditorOptionsWithPaste;
-			const paste = options?.editorProps?.handleDOMEvents?.paste;
-			const file = new File(["image-bytes"], "paste.png", {
-				type: "image/png",
-			});
-			const event = createClipboardEvent({
-				items: [{ type: "image/png", getAsFile: () => file }],
-			});
-			if (assertMarkup) {
-				mockEditor.state.doc.descendants.mockImplementation(
-					(
-						visit: (
-							node: {
-								type: { name: string };
-								attrs: Record<string, unknown>;
-							},
-							pos: number,
-						) => void,
-					) => {
-						const insertContentAtCalls = chainCommands.insertContentAt.mock
-							.calls as unknown as Array<[unknown, unknown]>;
-						const lastInsertCall =
-							insertContentAtCalls[insertContentAtCalls.length - 1];
-						const insertedNodes = lastInsertCall?.[1] as
-							| Array<{ attrs?: { uploadId?: string } }>
-							| undefined;
-						const uploadId = insertedNodes?.[0]?.attrs?.uploadId;
-						if (!uploadId) return;
-						visit(
-							{
-								type: { name: "image" },
-								attrs: {
-									src: "blob:preview",
-									alt: "paste.png",
-									title: "",
-									originSrc: "",
-									uploadId,
-								},
-							},
-							6,
-						);
-					},
-				);
-			}
-
-			await act(async () => {
-				expect(paste?.({}, event)).toBe(true);
-				await flushImageUploadWork();
-			});
-
-			expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
-				source_path: "notes/test.md",
-				target_dir: targetDir,
-				data_url: "data:image/png;base64,abc",
-				original_filename: "paste.png",
-			});
-			if (assertMarkup) {
-				expect(mockEditor.state.tr.setNodeMarkup).toHaveBeenCalledWith(
-					6,
-					undefined,
-					expect.objectContaining({
-						src: "glyphasset://localhost/assets/image.png",
-						alt: "paste.png",
-						title: "",
-						originSrc: "../assets/image.png",
-						uploadId: null,
-					}),
-				);
-			}
-		},
-	);
+		}
+	});
 
 	it("does not start image uploads when image placeholders cannot be inserted", async () => {
 		const onChange = vi.fn();
 		canCommands.insertContentAt.mockReturnValue(false);
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -1288,9 +1207,7 @@ describe("useNoteEditor", () => {
 		chainCommands.run.mockReturnValue(false);
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;
@@ -1313,17 +1230,13 @@ describe("useNoteEditor", () => {
 
 	it("continues processing later pasted images when one upload fails", async () => {
 		const onChange = vi.fn();
-		invokeMock
-			.mockRejectedValueOnce(new Error("first upload failed"))
-			.mockResolvedValueOnce({
-				asset_rel_path: "assets/image-2.png",
-				href: "../assets/image-2.png",
-			});
+		invokeMock.mockRejectedValueOnce(new Error("first upload failed")).mockResolvedValueOnce({
+			asset_rel_path: "assets/image-2.png",
+			href: "../assets/image-2.png",
+		});
 
 		await act(async () => {
-			root.render(
-				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
-			);
+			root.render(<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />);
 		});
 
 		const options = getEditorOptions() as EditorOptionsWithPaste;

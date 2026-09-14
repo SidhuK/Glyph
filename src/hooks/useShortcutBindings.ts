@@ -18,9 +18,7 @@ const DEFAULT_EFFECTIVE_BINDINGS = getEffectiveShortcutBindings({});
 const FOCUS_REFRESH_DELAY_MS = 200;
 
 export function useShortcutBindings() {
-	const [bindings, setBindings] = useState<EffectiveShortcutBindings>(
-		DEFAULT_EFFECTIVE_BINDINGS,
-	);
+	const [bindings, setBindings] = useState<EffectiveShortcutBindings>(DEFAULT_EFFECTIVE_BINDINGS);
 	const mountedRef = useRef(false);
 
 	const refresh = useCallback(async (withReload = false) => {
@@ -53,23 +51,15 @@ export function useShortcutBindings() {
 		};
 	}, [refresh]);
 
-	useTauriEvent(
-		"settings:updated",
-		(payload: { shortcuts?: { bindings?: ShortcutBindings } }) => {
-			if (!payload.shortcuts?.bindings) return;
-			setBindings(getEffectiveShortcutBindings(payload.shortcuts.bindings));
-		},
-	);
+	useTauriEvent("settings:updated", (payload: { shortcuts?: { bindings?: ShortcutBindings } }) => {
+		if (!payload.shortcuts?.bindings) return;
+		setBindings(getEffectiveShortcutBindings(payload.shortcuts.bindings));
+	});
 
-	const getBinding = useCallback(
-		(actionId: ShortcutActionId) => bindings[actionId],
-		[bindings],
-	);
+	const getBinding = useCallback((actionId: ShortcutActionId) => bindings[actionId], [bindings]);
 
 	const actionsWithBindings = useMemo<
-		Array<
-			ShortcutActionDefinition & { binding: EffectiveShortcutBindings[string] }
-		>
+		Array<ShortcutActionDefinition & { binding: EffectiveShortcutBindings[string] }>
 	>(
 		() =>
 			SHORTCUT_ACTIONS.map((action) => ({

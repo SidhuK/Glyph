@@ -81,8 +81,7 @@ export function wikiLinkDisplayName(
 	const target = typeof attrs.target === "string" ? attrs.target.trim() : "";
 	const targetName = target.split("/").pop()?.replace(/\.md$/i, "") || target;
 	const anchor = typeof attrs.anchor === "string" ? attrs.anchor.trim() : "";
-	if (attrs.anchorKind === "heading" && anchor)
-		return `${targetName}#${anchor}`;
+	if (attrs.anchorKind === "heading" && anchor) return `${targetName}#${anchor}`;
 	if (attrs.anchorKind === "block" && anchor) return `${targetName}#^${anchor}`;
 	return targetName;
 }

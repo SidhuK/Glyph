@@ -21,10 +21,7 @@ function isExpandedMarkdownUrlLink(link: HTMLAnchorElement): boolean {
 	return previousText.endsWith("](") && nextText.startsWith(")");
 }
 
-function expandMarkdownLinkForEditing(
-	view: EditorView,
-	link: HTMLAnchorElement,
-): boolean {
+function expandMarkdownLinkForEditing(view: EditorView, link: HTMLAnchorElement): boolean {
 	const href = link.getAttribute("href")?.trim() ?? "";
 	if (!href || href.startsWith("#")) return false;
 
@@ -51,11 +48,7 @@ function expandMarkdownLinkForEditing(
 	}
 }
 
-function scrollToFootnoteCounterpart(
-	view: EditorView,
-	source: HTMLElement,
-	id: string,
-): void {
+function scrollToFootnoteCounterpart(view: EditorView, source: HTMLElement, id: string): void {
 	const isDefinition = source.classList.contains("footnoteDef");
 	const targetClass = isDefinition ? "footnoteRef" : "footnoteDef";
 	const selector = `.${targetClass}[data-footnote-id="${cssEscape(id)}"]`;
@@ -79,8 +72,7 @@ export function handleEditorClick(
 			return true;
 		}
 		event.preventDefault();
-		const rawTag =
-			tagToken.getAttribute("data-tag") ?? tagToken.textContent ?? "";
+		const rawTag = tagToken.getAttribute("data-tag") ?? tagToken.textContent ?? "";
 		const normalized = rawTag.trim().replace(/^#+/, "");
 		if (!normalized) return true;
 		dispatchTagClick({ tag: `#${normalized}` });
@@ -94,17 +86,14 @@ export function handleEditorClick(
 			return true;
 		}
 		event.preventDefault();
-		const rawHandle =
-			personToken.getAttribute("data-handle") ?? personToken.textContent ?? "";
+		const rawHandle = personToken.getAttribute("data-handle") ?? personToken.textContent ?? "";
 		const normalized = rawHandle.trim().replace(/^@+/, "");
 		if (!normalized) return true;
 		dispatchPersonClick({ handle: `@${normalized}` });
 		return true;
 	}
 
-	const footnote = target?.closest(
-		".footnoteRef, .footnoteDef",
-	) as HTMLElement | null;
+	const footnote = target?.closest(".footnoteRef, .footnoteDef") as HTMLElement | null;
 	if (footnote) {
 		event.preventDefault();
 		if (!interactive) return true;
@@ -113,9 +102,7 @@ export function handleEditorClick(
 		return true;
 	}
 
-	const wikiLink = target?.closest(
-		'[data-wikilink="true"]',
-	) as HTMLElement | null;
+	const wikiLink = target?.closest('[data-wikilink="true"]') as HTMLElement | null;
 	if (wikiLink) {
 		if (!interactive) {
 			event.preventDefault();
@@ -125,9 +112,7 @@ export function handleEditorClick(
 		const unresolved = wikiLink.getAttribute("data-unresolved") === "true";
 		const anchorKindAttr = wikiLink.getAttribute("data-anchor-kind");
 		const anchorKind =
-			anchorKindAttr === "heading" || anchorKindAttr === "block"
-				? anchorKindAttr
-				: "none";
+			anchorKindAttr === "heading" || anchorKindAttr === "block" ? anchorKindAttr : "none";
 		const anchorAttr = wikiLink.getAttribute("data-anchor");
 		const anchor = anchorAttr ? anchorAttr : null;
 		dispatchWikiLinkClick({

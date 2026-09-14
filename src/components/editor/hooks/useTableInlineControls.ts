@@ -19,10 +19,7 @@ import type {
 } from "../noteEditorOverlayTypes";
 import { DISABLED_TABLE_CAPABILITIES } from "../noteEditorOverlayTypes";
 import type { NoteInlineEditorMode } from "../types";
-import {
-	getMountedEditorContentRoot,
-	getOffsetWithinAncestor,
-} from "./editorDomUtils";
+import { getMountedEditorContentRoot, getOffsetWithinAncestor } from "./editorDomUtils";
 import {
 	runTableEditorAction,
 	tableEditorSnapshot,
@@ -47,9 +44,7 @@ export function useTableInlineControls({
 }: UseTableInlineControlsArgs): TableInlineControlsProps | null {
 	const { t } = useTranslation("editor");
 	const syncRafRef = useRef<number | null>(null);
-	const [selectedTable, setSelectedTable] = useState<SelectedTableState | null>(
-		null,
-	);
+	const [selectedTable, setSelectedTable] = useState<SelectedTableState | null>(null);
 
 	const snapshot = useEditorState({
 		editor,
@@ -65,12 +60,9 @@ export function useTableInlineControls({
 		equalityFn: tableSnapshotsEqual,
 	});
 
-	const onControlMouseDown = useCallback(
-		(event: ReactMouseEvent<HTMLElement>) => {
-			event.preventDefault();
-		},
-		[],
-	);
+	const onControlMouseDown = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+		event.preventDefault();
+	}, []);
 	const captureTarget = useCallback((): TableActionTarget | null => {
 		return snapshot?.target ?? null;
 	}, [snapshot]);
@@ -113,8 +105,7 @@ export function useTableInlineControls({
 			}
 
 			const closestCell = anchorElement.closest("td, th");
-			const activeCell =
-				closestCell instanceof HTMLElement ? closestCell : null;
+			const activeCell = closestCell instanceof HTMLElement ? closestCell : null;
 			if (!activeCell || !contentRoot.contains(activeCell)) {
 				setSelectedTable(null);
 				return;
@@ -123,8 +114,7 @@ export function useTableInlineControls({
 			const closestRow = activeCell.closest("tr");
 			const closestTable = activeCell.closest("table");
 			const activeRow = closestRow instanceof HTMLElement ? closestRow : null;
-			const activeTable =
-				closestTable instanceof HTMLElement ? closestTable : null;
+			const activeTable = closestTable instanceof HTMLElement ? closestTable : null;
 			if (!activeRow || !activeTable || !contentRoot.contains(activeTable)) {
 				setSelectedTable(null);
 				return;
@@ -185,10 +175,7 @@ export function useTableInlineControls({
 			}
 			scrollHost?.removeEventListener("scroll", scheduleSyncSelectedTable);
 			window.removeEventListener("resize", scheduleSyncSelectedTable);
-			document.removeEventListener(
-				"selectionchange",
-				scheduleSyncSelectedTable,
-			);
+			document.removeEventListener("selectionchange", scheduleSyncSelectedTable);
 			editor.off("selectionUpdate", scheduleSyncSelectedTable);
 			editor.off("transaction", scheduleSyncSelectedTable);
 			editor.off("destroy", clearSelectedTable);

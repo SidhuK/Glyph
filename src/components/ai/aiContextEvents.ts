@@ -5,10 +5,7 @@ export type AiSelectionApplyResult = "applied" | "selection-changed" | "failed";
 export interface AiSelectionContext {
 	label: string;
 	text: string;
-	applyResponse: (
-		mode: "replace" | "insert",
-		markdown: string,
-	) => AiSelectionApplyResult;
+	applyResponse: (mode: "replace" | "insert", markdown: string) => AiSelectionApplyResult;
 }
 
 export interface AiContextAttachDetail {
@@ -28,7 +25,5 @@ export function dispatchAiContextAttach(detail: AiContextAttachDetail): void {
 	if (detail.selection) {
 		pendingSelectionContext = detail.selection;
 	}
-	window.dispatchEvent(
-		new CustomEvent<AiContextAttachDetail>(AI_CONTEXT_ATTACH_EVENT, { detail }),
-	);
+	window.dispatchEvent(new CustomEvent<AiContextAttachDetail>(AI_CONTEXT_ATTACH_EVENT, { detail }));
 }

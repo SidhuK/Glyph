@@ -56,17 +56,10 @@ function parseSvgLength(value: string | null): number | null {
 function getSvgNaturalSize(svg: SVGSVGElement): MermaidCanvasSize {
 	const viewBox = svg.getAttribute("viewBox")?.trim();
 	if (viewBox) {
-		const parts = viewBox
-			.split(/[\s,]+/)
-			.map((part) => Number.parseFloat(part));
+		const parts = viewBox.split(/[\s,]+/).map((part) => Number.parseFloat(part));
 		const width = parts[2];
 		const height = parts[3];
-		if (
-			parts.length === 4 &&
-			parts.every(Number.isFinite) &&
-			width > 0 &&
-			height > 0
-		) {
+		if (parts.length === 4 && parts.every(Number.isFinite) && width > 0 && height > 0) {
 			return { width, height };
 		}
 	}
@@ -99,10 +92,7 @@ function getViewportSize(viewport: HTMLElement): MermaidCanvasSize {
 	};
 }
 
-function getViewportPoint(
-	viewport: HTMLElement,
-	event: MouseEvent | PointerEvent,
-) {
+function getViewportPoint(viewport: HTMLElement, event: MouseEvent | PointerEvent) {
 	const rect = viewport.getBoundingClientRect();
 	return {
 		x: event.clientX - rect.left,
@@ -129,9 +119,7 @@ export function createMermaidErrorCanvas(message: string): HTMLElement {
 	return root;
 }
 
-export function createMermaidCanvas(
-	options: MermaidCanvasOptions,
-): MermaidCanvasMount {
+export function createMermaidCanvas(options: MermaidCanvasOptions): MermaidCanvasMount {
 	const svg = importSvg(options.svgHtml);
 	if (!svg) {
 		return {
@@ -196,10 +184,8 @@ export function createMermaidCanvas(
 		const viewportSize = getViewportSize(viewport);
 		if (viewportSize.width <= 0) return;
 
-		const fitWidth =
-			(viewportSize.width - MERMAID_CANVAS_FIT_INSET * 2) / naturalSize.width;
-		const fitHeight =
-			(viewportSize.height - MERMAID_CANVAS_FIT_INSET * 2) / naturalSize.height;
+		const fitWidth = (viewportSize.width - MERMAID_CANVAS_FIT_INSET * 2) / naturalSize.width;
+		const fitHeight = (viewportSize.height - MERMAID_CANVAS_FIT_INSET * 2) / naturalSize.height;
 		state.zoom = clamp(
 			Math.min(fitWidth, fitHeight),
 			MERMAID_CANVAS_MIN_ZOOM,
@@ -217,11 +203,7 @@ export function createMermaidCanvas(
 	}
 
 	function zoomAt(point: MermaidCanvasPoint, factor: number) {
-		const nextZoom = clamp(
-			state.zoom * factor,
-			MERMAID_CANVAS_MIN_ZOOM,
-			MERMAID_CANVAS_MAX_ZOOM,
-		);
+		const nextZoom = clamp(state.zoom * factor, MERMAID_CANVAS_MIN_ZOOM, MERMAID_CANVAS_MAX_ZOOM);
 		if (nextZoom === state.zoom) return;
 
 		const diagramX = (point.x - state.panX) / state.zoom;
@@ -342,10 +324,7 @@ export function createMermaidCanvas(
 			if (!event.metaKey && !event.ctrlKey) return;
 
 			event.preventDefault();
-			const factor =
-				event.deltaY < 0
-					? MERMAID_CANVAS_ZOOM_STEP
-					: 1 / MERMAID_CANVAS_ZOOM_STEP;
+			const factor = event.deltaY < 0 ? MERMAID_CANVAS_ZOOM_STEP : 1 / MERMAID_CANVAS_ZOOM_STEP;
 			zoomAt(getViewportPoint(viewport, event), factor);
 		},
 		{ passive: false },

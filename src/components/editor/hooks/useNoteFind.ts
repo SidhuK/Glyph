@@ -16,10 +16,7 @@ import {
 	type SearchJumpRequest,
 	consumeSearchJump,
 } from "../../../lib/searchJump";
-import {
-	findNoteSearchRanges,
-	findPlainTextSearchRanges,
-} from "../extensions/noteSearch";
+import { findNoteSearchRanges, findPlainTextSearchRanges } from "../extensions/noteSearch";
 import type { RawMarkdownEditorHandle } from "../raw/types";
 import type { NoteInlineEditorMode } from "../types";
 
@@ -64,9 +61,7 @@ function selectedTextForQuery(text: string): string {
  * body, the external markdown window, the quick note panel), so the scroll host
  * is resolved from the DOM instead of assuming one container.
  */
-function scrollHostFor(
-	element: Element | null | undefined,
-): HTMLElement | null {
+function scrollHostFor(element: Element | null | undefined): HTMLElement | null {
 	let current = element?.parentElement ?? null;
 	while (current) {
 		const overflowY = window.getComputedStyle(current).overflowY;
@@ -141,26 +136,16 @@ function markdownLinkDestinations(markdown: string): TextRange[] {
 	return destinations;
 }
 
-function overlapsMarkdownLinkDestination(
-	range: TextRange,
-	destinations: readonly TextRange[],
-) {
+function overlapsMarkdownLinkDestination(range: TextRange, destinations: readonly TextRange[]) {
 	return destinations.some(
 		(destination) => range.from < destination.to && destination.from < range.to,
 	);
 }
 
-function rawMatchIndexForVisibleMatch(
-	markdown: string,
-	query: string,
-	visibleMatchIndex: number,
-) {
+function rawMatchIndexForVisibleMatch(markdown: string, query: string, visibleMatchIndex: number) {
 	const destinations = markdownLinkDestinations(markdown);
 	let visibleIndex = 0;
-	for (const [rawIndex, range] of findPlainTextSearchRanges(
-		markdown,
-		query,
-	).entries()) {
+	for (const [rawIndex, range] of findPlainTextSearchRanges(markdown, query).entries()) {
 		if (overlapsMarkdownLinkDestination(range, destinations)) continue;
 		if (visibleIndex === visibleMatchIndex) return rawIndex;
 		visibleIndex += 1;
@@ -198,9 +183,7 @@ export function useNoteFind({
 	const editorDoc = useEditorState({
 		editor,
 		selector: ({ editor: instance }) =>
-			findOpen && mode !== "plain" && instance && !instance.isDestroyed
-				? instance.state.doc
-				: null,
+			findOpen && mode !== "plain" && instance && !instance.isDestroyed ? instance.state.doc : null,
 		equalityFn: (a, b) => a === b,
 	});
 
@@ -229,10 +212,7 @@ export function useNoteFind({
 		);
 		if (rawMatchIndex === null) return searchJump.matchIndex;
 		if (!frontmatter) return rawMatchIndex;
-		return (
-			rawMatchIndex +
-			findPlainTextSearchRanges(frontmatter, searchJump.query).length
-		);
+		return rawMatchIndex + findPlainTextSearchRanges(frontmatter, searchJump.query).length;
 	}, [findQuery, markdown, mode, searchJump]);
 
 	const effectiveFindActiveIndex = useMemo(() => {
@@ -257,17 +237,11 @@ export function useNoteFind({
 			const match = findMatches[index];
 			if (!match) return;
 			try {
-				const selection = TextSelection.create(
-					editor.state.doc,
-					match.from,
-					match.to,
-				);
+				const selection = TextSelection.create(editor.state.doc, match.from, match.to);
 				editor.view.dispatch(editor.state.tr.setSelection(selection));
 				centerEditorPosition(editor, match.from);
 			} catch {
-				const activeMatch = tiptapHostRef.current?.querySelector(
-					".noteSearchMatchActive",
-				);
+				const activeMatch = tiptapHostRef.current?.querySelector(".noteSearchMatchActive");
 				const scrollHost = scrollHostFor(tiptapHostRef.current);
 				if (activeMatch && scrollHost) {
 					centerElementInScrollHost(activeMatch, scrollHost);
@@ -302,8 +276,7 @@ export function useNoteFind({
 		(direction: 1 | -1) => {
 			if (!findMatches.length) return;
 			const nextIndex =
-				(effectiveFindActiveIndex + direction + findMatches.length) %
-				findMatches.length;
+				(effectiveFindActiveIndex + direction + findMatches.length) % findMatches.length;
 			setSearchJump(null);
 			setFindActiveIndex(nextIndex);
 			selectFindMatch(nextIndex);
@@ -314,22 +287,13 @@ export function useNoteFind({
 	useEffect(() => {
 		if (!findOpen || !findQuery || !findMatches.length) return;
 		selectFindMatch(effectiveFindActiveIndex);
-	}, [
-		effectiveFindActiveIndex,
-		findMatches.length,
-		findOpen,
-		findQuery,
-		selectFindMatch,
-	]);
+	}, [effectiveFindActiveIndex, findMatches.length, findOpen, findQuery, selectFindMatch]);
 
 	const getSelectedSearchText = useCallback(() => {
 		if (mode === "plain") {
-			return selectedTextForQuery(
-				rawEditorRef.current?.getSelectedText() ?? "",
-			);
+			return selectedTextForQuery(rawEditorRef.current?.getSelectedText() ?? "");
 		}
-		if (!editor || editor.isDestroyed || editor.state.selection.empty)
-			return "";
+		if (!editor || editor.isDestroyed || editor.state.selection.empty) return "";
 		const selected = editor.state.doc.textBetween(
 			editor.state.selection.from,
 			editor.state.selection.to,
@@ -409,9 +373,8 @@ export function useNoteFind({
 
 	const isSearchJumpTarget = useCallback(
 		(jump: SearchJumpRequest) =>
-			hostRef.current
-				?.closest("[data-editor-pane-id]")
-				?.getAttribute("data-editor-pane-id") === jump.targetPaneId,
+			hostRef.current?.closest("[data-editor-pane-id]")?.getAttribute("data-editor-pane-id") ===
+			jump.targetPaneId,
 		[hostRef],
 	);
 
@@ -422,8 +385,7 @@ export function useNoteFind({
 		const targetPaneId = hostRef.current
 			?.closest("[data-editor-pane-id]")
 			?.getAttribute("data-editor-pane-id");
-		const jump =
-			relPath && targetPaneId ? consumeSearchJump(relPath, targetPaneId) : null;
+		const jump = relPath && targetPaneId ? consumeSearchJump(relPath, targetPaneId) : null;
 		const pathChanged = previousRelPathRef.current !== relPath;
 		previousRelPathRef.current = relPath;
 		if (jump && isSearchJumpTarget(jump)) {
@@ -435,21 +397,14 @@ export function useNoteFind({
 		setFindOpen(false);
 		setFindQuery("");
 		setFindActiveIndex(0);
-	}, [
-		acceptSearchJumps,
-		applySearchJump,
-		hostRef,
-		isSearchJumpTarget,
-		relPath,
-	]);
+	}, [acceptSearchJumps, applySearchJump, hostRef, isSearchJumpTarget, relPath]);
 
 	// Jump while this note is already open (palette → same tab).
 	useEffect(() => {
 		if (!acceptSearchJumps || !relPath) return;
 		const onJump = (event: Event) => {
 			const detail = (event as CustomEvent<SearchJumpRequest>).detail;
-			if (!detail || detail.path !== relPath || !isSearchJumpTarget(detail))
-				return;
+			if (!detail || detail.path !== relPath || !isSearchJumpTarget(detail)) return;
 			consumeSearchJump(relPath, detail.targetPaneId);
 			applySearchJump(detail);
 		};
@@ -483,9 +438,7 @@ export function useNoteFind({
 		if (mode === "plain") return;
 		const frame = requestAnimationFrame(() => {
 			const scrollHost = scrollHostFor(tiptapHostRef.current);
-			const activeMatch = tiptapHostRef.current?.querySelector(
-				".noteSearchMatchActive",
-			);
+			const activeMatch = tiptapHostRef.current?.querySelector(".noteSearchMatchActive");
 			if (activeMatch && scrollHost) {
 				centerElementInScrollHost(activeMatch, scrollHost);
 			}

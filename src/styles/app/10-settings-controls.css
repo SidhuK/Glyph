@@ -229,8 +229,7 @@
 }
 
 .settingsSidebarDragHandle:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
 }
 
@@ -247,8 +246,7 @@
 	z-index: 2;
 	pointer-events: none;
 	background: var(--settings-surface);
-	box-shadow: 0 8px 24px
-		color-mix(in srgb, var(--text-primary) 10%, transparent);
+	box-shadow: 0 8px 24px color-mix(in srgb, var(--text-primary) 10%, transparent);
 }
 
 .settingsSidebarItemRow[data-dnd-placeholder] {
@@ -295,8 +293,7 @@
 .settingsField input:focus-visible,
 .settingsField textarea:focus-visible,
 .settingsField button:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 44%, transparent);
 	outline-offset: 2px;
 }
 
@@ -335,8 +332,7 @@
 }
 
 .settingsSelectWrap:has(.settingsSelectNative:focus) .settingsSelectChevron,
-.settingsSelectWrap:has(.settingsSelectNative:focus-visible)
-	.settingsSelectChevron,
+.settingsSelectWrap:has(.settingsSelectNative:focus-visible) .settingsSelectChevron,
 .settingsSelectWrap:has(.settingsSelectNative:active) .settingsSelectChevron {
 	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
 }
@@ -361,8 +357,7 @@
 .settingsSelectNative:focus-visible,
 .settingsSelectNative:active {
 	outline: none;
-	box-shadow: 0 0 0 3px
-		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 }
 
 .settingsHelp {
@@ -404,9 +399,7 @@
 	background: var(--bg-primary);
 }
 
-.settingsPeriodNoteBox:has(
-		.settingsFieldInteractive input[type="checkbox"]:not(:disabled)
-	):hover {
+.settingsPeriodNoteBox:has(.settingsFieldInteractive input[type="checkbox"]:not(:disabled)):hover {
 	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
 }
 
@@ -423,11 +416,7 @@
 }
 
 :root.light .settingsPeriodNoteBox:has(input[type="checkbox"]:checked) {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 6%,
-		var(--bg-primary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary));
 }
 
 .settingsPeriodNoteBox .settingsPeriodNoteRow.settingsField {
@@ -444,8 +433,7 @@
 	background: transparent;
 }
 
-.settingsPeriodNoteBox
-	.settingsFieldInteractive:has(input[type="checkbox"]:not(:disabled)):hover {
+.settingsPeriodNoteBox .settingsFieldInteractive:has(input[type="checkbox"]:not(:disabled)):hover {
 	background: transparent;
 }
 
@@ -506,14 +494,11 @@
 	opacity: 0.055;
 }
 
-.settingsPeriodNoteBox:has(input[type="checkbox"]:checked)
-	.settingsPeriodNoteMark {
+.settingsPeriodNoteBox:has(input[type="checkbox"]:checked) .settingsPeriodNoteMark {
 	opacity: 0.11;
 }
 
-:root.light
-	.settingsPeriodNoteBox:has(input[type="checkbox"]:checked)
-	.settingsPeriodNoteMark {
+:root.light .settingsPeriodNoteBox:has(input[type="checkbox"]:checked) .settingsPeriodNoteMark {
 	opacity: 0.08;
 }
 
@@ -541,10 +526,8 @@
 	color: var(--bg-primary);
 }
 
-.settingsFieldControl
-	> [data-slot="button"][data-variant="default"]:hover:not(:disabled),
-.settingsActions
-	> [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
+.settingsFieldControl > [data-slot="button"][data-variant="default"]:hover:not(:disabled),
+.settingsActions > [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
 	background: color-mix(in srgb, var(--text-primary) 88%, var(--bg-primary));
 	border-color: color-mix(in srgb, var(--text-primary) 88%, var(--bg-primary));
 	color: var(--bg-primary);
@@ -557,10 +540,8 @@
 	color: var(--text-primary);
 }
 
-.settingsFieldControl
-	> [data-slot="button"][data-variant="outline"]:hover:not(:disabled),
-.settingsActions
-	> [data-slot="button"][data-variant="outline"]:hover:not(:disabled) {
+.settingsFieldControl > [data-slot="button"][data-variant="outline"]:hover:not(:disabled),
+.settingsActions > [data-slot="button"][data-variant="outline"]:hover:not(:disabled) {
 	background: color-mix(in srgb, var(--settings-surface) 72%, var(--bg-primary));
 	border-color: color-mix(in srgb, var(--border-strong) 88%, transparent);
 	color: var(--text-primary);
@@ -572,10 +553,8 @@
 	color: var(--text-secondary);
 }
 
-.settingsFieldControl
-	> [data-slot="button"][data-variant="ghost"]:hover:not(:disabled),
-.settingsActions
-	> [data-slot="button"][data-variant="ghost"]:hover:not(:disabled) {
+.settingsFieldControl > [data-slot="button"][data-variant="ghost"]:hover:not(:disabled),
+.settingsActions > [data-slot="button"][data-variant="ghost"]:hover:not(:disabled) {
 	background: var(--settings-surface-soft);
 	color: var(--text-primary);
 }
@@ -644,13 +623,11 @@
 }
 
 .settingsPane .uiToggleControl {
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--border-default) 84%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-default) 84%, transparent);
 }
 
 .settingsPane .uiToggleInput:checked ~ .uiToggleControl {
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--accent-color) 42%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 42%, transparent);
 }
 
 .settingsEmpty {

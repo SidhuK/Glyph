@@ -18,8 +18,7 @@ export const FootnoteDecorations = createIncrementalTextDecorationExtension({
 			const end = start + match[0].length;
 			const from = pos + start;
 			const to = pos + end;
-			const isDefinition =
-				footnoteKindAt(text, start, match[0].length) === "def";
+			const isDefinition = footnoteKindAt(text, start, match[0].length) === "def";
 			decorations.push(
 				Decoration.inline(from, to, {
 					class: isDefinition ? "footnoteDef" : "footnoteRef",

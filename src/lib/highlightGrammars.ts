@@ -10,18 +10,17 @@ import plaintext from "highlight.js/lib/languages/plaintext";
  */
 export const PLAINTEXT_GRAMMAR: LanguageFn = plaintext;
 
-const GRAMMAR_LOADERS: Record<string, () => Promise<{ default: LanguageFn }>> =
-	{
-		bash: () => import("highlight.js/lib/languages/bash"),
-		javascript: () => import("highlight.js/lib/languages/javascript"),
-		json: () => import("highlight.js/lib/languages/json"),
-		markdown: () => import("highlight.js/lib/languages/markdown"),
-		python: () => import("highlight.js/lib/languages/python"),
-		rust: () => import("highlight.js/lib/languages/rust"),
-		typescript: () => import("highlight.js/lib/languages/typescript"),
-		xml: () => import("highlight.js/lib/languages/xml"),
-		yaml: () => import("highlight.js/lib/languages/yaml"),
-	};
+const GRAMMAR_LOADERS: Record<string, () => Promise<{ default: LanguageFn }>> = {
+	bash: () => import("highlight.js/lib/languages/bash"),
+	javascript: () => import("highlight.js/lib/languages/javascript"),
+	json: () => import("highlight.js/lib/languages/json"),
+	markdown: () => import("highlight.js/lib/languages/markdown"),
+	python: () => import("highlight.js/lib/languages/python"),
+	rust: () => import("highlight.js/lib/languages/rust"),
+	typescript: () => import("highlight.js/lib/languages/typescript"),
+	xml: () => import("highlight.js/lib/languages/xml"),
+	yaml: () => import("highlight.js/lib/languages/yaml"),
+};
 
 /** Registry-level aliases, keyed by grammar module name. */
 export const GRAMMAR_ALIASES: Readonly<Record<string, readonly string[]>> = {
@@ -46,9 +45,7 @@ for (const [name, aliases] of Object.entries(GRAMMAR_ALIASES)) {
 }
 
 /** Maps a language or alias to its grammar module name, or null if unsupported. */
-export function resolveGrammarName(
-	language: string | null | undefined,
-): string | null {
+export function resolveGrammarName(language: string | null | undefined): string | null {
 	if (!language) return "plaintext";
 	return GRAMMAR_NAME_BY_ALIAS.get(language.toLowerCase()) ?? null;
 }

@@ -1,12 +1,6 @@
 import type { MouseEvent } from "react";
-import {
-	priorityColorKey,
-	priorityOptionsWithCustomValues,
-} from "../../lib/priorityProperties";
-import {
-	statusColorKey,
-	statusOptionsWithCustomValues,
-} from "../../lib/statusProperties";
+import { priorityColorKey, priorityOptionsWithCustomValues } from "../../lib/priorityProperties";
+import { statusColorKey, statusOptionsWithCustomValues } from "../../lib/statusProperties";
 import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../editor/textColors";
 import {
 	DropdownMenu,
@@ -41,9 +35,7 @@ interface PriorityPropertyPickerProps extends PropertyPickerBaseProps {
 	kind: "priority";
 }
 
-export type PropertyOptionPickerProps =
-	| StatusPropertyPickerProps
-	| PriorityPropertyPickerProps;
+export type PropertyOptionPickerProps = StatusPropertyPickerProps | PriorityPropertyPickerProps;
 
 function handleTriggerClick(
 	event: MouseEvent<HTMLButtonElement>,
@@ -57,9 +49,7 @@ function handleTriggerClick(
 export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 	const values = [props.value, ...(props.valueOptions ?? [])];
 	const isStatus = props.kind === "status";
-	const selectedId = isStatus
-		? statusColorKey(props.value)
-		: priorityColorKey(props.value);
+	const selectedId = isStatus ? statusColorKey(props.value) : priorityColorKey(props.value);
 	const options = isStatus
 		? statusOptionsWithCustomValues(values)
 		: priorityOptionsWithCustomValues(values);
@@ -82,18 +72,11 @@ export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 					aria-label={props.triggerAriaLabel}
 					onFocus={props.onTriggerFocus}
 					onClick={(event) =>
-						handleTriggerClick(
-							event,
-							props.onTriggerClick,
-							props.stopTriggerClickPropagation,
-						)
+						handleTriggerClick(event, props.onTriggerClick, props.stopTriggerClickPropagation)
 					}
 				>
 					{isStatus ? (
-						<StatusPropertyPill
-							value={props.value || "not_started"}
-							colors={props.colors}
-						/>
+						<StatusPropertyPill value={props.value || "not_started"} colors={props.colors} />
 					) : (
 						<PriorityPropertyPill value={props.value || "no"} />
 					)}
@@ -110,19 +93,15 @@ export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 							key={option.id}
 							className="notePropertyStatusOption"
 							data-selected={
-								(isStatus
-									? statusColorKey(option.label)
-									: priorityColorKey(option.label)) === selectedId
+								(isStatus ? statusColorKey(option.label) : priorityColorKey(option.label)) ===
+								selectedId
 									? "true"
 									: "false"
 							}
 							onClick={() => void selectValue(option.label)}
 						>
 							{isStatus ? (
-								<StatusPropertyPill
-									value={option.label}
-									colors={props.colors}
-								/>
+								<StatusPropertyPill value={option.label} colors={props.colors} />
 							) : (
 								<PriorityPropertyPill value={option.label} />
 							)}

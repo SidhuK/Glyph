@@ -73,12 +73,7 @@ function cellPosition(
 	columnIndex: number,
 ): { cell: ProseMirrorNode; cellPos: number } | null {
 	const map = TableMap.get(table);
-	if (
-		rowIndex < 0 ||
-		columnIndex < 0 ||
-		rowIndex >= map.height ||
-		columnIndex >= map.width
-	) {
+	if (rowIndex < 0 || columnIndex < 0 || rowIndex >= map.height || columnIndex >= map.width) {
 		return null;
 	}
 	const relative = map.positionAt(rowIndex, columnIndex, table);
@@ -92,26 +87,15 @@ function restoreSelection(
 	table: ProseMirrorNode,
 	target: TableActionTarget,
 ): boolean {
-	const located = cellPosition(
-		table,
-		target.tablePos,
-		target.rowIndex,
-		target.columnIndex,
-	);
+	const located = cellPosition(table, target.tablePos, target.rowIndex, target.columnIndex);
 	if (!located || !editor.view) return false;
 	const { from, to } = editor.state.selection;
-	if (
-		from >= located.cellPos &&
-		to <= located.cellPos + located.cell.nodeSize
-	) {
+	if (from >= located.cellPos && to <= located.cellPos + located.cell.nodeSize) {
 		editor.view.focus();
 		return true;
 	}
 
-	const inner = Math.min(
-		located.cellPos + 1,
-		located.cellPos + located.cell.nodeSize - 1,
-	);
+	const inner = Math.min(located.cellPos + 1, located.cellPos + located.cell.nodeSize - 1);
 	const selection = TextSelection.near(editor.state.doc.resolve(inner), 1);
 	const tr = editor.state.tr.setSelection(selection);
 	tr.setMeta("addToHistory", false);
@@ -179,10 +163,7 @@ function runMoveCommand(editor: Editor, action: TableEditorAction): boolean {
 	}
 }
 
-export function runTableEditorAction(
-	editor: Editor,
-	action: TableEditorAction,
-): boolean {
+export function runTableEditorAction(editor: Editor, action: TableEditorAction): boolean {
 	if (editor.isDestroyed) return false;
 
 	const doc = editor.state?.doc;
@@ -201,11 +182,7 @@ export function runTableEditorAction(
 		case "addColumnBefore":
 		case "addColumnAfter":
 		case "deleteColumn":
-			return editor
-				.chain()
-				.focus(null, { scrollIntoView: false })
-				[action.kind]()
-				.run();
+			return editor.chain().focus(null, { scrollIntoView: false })[action.kind]().run();
 		case "moveRowUp":
 		case "moveRowDown":
 		case "moveColumnLeft":

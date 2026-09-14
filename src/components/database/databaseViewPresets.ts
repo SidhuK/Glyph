@@ -33,22 +33,13 @@ const DUE_DATE_PROPERTY_NAMES = ["due date", "due", "deadline"];
 const PRIORITY_PROPERTY_NAMES = ["priority", "prio"];
 const OWNER_PROPERTY_NAMES = ["owner", "owners", "assignee", "assignees"];
 const BLOCKED_PROPERTY_NAMES = ["blocked tasks", "blocked", "blockers"];
-const PROJECT_STATUS_PROPERTY_NAMES = [
-	"project status",
-	...STATUS_PROPERTY_NAMES,
-];
+const PROJECT_STATUS_PROPERTY_NAMES = ["project status", ...STATUS_PROPERTY_NAMES];
 
 function normalizePresetKey(value: string | null | undefined): string {
-	return (value ?? "")
-		.trim()
-		.toLowerCase()
-		.replace(/[_-]+/g, " ")
-		.replace(/\s+/g, " ");
+	return (value ?? "").trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
 }
 
-function hiddenPropertyColumn(
-	property: DatabasePropertyOption,
-): DatabaseColumn {
+function hiddenPropertyColumn(property: DatabasePropertyOption): DatabaseColumn {
 	return {
 		...createPropertyColumn({ ...property, key: property.key.trim() }),
 		visible: false,
@@ -62,10 +53,7 @@ function columnMatchesName(column: DatabaseColumn, names: string[]): boolean {
 		.some((value) => normalizedNames.has(value));
 }
 
-function propertyMatchesName(
-	property: DatabasePropertyOption,
-	names: string[],
-): boolean {
+function propertyMatchesName(property: DatabasePropertyOption, names: string[]): boolean {
 	const normalizedNames = new Set(names.map(normalizePresetKey));
 	return normalizedNames.has(normalizePresetKey(property.key));
 }
@@ -75,8 +63,7 @@ function findPropertyColumn(
 	names: string[],
 	kinds?: string[],
 ): DatabaseColumn | null {
-	const matchesKind = (kind: string | null | undefined) =>
-		!kinds || kinds.includes(kind ?? "");
+	const matchesKind = (kind: string | null | undefined) => !kinds || kinds.includes(kind ?? "");
 	const existing =
 		context.columns.find(
 			(column) =>
@@ -94,12 +81,10 @@ function findPropertyColumn(
 
 	const property =
 		context.availableProperties.find(
-			(option) =>
-				propertyMatchesName(option, names) && matchesKind(option.kind),
+			(option) => propertyMatchesName(option, names) && matchesKind(option.kind),
 		) ??
 		context.availableProperties.find(
-			(option) =>
-				propertyMatchesName(option, names) && option.kind === "status",
+			(option) => propertyMatchesName(option, names) && option.kind === "status",
 		);
 	return property ? hiddenPropertyColumn(property) : null;
 }
@@ -107,8 +92,7 @@ function findPropertyColumn(
 function statusColumn(context: PresetColumnContext): DatabaseColumn | null {
 	return (
 		context.columns.find(
-			(column) =>
-				column.type === "property" && column.property_kind === "status",
+			(column) => column.type === "property" && column.property_kind === "status",
 		) ??
 		findPropertyColumn(context, STATUS_PROPERTY_NAMES, ["status", "text"]) ??
 		null
@@ -116,11 +100,7 @@ function statusColumn(context: PresetColumnContext): DatabaseColumn | null {
 }
 
 function dueDateColumn(context: PresetColumnContext): DatabaseColumn | null {
-	return findPropertyColumn(context, DUE_DATE_PROPERTY_NAMES, [
-		"date",
-		"datetime",
-		"text",
-	]);
+	return findPropertyColumn(context, DUE_DATE_PROPERTY_NAMES, ["date", "datetime", "text"]);
 }
 
 function priorityColumn(context: PresetColumnContext): DatabaseColumn | null {
@@ -131,20 +111,14 @@ function ownerColumn(context: PresetColumnContext): DatabaseColumn | null {
 	return findPropertyColumn(context, OWNER_PROPERTY_NAMES);
 }
 
-function blockedTasksColumn(
-	context: PresetColumnContext,
-): DatabaseColumn | null {
+function blockedTasksColumn(context: PresetColumnContext): DatabaseColumn | null {
 	return findPropertyColumn(context, BLOCKED_PROPERTY_NAMES);
 }
 
-function projectStatusColumn(
-	context: PresetColumnContext,
-): DatabaseColumn | null {
+function projectStatusColumn(context: PresetColumnContext): DatabaseColumn | null {
 	return (
-		findPropertyColumn(context, PROJECT_STATUS_PROPERTY_NAMES, [
-			"status",
-			"text",
-		]) ?? statusColumn(context)
+		findPropertyColumn(context, PROJECT_STATUS_PROPERTY_NAMES, ["status", "text"]) ??
+		statusColumn(context)
 	);
 }
 
@@ -161,10 +135,7 @@ function textFilter(
 	};
 }
 
-function dateShortcutFilter(
-	column: DatabaseColumn,
-	value: string,
-): DatabaseFilter {
+function dateShortcutFilter(column: DatabaseColumn, value: string): DatabaseFilter {
 	return {
 		column_id: column.id,
 		operator: "within_last_7_days",
@@ -292,8 +263,7 @@ export function databaseSortPresets(
 	availableProperties: DatabasePropertyOption[],
 ): DatabaseSortPreset[] {
 	const context = { columns: config.columns, availableProperties };
-	const updatedColumn =
-		config.columns.find((column) => column.id === "updated") ?? null;
+	const updatedColumn = config.columns.find((column) => column.id === "updated") ?? null;
 	return [
 		sortPreset(
 			"updated-newest",

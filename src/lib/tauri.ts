@@ -182,15 +182,7 @@ interface DatabaseViewState {
 
 export interface DatabaseColumn {
 	id: string;
-	type:
-		| "title"
-		| "tags"
-		| "path"
-		| "folder"
-		| "created"
-		| "updated"
-		| "linked_notes"
-		| "property";
+	type: "title" | "tags" | "path" | "folder" | "created" | "updated" | "linked_notes" | "property";
 	label: string;
 	icon?: string | null;
 	width?: number | null;
@@ -726,11 +718,7 @@ interface GitSyncConfigPatch {
 	prompt_for_commit_message?: boolean;
 }
 
-type LicenseMode =
-	| "community_build"
-	| "licensed"
-	| "trial_active"
-	| "trial_expired";
+type LicenseMode = "community_build" | "licensed" | "trial_active" | "trial_expired";
 
 export interface LicenseStatus {
 	mode: LicenseMode;
@@ -907,10 +895,7 @@ export interface RolloverMoveResult {
 interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
 	deeplink_open: CommandDef<{ url: string }, void>;
-	deeplink_take_pending: CommandDef<
-		void,
-		import("./deeplink").PendingDeeplinks
-	>;
+	deeplink_take_pending: CommandDef<void, import("./deeplink").PendingDeeplinks>;
 	updater_check_release_channel: CommandDef<
 		{ channel: "stable" | "alpha" },
 		ReleaseChannelUpdate | null
@@ -926,10 +911,7 @@ interface TauriCommands {
 	hide_quick_note_window: CommandDef<void, void>;
 	show_main_window: CommandDef<void, void>;
 	read_clipboard_plain_text: CommandDef<void, string | null>;
-	set_quick_note_global_shortcut: CommandDef<
-		{ accelerator?: string | null },
-		void
-	>;
+	set_quick_note_global_shortcut: CommandDef<{ accelerator?: string | null }, void>;
 	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
 	set_menu_shortcuts: CommandDef<
 		{
@@ -975,35 +957,20 @@ interface TauriCommands {
 		},
 		FsEntry[]
 	>;
-	file_tree_appearance_list: CommandDef<
-		void,
-		Record<string, FileTreeAppearance>
-	>;
+	file_tree_appearance_list: CommandDef<void, Record<string, FileTreeAppearance>>;
 	file_tree_appearance_set: CommandDef<
 		{ path: string; color?: string | null; icon?: string | null },
 		FileTreeAppearance | null
 	>;
-	file_tree_appearance_rename_path: CommandDef<
-		{ from_path: string; to_path: string },
-		void
-	>;
+	file_tree_appearance_rename_path: CommandDef<{ from_path: string; to_path: string }, void>;
 	file_tree_appearance_delete_path: CommandDef<{ path: string }, void>;
 	list_collapse_state_get: CommandDef<{ path: string }, string[]>;
-	list_collapse_state_set: CommandDef<
-		{ path: string; branches: string[] },
-		void
-	>;
+	list_collapse_state_set: CommandDef<{ path: string; branches: string[] }, void>;
 	tag_appearance_list: CommandDef<void, Record<string, TagAppearance>>;
-	tag_appearance_set: CommandDef<
-		{ tag: string; icon?: string | null },
-		TagAppearance | null
-	>;
+	tag_appearance_set: CommandDef<{ tag: string; icon?: string | null }, TagAppearance | null>;
 	pinned_files_list: CommandDef<void, PinnedFiles>;
 	pinned_files_toggle: CommandDef<{ path: string }, PinnedFiles>;
-	pinned_files_rename_path: CommandDef<
-		{ from_path: string; to_path: string },
-		PinnedFiles
-	>;
+	pinned_files_rename_path: CommandDef<{ from_path: string; to_path: string }, PinnedFiles>;
 	pinned_files_delete_path: CommandDef<{ path: string }, PinnedFiles>;
 	space_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
@@ -1073,23 +1040,14 @@ interface TauriCommands {
 	>;
 	space_create_dir: CommandDef<{ path: string }, void>;
 	space_duplicate_path: CommandDef<{ path: string }, FsEntry>;
-	space_rename_path: CommandDef<
-		{ from_path: string; to_path: string },
-		LinkRewriteResult
-	>;
-	space_delete_path: CommandDef<
-		{ path: string; recursive?: boolean | null },
-		void
-	>;
+	space_rename_path: CommandDef<{ from_path: string; to_path: string }, LinkRewriteResult>;
+	space_delete_path: CommandDef<{ path: string; recursive?: boolean | null }, void>;
 	space_resolve_abs_path: CommandDef<{ path: string }, string>;
 	space_reveal_path: CommandDef<{ path: string }, void>;
 	space_relativize_path: CommandDef<{ abs_path: string }, string>;
 	space_resolve_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_image_wikilink: CommandDef<{ target: string }, string | null>;
-	space_resolve_markdown_link: CommandDef<
-		{ href: string; sourcePath: string },
-		string | null
-	>;
+	space_resolve_markdown_link: CommandDef<{ href: string; sourcePath: string }, string | null>;
 	space_suggest_links: CommandDef<
 		{
 			request: {
@@ -1105,14 +1063,8 @@ interface TauriCommands {
 		},
 		{ path: string; title: string; insert_text: string }[]
 	>;
-	note_frontmatter_parse_properties: CommandDef<
-		{ frontmatter?: string | null },
-		NoteProperty[]
-	>;
-	note_frontmatter_render_properties: CommandDef<
-		{ properties: NoteProperty[] },
-		string | null
-	>;
+	note_frontmatter_parse_properties: CommandDef<{ frontmatter?: string | null }, NoteProperty[]>;
+	note_frontmatter_render_properties: CommandDef<{ properties: NoteProperty[] }, string | null>;
 	databases_list: CommandDef<void, WorkspaceDatabaseSummary[]>;
 	databases_get: CommandDef<{ database_id: string }, WorkspaceDatabaseDocument>;
 	databases_create: CommandDef<
@@ -1170,18 +1122,9 @@ interface TauriCommands {
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	index_sync: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
-	search_advanced: CommandDef<
-		{ request: SearchAdvancedRequest },
-		SearchResult[]
-	>;
-	search_parse_and_run: CommandDef<
-		{ raw_query: string; limit?: number | null },
-		SearchResult[]
-	>;
-	index_set_people_mentions_as_tags_enabled: CommandDef<
-		{ enabled: boolean },
-		void
-	>;
+	search_advanced: CommandDef<{ request: SearchAdvancedRequest }, SearchResult[]>;
+	search_parse_and_run: CommandDef<{ raw_query: string; limit?: number | null }, SearchResult[]>;
+	index_set_people_mentions_as_tags_enabled: CommandDef<{ enabled: boolean }, void>;
 	all_docs_list: CommandDef<
 		{
 			limit?: number | null;
@@ -1211,42 +1154,24 @@ interface TauriCommands {
 		{ limit?: number | null; offset?: number | null; query?: string | null },
 		TagCount[]
 	>;
-	people_list: CommandDef<
-		{ limit?: number | null; offset?: number | null },
-		PersonCount[]
-	>;
+	people_list: CommandDef<{ limit?: number | null; offset?: number | null }, PersonCount[]>;
 	task_summary: CommandDef<{ markdown: string }, NoteTaskSummary>;
-	task_summaries_for_paths: CommandDef<
-		{ note_paths: string[] },
-		NoteTaskSummaryItem[]
-	>;
-	backlinks: CommandDef<
-		{ note_id: string; space_path?: string | null },
-		BacklinkItem[]
-	>;
+	task_summaries_for_paths: CommandDef<{ note_paths: string[] }, NoteTaskSummaryItem[]>;
+	backlinks: CommandDef<{ note_id: string; space_path?: string | null }, BacklinkItem[]>;
 	unlinked_mentions: CommandDef<{ note_id: string }, UnlinkedMentionsResult>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
 	note_local_connections: CommandDef<{ note_id: string }, LocalNoteConnections>;
 	space_connections: CommandDef<void, SpaceConnections>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
-	git_sync_config_update: CommandDef<
-		{ patch: GitSyncConfigPatch },
-		GitSyncConfig
-	>;
+	git_sync_config_update: CommandDef<{ patch: GitSyncConfigPatch }, GitSyncConfig>;
 	git_sync_run: CommandDef<{ request: GitSyncRunRequest }, GitSyncStatus>;
 	git_sync_commit_message_prompt: CommandDef<
 		{ request: GitSyncCommitMessagePromptRequest },
 		string | null
 	>;
-	git_history_list: CommandDef<
-		{ path: string; limit?: number | null },
-		GitHistoryCommit[]
-	>;
-	git_history_diff: CommandDef<
-		{ path: string; commit: GitHistoryCommit },
-		GitCommitDiff
-	>;
+	git_history_list: CommandDef<{ path: string; limit?: number | null }, GitHistoryCommit[]>;
+	git_history_diff: CommandDef<{ path: string; commit: GitHistoryCommit }, GitCommitDiff>;
 
 	ai_profiles_list: CommandDef<void, AiProfile[]>;
 	ai_active_profile_get: CommandDef<void, string | null>;
@@ -1271,14 +1196,8 @@ interface TauriCommands {
 		AiChatStartResult
 	>;
 	ai_chat_cancel: CommandDef<{ job_id: string }, void>;
-	ai_models_list: CommandDef<
-		{ profile_id: string; provider?: AiProviderKind | null },
-		AiModel[]
-	>;
-	ai_chat_history_list: CommandDef<
-		{ limit?: number | null },
-		AiChatHistorySummary[]
-	>;
+	ai_models_list: CommandDef<{ profile_id: string; provider?: AiProviderKind | null }, AiModel[]>;
+	ai_chat_history_list: CommandDef<{ limit?: number | null }, AiChatHistorySummary[]>;
 	ai_chat_history_get: CommandDef<{ job_id: string }, AiChatHistoryDetail>;
 	codex_account_read: CommandDef<
 		void,
@@ -1345,8 +1264,9 @@ function asInvokePayload(value: unknown): Record<string, unknown> {
 	return value as Record<string, unknown>;
 }
 
-type ArgsTuple<K extends keyof TauriCommands> =
-	TauriCommands[K]["args"] extends void ? [] : [TauriCommands[K]["args"]];
+type ArgsTuple<K extends keyof TauriCommands> = TauriCommands[K]["args"] extends void
+	? []
+	: [TauriCommands[K]["args"]];
 
 export async function invoke<K extends keyof TauriCommands>(
 	command: K,

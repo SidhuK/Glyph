@@ -1,13 +1,53 @@
 import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, lazyPlugins } from "vite-plus";
 
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-	plugins: [react(), tailwindcss()],
+	fmt: {
+		ignorePatterns: [
+			".agents/**",
+			".amp/**",
+			".claude/**",
+			".pi/**",
+			".pnpm-store/**",
+			".sc/**",
+			"dist/**",
+			"src-tauri/gen/**",
+			"src-tauri/target/**",
+		],
+		useTabs: true,
+	},
+	lint: {
+		ignorePatterns: [
+			".agents/**",
+			".amp/**",
+			".claude/**",
+			".pi/**",
+			".pnpm-store/**",
+			".sc/**",
+			"dist/**",
+			"src-tauri/gen/**",
+			"src-tauri/target/**",
+		],
+		options: {
+			typeAware: true,
+			typeCheck: true,
+		},
+		overrides: [
+			{
+				files: ["**/*.test.ts", "**/*.test.tsx"],
+				rules: {
+					"typescript/restrict-template-expressions": "off" as const,
+					"typescript/unbound-method": "off" as const,
+				},
+			},
+		],
+	},
+	plugins: lazyPlugins(() => [react(), tailwindcss()]),
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),

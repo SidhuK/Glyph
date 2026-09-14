@@ -1,44 +1,21 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Archive04Icon } from "@hugeicons/core-free-icons";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import {
-	type VirtualItem,
-	type Virtualizer,
-	useVirtualizer,
-} from "@tanstack/react-virtual";
-import {
-	addDays,
-	format,
-	isSameDay,
-	isSameYear,
-	parseISO,
-	startOfDay,
-	subDays,
-} from "date-fns";
+import { type VirtualItem, type Virtualizer, useVirtualizer } from "@tanstack/react-virtual";
+import { addDays, format, isSameDay, isSameYear, parseISO, startOfDay, subDays } from "date-fns";
 import { useReducedMotion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import {
-	useDateDisplayFormat,
-	useFileTreeContext,
-	useUILayoutContext,
-} from "../../contexts";
+import { useDateDisplayFormat, useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { getDailyNotePath } from "../../lib/dailyNotes";
-import {
-	type DateDisplayFormat,
-	formatDisplayDate,
-} from "../../lib/dateDisplayFormat";
+import { type DateDisplayFormat, formatDisplayDate } from "../../lib/dateDisplayFormat";
 import {
 	ACTIVITY_DOCS_PAGE_SIZE,
 	allDocsListQueryOptions,
 	allDocsPagesQueryOptions,
 } from "../../lib/navigationPrefetch";
-import type {
-	AllDocsItem,
-	FileTreeAppearance,
-	NoteTaskSummary,
-} from "../../lib/tauri";
+import type { AllDocsItem, FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
@@ -121,20 +98,11 @@ function buildRecentDayShell(): ActivityDay[] {
 	return days;
 }
 
-function isDailyNote(
-	notePath: string,
-	date: string,
-	dailyNotesFolder: string | null,
-): boolean {
-	return Boolean(
-		dailyNotesFolder && notePath === getDailyNotePath(dailyNotesFolder, date),
-	);
+function isDailyNote(notePath: string, date: string, dailyNotesFolder: string | null): boolean {
+	return Boolean(dailyNotesFolder && notePath === getDailyNotePath(dailyNotesFolder, date));
 }
 
-function buildActivityDays(
-	notes: AllDocsItem[],
-	dailyNotesFolder: string | null,
-): ActivityDay[] {
+function buildActivityDays(notes: AllDocsItem[], dailyNotesFolder: string | null): ActivityDay[] {
 	const byDate = new Map<string, ActivityDay>();
 	for (const day of buildRecentDayShell()) {
 		byDate.set(day.dateKey, day);
@@ -173,10 +141,7 @@ function buildActivityDays(
 		if (updatedKey) {
 			addNote(updatedKey, note);
 		}
-		if (
-			createdKey &&
-			isDailyNote(note.note_path, createdKey, dailyNotesFolder)
-		) {
+		if (createdKey && isDailyNote(note.note_path, createdKey, dailyNotesFolder)) {
 			addNote(createdKey, note, true);
 		}
 		if (
@@ -188,9 +153,7 @@ function buildActivityDays(
 		}
 	}
 
-	return [...byDate.values()].sort(
-		(left, right) => left.date.getTime() - right.date.getTime(),
-	);
+	return [...byDate.values()].sort((left, right) => left.date.getTime() - right.date.getTime());
 }
 
 function heatmapColumns(days: ActivityDay[]): ActivityDay[][] {
@@ -248,10 +211,7 @@ function useActivityTimelineData(dailyNotesFolder: string | null) {
 		() => notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
 		[notesQuery.data],
 	);
-	const feedNotePaths = useMemo(
-		() => feedNotes.map((note) => note.note_path),
-		[feedNotes],
-	);
+	const feedNotePaths = useMemo(() => feedNotes.map((note) => note.note_path), [feedNotes]);
 	const taskSummariesByPath = useTaskSummariesForPaths(feedNotePaths, true);
 	const heatmapNotes = heatmapNotesQuery.data ?? feedNotes;
 	const activityDays = useMemo(
@@ -262,19 +222,12 @@ function useActivityTimelineData(dailyNotesFolder: string | null) {
 		() => buildActivityDays(feedNotes, dailyNotesFolder),
 		[feedNotes, dailyNotesFolder],
 	);
-	const recentStart = useMemo(
-		() => subDays(startOfDay(new Date()), HEATMAP_DAYS - 1),
-		[],
-	);
+	const recentStart = useMemo(() => subDays(startOfDay(new Date()), HEATMAP_DAYS - 1), []);
 	const recentActivityDays = useMemo(
-		() =>
-			activityDays.filter((day) => day.date.getTime() >= recentStart.getTime()),
+		() => activityDays.filter((day) => day.date.getTime() >= recentStart.getTime()),
 		[activityDays, recentStart],
 	);
-	const columns = useMemo(
-		() => heatmapColumns(recentActivityDays),
-		[recentActivityDays],
-	);
+	const columns = useMemo(() => heatmapColumns(recentActivityDays), [recentActivityDays]);
 	const visibleMonthCounts = useMemo(
 		() => monthVisibilityCounts(recentActivityDays),
 		[recentActivityDays],
@@ -340,16 +293,13 @@ function useActivityVirtualization(
 ) {
 	const [paneWidth, setPaneWidth] = useState(0);
 	const columnCount = useMemo(() => {
-		const contentWidth =
-			paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, 860);
-		const minCardWidth =
-			contentWidth <= 640 ? 144 : contentWidth <= 900 ? 160 : 184;
+		const contentWidth = paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, 860);
+		const minCardWidth = contentWidth <= 640 ? 144 : contentWidth <= 900 ? 160 : 184;
 		const gap = 14;
 		return Math.max(1, Math.floor((contentWidth + gap) / (minCardWidth + gap)));
 	}, [paneWidth]);
 	const cardEstimate = useMemo(() => {
-		const contentWidth =
-			paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, 860);
+		const contentWidth = paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, 860);
 		const gap = 14;
 		const width = (contentWidth - gap * (columnCount - 1)) / columnCount;
 		const minHeight = contentWidth <= 640 ? 176 : 184;
@@ -391,11 +341,7 @@ interface ActivityHeatmapProps {
 	maxCount: number;
 }
 
-function ActivityHeatmap({
-	columns,
-	visibleMonthCounts,
-	maxCount,
-}: ActivityHeatmapProps) {
+function ActivityHeatmap({ columns, visibleMonthCounts, maxCount }: ActivityHeatmapProps) {
 	return (
 		<div className="activityHeatmapBlock" aria-label="Recent note activity">
 			<div className="activityHeatmapMonths" aria-hidden="true">
@@ -408,9 +354,7 @@ function ActivityHeatmap({
 						(!previous || first.date.getMonth() !== previous.date.getMonth()) &&
 						(visibleMonthCounts.get(monthKey) ?? 0) >= 15;
 					return (
-						<span key={first?.dateKey ?? index}>
-							{show && first ? monthLabel(first.date) : ""}
-						</span>
+						<span key={first?.dateKey ?? index}>{show && first ? monthLabel(first.date) : ""}</span>
 					);
 				})}
 			</div>
@@ -599,10 +543,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 		recentNotesCount,
 	} = useActivityTimelineData(dailyNotesFolder);
 	const virtualRows = useActivityRows(feedDays);
-	const { rowVirtualizer, virtualItems } = useActivityVirtualization(
-		paneElement,
-		virtualRows,
-	);
+	const { rowVirtualizer, virtualItems } = useActivityVirtualization(paneElement, virtualRows);
 
 	useVirtualLoadMore({
 		hasMore: notesQuery.hasNextPage,
@@ -621,9 +562,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 		return (
 			<div className="databaseLoadingState">
 				Could not load activity:{" "}
-				{notesQuery.error instanceof Error
-					? notesQuery.error.message
-					: String(notesQuery.error)}
+				{notesQuery.error instanceof Error ? notesQuery.error.message : String(notesQuery.error)}
 			</div>
 		);
 	}
@@ -647,11 +586,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 					<div className="activityHeatmapLegend" aria-hidden="true">
 						<span>Less</span>
 						{[0, 1, 2, 3, 4].map((level) => (
-							<span
-								key={level}
-								className="activityHeatmapLegendCell"
-								data-level={level}
-							/>
+							<span key={level} className="activityHeatmapLegendCell" data-level={level} />
 						))}
 						<span>More</span>
 					</div>

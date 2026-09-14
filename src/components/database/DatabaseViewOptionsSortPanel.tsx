@@ -1,8 +1,4 @@
-import {
-	isBooleanColumn,
-	isDateColumn,
-	isNumberColumn,
-} from "../../lib/database/columns";
+import { isBooleanColumn, isDateColumn, isNumberColumn } from "../../lib/database/columns";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
@@ -11,10 +7,7 @@ import type {
 } from "../../lib/database/types";
 import { Plus } from "../Icons";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
-import {
-	type DatabaseSortPreset,
-	databaseSortPresets,
-} from "./databaseViewPresets";
+import { type DatabaseSortPreset, databaseSortPresets } from "./databaseViewPresets";
 
 interface SortPanelProps {
 	config: DatabaseConfig;
@@ -28,10 +21,7 @@ interface SortPanelProps {
 	updateConfig: (config: DatabaseConfig) => Promise<boolean>;
 }
 
-function directionLabel(
-	column: DatabaseColumn | null,
-	direction: "asc" | "desc",
-) {
+function directionLabel(column: DatabaseColumn | null, direction: "asc" | "desc") {
 	if (isDateColumn(column)) {
 		return direction === "asc" ? "Oldest - Newest" : "Newest - Oldest";
 	}
@@ -89,9 +79,7 @@ export function SortPanel({
 								data-active={applied ? "true" : "false"}
 								title={
 									preset.disabledReason ??
-									(activeSort
-										? `Replace current sort with ${preset.label}`
-										: preset.label)
+									(activeSort ? `Replace current sort with ${preset.label}` : preset.label)
 								}
 								onClick={() => onApplySortPreset(preset)}
 							>
@@ -104,10 +92,7 @@ export function SortPanel({
 			{activeSort ? (
 				<div className="databaseViewSortRow">
 					<span className="databaseViewFilterColumn">
-						<DatabaseColumnIcon
-							column={sortColumn ?? undefined}
-							size="var(--icon-lg)"
-						/>
+						<DatabaseColumnIcon column={sortColumn ?? undefined} size="var(--icon-lg)" />
 						<select
 							className="databaseViewInlineSelect"
 							value={activeSort.column_id}
@@ -125,9 +110,7 @@ export function SortPanel({
 						className="databaseViewInlineSelect"
 						value={sortDirection}
 						aria-label="Sort direction"
-						onChange={(event) =>
-							setSort({ direction: event.target.value as "asc" | "desc" })
-						}
+						onChange={(event) => setSort({ direction: event.target.value as "asc" | "desc" })}
 					>
 						<option value="asc">{directionLabel(sortColumn, "asc")}</option>
 						<option value="desc">{directionLabel(sortColumn, "desc")}</option>

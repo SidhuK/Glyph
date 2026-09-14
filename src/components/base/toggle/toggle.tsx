@@ -45,8 +45,7 @@ export function Toggle({
 	onFocus,
 }: ToggleProps) {
 	const hasCopy = Boolean(label || hint);
-	const computedAriaLabel =
-		ariaLabel ?? getAriaText(label) ?? getAriaText(hint) ?? name ?? id;
+	const computedAriaLabel = ariaLabel ?? getAriaText(label) ?? getAriaText(hint) ?? name ?? id;
 
 	if (import.meta.env.DEV && !computedAriaLabel) {
 		console.warn(

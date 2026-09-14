@@ -88,9 +88,7 @@ export function normalizeSidebarVisibility(value: unknown): SidebarVisibility {
 	const record = isRecord(value) ? value : {};
 	const read = (key: SidebarVisibilityKey): boolean => {
 		const current = record[key];
-		return typeof current === "boolean"
-			? current
-			: DEFAULT_SIDEBAR_VISIBILITY[key];
+		return typeof current === "boolean" ? current : DEFAULT_SIDEBAR_VISIBILITY[key];
 	};
 	return {
 		newNote: read("newNote"),
@@ -169,10 +167,7 @@ export interface ShortcutSettings {
 }
 
 export type ShortcutBindings = ShortcutSettings["bindings"];
-export type EffectiveShortcutBindings = Record<
-	ShortcutActionId,
-	Shortcut | null
->;
+export type EffectiveShortcutBindings = Record<ShortcutActionId, Shortcut | null>;
 
 export interface RecentFile {
 	path: string;
@@ -198,12 +193,7 @@ export interface AppSettings {
 		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;
-		appIcon:
-			| "default"
-			| "blue-star"
-			| "blue-glyph"
-			| "confetti-star"
-			| "blueprint";
+		appIcon: "default" | "blue-star" | "blue-glyph" | "confetti-star" | "blueprint";
 		translucentApp: boolean;
 		cornerRadiusStyle: UiCornerRadiusStyle;
 		showToc: boolean;
@@ -275,9 +265,7 @@ interface SettingsChangeSections {
 }
 
 type SettingsChanges = {
-	[Section in keyof SettingsChangeSections]?: Partial<
-		SettingsChangeSections[Section]
-	>;
+	[Section in keyof SettingsChangeSections]?: Partial<SettingsChangeSections[Section]>;
 };
 
 export type SettingsUpdatedPayload = SettingsChanges & {

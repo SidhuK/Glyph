@@ -10,17 +10,12 @@ export const FILE_TREE_ROOT_DROP_COLLISION_PRIORITY = 1;
 
 export const FILE_TREE_ENTRY_SENSORS = [
 	PointerSensor.configure({
-		activationConstraints: [
-			new PointerActivationConstraints.Distance({ value: 5 }),
-		],
+		activationConstraints: [new PointerActivationConstraints.Distance({ value: 5 })],
 	}),
 	KeyboardSensor,
 ];
 
-export function fileTreeEntryDragId(
-	kind: "dir" | "file",
-	path: string,
-): string {
+export function fileTreeEntryDragId(kind: "dir" | "file", path: string): string {
 	return `${kind}:${path}`;
 }
 
@@ -34,11 +29,7 @@ export function fileTreeDirDropData(relPath: string): {
 	return { targetDirPath: relPath };
 }
 
-export function useFileTreeDirDropTargets({
-	relPath,
-}: {
-	relPath: string;
-}) {
+export function useFileTreeDirDropTargets({ relPath }: { relPath: string }) {
 	const { ref: rowDroppableRef, isDropTarget: isRowDropTarget } = useDroppable({
 		id: fileTreeDirRowDropId(relPath),
 		data: fileTreeDirDropData(relPath),

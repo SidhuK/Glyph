@@ -11,8 +11,7 @@ export interface ShortcutActionDefinition extends AppCommandDefinition {
 	id: ShortcutActionId;
 }
 
-export const SHORTCUT_ACTIONS: ShortcutActionDefinition[] =
-	listShortcutConfigurableCommands();
+export const SHORTCUT_ACTIONS: ShortcutActionDefinition[] = listShortcutConfigurableCommands();
 
 if (import.meta.env.DEV) {
 	const seen = new Set<string>();
@@ -24,8 +23,9 @@ if (import.meta.env.DEV) {
 	}
 }
 
-const SHORTCUT_ACTION_RECORD: Record<string, ShortcutActionDefinition> =
-	Object.fromEntries(SHORTCUT_ACTIONS.map((action) => [action.id, action]));
+const SHORTCUT_ACTION_RECORD: Record<string, ShortcutActionDefinition> = Object.fromEntries(
+	SHORTCUT_ACTIONS.map((action) => [action.id, action]),
+);
 
 export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
 	"workspace",

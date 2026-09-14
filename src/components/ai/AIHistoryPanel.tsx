@@ -8,10 +8,7 @@ interface AIHistoryPanelProps {
 	onLoadHistory: (jobId: string) => void;
 }
 
-export function AIHistoryPanel({
-	history,
-	onLoadHistory,
-}: AIHistoryPanelProps) {
+export function AIHistoryPanel({ history, onLoadHistory }: AIHistoryPanelProps) {
 	const isDark = useIsDarkTheme();
 
 	return (
@@ -25,16 +22,11 @@ export function AIHistoryPanel({
 						<button
 							key={item.job_id}
 							type="button"
-							className={cn(
-								"aiHistoryItem",
-								history.selectedJobId === item.job_id && "active",
-							)}
+							className={cn("aiHistoryItem", history.selectedJobId === item.job_id && "active")}
 							onClick={() => onLoadHistory(item.job_id)}
 							disabled={history.loadingJobId === item.job_id}
 						>
-							<div className="aiHistoryItemTitle">
-								{item.title || "Untitled chat"}
-							</div>
+							<div className="aiHistoryItemTitle">{item.title || "Untitled chat"}</div>
 							{item.provider ? (
 								<img
 									className="aiHistoryProviderIcon"

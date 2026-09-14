@@ -50,8 +50,7 @@ export function buildDatabaseTagPickerOptions(
 		.filter(
 			({ tag, is_explicit }) =>
 				is_explicit &&
-				(normalizedQuery.length === 0 ||
-					tag.toLowerCase().includes(normalizedQuery)),
+				(normalizedQuery.length === 0 || tag.toLowerCase().includes(normalizedQuery)),
 		)
 		.map(({ tag }) => ({ tag }))
 		.slice(0, limit);
@@ -77,14 +76,8 @@ export function DatabaseTagPicker({
 
 	const selectedTag = normalizedSelection(value);
 
-	const options = useMemo(
-		() => buildDatabaseTagPickerOptions(tags, query),
-		[query, tags],
-	);
-	const explicitTags = useMemo(
-		() => buildDatabaseTagPickerExplicitTags(tags),
-		[tags],
-	);
+	const options = useMemo(() => buildDatabaseTagPickerOptions(tags, query), [query, tags]);
+	const explicitTags = useMemo(() => buildDatabaseTagPickerExplicitTags(tags), [tags]);
 
 	const manualTag = normalizeTagToken(query);
 	const hasExactOption = explicitTags.some((tag) => tag === manualTag);
@@ -94,11 +87,7 @@ export function DatabaseTagPicker({
 	return (
 		<Popover open={open} onOpenChange={setOpen} modal={false}>
 			<PopoverTrigger asChild>
-				<Button
-					type="button"
-					variant="outline"
-					className="databasePickerTrigger"
-				>
+				<Button type="button" variant="outline" className="databasePickerTrigger">
 					<span className="databasePickerTriggerIcon">
 						<Hash size="var(--icon-sm)" />
 					</span>
@@ -165,12 +154,8 @@ export function DatabaseTagPicker({
 								}}
 							>
 								<span className="databasePickerOptionMain">
-									<span className="databasePickerOptionLabel">
-										Use {formatTagLabel(manualTag)}
-									</span>
-									<span className="databasePickerOptionMeta">
-										Add this tag value directly.
-									</span>
+									<span className="databasePickerOptionLabel">Use {formatTagLabel(manualTag)}</span>
+									<span className="databasePickerOptionMeta">Add this tag value directly.</span>
 								</span>
 								<span className="databasePickerOptionBadge">New</span>
 							</button>

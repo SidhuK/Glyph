@@ -1,11 +1,4 @@
-import {
-	startTransition,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
@@ -26,10 +19,7 @@ interface UseDatabaseBoardParams {
 	initialLaneOrderByGroup?: Record<string, string[]>;
 	initialCardOrderByGroup?: Record<string, Record<string, string[]>>;
 	onGroupColumnIdChange?: (groupColumnId: string | null) => void;
-	onLaneOrderChange?: (
-		groupColumnId: string,
-		laneOrder: string[],
-	) => void | Promise<void>;
+	onLaneOrderChange?: (groupColumnId: string, laneOrder: string[]) => void | Promise<void>;
 	onCardOrderChange?: (
 		groupColumnId: string,
 		cardOrder: Record<string, string[]>,
@@ -37,10 +27,7 @@ interface UseDatabaseBoardParams {
 }
 
 function laneOrdersEqual(left: string[], right: string[]): boolean {
-	return (
-		left.length === right.length &&
-		left.every((laneId, index) => right[index] === laneId)
-	);
+	return left.length === right.length && left.every((laneId, index) => right[index] === laneId);
 }
 
 function laneOrderRecordsEqual(
@@ -53,16 +40,11 @@ function laneOrderRecordsEqual(
 
 	const rightKeySet = new Set(rightKeys);
 	return leftKeys.every(
-		(key) =>
-			rightKeySet.has(key) &&
-			laneOrdersEqual(left[key] ?? [], right[key] ?? []),
+		(key) => rightKeySet.has(key) && laneOrdersEqual(left[key] ?? [], right[key] ?? []),
 	);
 }
 
-function cardOrdersEqual(
-	left: Record<string, string[]>,
-	right: Record<string, string[]>,
-): boolean {
+function cardOrdersEqual(left: Record<string, string[]>, right: Record<string, string[]>): boolean {
 	return laneOrderRecordsEqual(left, right);
 }
 
@@ -76,30 +58,20 @@ function cardOrderRecordsEqual(
 
 	const rightKeySet = new Set(rightKeys);
 	return leftKeys.every(
-		(key) =>
-			rightKeySet.has(key) &&
-			cardOrdersEqual(left[key] ?? {}, right[key] ?? {}),
+		(key) => rightKeySet.has(key) && cardOrdersEqual(left[key] ?? {}, right[key] ?? {}),
 	);
 }
 
 function displayLaneOrder(lanes: DatabaseBoardLane[]): string[] {
-	return lanes
-		.map((lane) => lane.id)
-		.filter((laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID);
+	return lanes.map((lane) => lane.id).filter((laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID);
 }
 
-function mergeLaneOrder(
-	currentLaneOrder: string[],
-	displayedLaneOrder: string[],
-): string[] {
+function mergeLaneOrder(currentLaneOrder: string[], displayedLaneOrder: string[]): string[] {
 	const currentLaneSet = new Set(currentLaneOrder);
 	return [
-		...currentLaneOrder.filter(
-			(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID,
-		),
+		...currentLaneOrder.filter((laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID),
 		...displayedLaneOrder.filter(
-			(laneId) =>
-				laneId !== DATABASE_BOARD_EMPTY_LANE_ID && !currentLaneSet.has(laneId),
+			(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID && !currentLaneSet.has(laneId),
 		),
 	];
 }
@@ -109,9 +81,7 @@ function pruneLaneOrderRecord(
 	activeGroupIds: Set<string>,
 ): Record<string, string[]> {
 	return Object.fromEntries(
-		Object.entries(laneOrderByGroup).filter(([groupColumnId]) =>
-			activeGroupIds.has(groupColumnId),
-		),
+		Object.entries(laneOrderByGroup).filter(([groupColumnId]) => activeGroupIds.has(groupColumnId)),
 	);
 }
 
@@ -120,16 +90,12 @@ function pruneCardOrderRecord(
 	activeGroupIds: Set<string>,
 ): Record<string, Record<string, string[]>> {
 	return Object.fromEntries(
-		Object.entries(cardOrderByGroup).filter(([groupColumnId]) =>
-			activeGroupIds.has(groupColumnId),
-		),
+		Object.entries(cardOrderByGroup).filter(([groupColumnId]) => activeGroupIds.has(groupColumnId)),
 	);
 }
 
 function laneRowsById(lanes: DatabaseBoardLane[]): Record<string, string[]> {
-	return Object.fromEntries(
-		lanes.map((lane) => [lane.id, lane.rows.map((row) => row.note_path)]),
-	);
+	return Object.fromEntries(lanes.map((lane) => [lane.id, lane.rows.map((row) => row.note_path)]));
 }
 
 function mergeCardOrder(
@@ -162,21 +128,16 @@ export function useDatabaseBoard({
 	onCardOrderChange,
 }: UseDatabaseBoardParams) {
 	const groupColumns = useMemo(() => getBoardGroupColumns(columns), [columns]);
-	const [rawGroupColumnId, setRawGroupColumnId] = useState<string | null>(
-		() => null,
+	const [rawGroupColumnId, setRawGroupColumnId] = useState<string | null>(() => null);
+	const [laneOrderByGroup, setLaneOrderByGroup] = useState<Record<string, string[]>>(
+		() => initialLaneOrderByGroup,
 	);
-	const [laneOrderByGroup, setLaneOrderByGroup] = useState<
-		Record<string, string[]>
-	>(() => initialLaneOrderByGroup);
 	const [cardOrderByGroup, setCardOrderByGroup] = useState<
 		Record<string, Record<string, string[]>>
 	>(() => initialCardOrderByGroup);
-	const displayedLaneIdsRef = useRef<Record<string, string[]>>(
-		initialLaneOrderByGroup,
-	);
-	const displayedCardIdsRef = useRef<Record<string, Record<string, string[]>>>(
-		initialCardOrderByGroup,
-	);
+	const displayedLaneIdsRef = useRef<Record<string, string[]>>(initialLaneOrderByGroup);
+	const displayedCardIdsRef =
+		useRef<Record<string, Record<string, string[]>>>(initialCardOrderByGroup);
 	const onLaneOrderChangeRef = useRef(onLaneOrderChange);
 	const onCardOrderChangeRef = useRef(onCardOrderChange);
 
@@ -189,34 +150,18 @@ export function useDatabaseBoard({
 	}, [onCardOrderChange]);
 
 	useEffect(() => {
-		if (
-			laneOrderRecordsEqual(
-				displayedLaneIdsRef.current,
-				initialLaneOrderByGroup,
-			)
-		)
-			return;
+		if (laneOrderRecordsEqual(displayedLaneIdsRef.current, initialLaneOrderByGroup)) return;
 		displayedLaneIdsRef.current = initialLaneOrderByGroup;
 		setLaneOrderByGroup((current) =>
-			laneOrderRecordsEqual(current, initialLaneOrderByGroup)
-				? current
-				: initialLaneOrderByGroup,
+			laneOrderRecordsEqual(current, initialLaneOrderByGroup) ? current : initialLaneOrderByGroup,
 		);
 	}, [initialLaneOrderByGroup]);
 
 	useEffect(() => {
-		if (
-			cardOrderRecordsEqual(
-				displayedCardIdsRef.current,
-				initialCardOrderByGroup,
-			)
-		)
-			return;
+		if (cardOrderRecordsEqual(displayedCardIdsRef.current, initialCardOrderByGroup)) return;
 		displayedCardIdsRef.current = initialCardOrderByGroup;
 		setCardOrderByGroup((current) =>
-			cardOrderRecordsEqual(current, initialCardOrderByGroup)
-				? current
-				: initialCardOrderByGroup,
+			cardOrderRecordsEqual(current, initialCardOrderByGroup) ? current : initialCardOrderByGroup,
 		);
 	}, [initialCardOrderByGroup]);
 
@@ -239,17 +184,13 @@ export function useDatabaseBoard({
 	const lanes = useMemo(() => {
 		const previousLaneIds =
 			groupColumn != null
-				? (laneOrderByGroup[groupColumn.id] ??
-					displayedLaneIdsRef.current[groupColumn.id] ??
-					[])
+				? (laneOrderByGroup[groupColumn.id] ?? displayedLaneIdsRef.current[groupColumn.id] ?? [])
 				: [];
 		const rawLanes = createBoardLanes(rows, groupColumn, previousLaneIds);
 		if (!groupColumn) return rawLanes;
 		const orderedLanes = orderBoardLanes(rawLanes, previousLaneIds);
 		const previousCardOrder =
-			cardOrderByGroup[groupColumn.id] ??
-			displayedCardIdsRef.current[groupColumn.id] ??
-			{};
+			cardOrderByGroup[groupColumn.id] ?? displayedCardIdsRef.current[groupColumn.id] ?? {};
 		return orderBoardLaneRows(orderedLanes, previousCardOrder);
 	}, [cardOrderByGroup, groupColumn, laneOrderByGroup, rows]);
 
@@ -259,9 +200,7 @@ export function useDatabaseBoard({
 		if (displayedLaneOrder.length === 0) return;
 
 		const currentLaneOrder =
-			laneOrderByGroup[groupColumn.id] ??
-			displayedLaneIdsRef.current[groupColumn.id] ??
-			[];
+			laneOrderByGroup[groupColumn.id] ?? displayedLaneIdsRef.current[groupColumn.id] ?? [];
 		const nextLaneOrder = mergeLaneOrder(currentLaneOrder, displayedLaneOrder);
 		if (laneOrdersEqual(currentLaneOrder, nextLaneOrder)) return;
 
@@ -281,9 +220,7 @@ export function useDatabaseBoard({
 				},
 				activeGroupIds,
 			);
-			return laneOrderRecordsEqual(current, nextLaneOrderByGroup)
-				? current
-				: nextLaneOrderByGroup;
+			return laneOrderRecordsEqual(current, nextLaneOrderByGroup) ? current : nextLaneOrderByGroup;
 		});
 		void onLaneOrderChangeRef.current?.(groupColumn.id, nextLaneOrder);
 	}, [groupColumn, groupColumns, laneOrderByGroup, lanes]);
@@ -292,9 +229,7 @@ export function useDatabaseBoard({
 		if (!groupColumn) return;
 		const displayedCardOrder = laneRowsById(lanes);
 		const currentCardOrder =
-			cardOrderByGroup[groupColumn.id] ??
-			displayedCardIdsRef.current[groupColumn.id] ??
-			{};
+			cardOrderByGroup[groupColumn.id] ?? displayedCardIdsRef.current[groupColumn.id] ?? {};
 		const nextCardOrder = mergeCardOrder(currentCardOrder, displayedCardOrder);
 		if (cardOrdersEqual(currentCardOrder, nextCardOrder)) return;
 
@@ -314,9 +249,7 @@ export function useDatabaseBoard({
 				},
 				activeGroupIds,
 			);
-			return cardOrderRecordsEqual(current, nextCardOrderByGroup)
-				? current
-				: nextCardOrderByGroup;
+			return cardOrderRecordsEqual(current, nextCardOrderByGroup) ? current : nextCardOrderByGroup;
 		});
 		void onCardOrderChangeRef.current?.(groupColumn.id, nextCardOrder);
 	}, [cardOrderByGroup, groupColumn, groupColumns, lanes]);
@@ -325,11 +258,7 @@ export function useDatabaseBoard({
 		(sourceLaneId: string, targetIndex: number) => {
 			if (!groupColumn) return;
 			const laneIds = lanes.map((lane) => lane.id);
-			const nextLaneOrder = moveBoardLaneToIndex(
-				laneIds,
-				sourceLaneId,
-				targetIndex,
-			);
+			const nextLaneOrder = moveBoardLaneToIndex(laneIds, sourceLaneId, targetIndex);
 			const currentLaneOrder = laneOrderByGroup[groupColumn.id] ?? [];
 			if (laneOrdersEqual(nextLaneOrder, currentLaneOrder)) {
 				return;
@@ -392,9 +321,7 @@ export function useDatabaseBoard({
 				laneId === sourceLaneId ? nextLaneId : laneId,
 			);
 			const currentCardOrder =
-				cardOrderByGroup[groupColumn.id] ??
-				displayedCardIdsRef.current[groupColumn.id] ??
-				{};
+				cardOrderByGroup[groupColumn.id] ?? displayedCardIdsRef.current[groupColumn.id] ?? {};
 			const nextCardOrder = Object.fromEntries(
 				Object.entries(currentCardOrder).map(([laneId, order]) => [
 					laneId === sourceLaneId ? nextLaneId : laneId,
@@ -434,9 +361,7 @@ export function useDatabaseBoard({
 			if (!groupColumn) return;
 			const displayedCardOrder = laneRowsById(lanes);
 			const currentCardOrder =
-				cardOrderByGroup[groupColumn.id] ??
-				displayedCardIdsRef.current[groupColumn.id] ??
-				{};
+				cardOrderByGroup[groupColumn.id] ?? displayedCardIdsRef.current[groupColumn.id] ?? {};
 			const nextCardOrder = moveBoardCardToLane(
 				currentCardOrder,
 				displayedCardOrder,

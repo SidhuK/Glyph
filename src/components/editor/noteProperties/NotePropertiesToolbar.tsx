@@ -63,11 +63,7 @@ export function NotePropertiesToolbar({
 	return (
 		<div className="notePropertiesToolbar">
 			<div className="notePropertiesToolbarLabel">Properties</div>
-			<div
-				className="notePropertiesModeSwitch"
-				role="tablist"
-				aria-label="Frontmatter mode"
-			>
+			<div className="notePropertiesModeSwitch" role="tablist" aria-label="Frontmatter mode">
 				<m.button
 					ref={propertiesButtonRef}
 					type="button"

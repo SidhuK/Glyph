@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { FsEntry } from "../lib/tauri";
 import { normalizeRelPath } from "../utils/path";
 import {
@@ -201,14 +201,10 @@ describe("fileTreeHelpers", () => {
 		];
 
 		expect(
-			[...entries]
-				.sort(compareEntriesForSort("modified-desc"))
-				.map((entry) => entry.rel_path),
+			[...entries].sort(compareEntriesForSort("modified-desc")).map((entry) => entry.rel_path),
 		).toEqual(["new.md", "old.md", "missing.md"]);
 		expect(
-			[...entries]
-				.sort(compareEntriesForSort("modified-asc"))
-				.map((entry) => entry.rel_path),
+			[...entries].sort(compareEntriesForSort("modified-asc")).map((entry) => entry.rel_path),
 		).toEqual(["old.md", "new.md", "missing.md"]);
 	});
 
@@ -234,10 +230,6 @@ describe("fileTreeHelpers", () => {
 			}),
 		]).sort(compareEntriesForSort("created-asc"));
 
-		expect(entries.map((entry) => entry.rel_path)).toEqual([
-			"Alpha.md",
-			"Beta.md",
-			"Gamma.md",
-		]);
+		expect(entries.map((entry) => entry.rel_path)).toEqual(["Alpha.md", "Beta.md", "Gamma.md"]);
 	});
 });

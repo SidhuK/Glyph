@@ -6,11 +6,7 @@ import {
 	removeBoardLaneColor,
 	viewToConfig,
 } from "../../lib/database/viewConfig";
-import type {
-	DatabaseColumn,
-	DatabaseConfig,
-	WorkspaceDatabaseDocument,
-} from "../../lib/tauri";
+import type { DatabaseColumn, DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 import type { DatabaseBoardHandlers, SaveDatabase } from "./types";
 
 const MIN_DATABASE_COLUMN_WIDTH = 120;
@@ -32,23 +28,15 @@ export function useViewConfigMutations({
 	const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
 
 	const handleSaveConfig = useCallback(
-		async (
-			nextConfig: DatabaseConfig | ((config: DatabaseConfig) => DatabaseConfig),
-		) => {
+		async (nextConfig: DatabaseConfig | ((config: DatabaseConfig) => DatabaseConfig)) => {
 			if (!document || !selectedViewId) return;
 			await saveDatabase((currentDatabase) => {
 				const currentConfig = viewToConfig(currentDatabase, selectedViewId);
 				if (!currentConfig) return currentDatabase;
 				const resolvedConfig =
-					typeof nextConfig === "function"
-						? nextConfig(currentConfig)
-						: nextConfig;
+					typeof nextConfig === "function" ? nextConfig(currentConfig) : nextConfig;
 				if (resolvedConfig === currentConfig) return currentDatabase;
-				return applyConfigToView(
-					currentDatabase,
-					selectedViewId,
-					resolvedConfig,
-				);
+				return applyConfigToView(currentDatabase, selectedViewId, resolvedConfig);
 			});
 		},
 		[document, saveDatabase, selectedViewId],
@@ -71,12 +59,7 @@ export function useViewConfigMutations({
 	const handleLaneOrderChange = useCallback(
 		(groupColumnId: string, laneOrder: string[]) => {
 			patchActiveConfig((config) =>
-				patchBoardMapField(
-					config,
-					"board_lane_order",
-					groupColumnId,
-					laneOrder,
-				),
+				patchBoardMapField(config, "board_lane_order", groupColumnId, laneOrder),
 			);
 		},
 		[patchActiveConfig],
@@ -85,12 +68,7 @@ export function useViewConfigMutations({
 	const persistCardOrder = useCallback(
 		(groupColumnId: string, cardOrder: Record<string, string[]>) => {
 			return handleSaveConfig((config) =>
-				patchBoardMapField(
-					config,
-					"board_card_order",
-					groupColumnId,
-					cardOrder,
-				),
+				patchBoardMapField(config, "board_card_order", groupColumnId, cardOrder),
 			);
 		},
 		[handleSaveConfig],
@@ -123,12 +101,7 @@ export function useViewConfigMutations({
 			onCardOrderChange: handleCardOrderChange,
 			onLaneColorChange: handleLaneColorChange,
 		};
-	}, [
-		activeConfig,
-		handleCardOrderChange,
-		handleLaneColorChange,
-		handleLaneOrderChange,
-	]);
+	}, [activeConfig, handleCardOrderChange, handleLaneColorChange, handleLaneOrderChange]);
 
 	const handleResizeColumn = useCallback(
 		(columnId: string, width: number) => {
@@ -137,9 +110,7 @@ export function useViewConfigMutations({
 				Math.max(MIN_DATABASE_COLUMN_WIDTH, Math.round(width)),
 			);
 			void handleSaveConfig((config) => {
-				const currentWidth =
-					config.columns.find((column) => column.id === columnId)?.width ??
-					null;
+				const currentWidth = config.columns.find((column) => column.id === columnId)?.width ?? null;
 				if (currentWidth != null && Math.round(currentWidth) === nextWidth) {
 					return config;
 				}
@@ -158,8 +129,7 @@ export function useViewConfigMutations({
 		(columnId: string, iconName: string | null) => {
 			const nextIcon = iconName?.trim() || null;
 			void handleSaveConfig((config) => {
-				const currentIcon =
-					config.columns.find((column) => column.id === columnId)?.icon ?? null;
+				const currentIcon = config.columns.find((column) => column.id === columnId)?.icon ?? null;
 				if (currentIcon === nextIcon) return config;
 				return {
 					...config,

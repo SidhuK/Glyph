@@ -122,25 +122,14 @@ th {
 
 const printMarked = new Marked();
 
-function sanitizeHtmlEmbedForPrint(
-	source: string,
-	kind: HtmlEmbedKind,
-): string {
+function sanitizeHtmlEmbedForPrint(source: string, kind: HtmlEmbedKind): string {
 	const cleaned = stripHtmlEmbedRawSentinel(source).trim();
 	if (!cleaned) return "";
 
 	const body = wrapHtmlEmbedBody(cleaned, kind);
 	const sanitized = DOMPurify.sanitize(body, {
 		USE_PROFILES: { html: true, svg: true },
-		FORBID_TAGS: [
-			"script",
-			"iframe",
-			"object",
-			"embed",
-			"form",
-			"base",
-			"link",
-		],
+		FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "base", "link"],
 		FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
 		ALLOWED_URI_REGEXP: /^(?:(?:data|blob):|#)/i,
 	});
@@ -180,11 +169,7 @@ function parseMarkdownSync(markdown: string): string {
 	return typeof rendered === "string" ? rendered : "";
 }
 
-export function buildPrintHtml({
-	markdown,
-	notePath,
-	noteAbsPath,
-}: BuildPrintHtmlOptions): string {
+export function buildPrintHtml({ markdown, notePath, noteAbsPath }: BuildPrintHtmlOptions): string {
 	const { body: markdownBody } = splitYamlFrontmatter(markdown);
 	const preparedMarkdown = replaceHtmlEmbedsForPrint(
 		wikiLinksToStandardMarkdown(preprocessHtmlEmbeds(markdownBody)),

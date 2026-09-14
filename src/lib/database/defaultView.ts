@@ -2,10 +2,7 @@ import type { WorkspaceDatabaseDefinition } from "../tauri";
 
 type DatabaseView = WorkspaceDatabaseDefinition["views"][number];
 
-export function createDefaultDatabaseView(
-	name: string,
-	templateView: DatabaseView,
-): DatabaseView {
+export function createDefaultDatabaseView(name: string, templateView: DatabaseView): DatabaseView {
 	const now = new Date().toISOString();
 	return {
 		id: crypto.randomUUID(),

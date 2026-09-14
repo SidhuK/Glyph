@@ -47,27 +47,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
-          node-version: 20
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.28.2
-
-      - name: Resolve pnpm store path
-        id: pnpm-store
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version-file: .node-version
+          run-install: false
+          cache: true
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -190,13 +175,13 @@ jobs:
           rm -f src-tauri/Cargo.toml.bak
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
       - name: Format updated version files
-        run: pnpm exec biome format --write package.json src-tauri/tauri.conf.json
+        run: vp fmt package.json src-tauri/tauri.conf.json
 
       - name: Check formatting and lint
-        run: pnpm check
+        run: vp check
 
       - name: Generate GitHub release notes
         id: release_notes

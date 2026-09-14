@@ -8,19 +8,11 @@ export function getTodayDateString(now = new Date()): string {
 export function parseIsoDate(iso: string): Date | null {
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
 	const [year, month, day] = iso.split("-").map(Number);
-	if (
-		!Number.isInteger(year) ||
-		!Number.isInteger(month) ||
-		!Number.isInteger(day)
-	) {
+	if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
 		return null;
 	}
 	const value = new Date(year, month - 1, day);
-	if (
-		value.getFullYear() !== year ||
-		value.getMonth() !== month - 1 ||
-		value.getDate() !== day
-	) {
+	if (value.getFullYear() !== year || value.getMonth() !== month - 1 || value.getDate() !== day) {
 		return null;
 	}
 	value.setHours(0, 0, 0, 0);
@@ -34,17 +26,11 @@ function isAbsolutePath(p: string): boolean {
 export function joinDatedNotePath(folder: string, filename: string): string {
 	const normalizedFolder = folder.replace(/\\/g, "/").replace(/\/+$/g, "");
 	if (isAbsolutePath(folder) || isAbsolutePath(normalizedFolder)) {
-		throw new Error(
-			`Dated note folder must be a relative path, got: ${folder}`,
-		);
+		throw new Error(`Dated note folder must be a relative path, got: ${folder}`);
 	}
-	const hasTraversal = normalizedFolder
-		.split("/")
-		.some((segment) => segment === "..");
+	const hasTraversal = normalizedFolder.split("/").some((segment) => segment === "..");
 	if (hasTraversal) {
-		throw new Error(
-			`Dated note folder cannot include parent traversal segments: ${folder}`,
-		);
+		throw new Error(`Dated note folder cannot include parent traversal segments: ${folder}`);
 	}
 	if (!normalizedFolder) {
 		return filename;
@@ -61,10 +47,7 @@ export function getDailyNoteContent(date: string): string {
 	return `# ${date}\n`;
 }
 
-export function getDailyNoteDateFromPath(
-	path: string,
-	folder: string,
-): string | null {
+export function getDailyNoteDateFromPath(path: string, folder: string): string | null {
 	const normalizedPath = path.replace(/\\/g, "/");
 	const normalizedFolder = folder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
 	const prefix = normalizedFolder ? `${normalizedFolder}/` : "";

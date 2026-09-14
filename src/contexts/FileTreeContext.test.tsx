@@ -2,7 +2,7 @@
 
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { FileTreeProvider, useFileTreeContext } from "./FileTreeContext";
 
 const { invokeMock, useSpaceMock, useTauriEventMock } = vi.hoisted(() => ({
@@ -43,16 +43,12 @@ vi.mock("../lib/settings", () => ({
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 function Consumer() {
-	const { pinnedFiles, togglePinnedFile, refreshPinnedFiles } =
-		useFileTreeContext();
+	const { pinnedFiles, togglePinnedFile, refreshPinnedFiles } = useFileTreeContext();
 
 	return (
 		<div>
 			<div data-testid="pinned-files">{pinnedFiles.join(",")}</div>
-			<button
-				type="button"
-				onClick={() => void togglePinnedFile("notes/toggled.md")}
-			>
+			<button type="button" onClick={() => void togglePinnedFile("notes/toggled.md")}>
 				Toggle
 			</button>
 			<button type="button" onClick={() => void refreshPinnedFiles()}>
@@ -87,9 +83,7 @@ describe("FileTreeProvider pinned files", () => {
 			}
 			if (command === "pinned_files_list") {
 				return Promise.resolve(
-					currentSpacePath === "/space-a"
-						? ["notes/alpha.md"]
-						: ["docs/beta.md"],
+					currentSpacePath === "/space-a" ? ["notes/alpha.md"] : ["docs/beta.md"],
 				);
 			}
 			return Promise.resolve(null);

@@ -17,28 +17,14 @@ import {
 	moveBoardCardToLane,
 } from "../../lib/database/board";
 import { databaseCellValueFromRow } from "../../lib/database/config";
-import type {
-	DatabaseColumn,
-	DatabaseRow,
-	DatabaseSort,
-} from "../../lib/database/types";
+import type { DatabaseColumn, DatabaseRow, DatabaseSort } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { ChevronDown, ChevronUp } from "../Icons";
 import { type EditorTextColor, isEditorTextColor } from "../editor/textColors";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "../ui/shadcn/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/shadcn/table";
 import { DatabaseCell } from "./DatabaseCell";
 import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
-import {
-	DatabaseTableDraggableRow,
-	DatabaseTableGroupHeader,
-} from "./DatabaseTableViews";
+import { DatabaseTableDraggableRow, DatabaseTableGroupHeader } from "./DatabaseTableViews";
 
 interface DatabaseTableProps {
 	rows: DatabaseRow[];
@@ -132,10 +118,7 @@ function orderDatabaseRowGroups(
 		const orderedPathSet = new Set(orderedRows.map((row) => row.note_path));
 		return {
 			...group,
-			rows: [
-				...orderedRows,
-				...group.rows.filter((row) => !orderedPathSet.has(row.note_path)),
-			],
+			rows: [...orderedRows, ...group.rows.filter((row) => !orderedPathSet.has(row.note_path))],
 		};
 	});
 }
@@ -153,9 +136,7 @@ function databaseGroupDropValue(
 		...value,
 		value_list: [
 			targetValue,
-			...value.value_list.filter(
-				(entry) => entry !== targetValue && entry !== sourceGroupId,
-			),
+			...value.value_list.filter((entry) => entry !== targetValue && entry !== sourceGroupId),
 		],
 	};
 }
@@ -173,9 +154,7 @@ function createDatabaseDisplayItems(
 			groupId: null,
 		}));
 	}
-	const rowsByPath = new Map(
-		displayRows.map((row) => [row.original.note_path, row]),
-	);
+	const rowsByPath = new Map(displayRows.map((row) => [row.original.note_path, row]));
 	return rowGroups.flatMap((group) => [
 		{
 			id: group.id,
@@ -197,7 +176,10 @@ function createDatabaseDisplayItems(
 function SortIndicator({
 	activeSort,
 	columnId,
-}: { activeSort: DatabaseSort | null; columnId: string }) {
+}: {
+	activeSort: DatabaseSort | null;
+	columnId: string;
+}) {
 	if (!activeSort || activeSort.column_id !== columnId) return null;
 	return (
 		<span className="databaseHeaderSortIcon" aria-hidden="true">
@@ -235,10 +217,9 @@ export function DatabaseTable({
 }: DatabaseTableProps) {
 	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
 	const [moveError, setMoveError] = useState("");
-	const [optimisticCardOrder, setOptimisticCardOrder] = useState<Record<
-		string,
-		string[]
-	> | null>(null);
+	const [optimisticCardOrder, setOptimisticCardOrder] = useState<Record<string, string[]> | null>(
+		null,
+	);
 	const tableContainerRef = useRef<HTMLDivElement>(null);
 	const suppressClickRef = useRef(false);
 	const displayedCardOrder = optimisticCardOrder ?? cardOrderByGroup;
@@ -357,19 +338,13 @@ export function DatabaseTable({
 		[rows, groupColumn],
 	);
 	const rowGroups = useMemo(
-		() =>
-			activeSort
-				? rawRowGroups
-				: orderDatabaseRowGroups(rawRowGroups, displayedCardOrder),
+		() => (activeSort ? rawRowGroups : orderDatabaseRowGroups(rawRowGroups, displayedCardOrder)),
 		[activeSort, displayedCardOrder, rawRowGroups],
 	);
 	const laneRowsById = useMemo(
 		() =>
 			Object.fromEntries(
-				rowGroups.map((group) => [
-					group.id,
-					group.rows.map((entry) => entry.note_path),
-				]),
+				rowGroups.map((group) => [group.id, group.rows.map((entry) => entry.note_path)]),
 			),
 		[rowGroups],
 	);
@@ -418,15 +393,11 @@ export function DatabaseTable({
 			if (!groupColumn || !onCardOrderChange) return;
 			try {
 				await onCardOrderChange(groupColumn.id, nextOrder);
-				setOptimisticCardOrder((current) =>
-					current === nextOrder ? null : current,
-				);
+				setOptimisticCardOrder((current) => (current === nextOrder ? null : current));
 			} catch (error) {
 				if (displayedCardOrderRef.current === nextOrder) {
 					displayedCardOrderRef.current = cardOrderByGroup;
-					setOptimisticCardOrder((current) =>
-						current === nextOrder ? null : current,
-					);
+					setOptimisticCardOrder((current) => (current === nextOrder ? null : current));
 				}
 				throw error;
 			}
@@ -463,9 +434,7 @@ export function DatabaseTable({
 					if (targetNotePath && targetNotePath !== notePath) {
 						await applyOrder();
 					} else if (!targetNotePath) {
-						const targetGroup = rowGroups.find(
-							(group) => group.id === targetGroupId,
-						);
+						const targetGroup = rowGroups.find((group) => group.id === targetGroupId);
 						const lastRow = targetGroup?.rows[targetGroup.rows.length - 1];
 						if (lastRow?.note_path !== notePath) {
 							await applyOrder();
@@ -477,12 +446,7 @@ export function DatabaseTable({
 				await onSaveCell(
 					row.note_path,
 					groupColumn,
-					databaseGroupDropValue(
-						row,
-						groupColumn,
-						targetGroupId,
-						sourceGroupId,
-					),
+					databaseGroupDropValue(row, groupColumn, targetGroupId, sourceGroupId),
 				);
 				await applyOrder();
 			} catch (error) {
@@ -501,24 +465,15 @@ export function DatabaseTable({
 			if (event.canceled) return;
 
 			const { source, target } = event.operation;
-			const notePath =
-				typeof source?.data.notePath === "string" ? source.data.notePath : null;
-			const targetGroupId =
-				typeof target?.data.laneId === "string" ? target.data.laneId : null;
+			const notePath = typeof source?.data.notePath === "string" ? source.data.notePath : null;
+			const targetGroupId = typeof target?.data.laneId === "string" ? target.data.laneId : null;
 			const targetNotePath =
 				typeof target?.data.notePath === "string" ? target.data.notePath : null;
 			const sourceGroupId =
-				typeof source?.data.sourceLaneId === "string"
-					? source.data.sourceLaneId
-					: null;
+				typeof source?.data.sourceLaneId === "string" ? source.data.sourceLaneId : null;
 			if (!targetGroupId) return;
 
-			void handleGroupDrop(
-				notePath,
-				targetGroupId,
-				sourceGroupId,
-				targetNotePath,
-			);
+			void handleGroupDrop(notePath, targetGroupId, sourceGroupId, targetNotePath);
 		},
 		[handleGroupDrop],
 	);
@@ -546,10 +501,7 @@ export function DatabaseTable({
 							>
 								{header.isPlaceholder
 									? null
-									: flexRender(
-											header.column.columnDef.header,
-											header.getContext(),
-										)}
+									: flexRender(header.column.columnDef.header, header.getContext())}
 								<div
 									className={`databaseColumnResizeHandle${header.column.getIsResizing() ? " is-resizing" : ""}`}
 									onMouseDown={(event) => {
@@ -572,10 +524,7 @@ export function DatabaseTable({
 			</TableHeader>
 			<TableBody
 				style={{
-					height:
-						displayItems.length > 0
-							? `${rowVirtualizer.getTotalSize()}px`
-							: undefined,
+					height: displayItems.length > 0 ? `${rowVirtualizer.getTotalSize()}px` : undefined,
 				}}
 			>
 				{displayItems.length > 0 ? (
@@ -645,11 +594,7 @@ export function DatabaseTable({
 						return (
 							<TableRow
 								key={virtualRow.key}
-								data-state={
-									row.original.note_path === selectedRowPath
-										? "selected"
-										: undefined
-								}
+								data-state={row.original.note_path === selectedRowPath ? "selected" : undefined}
 								className="databaseRow"
 								style={{
 									height: `${DATABASE_TABLE_ROW_HEIGHT}px`,
@@ -663,10 +608,7 @@ export function DatabaseTable({
 					})
 				) : (
 					<TableRow>
-						<TableCell
-							colSpan={visibleColumnCount}
-							className="databaseEmptyCell"
-						>
+						<TableCell colSpan={visibleColumnCount} className="databaseEmptyCell">
 							No matching notes
 						</TableCell>
 					</TableRow>
@@ -682,9 +624,7 @@ export function DatabaseTable({
 		>
 			{moveError ? <div className="databaseBoardError">{moveError}</div> : null}
 			{hasGroups && !activeSort ? (
-				<DragDropProvider onDragEnd={handleDragEnd}>
-					{tableBody}
-				</DragDropProvider>
+				<DragDropProvider onDragEnd={handleDragEnd}>{tableBody}</DragDropProvider>
 			) : (
 				tableBody
 			)}

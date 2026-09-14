@@ -42,10 +42,7 @@ export function useApiKeySettings(activeProfileId: string | null) {
 	};
 
 	const setApiKeyMutation = useMutation({
-		mutationFn: ({
-			profileId,
-			apiKey,
-		}: { profileId: string; apiKey: string }) =>
+		mutationFn: ({ profileId, apiKey }: { profileId: string; apiKey: string }) =>
 			invoke("ai_secret_set", {
 				profile_id: profileId,
 				api_key: apiKey,
@@ -62,8 +59,7 @@ export function useApiKeySettings(activeProfileId: string | null) {
 	});
 
 	const clearApiKeyMutation = useMutation({
-		mutationFn: (profileId: string) =>
-			invoke("ai_secret_clear", { profile_id: profileId }),
+		mutationFn: (profileId: string) => invoke("ai_secret_clear", { profile_id: profileId }),
 		scope: secretWriteScope,
 		onSuccess: async (_result, profileId) => {
 			const queryKey = secretStatusQueryKey(profileId);
@@ -112,9 +108,7 @@ export function useApiKeySettings(activeProfileId: string | null) {
 	return {
 		apiState: {
 			apiKeyDraft,
-			secretConfigured: activeProfileId
-				? (secretStatusQuery.data ?? null)
-				: null,
+			secretConfigured: activeProfileId ? (secretStatusQuery.data ?? null) : null,
 			keySaved,
 			error,
 		},

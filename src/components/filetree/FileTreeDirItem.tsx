@@ -1,18 +1,8 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { useDraggable } from "@dnd-kit/react";
-import {
-	ArrowRight02Icon,
-	Folder01Icon,
-	Folder03Icon,
-} from "@hugeicons/core-free-icons";
+import { ArrowRight02Icon, Folder01Icon, Folder03Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
-import type {
-	CSSProperties,
-	KeyboardEvent,
-	MouseEvent,
-	MutableRefObject,
-	Ref,
-} from "react";
+import type { CSSProperties, KeyboardEvent, MouseEvent, MutableRefObject, Ref } from "react";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
@@ -30,11 +20,7 @@ import {
 	fileTreeEntryDragId,
 	useFileTreeDirDropTargets,
 } from "./fileTreeDnd";
-import {
-	buildRowStyle,
-	rowVariants,
-	springTransition,
-} from "./fileTreeItemHelpers";
+import { buildRowStyle, rowVariants, springTransition } from "./fileTreeItemHelpers";
 import { fileTreeAppearanceNativeMenu } from "./fileTreeNativeContextMenu";
 
 interface FileTreeDirItemProps {
@@ -101,9 +87,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	const { t } = useTranslation("shell");
 	const { spacePath } = useSpace();
 	const customColor =
-		appearance?.color && isEditorTextColor(appearance.color)
-			? appearance.color
-			: null;
+		appearance?.color && isEditorTextColor(appearance.color) ? appearance.color : null;
 	const rowStyle = buildRowStyle(depth, entry.rel_path, customColor);
 	const displayDirName = entry.name.trim() || "New Folder";
 	const {
@@ -168,9 +152,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
-					label: isSidebarFolderTab
-						? t("fileTree.removeFolderTab")
-						: t("fileTree.addFolderTab"),
+					label: isSidebarFolderTab ? t("fileTree.removeFolderTab") : t("fileTree.addFolderTab"),
 					enabled: isSidebarFolderTab || canAddSidebarFolderTab,
 					action: () => void onToggleSidebarFolderTab(entry.rel_path),
 				},
@@ -256,9 +238,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							title={entry.rel_path || entry.name || "Folder"}
 							data-draggable="true"
 							data-dragging={isDragging ? "true" : undefined}
-							data-drop-target={
-								isRowDropTarget || isExternalDropTarget ? "true" : undefined
-							}
+							data-drop-target={isRowDropTarget || isExternalDropTarget ? "true" : undefined}
 							data-has-custom-color={customColor ? "true" : "false"}
 							data-file-tree-kind="dir"
 							data-file-tree-path={entry.rel_path}
@@ -279,7 +259,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							<span className="fileTreeName">{displayDirName}</span>
 							{onEnterDir ? (
 								<div className="fileTreeRowActions">
-									{/* biome-ignore lint/a11y/useSemanticElements: nested inside button row */}
 									<span
 										role="button"
 										tabIndex={0}
@@ -301,7 +280,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 									>
 										<Plus size="var(--icon-sm)" />
 									</span>
-									{/* biome-ignore lint/a11y/useSemanticElements: nested inside button row */}
 									<span
 										role="button"
 										tabIndex={0}
@@ -321,10 +299,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 											}
 										}}
 									>
-										<HugeiconsIcon
-											icon={ArrowRight02Icon}
-											size="var(--icon-sm)"
-										/>
+										<HugeiconsIcon icon={ArrowRight02Icon} size="var(--icon-sm)" />
 									</span>
 								</div>
 							) : null}

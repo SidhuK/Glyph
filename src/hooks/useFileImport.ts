@@ -1,11 +1,7 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../lib/errorUtils";
-import {
-	type ImportConflictPolicy,
-	type SpaceImportResult,
-	invoke,
-} from "../lib/tauri";
+import { type ImportConflictPolicy, type SpaceImportResult, invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
 
 interface UseFileImportOptions {
@@ -25,10 +21,7 @@ function policyForDialogResult(
 	return null;
 }
 
-export function useFileImport({
-	loadDir,
-	openWorkspaceFile,
-}: UseFileImportOptions) {
+export function useFileImport({ loadDir, openWorkspaceFile }: UseFileImportOptions) {
 	const { t } = useTranslation("shell");
 
 	const showImportError = useCallback(

@@ -51,9 +51,7 @@ export function SettingsSection({
 			<div className="settingsSectionHeader">
 				<div className="settingsSectionHeaderCopy">
 					<div className="settingsCardTitle">{title}</div>
-					{description ? (
-						<div className="settingsCardDescription">{description}</div>
-					) : null}
+					{description ? <div className="settingsCardDescription">{description}</div> : null}
 				</div>
 				{aside ? <div className="settingsCardActions">{aside}</div> : null}
 			</div>
@@ -78,10 +76,7 @@ export function SettingsRow({
 	const CopyTag = htmlFor ? "label" : "div";
 	const rowTitle = title ?? (typeof label === "string" ? label : undefined);
 
-	const tryToggleRowCheckbox = (
-		target: EventTarget | null,
-		currentTarget: HTMLDivElement,
-	) => {
+	const tryToggleRowCheckbox = (target: EventTarget | null, currentTarget: HTMLDivElement) => {
 		const el = target as HTMLElement | null;
 		if (!el) return false;
 		// Portaled content (popovers, dialogs) still bubbles through React's tree.
@@ -89,9 +84,7 @@ export function SettingsRow({
 		if (el.closest(".uiToggle")) return false;
 		if (el.closest("button, a, input, select, textarea")) return false;
 		if (el.closest("label")) return false;
-		const input = currentTarget.querySelector<HTMLInputElement>(
-			'input[type="checkbox"]',
-		);
+		const input = currentTarget.querySelector<HTMLInputElement>('input[type="checkbox"]');
 		if (input && !input.disabled) {
 			input.click();
 			return true;
@@ -131,12 +124,7 @@ export function SettingsRow({
 				<div className="settingsLabel">{label}</div>
 				{description ? <div className="settingsHelp">{description}</div> : null}
 			</CopyTag>
-			<div
-				className={cn(
-					"settingsFieldControl",
-					stacked && "settingsFieldControlStacked",
-				)}
-			>
+			<div className={cn("settingsFieldControl", stacked && "settingsFieldControlStacked")}>
 				{children}
 			</div>
 		</div>
@@ -154,20 +142,11 @@ export function SettingsInfoHint({
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
-				<button
-					type="button"
-					className="settingsInfoButton"
-					aria-label={ariaLabel}
-				>
+				<button type="button" className="settingsInfoButton" aria-label={ariaLabel}>
 					<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-md)" />
 				</button>
 			</PopoverTrigger>
-			<PopoverContent
-				align="start"
-				side="right"
-				sideOffset={8}
-				className="settingsInfoPopover"
-			>
+			<PopoverContent align="start" side="right" sideOffset={8} className="settingsInfoPopover">
 				{children}
 			</PopoverContent>
 		</Popover>
@@ -198,11 +177,7 @@ interface SettingsValueCardProps {
 	mono?: boolean;
 }
 
-export function SettingsValueCard({
-	icon,
-	value,
-	mono = false,
-}: SettingsValueCardProps) {
+export function SettingsValueCard({ icon, value, mono = false }: SettingsValueCardProps) {
 	return (
 		<div className="settingsValueCard">
 			<div className="settingsValueIcon" aria-hidden="true">

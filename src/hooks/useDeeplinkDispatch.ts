@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	type DeeplinkErrorPayload,
-	type DeeplinkEvent,
-	isSameSpacePath,
-} from "../lib/deeplink";
+import { type DeeplinkErrorPayload, type DeeplinkEvent, isSameSpacePath } from "../lib/deeplink";
 import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { toast } from "../lib/toast";
@@ -56,7 +52,7 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 	useEffect(() => {
 		void spacePath;
 		void settingsSpacePath;
-		for (const waiter of [...waitersRef.current]) {
+		for (const waiter of waitersRef.current.slice()) {
 			if (waiter.ready()) waiter.settle(true);
 		}
 	}, [spacePath, settingsSpacePath]);
@@ -68,16 +64,11 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 				ready,
 				settle: (settled) => {
 					clearTimeout(timer);
-					waitersRef.current = waitersRef.current.filter(
-						(entry) => entry !== waiter,
-					);
+					waitersRef.current = waitersRef.current.filter((entry) => entry !== waiter);
 					resolve(settled);
 				},
 			};
-			const timer = setTimeout(
-				() => waiter.settle(false),
-				SPACE_SETTLE_TIMEOUT_MS,
-			);
+			const timer = setTimeout(() => waiter.settle(false), SPACE_SETTLE_TIMEOUT_MS);
 			waitersRef.current.push(waiter);
 		});
 	}, []);
@@ -113,9 +104,7 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 			if (isSameSpacePath(optionsRef.current.spacePath, space)) return true;
 			// `selectSpace` saves open editors and surfaces its own failures.
 			if (!(await optionsRef.current.selectSpace(space))) return false;
-			return waitForState(() =>
-				isSameSpacePath(optionsRef.current.spacePath, space),
-			);
+			return waitForState(() => isSameSpacePath(optionsRef.current.spacePath, space));
 		},
 		[waitForState],
 	);
@@ -140,10 +129,7 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 						// The daily note folder and template are per-space settings, so
 						// acting before they rehydrate would target the previous space.
 						const ready = await waitForState(() =>
-							isSameSpacePath(
-								optionsRef.current.settingsSpacePath,
-								event.space,
-							),
+							isSameSpacePath(optionsRef.current.settingsSpacePath, event.space),
 						);
 						if (!ready) {
 							showError();

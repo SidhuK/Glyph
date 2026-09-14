@@ -51,9 +51,7 @@ export const PersonAutocomplete = Extension.create({
 				return new Promise<PersonSuggestionItem[]>(() => {});
 			}
 			const matches: PersonSuggestionItem[] = people
-				.filter((person) =>
-					normalized.length === 0 ? true : person.handle.includes(normalized),
-				)
+				.filter((person) => (normalized.length === 0 ? true : person.handle.includes(normalized)))
 				.sort((left, right) => left.handle.localeCompare(right.handle))
 				.slice(0, this.options.suggestionLimit)
 				.map((person) => ({
@@ -95,12 +93,7 @@ export const PersonAutocomplete = Extension.create({
 				},
 				items: ({ query }) => getItems(query),
 				command: ({ editor, range, props }) => {
-					editor
-						.chain()
-						.focus()
-						.deleteRange(range)
-						.insertContent(`@${props.handle}`)
-						.run();
+					editor.chain().focus().deleteRange(range).insertContent(`@${props.handle}`).run();
 				},
 				render: () =>
 					createTipTapTextSuggestionMenu<PersonSuggestionItem>({

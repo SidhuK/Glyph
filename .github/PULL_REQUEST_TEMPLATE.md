@@ -25,4 +25,3 @@ If the change affects the UI, add screenshots or a short video.
 - [ ] I used `src/lib/tauri.ts` for frontend Tauri invokes when applicable
 - [ ] This change does not add or require Windows-specific support
 - [ ] I am not introducing backward-compatibility code for deprecated behavior
-

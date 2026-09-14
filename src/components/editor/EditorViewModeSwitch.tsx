@@ -1,9 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	CodeIcon,
-	EyeIcon,
-	PencilEdit02Icon,
-} from "@hugeicons/core-free-icons";
+import { CodeIcon, EyeIcon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { EditorViewMode } from "../../lib/editorMode";
@@ -40,10 +36,7 @@ export function EditorViewModeSwitch({
 		mode,
 		dismissed: false,
 	});
-	if (
-		largeNoteDismissal.largeNote !== largeNote ||
-		largeNoteDismissal.mode !== mode
-	) {
+	if (largeNoteDismissal.largeNote !== largeNote || largeNoteDismissal.mode !== mode) {
 		setLargeNoteDismissal({ largeNote, mode, dismissed: false });
 	}
 	const activeMode = VIEW_MODES.find((item) => item.id === mode);
@@ -69,10 +62,7 @@ export function EditorViewModeSwitch({
 			data-open={shouldShowBubble || undefined}
 			onBlur={(event) => {
 				const nextFocus = event.relatedTarget;
-				if (
-					nextFocus instanceof Node &&
-					event.currentTarget.contains(nextFocus)
-				) {
+				if (nextFocus instanceof Node && event.currentTarget.contains(nextFocus)) {
 					return;
 				}
 				closeBubble();

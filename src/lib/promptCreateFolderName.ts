@@ -1,9 +1,6 @@
 import { join } from "@tauri-apps/api/path";
 import { basename, normalizeRelPath, parentDir } from "../utils/path";
-import {
-	formatCreateFolderLocationLabel,
-	validateFolderName,
-} from "./fileTreeFolderName";
+import { formatCreateFolderLocationLabel, validateFolderName } from "./fileTreeFolderName";
 import { invoke } from "./tauri";
 
 export async function promptCreateFolderName(options: {
@@ -14,10 +11,7 @@ export async function promptCreateFolderName(options: {
 	if (!options.spacePath) return null;
 
 	const normalizedParentDir = normalizeRelPath(options.parentDir);
-	const locationLabel = formatCreateFolderLocationLabel(
-		options.spacePath,
-		normalizedParentDir,
-	);
+	const locationLabel = formatCreateFolderLocationLabel(options.spacePath, normalizedParentDir);
 
 	if (options.prepareParentDir) {
 		await options.prepareParentDir(normalizedParentDir);
@@ -30,9 +24,7 @@ export async function promptCreateFolderName(options: {
 	const siblingNames = siblings.map((entry) => entry.name);
 
 	while (true) {
-		const { message: showMessage, save } = await import(
-			"@tauri-apps/plugin-dialog"
-		);
+		const { message: showMessage, save } = await import("@tauri-apps/plugin-dialog");
 		const defaultPath = normalizedParentDir
 			? await join(options.spacePath, normalizedParentDir, "New Folder")
 			: await join(options.spacePath, "New Folder");
@@ -44,14 +36,9 @@ export async function promptCreateFolderName(options: {
 
 		let relPath: string;
 		try {
-			relPath = normalizeRelPath(
-				await invoke("space_relativize_path", { abs_path: selection }),
-			);
+			relPath = normalizeRelPath(await invoke("space_relativize_path", { abs_path: selection }));
 		} catch (cause) {
-			const message =
-				cause instanceof Error
-					? cause.message
-					: "Could not resolve folder path.";
+			const message = cause instanceof Error ? cause.message : "Could not resolve folder path.";
 			await showMessage(message, {
 				title: "Invalid folder location",
 				kind: "warning",

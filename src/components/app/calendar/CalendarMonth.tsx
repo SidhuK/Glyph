@@ -14,11 +14,7 @@ import { useTranslation } from "react-i18next";
 import { activityTone } from "../../../lib/calendarActivity";
 import type { CalendarDayActivity } from "../../../lib/tauri";
 import { CalendarDayCell } from "./CalendarDayCell";
-import {
-	buildMonthWeeks,
-	dateForNavigationKey,
-	weekdayLabels,
-} from "./monthGrid";
+import { buildMonthWeeks, dateForNavigationKey, weekdayLabels } from "./monthGrid";
 
 interface CalendarMonthProps {
 	month: Date;
@@ -43,17 +39,10 @@ export function CalendarMonth({
 }: CalendarMonthProps) {
 	const { t } = useTranslation("shell");
 	const [focusedKey, setFocusedKey] = useState<string | null>(null);
-	const weekStartsOn: Day =
-		locale === "de" || locale === "es" || locale === "fr" ? 1 : 0;
+	const weekStartsOn: Day = locale === "de" || locale === "es" || locale === "fr" ? 1 : 0;
 
-	const weeks = useMemo(
-		() => buildMonthWeeks(month, weekStartsOn),
-		[month, weekStartsOn],
-	);
-	const weekdays = useMemo(
-		() => weekdayLabels(locale, weekStartsOn),
-		[locale, weekStartsOn],
-	);
+	const weeks = useMemo(() => buildMonthWeeks(month, weekStartsOn), [month, weekStartsOn]);
+	const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn]);
 
 	const monthYearLabel = useMemo(
 		() =>
@@ -76,10 +65,7 @@ export function CalendarMonth({
 
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLTableElement>) => {
-			const origin =
-				event.target instanceof HTMLElement
-					? event.target.dataset.date
-					: undefined;
+			const origin = event.target instanceof HTMLElement ? event.target.dataset.date : undefined;
 			if (!origin) return;
 			const from = parseISO(origin);
 			const next = dateForNavigationKey(event.key, from, weekStartsOn);
@@ -142,11 +128,7 @@ export function CalendarMonth({
 				</div>
 			</header>
 
-			<table
-				className="calendarGrid"
-				aria-label={monthYearLabel}
-				onKeyDown={handleKeyDown}
-			>
+			<table className="calendarGrid" aria-label={monthYearLabel} onKeyDown={handleKeyDown}>
 				<thead>
 					<tr>
 						{weekdays.map((weekday) => (

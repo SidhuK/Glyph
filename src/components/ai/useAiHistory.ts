@@ -2,29 +2,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { queryClient } from "../../lib/queryClient";
-import {
-	type AiChatHistoryDetail,
-	type AiStoredToolEvent,
-	invoke,
-} from "../../lib/tauri";
+import { type AiChatHistoryDetail, type AiStoredToolEvent, invoke } from "../../lib/tauri";
 import type { UIMessage } from "./hooks/useRigChat";
 
 const aiHistoryQueryKeys = {
 	all: ["ai", "history"] as const,
-	summaries: (limit: number) =>
-		[...aiHistoryQueryKeys.all, "summaries", limit] as const,
-	detail: (jobId: string) =>
-		[...aiHistoryQueryKeys.all, "detail", jobId] as const,
+	summaries: (limit: number) => [...aiHistoryQueryKeys.all, "summaries", limit] as const,
+	detail: (jobId: string) => [...aiHistoryQueryKeys.all, "detail", jobId] as const,
 };
 
 export function clearAiHistoryCache() {
 	queryClient.removeQueries({ queryKey: aiHistoryQueryKeys.all });
 }
 
-function toUIMessages(
-	jobId: string,
-	messages: AiChatHistoryDetail["messages"],
-): UIMessage[] {
+function toUIMessages(jobId: string, messages: AiChatHistoryDetail["messages"]): UIMessage[] {
 	const out: UIMessage[] = [];
 	for (let i = 0; i < messages.length; i += 1) {
 		const msg = messages[i];
@@ -47,9 +38,7 @@ interface LoadedAiChat {
 const HISTORY_WRITE_RETRY = 30;
 const HISTORY_WRITE_RETRY_MS = 500;
 
-export function fetchAiHistoryDetail(
-	jobId: string,
-): Promise<AiChatHistoryDetail> {
+export function fetchAiHistoryDetail(jobId: string): Promise<AiChatHistoryDetail> {
 	return queryClient.fetchQuery({
 		queryKey: aiHistoryQueryKeys.detail(jobId),
 		queryFn: () => invoke("ai_chat_history_get", { job_id: jobId }),
@@ -134,9 +123,7 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 		summaries,
 		selectedJobId,
 		listLoading: summariesQuery.isLoading,
-		loadingJobId: loadChatMutation.isPending
-			? loadChatMutation.variables
-			: null,
+		loadingJobId: loadChatMutation.isPending ? loadChatMutation.variables : null,
 		error,
 		refresh,
 		loadChatMessages,

@@ -56,9 +56,7 @@ function compareEntryTimestamps(
 	return compareEntryNames(a, b, 1);
 }
 
-export function compareEntriesForSort(
-	mode: FileTreeSortMode,
-): (a: FsEntry, b: FsEntry) => number {
+export function compareEntriesForSort(mode: FileTreeSortMode): (a: FsEntry, b: FsEntry) => number {
 	const timestamps = new Map<string, number | null>();
 	return (a, b) => {
 		if (a.kind === "dir" && b.kind === "file") return -1;
@@ -118,10 +116,7 @@ export function normalizeEntries(entries: FsEntry[]): FsEntry[] {
 	return [...byPath.values()].sort(compareEntries);
 }
 
-export function areEntriesEqual(
-	a: FsEntry[] | undefined,
-	b: FsEntry[],
-): boolean {
+export function areEntriesEqual(a: FsEntry[] | undefined, b: FsEntry[]): boolean {
 	if (!a) return false;
 	if (a.length !== b.length) return false;
 	for (let i = 0; i < a.length; i += 1) {
@@ -142,10 +137,7 @@ export function areEntriesEqual(
 	return true;
 }
 
-export function withInsertedEntry(
-	entries: FsEntry[],
-	entry: FsEntry,
-): FsEntry[] {
+export function withInsertedEntry(entries: FsEntry[], entry: FsEntry): FsEntry[] {
 	if (entries.some((e) => e.rel_path === entry.rel_path)) return entries;
 	return [...entries, entry].sort(compareEntries);
 }

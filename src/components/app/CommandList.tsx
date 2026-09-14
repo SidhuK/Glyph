@@ -1,10 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	Folder01Icon,
-	TableIcon,
-	Tag01Icon,
-	UserIcon,
-} from "@hugeicons/core-free-icons";
+import { Folder01Icon, TableIcon, Tag01Icon, UserIcon } from "@hugeicons/core-free-icons";
 import { Fragment, type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -84,17 +79,11 @@ function Shortcut({ result }: { result: PaletteResult }) {
 	const shortcut = result.command?.shortcut;
 	if (!shortcut) return null;
 	return (
-		<span
-			className="commandPaletteShortcut"
-			aria-label={formatShortcutForPlatform(shortcut)}
-		>
+		<span className="commandPaletteShortcut" aria-label={formatShortcutForPlatform(shortcut)}>
 			<kbd>
 				<span className="commandPaletteShortcutCombo">
 					{formatShortcutPartsForPlatform(shortcut).map((part) => (
-						<span
-							key={`${result.id}-${part}`}
-							className="commandPaletteShortcutPart"
-						>
+						<span key={`${result.id}-${part}`} className="commandPaletteShortcutPart">
 							{part}
 						</span>
 					))}
@@ -112,14 +101,11 @@ export function CommandList({
 }: CommandListProps) {
 	const { t } = useTranslation("shell");
 	const scrollSelectedIntoView = useCallback(
-		(node: HTMLButtonElement | null) =>
-			node?.scrollIntoView({ block: "nearest" }),
+		(node: HTMLButtonElement | null) => node?.scrollIntoView({ block: "nearest" }),
 		[],
 	);
 	if (!results.length) {
-		return (
-			<div className="commandPaletteEmpty">{t("commandPalette.noResults")}</div>
-		);
+		return <div className="commandPaletteEmpty">{t("commandPalette.noResults")}</div>;
 	}
 
 	let previousKind: PaletteResultKind | null = null;
@@ -159,21 +145,13 @@ export function CommandList({
 								</span>
 								<span className="commandPaletteUniversalContent">
 									<span className="commandPaletteResultLine">
-										<span className="commandPaletteResultTitle">
-											{result.label}
-										</span>
+										<span className="commandPaletteResultTitle">{result.label}</span>
 										{result.description ? (
 											<>
-												<span
-													className="commandPaletteResultLineSep"
-													aria-hidden="true"
-												>
+												<span className="commandPaletteResultLineSep" aria-hidden="true">
 													·
 												</span>
-												<span
-													className="commandPaletteResultPath"
-													title={result.description}
-												>
+												<span className="commandPaletteResultPath" title={result.description}>
 													{result.description}
 												</span>
 											</>
@@ -200,19 +178,13 @@ export function CommandList({
 							) : result.settingControl === "choice" && result.trailing ? (
 								<span className="commandPaletteInlineSettingValue">
 									<span aria-hidden="true">‹</span>
-									<span
-										className="commandPaletteResultValue"
-										title={result.trailing}
-									>
+									<span className="commandPaletteResultValue" title={result.trailing}>
 										{result.trailing}
 									</span>
 									<span aria-hidden="true">›</span>
 								</span>
 							) : result.trailing ? (
-								<span
-									className="commandPaletteResultValue"
-									title={result.trailing}
-								>
+								<span className="commandPaletteResultValue" title={result.trailing}>
 									{result.trailing}
 								</span>
 							) : (

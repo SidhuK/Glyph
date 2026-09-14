@@ -35,10 +35,7 @@ interface SpaceContextValue {
 
 const SpaceContext = createContext<SpaceContextValue | null>(null);
 
-function normalizeRecentSpaces(
-	recent: string[],
-	currentSpacePath: string | null,
-): string[] {
+function normalizeRecentSpaces(recent: string[], currentSpacePath: string | null): string[] {
 	const out: string[] = [];
 	const seen = new Set<string>();
 	const pushUnique = (value: string | null) => {
@@ -95,41 +92,31 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	useEffect(() => {
-		syncRecentSpacesMenu(
-			recentSpaces.filter((path) => path !== spacePath).slice(0, 20),
-		);
+		syncRecentSpacesMenu(recentSpaces.filter((path) => path !== spacePath).slice(0, 20));
 	}, [recentSpaces, spacePath, syncRecentSpacesMenu]);
 
 	useEffect(() => {
 		let cancelled = false;
-		(async () => {
+		void (async () => {
 			try {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setRecentSpaces(
-					normalizeRecentSpaces(
-						settings.recentSpaces,
-						settings.currentSpacePath ?? null,
-					),
+					normalizeRecentSpaces(settings.recentSpaces, settings.currentSpacePath ?? null),
 				);
 				try {
 					await invoke("index_set_people_mentions_as_tags_enabled", {
 						enabled: settings.editor.enablePeopleMentionsAsTags,
 					});
 				} catch (error) {
-					console.warn(
-						"Failed to sync people mentions setting with index runtime",
-						error,
-					);
+					console.warn("Failed to sync people mentions setting with index runtime", error);
 				}
 
 				const currentWindowSpaceInfo = await invoke("space_get_current_info");
 				if (currentWindowSpaceInfo) {
 					if (!cancelled) {
 						setSpacePath(currentWindowSpaceInfo.root);
-						setWelcomeNotePath(
-							currentWindowSpaceInfo.welcome_note_path ?? null,
-						);
+						setWelcomeNotePath(currentWindowSpaceInfo.welcome_note_path ?? null);
 					}
 				} else if (settings.currentSpacePath) {
 					try {
@@ -284,9 +271,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		],
 	);
 
-	return (
-		<SpaceContext.Provider value={value}>{children}</SpaceContext.Provider>
-	);
+	return <SpaceContext.Provider value={value}>{children}</SpaceContext.Provider>;
 }
 
 export function useSpace(): SpaceContextValue {

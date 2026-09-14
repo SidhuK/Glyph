@@ -12,11 +12,7 @@ export function LicenseStatusFooter() {
 
 	if (status.mode === "community_build") {
 		return (
-			<div
-				className="licenseSidebarFooter"
-				data-mode="community"
-				aria-live="polite"
-			>
+			<div className="licenseSidebarFooter" data-mode="community" aria-live="polite">
 				<div className="licenseSidebarInfo">
 					<span className="licenseSidebarText">
 						<span className="licenseSidebarLabel">Community Build</span>
@@ -24,8 +20,8 @@ export function LicenseStatusFooter() {
 							Thanks for downloading and building Glyph yourself.
 						</span>
 						<span className="licenseSidebarBody">
-							Support the project with the official license to get automatic
-							updates and the official build.
+							Support the project with the official license to get automatic updates and the
+							official build.
 						</span>
 						<span className="licenseSidebarNote">
 							Community builds do not include automatic updates.

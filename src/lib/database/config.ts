@@ -14,9 +14,7 @@ import type {
 	DatabaseRow,
 } from "./types";
 
-export function createPropertyColumn(
-	property: DatabasePropertyOption,
-): DatabaseColumn {
+export function createPropertyColumn(property: DatabasePropertyOption): DatabaseColumn {
 	return {
 		id: `property:${property.key}`,
 		type: "property",

@@ -11,14 +11,9 @@ import { invoke } from "../../lib/tauri";
 import { isReservedUiThemeName } from "../../lib/uiThemes";
 import { Copy, Download, Trash2, Upload } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import {
-	SettingsInfoHint,
-	SettingsRow,
-	SettingsSection,
-} from "./SettingsScaffold";
+import { SettingsInfoHint, SettingsRow, SettingsSection } from "./SettingsScaffold";
 
-const ACTION_BUTTON_CLASS =
-	"rounded-md border-border bg-background justify-center shadow-none";
+const ACTION_BUTTON_CLASS = "rounded-md border-border bg-background justify-center shadow-none";
 
 interface AppearanceCustomThemesCardProps {
 	customThemes: readonly CustomTheme[];
@@ -141,9 +136,7 @@ export function AppearanceCustomThemesCard({
 				label={
 					<span className="settingsLabelWithHelp">
 						{t("customThemes.import.label")}
-						<SettingsInfoHint
-							ariaLabel={t("customThemes.import.helpAriaLabel")}
-						>
+						<SettingsInfoHint ariaLabel={t("customThemes.import.helpAriaLabel")}>
 							{t("customThemes.import.description")}
 						</SettingsInfoHint>
 					</span>

@@ -5,9 +5,7 @@ export interface RelationshipGroup {
 	items: NoteRelationship[];
 }
 
-export function groupRelationshipsByField(
-	relationships: NoteRelationship[],
-): RelationshipGroup[] {
+export function groupRelationshipsByField(relationships: NoteRelationship[]): RelationshipGroup[] {
 	const groups = new Map<string, NoteRelationship[]>();
 	for (const relationship of relationships) {
 		const key = relationship.field_key.trim();
@@ -25,13 +23,6 @@ export function groupRelationshipsByField(
 		.sort((left, right) => left.field_key.localeCompare(right.field_key));
 }
 
-export function relationshipTargetLabel(
-	relationship: NoteRelationship,
-): string {
-	return (
-		relationship.target_title ||
-		relationship.to_title ||
-		relationship.to_id ||
-		"Untitled"
-	);
+export function relationshipTargetLabel(relationship: NoteRelationship): string {
+	return relationship.target_title || relationship.to_title || relationship.to_id || "Untitled";
 }

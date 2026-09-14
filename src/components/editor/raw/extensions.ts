@@ -4,12 +4,7 @@ import {
 	closeBracketsKeymap,
 	completionKeymap,
 } from "@codemirror/autocomplete";
-import {
-	defaultKeymap,
-	history,
-	historyKeymap,
-	indentWithTab,
-} from "@codemirror/commands";
+import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import {
 	HighlightStyle,
@@ -20,17 +15,8 @@ import {
 } from "@codemirror/language";
 import { languages } from "@codemirror/language-data";
 import { linter } from "@codemirror/lint";
-import {
-	highlightSelectionMatches,
-	search,
-	searchKeymap,
-} from "@codemirror/search";
-import {
-	Annotation,
-	EditorSelection,
-	EditorState,
-	type Extension,
-} from "@codemirror/state";
+import { highlightSelectionMatches, search, searchKeymap } from "@codemirror/search";
+import { Annotation, EditorSelection, EditorState, type Extension } from "@codemirror/state";
 import {
 	type Command,
 	EditorView,
@@ -45,18 +31,9 @@ import { tags } from "@lezer/highlight";
 import { vim } from "@replit/codemirror-vim";
 import { latexHoverTooltip } from "codemirror-lang-latex";
 import { createRawMarkdownDecorations } from "./decorations";
-import {
-	embeddedLatexCompletionSource,
-	latexSnippetCompletionSource,
-} from "./latexCompletions";
-import {
-	acceptWikiLinkCompletion,
-	createRawLinkCompletionSource,
-} from "./linkCompletions";
-import {
-	embeddedMathLinter,
-	markdownMathExtension,
-} from "./markdownMathLanguage";
+import { embeddedLatexCompletionSource, latexSnippetCompletionSource } from "./latexCompletions";
+import { acceptWikiLinkCompletion, createRawLinkCompletionSource } from "./linkCompletions";
+import { embeddedMathLinter, markdownMathExtension } from "./markdownMathLanguage";
 
 const markdownHighlightStyle = HighlightStyle.define([
 	{ tag: tags.heading1, class: "cm-raw-heading-token-1" },
@@ -103,10 +80,7 @@ function wrapSelection(open: string, close = open): Command {
 					{ from: range.from, insert: open },
 					{ from: range.to, insert: close },
 				],
-				range: EditorSelection.range(
-					range.from + open.length,
-					range.to + open.length,
-				),
+				range: EditorSelection.range(range.from + open.length, range.to + open.length),
 			};
 		});
 		view.dispatch(transaction);
@@ -116,9 +90,7 @@ function wrapSelection(open: string, close = open): Command {
 
 const toggleTaskAtCursor: Command = (view) => {
 	const line = view.state.doc.lineAt(view.state.selection.main.head);
-	const match = line.text.match(
-		/^(\s*(?:>\s*)*(?:[-+*]|\d+[.)])\s+)\[([ xX])\](?=\s|$)/,
-	);
+	const match = line.text.match(/^(\s*(?:>\s*)*(?:[-+*]|\d+[.)])\s+)\[([ xX])\](?=\s|$)/);
 	if (!match) return false;
 	const markerPosition = line.from + (match[1]?.length ?? 0);
 	const checked = match[2]?.toLowerCase() === "x";
@@ -128,18 +100,13 @@ const toggleTaskAtCursor: Command = (view) => {
 			to: markerPosition + 2,
 			insert: checked ? " " : "x",
 		},
-		effects: EditorView.announce.of(
-			checked ? "Task marked incomplete" : "Task marked complete",
-		),
+		effects: EditorView.announce.of(checked ? "Task marked incomplete" : "Task marked complete"),
 	});
 	return true;
 };
 
 function isInMarkdownTable(view: EditorView): boolean {
-	let node = syntaxTree(view.state).resolveInner(
-		view.state.selection.main.head,
-		-1,
-	);
+	let node = syntaxTree(view.state).resolveInner(view.state.selection.main.head, -1);
 	while (node) {
 		if (node.name === "Table") return true;
 		if (!node.parent) return false;
@@ -180,8 +147,7 @@ function moveTableCell(direction: 1 | -1): Command {
 		}
 
 		const nextLineNumber = line.number + direction;
-		const hasNextLine =
-			nextLineNumber >= 1 && nextLineNumber <= view.state.doc.lines;
+		const hasNextLine = nextLineNumber >= 1 && nextLineNumber <= view.state.doc.lines;
 		const nextLine = hasNextLine ? view.state.doc.line(nextLineNumber) : null;
 		if (!nextLine?.text.includes("|")) {
 			if (direction === -1) return false;
@@ -195,8 +161,7 @@ function moveTableCell(direction: 1 | -1): Command {
 			return true;
 		}
 		const nextStarts = tableCellStarts(nextLine.text, nextLine.from);
-		const target =
-			direction === 1 ? nextStarts[0] : nextStarts[nextStarts.length - 1];
+		const target = direction === 1 ? nextStarts[0] : nextStarts[nextStarts.length - 1];
 		if (target === undefined) return false;
 		view.dispatch({
 			selection: { anchor: target },
@@ -273,8 +238,7 @@ export function createRawMarkdownExtensions(
 		}),
 		EditorView.updateListener.of((update) => {
 			const isExternalUpdate = update.transactions.some(
-				(transaction) =>
-					transaction.annotation(externalRawMarkdownUpdate) === true,
+				(transaction) => transaction.annotation(externalRawMarkdownUpdate) === true,
 			);
 			if (update.docChanged && !isExternalUpdate) {
 				onChange();
@@ -308,9 +272,6 @@ export function createRawMarkdownExtensions(
 
 export function createRawMarkdownVimMode(enabled: boolean): Extension {
 	return enabled
-		? [
-				vim({ status: true }),
-				EditorView.updateListener.of(scrollOuterNoteBodyToCursor),
-			]
+		? [vim({ status: true }), EditorView.updateListener.of(scrollOuterNoteBodyToCursor)]
 		: [];
 }

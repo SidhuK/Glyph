@@ -86,9 +86,7 @@ export function LatexSourceEditor({
 				],
 			}),
 		});
-		const focusFrame = autoFocus
-			? window.requestAnimationFrame(() => view.focus())
-			: null;
+		const focusFrame = autoFocus ? window.requestAnimationFrame(() => view.focus()) : null;
 		return () => {
 			if (focusFrame !== null) window.cancelAnimationFrame(focusFrame);
 			view.destroy();
@@ -96,10 +94,6 @@ export function LatexSourceEditor({
 	}, [autoFocus]);
 
 	return (
-		<div
-			ref={hostRef}
-			className="latexSourceEditor"
-			data-multiline={multiline || undefined}
-		/>
+		<div ref={hostRef} className="latexSourceEditor" data-multiline={multiline || undefined} />
 	);
 }

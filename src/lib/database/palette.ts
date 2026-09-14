@@ -1,8 +1,5 @@
 import type { CSSProperties } from "react";
-import {
-	type EditorTextColor,
-	getEditorTextColorOption,
-} from "../../components/editor/textColors";
+import { type EditorTextColor, getEditorTextColorOption } from "../../components/editor/textColors";
 
 const DATABASE_TONES = [
 	"var(--color-blue-500)",
@@ -26,8 +23,7 @@ function normalizeToneSeed(seed: string): string {
 }
 
 function databaseToneStyle(seed: string): CSSProperties {
-	const tone =
-		DATABASE_TONES[hashSeed(normalizeToneSeed(seed)) % DATABASE_TONES.length];
+	const tone = DATABASE_TONES[hashSeed(normalizeToneSeed(seed)) % DATABASE_TONES.length];
 	return {
 		"--database-tone": tone,
 	} as CSSProperties;

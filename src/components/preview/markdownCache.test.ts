@@ -1,9 +1,5 @@
-import { describe, expect, it } from "vitest";
-import {
-	clearMarkdownDocCache,
-	getCachedMarkdownDoc,
-	setCachedMarkdownDoc,
-} from "./markdownCache";
+import { describe, expect, it } from "vite-plus/test";
+import { clearMarkdownDocCache, getCachedMarkdownDoc, setCachedMarkdownDoc } from "./markdownCache";
 
 describe("markdownCache", () => {
 	it("promotes a cached document and evicts by entry count", () => {

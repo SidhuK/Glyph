@@ -127,7 +127,9 @@
 	line-height: 1.15;
 	letter-spacing: -0.025em;
 	color: var(--text-primary);
-	transition: background-color 140ms ease, border-color 140ms ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
 }
 
 .databasesCollectionTitleInput:hover {
@@ -155,7 +157,9 @@ button.databasesCollectionSwitcher {
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
 	white-space: nowrap;
 }
 

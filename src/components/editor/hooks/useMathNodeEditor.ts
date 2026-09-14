@@ -40,11 +40,10 @@ export function useMathNodeEditor() {
 				close();
 				return;
 			}
-			const transaction = resolved.editor.state.tr.setNodeMarkup(
-				request.pos,
-				undefined,
-				{ ...resolved.node.attrs, latex },
-			);
+			const transaction = resolved.editor.state.tr.setNodeMarkup(request.pos, undefined, {
+				...resolved.node.attrs,
+				latex,
+			});
 			resolved.editor.view.dispatch(transaction);
 			close();
 			resolved.editor.commands.focus(request.pos);
@@ -60,10 +59,7 @@ export function useMathNodeEditor() {
 			return;
 		}
 		resolved.editor.view.dispatch(
-			resolved.editor.state.tr.delete(
-				request.pos,
-				request.pos + resolved.node.nodeSize,
-			),
+			resolved.editor.state.tr.delete(request.pos, request.pos + resolved.node.nodeSize),
 		);
 		close();
 		resolved.editor.commands.focus(request.pos);

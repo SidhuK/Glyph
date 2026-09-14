@@ -31,39 +31,24 @@
 	border-bottom-right-radius: 0;
 }
 
-.canvasPaneHost[data-space-connections="true"]
-	:is(.spaceConnectionsHost, .canvasPaneAwait),
-.canvasPaneHost[data-all-docs="true"]
-	:is(.activityTimelinePane, .canvasPaneAwait),
-.canvasPaneHost[data-databases="true"]
-	:is(.databaseHostPane, .canvasPaneAwait) {
+.canvasPaneHost[data-space-connections="true"] :is(.spaceConnectionsHost, .canvasPaneAwait),
+.canvasPaneHost[data-all-docs="true"] :is(.activityTimelinePane, .canvasPaneAwait),
+.canvasPaneHost[data-databases="true"] :is(.databaseHostPane, .canvasPaneAwait) {
 	position: absolute;
 	inset: 0;
 	z-index: 0;
 }
 
-.canvasPaneHost:is(
-		[data-space-connections="true"],
-		[data-all-docs="true"],
-		[data-databases="true"]
-	)
+.canvasPaneHost:is([data-space-connections="true"], [data-all-docs="true"], [data-databases="true"])
 	.mainTabBarTransition {
 	position: relative;
 	z-index: 1;
 	flex-shrink: 0;
 }
 
-.canvasPaneHost:is(
-		[data-space-connections="true"],
-		[data-all-docs="true"],
-		[data-databases="true"]
-	)
+.canvasPaneHost:is([data-space-connections="true"], [data-all-docs="true"], [data-databases="true"])
 	.mainTabsBarWrap,
-.canvasPaneHost:is(
-		[data-space-connections="true"],
-		[data-all-docs="true"],
-		[data-databases="true"]
-	)
+.canvasPaneHost:is([data-space-connections="true"], [data-all-docs="true"], [data-databases="true"])
 	.mainTabsBar {
 	background: transparent;
 }
@@ -87,8 +72,11 @@
 	-webkit-backdrop-filter: none;
 	box-sizing: border-box;
 	transition:
-		width 180ms ease, flex-basis 180ms ease, padding 180ms ease,
-		border-color 180ms ease, background-color 180ms ease;
+		width 180ms ease,
+		flex-basis 180ms ease,
+		padding 180ms ease,
+		border-color 180ms ease,
+		background-color 180ms ease;
 }
 
 .notesInfoSidebarResizeHandle {
@@ -140,8 +128,7 @@
 	/* border intentionally removed */
 }
 
-:root[data-translucent-sidebar="false"]
-	.notesInfoSidebarHost[data-open="true"] {
+:root[data-translucent-sidebar="false"] .notesInfoSidebarHost[data-open="true"] {
 	padding: 8px 0 0 0;
 	background: var(--bg-sidebar);
 	backdrop-filter: none;
@@ -162,9 +149,9 @@
 	border: 0;
 	border-radius: var(--radius-2xl);
 	background: var(--bg-primary);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--border-default) 88%, transparent), 0 18px 48px
-		color-mix(in srgb, #000 14%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--border-default) 88%, transparent),
+		0 18px 48px color-mix(in srgb, #000 14%, transparent);
 	color: var(--text-primary);
 	animation: noteSidePeekIn 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -176,9 +163,9 @@
 }
 
 .dark .noteSidePeek {
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--border-default) 88%, transparent), 0 18px 48px
-		color-mix(in srgb, #000 38%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--border-default) 88%, transparent),
+		0 18px 48px color-mix(in srgb, #000 38%, transparent);
 }
 
 @keyframes noteSidePeekIn {

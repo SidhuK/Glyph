@@ -23,10 +23,7 @@ import {
 	loadSettings,
 	writeSpaceSetting,
 } from "../../lib/settings";
-import {
-	DURABLE_SETTINGS,
-	SPACE_SETTINGS,
-} from "../../lib/settings/definitions";
+import { DURABLE_SETTINGS, SPACE_SETTINGS } from "../../lib/settings/definitions";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath, validateRelFolderPath } from "../../utils/path";
@@ -35,17 +32,10 @@ import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { SettingsFolderPicker } from "./SettingsFolderPicker";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
-import {
-	requireSpacePath,
-	selectFolderRelativeToSpace,
-} from "./spaceFolderSelection";
+import { requireSpacePath, selectFolderRelativeToSpace } from "./spaceFolderSelection";
 
 const ATTACHMENT_SUBFOLDER_ERROR_ID = "attachmentSubfolderError";
 
@@ -70,35 +60,22 @@ const PERIOD_NOTE_MARKS = {
 export function SpaceSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
-	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
-		null,
-	);
+	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(null);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
-	const [defaultNewNoteFolder, setDefaultNewNoteFolder] = useState<
-		string | null
-	>(null);
-	const [defaultNewNoteError, setDefaultNewNoteError] = useState<string | null>(
-		null,
-	);
+	const [defaultNewNoteFolder, setDefaultNewNoteFolder] = useState<string | null>(null);
+	const [defaultNewNoteError, setDefaultNewNoteError] = useState<string | null>(null);
 	const [periodNotesError, setPeriodNotesError] = useState<string | null>(null);
-	const [periodNotesEnabled, setPeriodNotesEnabled] = useState(
-		DEFAULT_PERIOD_NOTES_ENABLED,
-	);
+	const [periodNotesEnabled, setPeriodNotesEnabled] = useState(DEFAULT_PERIOD_NOTES_ENABLED);
 	const [attachmentStorageMode, setAttachmentStorageModeState] =
 		useState<AttachmentStorageMode>("note-folder");
-	const [attachmentFolder, setAttachmentFolderState] = useState(
-		DEFAULT_ATTACHMENT_FOLDER,
-	);
+	const [attachmentFolder, setAttachmentFolderState] = useState(DEFAULT_ATTACHMENT_FOLDER);
 	const [attachmentError, setAttachmentError] = useState<string | null>(null);
-	const [quickNotesFolder, setQuickNotesFolderState] = useState(
-		DEFAULT_QUICK_NOTES_FOLDER,
-	);
+	const [quickNotesFolder, setQuickNotesFolderState] = useState(DEFAULT_QUICK_NOTES_FOLDER);
 	const [quickNotesError, setQuickNotesError] = useState<string | null>(null);
 	const [error, setError] = useState("");
 	const [reindexStatus, setReindexStatus] = useState("");
 	const [isIndexing, setIsIndexing] = useState(false);
-	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
-		useState(false);
+	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] = useState(false);
 	const [isSavingPeopleMentions, setIsSavingPeopleMentions] = useState(false);
 	const { spacePath, startIndexRebuild } = useSpace();
 
@@ -130,17 +107,11 @@ export function SpaceSettingsPane() {
 				setCurrentSpacePath(currentSpace);
 				setDailyNotesFolderState(settings.dailyNotes.folder);
 				setDefaultNewNoteFolder(settings.noteCreation?.defaultFolder ?? null);
-				setPeriodNotesEnabled(
-					periodNotesEnabledFromSettings(settings.dailyNotes),
-				);
+				setPeriodNotesEnabled(periodNotesEnabledFromSettings(settings.dailyNotes));
 				setQuickNotesFolderState(settings.quickNotes.folder);
 				setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
-				setAttachmentFolderState(
-					settings.editor.attachmentFolder ?? DEFAULT_ATTACHMENT_FOLDER,
-				);
-				setEnablePeopleMentionsAsTags(
-					settings.editor.enablePeopleMentionsAsTags,
-				);
+				setAttachmentFolderState(settings.editor.attachmentFolder ?? DEFAULT_ATTACHMENT_FOLDER);
+				setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
 			} catch (e) {
 				if (!isCurrent()) return;
 				setError(extractErrorMessage(e));
@@ -197,19 +168,13 @@ export function SpaceSettingsPane() {
 		try {
 			const selection = await selectFolderRelativeToSpace();
 			if (selection === null) return;
-			await writeSpaceSetting(
-				SPACE_SETTINGS.dailyNotesFolder,
-				selection.relativePath || null,
-				{
-					spacePath: selection.spacePath,
-				},
-			);
+			await writeSpaceSetting(SPACE_SETTINGS.dailyNotesFolder, selection.relativePath || null, {
+				spacePath: selection.spacePath,
+			});
 			setCurrentSpacePath(selection.spacePath);
 			setDailyNotesFolderState(selection.relativePath || null);
 		} catch (cause) {
-			setDailyNotesError(
-				cause instanceof Error ? cause.message : "Failed to select folder",
-			);
+			setDailyNotesError(cause instanceof Error ? cause.message : "Failed to select folder");
 		}
 	}, []);
 
@@ -222,9 +187,7 @@ export function SpaceSettingsPane() {
 			});
 			setDailyNotesFolderState(null);
 		} catch (cause) {
-			setDailyNotesError(
-				cause instanceof Error ? cause.message : "Failed to clear folder",
-			);
+			setDailyNotesError(cause instanceof Error ? cause.message : "Failed to clear folder");
 		}
 	}, [currentSpacePath]);
 
@@ -268,11 +231,7 @@ export function SpaceSettingsPane() {
 				});
 				setPeriodNotesEnabled((current) => ({ ...current, [kind]: checked }));
 			} catch (cause) {
-				setPeriodNotesError(
-					cause instanceof Error
-						? cause.message
-						: t("periodNotes.updateFailed"),
-				);
+				setPeriodNotesError(cause instanceof Error ? cause.message : t("periodNotes.updateFailed"));
 			}
 		},
 		[currentSpacePath, t],
@@ -283,30 +242,20 @@ export function SpaceSettingsPane() {
 			setAttachmentError(null);
 			try {
 				const spacePath = requireSpacePath(currentSpacePath);
-				await writeSpaceSetting(
-					SPACE_SETTINGS.attachmentStorageMode,
-					nextMode,
-					{ spacePath },
-				);
+				await writeSpaceSetting(SPACE_SETTINGS.attachmentStorageMode, nextMode, { spacePath });
 				setAttachmentStorageModeState(nextMode);
 
 				const shouldResetFolder =
 					modesUseDifferentFolderSemantics(attachmentStorageMode, nextMode) ||
 					(modeRequiresAttachmentFolder(nextMode) && !attachmentFolder);
 				if (shouldResetFolder) {
-					await writeSpaceSetting(
-						SPACE_SETTINGS.attachmentFolder,
-						DEFAULT_ATTACHMENT_FOLDER,
-						{
-							spacePath,
-						},
-					);
+					await writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, DEFAULT_ATTACHMENT_FOLDER, {
+						spacePath,
+					});
 					setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 				}
 			} catch (cause) {
-				setAttachmentError(
-					cause instanceof Error ? cause.message : "Failed to update setting",
-				);
+				setAttachmentError(cause instanceof Error ? cause.message : "Failed to update setting");
 			}
 		},
 		[attachmentFolder, attachmentStorageMode, currentSpacePath],
@@ -327,9 +276,7 @@ export function SpaceSettingsPane() {
 			});
 			setAttachmentFolderState(normalized);
 		} catch (cause) {
-			setAttachmentError(
-				cause instanceof Error ? cause.message : "Failed to update subfolder",
-			);
+			setAttachmentError(cause instanceof Error ? cause.message : "Failed to update subfolder");
 		}
 	}, [attachmentFolder, currentSpacePath]);
 
@@ -338,21 +285,13 @@ export function SpaceSettingsPane() {
 		try {
 			const selection = await selectFolderRelativeToSpace();
 			if (selection === null) return;
-			await writeSpaceSetting(
-				SPACE_SETTINGS.attachmentFolder,
-				selection.relativePath,
-				{
-					spacePath: selection.spacePath,
-				},
-			);
+			await writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, selection.relativePath, {
+				spacePath: selection.spacePath,
+			});
 			setCurrentSpacePath(selection.spacePath);
-			setAttachmentFolderState(
-				selection.relativePath || DEFAULT_ATTACHMENT_FOLDER,
-			);
+			setAttachmentFolderState(selection.relativePath || DEFAULT_ATTACHMENT_FOLDER);
 		} catch (cause) {
-			setAttachmentError(
-				cause instanceof Error ? cause.message : "Failed to select folder",
-			);
+			setAttachmentError(cause instanceof Error ? cause.message : "Failed to select folder");
 		}
 	}, []);
 
@@ -360,16 +299,12 @@ export function SpaceSettingsPane() {
 		setAttachmentError(null);
 		try {
 			const spacePath = requireSpacePath(currentSpacePath);
-			await writeSpaceSetting(
-				SPACE_SETTINGS.attachmentFolder,
-				DEFAULT_ATTACHMENT_FOLDER,
-				{ spacePath },
-			);
+			await writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, DEFAULT_ATTACHMENT_FOLDER, {
+				spacePath,
+			});
 			setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 		} catch (cause) {
-			setAttachmentError(
-				cause instanceof Error ? cause.message : "Failed to reset folder",
-			);
+			setAttachmentError(cause instanceof Error ? cause.message : "Failed to reset folder");
 		}
 	}, [currentSpacePath]);
 
@@ -384,14 +319,10 @@ export function SpaceSettingsPane() {
 				{ spacePath: selection.spacePath },
 			);
 			setCurrentSpacePath(selection.spacePath);
-			setQuickNotesFolderState(
-				selection.relativePath || DEFAULT_QUICK_NOTES_FOLDER,
-			);
+			setQuickNotesFolderState(selection.relativePath || DEFAULT_QUICK_NOTES_FOLDER);
 		} catch (cause) {
 			setQuickNotesError(
-				cause instanceof Error
-					? cause.message
-					: "Failed to select quick notes folder",
+				cause instanceof Error ? cause.message : "Failed to select quick notes folder",
 			);
 		}
 	}, []);
@@ -400,23 +331,18 @@ export function SpaceSettingsPane() {
 		setQuickNotesError(null);
 		try {
 			const spacePath = requireSpacePath(currentSpacePath);
-			await writeSpaceSetting(
-				SPACE_SETTINGS.quickNotesFolder,
-				DEFAULT_QUICK_NOTES_FOLDER,
-				{ spacePath },
-			);
+			await writeSpaceSetting(SPACE_SETTINGS.quickNotesFolder, DEFAULT_QUICK_NOTES_FOLDER, {
+				spacePath,
+			});
 			setQuickNotesFolderState(DEFAULT_QUICK_NOTES_FOLDER);
 		} catch (cause) {
 			setQuickNotesError(
-				cause instanceof Error
-					? cause.message
-					: "Failed to reset quick notes folder",
+				cause instanceof Error ? cause.message : "Failed to reset quick notes folder",
 			);
 		}
 	}, [currentSpacePath]);
 
-	const attachmentFolderEditor =
-		ATTACHMENT_MODE_UI[attachmentStorageMode].folderEditor;
+	const attachmentFolderEditor = ATTACHMENT_MODE_UI[attachmentStorageMode].folderEditor;
 
 	return (
 		<div className="settingsPane">
@@ -440,9 +366,7 @@ export function SpaceSettingsPane() {
 							clearLabel={t("newNotes.clear")}
 							onBrowse={() => void handleBrowseDefaultNewNoteFolder()}
 							onClear={
-								defaultNewNoteFolder
-									? () => void handleClearDefaultNewNoteFolder()
-									: undefined
+								defaultNewNoteFolder ? () => void handleClearDefaultNewNoteFolder() : undefined
 							}
 							error={defaultNewNoteError}
 						/>
@@ -464,9 +388,7 @@ export function SpaceSettingsPane() {
 							browseLabel="Browse"
 							clearLabel="Clear daily notes folder"
 							onBrowse={() => void handleBrowseFolder()}
-							onClear={
-								dailyNotesFolder ? () => void handleClearFolder() : undefined
-							}
+							onClear={dailyNotesFolder ? () => void handleClearFolder() : undefined}
 							error={dailyNotesError}
 						/>
 					</SettingsRow>
@@ -486,9 +408,7 @@ export function SpaceSettingsPane() {
 									<SettingsToggle
 										checked={periodNotesEnabled[kind]}
 										ariaLabel={t(`periodNotes.${kind}.ariaLabel`)}
-										onCheckedChange={(checked) =>
-											void handlePeriodNoteToggle(kind, checked)
-										}
+										onCheckedChange={(checked) => void handlePeriodNoteToggle(kind, checked)}
 									/>
 								</SettingsRow>
 							</div>
@@ -529,9 +449,7 @@ export function SpaceSettingsPane() {
 									</option>
 								))}
 							</SettingsSelect>
-							<div className="settingsHelp">
-								{ATTACHMENT_MODE_UI[attachmentStorageMode].help}
-							</div>
+							<div className="settingsHelp">{ATTACHMENT_MODE_UI[attachmentStorageMode].help}</div>
 							{attachmentFolderEditor === "browse" ? (
 								<div className="dailyNotesFolderRow">
 									<div className="dailyNotesFolderPath">
@@ -572,11 +490,7 @@ export function SpaceSettingsPane() {
 									<Input
 										aria-label="Attachment subfolder name"
 										aria-invalid={attachmentError ? true : undefined}
-										aria-describedby={
-											attachmentError
-												? ATTACHMENT_SUBFOLDER_ERROR_ID
-												: undefined
-										}
+										aria-describedby={attachmentError ? ATTACHMENT_SUBFOLDER_ERROR_ID : undefined}
 										value={attachmentFolder}
 										placeholder={DEFAULT_ATTACHMENT_FOLDER}
 										onChange={(event) => {
@@ -606,11 +520,7 @@ export function SpaceSettingsPane() {
 							) : null}
 							{attachmentError ? (
 								<div
-									id={
-										attachmentFolderEditor === "text"
-											? ATTACHMENT_SUBFOLDER_ERROR_ID
-											: undefined
-									}
+									id={attachmentFolderEditor === "text" ? ATTACHMENT_SUBFOLDER_ERROR_ID : undefined}
 									className="settingsError dailyNotesError"
 									role="alert"
 								>
@@ -651,10 +561,7 @@ export function SpaceSettingsPane() {
 					>
 						<div className="dailyNotesFolderRow">
 							<div className="dailyNotesFolderPath">
-								{reindexStatus ||
-									(!currentSpacePath
-										? "No space selected."
-										: "Index is ready.")}
+								{reindexStatus || (!currentSpacePath ? "No space selected." : "Index is ready.")}
 							</div>
 							<div className="settingsActions dailyNotesActions">
 								<Button

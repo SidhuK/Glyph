@@ -1,5 +1,5 @@
 import { MarkdownManager } from "@tiptap/markdown";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createEditorExtensions } from "./index";
 
 describe("Code block highlighting markdown integration", () => {
@@ -61,12 +61,7 @@ describe("Code block highlighting markdown integration", () => {
 			},
 		});
 
-		const input = [
-			"```mermaid",
-			"flowchart TD",
-			"  A[Start] --> B[End]",
-			"```",
-		].join("\n");
+		const input = ["```mermaid", "flowchart TD", "  A[Start] --> B[End]", "```"].join("\n");
 
 		const json = manager.parse(input);
 		expect(json.content?.[0]?.type).toBe("codeBlock");

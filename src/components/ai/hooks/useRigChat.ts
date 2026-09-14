@@ -81,15 +81,11 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	const flushStreamingRef = useRef<(() => void) | null>(null);
 	const onComplete = options.onComplete;
 
-	const updateMessages = useCallback(
-		(next: UIMessage[] | ((prev: UIMessage[]) => UIMessage[])) => {
-			const resolved =
-				typeof next === "function" ? next(messagesRef.current) : next;
-			messagesRef.current = resolved;
-			setMessages(resolved);
-		},
-		[],
-	);
+	const updateMessages = useCallback((next: UIMessage[] | ((prev: UIMessage[]) => UIMessage[])) => {
+		const resolved = typeof next === "function" ? next(messagesRef.current) : next;
+		messagesRef.current = resolved;
+		setMessages(resolved);
+	}, []);
 
 	const cleanupListeners = useCallback(() => {
 		for (const stop of stopListenersRef.current) {
@@ -145,10 +141,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	}, [cleanupListeners, clearDoneTimer]);
 
 	const sendMessage = useCallback(
-		async (
-			{ text, context }: SendMessageArgs,
-			options?: SendMessageOptions,
-		) => {
+		async ({ text, context }: SendMessageArgs, options?: SendMessageOptions) => {
 			const trimmed = text.trim();
 			if (!trimmed) return;
 			const profileId = options?.body?.profile_id?.trim() ?? "";
@@ -182,8 +175,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 			const keepAliveEpoch = beginAiPanelKeepMounted();
 			keepAliveEpochRef.current = keepAliveEpoch;
 			const isCurrentSend = () =>
-				keepAliveEpochRef.current === keepAliveEpoch &&
-				isAiPanelKeepMounted(keepAliveEpoch);
+				keepAliveEpochRef.current === keepAliveEpoch && isAiPanelKeepMounted(keepAliveEpoch);
 
 			try {
 				clearDoneTimer();
@@ -191,10 +183,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				const threadId = requestedThreadId || activeThreadIdRef.current;
 				if (threadId) activeThreadIdRef.current = threadId;
 				const systemPrompt = options?.body?.system_prompt?.trim() ?? "";
-				const requestMessages = asAiMessages([
-					...previousMessages,
-					userMessage,
-				]);
+				const requestMessages = asAiMessages([...previousMessages, userMessage]);
 				if (systemPrompt) {
 					requestMessages.unshift({
 						role: "system",
@@ -213,8 +202,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					awaitingStartRef.current &&
 					!activeJobIdRef.current &&
 					!!jobId;
-				const isActiveJob = (jobId: string) =>
-					isCurrentSend() && jobId === activeJobIdRef.current;
+				const isActiveJob = (jobId: string) => isCurrentSend() && jobId === activeJobIdRef.current;
 				const flushChunks = () => {
 					if (chunkFrame !== null) {
 						window.cancelAnimationFrame(chunkFrame);

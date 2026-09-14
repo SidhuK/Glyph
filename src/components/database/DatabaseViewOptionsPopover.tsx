@@ -7,14 +7,7 @@ import {
 	SlidersVerticalIcon,
 	TextFontIcon,
 } from "@hugeicons/core-free-icons";
-import {
-	type ReactNode,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import {
 	ensureDatabaseColumn,
@@ -33,18 +26,9 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { ChevronRight, RefreshCw, Search } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import {
-	CardFieldsPanel,
-	visibleCardFieldCount,
-} from "./DatabaseViewOptionsCardFieldsPanel";
-import {
-	type ColumnMenuEntry,
-	ColumnsPanel,
-} from "./DatabaseViewOptionsColumnsPanel";
-import {
-	FiltersPanel,
-	nextFilterForColumn,
-} from "./DatabaseViewOptionsFiltersPanel";
+import { CardFieldsPanel, visibleCardFieldCount } from "./DatabaseViewOptionsCardFieldsPanel";
+import { type ColumnMenuEntry, ColumnsPanel } from "./DatabaseViewOptionsColumnsPanel";
+import { FiltersPanel, nextFilterForColumn } from "./DatabaseViewOptionsFiltersPanel";
 import { SortPanel } from "./DatabaseViewOptionsSortPanel";
 import { SourcePanel } from "./DatabaseViewOptionsSourcePanel";
 import {
@@ -180,14 +164,9 @@ function sourceLabel(config: DatabaseConfig): string {
 	}
 }
 
-function sortLabel(
-	sort: DatabaseSort | undefined,
-	columns: DatabaseColumn[],
-): string {
+function sortLabel(sort: DatabaseSort | undefined, columns: DatabaseColumn[]): string {
 	if (!sort) return "None";
-	return (
-		columns.find((column) => column.id === sort.column_id)?.label ?? "Sort"
-	);
+	return columns.find((column) => column.id === sort.column_id)?.label ?? "Sort";
 }
 
 function OptionMenuRow({
@@ -208,11 +187,7 @@ function OptionMenuRow({
 	return (
 		<button
 			type="button"
-			className={cn(
-				"databaseViewOptionsRow",
-				active && "is-active",
-				danger && "is-danger",
-			)}
+			className={cn("databaseViewOptionsRow", active && "is-active", danger && "is-danger")}
 			onClick={onClick}
 		>
 			<span className="databaseViewOptionsRowIcon">{icon}</span>
@@ -278,59 +253,49 @@ export function DatabaseViewOptionsPopover({
 				enabled: columnsById.get(column.id)?.visible ?? false,
 			});
 		}
-		const orderById = new Map(
-			config.columns.map((column, index) => [column.id, index]),
-		);
+		const orderById = new Map(config.columns.map((column, index) => [column.id, index]));
 		return [...entries.values()].sort((left, right) => {
 			const leftOrder = orderById.get(left.column.id);
 			const rightOrder = orderById.get(right.column.id);
 			if (left.enabled !== right.enabled) return left.enabled ? -1 : 1;
-			if (leftOrder != null && rightOrder != null)
-				return leftOrder - rightOrder;
+			if (leftOrder != null && rightOrder != null) return leftOrder - rightOrder;
 			if (leftOrder != null) return -1;
 			if (rightOrder != null) return 1;
 			return left.column.label.localeCompare(right.column.label);
 		});
 	}, [columnsById, config.columns, resolvedColumns]);
 
-	const deriveFilterUiKeys = useCallback(
-		(filters: DatabaseFilter[], preferredKeys?: string[]) => {
-			const nextEntries = (() => {
-				if (preferredKeys && preferredKeys.length === filters.length) {
-					return filters.map((filter, index) => ({
-						key:
-							preferredKeys[index] ?? `filter-${filterKeyCounterRef.current++}`,
-						signature: filterSignature(filter),
-					}));
-				}
-				const availableKeysBySignature = new Map<string, string[]>();
-				for (const entry of previousFilterKeyEntriesRef.current) {
-					const bucket = availableKeysBySignature.get(entry.signature);
-					if (bucket) bucket.push(entry.key);
-					else availableKeysBySignature.set(entry.signature, [entry.key]);
-				}
-				return filters.map((filter) => {
-					const signature = filterSignature(filter);
-					const bucket = availableKeysBySignature.get(signature);
-					return {
-						key: bucket?.shift() ?? `filter-${filterKeyCounterRef.current++}`,
-						signature,
-					};
-				});
-			})();
-			previousFilterKeyEntriesRef.current = nextEntries;
-			return nextEntries.map((entry) => entry.key);
-		},
-		[],
-	);
-	const filterSyncSignature = config.filters
-		.map(filterSignature)
-		.join("\u0001");
+	const deriveFilterUiKeys = useCallback((filters: DatabaseFilter[], preferredKeys?: string[]) => {
+		const nextEntries = (() => {
+			if (preferredKeys && preferredKeys.length === filters.length) {
+				return filters.map((filter, index) => ({
+					key: preferredKeys[index] ?? `filter-${filterKeyCounterRef.current++}`,
+					signature: filterSignature(filter),
+				}));
+			}
+			const availableKeysBySignature = new Map<string, string[]>();
+			for (const entry of previousFilterKeyEntriesRef.current) {
+				const bucket = availableKeysBySignature.get(entry.signature);
+				if (bucket) bucket.push(entry.key);
+				else availableKeysBySignature.set(entry.signature, [entry.key]);
+			}
+			return filters.map((filter) => {
+				const signature = filterSignature(filter);
+				const bucket = availableKeysBySignature.get(signature);
+				return {
+					key: bucket?.shift() ?? `filter-${filterKeyCounterRef.current++}`,
+					signature,
+				};
+			});
+		})();
+		previousFilterKeyEntriesRef.current = nextEntries;
+		return nextEntries.map((entry) => entry.key);
+	}, []);
+	const filterSyncSignature = config.filters.map(filterSignature).join("\u0001");
 	const [filterUiKeys, setFilterUiKeys] = useState<string[]>(() =>
 		deriveFilterUiKeys(config.filters),
 	);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: filterSyncSignature intentionally gates filter array reference churn.
 	useEffect(() => {
 		setFilterUiKeys(deriveFilterUiKeys(filtersRef.current));
 	}, [deriveFilterUiKeys, filterSyncSignature]);
@@ -347,9 +312,7 @@ export function DatabaseViewOptionsPopover({
 				return false;
 			});
 
-	const updateColumns = async (
-		updater: (columns: DatabaseColumn[]) => DatabaseColumn[],
-	) => {
+	const updateColumns = async (updater: (columns: DatabaseColumn[]) => DatabaseColumn[]) => {
 		await updateConfig({ ...config, columns: updater(config.columns) });
 	};
 
@@ -357,17 +320,12 @@ export function DatabaseViewOptionsPopover({
 		const existing = columnsById.get(column.id);
 		if (existing) {
 			await updateColumns((columns) =>
-				columns.map((entry) =>
-					entry.id === column.id ? { ...entry, visible: enabled } : entry,
-				),
+				columns.map((entry) => (entry.id === column.id ? { ...entry, visible: enabled } : entry)),
 			);
 			return;
 		}
 		if (enabled) {
-			await updateColumns((columns) => [
-				...columns,
-				{ ...column, visible: true },
-			]);
+			await updateColumns((columns) => [...columns, { ...column, visible: true }]);
 		}
 	};
 
@@ -397,9 +355,7 @@ export function DatabaseViewOptionsPopover({
 	const changeFilterColumn = (index: number, column: DatabaseColumn | null) => {
 		void updateFilters(
 			(filters) =>
-				filters.map((entry, i) =>
-					i === index ? nextFilterForColumn(entry, column) : entry,
-				),
+				filters.map((entry, i) => (i === index ? nextFilterForColumn(entry, column) : entry)),
 			undefined,
 			column ? ensureDatabaseColumn(config.columns, column) : config.columns,
 		);
@@ -419,9 +375,7 @@ export function DatabaseViewOptionsPopover({
 	};
 
 	const defaultFilterColumn =
-		resolvedColumns.find((column) => column.visible) ??
-		resolvedColumns[0] ??
-		null;
+		resolvedColumns.find((column) => column.visible) ?? resolvedColumns[0] ?? null;
 	const activeSort = config.sorts[0] ?? null;
 	const sortColumn =
 		resolvedColumns.find((column) => column.id === activeSort?.column_id) ??
@@ -433,21 +387,14 @@ export function DatabaseViewOptionsPopover({
 	const setSort = (patch: Partial<DatabaseSort>) => {
 		if (!sortColumn && !patch.column_id) return;
 		const nextColumn = patch.column_id
-			? (resolvedColumns.find((column) => column.id === patch.column_id) ??
-				null)
+			? (resolvedColumns.find((column) => column.id === patch.column_id) ?? null)
 			: sortColumn;
 		void updateConfig({
 			...config,
-			columns: nextColumn
-				? ensureDatabaseColumn(config.columns, nextColumn)
-				: config.columns,
+			columns: nextColumn ? ensureDatabaseColumn(config.columns, nextColumn) : config.columns,
 			sorts: [
 				{
-					column_id:
-						patch.column_id ??
-						activeSort?.column_id ??
-						sortColumn?.id ??
-						"title",
+					column_id: patch.column_id ?? activeSort?.column_id ?? sortColumn?.id ?? "title",
 					direction: patch.direction ?? activeSort?.direction ?? "asc",
 				},
 			],
@@ -567,9 +514,7 @@ export function DatabaseViewOptionsPopover({
 					/>
 				) : null}
 				<section className="databaseViewOptionsMenu" aria-label="View settings">
-					{configError ? (
-						<div className="databaseViewPanelError">{configError}</div>
-					) : null}
+					{configError ? <div className="databaseViewPanelError">{configError}</div> : null}
 					<OptionMenuRow
 						icon={<Search size="var(--icon-lg)" />}
 						label="Source"
@@ -589,11 +534,7 @@ export function DatabaseViewOptionsPopover({
 					<OptionMenuRow
 						icon={<HugeiconsIcon icon={FilterMailIcon} size="var(--icon-lg)" />}
 						label="Filter by"
-						value={
-							config.filters.length > 0
-								? `${config.filters.length} applied`
-								: "None"
-						}
+						value={config.filters.length > 0 ? `${config.filters.length} applied` : "None"}
 						active={activePanel === "filters"}
 						onClick={() => togglePanel("filters")}
 					/>
@@ -613,11 +554,7 @@ export function DatabaseViewOptionsPopover({
 							onClick={() => togglePanel("card_fields")}
 						/>
 					) : null}
-					<button
-						type="button"
-						className="databaseViewRestoreButton"
-						onClick={resetViewOptions}
-					>
+					<button type="button" className="databaseViewRestoreButton" onClick={resetViewOptions}>
 						<RefreshCw size="var(--icon-lg)" aria-hidden="true" />
 						Restore defaults
 					</button>

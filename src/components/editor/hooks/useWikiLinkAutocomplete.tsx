@@ -78,11 +78,7 @@ export function useWikiLinkAutocomplete({
 		[inputRef, onChange],
 	);
 	const handleSelect = useCallback(
-		(
-			item: EditorLinkSuggestion,
-			range: SuggestionRange,
-			cause: SuggestionSelectCause,
-		) => {
+		(item: EditorLinkSuggestion, range: SuggestionRange, cause: SuggestionSelectCause) => {
 			if (onSelectItem) {
 				onSelectItem(item);
 				return;
@@ -90,12 +86,8 @@ export function useWikiLinkAutocomplete({
 			const opening = wikiLinkOpening(value, range.from);
 			const replaceFrom = opening === "![[" ? range.from - 1 : range.from;
 			const commit = cause !== "tab" || item.kind === "heading";
-			const markdown = commit
-				? `${opening}${item.insertText}]]`
-				: `${opening}${item.insertText}`;
-			const nextValue = `${value.slice(0, replaceFrom)}${markdown}${value.slice(
-				range.to,
-			)}`;
+			const markdown = commit ? `${opening}${item.insertText}]]` : `${opening}${item.insertText}`;
+			const nextValue = `${value.slice(0, replaceFrom)}${markdown}${value.slice(range.to)}`;
 			applyMarkdown(nextValue, replaceFrom + markdown.length);
 		},
 		[applyMarkdown, onSelectItem, value],
@@ -134,10 +126,7 @@ export function WikiLinkSuggestionList({
 							: `${item.kind}:${item.path}`
 					}
 					type="button"
-					className={[
-						"wikiLinkSuggestionItem",
-						index === activeIndex ? "active" : "",
-					]
+					className={["wikiLinkSuggestionItem", index === activeIndex ? "active" : ""]
 						.filter(Boolean)
 						.join(" ")}
 					onMouseDown={(event) => {

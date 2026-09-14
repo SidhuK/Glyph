@@ -10,9 +10,7 @@ export function onWindowDragMouseDown(event: MouseEvent<HTMLElement>): void {
 
 	const target = event.target;
 	if (target instanceof Element) {
-		const interactiveAncestor = target.closest(
-			WINDOW_DRAG_INTERACTIVE_SELECTOR,
-		);
+		const interactiveAncestor = target.closest(WINDOW_DRAG_INTERACTIVE_SELECTOR);
 		if (interactiveAncestor) return;
 	}
 

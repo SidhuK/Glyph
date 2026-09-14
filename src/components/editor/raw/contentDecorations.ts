@@ -14,11 +14,7 @@ const FRONTMATTER_SCAN_LIMIT = 500;
 function isCodePosition(view: EditorView, position: number): boolean {
 	let node = syntaxTree(view.state).resolveInner(position, 1);
 	while (true) {
-		if (
-			node.name === "FencedCode" ||
-			node.name === "CodeBlock" ||
-			node.name === "InlineCode"
-		) {
+		if (node.name === "FencedCode" || node.name === "CodeBlock" || node.name === "InlineCode") {
 			return true;
 		}
 		const parent = node.parent;
@@ -40,9 +36,7 @@ function addPatternDecorations(
 		if (match.index === undefined) continue;
 		const from = lineFrom + match.index;
 		if (isCodePosition(view, from)) continue;
-		ranges.push(
-			Decoration.mark({ class: className }).range(from, from + match[0].length),
-		);
+		ranges.push(Decoration.mark({ class: className }).range(from, from + match[0].length));
 	}
 }
 
@@ -102,14 +96,7 @@ export function addGlyphInlineDecorations(
 			),
 		);
 	}
-	addPatternDecorations(
-		ranges,
-		view,
-		lineFrom,
-		text,
-		COMMENT_PATTERN,
-		"cm-raw-comment",
-	);
+	addPatternDecorations(ranges, view, lineFrom, text, COMMENT_PATTERN, "cm-raw-comment");
 	FOOTNOTE_PATTERN.lastIndex = 0;
 	for (const match of text.matchAll(FOOTNOTE_PATTERN)) {
 		if (match.index === undefined || !match[1]) continue;
@@ -132,10 +119,7 @@ export function addGlyphInlineDecorations(
 		const from = lineFrom + text.lastIndexOf(blockIdMatch[1]);
 		if (!isCodePosition(view, from)) {
 			ranges.push(
-				Decoration.mark({ class: "cm-raw-block-id" }).range(
-					from,
-					from + blockIdMatch[1].length,
-				),
+				Decoration.mark({ class: "cm-raw-block-id" }).range(from, from + blockIdMatch[1].length),
 			);
 		}
 	}

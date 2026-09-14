@@ -4,21 +4,9 @@
 
 .settingsTabPanel {
 	--settings-surface: var(--bg-tertiary);
-	--settings-surface-soft: color-mix(
-		in srgb,
-		var(--bg-tertiary) 58%,
-		transparent
-	);
-	--settings-control-surface: color-mix(
-		in srgb,
-		var(--bg-primary) 90%,
-		var(--bg-tertiary)
-	);
-	--settings-control-surface-strong: color-mix(
-		in srgb,
-		var(--bg-primary) 94%,
-		var(--bg-tertiary)
-	);
+	--settings-surface-soft: color-mix(in srgb, var(--bg-tertiary) 58%, transparent);
+	--settings-control-surface: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-tertiary));
+	--settings-control-surface-strong: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-tertiary));
 }
 
 .settingsSidebarBackRow {
@@ -65,8 +53,10 @@
 	font-size: var(--text-sm);
 	line-height: 1;
 	outline: none;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		border-color var(--transition-fast),
+		color var(--transition-fast);
 	cursor: text;
 }
 
@@ -184,14 +174,11 @@
 
 .settingsField.settingsSearchTarget,
 .settingsSection.settingsSearchTarget .settingsCard {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 34%,
-		var(--border-default)
-	);
+	border-color: color-mix(in srgb, var(--interactive-accent) 34%, var(--border-default));
 	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
-	transition: background var(--transition-base), border-color
-		var(--transition-base);
+	transition:
+		background var(--transition-base),
+		border-color var(--transition-base);
 }
 
 .settingsSidebarTabs {
@@ -223,20 +210,16 @@
 	padding: 12px;
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-tertiary) 68%, transparent);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--border-default) 58%, transparent), 0 1px 2px
-		color-mix(in srgb, var(--text-primary) 3%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--border-default) 58%, transparent),
+		0 1px 2px color-mix(in srgb, var(--text-primary) 3%, transparent);
 }
 
 .settingsFeedbackCardCommunity {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 5%,
-		var(--bg-tertiary) 68%
-	);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 14%, var(--border-default)), 0
-		1px 2px color-mix(in srgb, var(--text-primary) 3%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 5%, var(--bg-tertiary) 68%);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 14%, var(--border-default)),
+		0 1px 2px color-mix(in srgb, var(--text-primary) 3%, transparent);
 }
 
 .settingsFeedbackBadge {
@@ -255,11 +238,7 @@
 .settingsFeedbackCardCommunity .settingsFeedbackBadge {
 	border-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
-	color: color-mix(
-		in srgb,
-		var(--interactive-accent) 62%,
-		var(--text-secondary)
-	);
+	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-secondary));
 }
 
 .settingsFeedbackTitle {
@@ -297,11 +276,7 @@
 }
 
 .settingsFeedbackActionCommunity {
-	color: color-mix(
-		in srgb,
-		var(--interactive-accent) 58%,
-		var(--text-secondary)
-	);
+	color: color-mix(in srgb, var(--interactive-accent) 58%, var(--text-secondary));
 }
 
 .settingsFeedbackActionCommunity:hover {
@@ -328,8 +303,10 @@
 	line-height: 1;
 	border: 1px solid transparent;
 	border-radius: var(--radius-8);
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		border-color var(--transition-fast),
+		color var(--transition-fast);
 }
 
 .settingsTabIcon {
@@ -441,8 +418,7 @@
 }
 
 .settingsSearchTarget {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 44%, transparent);
 	outline-offset: 3px;
 }
 

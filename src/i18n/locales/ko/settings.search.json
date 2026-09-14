@@ -62,13 +62,7 @@
 		"general-license": {
 			"title": "License",
 			"description": "Trial status, license key, activation, and official build.",
-			"keywords": [
-				"trial",
-				"activate",
-				"activation",
-				"subscription",
-				"purchase"
-			]
+			"keywords": ["trial", "activate", "activation", "subscription", "purchase"]
 		},
 		"general-trial-status": {
 			"title": "Trial status",
@@ -116,32 +110,13 @@
 			"title": "날짜 형식",
 			"section": "날짜 및 시간",
 			"description": "Glyph 전체에서 완전한 날짜가 표시되는 방식을 선택합니다.",
-			"keywords": [
-				"날짜",
-				"형식",
-				"달력",
-				"US",
-				"European",
-				"Friendly",
-				"ISO",
-				"표시"
-			]
+			"keywords": ["날짜", "형식", "달력", "US", "European", "Friendly", "ISO", "표시"]
 		},
 		"general-resume-last-session": {
 			"title": "이전 탭 열기",
 			"section": "시작",
 			"description": "열어 두었던 탭으로 이 스페이스를 시작합니다.",
-			"keywords": [
-				"복원",
-				"시작",
-				"실행",
-				"이어서",
-				"탭",
-				"세션",
-				"restore",
-				"startup",
-				"tabs"
-			]
+			"keywords": ["복원", "시작", "실행", "이어서", "탭", "세션", "restore", "startup", "tabs"]
 		},
 		"general-keep-running-on-close": {
 			"title": "마지막 창을 닫아도 Glyph 계속 실행",
@@ -153,31 +128,13 @@
 			"title": "사이드바",
 			"section": "모양",
 			"description": "표시할 탐색 항목과 순서를 설정합니다.",
-			"keywords": [
-				"사이드바",
-				"탐색",
-				"표시",
-				"숨기기",
-				"캘린더",
-				"검색",
-				"템플릿",
-				"Git 동기화"
-			]
+			"keywords": ["사이드바", "탐색", "표시", "숨기기", "캘린더", "검색", "템플릿", "Git 동기화"]
 		},
 		"appearance-theme-mode": {
 			"title": "테마 선택",
 			"section": "테마",
 			"description": "시스템, 라이트 또는 다크 모드를 선택합니다.",
-			"keywords": [
-				"모드",
-				"시스템",
-				"라이트",
-				"다크",
-				"mode",
-				"system",
-				"light",
-				"dark"
-			]
+			"keywords": ["모드", "시스템", "라이트", "다크", "mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
 			"title": "라이트",
@@ -194,16 +151,7 @@
 		"appearance-translucent-app": {
 			"title": "반투명 사이드바",
 			"section": "테마",
-			"keywords": [
-				"창",
-				"유리",
-				"블러",
-				"반투명",
-				"window",
-				"glass",
-				"blur",
-				"translucent"
-			]
+			"keywords": ["창", "유리", "블러", "반투명", "window", "glass", "blur", "translucent"]
 		},
 		"appearance-custom-themes": {
 			"title": "테마 가져오기",
@@ -224,16 +172,7 @@
 		"appearance-editor-font": {
 			"title": "편집기 글꼴",
 			"section": "타이포그래피",
-			"keywords": [
-				"글꼴",
-				"편집기",
-				"노트",
-				"산문",
-				"font",
-				"editor",
-				"notes",
-				"prose"
-			]
+			"keywords": ["글꼴", "편집기", "노트", "산문", "font", "editor", "notes", "prose"]
 		},
 		"appearance-ui-font-size": {
 			"title": "UI 글꼴 크기",
@@ -501,14 +440,7 @@
 		"general-editor-frontmatter": {
 			"title": "편집기에서 frontmatter 표시",
 			"section": "편집기",
-			"keywords": [
-				"속성",
-				"yaml",
-				"메타데이터",
-				"properties",
-				"metadata",
-				"frontmatter"
-			]
+			"keywords": ["속성", "yaml", "메타데이터", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "컬러풀 제목",
@@ -612,28 +544,12 @@
 		"general-file-tree-sort": {
 			"title": "파일 트리 정렬",
 			"section": "파일 트리",
-			"keywords": [
-				"사이드바",
-				"폴더",
-				"파일",
-				"순서",
-				"sidebar",
-				"folders",
-				"files",
-				"order"
-			]
+			"keywords": ["사이드바", "폴더", "파일", "순서", "sidebar", "folders", "files", "order"]
 		},
 		"appearance-database-column-color": {
 			"title": "데이터베이스 열 색상 표시",
 			"section": "데이터베이스",
-			"keywords": [
-				"컬렉션",
-				"데이터베이스",
-				"색상",
-				"collection",
-				"database",
-				"color"
-			]
+			"keywords": ["컬렉션", "데이터베이스", "색상", "collection", "database", "color"]
 		},
 		"about-app": {
 			"title": "Glyph",

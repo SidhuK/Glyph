@@ -1,19 +1,13 @@
 import { useTranslation } from "react-i18next";
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { Input } from "../../ui/shadcn/input";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "../SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "../SettingsScaffold";
 import { SettingsSelect } from "../SettingsSelect";
 import { AiConnectionPicker } from "./AiConnectionPicker";
 import { AiModelCombobox } from "./AiModelCombobox";
 
 function usesReasoningControl(provider: AiProviderKind): boolean {
-	return (
-		provider === "codex_chatgpt" || provider === "pi" || provider === "grok"
-	);
+	return provider === "codex_chatgpt" || provider === "pi" || provider === "grok";
 }
 
 interface AiProviderSectionProps {
@@ -36,8 +30,7 @@ export function AiProviderSection({
 	onPersistDraft,
 }: AiProviderSectionProps) {
 	const { t } = useTranslation("settings.ai");
-	const selectedModel =
-		availableModels?.find((model) => model.id === profileDraft.model) ?? null;
+	const selectedModel = availableModels?.find((model) => model.id === profileDraft.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
 	const shouldShowReasoningSelect = usesReasoningControl(profileDraft.provider);
 	const baseUrlPlaceholder =
@@ -50,10 +43,7 @@ export function AiProviderSection({
 			title={t("connection.sectionTitle")}
 			description={t("connection.sectionDescription")}
 		>
-			<AiConnectionPicker
-				provider={profileDraft.provider}
-				onProviderChange={onProviderChange}
-			/>
+			<AiConnectionPicker provider={profileDraft.provider} onProviderChange={onProviderChange} />
 
 			<SettingsRow
 				label="Model"
@@ -67,9 +57,7 @@ export function AiProviderSection({
 					value={profileDraft.model}
 					secretConfigured={secretConfigured}
 					onChange={(nextModelId) => {
-						const nextModel =
-							availableModels?.find((entry) => entry.id === nextModelId) ??
-							null;
+						const nextModel = availableModels?.find((entry) => entry.id === nextModelId) ?? null;
 						const currentEffort = profileDraft.reasoning_effort ?? null;
 						const stillValid = !!nextModel?.reasoning_effort?.some(
 							(option) => option.effort === currentEffort,
@@ -88,9 +76,7 @@ export function AiProviderSection({
 				/>
 			</SettingsRow>
 
-			{["codex_chatgpt", "claude_code", "cursor", "opencode"].includes(
-				profileDraft.provider,
-			) ? (
+			{["codex_chatgpt", "claude_code", "cursor", "opencode"].includes(profileDraft.provider) ? (
 				<SettingsRow
 					label={t("chatNaming.label")}
 					searchId="ai-chat-naming-model"
@@ -109,9 +95,7 @@ export function AiProviderSection({
 					>
 						<option value="">{t("chatNaming.sameModel")}</option>
 						{profileDraft.chat_naming_model &&
-						!availableModels?.some(
-							(model) => model.id === profileDraft.chat_naming_model,
-						) ? (
+						!availableModels?.some((model) => model.id === profileDraft.chat_naming_model) ? (
 							<option value={profileDraft.chat_naming_model}>
 								{profileDraft.chat_naming_model}
 							</option>
@@ -149,9 +133,7 @@ export function AiProviderSection({
 						>
 							{reasoningOptions?.map((option) => (
 								<option key={option.effort} value={option.effort}>
-									{option.description
-										? `${option.effort} - ${option.description}`
-										: option.effort}
+									{option.description ? `${option.effort} - ${option.description}` : option.effort}
 								</option>
 							))}
 						</SettingsSelect>
@@ -175,16 +157,14 @@ export function AiProviderSection({
 								}
 							/>
 							<div className="settingsHint">
-								This model did not publish reasoning options; enter effort
-								manually.
+								This model did not publish reasoning options; enter effort manually.
 							</div>
 						</div>
 					)}
 				</SettingsRow>
 			) : null}
 
-			{profileDraft.provider === "openai_compat" ||
-			profileDraft.provider === "llama_cpp" ? (
+			{profileDraft.provider === "openai_compat" || profileDraft.provider === "llama_cpp" ? (
 				<SettingsRow
 					label="Base URL"
 					htmlFor="aiBaseUrl"
@@ -214,8 +194,7 @@ export function AiProviderSection({
 				</SettingsRow>
 			) : null}
 
-			{profileDraft.provider === "openai_compat" ||
-			profileDraft.provider === "llama_cpp" ? (
+			{profileDraft.provider === "openai_compat" || profileDraft.provider === "llama_cpp" ? (
 				<SettingsRow
 					label="Allow local network"
 					description={

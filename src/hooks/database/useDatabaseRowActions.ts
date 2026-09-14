@@ -25,10 +25,7 @@ export interface UseDatabaseRowActionsOptions extends PaneErrorHandlers {
 	document: WorkspaceDatabaseDocument | null;
 	selectedViewId: string | null;
 	activeColumns: DatabaseColumn[];
-	onRenameNotePath?: (
-		notePath: string,
-		nextName: string,
-	) => Promise<string | null>;
+	onRenameNotePath?: (notePath: string, nextName: string) => Promise<string | null>;
 	setRows: Dispatch<SetStateAction<DatabaseRow[]>>;
 	setSelectedRowPath: Dispatch<SetStateAction<string | null>>;
 }
@@ -44,11 +41,7 @@ export function useDatabaseRowActions({
 	clearError,
 }: UseDatabaseRowActionsOptions) {
 	const handleUpdateCell = useCallback(
-		async (
-			notePath: string,
-			column: DatabaseColumn,
-			value: DatabaseCellValue,
-		) => {
+		async (notePath: string, column: DatabaseColumn, value: DatabaseCellValue) => {
 			try {
 				const updatedRow = await invoke("databases_update_cell", {
 					note_path: notePath,
@@ -57,9 +50,7 @@ export function useDatabaseRowActions({
 				});
 				clearError();
 				setRows((current) => {
-					const existingIndex = current.findIndex(
-						(row) => row.note_path === notePath,
-					);
+					const existingIndex = current.findIndex((row) => row.note_path === notePath);
 					if (existingIndex === -1) {
 						return [...current, updatedRow];
 					}
@@ -82,9 +73,7 @@ export function useDatabaseRowActions({
 		async (notePath: string, nextTitle: string): Promise<boolean> => {
 			const title = nextTitle.trim();
 			if (!title) return false;
-			const titleColumn = activeColumns.find(
-				(column) => column.type === "title",
-			);
+			const titleColumn = activeColumns.find((column) => column.type === "title");
 			if (!titleColumn) return false;
 			const originalName = notePath.split("/").pop()?.trim() || "Untitled.md";
 			let renamedPath: string | null = null;
@@ -102,12 +91,8 @@ export function useDatabaseRowActions({
 					value_list: [],
 				});
 				if (renamedPath && renamedPath !== notePath) {
-					setRows((current) =>
-						current.filter((row) => row.note_path !== notePath),
-					);
-					setSelectedRowPath((current) =>
-						current === notePath ? renamedPath : current,
-					);
+					setRows((current) => current.filter((row) => row.note_path !== notePath));
+					setSelectedRowPath((current) => (current === notePath ? renamedPath : current));
 				}
 				return true;
 			} catch (cause) {
@@ -122,25 +107,14 @@ export function useDatabaseRowActions({
 				return false;
 			}
 		},
-		[
-			activeColumns,
-			handleUpdateCell,
-			onRenameNotePath,
-			setError,
-			setRows,
-			setSelectedRowPath,
-		],
+		[activeColumns, handleUpdateCell, onRenameNotePath, setError, setRows, setSelectedRowPath],
 	);
 
 	const handleCreateRow = useCallback(
-		async (
-			initialValue?: { column: DatabaseColumn; laneId: string } | null,
-		) => {
+		async (initialValue?: { column: DatabaseColumn; laneId: string } | null) => {
 			if (!document) return;
 			const createdValue =
-				initialValue != null
-					? boardCreateValue(initialValue.column, initialValue.laneId)
-					: null;
+				initialValue != null ? boardCreateValue(initialValue.column, initialValue.laneId) : null;
 			const initialValues: DatabaseCreateRowInitialValue[] =
 				initialValue != null && createdValue != null
 					? [{ column: initialValue.column, value: createdValue }]
@@ -155,9 +129,7 @@ export function useDatabaseRowActions({
 				setSelectedRowPath(created.note_path);
 				setRows((current) =>
 					current.some((row) => row.note_path === created.note_path)
-						? current.map((row) =>
-								row.note_path === created.note_path ? created.row : row,
-							)
+						? current.map((row) => (row.note_path === created.note_path ? created.row : row))
 						: [created.row, ...current],
 				);
 			} catch (cause) {

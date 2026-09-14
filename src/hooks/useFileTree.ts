@@ -20,18 +20,12 @@ export interface UseFileTreeResult {
 	openFile: (relPath: string) => Promise<void>;
 	openMarkdownFile: (relPath: string) => Promise<void>;
 	openNonMarkdownExternally: (relPath: string) => Promise<void>;
-	createMarkdownFileAtPath: (
-		options: CreateMarkdownFileOptions,
-	) => Promise<string | null>;
+	createMarkdownFileAtPath: (options: CreateMarkdownFileOptions) => Promise<string | null>;
 	onNewFile: () => Promise<string | null>;
 	onNewFileInDir: (dirPath: string) => Promise<string | null>;
 	requestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
-	onRenameDir: (
-		path: string,
-		nextName: string,
-		kind: "dir" | "file",
-	) => Promise<string | null>;
+	onRenameDir: (path: string, nextName: string, kind: "dir" | "file") => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onMovePath: (
 		fromPath: string,
@@ -46,16 +40,10 @@ interface UseFileTreeDeps {
 	updateChildrenByDir: (
 		next:
 			| Record<string, FsEntry[] | undefined>
-			| ((
-					prev: Record<string, FsEntry[] | undefined>,
-			  ) => Record<string, FsEntry[] | undefined>),
+			| ((prev: Record<string, FsEntry[] | undefined>) => Record<string, FsEntry[] | undefined>),
 	) => void;
-	updateExpandedDirs: (
-		next: Set<string> | ((prev: Set<string>) => Set<string>),
-	) => void;
-	updateRootEntries: (
-		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
-	) => void;
+	updateExpandedDirs: (next: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+	updateRootEntries: (next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[])) => void;
 	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
 	deleteItemAppearance: (path: string) => Promise<void>;
 	setActiveFilePath: (path: string | null) => void;
@@ -129,11 +117,9 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return changed ? next : prev;
 			});
 			loadedDirsRef.current = new Set(
-				[...loadedDirsRef.current].filter(
-					(key) => !key.startsWith(`${dirPath}/`),
-				),
+				Array.from(loadedDirsRef.current).filter((key) => !key.startsWith(`${dirPath}/`)),
 			);
-			for (const key of [...loadRequestVersionRef.current.keys()]) {
+			for (const key of loadRequestVersionRef.current.keys()) {
 				if (key.startsWith(`${dirPath}/`)) {
 					loadRequestVersionRef.current.delete(key);
 				}
@@ -148,10 +134,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			if (!force && loadedDirsRef.current.has(dirPath)) return;
 			const nextVersion = (loadRequestVersionRef.current.get(dirPath) ?? 0) + 1;
 			loadRequestVersionRef.current.set(dirPath, nextVersion);
-			const entries = await invoke(
-				"space_list_dir",
-				dirPath ? { dir: dirPath } : {},
-			);
+			const entries = await invoke("space_list_dir", dirPath ? { dir: dirPath } : {});
 			if (loadRequestVersionRef.current.get(dirPath) !== nextVersion) return;
 			const normalizedEntries = normalizeEntries(entries);
 			if (dirPath) {
@@ -215,9 +198,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				if (dirPath) {
 					nextChildrenByDir[dirPath] = entries;
 				} else {
-					updateRootEntries((prev) =>
-						areEntriesEqual(prev, entries) ? prev : entries,
-					);
+					updateRootEntries((prev) => (areEntriesEqual(prev, entries) ? prev : entries));
 				}
 
 				for (const entry of entries) {
@@ -234,13 +215,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		} catch (error) {
 			setError(extractErrorMessage(error));
 		}
-	}, [
-		spacePath,
-		setError,
-		updateChildrenByDir,
-		updateExpandedDirsAndRef,
-		updateRootEntries,
-	]);
+	}, [spacePath, setError, updateChildrenByDir, updateExpandedDirsAndRef, updateRootEntries]);
 
 	const collapseAllDirs = useCallback(() => {
 		updateExpandedDirsAndRef(new Set());

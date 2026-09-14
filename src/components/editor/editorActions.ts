@@ -1,10 +1,6 @@
 import type { Editor, JSONContent } from "@tiptap/core";
 import { createDetailsBlockContent } from "./extensions/detailsBlock";
-import {
-	EDITOR_TEXT_COLORS,
-	type EditorTextColor,
-	isEditorTextColor,
-} from "./textColors";
+import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "./textColors";
 import {
 	EDITOR_TEXT_HIGHLIGHTS,
 	type EditorTextHighlight,
@@ -52,9 +48,7 @@ export type EditorActionId =
 
 export const EDITOR_ACTIONS: EditorActionId[] = [
 	...BASE_EDITOR_ACTION_IDS,
-	...EDITOR_TEXT_COLORS.map<`color_${EditorTextColor}`>(
-		(color) => `color_${color.id}`,
-	),
+	...EDITOR_TEXT_COLORS.map<`color_${EditorTextColor}`>((color) => `color_${color.id}`),
 	...EDITOR_TEXT_HIGHLIGHTS.map<`highlight_${EditorTextHighlight}`>(
 		(highlight) => `highlight_${highlight.id}`,
 	),
@@ -132,9 +126,7 @@ export function executeEditorAction({
 				.insertContent({
 					type: "codeBlock",
 					attrs: { language: "mermaid" },
-					content: [
-						{ type: "text", text: "flowchart TD\n  A[Start] --> B[End]" },
-					],
+					content: [{ type: "text", text: "flowchart TD\n  A[Start] --> B[End]" }],
 				})
 				.run();
 		case "table":
@@ -148,9 +140,7 @@ export function executeEditorAction({
 		case "callout_error":
 		case "callout_success":
 		case "callout_tip":
-			return chain
-				.insertContent(createCalloutContent(action.slice("callout_".length)))
-				.run();
+			return chain.insertContent(createCalloutContent(action.slice("callout_".length))).run();
 		case "extract_selection_to_note":
 			onTriggerExtractToNote?.();
 			return true;
@@ -161,9 +151,7 @@ export function executeEditorAction({
 			const linkAttrs = editor.getAttributes("link");
 			onOpenLinkDialog?.(
 				typeof linkAttrs.href === "string" ? linkAttrs.href : "",
-				typeof linkAttrs.target === "string" && linkAttrs.target === "_blank"
-					? "_blank"
-					: "_self",
+				typeof linkAttrs.target === "string" && linkAttrs.target === "_blank" ? "_blank" : "_self",
 			);
 			return true;
 		}
@@ -180,10 +168,7 @@ export function executeEditorAction({
 			}
 			if (action.startsWith("highlight_")) {
 				const highlight = action.slice("highlight_".length);
-				return (
-					isEditorTextHighlight(highlight) &&
-					chain.setTextHighlight(highlight).run()
-				);
+				return isEditorTextHighlight(highlight) && chain.setTextHighlight(highlight).run();
 			}
 			return false;
 		}

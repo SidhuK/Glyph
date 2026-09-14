@@ -20,10 +20,7 @@ import {
 	WikiLinkSuggestionList,
 	useWikiLinkAutocomplete,
 } from "../editor/hooks/useWikiLinkAutocomplete";
-import {
-	normalizeTagDraftPrefix,
-	normalizeTagToken,
-} from "../editor/noteProperties/utils";
+import { normalizeTagDraftPrefix, normalizeTagToken } from "../editor/noteProperties/utils";
 import type { EditorTextColor } from "../editor/textColors";
 import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
 import { PropertyOptionPicker } from "../status/PropertyOptionPicker";
@@ -131,9 +128,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 			if (items.length > 0 && nextVisibleCount === 0) {
 				nextVisibleCount = 1;
 			}
-			setVisibleCount((current) =>
-				current === nextVisibleCount ? current : nextVisibleCount,
-			);
+			setVisibleCount((current) => (current === nextVisibleCount ? current : nextVisibleCount));
 		};
 
 		const observer = new ResizeObserver(() => {
@@ -167,9 +162,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 			<div ref={containerRef} className="databaseCellPills">
 				{visibleItems.map(renderPill)}
 				{hiddenCount > 0 ? (
-					<span className="databaseCellPill databaseCellPillMore">
-						+{hiddenCount}
-					</span>
+					<span className="databaseCellPill databaseCellPillMore">+{hiddenCount}</span>
 				) : null}
 			</div>
 			<div className="databaseCellPillsMeasure" aria-hidden="true">
@@ -225,17 +218,13 @@ function isListLikeColumn(column: DatabaseColumn): boolean {
 
 function supportsWikiLinkAutocomplete(column: DatabaseColumn): boolean {
 	return (
-		column.type === "property" &&
-		(column.property_kind == null || column.property_kind === "text")
+		column.type === "property" && (column.property_kind == null || column.property_kind === "text")
 	);
 }
 
 function normalizeLinkedNoteListValue(value: string): string {
 	const trimmed = value.trim();
-	const inner =
-		trimmed.startsWith("[[") && trimmed.endsWith("]]")
-			? trimmed.slice(2, -2)
-			: trimmed;
+	const inner = trimmed.startsWith("[[") && trimmed.endsWith("]]") ? trimmed.slice(2, -2) : trimmed;
 	const target = inner.split("|")[0]?.split("#")[0]?.trim();
 	return target ?? "";
 }
@@ -270,18 +259,9 @@ function DatabaseCellEditor({
 	onSave,
 	onClose,
 }: DatabaseCellEditorProps) {
-	const {
-		tags: availableTags,
-		beautifulTags,
-		tagAppearance,
-	} = useFileTreeContext();
-	const cellValue = useMemo(
-		() => databaseCellValueFromRow(row, column),
-		[column, row],
-	);
-	const [draft, setDraft] = useState(
-		() => cellValue.value_text ?? listDraft(row, column),
-	);
+	const { tags: availableTags, beautifulTags, tagAppearance } = useFileTreeContext();
+	const cellValue = useMemo(() => databaseCellValueFromRow(row, column), [column, row]);
+	const [draft, setDraft] = useState(() => cellValue.value_text ?? listDraft(row, column));
 	const [tagDraft, setTagDraft] = useState("");
 	const [valueDraft, setValueDraft] = useState("");
 	const [saveError, setSaveError] = useState("");
@@ -309,12 +289,9 @@ function DatabaseCellEditor({
 			element.select();
 		}
 	}, []);
-	const isTagsColumn =
-		column.type === "tags" || column.property_kind === "tags";
-	const isStatusColumn =
-		column.type === "property" && column.property_kind === "status";
-	const isPriorityColumn =
-		column.type === "property" && column.property_kind === "priority";
+	const isTagsColumn = column.type === "tags" || column.property_kind === "tags";
+	const isStatusColumn = column.type === "property" && column.property_kind === "status";
+	const isPriorityColumn = column.type === "property" && column.property_kind === "priority";
 	const isLinkedNotesColumn = column.type === "linked_notes";
 	const isListLike = isListLikeColumn(column);
 	const toneStyleForValue = (value: string) =>
@@ -330,11 +307,7 @@ function DatabaseCellEditor({
 		const suggestions = buildDatabaseTagPickerOptions(availableTags, tagDraft)
 			.filter(({ tag }) => {
 				const normalized = normalizeTagToken(tag);
-				if (
-					!normalized ||
-					selectedTags.has(normalized) ||
-					seenTags.has(normalized)
-				) {
+				if (!normalized || selectedTags.has(normalized) || seenTags.has(normalized)) {
 					return false;
 				}
 				seenTags.add(normalized);
@@ -345,11 +318,7 @@ function DatabaseCellEditor({
 			}));
 		for (const value of valueOptions) {
 			const normalized = normalizeTagToken(value);
-			if (
-				!normalized ||
-				selectedTags.has(normalized) ||
-				seenTags.has(normalized)
-			) {
+			if (!normalized || selectedTags.has(normalized) || seenTags.has(normalized)) {
 				continue;
 			}
 			if (query && !normalized.includes(query)) continue;
@@ -373,9 +342,7 @@ function DatabaseCellEditor({
 	const valueSuggestions = useMemo(() => {
 		if (!isListLike) return [];
 		const query = valueDraft.trim().toLowerCase();
-		const selected = new Set(
-			cellValue.value_list.map((value) => value.trim().toLowerCase()),
-		);
+		const selected = new Set(cellValue.value_list.map((value) => value.trim().toLowerCase()));
 		return uniqueValues(valueOptions)
 			.filter((value) => {
 				const key = value.trim().toLowerCase();
@@ -422,9 +389,7 @@ function DatabaseCellEditor({
 	const addTag = async (rawValue: string) => {
 		const nextTag = normalizeTagToken(rawValue);
 		if (!nextTag) return;
-		const currentTags = cellValue.value_list.map(
-			(value) => normalizeTagToken(value) ?? value,
-		);
+		const currentTags = cellValue.value_list.map((value) => normalizeTagToken(value) ?? value);
 		if (currentTags.includes(nextTag)) {
 			setTagDraft("");
 			return;
@@ -436,9 +401,7 @@ function DatabaseCellEditor({
 	const removeTag = async (tagToRemove: string) => {
 		const normalizedTag = normalizeTagToken(tagToRemove) ?? tagToRemove;
 		await saveTagList(
-			cellValue.value_list.filter(
-				(value) => (normalizeTagToken(value) ?? value) !== normalizedTag,
-			),
+			cellValue.value_list.filter((value) => (normalizeTagToken(value) ?? value) !== normalizedTag),
 		);
 	};
 
@@ -451,14 +414,10 @@ function DatabaseCellEditor({
 	};
 
 	const addListValue = async (rawValue: string) => {
-		const next = isLinkedNotesColumn
-			? normalizeLinkedNoteListValue(rawValue)
-			: rawValue.trim();
+		const next = isLinkedNotesColumn ? normalizeLinkedNoteListValue(rawValue) : rawValue.trim();
 		if (!next) return;
 		const currentValues = uniqueValues(cellValue.value_list);
-		const lowerCurrent = new Set(
-			currentValues.map((value) => value.trim().toLowerCase()),
-		);
+		const lowerCurrent = new Set(currentValues.map((value) => value.trim().toLowerCase()));
 		if (lowerCurrent.has(next.toLowerCase())) {
 			setValueDraft("");
 			return;
@@ -479,9 +438,7 @@ function DatabaseCellEditor({
 	const removeListValue = async (valueToRemove: string) => {
 		const normalized = valueToRemove.trim().toLowerCase();
 		await saveListValues(
-			cellValue.value_list.filter(
-				(value) => value.trim().toLowerCase() !== normalized,
-			),
+			cellValue.value_list.filter((value) => value.trim().toLowerCase() !== normalized),
 		);
 	};
 
@@ -521,9 +478,7 @@ function DatabaseCellEditor({
 					value_list: draft
 						.split(",")
 						.map((value) =>
-							isLinkedNotesColumn
-								? normalizeLinkedNoteListValue(value)
-								: value.trim(),
+							isLinkedNotesColumn ? normalizeLinkedNoteListValue(value) : value.trim(),
 						)
 						.filter(Boolean),
 				});
@@ -581,17 +536,12 @@ function DatabaseCellEditor({
 						type="text"
 						className="notePropertyTagInput"
 						value={tagDraft}
-						placeholder={
-							cellValue.value_list.length > 0 ? "" : "Add or choose a tag"
-						}
+						placeholder={cellValue.value_list.length > 0 ? "" : "Add or choose a tag"}
 						onFocus={handleSelectRow}
 						onChange={(event) => setTagDraft(event.target.value)}
 						onBlur={(event) => {
 							const relatedTarget = event.relatedTarget as Node | null;
-							if (
-								relatedTarget &&
-								tagFieldRef.current?.contains(relatedTarget)
-							) {
+							if (relatedTarget && tagFieldRef.current?.contains(relatedTarget)) {
 								return;
 							}
 							void (async () => {
@@ -625,8 +575,7 @@ function DatabaseCellEditor({
 							if (event.key !== "Backspace" || tagDraft.length > 0) {
 								return;
 							}
-							const lastTag =
-								cellValue.value_list[cellValue.value_list.length - 1];
+							const lastTag = cellValue.value_list[cellValue.value_list.length - 1];
 							if (!lastTag) return;
 							event.preventDefault();
 							void removeTag(lastTag).catch(handleTagSaveError);
@@ -647,10 +596,7 @@ function DatabaseCellEditor({
 										try {
 											await addTag(tag);
 										} catch (error) {
-											console.error(
-												"Failed to add suggested database tag",
-												error,
-											);
+											console.error("Failed to add suggested database tag", error);
 											setSaveError(extractErrorMessage(error));
 										}
 									}}
@@ -661,9 +607,7 @@ function DatabaseCellEditor({
 						</div>
 					</div>
 				) : null}
-				{saveError ? (
-					<div className="databaseCellError">{saveError}</div>
-				) : null}
+				{saveError ? <div className="databaseCellError">{saveError}</div> : null}
 			</div>
 		);
 	}
@@ -693,9 +637,7 @@ function DatabaseCellEditor({
 					onError={(error) => setSaveError(extractErrorMessage(error))}
 					onColorChange={onStatusColorChange}
 				/>
-				{saveError ? (
-					<div className="databaseCellError">{saveError}</div>
-				) : null}
+				{saveError ? <div className="databaseCellError">{saveError}</div> : null}
 			</div>
 		);
 	}
@@ -723,9 +665,7 @@ function DatabaseCellEditor({
 					}}
 					onError={(error) => setSaveError(extractErrorMessage(error))}
 				/>
-				{saveError ? (
-					<div className="databaseCellError">{saveError}</div>
-				) : null}
+				{saveError ? <div className="databaseCellError">{saveError}</div> : null}
 			</div>
 		);
 	}
@@ -765,24 +705,16 @@ function DatabaseCellEditor({
 						type="text"
 						className="notePropertyTagInput"
 						value={valueDraft}
-						placeholder={
-							cellValue.value_list.length > 0 ? "" : "Add or choose a value"
-						}
+						placeholder={cellValue.value_list.length > 0 ? "" : "Add or choose a value"}
 						onFocus={handleSelectRow}
 						onChange={(event) => {
 							const nextValue = event.target.value;
 							setValueDraft(nextValue);
-							linkedNoteListAutocomplete.refresh(
-								nextValue,
-								event.currentTarget.selectionStart,
-							);
+							linkedNoteListAutocomplete.refresh(nextValue, event.currentTarget.selectionStart);
 						}}
 						onBlur={(event) => {
 							const relatedTarget = event.relatedTarget as Node | null;
-							if (
-								relatedTarget &&
-								valueFieldRef.current?.contains(relatedTarget)
-							) {
+							if (relatedTarget && valueFieldRef.current?.contains(relatedTarget)) {
 								return;
 							}
 							void (async () => {
@@ -821,8 +753,7 @@ function DatabaseCellEditor({
 							if (event.key !== "Backspace" || valueDraft.length > 0) {
 								return;
 							}
-							const lastValue =
-								cellValue.value_list[cellValue.value_list.length - 1];
+							const lastValue = cellValue.value_list[cellValue.value_list.length - 1];
 							if (!lastValue) return;
 							event.preventDefault();
 							void removeListValue(lastValue).catch(handleTagSaveError);
@@ -856,9 +787,7 @@ function DatabaseCellEditor({
 						</div>
 					</div>
 				) : null}
-				{saveError ? (
-					<div className="databaseCellError">{saveError}</div>
-				) : null}
+				{saveError ? <div className="databaseCellError">{saveError}</div> : null}
 			</div>
 		);
 	}
@@ -869,20 +798,13 @@ function DatabaseCellEditor({
 				ref={focusTextInput}
 				className="databaseCellInput"
 				type={
-					column.property_kind === "date"
-						? "date"
-						: column.property_kind === "url"
-							? "url"
-							: "text"
+					column.property_kind === "date" ? "date" : column.property_kind === "url" ? "url" : "text"
 				}
 				value={draft}
 				onChange={(event) => {
 					const nextValue = event.target.value;
 					setDraft(nextValue);
-					wikiLinkAutocomplete.refresh(
-						nextValue,
-						event.currentTarget.selectionStart,
-					);
+					wikiLinkAutocomplete.refresh(nextValue, event.currentTarget.selectionStart);
 				}}
 				onBlur={() => void commitText()}
 				onFocus={(event) => {
@@ -962,15 +884,9 @@ export function DatabaseCell({
 	const dateDisplayFormat = useDateDisplayFormat();
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
-	const cellValue = useMemo(
-		() => databaseCellValueFromRow(row, column),
-		[column, row],
-	);
+	const cellValue = useMemo(() => databaseCellValueFromRow(row, column), [column, row]);
 	const noteAppearance = itemAppearance[row.note_path] ?? null;
-	const noteAppearanceStyle = databaseNoteAppearanceStyle(
-		row.note_path,
-		noteAppearance,
-	);
+	const noteAppearanceStyle = databaseNoteAppearanceStyle(row.note_path, noteAppearance);
 	const [editing, setEditing] = useState(false);
 	const [saveError, setSaveError] = useState("");
 	const displayText =
@@ -1110,9 +1026,7 @@ export function DatabaseCell({
 							onError={(error) => setSaveError(extractErrorMessage(error))}
 							onColorChange={onStatusColorChange}
 						/>
-						{saveError ? (
-							<div className="databaseCellError">{saveError}</div>
-						) : null}
+						{saveError ? <div className="databaseCellError">{saveError}</div> : null}
 					</div>
 				);
 			}
@@ -1126,10 +1040,7 @@ export function DatabaseCell({
 					}}
 					title={displayText || "Status"}
 				>
-					<StatusPropertyPill
-						value={currentValue || "not_started"}
-						colors={statusColors}
-					/>
+					<StatusPropertyPill value={currentValue || "not_started"} colors={statusColors} />
 				</button>
 			);
 		}
@@ -1157,9 +1068,7 @@ export function DatabaseCell({
 							}}
 							onError={(error) => setSaveError(extractErrorMessage(error))}
 						/>
-						{saveError ? (
-							<div className="databaseCellError">{saveError}</div>
-						) : null}
+						{saveError ? <div className="databaseCellError">{saveError}</div> : null}
 					</div>
 				);
 			}
@@ -1199,9 +1108,7 @@ export function DatabaseCell({
 							className="databaseTitleCellIcon"
 							size="var(--icon-md)"
 						/>
-						{displayText.trim() ? (
-							<span className="databaseCellText">{displayText}</span>
-						) : null}
+						{displayText.trim() ? <span className="databaseCellText">{displayText}</span> : null}
 					</button>
 					{isRowSelected ? (
 						<button
@@ -1223,9 +1130,7 @@ export function DatabaseCell({
 		return (
 			<button
 				type="button"
-				className={["databaseCellButton", !editable ? "is-readonly" : ""]
-					.filter(Boolean)
-					.join(" ")}
+				className={["databaseCellButton", !editable ? "is-readonly" : ""].filter(Boolean).join(" ")}
 				onDoubleClick={() => {
 					if (editable) setEditing(true);
 				}}
@@ -1235,9 +1140,7 @@ export function DatabaseCell({
 				}}
 				title={editable ? "Double-click to edit" : undefined}
 			>
-				{displayText.trim() ? (
-					<span className="databaseCellText">{displayText}</span>
-				) : null}
+				{displayText.trim() ? <span className="databaseCellText">{displayText}</span> : null}
 			</button>
 		);
 	}

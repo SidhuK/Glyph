@@ -37,10 +37,10 @@ jobs:
               - 'src/**'
               - 'public/**'
               - 'index.html'
+              - '.node-version'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
-              - 'biome.json'
               - 'components.json'
               - 'tsconfig.json'
               - 'tsconfig.node.json'
@@ -59,41 +59,26 @@ jobs:
       matrix:
         include:
           - name: Check
-            command: pnpm check
+            command: vp check
           - name: Test
-            command: pnpm test
+            command: vp test
           - name: Build
-            command: pnpm build
+            command: vp build
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
 
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
-          node-version: 20
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
-        with:
-          version: 10.28.2
-
-      - name: Resolve pnpm store path
-        id: pnpm-store
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache pnpm store
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version-file: .node-version
+          run-install: false
+          cache: true
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
       - name: ${{ matrix.name }}
         run: ${{ matrix.command }}

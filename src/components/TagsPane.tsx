@@ -3,10 +3,7 @@ import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import { type CSSProperties, memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	type TagIconOverrides,
-	tagIconOverridesFromAppearance,
-} from "../lib/tagIcons";
+import { type TagIconOverrides, tagIconOverridesFromAppearance } from "../lib/tagIcons";
 import type { PersonCount, TagAppearance, TagCount } from "../lib/tauri";
 import { TagIconPicker } from "./TagIconPicker";
 import { springPresets } from "./ui/animations";
@@ -66,9 +63,7 @@ export function buildTagTreeRows(tags: TagCount[]): TagTreeRow[] {
 }
 
 export function buildPeopleRows(people: PersonCount[]): PeopleRow[] {
-	return [...people].sort((left, right) =>
-		left.handle.localeCompare(right.handle),
-	);
+	return [...people].sort((left, right) => left.handle.localeCompare(right.handle));
 }
 
 export const TagsPane = memo(function TagsPane({
@@ -87,8 +82,7 @@ export const TagsPane = memo(function TagsPane({
 		[onSelectTag],
 	);
 	const onPersonClick = useCallback(
-		(handle: string) =>
-			onSelectPerson(handle.startsWith("@") ? handle : `@${handle}`),
+		(handle: string) => onSelectPerson(handle.startsWith("@") ? handle : `@${handle}`),
 		[onSelectPerson],
 	);
 	const rows = buildTagTreeRows(tags);
@@ -111,9 +105,7 @@ export const TagsPane = memo(function TagsPane({
 							className="tagsButton"
 							data-explicit="true"
 							onClick={() => onPersonClick(person.handle)}
-							title={`@${person.handle} · ${person.count} note${
-								person.count === 1 ? "" : "s"
-							}`}
+							title={`@${person.handle} · ${person.count} note${person.count === 1 ? "" : "s"}`}
 						>
 							<span className="tagsNameWrap">
 								<span className="tagsName">@{person.handle}</span>
@@ -158,9 +150,7 @@ export const TagsPane = memo(function TagsPane({
 												paddingInlineStart: `${8 + tag.depth * 16}px`,
 											} as CSSProperties
 										}
-										title={`#${tag.tag} · ${tag.totalCount} note${
-											tag.totalCount === 1 ? "" : "s"
-										}`}
+										title={`#${tag.tag} · ${tag.totalCount} note${tag.totalCount === 1 ? "" : "s"}`}
 										transition={springTransition}
 									>
 										<TagRowIcon
@@ -221,11 +211,5 @@ function TagRowIcon({
 		);
 	}
 
-	return (
-		<HugeiconsIcon
-			icon={Tag01Icon}
-			className="tagsIcon"
-			size="var(--icon-sm)"
-		/>
-	);
+	return <HugeiconsIcon icon={Tag01Icon} className="tagsIcon" size="var(--icon-sm)" />;
 }

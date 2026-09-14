@@ -13,11 +13,7 @@ import {
 	remapCodeBlockPreviews,
 } from "./codeBlockPreviewSession";
 
-export function selectionTouchesNode(
-	selection: Selection,
-	from: number,
-	to: number,
-): boolean {
+export function selectionTouchesNode(selection: Selection, from: number, to: number): boolean {
 	return selection.ranges.some((range) => {
 		const rangeFrom = range.$from.pos;
 		const rangeTo = range.$to.pos;
@@ -28,21 +24,13 @@ export function selectionTouchesNode(
 	});
 }
 
-export function selectCodeBlockSource(
-	view: EditorView,
-	pos: number,
-	nodeSize: number,
-): void {
+export function selectCodeBlockSource(view: EditorView, pos: number, nodeSize: number): void {
 	const textStart = pos + 1;
 	const textEnd = Math.max(textStart, pos + nodeSize - 1);
 	const docSize = view.state.doc.content.size;
 	if (textStart > docSize) return;
 
-	const selection = TextSelection.create(
-		view.state.doc,
-		textStart,
-		Math.min(textEnd, docSize),
-	);
+	const selection = TextSelection.create(view.state.doc, textStart, Math.min(textEnd, docSize));
 	view.dispatch(view.state.tr.setSelection(selection).scrollIntoView());
 	view.focus();
 }
@@ -75,10 +63,7 @@ export interface CodeBlockPreviewExtensionOptions {
 	getSource?: (node: ProseMirrorNode) => string;
 	createWidget: (context: CodeBlockPreviewWidgetContext) => HTMLElement;
 	destroyWidget?: (element: HTMLElement) => void;
-	shouldRefresh?: (
-		transaction: Transaction,
-		value: CodeBlockPreviewPluginState,
-	) => boolean;
+	shouldRefresh?: (transaction: Transaction, value: CodeBlockPreviewPluginState) => boolean;
 }
 
 export interface CodeBlockPreviewPluginState {
@@ -108,23 +93,17 @@ function buildCodeBlockPreviewDecorations(
 	doc.descendants((node, pos) => {
 		if (node.type.name !== "codeBlock") return;
 
-		const language =
-			typeof node.attrs.language === "string" ? node.attrs.language : null;
+		const language = typeof node.attrs.language === "string" ? node.attrs.language : null;
 		if (!options.matchLanguage(language)) return;
 
 		const to = pos + node.nodeSize;
 		const shouldShowSource =
 			editable &&
-			(!isCodeBlockPreviewEnabled(view, pos) ||
-				selectionTouchesNode(selection, pos, to));
+			(!isCodeBlockPreviewEnabled(view, pos) || selectionTouchesNode(selection, pos, to));
 		if (shouldShowSource) return;
 
-		const source = options.getSource
-			? options.getSource(node)
-			: (node.textContent ?? "");
-		const previewKey = editable
-			? getCodeBlockPreviewId(view, pos)
-			: `read-${pos}`;
+		const source = options.getSource ? options.getSource(node) : (node.textContent ?? "");
+		const previewKey = editable ? getCodeBlockPreviewId(view, pos) : `read-${pos}`;
 		if (!previewKey) return;
 
 		decorations.push(
@@ -151,17 +130,14 @@ function buildCodeBlockPreviewDecorations(
 						openFocusedPreview: () => {
 							if (!editable) return;
 							view.dom.dispatchEvent(
-								new CustomEvent<FocusedCodeBlockPreviewRequest>(
-									OPEN_FOCUSED_CODE_BLOCK_PREVIEW,
-									{
-										bubbles: true,
-										detail: {
-											pos,
-											source,
-											language,
-										},
+								new CustomEvent<FocusedCodeBlockPreviewRequest>(OPEN_FOCUSED_CODE_BLOCK_PREVIEW, {
+									bubbles: true,
+									detail: {
+										pos,
+										source,
+										language,
 									},
-								),
+								}),
 							);
 						},
 					}),
@@ -179,9 +155,7 @@ function buildCodeBlockPreviewDecorations(
 		);
 	});
 
-	return decorations.length
-		? DecorationSet.create(doc, decorations)
-		: DecorationSet.empty;
+	return decorations.length ? DecorationSet.create(doc, decorations) : DecorationSet.empty;
 }
 
 export {
@@ -191,9 +165,7 @@ export {
 	hasEnabledCodeBlockPreviews,
 } from "./codeBlockPreviewSession";
 
-export function createCodeBlockPreviewExtension(
-	options: CodeBlockPreviewExtensionOptions,
-) {
+export function createCodeBlockPreviewExtension(options: CodeBlockPreviewExtensionOptions) {
 	return Extension.create({
 		name: options.name,
 		addProseMirrorPlugins() {
@@ -227,14 +199,10 @@ export function createCodeBlockPreviewExtension(
 							// rebuilt from scratch (e.g. Mermaid cache invalidation).
 							// Plain refresh metas (enable preview, note switch) only
 							// rebuild decorations; existing widget DOM is reused.
-							const forceRecreate =
-								options.shouldRefresh?.(transaction, value) ?? false;
-							const shouldRebuild =
-								forceRecreate || isCodeBlockPreviewRefresh(transaction);
+							const forceRecreate = options.shouldRefresh?.(transaction, value) ?? false;
+							const shouldRebuild = forceRecreate || isCodeBlockPreviewRefresh(transaction);
 							const refreshKey =
-								forceRecreate || editableChanged
-									? value.refreshKey + 1
-									: value.refreshKey;
+								forceRecreate || editableChanged ? value.refreshKey + 1 : value.refreshKey;
 
 							if (
 								!transaction.docChanged &&

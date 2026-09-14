@@ -34,10 +34,7 @@ const DEFAULT_NOTE_EDITOR_SETTINGS: NoteEditorSettings = {
 	spellCheck: true,
 };
 
-function sameNoteEditorSettings(
-	left: NoteEditorSettings,
-	right: NoteEditorSettings,
-) {
+function sameNoteEditorSettings(left: NoteEditorSettings, right: NoteEditorSettings) {
 	return (
 		left.showCollapsibleHeadings === right.showCollapsibleHeadings &&
 		left.showCollapsibleLists === right.showCollapsibleLists &&
@@ -66,8 +63,7 @@ export function useNoteEditorSettings() {
 				setSettings((current) => ({
 					showCollapsibleHeadings: loaded.editor.showCollapsibleHeadings,
 					showCollapsibleLists: loaded.editor.showCollapsibleLists,
-					showFrontmatterInEditor:
-						loaded.editor.showFrontmatterInEditor === true,
+					showFrontmatterInEditor: loaded.editor.showFrontmatterInEditor === true,
 					showHeadingPrefixes: loaded.editor.showHeadingPrefixes,
 					colorfulHeadings: loaded.editor.colorfulHeadings,
 					peopleMentionsEnabled: loaded.editor.enablePeopleMentionsAsTags,
@@ -141,16 +137,9 @@ export function useNoteEditorSettings() {
 						? editor.showExternalLinkPreviews
 						: current.showExternalLinkPreviews,
 				showFormatBar:
-					typeof editor.showFormatBar === "boolean"
-						? editor.showFormatBar
-						: current.showFormatBar,
-				focusMode: isFocusMode(editor.focusMode)
-					? editor.focusMode
-					: current.focusMode,
-				spellCheck:
-					typeof editor.spellCheck === "boolean"
-						? editor.spellCheck
-						: current.spellCheck,
+					typeof editor.showFormatBar === "boolean" ? editor.showFormatBar : current.showFormatBar,
+				focusMode: isFocusMode(editor.focusMode) ? editor.focusMode : current.focusMode,
+				spellCheck: typeof editor.spellCheck === "boolean" ? editor.spellCheck : current.spellCheck,
 			};
 			return sameNoteEditorSettings(current, next) ? current : next;
 		});

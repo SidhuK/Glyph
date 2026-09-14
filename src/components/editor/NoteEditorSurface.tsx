@@ -9,10 +9,7 @@ import {
 	type SupportedCodeBlockLanguage,
 	getCodeBlockLanguageOptions,
 } from "./extensions/codeBlockHighlighting";
-import type {
-	SelectedCodeBlockState,
-	TableInlineControlsProps,
-} from "./noteEditorOverlayTypes";
+import type { SelectedCodeBlockState, TableInlineControlsProps } from "./noteEditorOverlayTypes";
 import { RolloverTaskActions } from "./rollover/RolloverTaskActions";
 import type { RolloverTaskActions as RolloverTaskActionsConfig } from "./types";
 
@@ -68,24 +65,14 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 		<div
 			ref={hostRef}
 			className={hostClassName}
-			data-colorful-headings={
-				mode === "rich" && colorfulHeadings ? "true" : undefined
-			}
-			data-heading-prefixes={
-				mode === "rich" && showHeadingPrefixes ? "true" : undefined
-			}
+			data-colorful-headings={mode === "rich" && colorfulHeadings ? "true" : undefined}
+			data-heading-prefixes={mode === "rich" && showHeadingPrefixes ? "true" : undefined}
 		>
 			<EditorContent editor={editor} />
 			{canEdit && editor && hostNode && rolloverTaskActions ? (
-				<RolloverTaskActions
-					actions={rolloverTaskActions}
-					editor={editor}
-					host={hostNode}
-				/>
+				<RolloverTaskActions actions={rolloverTaskActions} editor={editor} host={hostNode} />
 			) : null}
-			{canEdit && tableControls ? (
-				<TableInlineControls {...tableControls} />
-			) : null}
+			{canEdit && tableControls ? <TableInlineControls {...tableControls} /> : null}
 			{canEdit && codeBlock.selected ? (
 				<div
 					className="codeBlockInlineControls"
@@ -139,12 +126,8 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						data-copied={codeBlock.copied || undefined}
 						onMouseDown={codeBlock.onCodeBlockActionMouseDown}
 						onClick={codeBlock.onCopy}
-						title={
-							codeBlock.copied ? t("codeBlock.copied") : t("codeBlock.copy")
-						}
-						aria-label={
-							codeBlock.copied ? t("codeBlock.copied") : t("codeBlock.copy")
-						}
+						title={codeBlock.copied ? t("codeBlock.copied") : t("codeBlock.copy")}
+						aria-label={codeBlock.copied ? t("codeBlock.copied") : t("codeBlock.copy")}
 					>
 						<HugeiconsIcon
 							icon={codeBlock.copied ? Tick02Icon : Copy01Icon}

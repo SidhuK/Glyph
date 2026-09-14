@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import {
-	noteDocumentQueryOptions,
-	setPrefetchedNote,
-} from "../../lib/navigationPrefetch";
+import { noteDocumentQueryOptions, setPrefetchedNote } from "../../lib/navigationPrefetch";
 import { queryClient } from "../../lib/queryClient";
 import { subscribeOpenNoteContent } from "../../lib/spaceChange";
 import { type TextFileDoc, invoke } from "../../lib/tauri";
@@ -85,20 +82,14 @@ export function useMarkdownDocumentSession({
 		rawEditorRef.current?.flushPendingChange();
 	}, []);
 
-	const handleRawEditorReady = useCallback(
-		(editor: RawMarkdownEditorHandle | null) => {
-			rawEditorRef.current = editor;
-			setRawEditorReady(editor !== null);
-		},
-		[],
-	);
+	const handleRawEditorReady = useCallback((editor: RawMarkdownEditorHandle | null) => {
+		rawEditorRef.current = editor;
+		setRawEditorReady(editor !== null);
+	}, []);
 
-	const handleRichEditorFlushReady = useCallback(
-		(flush: (() => void) | null) => {
-			richEditorFlushRef.current = flush;
-		},
-		[],
-	);
+	const handleRichEditorFlushReady = useCallback((flush: (() => void) | null) => {
+		richEditorFlushRef.current = flush;
+	}, []);
 
 	const replaceText = useCallback(
 		(nextText: string) => {
@@ -241,13 +232,7 @@ export function useMarkdownDocumentSession({
 				setError(extractErrorMessage(e));
 			}
 		},
-		[
-			isCurrentSession,
-			relPath,
-			replaceText,
-			resolveEditorModeForNote,
-			setEditorMode,
-		],
+		[isCurrentSession, relPath, replaceText, resolveEditorModeForNote, setEditorMode],
 	);
 
 	const loadDocFromExternalChange = useCallback(async () => {
@@ -274,10 +259,7 @@ export function useMarkdownDocumentSession({
 				pendingExternalReloadRef.current = true;
 				return;
 			}
-			if (
-				doc.mtime_ms === mtimeRef.current &&
-				doc.text === savedTextRef.current
-			) {
+			if (doc.mtime_ms === mtimeRef.current && doc.text === savedTextRef.current) {
 				return;
 			}
 			setPrefetchedNote(relPath, doc);
@@ -342,9 +324,7 @@ export function useMarkdownDocumentSession({
 			} catch (e) {
 				if (!isCurrentSession(sessionId)) return false;
 				const message = extractErrorMessage(e);
-				const isConflict = message.includes(
-					"conflict: on-disk file changed since it was opened",
-				);
+				const isConflict = message.includes("conflict: on-disk file changed since it was opened");
 				if (!isConflict) {
 					setError(message);
 					return false;
@@ -357,9 +337,7 @@ export function useMarkdownDocumentSession({
 						applySaveState(nextText, latest.mtime_ms);
 						return true;
 					}
-					const { message: showDialog } = await import(
-						"@tauri-apps/plugin-dialog"
-					);
+					const { message: showDialog } = await import("@tauri-apps/plugin-dialog");
 					const reloadLabel = "Reload";
 					const overwriteLabel = "Overwrite";
 					const choice = await showDialog(
@@ -419,10 +397,7 @@ export function useMarkdownDocumentSession({
 		try {
 			await persistDoc(relPath, textRef.current, sessionId);
 		} finally {
-			if (
-				saveRequestTokenRef.current === saveToken &&
-				isCurrentSession(sessionId)
-			) {
+			if (saveRequestTokenRef.current === saveToken && isCurrentSession(sessionId)) {
 				setSaving(false);
 			}
 		}
@@ -480,7 +455,7 @@ export function useMarkdownDocumentSession({
 	useEffect(() => {
 		if (!isDirty || !hasUserEditsRef.current) return;
 		const timer = window.setTimeout(() => {
-			runAutosave();
+			void runAutosave();
 		}, AUTOSAVE_DEBOUNCE_MS);
 		return () => window.clearTimeout(timer);
 	}, [isDirty, runAutosave]);
@@ -488,7 +463,7 @@ export function useMarkdownDocumentSession({
 	useEffect(() => {
 		return () => {
 			if (textRef.current === savedTextRef.current) return;
-			runAutosave();
+			void runAutosave();
 		};
 	}, [runAutosave]);
 
@@ -517,10 +492,7 @@ export function useMarkdownDocumentSession({
 		[flushPendingEdits, loadDocFromExternalChange, relPath],
 	);
 
-	useEffect(
-		() => subscribeOpenNoteContent(handleExternalNoteChanged),
-		[handleExternalNoteChanged],
-	);
+	useEffect(() => subscribeOpenNoteContent(handleExternalNoteChanged), [handleExternalNoteChanged]);
 
 	useEffect(() => {
 		if (!pendingExternalReloadRef.current) return;

@@ -12,11 +12,7 @@ import {
 	Task01Icon,
 } from "@hugeicons/core-free-icons";
 import type { ComponentProps } from "react";
-import {
-	statusLabel,
-	statusOptionFromValue,
-	statusTextStyle,
-} from "../../lib/statusProperties";
+import { statusLabel, statusOptionFromValue, statusTextStyle } from "../../lib/statusProperties";
 import type { EditorTextColor } from "../editor/textColors";
 
 const STATUS_ICONS: Record<
@@ -49,11 +45,7 @@ interface StatusPropertyPillProps {
 	className?: string;
 }
 
-export function StatusPropertyPill({
-	value,
-	colors = {},
-	className,
-}: StatusPropertyPillProps) {
+export function StatusPropertyPill({ value, colors = {}, className }: StatusPropertyPillProps) {
 	const label = statusLabel(value);
 	if (!label) return null;
 	return (

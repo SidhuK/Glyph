@@ -25,14 +25,8 @@ export function AiApiKeySection({
 			title="API Key"
 			description="Stored locally in the secure secret store used by Glyph."
 			aside={
-				<div
-					className={`settingsPill ${toneForSecretConfigured(secretConfigured)}`}
-				>
-					{secretConfigured == null
-						? "Unknown"
-						: secretConfigured
-							? "Active"
-							: "Missing"}
+				<div className={`settingsPill ${toneForSecretConfigured(secretConfigured)}`}>
+					{secretConfigured == null ? "Unknown" : secretConfigured ? "Active" : "Missing"}
 				</div>
 			}
 		>
@@ -55,12 +49,7 @@ export function AiApiKeySection({
 							Save
 						</Button>
 						{secretConfigured ? (
-							<Button
-								type="button"
-								variant="ghost"
-								size="sm"
-								onClick={() => void onClearKey()}
-							>
+							<Button type="button" variant="ghost" size="sm" onClick={() => void onClearKey()}>
 								Clear
 							</Button>
 						) : null}

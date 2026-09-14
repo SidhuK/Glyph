@@ -47,10 +47,7 @@ export function resolveDatabaseColumns(
 	const byPropertyKey = new Map<string, DatabaseColumn>();
 	for (const column of columns) {
 		if (column.type !== "property" || !column.property_key) continue;
-		byPropertyKey.set(
-			normalizeDatabasePropertyKey(column.property_key),
-			column,
-		);
+		byPropertyKey.set(normalizeDatabasePropertyKey(column.property_key), column);
 	}
 
 	let merged: DatabaseColumn[] | null = null;
@@ -61,11 +58,7 @@ export function resolveDatabaseColumns(
 		const normalizedKey = normalizeDatabasePropertyKey(key);
 		const exactId = `property:${key}`;
 		const normalizedId = `property:${normalizedKey}`;
-		if (
-			byId.has(exactId) ||
-			byId.has(normalizedId) ||
-			byPropertyKey.has(normalizedKey)
-		) {
+		if (byId.has(exactId) || byId.has(normalizedId) || byPropertyKey.has(normalizedKey)) {
 			continue;
 		}
 

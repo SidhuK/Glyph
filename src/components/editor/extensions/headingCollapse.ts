@@ -34,9 +34,7 @@ type HeadingCollapseMeta =
 	| { type: "lists-enabled"; enabled: boolean }
 	| { type: "lists-collapsed"; keys: string[] };
 
-const headingCollapsePluginKey = new PluginKey<HeadingCollapseState>(
-	"heading-collapse",
-);
+const headingCollapsePluginKey = new PluginKey<HeadingCollapseState>("heading-collapse");
 const LIST_NODE_NAMES = new Set(["bulletList", "orderedList", "taskList"]);
 const LIST_ITEM_NODE_NAMES = new Set(["listItem", "taskItem"]);
 
@@ -48,19 +46,14 @@ function extractHeadingRanges(doc: ProseMirrorNode): HeadingRange[] {
 		headings.push({
 			pos,
 			end: doc.content.size,
-			level:
-				typeof node.attrs.level === "number" ? (node.attrs.level as number) : 1,
+			level: typeof node.attrs.level === "number" ? (node.attrs.level as number) : 1,
 			nodeSize: node.nodeSize,
 		});
 	});
 
 	for (let index = 0; index < headings.length; index += 1) {
 		const current = headings[index];
-		for (
-			let nextIndex = index + 1;
-			nextIndex < headings.length;
-			nextIndex += 1
-		) {
+		for (let nextIndex = index + 1; nextIndex < headings.length; nextIndex += 1) {
 			const next = headings[nextIndex];
 			if (next.level <= current.level) {
 				current.end = next.pos;
@@ -106,11 +99,7 @@ function extractListBranches(doc: ProseMirrorNode): ListBranch[] {
 	return branches;
 }
 
-function collapseDecorationsForRange(
-	doc: ProseMirrorNode,
-	from: number,
-	to: number,
-): Decoration[] {
+function collapseDecorationsForRange(doc: ProseMirrorNode, from: number, to: number): Decoration[] {
 	const decorations: Decoration[] = [];
 
 	if (from >= to) return decorations;
@@ -130,32 +119,20 @@ function collapseDecorationsForRange(
 	return decorations;
 }
 
-function collapsedListBranchKeys(
-	doc: ProseMirrorNode,
-	state: HeadingCollapseState,
-): string[] {
+function collapsedListBranchKeys(doc: ProseMirrorNode, state: HeadingCollapseState): string[] {
 	return extractListBranches(doc)
 		.filter((branch) => state.collapsedListPositions.has(branch.pos))
 		.map((branch) => branch.key);
 }
 
-function createToggleButton(
-	pos: number,
-	collapsed: boolean,
-): (view: EditorView) => HTMLElement {
+function createToggleButton(pos: number, collapsed: boolean): (view: EditorView) => HTMLElement {
 	return (view) => {
 		const button = document.createElement("button");
 		button.type = "button";
 		button.className = "headingCollapseToggle";
 		button.setAttribute("data-collapsed", collapsed ? "true" : "false");
-		button.setAttribute(
-			"aria-label",
-			collapsed ? "Expand section" : "Collapse section",
-		);
-		button.setAttribute(
-			"title",
-			collapsed ? "Expand section" : "Collapse section",
-		);
+		button.setAttribute("aria-label", collapsed ? "Expand section" : "Collapse section");
+		button.setAttribute("title", collapsed ? "Expand section" : "Collapse section");
 		button.contentEditable = "false";
 
 		const chevron = document.createElement("span");
@@ -189,9 +166,7 @@ function createListToggleButton(
 	return (view) => {
 		const button = document.createElement("button");
 		const label = i18n.t(
-			collapsed
-				? "editor:listCollapse.expandBranch"
-				: "editor:listCollapse.collapseBranch",
+			collapsed ? "editor:listCollapse.expandBranch" : "editor:listCollapse.collapseBranch",
 		);
 		button.type = "button";
 		button.className = "listCollapseToggle";
@@ -240,22 +215,14 @@ function buildDecorations(
 				Decoration.node(heading.pos, heading.pos + heading.nodeSize, {
 					class: "headingCollapseHeading",
 				}),
-				Decoration.widget(
-					heading.pos + 1,
-					createToggleButton(heading.pos, collapsed),
-					{
-						side: -1,
-						key: `heading-collapse-toggle-${heading.pos}-${collapsed}`,
-					},
-				),
+				Decoration.widget(heading.pos + 1, createToggleButton(heading.pos, collapsed), {
+					side: -1,
+					key: `heading-collapse-toggle-${heading.pos}-${collapsed}`,
+				}),
 			);
 			if (collapsed) {
 				decorations.push(
-					...collapseDecorationsForRange(
-						doc,
-						heading.pos + heading.nodeSize,
-						heading.end,
-					),
+					...collapseDecorationsForRange(doc, heading.pos + heading.nodeSize, heading.end),
 				);
 			}
 		}
@@ -302,9 +269,7 @@ function expandAncestorPositions(
 	const next = new Set(collapsedPositions);
 	const target =
 		headings.find((heading) => heading.pos === pos) ??
-		[...headings]
-			.reverse()
-			.find((heading) => heading.pos < pos && pos < heading.end);
+		[...headings].reverse().find((heading) => heading.pos < pos && pos < heading.end);
 
 	if (!target) return next;
 
@@ -327,16 +292,12 @@ function mapPositions(
 	const mapped = new Set<number>();
 	for (const position of positions) {
 		const result = transaction.mapping.mapResult(position, bias);
-		if (!result.deleted && validPositions.has(result.pos))
-			mapped.add(result.pos);
+		if (!result.deleted && validPositions.has(result.pos)) mapped.add(result.pos);
 	}
 	return mapped;
 }
 
-function findListBranchAtPosition(
-	doc: ProseMirrorNode,
-	pos: number,
-): ListBranch | null {
+function findListBranchAtPosition(doc: ProseMirrorNode, pos: number): ListBranch | null {
 	const resolved = doc.resolve(pos);
 	const branches = extractListBranches(doc);
 
@@ -351,13 +312,8 @@ function findListBranchAtPosition(
 	return null;
 }
 
-function findHeadingAtPosition(
-	headings: HeadingRange[],
-	pos: number,
-): HeadingRange | null {
-	const containingHeadings = headings.filter(
-		(heading) => pos >= heading.pos && pos < heading.end,
-	);
+function findHeadingAtPosition(headings: HeadingRange[], pos: number): HeadingRange | null {
+	const containingHeadings = headings.filter((heading) => pos >= heading.pos && pos < heading.end);
 	return containingHeadings[containingHeadings.length - 1] ?? null;
 }
 
@@ -396,10 +352,7 @@ export const HeadingCollapse = Extension.create<{
 						? findListBranchAtPosition(state.doc, state.selection.from)
 						: null;
 					const heading = collapseState.headingsEnabled
-						? findHeadingAtPosition(
-								extractHeadingRanges(state.doc),
-								state.selection.from,
-							)
+						? findHeadingAtPosition(extractHeadingRanges(state.doc), state.selection.from)
 						: null;
 					const meta: HeadingCollapseMeta | null = listBranch
 						? { type: "list-toggle", pos: listBranch.pos }
@@ -412,12 +365,9 @@ export const HeadingCollapse = Extension.create<{
 					dispatch?.(transaction);
 					if (listBranch && dispatch) {
 						const nextState = state.apply(transaction);
-						const nextCollapseState =
-							headingCollapsePluginKey.getState(nextState);
+						const nextCollapseState = headingCollapsePluginKey.getState(nextState);
 						if (nextCollapseState) {
-							onListCollapseToggle(
-								collapsedListBranchKeys(nextState.doc, nextCollapseState),
-							);
+							onListCollapseToggle(collapsedListBranchKeys(nextState.doc, nextCollapseState));
 						}
 					}
 					return true;
@@ -530,9 +480,7 @@ export const HeadingCollapse = Extension.create<{
 
 						const headings = extractHeadingRanges(nextState.doc);
 						const branches = extractListBranches(nextState.doc);
-						const headingPositions = new Set(
-							headings.map((heading) => heading.pos),
-						);
+						const headingPositions = new Set(headings.map((heading) => heading.pos));
 						const listPositions = new Set(branches.map((branch) => branch.pos));
 						let headingsEnabled = previous.headingsEnabled;
 						let listsEnabled = previous.listsEnabled;
@@ -552,9 +500,7 @@ export const HeadingCollapse = Extension.create<{
 						switch (meta?.type) {
 							case "heading-toggle":
 								if (headingPositions.has(meta.pos)) {
-									collapsedHeadingPositions = new Set(
-										collapsedHeadingPositions,
-									);
+									collapsedHeadingPositions = new Set(collapsedHeadingPositions);
 									if (collapsedHeadingPositions.has(meta.pos)) {
 										collapsedHeadingPositions.delete(meta.pos);
 									} else {
@@ -593,9 +539,7 @@ export const HeadingCollapse = Extension.create<{
 							case "lists-collapsed": {
 								const keys = new Set(meta.keys);
 								collapsedListPositions = new Set(
-									branches
-										.filter((branch) => keys.has(branch.key))
-										.map((branch) => branch.pos),
+									branches.filter((branch) => keys.has(branch.key)).map((branch) => branch.pos),
 								);
 								break;
 							}
@@ -632,10 +576,7 @@ export const HeadingCollapse = Extension.create<{
 							if (view.state.doc.eq(previousState.doc)) return;
 							const state = headingCollapsePluginKey.getState(view.state);
 							const previous = headingCollapsePluginKey.getState(previousState);
-							if (
-								!state?.listsEnabled ||
-								state.collapsedListPositions.size === 0
-							) {
+							if (!state?.listsEnabled || state.collapsedListPositions.size === 0) {
 								if (previous?.collapsedListPositions.size) {
 									onListCollapseToggle([]);
 								}

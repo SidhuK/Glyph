@@ -1,10 +1,4 @@
-import {
-	type Dispatch,
-	type RefObject,
-	type SetStateAction,
-	useCallback,
-	useMemo,
-} from "react";
+import { type Dispatch, type RefObject, type SetStateAction, useCallback, useMemo } from "react";
 import {
 	type SplitDropEdge,
 	type SplitEditorNode,
@@ -14,11 +8,7 @@ import {
 	updateSplitRatio,
 } from "../../lib/splitEditor";
 import { isMarkdownPath } from "../../utils/path";
-import type {
-	TabHistoryById,
-	WorkspaceEditorPane,
-	WorkspaceTab,
-} from "./useTabManager";
+import type { TabHistoryById, WorkspaceEditorPane, WorkspaceTab } from "./useTabManager";
 
 interface UseSplitEditorTabsArgs {
 	tabs: WorkspaceTab[];
@@ -30,26 +20,15 @@ interface UseSplitEditorTabsArgs {
 	activeTabByPane: Record<string, string | null>;
 	tabsRef: RefObject<WorkspaceTab[]>;
 	activeTabByPaneRef: RefObject<Record<string, string | null>>;
-	createTab: (
-		kind: WorkspaceTab["kind"],
-		target: string | null,
-		paneId?: string,
-	) => WorkspaceTab;
-	commitTabsChange: (
-		nextTabs: WorkspaceTab[],
-		nextActiveTabId: string | null,
-	) => void;
+	createTab: (kind: WorkspaceTab["kind"], target: string | null, paneId?: string) => WorkspaceTab;
+	commitTabsChange: (nextTabs: WorkspaceTab[], nextActiveTabId: string | null) => void;
 	setActiveTabId: (tabId: string | null) => void;
 	clearHistoryForTab: (tabId: string) => void;
 	pushNoteHistory: (tabId: string, path: string) => void;
 	navigateTabHistory: (tabId: string, delta: -1 | 1) => void;
 }
 
-function createSplit(
-	layout: SplitEditorNode,
-	paneId: string,
-	edge: SplitDropEdge,
-) {
+function createSplit(layout: SplitEditorNode, paneId: string, edge: SplitDropEdge) {
 	const newPaneId = `editor-pane-${crypto.randomUUID()}`;
 	const nextLayout = splitEditorPane(
 		layout,
@@ -89,9 +68,7 @@ export function useSplitEditorTabs({
 	const openFileInPane = useCallback(
 		(path: string, paneId: string) => {
 			if (!isMarkdownPath(path)) return false;
-			const existing = tabsRef.current.find(
-				(tab) => tab.kind === "file" && tab.target === path,
-			);
+			const existing = tabsRef.current.find((tab) => tab.kind === "file" && tab.target === path);
 			if (existing) {
 				commitTabsChange(tabsRef.current, existing.id);
 				return true;
@@ -107,60 +84,33 @@ export function useSplitEditorTabs({
 					: createTab("file", path, paneId);
 			const nextTabs =
 				paneActive?.kind === "blank"
-					? tabsRef.current.map((candidate) =>
-							candidate.id === tab.id ? tab : candidate,
-						)
+					? tabsRef.current.map((candidate) => (candidate.id === tab.id ? tab : candidate))
 					: [...tabsRef.current, tab];
 			if (paneActive?.kind === "blank") clearHistoryForTab(tab.id);
 			pushNoteHistory(tab.id, path);
 			commitTabsChange(nextTabs, tab.id);
 			return true;
 		},
-		[
-			activeTabByPaneRef,
-			clearHistoryForTab,
-			commitTabsChange,
-			createTab,
-			pushNoteHistory,
-			tabsRef,
-		],
+		[activeTabByPaneRef, clearHistoryForTab, commitTabsChange, createTab, pushNoteHistory, tabsRef],
 	);
 
 	const splitPaneWithTab = useCallback(
-		(
-			paneId: string,
-			edge: SplitDropEdge,
-			kind: WorkspaceTab["kind"],
-			target: string | null,
-		) => {
+		(paneId: string, edge: SplitDropEdge, kind: WorkspaceTab["kind"], target: string | null) => {
 			const currentLayout = splitLayoutRef.current;
-			const { newPaneId, nextLayout } = createSplit(
-				currentLayout,
-				paneId,
-				edge,
-			);
+			const { newPaneId, nextLayout } = createSplit(currentLayout, paneId, edge);
 			if (nextLayout === currentLayout) return;
 			const tab = createTab(kind, target, newPaneId);
 			setSplitLayout(nextLayout);
 			if (kind === "file" && target) pushNoteHistory(tab.id, target);
 			commitTabsChange([...tabsRef.current, tab], tab.id);
 		},
-		[
-			commitTabsChange,
-			createTab,
-			pushNoteHistory,
-			setSplitLayout,
-			splitLayoutRef,
-			tabsRef,
-		],
+		[commitTabsChange, createTab, pushNoteHistory, setSplitLayout, splitLayoutRef, tabsRef],
 	);
 
 	const splitPaneWithFile = useCallback(
 		(paneId: string, edge: SplitDropEdge, path: string) => {
 			if (!isMarkdownPath(path)) return;
-			const existing = tabsRef.current.find(
-				(tab) => tab.kind === "file" && tab.target === path,
-			);
+			const existing = tabsRef.current.find((tab) => tab.kind === "file" && tab.target === path);
 			if (existing) {
 				setActiveTabId(existing.id);
 				return;
@@ -203,9 +153,7 @@ export function useSplitEditorTabs({
 				const nextTabs = tabsRef.current.map((tab) =>
 					tab.id === tabId ? { ...tab, paneId: targetPaneId } : tab,
 				);
-				const sourcePaneIsEmpty = !nextTabs.some(
-					(tab) => tab.paneId === sourceTab.paneId,
-				);
+				const sourcePaneIsEmpty = !nextTabs.some((tab) => tab.paneId === sourceTab.paneId);
 				const currentLayout = splitLayoutRef.current;
 				if (sourcePaneIsEmpty && paneIdsInLayout(currentLayout).length > 1) {
 					const nextLayout = removeEditorPane(currentLayout, sourceTab.paneId);
@@ -216,19 +164,11 @@ export function useSplitEditorTabs({
 			}
 
 			const currentLayout = splitLayoutRef.current;
-			const { newPaneId, nextLayout } = createSplit(
-				currentLayout,
-				targetPaneId,
-				edge,
-			);
+			const { newPaneId, nextLayout } = createSplit(currentLayout, targetPaneId, edge);
 			if (nextLayout === currentLayout) return;
-			const sourcePaneTabs = tabsRef.current.filter(
-				(tab) => tab.paneId === sourceTab.paneId,
-			);
+			const sourcePaneTabs = tabsRef.current.filter((tab) => tab.paneId === sourceTab.paneId);
 			const movedTab = { ...sourceTab, paneId: newPaneId };
-			let nextTabs = tabsRef.current.map((tab) =>
-				tab.id === tabId ? movedTab : tab,
-			);
+			let nextTabs = tabsRef.current.map((tab) => (tab.id === tabId ? movedTab : tab));
 			if (sourcePaneTabs.length === 1) {
 				const blankTab = createTab("blank", null, sourceTab.paneId);
 				nextTabs = [...nextTabs, blankTab];
@@ -236,14 +176,7 @@ export function useSplitEditorTabs({
 			setSplitLayout(nextLayout);
 			commitTabsChange(nextTabs, movedTab.id);
 		},
-		[
-			commitTabsChange,
-			createTab,
-			setActiveTabId,
-			setSplitLayout,
-			splitLayoutRef,
-			tabsRef,
-		],
+		[commitTabsChange, createTab, setActiveTabId, setSplitLayout, splitLayoutRef, tabsRef],
 	);
 
 	const resizeSplit = useCallback(
@@ -281,21 +214,16 @@ export function useSplitEditorTabs({
 		const result: Record<string, WorkspaceEditorPane> = {};
 		for (const paneId of paneIdsInLayout(splitLayout)) {
 			const paneTabs = tabsByPane.get(paneId) ?? [];
-			const paneActiveTabId =
-				activeTabByPane[paneId] ?? paneTabs[0]?.id ?? null;
-			const paneActiveTab =
-				paneTabs.find((tab) => tab.id === paneActiveTabId) ?? null;
-			const history = paneActiveTabId
-				? historyByTabId[paneActiveTabId]
-				: undefined;
+			const paneActiveTabId = activeTabByPane[paneId] ?? paneTabs[0]?.id ?? null;
+			const paneActiveTab = paneTabs.find((tab) => tab.id === paneActiveTabId) ?? null;
+			const history = paneActiveTabId ? historyByTabId[paneActiveTabId] : undefined;
 			result[paneId] = {
 				id: paneId,
 				tabs: paneTabs,
 				activeTabId: paneActiveTabId,
 				activeTabPath: paneActiveTab?.target ?? null,
 				canGoBack: (history?.index ?? -1) > 0,
-				canGoForward:
-					(history?.index ?? -1) < (history?.entries.length ?? 0) - 1,
+				canGoForward: (history?.index ?? -1) < (history?.entries.length ?? 0) - 1,
 			};
 		}
 		return result;

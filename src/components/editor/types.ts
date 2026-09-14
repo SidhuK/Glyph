@@ -16,10 +16,7 @@ export interface RolloverTaskPosition {
 
 export interface RolloverTaskActions {
 	targets: RolloverMoveTarget[];
-	onMoveCandidate: (
-		position: RolloverTaskPosition,
-		target: RolloverMoveTarget,
-	) => void;
+	onMoveCandidate: (position: RolloverTaskPosition, target: RolloverMoveTarget) => void;
 }
 
 export interface CreateMarkdownFileOptions {
@@ -29,9 +26,7 @@ export interface CreateMarkdownFileOptions {
 }
 
 export interface ExtractToNoteActions {
-	createMarkdownFile: (
-		options: CreateMarkdownFileOptions,
-	) => Promise<string | null>;
+	createMarkdownFile: (options: CreateMarkdownFileOptions) => Promise<string | null>;
 	openNote: (path: string) => Promise<void> | void;
 	openNoteInNewTab: (path: string) => Promise<void> | void;
 }
@@ -59,15 +54,9 @@ export interface NoteInlineEditorProps {
 	aiEnabled?: boolean;
 	onOpenAiPanel?: () => void;
 	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
-	onRegisterCalloutInserter?:
-		| ((inserter: ((type: string) => void) | null) => void)
-		| undefined;
-	onEditorReady?:
-		| ((editor: Editor | null, contentRoot: HTMLElement | null) => void)
-		| undefined;
-	onRawEditorReady?:
-		| ((editor: RawMarkdownEditorHandle | null) => void)
-		| undefined;
+	onRegisterCalloutInserter?: ((inserter: ((type: string) => void) | null) => void) | undefined;
+	onEditorReady?: ((editor: Editor | null, contentRoot: HTMLElement | null) => void) | undefined;
+	onRawEditorReady?: ((editor: RawMarkdownEditorHandle | null) => void) | undefined;
 	/**
 	 * Registers a callback that synchronously flushes the rich editor's
 	 * debounced Markdown sync into `onChange`. Callers use it to make

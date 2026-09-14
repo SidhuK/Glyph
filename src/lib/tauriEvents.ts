@@ -43,10 +43,9 @@ type TauriEventMap = {
 	"settings:updated": SettingsUpdatedPayload;
 };
 
-type TauriEventHandler<K extends keyof TauriEventMap> =
-	TauriEventMap[K] extends undefined
-		? () => void
-		: (payload: TauriEventMap[K]) => void;
+type TauriEventHandler<K extends keyof TauriEventMap> = TauriEventMap[K] extends undefined
+	? () => void
+	: (payload: TauriEventMap[K]) => void;
 
 export async function listenTauriEvent<K extends keyof TauriEventMap>(
 	event: K,

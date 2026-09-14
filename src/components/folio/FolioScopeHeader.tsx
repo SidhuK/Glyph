@@ -50,11 +50,7 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 						aria-label="Sort notes"
 						onChange={(event) => {
 							const value = event.currentTarget.value;
-							onSortModeChange(
-								value === "edited" || value === "created"
-									? value
-									: "alphabetical",
-							);
+							onSortModeChange(value === "edited" || value === "created" ? value : "alphabetical");
 						}}
 					>
 						<option value="alphabetical">Alphabetically</option>

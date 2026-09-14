@@ -40,9 +40,7 @@ const disconnectedState: CodexState = {
 
 const codexAccountQueryKey = ["ai", "codex", "account"] as const;
 
-function dedupeRateLimits(
-	rateLimits: CodexRateLimitItem[],
-): CodexRateLimitItem[] {
+function dedupeRateLimits(rateLimits: CodexRateLimitItem[]): CodexRateLimitItem[] {
 	const deduped = new Map<string, CodexRateLimitItem>();
 	for (const item of rateLimits) {
 		const dedupeKey =
@@ -62,17 +60,14 @@ function dedupeRateLimits(
 	});
 }
 
-async function readCodexAccount(): Promise<
-	Omit<CodexState, "error" | "loading">
-> {
+async function readCodexAccount(): Promise<Omit<CodexState, "error" | "loading">> {
 	const info = await invoke("codex_account_read");
 	let rateLimits: CodexRateLimitItem[] = [];
 	try {
 		const limits = await invoke("codex_rate_limits_read");
 		rateLimits = dedupeRateLimits(
 			(limits.buckets ?? []).flatMap((bucket, bucketIndex) => {
-				const bucketName =
-					bucket.limit_name || bucket.limit_id || `limit-${bucketIndex + 1}`;
+				const bucketName = bucket.limit_name || bucket.limit_id || `limit-${bucketIndex + 1}`;
 				const windows: CodexRateLimitItem[] = [];
 				const pushWindow = (
 					kind: "primary" | "secondary",
@@ -87,16 +82,13 @@ async function readCodexAccount(): Promise<
 				) => {
 					if (!window || !Number.isFinite(window.used_percent)) return;
 					const windowMinutes =
-						typeof window.window_duration_mins === "number"
-							? window.window_duration_mins
-							: null;
+						typeof window.window_duration_mins === "number" ? window.window_duration_mins : null;
 					windows.push({
 						key: `${bucketName}:${kind}`,
 						label: formatRateLimitWindow(windowMinutes),
 						usedPercent: window.used_percent,
 						windowMinutes,
-						resetsAt:
-							typeof window.resets_at === "number" ? window.resets_at : null,
+						resetsAt: typeof window.resets_at === "number" ? window.resets_at : null,
 					});
 				};
 				pushWindow("primary", bucket.primary);
@@ -170,18 +162,14 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 	const error =
 		(accountQuery.error && extractErrorMessage(accountQuery.error)) ||
 		(connectMutation.error && extractErrorMessage(connectMutation.error)) ||
-		(disconnectMutation.error &&
-			extractErrorMessage(disconnectMutation.error)) ||
+		(disconnectMutation.error && extractErrorMessage(disconnectMutation.error)) ||
 		"";
 	const codexState = useMemo<CodexState>(() => {
 		if (!isCodexProvider) return disconnectedState;
 		return {
 			...(accountQuery.data ?? disconnectedState),
 			error,
-			loading:
-				accountQuery.isFetching ||
-				connectMutation.isPending ||
-				disconnectMutation.isPending,
+			loading: accountQuery.isFetching || connectMutation.isPending || disconnectMutation.isPending,
 		};
 	}, [
 		accountQuery.data,

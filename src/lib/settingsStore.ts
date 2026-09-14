@@ -19,8 +19,7 @@ function runSettingsInvalidationUnlisten(unlisten: UnlistenFn): void {
 }
 
 function ensureSettingsInvalidationListener() {
-	if (settingsInvalidationUnlisten || settingsInvalidationUnlistenPromise)
-		return;
+	if (settingsInvalidationUnlisten || settingsInvalidationUnlistenPromise) return;
 
 	const unlistenPromise = listen("settings:updated", () => {
 		invalidateSettingsCache();

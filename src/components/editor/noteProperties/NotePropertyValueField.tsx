@@ -9,12 +9,7 @@ import { StatusPropertyPill } from "../../status/StatusPropertyPill";
 import type { EditorTextColor } from "../textColors";
 import { TextPropertyValueField } from "./TextPropertyValueField";
 import { WikiLinkedText } from "./WikiLinkedText";
-import {
-	buildTagSuggestions,
-	formatPropertyDate,
-	formatTagLabel,
-	tagHueFromName,
-} from "./utils";
+import { buildTagSuggestions, formatPropertyDate, formatTagLabel, tagHueFromName } from "./utils";
 
 interface NotePropertyValueFieldProps {
 	rowId: string;
@@ -65,10 +60,7 @@ export function NotePropertyValueField({
 		}
 		if (property.kind === "priority") {
 			return (
-				<PriorityPropertyPill
-					value={property.value_text}
-					className="notePropertyStatusStatic"
-				/>
+				<PriorityPropertyPill value={property.value_text} className="notePropertyStatusStatic" />
 			);
 		}
 		if (property.kind === "tags") {
@@ -97,17 +89,10 @@ export function NotePropertyValueField({
 			);
 		}
 		if (property.kind === "checkbox") {
-			return (
-				<span className="notePropertyEmptyValue">
-					{property.value_bool ? "Yes" : "No"}
-				</span>
-			);
+			return <span className="notePropertyEmptyValue">{property.value_bool ? "Yes" : "No"}</span>;
 		}
 		if (property.kind === "date") {
-			const formatted = formatPropertyDate(
-				property.value_text ?? "",
-				dateDisplayFormat,
-			);
+			const formatted = formatPropertyDate(property.value_text ?? "", dateDisplayFormat);
 			if (!formatted) {
 				return <span className="notePropertyEmptyValue">—</span>;
 			}
@@ -183,11 +168,7 @@ export function NotePropertyValueField({
 	}
 
 	if (property.kind === "tags") {
-		const suggestions = buildTagSuggestions(
-			availableTags,
-			property.value_list,
-			tagDraft,
-		);
+		const suggestions = buildTagSuggestions(availableTags, property.value_list, tagDraft);
 		return (
 			<>
 				<div
@@ -239,8 +220,7 @@ export function NotePropertyValueField({
 							if (event.key !== "Backspace" || tagDraft.length > 0) {
 								return;
 							}
-							const lastTag =
-								property.value_list[property.value_list.length - 1];
+							const lastTag = property.value_list[property.value_list.length - 1];
 							if (!lastTag) return;
 							event.preventDefault();
 							onRemoveTag(index, lastTag);

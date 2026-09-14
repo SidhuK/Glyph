@@ -89,8 +89,7 @@
 }
 
 .settingsInlineLink:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 	outline-offset: 3px;
 }
 
@@ -283,13 +282,8 @@
 
 .shortcutRecordButton.is-recording {
 	border-color: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
-	box-shadow: 0 0 0 3px
-		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 8%,
-		var(--settings-control-surface)
-	);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--settings-control-surface));
 }
 
 .shortcutBindingActions {

@@ -4,33 +4,17 @@
 	--database-radius-lg: var(--radius-lg);
 	--database-dropdown-radius: calc(var(--radius-lg) + 2px);
 	--database-dropdown-padding: 8px;
-	--database-dropdown-border: color-mix(
-		in srgb,
-		var(--border-default) 88%,
-		transparent
-	);
+	--database-dropdown-border: color-mix(in srgb, var(--border-default) 88%, transparent);
 	--database-dropdown-background: var(--bg-primary);
-	--database-dropdown-hover: color-mix(
-		in srgb,
-		var(--bg-hover) 82%,
-		var(--bg-primary)
-	);
-	--database-dropdown-shadow: 0 18px 42px
-		color-mix(in srgb, black 18%, transparent), 0 6px 18px
-		color-mix(in srgb, black 10%, transparent), 0 1px 0
-		color-mix(in srgb, white 8%, transparent);
+	--database-dropdown-hover: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-primary));
+	--database-dropdown-shadow:
+		0 18px 42px color-mix(in srgb, black 18%, transparent),
+		0 6px 18px color-mix(in srgb, black 10%, transparent),
+		0 1px 0 color-mix(in srgb, white 8%, transparent);
 	--database-control-height: 30px;
 	--database-control-radius: calc(var(--radius-md) + 1px);
-	--database-control-border: color-mix(
-		in srgb,
-		var(--border-default) 78%,
-		transparent
-	);
-	--database-control-background: color-mix(
-		in srgb,
-		var(--bg-primary) 92%,
-		var(--bg-secondary)
-	);
+	--database-control-border: color-mix(in srgb, var(--border-default) 78%, transparent);
+	--database-control-background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
 }
 
 .databaseHostPane {
@@ -69,13 +53,13 @@
 	padding: 0 10px;
 	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
-	transition: background-color 140ms ease, color 140ms ease;
+	transition:
+		background-color 140ms ease,
+		color 140ms ease;
 }
 
-.databasesDropdownContent
-	[data-slot="dropdown-menu-item"]:is(:hover, [data-highlighted]),
-.databasePickerMenu
-	[data-slot="dropdown-menu-item"]:is(:hover, [data-highlighted]) {
+.databasesDropdownContent [data-slot="dropdown-menu-item"]:is(:hover, [data-highlighted]),
+.databasePickerMenu [data-slot="dropdown-menu-item"]:is(:hover, [data-highlighted]) {
 	background: var(--database-dropdown-hover);
 	color: var(--text-primary);
 }
@@ -147,11 +131,7 @@
 }
 
 .databaseToolbarSearch:focus-within {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 50%,
-		var(--border-default)
-	);
+	border-color: color-mix(in srgb, var(--interactive-accent) 50%, var(--border-default));
 	color: var(--text-secondary);
 }
 
@@ -195,8 +175,11 @@
 	border-color: var(--border-light);
 	background: var(--bg-primary);
 	color: var(--text-secondary);
-	transition: transform 180ms ease, border-color 180ms ease, background-color
-		180ms ease, color 180ms ease;
+	transition:
+		transform 180ms ease,
+		border-color 180ms ease,
+		background-color 180ms ease,
+		color 180ms ease;
 }
 
 .databaseToolbarChip:hover {
@@ -251,8 +234,11 @@
 	background-repeat: no-repeat;
 	background-position: right 9px center;
 	cursor: pointer;
-	transition: transform 180ms ease, border-color 180ms ease, background-color
-		180ms ease, color 180ms ease;
+	transition:
+		transform 180ms ease,
+		border-color 180ms ease,
+		background-color 180ms ease,
+		color 180ms ease;
 }
 
 .databaseToolbarGroupBySelect:hover {
@@ -265,11 +251,7 @@
 .databaseToolbarGroupBySelect:focus,
 .databaseToolbarGroupBySelect:focus-visible {
 	outline: none;
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 50%,
-		var(--border-default)
-	);
+	border-color: color-mix(in srgb, var(--interactive-accent) 50%, var(--border-default));
 }
 
 .databaseToolbarGroupByHint {

@@ -70,8 +70,7 @@ export function useDeferredTocSource(noteKey: string) {
 				if (!rootCanBecomeReady()) return;
 				if (tocReadyResizeObserverRef.current !== null) return;
 				if (typeof ResizeObserver === "undefined") {
-					tocReadyFrameRef.current =
-						window.requestAnimationFrame(markReadyAfterPaint);
+					tocReadyFrameRef.current = window.requestAnimationFrame(markReadyAfterPaint);
 					return;
 				}
 				const resizeObserver = new ResizeObserver(() => {
@@ -90,8 +89,7 @@ export function useDeferredTocSource(noteKey: string) {
 				const maxFramesElapsed = frameCount >= TOC_EDITOR_READY_MAX_FRAME_COUNT;
 
 				if (!minFramesElapsed || (!rootHasLayout && !maxFramesElapsed)) {
-					tocReadyFrameRef.current =
-						window.requestAnimationFrame(markReadyAfterPaint);
+					tocReadyFrameRef.current = window.requestAnimationFrame(markReadyAfterPaint);
 					return;
 				}
 
@@ -101,8 +99,7 @@ export function useDeferredTocSource(noteKey: string) {
 				}
 			}
 
-			tocReadyFrameRef.current =
-				window.requestAnimationFrame(markReadyAfterPaint);
+			tocReadyFrameRef.current = window.requestAnimationFrame(markReadyAfterPaint);
 		},
 		[disconnectPendingTocResizeObserver, resetPendingTocReady],
 	);

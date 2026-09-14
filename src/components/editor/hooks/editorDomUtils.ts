@@ -1,6 +1,4 @@
-export function getMountedEditorContentRoot(
-	host: HTMLElement | null,
-): HTMLElement | null {
+export function getMountedEditorContentRoot(host: HTMLElement | null): HTMLElement | null {
 	if (!host?.isConnected) return null;
 	const contentRoot = host.querySelector<HTMLElement>(".ProseMirror");
 	return contentRoot?.isConnected ? contentRoot : null;

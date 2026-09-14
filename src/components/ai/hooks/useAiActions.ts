@@ -13,9 +13,7 @@ export function useAiActions(chat: Chat) {
 		try {
 			await navigator.clipboard.writeText(text);
 		} catch (e) {
-			setAssistantActionError(
-				e instanceof Error ? e.message : "Failed to copy response",
-			);
+			setAssistantActionError(e instanceof Error ? e.message : "Failed to copy response");
 		}
 	}, []);
 
@@ -30,9 +28,7 @@ export function useAiActions(chat: Chat) {
 				defaultPath: "AI Response.md",
 				filters: [{ name: "Markdown", extensions: ["md"] }],
 			});
-			const absPath = Array.isArray(selection)
-				? (selection[0] ?? null)
-				: selection;
+			const absPath = Array.isArray(selection) ? (selection[0] ?? null) : selection;
 			if (!absPath) return;
 			const rel = await invoke("space_relativize_path", { abs_path: absPath });
 			const markdownRel = rel.toLowerCase().endsWith(".md") ? rel : `${rel}.md`;
@@ -42,17 +38,12 @@ export function useAiActions(chat: Chat) {
 				base_mtime_ms: null,
 			});
 		} catch (e) {
-			setAssistantActionError(
-				e instanceof Error ? e.message : "Failed to save response to file",
-			);
+			setAssistantActionError(e instanceof Error ? e.message : "Failed to save response to file");
 		}
 	}, []);
 
 	const createRetryHandler = useCallback(
-		(
-			sendWithCurrentContext: (text: string) => Promise<boolean>,
-			payloadError: string,
-		) =>
+		(sendWithCurrentContext: (text: string) => Promise<boolean>, payloadError: string) =>
 			async (assistantIndex: number) => {
 				if (chat.status === "streaming") return;
 				setAssistantActionError("");
@@ -67,9 +58,7 @@ export function useAiActions(chat: Chat) {
 					setAssistantActionError("No matching user prompt found for retry.");
 					return;
 				}
-				const userText = messageText(
-					chat.messages[userIndex] as UIMessage,
-				).trim();
+				const userText = messageText(chat.messages[userIndex] as UIMessage).trim();
 				if (!userText) {
 					setAssistantActionError("No matching user prompt found for retry.");
 					return;
@@ -77,9 +66,7 @@ export function useAiActions(chat: Chat) {
 				chat.setMessages(chat.messages.slice(0, userIndex));
 				const ok = await sendWithCurrentContext(userText);
 				if (!ok) {
-					setAssistantActionError(
-						payloadError || "Retry failed due to missing AI context.",
-					);
+					setAssistantActionError(payloadError || "Retry failed due to missing AI context.");
 				}
 			},
 		[chat],

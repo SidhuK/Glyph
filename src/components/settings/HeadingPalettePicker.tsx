@@ -14,11 +14,7 @@ function HeadingPalettePreview({ colors }: { colors: readonly string[] }) {
 	return (
 		<span className="headingPalettePreview" aria-hidden="true">
 			{colors.map((color, index) => (
-				<span
-					key={`${index}-${color}`}
-					className="headingPaletteSwatch"
-					style={{ color }}
-				>
+				<span key={`${index}-${color}`} className="headingPaletteSwatch" style={{ color }}>
 					H{index + 1}
 				</span>
 			))}
@@ -54,15 +50,11 @@ export function HeadingPalettePicker({
 					aria-label={t("editor.colorfulHeadings.palette.label")}
 					aria-expanded={open}
 				>
-					<HeadingPalettePreview
-						colors={isDark ? selected.dark : selected.light}
-					/>
+					<HeadingPalettePreview colors={isDark ? selected.dark : selected.light} />
 					<span className="appearanceThemeDropdownTitle">
 						{t(`editor.colorfulHeadings.palette.options.${selected.id}`)}
 					</span>
-					<span
-						className={cn("appearanceThemeDropdownChevron", open && "is-open")}
-					>
+					<span className={cn("appearanceThemeDropdownChevron", open && "is-open")}>
 						<ChevronDown size="var(--icon-md)" />
 					</span>
 				</button>
@@ -99,9 +91,7 @@ export function HeadingPalettePicker({
 								<span className="appearanceThemeDropdownOptionTitle">
 									{t(`editor.colorfulHeadings.palette.options.${palette.id}`)}
 								</span>
-								<HeadingPalettePreview
-									colors={isDark ? palette.dark : palette.light}
-								/>
+								<HeadingPalettePreview colors={isDark ? palette.dark : palette.light} />
 							</button>
 						);
 					})}

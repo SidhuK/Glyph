@@ -5,23 +5,14 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { type FocusMode, isFocusMode, loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import {
-	SettingsInfoHint,
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "./SettingsScaffold";
+import { SettingsInfoHint, SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
 
 const SETTINGS_QUERY_ROOT = "experimental-settings";
 
-const FOCUS_MODE_VALUES = [
-	"off",
-	"paragraph",
-	"sentence",
-] as const satisfies readonly FocusMode[];
+const FOCUS_MODE_VALUES = ["off", "paragraph", "sentence"] as const satisfies readonly FocusMode[];
 
 function VimModeInfo() {
 	const { t } = useTranslation("settings.general");
@@ -41,16 +32,8 @@ export function ExperimentalSettingsPane() {
 		queryKey: [SETTINGS_QUERY_ROOT],
 		queryFn: () => loadSettings(),
 	});
-	const folioMode = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.folioMode.write,
-		setError,
-	);
-	const noteSidePeek = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.noteSidePeek.write,
-		setError,
-	);
+	const folioMode = useSettingsBoolean(false, DURABLE_SETTINGS.folioMode.write, setError);
+	const noteSidePeek = useSettingsBoolean(false, DURABLE_SETTINGS.noteSidePeek.write, setError);
 	const legacyConnections = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.legacyConnections.write,
@@ -61,16 +44,8 @@ export function ExperimentalSettingsPane() {
 		DURABLE_SETTINGS.editorShowExternalLinkPreviews.write,
 		setError,
 	);
-	const formatBar = useSettingsBoolean(
-		true,
-		DURABLE_SETTINGS.editorShowFormatBar.write,
-		setError,
-	);
-	const zenMode = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorZenMode.write,
-		setError,
-	);
+	const formatBar = useSettingsBoolean(true, DURABLE_SETTINGS.editorShowFormatBar.write, setError);
+	const zenMode = useSettingsBoolean(false, DURABLE_SETTINGS.editorZenMode.write, setError);
 	const rawMarkdownVimMode = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.editorRawMarkdownVimMode.write,
@@ -126,15 +101,11 @@ export function ExperimentalSettingsPane() {
 		void queryClient.invalidateQueries({ queryKey: [SETTINGS_QUERY_ROOT] });
 	});
 
-	const displayedError = settingsQuery.error
-		? extractErrorMessage(settingsQuery.error)
-		: error;
+	const displayedError = settingsQuery.error ? extractErrorMessage(settingsQuery.error) : error;
 
 	return (
 		<div className="settingsPane">
-			{displayedError ? (
-				<div className="settingsError">{displayedError}</div>
-			) : null}
+			{displayedError ? <div className="settingsError">{displayedError}</div> : null}
 			<div className="settingsGrid">
 				<SettingsSection
 					title={t("experimental.sectionTitle")}

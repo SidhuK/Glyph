@@ -7,12 +7,8 @@ import type {
 export type DatabaseView = WorkspaceDatabaseDefinition["views"][number];
 export type SaveDatabaseInput =
 	| WorkspaceDatabaseDefinition
-	| ((
-			currentDatabase: WorkspaceDatabaseDefinition,
-	  ) => WorkspaceDatabaseDefinition);
-export type SaveDatabase = (
-	nextDatabase: SaveDatabaseInput,
-) => Promise<WorkspaceDatabaseDocument>;
+	| ((currentDatabase: WorkspaceDatabaseDefinition) => WorkspaceDatabaseDefinition);
+export type SaveDatabase = (nextDatabase: SaveDatabaseInput) => Promise<WorkspaceDatabaseDocument>;
 
 export interface PaneErrorHandlers {
 	setError: (message: string) => void;
@@ -27,9 +23,6 @@ export interface ActiveCollection {
 
 export interface DatabaseBoardHandlers {
 	onLaneOrderChange: (groupColumnId: string, laneOrder: string[]) => void;
-	onCardOrderChange: (
-		groupColumnId: string,
-		cardOrder: Record<string, string[]>,
-	) => void;
+	onCardOrderChange: (groupColumnId: string, cardOrder: Record<string, string[]>) => void;
 	onLaneColorChange: (laneId: string, color: string | null) => void;
 }

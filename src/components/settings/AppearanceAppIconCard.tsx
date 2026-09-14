@@ -5,13 +5,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow } from "./SettingsScaffold";
 
-const ICONS = [
-	"default",
-	"blue-star",
-	"blue-glyph",
-	"confetti-star",
-	"blueprint",
-] as const;
+const ICONS = ["default", "blue-star", "blue-glyph", "confetti-star", "blueprint"] as const;
 const QUERY_KEY = ["appearance-app-icon"] as const;
 
 export function AppearanceAppIconCard() {
@@ -66,11 +60,7 @@ export function AppearanceAppIconCard() {
 								/>
 								<span className="relative flex size-12 items-center justify-center rounded-xl border border-[var(--border-light)] bg-[var(--bg-primary)] transition-colors peer-checked:border-[var(--text-primary)] peer-checked:ring-1 peer-checked:ring-[var(--text-primary)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-[var(--text-primary)] peer-disabled:cursor-wait peer-disabled:opacity-50">
 									<img
-										src={
-											icon === "default"
-												? "/glyph-app-icon.png"
-												: `/app-icons/${icon}.png`
-										}
+										src={icon === "default" ? "/glyph-app-icon.png" : `/app-icons/${icon}.png`}
 										alt=""
 										width={40}
 										height={40}

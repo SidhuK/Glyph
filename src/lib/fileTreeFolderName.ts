@@ -7,14 +7,10 @@ export function spaceLabelFromAbsPath(path: string | null): string {
 	return parts[parts.length - 1] ?? path;
 }
 
-export function validateFolderName(
-	name: string,
-	siblingNames: Iterable<string>,
-): string | null {
+export function validateFolderName(name: string, siblingNames: Iterable<string>): string | null {
 	const trimmed = name.trim();
 	if (!trimmed) return "Folder name cannot be empty";
-	if (trimmed === "." || trimmed === "..")
-		return "This folder name is reserved";
+	if (trimmed === "." || trimmed === "..") return "This folder name is reserved";
 	if (trimmed.includes("/")) {
 		return "Folder name cannot contain path separators";
 	}

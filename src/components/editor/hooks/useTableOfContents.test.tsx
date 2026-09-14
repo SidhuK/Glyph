@@ -3,7 +3,7 @@
 import type { Editor } from "@tiptap/react";
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { useTableOfContents } from "./useTableOfContents";
 
 (
@@ -19,12 +19,7 @@ interface HarnessProps {
 
 function Harness({ contentRoot, editor }: HarnessProps) {
 	const { activeId, headings } = useTableOfContents(editor, contentRoot);
-	return (
-		<output
-			data-active-id={activeId ?? ""}
-			data-heading-count={headings.length}
-		/>
-	);
+	return <output data-active-id={activeId ?? ""} data-heading-count={headings.length} />;
 }
 
 describe("useTableOfContents editor mounting", () => {
@@ -40,9 +35,7 @@ describe("useTableOfContents editor mounting", () => {
 		vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) =>
 			window.setTimeout(() => callback(performance.now()), 16),
 		);
-		vi.stubGlobal("cancelAnimationFrame", (id: number) =>
-			window.clearTimeout(id),
-		);
+		vi.stubGlobal("cancelAnimationFrame", (id: number) => window.clearTimeout(id));
 		viewAccessCount = 0;
 		viewMounted = false;
 
@@ -69,9 +62,8 @@ describe("useTableOfContents editor mounting", () => {
 			},
 			state: {
 				doc: {
-					descendants: (
-						callback: (node: typeof headingNode, pos: number) => void,
-					) => callback(headingNode, 0),
+					descendants: (callback: (node: typeof headingNode, pos: number) => void) =>
+						callback(headingNode, 0),
 				},
 			},
 			on: (event: string, callback: (event: unknown) => void) => {
@@ -124,9 +116,7 @@ describe("useTableOfContents editor mounting", () => {
 		scrollContainer.appendChild(editorContentRoot);
 		document.body.appendChild(scrollContainer);
 
-		act(() =>
-			root.render(<Harness contentRoot={editorContentRoot} editor={editor} />),
-		);
+		act(() => root.render(<Harness contentRoot={editorContentRoot} editor={editor} />));
 		await flushAnimationFrame();
 
 		expect(viewAccessCount).toBeGreaterThan(0);

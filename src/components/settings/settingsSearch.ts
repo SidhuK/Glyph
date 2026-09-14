@@ -139,31 +139,24 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "usage-library", tab: "usage" },
 ];
 
-const SETTINGS_TAB_DEFS: readonly SettingsSearchDef[] = SETTINGS_TABS.map(
-	(tab) => ({
-		id: `${tab.id}-settings`,
-		tab: tab.id,
-	}),
-);
+const SETTINGS_TAB_DEFS: readonly SettingsSearchDef[] = SETTINGS_TABS.map((tab) => ({
+	id: `${tab.id}-settings`,
+	tab: tab.id,
+}));
 
 export const SETTINGS_SEARCH_ENTRIES: readonly SettingsSearchDef[] = [
 	...SETTINGS_TAB_DEFS,
 	...SETTINGS_SEARCH_DEFS,
 ];
 
-const settingsSearchIds = new Set(
-	SETTINGS_SEARCH_ENTRIES.map((definition) => definition.id),
-);
+const settingsSearchIds = new Set(SETTINGS_SEARCH_ENTRIES.map((definition) => definition.id));
 for (const id of SEARCHABLE_SETTING_IDS) {
 	if (!settingsSearchIds.has(id)) {
 		throw new Error(`Missing settings search entry: ${id}`);
 	}
 }
 
-function readKeywords(
-	nsKey: string,
-	language: string,
-): readonly string[] | undefined {
+function readKeywords(nsKey: string, language: string): readonly string[] | undefined {
 	const keywords = i18n.t(nsKey, {
 		lng: language,
 		returnObjects: true,
@@ -182,8 +175,7 @@ export function localizeSettingsSearchEntry(
 	def: SettingsSearchDef,
 	language: string = i18n.language,
 ): SettingsSearchEntry {
-	const isTabEntry =
-		def.id.endsWith("-settings") && def.id === `${def.tab}-settings`;
+	const isTabEntry = def.id.endsWith("-settings") && def.id === `${def.tab}-settings`;
 	const base = isTabEntry
 		? `settings.search:tabEntry.${def.tab}`
 		: `settings.search:entries.${def.id}`;
@@ -202,10 +194,8 @@ export function localizeSettingsSearchEntry(
 
 	const record = localized as Record<string, unknown>;
 	const title = typeof record.title === "string" ? record.title : def.id;
-	const section =
-		typeof record.section === "string" ? record.section : undefined;
-	const description =
-		typeof record.description === "string" ? record.description : undefined;
+	const section = typeof record.section === "string" ? record.section : undefined;
+	const description = typeof record.description === "string" ? record.description : undefined;
 	const keywords = Array.isArray(record.keywords)
 		? (record.keywords as string[])
 		: readKeywords(`${base}.keywords`, language);
@@ -265,8 +255,7 @@ export function searchSettingsEntries(
 		})
 		.sort((a, b) => {
 			const byScore =
-				scoreSettingsEntry(a, normalizedQuery) -
-				scoreSettingsEntry(b, normalizedQuery);
+				scoreSettingsEntry(a, normalizedQuery) - scoreSettingsEntry(b, normalizedQuery);
 			if (byScore !== 0) return byScore;
 			return a.title.localeCompare(b.title);
 		})
@@ -283,18 +272,11 @@ const SETTINGS_SEARCH_WAIT_TIMEOUT_MS = 5000;
 let settingsSearchRequestId = 0;
 let clearActiveSettingsSearchTarget: (() => void) | null = null;
 
-function findSettingsTarget(
-	root: ParentNode,
-	entry: SettingsSearchEntry,
-): HTMLElement | null {
-	const searchTarget = root.querySelector<HTMLElement>(
-		`[data-settings-search-id="${entry.id}"]`,
-	);
+function findSettingsTarget(root: ParentNode, entry: SettingsSearchEntry): HTMLElement | null {
+	const searchTarget = root.querySelector<HTMLElement>(`[data-settings-search-id="${entry.id}"]`);
 	if (searchTarget) return searchTarget;
 
-	const rows = Array.from(
-		root.querySelectorAll<HTMLElement>("[data-settings-row-title]"),
-	);
+	const rows = Array.from(root.querySelectorAll<HTMLElement>("[data-settings-row-title]"));
 	const matchingRow = rows.find((row) => {
 		if (row.dataset.settingsRowTitle !== entry.title) return false;
 		if (!entry.section) return true;
@@ -303,9 +285,7 @@ function findSettingsTarget(
 	});
 	if (matchingRow) return matchingRow;
 
-	const sections = Array.from(
-		root.querySelectorAll<HTMLElement>("[data-settings-section-title]"),
-	);
+	const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-settings-section-title]"));
 	return (
 		sections.find(
 			(section) =>
@@ -316,9 +296,7 @@ function findSettingsTarget(
 }
 
 function clearSettingsSearchTargets(root: ParentNode) {
-	for (const active of root.querySelectorAll(
-		`.${SETTINGS_SEARCH_TARGET_CLASS}`,
-	)) {
+	for (const active of root.querySelectorAll(`.${SETTINGS_SEARCH_TARGET_CLASS}`)) {
 		active.classList.remove(SETTINGS_SEARCH_TARGET_CLASS);
 	}
 }
@@ -326,9 +304,7 @@ function clearSettingsSearchTargets(root: ParentNode) {
 function findSettingsTabPanel(entry: SettingsSearchEntry): HTMLElement | null {
 	const root = document.querySelector<HTMLElement>(".settingsTabPanel");
 	const tabLabel = localizedSettingsTabLabel(entry.tab);
-	const activeTitle = root
-		?.querySelector<HTMLElement>(".settingsPanelTitle")
-		?.textContent?.trim();
+	const activeTitle = root?.querySelector<HTMLElement>(".settingsPanelTitle")?.textContent?.trim();
 	if (!root || (tabLabel && activeTitle !== tabLabel)) return null;
 	return root;
 }
@@ -406,8 +382,5 @@ export function scrollToSettingsSearchEntry(entry: SettingsSearchEntry) {
 	observer = new MutationObserver(scheduleReveal);
 	observer.observe(observerRoot, { childList: true, subtree: true });
 	scheduleReveal();
-	waitTimeoutId = window.setTimeout(
-		cancelPendingScroll,
-		SETTINGS_SEARCH_WAIT_TIMEOUT_MS,
-	);
+	waitTimeoutId = window.setTimeout(cancelPendingScroll, SETTINGS_SEARCH_WAIT_TIMEOUT_MS);
 }

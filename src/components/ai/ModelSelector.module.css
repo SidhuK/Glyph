@@ -19,8 +19,10 @@
 	color: var(--text-primary);
 	cursor: pointer;
 	box-shadow: none;
-	transition: border-color var(--transition-fast), background
-		var(--transition-fast), box-shadow var(--transition-fast);
+	transition:
+		border-color var(--transition-fast),
+		background var(--transition-fast),
+		box-shadow var(--transition-fast);
 	min-width: 0;
 	white-space: nowrap;
 	overflow: hidden;
@@ -80,8 +82,7 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 8px 12px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 40%, transparent);
+	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
 	flex-shrink: 0;
 }
 
@@ -202,8 +203,9 @@
 	background: transparent;
 	border: 1px solid transparent;
 	cursor: pointer;
-	transition: background var(--transition-base), border-color
-		var(--transition-base);
+	transition:
+		background var(--transition-base),
+		border-color var(--transition-base);
 	flex: 1;
 	min-width: 0;
 }
@@ -288,8 +290,7 @@
    ───────────────────────────────────────────────────────────────────────────── */
 .detailPanel {
 	width: var(--panel-width);
-	border-left: 1px solid
-		color-mix(in srgb, var(--border-light) 50%, transparent);
+	border-left: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
 	padding: 10px 12px;
 	display: flex;
 	flex-direction: column;

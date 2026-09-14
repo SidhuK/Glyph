@@ -47,10 +47,7 @@ interface CommandPaletteProps {
 	spacePath: string | null;
 	tabs: WorkspaceTab[];
 	onActivateTab: (id: string) => void;
-	onSelectSearchResult: (
-		id: string,
-		options?: { query?: string; matchIndex?: number },
-	) => void;
+	onSelectSearchResult: (id: string, options?: { query?: string; matchIndex?: number }) => void;
 	onRevealFolder: (path: string) => void;
 	onOpenDatabase: (id: string) => void;
 	templateFolder: string | null;
@@ -89,14 +86,11 @@ export function CommandPalette({
 	onCreateFromTemplate,
 }: CommandPaletteProps) {
 	const { t, i18n } = useTranslation("shell");
-	const { rootEntries, childrenByDir, tags, people, ensureTagsFresh } =
-		useFileTreeContext();
+	const { rootEntries, childrenByDir, tags, people, ensureTagsFresh } = useFileTreeContext();
 	const [query, setQuery] = useState(initialQuery);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [activeSettingId, setActiveSettingId] = useState<string | null>(null);
-	const [activeTemplatePath, setActiveTemplatePath] = useState<string | null>(
-		null,
-	);
+	const [activeTemplatePath, setActiveTemplatePath] = useState<string | null>(null);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const restoreFocusRef = useRef<HTMLElement | null>(null);
 	const parsedQuery = useMemo(() => parsePaletteQuery(query), [query]);
@@ -114,9 +108,7 @@ export function CommandPalette({
 	useEffect(() => {
 		if (!open) return;
 		restoreFocusRef.current =
-			document.activeElement instanceof HTMLElement
-				? document.activeElement
-				: null;
+			document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		void ensureTagsFresh();
 	}, [ensureTagsFresh, open]);
 
@@ -127,20 +119,17 @@ export function CommandPalette({
 
 	const searchEnabled =
 		!isSecretPalettePhrase &&
-		(parsedQuery.scope === "all" ||
-			parsedQuery.scope === "tags" ||
-			parsedQuery.scope === "people");
+		(parsedQuery.scope === "all" || parsedQuery.scope === "tags" || parsedQuery.scope === "people");
 	const searchQuery =
 		parsedQuery.scope === "tags" || parsedQuery.scope === "people"
 			? parsedQuery.raw
 			: parsedQuery.text;
-	const { recentFiles, isSearching, titleMatches, contentMatches } =
-		useCommandSearch(
-			searchQuery,
-			spacePath,
-			open && searchEnabled,
-			settings?.editor.enablePeopleMentionsAsTags ?? false,
-		);
+	const { recentFiles, isSearching, titleMatches, contentMatches } = useCommandSearch(
+		searchQuery,
+		spacePath,
+		open && searchEnabled,
+		settings?.editor.enablePeopleMentionsAsTags ?? false,
+	);
 
 	const databaseSummaries = useQuery({
 		queryKey: navigationQueryKeys.databaseSummaries(),
@@ -157,8 +146,7 @@ export function CommandPalette({
 			const trimmed = rawQuery.trim();
 			const summaries = databaseSummaries.data;
 			if (!summaries) throw new Error(t("commandPalette.saveSearchFailed"));
-			const baseName =
-				trimmed.length > 56 ? `${trimmed.slice(0, 53)}…` : trimmed;
+			const baseName = trimmed.length > 56 ? `${trimmed.slice(0, 53)}…` : trimmed;
 			return invoke("databases_create", {
 				name: nextCollectionName(summaries, baseName),
 				folder: null,
@@ -213,9 +201,7 @@ export function CommandPalette({
 			return preservedIndex;
 		}
 		const firstEnabledId = movePaletteSelection(results, null, 1);
-		const firstEnabledIndex = results.findIndex(
-			(result) => result.id === firstEnabledId,
-		);
+		const firstEnabledIndex = results.findIndex((result) => result.id === firstEnabledId);
 		return Math.max(firstEnabledIndex, 0);
 	}, [results, selectedId]);
 	const selectedResult = results[resolvedSelectedIndex];
@@ -237,9 +223,7 @@ export function CommandPalette({
 				return false;
 			}
 			if (settingPending) {
-				return (
-					definition.control === "toggle" || definition.control === "choice"
-				);
+				return definition.control === "toggle" || definition.control === "choice";
 			}
 			const current = settingValue(definition);
 			if (definition.control === "toggle" && typeof current === "boolean") {
@@ -247,11 +231,7 @@ export function CommandPalette({
 				return true;
 			}
 			if (definition.control === "choice") {
-				const nextValue = stepPaletteOption(
-					definition.options ?? [],
-					current ?? null,
-					direction,
-				);
+				const nextValue = stepPaletteOption(definition.options ?? [], current ?? null, direction);
 				if (nextValue !== null) {
 					updateSetting({ definition, value: nextValue });
 					return true;
@@ -345,12 +325,7 @@ export function CommandPalette({
 	const handleRootKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLElement>) => {
 			if (event.target !== inputRef.current) return;
-			if (
-				event.nativeEvent.isComposing ||
-				event.altKey ||
-				event.ctrlKey ||
-				event.metaKey
-			) {
+			if (event.nativeEvent.isComposing || event.altKey || event.ctrlKey || event.metaKey) {
 				return;
 			}
 			if (isSecretPalettePhrase && event.key !== "Escape") return;
@@ -412,9 +387,7 @@ export function CommandPalette({
 		],
 	);
 
-	const activeSetting = activeSettingId
-		? PALETTE_SETTING_BY_ID.get(activeSettingId)
-		: undefined;
+	const activeSetting = activeSettingId ? PALETTE_SETTING_BY_ID.get(activeSettingId) : undefined;
 	const activeSettingEntry = activeSetting
 		? localizeSettingsSearchEntry(
 				{
@@ -435,34 +408,24 @@ export function CommandPalette({
 	}, [activeSettingId, activeTemplatePath, open]);
 	const canSaveSearch =
 		!isSecretPalettePhrase &&
-		(parsedQuery.scope === "all" ||
-			parsedQuery.scope === "tags" ||
-			parsedQuery.scope === "people");
+		(parsedQuery.scope === "all" || parsedQuery.scope === "tags" || parsedQuery.scope === "people");
 	const isCurrentSearchSaved = databaseSummaries.data?.some(
 		(collection) =>
-			collection.source.kind === "search" &&
-			collection.source.value === normalizedQuery,
+			collection.source.kind === "search" && collection.source.value === normalizedQuery,
 	);
 
 	return (
-		<Dialog
-			open={open}
-			onOpenChange={(isOpen) => !isOpen && closeAndRestoreFocus()}
-		>
+		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && closeAndRestoreFocus()}>
 			<DialogContent
 				className={cn(
 					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
 					selectedPreviewPath ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
 				)}
 				data-with-preview={selectedPreviewPath ? "true" : "false"}
-				onKeyDownCapture={
-					activeSetting || activeTemplate ? undefined : handleRootKeyDown
-				}
+				onKeyDownCapture={activeSetting || activeTemplate ? undefined : handleRootKeyDown}
 				showCloseButton={false}
 			>
-				<DialogTitle className="sr-only">
-					{t("commandPalette.title")}
-				</DialogTitle>
+				<DialogTitle className="sr-only">{t("commandPalette.title")}</DialogTitle>
 
 				{activeSetting && activeSettingEntry ? (
 					<PaletteSettingEditor
@@ -477,9 +440,7 @@ export function CommandPalette({
 							setActiveSettingId(null);
 							window.requestAnimationFrame(() => inputRef.current?.focus());
 						}}
-						onChange={(value) =>
-							updateSetting({ definition: activeSetting, value })
-						}
+						onChange={(value) => updateSetting({ definition: activeSetting, value })}
 					/>
 				) : activeTemplate ? (
 					<div
@@ -548,9 +509,7 @@ export function CommandPalette({
 										className="commandSearchSaveButton"
 										data-saved={isCurrentSearchSaved ? "true" : "false"}
 										disabled={
-											!databaseSummaries.data ||
-											saveSearch.isPending ||
-											isCurrentSearchSaved
+											!databaseSummaries.data || saveSearch.isPending || isCurrentSearchSaved
 										}
 										onClick={() => saveSearch.mutate(query)}
 										title={t(
@@ -598,9 +557,7 @@ export function CommandPalette({
 									<CommandList
 										results={results}
 										selectedIndex={resolvedSelectedIndex}
-										onSetSelectedIndex={(index) =>
-											setSelectedId(results[index]?.id ?? null)
-										}
+										onSetSelectedIndex={(index) => setSelectedId(results[index]?.id ?? null)}
 										onSelectResult={selectResult}
 									/>
 								)}
@@ -611,9 +568,7 @@ export function CommandPalette({
 									aria-label={t("commandPalette.notePreview")}
 								>
 									<div className="linkedNotePreviewBody">
-										{notePreview ? (
-											<NotePreviewContent {...notePreview} />
-										) : null}
+										{notePreview ? <NotePreviewContent {...notePreview} /> : null}
 									</div>
 								</aside>
 							) : null}

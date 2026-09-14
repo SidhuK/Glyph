@@ -96,18 +96,8 @@ function normalizeSplitEditorNode(
 	const id = value.id.trim();
 	if (!id || splitIds.has(id)) return null;
 	splitIds.add(id);
-	const first = normalizeSplitEditorNode(
-		value.first,
-		paneIds,
-		splitIds,
-		depth + 1,
-	);
-	const second = normalizeSplitEditorNode(
-		value.second,
-		paneIds,
-		splitIds,
-		depth + 1,
-	);
+	const first = normalizeSplitEditorNode(value.first, paneIds, splitIds, depth + 1);
+	const second = normalizeSplitEditorNode(value.second, paneIds, splitIds, depth + 1);
 	if (!first || !second) return null;
 	return {
 		type: "split",
@@ -119,9 +109,7 @@ function normalizeSplitEditorNode(
 	};
 }
 
-function normalizeWorkspaceSessionSnapshot(
-	value: unknown,
-): WorkspaceSessionSnapshot | null {
+function normalizeWorkspaceSessionSnapshot(value: unknown): WorkspaceSessionSnapshot | null {
 	if (!isRecord(value) || value.version !== 1 || !Array.isArray(value.tabs)) {
 		return null;
 	}
@@ -134,36 +122,25 @@ function normalizeWorkspaceSessionSnapshot(
 			? normalizeSpecialTabTarget(value.activeTabTarget)
 			: null;
 	const activeTabTarget =
-		requestedActiveTarget &&
-		tabs.some((tab) => tab.target === requestedActiveTarget)
+		requestedActiveTarget && tabs.some((tab) => tab.target === requestedActiveTarget)
 			? requestedActiveTarget
 			: null;
-	const splitLayout = normalizeSplitEditorNode(
-		value.splitLayout,
-		new Set(),
-		new Set(),
-	);
+	const splitLayout = normalizeSplitEditorNode(value.splitLayout, new Set(), new Set());
 	const layoutPaneIds = new Set(
 		splitLayout ? paneIdsInLayout(splitLayout) : [PRIMARY_EDITOR_PANE_ID],
 	);
 	const activeTabTargetByPane: Record<string, string | null> = {};
-	const rawActiveTargets = isRecord(value.activeTabTargetByPane)
-		? value.activeTabTargetByPane
-		: {};
+	const rawActiveTargets = isRecord(value.activeTabTargetByPane) ? value.activeTabTargetByPane : {};
 	for (const paneId of layoutPaneIds) {
 		const target =
 			typeof rawActiveTargets[paneId] === "string"
 				? normalizeSpecialTabTarget(rawActiveTargets[paneId])
 				: null;
 		activeTabTargetByPane[paneId] =
-			target &&
-			tabs.some((tab) => tab.paneId === paneId && tab.target === target)
-				? target
-				: null;
+			target && tabs.some((tab) => tab.paneId === paneId && tab.target === target) ? target : null;
 	}
 	const focusedPaneId =
-		typeof value.focusedPaneId === "string" &&
-		layoutPaneIds.has(value.focusedPaneId)
+		typeof value.focusedPaneId === "string" && layoutPaneIds.has(value.focusedPaneId)
 			? value.focusedPaneId
 			: null;
 	const savedAt =
@@ -181,9 +158,7 @@ function normalizeWorkspaceSessionSnapshot(
 	};
 }
 
-function normalizeWorkspaceSessionMap(
-	value: unknown,
-): Record<string, WorkspaceSessionSnapshot> {
+function normalizeWorkspaceSessionMap(value: unknown): Record<string, WorkspaceSessionSnapshot> {
 	if (!isRecord(value)) return {};
 	const out: Record<string, WorkspaceSessionSnapshot> = {};
 	for (const [spacePath, snapshot] of Object.entries(value)) {

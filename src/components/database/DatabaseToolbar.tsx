@@ -53,18 +53,13 @@ export function DatabaseToolbar({
 	const [searchExpanded, setSearchExpanded] = useState(Boolean(searchValue));
 	configRef.current = config;
 	const hasSelectedGroupColumn =
-		groupColumnId != null &&
-		groupColumns.some((column) => column.id === groupColumnId);
+		groupColumnId != null && groupColumns.some((column) => column.id === groupColumnId);
 	const selectedGroupColumn =
-		(hasSelectedGroupColumn
-			? groupColumns.find((column) => column.id === groupColumnId)
-			: null) ??
+		(hasSelectedGroupColumn ? groupColumns.find((column) => column.id === groupColumnId) : null) ??
 		(databaseView === "board" ? groupColumns[0] : null) ??
 		null;
 	const selectedGroupColumnId =
-		selectedGroupColumn?.id ??
-		(databaseView === "board" ? groupColumns[0]?.id : "") ??
-		"";
+		selectedGroupColumn?.id ?? (databaseView === "board" ? groupColumns[0]?.id : "") ?? "";
 	const groupByLabel = "Grouped by";
 
 	useEffect(() => {
@@ -161,13 +156,9 @@ export function DatabaseToolbar({
 									: "Choose a field to group by"
 							}
 							aria-label={groupByLabel}
-							onChange={(event) =>
-								onGroupColumnIdChange(event.target.value || null)
-							}
+							onChange={(event) => onGroupColumnIdChange(event.target.value || null)}
 						>
-							{databaseView === "board" ? null : (
-								<option value="">No grouping</option>
-							)}
+							{databaseView === "board" ? null : <option value="">No grouping</option>}
 							{groupColumns.map((column) => (
 								<option key={column.id} value={column.id}>
 									{groupColumnOptionLabel(column)}

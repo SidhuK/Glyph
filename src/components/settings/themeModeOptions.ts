@@ -1,11 +1,7 @@
 import { i18n } from "../../i18n";
 import type { ThemeMode } from "../../lib/settings";
 
-const THEME_MODE_VALUES = [
-	"system",
-	"light",
-	"dark",
-] as const satisfies readonly ThemeMode[];
+const THEME_MODE_VALUES = ["system", "light", "dark"] as const satisfies readonly ThemeMode[];
 
 export function getThemeModeOptions(): Array<{
 	value: ThemeMode;

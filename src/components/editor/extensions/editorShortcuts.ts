@@ -6,9 +6,7 @@ export interface EditorShortcutsHandlers {
 	onSave?: () => void;
 }
 
-export function createEditorShortcutsExtension(
-	getHandlers: () => EditorShortcutsHandlers,
-) {
+export function createEditorShortcutsExtension(getHandlers: () => EditorShortcutsHandlers) {
 	return Extension.create({
 		name: "editorShortcuts",
 		priority: 1000,

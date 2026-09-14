@@ -21,9 +21,7 @@ export function IndexingNotice() {
 			</div>
 			<div className="indexingNoticeTrack" aria-hidden="true">
 				<div
-					className={
-						total > 0 ? "indexingNoticeBar" : "indexingNoticeBar is-pending"
-					}
+					className={total > 0 ? "indexingNoticeBar" : "indexingNoticeBar is-pending"}
 					style={total > 0 ? { width: `${percentage}%` } : undefined}
 				/>
 			</div>

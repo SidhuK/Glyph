@@ -2,13 +2,12 @@
 
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { NoteInlineEditor } from "./NoteInlineEditor";
 
 vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
-		t: (key: string, options?: { defaultValue?: string }) =>
-			options?.defaultValue ?? key,
+		t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key,
 	}),
 }));
 
@@ -202,46 +201,28 @@ vi.mock("../ui/shadcn/button", () => ({
 
 vi.mock("../ui/shadcn/dialog", () => ({
 	Dialog: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-	DialogContent: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	DialogDescription: ({ children }: { children: React.ReactNode }) => (
-		<p>{children}</p>
-	),
-	DialogFooter: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	DialogHeader: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	DialogTitle: ({ children }: { children: React.ReactNode }) => (
-		<h2>{children}</h2>
-	),
+	DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+	DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+	DialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+	DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+	DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }));
 
 vi.mock("../ui/shadcn/input", () => ({
-	Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-		<input {...props} />
-	),
+	Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} />,
 }));
 
 vi.mock("../ui/shadcn/popover", () => ({
 	Popover: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-	PopoverContent: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	PopoverTrigger: ({ children }: { children: React.ReactNode }) => (
-		<>{children}</>
-	),
+	PopoverContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+	PopoverTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("../ui/shadcn/dropdown-menu", () => ({
 	DropdownMenu: ({ children }: { children: React.ReactNode }) => (
 		<div data-testid="dropdown-menu">{children}</div>
 	),
-	DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => (
-		<>{children}</>
-	),
+	DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 	DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
 		<div role="menu" data-slot="dropdown-menu-content">
 			{children}
@@ -389,20 +370,14 @@ describe("NoteInlineEditor table controls", () => {
 
 		await syncSelection("Ada");
 
-		expect(container.querySelector('[data-axis="row"]')).toBeInstanceOf(
-			HTMLButtonElement,
-		);
-		expect(container.querySelector('[data-axis="column"]')).toBeInstanceOf(
-			HTMLButtonElement,
-		);
+		expect(container.querySelector('[data-axis="row"]')).toBeInstanceOf(HTMLButtonElement);
+		expect(container.querySelector('[data-axis="column"]')).toBeInstanceOf(HTMLButtonElement);
 	});
 
 	it("registers equations in minimal chrome only when the caller opts in", () => {
 		render("rich", { chrome: "minimal", markdown: "$x$" });
 
-		expect(
-			useNoteEditorMock.mock.lastCall?.[0].additionalExtensions,
-		).toHaveLength(0);
+		expect(useNoteEditorMock.mock.lastCall?.[0].additionalExtensions).toHaveLength(0);
 
 		render("rich", {
 			chrome: "minimal",
@@ -410,9 +385,7 @@ describe("NoteInlineEditor table controls", () => {
 			markdown: "$x$",
 		});
 
-		expect(
-			useNoteEditorMock.mock.lastCall?.[0].additionalExtensions,
-		).toHaveLength(2);
+		expect(useNoteEditorMock.mock.lastCall?.[0].additionalExtensions).toHaveLength(2);
 	});
 
 	it("hides table controls when selection moves outside the table", async () => {
@@ -483,9 +456,9 @@ describe("NoteInlineEditor table controls", () => {
 			?.closest('[data-testid="dropdown-menu"]');
 		const addColumnRight = Array.from(
 			columnMenu?.querySelectorAll('[data-slot="dropdown-menu-item"]') ?? [],
-		).find(
-			(element) => element.textContent === "tableControls.addColumnRight",
-		) as HTMLButtonElement | undefined;
+		).find((element) => element.textContent === "tableControls.addColumnRight") as
+			| HTMLButtonElement
+			| undefined;
 		expect(addColumnRight).toBeTruthy();
 
 		await act(async () => {
@@ -501,9 +474,7 @@ describe("NoteInlineEditor table controls", () => {
 	it("shows the formatting bar by default in rich mode", () => {
 		render("rich");
 
-		expect(
-			container.querySelector('[data-testid="editor-ribbon"]'),
-		).toBeTruthy();
+		expect(container.querySelector('[data-testid="editor-ribbon"]')).toBeTruthy();
 		expect(container.querySelector(".rfNodeNoteEditor")?.className).toContain(
 			"rfNodeNoteEditorHasRibbon",
 		);
@@ -526,9 +497,9 @@ describe("NoteInlineEditor table controls", () => {
 		render("rich");
 
 		expect(container.querySelector('[data-testid="editor-ribbon"]')).toBeNull();
-		expect(
-			container.querySelector(".rfNodeNoteEditor")?.className,
-		).not.toContain("rfNodeNoteEditorHasRibbon");
+		expect(container.querySelector(".rfNodeNoteEditor")?.className).not.toContain(
+			"rfNodeNoteEditorHasRibbon",
+		);
 	});
 
 	it("keeps frontmatter hidden by default for new notes", () => {
@@ -549,9 +520,7 @@ describe("NoteInlineEditor table controls", () => {
 
 		setShowFrontmatterInEditor(true);
 		render("rich");
-		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(
-			HTMLDivElement,
-		);
+		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(HTMLDivElement);
 	});
 
 	it("applies persisted frontmatter visibility after restart remount", () => {
@@ -559,9 +528,7 @@ describe("NoteInlineEditor table controls", () => {
 		setShowFrontmatterInEditor(true);
 
 		render("rich");
-		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(
-			HTMLDivElement,
-		);
+		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(HTMLDivElement);
 
 		act(() => {
 			root.unmount();
@@ -569,8 +536,6 @@ describe("NoteInlineEditor table controls", () => {
 		root = createRoot(container);
 
 		render("rich");
-		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(
-			HTMLDivElement,
-		);
+		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(HTMLDivElement);
 	});
 });

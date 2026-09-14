@@ -46,9 +46,7 @@ function AiProfileSectionsBody({
 	const [profileDraft, setProfileDraft] = useState<AiProfile | null>(
 		activeProfile ? structuredClone(activeProfile) : null,
 	);
-	const [availableModels, setAvailableModels] = useState<AiModel[] | null>(
-		null,
-	);
+	const [availableModels, setAvailableModels] = useState<AiModel[] | null>(null);
 	const lastSavePromiseRef = useRef<Promise<void>>(Promise.resolve());
 	const previousActiveProfileIdRef = useRef(activeProfile?.id ?? null);
 
@@ -63,8 +61,9 @@ function AiProfileSectionsBody({
 
 	const { apiState, setApiKeyDraft, handleSetApiKey, handleClearApiKey } =
 		useApiKeySettings(activeProfileId);
-	const { codexState, nowMs, handleCodexConnect, handleCodexDisconnect } =
-		useCodexAccount(profileDraft?.provider);
+	const { codexState, nowMs, handleCodexConnect, handleCodexDisconnect } = useCodexAccount(
+		profileDraft?.provider,
+	);
 
 	const providerUsesApiKey = useMemo(
 		() => !profileDraft?.provider || providerNeedsApiKey(profileDraft.provider),
@@ -89,8 +88,7 @@ function AiProfileSectionsBody({
 
 	const handleProviderChange = useCallback(
 		async (provider: AiProviderKind) => {
-			const nextProfile =
-				profiles.find((profile) => profile.provider === provider) ?? null;
+			const nextProfile = profiles.find((profile) => profile.provider === provider) ?? null;
 			if (!nextProfile || nextProfile.id === activeProfileId) return;
 			await onActiveProfileChange(nextProfile.id);
 		},
@@ -111,9 +109,7 @@ function AiProfileSectionsBody({
 				/>
 			) : null}
 
-			{apiState.error ? (
-				<div className="settingsError">{apiState.error}</div>
-			) : null}
+			{apiState.error ? <div className="settingsError">{apiState.error}</div> : null}
 
 			{profileDraft?.provider === "codex_chatgpt" ? (
 				<AiCodexAccountSection

@@ -1,5 +1,5 @@
 import { MarkdownManager } from "@tiptap/markdown";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
@@ -99,9 +99,7 @@ describe("smart Markdown paste integration", () => {
 		);
 		const editedInRaw = ` ${firstPass}`;
 		const secondPass = postprocessMarkdownFromEditor(
-			manager.serialize(
-				manager.parse(preprocessMarkdownForEditor(editedInRaw)),
-			),
+			manager.serialize(manager.parse(preprocessMarkdownForEditor(editedInRaw))),
 		);
 
 		expect(secondPass).toContain(formula);

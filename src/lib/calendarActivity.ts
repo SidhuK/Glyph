@@ -5,12 +5,7 @@ import { invoke } from "./tauri";
 
 export const calendarQueryKeys = {
 	all: ["calendar"] as const,
-	activity: (
-		spacePath: string,
-		fromDate: string,
-		toDate: string,
-		dailyNoteFolder: string | null,
-	) =>
+	activity: (spacePath: string, fromDate: string, toDate: string, dailyNoteFolder: string | null) =>
 		[
 			...calendarQueryKeys.all,
 			"activity",
@@ -19,18 +14,8 @@ export const calendarQueryKeys = {
 			toDate,
 			dailyNoteFolder ?? "__none__",
 		] as const,
-	notesForDate: (
-		spacePath: string,
-		date: string,
-		dailyNoteFolder: string | null,
-	) =>
-		[
-			...calendarQueryKeys.all,
-			"notes",
-			spacePath,
-			date,
-			dailyNoteFolder ?? "__none__",
-		] as const,
+	notesForDate: (spacePath: string, date: string, dailyNoteFolder: string | null) =>
+		[...calendarQueryKeys.all, "notes", spacePath, date, dailyNoteFolder ?? "__none__"] as const,
 };
 
 export function monthDateRange(month: Date): {
@@ -46,17 +31,13 @@ export function monthDateRange(month: Date): {
 /** Marker strength for a day cell: a daily note outranks incidental activity. */
 export type CalendarDayTone = "daily" | "note" | null;
 
-export function activityTone(
-	activity: CalendarDayActivity | undefined,
-): CalendarDayTone {
+export function activityTone(activity: CalendarDayActivity | undefined): CalendarDayTone {
 	if (!activity) return null;
 	if (activity.hasDailyNote) return "daily";
 	return activity.hasCreated || activity.hasEdited ? "note" : null;
 }
 
-export function activityMapFromRows(
-	rows: CalendarDayActivity[],
-): Map<string, CalendarDayActivity> {
+export function activityMapFromRows(rows: CalendarDayActivity[]): Map<string, CalendarDayActivity> {
 	return new Map(rows.map((row) => [row.date, row]));
 }
 

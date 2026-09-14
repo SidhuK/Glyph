@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
@@ -13,18 +13,14 @@ describe("wikiLinkMarkdownBridge", () => {
 
 	it("canonicalizes valid wikilinks", () => {
 		const md = "Jump to [[ Note#^abc | Alias ]] now";
-		expect(preprocessMarkdownForEditor(md)).toBe(
-			"Jump to [[Note#^abc|Alias]] now",
-		);
+		expect(preprocessMarkdownForEditor(md)).toBe("Jump to [[Note#^abc|Alias]] now");
 	});
 
 	it("bridges supported colored spans to internal editor tokens and back", () => {
 		const md =
 			'Use <span data-glyph-color="blue" style="color: var(--glyph-inline-color-blue)">**focus**</span> here';
 		const preprocessed = preprocessMarkdownForEditor(md);
-		expect(preprocessed).toBe(
-			"Use {{glyph-color:blue}}**focus**{{/glyph-color}} here",
-		);
+		expect(preprocessed).toBe("Use {{glyph-color:blue}}**focus**{{/glyph-color}} here");
 		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
 	});
 
@@ -32,9 +28,7 @@ describe("wikiLinkMarkdownBridge", () => {
 		const md =
 			'Use <mark data-glyph-highlight="yellow" style="background-color: var(--glyph-inline-highlight-yellow, rgba(240, 180, 41, 0.26))">**focus**</mark> here';
 		const preprocessed = preprocessMarkdownForEditor(md);
-		expect(preprocessed).toBe(
-			"Use {{glyph-highlight:yellow}}**focus**{{/glyph-highlight}} here",
-		);
+		expect(preprocessed).toBe("Use {{glyph-highlight:yellow}}**focus**{{/glyph-highlight}} here");
 		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
 	});
 
@@ -44,14 +38,9 @@ describe("wikiLinkMarkdownBridge", () => {
 	});
 
 	it("restores escaped callout markers with numeric kinds and folds", () => {
-		const serialized = [
-			String.raw`> \[!NOTE2\]-`,
-			String.raw`> \[!TIP\]+`,
-		].join("\n");
+		const serialized = [String.raw`> \[!NOTE2\]-`, String.raw`> \[!TIP\]+`].join("\n");
 
-		expect(postprocessMarkdownFromEditor(serialized)).toBe(
-			"> [!NOTE2]-\n> [!TIP]+",
-		);
+		expect(postprocessMarkdownFromEditor(serialized)).toBe("> [!NOTE2]-\n> [!TIP]+");
 	});
 
 	it("leaves extra blank lines as normal markdown input", () => {
@@ -75,25 +64,17 @@ describe("wikiLinkMarkdownBridge", () => {
 	});
 
 	it("decodes legacy whitespace sentinels emitted by older editor sessions", () => {
-		expect(postprocessMarkdownFromEditor("alpha\n\n\u200b\nbeta")).toBe(
-			"alpha\n\n\nbeta",
-		);
-		expect(postprocessMarkdownFromEditor("alpha\n\u2060\u2061\nbeta")).toBe(
-			"alpha\n \nbeta",
-		);
+		expect(postprocessMarkdownFromEditor("alpha\n\n\u200b\nbeta")).toBe("alpha\n\n\nbeta");
+		expect(postprocessMarkdownFromEditor("alpha\n\u2060\u2061\nbeta")).toBe("alpha\n \nbeta");
 	});
 
 	it("preserves escaped dollar signs through editor bridge round-trip", () => {
 		const md = String.raw`Price is \$5 and math is $x^2$.`;
-		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(
-			md,
-		);
+		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);
 	});
 
 	it("preserves literal placeholder sentinels through editor bridge round-trip", () => {
 		const md = "Marker \uE000 and escape \uE001 here";
-		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(
-			md,
-		);
+		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);
 	});
 });

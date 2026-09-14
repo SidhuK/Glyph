@@ -12,10 +12,7 @@ import {
 const HTML_EMBED_BLOCK_TAG_NAMES = ["div", "svg", "script", "style"] as const;
 type HtmlEmbedBlockTagName = (typeof HTML_EMBED_BLOCK_TAG_NAMES)[number];
 
-const HTML_EMBED_BLOCK_OPEN_RE = new RegExp(
-	`^<(${HTML_EMBED_BLOCK_TAG_NAMES.join("|")})\\b`,
-	"i",
-);
+const HTML_EMBED_BLOCK_OPEN_RE = new RegExp(`^<(${HTML_EMBED_BLOCK_TAG_NAMES.join("|")})\\b`, "i");
 
 function isHtmlEmbedBlockStart(text: string, index: number): boolean {
 	const slice = text.slice(index);
@@ -102,9 +99,7 @@ function findScriptOrStyleClose(
 				index += 2;
 				continue;
 			}
-			if (
-				text.slice(index, index + closeTag.length).toLowerCase() === closeTag
-			) {
+			if (text.slice(index, index + closeTag.length).toLowerCase() === closeTag) {
 				const afterTag = text.slice(index + closeTag.length).match(/^\s*>/);
 				if (afterTag) {
 					return index + closeTag.length + afterTag[0].length;
@@ -192,10 +187,7 @@ function readBalancedElement(
 		const nextClose = closeTagRe.exec(text);
 		if (!nextClose) return null;
 		if (nextOpen && nextOpen.index < nextClose.index) {
-			const nestedOpenEnd = findOpenTagEnd(
-				text,
-				nextOpen.index + nextOpen[0].length,
-			);
+			const nestedOpenEnd = findOpenTagEnd(text, nextOpen.index + nextOpen[0].length);
 			if (nestedOpenEnd === null) return null;
 			const nestedOpen = text.slice(nextOpen.index, nestedOpenEnd + 1);
 			cursor = nestedOpenEnd + 1;
@@ -280,9 +272,7 @@ function findRawHtmlEmbedRuns(input: string) {
 
 		if (!parts.length || firstTag === null) continue;
 		const kind =
-			firstTag === "svg" && parts.every((part) => /^<svg\b/i.test(part.trim()))
-				? "svg"
-				: "html";
+			firstTag === "svg" && parts.every((part) => /^<svg\b/i.test(part.trim())) ? "svg" : "html";
 		runs.push({
 			start: runStart,
 			end: cursor,
@@ -308,10 +298,7 @@ function preprocessRawHtmlEmbedChunk(input: string): string {
 }
 
 export function preprocessRawHtmlEmbeds(markdown: string): string {
-	if (
-		!/<(div|svg|script|style)\b/i.test(markdown) &&
-		!markdown.includes(HTML_EMBED_RAW_SENTINEL)
-	) {
+	if (!/<(div|svg|script|style)\b/i.test(markdown) && !markdown.includes(HTML_EMBED_RAW_SENTINEL)) {
 		return markdown;
 	}
 

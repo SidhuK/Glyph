@@ -76,9 +76,7 @@ function isPathSpecial(path: string): boolean {
 	);
 }
 
-function breadcrumbDisplayItems(
-	parts: BreadcrumbPart[],
-): BreadcrumbDisplayItem[] {
+function breadcrumbDisplayItems(parts: BreadcrumbPart[]): BreadcrumbDisplayItem[] {
 	if (parts.length <= 4) {
 		return parts.map((part, originalIndex) => ({
 			type: "part",
@@ -131,9 +129,7 @@ export function MainTabsBreadcrumbs({
 	onOpenBreadcrumbFile,
 }: MainTabsBreadcrumbsProps) {
 	const [menuOpen, setMenuOpen] = useState(false);
-	const [openBreadcrumbMenuKey, setOpenBreadcrumbMenuKey] = useState<
-		string | null
-	>(null);
+	const [openBreadcrumbMenuKey, setOpenBreadcrumbMenuKey] = useState<string | null>(null);
 	const { spacePath } = useSpace();
 	const breadcrumbParts = breadcrumbPartsForPath(activeTabPath);
 	const breadcrumbDisplay = breadcrumbDisplayItems(breadcrumbParts);
@@ -150,9 +146,7 @@ export function MainTabsBreadcrumbs({
 	);
 	const handleOpenBreadcrumbContainer = useCallback(
 		(part: BreadcrumbPart) => {
-			onNavigateBreadcrumbPath(
-				part.kind === "folder" ? part.path : parentDir(part.path),
-			);
+			onNavigateBreadcrumbPath(part.kind === "folder" ? part.path : parentDir(part.path));
 		},
 		[onNavigateBreadcrumbPath],
 	);
@@ -161,10 +155,7 @@ export function MainTabsBreadcrumbs({
 		try {
 			await invoke("space_reveal_path", { path: part.path });
 		} catch (error) {
-			const message =
-				error instanceof Error
-					? error.message
-					: "Could not show file in Finder.";
+			const message = error instanceof Error ? error.message : "Could not show file in Finder.";
 			toast.error("Could not show file in Finder", { description: message });
 		}
 	}, []);
@@ -177,8 +168,7 @@ export function MainTabsBreadcrumbs({
 					action: () => void handleRevealBreadcrumbPart(part),
 				},
 				{
-					label:
-						part.kind === "folder" ? "Open Folder" : "Open Containing Folder",
+					label: part.kind === "folder" ? "Open Folder" : "Open Containing Folder",
 					action: () => handleOpenBreadcrumbContainer(part),
 				},
 				...(part.kind === "file"
@@ -194,12 +184,7 @@ export function MainTabsBreadcrumbs({
 				console.error("Failed to show breadcrumb context menu", error);
 			});
 		},
-		[
-			handleOpenBreadcrumbContainer,
-			handleRevealBreadcrumbPart,
-			handleRevealInFinder,
-			spacePath,
-		],
+		[handleOpenBreadcrumbContainer, handleRevealBreadcrumbPart, handleRevealInFinder, spacePath],
 	);
 
 	if (breadcrumbParts.length === 0) return null;
@@ -234,8 +219,7 @@ export function MainTabsBreadcrumbs({
 				const { part, originalIndex } = item;
 				const isCurrent = originalIndex === breadcrumbParts.length - 1;
 				const menuDirPath = breadcrumbParts[originalIndex - 1]?.path ?? "";
-				const menuEntries =
-					menuDirPath === "" ? rootEntries : childrenByDir[menuDirPath];
+				const menuEntries = menuDirPath === "" ? rootEntries : childrenByDir[menuDirPath];
 				const menuItems = sortBreadcrumbEntries(menuEntries ?? []);
 				const menuKey = `${originalIndex}:${menuDirPath || ROOT_PATH_KEY}`;
 
@@ -271,9 +255,7 @@ export function MainTabsBreadcrumbs({
 									void onOpenBreadcrumbFile(part.path);
 								}
 							}}
-							onContextMenu={(event) =>
-								handleBreadcrumbContextMenu(event, part)
-							}
+							onContextMenu={(event) => handleBreadcrumbContextMenu(event, part)}
 						>
 							<span className="mainTabsBreadcrumbLabel">{part.label}</span>
 						</button>
@@ -305,19 +287,13 @@ function BreadcrumbOverflowMenu({
 				<button
 					type="button"
 					className="mainTabsBreadcrumbOverflowButton"
-					title={`${hiddenParts.length} hidden path ${
-						hiddenParts.length === 1 ? "item" : "items"
-					}`}
+					title={`${hiddenParts.length} hidden path ${hiddenParts.length === 1 ? "item" : "items"}`}
 					aria-label="Show hidden path items"
 				>
 					...
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				align="start"
-				side="bottom"
-				className="mainTabsBreadcrumbMenu"
-			>
+			<DropdownMenuContent align="start" side="bottom" className="mainTabsBreadcrumbMenu">
 				{hiddenParts.map((part) => {
 					return (
 						<DropdownMenuItem
@@ -332,9 +308,7 @@ function BreadcrumbOverflowMenu({
 								void onOpenFile(part.path);
 							}}
 						>
-							<span className="mainTabsBreadcrumbMenuItemLabel">
-								{part.label}
-							</span>
+							<span className="mainTabsBreadcrumbMenuItemLabel">{part.label}</span>
 						</DropdownMenuItem>
 					);
 				})}
@@ -383,11 +357,7 @@ function BreadcrumbEntryMenu({
 					/>
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				align="start"
-				side="bottom"
-				className="mainTabsBreadcrumbMenu"
-			>
+			<DropdownMenuContent align="start" side="bottom" className="mainTabsBreadcrumbMenu">
 				<DropdownMenuLabel className="mainTabsBreadcrumbMenuLabel">
 					{menuTitleForDir(dirPath)}
 				</DropdownMenuLabel>

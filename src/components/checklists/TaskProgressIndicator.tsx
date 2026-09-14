@@ -18,19 +18,15 @@ const COLOR_STOPS = [
 function getProgressColor(ratio: number): string {
 	for (let i = 0; i < COLOR_STOPS.length - 1; i++) {
 		if (ratio >= COLOR_STOPS[i].t && ratio <= COLOR_STOPS[i + 1].t) {
-			const local =
-				(ratio - COLOR_STOPS[i].t) / (COLOR_STOPS[i + 1].t - COLOR_STOPS[i].t);
+			const local = (ratio - COLOR_STOPS[i].t) / (COLOR_STOPS[i + 1].t - COLOR_STOPS[i].t);
 			const r = Math.round(
-				COLOR_STOPS[i].rgb[0] +
-					(COLOR_STOPS[i + 1].rgb[0] - COLOR_STOPS[i].rgb[0]) * local,
+				COLOR_STOPS[i].rgb[0] + (COLOR_STOPS[i + 1].rgb[0] - COLOR_STOPS[i].rgb[0]) * local,
 			);
 			const g = Math.round(
-				COLOR_STOPS[i].rgb[1] +
-					(COLOR_STOPS[i + 1].rgb[1] - COLOR_STOPS[i].rgb[1]) * local,
+				COLOR_STOPS[i].rgb[1] + (COLOR_STOPS[i + 1].rgb[1] - COLOR_STOPS[i].rgb[1]) * local,
 			);
 			const b = Math.round(
-				COLOR_STOPS[i].rgb[2] +
-					(COLOR_STOPS[i + 1].rgb[2] - COLOR_STOPS[i].rgb[2]) * local,
+				COLOR_STOPS[i].rgb[2] + (COLOR_STOPS[i + 1].rgb[2] - COLOR_STOPS[i].rgb[2]) * local,
 			);
 			return `rgb(${r}, ${g}, ${b})`;
 		}
@@ -39,11 +35,7 @@ function getProgressColor(ratio: number): string {
 	return `rgb(${last.rgb.join(", ")})`;
 }
 
-function buildPieGradient(
-	completed: number,
-	total: number,
-	color: string,
-): string {
+function buildPieGradient(completed: number, total: number, color: string): string {
 	const empty = "transparent";
 	if (total === 0 || completed <= 0) {
 		return `conic-gradient(${empty} 0deg 360deg)`;
@@ -55,19 +47,14 @@ function buildPieGradient(
 	return `conic-gradient(${color} 0deg ${completedDeg}deg, ${empty} ${completedDeg}deg 360deg)`;
 }
 
-export function TaskProgressIndicator({
-	summary,
-	className = "",
-}: TaskProgressIndicatorProps) {
+export function TaskProgressIndicator({ summary, className = "" }: TaskProgressIndicatorProps) {
 	const { completed_count, total_count } = summary;
 	const ratio = total_count > 0 ? completed_count / total_count : 0;
 	const color = getProgressColor(ratio);
 
 	return (
 		<div
-			className={["markdownEditorTaskProgress", className]
-				.filter(Boolean)
-				.join(" ")}
+			className={["markdownEditorTaskProgress", className].filter(Boolean).join(" ")}
 			title={`${completed_count}/${total_count} tasks completed`}
 			aria-label={`${completed_count} of ${total_count} tasks completed`}
 			style={{ "--task-progress-color": color } as CSSProperties}

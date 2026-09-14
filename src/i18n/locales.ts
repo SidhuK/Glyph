@@ -1,13 +1,4 @@
-export const SUPPORTED_LANGUAGE_IDS = [
-	"en",
-	"es",
-	"ja",
-	"de",
-	"fr",
-	"ko",
-	"pt-BR",
-	"pl",
-] as const;
+export const SUPPORTED_LANGUAGE_IDS = ["en", "es", "ja", "de", "fr", "ko", "pt-BR", "pl"] as const;
 
 export type AppLanguage = (typeof SUPPORTED_LANGUAGE_IDS)[number];
 

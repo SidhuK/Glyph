@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	getShortcutSignature,
 	isShortcutMatch,
@@ -31,12 +31,8 @@ function keyEvent(
 
 describe("shortcuts", () => {
 	it("matches exact modifier combinations", () => {
-		expect(
-			isShortcutMatch(keyEvent("k", { meta: true }), { key: "k", meta: true }),
-		).toBe(true);
-		expect(
-			isShortcutMatch(keyEvent("k", { meta: true }), { key: "k", ctrl: true }),
-		).toBe(false);
+		expect(isShortcutMatch(keyEvent("k", { meta: true }), { key: "k", meta: true })).toBe(true);
+		expect(isShortcutMatch(keyEvent("k", { meta: true }), { key: "k", ctrl: true })).toBe(false);
 	});
 
 	it("matches keys case-insensitively", () => {
@@ -104,9 +100,7 @@ describe("shortcuts", () => {
 			alt: true,
 			shift: true,
 		});
-		expect(
-			shortcutFromKeyboardEvent(keyEvent(" ", { meta: true, code: "Space" })),
-		).toEqual({
+		expect(shortcutFromKeyboardEvent(keyEvent(" ", { meta: true, code: "Space" }))).toEqual({
 			key: "Space",
 			meta: true,
 			ctrl: false,
@@ -116,12 +110,10 @@ describe("shortcuts", () => {
 	});
 
 	it("converts supported bindings to tauri accelerators", () => {
-		expect(
-			toTauriAccelerator({ meta: true, alt: true, shift: true, key: "a" }),
-		).toBe("CmdOrCtrl+Alt+Shift+A");
-		expect(toTauriAccelerator({ meta: true, key: "ArrowLeft" })).toBe(
-			"CmdOrCtrl+Left",
+		expect(toTauriAccelerator({ meta: true, alt: true, shift: true, key: "a" })).toBe(
+			"CmdOrCtrl+Alt+Shift+A",
 		);
+		expect(toTauriAccelerator({ meta: true, key: "ArrowLeft" })).toBe("CmdOrCtrl+Left");
 		expect(
 			toTauriAccelerator({
 				meta: true,

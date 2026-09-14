@@ -2,7 +2,7 @@
 
 import { Editor } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createEditorExtensions } from "./index";
 
 function createHarness() {
@@ -38,16 +38,12 @@ describe("Markdown link collapse integration", () => {
 
 		try {
 			let tr = harness.editor.state.tr.insertText(raw, 1, 12);
-			tr = tr.setSelection(
-				TextSelection.create(tr.doc, 1 + hrefStart, 1 + hrefEnd),
-			);
+			tr = tr.setSelection(TextSelection.create(tr.doc, 1 + hrefStart, 1 + hrefEnd));
 			harness.editor.view.dispatch(tr);
 
 			expect(harness.element.textContent).toContain(raw);
 
-			harness.editor.commands.setTextSelection(
-				harness.editor.state.doc.content.size,
-			);
+			harness.editor.commands.setTextSelection(harness.editor.state.doc.content.size);
 
 			const link = harness.element.querySelector("a");
 			expect(link?.textContent).toBe("Emil Kowalski");
@@ -67,25 +63,17 @@ describe("Markdown link collapse integration", () => {
 			harness.editor.commands.setContent(inlineInput, {
 				contentType: "markdown",
 			});
-			harness.editor.commands.setTextSelection(
-				harness.editor.state.doc.content.size,
-			);
+			harness.editor.commands.setTextSelection(harness.editor.state.doc.content.size);
 
-			expect(harness.editor.getMarkdown()).toContain(
-				"`[Emil](https://x.com/emilkowalski_)`",
-			);
+			expect(harness.editor.getMarkdown()).toContain("`[Emil](https://x.com/emilkowalski_)`");
 			expect(harness.element.querySelector("code a")).toBeNull();
 
 			harness.editor.commands.setContent(blockInput, {
 				contentType: "markdown",
 			});
-			harness.editor.commands.setTextSelection(
-				harness.editor.state.doc.content.size,
-			);
+			harness.editor.commands.setTextSelection(harness.editor.state.doc.content.size);
 
-			expect(harness.editor.getMarkdown()).toContain(
-				"[Emil](https://x.com/emilkowalski_)",
-			);
+			expect(harness.editor.getMarkdown()).toContain("[Emil](https://x.com/emilkowalski_)");
 			expect(harness.element.querySelector("pre a")).toBeNull();
 		} finally {
 			harness.destroy();

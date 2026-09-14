@@ -5,15 +5,8 @@ import { m } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { X } from "../Icons";
 import { springPresets } from "../ui/animations";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
-import {
-	getTextColorButton,
-	getTextHighlightButton,
-} from "./ribbonButtonConfigs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
+import { getTextColorButton, getTextHighlightButton } from "./ribbonButtonConfigs";
 
 interface RibbonSwatchPopoverProps {
 	editor: Editor;
@@ -34,9 +27,7 @@ function RibbonSwatchPopover({
 	icon: typeof PaintBucketIcon;
 	menuLabel: string;
 	clearLabel: string;
-	button:
-		| ReturnType<typeof getTextColorButton>
-		| ReturnType<typeof getTextHighlightButton>;
+	button: ReturnType<typeof getTextColorButton> | ReturnType<typeof getTextHighlightButton>;
 	canEdit: boolean;
 	preventMouseDown: (e: React.MouseEvent) => void;
 }) {
@@ -68,9 +59,7 @@ function RibbonSwatchPopover({
 						<button
 							key={option.id}
 							type="button"
-							className={`editorColorSwatchButton ${
-								button.activeId === option.id ? "active" : ""
-							}`}
+							className={`editorColorSwatchButton ${button.activeId === option.id ? "active" : ""}`}
 							title={option.label}
 							aria-label={option.label}
 							onMouseDown={preventMouseDown}

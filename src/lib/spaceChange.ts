@@ -41,18 +41,10 @@ export interface SpaceChangeHost {
 	expandedDirs: ReadonlySet<string>;
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	closeTabsForPathRemoval: (path: string, recursive: boolean) => void;
-	renameTabsForPath: (
-		fromPath: string,
-		toPath: string,
-		recursive: boolean,
-	) => void;
+	renameTabsForPath: (fromPath: string, toPath: string, recursive: boolean) => void;
 	renamePinnedPath: (fromPath: string, toPath: string) => Promise<void>;
 	deletePinnedPath: (path: string) => Promise<void>;
-	renameSidebarFolderPath: (
-		fromPath: string,
-		toPath: string,
-		recursive: boolean,
-	) => Promise<void>;
+	renameSidebarFolderPath: (fromPath: string, toPath: string, recursive: boolean) => Promise<void>;
 	deleteSidebarFolderPath: (path: string, recursive: boolean) => Promise<void>;
 	refreshTags: () => Promise<void>;
 }
@@ -71,20 +63,14 @@ export function registerPreviewInvalidator(
 	};
 }
 
-export function subscribeOpenNoteContent(
-	fn: (path: string) => void,
-): () => void {
+export function subscribeOpenNoteContent(fn: (path: string) => void): () => void {
 	openNoteListeners.add(fn);
 	return () => {
 		openNoteListeners.delete(fn);
 	};
 }
 
-function reloadDirs(
-	relPath: string,
-	current: SpaceChangeHost,
-	includeSelf: boolean,
-): void {
+function reloadDirs(relPath: string, current: SpaceChangeHost, includeSelf: boolean): void {
 	const dirs = new Set(["", parentDir(relPath)]);
 	if (includeSelf && current.expandedDirs.has(relPath)) dirs.add(relPath);
 	for (const dir of dirs) void current.loadDir(dir, true);

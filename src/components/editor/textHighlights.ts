@@ -46,16 +46,13 @@ export const EDITOR_TEXT_HIGHLIGHTS = [
 	},
 ] as const satisfies readonly EditorTextHighlightOption[];
 
-const EDITOR_TEXT_HIGHLIGHT_RECORD: Record<
-	EditorTextHighlight,
-	EditorTextHighlightOption
-> = Object.fromEntries(
-	EDITOR_TEXT_HIGHLIGHTS.map((option) => [option.id, option]),
-) as Record<EditorTextHighlight, EditorTextHighlightOption>;
+const EDITOR_TEXT_HIGHLIGHT_RECORD: Record<EditorTextHighlight, EditorTextHighlightOption> =
+	Object.fromEntries(EDITOR_TEXT_HIGHLIGHTS.map((option) => [option.id, option])) as Record<
+		EditorTextHighlight,
+		EditorTextHighlightOption
+	>;
 
-export function isEditorTextHighlight(
-	value: string,
-): value is EditorTextHighlight {
+export function isEditorTextHighlight(value: string): value is EditorTextHighlight {
 	return value in EDITOR_TEXT_HIGHLIGHT_RECORD;
 }
 
@@ -63,9 +60,7 @@ export function getEditorTextHighlightOption(highlight: EditorTextHighlight) {
 	return EDITOR_TEXT_HIGHLIGHT_RECORD[highlight];
 }
 
-export function getEditorTextHighlightLabel(
-	highlight: EditorTextHighlight,
-): string {
+export function getEditorTextHighlightLabel(highlight: EditorTextHighlight): string {
 	return i18n.t(`editor:highlights.${highlight}`);
 }
 
@@ -74,15 +69,11 @@ export function getEditorTextHighlightStyle(highlight: EditorTextHighlight) {
 	return `background-color: var(${option.backgroundCssVar}, ${option.backgroundFallback})`;
 }
 
-export function getEditorTextHighlightMarkdownOpenTag(
-	highlight: EditorTextHighlight,
-) {
+export function getEditorTextHighlightMarkdownOpenTag(highlight: EditorTextHighlight) {
 	return `<mark data-glyph-highlight="${highlight}" style="${getEditorTextHighlightStyle(highlight)}">`;
 }
 
-export function getEditorTextHighlightBridgeOpenToken(
-	highlight: EditorTextHighlight,
-) {
+export function getEditorTextHighlightBridgeOpenToken(highlight: EditorTextHighlight) {
 	return `{{glyph-highlight:${highlight}}}`;
 }
 

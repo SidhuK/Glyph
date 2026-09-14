@@ -35,7 +35,5 @@ export function QuickNoteTargetSummary({ path }: { path: string }) {
 	});
 
 	if (!summary.data) return null;
-	return (
-		<span className="quickNoteTargetSummary">{summaryLabel(summary.data)}</span>
-	);
+	return <span className="quickNoteTargetSummary">{summaryLabel(summary.data)}</span>;
 }

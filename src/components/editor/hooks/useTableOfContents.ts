@@ -20,10 +20,7 @@ export interface TOCHeading {
 
 const HEADING_PREVIEW_MAX_LENGTH = 150;
 
-export function getHeadingElement(
-	editor: Editor,
-	heading: TOCHeading,
-): HTMLElement | null {
+export function getHeadingElement(editor: Editor, heading: TOCHeading): HTMLElement | null {
 	try {
 		const dom = editor.view.nodeDOM(heading.pos);
 		return dom instanceof HTMLElement ? dom : null;
@@ -49,10 +46,7 @@ export function findScrollParent(el: HTMLElement): HTMLElement | null {
 	return null;
 }
 
-export function isSameHeadingList(
-	prev: readonly TOCHeading[],
-	next: readonly TOCHeading[],
-) {
+export function isSameHeadingList(prev: readonly TOCHeading[], next: readonly TOCHeading[]) {
 	return (
 		prev.length === next.length &&
 		prev.every(
@@ -82,10 +76,7 @@ export function getHeadingPreview(
 	let previewLength = 0;
 	const docEnd = doc.content.size;
 	if (heading.pos < 0 || heading.pos >= docEnd) return null;
-	const to = Math.min(
-		Math.max(nextHeading?.pos ?? docEnd, heading.pos),
-		docEnd,
-	);
+	const to = Math.min(Math.max(nextHeading?.pos ?? docEnd, heading.pos), docEnd);
 	if (heading.pos >= to) return null;
 
 	doc.nodesBetween(heading.pos, to, (node) => {
@@ -105,10 +96,7 @@ export function getHeadingPreview(
 	return preview ? truncatePreview(preview) : null;
 }
 
-function headingFromNode(
-	node: ProseMirrorNode,
-	pos: number,
-): TOCHeading | null {
+function headingFromNode(node: ProseMirrorNode, pos: number): TOCHeading | null {
 	if (node.type.name !== "heading") return null;
 	const level = node.attrs.level as number;
 	const text = node.textContent;
@@ -164,10 +152,7 @@ function extractHeadingsInRanges(
 	return headings;
 }
 
-function rangesContainHeading(
-	doc: ProseMirrorNode,
-	ranges: readonly ChangedRange[],
-): boolean {
+function rangesContainHeading(doc: ProseMirrorNode, ranges: readonly ChangedRange[]): boolean {
 	for (const range of ranges) {
 		let containsHeading = false;
 		doc.nodesBetween(range.from, range.to, (node) => {
@@ -182,10 +167,7 @@ function rangesContainHeading(
 	return false;
 }
 
-function rangeTouchesHeading(
-	heading: TOCHeading,
-	range: ChangedRange,
-): boolean {
+function rangeTouchesHeading(heading: TOCHeading, range: ChangedRange): boolean {
 	return heading.pos >= range.from && heading.pos < range.to;
 }
 
@@ -196,9 +178,7 @@ function mapHeadingsThroughTransaction(
 	return current
 		.map((heading) => {
 			const result = transaction.mapping.mapResult(heading.pos, -1);
-			return result.deleted
-				? null
-				: { ...heading, id: `toc-${result.pos}`, pos: result.pos };
+			return result.deleted ? null : { ...heading, id: `toc-${result.pos}`, pos: result.pos };
 		})
 		.filter((heading): heading is TOCHeading => heading !== null);
 }
@@ -207,10 +187,7 @@ export function updateHeadingsFromTransaction(
 	current: readonly TOCHeading[],
 	transaction: Transaction,
 ): TOCHeading[] {
-	const changedRanges = changedRangesFromTransactions(
-		[transaction],
-		transaction.doc.content.size,
-	);
+	const changedRanges = changedRangesFromTransactions([transaction], transaction.doc.content.size);
 	if (!changedRanges.length) {
 		return mapHeadingsThroughTransaction(current, transaction);
 	}
@@ -220,10 +197,7 @@ export function updateHeadingsFromTransaction(
 	const touchedExistingHeading = mapped.some((heading) =>
 		scanRanges.some((range) => rangeTouchesHeading(heading, range)),
 	);
-	const changedRangeHasHeading = rangesContainHeading(
-		transaction.doc,
-		scanRanges,
-	);
+	const changedRangeHasHeading = rangesContainHeading(transaction.doc, scanRanges);
 
 	if (!touchedExistingHeading && !changedRangeHasHeading) {
 		return mapped;
@@ -231,18 +205,14 @@ export function updateHeadingsFromTransaction(
 
 	const changedHeadings = extractHeadingsInRanges(transaction.doc, scanRanges);
 	const next = mapped.filter(
-		(heading) =>
-			!scanRanges.some((range) => rangeTouchesHeading(heading, range)),
+		(heading) => !scanRanges.some((range) => rangeTouchesHeading(heading, range)),
 	);
 	next.push(...changedHeadings);
 	next.sort((a, b) => a.pos - b.pos);
 	return withHeadingSlugs(next);
 }
 
-export function useTableOfContents(
-	editor: Editor | null,
-	contentRoot: HTMLElement | null,
-) {
+export function useTableOfContents(editor: Editor | null, contentRoot: HTMLElement | null) {
 	const [headings, setHeadings] = useState<TOCHeading[]>([]);
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const activeFrameRef = useRef<number | null>(null);
@@ -275,14 +245,10 @@ export function useTableOfContents(
 		}
 		headingsRef.current = extractHeadingsFromDoc(editor.state.doc);
 		publishHeadings();
-		const updateHeadings = ({
-			transaction,
-			appendedTransactions,
-		}: EditorEvents["transaction"]) => {
-			const documentTransactions = [
-				transaction,
-				...appendedTransactions,
-			].filter((item) => item.docChanged);
+		const updateHeadings = ({ transaction, appendedTransactions }: EditorEvents["transaction"]) => {
+			const documentTransactions = [transaction, ...appendedTransactions].filter(
+				(item) => item.docChanged,
+			);
 			if (documentTransactions.length === 0) return;
 			for (const documentTransaction of documentTransactions) {
 				headingsRef.current = updateHeadingsFromTransaction(
@@ -317,8 +283,7 @@ export function useTableOfContents(
 		const updateActiveHeading = () => {
 			activeFrameRef.current = null;
 			const containerRect = scrollContainer.getBoundingClientRect();
-			const activationY =
-				containerRect.top + Math.min(120, containerRect.height * 0.28);
+			const activationY = containerRect.top + Math.min(120, containerRect.height * 0.28);
 			let nextActiveId: string | null = null;
 
 			for (const heading of headings) {
@@ -337,8 +302,7 @@ export function useTableOfContents(
 
 		const requestActiveUpdate = () => {
 			if (activeFrameRef.current !== null) return;
-			activeFrameRef.current =
-				window.requestAnimationFrame(updateActiveHeading);
+			activeFrameRef.current = window.requestAnimationFrame(updateActiveHeading);
 		};
 
 		requestActiveUpdate();
@@ -368,9 +332,7 @@ export function useTableOfContents(
 	const getPreviewForHeading = useCallback(
 		(heading: TOCHeading) => {
 			if (!editor) return null;
-			const headingIndex = headingsRef.current.findIndex(
-				(item) => item.id === heading.id,
-			);
+			const headingIndex = headingsRef.current.findIndex((item) => item.id === heading.id);
 			if (headingIndex === -1) return null;
 			const currentHeading = headingsRef.current[headingIndex];
 			if (!currentHeading) return null;
@@ -397,8 +359,7 @@ export function scrollEditorToHeading(
 		if (scrollContainer) {
 			const containerRect = scrollContainer.getBoundingClientRect();
 			const elRect = el.getBoundingClientRect();
-			const offset =
-				elRect.top - containerRect.top + scrollContainer.scrollTop - 20;
+			const offset = elRect.top - containerRect.top + scrollContainer.scrollTop - 20;
 			scrollContainer.scrollTo({ top: offset, behavior: "smooth" });
 			return;
 		}

@@ -1,11 +1,4 @@
-import {
-	type ReactNode,
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-} from "react";
+import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef } from "react";
 import type { EditorViewMode } from "../lib/editorMode";
 
 /**
@@ -84,9 +77,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const saveAllEditors = useCallback(async () => {
-		const dirtyEditors = [...registeredEditorsRef.current].filter(
-			(editor) => editor.isDirty,
-		);
+		const dirtyEditors = [...registeredEditorsRef.current].filter((editor) => editor.isDirty);
 		if (dirtyEditors.length === 0) return false;
 		await Promise.all(dirtyEditors.map((editor) => editor.save()));
 		return true;
@@ -149,10 +140,7 @@ export function useEditorContext(): EditorContextValue {
 /**
  * Hook for editor components to register their save state
  */
-export function useEditorRegistration(
-	state: EditorSaveState | null,
-	active = true,
-): void {
+export function useEditorRegistration(state: EditorSaveState | null, active = true): void {
 	const { activateEditor, registerEditor } = useEditorContext();
 
 	useEffect(() => {

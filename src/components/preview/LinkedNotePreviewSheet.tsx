@@ -1,11 +1,4 @@
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { NotePreviewContent } from "./NotePreviewContent";
 import {
@@ -43,23 +36,16 @@ function clamp(value: number, min: number, max: number): number {
 	return Math.min(Math.max(value, min), max);
 }
 
-function positionSheet(
-	anchor: DOMRect,
-	width: number,
-	height: number,
-): Position {
-	const viewportWidth =
-		window.innerWidth || document.documentElement.clientWidth;
-	const viewportHeight =
-		window.innerHeight || document.documentElement.clientHeight;
+function positionSheet(anchor: DOMRect, width: number, height: number): Position {
+	const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+	const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 	const sheetWidth = Math.min(width, viewportWidth - VIEWPORT_PADDING * 2);
 	const sheetHeight = Math.min(height, viewportHeight - VIEWPORT_PADDING * 2);
 	const rightLeft = anchor.right + SHEET_GAP;
 	const leftLeft = anchor.left - SHEET_GAP - sheetWidth;
 	const fitsRight = rightLeft + sheetWidth <= viewportWidth - VIEWPORT_PADDING;
 	const fitsLeft = leftLeft >= VIEWPORT_PADDING;
-	const rightSpace =
-		viewportWidth - VIEWPORT_PADDING - anchor.right - SHEET_GAP;
+	const rightSpace = viewportWidth - VIEWPORT_PADDING - anchor.right - SHEET_GAP;
 	const leftSpace = anchor.left - VIEWPORT_PADDING - SHEET_GAP;
 	const preferredLeft = fitsRight
 		? rightLeft
@@ -68,30 +54,17 @@ function positionSheet(
 			: rightSpace >= leftSpace
 				? rightLeft
 				: leftLeft;
-	const maxLeft = Math.max(
-		VIEWPORT_PADDING,
-		viewportWidth - VIEWPORT_PADDING - sheetWidth,
-	);
-	const maxTop = Math.max(
-		VIEWPORT_PADDING,
-		viewportHeight - VIEWPORT_PADDING - sheetHeight,
-	);
+	const maxLeft = Math.max(VIEWPORT_PADDING, viewportWidth - VIEWPORT_PADDING - sheetWidth);
+	const maxTop = Math.max(VIEWPORT_PADDING, viewportHeight - VIEWPORT_PADDING - sheetHeight);
 
 	return {
 		left: clamp(preferredLeft, VIEWPORT_PADDING, maxLeft),
-		top: clamp(
-			anchor.top + anchor.height / 2 - sheetHeight / 2,
-			VIEWPORT_PADDING,
-			maxTop,
-		),
+		top: clamp(anchor.top + anchor.height / 2 - sheetHeight / 2, VIEWPORT_PADDING, maxTop),
 	};
 }
 
 function isSamePosition(a: Position, b: Position): boolean {
-	return (
-		Math.round(a.left) === Math.round(b.left) &&
-		Math.round(a.top) === Math.round(b.top)
-	);
+	return Math.round(a.left) === Math.round(b.left) && Math.round(a.top) === Math.round(b.top);
 }
 
 function pointInRect(point: PointerPosition, rect: DOMRect): boolean {
@@ -119,10 +92,7 @@ function pointInPreviewSafeArea(
 	const gapTop = Math.min(sheetRect.top, preview.anchor.top) - 8;
 	const gapBottom = Math.max(sheetRect.bottom, preview.anchor.bottom) + 8;
 	return (
-		point.left >= gapLeft &&
-		point.left <= gapRight &&
-		point.top >= gapTop &&
-		point.top <= gapBottom
+		point.left >= gapLeft && point.left <= gapRight && point.top >= gapTop && point.top <= gapBottom
 	);
 }
 
@@ -143,9 +113,7 @@ export function LinkedNotePreviewSheet() {
 		return {
 			target: hover.target,
 			anchor: hover.anchor,
-			position:
-				position ??
-				positionSheet(hover.anchor, SHEET_WIDTH, ESTIMATED_SHEET_HEIGHT),
+			position: position ?? positionSheet(hover.anchor, SHEET_WIDTH, ESTIMATED_SHEET_HEIGHT),
 		};
 	}, [hover, position, previewData]);
 
@@ -209,10 +177,7 @@ export function LinkedNotePreviewSheet() {
 			const point = { left: event.clientX, top: event.clientY };
 			pointerRef.current = point;
 			const currentPreview = previewRef.current;
-			if (
-				currentPreview &&
-				!pointInPreviewSafeArea(point, currentPreview, sheetRef.current)
-			) {
+			if (currentPreview && !pointInPreviewSafeArea(point, currentPreview, sheetRef.current)) {
 				closePreview();
 			}
 		};
@@ -220,9 +185,7 @@ export function LinkedNotePreviewSheet() {
 		const onPointerOver = (event: PointerEvent) => {
 			pointerRef.current = { left: event.clientX, top: event.clientY };
 			const target = event.target instanceof Element ? event.target : null;
-			const link = target?.closest(
-				".wikiLink[data-target]",
-			) as HTMLElement | null;
+			const link = target?.closest(".wikiLink[data-target]") as HTMLElement | null;
 			if (!link) return;
 			const related = event.relatedTarget;
 			if (related instanceof Node && link.contains(related)) return;
@@ -233,9 +196,7 @@ export function LinkedNotePreviewSheet() {
 		const onPointerOut = (event: PointerEvent) => {
 			pointerRef.current = { left: event.clientX, top: event.clientY };
 			const target = event.target instanceof Element ? event.target : null;
-			const link = target?.closest(
-				".wikiLink[data-target]",
-			) as HTMLElement | null;
+			const link = target?.closest(".wikiLink[data-target]") as HTMLElement | null;
 			if (!link) return;
 			const related = event.relatedTarget;
 			if (related instanceof Node && link.contains(related)) return;
@@ -269,9 +230,7 @@ export function LinkedNotePreviewSheet() {
 		<aside
 			ref={sheetRef}
 			className="linkedNotePreviewSheet"
-			data-side={
-				preview.position.left >= preview.anchor.right ? "right" : "left"
-			}
+			data-side={preview.position.left >= preview.anchor.right ? "right" : "left"}
 			style={preview.position}
 			onPointerEnter={clearCloseTimer}
 			onPointerLeave={scheduleClose}

@@ -32,9 +32,7 @@ export function clearAiProfilesCache() {
 	queryClient.removeQueries({ queryKey: aiProfilesQueryKey });
 }
 
-function updateProfilesCache(
-	updater: (current: AiProfilesBootstrap) => AiProfilesBootstrap,
-) {
+function updateProfilesCache(updater: (current: AiProfilesBootstrap) => AiProfilesBootstrap) {
 	queryClient.setQueryData<AiProfilesBootstrap>(aiProfilesQueryKey, (current) =>
 		updater(
 			current ?? {
@@ -58,11 +56,8 @@ export function useAiProfiles() {
 
 	const setModelMutation = useMutation({
 		mutationFn: async (modelId: string) => {
-			const current =
-				localQueryClient.getQueryData<AiProfilesBootstrap>(aiProfilesQueryKey);
-			const profile = current?.profiles.find(
-				(p) => p.id === current.activeProfileId,
-			);
+			const current = localQueryClient.getQueryData<AiProfilesBootstrap>(aiProfilesQueryKey);
+			const profile = current?.profiles.find((p) => p.id === current.activeProfileId);
 			if (!profile) return null;
 			return invoke("ai_profile_upsert", {
 				profile: { ...profile, model: modelId },
@@ -72,9 +67,7 @@ export function useAiProfiles() {
 			if (!saved) return;
 			updateProfilesCache((current) => ({
 				...current,
-				profiles: current.profiles.map((profile) =>
-					profile.id === saved.id ? saved : profile,
-				),
+				profiles: current.profiles.map((profile) => (profile.id === saved.id ? saved : profile)),
 			}));
 		},
 	});

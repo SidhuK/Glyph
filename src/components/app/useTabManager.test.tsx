@@ -2,7 +2,7 @@
 
 import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const addRecentFileMock = vi.fn();
 const setActiveFilePathMock = vi.fn();
@@ -37,11 +37,7 @@ type HookValue = typeof import("./useTabManager").useTabManager extends (
 	? T
 	: never;
 
-function Harness({
-	onReady,
-}: {
-	onReady: (value: HookValue) => void;
-}) {
+function Harness({ onReady }: { onReady: (value: HookValue) => void }) {
 	const hookValue = useTabManager("/tmp/test-space");
 
 	useEffect(() => {
@@ -152,9 +148,7 @@ describe("useTabManager", () => {
 		});
 
 		expect(latestValue.tabs).toHaveLength(3);
-		expect(
-			latestValue.tabs.filter((tab) => tab.target === "notes/first.md"),
-		).toHaveLength(1);
+		expect(latestValue.tabs.filter((tab) => tab.target === "notes/first.md")).toHaveLength(1);
 		expect(latestValue.tabs[2]).toMatchObject({ kind: "blank", target: null });
 		expect(latestValue.activeTabPath).toBe("notes/first.md");
 	});

@@ -88,10 +88,7 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 					/>
 				) : null}
 				{config.source.kind === "search" ? (
-					<label
-						className="databaseViewField"
-						htmlFor="databaseViewSourceQuery"
-					>
+					<label className="databaseViewField" htmlFor="databaseViewSourceQuery">
 						<span>Search query</span>
 						<Input
 							id="databaseViewSourceQuery"

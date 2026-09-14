@@ -63,11 +63,9 @@ export function ActionMenuTrigger({
 }: ActionMenuTriggerProps) {
 	const handleNativeMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
-			void showNativePopupMenu(event, toNativeContextMenuItems(items)).catch(
-				(error: unknown) => {
-					console.error("Failed to show action menu", error);
-				},
-			);
+			void showNativePopupMenu(event, toNativeContextMenuItems(items)).catch((error: unknown) => {
+				console.error("Failed to show action menu", error);
+			});
 		},
 		[items],
 	);

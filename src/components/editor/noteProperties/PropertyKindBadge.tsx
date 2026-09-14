@@ -21,11 +21,7 @@ interface PropertyKindBadgeProps {
 	onSelect?: (kind: PropertyKind) => void;
 }
 
-export function PropertyKindBadge({
-	kind,
-	interactive = false,
-	onSelect,
-}: PropertyKindBadgeProps) {
+export function PropertyKindBadge({ kind, interactive = false, onSelect }: PropertyKindBadgeProps) {
 	const resolvedKind = isPropertyKind(kind) ? kind : "text";
 	const icon = PROPERTY_KIND_ICONS[resolvedKind];
 	const label = PROPERTY_KIND_LABELS[resolvedKind];
@@ -60,10 +56,7 @@ export function PropertyKindBadge({
 								className="notePropertyKindOption"
 							>
 								<span className="notePropertyKindOptionIcon">
-									<HugeiconsIcon
-										icon={PROPERTY_KIND_ICONS[menuKind]}
-										size="var(--icon-sm)"
-									/>
+									<HugeiconsIcon icon={PROPERTY_KIND_ICONS[menuKind]} size="var(--icon-sm)" />
 								</span>
 								<span className="notePropertyKindOptionLabel">
 									{PROPERTY_KIND_LABELS[menuKind]}

@@ -2,7 +2,7 @@
 
 import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
 	EditorProvider,
 	type EditorSaveState,
@@ -108,9 +108,7 @@ describe("EditorContext", () => {
 			throw new Error("Expected editor context to be available");
 		}
 		expect(registeredContext.hasUnsavedChanges()).toBe(true);
-		expect(registeredContext.getCurrentMarkdown("notes/daily.md")).toBe(
-			"second version",
-		);
+		expect(registeredContext.getCurrentMarkdown("notes/daily.md")).toBe("second version");
 
 		await act(async () => {
 			await registeredContext.saveCurrentEditor();

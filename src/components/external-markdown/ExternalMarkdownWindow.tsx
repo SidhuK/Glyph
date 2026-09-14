@@ -3,10 +3,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import { dispatchEditorMenuAction } from "../../lib/appEvents";
-import {
-	type EditorViewMode,
-	getDefaultEditorViewMode,
-} from "../../lib/editorMode";
+import { type EditorViewMode, getDefaultEditorViewMode } from "../../lib/editorMode";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -70,14 +67,8 @@ export function ExternalMarkdownWindow() {
 	const saveTokenRef = useRef(0);
 	const autosaveTimerRef = useRef<number | null>(null);
 	const mountedRef = useRef(true);
-	const {
-		setSaving,
-		setLoading,
-		flashPulse,
-		clearPulse,
-		resolveLabel,
-		resolveState,
-	} = useEditorSaveIndicator();
+	const { setSaving, setLoading, flashPulse, clearPulse, resolveLabel, resolveState } =
+		useEditorSaveIndicator();
 
 	const isInsideSpace = Boolean(relPath);
 	const folderLabel = relPath
@@ -194,9 +185,7 @@ export function ExternalMarkdownWindow() {
 				const nextRelPath = await resolveRelPath(nextAbsPath);
 				if (cancelled) return;
 
-				const nextTitle = displayNameFromPath(
-					nextRelPath || fallbackRelPathFromAbs(nextAbsPath),
-				);
+				const nextTitle = displayNameFromPath(nextRelPath || fallbackRelPathFromAbs(nextAbsPath));
 				relPathRef.current = nextRelPath;
 				setRelPath(nextRelPath);
 				setTitle(nextTitle);

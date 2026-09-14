@@ -1,9 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	CodeIcon,
-	EyeIcon,
-	PencilEdit02Icon,
-} from "@hugeicons/core-free-icons";
+import { CodeIcon, EyeIcon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { dispatchEditorMenuAction } from "../../lib/appEvents";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { ChevronDown, ChevronUp } from "../Icons";
@@ -66,8 +62,7 @@ export function buildEditorCommands({
 			icon: <ChevronUp size="var(--icon-lg)" />,
 			enabled: enabled && showCollapsibleHeadings,
 			allowInEditable: true,
-			action: () =>
-				dispatchEditorMenuAction({ action: "collapse_all_headings" }),
+			action: () => dispatchEditorMenuAction({ action: "collapse_all_headings" }),
 		},
 		{
 			id: "expand_all_headings",

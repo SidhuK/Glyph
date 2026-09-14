@@ -32,8 +32,7 @@ export const DEFAULT_HEADING_PALETTE_ID: HeadingPaletteId = "classy";
 
 export function isHeadingPaletteId(value: unknown): value is HeadingPaletteId {
 	return (
-		typeof value === "string" &&
-		HEADING_PALETTE_OPTIONS.some((palette) => palette.id === value)
+		typeof value === "string" && HEADING_PALETTE_OPTIONS.some((palette) => palette.id === value)
 	);
 }
 
@@ -41,13 +40,8 @@ export function asHeadingPaletteId(value: unknown): HeadingPaletteId {
 	return isHeadingPaletteId(value) ? value : DEFAULT_HEADING_PALETTE_ID;
 }
 
-export function getHeadingPalette(
-	id: HeadingPaletteId,
-): (typeof HEADING_PALETTE_OPTIONS)[number] {
-	return (
-		HEADING_PALETTE_OPTIONS.find((palette) => palette.id === id) ??
-		HEADING_PALETTE_OPTIONS[0]
-	);
+export function getHeadingPalette(id: HeadingPaletteId): (typeof HEADING_PALETTE_OPTIONS)[number] {
+	return HEADING_PALETTE_OPTIONS.find((palette) => palette.id === id) ?? HEADING_PALETTE_OPTIONS[0];
 }
 
 export function applyEditorHeadingPalette(id: HeadingPaletteId): void {

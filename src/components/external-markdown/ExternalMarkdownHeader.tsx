@@ -23,11 +23,7 @@ export function ExternalMarkdownHeader({
 }: ExternalMarkdownHeaderProps) {
 	return (
 		<div className="externalMarkdownOverlayChrome">
-			<div
-				className="externalMarkdownDragRegion"
-				data-tauri-drag-region
-				aria-hidden="true"
-			/>
+			<div className="externalMarkdownDragRegion" data-tauri-drag-region aria-hidden="true" />
 			<div className="externalMarkdownTitleBlock">
 				<h1 className="externalMarkdownTitle">{title}</h1>
 				<div className="externalMarkdownMetaRow">
@@ -42,9 +38,7 @@ export function ExternalMarkdownHeader({
 							<span className="externalMarkdownMetaLabel">{folderLabel}</span>
 						</button>
 					) : null}
-					{isInsideSpace ? null : (
-						<span className="externalMarkdownBadge">Outside your space</span>
-					)}
+					{isInsideSpace ? null : <span className="externalMarkdownBadge">Outside your space</span>}
 				</div>
 			</div>
 			<div className="externalMarkdownHeaderActions">

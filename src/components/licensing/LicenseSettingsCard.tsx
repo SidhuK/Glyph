@@ -86,9 +86,7 @@ export function LicenseSettingsCard() {
 			setSuccessMessage("License activated.");
 			scheduleSuccessMessageReset();
 		} catch (cause) {
-			setActionError(
-				cause instanceof Error ? cause.message : "Failed to activate license",
-			);
+			setActionError(cause instanceof Error ? cause.message : "Failed to activate license");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -105,11 +103,7 @@ export function LicenseSettingsCard() {
 			scheduleSuccessMessageReset();
 			await reload();
 		} catch (cause) {
-			setActionError(
-				cause instanceof Error
-					? cause.message
-					: "Failed to remove local activation",
-			);
+			setActionError(cause instanceof Error ? cause.message : "Failed to remove local activation");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -119,18 +113,12 @@ export function LicenseSettingsCard() {
 		<SettingsSection
 			title="License"
 			aside={
-				status ? (
-					<span className={statusPillClassName(status)}>
-						{statusLabel(status)}
-					</span>
-				) : null
+				status ? <span className={statusPillClassName(status)}>{statusLabel(status)}</span> : null
 			}
 		>
 			{error ? <div className="settingsError">{error}</div> : null}
 			{actionError ? <div className="settingsError">{actionError}</div> : null}
-			{successMessage ? (
-				<div className="settingsKeySaved">{successMessage}</div>
-			) : null}
+			{successMessage ? <div className="settingsKeySaved">{successMessage}</div> : null}
 
 			{status?.mode === "trial_active" || status?.mode === "trial_expired" ? (
 				<SettingsRow
@@ -152,9 +140,7 @@ export function LicenseSettingsCard() {
 						</div>
 					</SettingsRow>
 					<SettingsRow label="License key" interactive={false}>
-						<div className="settingsValue">
-							{status.license_key_masked ?? "Stored locally"}
-						</div>
+						<div className="settingsValue">{status.license_key_masked ?? "Stored locally"}</div>
 					</SettingsRow>
 				</>
 			) : null}
@@ -167,11 +153,7 @@ export function LicenseSettingsCard() {
 					interactive={false}
 				>
 					<div className="settingsActions">
-						<Button
-							type="button"
-							size="sm"
-							onClick={() => void openUrl(status.purchase_url)}
-						>
+						<Button type="button" size="sm" onClick={() => void openUrl(status.purchase_url)}>
 							Buy Official License
 						</Button>
 					</div>

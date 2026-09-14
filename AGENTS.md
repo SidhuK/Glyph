@@ -5,10 +5,10 @@
 **Reference only — do not run these unless specifically stated by the user:**
 
 ```bash
-pnpm build          # TypeScript check + Vite build
-pnpm check          # Biome lint + format check
-pnpm format         # Auto-format with Biome
-pnpm test           # Run all tests (vitest)
+vp build            # Vite+ production build
+vp check            # Oxfmt, Oxlint, and TypeScript checks
+vp fmt              # Auto-format with Oxfmt
+vp test             # Run all tests with Vite+
 cd src-tauri && cargo check    # Typecheck Rust backend
 cd src-tauri && cargo clippy   # Lint Rust
 ```
@@ -16,18 +16,18 @@ cd src-tauri && cargo clippy   # Lint Rust
 **Reference only — do not run dev servers:**
 
 ```bash
-pnpm dev            # Vite dev server (frontend only)
-pnpm tauri dev      # Full Tauri app in dev mode
-GLYPH_DEV_FORCE_TRIAL=1 pnpm tauri dev # Force trial mode to check licensing
+vp dev              # Vite+ dev server (frontend only)
+vp run tauri dev    # Full Tauri app in dev mode (`pnpm tauri dev` also works)
+GLYPH_DEV_FORCE_TRIAL=1 vp run tauri dev # Force trial mode to check licensing
 ```
 
-**Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check` # use this when you are ready to push your changes to the main branch, and the user has requested you to do so.
+**Pre-push:** `vp check && vp test && vp build && cd src-tauri && cargo check` # use this when you are ready to push your changes to the main branch, and the user has requested you to do so.
 
 **Never run a dev server or use the computer use tool - the user handles dev.**
 
 ## Code Style & Safety
 
-- TypeScript strict mode, no `any` (use `unknown` + narrowing). Biome handles formatting/imports.
+- TypeScript strict mode, no `any` (use `unknown` + narrowing). Oxfmt handles formatting.
 - Functional React components, hooks, lazy-load heavy components. State via Context (no prop drilling).
 - Rust: serde for serialization, tracing for logs, atomic writes via `io_atomic::write_atomic()`.
 - Aim for roughly 200 LOC per file; treat this as a guideline, not a hard rule. Don't obsess over landing exactly at 200, but do refactor into subfolders when a file is getting out of hand.
@@ -43,8 +43,6 @@ GLYPH_DEV_FORCE_TRIAL=1 pnpm tauri dev # Force trial mode to check licensing
 - Hard subtraction pass: always attempt the fix by deleting or narrowing existing code first, and only add LOC when the existing code provably cannot support the fix. Never add new abstractions, command entries, shortcuts, files, or wiring as a patch around code that should have been narrowed.
 - NEVER make test files unless specifically requested by users.
 - For TSX files extract hooks/subcomponents when rendering, state, effects, and commands start mixing.
-
-
 
 ## React Code Practices
 
@@ -62,24 +60,17 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 - Type assertions with `as`: prefer narrowing, typed helpers, `satisfies`, and explicit annotations. `as const` is allowed.
 - Silent fallbacks: do not hide failed user-initiated actions behind fallback behavior. Surface errors clearly when the product cannot do what the user asked.
 - Async action booleans like `isSaving`, `isLoadingFoo`, or `isDeleting`: prefer React Query mutations/queries for server, IPC, filesystem, and durable async work. Local UI-only state is fine.
-- Lint/type suppression comments such as `eslint-disable`, `biome-ignore`, `@ts-ignore`, or `@ts-expect-error` require explicit human approval.
-
-
+- Lint/type suppression comments such as `oxlint-disable`, `@ts-ignore`, or `@ts-expect-error` require explicit human approval.
 
 ## Migration Policy
 
 - Use a hard cutover approach and never implement backward compatibility. However ask before you decided to do a hard cutover.
 - Unless a core functionality is broken, never suggest adding backward compatibility.
 
-
-
 ## Sub-agents
 
 - Never spawn sub-agents by default. Before spawning any sub-agent, including when you are ready to spawn one or think delegation would help, ask the user which agents to spawn and which base model each should use. Spawn them only after the user explicitly provides that direction.
 
-
-
 ## Development Platform
 
 - Glyph is a macOS-only app. It is not being developed for Linux or Windows. Focus code, suggestions, and comments solely on macOS development.
-

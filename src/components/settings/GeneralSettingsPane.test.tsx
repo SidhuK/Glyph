@@ -3,7 +3,7 @@
 import { act } from "react";
 import type React from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { GeneralSettingsPane } from "./GeneralSettingsPane";
 
 const { settingWriter, useTauriEventMock } = vi.hoisted(() => ({
@@ -20,10 +20,7 @@ vi.mock("../../lib/settings", () => ({
 	],
 	DEFAULT_DATE_DISPLAY_FORMAT: "friendly",
 	isDateDisplayFormat: (value: unknown) =>
-		value === "us" ||
-		value === "european" ||
-		value === "friendly" ||
-		value === "iso",
+		value === "us" || value === "european" || value === "friendly" || value === "iso",
 	loadSettings: vi.fn(() =>
 		Promise.resolve({
 			ui: {
@@ -72,22 +69,12 @@ vi.mock("../licensing/LicenseSettingsCard", () => ({
 }));
 
 vi.mock("../ui/shadcn/button", () => ({
-	Button: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-		<button {...props} />
-	),
+	Button: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props} />,
 }));
 
 vi.mock("./SettingsScaffold", () => ({
-	SettingsInfoHint: ({ children }: { children: React.ReactNode }) => (
-		<span>{children}</span>
-	),
-	SettingsSection: ({
-		children,
-		title,
-	}: {
-		children: React.ReactNode;
-		title: string;
-	}) => (
+	SettingsInfoHint: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+	SettingsSection: ({ children, title }: { children: React.ReactNode; title: string }) => (
 		<section>
 			<h2>{title}</h2>
 			{children}

@@ -3,20 +3,9 @@ import { useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
-import {
-	dispatchTagClick,
-	dispatchWikiLinkClick,
-} from "../editor/markdown/editorEvents";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogTitle,
-} from "../ui/shadcn/dialog";
-import {
-	type ConnectionsGraph,
-	buildLocalConnectionsGraph,
-} from "./connectionsGraph";
+import { dispatchTagClick, dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
+import { type ConnectionsGraph, buildLocalConnectionsGraph } from "./connectionsGraph";
 import { useSigmaConnections } from "./useSigmaConnections";
 
 interface LocalNoteConnectionsDialogProps {
@@ -41,9 +30,7 @@ export function LocalNoteConnectionsDialog({
 		queryFn: () => invoke("note_local_connections", { note_id: noteId }),
 	});
 	const payload = connectionsQuery.data ?? null;
-	const error = connectionsQuery.error
-		? extractErrorMessage(connectionsQuery.error)
-		: "";
+	const error = connectionsQuery.error ? extractErrorMessage(connectionsQuery.error) : "";
 
 	const openNode = useCallback(
 		(nodeId: string) => {
@@ -89,13 +76,8 @@ export function LocalNoteConnectionsDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent
-				className="localNoteConnectionsDialog"
-				showCloseButton={false}
-			>
-				<DialogTitle className="sr-only">
-					{t("connections.localTitle")}
-				</DialogTitle>
+			<DialogContent className="localNoteConnectionsDialog" showCloseButton={false}>
+				<DialogTitle className="sr-only">{t("connections.localTitle")}</DialogTitle>
 
 				<div className="localNoteConnectionsBody">
 					<DialogClose asChild>
@@ -118,43 +100,25 @@ export function LocalNoteConnectionsDialog({
 								className="localNoteConnectionsViewport"
 								aria-label={t("connections.localGraphAria")}
 							/>
-							<div
-								className="localNoteConnectionsLegend"
-								aria-label={t("connections.legendAria")}
-							>
+							<div className="localNoteConnectionsLegend" aria-label={t("connections.legendAria")}>
 								<span className="localNoteConnectionsLegendItem">
-									<span
-										className="localNoteConnectionsLegendNode is-current"
-										aria-hidden="true"
-									/>
+									<span className="localNoteConnectionsLegendNode is-current" aria-hidden="true" />
 									{t("connections.legendCurrent")}
 								</span>
 								<span className="localNoteConnectionsLegendItem">
-									<span
-										className="localNoteConnectionsLegendNode is-note"
-										aria-hidden="true"
-									/>
+									<span className="localNoteConnectionsLegendNode is-note" aria-hidden="true" />
 									{t("connections.legendNote")}
 								</span>
 								<span className="localNoteConnectionsLegendItem">
-									<span
-										className="localNoteConnectionsLegendNode is-tag"
-										aria-hidden="true"
-									/>
+									<span className="localNoteConnectionsLegendNode is-tag" aria-hidden="true" />
 									{t("connections.legendTag")}
 								</span>
 								<span className="localNoteConnectionsLegendItem">
-									<span
-										className="localNoteConnectionsLegendEdge is-link"
-										aria-hidden="true"
-									/>
+									<span className="localNoteConnectionsLegendEdge is-link" aria-hidden="true" />
 									{t("connections.legendLink")}
 								</span>
 								<span className="localNoteConnectionsLegendItem">
-									<span
-										className="localNoteConnectionsLegendEdge is-tag-link"
-										aria-hidden="true"
-									/>
+									<span className="localNoteConnectionsLegendEdge is-tag-link" aria-hidden="true" />
 									{t("connections.legendTagShare")}
 								</span>
 							</div>

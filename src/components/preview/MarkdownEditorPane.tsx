@@ -1,8 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	AiBrain04Icon,
-	LayoutAlignRightIcon,
-} from "@hugeicons/core-free-icons";
+import { AiBrain04Icon, LayoutAlignRightIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,10 +17,7 @@ import {
 	type ToggleNoteInfoSidebarDetail,
 } from "../../lib/appEvents";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
-import {
-	joinYamlFrontmatter,
-	splitYamlFrontmatter,
-} from "../../lib/notePreview";
+import { joinYamlFrontmatter, splitYamlFrontmatter } from "../../lib/notePreview";
 import { groupRelationshipsByField } from "../../lib/relationships";
 import {
 	type BacklinkItem,
@@ -41,18 +35,12 @@ import { useInlineTemplateInsertion } from "../editor/hooks/useInlineTemplateIns
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
 import { DailyNoteRollover } from "../editor/rollover/DailyNoteRollover";
-import type {
-	ExtractToNoteActions,
-	NoteInlineEditorMode,
-} from "../editor/types";
+import type { ExtractToNoteActions, NoteInlineEditorMode } from "../editor/types";
 import { GitDiffView } from "./GitDiffView";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { MarkdownFloatingToc } from "./MarkdownFloatingToc";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
-import {
-	initialEditorMode,
-	requiresPlainEditorMode,
-} from "./editorModeSelection";
+import { initialEditorMode, requiresPlainEditorMode } from "./editorModeSelection";
 import { peekCachedMarkdownDoc } from "./markdownCache";
 import { analyzeNoteInfo } from "./noteInfoAnalysis";
 import { useDeferredTocSource } from "./useDeferredTocSource";
@@ -120,9 +108,7 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 
 	for (const match of markdown.matchAll(/\[[^\]\n]+\]\((?:\\.|[^)\n])+\)/g)) {
 		const raw = match[0];
-		const linkMatch = raw.match(
-			/^\[([^\]\n]+)\]\(((?:\\.|[^)\n])*?)(?:\s+"[^"\n]*")?\)$/,
-		);
+		const linkMatch = raw.match(/^\[([^\]\n]+)\]\(((?:\\.|[^)\n])*?)(?:\s+"[^"\n]*")?\)$/);
 		const linkText = linkMatch?.[1]?.trim() ?? "";
 		const href = linkMatch?.[2]?.trim().replace(/\\([()])/g, "$1") ?? "";
 		if (!href) continue;
@@ -166,20 +152,15 @@ export function MarkdownEditorPane({
 	const [infoPanelText, setInfoPanelText] = useState("");
 	const preferredEditorModeRef = useRef<NoteInlineEditorMode | null>(null);
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
-	const [mode, setMode] = useState<NoteInlineEditorMode>(() =>
-		initialEditorMode(initialText),
-	);
+	const [mode, setMode] = useState<NoteInlineEditorMode>(() => initialEditorMode(initialText));
 	const [infoPanelOpen, setInfoPanelOpen] = useState(false);
 	const [localConnectionsOpen, setLocalConnectionsOpen] = useState(false);
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
 	const [relationships, setRelationships] = useState<NoteRelationship[]>([]);
-	const resolveEditorModeForNote = useCallback(
-		(markdown: string): NoteInlineEditorMode => {
-			if (requiresPlainEditorMode(markdown)) return "plain";
-			return preferredEditorModeRef.current ?? initialEditorMode(markdown);
-		},
-		[],
-	);
+	const resolveEditorModeForNote = useCallback((markdown: string): NoteInlineEditorMode => {
+		if (requiresPlainEditorMode(markdown)) return "plain";
+		return preferredEditorModeRef.current ?? initialEditorMode(markdown);
+	}, []);
 	const applyEditorMode = useCallback((nextMode: NoteInlineEditorMode) => {
 		preferredEditorModeRef.current = nextMode;
 		setMode(nextMode);
@@ -247,12 +228,10 @@ export function MarkdownEditorPane({
 		activeId: tocActiveId,
 		getPreviewForHeading,
 		scrollToHeading,
-	} = useTableOfContents(
-		tocSource?.editor ?? null,
-		tocSource?.contentRoot ?? null,
+	} = useTableOfContents(tocSource?.editor ?? null, tocSource?.contentRoot ?? null);
+	const [previewContext, setPreviewContext] = useState<WorkspaceDatabasePreviewContext | null>(
+		null,
 	);
-	const [previewContext, setPreviewContext] =
-		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const [linkRefreshKey, setLinkRefreshKey] = useState(0);
 	const { showToc, zenMode } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
@@ -305,10 +284,7 @@ export function MarkdownEditorPane({
 	}
 
 	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
-		() =>
-			infoPanelOpen
-				? splitYamlFrontmatter(infoPanelText)
-				: { frontmatter: null, body: "" },
+		() => (infoPanelOpen ? splitYamlFrontmatter(infoPanelText) : { frontmatter: null, body: "" }),
 		[infoPanelOpen, infoPanelText],
 	);
 	const infoAnalysis = useMemo(
@@ -358,8 +334,7 @@ export function MarkdownEditorPane({
 		() => groupRelationshipsByField(relationships),
 		[relationships],
 	);
-	const visibleHeadings =
-		mode === "plain" ? infoAnalysis.headings : tocHeadings;
+	const visibleHeadings = mode === "plain" ? infoAnalysis.headings : tocHeadings;
 	const visibleActiveHeadingId = mode === "plain" ? null : tocActiveId;
 	const selectVisibleHeading = useCallback(
 		(heading: (typeof visibleHeadings)[number]) => {
@@ -387,8 +362,7 @@ export function MarkdownEditorPane({
 		headings: navigationHeadings,
 		selectVisibleHeading,
 		headingsReady:
-			loadedRelPath === relPath &&
-			(mode === "plain" ? rawEditorReady : tocSource !== null),
+			loadedRelPath === relPath && (mode === "plain" ? rawEditorReady : tocSource !== null),
 	});
 	const handleEditorReady = useCallback(
 		(editor: Editor | null, contentRoot: HTMLElement | null) => {
@@ -426,23 +400,11 @@ export function MarkdownEditorPane({
 				return nextOpen;
 			});
 		};
-		window.addEventListener(
-			OPEN_LOCAL_CONNECTIONS_EVENT,
-			handleOpenLocalConnections,
-		);
-		window.addEventListener(
-			TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
-			handleToggleInfoSidebar,
-		);
+		window.addEventListener(OPEN_LOCAL_CONNECTIONS_EVENT, handleOpenLocalConnections);
+		window.addEventListener(TOGGLE_NOTE_INFO_SIDEBAR_EVENT, handleToggleInfoSidebar);
 		return () => {
-			window.removeEventListener(
-				OPEN_LOCAL_CONNECTIONS_EVENT,
-				handleOpenLocalConnections,
-			);
-			window.removeEventListener(
-				TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
-				handleToggleInfoSidebar,
-			);
+			window.removeEventListener(OPEN_LOCAL_CONNECTIONS_EVENT, handleOpenLocalConnections);
+			window.removeEventListener(TOGGLE_NOTE_INFO_SIDEBAR_EVENT, handleToggleInfoSidebar);
 		};
 	}, [relPath, setAiPanelOpen, textRef]);
 
@@ -526,9 +488,7 @@ export function MarkdownEditorPane({
 
 	const handleInfoFrontmatterChange = useCallback(
 		(nextFrontmatter: string | null) => {
-			const normalizedFrontmatter = nextFrontmatter?.trim().length
-				? nextFrontmatter
-				: null;
+			const normalizedFrontmatter = nextFrontmatter?.trim().length ? nextFrontmatter : null;
 			const { body } = splitYamlFrontmatter(textRef.current);
 			const nextMarkdown = joinYamlFrontmatter(normalizedFrontmatter, body);
 			if (nextMarkdown === textRef.current) return;
@@ -590,10 +550,7 @@ export function MarkdownEditorPane({
 								title={t("toolbar.info")}
 								aria-pressed={infoPanelOpen}
 							>
-								<HugeiconsIcon
-									icon={LayoutAlignRightIcon}
-									size="var(--icon-md)"
-								/>
+								<HugeiconsIcon icon={LayoutAlignRightIcon} size="var(--icon-md)" />
 							</button>
 						</div>
 					</div>
@@ -606,16 +563,10 @@ export function MarkdownEditorPane({
 			) : null}
 
 			{!error ? (
-				<div
-					ref={contentScrollRef}
-					className="filePreviewTextWrap markdownEditorContent"
-				>
+				<div ref={contentScrollRef} className="filePreviewTextWrap markdownEditorContent">
 					<div className="markdownEditorCenter">
 						{gitDiff ? (
-							<GitDiffView
-								diff={gitDiff}
-								onBack={() => onGitDiffChange?.(null)}
-							/>
+							<GitDiffView diff={gitDiff} onBack={() => onGitDiffChange?.(null)} />
 						) : (
 							<DailyNoteRollover
 								mode={mode}
@@ -655,14 +606,7 @@ export function MarkdownEditorPane({
 				activeId={tocActiveId}
 				getHeadingPreview={getPreviewForHeading}
 				onSelectHeading={scrollToHeading}
-				visible={
-					!zenMode &&
-					showToc &&
-					!infoPanelOpen &&
-					!gitDiff &&
-					!error &&
-					mode !== "plain"
-				}
+				visible={!zenMode && showToc && !infoPanelOpen && !gitDiff && !error && mode !== "plain"}
 			/>
 
 			{!zenMode ? (

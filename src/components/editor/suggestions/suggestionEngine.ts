@@ -24,15 +24,8 @@ export interface UseInputSuggestionEngineOptions<T> {
 	inputRef: RefObject<HTMLInputElement | null>;
 	value: string;
 	provider: SuggestionProvider<T>;
-	findRange: (
-		value: string,
-		selectionStart: number | null,
-	) => SuggestionRange | null;
-	onSelect: (
-		item: T,
-		range: SuggestionRange,
-		cause: SuggestionSelectCause,
-	) => void;
+	findRange: (value: string, selectionStart: number | null) => SuggestionRange | null;
+	onSelect: (item: T, range: SuggestionRange, cause: SuggestionSelectCause) => void;
 	closeAfterSelect?: (item: T, cause: SuggestionSelectCause) => boolean;
 }
 
@@ -75,9 +68,7 @@ function applySuggestionTransforms<T>(
 		? items.filter((item) => provider.filter?.(item, query) ?? true)
 		: items;
 	const sorted = provider.sort
-		? [...filtered].sort(
-				(left, right) => provider.sort?.(left, right, query) ?? 0,
-			)
+		? [...filtered].sort((left, right) => provider.sort?.(left, right, query) ?? 0)
 		: filtered;
 	return sorted.slice(0, provider.limit ?? sorted.length);
 }
@@ -161,16 +152,12 @@ export function useInputSuggestionEngine<T>({
 			if (!items.length) return false;
 			if (event.key === "ArrowDown") {
 				event.preventDefault();
-				setActiveIndex((current) =>
-					nextSuggestionIndex(current, items.length, 1),
-				);
+				setActiveIndex((current) => nextSuggestionIndex(current, items.length, 1));
 				return true;
 			}
 			if (event.key === "ArrowUp") {
 				event.preventDefault();
-				setActiveIndex((current) =>
-					nextSuggestionIndex(current, items.length, -1),
-				);
+				setActiveIndex((current) => nextSuggestionIndex(current, items.length, -1));
 				return true;
 			}
 			if (event.key === "Enter") {

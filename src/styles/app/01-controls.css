@@ -24,15 +24,15 @@ button {
 
 button:hover:not(
 		:where(
-				.databaseBoardCard,
-				.databaseBoardLaneTitleButton,
-				.databaseBoardLaneHandle,
-				.databaseBoardColorRibbonSwatch,
-				.databaseBoardColorRibbonClear,
-				.databasesViewTab,
-				.databasesCollectionSwitcher,
-				[data-sileo-toast]
-			)
+			.databaseBoardCard,
+			.databaseBoardLaneTitleButton,
+			.databaseBoardLaneHandle,
+			.databaseBoardColorRibbonSwatch,
+			.databaseBoardColorRibbonClear,
+			.databasesViewTab,
+			.databasesCollectionSwitcher,
+			[data-sileo-toast]
+		)
 	) {
 	background: var(--bg-hover);
 	color: var(--text-primary);
@@ -40,15 +40,15 @@ button:hover:not(
 
 button:active:not(
 		:where(
-				.databaseBoardCard,
-				.databaseBoardLaneTitleButton,
-				.databaseBoardLaneHandle,
-				.databaseBoardColorRibbonSwatch,
-				.databaseBoardColorRibbonClear,
-				.databasesViewTab,
-				.databasesCollectionSwitcher,
-				[data-sileo-toast]
-			)
+			.databaseBoardCard,
+			.databaseBoardLaneTitleButton,
+			.databaseBoardLaneHandle,
+			.databaseBoardColorRibbonSwatch,
+			.databaseBoardColorRibbonClear,
+			.databasesViewTab,
+			.databasesCollectionSwitcher,
+			[data-sileo-toast]
+		)
 	) {
 	background: var(--bg-active);
 }
@@ -62,14 +62,14 @@ button:disabled {
 
 button:disabled:hover:not(
 		:where(
-				.databaseBoardCard,
-				.databaseBoardLaneTitleButton,
-				.databaseBoardLaneHandle,
-				.databaseBoardColorRibbonSwatch,
-				.databaseBoardColorRibbonClear,
-				.databasesViewTab,
-				.databasesCollectionSwitcher
-			)
+			.databaseBoardCard,
+			.databaseBoardLaneTitleButton,
+			.databaseBoardLaneHandle,
+			.databaseBoardColorRibbonSwatch,
+			.databaseBoardColorRibbonClear,
+			.databasesViewTab,
+			.databasesCollectionSwitcher
+		)
 	) {
 	background: transparent;
 	transform: none;

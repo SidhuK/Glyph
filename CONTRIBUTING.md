@@ -22,20 +22,23 @@ Glyph is an offline-first desktop notes app built with React, TypeScript, Tauri,
 
 ### Requirements
 
-- Node.js 20+
-- `pnpm` 10+
+- Node.js 24.21.0
+- Vite+ 0.3.1
+- `pnpm` 10+ (managed by Vite+)
 - Rust stable
 - macOS for full Tauri app development and verification
 
 ### Useful commands
 
 ```bash
-pnpm dev
-pnpm tauri dev
-pnpm build
-pnpm check
-pnpm format
-pnpm test
+vp dev
+vp run tauri dev # full Tauri app; equivalent to `pnpm tauri dev`
+vp build
+vp run tauri build # full macOS app; equivalent to `pnpm tauri build`
+vp check
+vp fmt
+vp lint
+vp test
 cd src-tauri && cargo check
 cd src-tauri && cargo clippy
 ```
@@ -45,8 +48,9 @@ cd src-tauri && cargo clippy
 Run these before you open or update a PR:
 
 ```bash
-pnpm check
-pnpm build
+vp check
+vp test
+vp build
 cd src-tauri && cargo check
 ```
 

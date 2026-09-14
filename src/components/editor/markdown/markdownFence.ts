@@ -16,10 +16,7 @@ function isClosingFenceFor(openFence: string, closeFence: string): boolean {
 	return closeFence.length >= openFence.length;
 }
 
-export function updateMarkdownFenceTracker(
-	line: string,
-	tracker: MarkdownFenceTracker,
-): boolean {
+export function updateMarkdownFenceTracker(line: string, tracker: MarkdownFenceTracker): boolean {
 	const fence = matchMarkdownCodeFence(line);
 	if (!fence) return false;
 
@@ -36,17 +33,11 @@ export function updateMarkdownFenceTracker(
 	return false;
 }
 
-export function isInsideMarkdownCodeFence(
-	tracker: MarkdownFenceTracker,
-): boolean {
+export function isInsideMarkdownCodeFence(tracker: MarkdownFenceTracker): boolean {
 	return tracker.activeFence !== null;
 }
 
-function findInlineCodeClose(
-	line: string,
-	openStart: number,
-	tickCount: number,
-): number {
+function findInlineCodeClose(line: string, openStart: number, tickCount: number): number {
 	let search = openStart + tickCount;
 	while (search < line.length) {
 		const next = line.indexOf("`".repeat(tickCount), search);
@@ -60,10 +51,7 @@ function findInlineCodeClose(
 	return -1;
 }
 
-function transformLineOutsideInlineCode(
-	line: string,
-	transform: (text: string) => string,
-) {
+function transformLineOutsideInlineCode(line: string, transform: (text: string) => string) {
 	let output = "";
 	let cursor = 0;
 	while (cursor < line.length) {

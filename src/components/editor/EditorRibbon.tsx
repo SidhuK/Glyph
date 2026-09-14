@@ -5,10 +5,7 @@ import { m } from "motion/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { springPresets } from "../ui/animations";
-import {
-	RibbonColorPopover,
-	RibbonHighlightPopover,
-} from "./RibbonColorPopover";
+import { RibbonColorPopover, RibbonHighlightPopover } from "./RibbonColorPopover";
 import { RibbonLinkPopover } from "./RibbonLinkPopover";
 import {
 	type RibbonButtonConfig,
@@ -61,15 +58,12 @@ export const EditorRibbon = memo(function EditorRibbon({
 	onExtractSelectionToNote,
 }: EditorRibbonProps) {
 	const { t } = useTranslation("editor");
-	const focusChain = () =>
-		editor.chain().focus(undefined, { scrollIntoView: false });
+	const focusChain = () => editor.chain().focus(undefined, { scrollIntoView: false });
 
 	const preventMouseDown = (e: React.MouseEvent) => e.preventDefault();
 
 	const runCommand = (fn: () => void) => {
-		const host = editor.view.dom.closest(
-			".rfNodeNoteEditorBody",
-		) as HTMLElement | null;
+		const host = editor.view.dom.closest(".rfNodeNoteEditorBody") as HTMLElement | null;
 		const scrollTop = host?.scrollTop ?? 0;
 		fn();
 		if (host) {

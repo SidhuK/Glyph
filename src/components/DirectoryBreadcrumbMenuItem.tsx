@@ -65,21 +65,19 @@ export function DirectoryBreadcrumbMenuItem({
 					<div className={stateClassName}>Empty folder</div>
 				) : (
 					<>
-						{childEntries
-							.slice(0, DIRECTORY_BREADCRUMB_CHILD_LIMIT)
-							.map((child) => (
-								<DirectoryBreadcrumbMenuItem
-									key={child.rel_path || ROOT_PATH_KEY}
-									entry={child}
-									childrenByDir={childrenByDir}
-									onLoadDir={onLoadDir}
-									onSelectFile={onSelectFile}
-									itemClassName={itemClassName}
-									labelClassName={labelClassName}
-									menuClassName={menuClassName}
-									stateClassName={stateClassName}
-								/>
-							))}
+						{childEntries.slice(0, DIRECTORY_BREADCRUMB_CHILD_LIMIT).map((child) => (
+							<DirectoryBreadcrumbMenuItem
+								key={child.rel_path || ROOT_PATH_KEY}
+								entry={child}
+								childrenByDir={childrenByDir}
+								onLoadDir={onLoadDir}
+								onSelectFile={onSelectFile}
+								itemClassName={itemClassName}
+								labelClassName={labelClassName}
+								menuClassName={menuClassName}
+								stateClassName={stateClassName}
+							/>
+						))}
 						{childEntries.length > DIRECTORY_BREADCRUMB_CHILD_LIMIT ? (
 							<div className={stateClassName}>
 								+{childEntries.length - DIRECTORY_BREADCRUMB_CHILD_LIMIT} more

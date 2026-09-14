@@ -10,8 +10,8 @@
 	align-items: center;
 	min-height: 0;
 	overflow-y: auto;
-	padding: calc(var(--header-height) + clamp(28px, 3.2vw, 46px))
-		clamp(18px, 4vw, 56px) clamp(34px, 5vw, 64px);
+	padding: calc(var(--header-height) + clamp(28px, 3.2vw, 46px)) clamp(18px, 4vw, 56px)
+		clamp(34px, 5vw, 64px);
 	background: var(--bg-primary);
 	gap: 26px;
 }
@@ -121,38 +121,22 @@
 
 .activityHeatmapCell[data-level="1"],
 .activityHeatmapLegendCell[data-level="1"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 24%,
-		var(--bg-tertiary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 24%, var(--bg-tertiary));
 }
 
 .activityHeatmapCell[data-level="2"],
 .activityHeatmapLegendCell[data-level="2"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 42%,
-		var(--bg-tertiary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 42%, var(--bg-tertiary));
 }
 
 .activityHeatmapCell[data-level="3"],
 .activityHeatmapLegendCell[data-level="3"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 62%,
-		var(--bg-tertiary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 62%, var(--bg-tertiary));
 }
 
 .activityHeatmapCell[data-level="4"],
 .activityHeatmapLegendCell[data-level="4"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 82%,
-		var(--text-primary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 82%, var(--text-primary));
 }
 
 .activityHeatmapCell::after {
@@ -172,7 +156,9 @@
 	opacity: 0;
 	pointer-events: none;
 	transform: translateX(-50%) translateY(2px);
-	transition: opacity 120ms ease, transform 120ms ease;
+	transition:
+		opacity 120ms ease,
+		transform 120ms ease;
 	white-space: nowrap;
 }
 
@@ -256,8 +242,7 @@
 	height: 13px;
 	border-radius: 50%;
 	background: var(--bg-primary);
-	border: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
+	border: 2px solid color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
 }
 
 .activityVirtualRow:last-child .activityDayRail::before {

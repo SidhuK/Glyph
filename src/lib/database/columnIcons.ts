@@ -573,10 +573,7 @@ export function defaultDatabaseColumnIconName(
 	column: Pick<DatabaseColumn, "type" | "property_kind">,
 ): string {
 	if (column.type === "property") {
-		return (
-			PROPERTY_KIND_DATABASE_COLUMN_ICONS[column.property_kind ?? ""] ??
-			"document"
-		);
+		return PROPERTY_KIND_DATABASE_COLUMN_ICONS[column.property_kind ?? ""] ?? "document";
 	}
 	return BUILT_IN_DATABASE_COLUMN_ICONS[column.type];
 }

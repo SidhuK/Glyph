@@ -36,9 +36,7 @@ export function splitPaneDroppable(paneId: string) {
  * sortables also carry a `paneId`, so panes are keyed separately to keep the
  * two apart.
  */
-export function splitPaneIdOf(
-	data: Record<string, unknown> | undefined,
-): string | null {
+export function splitPaneIdOf(data: Record<string, unknown> | undefined): string | null {
 	const paneId = data?.splitPaneId;
 	return typeof paneId === "string" ? paneId : null;
 }

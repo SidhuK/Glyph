@@ -1,15 +1,8 @@
 import { useMemo } from "react";
-import {
-	getBoardGroupColumns,
-	getDatabaseGroupColumns,
-} from "../../lib/database/board";
+import { getBoardGroupColumns, getDatabaseGroupColumns } from "../../lib/database/board";
 import { resolveDatabaseColumns } from "../../lib/database/columns";
 import { viewToConfig } from "../../lib/database/viewConfig";
-import type {
-	DatabaseColumn,
-	DatabaseConfig,
-	WorkspaceDatabaseDocument,
-} from "../../lib/tauri";
+import type { DatabaseColumn, DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 import type { DatabaseView } from "./types";
 
 export interface ActiveViewConfig {
@@ -31,17 +24,11 @@ function deriveActiveViewConfig(
 	selectedViewId: string | null,
 ): ActiveViewConfig {
 	const activeConfig =
-		document && selectedViewId
-			? viewToConfig(document.database, selectedViewId)
-			: null;
+		document && selectedViewId ? viewToConfig(document.database, selectedViewId) : null;
 
-	const activeView =
-		document?.database.views.find((view) => view.id === selectedViewId) ?? null;
+	const activeView = document?.database.views.find((view) => view.id === selectedViewId) ?? null;
 	const resolvedColumns = activeConfig
-		? resolveDatabaseColumns(
-				activeConfig.columns,
-				document?.available_properties ?? [],
-			)
+		? resolveDatabaseColumns(activeConfig.columns, document?.available_properties ?? [])
 		: [];
 
 	const groupColumns =
@@ -50,12 +37,9 @@ function deriveActiveViewConfig(
 			: getDatabaseGroupColumns(resolvedColumns);
 
 	const activeGroupColumn =
-		groupColumns.find(
-			(column) => column.id === activeConfig?.view.board_group_by,
-		) ?? null;
+		groupColumns.find((column) => column.id === activeConfig?.view.board_group_by) ?? null;
 
-	const visibleColumns =
-		activeConfig?.columns.filter((column) => column.visible) ?? [];
+	const visibleColumns = activeConfig?.columns.filter((column) => column.visible) ?? [];
 
 	return {
 		activeConfig,

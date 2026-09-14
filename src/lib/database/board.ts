@@ -1,9 +1,5 @@
 import { priorityLabel, priorityOptionFromValue } from "../priorityProperties";
-import {
-	statusColorKey,
-	statusLabel,
-	statusOptionFromValue,
-} from "../statusProperties";
+import { statusColorKey, statusLabel, statusOptionFromValue } from "../statusProperties";
 import { resolveDatabaseColumns } from "./columns";
 import { databaseCellValueFromRow } from "./config";
 import type {
@@ -59,15 +55,11 @@ function isDatabaseGroupColumn(column: DatabaseColumn): boolean {
 	return column.type === "tags" || column.type === "property";
 }
 
-export function getBoardGroupColumns(
-	columns: DatabaseColumn[],
-): DatabaseColumn[] {
+export function getBoardGroupColumns(columns: DatabaseColumn[]): DatabaseColumn[] {
 	return columns.filter(isBoardGroupColumn);
 }
 
-export function getDatabaseGroupColumns(
-	columns: DatabaseColumn[],
-): DatabaseColumn[] {
+export function getDatabaseGroupColumns(columns: DatabaseColumn[]): DatabaseColumn[] {
 	return columns.filter(isDatabaseGroupColumn);
 }
 
@@ -75,18 +67,14 @@ export function resolveDatabaseGroupColumns(
 	columns: DatabaseColumn[],
 	availableProperties: DatabasePropertyOption[] = [],
 ): DatabaseColumn[] {
-	return getDatabaseGroupColumns(
-		resolveDatabaseColumns(columns, availableProperties),
-	);
+	return getDatabaseGroupColumns(resolveDatabaseColumns(columns, availableProperties));
 }
 
 export function resolveBoardGroupColumns(
 	columns: DatabaseColumn[],
 	availableProperties: DatabasePropertyOption[] = [],
 ): DatabaseColumn[] {
-	return getBoardGroupColumns(
-		resolveDatabaseColumns(columns, availableProperties),
-	);
+	return getBoardGroupColumns(resolveDatabaseColumns(columns, availableProperties));
 }
 
 export function emptyBoardLaneLabel(column: DatabaseColumn | null): string {
@@ -102,9 +90,7 @@ export function emptyBoardLaneLabel(column: DatabaseColumn | null): string {
 	return "No value yet";
 }
 
-export function defaultBoardGroupColumnId(
-	columns: DatabaseColumn[],
-): string | null {
+export function defaultBoardGroupColumnId(columns: DatabaseColumn[]): string | null {
 	return getBoardGroupColumns(columns)[0]?.id ?? null;
 }
 
@@ -130,8 +116,7 @@ function laneWorkflowState(
 }
 
 function boardLaneLabel(column: DatabaseColumn, laneId: string): string {
-	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID)
-		return emptyBoardLaneLabel(column);
+	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID) return emptyBoardLaneLabel(column);
 	if (column.property_kind === "checkbox") {
 		return checkboxLaneLabel(laneId === "true");
 	}
@@ -140,10 +125,7 @@ function boardLaneLabel(column: DatabaseColumn, laneId: string): string {
 	return laneId;
 }
 
-function createEmptyLane(
-	column: DatabaseColumn,
-	laneId: string,
-): DatabaseBoardLane {
+function createEmptyLane(column: DatabaseColumn, laneId: string): DatabaseBoardLane {
 	const label = boardLaneLabel(column, laneId);
 	return {
 		id: laneId,
@@ -188,15 +170,11 @@ function normalizeBoardTagValue(value: string): string | null {
 export function canManageBoardLanes(column: DatabaseColumn | null): boolean {
 	return (
 		column?.type === "property" &&
-		(column.property_kind === "status" ||
-			column.property_kind === "multi_select")
+		(column.property_kind === "status" || column.property_kind === "multi_select")
 	);
 }
 
-export function boardLaneIdFromLabel(
-	column: DatabaseColumn,
-	label: string,
-): string | null {
+export function boardLaneIdFromLabel(column: DatabaseColumn, label: string): string | null {
 	const trimmed = label.trim();
 	if (!trimmed) return null;
 	if (column.property_kind === "status") return statusLabel(trimmed);
@@ -209,9 +187,7 @@ function rawLaneValues(row: DatabaseRow, column: DatabaseColumn): string[] {
 	if (isMultiValueBoardColumn(column)) {
 		if (column.type === "tags" || column.property_kind === "tags") {
 			return uniqueLaneValues(
-				cell.value_list.map(
-					(value) => normalizeBoardTagValue(value) ?? value.trim(),
-				),
+				cell.value_list.map((value) => normalizeBoardTagValue(value) ?? value.trim()),
 			);
 		}
 		return uniqueLaneValues(cell.value_list);
@@ -232,26 +208,16 @@ function rawLaneValues(row: DatabaseRow, column: DatabaseColumn): string[] {
 	return value ? [value] : [];
 }
 
-export function boardLaneIdsForRow(
-	row: DatabaseRow,
-	column: DatabaseColumn,
-): string[] {
+export function boardLaneIdsForRow(row: DatabaseRow, column: DatabaseColumn): string[] {
 	const laneValues = rawLaneValues(row, column);
 	return laneValues.length > 0 ? laneValues : [DATABASE_BOARD_EMPTY_LANE_ID];
 }
 
-export function boardRowHasLane(
-	row: DatabaseRow,
-	column: DatabaseColumn,
-	laneId: string,
-): boolean {
+export function boardRowHasLane(row: DatabaseRow, column: DatabaseColumn, laneId: string): boolean {
 	return boardLaneIdsForRow(row, column).includes(laneId);
 }
 
-export function boardLaneIdForRow(
-	row: DatabaseRow,
-	column: DatabaseColumn,
-): string {
+export function boardLaneIdForRow(row: DatabaseRow, column: DatabaseColumn): string {
 	return boardLaneIdsForRow(row, column)[0] ?? DATABASE_BOARD_EMPTY_LANE_ID;
 }
 
@@ -278,22 +244,14 @@ export function createBoardLanes(
 				label: checkboxLaneLabel(false),
 				cardCount: buckets.get("false")?.length ?? 0,
 				rows: sortLaneRows(buckets.get("false") ?? []),
-				workflowState: laneWorkflowState(
-					column,
-					"false",
-					checkboxLaneLabel(false),
-				),
+				workflowState: laneWorkflowState(column, "false", checkboxLaneLabel(false)),
 			},
 			{
 				id: "true",
 				label: checkboxLaneLabel(true),
 				cardCount: buckets.get("true")?.length ?? 0,
 				rows: sortLaneRows(buckets.get("true") ?? []),
-				workflowState: laneWorkflowState(
-					column,
-					"true",
-					checkboxLaneLabel(true),
-				),
+				workflowState: laneWorkflowState(column, "true", checkboxLaneLabel(true)),
 			},
 			{
 				id: DATABASE_BOARD_EMPTY_LANE_ID,
@@ -312,8 +270,7 @@ export function createBoardLanes(
 	const lanes = new Map<string, DatabaseBoardLane>();
 	if (canManageBoardLanes(column)) {
 		for (const laneId of configuredLaneIds) {
-			if (laneId === DATABASE_BOARD_EMPTY_LANE_ID || lanes.has(laneId))
-				continue;
+			if (laneId === DATABASE_BOARD_EMPTY_LANE_ID || lanes.has(laneId)) continue;
 			lanes.set(laneId, createEmptyLane(column, laneId));
 		}
 	}
@@ -337,10 +294,7 @@ export function createBoardLanes(
 	}
 
 	if (!lanes.has(DATABASE_BOARD_EMPTY_LANE_ID)) {
-		lanes.set(
-			DATABASE_BOARD_EMPTY_LANE_ID,
-			createEmptyLane(column, DATABASE_BOARD_EMPTY_LANE_ID),
-		);
+		lanes.set(DATABASE_BOARD_EMPTY_LANE_ID, createEmptyLane(column, DATABASE_BOARD_EMPTY_LANE_ID));
 	}
 
 	const orderedLanes = [...lanes.values()].map((lane) => ({
@@ -385,9 +339,7 @@ export function createDatabaseRowGroups(
 		(group) => group.id !== DATABASE_BOARD_EMPTY_LANE_ID,
 	);
 	const emptyGroup = groups.get(DATABASE_BOARD_EMPTY_LANE_ID);
-	filledGroups.sort((left, right) =>
-		boardCollator.compare(left.label, right.label),
-	);
+	filledGroups.sort((left, right) => boardCollator.compare(left.label, right.label));
 	if (!ascending) filledGroups.reverse();
 	return emptyGroup ? [...filledGroups, emptyGroup] : filledGroups;
 }
@@ -401,15 +353,12 @@ export function orderBoardLanes(
 	const previousLaneIdSet = new Set(previousLaneIds);
 	const nextLaneIds = [
 		...previousLaneIds.filter(
-			(laneId) =>
-				laneId !== DATABASE_BOARD_EMPTY_LANE_ID && laneMap.has(laneId),
+			(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID && laneMap.has(laneId),
 		),
 		...lanes
 			.map((lane) => lane.id)
 			.filter(
-				(laneId) =>
-					laneId !== DATABASE_BOARD_EMPTY_LANE_ID &&
-					!previousLaneIdSet.has(laneId),
+				(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID && !previousLaneIdSet.has(laneId),
 			),
 	];
 	if (laneMap.has(DATABASE_BOARD_EMPTY_LANE_ID)) {
@@ -432,10 +381,7 @@ export function orderBoardLaneRows(
 		const orderedPathSet = new Set(orderedRows.map((row) => row.note_path));
 		return {
 			...lane,
-			rows: [
-				...orderedRows,
-				...lane.rows.filter((row) => !orderedPathSet.has(row.note_path)),
-			],
+			rows: [...orderedRows, ...lane.rows.filter((row) => !orderedPathSet.has(row.note_path))],
 		};
 	});
 }
@@ -472,31 +418,22 @@ export function moveBoardCardToLane(
 		const shouldRemoveFromLane = sourceLaneIds.has(laneId);
 		nextOrder[laneId] = [
 			...previousOrder.filter(
-				(path) =>
-					(!shouldRemoveFromLane || path !== notePath) && knownRowSet.has(path),
+				(path) => (!shouldRemoveFromLane || path !== notePath) && knownRowSet.has(path),
 			),
 			...knownRows.filter(
-				(path) =>
-					(!shouldRemoveFromLane || path !== notePath) &&
-					!previousOrderSet.has(path),
+				(path) => (!shouldRemoveFromLane || path !== notePath) && !previousOrderSet.has(path),
 			),
 		];
 	}
 
-	const targetRows = (nextOrder[targetLaneId] ?? []).filter(
-		(path) => path !== notePath,
-	);
+	const targetRows = (nextOrder[targetLaneId] ?? []).filter((path) => path !== notePath);
 	const targetIndex =
-		targetNotePath && targetNotePath !== notePath
-			? targetRows.indexOf(targetNotePath)
-			: -1;
+		targetNotePath && targetNotePath !== notePath ? targetRows.indexOf(targetNotePath) : -1;
 	const boundedTargetIndex = targetIndex >= 0 ? targetIndex : targetRows.length;
 	targetRows.splice(boundedTargetIndex, 0, notePath);
 	nextOrder[targetLaneId] = targetRows;
 
-	return Object.fromEntries(
-		Object.entries(nextOrder).filter(([, order]) => order.length > 0),
-	);
+	return Object.fromEntries(Object.entries(nextOrder).filter(([, order]) => order.length > 0));
 }
 
 export function moveBoardLaneToIndex(
@@ -504,15 +441,10 @@ export function moveBoardLaneToIndex(
 	sourceLaneId: string,
 	targetIndex: number,
 ): string[] {
-	const normalizedLaneIds = laneIds.filter(
-		(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID,
-	);
+	const normalizedLaneIds = laneIds.filter((laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID);
 	const sourceIndex = normalizedLaneIds.indexOf(sourceLaneId);
 	if (sourceIndex === -1) return normalizedLaneIds;
-	const boundedTargetIndex = Math.max(
-		0,
-		Math.min(targetIndex, normalizedLaneIds.length - 1),
-	);
+	const boundedTargetIndex = Math.max(0, Math.min(targetIndex, normalizedLaneIds.length - 1));
 	if (sourceIndex === boundedTargetIndex) return normalizedLaneIds;
 	const nextLaneIds = [...normalizedLaneIds];
 	const [movedLaneId] = nextLaneIds.splice(sourceIndex, 1);
@@ -521,15 +453,11 @@ export function moveBoardLaneToIndex(
 	return nextLaneIds;
 }
 
-export function boardLaneValue(
-	column: DatabaseColumn,
-	laneId: string,
-): DatabaseCellValue {
+export function boardLaneValue(column: DatabaseColumn, laneId: string): DatabaseCellValue {
 	if (column.property_kind === "checkbox") {
 		return {
 			kind: "checkbox",
-			value_bool:
-				laneId === DATABASE_BOARD_EMPTY_LANE_ID ? null : laneId === "true",
+			value_bool: laneId === DATABASE_BOARD_EMPTY_LANE_ID ? null : laneId === "true",
 			value_list: [],
 		};
 	}
@@ -549,10 +477,7 @@ export function boardLaneValue(
 	};
 }
 
-export function boardCreateValue(
-	column: DatabaseColumn,
-	laneId: string,
-): DatabaseCellValue | null {
+export function boardCreateValue(column: DatabaseColumn, laneId: string): DatabaseCellValue | null {
 	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID) return null;
 	if (column.type === "tags" || column.property_kind === "tags") {
 		return {
@@ -597,9 +522,7 @@ export function boardDropValue(
 			return {
 				kind: cell.kind,
 				value_list: uniqueLaneValues([
-					...cell.value_list.map(
-						(value) => normalizeBoardTagValue(value) ?? value.trim(),
-					),
+					...cell.value_list.map((value) => normalizeBoardTagValue(value) ?? value.trim()),
 					normalizedLaneId,
 				]),
 			};

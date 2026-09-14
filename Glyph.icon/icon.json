@@ -2,10 +2,7 @@
 	"fill-specializations": [
 		{
 			"value": {
-				"linear-gradient": [
-					"extended-gray:1.00000,1.00000",
-					"extended-gray:0.75000,1.00000"
-				],
+				"linear-gradient": ["extended-gray:1.00000,1.00000", "extended-gray:0.75000,1.00000"],
 				"orientation": {
 					"start": {
 						"x": 0.5,

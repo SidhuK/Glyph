@@ -58,8 +58,7 @@ export function replaceHtmlEmbedFences(
 		const block = blocks[index];
 		const replacement = replacer(block);
 		if (replacement === null) continue;
-		result =
-			result.slice(0, block.start) + replacement + result.slice(block.end);
+		result = result.slice(0, block.start) + replacement + result.slice(block.end);
 	}
 	return result;
 }
@@ -70,15 +69,10 @@ export function postprocessHtmlEmbedFences(input: string): string {
 	// Only sentinel-tagged fences (raw HTML converted on ingest) need
 	// rewriting; user-authored fences pass through byte-identical.
 	return replaceHtmlEmbedFences(input, (block) =>
-		block.body.startsWith(sentinelPrefix)
-			? block.body.slice(sentinelPrefix.length)
-			: null,
+		block.body.startsWith(sentinelPrefix) ? block.body.slice(sentinelPrefix.length) : null,
 	);
 }
 
-export function rawHtmlToFencedBlock(
-	kind: HtmlEmbedKind,
-	content: string,
-): string {
+export function rawHtmlToFencedBlock(kind: HtmlEmbedKind, content: string): string {
 	return [`\`\`\`${kind}`, HTML_EMBED_RAW_SENTINEL, content, "```"].join("\n");
 }

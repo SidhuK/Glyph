@@ -1,8 +1,4 @@
-import {
-	type DragEndEvent,
-	useDragDropMonitor,
-	useDroppable,
-} from "@dnd-kit/react";
+import { type DragEndEvent, useDragDropMonitor, useDroppable } from "@dnd-kit/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
@@ -37,11 +33,7 @@ import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
 import { MAX_SIDEBAR_FOLDER_TABS } from "../../lib/settings/definitions";
 import { registerPreviewInvalidator } from "../../lib/spaceChange";
-import type {
-	FileTreeAppearance,
-	FsEntry,
-	NoteTaskSummary,
-} from "../../lib/tauri";
+import type { FileTreeAppearance, FsEntry, NoteTaskSummary } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
 import { parentDir } from "../../utils/path";
@@ -51,10 +43,7 @@ import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
-import {
-	FILE_TREE_ENTRY_TYPE,
-	FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
-} from "./fileTreeDnd";
+import { FILE_TREE_ENTRY_TYPE, FILE_TREE_ROOT_DROP_COLLISION_PRIORITY } from "./fileTreeDnd";
 import { useFileTreeCreateFolderScroll } from "./useFileTreeCreateFolderScroll";
 import { useVisibleFilePreviews } from "./useVisibleFilePreviews";
 
@@ -151,9 +140,7 @@ function FileTreeRootDrop({
 		<div
 			ref={ref}
 			className="fileTreeScroll"
-			data-drop-target={
-				isDropTarget || isExternalDropTarget ? "true" : undefined
-			}
+			data-drop-target={isDropTarget || isExternalDropTarget ? "true" : undefined}
 		>
 			{children}
 		</div>
@@ -183,12 +170,7 @@ function fileTreeDropTargetAtPoint(
 	fallbackDirPath: string,
 ): string | null {
 	const bounds = pane.getBoundingClientRect();
-	if (
-		x < bounds.left ||
-		x >= bounds.right ||
-		y < bounds.top ||
-		y >= bounds.bottom
-	) {
+	if (x < bounds.left || x >= bounds.right || y < bounds.top || y >= bounds.bottom) {
 		return null;
 	}
 
@@ -197,8 +179,7 @@ function fileTreeDropTargetAtPoint(
 		hit instanceof Element
 			? hit.closest<HTMLElement>("[data-file-tree-path][data-file-tree-kind]")
 			: null;
-	const rowPath =
-		row && pane.contains(row) ? row.dataset.fileTreePath : undefined;
+	const rowPath = row && pane.contains(row) ? row.dataset.fileTreePath : undefined;
 	return rowPath && row?.dataset.fileTreeKind === "dir"
 		? rowPath
 		: rowPath
@@ -206,12 +187,7 @@ function fileTreeDropTargetAtPoint(
 			: fallbackDirPath;
 }
 
-function FolderBreadcrumb({
-	spacePath,
-	dirPath,
-	onNavigate,
-	onExit,
-}: FolderBreadcrumbProps) {
+function FolderBreadcrumb({ spacePath, dirPath, onNavigate, onExit }: FolderBreadcrumbProps) {
 	const parts = folderBreadcrumbParts(spacePath, dirPath);
 	const navRef = useRef<HTMLElement | null>(null);
 
@@ -241,10 +217,7 @@ function FolderBreadcrumb({
 				};
 
 				return (
-					<span
-						key={part.path || "__root__"}
-						className="fileTreeBreadcrumbPart"
-					>
+					<span key={part.path || "__root__"} className="fileTreeBreadcrumbPart">
 						<button
 							type="button"
 							className="fileTreeBreadcrumbButton"
@@ -324,12 +297,7 @@ function flattenVisibleFileTreeRows({
 	sortMode,
 }: Pick<
 	TreeEntriesProps,
-	| "entries"
-	| "parentDepth"
-	| "childrenByDir"
-	| "expandedDirs"
-	| "showNonMarkdownFiles"
-	| "sortMode"
+	"entries" | "parentDepth" | "childrenByDir" | "expandedDirs" | "showNonMarkdownFiles" | "sortMode"
 >): VirtualFileTreeRow[] {
 	const rows: VirtualFileTreeRow[] = [];
 	const walk = (currentEntries: FsEntry[], currentParentDepth: number) => {
@@ -341,9 +309,7 @@ function flattenVisibleFileTreeRows({
 		for (const entry of visibleEntries) {
 			const depth = currentParentDepth + 1;
 			rows.push({
-				id:
-					entry.rel_path.trim() ||
-					`${entry.kind}:${entry.name.trim()}:${depth}`,
+				id: entry.rel_path.trim() || `${entry.kind}:${entry.name.trim()}:${depth}`,
 				entry,
 				depth,
 			});
@@ -406,14 +372,7 @@ function TreeEntries({
 				showNonMarkdownFiles,
 				sortMode,
 			}),
-		[
-			childrenByDir,
-			entries,
-			expandedDirs,
-			parentDepth,
-			showNonMarkdownFiles,
-			sortMode,
-		],
+		[childrenByDir, entries, expandedDirs, parentDepth, showNonMarkdownFiles, sortMode],
 	);
 	const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
 	const scrollMarginRef = useRef(0);
@@ -437,9 +396,7 @@ function TreeEntries({
 		estimateSize: (index) => {
 			const row = virtualRows[index];
 			if (!row) return FILE_TREE_ROW_ESTIMATE;
-			return showFilePreviews &&
-				row.entry.kind === "file" &&
-				row.entry.is_markdown
+			return showFilePreviews && row.entry.kind === "file" && row.entry.is_markdown
 				? FILE_TREE_PREVIEW_ROW_ESTIMATE
 				: FILE_TREE_ROW_ESTIMATE;
 		},
@@ -461,9 +418,7 @@ function TreeEntries({
 		return [...paths].sort().join("\0");
 	}, [showFilePreviews, virtualItems, virtualRows]);
 	useEffect(() => {
-		onVisiblePreviewPathsChange?.(
-			visiblePreviewPathKey ? visiblePreviewPathKey.split("\0") : [],
-		);
+		onVisiblePreviewPathsChange?.(visiblePreviewPathKey ? visiblePreviewPathKey.split("\0") : []);
 	}, [onVisiblePreviewPathsChange, visiblePreviewPathKey]);
 	const onVisiblePreviewPathsChangeRef = useRef(onVisiblePreviewPathsChange);
 	onVisiblePreviewPathsChangeRef.current = onVisiblePreviewPathsChange;
@@ -490,12 +445,8 @@ function TreeEntries({
 				onOpenFile(nextRow.entry.rel_path);
 				requestAnimationFrame(() => {
 					const nextButton = Array.from(
-						pane?.querySelectorAll<HTMLElement>(
-							"[data-file-tree-file='true']",
-						) ?? [],
-					).find(
-						(button) => button.dataset.fileTreePath === nextRow.entry.rel_path,
-					);
+						pane?.querySelectorAll<HTMLElement>("[data-file-tree-file='true']") ?? [],
+					).find((button) => button.dataset.fileTreePath === nextRow.entry.rel_path);
 					nextButton?.focus();
 				});
 				return;
@@ -507,11 +458,7 @@ function TreeEntries({
 	if (virtualRows.length === 0) return null;
 
 	return (
-		<ul
-			ref={listRef}
-			className="fileTreeList"
-			style={{ height: rowVirtualizer.getTotalSize() }}
-		>
+		<ul ref={listRef} className="fileTreeList" style={{ height: rowVirtualizer.getTotalSize() }}>
 			{virtualItems.map((virtualItem) => {
 				const row = virtualRows[virtualItem.index];
 				if (!row) return null;
@@ -521,9 +468,7 @@ function TreeEntries({
 					top: 0,
 					left: 0,
 					width: "100%",
-					transform: `translateY(${
-						virtualItem.start - rowVirtualizer.options.scrollMargin
-					}px)`,
+					transform: `translateY(${virtualItem.start - rowVirtualizer.options.scrollMargin}px)`,
 				};
 
 				if (entry.kind === "dir") {
@@ -554,9 +499,7 @@ function TreeEntries({
 							isExternalDropTarget={externalDropTargetPath === entry.rel_path}
 							onOpenAppearancePicker={() => onOpenAppearancePicker(entry)}
 							isSidebarFolderTab={sidebarFolderTabs.includes(entry.rel_path)}
-							canAddSidebarFolderTab={
-								sidebarFolderTabs.length < MAX_SIDEBAR_FOLDER_TABS
-							}
+							canAddSidebarFolderTab={sidebarFolderTabs.length < MAX_SIDEBAR_FOLDER_TABS}
 							onToggleSidebarFolderTab={onToggleSidebarFolderTab}
 							onStartRename={() => onStartRename(entry.rel_path)}
 							onCommitRename={onCommitDirRename}
@@ -640,16 +583,10 @@ export const FileTreePane = memo(function FileTreePane({
 	children,
 }: FileTreePaneProps) {
 	const { t } = useTranslation("shell");
-	const {
-		itemAppearance,
-		setItemAppearance,
-		fileTreeSortMode: sortMode,
-	} = useFileTreeContext();
+	const { itemAppearance, setItemAppearance, fileTreeSortMode: sortMode } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
-	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
-		boolean | null
-	>(null);
+	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<boolean | null>(null);
 	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(
 		initialFocusedDirPath === undefined ? activeDirPath : initialFocusedDirPath,
 	);
@@ -661,13 +598,9 @@ export const FileTreePane = memo(function FileTreePane({
 	} = useVisibleFilePreviews(spacePath, focusedDirPath);
 	const [appearancePickerTarget, setAppearancePickerTarget] =
 		useState<AppearancePickerTarget | null>(null);
-	const [externalDropTargetPath, setExternalDropTargetPath] = useState<
-		string | null
-	>(null);
+	const [externalDropTargetPath, setExternalDropTargetPath] = useState<string | null>(null);
 	const moveClickSuppressRef = useRef(false);
-	const moveClickSuppressResetTimerRef = useRef<ReturnType<
-		typeof window.setTimeout
-	> | null>(null);
+	const moveClickSuppressResetTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const focusedDirPathRef = useRef(focusedDirPath);
 	const settingsVersionRef = useRef(0);
@@ -740,9 +673,7 @@ export const FileTreePane = memo(function FileTreePane({
 
 	const folderCountTreeRevision = useMemo(() => {
 		const serializeEntries = (entries: FsEntry[] | undefined) =>
-			(entries ?? [])
-				.map((entry) => `${entry.kind}:${entry.rel_path}`)
-				.join("|");
+			(entries ?? []).map((entry) => `${entry.kind}:${entry.rel_path}`).join("|");
 
 		return summaryParentDirs
 			.map((dirPath) =>
@@ -779,18 +710,13 @@ export const FileTreePane = memo(function FileTreePane({
 		}
 		return [...paths].sort();
 	}, [childrenByDir, expandedDirs, focusedDirPath, rootEntries]);
-	const taskSummariesByPath = useTaskSummariesForPaths(
-		taskSummaryPaths,
-		Boolean(spacePath),
-	);
+	const taskSummariesByPath = useTaskSummariesForPaths(taskSummaryPaths, Boolean(spacePath));
 
 	useEffect(() => {
 		return registerPreviewInvalidator(invalidatePreviewForPath);
 	}, [invalidatePreviewForPath]);
 
-	const handleRequestCreateFolder = useFileTreeCreateFolderScroll(
-		onRequestCreateFolder,
-	);
+	const handleRequestCreateFolder = useFileTreeCreateFolderScroll(onRequestCreateFolder);
 
 	const handleDeletePath = useCallback(
 		async (path: string, kind: "dir" | "file") => {
@@ -811,9 +737,7 @@ export const FileTreePane = memo(function FileTreePane({
 		(event: KeyboardEvent<HTMLElement>) => {
 			if (!isDeleteKey(event) || isEditableTarget(event.target)) return;
 			if (!(event.target instanceof HTMLElement)) return;
-			const row = event.target.closest<HTMLElement>(
-				"[data-file-tree-path][data-file-tree-kind]",
-			);
+			const row = event.target.closest<HTMLElement>("[data-file-tree-path][data-file-tree-kind]");
 			if (!row || !event.currentTarget.contains(row)) return;
 			const path = row.dataset.fileTreePath;
 			const kind = row.dataset.fileTreeKind;
@@ -860,20 +784,18 @@ export const FileTreePane = memo(function FileTreePane({
 		? (itemAppearance[appearancePickerEntry.rel_path] ?? null)
 		: null;
 	const appearancePickerColor =
-		appearancePickerAppearance?.color &&
-		isEditorTextColor(appearancePickerAppearance.color)
+		appearancePickerAppearance?.color && isEditorTextColor(appearancePickerAppearance.color)
 			? appearancePickerAppearance.color
 			: null;
 	const appearancePickerIcon = appearancePickerAppearance?.icon ?? null;
-	const appearancePickerDefaultIcon =
-		appearancePickerEntry?.kind === "dir" ? "folder" : "document";
+	const appearancePickerDefaultIcon = appearancePickerEntry?.kind === "dir" ? "folder" : "document";
 
 	const updatePickerAppearance = useCallback(
 		(nextAppearance: FileTreeAppearance) => {
 			if (!appearancePickerEntry) return;
 			const path = appearancePickerEntry.rel_path;
 			const mergedAppearance = {
-				...(itemAppearanceRef.current[path] ?? {}),
+				...itemAppearanceRef.current[path],
 				...nextAppearance,
 			};
 			itemAppearanceRef.current = {
@@ -896,14 +818,7 @@ export const FileTreePane = memo(function FileTreePane({
 				onToggleDir(dirPath);
 			}
 		},
-		[
-			childrenByDir,
-			clearVisiblePreviewPaths,
-			expandedDirs,
-			onLoadDir,
-			onSelectDir,
-			onToggleDir,
-		],
+		[childrenByDir, clearVisiblePreviewPaths, expandedDirs, onLoadDir, onSelectDir, onToggleDir],
 	);
 
 	const handleExitFocusedDir = useCallback(() => {
@@ -930,9 +845,7 @@ export const FileTreePane = memo(function FileTreePane({
 		[handleEnterDir, handleExitFocusedDir, initialFocusedDirPath],
 	);
 
-	const focusedEntries = focusedDirPath
-		? (childrenByDir[focusedDirPath] ?? null)
-		: null;
+	const focusedEntries = focusedDirPath ? (childrenByDir[focusedDirPath] ?? null) : null;
 	const hasLoadedFileVisibility = showNonMarkdownFiles !== null;
 	const showNonMarkdownFilesSetting = showNonMarkdownFiles ?? false;
 	const hasVisibleRootEntries = useMemo(
@@ -943,10 +856,7 @@ export const FileTreePane = memo(function FileTreePane({
 		() =>
 			focusedEntries === null
 				? null
-				: hasVisibleFileTreeEntries(
-						focusedEntries,
-						showNonMarkdownFilesSetting,
-					),
+				: hasVisibleFileTreeEntries(focusedEntries, showNonMarkdownFilesSetting),
 		[focusedEntries, showNonMarkdownFilesSetting],
 	);
 
@@ -961,12 +871,9 @@ export const FileTreePane = memo(function FileTreePane({
 		() => ({
 			onDragEnd(event: DragEndEvent) {
 				const { source, target } = event.operation;
-				const sourcePath =
-					typeof source?.data.path === "string" ? source.data.path : null;
+				const sourcePath = typeof source?.data.path === "string" ? source.data.path : null;
 				const sourceKind =
-					source?.data.kind === "dir" || source?.data.kind === "file"
-						? source.data.kind
-						: null;
+					source?.data.kind === "dir" || source?.data.kind === "file" ? source.data.kind : null;
 				if (!sourcePath || !sourceKind) return;
 
 				moveClickSuppressRef.current = true;
@@ -982,9 +889,7 @@ export const FileTreePane = memo(function FileTreePane({
 				if (event.canceled) return;
 
 				const targetDirPath =
-					typeof target?.data.targetDirPath === "string"
-						? target.data.targetDirPath
-						: null;
+					typeof target?.data.targetDirPath === "string" ? target.data.targetDirPath : null;
 				if (targetDirPath == null) return;
 
 				void onMovePath(sourcePath, targetDirPath, sourceKind);
@@ -1046,7 +951,7 @@ export const FileTreePane = memo(function FileTreePane({
 				setExternalDropTargetPath(null);
 				if (payload.paths.length === 0) return;
 				if (targetDir === null) return;
-				await onImportPathsInDir(payload.paths, targetDir);
+				onImportPathsInDir(payload.paths, targetDir);
 			})
 			.then((stopListening) => {
 				if (disposed) {
@@ -1109,8 +1014,7 @@ export const FileTreePane = memo(function FileTreePane({
 						onNavigate={handleNavigateFocusedDir}
 						onExit={handleExitFocusedDir}
 					/>
-					{hasVisibleFocusedEntries ===
-					null ? null : hasVisibleFocusedEntries ? (
+					{hasVisibleFocusedEntries === null ? null : hasVisibleFocusedEntries ? (
 						<TreeEntries
 							entries={focusedEntries ?? []}
 							parentDepth={-1}
@@ -1152,11 +1056,7 @@ export const FileTreePane = memo(function FileTreePane({
 							sortMode={sortMode}
 						/>
 					) : (
-						<m.div
-							className="fileTreeEmpty"
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-						>
+						<m.div className="fileTreeEmpty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
 							No files found.
 						</m.div>
 					)}

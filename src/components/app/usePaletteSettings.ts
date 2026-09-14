@@ -43,10 +43,7 @@ export function usePaletteSettings(open: boolean, spacePath: string | null) {
 	});
 	const valueFor = useCallback(
 		(definition: PaletteSettingDefinition) => {
-			if (
-				mutation.isPending &&
-				mutation.variables.definition.id === definition.id
-			) {
+			if (mutation.isPending && mutation.variables.definition.id === definition.id) {
 				return mutation.variables.value;
 			}
 			return query.data ? definition.read(query.data) : null;

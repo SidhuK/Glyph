@@ -18,9 +18,7 @@ export function UpdaterProvider({
 	children: ReactNode;
 	value: AutoUpdaterState;
 }) {
-	return (
-		<UpdaterContext.Provider value={value}>{children}</UpdaterContext.Provider>
-	);
+	return <UpdaterContext.Provider value={value}>{children}</UpdaterContext.Provider>;
 }
 
 export function useUpdaterContext(): AutoUpdaterState {

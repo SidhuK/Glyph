@@ -29,11 +29,7 @@ const noteSearchPluginKey = new PluginKey<NoteSearchPluginState>("note-search");
  * addresses the same occurrence here. Folding is locale-neutral for the same
  * reason — a Turkish locale would otherwise count different occurrences.
  */
-export function findPlainTextSearchRanges(
-	text: string,
-	query: string,
-	offset = 0,
-) {
+export function findPlainTextSearchRanges(text: string, query: string, offset = 0) {
 	const ranges: NoteSearchRange[] = [];
 	if (!query || !text) return ranges;
 
@@ -63,9 +59,7 @@ export function findPlainTextSearchRanges(
 		if (found === -1) break;
 		ranges.push({
 			from: offset + (ascii ? found : sourceStart[found]),
-			to:
-				offset +
-				(ascii ? found + needle.length : sourceEnd[found + needle.length - 1]),
+			to: offset + (ascii ? found + needle.length : sourceEnd[found + needle.length - 1]),
 		});
 		cursor = found + needle.length;
 	}
@@ -73,10 +67,7 @@ export function findPlainTextSearchRanges(
 	return ranges;
 }
 
-export function findNoteSearchRanges(
-	doc: ProseMirrorNode,
-	query: string,
-): NoteSearchRange[] {
+export function findNoteSearchRanges(doc: ProseMirrorNode, query: string): NoteSearchRange[] {
 	const ranges: NoteSearchRange[] = [];
 	if (!query) return ranges;
 
@@ -88,10 +79,7 @@ export function findNoteSearchRanges(
 	return ranges;
 }
 
-function buildSearchDecorations(
-	doc: ProseMirrorNode,
-	{ activeIndex, query }: NoteSearchState,
-) {
+function buildSearchDecorations(doc: ProseMirrorNode, { activeIndex, query }: NoteSearchState) {
 	const ranges = findNoteSearchRanges(doc, query);
 	if (!ranges.length) return DecorationSet.empty;
 
@@ -99,10 +87,7 @@ function buildSearchDecorations(
 		doc,
 		ranges.map((range, index) =>
 			Decoration.inline(range.from, range.to, {
-				class:
-					index === activeIndex
-						? "noteSearchMatch noteSearchMatchActive"
-						: "noteSearchMatch",
+				class: index === activeIndex ? "noteSearchMatch noteSearchMatchActive" : "noteSearchMatch",
 			}),
 		),
 	);
@@ -142,11 +127,7 @@ export const NoteSearch = Extension.create({
 					}),
 					apply(tr, value) {
 						const next = tr.getMeta(noteSearchPluginKey);
-						if (
-							next &&
-							typeof next.query === "string" &&
-							typeof next.activeIndex === "number"
-						) {
+						if (next && typeof next.query === "string" && typeof next.activeIndex === "number") {
 							return {
 								...next,
 								decorations: next.query

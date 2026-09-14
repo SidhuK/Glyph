@@ -1,19 +1,10 @@
 import type { AnyExtension, JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { useEditor } from "@tiptap/react";
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { i18n } from "../../../i18n";
 import { resolveAttachmentTargetDir } from "../../../lib/attachmentStorage";
-import {
-	joinYamlFrontmatter,
-	splitYamlFrontmatter,
-} from "../../../lib/notePreview";
+import { joinYamlFrontmatter, splitYamlFrontmatter } from "../../../lib/notePreview";
 import { invoke } from "../../../lib/tauri";
 import { toast } from "../../../lib/toast";
 import { handleEditorClick } from "../editorClickHandlers";
@@ -28,10 +19,7 @@ import {
 import type { TemplateInsertRequest } from "../slashCommands";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { applyEditorSpellCheck } from "./useEditorSpellCheck";
-import {
-	spaceAssetUrl,
-	useHydrateInlineImages,
-} from "./useHydrateInlineImages";
+import { spaceAssetUrl, useHydrateInlineImages } from "./useHydrateInlineImages";
 import { useNoteEditorSettings } from "./useNoteEditorSettings";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
@@ -182,7 +170,6 @@ function replacePlaceholderWithFallbackText(
 ): boolean {
 	const tr = editor.state.tr;
 	const paragraph = editor.state.schema.nodes.paragraph;
-	const textNode = editor.state.schema.text;
 	let changed = false;
 	editor.state.doc.descendants((node, pos) => {
 		if (changed || node.type.name !== "image") return;
@@ -192,7 +179,7 @@ function replacePlaceholderWithFallbackText(
 			tr.replaceWith(
 				pos,
 				pos + node.nodeSize,
-				paragraph.create(null, fallbackText ? textNode(fallbackText) : null),
+				paragraph.create(null, fallbackText ? editor.state.schema.text(fallbackText) : null),
 			);
 		} else {
 			tr.delete(pos, pos + node.nodeSize);
@@ -216,10 +203,7 @@ function getInsertableMarkdownContent(
 	return Array.isArray(content[0].content) ? content[0].content : [];
 }
 
-function shouldHandleSmartMarkdownPaste(
-	clipboardText: string,
-	clipboardHtml: string,
-): boolean {
+function shouldHandleSmartMarkdownPaste(clipboardText: string, clipboardHtml: string): boolean {
 	const normalizedText = normalizeClipboardMarkdownText(clipboardText).trim();
 	if (!looksLikeMarkdownPaste(normalizedText)) return false;
 	const normalizedHtml = extractPlainTextFromClipboardHtml(clipboardHtml);
@@ -366,8 +350,7 @@ export function useNoteEditor({
 	const listCollapseLoadVersionRef = useRef(0);
 	const listCollapseSaveRef = useRef(Promise.resolve());
 	const listCollapseEnabled = showCollapsibleLists && mode !== "plain";
-	const externalLinkPreviewsEnabled =
-		showExternalLinkPreviews && mode !== "plain";
+	const externalLinkPreviewsEnabled = showExternalLinkPreviews && mode !== "plain";
 	const handleListCollapseChange = useCallback((branches: string[]) => {
 		const path = relPathRef.current;
 		if (!path) return;
@@ -449,19 +432,13 @@ export function useNoteEditor({
 			if (!pending) {
 				return;
 			}
-			if (
-				expectedRelPath !== undefined &&
-				pending.relPath !== expectedRelPath
-			) {
+			if (expectedRelPath !== undefined && pending.relPath !== expectedRelPath) {
 				return;
 			}
 			const { instance } = pending;
 			if (instance.isDestroyed) return;
 			const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
-			const nextMarkdown = joinYamlFrontmatter(
-				pending.frontmatter,
-				normalizeBody(nextBody),
-			);
+			const nextMarkdown = joinYamlFrontmatter(pending.frontmatter, normalizeBody(nextBody));
 			if (pending.relPath === relPathRef.current) {
 				lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
 				lastEmittedMarkdownRef.current = nextMarkdown;
@@ -504,10 +481,7 @@ export function useNoteEditor({
 		void mode;
 		void placeholder;
 		return () => {
-			const snapshot = snapshotFocusedSelection(
-				committedEditorRef.current,
-				relPath,
-			);
+			const snapshot = snapshotFocusedSelection(committedEditorRef.current, relPath);
 			if (snapshot) pendingSelectionRestoreRef.current = snapshot;
 			flushMarkdownSync(relPath);
 		};
@@ -587,11 +561,7 @@ export function useNoteEditor({
 									uploadId: item.uploadId,
 								},
 							}));
-							if (
-								!editorInstance
-									.can()
-									.insertContentAt(selectionRange, placeholderNodes)
-							) {
+							if (!editorInstance.can().insertContentAt(selectionRange, placeholderNodes)) {
 								for (const item of placeholders) {
 									URL.revokeObjectURL(item.objectUrl);
 								}
@@ -665,9 +635,7 @@ export function useNoteEditor({
 						}
 						if (editorInstance.isActive("codeBlock")) return false;
 						const clipboardHtml = getClipboardHtml(event);
-						const clipboardText = normalizeClipboardMarkdownText(
-							getClipboardPlainText(event),
-						);
+						const clipboardText = normalizeClipboardMarkdownText(getClipboardPlainText(event));
 						if (!shouldHandleSmartMarkdownPaste(clipboardText, clipboardHtml)) {
 							return false;
 						}
@@ -682,11 +650,7 @@ export function useNoteEditor({
 							clipboardText,
 						);
 						if (!insertableContent.length) return false;
-						if (
-							!editorInstance
-								.can()
-								.insertContentAt(selectionRange, insertableContent)
-						) {
+						if (!editorInstance.can().insertContentAt(selectionRange, insertableContent)) {
 							return false;
 						}
 						const inserted = editorInstance
@@ -765,19 +729,13 @@ export function useNoteEditor({
 		previousModeRef.current = mode;
 		if (mode === "plain") return;
 		const isHydratingFromPlainMode = previousMode === "plain";
-		if (
-			!isHydratingFromPlainMode &&
-			markdown === lastEmittedMarkdownRef.current
-		) {
+		if (!isHydratingFromPlainMode && markdown === lastEmittedMarkdownRef.current) {
 			return;
 		}
 		if (editorBody === lastAppliedBodyRef.current) return;
 		flushMarkdownSync(relPath);
 		suppressUpdateRef.current = true;
-		const snapshot = snapshotFocusedSelection(
-			editor,
-			editorContentRelPathRef.current,
-		);
+		const snapshot = snapshotFocusedSelection(editor, editorContentRelPathRef.current);
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
 		if (snapshot) restoreSelectionSnapshot(editor, snapshot, relPath);
 		editorContentRelPathRef.current = relPath;

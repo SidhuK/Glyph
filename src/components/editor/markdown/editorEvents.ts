@@ -34,14 +34,10 @@ export interface InternalAnchorClickDetail {
 	sourcePath: string;
 }
 
-function isInternalAnchorClickDetail(
-	value: unknown,
-): value is InternalAnchorClickDetail {
+function isInternalAnchorClickDetail(value: unknown): value is InternalAnchorClickDetail {
 	if (typeof value !== "object" || value === null) return false;
 	if (!("anchor" in value) || !("sourcePath" in value)) return false;
-	return (
-		typeof value.anchor === "string" && typeof value.sourcePath === "string"
-	);
+	return typeof value.anchor === "string" && typeof value.sourcePath === "string";
 }
 
 export function isInternalAnchorClickEvent(
@@ -61,19 +57,13 @@ function isWikiLinkClickDetail(value: unknown): value is WikiLinkClickDetail {
 	if (!("unresolved" in value) || typeof value.unresolved !== "boolean") {
 		return false;
 	}
-	if (
-		!("alias" in value) ||
-		(value.alias !== null && typeof value.alias !== "string")
-	) {
+	if (!("alias" in value) || (value.alias !== null && typeof value.alias !== "string")) {
 		return false;
 	}
 	if (!("anchorKind" in value)) return false;
 	const kind = value.anchorKind;
 	if (kind !== "none" && kind !== "heading" && kind !== "block") return false;
-	if (
-		!("anchor" in value) ||
-		(value.anchor !== null && typeof value.anchor !== "string")
-	) {
+	if (!("anchor" in value) || (value.anchor !== null && typeof value.anchor !== "string")) {
 		return false;
 	}
 	if ("embed" in value && typeof value.embed !== "boolean") return false;
@@ -83,9 +73,7 @@ function isWikiLinkClickDetail(value: unknown): value is WikiLinkClickDetail {
 	return true;
 }
 
-export function isWikiLinkClickEvent(
-	event: Event,
-): event is CustomEvent<WikiLinkClickDetail> {
+export function isWikiLinkClickEvent(event: Event): event is CustomEvent<WikiLinkClickDetail> {
 	return (
 		event.type === WIKI_LINK_CLICK_EVENT &&
 		event instanceof CustomEvent &&
@@ -94,26 +82,18 @@ export function isWikiLinkClickEvent(
 }
 
 export function dispatchWikiLinkClick(detail: WikiLinkClickDetail): void {
-	window.dispatchEvent(
-		new CustomEvent<WikiLinkClickDetail>(WIKI_LINK_CLICK_EVENT, { detail }),
-	);
+	window.dispatchEvent(new CustomEvent<WikiLinkClickDetail>(WIKI_LINK_CLICK_EVENT, { detail }));
 }
 
 export function dispatchTagClick(detail: TagClickDetail): void {
-	window.dispatchEvent(
-		new CustomEvent<TagClickDetail>(TAG_CLICK_EVENT, { detail }),
-	);
+	window.dispatchEvent(new CustomEvent<TagClickDetail>(TAG_CLICK_EVENT, { detail }));
 }
 
 export function dispatchPersonClick(detail: PersonClickDetail): void {
-	window.dispatchEvent(
-		new CustomEvent<PersonClickDetail>(PERSON_CLICK_EVENT, { detail }),
-	);
+	window.dispatchEvent(new CustomEvent<PersonClickDetail>(PERSON_CLICK_EVENT, { detail }));
 }
 
-export function dispatchMarkdownLinkClick(
-	detail: MarkdownLinkClickDetail,
-): void {
+export function dispatchMarkdownLinkClick(detail: MarkdownLinkClickDetail): void {
 	window.dispatchEvent(
 		new CustomEvent<MarkdownLinkClickDetail>(MARKDOWN_LINK_CLICK_EVENT, {
 			detail,
@@ -121,9 +101,7 @@ export function dispatchMarkdownLinkClick(
 	);
 }
 
-export function dispatchInternalAnchorClick(
-	detail: InternalAnchorClickDetail,
-): void {
+export function dispatchInternalAnchorClick(detail: InternalAnchorClickDetail): void {
 	window.dispatchEvent(
 		new CustomEvent<InternalAnchorClickDetail>(INTERNAL_ANCHOR_CLICK_EVENT, {
 			detail,

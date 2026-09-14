@@ -10,23 +10,17 @@
 	background: var(--database-control-background);
 	align-self: flex-start;
 	box-shadow: none;
-	transition: border-color 140ms ease, background-color 140ms ease, color 140ms
-		ease;
+	transition:
+		border-color 140ms ease,
+		background-color 140ms ease,
+		color 140ms ease;
 }
 
 .databaseDialogCompact .databasePickerTrigger {
 	min-height: 34px;
 	padding: 6px 10px;
-	border-color: color-mix(
-		in srgb,
-		var(--database-control-border) 88%,
-		transparent
-	);
-	background: color-mix(
-		in srgb,
-		var(--database-control-background) 94%,
-		var(--bg-primary)
-	);
+	border-color: color-mix(in srgb, var(--database-control-border) 88%, transparent);
+	background: color-mix(in srgb, var(--database-control-background) 94%, var(--bg-primary));
 }
 
 .databasePickerTrigger:hover {
@@ -117,11 +111,7 @@
 
 .databaseSourceInlinePicker:hover {
 	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-hover));
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 24%,
-		var(--border-default)
-	);
+	border-color: color-mix(in srgb, var(--interactive-accent) 24%, var(--border-default));
 }
 
 .databaseSourceInlinePicker .databasePickerTriggerIcon {
@@ -143,8 +133,7 @@
 }
 
 .databaseDialogCompact .databasePickerTriggerError .databasePickerTriggerMeta,
-.databaseSourceInlinePicker.databasePickerTriggerError
-	.databasePickerTriggerMeta {
+.databaseSourceInlinePicker.databasePickerTriggerError .databasePickerTriggerMeta {
 	display: block;
 }
 
@@ -225,8 +214,9 @@
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	text-align: left;
-	transition: border-color var(--transition-base), background-color
-		var(--transition-base);
+	transition:
+		border-color var(--transition-base),
+		background-color var(--transition-base);
 }
 
 .databasePickerOption:hover,
@@ -237,8 +227,7 @@
 }
 
 .databasePickerOption:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 	outline-offset: 2px;
 }
 
@@ -280,18 +269,10 @@
 	padding: 0 8px;
 	border-radius: var(--pill-radius);
 	border: 0;
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 7%,
-		var(--bg-secondary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 7%, var(--bg-secondary));
 	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
-	color: color-mix(
-		in srgb,
-		var(--interactive-accent) 58%,
-		var(--text-secondary)
-	);
+	color: color-mix(in srgb, var(--interactive-accent) 58%, var(--text-secondary));
 	flex: 0 0 auto;
 	box-shadow: var(--pill-shadow);
 }
@@ -309,21 +290,18 @@
 	font-size: calc(var(--text-base) * 0.9);
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	.databasePickerTriggerIcon {
+[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerIcon {
 	width: var(--icon-xl);
 	height: var(--icon-xl);
 	background: transparent;
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	.databasePickerTriggerLabel {
+[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerLabel {
 	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	.databasePickerTriggerMeta {
+[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerMeta {
 	display: none;
 }
 
@@ -332,8 +310,12 @@
 	padding: 0 28px 0 8px;
 	font-size: calc(var(--text-base) * 0.9);
 	border-radius: var(--database-control-radius);
-	background-position: calc(100% - 11px) 11px, calc(100% - 6px) 11px;
-	background-size: 5px 5px, 5px 5px;
+	background-position:
+		calc(100% - 11px) 11px,
+		calc(100% - 6px) 11px;
+	background-size:
+		5px 5px,
+		5px 5px;
 }
 
 [data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="input"] {
@@ -346,19 +328,14 @@
 	box-shadow: none;
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="input"]:hover {
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="input"]:hover {
 	border-color: var(--border-default);
 	background: var(--database-dropdown-hover);
 }
 
 /* Lighter icons inside dropdown menu items */
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="dropdown-menu-item"]
-	svg,
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="dropdown-menu-label"]
-	svg {
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] svg,
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-label"] svg {
 	opacity: 0.45;
 }
 
@@ -369,14 +346,12 @@
 }
 
 /* More breathing room between dropdown items */
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="dropdown-menu-item"] {
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] {
 	padding-block: 6px;
 }
 
 /* Subtler section headings */
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="dropdown-menu-label"] {
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-label"] {
 	font-size: calc(var(--text-base) * 0.8);
 	font-weight: 500;
 	text-transform: uppercase;
@@ -387,8 +362,7 @@
 }
 
 /* Subtler dividers */
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="dropdown-menu-separator"] {
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-separator"] {
 	opacity: 0.4;
 }
 
@@ -397,13 +371,11 @@
 	padding: var(--database-dropdown-padding);
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="dropdown-menu-item"] {
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] {
 	width: 100%;
 	padding-inline: 10px;
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="dropdown-menu-shortcut"] {
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-shortcut"] {
 	margin-left: auto;
 }

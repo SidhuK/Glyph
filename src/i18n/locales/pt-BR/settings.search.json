@@ -62,13 +62,7 @@
 		"general-license": {
 			"title": "License",
 			"description": "Trial status, license key, activation, and official build.",
-			"keywords": [
-				"trial",
-				"activate",
-				"activation",
-				"subscription",
-				"purchase"
-			]
+			"keywords": ["trial", "activate", "activation", "subscription", "purchase"]
 		},
 		"general-trial-status": {
 			"title": "Trial status",
@@ -110,29 +104,13 @@
 			"title": "Idioma",
 			"section": "Idioma",
 			"description": "Escolha o idioma de exibição do Glyph.",
-			"keywords": [
-				"locale",
-				"tradução",
-				"i18n",
-				"idioma",
-				"language",
-				"translation"
-			]
+			"keywords": ["locale", "tradução", "i18n", "idioma", "language", "translation"]
 		},
 		"general-date-format": {
 			"title": "Formato de data",
 			"section": "Data e hora",
 			"description": "Escolha como as datas completas são exibidas no Glyph.",
-			"keywords": [
-				"data",
-				"formato",
-				"calendário",
-				"US",
-				"European",
-				"Friendly",
-				"ISO",
-				"exibição"
-			]
+			"keywords": ["data", "formato", "calendário", "US", "European", "Friendly", "ISO", "exibição"]
 		},
 		"general-resume-last-session": {
 			"title": "Abrir abas anteriores",
@@ -176,16 +154,7 @@
 			"title": "Selecionar tema",
 			"section": "Temas",
 			"description": "Escolha o modo sistema, claro ou escuro.",
-			"keywords": [
-				"modo",
-				"sistema",
-				"claro",
-				"escuro",
-				"mode",
-				"system",
-				"light",
-				"dark"
-			]
+			"keywords": ["modo", "sistema", "claro", "escuro", "mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
 			"title": "Claro",
@@ -232,15 +201,7 @@
 		"appearance-editor-font": {
 			"title": "Fonte do editor",
 			"section": "Tipografia",
-			"keywords": [
-				"fonte",
-				"editor",
-				"notas",
-				"prosa",
-				"font",
-				"notes",
-				"prose"
-			]
+			"keywords": ["fonte", "editor", "notas", "prosa", "font", "notes", "prose"]
 		},
 		"appearance-ui-font-size": {
 			"title": "Tamanho da fonte da UI",
@@ -508,14 +469,7 @@
 		"general-editor-frontmatter": {
 			"title": "Mostrar frontmatter no editor",
 			"section": "Editor",
-			"keywords": [
-				"propriedades",
-				"yaml",
-				"metadados",
-				"properties",
-				"metadata",
-				"frontmatter"
-			]
+			"keywords": ["propriedades", "yaml", "metadados", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "Títulos coloridos",
@@ -545,14 +499,7 @@
 		"appearance-editor-presentation-width": {
 			"title": "Largura do editor",
 			"section": "Apresentação do editor",
-			"keywords": [
-				"compacto",
-				"confortável",
-				"largo",
-				"compact",
-				"comfortable",
-				"wide"
-			]
+			"keywords": ["compacto", "confortável", "largo", "compact", "comfortable", "wide"]
 		},
 		"general-editor-collapsible-headings": {
 			"title": "Títulos recolhíveis",
@@ -640,14 +587,7 @@
 		"appearance-database-column-color": {
 			"title": "Mostrar cor da coluna do banco de dados",
 			"section": "Banco de dados",
-			"keywords": [
-				"coleção",
-				"banco de dados",
-				"cor",
-				"collection",
-				"database",
-				"color"
-			]
+			"keywords": ["coleção", "banco de dados", "cor", "collection", "database", "color"]
 		},
 		"about-app": {
 			"title": "Glyph",

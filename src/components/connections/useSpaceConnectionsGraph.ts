@@ -6,10 +6,7 @@ import {
 } from "../../lib/connectionsGraphOptions";
 import type { SpaceConnections } from "../../lib/tauri";
 import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
-import {
-	type ConnectionsGraph,
-	buildSpaceConnectionsGraph,
-} from "./connectionsGraph";
+import { type ConnectionsGraph, buildSpaceConnectionsGraph } from "./connectionsGraph";
 import type {
 	ConnectionsLayoutMode,
 	ConnectionsLayoutRequest,
@@ -24,10 +21,9 @@ function layoutSpaceConnections(
 	signal: AbortSignal,
 ) {
 	return new Promise<ReadonlyMap<string, GraphPosition>>((resolve, reject) => {
-		const worker = new Worker(
-			new URL("./connectionsLayout.worker.ts", import.meta.url),
-			{ type: "module" },
-		);
+		const worker = new Worker(new URL("./connectionsLayout.worker.ts", import.meta.url), {
+			type: "module",
+		});
 		const graph: ConnectionsLayoutGraph = {
 			nodeIds: payload.nodes.map((node) => node.id),
 			tags: payload.tags.map((tag) => ({
@@ -120,13 +116,9 @@ function filterSpaceConnections(
 	if (minimumDegree <= 0) return payload;
 
 	const degrees = noteLinkDegrees(payload);
-	const nodes = payload.nodes.filter(
-		(node) => (degrees.get(node.id) ?? 0) >= minimumDegree,
-	);
+	const nodes = payload.nodes.filter((node) => (degrees.get(node.id) ?? 0) >= minimumDegree);
 	const visibleNotes = new Set(nodes.map((node) => node.id));
-	const tag_edges = payload.tag_edges.filter((edge) =>
-		visibleNotes.has(edge.note_id),
-	);
+	const tag_edges = payload.tag_edges.filter((edge) => visibleNotes.has(edge.note_id));
 	const remainingTagIds = new Set(tag_edges.map((edge) => edge.tag_id));
 
 	return {
@@ -151,8 +143,7 @@ export function useSpaceConnectionsGraph(
 		[options, payload],
 	);
 	const layoutFingerprint = useMemo(
-		() =>
-			filteredPayload ? spaceConnectionsLayoutFingerprint(filteredPayload) : "",
+		() => (filteredPayload ? spaceConnectionsLayoutFingerprint(filteredPayload) : ""),
 		[filteredPayload],
 	);
 
@@ -191,9 +182,7 @@ export function useSpaceConnectionsGraph(
 				: String(layoutQuery.error)
 			: "",
 		layoutLoading: Boolean(
-			filteredPayload &&
-				filteredPayload.nodes.length > 0 &&
-				layoutQuery.isPending,
+			filteredPayload && filteredPayload.nodes.length > 0 && layoutQuery.isPending,
 		),
 		refetchLayout: layoutQuery.refetch,
 	};

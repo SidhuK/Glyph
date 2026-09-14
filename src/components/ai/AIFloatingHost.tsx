@@ -27,9 +27,7 @@ export function AIFloatingHost({ onToggle, hidden }: AIFloatingHostProps) {
 				initial={shouldReduceMotion ? false : { opacity: 0, x: 8, scale: 0.99 }}
 				animate={{ opacity: 1, x: 0, scale: 1 }}
 				transition={
-					shouldReduceMotion
-						? { duration: 0 }
-						: { type: "spring", stiffness: 360, damping: 28 }
+					shouldReduceMotion ? { duration: 0 } : { type: "spring", stiffness: 360, damping: 28 }
 				}
 			>
 				<Suspense fallback={<div className="aiFloatingWindowInner" />}>

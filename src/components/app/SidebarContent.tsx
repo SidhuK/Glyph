@@ -40,10 +40,7 @@ import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
-import {
-	FILE_TREE_SORT_MODES,
-	fileTreeSortLabel,
-} from "../../lib/fileTreeSort";
+import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import {
 	allDocsCountQueryOptions,
@@ -52,20 +49,14 @@ import {
 } from "../../lib/navigationPrefetch";
 import { type PeriodKind, isPeriodNoteEnabled } from "../../lib/periodNotes";
 import { isFileTreeSortMode } from "../../lib/settings";
-import type {
-	SidebarOrder,
-	SidebarVisibilityKey,
-} from "../../lib/settings/model";
+import type { SidebarOrder, SidebarVisibilityKey } from "../../lib/settings/model";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
-import {
-	getEditorTextColorOption,
-	isEditorTextColor,
-} from "../editor/textColors";
+import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
 import { FileTreePane } from "../filetree";
 import { RecentFilesPane } from "./RecentFilesPane";
 
@@ -85,11 +76,7 @@ export interface SidebarContentProps {
 	onImportPathsInDir: (paths: string[], dirPath: string) => void;
 	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
-	onRenameDir: (
-		dirPath: string,
-		nextName: string,
-		kind: "dir" | "file",
-	) => Promise<string | null>;
+	onRenameDir: (dirPath: string, nextName: string, kind: "dir" | "file") => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onMovePath: (
 		fromPath: string,
@@ -105,12 +92,7 @@ export interface SidebarContentProps {
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
 	spacePath: string | null;
-	activeTopSection:
-		| "all-notes"
-		| "connections"
-		| "databases"
-		| "pinned-notes"
-		| null;
+	activeTopSection: "all-notes" | "connections" | "databases" | "pinned-notes" | null;
 	onOpenCalendar: () => void;
 	onOpenSearch: () => void;
 	onOpenPeriodNote: (kind: PeriodKind) => void;
@@ -150,9 +132,7 @@ function folioTreeRootEntries(
 	childrenByDir: Record<string, FsEntry[] | undefined>,
 	spaceLabel: string,
 ): FsEntry[] {
-	const spaceContainer = rootEntries.find((entry) =>
-		isSpaceContainerEntry(entry, spaceLabel),
-	);
+	const spaceContainer = rootEntries.find((entry) => isSpaceContainerEntry(entry, spaceLabel));
 	if (!spaceContainer) return folderEntries(rootEntries);
 	return folderEntries([
 		...rootEntries.filter((entry) => entry !== spaceContainer),
@@ -173,8 +153,7 @@ function PinnedCountBadge({ noteCount }: { noteCount: number }) {
 		queryFn: () => invoke("databases_list"),
 	});
 	const collectionCount =
-		collectionsQuery.data?.filter((collection) => collection.pinned).length ??
-		0;
+		collectionsQuery.data?.filter((collection) => collection.pinned).length ?? 0;
 	const count = noteCount + collectionCount;
 	if (count === 0) return null;
 	return <span className="sidebarQuickActionCount">{count}</span>;
@@ -212,13 +191,7 @@ function SidebarActionButton({
 	);
 }
 
-function OrderedSidebarItems({
-	children,
-	order,
-}: {
-	children: ReactNode;
-	order: SidebarOrder;
-}) {
+function OrderedSidebarItems({ children, order }: { children: ReactNode; order: SidebarOrder }) {
 	return Children.toArray(children).sort((left, right) => {
 		if (
 			!isValidElement<{ "data-sidebar-key": SidebarVisibilityKey }>(left) ||
@@ -226,8 +199,7 @@ function OrderedSidebarItems({
 		)
 			return 0;
 		return (
-			order.indexOf(left.props["data-sidebar-key"]) -
-			order.indexOf(right.props["data-sidebar-key"])
+			order.indexOf(left.props["data-sidebar-key"]) - order.indexOf(right.props["data-sidebar-key"])
 		);
 	});
 }
@@ -290,17 +262,10 @@ export const SidebarContent = memo(function SidebarContent({
 		ensureTagsFresh,
 		setTagAppearance,
 	} = useFileTreeContext();
-	const {
-		folioMode,
-		periodNotesEnabled,
-		sidebarOrder,
-		setFolioScope,
-		sidebarVisibility,
-	} = useUILayoutContext();
+	const { folioMode, periodNotesEnabled, sidebarOrder, setFolioScope, sidebarVisibility } =
+		useUILayoutContext();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
-	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
-		null,
-	);
+	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(null);
 	const [sidebarView, setSidebarView] = useState<SidebarView>({
 		kind: "files",
 	});
@@ -312,20 +277,15 @@ export const SidebarContent = memo(function SidebarContent({
 		},
 	});
 	const newNoteShortcut = getBinding("new-note");
-	const searchShortcut =
-		getBinding("open-command-palette") ?? getBinding("quick-open");
-	const searchShortcutLabel = searchShortcut
-		? formatShortcutForPlatform(searchShortcut)
-		: "";
+	const searchShortcut = getBinding("open-command-palette") ?? getBinding("quick-open");
+	const searchShortcutLabel = searchShortcut ? formatShortcutForPlatform(searchShortcut) : "";
 	const searchPlaceholder =
 		t("sidebar.searchPlaceholder") !== "sidebar.searchPlaceholder"
 			? t("sidebar.searchPlaceholder")
 			: t("sidebar.search");
-	const sidebarViewTabsLabel = [
-		t("sidebar.files"),
-		t("sidebar.recents"),
-		t("tags.header"),
-	].join(" / ");
+	const sidebarViewTabsLabel = [t("sidebar.files"), t("sidebar.recents"), t("tags.header")].join(
+		" / ",
+	);
 	const newNoteTitle = newNoteFolder
 		? t("sidebar.newNoteInFolder", { folder: newNoteFolder })
 		: t("sidebar.newNoteInRoot");
@@ -342,10 +302,7 @@ export const SidebarContent = memo(function SidebarContent({
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
 	const folioSpaceContainerPath = useMemo(() => {
 		if (!folioMode) return null;
-		return (
-			rootEntries.find((entry) => isSpaceContainerEntry(entry, spaceLabel))
-				?.rel_path ?? null
-		);
+		return rootEntries.find((entry) => isSpaceContainerEntry(entry, spaceLabel))?.rel_path ?? null;
 	}, [folioMode, rootEntries, spaceLabel]);
 	const folioRootEntries = useMemo(
 		() => folioTreeRootEntries(rootEntries, childrenByDir, spaceLabel),
@@ -378,15 +335,8 @@ export const SidebarContent = memo(function SidebarContent({
 			if (!path) return;
 			handleStartRename(path);
 		};
-		window.addEventListener(
-			FILE_TREE_START_RENAME_EVENT,
-			handleStartRenameEvent,
-		);
-		return () =>
-			window.removeEventListener(
-				FILE_TREE_START_RENAME_EVENT,
-				handleStartRenameEvent,
-			);
+		window.addEventListener(FILE_TREE_START_RENAME_EVENT, handleStartRenameEvent);
+		return () => window.removeEventListener(FILE_TREE_START_RENAME_EVENT, handleStartRenameEvent);
 	}, [handleStartRename]);
 
 	useEffect(() => {
@@ -450,12 +400,10 @@ export const SidebarContent = memo(function SidebarContent({
 		showAllFolioDocs();
 	}, [onOpenAllDocs, showAllFolioDocs]);
 	const activeSidebarView: SidebarView =
-		sidebarView.kind === "folder" &&
-		!sidebarFolderTabs.includes(sidebarView.path)
+		sidebarView.kind === "folder" && !sidebarFolderTabs.includes(sidebarView.path)
 			? { kind: "files" }
 			: sidebarView;
-	const activeFolderPath =
-		activeSidebarView.kind === "folder" ? activeSidebarView.path : null;
+	const activeFolderPath = activeSidebarView.kind === "folder" ? activeSidebarView.path : null;
 	const handleSelectFolioFolder = useCallback(
 		(dirPath: string) => {
 			onSelectDir(dirPath);
@@ -482,13 +430,7 @@ export const SidebarContent = memo(function SidebarContent({
 				void ensureTagsFresh();
 			}
 		},
-		[
-			activeSidebarView.kind,
-			ensureTagsFresh,
-			folioMode,
-			handleSelectFolioFolder,
-			onSelectDir,
-		],
+		[activeSidebarView.kind, ensureTagsFresh, folioMode, handleSelectFolioFolder, onSelectDir],
 	);
 	const handleSelectSidebarFolder = useCallback(
 		(folderPath: string) => {
@@ -516,13 +458,7 @@ export const SidebarContent = memo(function SidebarContent({
 				});
 			}
 		},
-		[
-			activeFolderPath,
-			handleSidebarViewChange,
-			sidebarFolderTabs,
-			t,
-			toggleSidebarFolderTab,
-		],
+		[activeFolderPath, handleSidebarViewChange, sidebarFolderTabs, t, toggleSidebarFolderTab],
 	);
 	const handleFolderTabContextMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>, folderPath: string) => {
@@ -564,9 +500,7 @@ export const SidebarContent = memo(function SidebarContent({
 		return (
 			<div className="sidebarSection sidebarSectionGrow sidebarEmpty">
 				<div className="sidebarEmptyTitle">No space open</div>
-				<div className="sidebarEmptyHint">
-					Open or create a space to get started.
-				</div>
+				<div className="sidebarEmptyHint">Open or create a space to get started.</div>
 			</div>
 		);
 	}
@@ -587,18 +521,11 @@ export const SidebarContent = memo(function SidebarContent({
 									aria-label={t("sidebar.newNote")}
 									onClick={onNewNote}
 									title={`${newNoteTitle}${
-										newNoteShortcut
-											? ` (${formatShortcutForPlatform(newNoteShortcut)})`
-											: ""
+										newNoteShortcut ? ` (${formatShortcutForPlatform(newNoteShortcut)})` : ""
 									}`}
 								>
-									<HugeiconsIcon
-										icon={CursorAddSelection02Icon}
-										size="var(--icon-lg)"
-									/>
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.newNote")}
-									</span>
+									<HugeiconsIcon icon={CursorAddSelection02Icon} size="var(--icon-lg)" />
+									<span className="sidebarQuickActionLabel">{t("sidebar.newNote")}</span>
 									{newNoteShortcut ? (
 										<span className="sidebarQuickActionShortcut">
 											{formatShortcutForPlatform(newNoteShortcut)}
@@ -613,21 +540,15 @@ export const SidebarContent = memo(function SidebarContent({
 									className="sidebarQuickActionBtn sidebarNavBtn"
 									data-sidebar-key="pinned"
 									data-kind="pinned-notes"
-									data-active={
-										activeTopSection === "pinned-notes" ? "true" : "false"
-									}
+									data-active={activeTopSection === "pinned-notes" ? "true" : "false"}
 									aria-label={t("sidebar.pinned")}
 									aria-pressed={activeTopSection === "pinned-notes"}
-									aria-current={
-										activeTopSection === "pinned-notes" ? "page" : undefined
-									}
+									aria-current={activeTopSection === "pinned-notes" ? "page" : undefined}
 									onClick={onOpenPinnedDocs}
 									title={t("sidebar.pinned")}
 								>
 									<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.pinned")}
-									</span>
+									<span className="sidebarQuickActionLabel">{t("sidebar.pinned")}</span>
 									<PinnedCountBadge noteCount={pinnedFiles.length} />
 								</button>
 							) : null}
@@ -638,14 +559,10 @@ export const SidebarContent = memo(function SidebarContent({
 									className="sidebarQuickActionBtn sidebarNavBtn"
 									data-sidebar-key="allNotes"
 									data-kind="all-notes"
-									data-active={
-										activeTopSection === "all-notes" ? "true" : "false"
-									}
+									data-active={activeTopSection === "all-notes" ? "true" : "false"}
 									aria-label={t("sidebar.allNotes")}
 									aria-pressed={activeTopSection === "all-notes"}
-									aria-current={
-										activeTopSection === "all-notes" ? "page" : undefined
-									}
+									aria-current={activeTopSection === "all-notes" ? "page" : undefined}
 									onClick={() => {
 										cancelAllDocsHoverPrefetch();
 										handleOpenAllNotes();
@@ -655,9 +572,7 @@ export const SidebarContent = memo(function SidebarContent({
 									title={t("sidebar.allNotes")}
 								>
 									<HugeiconsIcon icon={Archive04Icon} size="var(--icon-md)" />
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.allNotes")}
-									</span>
+									<span className="sidebarQuickActionLabel">{t("sidebar.allNotes")}</span>
 									<AllNotesCountBadge />
 								</button>
 							) : null}
@@ -668,14 +583,10 @@ export const SidebarContent = memo(function SidebarContent({
 									className="sidebarQuickActionBtn sidebarNavBtn"
 									data-sidebar-key="databases"
 									data-kind="databases"
-									data-active={
-										activeTopSection === "databases" ? "true" : "false"
-									}
+									data-active={activeTopSection === "databases" ? "true" : "false"}
 									aria-label={t("sidebar.collections")}
 									aria-pressed={activeTopSection === "databases"}
-									aria-current={
-										activeTopSection === "databases" ? "page" : undefined
-									}
+									aria-current={activeTopSection === "databases" ? "page" : undefined}
 									onClick={() => {
 										cancelDatabasesHoverPrefetch();
 										onOpenDatabases();
@@ -685,9 +596,7 @@ export const SidebarContent = memo(function SidebarContent({
 									title={t("sidebar.collections")}
 								>
 									<HugeiconsIcon icon={LibraryIcon} size="var(--icon-md)" />
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.collections")}
-									</span>
+									<span className="sidebarQuickActionLabel">{t("sidebar.collections")}</span>
 								</button>
 							) : null}
 							{sidebarVisibility.connections ? (
@@ -697,24 +606,15 @@ export const SidebarContent = memo(function SidebarContent({
 									className="sidebarQuickActionBtn sidebarNavBtn"
 									data-sidebar-key="connections"
 									data-kind="connections"
-									data-active={
-										activeTopSection === "connections" ? "true" : "false"
-									}
+									data-active={activeTopSection === "connections" ? "true" : "false"}
 									aria-label={t("sidebar.connections")}
 									aria-pressed={activeTopSection === "connections"}
-									aria-current={
-										activeTopSection === "connections" ? "page" : undefined
-									}
+									aria-current={activeTopSection === "connections" ? "page" : undefined}
 									onClick={onOpenConnections}
 									title={t("sidebar.connections")}
 								>
-									<HugeiconsIcon
-										icon={ChartRelationshipIcon}
-										size="var(--icon-md)"
-									/>
-									<span className="sidebarQuickActionLabel">
-										{t("sidebar.connections")}
-									</span>
+									<HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-md)" />
+									<span className="sidebarQuickActionLabel">{t("sidebar.connections")}</span>
 								</button>
 							) : null}
 							{sidebarVisibility.calendar ? (
@@ -748,14 +648,9 @@ export const SidebarContent = memo(function SidebarContent({
 										className="sidebarSearchBarIcon"
 										aria-hidden="true"
 									/>
-									<span className="sidebarSearchBarLabel">
-										{searchPlaceholder}
-									</span>
+									<span className="sidebarSearchBarLabel">{searchPlaceholder}</span>
 									{searchShortcutLabel ? (
-										<span
-											className="sidebarSearchBarShortcut"
-											aria-hidden="true"
-										>
+										<span className="sidebarSearchBarShortcut" aria-hidden="true">
 											{searchShortcutLabel}
 										</span>
 									) : null}
@@ -831,11 +726,7 @@ export const SidebarContent = memo(function SidebarContent({
 								</div>
 							) : null}
 						</OrderedSidebarItems>
-						<div
-							className="sidebarViewTabs"
-							role="tablist"
-							aria-label={sidebarViewTabsLabel}
-						>
+						<div className="sidebarViewTabs" role="tablist" aria-label={sidebarViewTabsLabel}>
 							<button
 								type="button"
 								className="sidebarViewTab"
@@ -851,9 +742,7 @@ export const SidebarContent = memo(function SidebarContent({
 									className="sidebarViewTabIcon"
 									aria-hidden="true"
 								/>
-								<span className="sidebarViewTabLabel">
-									{t("sidebar.files")}
-								</span>
+								<span className="sidebarViewTabLabel">{t("sidebar.files")}</span>
 							</button>
 							<button
 								type="button"
@@ -870,9 +759,7 @@ export const SidebarContent = memo(function SidebarContent({
 									className="sidebarViewTabIcon"
 									aria-hidden="true"
 								/>
-								<span className="sidebarViewTabLabel">
-									{t("sidebar.recents")}
-								</span>
+								<span className="sidebarViewTabLabel">{t("sidebar.recents")}</span>
 							</button>
 							<button
 								type="button"
@@ -915,15 +802,12 @@ export const SidebarContent = memo(function SidebarContent({
 											folder: folderPath,
 										})}
 										aria-selected={
-											activeSidebarView.kind === "folder" &&
-											activeSidebarView.path === folderPath
+											activeSidebarView.kind === "folder" && activeSidebarView.path === folderPath
 										}
 										aria-controls="sidebar-files-panel"
 										title={folderPath}
 										onClick={() => handleSelectSidebarFolder(folderPath)}
-										onContextMenu={(event) =>
-											handleFolderTabContextMenu(event, folderPath)
-										}
+										onContextMenu={(event) => handleFolderTabContextMenu(event, folderPath)}
 									>
 										{appearance?.icon ? (
 											<DatabaseColumnIcon
@@ -939,9 +823,7 @@ export const SidebarContent = memo(function SidebarContent({
 												aria-hidden="true"
 											/>
 										)}
-										<span className="sidebarViewTabLabel">
-											{basename(folderPath)}
-										</span>
+										<span className="sidebarViewTabLabel">{basename(folderPath)}</span>
 									</button>
 								);
 							})}
@@ -950,8 +832,7 @@ export const SidebarContent = memo(function SidebarContent({
 					<div className="sidebarViewContent">
 						<Activity
 							mode={
-								activeSidebarView.kind === "files" ||
-								activeSidebarView.kind === "folder"
+								activeSidebarView.kind === "files" || activeSidebarView.kind === "folder"
 									? "visible"
 									: "hidden"
 							}
@@ -1009,10 +890,7 @@ export const SidebarContent = memo(function SidebarContent({
 												void onExpandAllDirs();
 											}}
 										>
-											<HugeiconsIcon
-												icon={ExpandParagraphIcon}
-												size="var(--icon-sm)"
-											/>
+											<HugeiconsIcon icon={ExpandParagraphIcon} size="var(--icon-sm)" />
 										</button>
 										<button
 											type="button"
@@ -1021,10 +899,7 @@ export const SidebarContent = memo(function SidebarContent({
 											aria-label={t("sidebar.collapseAllFolders")}
 											onClick={onCollapseAllDirs}
 										>
-											<HugeiconsIcon
-												icon={ArrowShrinkIcon}
-												size="var(--icon-sm)"
-											/>
+											<HugeiconsIcon icon={ArrowShrinkIcon} size="var(--icon-sm)" />
 										</button>
 									</div>
 								</div>
@@ -1041,9 +916,7 @@ export const SidebarContent = memo(function SidebarContent({
 									activeDirPath={activeDirPath}
 									onToggleDir={onToggleDir}
 									onLoadDir={onLoadDir}
-									onSelectDir={
-										folioMode ? handleSelectFolioFolder : onSelectDir
-									}
+									onSelectDir={folioMode ? handleSelectFolioFolder : onSelectDir}
 									onOpenFile={onOpenFile}
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
@@ -1061,9 +934,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onCommitDirRename={handleCommitDirRename}
 									onMovePath={onMovePath}
 									initialFocusedDirPath={
-										activeSidebarView.kind === "folder"
-											? activeSidebarView.path
-											: null
+										activeSidebarView.kind === "folder" ? activeSidebarView.path : null
 									}
 									onExitFocusedDir={
 										activeSidebarView.kind === "folder"
@@ -1077,9 +948,7 @@ export const SidebarContent = memo(function SidebarContent({
 								/>
 							</section>
 						</Activity>
-						<Activity
-							mode={activeSidebarView.kind === "recents" ? "visible" : "hidden"}
-						>
+						<Activity mode={activeSidebarView.kind === "recents" ? "visible" : "hidden"}>
 							<section
 								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
 								data-section="recents"
@@ -1094,9 +963,7 @@ export const SidebarContent = memo(function SidebarContent({
 								/>
 							</section>
 						</Activity>
-						<Activity
-							mode={activeSidebarView.kind === "tags" ? "visible" : "hidden"}
-						>
+						<Activity mode={activeSidebarView.kind === "tags" ? "visible" : "hidden"}>
 							<section
 								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
 								data-section="tags"

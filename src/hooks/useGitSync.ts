@@ -38,10 +38,7 @@ async function buildRunContext() {
 	};
 }
 
-export function useGitSync({
-	spacePath,
-	saveEditors,
-}: UseGitSyncOptions): GitSyncController {
+export function useGitSync({ spacePath, saveEditors }: UseGitSyncOptions): GitSyncController {
 	const { openSettings } = useUILayoutContext();
 	const { t } = useTranslation();
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
@@ -71,11 +68,7 @@ export function useGitSync({
 			}
 		} catch (cause) {
 			if (activeSpacePathRef.current === refreshSpacePath) {
-				setError(
-					cause instanceof Error
-						? cause.message
-						: "Failed to load Git Sync status",
-				);
+				setError(cause instanceof Error ? cause.message : "Failed to load Git Sync status");
 			}
 		} finally {
 			if (activeSpacePathRef.current === refreshSpacePath) {
@@ -104,9 +97,7 @@ export function useGitSync({
 	const syncNow = useCallback(async () => {
 		const syncSpacePath = activeSpacePathRef.current;
 		const promptForCommitMessage =
-			(statusSpaceRef.current === syncSpacePath
-				? status?.prompt_for_commit_message
-				: undefined) ??
+			(statusSpaceRef.current === syncSpacePath ? status?.prompt_for_commit_message : undefined) ??
 			(await invoke("git_sync_config_read"))?.prompt_for_commit_message ??
 			false;
 		if (activeSpacePathRef.current !== syncSpacePath) return null;
@@ -122,10 +113,7 @@ export function useGitSync({
 				cancel_label: t("gitSync.cancel"),
 			},
 		});
-		if (
-			commitMessage === null ||
-			activeSpacePathRef.current !== syncSpacePath
-		) {
+		if (commitMessage === null || activeSpacePathRef.current !== syncSpacePath) {
 			return null;
 		}
 		return runSync("manual", commitMessage.trim());
@@ -182,11 +170,7 @@ export function useGitSync({
 	const statusIntervalMinutes = status?.interval_minutes ?? 10;
 
 	useEffect(() => {
-		if (
-			!spacePath ||
-			statusSpaceRef.current !== spacePath ||
-			!shouldPromptForAutoSync(status)
-		) {
+		if (!spacePath || statusSpaceRef.current !== spacePath || !shouldPromptForAutoSync(status)) {
 			return;
 		}
 		if (autoSyncPromptSpaceRef.current === spacePath) return;
@@ -194,8 +178,7 @@ export function useGitSync({
 
 		void (async () => {
 			const isCurrentPromptSpace = () =>
-				activeSpacePathRef.current === spacePath &&
-				statusSpaceRef.current === spacePath;
+				activeSpacePathRef.current === spacePath && statusSpaceRef.current === spacePath;
 			const resetPromptForSpace = () => {
 				if (autoSyncPromptSpaceRef.current === spacePath) {
 					autoSyncPromptSpaceRef.current = null;
@@ -226,11 +209,7 @@ export function useGitSync({
 				if (!isCurrentPromptSpace()) {
 					return;
 				}
-				setError(
-					cause instanceof Error
-						? cause.message
-						: "Failed to configure Git Sync",
-				);
+				setError(cause instanceof Error ? cause.message : "Failed to configure Git Sync");
 			}
 		})();
 	}, [spacePath, status]);
@@ -250,14 +229,7 @@ export function useGitSync({
 		void runSync("auto").catch((cause) => {
 			setError(cause instanceof Error ? cause.message : "Git Sync failed");
 		});
-	}, [
-		runSync,
-		spacePath,
-		status,
-		statusConfigured,
-		statusEnabled,
-		statusPaused,
-	]);
+	}, [runSync, spacePath, status, statusConfigured, statusEnabled, statusPaused]);
 
 	useEffect(() => {
 		if (

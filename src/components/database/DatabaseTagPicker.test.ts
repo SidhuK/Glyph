@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	buildDatabaseTagPickerExplicitTags,
 	buildDatabaseTagPickerOptions,
@@ -48,10 +48,7 @@ describe("DatabaseTagPicker", () => {
 	});
 
 	it("checks exact matches against the full explicit tag set", () => {
-		expect(buildDatabaseTagPickerExplicitTags(availableTags)).toEqual([
-			"work",
-			"personal",
-		]);
+		expect(buildDatabaseTagPickerExplicitTags(availableTags)).toEqual(["work", "personal"]);
 	});
 
 	it("returns every explicit tag when query is empty", () => {

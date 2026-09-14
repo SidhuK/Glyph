@@ -1,11 +1,7 @@
 import { normalizeRelPath } from "../utils/path";
 import { setCachedDefaultEditorViewMode } from "./editorMode";
 export { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
-import {
-	type CustomTheme,
-	customThemeId,
-	isCustomThemeId,
-} from "./customThemes";
+import { type CustomTheme, customThemeId, isCustomThemeId } from "./customThemes";
 import {
 	DURABLE_SETTINGS,
 	INTERNAL_SETTING_KEYS,
@@ -35,16 +31,9 @@ import {
 	normalizeShortcut,
 	validateConfigurableShortcut,
 } from "./shortcuts";
-import {
-	SHORTCUT_ACTIONS,
-	type ShortcutActionId,
-	isShortcutActionId,
-} from "./shortcuts/registry";
+import { SHORTCUT_ACTIONS, type ShortcutActionId, isShortcutActionId } from "./shortcuts/registry";
 import { invoke } from "./tauri";
-import {
-	GLYPH_DEFAULT_DARK_THEME_ID,
-	GLYPH_DEFAULT_LIGHT_THEME_ID,
-} from "./uiThemes";
+import { GLYPH_DEFAULT_DARK_THEME_ID, GLYPH_DEFAULT_LIGHT_THEME_ID } from "./uiThemes";
 
 export {
 	DEFAULT_QUICK_NOTES_FOLDER,
@@ -105,9 +94,7 @@ function resolveSelectedThemeId<T extends string>(
 	fallback: T,
 ): T {
 	if (!isCustomThemeId(themeId)) return themeId;
-	return customThemes.some((theme) => customThemeId(theme.name) === themeId)
-		? themeId
-		: fallback;
+	return customThemes.some((theme) => customThemeId(theme.name) === themeId) ? themeId : fallback;
 }
 
 export interface SettingsScope {
@@ -116,13 +103,8 @@ export interface SettingsScope {
 
 let spaceScopedSettingsWriteQueue: Promise<unknown> = Promise.resolve();
 
-async function withSpaceScopedSettingsWriteLock<T>(
-	operation: () => Promise<T>,
-): Promise<T> {
-	const locks =
-		typeof navigator !== "undefined" && "locks" in navigator
-			? navigator.locks
-			: null;
+async function withSpaceScopedSettingsWriteLock<T>(operation: () => Promise<T>): Promise<T> {
+	const locks = typeof navigator !== "undefined" && "locks" in navigator ? navigator.locks : null;
 	if (locks) {
 		return locks.request("glyph-space-scoped-settings", operation);
 	}
@@ -131,9 +113,7 @@ async function withSpaceScopedSettingsWriteLock<T>(
 	return run;
 }
 
-function isShortcutBindingRecord(
-	value: unknown,
-): value is Record<string, Shortcut | null> {
+function isShortcutBindingRecord(value: unknown): value is Record<string, Shortcut | null> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -188,14 +168,12 @@ export function getEffectiveShortcutBindings(
 			continue;
 		}
 		if (!override) {
-			if (defaultBinding)
-				claimed.set(getShortcutSignature(defaultBinding), action.id);
+			if (defaultBinding) claimed.set(getShortcutSignature(defaultBinding), action.id);
 			continue;
 		}
 		const signature = getShortcutSignature(override);
 		if (claimed.has(signature)) {
-			if (defaultBinding)
-				claimed.set(getShortcutSignature(defaultBinding), action.id);
+			if (defaultBinding) claimed.set(getShortcutSignature(defaultBinding), action.id);
 			continue;
 		}
 		effective[action.id] = override;
@@ -218,9 +196,7 @@ function sanitizeShortcutBindings(bindings: unknown): ShortcutBindings {
 			continue;
 		}
 		if (!override || !effectiveBinding) continue;
-		const defaultBinding = action.defaultBinding
-			? normalizeShortcut(action.defaultBinding)
-			: null;
+		const defaultBinding = action.defaultBinding ? normalizeShortcut(action.defaultBinding) : null;
 		if (defaultBinding && areShortcutsEqual(defaultBinding, effectiveBinding)) {
 			continue;
 		}
@@ -237,9 +213,7 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 	if (!isRecord(value)) return {};
 	const out: SpaceScopedSettings = {};
 	if ("dailyNotesFolder" in value) {
-		out.dailyNotesFolder = SPACE_SETTINGS.dailyNotesFolder.normalize(
-			value.dailyNotesFolder,
-		);
+		out.dailyNotesFolder = SPACE_SETTINGS.dailyNotesFolder.normalize(value.dailyNotesFolder);
 	}
 	if ("dailyNotesWeeklyNotes" in value) {
 		out.dailyNotesWeeklyNotes = SPACE_SETTINGS.dailyNotesWeeklyNotes.normalize(
@@ -247,65 +221,52 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 		);
 	}
 	if ("dailyNotesMonthlyNotes" in value) {
-		out.dailyNotesMonthlyNotes =
-			SPACE_SETTINGS.dailyNotesMonthlyNotes.normalize(
-				value.dailyNotesMonthlyNotes,
-			);
+		out.dailyNotesMonthlyNotes = SPACE_SETTINGS.dailyNotesMonthlyNotes.normalize(
+			value.dailyNotesMonthlyNotes,
+		);
 	}
 	if ("dailyNotesQuarterlyNotes" in value) {
-		out.dailyNotesQuarterlyNotes =
-			SPACE_SETTINGS.dailyNotesQuarterlyNotes.normalize(
-				value.dailyNotesQuarterlyNotes,
-			);
+		out.dailyNotesQuarterlyNotes = SPACE_SETTINGS.dailyNotesQuarterlyNotes.normalize(
+			value.dailyNotesQuarterlyNotes,
+		);
 	}
 	if ("quickNotesFolder" in value) {
-		out.quickNotesFolder = SPACE_SETTINGS.quickNotesFolder.normalize(
-			value.quickNotesFolder,
-		);
+		out.quickNotesFolder = SPACE_SETTINGS.quickNotesFolder.normalize(value.quickNotesFolder);
 	}
 	if ("sidebarFolderTabs" in value) {
-		out.sidebarFolderTabs = SPACE_SETTINGS.sidebarFolderTabs.normalize(
-			value.sidebarFolderTabs,
-		);
+		out.sidebarFolderTabs = SPACE_SETTINGS.sidebarFolderTabs.normalize(value.sidebarFolderTabs);
 	}
 	if ("noteCreationDefaultFolder" in value) {
 		const folder = SPACE_SETTINGS.noteCreationDefaultFolder.normalize(
 			value.noteCreationDefaultFolder,
 		);
-		out.noteCreationDefaultFolder =
-			SPACE_SETTINGS.noteCreationDefaultFolder.validate?.(folder)
-				? null
-				: folder;
+		out.noteCreationDefaultFolder = SPACE_SETTINGS.noteCreationDefaultFolder.validate?.(folder)
+			? null
+			: folder;
 	}
 	if ("templatesFolder" in value) {
 		out.templatesFolder =
-			typeof value.templatesFolder === "string"
-				? normalizeRelPath(value.templatesFolder)
-				: null;
+			typeof value.templatesFolder === "string" ? normalizeRelPath(value.templatesFolder) : null;
 	}
 	if ("templatesDailyNoteTemplate" in value) {
-		out.templatesDailyNoteTemplate =
-			SPACE_SETTINGS.templatesDailyNoteTemplate.normalize(
-				value.templatesDailyNoteTemplate,
-			);
+		out.templatesDailyNoteTemplate = SPACE_SETTINGS.templatesDailyNoteTemplate.normalize(
+			value.templatesDailyNoteTemplate,
+		);
 	}
 	if ("templatesWeeklyNoteTemplate" in value) {
-		out.templatesWeeklyNoteTemplate =
-			SPACE_SETTINGS.templatesWeeklyNoteTemplate.normalize(
-				value.templatesWeeklyNoteTemplate,
-			);
+		out.templatesWeeklyNoteTemplate = SPACE_SETTINGS.templatesWeeklyNoteTemplate.normalize(
+			value.templatesWeeklyNoteTemplate,
+		);
 	}
 	if ("templatesMonthlyNoteTemplate" in value) {
-		out.templatesMonthlyNoteTemplate =
-			SPACE_SETTINGS.templatesMonthlyNoteTemplate.normalize(
-				value.templatesMonthlyNoteTemplate,
-			);
+		out.templatesMonthlyNoteTemplate = SPACE_SETTINGS.templatesMonthlyNoteTemplate.normalize(
+			value.templatesMonthlyNoteTemplate,
+		);
 	}
 	if ("templatesQuarterlyNoteTemplate" in value) {
-		out.templatesQuarterlyNoteTemplate =
-			SPACE_SETTINGS.templatesQuarterlyNoteTemplate.normalize(
-				value.templatesQuarterlyNoteTemplate,
-			);
+		out.templatesQuarterlyNoteTemplate = SPACE_SETTINGS.templatesQuarterlyNoteTemplate.normalize(
+			value.templatesQuarterlyNoteTemplate,
+		);
 	}
 	if ("attachmentStorageMode" in value) {
 		out.attachmentStorageMode = SPACE_SETTINGS.attachmentStorageMode.normalize(
@@ -313,21 +274,15 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 		);
 	}
 	if ("attachmentFolder" in value) {
-		out.attachmentFolder = SPACE_SETTINGS.attachmentFolder.normalize(
-			value.attachmentFolder,
-		);
+		out.attachmentFolder = SPACE_SETTINGS.attachmentFolder.normalize(value.attachmentFolder);
 	}
 	if ("connectionsGraph" in value) {
-		out.connectionsGraph = SPACE_SETTINGS.connectionsGraph.normalize(
-			value.connectionsGraph,
-		);
+		out.connectionsGraph = SPACE_SETTINGS.connectionsGraph.normalize(value.connectionsGraph);
 	}
 	return out;
 }
 
-function normalizeSpaceScopedSettingsMap(
-	value: unknown,
-): SpaceScopedSettingsMap {
+function normalizeSpaceScopedSettingsMap(value: unknown): SpaceScopedSettingsMap {
 	if (!isRecord(value)) return {};
 	const out: SpaceScopedSettingsMap = {};
 	for (const [spacePath, settings] of Object.entries(value)) {
@@ -377,10 +332,7 @@ export async function writeSpaceSetting<Value>(
 	const validationError = definition.validate?.(normalized);
 	if (validationError) throw new Error(validationError);
 
-	const spacePath = await updateActiveSpaceSettings(
-		definition.patch(normalized),
-		scope,
-	);
+	const spacePath = await updateActiveSpaceSettings(definition.patch(normalized), scope);
 	if (spacePath) {
 		void emitSettingsUpdated({
 			...definition.change(normalized),
@@ -449,32 +401,18 @@ function loadSpaceSettingValue<Value>(
 		? activeSettings?.[definition.field]
 		: entries.get(definition.legacyKey);
 	const normalized = definition.normalize(storedValue);
-	return definition.validate?.(normalized)
-		? definition.defaultValue
-		: normalized;
+	return definition.validate?.(normalized) ? definition.defaultValue : normalized;
 }
 
-export async function loadSettings(
-	scope?: SettingsScope,
-): Promise<AppSettings> {
+export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> {
 	const entries = await loadSettingsEntries();
-	const currentSpacePathRaw = entries.get(
-		INTERNAL_SETTING_KEYS.currentSpacePath,
-	);
+	const currentSpacePathRaw = entries.get(INTERNAL_SETTING_KEYS.currentSpacePath);
 	const recentSpacesRaw = entries.get(INTERNAL_SETTING_KEYS.recentSpaces);
 	const rawRecentFiles = entries.get(INTERNAL_SETTING_KEYS.recentFiles);
-	const rawShortcutSettingsVersion = entries.get(
-		INTERNAL_SETTING_KEYS.shortcutsVersion,
-	);
-	const rawShortcutBindings = entries.get(
-		INTERNAL_SETTING_KEYS.shortcutsBindings,
-	);
-	const rawSpaceScopedSettings = entries.get(
-		INTERNAL_SETTING_KEYS.spaceScopedSettings,
-	);
-	const scopedSettings = normalizeSpaceScopedSettingsMap(
-		rawSpaceScopedSettings,
-	);
+	const rawShortcutSettingsVersion = entries.get(INTERNAL_SETTING_KEYS.shortcutsVersion);
+	const rawShortcutBindings = entries.get(INTERNAL_SETTING_KEYS.shortcutsBindings);
+	const rawSpaceScopedSettings = entries.get(INTERNAL_SETTING_KEYS.spaceScopedSettings);
+	const scopedSettings = normalizeSpaceScopedSettingsMap(rawSpaceScopedSettings);
 	const activeSettingsSpacePath = await activeSpacePath(scope);
 	const currentSpacePath =
 		activeSettingsSpacePath ??
@@ -492,8 +430,7 @@ export async function loadSettings(
 	const dateDisplayFormat = DURABLE_SETTINGS.dateDisplayFormat.load(entries);
 	const aiAssistantMode = DURABLE_SETTINGS.aiAssistantMode.load(entries);
 	const theme = DURABLE_SETTINGS.theme.load(entries);
-	const autoUpdateCheckInterval =
-		DURABLE_SETTINGS.autoUpdateCheckInterval.load(entries);
+	const autoUpdateCheckInterval = DURABLE_SETTINGS.autoUpdateCheckInterval.load(entries);
 	const releaseChannel = DURABLE_SETTINGS.releaseChannel.load(entries);
 	const customThemes = DURABLE_SETTINGS.customThemes.load(entries);
 	const lightThemeId = resolveSelectedThemeId(
@@ -519,17 +456,14 @@ export async function loadSettings(
 	const showToc = DURABLE_SETTINGS.showToc.load(entries);
 	const sidebarVisibility = DURABLE_SETTINGS.sidebarVisibility.load(entries);
 	const sidebarOrder = DURABLE_SETTINGS.sidebarOrder.load(entries);
-	const showFileTreeFolderCounts =
-		DURABLE_SETTINGS.showFileTreeFolderCounts.load(entries);
-	const showNonMarkdownFiles =
-		DURABLE_SETTINGS.showNonMarkdownFiles.load(entries);
+	const showFileTreeFolderCounts = DURABLE_SETTINGS.showFileTreeFolderCounts.load(entries);
+	const showNonMarkdownFiles = DURABLE_SETTINGS.showNonMarkdownFiles.load(entries);
 	const fileTreeSortMode = DURABLE_SETTINGS.fileTreeSortMode.load(entries);
 	const folioMode = DURABLE_SETTINGS.folioMode.load(entries);
 	const noteSidePeek = DURABLE_SETTINGS.noteSidePeek.load(entries);
 	const legacyConnections = DURABLE_SETTINGS.legacyConnections.load(entries);
 	const resumeLastSession = DURABLE_SETTINGS.resumeLastSession.load(entries);
-	const keepRunningOnLastWindowClose =
-		DURABLE_SETTINGS.keepRunningOnLastWindowClose.load(entries);
+	const keepRunningOnLastWindowClose = DURABLE_SETTINGS.keepRunningOnLastWindowClose.load(entries);
 	const dailyNotesFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.dailyNotesFolder,
 		entries,
@@ -572,9 +506,7 @@ export async function loadSettings(
 		activeScopedSettings,
 		hasActiveSpace,
 	);
-	const legacyTemplatesFolder = entries.get(
-		INTERNAL_SETTING_KEYS.templatesFolder,
-	);
+	const legacyTemplatesFolder = entries.get(INTERNAL_SETTING_KEYS.templatesFolder);
 	const templatesFolder = hasActiveSpace
 		? (activeScopedSettings?.templatesFolder ?? null)
 		: typeof legacyTemplatesFolder === "string"
@@ -606,8 +538,7 @@ export async function loadSettings(
 	);
 	const shortcutBindings = sanitizeShortcutBindings(rawShortcutBindings);
 	const shortcuts: ShortcutSettings = {
-		version:
-			rawShortcutSettingsVersion === 1 ? 1 : DEFAULT_SHORTCUT_SETTINGS.version,
+		version: rawShortcutSettingsVersion === 1 ? 1 : DEFAULT_SHORTCUT_SETTINGS.version,
 		bindings: shortcutBindings,
 	};
 	const attachmentStorageMode = loadSpaceSettingValue(
@@ -629,14 +560,10 @@ export async function loadSettings(
 		hasActiveSpace,
 	);
 	const editor: AppSettings["editor"] = {
-		showCollapsibleHeadings:
-			DURABLE_SETTINGS.editorShowCollapsibleHeadings.load(entries),
-		showCollapsibleLists:
-			DURABLE_SETTINGS.editorShowCollapsibleLists.load(entries),
-		showFrontmatterInEditor:
-			DURABLE_SETTINGS.editorShowFrontmatterInEditor.load(entries),
-		showHeadingPrefixes:
-			DURABLE_SETTINGS.editorShowHeadingPrefixes.load(entries),
+		showCollapsibleHeadings: DURABLE_SETTINGS.editorShowCollapsibleHeadings.load(entries),
+		showCollapsibleLists: DURABLE_SETTINGS.editorShowCollapsibleLists.load(entries),
+		showFrontmatterInEditor: DURABLE_SETTINGS.editorShowFrontmatterInEditor.load(entries),
+		showHeadingPrefixes: DURABLE_SETTINGS.editorShowHeadingPrefixes.load(entries),
 		colorfulHeadings: DURABLE_SETTINGS.editorColorfulHeadings.load(entries),
 		headingPaletteId: DURABLE_SETTINGS.editorHeadingPaletteId.load(entries),
 		beautifulTags: DURABLE_SETTINGS.editorBeautifulTags.load(entries),
@@ -644,12 +571,10 @@ export async function loadSettings(
 		defaultEditorMode: DURABLE_SETTINGS.editorDefaultEditorMode.load(entries),
 		attachmentStorageMode,
 		attachmentFolder,
-		enablePeopleMentionsAsTags:
-			DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.load(entries),
+		enablePeopleMentionsAsTags: DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.load(entries),
 		rawMarkdownVimMode: DURABLE_SETTINGS.editorRawMarkdownVimMode.load(entries),
 		spellCheck: DURABLE_SETTINGS.editorSpellCheck.load(entries),
-		showExternalLinkPreviews:
-			DURABLE_SETTINGS.editorShowExternalLinkPreviews.load(entries),
+		showExternalLinkPreviews: DURABLE_SETTINGS.editorShowExternalLinkPreviews.load(entries),
 		showFormatBar: DURABLE_SETTINGS.editorShowFormatBar.load(entries),
 		zenMode: DURABLE_SETTINGS.editorZenMode.load(entries),
 		focusMode: DURABLE_SETTINGS.editorFocusMode.load(entries),
@@ -723,9 +648,7 @@ export async function loadSettings(
 export async function setCurrentSpacePath(path: string): Promise<void> {
 	const store = await getSettingsStore();
 	await store.set(INTERNAL_SETTING_KEYS.currentSpacePath, path);
-	const prev =
-		(await store.get<string[] | null>(INTERNAL_SETTING_KEYS.recentSpaces)) ??
-		[];
+	const prev = (await store.get<string[] | null>(INTERNAL_SETTING_KEYS.recentSpaces)) ?? [];
 	const next = [path, ...prev.filter((p) => p !== path)].slice(0, 20);
 	await store.set(INTERNAL_SETTING_KEYS.recentSpaces, next);
 	await saveSettingsStore(store);
@@ -734,10 +657,7 @@ export async function setCurrentSpacePath(path: string): Promise<void> {
 async function saveShortcutBindingsToStore(bindings: ShortcutBindings) {
 	const store = await getSettingsStore();
 	const sanitized = sanitizeShortcutBindings(bindings);
-	await store.set(
-		INTERNAL_SETTING_KEYS.shortcutsVersion,
-		DEFAULT_SHORTCUT_SETTINGS.version,
-	);
+	await store.set(INTERNAL_SETTING_KEYS.shortcutsVersion, DEFAULT_SHORTCUT_SETTINGS.version);
 	await store.set(INTERNAL_SETTING_KEYS.shortcutsBindings, sanitized);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ shortcuts: { bindings: sanitized } });
@@ -746,9 +666,7 @@ async function saveShortcutBindingsToStore(bindings: ShortcutBindings) {
 
 let shortcutBindingsWriteQueue: Promise<unknown> = Promise.resolve();
 
-function withShortcutBindingsWriteLock<T>(
-	operation: () => Promise<T>,
-): Promise<T> {
+function withShortcutBindingsWriteLock<T>(operation: () => Promise<T>): Promise<T> {
 	const run = shortcutBindingsWriteQueue.then(operation, operation);
 	shortcutBindingsWriteQueue = run.catch(() => {});
 	return run;
@@ -783,9 +701,7 @@ export async function setShortcutBinding(
 		if (conflict) {
 			throw new Error(`Shortcut already used by ${conflict}`);
 		}
-		const definition = SHORTCUT_ACTIONS.find(
-			(action) => action.id === actionId,
-		);
+		const definition = SHORTCUT_ACTIONS.find((action) => action.id === actionId);
 		if (!definition) throw new Error(`Unknown shortcut action: ${actionId}`);
 		const defaultBinding = definition.defaultBinding
 			? normalizeShortcut(definition.defaultBinding)
@@ -799,9 +715,7 @@ export async function setShortcutBinding(
 	});
 }
 
-export async function resetShortcutBinding(
-	actionId: ShortcutActionId,
-): Promise<ShortcutBindings> {
+export async function resetShortcutBinding(actionId: ShortcutActionId): Promise<ShortcutBindings> {
 	return withShortcutBindingsWriteLock(async () => {
 		const current = await loadShortcutSettings();
 		const next = { ...current.bindings };
@@ -814,8 +728,7 @@ export async function setTemplatesFolder(
 	folder: string | null,
 	scope?: SettingsScope,
 ): Promise<void> {
-	const nextFolder =
-		typeof folder === "string" ? normalizeRelPath(folder) : null;
+	const nextFolder = typeof folder === "string" ? normalizeRelPath(folder) : null;
 	const scopedPatch: SpaceScopedSettings = { templatesFolder: nextFolder };
 	if (nextFolder === null) {
 		scopedPatch.templatesDailyNoteTemplate = null;
@@ -859,21 +772,12 @@ export async function setTemplatesFolder(
 	});
 }
 
-export async function setAutoUpdateLastCheckedAt(
-	timestamp: number | null,
-): Promise<void> {
+export async function setAutoUpdateLastCheckedAt(timestamp: number | null): Promise<void> {
 	const store = await getSettingsStore();
-	if (
-		typeof timestamp !== "number" ||
-		!Number.isFinite(timestamp) ||
-		timestamp <= 0
-	) {
+	if (typeof timestamp !== "number" || !Number.isFinite(timestamp) || timestamp <= 0) {
 		await store.delete(INTERNAL_SETTING_KEYS.autoUpdateLastCheckedAt);
 	} else {
-		await store.set(
-			INTERNAL_SETTING_KEYS.autoUpdateLastCheckedAt,
-			Math.floor(timestamp),
-		);
+		await store.set(INTERNAL_SETTING_KEYS.autoUpdateLastCheckedAt, Math.floor(timestamp));
 	}
 	await saveSettingsStore(store);
 }
@@ -884,20 +788,12 @@ export async function getRecentFiles(): Promise<RecentFile[]> {
 	return isRecentFileArray(raw) ? raw : [];
 }
 
-export async function addRecentFile(
-	path: string,
-	spacePath: string,
-): Promise<void> {
+export async function addRecentFile(path: string, spacePath: string): Promise<void> {
 	const store = await getSettingsStore();
 	const raw = await store.get<unknown>(INTERNAL_SETTING_KEYS.recentFiles);
 	const recent = isRecentFileArray(raw) ? raw : [];
-	const filtered = recent.filter(
-		(r) => r.path !== path || r.spacePath !== spacePath,
-	);
-	const next: RecentFile[] = [
-		{ path, spacePath, openedAt: Date.now() },
-		...filtered,
-	].slice(0, 20);
+	const filtered = recent.filter((r) => r.path !== path || r.spacePath !== spacePath);
+	const next: RecentFile[] = [{ path, spacePath, openedAt: Date.now() }, ...filtered].slice(0, 20);
 	await store.set(INTERNAL_SETTING_KEYS.recentFiles, next);
 	await saveSettingsStore(store);
 }
@@ -925,8 +821,7 @@ export async function updateRecentFilesForPathChange(
 	const recent = isRecentFileArray(raw) ? raw : [];
 	const matches = (file: RecentFile) =>
 		file.spacePath === change.spacePath &&
-		(file.path === target ||
-			(change.recursive && file.path.startsWith(`${target}/`)));
+		(file.path === target || (change.recursive && file.path.startsWith(`${target}/`)));
 	const next =
 		change.kind === "remove"
 			? recent.filter((file) => !matches(file))

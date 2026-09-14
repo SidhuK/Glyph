@@ -100,31 +100,17 @@ export function RolloverTaskActions({
 
 	if (!active) return null;
 	return (
-		<div
-			className="rolloverTaskActionButtons"
-			style={{ left: active.left, top: active.top }}
-		>
+		<div className="rolloverTaskActionButtons" style={{ left: active.left, top: active.top }}>
 			{actions.targets.map((target) => (
 				<Button
 					key={target}
 					variant="outline"
 					size="icon-xs"
-					title={
-						target === "today"
-							? t("rollover.moveToday")
-							: t("rollover.moveTomorrow")
-					}
-					aria-label={
-						target === "today"
-							? t("rollover.moveToday")
-							: t("rollover.moveTomorrow")
-					}
+					title={target === "today" ? t("rollover.moveToday") : t("rollover.moveTomorrow")}
+					aria-label={target === "today" ? t("rollover.moveToday") : t("rollover.moveTomorrow")}
 					onMouseDown={(event) => event.preventDefault()}
 					onClick={() =>
-						actions.onMoveCandidate(
-							{ index: active.index, total: active.total },
-							target,
-						)
+						actions.onMoveCandidate({ index: active.index, total: active.total }, target)
 					}
 				>
 					<HugeiconsIcon icon={target === "today" ? Sun02Icon : NextWeekIcon} />

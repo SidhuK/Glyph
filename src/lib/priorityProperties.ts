@@ -53,9 +53,7 @@ const PRIORITY_BY_ID = new Map<string, PriorityOption>(
 const PRIORITY_ALIAS_TO_ID = new Map<string, string>(
 	PRIORITY_OPTIONS.flatMap((option) => [
 		[option.id, option.id] as const,
-		...option.aliases.map(
-			(alias) => [normalizePriorityText(alias), option.id] as const,
-		),
+		...option.aliases.map((alias) => [normalizePriorityText(alias), option.id] as const),
 	]),
 );
 
@@ -68,9 +66,7 @@ function priorityIdFromValue(value: string | null | undefined): string | null {
 	return normalized ? (PRIORITY_ALIAS_TO_ID.get(normalized) ?? null) : null;
 }
 
-export function priorityOptionFromValue(
-	value: string | null | undefined,
-): PriorityOption | null {
+export function priorityOptionFromValue(value: string | null | undefined): PriorityOption | null {
 	const priorityId = priorityIdFromValue(value);
 	return priorityId ? (PRIORITY_BY_ID.get(priorityId) ?? null) : null;
 }
@@ -81,20 +77,13 @@ export function priorityLabel(value: string | null | undefined): string {
 	return (value ?? "").trim();
 }
 
-export function priorityToneStyle(
-	value: string | null | undefined,
-): CSSProperties {
+export function priorityToneStyle(value: string | null | undefined): CSSProperties {
 	const option = priorityOptionFromValue(value);
 	const fallbackValue = (value ?? "").trim();
-	return databaseValueToneStyleForColor(
-		option?.id ?? fallbackValue,
-		option?.color ?? null,
-	);
+	return databaseValueToneStyleForColor(option?.id ?? fallbackValue, option?.color ?? null);
 }
 
-export function priorityTextStyle(
-	value: string | null | undefined,
-): CSSProperties {
+export function priorityTextStyle(value: string | null | undefined): CSSProperties {
 	const option = priorityOptionFromValue(value);
 	const toneStyle = priorityToneStyle(value);
 	return {
@@ -106,9 +95,7 @@ export function priorityTextStyle(
 	};
 }
 
-export function priorityColorKey(
-	value: string | null | undefined,
-): string | null {
+export function priorityColorKey(value: string | null | undefined): string | null {
 	const trimmed = (value ?? "").trim();
 	if (!trimmed) return null;
 	const option = priorityOptionFromValue(trimmed);

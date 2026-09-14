@@ -43,9 +43,7 @@ function AppearancePreviewPane({
 	);
 }
 
-export function AppearancePreviewFrame({
-	mode = "default",
-}: AppearancePreviewFrameProps) {
+export function AppearancePreviewFrame({ mode = "default" }: AppearancePreviewFrameProps) {
 	if (mode === "system") {
 		return (
 			<span className="settingsAppearancePreview" aria-hidden="true">

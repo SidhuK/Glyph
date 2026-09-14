@@ -1,19 +1,9 @@
-import {
-	type KeyboardEvent,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import { createDefaultDatabaseView } from "../../lib/database/defaultView";
 import { resolveSelectedViewId } from "../../lib/database/selectedViewStorage";
 import { buildViewMenuItems } from "../../lib/database/viewMenuItems";
-import type {
-	DatabaseConfig,
-	WorkspaceDatabaseDocument,
-} from "../../lib/tauri";
+import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 
 export interface UseDatabaseViewTabsOptions {
 	document: WorkspaceDatabaseDocument;
@@ -67,9 +57,7 @@ export function useDatabaseViewTabs({
 			setRenamingViewId(null);
 			return;
 		}
-		const current = document.database.views.find(
-			(v) => v.id === renamingViewId,
-		);
+		const current = document.database.views.find((v) => v.id === renamingViewId);
 		if (!current || viewNameDraft.trim() === current.name) {
 			setRenamingViewId(null);
 			return;
@@ -92,9 +80,7 @@ export function useDatabaseViewTabs({
 					views: document.database.views.filter((v) => v.id !== viewId),
 				});
 				if (selectedViewId === viewId) {
-					setSelectedViewId(
-						resolveSelectedViewId(saved.database.id, saved.database.views),
-					);
+					setSelectedViewId(resolveSelectedViewId(saved.database.id, saved.database.views));
 				}
 			} catch {
 				// saveDatabase owns surfacing the error; avoid unhandled rejections.
@@ -123,9 +109,7 @@ export function useDatabaseViewTabs({
 			const selectAndFocusView = (nextViewId: string) => {
 				setSelectedViewId(nextViewId);
 				window.requestAnimationFrame(() => {
-					const tabs =
-						tabList?.querySelectorAll<HTMLButtonElement>(".databasesViewTab") ??
-						[];
+					const tabs = tabList?.querySelectorAll<HTMLButtonElement>(".databasesViewTab") ?? [];
 					for (const tab of tabs) {
 						if (tab.dataset.viewId === nextViewId) {
 							tab.focus();

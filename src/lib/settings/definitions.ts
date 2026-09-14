@@ -142,9 +142,7 @@ function parsed<Value>(value: Value): SettingParseResult<Value> {
 	return { ok: true, value };
 }
 
-export async function emitSettingsUpdated(
-	payload: SettingsUpdatedPayload,
-): Promise<void> {
+export async function emitSettingsUpdated(payload: SettingsUpdatedPayload): Promise<void> {
 	try {
 		if (payload.spacePath) {
 			await emitTo(getCurrentWindow().label, "settings:updated", payload);
@@ -195,10 +193,8 @@ function booleanSpaceSetting(
 ): SpaceSettingDefinition<boolean> {
 	return defineSpaceSetting({
 		...config,
-		normalize: (value) =>
-			typeof value === "boolean" ? value : config.defaultValue,
-		parse: (value) =>
-			typeof value === "boolean" ? parsed(value) : INVALID_PARSE_RESULT,
+		normalize: (value) => (typeof value === "boolean" ? value : config.defaultValue),
+		parse: (value) => (typeof value === "boolean" ? parsed(value) : INVALID_PARSE_RESULT),
 	});
 }
 
@@ -207,10 +203,8 @@ function booleanSetting(
 ): ApplicationSettingDefinition<boolean> {
 	return defineApplicationSetting({
 		...config,
-		normalize: (value) =>
-			typeof value === "boolean" ? value : config.defaultValue,
-		parse: (value) =>
-			typeof value === "boolean" ? parsed(value) : INVALID_PARSE_RESULT,
+		normalize: (value) => (typeof value === "boolean" ? value : config.defaultValue),
+		parse: (value) => (typeof value === "boolean" ? parsed(value) : INVALID_PARSE_RESULT),
 	});
 }
 
@@ -252,9 +246,7 @@ function isAiAssistantMode(value: unknown): value is "chat" | "create" {
 	return value === "chat" || value === "create";
 }
 
-export function isAttachmentStorageMode(
-	value: unknown,
-): value is AttachmentStorageMode {
+export function isAttachmentStorageMode(value: unknown): value is AttachmentStorageMode {
 	return (
 		value === "space-root" ||
 		value === "specific-folder" ||
@@ -271,9 +263,7 @@ export function isFocusMode(value: unknown): value is FocusMode {
 	return value === "off" || value === "paragraph" || value === "sentence";
 }
 
-export function isUiCornerRadiusStyle(
-	value: unknown,
-): value is UiCornerRadiusStyle {
+export function isUiCornerRadiusStyle(value: unknown): value is UiCornerRadiusStyle {
 	return value === "default" || value === "sharp" || value === "round";
 }
 
@@ -292,10 +282,7 @@ function normalizeUiMonoFontFamily(value: unknown): UiFontFamily {
 
 function normalizeUiFontSize(value: unknown): UiFontSize {
 	if (typeof value === "number" && Number.isFinite(value)) {
-		return Math.max(
-			MIN_UI_FONT_SIZE,
-			Math.min(MAX_UI_FONT_SIZE, Math.round(value)),
-		);
+		return Math.max(MIN_UI_FONT_SIZE, Math.min(MAX_UI_FONT_SIZE, Math.round(value)));
 	}
 	if (value === "small") return 12;
 	if (value === "large") return 16;
@@ -304,27 +291,20 @@ function normalizeUiFontSize(value: unknown): UiFontSize {
 
 function normalizeEditorFontSize(value: unknown): UiFontSize {
 	if (typeof value === "number" && Number.isFinite(value)) {
-		return Math.max(
-			MIN_EDITOR_FONT_SIZE,
-			Math.min(MAX_EDITOR_FONT_SIZE, Math.round(value)),
-		);
+		return Math.max(MIN_EDITOR_FONT_SIZE, Math.min(MAX_EDITOR_FONT_SIZE, Math.round(value)));
 	}
 	return DEFAULT_EDITOR_FONT_SIZE;
 }
 
 function parseFiniteNumber(value: unknown): SettingParseResult<number> {
-	return typeof value === "number" && Number.isFinite(value)
-		? parsed(value)
-		: INVALID_PARSE_RESULT;
+	return typeof value === "number" && Number.isFinite(value) ? parsed(value) : INVALID_PARSE_RESULT;
 }
 
 function parseString(value: unknown): SettingParseResult<string> {
 	return typeof value === "string" ? parsed(value) : INVALID_PARSE_RESULT;
 }
 
-function normalizeAutoUpdateCheckInterval(
-	value: unknown,
-): AutoUpdateCheckInterval {
+function normalizeAutoUpdateCheckInterval(value: unknown): AutoUpdateCheckInterval {
 	return value === "3h" || value === "launch" || value === "12h"
 		? "3h"
 		: DEFAULT_AUTO_UPDATE_CHECK_INTERVAL;
@@ -365,8 +345,7 @@ export const DURABLE_SETTINGS = {
 		defaultValue: normalizeAppLanguage(undefined),
 		discovery: searchable("general-language"),
 		normalize: normalizeAppLanguage,
-		parse: (value) =>
-			isAppLanguage(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isAppLanguage(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.language,
 		change: (value) => ({ ui: { language: value } }),
 	}),
@@ -375,20 +354,16 @@ export const DURABLE_SETTINGS = {
 		defaultValue: DEFAULT_DATE_DISPLAY_FORMAT,
 		discovery: searchable("general-date-format"),
 		normalize: normalizeDateDisplayFormat,
-		parse: (value) =>
-			isDateDisplayFormat(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isDateDisplayFormat(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.dateDisplayFormat,
 		change: (value) => ({ ui: { dateDisplayFormat: value } }),
 	}),
-	aiAssistantMode: defineApplicationSetting<
-		AppSettings["ui"]["aiAssistantMode"]
-	>({
+	aiAssistantMode: defineApplicationSetting<AppSettings["ui"]["aiAssistantMode"]>({
 		key: "ui.aiAssistantMode",
 		defaultValue: "create",
 		discovery: searchable("ai-assistant-behavior-tools"),
 		normalize: (value) => (isAiAssistantMode(value) ? value : "create"),
-		parse: (value) =>
-			isAiAssistantMode(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isAiAssistantMode(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.aiAssistantMode,
 		change: (value) => ({ ui: { aiAssistantMode: value } }),
 	}),
@@ -397,8 +372,7 @@ export const DURABLE_SETTINGS = {
 		defaultValue: "system",
 		discovery: searchable("appearance-theme-mode"),
 		normalize: (value) => (isThemeMode(value) ? value : "system"),
-		parse: (value) =>
-			isThemeMode(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isThemeMode(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.theme,
 		change: (value) => ({ ui: { theme: value } }),
 	}),
@@ -417,9 +391,7 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("about-alpha-releases"),
 		normalize: (value) => (value === "alpha" ? "alpha" : "stable"),
 		parse: (value) =>
-			value === "alpha" || value === "stable"
-				? parsed(value)
-				: INVALID_PARSE_RESULT,
+			value === "alpha" || value === "stable" ? parsed(value) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.ui.releaseChannel,
 		change: (value) => ({ ui: { releaseChannel: value } }),
 	}),
@@ -429,9 +401,7 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("appearance-custom-themes"),
 		normalize: normalizeCustomThemes,
 		parse: (value) =>
-			Array.isArray(value)
-				? parsed(normalizeCustomThemes(value))
-				: INVALID_PARSE_RESULT,
+			Array.isArray(value) ? parsed(normalizeCustomThemes(value)) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.ui.customThemes,
 		change: (value) => ({ ui: { customThemes: value } }),
 	}),
@@ -440,8 +410,7 @@ export const DURABLE_SETTINGS = {
 		defaultValue: GLYPH_DEFAULT_LIGHT_THEME_ID,
 		discovery: searchable("appearance-light-theme"),
 		normalize: asUiLightThemeId,
-		parse: (value) =>
-			isUiLightThemeId(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isUiLightThemeId(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.lightThemeId,
 		change: (value) => ({ ui: { lightThemeId: value } }),
 	}),
@@ -450,8 +419,7 @@ export const DURABLE_SETTINGS = {
 		defaultValue: GLYPH_DEFAULT_DARK_THEME_ID,
 		discovery: searchable("appearance-dark-theme"),
 		normalize: asUiDarkThemeId,
-		parse: (value) =>
-			isUiDarkThemeId(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isUiDarkThemeId(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.darkThemeId,
 		change: (value) => ({ ui: { darkThemeId: value } }),
 	}),
@@ -535,10 +503,8 @@ export const DURABLE_SETTINGS = {
 		key: "ui.cornerRadiusStyle",
 		defaultValue: DEFAULT_UI_CORNER_RADIUS_STYLE,
 		discovery: hidden("The current search catalog has no corner-radius row."),
-		normalize: (value) =>
-			isUiCornerRadiusStyle(value) ? value : DEFAULT_UI_CORNER_RADIUS_STYLE,
-		parse: (value) =>
-			isUiCornerRadiusStyle(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		normalize: (value) => (isUiCornerRadiusStyle(value) ? value : DEFAULT_UI_CORNER_RADIUS_STYLE),
+		parse: (value) => (isUiCornerRadiusStyle(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.cornerRadiusStyle,
 		change: (value) => ({ ui: { cornerRadiusStyle: value } }),
 	}),
@@ -567,9 +533,7 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("appearance-sidebar"),
 		normalize: normalizeSidebarOrder,
 		parse: (value) =>
-			Array.isArray(value)
-				? parsed(normalizeSidebarOrder(value))
-				: INVALID_PARSE_RESULT,
+			Array.isArray(value) ? parsed(normalizeSidebarOrder(value)) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.ui.sidebarOrder,
 		change: (value) => ({ ui: { sidebarOrder: value } }),
 	}),
@@ -591,10 +555,8 @@ export const DURABLE_SETTINGS = {
 		key: "ui.fileTree.sortMode",
 		defaultValue: DEFAULT_FILE_TREE_SORT_MODE,
 		discovery: searchable("general-file-tree-sort"),
-		normalize: (value) =>
-			isFileTreeSortMode(value) ? value : DEFAULT_FILE_TREE_SORT_MODE,
-		parse: (value) =>
-			isFileTreeSortMode(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		normalize: (value) => (isFileTreeSortMode(value) ? value : DEFAULT_FILE_TREE_SORT_MODE),
+		parse: (value) => (isFileTreeSortMode(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.fileTreeSortMode,
 		change: (value) => ({ ui: { fileTreeSortMode: value } }),
 	}),
@@ -677,8 +639,7 @@ export const DURABLE_SETTINGS = {
 		defaultValue: DEFAULT_HEADING_PALETTE_ID,
 		discovery: searchable("general-editor-heading-palette"),
 		normalize: asHeadingPaletteId,
-		parse: (value) =>
-			isHeadingPaletteId(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isHeadingPaletteId(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.editor.headingPaletteId,
 		change: (value) => ({ editor: { headingPaletteId: value } }),
 	}),
@@ -693,10 +654,8 @@ export const DURABLE_SETTINGS = {
 		key: "editor.editorWidthMode",
 		defaultValue: DEFAULT_EDITOR_WIDTH_MODE,
 		discovery: searchable("appearance-editor-presentation-width"),
-		normalize: (value) =>
-			isEditorWidthMode(value) ? value : DEFAULT_EDITOR_WIDTH_MODE,
-		parse: (value) =>
-			isEditorWidthMode(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		normalize: (value) => (isEditorWidthMode(value) ? value : DEFAULT_EDITOR_WIDTH_MODE),
+		parse: (value) => (isEditorWidthMode(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.editor.editorWidthMode,
 		change: (value) => ({ editor: { editorWidthMode: value } }),
 	}),
@@ -704,10 +663,8 @@ export const DURABLE_SETTINGS = {
 		key: "editor.defaultEditorMode",
 		defaultValue: DEFAULT_EDITOR_VIEW_MODE,
 		discovery: searchable("general-editor-default-mode"),
-		normalize: (value) =>
-			isEditorViewMode(value) ? value : DEFAULT_EDITOR_VIEW_MODE,
-		parse: (value) =>
-			isEditorViewMode(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		normalize: (value) => (isEditorViewMode(value) ? value : DEFAULT_EDITOR_VIEW_MODE),
+		parse: (value) => (isEditorViewMode(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.editor.defaultEditorMode,
 		change: (value) => ({ editor: { defaultEditorMode: value } }),
 		afterSave: setCachedDefaultEditorViewMode,
@@ -759,8 +716,7 @@ export const DURABLE_SETTINGS = {
 		defaultValue: DEFAULT_FOCUS_MODE,
 		discovery: searchable("general-editor-focus-mode"),
 		normalize: (value) => (isFocusMode(value) ? value : DEFAULT_FOCUS_MODE),
-		parse: (value) =>
-			isFocusMode(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isFocusMode(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.editor.focusMode,
 		change: (value) => ({ editor: { focusMode: value } }),
 	}),
@@ -784,10 +740,7 @@ export async function writeSidebarLayout({
 	const normalizedOrder = normalizeSidebarOrder(order);
 	const store = await getSettingsStore();
 	try {
-		await store.set(
-			DURABLE_SETTINGS.sidebarVisibility.key,
-			normalizedVisibility,
-		);
+		await store.set(DURABLE_SETTINGS.sidebarVisibility.key, normalizedVisibility);
 		await store.set(DURABLE_SETTINGS.sidebarOrder.key, normalizedOrder);
 		await saveSettingsStore(store);
 	} catch (error) {
@@ -814,9 +767,7 @@ export const SPACE_SETTINGS = {
 		discovery: searchable("space-daily-notes-folder"),
 		normalize: nullablePath,
 		parse: (value) =>
-			typeof value === "string" || value === null
-				? parsed(value)
-				: INVALID_PARSE_RESULT,
+			typeof value === "string" || value === null ? parsed(value) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.dailyNotes.folder,
 		patch: (value) => ({ dailyNotesFolder: value }),
 		change: (value) => ({ dailyNotes: { folder: value } }),
@@ -857,8 +808,7 @@ export const SPACE_SETTINGS = {
 			typeof value === "string"
 				? normalizeRelPath(value) || DEFAULT_QUICK_NOTES_FOLDER
 				: DEFAULT_QUICK_NOTES_FOLDER,
-		parse: (value) =>
-			value === null ? parsed(DEFAULT_QUICK_NOTES_FOLDER) : parseString(value),
+		parse: (value) => (value === null ? parsed(DEFAULT_QUICK_NOTES_FOLDER) : parseString(value)),
 		read: (settings) => settings.quickNotes.folder,
 		patch: (value) => ({ quickNotesFolder: value }),
 		change: (value) => ({ quickNotes: { folder: value } }),
@@ -870,9 +820,7 @@ export const SPACE_SETTINGS = {
 		discovery: searchable("general-file-tree-folder-tabs"),
 		normalize: normalizeSidebarFolderTabs,
 		parse: (value) =>
-			Array.isArray(value)
-				? parsed(normalizeSidebarFolderTabs(value))
-				: INVALID_PARSE_RESULT,
+			Array.isArray(value) ? parsed(normalizeSidebarFolderTabs(value)) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.ui.sidebarFolderTabs,
 		patch: (value) => ({ sidebarFolderTabs: value }),
 		change: (value) => ({ ui: { sidebarFolderTabs: value } }),
@@ -884,9 +832,7 @@ export const SPACE_SETTINGS = {
 		discovery: searchable("space-default-new-note-folder"),
 		normalize: nullablePath,
 		parse: (value) =>
-			typeof value === "string" || value === null
-				? parsed(value)
-				: INVALID_PARSE_RESULT,
+			typeof value === "string" || value === null ? parsed(value) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.noteCreation.defaultFolder,
 		patch: (value) => ({ noteCreationDefaultFolder: value }),
 		change: (value) => ({ noteCreation: { defaultFolder: value } }),
@@ -899,9 +845,7 @@ export const SPACE_SETTINGS = {
 		discovery: searchable("space-default-daily-template"),
 		normalize: nullablePath,
 		parse: (value) =>
-			typeof value === "string" || value === null
-				? parsed(value)
-				: INVALID_PARSE_RESULT,
+			typeof value === "string" || value === null ? parsed(value) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.templates.dailyNoteTemplate,
 		patch: (value) => ({ templatesDailyNoteTemplate: value }),
 		change: (value) => ({ templates: { dailyNoteTemplate: value } }),
@@ -913,9 +857,7 @@ export const SPACE_SETTINGS = {
 		discovery: searchable("space-default-weekly-template"),
 		normalize: nullablePath,
 		parse: (value) =>
-			typeof value === "string" || value === null
-				? parsed(value)
-				: INVALID_PARSE_RESULT,
+			typeof value === "string" || value === null ? parsed(value) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.templates.weeklyNoteTemplate,
 		patch: (value) => ({ templatesWeeklyNoteTemplate: value }),
 		change: (value) => ({ templates: { weeklyNoteTemplate: value } }),
@@ -927,9 +869,7 @@ export const SPACE_SETTINGS = {
 		discovery: searchable("space-default-monthly-template"),
 		normalize: nullablePath,
 		parse: (value) =>
-			typeof value === "string" || value === null
-				? parsed(value)
-				: INVALID_PARSE_RESULT,
+			typeof value === "string" || value === null ? parsed(value) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.templates.monthlyNoteTemplate,
 		patch: (value) => ({ templatesMonthlyNoteTemplate: value }),
 		change: (value) => ({ templates: { monthlyNoteTemplate: value } }),
@@ -941,9 +881,7 @@ export const SPACE_SETTINGS = {
 		discovery: searchable("space-default-quarterly-template"),
 		normalize: nullablePath,
 		parse: (value) =>
-			typeof value === "string" || value === null
-				? parsed(value)
-				: INVALID_PARSE_RESULT,
+			typeof value === "string" || value === null ? parsed(value) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.templates.quarterlyNoteTemplate,
 		patch: (value) => ({ templatesQuarterlyNoteTemplate: value }),
 		change: (value) => ({ templates: { quarterlyNoteTemplate: value } }),
@@ -955,8 +893,7 @@ export const SPACE_SETTINGS = {
 		discovery: searchable("space-attachments-location"),
 		normalize: (value) =>
 			isAttachmentStorageMode(value) ? value : DEFAULT_ATTACHMENT_STORAGE_MODE,
-		parse: (value) =>
-			isAttachmentStorageMode(value) ? parsed(value) : INVALID_PARSE_RESULT,
+		parse: (value) => (isAttachmentStorageMode(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.editor.attachmentStorageMode,
 		patch: (value) => ({ attachmentStorageMode: value }),
 		change: (value) => ({ editor: { attachmentStorageMode: value } }),
@@ -968,9 +905,7 @@ export const SPACE_SETTINGS = {
 		discovery: hidden("The folder is part of the attachment location control."),
 		normalize: normalizeAttachmentFolder,
 		parse: (value) =>
-			typeof value === "string" || value === null
-				? parsed(value)
-				: INVALID_PARSE_RESULT,
+			typeof value === "string" || value === null ? parsed(value) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.editor.attachmentFolder,
 		patch: (value) => ({ attachmentFolder: value }),
 		change: (value) => ({ editor: { attachmentFolder: value } }),

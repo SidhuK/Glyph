@@ -7,11 +7,7 @@ import { loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { useSettingsBoolean } from "./useSettingsBoolean";
 
@@ -29,9 +25,7 @@ async function setActiveProfileWithRetry(id: string | null) {
 				error,
 			);
 		}
-		await new Promise((resolve) =>
-			window.setTimeout(resolve, MISSING_FILE_RETRY_DELAY_MS),
-		);
+		await new Promise((resolve) => window.setTimeout(resolve, MISSING_FILE_RETRY_DELAY_MS));
 		try {
 			await invoke("ai_active_profile_set", { id });
 		} catch (retryError) {
@@ -121,10 +115,7 @@ export function AiSettingsPane() {
 		if (typeof payload.ui?.aiEnabled === "boolean") {
 			setAiEnabledState(payload.ui.aiEnabled);
 		}
-		if (
-			payload.ui?.aiAssistantMode === "chat" ||
-			payload.ui?.aiAssistantMode === "create"
-		) {
+		if (payload.ui?.aiAssistantMode === "chat" || payload.ui?.aiAssistantMode === "create") {
 			setAiToolsEnabledChecked(payload.ui.aiAssistantMode === "create");
 		}
 	});
@@ -193,10 +184,7 @@ export function AiSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<SettingsSection
-					title="Availability"
-					description="Turn AI tools on or off across Glyph."
-				>
+				<SettingsSection title="Availability" description="Turn AI tools on or off across Glyph.">
 					<SettingsRow
 						label="AI features"
 						description="When off, AI panels and AI command-palette actions stay hidden."

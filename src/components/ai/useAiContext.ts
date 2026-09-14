@@ -92,11 +92,7 @@ export function useAiContext(contextSearch = "") {
 		if (kind === "file" && !path) return;
 		const label = kind === "folder" ? folderLabel(path) : fileLabel(path);
 		const key = contextKey(kind, path);
-		if (
-			attachedContextRef.current.some(
-				(entry) => contextKey(entry.kind, entry.path) === key,
-			)
-		) {
+		if (attachedContextRef.current.some((entry) => contextKey(entry.kind, entry.path) === key)) {
 			return;
 		}
 		const next = [...attachedContextRef.current, { kind, path, label }];
@@ -104,24 +100,19 @@ export function useAiContext(contextSearch = "") {
 		setAttachedContext(next);
 	}, []);
 
-	const removeContext = useCallback(
-		(kind: ContextEntryKind, rawPath: string) => {
-			const path = normalizeRelPath(rawPath);
-			const next = attachedContextRef.current.filter(
-				(entry) => !(entry.kind === kind && entry.path === path),
-			);
-			attachedContextRef.current = next;
-			setAttachedContext(next);
-		},
-		[],
-	);
+	const removeContext = useCallback((kind: ContextEntryKind, rawPath: string) => {
+		const path = normalizeRelPath(rawPath);
+		const next = attachedContextRef.current.filter(
+			(entry) => !(entry.kind === kind && entry.path === path),
+		);
+		attachedContextRef.current = next;
+		setAttachedContext(next);
+	}, []);
 
 	const hasContext = useCallback(
 		(kind: ContextEntryKind, rawPath: string) => {
 			const path = normalizeRelPath(rawPath);
-			return attachedFolders.some(
-				(item) => item.kind === kind && item.path === path,
-			);
+			return attachedFolders.some((item) => item.kind === kind && item.path === path);
 		},
 		[attachedFolders],
 	);
@@ -129,9 +120,7 @@ export function useAiContext(contextSearch = "") {
 	const visibleSuggestions = useMemo(() => {
 		const q = contextSearch.trim().toLowerCase();
 		if (!q) return [];
-		const folders = folderIndex.filter((f) =>
-			f.label.toLowerCase().includes(q),
-		);
+		const folders = folderIndex.filter((f) => f.label.toLowerCase().includes(q));
 		const files = fileIndex.filter((f) => f.label.toLowerCase().includes(q));
 		return [
 			...folders.map((f) => ({ kind: "folder" as const, ...f })),
@@ -144,23 +133,20 @@ export function useAiContext(contextSearch = "") {
 			const folderSet = new Set(folderIndex.map((entry) => entry.path));
 			const fileSet = new Set(fileIndex.map((entry) => entry.path));
 			let mutated = false;
-			const cleaned = input.replace(
-				MENTION_RE,
-				(full, ws: string, token: string) => {
-					const path = normalizeRelPath(token);
-					if (fileSet.has(path)) {
-						addContext("file", path);
-						mutated = true;
-						return ws;
-					}
-					if (folderSet.has(path)) {
-						addContext("folder", path);
-						mutated = true;
-						return ws;
-					}
-					return full;
-				},
-			);
+			const cleaned = input.replace(MENTION_RE, (full, ws: string, token: string) => {
+				const path = normalizeRelPath(token);
+				if (fileSet.has(path)) {
+					addContext("file", path);
+					mutated = true;
+					return ws;
+				}
+				if (folderSet.has(path)) {
+					addContext("folder", path);
+					mutated = true;
+					return ws;
+				}
+				return full;
+			});
 			if (!mutated) return input.trim();
 			return cleaned.replace(/\s{2,}/g, " ").trim();
 		},
@@ -192,17 +178,10 @@ export function useAiContext(contextSearch = "") {
 	});
 
 	const ensurePayload = useCallback(
-		async (selection?: {
-			label: string;
-			text: string;
-		}) => {
+		async (selection?: { label: string; text: string }) => {
 			const built = await buildPayloadMutation.mutateAsync();
 			if (!selection) return built;
-			const selectionHeader = [
-				"# Selected passage",
-				`Source: ${selection.label}`,
-				"",
-			].join("\n");
+			const selectionHeader = ["# Selected passage", `Source: ${selection.label}`, ""].join("\n");
 			const contextSuffix = built.payload ? `\n\n---\n\n${built.payload}` : "";
 			const availableSelectionChars = Math.max(
 				0,
@@ -210,11 +189,10 @@ export function useAiContext(contextSearch = "") {
 			);
 			const selectionText = selection.text.slice(0, availableSelectionChars);
 			const selectionTruncated = selectionText.length < selection.text.length;
-			const payload =
-				`${selectionHeader}${selectionText}${contextSuffix}`.slice(
-					0,
-					DEFAULT_CHAR_BUDGET,
-				);
+			const payload = `${selectionHeader}${selectionText}${contextSuffix}`.slice(
+				0,
+				DEFAULT_CHAR_BUDGET,
+			);
 			return {
 				payload,
 				manifest: {
@@ -231,10 +209,7 @@ export function useAiContext(contextSearch = "") {
 					totalChars: payload.length,
 					estTokens: Math.ceil(payload.length / 4),
 				},
-				attachments: [
-					{ kind: "selection" as const, label: selection.label },
-					...built.attachments,
-				],
+				attachments: [{ kind: "selection" as const, label: selection.label }, ...built.attachments],
 			};
 		},
 		[buildPayloadMutation],
@@ -245,13 +220,10 @@ export function useAiContext(contextSearch = "") {
 		removeContext,
 		hasContext,
 		resolveMentionsFromInput,
-		folderIndexError:
-			indexQuery.error != null ? extractErrorMessage(indexQuery.error) : "",
+		folderIndexError: indexQuery.error != null ? extractErrorMessage(indexQuery.error) : "",
 		visibleSuggestions,
 		payloadError:
-			buildPayloadMutation.error != null
-				? extractErrorMessage(buildPayloadMutation.error)
-				: "",
+			buildPayloadMutation.error != null ? extractErrorMessage(buildPayloadMutation.error) : "",
 		ensurePayload,
 	};
 }

@@ -23,8 +23,7 @@ interface InlineTableOfContentsPluginState {
 
 function isInlineTocNode(node: ProseMirrorNode) {
 	return (
-		node.type.name === "paragraph" &&
-		node.textContent.trim().toLowerCase() === INLINE_TOC_MARKER
+		node.type.name === "paragraph" && node.textContent.trim().toLowerCase() === INLINE_TOC_MARKER
 	);
 }
 
@@ -36,16 +35,11 @@ function getInlineTocMarkerSignature(doc: ProseMirrorNode) {
 	return parts.join("|");
 }
 
-function getInlineTocSignature(
-	markerSignature: string,
-	headings: readonly TOCHeading[],
-) {
+function getInlineTocSignature(markerSignature: string, headings: readonly TOCHeading[]) {
 	if (!markerSignature) return "";
 	return [
 		markerSignature,
-		...headings.map(
-			(heading) => `${heading.pos}:${heading.level}:${heading.text}`,
-		),
+		...headings.map((heading) => `${heading.pos}:${heading.level}:${heading.text}`),
 	].join("|");
 }
 
@@ -58,8 +52,7 @@ function scrollToHeading(editor: Editor, heading: TOCHeading) {
 		if (scrollContainer) {
 			const containerRect = scrollContainer.getBoundingClientRect();
 			const headingRect = dom.getBoundingClientRect();
-			const offset =
-				headingRect.top - containerRect.top + scrollContainer.scrollTop - 20;
+			const offset = headingRect.top - containerRect.top + scrollContainer.scrollTop - 20;
 			scrollContainer.scrollTo({ top: offset, behavior: "smooth" });
 			return;
 		}
@@ -80,11 +73,7 @@ function findInlineTocMarkerRange(doc: ProseMirrorNode, preferredPos: number) {
 	return closestRange;
 }
 
-function createInlineTocWidget(
-	editor: Editor,
-	headings: readonly TOCHeading[],
-	markerPos: number,
-) {
+function createInlineTocWidget(editor: Editor, headings: readonly TOCHeading[], markerPos: number) {
 	const root = document.createElement("nav");
 	root.className = "inlineTocWidget";
 	root.contentEditable = "false";
@@ -119,14 +108,11 @@ function createInlineTocWidget(
 		let confirmed = false;
 		try {
 			const { confirm } = await import("@tauri-apps/plugin-dialog");
-			confirmed = await confirm(
-				"Remove this table of contents from the note?",
-				{
-					title: "Remove table of contents",
-					okLabel: "Remove",
-					cancelLabel: "Cancel",
-				},
-			);
+			confirmed = await confirm("Remove this table of contents from the note?", {
+				title: "Remove table of contents",
+				okLabel: "Remove",
+				cancelLabel: "Cancel",
+			});
 		} finally {
 			removePending = false;
 			removeButton.disabled = false;
@@ -138,10 +124,7 @@ function createInlineTocWidget(
 		} catch {
 			currentWidgetPos = markerPos;
 		}
-		const markerRange = findInlineTocMarkerRange(
-			editor.state.doc,
-			currentWidgetPos,
-		);
+		const markerRange = findInlineTocMarkerRange(editor.state.doc, currentWidgetPos);
 		if (!markerRange) return;
 		editor.chain().focus().deleteRange(markerRange).run();
 	});
@@ -194,30 +177,22 @@ function buildInlineTocDecorations(
 			Decoration.node(pos, pos + node.nodeSize, {
 				class: "inlineTocMarker",
 			}),
-			Decoration.widget(
-				pos + node.nodeSize,
-				() => createInlineTocWidget(editor, headings, pos),
-				{
-					side: 1,
-					ignoreSelection: true,
-					key: `inline-toc-${pos}-${headings
-						.map((h) => `${h.pos}:${h.level}:${h.text}`)
-						.join("|")}`,
-					stopEvent: (event) =>
-						event.target instanceof Element &&
-						event.target.closest(".inlineTocWidget") !== null,
-				},
-			),
+			Decoration.widget(pos + node.nodeSize, () => createInlineTocWidget(editor, headings, pos), {
+				side: 1,
+				ignoreSelection: true,
+				key: `inline-toc-${pos}-${headings.map((h) => `${h.pos}:${h.level}:${h.text}`).join("|")}`,
+				stopEvent: (event) =>
+					event.target instanceof Element && event.target.closest(".inlineTocWidget") !== null,
+			}),
 		);
 	});
 
-	return decorations.length
-		? DecorationSet.create(doc, decorations)
-		: DecorationSet.empty;
+	return decorations.length ? DecorationSet.create(doc, decorations) : DecorationSet.empty;
 }
 
-const inlineTableOfContentsPluginKey =
-	new PluginKey<InlineTableOfContentsPluginState>("inline-table-of-contents");
+const inlineTableOfContentsPluginKey = new PluginKey<InlineTableOfContentsPluginState>(
+	"inline-table-of-contents",
+);
 
 export const InlineTableOfContents = Extension.create({
 	name: "inline-table-of-contents",
@@ -229,9 +204,7 @@ export const InlineTableOfContents = Extension.create({
 				state: {
 					init: (_config, state) => {
 						const markerSignature = getInlineTocMarkerSignature(state.doc);
-						const headings = markerSignature
-							? extractHeadingsFromDoc(state.doc)
-							: [];
+						const headings = markerSignature ? extractHeadingsFromDoc(state.doc) : [];
 						return {
 							headings,
 							markerSignature,
@@ -245,16 +218,11 @@ export const InlineTableOfContents = Extension.create({
 						if (!transaction.docChanged) {
 							return {
 								...value,
-								decorations: value.decorations.map(
-									transaction.mapping,
-									transaction.doc,
-								),
+								decorations: value.decorations.map(transaction.mapping, transaction.doc),
 							};
 						}
 
-						const markerSignature = getInlineTocMarkerSignature(
-							transaction.doc,
-						);
+						const markerSignature = getInlineTocMarkerSignature(transaction.doc);
 						if (!markerSignature) {
 							return {
 								headings: [],
@@ -268,18 +236,12 @@ export const InlineTableOfContents = Extension.create({
 							? updateHeadingsFromTransaction(value.headings, transaction)
 							: extractHeadingsFromDoc(transaction.doc);
 						const signature = getInlineTocSignature(markerSignature, headings);
-						if (
-							signature === value.signature &&
-							isSameHeadingList(value.headings, headings)
-						) {
+						if (signature === value.signature && isSameHeadingList(value.headings, headings)) {
 							return {
 								...value,
 								headings,
 								markerSignature,
-								decorations: value.decorations.map(
-									transaction.mapping,
-									transaction.doc,
-								),
+								decorations: value.decorations.map(transaction.mapping, transaction.doc),
 							};
 						}
 
@@ -287,19 +249,14 @@ export const InlineTableOfContents = Extension.create({
 							headings,
 							markerSignature,
 							signature,
-							decorations: buildInlineTocDecorations(
-								transaction.doc,
-								editor,
-								headings,
-							),
+							decorations: buildInlineTocDecorations(transaction.doc, editor, headings),
 						};
 					},
 				},
 				props: {
 					decorations(state) {
 						return (
-							inlineTableOfContentsPluginKey.getState(state)?.decorations ??
-							DecorationSet.empty
+							inlineTableOfContentsPluginKey.getState(state)?.decorations ?? DecorationSet.empty
 						);
 					},
 				},

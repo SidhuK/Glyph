@@ -10,9 +10,7 @@ import { i18n } from "../../../i18n";
 
 const FEEDBACK_MS = 1500;
 
-const pluginKey = new PluginKey<CodeBlockCopyPluginState>(
-	"code-block-copy-controls",
-);
+const pluginKey = new PluginKey<CodeBlockCopyPluginState>("code-block-copy-controls");
 
 interface CodeBlockCopyPluginState {
 	decorations: DecorationSet;
@@ -28,10 +26,7 @@ function iconMarkup(copied: boolean): string {
 	);
 }
 
-function codeBlockTextAtWidget(
-	view: EditorView,
-	getPos: () => number | undefined,
-): string {
+function codeBlockTextAtWidget(view: EditorView, getPos: () => number | undefined): string {
 	const pos = getPos();
 	if (typeof pos !== "number") return "";
 	const $pos = view.state.doc.resolve(pos);
@@ -39,10 +34,7 @@ function codeBlockTextAtWidget(
 	return $pos.parent.textContent ?? "";
 }
 
-function copyButton(
-	view: EditorView,
-	getPos: () => number | undefined,
-): HTMLButtonElement {
+function copyButton(view: EditorView, getPos: () => number | undefined): HTMLButtonElement {
 	const btn = document.createElement("button");
 	btn.type = "button";
 	btn.className = "codeBlockActionBtn codeBlockInlineCopy";
@@ -106,8 +98,7 @@ function buildCopyDecorations(doc: ProseMirrorNode): DecorationSet {
 			Decoration.widget(
 				pos + 1,
 				(view, getPos) => {
-					const resolvePos =
-						typeof getPos === "function" ? getPos : () => undefined;
+					const resolvePos = typeof getPos === "function" ? getPos : () => undefined;
 					return copyButton(view, resolvePos);
 				},
 				{
@@ -137,9 +128,7 @@ export const CodeBlockCopyControls = Extension.create({
 						const editable = getEditable();
 						return {
 							editable,
-							decorations: editable
-								? DecorationSet.empty
-								: buildCopyDecorations(state.doc),
+							decorations: editable ? DecorationSet.empty : buildCopyDecorations(state.doc),
 						};
 					},
 					apply(transaction, value, _oldState, newState) {

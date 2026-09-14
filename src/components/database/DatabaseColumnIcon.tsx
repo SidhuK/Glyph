@@ -156,10 +156,7 @@ interface DatabaseColumnIconProps {
 	className?: string;
 }
 
-const DATABASE_COLUMN_ICONS_BY_KEY: Record<
-	string,
-	ComponentProps<typeof HugeiconsIcon>["icon"]
-> = {
+const DATABASE_COLUMN_ICONS_BY_KEY: Record<string, ComponentProps<typeof HugeiconsIcon>["icon"]> = {
 	Activity01Icon,
 	AiIdeaIcon,
 	AlarmClockIcon,

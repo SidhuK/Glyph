@@ -22,9 +22,7 @@ export function buildRowStyle(
 ): CSSProperties {
 	const paddingLeft = 8 + depth * 10;
 	const toneStyle =
-		toneSeed && color
-			? databaseValueToneStyleForColor(toneSeed, color)
-			: ({} as CSSProperties);
+		toneSeed && color ? databaseValueToneStyleForColor(toneSeed, color) : ({} as CSSProperties);
 	return {
 		paddingLeft,
 		...toneStyle,

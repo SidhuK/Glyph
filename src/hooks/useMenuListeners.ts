@@ -142,24 +142,16 @@ export function useMenuListeners({
 				"ai-attach-all-open-notes": onAttachAllOpenNotesToAi,
 				"open-ai-settings": onOpenAiSettings,
 				...Object.fromEntries(
-					EDITOR_MENU_COMMANDS.map((commandId) => [
-						commandId,
-						() => onEditorAction(commandId),
-					]),
+					EDITOR_MENU_COMMANDS.map((commandId) => [commandId, () => onEditorAction(commandId)]),
 				),
 			})
 				.then((handled) => {
 					if (!handled) {
-						console.warn(
-							`[useMenuListeners] command "${payload.command_id}" has no handler`,
-						);
+						console.warn(`[useMenuListeners] command "${payload.command_id}" has no handler`);
 					}
 				})
 				.catch((error) => {
-					console.error(
-						`[useMenuListeners] command "${payload.command_id}" failed:`,
-						error,
-					);
+					console.error(`[useMenuListeners] command "${payload.command_id}" failed:`, error);
 				});
 		},
 		[
@@ -223,10 +215,6 @@ export function useMenuListeners({
 		};
 	}, [handleAppCommand]);
 
-	useTauriEvent(
-		"menu:app_command",
-		handleMenuCommand,
-		replayPendingMenuCommands,
-	);
+	useTauriEvent("menu:app_command", handleMenuCommand, replayPendingMenuCommands);
 	useTauriEvent("menu:open_recent_space", handleOpenRecentSpace);
 }

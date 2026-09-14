@@ -1,8 +1,4 @@
-import {
-	Details,
-	DetailsContent,
-	DetailsSummary,
-} from "@tiptap/extension-details";
+import { Details, DetailsContent, DetailsSummary } from "@tiptap/extension-details";
 
 export const GlyphDetails = Details.configure({
 	persist: true,
@@ -24,11 +20,7 @@ export const GlyphDetailsContent = DetailsContent.configure({
 	},
 });
 
-export const glyphDetailsExtensions = [
-	GlyphDetails,
-	GlyphDetailsSummary,
-	GlyphDetailsContent,
-];
+export const glyphDetailsExtensions = [GlyphDetails, GlyphDetailsSummary, GlyphDetailsContent];
 
 export function createDetailsBlockContent(summary = "Toggle title") {
 	return {

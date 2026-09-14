@@ -1,11 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
-import {
-	KeyboardSensor,
-	PointerSensor,
-	useDraggable,
-	useDroppable,
-} from "@dnd-kit/react";
+import { KeyboardSensor, PointerSensor, useDraggable, useDroppable } from "@dnd-kit/react";
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import {
@@ -15,10 +10,7 @@ import {
 	useCallback,
 	useMemo,
 } from "react";
-import {
-	DATABASE_BOARD_EMPTY_LANE_ID,
-	type DatabaseBoardLane,
-} from "../../lib/database/board";
+import { DATABASE_BOARD_EMPTY_LANE_ID, type DatabaseBoardLane } from "../../lib/database/board";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseRow } from "../../lib/database/types";
 import {
@@ -28,33 +20,20 @@ import {
 } from "../../lib/nativeContextMenu";
 import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
-import {
-	EDITOR_TEXT_COLORS,
-	type EditorTextColor,
-	isEditorTextColor,
-} from "../editor/textColors";
+import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
 import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
 
 const DATABASE_BOARD_CARD_SENSORS = [
 	PointerSensor.configure({
-		activationConstraints: [
-			new PointerActivationConstraints.Distance({ value: 5 }),
-		],
+		activationConstraints: [new PointerActivationConstraints.Distance({ value: 5 })],
 	}),
 	KeyboardSensor,
 ];
 
-function getLaneColor(
-	laneColors: Record<string, string>,
-	laneId: string,
-): EditorTextColor | null {
+function getLaneColor(laneColors: Record<string, string>, laneId: string): EditorTextColor | null {
 	const color = laneColors[laneId];
 	return color && isEditorTextColor(color) ? color : null;
 }
@@ -73,9 +52,7 @@ interface DatabaseBoardLaneViewProps {
 	isPriorityGroup: boolean;
 	isTagGroup: boolean;
 	shouldReduceMotion: boolean | null;
-	onLaneColorChange?:
-		| ((laneId: string, color: EditorTextColor | null) => void)
-		| null;
+	onLaneColorChange?: ((laneId: string, color: EditorTextColor | null) => void) | null;
 	onAddLane?: () => void;
 	onRenameLane?: (lane: DatabaseBoardLane) => void;
 	reorderableLanes: DatabaseBoardLane[];
@@ -136,11 +113,9 @@ export function DatabaseBoardLaneView({
 		(event: MouseEvent<HTMLButtonElement>) => {
 			if (lane.id === DATABASE_BOARD_EMPTY_LANE_ID) return;
 
-			void showNativeContextMenu(event, laneMenuItems).catch(
-				(error: unknown) => {
-					console.error("Failed to show board lane context menu", error);
-				},
-			);
+			void showNativeContextMenu(event, laneMenuItems).catch((error: unknown) => {
+				console.error("Failed to show board lane context menu", error);
+			});
 		},
 		[lane.id, laneMenuItems],
 	);
@@ -187,10 +162,7 @@ export function DatabaseBoardLaneView({
 					? statusToneStyle(lane.label, statusColors)
 					: isPriorityGroup
 						? priorityToneStyle(lane.label)
-						: databaseValueToneStyleForColor(
-								lane.id,
-								getLaneColor(laneColors, lane.id),
-							)
+						: databaseValueToneStyleForColor(lane.id, getLaneColor(laneColors, lane.id))
 			}
 			data-active={isDropTarget ? "true" : "false"}
 			initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
@@ -217,10 +189,7 @@ export function DatabaseBoardLaneView({
 								{laneTitleContent}
 							</button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="start"
-							className="databaseBoardColorMenu"
-						>
+						<DropdownMenuContent align="start" className="databaseBoardColorMenu">
 							<div className="databaseBoardColorRibbon">
 								{EDITOR_TEXT_COLORS.map((color) => (
 									<button
@@ -249,10 +218,7 @@ export function DatabaseBoardLaneView({
 					<div className="databaseBoardLaneTitleGroup">{laneTitleContent}</div>
 				)}
 				<div className="databaseBoardLaneHeaderActions">
-					<span
-						className="databaseBoardLaneCount"
-						aria-label={`${lane.cardCount} cards`}
-					>
+					<span className="databaseBoardLaneCount" aria-label={`${lane.cardCount} cards`}>
 						{lane.cardCount}
 					</span>
 					<button

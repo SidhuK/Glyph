@@ -1,15 +1,8 @@
-import { describe, expect, it } from "vitest";
-import {
-	groupRelationshipsByField,
-	relationshipTargetLabel,
-} from "./relationships";
+import { describe, expect, it } from "vite-plus/test";
+import { groupRelationshipsByField, relationshipTargetLabel } from "./relationships";
 import type { NoteRelationship } from "./tauri";
 
-function relationship(
-	field_key: string,
-	target_title: string,
-	ordinal: number,
-): NoteRelationship {
+function relationship(field_key: string, target_title: string, ordinal: number): NoteRelationship {
 	return {
 		from_id: "source.md",
 		field_key,
@@ -28,19 +21,11 @@ describe("relationships", () => {
 			relationship("related", "A", 0),
 		]);
 
-		expect(groups.map((group) => group.field_key)).toEqual([
-			"project",
-			"related",
-		]);
-		expect(groups[1].items.map((item) => item.target_title)).toEqual([
-			"A",
-			"B",
-		]);
+		expect(groups.map((group) => group.field_key)).toEqual(["project", "related"]);
+		expect(groups[1].items.map((item) => item.target_title)).toEqual(["A", "B"]);
 	});
 
 	it("uses the durable frontmatter target as the display label", () => {
-		expect(relationshipTargetLabel(relationship("project", "Launch", 0))).toBe(
-			"Launch",
-		);
+		expect(relationshipTargetLabel(relationship("project", "Launch", 0))).toBe("Launch");
 	});
 });

@@ -55,9 +55,7 @@ export function DatabaseFolderPicker({
 				throw new Error("No space is currently open.");
 			}
 
-			const defaultPath = value
-				? await join(currentSpace, value)
-				: currentSpace;
+			const defaultPath = value ? await join(currentSpace, value) : currentSpace;
 			const { open } = await import("@tauri-apps/plugin-dialog");
 			const selected = await open({
 				directory: true,

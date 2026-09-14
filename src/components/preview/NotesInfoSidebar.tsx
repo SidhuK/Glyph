@@ -17,10 +17,7 @@ import {
 } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
-import {
-	type RelationshipGroup,
-	relationshipTargetLabel,
-} from "../../lib/relationships";
+import { type RelationshipGroup, relationshipTargetLabel } from "../../lib/relationships";
 import type {
 	GitCommitDiff,
 	GitSyncStatus,
@@ -33,10 +30,7 @@ import { ChevronDown } from "../Icons";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { NotePropertiesPanel } from "../editor/NotePropertiesPanel";
 import type { TOCHeading } from "../editor/hooks/useTableOfContents";
-import {
-	dispatchMarkdownLinkClick,
-	dispatchWikiLinkClick,
-} from "../editor/markdown/editorEvents";
+import { dispatchMarkdownLinkClick, dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
 import { GitHistorySidebar } from "./GitHistorySidebar";
 
 type InfoSidebarTab = "info" | "history";
@@ -117,9 +111,7 @@ function UnlinkedMentionsSection({
 						aria-expanded={expanded}
 						aria-controls="unlinked-mentions-content"
 					>
-						<span>
-							{t("unlinkedMentions.heading", { count: mentions.length })}
-						</span>
+						<span>{t("unlinkedMentions.heading", { count: mentions.length })}</span>
 						<ChevronDown
 							className={expanded ? undefined : "is-collapsed"}
 							size="var(--icon-xs)"
@@ -141,40 +133,26 @@ function UnlinkedMentionsSection({
 			{expanded ? (
 				<div id="unlinked-mentions-content">
 					{isLoading ? (
-						<div className="markdownEditorInfoEmpty">
-							{t("unlinkedMentions.loading")}
-						</div>
+						<div className="markdownEditorInfoEmpty">{t("unlinkedMentions.loading")}</div>
 					) : null}
 					{error ? (
-						<div className="markdownEditorInfoEmpty">
-							{extractErrorMessage(error)}
-						</div>
+						<div className="markdownEditorInfoEmpty">{extractErrorMessage(error)}</div>
 					) : null}
 					{skippedCount > 0 ? (
-						<div className="markdownEditorInfoEmpty">
-							{t("unlinkedMentions.skipped")}
-						</div>
+						<div className="markdownEditorInfoEmpty">{t("unlinkedMentions.skipped")}</div>
 					) : null}
 					{linkedCount > 0 ? (
 						<div className="markdownEditorInfoEmpty">
 							{t("unlinkedMentions.linked", { count: linkedCount })}
 						</div>
 					) : null}
-					{!isLoading &&
-					!error &&
-					mentions.length === 0 &&
-					skippedCount === 0 ? (
-						<div className="markdownEditorInfoEmpty">
-							{t("unlinkedMentions.empty")}
-						</div>
+					{!isLoading && !error && mentions.length === 0 && skippedCount === 0 ? (
+						<div className="markdownEditorInfoEmpty">{t("unlinkedMentions.empty")}</div>
 					) : null}
 					{mentions.length > 0 ? (
 						<div className="unlinkedMentionsList">
 							{mentions.map((mention) => (
-								<div
-									className="unlinkedMentionItem"
-									key={`${mention.source_id}:${mention.start}`}
-								>
+								<div className="unlinkedMentionItem" key={`${mention.source_id}:${mention.start}`}>
 									<button
 										type="button"
 										className="unlinkedMentionSource"
@@ -199,11 +177,7 @@ function UnlinkedMentionsSection({
 										disabled={isLinking}
 										aria-label={t("unlinkedMentions.link")}
 									>
-										<HugeiconsIcon
-											icon={Link04Icon}
-											size="var(--icon-sm)"
-											aria-hidden="true"
-										/>
+										<HugeiconsIcon icon={Link04Icon} size="var(--icon-sm)" aria-hidden="true" />
 									</button>
 									<p className="unlinkedMentionContext">{mention.context}</p>
 								</div>
@@ -237,8 +211,7 @@ function formatFileSize(bytes: number): string {
 		size /= 1024;
 		unitIndex += 1;
 	}
-	const fractionDigits =
-		unitIndex === 0 ? 0 : size >= 100 ? 0 : size >= 10 ? 1 : 2;
+	const fractionDigits = unitIndex === 0 ? 0 : size >= 100 ? 0 : size >= 10 ? 1 : 2;
 	return `${size.toLocaleString(undefined, {
 		maximumFractionDigits: fractionDigits,
 	})} ${units[unitIndex]}`;
@@ -272,15 +245,13 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	const dateDisplayFormat = useDateDisplayFormat();
 	const [host, setHost] = useState<HTMLElement | null>(null);
 	const [activeTab, setActiveTab] = useState<InfoSidebarTab>("info");
-	const hasGitHistoryTab =
-		canShowGitHistory(gitSyncStatus) && Boolean(onSelectGitDiff);
+	const hasGitHistoryTab = canShowGitHistory(gitSyncStatus) && Boolean(onSelectGitDiff);
 
 	useEffect(() => {
 		if (typeof document === "undefined") return;
 		setHost(document.getElementById("notes-info-sidebar-root"));
 	}, []);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset to the info tab when the active note path changes.
 	useEffect(() => {
 		setActiveTab("info");
 	}, [relPath]);
@@ -394,9 +365,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 											key={heading.id}
 											type="button"
 											className="markdownEditorInfoOutlineItem"
-											data-active={
-												tocActiveId === heading.id ? "true" : undefined
-											}
+											data-active={tocActiveId === heading.id ? "true" : undefined}
 											data-level={heading.level}
 											onClick={() => onSelectHeading(heading)}
 											title={heading.text}
@@ -406,9 +375,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 									))}
 								</div>
 							) : (
-								<div className="markdownEditorInfoEmpty">
-									No headings in this note yet.
-								</div>
+								<div className="markdownEditorInfoEmpty">No headings in this note yet.</div>
 							)}
 						</section>
 
@@ -446,15 +413,10 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 
 						{relationshipGroups.length > 0 ? (
 							<section className="markdownEditorInfoSection">
-								<h3 className="markdownEditorInfoSectionLabel">
-									Relationships
-								</h3>
+								<h3 className="markdownEditorInfoSectionLabel">Relationships</h3>
 								<div className="markdownEditorInfoRows">
 									{relationshipGroups.map((group) => (
-										<div
-											key={group.field_key}
-											className="markdownEditorInfoRelationshipGroup"
-										>
+										<div key={group.field_key} className="markdownEditorInfoRelationshipGroup">
 											<span>{group.field_key}</span>
 											<div className="markdownEditorInfoLinkList">
 												{group.items.map((item) => {
@@ -478,13 +440,8 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 															}
 															title={target}
 														>
-															<span
-																className="wikiLinkIcon"
-																aria-hidden="true"
-															/>
-															<span className="wikiLinkLabel">
-																{relationshipTargetLabel(item)}
-															</span>
+															<span className="wikiLinkIcon" aria-hidden="true" />
+															<span className="wikiLinkLabel">{relationshipTargetLabel(item)}</span>
 														</button>
 													);
 												})}
@@ -536,10 +493,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 
 						<section className="markdownEditorInfoSection markdownEditorInfoSectionFile">
 							<h3 className="markdownEditorInfoSectionLabel markdownEditorInfoSectionLabelSubtle">
-								<HugeiconsIcon
-									icon={InformationCircleIcon}
-									size="var(--icon-sm)"
-								/>
+								<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-sm)" />
 								Info
 							</h3>
 							<div className="markdownEditorInfoRows">
@@ -557,10 +511,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 								<div className="markdownEditorInfoRow">
 									<span>Created</span>
 									<span className="markdownEditorInfoValue">
-										{formatMetadataDate(
-											previewContext?.created,
-											dateDisplayFormat,
-										)}
+										{formatMetadataDate(previewContext?.created, dateDisplayFormat)}
 									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
@@ -575,9 +526,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 								</div>
 								<div className="markdownEditorInfoRow">
 									<span>Size</span>
-									<span className="markdownEditorInfoValue">
-										{formatFileSize(utf8SizeBytes)}
-									</span>
+									<span className="markdownEditorInfoValue">{formatFileSize(utf8SizeBytes)}</span>
 								</div>
 								<div className="markdownEditorInfoRow">
 									<span>Save status</span>

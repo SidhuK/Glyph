@@ -8,10 +8,7 @@ import {
 	dispatchTagClick,
 	dispatchWikiLinkClick,
 } from "../markdown/editorEvents";
-import {
-	type FootnoteKind,
-	findFootnoteCounterpartOffset,
-} from "../markdown/footnote";
+import { type FootnoteKind, findFootnoteCounterpartOffset } from "../markdown/footnote";
 import { parseWikiLink } from "../markdown/wikiLinkCodec";
 
 function toggleTask(view: EditorView, target: HTMLElement): boolean {
@@ -24,9 +21,7 @@ function toggleTask(view: EditorView, target: HTMLElement): boolean {
 			to: markerPosition + 2,
 			insert: checked ? " " : "x",
 		},
-		effects: EditorView.announce.of(
-			checked ? "Task marked incomplete" : "Task marked complete",
-		),
+		effects: EditorView.announce.of(checked ? "Task marked incomplete" : "Task marked complete"),
 	});
 	view.focus();
 	return true;
@@ -37,11 +32,7 @@ function scrollToRawFootnoteCounterpart(
 	id: string,
 	fromKind: FootnoteKind,
 ): boolean {
-	const offset = findFootnoteCounterpartOffset(
-		view.state.doc.toString(),
-		id,
-		fromKind,
-	);
+	const offset = findFootnoteCounterpartOffset(view.state.doc.toString(), id, fromKind);
 	if (offset === null) return false;
 	view.dispatch({
 		selection: { anchor: offset },
@@ -81,11 +72,8 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			if (footnote?.dataset.footnoteId) {
 				const kind = footnote.dataset.footnoteKind === "def" ? "def" : "ref";
 				return (
-					scrollToRawFootnoteCounterpart(
-						view,
-						footnote.dataset.footnoteId,
-						kind,
-					) || placeCaretAtEvent(view, event)
+					scrollToRawFootnoteCounterpart(view, footnote.dataset.footnoteId, kind) ||
+					placeCaretAtEvent(view, event)
 				);
 			}
 
@@ -106,9 +94,7 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 				return true;
 			}
 
-			const markdownLink = target?.closest<HTMLElement>(
-				".cm-raw-markdown-link",
-			);
+			const markdownLink = target?.closest<HTMLElement>(".cm-raw-markdown-link");
 			const href = markdownLink?.dataset.markdownHref;
 			if (!href) return false;
 			if (isGlyphDeeplink(href)) {

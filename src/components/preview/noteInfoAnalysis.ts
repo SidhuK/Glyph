@@ -34,10 +34,7 @@ function readingTime(words: number): string {
 export function analyzeNoteInfo(
 	markdown: string,
 	body: string,
-	{
-		includeHeadings,
-		includeStats = true,
-	}: { includeHeadings: boolean; includeStats?: boolean },
+	{ includeHeadings, includeStats = true }: { includeHeadings: boolean; includeStats?: boolean },
 ): NoteInfoAnalysis {
 	let words = 0;
 	const wordPattern = /\S+/gu;

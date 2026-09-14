@@ -7,20 +7,19 @@ export function hasDetailData(
 	providerSupport?: ProviderSupportEntry | null,
 ): boolean {
 	const hasProviderSupport = Boolean(
-		providerSupport &&
-			Object.values(providerSupport.endpoints).some((enabled) => enabled),
+		providerSupport && Object.values(providerSupport.endpoints).some((enabled) => enabled),
 	);
 	return Boolean(
 		model.context_length ||
-			model.max_completion_tokens ||
-			model.description ||
-			model.prompt_pricing ||
-			model.completion_pricing ||
-			model.input_modalities?.length ||
-			model.output_modalities?.length ||
-			model.tokenizer ||
-			model.supported_parameters?.length ||
-			hasProviderSupport,
+		model.max_completion_tokens ||
+		model.description ||
+		model.prompt_pricing ||
+		model.completion_pricing ||
+		model.input_modalities?.length ||
+		model.output_modalities?.length ||
+		model.tokenizer ||
+		model.supported_parameters?.length ||
+		hasProviderSupport,
 	);
 }
 
@@ -38,8 +37,7 @@ export function ModelDetail({
 	model: AiModel;
 	providerSupport?: ProviderSupportEntry | null;
 }) {
-	const hasModalities =
-		model.input_modalities?.length || model.output_modalities?.length;
+	const hasModalities = model.input_modalities?.length || model.output_modalities?.length;
 	const hasParams = model.supported_parameters?.length;
 	const supportedEndpointEntries = providerSupport
 		? Object.entries(providerSupport.endpoints).filter(([, enabled]) => enabled)
@@ -50,8 +48,7 @@ export function ModelDetail({
 			<div className={styles.detailName}>{model.name}</div>
 			<div className={styles.detailId}>{model.id}</div>
 
-			{(model.context_length != null ||
-				model.max_completion_tokens != null) && (
+			{(model.context_length != null || model.max_completion_tokens != null) && (
 				<div className={styles.detailSection}>
 					{model.context_length != null && (
 						<div className={styles.detailRow}>
@@ -77,9 +74,7 @@ export function ModelDetail({
 					<span className={styles.detailSectionTitle}>Pricing</span>
 					<div className={styles.detailTags}>
 						{model.prompt_pricing && (
-							<span className={styles.detailTag}>
-								Input: {formatPrice(model.prompt_pricing)}
-							</span>
+							<span className={styles.detailTag}>Input: {formatPrice(model.prompt_pricing)}</span>
 						)}
 						{model.completion_pricing && (
 							<span className={styles.detailTag}>
@@ -130,9 +125,7 @@ export function ModelDetail({
 
 			{providerSupport && supportedEndpointEntries.length > 0 && (
 				<div className={styles.detailSection}>
-					<span className={styles.detailSectionTitle}>
-						{providerSupport.display_name} support
-					</span>
+					<span className={styles.detailSectionTitle}>{providerSupport.display_name} support</span>
 					<div className={styles.detailTags}>
 						{supportedEndpointEntries.map(([endpoint]) => (
 							<span key={endpoint} className={styles.detailTag}>
@@ -153,18 +146,11 @@ export function ModelDetail({
 				</div>
 			)}
 
-			{model.description && (
-				<div className={styles.detailDescription}>{model.description}</div>
-			)}
+			{model.description && <div className={styles.detailDescription}>{model.description}</div>}
 
-			{!model.context_length &&
-				!model.description &&
-				!hasModalities &&
-				!hasParams && (
-					<div className={styles.detailValue}>
-						No additional details available.
-					</div>
-				)}
+			{!model.context_length && !model.description && !hasModalities && !hasParams && (
+				<div className={styles.detailValue}>No additional details available.</div>
+			)}
 		</div>
 	);
 }

@@ -14,8 +14,11 @@
 	margin: 0;
 	text-align: left;
 	cursor: pointer;
-	transition: background var(--transition-fast), color var(--transition-fast),
-		border-color var(--transition-fast), box-shadow var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast),
+		border-color var(--transition-fast),
+		box-shadow var(--transition-fast);
 }
 
 .sidebarQuickActionBtn:hover {
@@ -23,8 +26,7 @@
 }
 
 .sidebarQuickActionBtn:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
 }
 
@@ -141,8 +143,10 @@
 	font-size: var(--text-sm);
 	text-align: left;
 	cursor: pointer;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), box-shadow var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		border-color var(--transition-fast),
+		box-shadow var(--transition-fast);
 }
 
 .sidebarSearchBar:hover {
@@ -151,8 +155,7 @@
 }
 
 .sidebarSearchBar:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
 	border-color: var(--border-default);
 }

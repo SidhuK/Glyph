@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { Editor } from "@tiptap/core";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createEditorExtensions } from "./index";
 
 function createEditor(markdown: string) {
@@ -43,8 +43,8 @@ function getHeadingPositions(editor: Editor) {
 }
 
 function findBlockByText(element: HTMLElement, text: string) {
-	return Array.from(element.querySelectorAll("h1, h2, h3, h4, h5, h6, p")).find(
-		(node) => node.textContent?.includes(text),
+	return Array.from(element.querySelectorAll("h1, h2, h3, h4, h5, h6, p")).find((node) =>
+		node.textContent?.includes(text),
 	);
 }
 
@@ -77,20 +77,20 @@ describe("Heading collapse integration", () => {
 			expect(findBlockByText(harness.element, "Beta")?.className).not.toContain(
 				"headingCollapseHidden",
 			);
-			expect(
-				findBlockByText(harness.element, "Gamma body")?.className,
-			).toContain("headingCollapseHidden");
-			expect(
-				findBlockByText(harness.element, "Delta body")?.className,
-			).not.toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Gamma body")?.className).toContain(
+				"headingCollapseHidden",
+			);
+			expect(findBlockByText(harness.element, "Delta body")?.className).not.toContain(
+				"headingCollapseHidden",
+			);
 
 			harness.editor.commands.toggleHeadingCollapse(alpha.pos);
-			expect(
-				findBlockByText(harness.element, "Alpha body")?.className,
-			).toContain("headingCollapseHidden");
-			expect(
-				findBlockByText(harness.element, "Delta body")?.className,
-			).toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
+				"headingCollapseHidden",
+			);
+			expect(findBlockByText(harness.element, "Delta body")?.className).toContain(
+				"headingCollapseHidden",
+			);
 		} finally {
 			harness.destroy();
 		}
@@ -104,19 +104,19 @@ describe("Heading collapse integration", () => {
 		try {
 			const [alpha] = getHeadingPositions(harness.editor);
 			harness.editor.commands.toggleHeadingCollapse(alpha.pos);
-			expect(
-				findBlockByText(harness.element, "Alpha body")?.className,
-			).toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
+				"headingCollapseHidden",
+			);
 
 			harness.editor.commands.insertContentAt(alpha.pos + 1, "Updated ");
 
 			expect(findBlockByText(harness.element, "Updated Alpha")).toBeTruthy();
-			expect(
-				findBlockByText(harness.element, "Beta body")?.className,
-			).toContain("headingCollapseHidden");
-			expect(
-				findBlockByText(harness.element, "Alpha body")?.className,
-			).toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Beta body")?.className).toContain(
+				"headingCollapseHidden",
+			);
+			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
+				"headingCollapseHidden",
+			);
 		} finally {
 			harness.destroy();
 		}
@@ -144,15 +144,15 @@ describe("Heading collapse integration", () => {
 
 			harness.editor.commands.toggleHeadingCollapse(alpha.pos);
 			harness.editor.commands.toggleHeadingCollapse(beta.pos);
-			expect(
-				findBlockByText(harness.element, "Gamma body")?.className,
-			).toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Gamma body")?.className).toContain(
+				"headingCollapseHidden",
+			);
 
 			harness.editor.commands.expandHeadingAncestors(gamma.pos);
 
-			expect(
-				findBlockByText(harness.element, "Gamma body")?.className,
-			).not.toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Gamma body")?.className).not.toContain(
+				"headingCollapseHidden",
+			);
 		} finally {
 			harness.destroy();
 		}
@@ -174,9 +174,9 @@ describe("Heading collapse integration", () => {
 			toggle?.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
 			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-			expect(
-				findBlockByText(harness.element, "Alpha body")?.className,
-			).toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
+				"headingCollapseHidden",
+			);
 		} finally {
 			harness.destroy();
 		}
@@ -201,23 +201,23 @@ describe("Heading collapse integration", () => {
 
 		try {
 			harness.editor.commands.collapseAllHeadings();
-			expect(
-				findBlockByText(harness.element, "Alpha body")?.className,
-			).toContain("headingCollapseHidden");
-			expect(
-				findBlockByText(harness.element, "Beta body")?.className,
-			).toContain("headingCollapseHidden");
-			expect(
-				findBlockByText(harness.element, "Gamma body")?.className,
-			).toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
+				"headingCollapseHidden",
+			);
+			expect(findBlockByText(harness.element, "Beta body")?.className).toContain(
+				"headingCollapseHidden",
+			);
+			expect(findBlockByText(harness.element, "Gamma body")?.className).toContain(
+				"headingCollapseHidden",
+			);
 
 			harness.editor.commands.expandAllHeadings();
-			expect(
-				findBlockByText(harness.element, "Alpha body")?.className,
-			).not.toContain("headingCollapseHidden");
-			expect(
-				findBlockByText(harness.element, "Beta body")?.className,
-			).not.toContain("headingCollapseHidden");
+			expect(findBlockByText(harness.element, "Alpha body")?.className).not.toContain(
+				"headingCollapseHidden",
+			);
+			expect(findBlockByText(harness.element, "Beta body")?.className).not.toContain(
+				"headingCollapseHidden",
+			);
 		} finally {
 			harness.destroy();
 		}

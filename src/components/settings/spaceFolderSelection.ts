@@ -15,9 +15,7 @@ export async function selectFolderRelativeToSpace(): Promise<SpaceFolderSelectio
 
 	const normalizedSelected = selected.replace(/\\/g, "/");
 	const normalizedSpace = spacePath.replace(/\\/g, "/");
-	const spacePrefix = normalizedSpace.endsWith("/")
-		? normalizedSpace
-		: `${normalizedSpace}/`;
+	const spacePrefix = normalizedSpace.endsWith("/") ? normalizedSpace : `${normalizedSpace}/`;
 	if (
 		normalizedSelected.toLowerCase() !== normalizedSpace.toLowerCase() &&
 		!normalizedSelected.toLowerCase().startsWith(spacePrefix.toLowerCase())
@@ -26,9 +24,7 @@ export async function selectFolderRelativeToSpace(): Promise<SpaceFolderSelectio
 	}
 
 	return {
-		relativePath: normalizedSelected
-			.slice(normalizedSpace.length)
-			.replace(/^\/+/, ""),
+		relativePath: normalizedSelected.slice(normalizedSpace.length).replace(/^\/+/, ""),
 		spacePath,
 	};
 }

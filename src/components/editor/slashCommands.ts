@@ -144,9 +144,7 @@ function insertMathAndOpen(
 	});
 	const nearestPos = candidates.reduce<number | null>((nearest, pos) => {
 		if (nearest === null) return pos;
-		return Math.abs(pos - range.from) < Math.abs(nearest - range.from)
-			? pos
-			: nearest;
+		return Math.abs(pos - range.from) < Math.abs(nearest - range.from) ? pos : nearest;
 	}, null);
 	if (nearestPos === null) return;
 	onMathEditRequest?.({ kind, latex, pos: nearestPos });
@@ -402,9 +400,7 @@ export const SlashCommand = Extension.create({
 	addOptions() {
 		return {
 			onMathEditRequest: null as ((request: MathEditRequest) => void) | null,
-			onTemplateInsertRequest: null as
-				| ((request: TemplateInsertRequest) => void)
-				| null,
+			onTemplateInsertRequest: null as ((request: TemplateInsertRequest) => void) | null,
 			suggestion: {
 				char: "/",
 				startOfLine: false,
@@ -440,16 +436,14 @@ export const SlashCommand = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
-		const { suggestion, onMathEditRequest, onTemplateInsertRequest } =
-			this.options;
+		const { suggestion, onMathEditRequest, onTemplateInsertRequest } = this.options;
 		return [
 			Suggestion({
 				editor: this.editor,
 				...suggestion,
 				items: ({ query }: { query: string }) =>
 					SLASH_COMMANDS.filter(
-						(item) =>
-							item.id !== "insertTemplate" || Boolean(onTemplateInsertRequest),
+						(item) => item.id !== "insertTemplate" || Boolean(onTemplateInsertRequest),
 					)
 						.map(localizeSlashCommandItem)
 						.filter((item) => slashCommandMatchesQuery(item, query)),

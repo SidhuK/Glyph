@@ -37,8 +37,7 @@ const streamFills = [
 	"color-mix(in srgb, var(--status-success-fg) 50%, var(--bg-primary))",
 	"color-mix(in srgb, var(--text-secondary) 45%, var(--bg-primary))",
 ] as const;
-const taskOpenFill =
-	"color-mix(in srgb, var(--accent-color) 34%, var(--bg-primary))";
+const taskOpenFill = "color-mix(in srgb, var(--accent-color) 34%, var(--bg-primary))";
 
 type NamedCount = { label: string; value: number };
 type FolderSize = { name: string; size: number };
@@ -74,19 +73,13 @@ function parseIsoDateUtc(value: string): Date | null {
 	const year = Number(match[1]);
 	const month = Number(match[2]);
 	const day = Number(match[3]);
-	if (
-		!Number.isFinite(year) ||
-		!Number.isFinite(month) ||
-		!Number.isFinite(day)
-	) {
+	if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
 		return null;
 	}
 	return new Date(Date.UTC(year, month - 1, day));
 }
 
-function weekdayLabels(
-	locale: string,
-): [string, string, string, string, string, string, string] {
+function weekdayLabels(locale: string): [string, string, string, string, string, string, string] {
 	const format = new Intl.DateTimeFormat(locale, {
 		weekday: "short",
 		timeZone: "UTC",
@@ -107,17 +100,12 @@ function activityMix(t: number): string {
 	return `color-mix(in srgb, var(--accent-color) ${pct}%, var(--bg-primary))`;
 }
 
-function activityCells(
-	insights: UsageInsights,
-	weekdays: readonly string[],
-): ActivityCell[] {
+function activityCells(insights: UsageInsights, weekdays: readonly string[]): ActivityCell[] {
 	const end = new Date();
 	end.setHours(0, 0, 0, 0);
 	const start = new Date(end);
 	start.setDate(start.getDate() - start.getDay() - 77);
-	const counts = new Map(
-		insights.activity.map((day) => [day.date, day.created + day.lastEdited]),
-	);
+	const counts = new Map(insights.activity.map((day) => [day.date, day.created + day.lastEdited]));
 	return Array.from({ length: activityDayCount }, (_, index) => {
 		const date = new Date(start);
 		date.setDate(start.getDate() + index);
@@ -135,18 +123,13 @@ function activityCells(
 	});
 }
 
-export function UsageActivityHeatmap({
-	insights,
-}: { insights: UsageInsights }) {
+export function UsageActivityHeatmap({ insights }: { insights: UsageInsights }) {
 	const { i18n, t } = useTranslation("settings.general");
 	const weekdays = useMemo(
 		() => weekdayLabels(i18n.resolvedLanguage ?? i18n.language),
 		[i18n.language, i18n.resolvedLanguage],
 	);
-	const rows = useMemo(
-		() => activityCells(insights, weekdays),
-		[insights, weekdays],
-	);
+	const rows = useMemo(() => activityCells(insights, weekdays), [insights, weekdays]);
 	const weekLabel = t("usage.weekAxis");
 	const legendLabel = t("usage.activity");
 	const definition = useMemo(
@@ -154,8 +137,7 @@ export function UsageActivityHeatmap({
 			defineChart({
 				tooltip: {
 					use: tooltip,
-					format: (point) =>
-						`${point.datum.key}: ${numberFormat.format(point.datum.count)}`,
+					format: (point) => `${point.datum.key}: ${numberFormat.format(point.datum.count)}`,
 				},
 				marks: [
 					cell(rows, {
@@ -168,8 +150,7 @@ export function UsageActivityHeatmap({
 					}),
 				],
 				x: {
-					scale: () =>
-						scaleBand<number>().paddingInner(0.06).paddingOuter(0.03),
+					scale: () => scaleBand<number>().paddingInner(0.06).paddingOuter(0.03),
 					axis: {
 						label: weekLabel,
 						ticks: {
@@ -178,11 +159,7 @@ export function UsageActivityHeatmap({
 					},
 				},
 				y: {
-					scale: () =>
-						scaleBand<string>()
-							.domain(weekdays)
-							.paddingInner(0.06)
-							.paddingOuter(0.03),
+					scale: () => scaleBand<string>().domain(weekdays).paddingInner(0.06).paddingOuter(0.03),
 				},
 				color: {
 					scale: () => scaleSequential(activityMix),
@@ -195,13 +172,7 @@ export function UsageActivityHeatmap({
 			}),
 		[legendLabel, rows, t, weekLabel, weekdays],
 	);
-	return (
-		<Chart
-			definition={definition}
-			height={248}
-			ariaLabel={t("usage.activity")}
-		/>
-	);
+	return <Chart definition={definition} height={248} ariaLabel={t("usage.activity")} />;
 }
 
 export function UsageFolderStream({
@@ -242,8 +213,7 @@ export function UsageFolderStream({
 			defineChart({
 				tooltip: {
 					use: tooltip,
-					format: (point) =>
-						`${point.datum.folder}: ${numberFormat.format(point.datum.count)}`,
+					format: (point) => `${point.datum.folder}: ${numberFormat.format(point.datum.count)}`,
 				},
 				marks: [
 					areaY(prepared, {
@@ -290,30 +260,17 @@ export function UsageFolderStream({
 	if (folderNames.length < 2) {
 		return <p className="usageEmpty">{t("usage.noData")}</p>;
 	}
-	return (
-		<Chart
-			definition={definition}
-			height={248}
-			ariaLabel={t("usage.folderActivity")}
-		/>
-	);
+	return <Chart definition={definition} height={248} ariaLabel={t("usage.folderActivity")} />;
 }
 
-export function TaskCompletionDonut({
-	completed,
-	open,
-}: {
-	completed: number;
-	open: number;
-}) {
+export function TaskCompletionDonut({ completed, open }: { completed: number; open: number }) {
 	const { t } = useTranslation("settings.general");
 	const doneLabel = t("usage.done");
 	const openLabel = t("usage.open");
 	const completedLabel = t("usage.completed");
 	const total = completed + open;
 	const domainMax = Math.max(total, 1);
-	const percent =
-		total === 0 ? "0%" : `${Math.round((completed / total) * 100)}%`;
+	const percent = total === 0 ? "0%" : `${Math.round((completed / total) * 100)}%`;
 	const rows = useMemo(() => {
 		if (total === 0) {
 			return [
@@ -371,10 +328,7 @@ export function TaskCompletionDonut({
 						},
 						radius: {
 							scale: () => scaleBand<string>().domain(["tasks"]),
-							range: [
-								({ radius }) => radius * 0.58,
-								({ radius }) => radius * 0.9,
-							],
+							range: [({ radius }) => radius * 0.58, ({ radius }) => radius * 0.9],
 						},
 						marks: [
 							radialBarAngle(rows, {
@@ -441,28 +395,16 @@ export function TaskCompletionDonut({
 	);
 	return (
 		<div className="usageTaskRadial">
-			<Chart
-				definition={definition}
-				height={188}
-				ariaLabel={t("usage.tasks")}
-			/>
+			<Chart definition={definition} height={188} ariaLabel={t("usage.tasks")} />
 			<div className="usageDonutLegend">
-				<span className="usageTaskDone">
-					{`${doneLabel} ${numberFormat.format(completed)}`}
-				</span>
-				<span className="usageTaskOpen">
-					{`${openLabel} ${numberFormat.format(open)}`}
-				</span>
+				<span className="usageTaskDone">{`${doneLabel} ${numberFormat.format(completed)}`}</span>
+				<span className="usageTaskOpen">{`${openLabel} ${numberFormat.format(open)}`}</span>
 			</div>
 		</div>
 	);
 }
 
-export function NetworkCoverageMosaic({
-	folders,
-}: {
-	folders: readonly ConnectionFolder[];
-}) {
+export function NetworkCoverageMosaic({ folders }: { folders: readonly ConnectionFolder[] }) {
 	const { t } = useTranslation("settings.general");
 	const connectedLabel = t("usage.connected");
 	const unlinkedLabel = t("usage.unlinked");
@@ -485,10 +427,7 @@ export function NetworkCoverageMosaic({
 		});
 		return counts;
 	}, [connectedLabel, folders, unlinkedLabel]);
-	const folderOrder = useMemo(
-		() => folders.map((folder) => folder.name),
-		[folders],
-	);
+	const folderOrder = useMemo(() => folders.map((folder) => folder.name), [folders]);
 	const definition = useMemo(() => {
 		if (rows.length === 0) return null;
 		const cells = mosaicY(rows, {
@@ -549,13 +488,7 @@ export function NetworkCoverageMosaic({
 	if (!definition) {
 		return <p className="usageEmpty">{t("usage.noData")}</p>;
 	}
-	return (
-		<Chart
-			definition={definition}
-			height={220}
-			ariaLabel={t("usage.library")}
-		/>
-	);
+	return <Chart definition={definition} height={220} ariaLabel={t("usage.library")} />;
 }
 
 export function UsageFolderTreemap({
@@ -615,18 +548,9 @@ export function UsageFolderTreemap({
 	return <Chart definition={definition} height={268} ariaLabel={label} />;
 }
 
-export function UsageTagWaffle({
-	rows,
-	label,
-}: {
-	rows: readonly NamedCount[];
-	label: string;
-}) {
+export function UsageTagWaffle({ rows, label }: { rows: readonly NamedCount[]; label: string }) {
 	const tags = useMemo(() => rows.map((row) => row.label), [rows]);
-	const unit = Math.max(
-		1,
-		Math.ceil(rows.reduce((total, row) => total + row.value, 0) / 80),
-	);
+	const unit = Math.max(1, Math.ceil(rows.reduce((total, row) => total + row.value, 0) / 80));
 	const definition = useMemo(
 		() =>
 			defineChart({

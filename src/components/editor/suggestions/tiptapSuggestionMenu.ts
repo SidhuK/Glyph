@@ -26,8 +26,10 @@ interface TipTapSuggestionMenuOptions<T> {
 	onEmptyEnter?: (props: SuggestionProps<T>) => boolean;
 }
 
-interface TipTapTextSuggestionMenuOptions<T>
-	extends Omit<TipTapSuggestionMenuOptions<T>, "renderItem"> {
+interface TipTapTextSuggestionMenuOptions<T> extends Omit<
+	TipTapSuggestionMenuOptions<T>,
+	"renderItem"
+> {
 	itemContent: (item: T) => {
 		title: string;
 		description: string;
@@ -76,9 +78,7 @@ function placeMenu(menu: HTMLElement, rect: DOMRect): void {
 	const maxTop = window.innerHeight - menuRect.height - pad;
 	const nextLeft = Math.max(pad, Math.min(rect.left, maxLeft));
 	const nextTop =
-		placeBelowTop <= maxTop
-			? placeBelowTop
-			: Math.max(pad, Math.min(placeAboveTop, maxTop));
+		placeBelowTop <= maxTop ? placeBelowTop : Math.max(pad, Math.min(placeAboveTop, maxTop));
 	menu.style.left = `${nextLeft}px`;
 	menu.style.top = `${nextTop}px`;
 }
@@ -157,10 +157,7 @@ export function createTipTapSuggestionMenu<T>({
 			selectedIndex = 0;
 			unlockEditorScroll?.();
 			if (lockEditorScroll) {
-				unlockEditorScroll = lockEditorScrollDuringSuggestion(
-					props.editor as Editor,
-					() => menu,
-				);
+				unlockEditorScroll = lockEditorScrollDuringSuggestion(props.editor as Editor, () => menu);
 			}
 			createMenu(props);
 		},

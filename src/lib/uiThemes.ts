@@ -1,8 +1,4 @@
-import {
-	type CustomUiThemeId,
-	customThemeSlug,
-	isCustomThemeId,
-} from "./customThemes";
+import { type CustomUiThemeId, customThemeSlug, isCustomThemeId } from "./customThemes";
 
 export interface UiThemeOption<T extends string> {
 	id: T;
@@ -179,12 +175,8 @@ export type UiDarkThemeId = UiBuiltInDarkThemeId | CustomUiThemeId;
 export const GLYPH_DEFAULT_LIGHT_THEME_ID: UiLightThemeId = "glyph-default";
 export const GLYPH_DEFAULT_DARK_THEME_ID: UiDarkThemeId = "glyph-default-dark";
 
-const LIGHT_THEME_IDS = new Set<string>(
-	LIGHT_THEME_OPTIONS.map((option) => option.id),
-);
-const DARK_THEME_IDS = new Set<string>(
-	DARK_THEME_OPTIONS.map((option) => option.id),
-);
+const LIGHT_THEME_IDS = new Set<string>(LIGHT_THEME_OPTIONS.map((option) => option.id));
+const DARK_THEME_IDS = new Set<string>(DARK_THEME_OPTIONS.map((option) => option.id));
 const LIGHT_THEME_MAP = new Map<UiLightThemeId, UiThemeOption<UiLightThemeId>>(
 	LIGHT_THEME_OPTIONS.map((option) => [option.id, option]),
 );
@@ -202,15 +194,11 @@ export function asUiDarkThemeId(value: unknown): UiDarkThemeId {
 	return isUiDarkThemeId(value) ? value : GLYPH_DEFAULT_DARK_THEME_ID;
 }
 
-export function getUiLightThemeOption(
-	themeId: UiLightThemeId,
-): UiThemeOption<UiLightThemeId> {
+export function getUiLightThemeOption(themeId: UiLightThemeId): UiThemeOption<UiLightThemeId> {
 	return LIGHT_THEME_MAP.get(themeId) ?? DEFAULT_LIGHT_THEME_OPTION;
 }
 
-export function getUiDarkThemeOption(
-	themeId: UiDarkThemeId,
-): UiThemeOption<UiDarkThemeId> {
+export function getUiDarkThemeOption(themeId: UiDarkThemeId): UiThemeOption<UiDarkThemeId> {
 	return DARK_THEME_MAP.get(themeId) ?? DEFAULT_DARK_THEME_OPTION;
 }
 
@@ -234,12 +222,8 @@ export function isReservedUiThemeName(name: string): boolean {
 	);
 }
 
-export function getGlyphDefaultThemeId(
-	mode: "light" | "dark",
-): UiLightThemeId | UiDarkThemeId {
-	return mode === "light"
-		? GLYPH_DEFAULT_LIGHT_THEME_ID
-		: GLYPH_DEFAULT_DARK_THEME_ID;
+export function getGlyphDefaultThemeId(mode: "light" | "dark"): UiLightThemeId | UiDarkThemeId {
+	return mode === "light" ? GLYPH_DEFAULT_LIGHT_THEME_ID : GLYPH_DEFAULT_DARK_THEME_ID;
 }
 
 export function sortUiThemeOptions<T extends string>(
@@ -257,8 +241,5 @@ export function sortUiThemeOptions<T extends string>(
 	}
 
 	const rest = options.filter((option) => option.id !== defaultId);
-	return [
-		defaultOption,
-		...rest.sort((a, b) => a.label.localeCompare(b.label)),
-	];
+	return [defaultOption, ...rest.sort((a, b) => a.label.localeCompare(b.label))];
 }

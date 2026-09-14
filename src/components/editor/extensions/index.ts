@@ -1,11 +1,6 @@
 import { type AnyExtension, Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
-import {
-	Table,
-	TableCell,
-	TableHeader,
-	TableRow,
-} from "@tiptap/extension-table";
+import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import { Markdown } from "@tiptap/markdown";
@@ -44,9 +39,7 @@ import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
 
-function parseCalloutMarker(
-	text: string,
-): { kind: string; title: string } | null {
+function parseCalloutMarker(text: string): { kind: string; title: string } | null {
 	const trimmed = text.trim();
 	if (!trimmed.startsWith("[!")) return null;
 	const match = trimmed.match(/^\[!([A-Za-z_-]+)\]\s*(.*)$/);
@@ -89,16 +82,12 @@ const CalloutDecorations = Extension.create({
 								visitChangedNodes(transactions, newState, (node, pos) => {
 									if (node.type !== paragraph || node.childCount !== 1) return;
 									const text = node.textContent ?? "";
-									const match = text.match(
-										/^\s*>\s*\[!([A-Za-z_-]+)\]\s*(.*)$/,
-									);
+									const match = text.match(/^\s*>\s*\[!([A-Za-z_-]+)\]\s*(.*)$/);
 									if (!match) return;
 									const rawKind = (match[1] ?? "note").toLowerCase();
 									const kind = rawKind === "warn" ? "warning" : rawKind;
 									const tail = (match[2] ?? "").trim();
-									const marker = tail.length
-										? `[!${kind}] ${tail}`
-										: `[!${kind}]`;
+									const marker = tail.length ? `[!${kind}] ${tail}` : `[!${kind}]`;
 									replacements.push({ pos, size: node.nodeSize, marker });
 								});
 
@@ -112,9 +101,7 @@ const CalloutDecorations = Extension.create({
 										[
 											paragraph.create(
 												null,
-												replacement.marker
-													? textNode(replacement.marker)
-													: null,
+												replacement.marker ? textNode(replacement.marker) : null,
 											),
 											paragraph.create(),
 										].filter(Boolean),
@@ -157,15 +144,10 @@ function buildCalloutDecorations(doc: ProseMirrorNode): DecorationSet {
 		const decoration = calloutDecorationForNode(node, pos);
 		if (decoration) decorations.push(decoration);
 	});
-	return decorations.length
-		? DecorationSet.create(doc, decorations)
-		: DecorationSet.empty;
+	return decorations.length ? DecorationSet.create(doc, decorations) : DecorationSet.empty;
 }
 
-function calloutDecorationForNode(
-	node: ProseMirrorNode,
-	pos: number,
-): Decoration | null {
+function calloutDecorationForNode(node: ProseMirrorNode, pos: number): Decoration | null {
 	if (node.type.name !== "blockquote") return null;
 	let parsed: { kind: string; title: string } | null = null;
 	for (let i = 0; i < node.childCount; i += 1) {
@@ -244,8 +226,7 @@ function mapTextOffsetToDocPos(
 
 	if (resolved !== null) return resolved;
 	if (targetOffset === 0) return pos + 1;
-	if (bias === "end" && targetOffset === textCursor)
-		return pos + node.nodeSize - 1;
+	if (bias === "end" && targetOffset === textCursor) return pos + node.nodeSize - 1;
 	return null;
 }
 
@@ -314,10 +295,7 @@ const MarkdownLinkSyntaxCollapse = Extension.create({
 						: [selectionRange(oldState), selectionRange(newState)];
 
 					visitNodesInRanges(newState, scanRanges, (node, pos) => {
-						if (
-							node.type.name === "codeBlock" ||
-							node.type.name === "code_block"
-						) {
+						if (node.type.name === "codeBlock" || node.type.name === "code_block") {
 							return false;
 						}
 						if (!node.isTextblock) return;
@@ -327,12 +305,7 @@ const MarkdownLinkSyntaxCollapse = Extension.create({
 							if (rangeTouchesCodeMark(node, match.start, match.end)) {
 								continue;
 							}
-							const from = mapTextOffsetToDocPos(
-								node,
-								pos,
-								match.start,
-								"start",
-							);
+							const from = mapTextOffsetToDocPos(node, pos, match.start, "start");
 							const to = mapTextOffsetToDocPos(node, pos, match.end, "end");
 							if (from === null || to === null || from >= to) continue;
 							if (selectionTouchesRange(selectionFrom, selectionTo, from, to)) {
@@ -432,16 +405,9 @@ const TaskListMarkdownShortcut = Extension.create({
 							null,
 							replacement.text ? textNode(replacement.text) : null,
 						);
-						const taskItemNode = taskItem.create(
-							{ checked: replacement.checked },
-							paragraphNode,
-						);
+						const taskItemNode = taskItem.create({ checked: replacement.checked }, paragraphNode);
 						const taskListNode = taskList.create(null, [taskItemNode]);
-						tr = tr.replaceWith(
-							replacement.pos,
-							replacement.pos + replacement.size,
-							taskListNode,
-						);
+						tr = tr.replaceWith(replacement.pos, replacement.pos + replacement.size, taskListNode);
 					}
 
 					return tr.docChanged ? tr : null;
@@ -483,14 +449,9 @@ const TaskDetailShortcut = Extension.create({
 				}
 
 				const insertAt = $from.after(taskDepth);
-				const nextTask = taskItem.create(
-					{ checked: false },
-					paragraph.create(),
-				);
+				const nextTask = taskItem.create({ checked: false }, paragraph.create());
 				let tr = state.tr.insert(insertAt, nextTask);
-				tr = tr
-					.setSelection(TextSelection.create(tr.doc, insertAt + 2))
-					.scrollIntoView();
+				tr = tr.setSelection(TextSelection.create(tr.doc, insertAt + 2)).scrollIntoView();
 				view.dispatch(tr);
 				return true;
 			},
@@ -533,15 +494,12 @@ const TableEnterNavigation = Extension.create({
 					}
 				}
 
-				if (cellDepth === -1 || rowDepth === -1 || tableDepth === -1)
-					return false;
+				if (cellDepth === -1 || rowDepth === -1 || tableDepth === -1) return false;
 
 				const rowNode = $from.node(rowDepth);
 				const tableNode = $from.node(tableDepth);
-				const isLastCellInRow =
-					$from.index(rowDepth) === rowNode.childCount - 1;
-				const isLastRowInTable =
-					$from.index(tableDepth) === tableNode.childCount - 1;
+				const isLastCellInRow = $from.index(rowDepth) === rowNode.childCount - 1;
+				const isLastRowInTable = $from.index(tableDepth) === tableNode.childCount - 1;
 
 				if (isLastCellInRow && isLastRowInTable) {
 					return editor.chain().focus().addRowAfter().goToNextCell().run();
@@ -625,9 +583,7 @@ interface CreateEditorExtensionsOptions {
 	onListCollapseToggle?: (branches: string[]) => void;
 }
 
-export function createEditorExtensions(
-	options?: CreateEditorExtensionsOptions,
-) {
+export function createEditorExtensions(options?: CreateEditorExtensionsOptions) {
 	const {
 		additionalExtensions = [],
 		enableEditingExtensions = true,
@@ -712,9 +668,7 @@ export function createEditorExtensions(
 					}),
 				]
 			: []),
-		...(enableEditingExtensions && enablePeopleMentions
-			? [PersonAutocomplete]
-			: []),
+		...(enableEditingExtensions && enablePeopleMentions ? [PersonAutocomplete] : []),
 		...(enableEditingExtensions ? [TagAutocomplete] : []),
 		...(enableEditingExtensions && enableSlashCommand
 			? [

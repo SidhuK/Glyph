@@ -58,10 +58,7 @@ function titleWithDismiss(id: string, title: string) {
 	);
 }
 
-function toSileoOptions(
-	title: string,
-	options: ToastOptions = {},
-): SileoOptions {
+function toSileoOptions(title: string, options: ToastOptions = {}): SileoOptions {
 	const id = options.id ?? nextToastId();
 	const sileoOptions: GlyphSileoOptions = {
 		id,

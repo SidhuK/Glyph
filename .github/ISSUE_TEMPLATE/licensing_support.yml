@@ -97,4 +97,3 @@ body:
     attributes:
       label: Extra context
       description: Include anything that helps explain whether this came from an official download, a self-build, or a local dev build.
-

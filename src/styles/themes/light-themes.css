@@ -85,10 +85,7 @@
 	--glass-bg: rgba(255, 255, 255, 0.82);
 }
 
-:where(
-		:root,
-		.appearanceThemePreview
-	).light[data-light-theme="solarized-light"] {
+:where(:root, .appearanceThemePreview).light[data-light-theme="solarized-light"] {
 	--bg-primary: #fdf6e3;
 	--bg-secondary: #f5efdc;
 	--bg-tertiary: #eee8d5;
@@ -223,10 +220,7 @@
 	--glass-bg: rgba(236, 239, 244, 0.82);
 }
 
-:where(
-		:root,
-		.appearanceThemePreview
-	).light[data-light-theme="everforest-light"] {
+:where(:root, .appearanceThemePreview).light[data-light-theme="everforest-light"] {
 	--bg-primary: #f6f2e8;
 	--bg-secondary: #f1ede1;
 	--bg-tertiary: #e6dfcf;
@@ -319,10 +313,7 @@
 	--glass-bg: rgba(250, 250, 250, 0.86);
 }
 
-:where(
-		:root,
-		.appearanceThemePreview
-	).light[data-light-theme="rose-pine-dawn"] {
+:where(:root, .appearanceThemePreview).light[data-light-theme="rose-pine-dawn"] {
 	--bg-primary: #faf4ed;
 	--bg-secondary: #f7efe5;
 	--bg-tertiary: #f0e4d7;
@@ -353,10 +344,7 @@
 	--glass-bg: rgba(250, 244, 237, 0.86);
 }
 
-:where(
-		:root,
-		.appearanceThemePreview
-	).light[data-light-theme="catppuccin-latte"] {
+:where(:root, .appearanceThemePreview).light[data-light-theme="catppuccin-latte"] {
 	--bg-primary: #eff1f5;
 	--bg-secondary: #e6e9ef;
 	--bg-tertiary: #dce0e8;
@@ -401,40 +389,18 @@
 	--glass-bg: rgba(239, 241, 245, 0.84);
 }
 
-:where(
-		:root,
-		.appearanceThemePreview
-	).light[data-light-theme="everforest-light"],
+:where(:root, .appearanceThemePreview).light[data-light-theme="everforest-light"],
 :where(:root, .appearanceThemePreview).light[data-light-theme="linear-light"],
 :where(:root, .appearanceThemePreview).light[data-light-theme="one-light"],
-:where(
-		:root,
-		.appearanceThemePreview
-	).light[data-light-theme="rose-pine-dawn"] {
+:where(:root, .appearanceThemePreview).light[data-light-theme="rose-pine-dawn"] {
 	--text-placeholder: color-mix(in srgb, var(--text-primary) 40%, transparent);
 	--text-inverse: var(--bg-primary);
 	--text-accent: var(--text-primary);
 	--text-error: var(--status-danger-fg);
-	--feedback-error-bg: color-mix(
-		in srgb,
-		var(--status-danger-fg) 12%,
-		transparent
-	);
-	--status-success-bg: color-mix(
-		in srgb,
-		var(--status-success-fg) 14%,
-		transparent
-	);
-	--status-danger-bg: color-mix(
-		in srgb,
-		var(--status-danger-fg) 12%,
-		transparent
-	);
-	--status-danger-border: color-mix(
-		in srgb,
-		var(--status-danger-fg) 30%,
-		transparent
-	);
+	--feedback-error-bg: color-mix(in srgb, var(--status-danger-fg) 12%, transparent);
+	--status-success-bg: color-mix(in srgb, var(--status-success-fg) 14%, transparent);
+	--status-danger-bg: color-mix(in srgb, var(--status-danger-fg) 12%, transparent);
+	--status-danger-border: color-mix(in srgb, var(--status-danger-fg) 30%, transparent);
 	--ai-accent-chat: var(--interactive-accent);
 	--ai-accent-create: var(--accent-color);
 	--callout-info: var(--status-info-fg);
@@ -533,10 +499,7 @@
 	--glass-bg: rgba(252, 252, 252, 0.86);
 }
 
-:where(
-		:root,
-		.appearanceThemePreview
-	).light[data-light-theme="tokyo-night-day"] {
+:where(:root, .appearanceThemePreview).light[data-light-theme="tokyo-night-day"] {
 	--bg-primary: #e1e2e7;
 	--bg-secondary: #d8dbe4;
 	--bg-tertiary: #cfd5e3;

@@ -18,15 +18,10 @@ interface UsePeriodNoteOptions {
 }
 
 interface UsePeriodNoteReturn {
-	openOrCreatePeriodNote: (
-		folder: string,
-		period: PeriodId,
-	) => Promise<string | null>;
+	openOrCreatePeriodNote: (folder: string, period: PeriodId) => Promise<string | null>;
 }
 
-export function usePeriodNote(
-	options: UsePeriodNoteOptions,
-): UsePeriodNoteReturn {
+export function usePeriodNote(options: UsePeriodNoteOptions): UsePeriodNoteReturn {
 	const { onOpenFile, setError, spacePath, templatePathFor } = options;
 	const inFlightKeysRef = useRef(new Set<string>());
 	const spacePathRef = useRef(spacePath);
@@ -43,8 +38,7 @@ export function usePeriodNote(
 				const flightKey = `${requestedSpacePath ?? ""}\0${notePath}`;
 				if (inFlightKeysRef.current.has(flightKey)) return null;
 				inFlightKeysRef.current.add(flightKey);
-				const stillOnRequestedSpace = () =>
-					spacePathRef.current === requestedSpacePath;
+				const stillOnRequestedSpace = () => spacePathRef.current === requestedSpacePath;
 				try {
 					try {
 						await invoke("space_read_text", { path: notePath });
@@ -93,8 +87,7 @@ export function usePeriodNote(
 					inFlightKeysRef.current.delete(flightKey);
 				}
 			} catch (err) {
-				const message =
-					err instanceof Error ? err.message : "Failed to open dated note";
+				const message = err instanceof Error ? err.message : "Failed to open dated note";
 				setError(message);
 				return null;
 			}

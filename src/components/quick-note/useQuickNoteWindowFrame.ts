@@ -1,8 +1,4 @@
-import {
-	LogicalSize,
-	PhysicalPosition,
-	getCurrentWindow,
-} from "@tauri-apps/api/window";
+import { LogicalSize, PhysicalPosition, getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useRef, useState } from "react";
 
 const FRAME_STORAGE_KEY = "glyph.quickNote.frame";
@@ -51,10 +47,7 @@ function writeStoredFrame(frame: StoredFrame) {
 
 function clampWindowHeight(height: number): number {
 	const screenLimit = Math.round(window.screen.availHeight * 0.7);
-	const maxHeight = Math.max(
-		MIN_WINDOW_HEIGHT,
-		Math.min(MAX_WINDOW_HEIGHT, screenLimit),
-	);
+	const maxHeight = Math.max(MIN_WINDOW_HEIGHT, Math.min(MAX_WINDOW_HEIGHT, screenLimit));
 	return Math.round(Math.min(maxHeight, Math.max(MIN_WINDOW_HEIGHT, height)));
 }
 
@@ -105,8 +98,7 @@ export function useQuickNoteWindowFrame({
 				const autoHeight = autoHeightRef.current;
 				const isAutoResize =
 					autoHeight !== null &&
-					Math.abs(window.innerHeight - autoHeight) <=
-						HEIGHT_MATCH_TOLERANCE_PX;
+					Math.abs(window.innerHeight - autoHeight) <= HEIGHT_MATCH_TOLERANCE_PX;
 				if (isAutoResize) return;
 				manualSizeRef.current = true;
 				void (async () => {
@@ -151,12 +143,8 @@ export function useQuickNoteWindowFrame({
 			const chromeHeight = window.innerHeight - editorAreaElement.clientHeight;
 			// Measure content, not the scroll host — scrollHeight of a host that
 			// already fits content equals clientHeight, so the window never shrinks.
-			const nextHeight = clampWindowHeight(
-				chromeHeight + contentElement.scrollHeight,
-			);
-			if (
-				Math.abs(nextHeight - window.innerHeight) <= HEIGHT_MATCH_TOLERANCE_PX
-			) {
+			const nextHeight = clampWindowHeight(chromeHeight + contentElement.scrollHeight);
+			if (Math.abs(nextHeight - window.innerHeight) <= HEIGHT_MATCH_TOLERANCE_PX) {
 				return;
 			}
 			autoHeightRef.current = nextHeight;

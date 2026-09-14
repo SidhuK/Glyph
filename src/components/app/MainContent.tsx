@@ -13,11 +13,7 @@ import {
 	useState,
 } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import {
-	useAISidebarContext,
-	useSpace,
-	useUILayoutContext,
-} from "../../contexts";
+import { useAISidebarContext, useSpace, useUILayoutContext } from "../../contexts";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { APP_TAGLINE } from "../../lib/copy";
@@ -48,10 +44,7 @@ import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
 import { SplitEditorLayout } from "./SplitEditorLayout";
 import { WelcomeScreen } from "./WelcomeScreen";
-import type {
-	SplitEditorDragSource,
-	SplitEditorDropTarget,
-} from "./splitEditorDnd";
+import type { SplitEditorDragSource, SplitEditorDropTarget } from "./splitEditorDnd";
 import type { WorkspaceEditorPane } from "./useTabManager";
 
 const DAILY_NOTES_SETUP_TOAST_ID = "daily-notes-setup";
@@ -74,9 +67,7 @@ function EmptyStateCommandPaletteHint({
 	const { t } = useTranslation();
 	const { getBinding } = useShortcutBindings();
 	const shortcut = getBinding("open-command-palette");
-	const shortcutParts = shortcut
-		? formatShortcutPartsForPlatform(shortcut)
-		: [];
+	const shortcutParts = shortcut ? formatShortcutPartsForPlatform(shortcut) : [];
 
 	return (
 		<div className="mainEmptyBottomBlock">
@@ -161,15 +152,9 @@ function SettingsTabContent({ tab }: { tab: SettingsTab }) {
 
 interface MainContentProps {
 	fileTree: {
-		createMarkdownFileAtPath: (
-			options: CreateMarkdownFileOptions,
-		) => Promise<string | null>;
+		createMarkdownFileAtPath: (options: CreateMarkdownFileOptions) => Promise<string | null>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
-		onRenameDir: (
-			path: string,
-			nextName: string,
-			kind: "dir" | "file",
-		) => Promise<string | null>;
+		onRenameDir: (path: string, nextName: string, kind: "dir" | "file") => Promise<string | null>;
 		onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	};
 	onOpenFile: (relPath: string) => Promise<void>;
@@ -197,11 +182,7 @@ interface MainContentProps {
 		edge: Exclude<SplitEditorDropTarget["edge"], "center">,
 		path: string,
 	) => void;
-	moveTabToPane: (
-		tabId: string,
-		paneId: string,
-		edge: SplitEditorDropTarget["edge"],
-	) => void;
+	moveTabToPane: (tabId: string, paneId: string, edge: SplitEditorDropTarget["edge"]) => void;
 	focusPane: (paneId: string) => void;
 	resizeSplit: (splitId: string, ratio: number) => void;
 	onStartRenamePath: (path: string) => void;
@@ -258,21 +239,17 @@ export const MainContent = memo(function MainContent({
 	onOpenPeekedNote,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
-	const { folioMode, settingsMode, settingsTab, zenMode } =
-		useUILayoutContext();
+	const { folioMode, settingsMode, settingsTab, zenMode } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { keepMounted: aiPanelKeepMounted } = useAiPanelSession();
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
 	const handledDailyNoteSetupNoticeRequestRef = useRef(0);
 
-	const aiSidebarVisible =
-		!zenMode && aiEnabled && aiPanelOpen && !infoSidebarOpen;
+	const aiSidebarVisible = !zenMode && aiEnabled && aiPanelOpen && !infoSidebarOpen;
 	const aiSidebarMounted = aiSidebarVisible || aiPanelKeepMounted;
 	const rightSidebarOpen =
-		Boolean(spacePath) &&
-		!settingsMode &&
-		(aiSidebarVisible || (!zenMode && infoSidebarOpen));
+		Boolean(spacePath) && !settingsMode && (aiSidebarVisible || (!zenMode && infoSidebarOpen));
 	const infoSidebarResize = useResizablePanel({
 		min: 260,
 		max: 620,
@@ -301,8 +278,7 @@ export const MainContent = memo(function MainContent({
 	useEffect(() => {
 		if (
 			dailyNoteSetupNoticeRequest === 0 ||
-			dailyNoteSetupNoticeRequest ===
-				handledDailyNoteSetupNoticeRequestRef.current
+			dailyNoteSetupNoticeRequest === handledDailyNoteSetupNoticeRequestRef.current
 		) {
 			return;
 		}
@@ -336,13 +312,9 @@ export const MainContent = memo(function MainContent({
 	);
 
 	const { i18n } = useTranslation();
-	const settingsPanelTitle = localizedSettingsTabLabel(
-		settingsTab,
-		i18n.language,
-	);
+	const settingsPanelTitle = localizedSettingsTabLabel(settingsTab, i18n.language);
 	const handleRenameFile = useCallback(
-		(path: string, nextName: string) =>
-			fileTree.onRenameDir(path, nextName, "file"),
+		(path: string, nextName: string) => fileTree.onRenameDir(path, nextName, "file"),
 		[fileTree.onRenameDir],
 	);
 	const handleSplitDrop = useCallback(
@@ -364,8 +336,7 @@ export const MainContent = memo(function MainContent({
 		(paneId: string, focused: boolean) => {
 			const pane = panes[paneId];
 			if (!pane) return null;
-			const handlesDatabasesOpenRequest =
-				databasesOpenRequest.paneId === paneId;
+			const handlesDatabasesOpenRequest = databasesOpenRequest.paneId === paneId;
 			const paneDatabasesOpenRequest = handlesDatabasesOpenRequest
 				? databasesOpenRequest
 				: INITIAL_DATABASES_OPEN_REQUEST;
@@ -377,11 +348,7 @@ export const MainContent = memo(function MainContent({
 					allowWindowDrag={splitLayout.type === "pane"}
 					rootEntries={rootEntries}
 					childrenByDir={childrenByDir}
-					emptyState={
-						<EmptyStateCommandPaletteHint
-							onOpenCommandPalette={onOpenCommandPalette}
-						/>
-					}
+					emptyState={<EmptyStateCommandPaletteHint onOpenCommandPalette={onOpenCommandPalette} />}
 					createMarkdownFileAtPath={fileTree.createMarkdownFileAtPath}
 					onRenameFile={handleRenameFile}
 					onOpenFile={onOpenFile}
@@ -444,10 +411,7 @@ export const MainContent = memo(function MainContent({
 		<>
 			<div
 				ref={infoSidebarResize.resizeRef}
-				className={cn(
-					"notesInfoSidebarResizeHandle",
-					!rightSidebarOpen && "is-hidden",
-				)}
+				className={cn("notesInfoSidebarResizeHandle", !rightSidebarOpen && "is-hidden")}
 				onPointerDown={handleInfoSidebarResizePointerDown}
 				onPointerMove={infoSidebarResize.handlePointerMove}
 				onPointerUp={infoSidebarResize.handlePointerUp}
@@ -509,10 +473,7 @@ export const MainContent = memo(function MainContent({
 
 	return (
 		<>
-			<main
-				className="mainArea"
-				data-right-sidebar-open={rightSidebarOpen ? "true" : undefined}
-			>
+			<main className="mainArea" data-right-sidebar-open={rightSidebarOpen ? "true" : undefined}>
 				<div className="canvasWrapper">
 					{folioMode ? (
 						<FolioWorkspace
@@ -520,9 +481,7 @@ export const MainContent = memo(function MainContent({
 							onOpenFile={onOpenFolioFile}
 							onOpenFileInNewTab={onOpenFolioFileInNewTab}
 							onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
-							onRenameFile={(path, nextName) =>
-								fileTree.onRenameDir(path, nextName, "file")
-							}
+							onRenameFile={(path, nextName) => fileTree.onRenameDir(path, nextName, "file")}
 							onDeleteFile={(path) => fileTree.onDeletePath(path, "file")}
 						>
 							{editorCanvas}

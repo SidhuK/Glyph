@@ -66,10 +66,7 @@ export const providerLogoMeta: Record<
 	},
 };
 
-export function getProviderLogoSrc(
-	provider: AiProviderKind,
-	isDark: boolean,
-): string {
+export function getProviderLogoSrc(provider: AiProviderKind, isDark: boolean): string {
 	const config = providerLogoMeta[provider];
 	return isDark ? (config.darkSrc ?? config.src) : config.src;
 }

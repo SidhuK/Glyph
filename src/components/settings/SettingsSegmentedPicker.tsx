@@ -28,18 +28,11 @@ export function SettingsSegmentedPicker<T extends string>({
 }: SettingsSegmentedPickerProps<T>) {
 	return (
 		<div className="settingsSegmentedPicker">
-			<div
-				className="settingsSegmentedTrack"
-				role="radiogroup"
-				aria-label={ariaLabel}
-			>
+			<div className="settingsSegmentedTrack" role="radiogroup" aria-label={ariaLabel}>
 				{options.map((option) => (
 					<label
 						key={option.value}
-						className={cn(
-							"settingsSegmentedOption",
-							value === option.value && "is-active",
-						)}
+						className={cn("settingsSegmentedOption", value === option.value && "is-active")}
 						title={option.description}
 						{...(getDataAttributes?.(option.value) ?? {})}
 					>
