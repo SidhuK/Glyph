@@ -7,7 +7,7 @@ import {
 } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon, PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
-import { memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -96,6 +96,7 @@ export function TabBar({
 }: TabBarProps) {
 	const { t } = useTranslation("shell");
 	const { getBinding } = useShortcutBindings();
+	const [tabsOverflow, setTabsOverflow] = useState(false);
 	const suppressClickRef = useRef(false);
 	const suppressClickResetTimerRef = useRef<ReturnType<
 		typeof window.setTimeout
@@ -133,8 +134,26 @@ export function TabBar({
 		},
 		[compactLabel, stripFileExtension, t],
 	);
+	const measureTabsRef = useCallback((node: HTMLDivElement | null) => {
+		if (!node) return;
 
-	const showTabs = tabs.length > 0;
+		const updateOverflow = () => {
+			setTabsOverflow(node.scrollWidth > node.clientWidth);
+		};
+		const resizeObserver = new ResizeObserver(updateOverflow);
+		resizeObserver.observe(node);
+		const mutationObserver = new MutationObserver(updateOverflow);
+		mutationObserver.observe(node, {
+			childList: true,
+		});
+		updateOverflow();
+
+		return () => {
+			mutationObserver.disconnect();
+			resizeObserver.disconnect();
+		};
+	}, []);
+
 	const newTabShortcut = getBinding("new-tab");
 	const activeMarkdownPath =
 		activeTabPath &&
@@ -217,9 +236,9 @@ export function TabBar({
 					path={activeMarkdownPath}
 					onRenameFile={onRenameFile}
 				/>
-				{showTabs ? (
+				{tabs.length > 0 ? (
 					<div className="mainTabsStrip">
-						<div className="mainTabsStripTabs">
+						<div className="mainTabsStripTabs" ref={measureTabsRef}>
 							{tabs.map((tab, index) => (
 								<TabItem
 									key={tab.id}
@@ -250,6 +269,37 @@ export function TabBar({
 						>
 							+
 						</button>
+						{tabsOverflow ? (
+							<div className="mainTabAdd mainTabOverflow">
+								<svg
+									className="size-[14px] shrink-0"
+									viewBox="0 0 24 24"
+									fill="none"
+									aria-hidden="true"
+								>
+									<path
+										d="M18 9C18 9 13.5811 15 12 15C10.4188 15 6 9 6 9"
+										stroke="currentColor"
+										strokeWidth="2"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									/>
+								</svg>
+								<select
+									className="mainTabOverflowSelect"
+									value={activeTabId ?? tabs[0]?.id}
+									onChange={(event) => onSelectTab(event.currentTarget.value)}
+									title="Show all tabs"
+									aria-label="Show all tabs"
+								>
+									{tabs.map((tab) => (
+										<option key={tab.id} value={tab.id}>
+											{tabLabel(tab)}
+										</option>
+									))}
+								</select>
+							</div>
+						) : null}
 					</div>
 				) : null}
 			</div>
