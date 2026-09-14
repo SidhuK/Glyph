@@ -610,7 +610,22 @@ button.mainTabClose {
 	transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.mainTabAdd:hover {
+.mainTabOverflow {
+	position: relative;
+	color: var(--text-secondary);
+}
+
+.mainTabOverflowSelect {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.mainTabAdd:hover,
+.mainTabOverflow:focus-within {
 	color: var(--text-primary);
 }
 
