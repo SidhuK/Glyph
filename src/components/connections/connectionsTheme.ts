@@ -63,35 +63,19 @@ function cssColor(element: HTMLElement, name: string, fallback: string) {
 
 function withAlpha(color: string, alpha: number) {
 	const clamped = Math.min(1, Math.max(0, alpha));
-	const rgb = color.match(
-		/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i,
-	);
+	const rgb = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i);
 	if (!rgb) return color;
 	return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${Math.round(clamped * 1000) / 1000})`;
 }
 
-export function resolveConnectionsPalette(
-	container: HTMLElement,
-): ConnectionsPalette {
+export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPalette {
 	const accent = cssColor(container, "--interactive-accent", "#888888");
 	const text = cssColor(container, "--text-primary", "#1f2328");
 	const note = cssColor(container, "--local-connections-note-bg", "#4269d0");
 	const tag = cssColor(container, "--local-connections-tag-node", "#a463f2");
-	const edgeDefault = cssColor(
-		container,
-		"--local-connections-edge",
-		"#6e737b",
-	);
-	const edgeMuted = cssColor(
-		container,
-		"--local-connections-edge-muted",
-		"#9aa0a8",
-	);
-	const faded = cssColor(
-		container,
-		"--local-connections-node-faded",
-		"#d4d6da",
-	);
+	const edgeDefault = cssColor(container, "--local-connections-edge", "#6e737b");
+	const edgeMuted = cssColor(container, "--local-connections-edge-muted", "#9aa0a8");
+	const faded = cssColor(container, "--local-connections-node-faded", "#d4d6da");
 	const labelBackground = cssColor(
 		container,
 		"--local-connections-label-bg",
@@ -118,10 +102,7 @@ export function resolveConnectionsPalette(
 	};
 }
 
-function nodeColorForAttributes(
-	attrs: ConnectionsNodeAttributes,
-	palette: ConnectionsPalette,
-) {
+function nodeColorForAttributes(attrs: ConnectionsNodeAttributes, palette: ConnectionsPalette) {
 	if (attrs.isCenter) return palette.accent;
 	if (attrs.kind === "tag") return palette.tag;
 	return palette.note;
@@ -133,13 +114,9 @@ export function buildNodeReducer(
 	getFocusState: () => ConnectionsFocusState,
 	getDisplayState: () => ConnectionsDisplayState,
 ) {
-	return (
-		nodeKey: string,
-		data: ConnectionsNodeAttributes,
-	): Partial<NodeDisplayData> => {
+	return (nodeKey: string, data: ConnectionsNodeAttributes): Partial<NodeDisplayData> => {
 		const palette = getPalette();
-		const { hoveredNode, neighborIds, selectedNodeId, searchMatchIds } =
-			getFocusState();
+		const { hoveredNode, neighborIds, selectedNodeId, searchMatchIds } = getFocusState();
 		const display = getDisplayState();
 		const activeFocusId = selectedNodeId ?? hoveredNode;
 		const activeNeighbors = neighborIds;
@@ -147,9 +124,7 @@ export function buildNodeReducer(
 		const isSearchMatch = searching && searchMatchIds.has(nodeKey);
 		const isFocus = activeFocusId === nodeKey;
 		const isNeighbor = activeNeighbors?.has(nodeKey) ?? false;
-		const isFaded = searching
-			? !isSearchMatch
-			: Boolean(activeFocusId) && !isFocus && !isNeighbor;
+		const isFaded = searching ? !isSearchMatch : Boolean(activeFocusId) && !isFocus && !isNeighbor;
 
 		let color = nodeColorForAttributes(data, palette);
 		let label = data.label;
@@ -163,10 +138,7 @@ export function buildNodeReducer(
 			zIndex = 0;
 		} else if (isFocus) {
 			forceLabel = true;
-			size = Math.max(
-				size,
-				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : size * 1.15,
-			);
+			size = Math.max(size, variant === "local" ? LOCAL_FOCUS_NODE_SIZE : size * 1.15);
 			zIndex = 30;
 		} else if (isSearchMatch) {
 			forceLabel = true;
@@ -216,12 +188,8 @@ export function buildEdgeReducer(
 		const { hoveredNode, selectedNodeId, searchMatchIds } = getFocusState();
 		const activeFocusId = selectedNodeId ?? hoveredNode;
 		const matchEdge = searchMatchIds?.has(source) && searchMatchIds.has(target);
-		const isHighlighted =
-			searchMatchIds === null && isEdgeInFocus(source, target);
-		const isFaded =
-			searchMatchIds !== null
-				? !matchEdge
-				: Boolean(activeFocusId) && !isHighlighted;
+		const isHighlighted = searchMatchIds === null && isEdgeInFocus(source, target);
+		const isFaded = searchMatchIds !== null ? !matchEdge : Boolean(activeFocusId) && !isHighlighted;
 		const baseColor = edgeColorForRole(data.colorRole, palette);
 
 		let color = withAlpha(baseColor, display.linkOpacity);

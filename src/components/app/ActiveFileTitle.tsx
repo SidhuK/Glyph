@@ -43,14 +43,7 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 		} finally {
 			setIsRenaming(false);
 		}
-	}, [
-		draftName,
-		editableName.ext,
-		editableName.stem,
-		fileName,
-		onRenameFile,
-		path,
-	]);
+	}, [draftName, editableName.ext, editableName.stem, fileName, onRenameFile, path]);
 
 	const cancelRename = useCallback(() => {
 		submittedRef.current = true;

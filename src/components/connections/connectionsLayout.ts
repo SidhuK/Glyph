@@ -35,10 +35,7 @@ export type ConnectionsLayoutResponse =
 			readonly error: string;
 	  };
 
-export function computeSpaceConnectionsLayout({
-	graph,
-	mode,
-}: ConnectionsLayoutRequest) {
+export function computeSpaceConnectionsLayout({ graph, mode }: ConnectionsLayoutRequest) {
 	if (graph.nodeIds.length + graph.tags.length === 0) return [];
 	const model = detectConnectionsCommunities(graph);
 	return mode === "legacy"

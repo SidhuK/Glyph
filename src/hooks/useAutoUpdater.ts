@@ -2,11 +2,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { Update } from "@tauri-apps/plugin-updater";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	type ReleaseChannel,
-	loadSettings,
-	setAutoUpdateLastCheckedAt,
-} from "../lib/settings";
+import { type ReleaseChannel, loadSettings, setAutoUpdateLastCheckedAt } from "../lib/settings";
 import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 
@@ -26,9 +22,7 @@ async function isMainWindow(): Promise<boolean> {
 	return windowLabel === "main";
 }
 
-async function checkReleaseChannel(
-	channel: ReleaseChannel,
-): Promise<Update | null> {
+async function checkReleaseChannel(channel: ReleaseChannel): Promise<Update | null> {
 	const metadata = await invoke("updater_check_release_channel", { channel });
 	return metadata ? new Update(metadata) : null;
 }
@@ -74,8 +68,7 @@ export interface AutoUpdaterState {
 }
 
 export function useAutoUpdater(enabled = true): AutoUpdaterState {
-	const [releaseChannel, setReleaseChannelState] =
-		useState<ReleaseChannel>("stable");
+	const [releaseChannel, setReleaseChannelState] = useState<ReleaseChannel>("stable");
 	const releaseChannelRef = useRef(releaseChannel);
 	const [releaseChannelLoaded, setReleaseChannelLoaded] = useState(false);
 	const [update, setUpdate] = useState<Update | null>(null);
@@ -120,9 +113,7 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 		if (!nextChannel) return;
 		setReleaseChannelState(nextChannel);
 		setReleaseChannelLoaded(true);
-		setUpdate(
-			cachedUpdate?.channel === nextChannel ? cachedUpdate.update : null,
-		);
+		setUpdate(cachedUpdate?.channel === nextChannel ? cachedUpdate.update : null);
 	});
 
 	useEffect(() => {

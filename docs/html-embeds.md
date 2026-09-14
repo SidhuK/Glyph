@@ -9,9 +9,13 @@ The supported path is a fenced code block with an explicit language tag:
 ````md
 ```html
 <div id="app"></div>
-<style>#app { padding: 16px; }</style>
+<style>
+	#app {
+		padding: 16px;
+	}
+</style>
 <script>
-  document.getElementById("app").textContent = "Hello from the embed";
+	document.getElementById("app").textContent = "Hello from the embed";
 </script>
 ```
 ````
@@ -59,13 +63,13 @@ sandbox="allow-scripts allow-downloads"
 
 What that means in practice:
 
-| Allowed | Blocked |
-|---------|---------|
-| Inline `<script>` and inline `style=""` | `allow-same-origin` (no access to Glyph's DOM, cookies, or `localStorage`) |
-| `data:` and `blob:` images, fonts, media | Network requests (`connect-src 'none'`) |
-| Canvas, SVG, DOM APIs inside the frame | Form submission to external URLs |
-| `postMessage` to parent for sizing/errors | `window.open`, top navigation, popups |
-| `URL.createObjectURL` for downloads | External `<script src>`, `<link href>`, `@import url(...)` |
+| Allowed                                   | Blocked                                                                    |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| Inline `<script>` and inline `style=""`   | `allow-same-origin` (no access to Glyph's DOM, cookies, or `localStorage`) |
+| `data:` and `blob:` images, fonts, media  | Network requests (`connect-src 'none'`)                                    |
+| Canvas, SVG, DOM APIs inside the frame    | Form submission to external URLs                                           |
+| `postMessage` to parent for sizing/errors | `window.open`, top navigation, popups                                      |
+| `URL.createObjectURL` for downloads       | External `<script src>`, `<link href>`, `@import url(...)`                 |
 
 CSP on the embed document:
 
@@ -86,11 +90,11 @@ Glyph does not inject its theme tokens into the iframe. CSS variables like `var(
 
 ```html
 <style>
-  :root {
-    --foreground: #171717;
-    --primary: #2563eb;
-    --border: #e5e5e5;
-  }
+	:root {
+		--foreground: #171717;
+		--primary: #2563eb;
+		--border: #e5e5e5;
+	}
 </style>
 ```
 
@@ -140,26 +144,26 @@ If you open a note in raw Markdown mode, you see fences (or raw HTML if that is 
 
 ## Debugging a broken embed
 
-| Symptom | Likely cause |
-|---------|----------------|
-| Code visible, no iframe | Preview not started yet — click the play control; or cursor is inside the block; or language is `xml` instead of `html` |
-| Blank or tiny preview | `height: 100%` collapse; add `min-height` |
-| Chart draws but colors are wrong | Glyph CSS variables used without a local `:root` definition |
-| Red error line under the embed | JavaScript threw; fix the script |
-| Works in preview, empty in print | Output depends on JS execution; add static SVG or accept print limits |
+| Symptom                          | Likely cause                                                                                                            |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Code visible, no iframe          | Preview not started yet — click the play control; or cursor is inside the block; or language is `xml` instead of `html` |
+| Blank or tiny preview            | `height: 100%` collapse; add `min-height`                                                                               |
+| Chart draws but colors are wrong | Glyph CSS variables used without a local `:root` definition                                                             |
+| Red error line under the embed   | JavaScript threw; fix the script                                                                                        |
+| Works in preview, empty in print | Output depends on JS execution; add static SVG or accept print limits                                                   |
 
 Errors from the iframe surface in `.htmlEmbedError` under the preview frame.
 
 ## Related code
 
-| File | Role |
-|------|------|
-| `src/components/editor/extensions/htmlEmbedPreview.ts` | Preview decorations, play-to-render toggling |
-| `src/components/editor/extensions/htmlEmbed/sandbox.ts` | `srcdoc` builder, CSP, iframe widget, sizing |
-| `src/components/editor/markdown/htmlEmbedMarkdown.ts` | Raw HTML preprocess/postprocess |
-| `src/components/editor/markdown/wikiLinkMarkdownBridge.ts` | Pipeline wiring |
-| `src/lib/printHtml.ts` | Static sanitization for print |
-| `src/styles/app/26-node-note-overlays.css` | `.htmlEmbedWidget`, frame, error styles |
+| File                                                       | Role                                         |
+| ---------------------------------------------------------- | -------------------------------------------- |
+| `src/components/editor/extensions/htmlEmbedPreview.ts`     | Preview decorations, play-to-render toggling |
+| `src/components/editor/extensions/htmlEmbed/sandbox.ts`    | `srcdoc` builder, CSP, iframe widget, sizing |
+| `src/components/editor/markdown/htmlEmbedMarkdown.ts`      | Raw HTML preprocess/postprocess              |
+| `src/components/editor/markdown/wikiLinkMarkdownBridge.ts` | Pipeline wiring                              |
+| `src/lib/printHtml.ts`                                     | Static sanitization for print                |
+| `src/styles/app/26-node-note-overlays.css`                 | `.htmlEmbedWidget`, frame, error styles      |
 
 ---
 
@@ -167,7 +171,7 @@ Errors from the iframe surface in `.htmlEmbedError` under the preview frame.
 
 Copy this prompt into Cursor (or any agent) with your HTML file attached:
 
-```text
+````text
 Convert the attached HTML file into a single Glyph HTML embed block I can paste into a note.
 
 Requirements:
@@ -182,4 +186,4 @@ Requirements:
 - If the page has <html>/<head>/<body>, extract only what belongs in the embed body; do not nest a full document.
 - Preserve the visual design and behavior as closely as the sandbox allows.
 - After the block, list what you changed and anything that cannot be ported (with a one-line reason each).
-```
+````

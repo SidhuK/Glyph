@@ -20,20 +20,15 @@ export function nextDatabasesOpenRequest(
 		paneId?: string | null;
 	},
 ): DatabasesOpenRequest {
-	const databaseId =
-		patch.databaseId !== undefined ? patch.databaseId : current.databaseId;
+	const databaseId = patch.databaseId !== undefined ? patch.databaseId : current.databaseId;
 	const openCreateDialog =
-		patch.openCreateDialog !== undefined
-			? patch.openCreateDialog
-			: current.openCreateDialog;
+		patch.openCreateDialog !== undefined ? patch.openCreateDialog : current.openCreateDialog;
 	const paneId = patch.paneId !== undefined ? patch.paneId : current.paneId;
 	const databaseIdChanged =
 		patch.databaseId !== undefined && patch.databaseId !== current.databaseId;
 	const openCreateDialogChanged =
-		patch.openCreateDialog !== undefined &&
-		patch.openCreateDialog !== current.openCreateDialog;
-	const paneIdChanged =
-		patch.paneId !== undefined && patch.paneId !== current.paneId;
+		patch.openCreateDialog !== undefined && patch.openCreateDialog !== current.openCreateDialog;
+	const paneIdChanged = patch.paneId !== undefined && patch.paneId !== current.paneId;
 	const openCreateRequested = patch.openCreateDialog === true;
 
 	return {
@@ -41,10 +36,7 @@ export function nextDatabasesOpenRequest(
 		openCreateDialog,
 		paneId,
 		nonce:
-			databaseIdChanged ||
-			openCreateDialogChanged ||
-			paneIdChanged ||
-			openCreateRequested
+			databaseIdChanged || openCreateDialogChanged || paneIdChanged || openCreateRequested
 				? current.nonce + 1
 				: current.nonce,
 	};

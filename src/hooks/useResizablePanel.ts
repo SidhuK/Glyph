@@ -26,9 +26,7 @@ export function useResizablePanel({
 	const calcWidth = useCallback(
 		(clientX: number) => {
 			const delta =
-				direction === "right"
-					? clientX - dragStartXRef.current
-					: dragStartXRef.current - clientX;
+				direction === "right" ? clientX - dragStartXRef.current : dragStartXRef.current - clientX;
 			return Math.max(min, Math.min(max, dragStartWidthRef.current + delta));
 		},
 		[direction, max, min],

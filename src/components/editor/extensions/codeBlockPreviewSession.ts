@@ -6,10 +6,7 @@ export const CODE_BLOCK_PREVIEW_REFRESH_META = "code-block-preview-refresh";
 let nextPreviewId = 1;
 const enabledPreviewIdsByView = new WeakMap<EditorView, Map<number, string>>();
 
-export function enableCodeBlockPreviewAt(
-	view: EditorView,
-	pos: number,
-): string {
+export function enableCodeBlockPreviewAt(view: EditorView, pos: number): string {
 	let session = enabledPreviewIdsByView.get(view);
 	if (!session) {
 		session = new Map();
@@ -30,38 +27,25 @@ export function clearCodeBlockPreviews(view: EditorView): void {
 
 // Read helpers tolerate a missing view: plugin state can initialize before
 // TipTap assigns editor.view.
-function readPreviewSession(
-	view: EditorView | undefined,
-): Map<number, string> | undefined {
+function readPreviewSession(view: EditorView | undefined): Map<number, string> | undefined {
 	return view ? enabledPreviewIdsByView.get(view) : undefined;
 }
 
-export function hasEnabledCodeBlockPreviews(
-	view: EditorView | undefined,
-): boolean {
+export function hasEnabledCodeBlockPreviews(view: EditorView | undefined): boolean {
 	return (readPreviewSession(view)?.size ?? 0) > 0;
 }
 
-export function isCodeBlockPreviewEnabled(
-	view: EditorView | undefined,
-	pos: number,
-): boolean {
+export function isCodeBlockPreviewEnabled(view: EditorView | undefined, pos: number): boolean {
 	return readPreviewSession(view)?.has(pos) ?? false;
 }
 
-export function getCodeBlockPreviewId(
-	view: EditorView | undefined,
-	pos: number,
-): string | null {
+export function getCodeBlockPreviewId(view: EditorView | undefined, pos: number): string | null {
 	return readPreviewSession(view)?.get(pos) ?? null;
 }
 
 const remappedPreviewTransactions = new WeakSet<Transaction>();
 
-export function remapCodeBlockPreviews(
-	view: EditorView,
-	transaction: Transaction,
-): void {
+export function remapCodeBlockPreviews(view: EditorView, transaction: Transaction): void {
 	if (remappedPreviewTransactions.has(transaction)) return;
 	remappedPreviewTransactions.add(transaction);
 

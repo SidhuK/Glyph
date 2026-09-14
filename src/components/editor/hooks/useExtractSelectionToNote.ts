@@ -27,25 +27,19 @@ export function useExtractSelectionToNote({
 	hostRef,
 	relPath,
 }: UseExtractSelectionToNoteArgs) {
-	const [dialogState, setDialogState] =
-		useState<ExtractToNoteDialogState | null>(null);
+	const [dialogState, setDialogState] = useState<ExtractToNoteDialogState | null>(null);
 
 	const canExtractToNote = canEdit && Boolean(relPath) && Boolean(actions);
 
-	const loadUniqueExtractTitle = useCallback(
-		async (title: string, destinationDir: string) => {
-			const siblings = await invoke("space_list_dir", {
-				dir: destinationDir || null,
-			});
-			return uniqueExtractedNoteTitle(
-				title,
-				siblings
-					.filter((entry) => entry.kind === "file")
-					.map((entry) => entry.name),
-			);
-		},
-		[],
-	);
+	const loadUniqueExtractTitle = useCallback(async (title: string, destinationDir: string) => {
+		const siblings = await invoke("space_list_dir", {
+			dir: destinationDir || null,
+		});
+		return uniqueExtractedNoteTitle(
+			title,
+			siblings.filter((entry) => entry.kind === "file").map((entry) => entry.name),
+		);
+	}, []);
 
 	const openExtractDialog = useCallback(() => {
 		if (!editor || !canExtractToNote || !relPath) {
@@ -57,9 +51,7 @@ export function useExtractSelectionToNote({
 			toast.error("Select text to extract.");
 			return;
 		}
-		const destinationDir = relPath.includes("/")
-			? relPath.slice(0, relPath.lastIndexOf("/"))
-			: "";
+		const destinationDir = relPath.includes("/") ? relPath.slice(0, relPath.lastIndexOf("/")) : "";
 		setDialogState({
 			...draft,
 			destinationDir,
@@ -94,33 +86,21 @@ export function useExtractSelectionToNote({
 	}, []);
 
 	const setExtractTitle = useCallback((title: string) => {
-		setDialogState((current) =>
-			current ? { ...current, title, titleDirty: true } : current,
-		);
+		setDialogState((current) => (current ? { ...current, title, titleDirty: true } : current));
 	}, []);
 
 	const setExtractDestinationDir = useCallback((destinationDir: string) => {
-		setDialogState((current) =>
-			current ? { ...current, destinationDir } : current,
-		);
+		setDialogState((current) => (current ? { ...current, destinationDir } : current));
 	}, []);
 
 	const submitExtractDialog = useCallback(async () => {
 		if (!editor || !dialogState || !actions || !relPath) return;
 		const requestedTitle = sanitizeExtractedNoteTitle(dialogState.title);
 		if (!requestedTitle) return;
-		setDialogState((current) =>
-			current ? { ...current, loading: true } : current,
-		);
+		setDialogState((current) => (current ? { ...current, loading: true } : current));
 		try {
-			const finalTitle = await loadUniqueExtractTitle(
-				requestedTitle,
-				dialogState.destinationDir,
-			);
-			const notePath = buildExtractedNotePath(
-				finalTitle,
-				dialogState.destinationDir,
-			);
+			const finalTitle = await loadUniqueExtractTitle(requestedTitle, dialogState.destinationDir);
+			const notePath = buildExtractedNotePath(finalTitle, dialogState.destinationDir);
 			const noteMarkdown = rewriteRelativeMarkdownLinks(
 				dialogState.markdown,
 				relPath,
@@ -134,9 +114,7 @@ export function useExtractSelectionToNote({
 			if (!createdPath) {
 				throw new Error("Could not create the extracted note.");
 			}
-			const scrollHost = hostRef.current?.closest(
-				".rfNodeNoteEditorBody",
-			) as HTMLElement | null;
+			const scrollHost = hostRef.current?.closest(".rfNodeNoteEditorBody") as HTMLElement | null;
 			const scrollTop = scrollHost?.scrollTop ?? 0;
 			const inserted = editor
 				.chain()
@@ -179,9 +157,7 @@ export function useExtractSelectionToNote({
 			const message = error instanceof Error ? error.message : String(error);
 			console.error("Failed to extract selection to note", error);
 			toast.error("Could not extract to note", { description: message });
-			setDialogState((current) =>
-				current ? { ...current, loading: false } : current,
-			);
+			setDialogState((current) => (current ? { ...current, loading: false } : current));
 		}
 	}, [actions, dialogState, editor, hostRef, loadUniqueExtractTitle, relPath]);
 

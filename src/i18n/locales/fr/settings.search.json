@@ -62,13 +62,7 @@
 		"general-license": {
 			"title": "License",
 			"description": "Trial status, license key, activation, and official build.",
-			"keywords": [
-				"trial",
-				"activate",
-				"activation",
-				"subscription",
-				"purchase"
-			]
+			"keywords": ["trial", "activate", "activation", "subscription", "purchase"]
 		},
 		"general-trial-status": {
 			"title": "Trial status",
@@ -110,29 +104,13 @@
 			"title": "Langue",
 			"section": "Langue",
 			"description": "Choisir la langue d’affichage de Glyph.",
-			"keywords": [
-				"locale",
-				"traduction",
-				"i18n",
-				"langue",
-				"language",
-				"translation"
-			]
+			"keywords": ["locale", "traduction", "i18n", "langue", "language", "translation"]
 		},
 		"general-date-format": {
 			"title": "Format de date",
 			"section": "Date et heure",
 			"description": "Choisissez l’affichage des dates complètes dans Glyph.",
-			"keywords": [
-				"date",
-				"format",
-				"calendrier",
-				"US",
-				"European",
-				"Friendly",
-				"ISO",
-				"affichage"
-			]
+			"keywords": ["date", "format", "calendrier", "US", "European", "Friendly", "ISO", "affichage"]
 		},
 		"general-resume-last-session": {
 			"title": "Ouvrir les onglets précédents",
@@ -175,15 +153,7 @@
 			"title": "Sélectionner le thème",
 			"section": "Thèmes",
 			"description": "Choisir le mode système, clair ou sombre.",
-			"keywords": [
-				"mode",
-				"système",
-				"clair",
-				"sombre",
-				"system",
-				"light",
-				"dark"
-			]
+			"keywords": ["mode", "système", "clair", "sombre", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
 			"title": "Clair",
@@ -504,14 +474,7 @@
 		"general-editor-frontmatter": {
 			"title": "Afficher le frontmatter dans l’éditeur",
 			"section": "Éditeur",
-			"keywords": [
-				"propriétés",
-				"yaml",
-				"métadonnées",
-				"properties",
-				"metadata",
-				"frontmatter"
-			]
+			"keywords": ["propriétés", "yaml", "métadonnées", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "Titres colorés",
@@ -541,38 +504,17 @@
 		"appearance-editor-presentation-width": {
 			"title": "Largeur de l’éditeur",
 			"section": "Présentation de l’éditeur",
-			"keywords": [
-				"compacte",
-				"confortable",
-				"large",
-				"compact",
-				"comfortable",
-				"wide"
-			]
+			"keywords": ["compacte", "confortable", "large", "compact", "comfortable", "wide"]
 		},
 		"general-editor-collapsible-headings": {
 			"title": "Titres repliables",
 			"section": "Éditeur",
-			"keywords": [
-				"replier",
-				"réduire",
-				"développer",
-				"fold",
-				"collapse",
-				"expand"
-			]
+			"keywords": ["replier", "réduire", "développer", "fold", "collapse", "expand"]
 		},
 		"general-editor-spell-check": {
 			"title": "Vérification orthographique",
 			"section": "Éditeur",
-			"keywords": [
-				"orthographe",
-				"faute",
-				"dictionnaire",
-				"spelling",
-				"typo",
-				"dictionary"
-			]
+			"keywords": ["orthographe", "faute", "dictionnaire", "spelling", "typo", "dictionary"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Mode Vim",
@@ -591,14 +533,7 @@
 		"general-editor-format-bar": {
 			"title": "Barre de formatage",
 			"section": "Expérimental",
-			"keywords": [
-				"formatage",
-				"barre",
-				"toolbar",
-				"ribbon",
-				"enrichi",
-				"éditeur"
-			]
+			"keywords": ["formatage", "barre", "toolbar", "ribbon", "enrichi", "éditeur"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
@@ -656,13 +591,7 @@
 		"appearance-database-column-color": {
 			"title": "Afficher la couleur des colonnes de base de données",
 			"section": "Base de données",
-			"keywords": [
-				"collection",
-				"base de données",
-				"couleur",
-				"database",
-				"color"
-			]
+			"keywords": ["collection", "base de données", "couleur", "database", "color"]
 		},
 		"about-app": {
 			"title": "Glyph",

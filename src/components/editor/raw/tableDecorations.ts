@@ -1,8 +1,7 @@
 import type { Range } from "@codemirror/state";
 import { Decoration, type EditorView } from "@codemirror/view";
 
-const TABLE_DELIMITER_PATTERN =
-	/^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/;
+const TABLE_DELIMITER_PATTERN = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/;
 
 interface TableCell {
 	from: number;
@@ -40,27 +39,18 @@ export function decorateRecognizedTable(
 	const document = view.state.doc;
 	const first = document.lineAt(from).number;
 	const last = document.lineAt(Math.max(from, to - 1)).number;
-	const rows = Array.from({ length: last - first + 1 }, (_, index) =>
-		document.line(first + index),
-	);
+	const rows = Array.from({ length: last - first + 1 }, (_, index) => document.line(first + index));
 	const widths: number[] = [];
 	for (const row of rows) {
 		for (const [index, cell] of tableCells(row.text).entries()) {
-			widths[index] = Math.max(
-				widths[index] ?? 0,
-				Math.min(38, Math.max(7, cell.text.length + 2)),
-			);
+			widths[index] = Math.max(widths[index] ?? 0, Math.min(38, Math.max(7, cell.text.length + 2)));
 		}
 	}
 	const totalWidth = widths.reduce((sum, width) => sum + width, 0);
 	for (const [index, line] of rows.entries()) {
 		if (line.to < visibleFrom || line.from > visibleTo) continue;
 		const kind =
-			index === 0
-				? "header"
-				: TABLE_DELIMITER_PATTERN.test(line.text)
-					? "separator"
-					: "row";
+			index === 0 ? "header" : TABLE_DELIMITER_PATTERN.test(line.text) ? "separator" : "row";
 		const isLast = index === rows.length - 1;
 		ranges.push(
 			Decoration.line({

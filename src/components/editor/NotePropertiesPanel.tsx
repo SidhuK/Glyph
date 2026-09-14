@@ -7,11 +7,7 @@ import { Button } from "../ui/shadcn/button";
 import { NotePropertiesToolbar } from "./noteProperties/NotePropertiesToolbar";
 import { NotePropertyRow } from "./noteProperties/NotePropertyRow";
 import { RawFrontmatterEditor } from "./noteProperties/RawFrontmatterEditor";
-import {
-	emptyProperty,
-	normalizeForKind,
-	normalizeTagToken,
-} from "./noteProperties/utils";
+import { emptyProperty, normalizeForKind, normalizeTagToken } from "./noteProperties/utils";
 
 function normalizeFrontmatter(fm: string | null): string | null {
 	if (fm == null) return null;
@@ -59,16 +55,12 @@ export function NotePropertiesPanel({
 	const pruneRowScopedState = (nextRowIds: string[]) => {
 		setTagDrafts((current) =>
 			Object.fromEntries(
-				nextRowIds.flatMap((rowId) =>
-					rowId in current ? [[rowId, current[rowId] ?? ""]] : [],
-				),
+				nextRowIds.flatMap((rowId) => (rowId in current ? [[rowId, current[rowId] ?? ""]] : [])),
 			),
 		);
 		tagInputRefs.current = Object.fromEntries(
 			nextRowIds.flatMap((rowId) =>
-				rowId in tagInputRefs.current
-					? [[rowId, tagInputRefs.current[rowId] ?? null]]
-					: [],
+				rowId in tagInputRefs.current ? [[rowId, tagInputRefs.current[rowId] ?? null]] : [],
 			),
 		);
 	};
@@ -78,9 +70,7 @@ export function NotePropertiesPanel({
 		if (mode === "raw") {
 			parseRequestIdRef.current += 1;
 			setEditorState((current) =>
-				current.rawDraft === nextRawDraft
-					? current
-					: { ...current, rawDraft: nextRawDraft },
+				current.rawDraft === nextRawDraft ? current : { ...current, rawDraft: nextRawDraft },
 			);
 			return;
 		}
@@ -90,24 +80,18 @@ export function NotePropertiesPanel({
 		) {
 			parseRequestIdRef.current += 1;
 			setEditorState((current) =>
-				current.rawDraft === nextRawDraft
-					? current
-					: { ...current, rawDraft: nextRawDraft },
+				current.rawDraft === nextRawDraft ? current : { ...current, rawDraft: nextRawDraft },
 			);
 			return;
 		}
 		const requestId = ++parseRequestIdRef.current;
 		setEditorState((current) =>
-			current.rawDraft === nextRawDraft
-				? current
-				: { ...current, rawDraft: nextRawDraft },
+			current.rawDraft === nextRawDraft ? current : { ...current, rawDraft: nextRawDraft },
 		);
 		void invoke("note_frontmatter_parse_properties", { frontmatter })
 			.then((parsed) => {
 				if (requestId !== parseRequestIdRef.current) return;
-				const nextRowIds = parsed.map(
-					() => `property-row-${propertyRowIdCounterRef.current++}`,
-				);
+				const nextRowIds = parsed.map(() => `property-row-${propertyRowIdCounterRef.current++}`);
 				setEditorState({
 					properties: parsed,
 					propertyRowIds: nextRowIds,
@@ -157,8 +141,7 @@ export function NotePropertiesPanel({
 					...current,
 					rawDraft: nextFrontmatter ?? "",
 				}));
-				lastCommittedFrontmatterRef.current =
-					normalizeFrontmatter(nextFrontmatter);
+				lastCommittedFrontmatterRef.current = normalizeFrontmatter(nextFrontmatter);
 				onErrorChange?.("");
 				onChange(nextFrontmatter);
 			})
@@ -171,9 +154,7 @@ export function NotePropertiesPanel({
 	const updateProperty = (index: number, patch: Partial<NoteProperty>) => {
 		commitProperties(
 			properties.map((property, currentIndex) =>
-				currentIndex === index
-					? normalizeForKind({ ...property, ...patch })
-					: property,
+				currentIndex === index ? normalizeForKind({ ...property, ...patch }) : property,
 			),
 		);
 	};
@@ -200,8 +181,7 @@ export function NotePropertiesPanel({
 			) : (
 				<div className="notePropertiesList">
 					{properties.map((property, index) => {
-						const rowId =
-							propertyRowIds[index] ?? `property-row-fallback-${index}`;
+						const rowId = propertyRowIds[index] ?? `property-row-fallback-${index}`;
 						return (
 							<NotePropertyRow
 								key={rowId}
@@ -222,8 +202,7 @@ export function NotePropertiesPanel({
 								onAddTag={(nextRowId, propertyIndex, rawValue) => {
 									const nextTag = normalizeTagToken(rawValue);
 									if (!nextTag) return;
-									const currentTags =
-										properties[propertyIndex]?.value_list ?? [];
+									const currentTags = properties[propertyIndex]?.value_list ?? [];
 									if (currentTags.includes(nextTag)) {
 										setTagDrafts((current) => ({
 											...current,
@@ -241,9 +220,9 @@ export function NotePropertiesPanel({
 								}}
 								onRemoveTag={(propertyIndex, tag) =>
 									updateProperty(propertyIndex, {
-										value_list: (
-											properties[propertyIndex]?.value_list ?? []
-										).filter((currentTag) => currentTag !== tag),
+										value_list: (properties[propertyIndex]?.value_list ?? []).filter(
+											(currentTag) => currentTag !== tag,
+										),
 									})
 								}
 								onUpdate={updateProperty}
@@ -259,12 +238,8 @@ export function NotePropertiesPanel({
 										delete tagInputRefs.current[removedRowId];
 									}
 									commitProperties(
-										properties.filter(
-											(_, currentIndex) => currentIndex !== propertyIndex,
-										),
-										propertyRowIds.filter(
-											(_, currentIndex) => currentIndex !== propertyIndex,
-										),
+										properties.filter((_, currentIndex) => currentIndex !== propertyIndex),
+										propertyRowIds.filter((_, currentIndex) => currentIndex !== propertyIndex),
 									);
 								}}
 								onSetTagInputRef={(nextRowId, node) => {
@@ -284,10 +259,7 @@ export function NotePropertiesPanel({
 								onClick={() =>
 									commitProperties(
 										[...properties, emptyProperty()],
-										[
-											...propertyRowIds,
-											`property-row-${propertyRowIdCounterRef.current++}`,
-										],
+										[...propertyRowIds, `property-row-${propertyRowIdCounterRef.current++}`],
 									)
 								}
 							>

@@ -1,18 +1,10 @@
 import { Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import {
-	type EditorState,
-	Plugin,
-	PluginKey,
-	Selection,
-	TextSelection,
-} from "@tiptap/pm/state";
+import { type EditorState, Plugin, PluginKey, Selection, TextSelection } from "@tiptap/pm/state";
 import { changedRangesFromTransactions } from "./changedRanges";
 import { encodeMarkdownImageSrc } from "./markdownImage";
 
-export const markdownImagePreviewPluginKey = new PluginKey(
-	"markdown-image-preview",
-);
+export const markdownImagePreviewPluginKey = new PluginKey("markdown-image-preview");
 
 function parseStandaloneMarkdownImage(
 	text: string,
@@ -40,9 +32,7 @@ function buildImageMarkdown(attrs: Record<string, unknown>): string | null {
 	const alt = typeof attrs.alt === "string" ? attrs.alt.trim() : "";
 	const title = typeof attrs.title === "string" ? attrs.title.trim() : "";
 	const encodedSrc = encodeMarkdownImageSrc(originSrc);
-	return title
-		? `![${alt}](${encodedSrc} "${title}")`
-		: `![${alt}](${encodedSrc})`;
+	return title ? `![${alt}](${encodedSrc} "${title}")` : `![${alt}](${encodedSrc})`;
 }
 
 type ExpandOp = {
@@ -68,19 +58,13 @@ type ScanRange = {
 	to: number;
 };
 
-function selectionScanRanges(
-	oldState: EditorState,
-	newState: EditorState,
-): ScanRange[] {
+function selectionScanRanges(oldState: EditorState, newState: EditorState): ScanRange[] {
 	const ranges: ScanRange[] = [];
 	const seen = new Set<string>();
 
 	const addRange = (from: number, to: number) => {
 		const boundedFrom = Math.max(0, Math.min(from, newState.doc.content.size));
-		const boundedTo = Math.max(
-			boundedFrom,
-			Math.min(to, newState.doc.content.size),
-		);
+		const boundedTo = Math.max(boundedFrom, Math.min(to, newState.doc.content.size));
 		if (boundedFrom === boundedTo) return;
 		const key = `${boundedFrom}:${boundedTo}`;
 		if (seen.has(key)) return;
@@ -115,11 +99,7 @@ export const MarkdownImageLivePreview = Extension.create({
 					const docChanged = transactions.some((tr) => tr.docChanged);
 					const relevant = selectionChanged || docChanged;
 					if (!relevant) return null;
-					if (
-						transactions.some(
-							(tr) => tr.getMeta(markdownImagePreviewPluginKey) === "applied",
-						)
-					) {
+					if (transactions.some((tr) => tr.getMeta(markdownImagePreviewPluginKey) === "applied")) {
 						return null;
 					}
 
@@ -141,9 +121,7 @@ export const MarkdownImageLivePreview = Extension.create({
 						if (node.type === image) {
 							if (!caretInside || !selectionChanged) return false;
 							if (oldState.doc.nodeAt(pos)?.type !== image) return false;
-							const markdown = buildImageMarkdown(
-								node.attrs as Record<string, unknown>,
-							);
+							const markdown = buildImageMarkdown(node.attrs as Record<string, unknown>);
 							if (!markdown) return false;
 							const $pos = newState.doc.resolve(pos);
 							const index = $pos.index();
@@ -165,9 +143,7 @@ export const MarkdownImageLivePreview = Extension.create({
 							node.firstChild?.type.name === "text"
 						) {
 							if (caretInside) return false;
-							const parsed = parseStandaloneMarkdownImage(
-								node.textContent ?? "",
-							);
+							const parsed = parseStandaloneMarkdownImage(node.textContent ?? "");
 							if (!parsed) return false;
 							const $pos = newState.doc.resolve(pos);
 							if ($pos.parent.type.name === "listItem") return false;
@@ -207,12 +183,8 @@ export const MarkdownImageLivePreview = Extension.create({
 					if (!ops.length) return null;
 
 					ops.sort((a, b) => b.pos - a.pos);
-					const expandOps = ops.filter(
-						(op): op is ExpandOp => op.kind === "expand",
-					);
-					const collapseOps = ops.filter(
-						(op): op is CollapseOp => op.kind === "collapse",
-					);
+					const expandOps = ops.filter((op): op is ExpandOp => op.kind === "expand");
+					const collapseOps = ops.filter((op): op is CollapseOp => op.kind === "collapse");
 					const selectionHead = newState.selection.head;
 
 					let tr = newState.tr;
@@ -245,12 +217,9 @@ export const MarkdownImageLivePreview = Extension.create({
 						const srcOffset = op.markdown.indexOf("](") + 2;
 						const srcEndOffset = op.markdown.indexOf(")", srcOffset);
 						const srcStart = base + srcOffset;
-						const srcEnd =
-							base + (srcEndOffset === -1 ? srcOffset : srcEndOffset);
+						const srcEnd = base + (srcEndOffset === -1 ? srcOffset : srcEndOffset);
 						try {
-							tr = tr.setSelection(
-								TextSelection.create(tr.doc, srcStart, srcEnd),
-							);
+							tr = tr.setSelection(TextSelection.create(tr.doc, srcStart, srcEnd));
 						} catch {
 							// Leave the mapped selection untouched.
 						}
@@ -261,15 +230,10 @@ export const MarkdownImageLivePreview = Extension.create({
 						const bias = selectionHead <= collapsedStart ? -1 : 1;
 						const mappedHead = Math.max(
 							0,
-							Math.min(
-								tr.doc.content.size,
-								tr.mapping.map(selectionHead, bias),
-							),
+							Math.min(tr.doc.content.size, tr.mapping.map(selectionHead, bias)),
 						);
 						try {
-							tr = tr.setSelection(
-								Selection.near(tr.doc.resolve(mappedHead), bias),
-							);
+							tr = tr.setSelection(Selection.near(tr.doc.resolve(mappedHead), bias));
 						} catch {
 							// Leave the mapped selection untouched.
 						}

@@ -228,7 +228,7 @@ Tags come from Markdown body and frontmatter. The parser expands hierarchical ta
 People mentions are optional. `SpaceContext` syncs the setting to Rust with:
 
 ```ts
-invoke("index_set_people_mentions_as_tags_enabled", { enabled })
+invoke("index_set_people_mentions_as_tags_enabled", { enabled });
 ```
 
 The Rust flag is process-local. When the setting changes, the index may need a rebuild for stored people tags to reflect the new behavior.

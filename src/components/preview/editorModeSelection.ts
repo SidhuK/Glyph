@@ -8,7 +8,5 @@ export function requiresPlainEditorMode(markdown: string): boolean {
 }
 
 export function initialEditorMode(markdown: string): NoteInlineEditorMode {
-	return requiresPlainEditorMode(markdown)
-		? "plain"
-		: getDefaultEditorViewMode();
+	return requiresPlainEditorMode(markdown) ? "plain" : getDefaultEditorViewMode();
 }

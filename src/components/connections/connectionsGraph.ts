@@ -1,9 +1,6 @@
 import Graph from "graphology";
 import type { LocalNoteConnections, SpaceConnections } from "../../lib/tauri";
-import {
-	LOCAL_CENTER_NODE_SIZE,
-	spaceConnectionsDensityProfile,
-} from "./connectionsDensity";
+import { LOCAL_CENTER_NODE_SIZE, spaceConnectionsDensityProfile } from "./connectionsDensity";
 import type { GraphPosition } from "./connectionsLayout";
 import { hashString, randomUnit } from "./connectionsRandom";
 
@@ -30,21 +27,13 @@ export interface ConnectionsEdgeAttributes {
 	size: number;
 }
 
-export type ConnectionsGraph = Graph<
-	ConnectionsNodeAttributes,
-	ConnectionsEdgeAttributes
->;
+export type ConnectionsGraph = Graph<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>;
 
 const MIN_TAG_NODE_SIZE = 6;
 const MAX_TAG_NODE_SIZE = 13;
 const REDUCER_COLOR_PLACEHOLDER = "#000000";
 
-function scaledNodeSize(
-	weight: number,
-	minSize: number,
-	maxSize: number,
-	maxWeight: number,
-) {
+function scaledNodeSize(weight: number, minSize: number, maxSize: number, maxWeight: number) {
 	if (weight <= 0) return minSize;
 	const normalized = (weight / Math.max(maxWeight, 1)) ** 0.6;
 	return minSize + normalized * (maxSize - minSize);
@@ -229,9 +218,7 @@ export function buildSpaceConnectionsGraph(
 	return graph;
 }
 
-export function buildLocalConnectionsGraph(
-	payload: LocalNoteConnections,
-): ConnectionsGraph {
+export function buildLocalConnectionsGraph(payload: LocalNoteConnections): ConnectionsGraph {
 	const graph = createGraph();
 	const positions = seedLocalPositions(payload);
 	const connectionCounts = localConnectionCounts(payload);
@@ -263,12 +250,7 @@ export function buildLocalConnectionsGraph(
 			bundleX: position.x,
 			bundleY: position.y,
 			label: tag.title,
-			size: scaledNodeSize(
-				connectionCount,
-				MIN_TAG_NODE_SIZE,
-				MAX_TAG_NODE_SIZE,
-				maxConnections,
-			),
+			size: scaledNodeSize(connectionCount, MIN_TAG_NODE_SIZE, MAX_TAG_NODE_SIZE, maxConnections),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
 			isCenter: false,

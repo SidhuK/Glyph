@@ -11,9 +11,10 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
 	border-radius: 20px;
 	background: var(--bg-primary);
-	box-shadow: 0 24px 70px color-mix(in srgb, black 30%, transparent), 0 4px 18px
-		color-mix(in srgb, black 18%, transparent), inset 0 1px
-		color-mix(in srgb, white 5%, transparent);
+	box-shadow:
+		0 24px 70px color-mix(in srgb, black 30%, transparent),
+		0 4px 18px color-mix(in srgb, black 18%, transparent),
+		inset 0 1px color-mix(in srgb, white 5%, transparent);
 	-webkit-font-smoothing: antialiased;
 }
 
@@ -145,8 +146,7 @@
 	overflow-y: auto;
 	padding: 0 8px 10px;
 	scroll-padding: 8px;
-	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 36%, transparent)
-		transparent;
+	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 36%, transparent) transparent;
 	scrollbar-width: thin;
 }
 
@@ -213,8 +213,7 @@
 }
 
 .commandPaletteItem:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: -2px;
 }
 
@@ -359,8 +358,7 @@
 	flex: 0 0 auto;
 	border-radius: var(--radius-full);
 	background: var(--bg-active);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--text-tertiary) 22%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-tertiary) 22%, transparent);
 	transition: background-color 120ms;
 }
 
@@ -505,8 +503,7 @@
 
 .commandPaletteSettingInput:focus-visible {
 	border-color: var(--interactive-accent);
-	box-shadow: 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
 .commandPaletteSettingSave {

@@ -34,10 +34,7 @@ interface PriorityPropertyPillProps {
 	className?: string;
 }
 
-export function PriorityPropertyPill({
-	value,
-	className,
-}: PriorityPropertyPillProps) {
+export function PriorityPropertyPill({ value, className }: PriorityPropertyPillProps) {
 	const label = priorityLabel(value);
 	if (!label) return null;
 	return (

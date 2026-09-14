@@ -52,10 +52,7 @@ function renderMarkdown(markdown: string): string {
 	});
 }
 
-function setCopyButtonFeedback(
-	button: CopyButtonElement,
-	label: "Copy" | "Copied!" | "Failed",
-) {
+function setCopyButtonFeedback(button: CopyButtonElement, label: "Copy" | "Copied!" | "Failed") {
 	button.textContent = label;
 	if (button.__copyResetTimer != null) {
 		window.clearTimeout(button.__copyResetTimer);
@@ -134,10 +131,7 @@ export const AIMessageMarkdown = memo(function AIMessageMarkdown({
 	streaming = false,
 }: AIMessageMarkdownProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const html = useMemo(
-		() => (streaming ? "" : renderMarkdown(markdown)),
-		[markdown, streaming],
-	);
+	const html = useMemo(() => (streaming ? "" : renderMarkdown(markdown)), [markdown, streaming]);
 
 	useEffect(() => {
 		if (streaming) return;
@@ -194,7 +188,6 @@ export const AIMessageMarkdown = memo(function AIMessageMarkdown({
 			<div
 				className="tiptapContentInline aiMessageMarkdownContent"
 				// HTML is sanitized above and link clicks are handled at the wrapper.
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: AI Markdown is sanitized with DOMPurify before insertion.
 				dangerouslySetInnerHTML={{ __html: html }}
 			/>
 		</div>

@@ -67,13 +67,7 @@
 		"general-license": {
 			"title": "Licencja",
 			"description": "Status wersji próbnej, klucz licencyjny, aktywacja i oficjalna kompilacja.",
-			"keywords": [
-				"wersja próbna",
-				"aktywuj",
-				"aktywacja",
-				"subskrypcja",
-				"zakup"
-			]
+			"keywords": ["wersja próbna", "aktywuj", "aktywacja", "subskrypcja", "zakup"]
 		},
 		"general-trial-status": {
 			"title": "Status wersji próbnej",
@@ -287,14 +281,7 @@
 		"ai-provider-service": {
 			"title": "Usługa",
 			"section": "Dostawca",
-			"keywords": [
-				"dostawca",
-				"cursor",
-				"grok",
-				"openai",
-				"anthropic",
-				"ollama"
-			]
+			"keywords": ["dostawca", "cursor", "grok", "openai", "anthropic", "ollama"]
 		},
 		"ai-provider-model": {
 			"title": "Model",
@@ -551,13 +538,7 @@
 		"general-editor-vim-mode": {
 			"title": "Tryb Vim",
 			"section": "Eksperymentalne",
-			"keywords": [
-				"vim",
-				"surowy",
-				"markdown",
-				"powiązania klawiszy",
-				"klawiatura"
-			]
+			"keywords": ["vim", "surowy", "markdown", "powiązania klawiszy", "klawiatura"]
 		},
 		"general-editor-format-bar": {
 			"title": "Pasek formatowania",
@@ -592,14 +573,7 @@
 		"general-file-tree-non-markdown-files": {
 			"title": "Pokaż pliki inne niż Markdown",
 			"section": "Eksperymentalne",
-			"keywords": [
-				"pasek boczny",
-				"załączniki",
-				"pdf",
-				"obrazy",
-				"folio",
-				"drzewo plików"
-			]
+			"keywords": ["pasek boczny", "załączniki", "pdf", "obrazy", "folio", "drzewo plików"]
 		},
 		"general-file-tree-sort": {
 			"title": "Sortowanie drzewa plików",

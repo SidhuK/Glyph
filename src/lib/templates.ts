@@ -1,9 +1,4 @@
-import {
-	basename,
-	isMarkdownPath,
-	normalizeRelPath,
-	parentDir,
-} from "../utils/path";
+import { basename, isMarkdownPath, normalizeRelPath, parentDir } from "../utils/path";
 import { isoWeekFromDate } from "./periodNotes";
 import { invoke } from "./tauri";
 
@@ -46,34 +41,13 @@ function getMonthNames() {
 			"November",
 			"December",
 		],
-		short: [
-			"Jan",
-			"Feb",
-			"Mar",
-			"Apr",
-			"May",
-			"Jun",
-			"Jul",
-			"Aug",
-			"Sep",
-			"Oct",
-			"Nov",
-			"Dec",
-		],
+		short: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 	};
 }
 
 function getWeekdayNames() {
 	return {
-		long: [
-			"Sunday",
-			"Monday",
-			"Tuesday",
-			"Wednesday",
-			"Thursday",
-			"Friday",
-			"Saturday",
-		],
+		long: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
 		short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
 	};
 }
@@ -172,9 +146,7 @@ export async function selectTemplateFile({
 	};
 }
 
-export function buildTemplateVariables(
-	context: TemplateRenderContext,
-): Record<string, string> {
+export function buildTemplateVariables(context: TemplateRenderContext): Record<string, string> {
 	const now = context.date ? new Date(context.date) : new Date();
 	const monthNames = getMonthNames();
 	const weekdayNames = getWeekdayNames();
@@ -215,14 +187,10 @@ export function buildTemplateVariables(
 	};
 }
 
-export function renderTemplate(
-	markdown: string,
-	context: TemplateRenderContext,
-): string {
+export function renderTemplate(markdown: string, context: TemplateRenderContext): string {
 	const variables = buildTemplateVariables(context);
 	return markdown.replace(TEMPLATE_TOKEN_RE, (match, token) => {
-		const normalizedToken =
-			typeof token === "string" ? token.trim().toLowerCase() : "";
+		const normalizedToken = typeof token === "string" ? token.trim().toLowerCase() : "";
 		return variables[normalizedToken] ?? match;
 	});
 }

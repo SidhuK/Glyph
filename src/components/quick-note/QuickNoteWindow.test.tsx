@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { QuickNoteWindow } from "./QuickNoteWindow";
 
 const {
@@ -52,10 +52,7 @@ const {
 		),
 		editorReadyCallbackRef: {
 			current: null as
-				| ((
-						editor: typeof mockEditor | null,
-						contentRoot: HTMLElement | null,
-				  ) => void)
+				| ((editor: typeof mockEditor | null, contentRoot: HTMLElement | null) => void)
 				| null,
 		},
 		additionalExtensionsRef: {
@@ -103,10 +100,7 @@ vi.mock("../editor/NoteInlineEditor", () => ({
 		additionalExtensions,
 	}: {
 		onChange: (nextMarkdown: string) => void;
-		onEditorReady?: (
-			editor: typeof mockEditor | null,
-			contentRoot: HTMLElement | null,
-		) => void;
+		onEditorReady?: (editor: typeof mockEditor | null, contentRoot: HTMLElement | null) => void;
 		deferHeavyFeatures?: boolean;
 		chrome?: string;
 		placeholder?: string;
@@ -222,9 +216,7 @@ describe("QuickNoteWindow", () => {
 	}
 
 	function getSaveButton() {
-		return container.querySelector(
-			".quickNoteSaveButton",
-		) as HTMLButtonElement | null;
+		return container.querySelector(".quickNoteSaveButton") as HTMLButtonElement | null;
 	}
 
 	function typeInEditor(value: string) {

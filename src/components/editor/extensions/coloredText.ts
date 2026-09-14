@@ -7,8 +7,7 @@ import {
 	isEditorTextColor,
 } from "../textColors";
 
-const GLYPH_COLOR_BRIDGE_RE =
-	/^\{\{glyph-color:([a-z]+)\}\}([\s\S]*?)\{\{\/glyph-color\}\}/i;
+const GLYPH_COLOR_BRIDGE_RE = /^\{\{glyph-color:([a-z]+)\}\}([\s\S]*?)\{\{\/glyph-color\}\}/i;
 
 declare module "@tiptap/core" {
 	interface Commands<ReturnType> {
@@ -79,17 +78,13 @@ export const ColoredText = MarkExtension.create({
 		return `${getEditorTextColorBridgeOpenToken(color)}${helpers.renderChildren(node)}${EDITOR_TEXT_COLOR_BRIDGE_CLOSE_TOKEN}`;
 	},
 	parseMarkdown(token, helpers) {
-		const parsed = parseGlyphColorSpan(
-			(token.raw ?? token.text ?? "").toString(),
-		);
+		const parsed = parseGlyphColorSpan((token.raw ?? token.text ?? "").toString());
 		if (!parsed) {
 			return helpers.createTextNode((token.text ?? token.raw ?? "").toString());
 		}
-		return helpers.applyMark(
-			"coloredText",
-			helpers.parseInline(token.tokens ?? []),
-			{ color: parsed.color },
-		);
+		return helpers.applyMark("coloredText", helpers.parseInline(token.tokens ?? []), {
+			color: parsed.color,
+		});
 	},
 	markdownTokenizer: {
 		name: "coloredText",
@@ -128,9 +123,7 @@ export const ColoredText = MarkExtension.create({
 					if (editor.isActive("code") || editor.isActive("codeBlock")) {
 						return false;
 					}
-					return chain()
-						.unsetMark(this.name, { extendEmptyMarkRange: true })
-						.run();
+					return chain().unsetMark(this.name, { extendEmptyMarkRange: true }).run();
 				},
 		};
 	},

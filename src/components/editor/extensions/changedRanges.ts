@@ -18,11 +18,7 @@ function remapPositionToFinalDoc(
 	for (let index = stepMapIndex + 1; index < currentMaps.length; index += 1) {
 		mappedPosition = currentMaps[index].map(mappedPosition, assoc);
 	}
-	for (
-		let index = transactionIndex + 1;
-		index < transactions.length;
-		index += 1
-	) {
+	for (let index = transactionIndex + 1; index < transactions.length; index += 1) {
 		for (const stepMap of transactions[index].mapping.maps) {
 			mappedPosition = stepMap.map(mappedPosition, assoc);
 		}
@@ -37,19 +33,11 @@ export function changedRangesFromTransactions(
 	const ranges: ChangedRange[] = [];
 	let hasDocChange = false;
 
-	for (
-		let transactionIndex = 0;
-		transactionIndex < transactions.length;
-		transactionIndex += 1
-	) {
+	for (let transactionIndex = 0; transactionIndex < transactions.length; transactionIndex += 1) {
 		const transaction = transactions[transactionIndex];
 		if (!transaction.docChanged) continue;
 		hasDocChange = true;
-		for (
-			let stepMapIndex = 0;
-			stepMapIndex < transaction.mapping.maps.length;
-			stepMapIndex += 1
-		) {
+		for (let stepMapIndex = 0; stepMapIndex < transaction.mapping.maps.length; stepMapIndex += 1) {
 			const stepMap = transaction.mapping.maps[stepMapIndex];
 			stepMap.forEach((_oldStart, _oldEnd, newStart, newEnd) => {
 				const finalStart = remapPositionToFinalDoc(
@@ -81,9 +69,7 @@ export function changedRangesFromTransactions(
 	return mergeChangedRanges(ranges);
 }
 
-export function mergeChangedRanges(
-	ranges: readonly ChangedRange[],
-): ChangedRange[] {
+export function mergeChangedRanges(ranges: readonly ChangedRange[]): ChangedRange[] {
 	if (!ranges.length) return [];
 
 	const sorted = [...ranges].sort((a, b) => a.from - b.from || a.to - b.to);

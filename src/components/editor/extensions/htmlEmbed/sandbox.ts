@@ -1,8 +1,5 @@
 import { i18n } from "../../../../i18n";
-import {
-	type HtmlEmbedKind,
-	wrapHtmlEmbedBody,
-} from "../../../../lib/htmlEmbed";
+import { type HtmlEmbedKind, wrapHtmlEmbedBody } from "../../../../lib/htmlEmbed";
 import { appendEditCodeControls } from "../codeBlockPreviewControls";
 
 const HTML_EMBED_CSP = [
@@ -29,9 +26,8 @@ function buildHtmlEmbedSrcDoc(source: string, kind: HtmlEmbedKind): string {
 	const escapedCsp = HTML_EMBED_CSP.replace(/"/g, "&quot;");
 	const postMessageOrigin = JSON.stringify(window.location.origin);
 	const textColor =
-		getComputedStyle(document.documentElement)
-			.getPropertyValue("--text-primary")
-			.trim() || "#171717";
+		getComputedStyle(document.documentElement).getPropertyValue("--text-primary").trim() ||
+		"#171717";
 
 	return `<!doctype html>
 <html>
@@ -122,19 +118,12 @@ function buildHtmlEmbedSrcDoc(source: string, kind: HtmlEmbedKind): string {
 </html>`;
 }
 
-function isTrustedEmbedMessage(
-	event: MessageEvent,
-	iframe: HTMLIFrameElement,
-): boolean {
+function isTrustedEmbedMessage(event: MessageEvent, iframe: HTMLIFrameElement): boolean {
 	if (event.source !== iframe.contentWindow) return false;
 	return event.origin === window.location.origin || event.origin === "null";
 }
 
-function applyEmbedHeight(
-	frame: HTMLElement,
-	iframe: HTMLIFrameElement,
-	height: number,
-): void {
+function applyEmbedHeight(frame: HTMLElement, iframe: HTMLIFrameElement, height: number): void {
 	const measured =
 		!Number.isFinite(height) || height <= 0
 			? HTML_EMBED_INITIAL_HEIGHT
@@ -171,10 +160,7 @@ export function createHtmlEmbedWidget({
 	iframe.className = "htmlEmbedIframe";
 	iframe.setAttribute("sandbox", "allow-scripts allow-downloads");
 	iframe.setAttribute("referrerpolicy", "no-referrer");
-	iframe.setAttribute(
-		"title",
-		kind === "svg" ? "SVG embed preview" : "HTML embed preview",
-	);
+	iframe.setAttribute("title", kind === "svg" ? "SVG embed preview" : "HTML embed preview");
 	iframe.setAttribute("scrolling", "no");
 	iframe.srcdoc = buildHtmlEmbedSrcDoc(source, kind);
 	applyEmbedHeight(frame, iframe, HTML_EMBED_INITIAL_HEIGHT);
@@ -186,11 +172,7 @@ export function createHtmlEmbedWidget({
 	const onMessage = (event: MessageEvent) => {
 		if (!isTrustedEmbedMessage(event, iframe)) return;
 		const data = event.data;
-		if (
-			!data ||
-			typeof data !== "object" ||
-			data.source !== HTML_EMBED_MESSAGE_SOURCE
-		) {
+		if (!data || typeof data !== "object" || data.source !== HTML_EMBED_MESSAGE_SOURCE) {
 			return;
 		}
 		if (data.type === "size" && typeof data.height === "number") {
@@ -213,9 +195,7 @@ export function createHtmlEmbedWidget({
 	if (editable) {
 		appendEditCodeControls(frame, {
 			label:
-				kind === "svg"
-					? i18n.t("editor:codeBlock.editSvg")
-					: i18n.t("editor:codeBlock.editHtml"),
+				kind === "svg" ? i18n.t("editor:codeBlock.editSvg") : i18n.t("editor:codeBlock.editHtml"),
 			onEditCode,
 			openPreviewLabel: onOpenFocusedPreview
 				? i18n.t("editor:codeBlock.focusedViewer.open")

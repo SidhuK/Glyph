@@ -62,13 +62,7 @@
 		"general-license": {
 			"title": "License",
 			"description": "Trial status, license key, activation, and official build.",
-			"keywords": [
-				"trial",
-				"activate",
-				"activation",
-				"subscription",
-				"purchase"
-			]
+			"keywords": ["trial", "activate", "activation", "subscription", "purchase"]
 		},
 		"general-trial-status": {
 			"title": "Trial status",
@@ -110,29 +104,13 @@
 			"title": "Sprache",
 			"section": "Sprache",
 			"description": "Die Anzeigesprache für Glyph wählen.",
-			"keywords": [
-				"locale",
-				"übersetzung",
-				"i18n",
-				"sprache",
-				"language",
-				"translation"
-			]
+			"keywords": ["locale", "übersetzung", "i18n", "sprache", "language", "translation"]
 		},
 		"general-date-format": {
 			"title": "Datumsformat",
 			"section": "Datum & Uhrzeit",
 			"description": "Lege fest, wie vollständige Daten in Glyph angezeigt werden.",
-			"keywords": [
-				"Datum",
-				"Format",
-				"Kalender",
-				"US",
-				"European",
-				"Friendly",
-				"ISO",
-				"Anzeige"
-			]
+			"keywords": ["Datum", "Format", "Kalender", "US", "European", "Friendly", "ISO", "Anzeige"]
 		},
 		"general-resume-last-session": {
 			"title": "Vorherige Tabs öffnen",
@@ -221,15 +199,7 @@
 		"appearance-editor-font": {
 			"title": "Editorschrift",
 			"section": "Typografie",
-			"keywords": [
-				"schrift",
-				"editor",
-				"notizen",
-				"prosa",
-				"font",
-				"notes",
-				"prose"
-			]
+			"keywords": ["schrift", "editor", "notizen", "prosa", "font", "notes", "prose"]
 		},
 		"appearance-ui-font-size": {
 			"title": "UI-Schriftgröße",
@@ -497,14 +467,7 @@
 		"general-editor-frontmatter": {
 			"title": "Frontmatter im Editor anzeigen",
 			"section": "Editor",
-			"keywords": [
-				"eigenschaften",
-				"yaml",
-				"metadaten",
-				"properties",
-				"metadata",
-				"frontmatter"
-			]
+			"keywords": ["eigenschaften", "yaml", "metadaten", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "Farbige Überschriften",
@@ -534,38 +497,17 @@
 		"appearance-editor-presentation-width": {
 			"title": "Editorbreite",
 			"section": "Editor-Darstellung",
-			"keywords": [
-				"kompakt",
-				"komfortabel",
-				"breit",
-				"compact",
-				"comfortable",
-				"wide"
-			]
+			"keywords": ["kompakt", "komfortabel", "breit", "compact", "comfortable", "wide"]
 		},
 		"general-editor-collapsible-headings": {
 			"title": "Einklappbare Überschriften",
 			"section": "Editor",
-			"keywords": [
-				"falten",
-				"einklappen",
-				"ausklappen",
-				"fold",
-				"collapse",
-				"expand"
-			]
+			"keywords": ["falten", "einklappen", "ausklappen", "fold", "collapse", "expand"]
 		},
 		"general-editor-spell-check": {
 			"title": "Rechtschreibprüfung",
 			"section": "Editor",
-			"keywords": [
-				"rechtschreibung",
-				"tippfehler",
-				"wörterbuch",
-				"spelling",
-				"typo",
-				"dictionary"
-			]
+			"keywords": ["rechtschreibung", "tippfehler", "wörterbuch", "spelling", "typo", "dictionary"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Vim-Modus",
@@ -584,15 +526,7 @@
 		"general-editor-format-bar": {
 			"title": "Formatierungsleiste",
 			"section": "Experimentell",
-			"keywords": [
-				"format",
-				"leiste",
-				"toolbar",
-				"ribbon",
-				"rich",
-				"editor",
-				"ausblenden"
-			]
+			"keywords": ["format", "leiste", "toolbar", "ribbon", "rich", "editor", "ausblenden"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
@@ -651,14 +585,7 @@
 		"appearance-database-column-color": {
 			"title": "Datenbankspaltenfarbe anzeigen",
 			"section": "Datenbank",
-			"keywords": [
-				"sammlung",
-				"datenbank",
-				"farbe",
-				"collection",
-				"database",
-				"color"
-			]
+			"keywords": ["sammlung", "datenbank", "farbe", "collection", "database", "color"]
 		},
 		"about-app": {
 			"title": "Glyph",

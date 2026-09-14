@@ -20,9 +20,7 @@ export function wikiTargetFromLink(element: HTMLElement): string | null {
 	return normalized || null;
 }
 
-export async function loadNotePreviewFromPath(
-	relPath: string,
-): Promise<NotePreviewData> {
+export async function loadNotePreviewFromPath(relPath: string): Promise<NotePreviewData> {
 	const doc = await invoke("space_read_text_preview", {
 		path: relPath,
 		max_bytes: NOTE_PREVIEW_MAX_BYTES,
@@ -31,9 +29,7 @@ export async function loadNotePreviewFromPath(
 	return { status: "ok", relPath, content };
 }
 
-export async function loadNotePreviewFromWikiTarget(
-	target: string,
-): Promise<NotePreviewData> {
+export async function loadNotePreviewFromWikiTarget(target: string): Promise<NotePreviewData> {
 	const relPath = await invoke("space_resolve_wikilink", { target });
 	if (!relPath) {
 		throw new Error("Note not found");

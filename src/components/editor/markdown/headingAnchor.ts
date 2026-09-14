@@ -28,9 +28,7 @@ function normalizeAnchor(anchor: string): string {
 }
 
 /** Attach GitHub-style disambiguated anchor slugs to a heading list. */
-export function withHeadingSlugs(
-	headings: readonly TOCHeading[],
-): TOCHeading[] {
+export function withHeadingSlugs(headings: readonly TOCHeading[]): TOCHeading[] {
 	const counts = new Map<string, number>();
 	return headings.map((heading) => {
 		const base = slugifyHeading(heading.text);
@@ -55,19 +53,13 @@ export function resolveAnchorHeading(
 	if (!normalized) return null;
 
 	const indexed =
-		headings.length > 0 && headings[0]?.slug !== undefined
-			? headings
-			: withHeadingSlugs(headings);
+		headings.length > 0 && headings[0]?.slug !== undefined ? headings : withHeadingSlugs(headings);
 
 	for (const heading of indexed) {
 		if (heading.slug === normalized) return heading;
 	}
 
-	return (
-		indexed.find(
-			(heading) => heading.text.trim().toLowerCase() === normalized,
-		) ?? null
-	);
+	return indexed.find((heading) => heading.text.trim().toLowerCase() === normalized) ?? null;
 }
 
 type PendingHeadingJump = {
@@ -96,10 +88,7 @@ export function applyPendingHeadingJump(options: {
 }): boolean {
 	const path = normalizeRelPath(options.path);
 	if (!pendingHeadingJump || pendingHeadingJump.path !== path) return false;
-	const heading = resolveAnchorHeading(
-		options.headings,
-		pendingHeadingJump.anchor,
-	);
+	const heading = resolveAnchorHeading(options.headings, pendingHeadingJump.anchor);
 	if (!heading) return false;
 	pendingHeadingJump = null;
 	options.selectHeading(heading);

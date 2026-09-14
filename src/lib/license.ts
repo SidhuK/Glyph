@@ -7,27 +7,19 @@ import {
 	formatLocalClockTime,
 	parseDisplayDateInput,
 } from "./dateDisplayFormat";
-import {
-	type LicenseActivateResult,
-	type LicenseStatus,
-	invoke,
-} from "./tauri";
+import { type LicenseActivateResult, type LicenseStatus, invoke } from "./tauri";
 
 const LICENSE_UPDATED_EVENT = "glyph:license-updated";
 
 function dispatchLicenseUpdated(status: LicenseStatus) {
-	window.dispatchEvent(
-		new CustomEvent<LicenseStatus>(LICENSE_UPDATED_EVENT, { detail: status }),
-	);
+	window.dispatchEvent(new CustomEvent<LicenseStatus>(LICENSE_UPDATED_EVENT, { detail: status }));
 }
 
 export async function getLicenseStatus(): Promise<LicenseStatus> {
 	return invoke("license_bootstrap_status");
 }
 
-export async function activateLicenseKey(
-	licenseKey: string,
-): Promise<LicenseActivateResult> {
+export async function activateLicenseKey(licenseKey: string): Promise<LicenseActivateResult> {
 	const result = await invoke("license_activate", {
 		license_key: licenseKey,
 	});
@@ -97,11 +89,7 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 			const next = await getLicenseStatus();
 			setStatus(next);
 		} catch (cause) {
-			setError(
-				cause instanceof Error
-					? cause.message
-					: "Failed to load license status",
-			);
+			setError(cause instanceof Error ? cause.message : "Failed to load license status");
 		} finally {
 			setLoading(false);
 		}

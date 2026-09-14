@@ -14,8 +14,7 @@ import {
 	UsageTaskDensityChart,
 } from "./usageCharts";
 
-const usageInsightsQueryKey = (spacePath: string) =>
-	["usage-insights", spacePath] as const;
+const usageInsightsQueryKey = (spacePath: string) => ["usage-insights", spacePath] as const;
 const numberFormat = new Intl.NumberFormat();
 
 function formatBytes(bytes: number): string {
@@ -109,20 +108,13 @@ export function UsageSettingsPane() {
 		return <div className="settingsPane usagePane">{t("usage.noSpace")}</div>;
 	}
 	if (insightsQuery.error || !insights) {
-		return (
-			<div className="settingsPane usagePane settingsError">
-				{t("usage.error")}
-			</div>
-		);
+		return <div className="settingsPane usagePane settingsError">{t("usage.error")}</div>;
 	}
 
 	const openTasks = Math.max(0, insights.taskTotal - insights.taskCompleted);
-	const folderWeekFolders = new Set(
-		insights.folderWeeks.map((row) => row.folder),
-	);
+	const folderWeekFolders = new Set(insights.folderWeeks.map((row) => row.folder));
 	const showFolderStream =
-		folderWeekFolders.size >= 2 &&
-		insights.folderWeeks.some((row) => row.count > 0);
+		folderWeekFolders.size >= 2 && insights.folderWeeks.some((row) => row.count > 0);
 
 	return (
 		<div className="settingsPane usagePane">
@@ -133,22 +125,13 @@ export function UsageSettingsPane() {
 					searchId="usage-insights"
 				>
 					<div className="usageStats">
-						<Stat
-							label={t("usage.notes")}
-							value={numberFormat.format(insights.noteCount)}
-						/>
-						<Stat
-							label={t("usage.storage")}
-							value={formatBytes(insights.totalFileBytes)}
-						/>
+						<Stat label={t("usage.notes")} value={numberFormat.format(insights.noteCount)} />
+						<Stat label={t("usage.storage")} value={formatBytes(insights.totalFileBytes)} />
 						<Stat
 							label={t("usage.dailyNotes")}
 							value={numberFormat.format(insights.dailyNotesCount)}
 						/>
-						<Stat
-							label={t("usage.tasks")}
-							value={numberFormat.format(insights.taskTotal)}
-						/>
+						<Stat label={t("usage.tasks")} value={numberFormat.format(insights.taskTotal)} />
 						<Stat
 							label={t("usage.activeDays")}
 							value={numberFormat.format(insights.activeDayCount)}
@@ -170,15 +153,8 @@ export function UsageSettingsPane() {
 					</div>
 				</UsagePanel>
 
-				<UsagePanel
-					title={t("usage.taskHealth")}
-					className="usageTaskPanel"
-					searchId="usage-tasks"
-				>
-					<TaskCompletionDonut
-						completed={insights.taskCompleted}
-						open={openTasks}
-					/>
+				<UsagePanel title={t("usage.taskHealth")} className="usageTaskPanel" searchId="usage-tasks">
+					<TaskCompletionDonut completed={insights.taskCompleted} open={openTasks} />
 				</UsagePanel>
 
 				{showFolderStream ? (
@@ -188,10 +164,7 @@ export function UsageSettingsPane() {
 						searchId="usage-folder-activity"
 					>
 						<div className="usageCharts">
-							<UsageFolderStream
-								rows={insights.folderWeeks}
-								otherLabel={t("usage.otherFolder")}
-							/>
+							<UsageFolderStream rows={insights.folderWeeks} otherLabel={t("usage.otherFolder")} />
 						</div>
 					</UsagePanel>
 				) : null}
@@ -202,18 +175,12 @@ export function UsageSettingsPane() {
 					searchId="usage-library"
 				>
 					<div className="usageStats">
-						<Stat
-							label={t("usage.links")}
-							value={numberFormat.format(insights.linkCount)}
-						/>
+						<Stat label={t("usage.links")} value={numberFormat.format(insights.linkCount)} />
 						<Stat
 							label={t("usage.isolated")}
 							value={numberFormat.format(insights.isolatedNoteCount)}
 						/>
-						<Stat
-							label={t("usage.tags")}
-							value={numberFormat.format(insights.tagCount)}
-						/>
+						<Stat label={t("usage.tags")} value={numberFormat.format(insights.tagCount)} />
 					</div>
 					<div className="usageCharts">
 						<NetworkCoverageMosaic
@@ -250,10 +217,7 @@ export function UsageSettingsPane() {
 					</div>
 				</UsagePanel>
 
-				<UsagePanel
-					title={t("usage.taskDensity")}
-					className="usageTaskDensityPanel"
-				>
+				<UsagePanel title={t("usage.taskDensity")} className="usageTaskDensityPanel">
 					<div className="usageCharts">
 						{taskDensityRows.length ? (
 							<UsageTaskDensityChart

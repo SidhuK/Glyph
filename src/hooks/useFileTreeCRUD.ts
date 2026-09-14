@@ -25,16 +25,10 @@ interface UseFileTreeCRUDDeps {
 	updateChildrenByDir: (
 		next:
 			| Record<string, FsEntry[] | undefined>
-			| ((
-					prev: Record<string, FsEntry[] | undefined>,
-			  ) => Record<string, FsEntry[] | undefined>),
+			| ((prev: Record<string, FsEntry[] | undefined>) => Record<string, FsEntry[] | undefined>),
 	) => void;
-	updateExpandedDirs: (
-		next: Set<string> | ((prev: Set<string>) => Set<string>),
-	) => void;
-	updateRootEntries: (
-		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
-	) => void;
+	updateExpandedDirs: (next: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+	updateRootEntries: (next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[])) => void;
 	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
 	deleteItemAppearance: (path: string) => Promise<void>;
 	setActiveFilePath: (path: string | null) => void;
@@ -62,12 +56,9 @@ function showLinkRewriteToast(result: LinkRewriteResult) {
 	if (result.changed_files.length === 0) return;
 	const linkLabel = result.changed_links === 1 ? "link" : "links";
 	const fileLabel = result.changed_files.length === 1 ? "file" : "files";
-	toast.success(
-		`Updated ${result.changed_links.toLocaleString()} ${linkLabel}`,
-		{
-			description: `Repaired references in ${result.changed_files.length.toLocaleString()} ${fileLabel}.`,
-		},
-	);
+	toast.success(`Updated ${result.changed_links.toLocaleString()} ${linkLabel}`, {
+		description: `Repaired references in ${result.changed_files.length.toLocaleString()} ${fileLabel}.`,
+	});
 }
 
 export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
@@ -168,9 +159,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				});
 				optimisticallyAddAllDocsNote({ path: markdownRel, text });
 				const nextOpenParentDir =
-					typeof openParentDir === "string"
-						? openParentDir
-						: parentDir(markdownRel);
+					typeof openParentDir === "string" ? openParentDir : parentDir(markdownRel);
 				if (nextOpenParentDir) {
 					updateExpandedDirs((prev) => {
 						if (prev.has(nextOpenParentDir)) return prev;
@@ -194,13 +183,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (!spacePath) return null;
 			setError("");
 			try {
-				const siblings = await invoke(
-					"space_list_dir",
-					dirPath ? { dir: dirPath } : {},
-				);
-				const siblingNames = new Set(
-					siblings.map((entry) => entry.name.toLowerCase()),
-				);
+				const siblings = await invoke("space_list_dir", dirPath ? { dir: dirPath } : {});
+				const siblingNames = new Set(siblings.map((entry) => entry.name.toLowerCase()));
 				let fileName = "Untitled.md";
 				if (siblingNames.has(fileName.toLowerCase())) {
 					let suffix = 2;
@@ -258,13 +242,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			}
 			return null;
 		},
-		[
-			insertEntryOptimistic,
-			refreshAfterCreate,
-			setError,
-			updateExpandedDirs,
-			spacePath,
-		],
+		[insertEntryOptimistic, refreshAfterCreate, setError, updateExpandedDirs, spacePath],
 	);
 
 	const onDuplicateFile = useCallback(
@@ -316,8 +294,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				showLinkRewriteToast(rewriteResult);
 				updateExpandedDirs((prev) => {
 					const next = new Set<string>();
-					for (const expanded of prev)
-						next.add(rewritePrefix(expanded, dirPath, nextPath));
+					for (const expanded of prev) next.add(rewritePrefix(expanded, dirPath, nextPath));
 					return next;
 				});
 				if (parent) {
@@ -326,20 +303,14 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						return {
 							...prev,
 							[parent]: pe
-								.map((e) =>
-									e.rel_path === dirPath
-										? { ...e, name, rel_path: nextPath }
-										: e,
-								)
+								.map((e) => (e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e))
 								.sort(compareEntries),
 						};
 					});
 				} else {
 					updateRootEntries((prev) =>
 						prev
-							.map((e) =>
-								e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e,
-							)
+							.map((e) => (e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e))
 							.sort(compareEntries),
 					);
 				}
@@ -355,9 +326,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						return next;
 					});
 					loadedDirsRef.current = new Set(
-						[...loadedDirsRef.current].map((l) =>
-							rewritePrefix(l, dirPath, nextPath),
-						),
+						[...loadedDirsRef.current].map((l) => rewritePrefix(l, dirPath, nextPath)),
 					);
 				} else {
 					updateChildrenByDir((prev) => {
@@ -429,27 +398,23 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				updateRootEntries((prev) =>
 					prev.filter(
 						(e) =>
-							e.rel_path !== target &&
-							(kind !== "dir" || !e.rel_path.startsWith(`${target}/`)),
+							e.rel_path !== target && (kind !== "dir" || !e.rel_path.startsWith(`${target}/`)),
 					),
 				);
 				updateChildrenByDir((prev) => {
 					const next: Record<string, FsEntry[] | undefined> = {};
 					for (const [k, entries] of Object.entries(prev)) {
-						if (kind === "dir" && (k === target || k.startsWith(`${target}/`)))
-							continue;
+						if (kind === "dir" && (k === target || k.startsWith(`${target}/`))) continue;
 						next[k] = entries?.filter(
 							(e) =>
-								e.rel_path !== target &&
-								(kind !== "dir" || !e.rel_path.startsWith(`${target}/`)),
+								e.rel_path !== target && (kind !== "dir" || !e.rel_path.startsWith(`${target}/`)),
 						);
 					}
 					return next;
 				});
 				loadedDirsRef.current = new Set(
 					[...loadedDirsRef.current].filter(
-						(d) =>
-							d !== target && (kind !== "dir" || !d.startsWith(`${target}/`)),
+						(d) => d !== target && (kind !== "dir" || !d.startsWith(`${target}/`)),
 					),
 				);
 				const activeFile = activeFilePathRef.current;
@@ -491,11 +456,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	);
 
 	const onMovePath = useCallback(
-		async (
-			fromPath: string,
-			toDirPath: string,
-			kind: "dir" | "file" = "file",
-		) => {
+		async (fromPath: string, toDirPath: string, kind: "dir" | "file" = "file") => {
 			const from = normalizeRelPath(fromPath);
 			const toDir = normalizeRelPath(toDirPath);
 			if (!from) return null;
@@ -527,8 +488,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				updateExpandedDirs((prev) => {
 					if (kind !== "dir") return prev;
 					const next = new Set<string>();
-					for (const expanded of prev)
-						next.add(rewritePrefix(expanded, from, nextPath));
+					for (const expanded of prev) next.add(rewritePrefix(expanded, from, nextPath));
 					if (toDir) next.add(toDir);
 					return next;
 				});
@@ -552,9 +512,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						return next;
 					});
 					loadedDirsRef.current = new Set(
-						[...loadedDirsRef.current].map((dir) =>
-							rewritePrefix(dir, from, nextPath),
-						),
+						[...loadedDirsRef.current].map((dir) => rewritePrefix(dir, from, nextPath)),
 					);
 				} else {
 					updateChildrenByDir((prev) => {
@@ -576,8 +534,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				const activeFile = activeFilePathRef.current;
 				if (
 					activeFile &&
-					(activeFile === from ||
-						(kind === "dir" && activeFile.startsWith(`${from}/`)))
+					(activeFile === from || (kind === "dir" && activeFile.startsWith(`${from}/`)))
 				) {
 					setActiveFilePath(rewritePrefix(activeFile, from, nextPath));
 				}

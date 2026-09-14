@@ -16,10 +16,7 @@ export function AppearanceCornerRadiusCard({
 }: AppearanceCornerRadiusCardProps) {
 	const { t } = useTranslation("settings.appearance");
 	return (
-		<SettingsSection
-			title={t("shape.sectionTitle")}
-			description={t("shape.sectionDescription")}
-		>
+		<SettingsSection title={t("shape.sectionTitle")} description={t("shape.sectionDescription")}>
 			<SettingsRow
 				label={t("shape.corners.label")}
 				description={t("shape.corners.description")}
@@ -30,7 +27,7 @@ export function AppearanceCornerRadiusCard({
 					ariaLabel={t("shape.corners.ariaLabel")}
 					value={cornerRadiusStyle}
 					options={getCornerRadiusOptions()}
-					onChange={(next) => void onCornerRadiusStyleChange(next)}
+					onChange={(next) => onCornerRadiusStyleChange(next)}
 					renderPreview={() => <AppearancePreviewFrame />}
 					getDataAttributes={(value) => ({
 						"data-corner-radius-style": value,

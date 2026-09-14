@@ -7,9 +7,7 @@ import type { TagAppearance } from "./tauri";
 
 export type TagIconOption = DatabaseColumnIconOption;
 export type TagIconName = (typeof DATABASE_COLUMN_ICON_OPTIONS)[number]["id"];
-export type TagIconOverrides = Readonly<
-	Record<string, string | null | undefined>
->;
+export type TagIconOverrides = Readonly<Record<string, string | null | undefined>>;
 
 export const DEFAULT_TAG_ICON_NAME = "tag" satisfies TagIconName;
 export const TAG_ICON_OPTIONS = DATABASE_COLUMN_ICON_OPTIONS;
@@ -193,15 +191,11 @@ export function normalizeTagIconKey(tag: string): string | null {
 	return normalized.split("/").every(Boolean) ? normalized : null;
 }
 
-function getTagIconOption(
-	iconName: string | null | undefined,
-): TagIconOption | null {
+function getTagIconOption(iconName: string | null | undefined): TagIconOption | null {
 	return getDatabaseColumnIconOption(iconName);
 }
 
-export function isTagIconName(
-	iconName: string | null | undefined,
-): iconName is TagIconName {
+export function isTagIconName(iconName: string | null | undefined): iconName is TagIconName {
 	return Boolean(getTagIconOption(iconName));
 }
 
@@ -211,11 +205,7 @@ export function resolveTagIconName(
 	beautifulTagsEnabled: boolean,
 ): string {
 	const normalizedTag = normalizeTagIconKey(tag);
-	const overrideIconName = resolveOverrideIconName(
-		tag,
-		normalizedTag,
-		overrides,
-	);
+	const overrideIconName = resolveOverrideIconName(tag, normalizedTag, overrides);
 	if (overrideIconName) return overrideIconName;
 
 	if (beautifulTagsEnabled && normalizedTag) {
@@ -270,7 +260,6 @@ function resolveAliasIconName(normalizedTag: string): TagIconName | null {
 	const rootIconName = PREDEFINED_TAG_ICON_ALIAS_LOOKUP[segments[0] ?? ""];
 	if (rootIconName) return rootIconName;
 
-	const leafIconName =
-		PREDEFINED_TAG_ICON_ALIAS_LOOKUP[segments[segments.length - 1] ?? ""];
+	const leafIconName = PREDEFINED_TAG_ICON_ALIAS_LOOKUP[segments[segments.length - 1] ?? ""];
 	return leafIconName ?? null;
 }

@@ -28,18 +28,14 @@
 	align-items: center;
 	justify-content: flex-start;
 	gap: 8px;
-	padding: var(--main-tabs-top-padding)
-		calc(var(--space-3) + var(--main-tabs-right-reserve)) 0
+	padding: var(--main-tabs-top-padding) calc(var(--space-3) + var(--main-tabs-right-reserve)) 0
 		var(--main-tabs-left-reserve);
 	border-bottom: 0;
 	background: var(--bg-primary);
 }
 
 .appShell.appShellSidebarCollapsed .mainTabsBar {
-	--main-tabs-left-reserve: max(
-		var(--space-3),
-		var(--collapsed-sidebar-top-reserve)
-	);
+	--main-tabs-left-reserve: max(var(--space-3), var(--collapsed-sidebar-top-reserve));
 }
 
 .mainTabsBar[data-empty-state="true"] {
@@ -73,7 +69,9 @@
 	background: transparent;
 	color: var(--text-secondary);
 	cursor: text;
-	transition: background var(--transition-fast), color var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
 }
 
 .mainTabActiveTitle:hover {
@@ -119,7 +117,9 @@
 	font-weight: var(--font-medium);
 	line-height: 1;
 	cursor: pointer;
-	transition: color var(--transition-fast), opacity var(--transition-fast);
+	transition:
+		color var(--transition-fast),
+		opacity var(--transition-fast);
 }
 
 .mainTabNavBtn:hover:not(:disabled) {
@@ -144,9 +144,7 @@
 	gap: 0;
 	width: fit-content;
 	max-width: calc(
-		100% -
-		var(--main-tabs-right-reserve, 78px) -
-		var(--main-tabs-right-reserve, 78px)
+		100% - var(--main-tabs-right-reserve, 78px) - var(--main-tabs-right-reserve, 78px)
 	);
 	min-height: 8px;
 	max-height: 8px;
@@ -158,7 +156,10 @@
 	opacity: 0;
 	pointer-events: auto;
 	scrollbar-width: none;
-	transition: max-height 140ms ease, min-height 140ms ease, opacity 140ms ease,
+	transition:
+		max-height 140ms ease,
+		min-height 140ms ease,
+		opacity 140ms ease,
 		padding 140ms ease;
 }
 
@@ -194,7 +195,9 @@
 	opacity: 0.74;
 	flex-shrink: 0;
 	margin: 0;
-	transition: color var(--transition-fast), transform var(--transition-fast),
+	transition:
+		color var(--transition-fast),
+		transform var(--transition-fast),
 		opacity var(--transition-fast);
 }
 
@@ -211,8 +214,10 @@
 	background: transparent;
 	color: var(--text-quaternary);
 	cursor: pointer;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		border-color var(--transition-fast),
+		color var(--transition-fast);
 }
 
 .mainTabsBreadcrumbSepButton:hover,
@@ -275,9 +280,11 @@
 	line-height: 1;
 	white-space: nowrap;
 	cursor: pointer;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast), box-shadow
-		var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		border-color var(--transition-fast),
+		color var(--transition-fast),
+		box-shadow var(--transition-fast);
 }
 
 .mainTabsBreadcrumbButton:hover:not(:disabled),
@@ -315,8 +322,7 @@
 	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
-	box-shadow: 0 12px 32px
-		color-mix(in srgb, var(--shadow-color, #000) 16%, transparent);
+	box-shadow: 0 12px 32px color-mix(in srgb, var(--shadow-color, #000) 16%, transparent);
 }
 
 .mainTabsBreadcrumbMenuLabel {
@@ -413,9 +419,9 @@
 .mainTabWrap[data-dnd-dragging]:not([data-dnd-placeholder]) .mainTab {
 	background: var(--bg-primary);
 	border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
-		color-mix(in srgb, var(--text-primary) 14%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 28%, transparent),
+		0 12px 28px color-mix(in srgb, var(--text-primary) 14%, transparent);
 	color: var(--text-primary);
 	transform: none;
 	animation: none;
@@ -442,9 +448,9 @@
 .dark .mainTabWrap[data-dragging="true"]:not([data-dnd-placeholder]) .mainTab,
 .dark .mainTabWrap[data-dnd-dragging]:not([data-dnd-placeholder]) .mainTab {
 	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
-		color-mix(in srgb, black 30%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 28%, transparent),
+		0 12px 28px color-mix(in srgb, black 30%, transparent);
 }
 
 .mainTabWrap[data-drop-target="true"] .mainTab {
@@ -497,8 +503,7 @@
 	background: var(--bg-primary);
 	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
 	color: var(--text-primary);
-	box-shadow: 0 1px 2px
-		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
 }
 
 .mainTabText {
@@ -535,17 +540,15 @@
 	background: transparent;
 	color: var(--text-secondary);
 	opacity: 0;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast), opacity
-		var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		border-color var(--transition-fast),
+		color var(--transition-fast),
+		opacity var(--transition-fast);
 }
 
 button.mainTabClose {
-	background: radial-gradient(
-		circle,
-		var(--text-primary) 0 5px,
-		transparent 5px
-	);
+	background: radial-gradient(circle, var(--text-primary) 0 5px, transparent 5px);
 	color: var(--bg-primary);
 }
 
@@ -607,7 +610,9 @@ button.mainTabClose {
 	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-medium);
 	line-height: 1;
-	transition: background var(--transition-fast), color var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
 }
 
 .mainTabOverflow {
@@ -636,15 +641,13 @@ button.mainTabClose {
 .mainTab:focus-visible,
 .mainTabClose:focus-visible,
 .mainTabPin:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 1px;
 }
 
 .mainTabActiveTitle:focus-visible,
 .mainTabAdd:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 1px;
 }
 

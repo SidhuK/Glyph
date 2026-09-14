@@ -4,10 +4,7 @@
 .appShell {
 	--window-control-toggle-offset: 78px;
 	--window-control-toggle-top: calc((var(--header-height) + 6px) / 2);
-	--collapsed-sidebar-top-reserve: calc(
-		var(--window-control-toggle-offset) +
-		38px
-	);
+	--collapsed-sidebar-top-reserve: calc(var(--window-control-toggle-offset) + 38px);
 
 	isolation: isolate;
 	display: flex;
@@ -108,7 +105,9 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 	line-height: 18px;
 	text-align: center;
 	cursor: pointer;
-	transition: color 120ms ease, background 120ms ease;
+	transition:
+		color 120ms ease,
+		background 120ms ease;
 }
 
 .glyphToastClose[data-sileo-button]:hover,
@@ -213,26 +212,9 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 
 .no-drag,
 [data-window-drag-ignore],
-.drag
-	:is(
-		button,
-		a,
-		input,
-		textarea,
-		select,
-		[role="button"],
-		[contenteditable="true"]
-	),
+.drag :is(button, a, input, textarea, select, [role="button"], [contenteditable="true"]),
 [data-tauri-drag-region]
-	:is(
-		button,
-		a,
-		input,
-		textarea,
-		select,
-		[role="button"],
-		[contenteditable="true"]
-	) {
+	:is(button, a, input, textarea, select, [role="button"], [contenteditable="true"]) {
 	-webkit-app-region: no-drag;
 }
 

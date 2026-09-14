@@ -14,10 +14,7 @@ import type { ComponentProps } from "react";
 
 export type IconProps = Omit<ComponentProps<typeof HugeiconsIcon>, "icon">;
 
-export function withDefaultIconSize({
-	size = "var(--icon-md)",
-	...props
-}: IconProps): IconProps {
+export function withDefaultIconSize({ size = "var(--icon-md)", ...props }: IconProps): IconProps {
 	return { size, ...props };
 }
 

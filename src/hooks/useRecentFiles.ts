@@ -12,17 +12,9 @@ interface UseRecentFilesReturn {
 	refreshRecentFiles: () => Promise<void>;
 }
 
-export function useRecentFiles(
-	currentSpacePath: string | null,
-	limit = 7,
-): UseRecentFilesReturn {
+export function useRecentFiles(currentSpacePath: string | null, limit = 7): UseRecentFilesReturn {
 	const queryClient = useQueryClient();
-	const queryKey = [
-		"settings",
-		"recent-files",
-		currentSpacePath ?? "__all__",
-		limit,
-	] as const;
+	const queryKey = ["settings", "recent-files", currentSpacePath ?? "__all__", limit] as const;
 	const recentFilesQuery = useQuery({
 		queryKey,
 		queryFn: async () => {

@@ -23,8 +23,7 @@ export const markdownMathExtension: MarkdownExtension = {
 			before: "Escape",
 			parse(context, next, pos) {
 				if (next !== DOLLAR || context.char(pos + 1) === DOLLAR) return -1;
-				if (pos > context.offset && context.char(pos - 1) === BACKSLASH)
-					return -1;
+				if (pos > context.offset && context.char(pos - 1) === BACKSLASH) return -1;
 				const first = context.char(pos + 1);
 				if (first < 0 || /\s/.test(String.fromCharCode(first))) return -1;
 				let cursor = pos + 1;
@@ -73,9 +72,7 @@ export const markdownMathExtension: MarkdownExtension = {
 							children.push(context.elt("MathContent", contentFrom, contentTo));
 						}
 						children.push(context.elt("MathMark", closeFrom, closeTo));
-						context.addElement(
-							context.elt("BlockMath", from, closeTo, children),
-						);
+						context.addElement(context.elt("BlockMath", from, closeTo, children));
 						return true;
 					}
 					const lineFrom = context.lineStart + line.basePos;
@@ -87,31 +84,20 @@ export const markdownMathExtension: MarkdownExtension = {
 				if (sawContent) {
 					children.push(context.elt("MathContent", contentFrom, contentTo));
 				}
-				context.addElement(
-					context.elt("BlockMath", from, Math.max(openTo, contentTo), children),
-				);
+				context.addElement(context.elt("BlockMath", from, Math.max(openTo, contentTo), children));
 				return true;
 			},
 		},
 	],
 	wrap: parseMixed((node) =>
-		node.type.name === "MathContent"
-			? { parser: latexLanguage.parser, bracketed: true }
-			: null,
+		node.type.name === "MathContent" ? { parser: latexLanguage.parser, bracketed: true } : null,
 	),
 };
 
-export function isPositionInMath(
-	state: EditorState,
-	position: number,
-): boolean {
+export function isPositionInMath(state: EditorState, position: number): boolean {
 	let node = syntaxTree(state).resolve(position, -1);
 	while (node) {
-		if (
-			node.name === "MathContent" ||
-			node.name === "InlineMath" ||
-			node.name === "BlockMath"
-		) {
+		if (node.name === "MathContent" || node.name === "InlineMath" || node.name === "BlockMath") {
 			return true;
 		}
 		if (!node.parent) return false;
@@ -141,8 +127,7 @@ function validateFormula(source: string, offset: number): Diagnostic[] {
 				}
 			}
 		}
-		consecutiveBackslashes =
-			character === "\\" ? consecutiveBackslashes + 1 : 0;
+		consecutiveBackslashes = character === "\\" ? consecutiveBackslashes + 1 : 0;
 	}
 	for (const opening of braces) {
 		diagnostics.push({

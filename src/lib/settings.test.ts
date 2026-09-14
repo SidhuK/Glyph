@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { AppSettings } from "./settings/model";
 
 const { emitMock, listenMock, storeState } = vi.hoisted(() => ({
@@ -26,9 +26,7 @@ vi.mock("@tauri-apps/plugin-store", () => ({
 		}
 
 		entries<T>() {
-			return Promise.resolve(
-				Array.from(storeState.entries()) as Array<[string, T]>,
-			);
+			return Promise.resolve(Array.from(storeState.entries()) as Array<[string, T]>);
 		}
 
 		set(key: string, value: unknown) {
@@ -83,9 +81,7 @@ const DURABLE_SETTING_CASES = [
 		defaultValue: false,
 		storedValue: true,
 		writeKey: "editorRawMarkdownVimMode",
-		writes: [
-			{ value: true, payload: { editor: { rawMarkdownVimMode: true } } },
-		],
+		writes: [{ value: true, payload: { editor: { rawMarkdownVimMode: true } } }],
 	},
 	{
 		name: "formatting bar",
@@ -201,13 +197,10 @@ const DURABLE_SETTING_CASES = [
 describe("durable settings", () => {
 	beforeEach(resetSettingsHarness);
 
-	it.each(DURABLE_SETTING_CASES)(
-		"defaults $name",
-		async ({ read, defaultValue }) => {
-			const { loadSettings } = await import("./settings");
-			expect(read(await loadSettings())).toBe(defaultValue);
-		},
-	);
+	it.each(DURABLE_SETTING_CASES)("defaults $name", async ({ read, defaultValue }) => {
+		const { loadSettings } = await import("./settings");
+		expect(read(await loadSettings())).toBe(defaultValue);
+	});
 
 	it.each(DURABLE_SETTING_CASES.filter((setting) => "storedValue" in setting))(
 		"loads $name from the store",
@@ -218,9 +211,7 @@ describe("durable settings", () => {
 		},
 	);
 
-	it.each(
-		DURABLE_SETTING_CASES.filter((setting) => "invalidStoredValue" in setting),
-	)(
+	it.each(DURABLE_SETTING_CASES.filter((setting) => "invalidStoredValue" in setting))(
 		"falls back to the default for invalid $name values",
 		async ({ storeKey, invalidStoredValue, read, defaultValue }) => {
 			storeState.set(storeKey, invalidStoredValue);
@@ -239,10 +230,7 @@ describe("durable settings", () => {
 			for (const write of writes) {
 				await setting.write(write.value);
 				expect(storeState.get(storeKey)).toBe(write.value);
-				expect(emitMock).toHaveBeenCalledWith(
-					"settings:updated",
-					write.payload,
-				);
+				expect(emitMock).toHaveBeenCalledWith("settings:updated", write.payload);
 			}
 		},
 	);
@@ -419,14 +407,9 @@ describe("attachment storage settings", () => {
 		const { SPACE_SETTINGS, writeSpaceSetting } = await import("./settings");
 
 		await writeSpaceSetting(SPACE_SETTINGS.attachmentStorageMode, "space-root");
-		await writeSpaceSetting(
-			SPACE_SETTINGS.attachmentStorageMode,
-			"note-subfolder",
-		);
+		await writeSpaceSetting(SPACE_SETTINGS.attachmentStorageMode, "note-subfolder");
 
-		expect(storeState.get("editor.attachmentStorageMode")).toBe(
-			"note-subfolder",
-		);
+		expect(storeState.get("editor.attachmentStorageMode")).toBe("note-subfolder");
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			editor: { attachmentStorageMode: "note-subfolder" },
 		});
@@ -453,12 +436,12 @@ describe("attachment storage settings", () => {
 	it("rejects invalid attachment folder paths", async () => {
 		const { SPACE_SETTINGS, writeSpaceSetting } = await import("./settings");
 
-		await expect(
-			writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, "../secret"),
-		).rejects.toThrow("..");
-		await expect(
-			writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, ".hidden"),
-		).rejects.toThrow("hidden");
+		await expect(writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, "../secret")).rejects.toThrow(
+			"..",
+		);
+		await expect(writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, ".hidden")).rejects.toThrow(
+			"hidden",
+		);
 	});
 });
 
@@ -491,8 +474,7 @@ describe("space-scoped settings", () => {
 	});
 
 	it("persists folder settings under the explicit space path", async () => {
-		const { SPACE_SETTINGS, setTemplatesFolder, writeSpaceSetting } =
-			await import("./settings");
+		const { SPACE_SETTINGS, setTemplatesFolder, writeSpaceSetting } = await import("./settings");
 
 		await writeSpaceSetting(SPACE_SETTINGS.dailyNotesFolder, "Daily", {
 			spacePath: "/spaces/work",
@@ -501,13 +483,9 @@ describe("space-scoped settings", () => {
 			spacePath: "/spaces/work",
 		});
 		await setTemplatesFolder("Templates", { spacePath: "/spaces/work" });
-		await writeSpaceSetting(
-			SPACE_SETTINGS.attachmentStorageMode,
-			"specific-folder",
-			{
-				spacePath: "/spaces/work",
-			},
-		);
+		await writeSpaceSetting(SPACE_SETTINGS.attachmentStorageMode, "specific-folder", {
+			spacePath: "/spaces/work",
+		});
 
 		expect(storeState.get("space.scopedSettings")).toEqual({
 			"/spaces/work": {
@@ -528,16 +506,12 @@ describe("shortcut settings", () => {
 	beforeEach(resetSettingsHarness);
 
 	it("loads effective defaults when no overrides are stored", async () => {
-		const { loadShortcutSettings, getEffectiveShortcutBindings } = await import(
-			"./settings"
-		);
+		const { loadShortcutSettings, getEffectiveShortcutBindings } = await import("./settings");
 
 		const shortcutSettings = await loadShortcutSettings();
 
 		expect(shortcutSettings.bindings).toEqual({});
-		expect(
-			getEffectiveShortcutBindings(shortcutSettings.bindings),
-		).toMatchObject({
+		expect(getEffectiveShortcutBindings(shortcutSettings.bindings)).toMatchObject({
 			"open-command-palette": {
 				meta: true,
 				key: "k",
@@ -609,9 +583,7 @@ describe("shortcut settings", () => {
 			"not-a-real-action": { meta: true, key: "y" },
 		});
 
-		const { loadShortcutSettings, getEffectiveShortcutBindings } = await import(
-			"./settings"
-		);
+		const { loadShortcutSettings, getEffectiveShortcutBindings } = await import("./settings");
 
 		const shortcutSettings = await loadShortcutSettings();
 		const effective = getEffectiveShortcutBindings(shortcutSettings.bindings);

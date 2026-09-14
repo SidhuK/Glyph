@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { SETTINGS_SEARCH_ENTRIES } from "../settings/settingsSearch";
 import {
 	buildSearchQuery,
@@ -13,18 +13,16 @@ import { PALETTE_SETTINGS_REGISTRY } from "./settingsPaletteRegistry";
 
 describe("commandPaletteHelpers", () => {
 	it("parses people and tags from a mixed query", () => {
-		expect(parseSearchQueryWithPeople("@alice #project roadmap", true)).toEqual(
-			{
-				request: {
-					tags: ["#project"],
-					people: ["@alice"],
-					title_only: false,
-					tag_only: false,
-					query: "roadmap",
-				},
-				text: "roadmap",
+		expect(parseSearchQueryWithPeople("@alice #project roadmap", true)).toEqual({
+			request: {
+				tags: ["#project"],
+				people: ["@alice"],
+				title_only: false,
+				tag_only: false,
+				query: "roadmap",
 			},
-		);
+			text: "roadmap",
+		});
 	});
 
 	it("builds people and tag tokens back into a query", () => {
@@ -67,10 +65,7 @@ describe("commandPaletteHelpers", () => {
 		});
 		const query = parsePaletteQuery("theme");
 		const exact = rankPaletteResult(result("exact", "Theme", []), query);
-		const keyword = rankPaletteResult(
-			result("keyword", "Appearance", ["theme"]),
-			query,
-		);
+		const keyword = rankPaletteResult(result("keyword", "Appearance", ["theme"]), query);
 		const description = rankPaletteResult(
 			result("description", "Colors", [], "Choose a theme"),
 			query,

@@ -83,11 +83,7 @@ export function GitDiffView({ diff, onBack }: GitDiffViewProps) {
 					lines.map((line, index) => {
 						const display = diffLineDisplay(line);
 						return (
-							<div
-								key={`${index}:${line}`}
-								className="gitDiffLine"
-								data-kind={display.kind}
-							>
+							<div key={`${index}:${line}`} className="gitDiffLine" data-kind={display.kind}>
 								<div className="gitDiffLineInner">
 									<span className="gitDiffMarker" aria-hidden="true">
 										{display.marker}
@@ -98,9 +94,7 @@ export function GitDiffView({ diff, onBack }: GitDiffViewProps) {
 						);
 					})
 				) : (
-					<div className="gitDiffEmpty">
-						This commit did not change the current note.
-					</div>
+					<div className="gitDiffEmpty">This commit did not change the current note.</div>
 				)}
 			</section>
 		</div>

@@ -24,19 +24,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function clampNumber(
-	value: unknown,
-	fallback: number,
-	min: number,
-	max: number,
-) {
+function clampNumber(value: unknown, fallback: number, min: number, max: number) {
 	if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
 	return Math.min(max, Math.max(min, Math.round(value)));
 }
 
-export function normalizeConnectionsGraphOptions(
-	value: unknown,
-): ConnectionsGraphOptions {
+export function normalizeConnectionsGraphOptions(value: unknown): ConnectionsGraphOptions {
 	const source = isRecord(value) ? value : {};
 	return {
 		nodeSize: clampNumber(
@@ -114,9 +107,7 @@ export function connectionsLabelVisibility(value: number) {
 	};
 }
 
-export function connectionsMinimumVisibleDegree(
-	options: ConnectionsGraphOptions,
-) {
+export function connectionsMinimumVisibleDegree(options: ConnectionsGraphOptions) {
 	const orphanFloor = options.hideOrphanNodes ? 1 : 0;
 	return Math.max(orphanFloor, options.minConnections);
 }

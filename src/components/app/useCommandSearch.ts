@@ -42,10 +42,7 @@ export function useCommandSearch(
 		debounceRef.current = setTimeout(() => {
 			void (async () => {
 				try {
-					const parsed = parseSearchQueryWithPeople(
-						trimmed,
-						peopleMentionsEnabled,
-					);
+					const parsed = parseSearchQueryWithPeople(trimmed, peopleMentionsEnabled);
 					let results: SearchResult[];
 					try {
 						if (peopleMentionsEnabled) {
@@ -83,12 +80,8 @@ export function useCommandSearch(
 	}, [query, enabled, spacePath, peopleMentionsEnabled]);
 
 	const { titleMatches, contentMatches } = useMemo(() => {
-		if (!enabled || !query.trim())
-			return { titleMatches: [], contentMatches: [] };
-		const parsed = parseSearchQueryWithPeople(
-			query.trim(),
-			peopleMentionsEnabled,
-		);
+		if (!enabled || !query.trim()) return { titleMatches: [], contentMatches: [] };
+		const parsed = parseSearchQueryWithPeople(query.trim(), peopleMentionsEnabled);
 		const q = parsed.text.toLowerCase();
 		if (parsed.request.tag_only) {
 			return { titleMatches: searchResults, contentMatches: [] };

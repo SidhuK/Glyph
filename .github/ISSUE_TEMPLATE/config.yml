@@ -6,4 +6,3 @@ contact_links:
   - name: macOS install guide
     url: https://github.com/SidhuK/Glyph/blob/main/docs/macos-unsigned-install.md
     about: Start here if the app is blocked by macOS Gatekeeper or first-run install prompts.
-

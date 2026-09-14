@@ -10,10 +10,7 @@ interface PinnedCollectionCardProps {
 	onUnpin: () => void;
 }
 
-function collectionDescription(
-	collection: WorkspaceDatabaseSummary,
-	t: TFunction<"shell">,
-) {
+function collectionDescription(collection: WorkspaceDatabaseSummary, t: TFunction<"shell">) {
 	if (collection.source.kind === "search") {
 		return t("pinned.savedSearch");
 	}
@@ -28,19 +25,11 @@ function collectionDescription(
 	return t("pinned.allNotesCollection");
 }
 
-export function PinnedCollectionCard({
-	collection,
-	onOpen,
-	onUnpin,
-}: PinnedCollectionCardProps) {
+export function PinnedCollectionCard({ collection, onOpen, onUnpin }: PinnedCollectionCardProps) {
 	const { t } = useTranslation("shell");
 	return (
 		<article className="pinnedCollectionCard">
-			<button
-				type="button"
-				className="pinnedCollectionCardOpen"
-				onClick={onOpen}
-			>
+			<button type="button" className="pinnedCollectionCardOpen" onClick={onOpen}>
 				<span className="pinnedCollectionCardCopy">
 					<span className="pinnedCollectionCardTitle">
 						<HugeiconsIcon icon={LibraryIcon} size="var(--icon-md)" />

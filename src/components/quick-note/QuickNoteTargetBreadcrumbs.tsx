@@ -72,11 +72,7 @@ function breadcrumbPartsForTarget(
 				const segmentPath = segments.slice(0, index + 1).join("/");
 				const isFile = index === segments.length - 1;
 				let label = isFile ? stripFileExtension(segment) : segment;
-				if (
-					isFile &&
-					targetValue === QUICK_NOTE_TARGET_VALUE &&
-					path === todayQuickNotePath
-				) {
+				if (isFile && targetValue === QUICK_NOTE_TARGET_VALUE && path === todayQuickNotePath) {
 					label = "Today's quick note";
 				}
 				return { label, path: segmentPath };
@@ -150,11 +146,7 @@ function TargetBreadcrumbEntryMenu({
 					data-current={isCurrent ? "true" : undefined}
 				>
 					{showSeparator ? (
-						<ChevronRight
-							size="var(--icon-xs)"
-							className="quickNoteTargetSep"
-							aria-hidden="true"
-						/>
+						<ChevronRight size="var(--icon-xs)" className="quickNoteTargetSep" aria-hidden="true" />
 					) : null}
 					<span className="quickNoteTargetLabel">{label}</span>
 					{isCurrent ? (
@@ -166,11 +158,7 @@ function TargetBreadcrumbEntryMenu({
 					) : null}
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				align="start"
-				side="bottom"
-				className="quickNoteTargetMenu"
-			>
+			<DropdownMenuContent align="start" side="bottom" className="quickNoteTargetMenu">
 				<DropdownMenuLabel className="quickNoteTargetMenuLabel">
 					{menuTitleForDir(dirPath)}
 				</DropdownMenuLabel>
@@ -178,18 +166,10 @@ function TargetBreadcrumbEntryMenu({
 					<DropdownMenuItem
 						className="quickNoteTargetMenuItem"
 						title={todayQuickNotePath}
-						data-selected={
-							selectedTargetValue === QUICK_NOTE_TARGET_VALUE
-								? "true"
-								: undefined
-						}
-						onSelect={() =>
-							onSelectTarget(todayQuickNoteTarget(todayQuickNotePath))
-						}
+						data-selected={selectedTargetValue === QUICK_NOTE_TARGET_VALUE ? "true" : undefined}
+						onSelect={() => onSelectTarget(todayQuickNoteTarget(todayQuickNotePath))}
 					>
-						<span className="quickNoteTargetMenuItemLabel">
-							Today&apos;s quick note
-						</span>
+						<span className="quickNoteTargetMenuItemLabel">Today&apos;s quick note</span>
 					</DropdownMenuItem>
 				) : null}
 				{loading ? null : entries.length === 0 ? (
@@ -220,9 +200,7 @@ export function QuickNoteTargetBreadcrumbs({
 	todayQuickNotePath,
 	onSelectTarget,
 }: QuickNoteTargetBreadcrumbsProps) {
-	const [childrenByDir, setChildrenByDir] = useState<
-		Record<string, FsEntry[] | undefined>
-	>({});
+	const [childrenByDir, setChildrenByDir] = useState<Record<string, FsEntry[] | undefined>>({});
 	const childrenByDirRef = useRef(childrenByDir);
 	childrenByDirRef.current = childrenByDir;
 	const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
@@ -235,10 +213,7 @@ export function QuickNoteTargetBreadcrumbs({
 	const loadDir = useCallback(async (dirPath: string) => {
 		if (childrenByDirRef.current[dirPath] !== undefined) return;
 		try {
-			const entries = await invoke(
-				"space_list_dir",
-				dirPath ? { dir: dirPath } : {},
-			);
+			const entries = await invoke("space_list_dir", dirPath ? { dir: dirPath } : {});
 			setChildrenByDir((current) => ({
 				...current,
 				[dirPath]: sortTargetEntries(entries),
@@ -252,9 +227,7 @@ export function QuickNoteTargetBreadcrumbs({
 		const segments = selectedTarget.path.split("/").filter(Boolean);
 		const dirsToLoad = [
 			"",
-			...segments
-				.slice(0, -1)
-				.map((_, index) => segments.slice(0, index + 1).join("/")),
+			...segments.slice(0, -1).map((_, index) => segments.slice(0, index + 1).join("/")),
 		];
 		for (const dirPath of dirsToLoad) {
 			void loadDir(dirPath);
@@ -270,10 +243,7 @@ export function QuickNoteTargetBreadcrumbs({
 	);
 
 	return (
-		<nav
-			className="quickNoteTargetBreadcrumb"
-			aria-label="Quick note destination"
-		>
+		<nav className="quickNoteTargetBreadcrumb" aria-label="Quick note destination">
 			{breadcrumbParts.map((part, index) => {
 				const isCurrent = index === breadcrumbParts.length - 1;
 				const menuDirPath = breadcrumbParts[index - 1]?.path ?? "";

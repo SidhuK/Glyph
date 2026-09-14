@@ -19,10 +19,7 @@ function escapeHtmlText(text: string): string {
 
 function htmlFragmentToPlainText(html: string): string {
 	if (!html.trim() || typeof DOMParser === "undefined") return html.trim();
-	const doc = new DOMParser().parseFromString(
-		`<div>${html}</div>`,
-		"text/html",
-	);
+	const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
 	return doc.body.textContent?.trim() ?? html.trim();
 }
 
@@ -61,9 +58,7 @@ function isDetailsSectionEnd(
 		return next === null || DETAILS_CONTENT_START_RE.test(next);
 	}
 	return (
-		next === null ||
-		DETAILS_BLOCK_END_RE.test(next) ||
-		/^:::details(?:\s+\{open\})?\s*$/.test(next)
+		next === null || DETAILS_BLOCK_END_RE.test(next) || /^:::details(?:\s+\{open\})?\s*$/.test(next)
 	);
 }
 
@@ -89,16 +84,9 @@ function readFencedSection(
 	return { content: stripStructuralBlankLines(contentLines), endIndex: index };
 }
 
-function detailsFencesToHtml(
-	isOpen: boolean,
-	summary: string,
-	content: string,
-) {
+function detailsFencesToHtml(isOpen: boolean, summary: string, content: string) {
 	const openAttr = isOpen ? " open" : "";
-	const blocks = [
-		`<details${openAttr}>`,
-		`<summary>${escapeHtmlText(summary)}</summary>`,
-	];
+	const blocks = [`<details${openAttr}>`, `<summary>${escapeHtmlText(summary)}</summary>`];
 	if (content) blocks.push("", content);
 	blocks.push("", "</details>");
 	return blocks.join("\n");
@@ -108,9 +96,7 @@ function detailsInnerHtmlToFences(isOpen: boolean, inner: string): string {
 	const summaryMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
 	// Strip tags so postprocess → escapeHtmlText does not double-escape markup.
 	const summary = htmlFragmentToPlainText(summaryMatch?.[1] ?? "");
-	const content = stripOuterBlankLines(
-		inner.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, ""),
-	);
+	const content = stripOuterBlankLines(inner.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, ""));
 	const openLine = isOpen ? ":::details {open}" : ":::details";
 	return [
 		openLine,
@@ -194,10 +180,7 @@ function postprocessDetailsFences(input: string): string {
 			continue;
 		}
 
-		if (
-			isInsideMarkdownCodeFence(fenceTracker) ||
-			!/^:::details(?:\s+\{open\})?\s*$/.test(line)
-		) {
+		if (isInsideMarkdownCodeFence(fenceTracker) || !/^:::details(?:\s+\{open\})?\s*$/.test(line)) {
 			output.push(line);
 			index += 1;
 			continue;

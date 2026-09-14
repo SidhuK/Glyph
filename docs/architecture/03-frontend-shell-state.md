@@ -10,11 +10,11 @@ This document explains the provider stack and the shell files you should read be
 
 ```tsx
 <LazyMotion features={domAnimation}>
-  <AppProviders>
-    <LicenseGate>
-      <AppShell />
-    </LicenseGate>
-  </AppProviders>
+	<AppProviders>
+		<LicenseGate>
+			<AppShell />
+		</LicenseGate>
+	</AppProviders>
 </LazyMotion>
 ```
 
@@ -176,9 +176,9 @@ Tabs have three kinds:
 
 ```ts
 type WorkspaceTab = {
-  id: string;
-  kind: "blank" | "file" | "special";
-  target: string | null;
+	id: string;
+	kind: "blank" | "file" | "special";
+	target: string | null;
 };
 ```
 

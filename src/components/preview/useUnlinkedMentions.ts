@@ -8,11 +8,7 @@ interface UseUnlinkedMentionsOptions {
 	onLinked: () => void;
 }
 
-export function useUnlinkedMentions({
-	enabled,
-	noteId,
-	onLinked,
-}: UseUnlinkedMentionsOptions) {
+export function useUnlinkedMentions({ enabled, noteId, onLinked }: UseUnlinkedMentionsOptions) {
 	const queryClient = useQueryClient();
 	const [linkedCount, setLinkedCount] = useState(0);
 	const [skippedCount, setSkippedCount] = useState(0);

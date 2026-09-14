@@ -1,8 +1,5 @@
 import { PluginKey } from "@tiptap/pm/state";
-import {
-	isHtmlEmbedCodeBlockLanguage,
-	stripHtmlEmbedRawSentinel,
-} from "../../../lib/htmlEmbed";
+import { isHtmlEmbedCodeBlockLanguage, stripHtmlEmbedRawSentinel } from "../../../lib/htmlEmbed";
 import {
 	createLazyCodeBlockPreviewWidget,
 	destroyLazyCodeBlockPreviewWidget,
@@ -19,13 +16,7 @@ export const HtmlEmbedPreview = createCodeBlockPreviewExtension({
 	widgetKeyPrefix: "html-embed",
 	matchLanguage: (language) => isHtmlEmbedCodeBlockLanguage(language) !== null,
 	getSource: (node) => stripHtmlEmbedRawSentinel(node.textContent ?? ""),
-	createWidget: ({
-		source,
-		language,
-		editable,
-		selectSource,
-		openFocusedPreview,
-	}) => {
+	createWidget: ({ source, language, editable, selectSource, openFocusedPreview }) => {
 		const kind = isHtmlEmbedCodeBlockLanguage(language);
 		if (!kind) {
 			return document.createElement("div");

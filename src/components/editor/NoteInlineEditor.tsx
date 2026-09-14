@@ -44,10 +44,7 @@ import {
 	enableCodeBlockPreviewAt,
 } from "./extensions/codeBlockPreviewPlugin";
 import { createGlyphMathExtensions } from "./extensions/math/markdownMath";
-import {
-	getMountedEditorContentRoot,
-	getOffsetWithinAncestor,
-} from "./hooks/editorDomUtils";
+import { getMountedEditorContentRoot, getOffsetWithinAncestor } from "./hooks/editorDomUtils";
 import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
 import { useMathNodeEditor } from "./hooks/useMathNodeEditor";
 import { useNoteEditor } from "./hooks/useNoteEditor";
@@ -98,26 +95,17 @@ function parseAiResponse(
 	});
 	const parsed = manager.parse(preprocessMarkdownForEditor(markdown));
 	const content = Array.isArray(parsed.content) ? parsed.content : [];
-	if (
-		unwrapSingleParagraph &&
-		content.length === 1 &&
-		content[0]?.type === "paragraph"
-	) {
+	if (unwrapSingleParagraph && content.length === 1 && content[0]?.type === "paragraph") {
 		return Array.isArray(content[0].content) ? content[0].content : [];
 	}
 	return content;
 }
 
 function isPreviewableCodeBlockLanguage(language: string | null): boolean {
-	return (
-		isHtmlEmbedCodeBlockLanguage(language) !== null ||
-		isMermaidCodeBlockLanguage(language)
-	);
+	return isHtmlEmbedCodeBlockLanguage(language) !== null || isMermaidCodeBlockLanguage(language);
 }
 
-function isFocusedCodeBlockPreviewRequest(
-	value: unknown,
-): value is FocusedCodeBlockPreviewRequest {
+function isFocusedCodeBlockPreviewRequest(value: unknown): value is FocusedCodeBlockPreviewRequest {
 	if (
 		!value ||
 		typeof value !== "object" ||
@@ -192,10 +180,7 @@ function extractFrontmatterLinkTokens(text: string): FrontmatterLinkToken[] {
 	return tokens;
 }
 
-async function openFrontmatterHref(
-	href: string,
-	sourcePath: string,
-): Promise<void> {
+async function openFrontmatterHref(href: string, sourcePath: string): Promise<void> {
 	if (href.startsWith("http://") || href.startsWith("https://")) {
 		await openUrl(href);
 		return;
@@ -236,10 +221,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const chromeMinimal = chrome === "minimal";
 	const mathNodeEditor = useMathNodeEditor();
 	const mathExtensions = useMemo(
-		() =>
-			enableMath
-				? createGlyphMathExtensions({ onEditRequest: mathNodeEditor.open })
-				: [],
+		() => (enableMath ? createGlyphMathExtensions({ onEditRequest: mathNodeEditor.open }) : []),
 		[enableMath, mathNodeEditor.open],
 	);
 
@@ -283,8 +265,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const showLiveFormatBar = Boolean(showEditorFormatBar && liveEditor);
 	const showLiveFormatBarRef = useRef(showLiveFormatBar);
 	showLiveFormatBarRef.current = showLiveFormatBar;
-	const [reserveFormatBarSpace, setReserveFormatBarSpace] =
-		useState(showLiveFormatBar);
+	const [reserveFormatBarSpace, setReserveFormatBarSpace] = useState(showLiveFormatBar);
 	useLayoutEffect(() => {
 		if (showLiveFormatBar) {
 			setReserveFormatBarSpace(true);
@@ -294,19 +275,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const lastFrontmatterRef = useRef(frontmatter);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
 	const noteEditorHostRef = useRef<HTMLDivElement | null>(null);
-	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
-		null,
-	);
-	const [selectedCodeBlock, setSelectedCodeBlock] =
-		useState<SelectedCodeBlockState | null>(null);
+	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(null);
+	const [selectedCodeBlock, setSelectedCodeBlock] = useState<SelectedCodeBlockState | null>(null);
 	const selectedCodeBlockRef = useRef<SelectedCodeBlockState | null>(null);
 	const codeBlockCopyResetTimerRef = useRef<number | null>(null);
 	const [codeBlockCopied, setCodeBlockCopied] = useState(false);
 	const [focusedCodeBlockPreview, setFocusedCodeBlockPreview] =
 		useState<FocusedCodeBlockPreview | null>(null);
-	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(
-		null,
-	);
+	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(null);
 	useEffect(() => {
 		if (!onFlushPendingEditsReady) return;
 		onFlushPendingEditsReady(() => flushMarkdownSync());
@@ -334,10 +310,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		const blurHostSelection = (host: HTMLDivElement | null) => {
 			if (!host) return;
 			const activeElement = document.activeElement;
-			if (
-				activeElement instanceof HTMLElement &&
-				host.contains(activeElement)
-			) {
+			if (activeElement instanceof HTMLElement && host.contains(activeElement)) {
 				activeElement.blur();
 			}
 			const selection = window.getSelection();
@@ -349,9 +322,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			setFocusedCodeBlockPreview(null);
 			if (editor && !editor.isDestroyed) {
 				clearCodeBlockPreviews(editor.view);
-				editor.view.dispatch(
-					editor.state.tr.setMeta(CODE_BLOCK_PREVIEW_REFRESH_META, true),
-				);
+				editor.view.dispatch(editor.state.tr.setMeta(CODE_BLOCK_PREVIEW_REFRESH_META, true));
 			}
 			blurHostSelection(host);
 			previousRelPathRef.current = relPath;
@@ -377,15 +348,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			if (!isPreviewableCodeBlockLanguage(request.language)) return;
 			setFocusedCodeBlockPreview(request);
 		};
-		tiptapHostNode.addEventListener(
-			OPEN_FOCUSED_CODE_BLOCK_PREVIEW,
-			openFocusedPreview,
-		);
+		tiptapHostNode.addEventListener(OPEN_FOCUSED_CODE_BLOCK_PREVIEW, openFocusedPreview);
 		return () =>
-			tiptapHostNode.removeEventListener(
-				OPEN_FOCUSED_CODE_BLOCK_PREVIEW,
-				openFocusedPreview,
-			);
+			tiptapHostNode.removeEventListener(OPEN_FOCUSED_CODE_BLOCK_PREVIEW, openFocusedPreview);
 	}, [editor, mode, tiptapHostNode]);
 
 	useEffect(() => {
@@ -405,10 +370,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	// Reset when the editor context changes, but not on every content update.
 	// Including `markdown` here causes the viewport to jump to the top while typing.
-	useResetScrollOnChange(tiptapHostRef, ".rfNodeNoteEditorBody", [
-		mode,
-		relPath,
-	]);
+	useResetScrollOnChange(tiptapHostRef, ".rfNodeNoteEditorBody", [mode, relPath]);
 
 	const tableControls = useTableInlineControls({
 		canEdit: showEditorChrome,
@@ -488,11 +450,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 								: "";
 						if (currentText !== text) return "selection-changed";
 						try {
-							const content = parseAiResponse(
-								liveEditor,
-								markdown,
-								applyMode === "replace",
-							);
+							const content = parseAiResponse(liveEditor, markdown, applyMode === "replace");
 							if (!content.length) return "failed";
 							const resolvedEnd = liveEditor.state.doc.resolve(to);
 							const range =
@@ -528,10 +486,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		const currentBody = normalizeBody(
 			liveEditor?.getMarkdown() ?? lastAppliedBodyRef.current ?? "",
 		);
-		const nextMarkdown = joinYamlFrontmatter(
-			normalizedFrontmatter,
-			currentBody,
-		);
+		const nextMarkdown = joinYamlFrontmatter(normalizedFrontmatter, currentBody);
 		if (nextMarkdown === lastEmittedMarkdownRef.current) return;
 		lastEmittedMarkdownRef.current = nextMarkdown;
 		onChange(nextMarkdown);
@@ -654,9 +609,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			const nextControlsLeft = codeOffset.left + 10;
 			const nextControlsRight = codeOffset.left + codeElement.offsetWidth - 10;
 			const nextLanguage =
-				typeof parentNode.attrs.language === "string"
-					? parentNode.attrs.language
-					: null;
+				typeof parentNode.attrs.language === "string" ? parentNode.attrs.language : null;
 			const nextPos = editor.state.selection.$from.before();
 			const nextSource = parentNode.textContent ?? "";
 
@@ -668,12 +621,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				language: nextLanguage,
 				source: nextSource,
 			} satisfies SelectedCodeBlockState;
-			if (
-				!areSelectedCodeBlocksSameBlock(
-					selectedCodeBlockRef.current,
-					nextCodeBlock,
-				)
-			) {
+			if (!areSelectedCodeBlocksSameBlock(selectedCodeBlockRef.current, nextCodeBlock)) {
 				selectedCodeBlockRef.current = nextCodeBlock;
 				if (codeBlockCopyResetTimerRef.current !== null) {
 					window.clearTimeout(codeBlockCopyResetTimerRef.current);
@@ -712,10 +660,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			}
 			scrollHost?.removeEventListener("scroll", scheduleSelectedCodeBlockSync);
 			window.removeEventListener("resize", scheduleSelectedCodeBlockSync);
-			document.removeEventListener(
-				"selectionchange",
-				scheduleSelectedCodeBlockSync,
-			);
+			document.removeEventListener("selectionchange", scheduleSelectedCodeBlockSync);
 			editor.off("selectionUpdate", scheduleSelectedCodeBlockSync);
 			editor.off("transaction", scheduleSelectedCodeBlockSync);
 		};
@@ -739,12 +684,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		},
 		[editor],
 	);
-	const preventOverlayMouseDown = useCallback(
-		(event: ReactMouseEvent<HTMLElement>) => {
-			event.preventDefault();
-		},
-		[],
-	);
+	const preventOverlayMouseDown = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+		event.preventDefault();
+	}, []);
 	useEffect(() => {
 		if (!editor || editor.isDestroyed) return;
 		if (mode === "rich" || mode === "preview") {
@@ -834,9 +776,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			editor.state.doc.content.size,
 		);
 		editor.view.dispatch(
-			editor.state.tr.setSelection(
-				Selection.near(editor.state.doc.resolve(afterBlock)),
-			),
+			editor.state.tr.setSelection(Selection.near(editor.state.doc.resolve(afterBlock))),
 		);
 		editor.view.focus();
 	}, [editor, focusedCodeBlockPreview]);
@@ -881,9 +821,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			]
 				.filter(Boolean)
 				.join(" ")}
-			onKeyDownCapture={
-				canEdit ? noteFind.handleEditorKeyDownCapture : undefined
-			}
+			onKeyDownCapture={canEdit ? noteFind.handleEditorKeyDownCapture : undefined}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{noteFind.findOpen ? (
@@ -951,9 +889,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						canEdit={canEdit}
 						className="rfNodeNoteEditorRibbonBottom"
 						onExtractSelectionToNote={
-							extractToNote.canExtractToNote
-								? extractToNote.openExtractDialog
-								: undefined
+							extractToNote.canExtractToNote ? extractToNote.openExtractDialog : undefined
 						}
 					/>
 				) : null}

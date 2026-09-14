@@ -18,10 +18,7 @@ export function useFileTreeCreateFolderScroll(
 			cancelScrollRef.current = null;
 			const createdPath = await onRequestCreateFolder(dirPath);
 			if (!createdPath) return null;
-			cancelScrollRef.current = scheduleScrollFileTreePathIntoView(
-				createdPath,
-				{ focus: true },
-			);
+			cancelScrollRef.current = scheduleScrollFileTreePathIntoView(createdPath, { focus: true });
 			return createdPath;
 		},
 		[onRequestCreateFolder],

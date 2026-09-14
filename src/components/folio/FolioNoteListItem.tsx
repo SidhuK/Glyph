@@ -23,10 +23,7 @@ import { InlineRenameInput } from "../InlineRenameInput";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
-import {
-	getEditorTextColorOption,
-	isEditorTextColor,
-} from "../editor/textColors";
+import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
 import { fileTreeAppearanceNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import type { FolioItem } from "./useFolioNotes";
@@ -43,10 +40,7 @@ interface FolioNoteListItemProps {
 	onFocus: () => void;
 	taskSummary?: NoteTaskSummary | null;
 	isRenaming?: boolean;
-	onCommitRename: (
-		path: string,
-		nextName: string,
-	) => Promise<boolean> | boolean;
+	onCommitRename: (path: string, nextName: string) => Promise<boolean> | boolean;
 	onCancelRename: () => void;
 	appearance?: FileTreeAppearance | null;
 	onOpenAppearancePicker: (path: string) => void;
@@ -207,9 +201,7 @@ function extractFirstImageRef(markdown: string): FolioImageRef | null {
 		}
 	}
 
-	for (const match of markdown.matchAll(
-		/<img\b[^>]*\bsrc=(["'])(.*?)\1[^>]*>/gi,
-	)) {
+	for (const match of markdown.matchAll(/<img\b[^>]*\bsrc=(["'])(.*?)\1[^>]*>/gi)) {
 		const ref = imageRefFromHref((match[2] ?? "").trim());
 		if (ref) {
 			candidates.push({
@@ -302,10 +294,7 @@ function useFolioThumbnail(note: FolioItem): string {
 }
 
 function useFolioFirstUrl(note: FolioItem): string {
-	const previewUrl = useMemo(
-		() => extractFirstUrl(note.preview),
-		[note.preview],
-	);
+	const previewUrl = useMemo(() => extractFirstUrl(note.preview), [note.preview]);
 	const [url, setUrl] = useState(previewUrl);
 
 	useEffect(() => {
@@ -364,14 +353,10 @@ export const FolioNoteListItem = memo(
 		const title = note.title.trim() || titleFromPath(note.note_path);
 		const isMarkdown = note.is_markdown;
 		const { spacePath } = useSpace();
-		const { stem: fileStem, ext: fileExt } = splitEditableFileName(
-			basename(note.note_path),
-		);
+		const { stem: fileStem, ext: fileExt } = splitEditableFileName(basename(note.note_path));
 		const { Icon, color } = getFileTypeInfo(note.note_path, isMarkdown);
 		const customColor =
-			appearance?.color && isEditorTextColor(appearance.color)
-				? appearance.color
-				: null;
+			appearance?.color && isEditorTextColor(appearance.color) ? appearance.color : null;
 		const rowStyle = customColor
 			? ({
 					"--folio-file-color": `var(${getEditorTextColorOption(customColor).cssVar})`,
@@ -391,10 +376,7 @@ export const FolioNoteListItem = memo(
 		const firstUrlLabel = firstUrl ? urlLabel(firstUrl) : "";
 		const taskProgress =
 			taskSummary && taskSummary.total_count > 0 ? (
-				<TaskProgressIndicator
-					summary={taskSummary}
-					className="folioNoteTaskProgress"
-				/>
+				<TaskProgressIndicator summary={taskSummary} className="folioNoteTaskProgress" />
 			) : null;
 		const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
 			if (isMarkdown) onPrefetch(note.note_path);
@@ -431,9 +413,7 @@ export const FolioNoteListItem = memo(
 								},
 							]
 						: []),
-					fileTreeAppearanceNativeMenu(() =>
-						onOpenAppearancePicker(note.note_path),
-					),
+					fileTreeAppearanceNativeMenu(() => onOpenAppearancePicker(note.note_path)),
 					{ type: "separator" },
 					{
 						label: "Delete",
@@ -469,7 +449,6 @@ export const FolioNoteListItem = memo(
 			/>
 		);
 		const noteTitleIcon = (
-			// biome-ignore lint/a11y/useSemanticElements: nested inside button row
 			<span
 				role="button"
 				tabIndex={0}
@@ -581,12 +560,8 @@ export const FolioNoteListItem = memo(
 								placeholder="Untitled"
 								onCommit={(draftName) => {
 									const initialName = fileStem || titleFromPath(note.note_path);
-									const nextStem =
-										draftName.trim() || fileStem || initialName.trim();
-									return onCommitRename(
-										note.note_path,
-										`${nextStem}${fileExt}`,
-									);
+									const nextStem = draftName.trim() || fileStem || initialName.trim();
+									return onCommitRename(note.note_path, `${nextStem}${fileExt}`);
 								}}
 								onCancel={onCancelRename}
 							/>

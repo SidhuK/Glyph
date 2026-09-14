@@ -145,11 +145,9 @@ const TableAxisControl = memo(function TableAxisControl({
 			capturedTargetRef.current = target;
 			if (!target) return;
 			const nativeMenuItems = toNativeMenuItems(menuItems, runCapturedCommand);
-			void showNativePopupMenu(event, nativeMenuItems).catch(
-				(error: unknown) => {
-					console.error(`Failed to show table ${axis} menu`, error);
-				},
-			);
+			void showNativePopupMenu(event, nativeMenuItems).catch((error: unknown) => {
+				console.error(`Failed to show table ${axis} menu`, error);
+			});
 		},
 		[axis, captureTarget, menuItems, runCapturedCommand],
 	);

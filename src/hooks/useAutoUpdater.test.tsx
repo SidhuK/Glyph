@@ -2,7 +2,7 @@
 
 import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("@tauri-apps/api/event", () => ({
 	listen: vi.fn().mockResolvedValue(vi.fn()),
@@ -48,13 +48,7 @@ vi.mock("../lib/tauri", () => ({
 	}
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-function Harness({
-	enabled,
-	onReady,
-}: {
-	enabled: boolean;
-	onReady: (ready: boolean) => void;
-}) {
+function Harness({ enabled, onReady }: { enabled: boolean; onReady: (ready: boolean) => void }) {
 	const { updateReady } = useAutoUpdater(enabled);
 
 	useEffect(() => {

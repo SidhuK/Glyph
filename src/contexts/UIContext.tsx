@@ -11,10 +11,7 @@ import {
 	useReducer,
 	useRef,
 } from "react";
-import {
-	DEFAULT_FOLIO_SCOPE,
-	type FolioScope,
-} from "../components/folio/folioScopes";
+import { DEFAULT_FOLIO_SCOPE, type FolioScope } from "../components/folio/folioScopes";
 import type { SettingsTab } from "../components/settings/settingsConfig";
 import {
 	DEFAULT_DATE_DISPLAY_FORMAT,
@@ -31,11 +28,7 @@ import {
 	periodNoteTemplatesFromSettings,
 	periodNotesEnabledFromSettings,
 } from "../lib/periodNotes";
-import {
-	type AiAssistantMode,
-	loadSettings,
-	reloadFromDisk,
-} from "../lib/settings";
+import { type AiAssistantMode, loadSettings, reloadFromDisk } from "../lib/settings";
 import { DURABLE_SETTINGS } from "../lib/settings/definitions";
 import {
 	DEFAULT_SIDEBAR_ORDER,
@@ -96,9 +89,7 @@ interface AISidebarContextValue {
 
 const UILayoutContext = createContext<UILayoutContextValue | null>(null);
 const AISidebarContext = createContext<AISidebarContextValue | null>(null);
-const DateDisplayFormatContext = createContext<DateDisplayFormat>(
-	DEFAULT_DATE_DISPLAY_FORMAT,
-);
+const DateDisplayFormatContext = createContext<DateDisplayFormat>(DEFAULT_DATE_DISPLAY_FORMAT);
 
 type UIState = {
 	sidebarCollapsed: boolean;
@@ -224,9 +215,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return {
 				...state,
 				openMarkdownTabs:
-					typeof action.value === "function"
-						? action.value(state.openMarkdownTabs)
-						: action.value,
+					typeof action.value === "function" ? action.value(state.openMarkdownTabs) : action.value,
 			};
 		case "setActiveMarkdownTabPath":
 			return { ...state, activeMarkdownTabPath: action.value };
@@ -275,9 +264,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return {
 				...state,
 				aiPanelOpen:
-					typeof action.value === "function"
-						? action.value(state.aiPanelOpen)
-						: action.value,
+					typeof action.value === "function" ? action.value(state.aiPanelOpen) : action.value,
 			};
 		case "setAiAssistantMode":
 			return { ...state, aiAssistantMode: action.value };
@@ -391,9 +378,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dispatch({ type: "setAiEnabled", value: nextEnabled });
 		}
 		if (payload.ui?.sidebarVisibility) {
-			const nextSidebarVisibility = normalizeSidebarVisibility(
-				payload.ui.sidebarVisibility,
-			);
+			const nextSidebarVisibility = normalizeSidebarVisibility(payload.ui.sidebarVisibility);
 			sidebarVisibilityRevisionRef.current += 1;
 			sidebarVisibilityRef.current = nextSidebarVisibility;
 			dispatch({
@@ -516,9 +501,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				// never stamp the previous space's folders/template as the new one.
 				if (cancelled || requestedSpacePath !== spacePathRef.current) return;
 				const nextZenMode =
-					zenModeRevision === zenModeRevisionRef.current
-						? s.editor.zenMode
-						: zenModeRef.current;
+					zenModeRevision === zenModeRevisionRef.current ? s.editor.zenMode : zenModeRef.current;
 				zenModeRef.current = nextZenMode;
 				const nextSidebarVisibility =
 					sidebarVisibilityRevision === sidebarVisibilityRevisionRef.current
@@ -621,8 +604,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	);
 
 	const setSidebarCollapsed = useCallback(
-		(collapsed: boolean) =>
-			dispatch({ type: "setSidebarCollapsed", value: collapsed }),
+		(collapsed: boolean) => dispatch({ type: "setSidebarCollapsed", value: collapsed }),
 		[],
 	);
 	const setSidebarWidth = useCallback(
@@ -642,8 +624,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[],
 	);
 	const setActiveMarkdownTabPath = useCallback(
-		(path: string | null) =>
-			dispatch({ type: "setActiveMarkdownTabPath", value: path }),
+		(path: string | null) => dispatch({ type: "setActiveMarkdownTabPath", value: path }),
 		[],
 	);
 	const setAiPanelOpen = useCallback(
@@ -659,10 +640,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		(tab?: SettingsTab) => dispatch({ type: "openSettings", tab }),
 		[],
 	);
-	const closeSettings = useCallback(
-		() => dispatch({ type: "closeSettings" }),
-		[],
-	);
+	const closeSettings = useCallback(() => dispatch({ type: "closeSettings" }), []);
 	const setSettingsTab = useCallback(
 		(tab: SettingsTab) => dispatch({ type: "setSettingsTab", value: tab }),
 		[],
@@ -743,13 +721,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			aiAssistantMode,
 			setAiAssistantMode,
 		}),
-		[
-			aiEnabled,
-			aiPanelOpen,
-			setAiPanelOpen,
-			aiAssistantMode,
-			setAiAssistantMode,
-		],
+		[aiEnabled, aiPanelOpen, setAiPanelOpen, aiAssistantMode, setAiAssistantMode],
 	);
 
 	return (
@@ -765,15 +737,13 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 export function useUILayoutContext(): UILayoutContextValue {
 	const ctx = useContext(UILayoutContext);
-	if (!ctx)
-		throw new Error("useUILayoutContext must be used within UIProvider");
+	if (!ctx) throw new Error("useUILayoutContext must be used within UIProvider");
 	return ctx;
 }
 
 export function useAISidebarContext(): AISidebarContextValue {
 	const ctx = useContext(AISidebarContext);
-	if (!ctx)
-		throw new Error("useAISidebarContext must be used within UIProvider");
+	if (!ctx) throw new Error("useAISidebarContext must be used within UIProvider");
 	return ctx;
 }
 

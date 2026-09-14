@@ -6,12 +6,7 @@ import {
 	type UiFontFamily,
 	type UiFontSize,
 } from "./settings";
-import {
-	type UiDarkThemeId,
-	type UiLightThemeId,
-	asUiDarkThemeId,
-	asUiLightThemeId,
-} from "./uiThemes";
+import { asUiDarkThemeId, asUiLightThemeId } from "./uiThemes";
 
 const BASE_SPACE_SIZES = {
 	1: 4,
@@ -84,19 +79,12 @@ export function applyUiTypography({
 	const safeMonoFamily = monoFontFamily.trim() || "JetBrains Mono";
 	const uiScale = Math.max(0.5, Math.min(3, uiFontSize / 14));
 	const compactDisplayBoost = getCompactDisplayBoost();
-	const effectiveUiScale = Math.max(
-		0.5,
-		Math.min(3, uiScale * compactDisplayBoost),
-	);
+	const effectiveUiScale = Math.max(0.5, Math.min(3, uiScale * compactDisplayBoost));
 	const safeEditorFontSize = Math.max(
 		MIN_EDITOR_FONT_SIZE,
 		Math.min(
 			MAX_EDITOR_FONT_SIZE,
-			Math.round(
-				Number.isFinite(editorFontSize)
-					? editorFontSize
-					: BASE_EDITOR_FONT_SIZE,
-			),
+			Math.round(Number.isFinite(editorFontSize) ? editorFontSize : BASE_EDITOR_FONT_SIZE),
 		),
 	);
 	const rootRemPx = 16 * effectiveUiScale;
@@ -118,34 +106,13 @@ export function applyUiTypography({
 	for (const property of DERIVED_UI_FONT_SIZE_PROPERTIES) {
 		root.style.removeProperty(property);
 	}
-	root.style.setProperty(
-		"--space-1",
-		scaledPx(BASE_SPACE_SIZES[1], effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--space-2",
-		scaledPx(BASE_SPACE_SIZES[2], effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--space-3",
-		scaledPx(BASE_SPACE_SIZES[3], effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--space-4",
-		scaledPx(BASE_SPACE_SIZES[4], effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--space-5",
-		scaledPx(BASE_SPACE_SIZES[5], effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--space-6",
-		scaledPx(BASE_SPACE_SIZES[6], effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--space-8",
-		scaledPx(BASE_SPACE_SIZES[8], effectiveUiScale),
-	);
+	root.style.setProperty("--space-1", scaledPx(BASE_SPACE_SIZES[1], effectiveUiScale));
+	root.style.setProperty("--space-2", scaledPx(BASE_SPACE_SIZES[2], effectiveUiScale));
+	root.style.setProperty("--space-3", scaledPx(BASE_SPACE_SIZES[3], effectiveUiScale));
+	root.style.setProperty("--space-4", scaledPx(BASE_SPACE_SIZES[4], effectiveUiScale));
+	root.style.setProperty("--space-5", scaledPx(BASE_SPACE_SIZES[5], effectiveUiScale));
+	root.style.setProperty("--space-6", scaledPx(BASE_SPACE_SIZES[6], effectiveUiScale));
+	root.style.setProperty("--space-8", scaledPx(BASE_SPACE_SIZES[8], effectiveUiScale));
 	root.style.setProperty(
 		"--header-height",
 		scaledPx(BASE_LAYOUT_SIZES.headerHeight, effectiveUiScale),
@@ -178,17 +145,15 @@ export function applyUiCornerRadius(style: UiCornerRadiusStyle): void {
 }
 
 export function applyUiThemeSelection(
-	lightThemeId: UiLightThemeId | string | null | undefined,
-	darkThemeId: UiDarkThemeId | string | null | undefined,
+	lightThemeId: string | null | undefined,
+	darkThemeId: string | null | undefined,
 ): void {
 	const root = document.documentElement;
 	root.dataset.lightTheme = asUiLightThemeId(lightThemeId);
 	root.dataset.darkTheme = asUiDarkThemeId(darkThemeId);
 }
 
-export function applyUiSurfacePreferences(options: {
-	translucentApp: boolean;
-}): void {
+export function applyUiSurfacePreferences(options: { translucentApp: boolean }): void {
 	const root = document.documentElement;
 	root.dataset.translucentSidebar = String(options.translucentApp);
 	root.dataset.translucentAppFrame = String(options.translucentApp);
@@ -208,14 +173,8 @@ export function applyEditorWidthMode(mode: EditorWidthMode): void {
 
 	if (mode === "comfortable") {
 		root.style.setProperty("--editor-readable-content-max-width", "860px");
-		root.style.setProperty(
-			"--editor-readable-content-gutter",
-			"clamp(14px, 3vw, 36px)",
-		);
-		root.style.setProperty(
-			"--editor-readable-content-gutter-compact",
-			"clamp(10px, 2.4vw, 22px)",
-		);
+		root.style.setProperty("--editor-readable-content-gutter", "clamp(14px, 3vw, 36px)");
+		root.style.setProperty("--editor-readable-content-gutter-compact", "clamp(10px, 2.4vw, 22px)");
 		return;
 	}
 

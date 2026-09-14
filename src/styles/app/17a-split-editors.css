@@ -38,8 +38,7 @@
 }
 
 .splitEditorPane[data-focused="true"] {
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 26%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 26%, transparent);
 }
 
 .splitEditorDivider {
@@ -103,8 +102,7 @@
 .splitEditorDivider[data-resizing="true"]::after,
 .splitEditorDivider:focus-visible::after {
 	background: var(--interactive-accent);
-	box-shadow: 0 2px 8px
-		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 	opacity: 1;
 }
 
@@ -116,9 +114,9 @@
 	pointer-events: none;
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-	box-shadow: inset 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 92%, transparent), 0 12px 36px
-		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	box-shadow:
+		inset 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 92%, transparent),
+		0 12px 36px color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 }
 
 .splitEditorDropPreview[data-edge="left"],

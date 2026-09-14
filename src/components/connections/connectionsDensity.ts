@@ -97,13 +97,8 @@ const LOCAL_SIGMA = {
 	zoomingRatio: 1.7,
 };
 
-function tierForCount<T extends { minNodes: number }>(
-	tiers: readonly T[],
-	count: number,
-) {
-	return (
-		tiers.find((tier) => count >= tier.minNodes) ?? tiers[tiers.length - 1]
-	);
+function tierForCount<T extends { minNodes: number }>(tiers: readonly T[], count: number) {
+	return tiers.find((tier) => count >= tier.minNodes) ?? tiers[tiers.length - 1];
 }
 
 interface ConnectionsDensityProfile {
@@ -121,9 +116,7 @@ export function spaceConnectionsDensityProfile(
 	return {
 		noteSizeRange: nodeTier.noteSize,
 		tagSizeRange: nodeTier.tagSize,
-		edgeScale:
-			SPACE_EDGE_SCALE_TIERS.find((tier) => edgeCount >= tier.minEdges)
-				?.scale ?? 1,
+		edgeScale: SPACE_EDGE_SCALE_TIERS.find((tier) => edgeCount >= tier.minEdges)?.scale ?? 1,
 	};
 }
 

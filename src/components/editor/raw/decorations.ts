@@ -7,10 +7,7 @@ import {
 	ViewPlugin,
 	type ViewUpdate,
 } from "@codemirror/view";
-import {
-	addGlyphInlineDecorations,
-	findFrontmatterEnd,
-} from "./contentDecorations";
+import { addGlyphInlineDecorations, findFrontmatterEnd } from "./contentDecorations";
 import { createRawMarkdownEventHandlers } from "./interactions";
 import { decorateRecognizedTable } from "./tableDecorations";
 
@@ -79,35 +76,21 @@ function decorateFrontmatter(
 			const keyFrom = line.from + (key[1]?.length ?? 0);
 			const keyTo = keyFrom + (key[2]?.length ?? 0);
 			const valueFrom = line.from + key[0].length;
-			ranges.push(
-				Decoration.mark({ class: "cm-raw-frontmatter-key" }).range(
-					keyFrom,
-					keyTo,
-				),
-			);
+			ranges.push(Decoration.mark({ class: "cm-raw-frontmatter-key" }).range(keyFrom, keyTo));
 			if (valueFrom < line.to) {
 				ranges.push(
-					Decoration.mark({ class: "cm-raw-frontmatter-value" }).range(
-						valueFrom,
-						line.to,
-					),
+					Decoration.mark({ class: "cm-raw-frontmatter-value" }).range(valueFrom, line.to),
 				);
 			}
 		} else if (list) {
 			const marker = line.from + (list[1]?.length ?? 0);
 			const valueFrom = line.from + list[0].length;
 			ranges.push(
-				Decoration.mark({ class: "cm-raw-frontmatter-list-mark" }).range(
-					marker,
-					marker + 1,
-				),
+				Decoration.mark({ class: "cm-raw-frontmatter-list-mark" }).range(marker, marker + 1),
 			);
 			if (valueFrom < line.to) {
 				ranges.push(
-					Decoration.mark({ class: "cm-raw-frontmatter-value" }).range(
-						valueFrom,
-						line.to,
-					),
+					Decoration.mark({ class: "cm-raw-frontmatter-value" }).range(valueFrom, line.to),
 				);
 			}
 		}
@@ -117,14 +100,10 @@ function decorateFrontmatter(
 function buildVisibleDecorations(view: EditorView): DecorationSet {
 	const ranges: Range<Decoration>[] = [];
 	const visibleFrom = view.visibleRanges[0]?.from ?? 0;
-	const visibleTo =
-		view.visibleRanges[view.visibleRanges.length - 1]?.to ??
-		view.state.doc.length;
+	const visibleTo = view.visibleRanges[view.visibleRanges.length - 1]?.to ?? view.state.doc.length;
 	const decoratedTables = new Set<number>();
 	const frontmatterEnd = findFrontmatterEnd(view.state.doc);
-	const frontmatterTo = frontmatterEnd
-		? view.state.doc.line(frontmatterEnd).to
-		: -1;
+	const frontmatterTo = frontmatterEnd ? view.state.doc.line(frontmatterEnd).to : -1;
 
 	syntaxTree(view.state).iterate({
 		from: visibleFrom,
@@ -161,12 +140,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 							: lineNumber === last
 								? " is-fence is-closing"
 								: "";
-					addLineDecoration(
-						ranges,
-						view,
-						lineNumber,
-						`cm-raw-code-line${edge}`,
-					);
+					addLineDecoration(ranges, view, lineNumber, `cm-raw-code-line${edge}`);
 				}
 				return;
 			}
@@ -188,12 +162,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 					const calloutClass = kind
 						? ` cm-raw-callout cm-raw-callout-${kind}${lineNumber === first ? " is-title" : ""}${lineNumber === last ? " is-end" : ""}`
 						: "";
-					addLineDecoration(
-						ranges,
-						view,
-						lineNumber,
-						`cm-raw-quote-line${calloutClass}`,
-					);
+					addLineDecoration(ranges, view, lineNumber, `cm-raw-quote-line${calloutClass}`);
 				}
 				if (callout) {
 					const title = view.state.doc.line(first);
@@ -213,10 +182,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 			if (name === "QuoteMark" || name === "ListMark") {
 				ranges.push(
 					Decoration.mark({
-						class:
-							name === "ListMark"
-								? "cm-raw-syntax cm-raw-list-mark"
-								: "cm-raw-syntax",
+						class: name === "ListMark" ? "cm-raw-syntax cm-raw-list-mark" : "cm-raw-syntax",
 					}).range(node.from, node.to),
 				);
 				return;
@@ -241,9 +207,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 							"data-checked": String(checked),
 							role: "checkbox",
 							"aria-checked": String(checked),
-							"aria-label": checked
-								? "Mark task incomplete"
-								: "Mark task complete",
+							"aria-label": checked ? "Mark task incomplete" : "Mark task complete",
 						},
 					}).range(node.from, node.to),
 				);
@@ -275,22 +239,13 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 			}
 			if (name === "Table" && !decoratedTables.has(node.from)) {
 				decoratedTables.add(node.from);
-				decorateRecognizedTable(
-					ranges,
-					view,
-					node.from,
-					node.to,
-					visibleFrom,
-					visibleTo,
-				);
+				decorateRecognizedTable(ranges, view, node.from, node.to, visibleFrom, visibleTo);
 				return;
 			}
 			if (name === "Link" || name === "Image" || name === "Autolink") {
 				const url = node.node.getChild("URL");
 				if (!url) return;
-				const href = view.state.doc
-					.sliceString(url.from, url.to)
-					.replace(/^<|>$/g, "");
+				const href = view.state.doc.sliceString(url.from, url.to).replace(/^<|>$/g, "");
 				ranges.push(
 					Decoration.mark({
 						class: `cm-raw-markdown-link${name === "Autolink" ? " cm-raw-bare-url" : ""}`,

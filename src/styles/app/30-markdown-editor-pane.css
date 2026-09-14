@@ -24,10 +24,7 @@
 	flex-direction: column;
 	--readable-content-outer-width: min(
 		100%,
-		calc(
-			var(--editor-readable-content-max-width) +
-			(2 * var(--editor-readable-content-gutter))
-		)
+		calc(var(--editor-readable-content-max-width) + (2 * var(--editor-readable-content-gutter)))
 	);
 }
 
@@ -50,7 +47,9 @@
 	display: inline-flex;
 	align-items: center;
 	overflow: visible;
-	transition: opacity 180ms ease, transform 220ms ease;
+	transition:
+		opacity 180ms ease,
+		transform 220ms ease;
 }
 
 .markdownEditorToolbar,
@@ -130,7 +129,10 @@
 	visibility: hidden;
 	pointer-events: none;
 	transform: translateX(-50%) translateY(-2px);
-	transition: opacity 140ms ease, visibility 140ms ease, transform 140ms ease;
+	transition:
+		opacity 140ms ease,
+		visibility 140ms ease,
+		transform 140ms ease;
 }
 
 .markdownEditorModeSwitch:hover .markdownEditorModeBubble,
@@ -165,19 +167,13 @@
 
 .markdownEditorTaskProgressPie {
 	display: block;
-	width: var(
-		--task-progress-pie-size,
-		calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
-	);
+	width: var(--task-progress-pie-size, calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45));
 	height: var(
 		--task-progress-pie-size,
 		calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
 	);
 	flex: 0 0
-		var(
-			--task-progress-pie-size,
-			calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
-		);
+		var(--task-progress-pie-size, calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45));
 	border-radius: 50%;
 	transition: background 180ms ease;
 }
@@ -210,11 +206,7 @@
 	gap: 14px;
 	width: 100%;
 	padding: 14px var(--editor-readable-content-gutter);
-	background: color-mix(
-		in srgb,
-		var(--bg-canvas, var(--bg-primary)) 94%,
-		transparent
-	);
+	background: color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 94%, transparent);
 	backdrop-filter: blur(12px);
 	-webkit-backdrop-filter: blur(12px);
 }
@@ -383,7 +375,9 @@
 	color: var(--text-secondary);
 	border-radius: var(--radius-sm);
 	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
 }
 
 .markdownEditorInfoClose:hover {
@@ -422,7 +416,9 @@
 	font-weight: var(--font-medium);
 	line-height: 1;
 	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
 }
 
 .markdownEditorInfoTab:hover {
@@ -511,7 +507,9 @@
 	color: var(--text-primary);
 	text-align: left;
 	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
 }
 
 .gitHistoryItem:hover {
@@ -1016,10 +1014,8 @@
 		.tiptapHostInline:not(.is-preview)
 		.tiptapContentInline {
 		padding-right: calc(
-			var(--editor-readable-content-gutter-compact) +
-			var(--heading-toggle-rail-width) +
-			var(--heading-level-rail-width) +
-			(var(--heading-rail-gap) * 2)
+			var(--editor-readable-content-gutter-compact) + var(--heading-toggle-rail-width) +
+				var(--heading-level-rail-width) + (var(--heading-rail-gap) * 2)
 		);
 	}
 }

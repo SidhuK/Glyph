@@ -17,11 +17,7 @@ import { type RolloverCandidate, invoke } from "../../../lib/tauri";
 import { renderTemplate } from "../../../lib/templates";
 import { toast } from "../../../lib/toast";
 import { Button } from "../../ui/shadcn/button";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "../../ui/shadcn/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/shadcn/popover";
 import type { RolloverMoveTarget, RolloverTaskActions } from "../types";
 
 interface DailyNoteRolloverProps {
@@ -40,16 +36,11 @@ export function DailyNoteRollover({
 	const { t } = useTranslation("editor");
 	const [summaryOpen, setSummaryOpen] = useState(false);
 	const { spacePath } = useSpace();
-	const { dailyNotesFolder, periodNoteTemplates, zenMode } =
-		useUILayoutContext();
+	const { dailyNotesFolder, periodNoteTemplates, zenMode } = useUILayoutContext();
 	const today = getTodayDateString();
-	const noteDate = dailyNotesFolder
-		? getDailyNoteDateFromPath(relPath, dailyNotesFolder)
-		: null;
+	const noteDate = dailyNotesFolder ? getDailyNoteDateFromPath(relPath, dailyNotesFolder) : null;
 	const rolloverEnabled =
-		!zenMode &&
-		mode === "rich" &&
-		Boolean(dailyNotesFolder && noteDate && noteDate <= today);
+		!zenMode && mode === "rich" && Boolean(dailyNotesFolder && noteDate && noteDate <= today);
 	const overdueQuery = useQuery({
 		queryKey: ["daily-note-rollover", dailyNotesFolder, today],
 		queryFn: () =>
@@ -81,15 +72,11 @@ export function DailyNoteRollover({
 			if (!dailyNotesFolder || !noteDate) {
 				throw new Error(t("rollover.invalidDailyNote"));
 			}
-			const destinationDate =
-				target === "today" ? today : getNextDateString(today);
+			const destinationDate = target === "today" ? today : getNextDateString(today);
 			if (!destinationDate) {
 				throw new Error(t("rollover.invalidDailyNote"));
 			}
-			const destinationPath = getDailyNotePath(
-				dailyNotesFolder,
-				destinationDate,
-			);
+			const destinationPath = getDailyNotePath(dailyNotesFolder, destinationDate);
 			let initialText = getDailyNoteContent(destinationDate);
 			if (periodNoteTemplates.day) {
 				try {
@@ -256,8 +243,7 @@ export function DailyNoteRollover({
 					await showMoveError(t("rollover.moveFailedDescription"));
 					return;
 				}
-				const candidate =
-					refreshed.data?.length === total ? refreshed.data[index] : undefined;
+				const candidate = refreshed.data?.length === total ? refreshed.data[index] : undefined;
 				if (!candidate) {
 					await showMoveError(t("rollover.itemChanged"));
 					return;
@@ -273,11 +259,7 @@ export function DailyNoteRollover({
 				<Popover open={summaryOpen} onOpenChange={setSummaryOpen}>
 					<div className="rolloverReviewTrigger">
 						<PopoverTrigger asChild>
-							<Button
-								variant="outline"
-								size="icon-sm"
-								aria-label={t("rollover.bannerLabel")}
-							>
+							<Button variant="outline" size="icon-sm" aria-label={t("rollover.bannerLabel")}>
 								<HugeiconsIcon icon={Audit02Icon} />
 							</Button>
 						</PopoverTrigger>

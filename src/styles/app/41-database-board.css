@@ -100,15 +100,13 @@
 	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary));
 	border-color: color-mix(in srgb, var(--database-tone) 28%, transparent);
 	outline: none;
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--database-tone) 16%, transparent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--database-tone) 16%, transparent);
 }
 
 .databaseBoardLane[data-show-column-color="false"][data-active="true"] {
 	background: color-mix(in srgb, var(--bg-hover) 80%, var(--bg-primary));
 	border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--border-default) 28%, transparent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-default) 28%, transparent);
 }
 
 .databaseBoardLaneHeader {
@@ -140,8 +138,10 @@
 
 .databaseBoardLaneHandle,
 .databaseBoardCard {
-	transition: background-color 140ms ease, border-color 140ms ease, box-shadow
-		140ms ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease,
+		box-shadow 140ms ease;
 }
 
 .databaseBoardLaneHandle {
@@ -252,8 +252,10 @@
 	font-weight: var(--font-medium);
 	letter-spacing: -0.01em;
 	cursor: pointer;
-	transition: background-color 140ms ease, border-color 140ms ease, color 140ms
-		ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease,
+		color 140ms ease;
 }
 
 .databaseBoardAddCardIcon {
@@ -324,9 +326,9 @@
 	overflow: visible;
 	cursor: grabbing;
 	border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
-		color-mix(in srgb, var(--text-primary) 14%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 28%, transparent),
+		0 12px 28px color-mix(in srgb, var(--text-primary) 14%, transparent);
 	rotate: 3deg;
 }
 
@@ -359,19 +361,11 @@
 }
 
 .dark .databaseBoardCard[data-state="selected"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 8%,
-		var(--bg-tertiary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-tertiary));
 }
 
 .databaseBoardCard[data-state="selected"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 6%,
-		var(--bg-primary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary));
 	border-color: color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 }
 

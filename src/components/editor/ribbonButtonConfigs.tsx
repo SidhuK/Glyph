@@ -90,18 +90,10 @@ export function getFormatButtons(
 	];
 }
 
-export function getTextColorButton(
-	editor: Editor,
-	runCommand: RunCommand,
-	focusChain: FocusChain,
-) {
-	const activeColor = editor.getAttributes("coloredText").color as
-		| EditorTextColor
-		| undefined;
+export function getTextColorButton(editor: Editor, runCommand: RunCommand, focusChain: FocusChain) {
+	const activeColor = editor.getAttributes("coloredText").color as EditorTextColor | undefined;
 	const activeOption =
-		activeColor && isEditorTextColor(activeColor)
-			? getEditorTextColorOption(activeColor)
-			: null;
+		activeColor && isEditorTextColor(activeColor) ? getEditorTextColorOption(activeColor) : null;
 
 	return {
 		title: i18n.t("editor:ribbon.textColor"),
@@ -112,12 +104,7 @@ export function getTextColorButton(
 			label: getEditorTextColorLabel(option.id),
 			cssVar: option.cssVar,
 			fallbackHex: option.fallbackHex,
-			onSelect: runEditorAction(
-				`color_${option.id}`,
-				editor,
-				runCommand,
-				focusChain,
-			),
+			onSelect: runEditorAction(`color_${option.id}`, editor, runCommand, focusChain),
 		})),
 		onClear: runEditorAction("color_clear", editor, runCommand, focusChain),
 	};
@@ -145,12 +132,7 @@ export function getTextHighlightButton(
 			label: getEditorTextHighlightLabel(option.id),
 			cssVar: option.swatchCssVar,
 			fallbackHex: option.swatchFallback,
-			onSelect: runEditorAction(
-				`highlight_${option.id}`,
-				editor,
-				runCommand,
-				focusChain,
-			),
+			onSelect: runEditorAction(`highlight_${option.id}`, editor, runCommand, focusChain),
 		})),
 		onClear: runEditorAction("highlight_clear", editor, runCommand, focusChain),
 	};

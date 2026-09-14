@@ -25,10 +25,7 @@ import type { useAiProfiles } from "./useAiProfiles";
 
 const CHIP_OPEN = "\uE000";
 const CHIP_CLOSE = "\uE001";
-const CHIP_RE = new RegExp(
-	`${CHIP_OPEN}(file|folder)([^${CHIP_CLOSE}]*)${CHIP_CLOSE}`,
-	"g",
-);
+const CHIP_RE = new RegExp(`${CHIP_OPEN}(file|folder)([^${CHIP_CLOSE}]*)${CHIP_CLOSE}`, "g");
 
 function fileNameFromPath(path: string): string {
 	const parts = path.split(/[\\/]/).filter(Boolean);
@@ -128,10 +125,7 @@ function nonEditableChipFor(node: Node, root: HTMLElement): HTMLElement | null {
 	let element = node.parentElement;
 	let nonEditable: HTMLElement | null = null;
 	while (element && element !== root) {
-		if (
-			element.dataset.chipKind === "file" ||
-			element.dataset.chipKind === "folder"
-		) {
+		if (element.dataset.chipKind === "file" || element.dataset.chipKind === "folder") {
 			return element;
 		}
 		if (element.isContentEditable === false) nonEditable = element;
@@ -266,19 +260,11 @@ export function AIComposer({
 		});
 		scheduleComposerInputResize();
 		window.requestAnimationFrame(() => composerInputRef.current?.focus());
-	}, [
-		isAwaitingResponse,
-		setInput,
-		scheduleComposerInputResize,
-		composerInputRef,
-	]);
+	}, [isAwaitingResponse, setInput, scheduleComposerInputResize, composerInputRef]);
 
-	const suggestedFilePath = activeFilePath
-		? normalizeRelPath(activeFilePath)
-		: "";
+	const suggestedFilePath = activeFilePath ? normalizeRelPath(activeFilePath) : "";
 	const showActiveFileSuggestion =
-		Boolean(suggestedFilePath) &&
-		!context.hasContext("file", suggestedFilePath);
+		Boolean(suggestedFilePath) && !context.hasContext("file", suggestedFilePath);
 
 	const renderSegments = useMemo(() => {
 		const segments: Array<
@@ -420,12 +406,7 @@ export function AIComposer({
 
 	const handleKeyDown = useCallback(
 		(event: ReactKeyboardEvent<HTMLDivElement>) => {
-			if (
-				event.key === "Enter" &&
-				!event.shiftKey &&
-				!event.metaKey &&
-				!event.ctrlKey
-			) {
+			if (event.key === "Enter" && !event.shiftKey && !event.metaKey && !event.ctrlKey) {
 				if (event.nativeEvent.isComposing || !canSend) return;
 				event.preventDefault();
 				onSend();
@@ -465,27 +446,18 @@ export function AIComposer({
 							))
 						) : (
 							<div className="aiAddPanelEmpty">
-								{panelQuery.trim()
-									? "No results"
-									: "Type to search files & folders"}
+								{panelQuery.trim() ? "No results" : "Type to search files & folders"}
 							</div>
 						)}
 					</div>
-					<button
-						type="button"
-						className="aiAddPanelClose"
-						onClick={() => setAddPanelOpen(false)}
-					>
+					<button type="button" className="aiAddPanelClose" onClick={() => setAddPanelOpen(false)}>
 						<X size="var(--icon-xs)" />
 					</button>
 				</div>
 			) : null}
 			<div className="aiComposer">
 				{showActiveFileSuggestion ? (
-					<div
-						className="aiComposerSuggestionHint"
-						aria-label={t("ai.activeFile")}
-					>
+					<div className="aiComposerSuggestionHint" aria-label={t("ai.activeFile")}>
 						<button
 							type="button"
 							className="aiComposerSuggestionButton"

@@ -4,14 +4,7 @@ import type { Shortcut, ShortcutValidationResult } from "./shortcuts/types";
 export type { Shortcut, ShortcutValidationResult } from "./shortcuts/types";
 export { normalizeShortcutKey } from "./shortcuts/normalize";
 
-const MODIFIER_KEYS = new Set([
-	"Meta",
-	"Control",
-	"Alt",
-	"Shift",
-	"Super",
-	"OS",
-]);
+const MODIFIER_KEYS = new Set(["Meta", "Control", "Alt", "Shift", "Super", "OS"]);
 
 export function normalizeShortcut(shortcut: Shortcut): Shortcut {
 	return {
@@ -32,10 +25,7 @@ export function isShortcutModifierKey(key: string): boolean {
 }
 
 export function shortcutFromKeyboardEvent(
-	event: Pick<
-		KeyboardEvent,
-		"key" | "code" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey"
-	>,
+	event: Pick<KeyboardEvent, "key" | "code" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey">,
 ): Shortcut {
 	const keyFromCode = event.code.startsWith("Key")
 		? event.code.slice(3)
@@ -51,9 +41,7 @@ export function shortcutFromKeyboardEvent(
 	});
 }
 
-export function validateConfigurableShortcut(
-	shortcut: Shortcut,
-): ShortcutValidationResult {
+export function validateConfigurableShortcut(shortcut: Shortcut): ShortcutValidationResult {
 	const normalized = normalizeShortcut(shortcut);
 	if (!normalized.key) {
 		return { valid: false, reason: "Choose a key." };
@@ -83,19 +71,13 @@ export function getShortcutSignature(shortcut: Shortcut): string {
 		.join("+");
 }
 
-export function areShortcutsEqual(
-	a: Shortcut | null,
-	b: Shortcut | null,
-): boolean {
+export function areShortcutsEqual(a: Shortcut | null, b: Shortcut | null): boolean {
 	if (a === b) return true;
 	if (!a || !b) return false;
 	return getShortcutSignature(a) === getShortcutSignature(b);
 }
 
-export function isShortcutMatch(
-	event: KeyboardEvent,
-	shortcut: Shortcut,
-): boolean {
+export function isShortcutMatch(event: KeyboardEvent, shortcut: Shortcut): boolean {
 	const normalized = normalizeShortcut(shortcut);
 	if (normalized.meta) {
 		if (!event.metaKey) return false;
@@ -121,9 +103,7 @@ export function getShortcutTooltip(shortcut: Shortcut): string {
 	if (normalized.ctrl) parts.push("⌃");
 	if (normalized.alt) parts.push("⌥");
 	if (normalized.shift) parts.push("⇧");
-	parts.push(
-		normalized.key.length === 1 ? normalized.key.toUpperCase() : normalized.key,
-	);
+	parts.push(normalized.key.length === 1 ? normalized.key.toUpperCase() : normalized.key);
 
 	return parts.join("");
 }

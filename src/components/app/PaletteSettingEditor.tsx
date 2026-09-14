@@ -40,20 +40,15 @@ export function PaletteSettingEditor({
 	const backButtonRef = useRef<HTMLButtonElement | null>(null);
 	const selectedOptionRef = useRef<HTMLButtonElement | null>(null);
 	const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
-	const pathOptions: readonly PaletteSettingOption[] = folders.map(
-		(folder) => ({
-			value: folder,
-			label: folder || t("commandPalette.spaceRoot"),
-		}),
-	);
-	const options =
-		definition.control === "path" ? pathOptions : (definition.options ?? []);
+	const pathOptions: readonly PaletteSettingOption[] = folders.map((folder) => ({
+		value: folder,
+		label: folder || t("commandPalette.spaceRoot"),
+	}));
+	const options = definition.control === "path" ? pathOptions : (definition.options ?? []);
 	const visibleOptions =
 		definition.control === "path" && pathQuery.trim()
 			? options.filter((option) =>
-					paletteSettingOptionLabel(option)
-						.toLowerCase()
-						.includes(pathQuery.trim().toLowerCase()),
+					paletteSettingOptionLabel(option).toLowerCase().includes(pathQuery.trim().toLowerCase()),
 				)
 			: options;
 	useEffect(() => {
@@ -67,8 +62,7 @@ export function PaletteSettingEditor({
 
 	const handleKeyDown = (event: React.KeyboardEvent) => {
 		const target = event.target;
-		const emptyChildInput =
-			target instanceof HTMLInputElement ? !target.value : !draft;
+		const emptyChildInput = target instanceof HTMLInputElement ? !target.value : !draft;
 		const cursorAtStart =
 			target instanceof HTMLInputElement
 				? target.selectionStart === 0 && target.selectionEnd === 0
@@ -84,10 +78,8 @@ export function PaletteSettingEditor({
 			if (!options.length) return;
 			const currentIndex = options.findIndex((option) => option === target);
 			const direction = event.key === "ArrowDown" ? 1 : -1;
-			const startIndex =
-				currentIndex >= 0 ? currentIndex : direction === 1 ? -1 : 0;
-			const nextIndex =
-				(startIndex + direction + options.length) % options.length;
+			const startIndex = currentIndex >= 0 ? currentIndex : direction === 1 ? -1 : 0;
+			const nextIndex = (startIndex + direction + options.length) % options.length;
 			options[nextIndex]?.focus();
 			return;
 		}
@@ -154,15 +146,12 @@ export function PaletteSettingEditor({
 							onClick={() => onChange(null)}
 						>
 							<span>{t("commandPalette.clearValue")}</span>
-							{value === null || value === "" ? (
-								<span aria-hidden="true">✓</span>
-							) : null}
+							{value === null || value === "" ? <span aria-hidden="true">✓</span> : null}
 						</button>
 					) : null}
 					{visibleOptions.map((option, index) => {
 						const selected = option.value === value;
-						const optionIndex =
-							definition.control === "path" ? index + 1 : index;
+						const optionIndex = definition.control === "path" ? index + 1 : index;
 						return (
 							<button
 								ref={(node) => {
@@ -190,8 +179,7 @@ export function PaletteSettingEditor({
 					className="commandPaletteSettingForm"
 					onSubmit={(event) => {
 						event.preventDefault();
-						const nextValue =
-							definition.control === "number" ? Number(draft) : draft;
+						const nextValue = definition.control === "number" ? Number(draft) : draft;
 						onChange(nextValue);
 					}}
 				>
@@ -223,9 +211,7 @@ export function PaletteSettingEditor({
 						disabled={pending}
 						onClick={() => onChange(true)}
 					>
-						{pending
-							? t("commandPalette.running")
-							: t("commandPalette.runAction")}
+						{pending ? t("commandPalette.running") : t("commandPalette.runAction")}
 					</button>
 				</div>
 			) : null}

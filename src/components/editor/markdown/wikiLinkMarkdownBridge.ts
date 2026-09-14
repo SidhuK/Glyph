@@ -14,27 +14,11 @@ import {
 	getEditorTextHighlightMarkdownOpenTag,
 	isEditorTextHighlight,
 } from "../textHighlights";
-import {
-	postprocessDetailsMarkdown,
-	preprocessDetailsMarkdown,
-} from "./detailsMarkdown";
-import {
-	postprocessHtmlEmbeds,
-	preprocessHtmlEmbeds,
-} from "./htmlEmbedMarkdown";
-import {
-	postprocessInlineTocMarkers,
-	preprocessInlineTocMarkers,
-} from "./inlineTocMarkdown";
-import {
-	transformMarkdownOutsideCode,
-	transformMarkdownOutsideFences,
-} from "./markdownFence";
-import {
-	findWikiLinkSpans,
-	parseWikiLink,
-	wikiLinkAttrsToMarkdown,
-} from "./wikiLinkCodec";
+import { postprocessDetailsMarkdown, preprocessDetailsMarkdown } from "./detailsMarkdown";
+import { postprocessHtmlEmbeds, preprocessHtmlEmbeds } from "./htmlEmbedMarkdown";
+import { postprocessInlineTocMarkers, preprocessInlineTocMarkers } from "./inlineTocMarkdown";
+import { transformMarkdownOutsideCode, transformMarkdownOutsideFences } from "./markdownFence";
+import { findWikiLinkSpans, parseWikiLink, wikiLinkAttrsToMarkdown } from "./wikiLinkCodec";
 
 const WHITESPACE_LINE_SENTINEL = "\u2060";
 const WHITESPACE_SPACE_SENTINEL = "\u2061";
@@ -70,33 +54,28 @@ function restoreEscapedBracketSyntax(input: string): string {
 	);
 }
 
-const MARKDOWN_IMAGE_WITHOUT_TITLE_RE =
-	/!\[([^\]\n]*)\]\(([^)\n"]*\s[^)\n"]*)\)/g;
+const MARKDOWN_IMAGE_WITHOUT_TITLE_RE = /!\[([^\]\n]*)\]\(([^)\n"]*\s[^)\n"]*)\)/g;
 
 function encodeMarkdownImageDestinations(input: string): string {
 	// Fence-aware only: alt text may contain inline code, so the full `![...](...)`
 	// token must stay intact for the image regex.
 	return transformMarkdownOutsideFences(input, (line) =>
-		line.replace(
-			MARKDOWN_IMAGE_WITHOUT_TITLE_RE,
-			(match, alt: string, rawHref: string) => {
-				const href = typeof rawHref === "string" ? rawHref.trim() : "";
-				if (!href) return match;
-				try {
-					return `![${alt}](${encodeURI(decodeURI(href))})`;
-				} catch {
-					return `![${alt}](${encodeURI(href)})`;
-				}
-			},
-		),
+		line.replace(MARKDOWN_IMAGE_WITHOUT_TITLE_RE, (match, alt: string, rawHref: string) => {
+			const href = typeof rawHref === "string" ? rawHref.trim() : "";
+			if (!href) return match;
+			try {
+				return `![${alt}](${encodeURI(decodeURI(href))})`;
+			} catch {
+				return `![${alt}](${encodeURI(href)})`;
+			}
+		}),
 	);
 }
 
 const GLYPH_COLOR_HTML_RE =
 	/<span\b(?=[^>]*\bdata-glyph-color=(?:"([^"]+)"|'([^']+)'))(?=[^>]*\bstyle=(?:"[^"]*"|'[^']*'))[^>]*>([\s\S]*?)<\/span>/gi;
 
-const GLYPH_COLOR_BRIDGE_RE =
-	/\{\{glyph-color:([a-z]+)\}\}([\s\S]*?)\{\{\/glyph-color\}\}/gi;
+const GLYPH_COLOR_BRIDGE_RE = /\{\{glyph-color:([a-z]+)\}\}([\s\S]*?)\{\{\/glyph-color\}\}/gi;
 const GLYPH_HIGHLIGHT_HTML_RE =
 	/<mark\b(?=[^>]*\bdata-glyph-highlight=(?:"([^"]+)"|'([^']+)'))(?=[^>]*\bstyle=(?:"[^"]*"|'[^']*'))[^>]*>([\s\S]*?)<\/mark>/gi;
 const GLYPH_HIGHLIGHT_BRIDGE_RE =
@@ -105,12 +84,7 @@ const GLYPH_HIGHLIGHT_BRIDGE_RE =
 function preprocessColoredText(input: string): string {
 	return input.replace(
 		GLYPH_COLOR_HTML_RE,
-		(
-			_match,
-			dqColor: string | undefined,
-			sqColor: string | undefined,
-			text: string,
-		) => {
+		(_match, dqColor: string | undefined, sqColor: string | undefined, text: string) => {
 			const color = (dqColor ?? sqColor ?? "").trim().toLowerCase();
 			if (!isEditorTextColor(color)) return text;
 			return `${getEditorTextColorBridgeOpenToken(color)}${text}${EDITOR_TEXT_COLOR_BRIDGE_CLOSE_TOKEN}`;
@@ -121,12 +95,7 @@ function preprocessColoredText(input: string): string {
 function preprocessHighlightedText(input: string): string {
 	return input.replace(
 		GLYPH_HIGHLIGHT_HTML_RE,
-		(
-			_match,
-			dqColor: string | undefined,
-			sqColor: string | undefined,
-			text: string,
-		) => {
+		(_match, dqColor: string | undefined, sqColor: string | undefined, text: string) => {
 			const color = (dqColor ?? sqColor ?? "").trim().toLowerCase();
 			if (!isEditorTextHighlight(color)) return text;
 			return `${getEditorTextHighlightBridgeOpenToken(color)}${text}${EDITOR_TEXT_HIGHLIGHT_BRIDGE_CLOSE_TOKEN}`;
@@ -135,23 +104,17 @@ function preprocessHighlightedText(input: string): string {
 }
 
 function postprocessColoredText(input: string): string {
-	return input.replace(
-		GLYPH_COLOR_BRIDGE_RE,
-		(_match, rawColor: string, text: string) => {
-			if (!isEditorTextColor(rawColor)) return text;
-			return `${getEditorTextColorMarkdownOpenTag(rawColor)}${text}</span>`;
-		},
-	);
+	return input.replace(GLYPH_COLOR_BRIDGE_RE, (_match, rawColor: string, text: string) => {
+		if (!isEditorTextColor(rawColor)) return text;
+		return `${getEditorTextColorMarkdownOpenTag(rawColor)}${text}</span>`;
+	});
 }
 
 function postprocessHighlightedText(input: string): string {
-	return input.replace(
-		GLYPH_HIGHLIGHT_BRIDGE_RE,
-		(_match, rawColor: string, text: string) => {
-			if (!isEditorTextHighlight(rawColor)) return text;
-			return `${getEditorTextHighlightMarkdownOpenTag(rawColor)}${text}</mark>`;
-		},
-	);
+	return input.replace(GLYPH_HIGHLIGHT_BRIDGE_RE, (_match, rawColor: string, text: string) => {
+		if (!isEditorTextHighlight(rawColor)) return text;
+		return `${getEditorTextHighlightMarkdownOpenTag(rawColor)}${text}</mark>`;
+	});
 }
 
 function decodeWhitespaceLine(line: string): string | null {
@@ -192,9 +155,7 @@ export function preprocessMarkdownForEditor(markdown: string): string {
 			preprocessHighlightedText(
 				encodeMarkdownImageDestinations(
 					canonicalizeWikiLinks(
-						preprocessDetailsMarkdown(
-							preprocessHtmlEmbeds(preprocessInlineTocMarkers(markdown)),
-						),
+						preprocessDetailsMarkdown(preprocessHtmlEmbeds(preprocessInlineTocMarkers(markdown))),
 					),
 				),
 			),
@@ -209,9 +170,7 @@ export function postprocessMarkdownFromEditor(markdown: string): string {
 				postprocessHighlightedText(
 					postprocessColoredText(
 						postprocessDetailsMarkdown(
-							postprocessHtmlEmbeds(
-								canonicalizeWikiLinks(restoreEscapedBracketSyntax(markdown)),
-							),
+							postprocessHtmlEmbeds(canonicalizeWikiLinks(restoreEscapedBracketSyntax(markdown))),
 						),
 					),
 				),

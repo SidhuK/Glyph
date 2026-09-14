@@ -9,24 +9,14 @@ import {
 	isPeriodNoteEnabled,
 	periodNoteTemplatesFromSettings,
 } from "../../lib/periodNotes";
-import {
-	loadSettings,
-	setTemplatesFolder,
-	writeSpaceSetting,
-} from "../../lib/settings";
-import {
-	SPACE_SETTINGS,
-	type SpaceSettingDefinition,
-} from "../../lib/settings/definitions";
+import { loadSettings, setTemplatesFolder, writeSpaceSetting } from "../../lib/settings";
+import { SPACE_SETTINGS, type SpaceSettingDefinition } from "../../lib/settings/definitions";
 import { invoke } from "../../lib/tauri";
 import { listTemplates } from "../../lib/templates";
 import { SettingsFolderPicker } from "./SettingsFolderPicker";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
-import {
-	requireSpacePath,
-	selectFolderRelativeToSpace,
-} from "./spaceFolderSelection";
+import { requireSpacePath, selectFolderRelativeToSpace } from "./spaceFolderSelection";
 
 interface TemplateOption {
 	label: string;
@@ -103,8 +93,9 @@ export function TemplateSettingsSections() {
 	const [settingsState, setSettingsState] = useState<TemplatesSettingsState>(
 		INITIAL_TEMPLATES_SETTINGS_STATE,
 	);
-	const [templateLibraryState, setTemplateLibraryState] =
-		useState<TemplateLibraryState>(INITIAL_TEMPLATE_LIBRARY_STATE);
+	const [templateLibraryState, setTemplateLibraryState] = useState<TemplateLibraryState>(
+		INITIAL_TEMPLATE_LIBRARY_STATE,
+	);
 	const latestTemplateWriteIdRef = useRef<Record<PeriodKind, number>>({
 		day: 0,
 		week: 0,
@@ -112,8 +103,7 @@ export function TemplateSettingsSections() {
 		quarter: 0,
 	});
 	const latestFolderWriteIdRef = useRef(0);
-	const { currentSpacePath, templatesFolder, periodTemplates, error } =
-		settingsState;
+	const { currentSpacePath, templatesFolder, periodTemplates, error } = settingsState;
 	const { templates, error: templatesError } = templateLibraryState;
 
 	const beginTemplateWrite = useCallback((kind: PeriodKind) => {
@@ -135,9 +125,7 @@ export function TemplateSettingsSections() {
 			nextTemplates: TemplateOption[],
 			current: PeriodNoteTemplatePaths,
 		): Promise<Partial<Record<PeriodKind, null>>> => {
-			const available = new Set(
-				nextTemplates.map((template) => template.value),
-			);
+			const available = new Set(nextTemplates.map((template) => template.value));
 			const cleared: Partial<Record<PeriodKind, null>> = {};
 			for (const { kind, setting } of PERIOD_TEMPLATE_SETTINGS) {
 				const selected = current[kind];
@@ -171,10 +159,7 @@ export function TemplateSettingsSections() {
 				if (cancelled) return;
 				setSettingsState((current) => ({
 					...current,
-					error:
-						cause instanceof Error
-							? cause.message
-							: "Failed to load templates settings",
+					error: cause instanceof Error ? cause.message : "Failed to load templates settings",
 				}));
 			}
 		})();
@@ -207,9 +192,7 @@ export function TemplateSettingsSections() {
 						setSettingsState((current) => ({
 							...current,
 							error:
-								cause instanceof Error
-									? cause.message
-									: "Failed to clear period note templates",
+								cause instanceof Error ? cause.message : "Failed to clear period note templates",
 						}));
 					}
 				})();
@@ -257,8 +240,7 @@ export function TemplateSettingsSections() {
 				if (cancelled) return;
 				setTemplateLibraryState({
 					templates: [],
-					error:
-						cause instanceof Error ? cause.message : "Failed to load templates",
+					error: cause instanceof Error ? cause.message : "Failed to load templates",
 				});
 			});
 		return () => {
@@ -300,10 +282,7 @@ export function TemplateSettingsSections() {
 			}
 			setSettingsState((current) => ({
 				...current,
-				error:
-					cause instanceof Error
-						? cause.message
-						: "Failed to select template folder",
+				error: cause instanceof Error ? cause.message : "Failed to select template folder",
 			}));
 		}
 	}, [beginFolderWrite]);
@@ -321,10 +300,7 @@ export function TemplateSettingsSections() {
 		} catch (cause) {
 			setSettingsState((current) => ({
 				...current,
-				error:
-					cause instanceof Error
-						? cause.message
-						: "Failed to clear template folder",
+				error: cause instanceof Error ? cause.message : "Failed to clear template folder",
 			}));
 		}
 	}, [currentSpacePath]);
@@ -333,9 +309,7 @@ export function TemplateSettingsSections() {
 		async (kind: PeriodKind, value: string) => {
 			const next = value.trim() ? value : null;
 			const writeId = beginTemplateWrite(kind);
-			const setting = PERIOD_TEMPLATE_SETTINGS.find(
-				(row) => row.kind === kind,
-			)?.setting;
+			const setting = PERIOD_TEMPLATE_SETTINGS.find((row) => row.kind === kind)?.setting;
 			if (!setting) return;
 			setSettingsState((current) => ({ ...current, error: null }));
 			try {
@@ -350,10 +324,7 @@ export function TemplateSettingsSections() {
 				if (writeId !== latestTemplateWriteIdRef.current[kind]) return;
 				setSettingsState((current) => ({
 					...current,
-					error:
-						cause instanceof Error
-							? cause.message
-							: "Failed to update period note template",
+					error: cause instanceof Error ? cause.message : "Failed to update period note template",
 				}));
 			}
 		},
@@ -377,19 +348,11 @@ export function TemplateSettingsSections() {
 					interactive={false}
 				>
 					<SettingsFolderPicker
-						path={
-							templatesFolder === null
-								? "Not configured"
-								: templatesFolder || "/"
-						}
+						path={templatesFolder === null ? "Not configured" : templatesFolder || "/"}
 						browseLabel="Browse"
 						clearLabel="Clear template folder"
 						onBrowse={() => void handleBrowseFolder()}
-						onClear={
-							templatesFolder !== null
-								? () => void handleClearFolder()
-								: undefined
-						}
+						onClear={templatesFolder !== null ? () => void handleClearFolder() : undefined}
 						helper={summary}
 						error={templatesError}
 					/>
@@ -401,9 +364,7 @@ export function TemplateSettingsSections() {
 					<SettingsRow key={row.kind} label={t(row.labelKey)}>
 						<SettingsSelect
 							value={periodTemplates[row.kind] ?? ""}
-							onChange={(event) =>
-								void handlePeriodTemplateChange(row.kind, event.target.value)
-							}
+							onChange={(event) => void handlePeriodTemplateChange(row.kind, event.target.value)}
 							disabled={templatesFolder === null || !templates.length}
 						>
 							<option value="">None</option>

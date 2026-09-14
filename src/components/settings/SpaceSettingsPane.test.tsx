@@ -3,37 +3,32 @@
 import { act } from "react";
 import type React from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { SpaceSettingsPane } from "./SpaceSettingsPane";
 
-const { invokeMock, loadSettingsMock, writeSpaceSettingMock } = vi.hoisted(
-	() => ({
-		invokeMock: vi.fn(),
-		loadSettingsMock: vi.fn(() =>
-			Promise.resolve({
-				currentSpacePath: "/spaces/test",
-				dailyNotes: {
-					folder: null,
-				},
-				editor: {
-					attachmentStorageMode: "note-folder",
-					attachmentFolder: "assets",
-					enablePeopleMentionsAsTags: false,
-				},
-				quickNotes: {
-					folder: "Quick Notes",
-				},
-			}),
-		),
-		writeSpaceSettingMock: vi.fn(
-			(
-				_definition: { field: string },
-				_value: unknown,
-				_scope: { spacePath?: string | null },
-			) => Promise.resolve(),
-		),
-	}),
-);
+const { invokeMock, loadSettingsMock, writeSpaceSettingMock } = vi.hoisted(() => ({
+	invokeMock: vi.fn(),
+	loadSettingsMock: vi.fn(() =>
+		Promise.resolve({
+			currentSpacePath: "/spaces/test",
+			dailyNotes: {
+				folder: null,
+			},
+			editor: {
+				attachmentStorageMode: "note-folder",
+				attachmentFolder: "assets",
+				enablePeopleMentionsAsTags: false,
+			},
+			quickNotes: {
+				folder: "Quick Notes",
+			},
+		}),
+	),
+	writeSpaceSettingMock: vi.fn(
+		(_definition: { field: string }, _value: unknown, _scope: { spacePath?: string | null }) =>
+			Promise.resolve(),
+	),
+}));
 
 (
 	globalThis as typeof globalThis & {
@@ -91,10 +86,7 @@ vi.mock("./TemplatesSettingsPane", () => ({
 }));
 
 vi.mock("../ui/shadcn/button", () => ({
-	Button: ({
-		children,
-		...props
-	}: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+	Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
 		<button type="button" {...props}>
 			{children}
 		</button>
@@ -115,13 +107,7 @@ vi.mock("../Icons/NavigationIcons", () => ({
 }));
 
 vi.mock("./SettingsScaffold", () => ({
-	SettingsSection: ({
-		children,
-		title,
-	}: {
-		children: React.ReactNode;
-		title: string;
-	}) => (
+	SettingsSection: ({ children, title }: { children: React.ReactNode; title: string }) => (
 		<section>
 			<h2>{title}</h2>
 			{children}
@@ -142,12 +128,7 @@ vi.mock("./SettingsScaffold", () => ({
 			{children}
 		</div>
 	),
-	SettingsValueCard: ({
-		value,
-	}: {
-		icon: React.ReactNode;
-		value: string;
-	}) => <div>{value}</div>,
+	SettingsValueCard: ({ value }: { icon: React.ReactNode; value: string }) => <div>{value}</div>,
 	SettingsToggle: ({
 		checked,
 		ariaLabel,
@@ -171,16 +152,10 @@ describe("SpaceSettingsPane", () => {
 	let root: Root;
 
 	function spaceSettingCalls(field: string) {
-		return writeSpaceSettingMock.mock.calls.filter(
-			(call) => call[0].field === field,
-		);
+		return writeSpaceSettingMock.mock.calls.filter((call) => call[0].field === field);
 	}
 
-	function expectSpaceSetting(
-		field: string,
-		value: unknown,
-		spacePath = "/spaces/test",
-	) {
+	function expectSpaceSetting(field: string, value: unknown, spacePath = "/spaces/test") {
 		expect(writeSpaceSettingMock).toHaveBeenCalledWith({ field }, value, {
 			spacePath,
 		});
@@ -285,9 +260,7 @@ describe("SpaceSettingsPane", () => {
 		});
 
 		expectSpaceSetting("attachmentStorageMode", "note-subfolder");
-		expect(
-			container.querySelector('input[aria-label="Attachment subfolder name"]'),
-		).not.toBeNull();
+		expect(container.querySelector('input[aria-label="Attachment subfolder name"]')).not.toBeNull();
 		expect(getAttachmentsSection().textContent).not.toContain("Browse");
 		expect(getAttachmentsSection().textContent).toContain(
 			"Attachments go in this subfolder inside the note's folder.",
@@ -428,9 +401,9 @@ describe("SpaceSettingsPane", () => {
 		});
 
 		expect(spaceSettingCalls("attachmentFolder")).toHaveLength(0);
-		expect(
-			container.querySelector("#attachmentSubfolderError")?.textContent,
-		).toContain("Folder path cannot contain '..'.");
+		expect(container.querySelector("#attachmentSubfolderError")?.textContent).toContain(
+			"Folder path cannot contain '..'.",
+		);
 		expect(input.getAttribute("aria-invalid")).toBe("true");
 	});
 });

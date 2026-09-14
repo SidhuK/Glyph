@@ -12,9 +12,7 @@ export interface ColumnMenuEntry {
 interface ColumnsPanelProps {
 	columnMenuEntries: ColumnMenuEntry[];
 	setColumnEnabled: (column: DatabaseColumn, enabled: boolean) => Promise<void>;
-	updateColumns: (
-		updater: (columns: DatabaseColumn[]) => DatabaseColumn[],
-	) => Promise<void>;
+	updateColumns: (updater: (columns: DatabaseColumn[]) => DatabaseColumn[]) => Promise<void>;
 	onRestoreDefaultColumns: () => void;
 }
 
@@ -33,22 +31,15 @@ export function ColumnsPanel({
 				{columnMenuEntries.map((entry) => (
 					<div
 						key={entry.key}
-						className={cn(
-							"databaseViewColumnRow",
-							entry.enabled && "is-enabled",
-						)}
+						className={cn("databaseViewColumnRow", entry.enabled && "is-enabled")}
 					>
-						<span className="databaseViewColumnLabel">
-							{entry.column.label}
-						</span>
+						<span className="databaseViewColumnLabel">{entry.column.label}</span>
 						<span className="databaseViewColumnToggle">
 							<Toggle
 								size="sm"
 								checked={entry.enabled}
 								ariaLabel={`${entry.enabled ? "Hide" : "Show"} ${entry.column.label} column`}
-								onCheckedChange={(checked) =>
-									void setColumnEnabled(entry.column, checked)
-								}
+								onCheckedChange={(checked) => void setColumnEnabled(entry.column, checked)}
 							/>
 						</span>
 					</div>
@@ -60,9 +51,7 @@ export function ColumnsPanel({
 				className="databaseViewColumnRow databaseViewColumnUtility"
 				onClick={() =>
 					void updateColumns((columns) => {
-						const existing = new Map(
-							columns.map((column) => [column.id, column]),
-						);
+						const existing = new Map(columns.map((column) => [column.id, column]));
 						const missing = columnMenuEntries
 							.map((entry) => entry.column)
 							.filter((column) => !existing.has(column.id));
@@ -75,11 +64,7 @@ export function ColumnsPanel({
 			>
 				<span>Show all columns</span>
 			</button>
-			<button
-				type="button"
-				className="databaseViewRestoreButton"
-				onClick={onRestoreDefaultColumns}
-			>
+			<button type="button" className="databaseViewRestoreButton" onClick={onRestoreDefaultColumns}>
 				<RefreshCw size="var(--icon-lg)" aria-hidden="true" />
 				Restore defaults
 			</button>

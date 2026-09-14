@@ -26,12 +26,8 @@
 	width: calc(var(--icon-lg) * 0.72);
 }
 
-:root.dark
-	.aiConnectionPreviewLogo[data-provider="openrouter"]
-	.aiConnectionPreviewLogoImage,
-:root.dark
-	.aiProviderDropdownLogo[data-provider="openrouter"]
-	.aiProviderDropdownLogoImage {
+:root.dark .aiConnectionPreviewLogo[data-provider="openrouter"] .aiConnectionPreviewLogoImage,
+:root.dark .aiProviderDropdownLogo[data-provider="openrouter"] .aiProviderDropdownLogoImage {
 	filter: brightness(0) invert(1);
 }
 

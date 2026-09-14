@@ -2,7 +2,7 @@
 
 import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
@@ -78,12 +78,7 @@ describe("HighlightedText markdown integration", () => {
 			element: document.createElement("div"),
 		});
 
-		editor
-			.chain()
-			.focus()
-			.setTextHighlight("green")
-			.insertContent("done")
-			.run();
+		editor.chain().focus().setTextHighlight("green").insertContent("done").run();
 		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe(
 			'<mark data-glyph-highlight="green" style="background-color: var(--glyph-inline-highlight-green, rgba(60, 207, 142, 0.24))">done</mark>',
 		);
@@ -92,9 +87,7 @@ describe("HighlightedText markdown integration", () => {
 		editor.commands.toggleBold();
 		editor.commands.unsetTextHighlight();
 
-		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe(
-			"**done**",
-		);
+		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe("**done**");
 
 		editor.destroy();
 	});

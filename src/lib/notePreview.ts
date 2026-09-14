@@ -13,9 +13,7 @@ export function parseNotePreview(
 	// Extract title from frontmatter or first heading
 	let title = titleForFile(relPath);
 	// Check for YAML frontmatter title
-	const frontmatterTitleMatch = normalizedText.match(
-		/^---\n([\s\S]*?)\n---\n?/,
-	);
+	const frontmatterTitleMatch = normalizedText.match(/^---\n([\s\S]*?)\n---\n?/);
 	let titleFoundInFrontmatter = false;
 	if (frontmatterTitleMatch?.[1]) {
 		for (const line of frontmatterTitleMatch[1].split("\n")) {
@@ -68,10 +66,7 @@ export function splitYamlFrontmatter(markdown: string): {
 	return { frontmatter, body };
 }
 
-export function joinYamlFrontmatter(
-	frontmatter: string | null,
-	body: string,
-): string {
+export function joinYamlFrontmatter(frontmatter: string | null, body: string): string {
 	const fm = frontmatter?.trimEnd() ?? "";
 	const b = body ?? "";
 	if (!fm) return b;

@@ -7,10 +7,7 @@ import type {
 } from "../../lib/tauri";
 import type { TemplateEntry } from "../../lib/templates";
 import { displayFolderFromPath, displayNameFromPath } from "../../utils/path";
-import {
-	localizeSettingsSearchEntry,
-	localizedSettingsTabLabel,
-} from "../settings/settingsSearch";
+import { localizeSettingsSearchEntry, localizedSettingsTabLabel } from "../settings/settingsSearch";
 import {
 	type Command,
 	type PaletteLaunchMode,
@@ -74,9 +71,7 @@ const CONTENT_GROUP_LIMIT = 50;
 interface PaletteResultSources {
 	commands: readonly Command[];
 	settings: AppSettings | undefined;
-	settingValue: (
-		definition: PaletteSettingDefinition,
-	) => string | number | boolean | null;
+	settingValue: (definition: PaletteSettingDefinition) => string | number | boolean | null;
 	tabs: readonly WorkspaceTab[];
 	titleMatches: readonly SearchResult[];
 	contentMatches: readonly SearchResult[];
@@ -107,9 +102,7 @@ function displaySettingValue(
 		return t(value ? "commandPalette.on" : "commandPalette.off");
 	}
 	if (value === null || value === "") return t("commandPalette.notSet");
-	const option = definition.options?.find(
-		(candidate) => candidate.value === value,
-	);
+	const option = definition.options?.find((candidate) => candidate.value === value);
 	if (option) return paletteSettingOptionLabel(option);
 	return String(value);
 }
@@ -151,25 +144,16 @@ export function buildPaletteResults({
 				id: `setting:${definition.id}`,
 				kind: "setting",
 				label: entry.title,
-				description: [
-					localizedSettingsTabLabel(entry.tab, language),
-					entry.section,
-				]
+				description: [localizedSettingsTabLabel(entry.tab, language), entry.section]
 					.filter(Boolean)
 					.join(" / "),
 				category: t("commandPalette.groups.setting"),
-				keywords: [
-					"settings",
-					entry.description ?? "",
-					...(entry.keywords ?? []),
-				],
+				keywords: ["settings", entry.description ?? "", ...(entry.keywords ?? [])],
 				defaultVisible: definition.defaultVisible,
 				rankBoost: definition.scope === "space" && spacePath ? 10 : 0,
 				checked: typeof value === "boolean" ? value : undefined,
 				trailing:
-					definition.control === "action"
-						? undefined
-						: displaySettingValue(definition, value, t),
+					definition.control === "action" ? undefined : displaySettingValue(definition, value, t),
 				settingId: definition.id,
 				settingControl: definition.control,
 			});
@@ -213,8 +197,7 @@ export function buildPaletteResults({
 				return { result, kind: "note" as const };
 			});
 	for (const { result, kind } of noteSource) {
-		const matchIndex =
-			typeof result.match_index === "number" ? result.match_index : undefined;
+		const matchIndex = typeof result.match_index === "number" ? result.match_index : undefined;
 		const matchLine = typeof result.line === "number" ? result.line : undefined;
 		const folder = displayFolderFromPath(result.id);
 		const description =
@@ -311,10 +294,7 @@ export function buildPaletteResults({
 			result,
 			score: rankPaletteResult(result, parsedQuery),
 		}))
-		.filter(
-			(item): item is { result: PaletteResult; score: number } =>
-				item.score !== null,
-		);
+		.filter((item): item is { result: PaletteResult; score: number } => item.score !== null);
 	const scoped = parsedQuery.scope !== "all";
 	const byKind = new Map<PaletteResultKind, typeof ranked>();
 	for (const item of ranked) {
@@ -329,24 +309,16 @@ export function buildPaletteResults({
 					"note" as const,
 					"content" as const,
 					...PALETTE_GROUP_ORDER.filter(
-						(kind) =>
-							kind !== "open-tab" && kind !== "note" && kind !== "content",
+						(kind) => kind !== "open-tab" && kind !== "note" && kind !== "content",
 					),
 				]
 			: PALETTE_GROUP_ORDER;
 	return groupOrder.flatMap((kind) => {
 		const group = byKind.get(kind) ?? [];
-		group.sort(
-			(a, b) =>
-				b.score - a.score || a.result.label.localeCompare(b.result.label),
-		);
+		group.sort((a, b) => b.score - a.score || a.result.label.localeCompare(b.result.label));
 		// Only the search surface is a match list; the command palette stays tight.
 		const groupLimit =
-			kind === "content" && mode === "search"
-				? CONTENT_GROUP_LIMIT
-				: BROAD_GROUP_LIMIT;
-		return group
-			.slice(0, scoped ? undefined : groupLimit)
-			.map(({ result }) => result);
+			kind === "content" && mode === "search" ? CONTENT_GROUP_LIMIT : BROAD_GROUP_LIMIT;
+		return group.slice(0, scoped ? undefined : groupLimit).map(({ result }) => result);
 	});
 }

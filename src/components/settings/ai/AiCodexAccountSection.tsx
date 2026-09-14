@@ -34,10 +34,7 @@ interface AiCodexAccountSectionProps {
 
 const rateLimitSegmentCount = 12;
 
-function formatRateLimitLabel(
-	label: string,
-	windowMinutes: number | null,
-): string {
+function formatRateLimitLabel(label: string, windowMinutes: number | null): string {
 	if (windowMinutes === MINUTES_PER_WEEK) return "Weekly";
 	if (windowMinutes != null && Number.isFinite(windowMinutes)) {
 		if (windowMinutes >= 60 && windowMinutes % 60 === 0) {
@@ -66,9 +63,7 @@ export function AiCodexAccountSection({
 			title="ChatGPT Account"
 			description="Check connection status, sign in, and review Codex usage limits."
 			aside={
-				<div
-					className={`settingsPill ${toneForCodexStatus(codexState.status)}`}
-				>
+				<div className={`settingsPill ${toneForCodexStatus(codexState.status)}`}>
 					{labelForCodexStatus(codexState.status)}
 				</div>
 			}
@@ -141,13 +136,8 @@ export function AiCodexAccountSection({
 										(remainingPercent / 100) * rateLimitSegmentCount,
 									);
 									const WindowIcon =
-										item.windowMinutes === MINUTES_PER_WEEK
-											? Calendar03Icon
-											: Time04Icon;
-									const shortLabel = formatRateLimitLabel(
-										item.label,
-										item.windowMinutes,
-									);
+										item.windowMinutes === MINUTES_PER_WEEK ? Calendar03Icon : Time04Icon;
+									const shortLabel = formatRateLimitLabel(item.label, item.windowMinutes);
 
 									return (
 										<tr key={item.key} className={`codexRateLimitRow--${tone}`}>
@@ -169,10 +159,7 @@ export function AiCodexAccountSection({
 														max={100}
 														aria-label={`${item.label} remaining`}
 													/>
-													<div
-														className="codexRateLimitMeter"
-														aria-hidden="true"
-													>
+													<div className="codexRateLimitMeter" aria-hidden="true">
 														{Array.from({
 															length: rateLimitSegmentCount,
 														}).map((_, index) => (
@@ -204,9 +191,7 @@ export function AiCodexAccountSection({
 					</div>
 				</SettingsRow>
 			) : null}
-			{codexState.error ? (
-				<div className="settingsError">{codexState.error}</div>
-			) : null}
+			{codexState.error ? <div className="settingsError">{codexState.error}</div> : null}
 		</SettingsSection>
 	);
 }

@@ -33,10 +33,7 @@
 
 .allDocsGrid {
 	display: grid;
-	grid-template-columns: repeat(
-			auto-fill,
-			minmax(var(--all-docs-card-min-width), 1fr)
-		);
+	grid-template-columns: repeat(auto-fill, minmax(var(--all-docs-card-min-width), 1fr));
 	gap: var(--all-docs-card-gap);
 	align-content: start;
 	padding-bottom: var(--all-docs-card-gap);
@@ -84,8 +81,7 @@
 
 .pinnedCollectionCardOpen:focus-visible {
 	outline: none;
-	box-shadow: inset 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 36%, transparent);
+	box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 36%, transparent);
 }
 
 .pinnedCollectionCardCopy {
@@ -212,8 +208,7 @@
 }
 
 .allDocsCard:focus-visible .allDocsCardSurface {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: -2px;
 }
 
@@ -260,11 +255,7 @@
 	overflow-wrap: anywhere;
 	white-space: normal;
 	mask-image: linear-gradient(to bottom, #000 calc(100% - 1.45em), transparent);
-	-webkit-mask-image: linear-gradient(
-		to bottom,
-		#000 calc(100% - 1.45em),
-		transparent
-	);
+	-webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.45em), transparent);
 }
 
 .allDocsCardPreviewLine.is-heading {
@@ -274,8 +265,7 @@
 
 .allDocsCardPreviewLine.is-quote {
 	padding-left: 8px;
-	border-left: 2px solid
-		color-mix(in srgb, var(--border-light) 88%, transparent);
+	border-left: 2px solid color-mix(in srgb, var(--border-light) 88%, transparent);
 	color: color-mix(in srgb, var(--text-secondary) 70%, var(--text-tertiary));
 }
 

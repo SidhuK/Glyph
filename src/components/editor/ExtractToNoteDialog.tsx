@@ -56,10 +56,7 @@ export function ExtractToNoteDialog({
 					}}
 				>
 					<div className="extractToNoteField">
-						<label
-							className="extractToNoteLabel"
-							htmlFor="extract-to-note-title"
-						>
+						<label className="extractToNoteLabel" htmlFor="extract-to-note-title">
 							Title
 						</label>
 						<Input
@@ -84,18 +81,10 @@ export function ExtractToNoteDialog({
 						) : null}
 					</div>
 					<DialogFooter className="extractToNoteActions">
-						<Button
-							type="button"
-							variant="ghost"
-							onClick={onClose}
-							disabled={state?.loading}
-						>
+						<Button type="button" variant="ghost" onClick={onClose} disabled={state?.loading}>
 							Cancel
 						</Button>
-						<Button
-							type="submit"
-							disabled={state?.loading || !state?.title.trim()}
-						>
+						<Button type="submit" disabled={state?.loading || !state?.title.trim()}>
 							{state?.loading ? "Creating" : "Create"}
 						</Button>
 					</DialogFooter>

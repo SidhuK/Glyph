@@ -15,8 +15,6 @@ export function getCornerRadiusOptions(): Array<{
 	return CORNER_RADIUS_VALUES.map((value) => ({
 		value,
 		label: i18n.t(`settings.appearance:shape.options.${value}.label`),
-		description: i18n.t(
-			`settings.appearance:shape.options.${value}.description`,
-		),
+		description: i18n.t(`settings.appearance:shape.options.${value}.description`),
 	}));
 }

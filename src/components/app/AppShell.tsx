@@ -31,10 +31,7 @@ import { usePeriodNote } from "../../hooks/usePeriodNote";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
-import {
-	dispatchEditorMenuAction,
-	dispatchFileTreeStartRename,
-} from "../../lib/appEvents";
+import { dispatchEditorMenuAction, dispatchFileTreeStartRename } from "../../lib/appEvents";
 import {
 	INITIAL_DATABASES_OPEN_REQUEST,
 	nextDatabasesOpenRequest,
@@ -63,26 +60,15 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate, selectTemplateFile } from "../../lib/templates";
 import { toast } from "../../lib/toast";
-import {
-	displayNameFromPath,
-	isMarkdownPath,
-	normalizeRelPath,
-	parentDir,
-} from "../../utils/path";
+import { displayNameFromPath, isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
-import {
-	CalendarPaletteController,
-	preloadCalendarPalette,
-} from "./CalendarPaletteController";
+import { CalendarPaletteController, preloadCalendarPalette } from "./CalendarPaletteController";
 import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
-import {
-	loadActivityTimelinePane,
-	loadDatabasesPane,
-} from "./prefetchablePanes";
+import { loadActivityTimelinePane, loadDatabasesPane } from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
 import { useTabManager } from "./useTabManager";
 import { useWorkspaceLinkEvents } from "./useWorkspaceLinkEvents";
@@ -168,25 +154,14 @@ export function AppShell() {
 	const zenModeRef = useRef(zenMode);
 	zenModeRef.current = zenMode;
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
-	const {
-		getCurrentMarkdown,
-		saveCurrentEditor,
-		saveAllEditors,
-		setCurrentEditorMode,
-	} = useEditorContext();
+	const { getCurrentMarkdown, saveCurrentEditor, saveAllEditors, setCurrentEditorMode } =
+		useEditorContext();
 
-	const [paletteLaunchMode, setPaletteLaunchMode] = useState<
-		"commands" | "search"
-	>("commands");
+	const [paletteLaunchMode, setPaletteLaunchMode] = useState<"commands" | "search">("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
-	const [databasesOpenRequest, setDatabasesOpenRequest] = useState(
-		INITIAL_DATABASES_OPEN_REQUEST,
-	);
-	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
-		useState(0);
-	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
-		string | null
-	>(null);
+	const [databasesOpenRequest, setDatabasesOpenRequest] = useState(INITIAL_DATABASES_OPEN_REQUEST);
+	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] = useState(0);
+	const [movePickerSourcePath, setMovePickerSourcePath] = useState<string | null>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
 	const [calendarOpen, setCalendarOpen] = useState(false);
@@ -197,16 +172,12 @@ export function AppShell() {
 		spacePath: string;
 		relPath: string;
 	} | null>(null);
-	const [resumeLastSession, setResumeLastSession] = useState<boolean | null>(
-		null,
-	);
+	const [resumeLastSession, setResumeLastSession] = useState<boolean | null>(null);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 	const autoUpdater = useUpdaterContext();
 	const [sidebarAutoCollapsed, setSidebarAutoCollapsed] = useState(() =>
-		typeof window === "undefined"
-			? false
-			: window.innerWidth <= SIDEBAR_AUTO_COLLAPSE_WIDTH,
+		typeof window === "undefined" ? false : window.innerWidth <= SIDEBAR_AUTO_COLLAPSE_WIDTH,
 	);
 
 	const sidebarCollapsed = sidebarCollapsedState || sidebarAutoCollapsed;
@@ -235,9 +206,7 @@ export function AppShell() {
 	});
 
 	useEffect(() => {
-		const query = window.matchMedia(
-			`(max-width: ${SIDEBAR_AUTO_COLLAPSE_WIDTH}px)`,
-		);
+		const query = window.matchMedia(`(max-width: ${SIDEBAR_AUTO_COLLAPSE_WIDTH}px)`);
 		const syncSidebarBreakpoint = () => {
 			setSidebarAutoCollapsed(query.matches);
 			if (query.matches) {
@@ -329,8 +298,7 @@ export function AppShell() {
 			if (status.phase === "success") {
 				toast.success("Git Sync completed.");
 			} else if (status.phase === "error" || status.last_error) {
-				const message =
-					status.last_error ?? status.message ?? "Git Sync failed.";
+				const message = status.last_error ?? status.message ?? "Git Sync failed.";
 				showGitSyncErrorToast(message);
 			}
 		}
@@ -450,8 +418,7 @@ export function AppShell() {
 	}, [closeSpace, prepareForSpaceChange]);
 
 	useEffect(() => {
-		const visible =
-			activeMarkdownTabPath !== null && isMarkdownPath(activeMarkdownTabPath);
+		const visible = activeMarkdownTabPath !== null && isMarkdownPath(activeMarkdownTabPath);
 		void invoke("set_markdown_menu_visible", { visible }).catch(() => {});
 	}, [activeMarkdownTabPath]);
 
@@ -473,10 +440,7 @@ export function AppShell() {
 		spacePath,
 		activeTabPath,
 	});
-	if (
-		spacePath !== peekNavigation.spacePath ||
-		activeTabPath !== peekNavigation.activeTabPath
-	) {
+	if (spacePath !== peekNavigation.spacePath || activeTabPath !== peekNavigation.activeTabPath) {
 		setPeekNavigation({ spacePath, activeTabPath });
 		if (notePeek) setNotePeek(null);
 	}
@@ -520,8 +484,7 @@ export function AppShell() {
 		loadDir: fileTree.loadDir,
 		openWorkspaceFile,
 	});
-	const selectedImportDir =
-		activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+	const selectedImportDir = activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
 	const handleImportFilesFromMenu = useCallback(() => {
 		void importFilesInto(selectedImportDir);
 	}, [importFilesInto, selectedImportDir]);
@@ -536,13 +499,7 @@ export function AppShell() {
 			.catch((cause) => {
 				setError(cause instanceof Error ? cause.message : String(cause));
 			});
-	}, [
-		consumeWelcomeNotePath,
-		openWorkspaceFile,
-		setError,
-		spacePath,
-		welcomeNotePath,
-	]);
+	}, [consumeWelcomeNotePath, openWorkspaceFile, setError, spacePath, welcomeNotePath]);
 
 	const openFolioWorkspaceFile = useCallback(
 		async (path: string) => {
@@ -630,8 +587,7 @@ export function AppShell() {
 			if (!spacePath) return;
 			try {
 				const { save } = await import("@tauri-apps/plugin-dialog");
-				const suggestedFileName =
-					template.relPath.split("/").pop()?.trim() || "Untitled.md";
+				const suggestedFileName = template.relPath.split("/").pop()?.trim() || "Untitled.md";
 				const defaultPath = destinationDirPath
 					? await join(spacePath, destinationDirPath, suggestedFileName)
 					: await join(spacePath, suggestedFileName);
@@ -640,16 +596,12 @@ export function AppShell() {
 					defaultPath,
 					filters: [{ name: "Markdown", extensions: ["md"] }],
 				});
-				const absPath = Array.isArray(selection)
-					? (selection[0] ?? null)
-					: selection;
+				const absPath = Array.isArray(selection) ? (selection[0] ?? null) : selection;
 				if (!absPath) return;
 				const relPath = await invoke("space_relativize_path", {
 					abs_path: absPath,
 				});
-				const normalizedRelPath = relPath.toLowerCase().endsWith(".md")
-					? relPath
-					: `${relPath}.md`;
+				const normalizedRelPath = relPath.toLowerCase().endsWith(".md") ? relPath : `${relPath}.md`;
 				if (
 					destinationDirPath &&
 					normalizedRelPath !== destinationDirPath &&
@@ -675,9 +627,7 @@ export function AppShell() {
 				}
 			} catch (cause) {
 				setError(
-					cause instanceof Error
-						? cause.message
-						: "Failed to create the note from template.",
+					cause instanceof Error ? cause.message : "Failed to create the note from template.",
 				);
 			}
 		},
@@ -711,29 +661,17 @@ export function AppShell() {
 				await handlePickTemplate(selection.template, dirPath ?? "");
 			} catch (cause) {
 				setError(
-					cause instanceof Error
-						? cause.message
-						: t("commandPalette.templateSelectionFailed"),
+					cause instanceof Error ? cause.message : t("commandPalette.templateSelectionFailed"),
 				);
 			}
 		},
-		[
-			handlePickTemplate,
-			openTemplatesSettings,
-			setError,
-			spacePath,
-			t,
-			templateFolder,
-		],
+		[handlePickTemplate, openTemplatesSettings, setError, spacePath, t, templateFolder],
 	);
 
 	const handleOpenPeriodNote = useCallback(
 		async (kind: PeriodKind) => {
 			if (!dailyNotesFolder) return;
-			await openOrCreatePeriodNote(
-				dailyNotesFolder,
-				periodIdFromDate(kind, new Date()),
-			);
+			await openOrCreatePeriodNote(dailyNotesFolder, periodIdFromDate(kind, new Date()));
 		},
 		[dailyNotesFolder, openOrCreatePeriodNote],
 	);
@@ -848,8 +786,7 @@ export function AppShell() {
 
 	const openTagSearchPalette = useCallback(
 		(tag: string) => {
-			const query =
-				tag.startsWith("#") || tag.startsWith("@") ? tag : `#${tag}`;
+			const query = tag.startsWith("#") || tag.startsWith("@") ? tag : `#${tag}`;
 			openPalette("search", query);
 		},
 		[openPalette],
@@ -859,11 +796,7 @@ export function AppShell() {
 		async (paths: string[]) => {
 			if (!aiEnabled) return;
 			const unique = Array.from(
-				new Set(
-					paths
-						.map((p) => p.trim())
-						.filter((p) => p.toLowerCase().endsWith(".md")),
-				),
+				new Set(paths.map((p) => p.trim()).filter((p) => p.toLowerCase().endsWith(".md"))),
 			);
 			if (!unique.length) return;
 			setAiPanelOpen(true);
@@ -881,9 +814,7 @@ export function AppShell() {
 	}, [activeMarkdownTabPath, attachContextFiles, setError]);
 
 	const attachAllOpenNotesToAi = useCallback(async () => {
-		const tabs = openMarkdownTabs.filter((p) =>
-			p.toLowerCase().endsWith(".md"),
-		);
+		const tabs = openMarkdownTabs.filter((p) => p.toLowerCase().endsWith(".md"));
 		if (!tabs.length) {
 			setError("No open markdown notes to attach to AI.");
 			return;
@@ -908,8 +839,7 @@ export function AppShell() {
 
 	const handleCreateFromTemplateFromMenu = useCallback(() => {
 		if (!spacePath) return;
-		const dir =
-			activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+		const dir = activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
 		void openTemplatePicker(dir);
 	}, [activeDirPath, activeFilePath, openTemplatePicker, spacePath]);
 
@@ -1052,8 +982,7 @@ export function AppShell() {
 		} catch (error) {
 			console.error("Failed to copy note as markdown", error);
 			toast.error("Could not copy note as Markdown", {
-				description:
-					error instanceof Error ? error.message : "Try again in a moment.",
+				description: error instanceof Error ? error.message : "Try again in a moment.",
 			});
 		}
 	}, [activeMarkdownTabPath, getCurrentMarkdown]);
@@ -1078,8 +1007,7 @@ export function AppShell() {
 				noteAbsPath,
 			});
 			const path = await invoke("print_write_html", {
-				file_stem:
-					displayNameFromPath(activeMarkdownTabPath).trim() || "Untitled",
+				file_stem: displayNameFromPath(activeMarkdownTabPath).trim() || "Untitled",
 				html,
 			});
 			await openPath(path);
@@ -1087,8 +1015,7 @@ export function AppShell() {
 		} catch (error) {
 			console.error("Failed to print note", error);
 			toast.error("Could not open the note for printing", {
-				description:
-					error instanceof Error ? error.message : "Try again in a moment.",
+				description: error instanceof Error ? error.message : "Try again in a moment.",
 			});
 		}
 	}, [activeMarkdownTabPath, getCurrentMarkdown, saveCurrentEditor]);
@@ -1108,18 +1035,12 @@ export function AppShell() {
 			return;
 		}
 		setSidebarCollapsed(false);
-		const duplicatedPath = await duplicateFileWithActiveEditorFlush(
-			activeMarkdownTabPath,
-		);
+		const duplicatedPath = await duplicateFileWithActiveEditorFlush(activeMarkdownTabPath);
 		if (!duplicatedPath) return;
 		window.requestAnimationFrame(() => {
 			dispatchFileTreeStartRename({ path: duplicatedPath });
 		});
-	}, [
-		activeMarkdownTabPath,
-		duplicateFileWithActiveEditorFlush,
-		setSidebarCollapsed,
-	]);
+	}, [activeMarkdownTabPath, duplicateFileWithActiveEditorFlush, setSidebarCollapsed]);
 
 	const handleNavigateBreadcrumbPath = useCallback(
 		(dirPath: string) => {
@@ -1152,13 +1073,7 @@ export function AppShell() {
 				}
 			})();
 		},
-		[
-			fileTree.loadDir,
-			setError,
-			setActiveDirPath,
-			setSidebarCollapsed,
-			updateExpandedDirs,
-		],
+		[fileTree.loadDir, setError, setActiveDirPath, setSidebarCollapsed, updateExpandedDirs],
 	);
 
 	const handleStartRenameFromTab = useCallback(
@@ -1378,10 +1293,7 @@ export function AppShell() {
 		const accelerators = Object.fromEntries(
 			actionsWithBindings
 				.filter((action) => action.menuId)
-				.map((action) => [
-					action.menuId as string,
-					toTauriAccelerator(action.binding),
-				]),
+				.map((action) => [action.menuId as string, toTauriAccelerator(action.binding)]),
 		);
 		void invoke("set_menu_shortcuts", { accelerators }).catch(() => {});
 	}, [actionsWithBindings]);
@@ -1431,9 +1343,7 @@ export function AppShell() {
 						onImportFilesInDir={importFilesInto}
 						onImportFolderInDir={importFolderInto}
 						onImportPathsInDir={importPathsInto}
-						onRequestCreateFolder={(dirPath) =>
-							fileTree.requestCreateFolder(dirPath)
-						}
+						onRequestCreateFolder={(dirPath) => fileTree.requestCreateFolder(dirPath)}
 						onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
 						onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
 						onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
@@ -1513,9 +1423,7 @@ export function AppShell() {
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
-				peekNotePath={
-					notePeek && notePeek.spacePath === spacePath ? notePeek.relPath : null
-				}
+				peekNotePath={notePeek && notePeek.spacePath === spacePath ? notePeek.relPath : null}
 				onCloseNotePeek={closeNotePeek}
 				onOpenPeekedNote={() => {
 					void openPeekedNote();
@@ -1534,17 +1442,14 @@ export function AppShell() {
 						tabs={tabs}
 						onActivateTab={setActiveTabId}
 						onSelectSearchResult={(id, options) => {
-							if (
-								options?.query?.trim() &&
-								typeof options.matchIndex === "number"
-							) {
+							if (options?.query?.trim() && typeof options.matchIndex === "number") {
 								requestSearchJump({
 									path: id,
 									query: options.query.trim(),
 									matchIndex: options.matchIndex,
 									targetPaneId:
-										tabs.find((tab) => tab.kind === "file" && tab.target === id)
-											?.paneId ?? focusedPaneId,
+										tabs.find((tab) => tab.kind === "file" && tab.target === id)?.paneId ??
+										focusedPaneId,
 								});
 							}
 							void openWorkspaceFile(id);
@@ -1552,9 +1457,7 @@ export function AppShell() {
 						onRevealFolder={handleNavigateBreadcrumbPath}
 						onOpenDatabase={(id) => openDatabasesTab(id)}
 						templateFolder={templateFolder}
-						onCreateFromTemplate={(template) =>
-							void handlePickTemplate(template, "")
-						}
+						onCreateFromTemplate={(template) => void handlePickTemplate(template, "")}
 					/>
 				</Suspense>
 			) : null}
@@ -1566,9 +1469,7 @@ export function AppShell() {
 						spacePath={spacePath}
 						dailyNoteFolder={dailyNotesFolder}
 						onOpenNote={(path) => void openWorkspaceFile(path)}
-						onOpenPeriodNoteAtDate={(kind, date) =>
-							void handleOpenPeriodNoteAtDate(kind, date)
-						}
+						onOpenPeriodNoteAtDate={(kind, date) => void handleOpenPeriodNoteAtDate(kind, date)}
 					/>
 				</>
 			) : null}

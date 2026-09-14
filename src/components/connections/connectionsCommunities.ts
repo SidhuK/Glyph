@@ -46,10 +46,7 @@ export function communityBridgeKey(left: number, right: number) {
 	return left < right ? `${left}:${right}` : `${right}:${left}`;
 }
 
-type CommunityGraph = Graph<
-	Record<string, never>,
-	CommunityGraphEdgeAttributes
->;
+type CommunityGraph = Graph<Record<string, never>, CommunityGraphEdgeAttributes>;
 
 function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
 	const graph = new Graph<Record<string, never>, CommunityGraphEdgeAttributes>({
@@ -65,11 +62,7 @@ function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
 		if (!graph.hasNode(left) || !graph.hasNode(right) || left === right) return;
 		const existingEdge = graph.edge(left, right);
 		if (existingEdge) {
-			graph.updateEdgeAttribute(
-				existingEdge,
-				"weight",
-				(current = 0) => current + weight,
-			);
+			graph.updateEdgeAttribute(existingEdge, "weight", (current = 0) => current + weight);
 			return;
 		}
 		graph.addUndirectedEdge(left, right, { weight });
@@ -79,21 +72,14 @@ function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
 		mergeEdge(
 			edge.source,
 			edge.target,
-			(edge.kind === "relationship" ? RELATIONSHIP_WEIGHT : NOTE_LINK_WEIGHT) *
-				edge.weight,
+			(edge.kind === "relationship" ? RELATIONSHIP_WEIGHT : NOTE_LINK_WEIGHT) * edge.weight,
 		);
 	}
 
-	const tagCounts = new Map(
-		layoutGraph.tags.map((tag) => [tag.id, tag.noteCount]),
-	);
+	const tagCounts = new Map(layoutGraph.tags.map((tag) => [tag.id, tag.noteCount]));
 	for (const edge of layoutGraph.tagEdges) {
 		const noteCount = Math.max(1, tagCounts.get(edge.tagId) ?? 1);
-		mergeEdge(
-			edge.tagId,
-			edge.noteId,
-			TAG_WEIGHT_SCALE / noteCount ** TAG_FREQUENCY_DISCOUNT,
-		);
+		mergeEdge(edge.tagId, edge.noteId, TAG_WEIGHT_SCALE / noteCount ** TAG_FREQUENCY_DISCOUNT);
 	}
 
 	return graph;
@@ -200,10 +186,7 @@ export function detectConnectionsCommunities(
 			return;
 		}
 		const key = communityBridgeKey(sourceCommunity, targetCommunity);
-		communityBridges.set(
-			key,
-			(communityBridges.get(key) ?? 0) + attributes.weight,
-		);
+		communityBridges.set(key, (communityBridges.get(key) ?? 0) + attributes.weight);
 	});
 
 	return { communities, communityBridges };

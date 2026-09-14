@@ -22,10 +22,7 @@ export function normalizeEditorHref(value: string): string {
 	return `https://${trimmed}`;
 }
 
-function selectLinkRange(
-	chain: ReturnType<Editor["chain"]>,
-	range: EditorLinkState["range"],
-) {
+function selectLinkRange(chain: ReturnType<Editor["chain"]>, range: EditorLinkState["range"]) {
 	if (range) chain.setTextSelection(range);
 	return chain.extendMarkRange("link");
 }

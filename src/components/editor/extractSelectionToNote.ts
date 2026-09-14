@@ -51,17 +51,10 @@ function relativePath(fromDir: string, toPath: string): string {
 	const from = normalizeRelPath(fromDir).split("/").filter(Boolean);
 	const to = normalizeRelPath(toPath).split("/").filter(Boolean);
 	let index = 0;
-	while (
-		index < from.length &&
-		index < to.length &&
-		from[index] === to[index]
-	) {
+	while (index < from.length && index < to.length && from[index] === to[index]) {
 		index += 1;
 	}
-	const parts = [
-		...Array.from({ length: from.length - index }, () => ".."),
-		...to.slice(index),
-	];
+	const parts = [...Array.from({ length: from.length - index }, () => ".."), ...to.slice(index)];
 	return parts.join("/") || to[to.length - 1] || "";
 }
 
@@ -110,14 +103,9 @@ export function sanitizeExtractedNoteTitle(title: string): string {
 	return sanitized || FALLBACK_TITLE;
 }
 
-export function uniqueExtractedNoteTitle(
-	title: string,
-	siblingNames: Iterable<string>,
-): string {
+export function uniqueExtractedNoteTitle(title: string, siblingNames: Iterable<string>): string {
 	const base = sanitizeExtractedNoteTitle(title);
-	const unavailable = new Set(
-		Array.from(siblingNames, (name) => name.toLowerCase()),
-	);
+	const unavailable = new Set(Array.from(siblingNames, (name) => name.toLowerCase()));
 	if (!unavailable.has(`${base}.md`.toLowerCase())) return base;
 	let index = 2;
 	while (unavailable.has(`${base} ${index}.md`.toLowerCase())) {
@@ -147,8 +135,7 @@ function splitDestination(raw: string): {
 	const titleSuffix = titleMatch ? (titleMatch[2] ?? "") : "";
 	const baseSuffix = `${titleSuffix}${wrapperSuffix}`;
 	const hashIndex = value.indexOf("#");
-	if (hashIndex === -1)
-		return { destination: value, suffix: baseSuffix, wrapper };
+	if (hashIndex === -1) return { destination: value, suffix: baseSuffix, wrapper };
 	return {
 		destination: value.slice(0, hashIndex),
 		suffix: `${value.slice(hashIndex)}${baseSuffix}`,
@@ -203,25 +190,18 @@ export function rewriteRelativeMarkdownLinks(
 			const absoluteTarget = decoded.startsWith("/")
 				? normalizeSegments(decoded)
 				: normalizeSegments(`${sourceDir}/${decoded}`);
-			const nextDestination = encodeDestination(
-				relativePath(nextDir, absoluteTarget),
-			);
-			const wrappedDestination =
-				wrapper === "<" ? `<${nextDestination}>` : nextDestination;
+			const nextDestination = encodeDestination(relativePath(nextDir, absoluteTarget));
+			const wrappedDestination = wrapper === "<" ? `<${nextDestination}>` : nextDestination;
 			return `${embed}[${label}](${wrappedDestination}${suffix})`;
 		},
 	);
 }
 
 function normalizeSelectedMarkdown(markdown: string): string {
-	return postprocessMarkdownFromEditor(markdown)
-		.replace(/^\n+/, "")
-		.replace(/\n+$/, "");
+	return postprocessMarkdownFromEditor(markdown).replace(/^\n+/, "").replace(/\n+$/, "");
 }
 
-export function buildExtractSelectionDraft(
-	editor: Editor,
-): ExtractSelectionDraft | null {
+export function buildExtractSelectionDraft(editor: Editor): ExtractSelectionDraft | null {
 	if (!editor.markdown) return null;
 	const { selection } = editor.state;
 	if (selection.empty) return null;

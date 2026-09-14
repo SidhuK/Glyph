@@ -30,28 +30,13 @@ interface FileTypeInfo {
 	label: string;
 }
 
-export function getFileTypeInfo(
-	relPath: string,
-	isMarkdown: boolean,
-): FileTypeInfo {
+export function getFileTypeInfo(relPath: string, isMarkdown: boolean): FileTypeInfo {
 	const ext = relPath.split(".").pop()?.toLowerCase() ?? "";
 
 	if (isMarkdown) {
 		return { Icon: FileText, color: "var(--text-accent)", label: "markdown" };
 	}
-	if (
-		[
-			"png",
-			"jpg",
-			"jpeg",
-			"gif",
-			"webp",
-			"svg",
-			"ico",
-			"avif",
-			"heic",
-		].includes(ext)
-	) {
+	if (["png", "jpg", "jpeg", "gif", "webp", "svg", "ico", "avif", "heic"].includes(ext)) {
 		return { Icon: FileImage, color: "var(--color-green-500)", label: ext };
 	}
 	if (["mp4", "avi", "mov", "webm", "mkv"].includes(ext)) {

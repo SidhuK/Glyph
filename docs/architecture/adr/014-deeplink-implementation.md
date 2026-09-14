@@ -12,10 +12,10 @@ ADRs 001–013 lock the product contract for `glyph://` deeplinks. Shipping them
 
 ### Platform delivery
 
-| Platform | Registration | Runtime delivery |
-| --- | --- | --- |
-| macOS | Static scheme via `tauri-plugin-deep-link` (`CFBundleURLTypes`) | Plugin `on_open_url` only. The plugin hooks the same `RunEvent::Opened`, so our own handler stays `file://`-only to avoid dispatching twice |
-| Windows / Linux | Static scheme in plugin config; runtime `register_all` in debug/dev where needed | Plugin `on_open_url`; second-process launches forwarded via `tauri-plugin-single-instance` with `deep-link` feature |
+| Platform        | Registration                                                                     | Runtime delivery                                                                                                                            |
+| --------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| macOS           | Static scheme via `tauri-plugin-deep-link` (`CFBundleURLTypes`)                  | Plugin `on_open_url` only. The plugin hooks the same `RunEvent::Opened`, so our own handler stays `file://`-only to avoid dispatching twice |
+| Windows / Linux | Static scheme in plugin config; runtime `register_all` in debug/dev where needed | Plugin `on_open_url`; second-process launches forwarded via `tauri-plugin-single-instance` with `deep-link` feature                         |
 
 - `file://` / Finder association handling is unchanged (ADR 009).
 - Only the configured scheme `glyph` is accepted. No HTTPS / Universal Links (ADR 011).
@@ -30,11 +30,11 @@ ADRs 001–013 lock the product contract for `glyph://` deeplinks. Shipping them
 
 Routes map 1:1 to ADR 013:
 
-| Route | Action |
-| --- | --- |
-| `glyph://open/note?space=&path=` | `OpenNote` |
-| `glyph://open/space?space=` | `OpenSpace` |
-| `glyph://search?space=&q=` | `Search` |
+| Route                            | Action          |
+| -------------------------------- | --------------- |
+| `glyph://open/note?space=&path=` | `OpenNote`      |
+| `glyph://open/space?space=`      | `OpenSpace`     |
+| `glyph://search?space=&q=`       | `Search`        |
 | `glyph://open/daily-note?space=` | `OpenDailyNote` |
 
 URL shape: path-style with host + path (`glyph://open/note` → host `open`, path `/note`). Query holds parameters. Canonical encoding uses standard percent-encoding so spaces and Unicode round-trip.
@@ -58,7 +58,7 @@ half-applied space switch.
 
 ### Window readiness / queue
 
-- Parsed actions are enqueued in `DeeplinkState` *and* emitted as `deeplink:action`, because the webview is not listening yet on a cold start.
+- Parsed actions are enqueued in `DeeplinkState` _and_ emitted as `deeplink:action`, because the webview is not listening yet on a cold start.
 - Each dispatch carries a process-unique id. The frontend drains `deeplink_take_pending` and discards ids it already handled, so the live emit and its queue mirror cannot run twice and a drain cannot destroy an entry it did not deliver.
 - Rejections are queued and emitted the same way, so a cold-start failure is still reported.
 - The queue is bounded; the oldest entries are dropped first.
@@ -74,7 +74,7 @@ precise cause stays in the log.
 
 - **`space=`**: must be absolute. Prefer `canonicalize` so symlinked roots resolve to a real directory. If the path does not exist or is not a directory → error (do not create spaces).
 - **`path=` (notes)**: space-relative only. Validate with `paths::join_under()` (rejects absolute segments and `..`). Lexical containment is the security boundary; the resolved absolute path is not re-canonicalized through user-controlled symlinks for escape (same model as other space FS ops). Missing note for `open/note` → error, no create. Daily note create-if-missing stays on the existing frontend daily-note flow (ADR 012).
-- Do not treat lexical containment alone as full symlink containment for *space roots*; space identity always goes through canonicalize when the root exists.
+- Do not treat lexical containment alone as full symlink containment for _space roots_; space identity always goes through canonicalize when the root exists.
 
 ### Failure UX (ADR 010)
 

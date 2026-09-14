@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import { loadSettings } from "../../../lib/settings";
 import { useTauriEvent } from "../../../lib/tauriEvents";
 
-export function applyDomSpellCheck(
-	node: HTMLElement | null | undefined,
-	enabled: boolean,
-): void {
+export function applyDomSpellCheck(node: HTMLElement | null | undefined, enabled: boolean): void {
 	node?.setAttribute("spellcheck", enabled ? "true" : "false");
 }
 

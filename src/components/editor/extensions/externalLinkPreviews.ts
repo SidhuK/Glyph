@@ -21,9 +21,7 @@ interface PreviewUpdate {
 	preview: ExternalLinkPreview | null;
 }
 
-const EXTERNAL_LINK_PREVIEW_KEY = new PluginKey<LinkPreviewState>(
-	"external-link-previews",
-);
+const EXTERNAL_LINK_PREVIEW_KEY = new PluginKey<LinkPreviewState>("external-link-previews");
 const PREVIEW_UPDATE_META = "external-link-preview-update";
 const MAX_PREVIEW_REQUESTS = 3;
 
@@ -36,16 +34,12 @@ function externalUrl(href: string): URL | null {
 	}
 }
 
-function singleExternalLink(
-	node: ProseMirrorNode,
-	pos: number,
-): ExternalLink | null {
+function singleExternalLink(node: ProseMirrorNode, pos: number): ExternalLink | null {
 	if (node.type.name !== "paragraph" || node.childCount !== 1) return null;
 	const child = node.firstChild;
 	if (!child?.isText || !child.text?.trim()) return null;
 	const link = child.marks.find((mark) => mark.type.name === "link");
-	const href =
-		typeof link?.attrs.href === "string" ? link.attrs.href.trim() : "";
+	const href = typeof link?.attrs.href === "string" ? link.attrs.href.trim() : "";
 	if (!externalUrl(href)) return null;
 	return {
 		from: pos + 1,
@@ -83,19 +77,14 @@ function isPreviewUpdate(value: unknown): value is PreviewUpdate {
 	);
 }
 
-function previewDecoration(
-	link: ExternalLink,
-	preview: ExternalLinkPreview | null,
-): Decoration {
+function previewDecoration(link: ExternalLink, preview: ExternalLinkPreview | null): Decoration {
 	const url = externalUrl(link.href);
 	const siteName = preview?.site_name || url?.hostname || link.href;
 	const title = preview?.title || link.label;
 	const mediaDataUrl = preview?.image_data_url ?? preview?.favicon_data_url;
 	const style = [
 		mediaDataUrl ? `--external-link-preview-media: url("${mediaDataUrl}")` : "",
-		preview?.accent_color
-			? `--external-link-preview-accent: ${preview.accent_color}`
-			: "",
+		preview?.accent_color ? `--external-link-preview-accent: ${preview.accent_color}` : "",
 	]
 		.filter(Boolean)
 		.join(";");
@@ -107,9 +96,7 @@ function previewDecoration(
 			class: "externalLinkPreviewCard",
 			"data-link-preview-has-accent": preview?.accent_color ? "true" : "false",
 			"data-link-preview-has-media": mediaDataUrl ? "true" : "false",
-			"data-link-preview-light-accent": preview?.accent_is_light
-				? "true"
-				: "false",
+			"data-link-preview-light-accent": preview?.accent_is_light ? "true" : "false",
 			"data-link-preview-site": siteName,
 			"data-link-preview-title": title,
 			style,
@@ -166,8 +153,7 @@ function mapPreviewDecorations(
 	for (const { node, pos } of blocks) {
 		removals.push(...mapped.find(pos + 1, pos + node.content.size));
 		const link = singleExternalLink(node, pos);
-		if (link)
-			additions.push(previewDecoration(link, previews.get(link.href) ?? null));
+		if (link) additions.push(previewDecoration(link, previews.get(link.href) ?? null));
 	}
 	if (removals.length > 0) mapped = mapped.remove(removals);
 	return additions.length > 0 ? mapped.add(transaction.doc, additions) : mapped;
@@ -179,9 +165,7 @@ function replacePreviewDecorations(
 	href: string,
 	preview: ExternalLinkPreview | null,
 ): DecorationSet {
-	const existing = decorations
-		.find()
-		.filter((decoration) => decoration.spec.href === href);
+	const existing = decorations.find().filter((decoration) => decoration.spec.href === href);
 	if (existing.length === 0) return decorations;
 	const replacements = existing.map((decoration) =>
 		previewDecoration(
@@ -213,17 +197,11 @@ export const ExternalLinkPreviews = Extension.create({
 					},
 					apply(transaction, value) {
 						let decorations = transaction.docChanged
-							? mapPreviewDecorations(
-									transaction,
-									value.decorations,
-									value.previews,
-								)
+							? mapPreviewDecorations(transaction, value.decorations, value.previews)
 							: value.decorations;
 						const update = transaction.getMeta(PREVIEW_UPDATE_META);
 						if (!isPreviewUpdate(update)) {
-							return decorations === value.decorations
-								? value
-								: { ...value, decorations };
+							return decorations === value.decorations ? value : { ...value, decorations };
 						}
 						const previews = new Map(value.previews);
 						previews.set(update.href, update.preview);
@@ -238,10 +216,7 @@ export const ExternalLinkPreviews = Extension.create({
 				},
 				props: {
 					decorations(state) {
-						return (
-							EXTERNAL_LINK_PREVIEW_KEY.getState(state)?.decorations ??
-							DecorationSet.empty
-						);
+						return EXTERNAL_LINK_PREVIEW_KEY.getState(state)?.decorations ?? DecorationSet.empty;
 					},
 				},
 				view(editorView) {
@@ -254,11 +229,7 @@ export const ExternalLinkPreviews = Extension.create({
 						for (const decoration of state.decorations.find()) {
 							if (inFlight >= MAX_PREVIEW_REQUESTS) return;
 							const href = decoration.spec.href;
-							if (
-								typeof href !== "string" ||
-								state.previews.has(href) ||
-								requested.has(href)
-							) {
+							if (typeof href !== "string" || state.previews.has(href) || requested.has(href)) {
 								continue;
 							}
 							requested.add(href);

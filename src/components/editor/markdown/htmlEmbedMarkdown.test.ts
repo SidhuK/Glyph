@@ -1,8 +1,5 @@
-import { describe, expect, it } from "vitest";
-import {
-	postprocessHtmlEmbeds,
-	preprocessHtmlEmbeds,
-} from "./htmlEmbedMarkdown";
+import { describe, expect, it } from "vite-plus/test";
+import { postprocessHtmlEmbeds, preprocessHtmlEmbeds } from "./htmlEmbedMarkdown";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
@@ -46,8 +43,7 @@ describe("htmlEmbedMarkdown", () => {
 	});
 
 	it("classifies svg-only raw runs as svg fences", () => {
-		const md =
-			'<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"></svg>';
+		const md = '<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"></svg>';
 		const preprocessed = preprocessHtmlEmbeds(md);
 		expect(preprocessed).toContain("```svg");
 		expect(postprocessHtmlEmbeds(preprocessed)).toBe(md);
@@ -76,15 +72,11 @@ describe("htmlEmbedMarkdown", () => {
 describe("wikiLinkMarkdownBridge html embeds", () => {
 	it("round-trips fenced html embeds through the editor bridge", () => {
 		const md = "```html\n<div>Bridge</div>\n```";
-		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(
-			md,
-		);
+		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);
 	});
 
 	it("round-trips raw html embeds through the editor bridge", () => {
 		const md = "<div>Bridge raw</div>";
-		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(
-			md,
-		);
+		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);
 	});
 });

@@ -14,9 +14,11 @@
 	backdrop-filter: blur(6px);
 	transform: translate(-50%, -50%);
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 82%, transparent);
-	transition: background-color var(--transition-fast), color
-		var(--transition-fast), box-shadow var(--transition-fast), transform
-		var(--transition-fast);
+	transition:
+		background-color var(--transition-fast),
+		color var(--transition-fast),
+		box-shadow var(--transition-fast),
+		transform var(--transition-fast);
 }
 
 .tableInlineAddBtn.is-row {
@@ -24,14 +26,9 @@
 }
 
 .tableInlineAddBtn:hover {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 18%,
-		var(--bg-primary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 18%, var(--bg-primary));
 	color: var(--text-primary);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 32%, transparent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 32%, transparent);
 }
 
 .codeBlockInlineControls {
@@ -82,7 +79,9 @@
 	font-weight: var(--font-medium);
 	backdrop-filter: blur(4px);
 	cursor: pointer;
-	transition: color 150ms ease, background-color 150ms ease;
+	transition:
+		color 150ms ease,
+		background-color 150ms ease;
 }
 
 .codeBlockActionBtn:hover {
@@ -151,8 +150,7 @@
 }
 
 .mermaidCanvasViewport:focus-visible {
-	box-shadow: inset 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 52%, transparent);
+	box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 52%, transparent);
 }
 
 .mermaidCanvasViewport[data-dragging="true"] {
@@ -205,8 +203,9 @@
 	font-weight: var(--font-medium);
 	line-height: 1;
 	cursor: pointer;
-	transition: background-color var(--transition-fast), color
-		var(--transition-fast);
+	transition:
+		background-color var(--transition-fast),
+		color var(--transition-fast);
 	padding: 0 10px;
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
@@ -303,22 +302,25 @@
 	padding: 7px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
 	border-radius: var(--radius-lg);
-	background-color: color-mix(
-		in srgb,
-		var(--bg-primary) 94%,
-		var(--bg-secondary)
-	);
-	background-image: linear-gradient(
+	background-color: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	background-image:
+		linear-gradient(
 			105deg,
 			color-mix(in srgb, var(--bg-primary) 96%, var(--interactive-accent)) 0%,
 			color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary)) 62%,
 			color-mix(in srgb, var(--bg-primary) 92%, var(--interactive-accent)) 100%
-		), var(--editor-ribbon-grain);
-	background-size: 100% 100%, 192px 48px;
-	background-position: 0 0, -19px -11px;
+		),
+		var(--editor-ribbon-grain);
+	background-size:
+		100% 100%,
+		192px 48px;
+	background-position:
+		0 0,
+		-19px -11px;
 	background-blend-mode: normal, soft-light;
-	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.13), inset 0 1px 0
-		color-mix(in srgb, var(--bg-primary) 82%, transparent);
+	box-shadow:
+		0 14px 34px rgba(0, 0, 0, 0.13),
+		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 82%, transparent);
 }
 
 .editorColorGrid {
@@ -342,9 +344,11 @@
 	color: var(--text-secondary);
 	outline: none;
 	box-shadow: none;
-	transition: background-color var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast), transform
-		var(--transition-fast);
+	transition:
+		background-color var(--transition-fast),
+		border-color var(--transition-fast),
+		color var(--transition-fast),
+		transform var(--transition-fast);
 }
 
 .editorColorSwatchButton:hover {
@@ -353,28 +357,26 @@
 }
 
 .editorColorSwatchButton.active {
-	background: linear-gradient(
+	background:
+		linear-gradient(
 			105deg,
 			color-mix(in srgb, var(--interactive-accent) 18%, transparent) 0%,
 			color-mix(in srgb, var(--interactive-accent) 10%, transparent) 72%,
 			color-mix(in srgb, var(--interactive-accent) 24%, transparent) 100%
-		), var(--editor-ribbon-grain);
-	background-size: 100% 100%, 192px 48px;
-	background-position: 0 0, -37px -13px;
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 34%,
-		var(--border-default)
-	);
+		),
+		var(--editor-ribbon-grain);
+	background-size:
+		100% 100%,
+		192px 48px;
+	background-position:
+		0 0,
+		-37px -13px;
+	border-color: color-mix(in srgb, var(--interactive-accent) 34%, var(--border-default));
 	color: var(--interactive-accent);
 }
 
 .editorColorSwatchButton:focus-visible {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 38%,
-		var(--border-default)
-	);
+	border-color: color-mix(in srgb, var(--interactive-accent) 38%, var(--border-default));
 	background: var(--interactive-hover);
 }
 
@@ -400,8 +402,7 @@
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	scrollbar-width: thin;
-	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 60%, transparent)
-		transparent;
+	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 60%, transparent) transparent;
 	background: var(--bg-primary);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-lg);
@@ -517,22 +518,25 @@
 	padding: 10px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
 	border-radius: var(--radius-lg);
-	background-color: color-mix(
-		in srgb,
-		var(--bg-primary) 94%,
-		var(--bg-secondary)
-	);
-	background-image: linear-gradient(
+	background-color: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	background-image:
+		linear-gradient(
 			105deg,
 			color-mix(in srgb, var(--bg-primary) 96%, var(--interactive-accent)) 0%,
 			color-mix(in srgb, var(--bg-primary) 89%, var(--bg-secondary)) 62%,
 			color-mix(in srgb, var(--bg-primary) 92%, var(--interactive-accent)) 100%
-		), var(--editor-ribbon-grain);
-	background-size: 100% 100%, 192px 48px;
-	background-position: 0 0, -23px -7px;
+		),
+		var(--editor-ribbon-grain);
+	background-size:
+		100% 100%,
+		192px 48px;
+	background-position:
+		0 0,
+		-23px -7px;
 	background-blend-mode: normal, soft-light;
-	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.13), inset 0 1px 0
-		color-mix(in srgb, var(--bg-primary) 82%, transparent);
+	box-shadow:
+		0 14px 34px rgba(0, 0, 0, 0.13),
+		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 82%, transparent);
 }
 
 .editorLinkPopoverRow {

@@ -3,8 +3,7 @@ const BULLET_LIST_RE = /^\s{0,3}[-+*]\s+\S/m;
 const ORDERED_LIST_RE = /^\s{0,3}\d+[.)]\s+\S/m;
 const TASK_LIST_RE = /^\s{0,3}[-+*]\s+\[[ xX]\]\s+\S/m;
 const BLOCKQUOTE_RE = /^\s{0,3}>\s*\S/m;
-const FENCED_CODE_BLOCK_RE =
-	/(^|\n)\s*(```|~~~)[^\n]*\n(?:[\s\S]*?\n)?\s*\2\s*(?=\n|$)/m;
+const FENCED_CODE_BLOCK_RE = /(^|\n)\s*(```|~~~)[^\n]*\n(?:[\s\S]*?\n)?\s*\2\s*(?=\n|$)/m;
 const MARKDOWN_LINK_RE = /!?\[[^\]\n]+\]\([^)]+\)/;
 const WIKI_LINK_RE = /\[\[[^[\]\n]+]]/;
 const INLINE_CODE_RE = /(^|[\s([{>])`[^`\n]+`(?=$|[\s)\]},.!?:;])/m;

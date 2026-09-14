@@ -26,18 +26,15 @@
 
 .tiptap-mathematics-render--editable {
 	cursor: pointer;
-	transition: background-color 120ms ease, box-shadow 120ms ease;
+	transition:
+		background-color 120ms ease,
+		box-shadow 120ms ease;
 }
 
 .tiptap-mathematics-render--editable:hover,
 .tiptap-mathematics-render--editable:focus-visible {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 9%,
-		var(--bg-secondary)
-	);
-	box-shadow: 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 9%, var(--bg-secondary));
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
 .tiptapHostInline.is-preview .tiptap-mathematics-render {

@@ -69,10 +69,7 @@ export function CreateCollectionDialog({
 	const [name, setName] = useState("");
 	const [nameTouched, setNameTouched] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const normalizedFolder = useMemo(
-		() => normalizeCollectionFolderPath(folder),
-		[folder],
-	);
+	const normalizedFolder = useMemo(() => normalizeCollectionFolderPath(folder), [folder]);
 
 	useEffect(() => {
 		if (!open) {
@@ -98,10 +95,7 @@ export function CreateCollectionDialog({
 		setLoading(true);
 		try {
 			const created = await invoke("databases_create", {
-				name: nextCollectionName(
-					summaries,
-					name.trim() || folderNameFromPath(normalizedFolder),
-				),
+				name: nextCollectionName(summaries, name.trim() || folderNameFromPath(normalizedFolder)),
 				folder: normalizedFolder,
 				source: null,
 				pinned: false,
@@ -131,8 +125,7 @@ export function CreateCollectionDialog({
 						<p className="createCollectionEyebrow">Collections</p>
 						<DialogTitle>New collection</DialogTitle>
 						<DialogDescription className="createCollectionDescription">
-							A collection is just a group of notes in a folder. Pick the folder
-							to get started.
+							A collection is just a group of notes in a folder. Pick the folder to get started.
 						</DialogDescription>
 					</DialogHeader>
 				</div>
@@ -171,10 +164,7 @@ export function CreateCollectionDialog({
 						</label>
 					</div>
 
-					<div
-						className="createCollectionTips"
-						aria-label="How collections work"
-					>
+					<div className="createCollectionTips" aria-label="How collections work">
 						<ul className="createCollectionTipsList">
 							{COLLECTION_TIPS.map((tip) => (
 								<li key={tip.id} className="createCollectionTip">

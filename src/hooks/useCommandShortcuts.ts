@@ -30,10 +30,7 @@ export function useCommandShortcuts({
 	closePaletteRef.current = onClosePalette;
 
 	useEffect(() => {
-		const handleMatchedShortcut = (
-			event: KeyboardEvent,
-			editableOnly: boolean,
-		) => {
+		const handleMatchedShortcut = (event: KeyboardEvent, editableOnly: boolean) => {
 			for (const handler of handlersRef.current) {
 				if (!handler.shortcut || handler.enabled === false) continue;
 				if (editableOnly && handler.allowInEditable !== true) continue;
@@ -49,9 +46,7 @@ export function useCommandShortcuts({
 			const target = event.target;
 			const inEditableField =
 				target instanceof HTMLElement &&
-				(target.tagName === "INPUT" ||
-					target.tagName === "TEXTAREA" ||
-					target.isContentEditable);
+				(target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
 
 			if (paletteOpenRef.current && event.key === "Escape") {
 				event.preventDefault();

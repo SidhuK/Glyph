@@ -1,9 +1,5 @@
-import { describe, expect, it } from "vitest";
-import {
-	buildTagSuggestions,
-	normalizeTagDraftPrefix,
-	normalizeTagToken,
-} from "./utils";
+import { describe, expect, it } from "vite-plus/test";
+import { buildTagSuggestions, normalizeTagDraftPrefix, normalizeTagToken } from "./utils";
 
 const availableTags = [
 	{

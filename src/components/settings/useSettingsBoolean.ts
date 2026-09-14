@@ -1,9 +1,6 @@
 import { useSettingsValue } from "./useSettingsValue";
 
-export function applyIfBoolean(
-	value: unknown,
-	set: (next: boolean) => void,
-): void {
+export function applyIfBoolean(value: unknown, set: (next: boolean) => void): void {
 	if (typeof value === "boolean") set(value);
 }
 

@@ -29,13 +29,10 @@ export const MarkdownImage = Image.extend({
 			originSrc: {
 				default: null,
 				parseHTML: (element) =>
-					element.getAttribute("data-glyph-origin-src") ??
-					element.getAttribute("src"),
+					element.getAttribute("data-glyph-origin-src") ?? element.getAttribute("src"),
 				renderHTML: (attributes) => {
 					const originSrc =
-						typeof attributes.originSrc === "string"
-							? attributes.originSrc.trim()
-							: "";
+						typeof attributes.originSrc === "string" ? attributes.originSrc.trim() : "";
 					return originSrc ? { "data-glyph-origin-src": originSrc } : {};
 				},
 			},
@@ -44,9 +41,7 @@ export const MarkdownImage = Image.extend({
 				parseHTML: (element) => element.getAttribute("data-glyph-upload-id"),
 				renderHTML: (attributes) => {
 					const uploadId =
-						typeof attributes.uploadId === "string"
-							? attributes.uploadId.trim()
-							: "";
+						typeof attributes.uploadId === "string" ? attributes.uploadId.trim() : "";
 					return uploadId ? { "data-glyph-upload-id": uploadId } : {};
 				},
 			},
@@ -54,8 +49,7 @@ export const MarkdownImage = Image.extend({
 	},
 
 	parseMarkdown(token: MarkdownToken, helpers) {
-		const src =
-			getTokenField(token, "href") ?? getTokenField(token, "src") ?? "";
+		const src = getTokenField(token, "href") ?? getTokenField(token, "src") ?? "";
 		const alt = getTokenField(token, "text") ?? getTokenField(token, "alt");
 		const title = getTokenField(token, "title");
 		if (!src.trim()) {
@@ -72,18 +66,12 @@ export const MarkdownImage = Image.extend({
 	renderMarkdown(node) {
 		const uploadId = ((node.attrs?.uploadId as string) ?? "").trim();
 		const originSrc = ((node.attrs?.originSrc as string) ?? "").trim();
-		const src = (
-			(node.attrs?.originSrc as string) ??
-			(node.attrs?.src as string) ??
-			""
-		).trim();
+		const src = ((node.attrs?.originSrc as string) ?? (node.attrs?.src as string) ?? "").trim();
 		if (uploadId && !originSrc) return "";
 		if (!src) return "";
 		const alt = ((node.attrs?.alt as string) ?? "").trim();
 		const title = ((node.attrs?.title as string) ?? "").trim();
 		const encodedSrc = encodeMarkdownImageSrc(src);
-		return title
-			? `![${alt}](${encodedSrc} "${title}")`
-			: `![${alt}](${encodedSrc})`;
+		return title ? `![${alt}](${encodedSrc} "${title}")` : `![${alt}](${encodedSrc})`;
 	},
 });

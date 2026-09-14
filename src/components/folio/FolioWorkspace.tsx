@@ -1,10 +1,4 @@
-import {
-	type CSSProperties,
-	type ReactNode,
-	memo,
-	useMemo,
-	useState,
-} from "react";
+import { type CSSProperties, type ReactNode, memo, useMemo, useState } from "react";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { FolioNotesListPane } from "./FolioNotesListPane";
 

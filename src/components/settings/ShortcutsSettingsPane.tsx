@@ -34,9 +34,7 @@ function formatBinding(binding: Shortcut | null) {
 }
 
 function hasPressedModifier(shortcut: Shortcut | null) {
-	return Boolean(
-		shortcut?.meta || shortcut?.ctrl || shortcut?.alt || shortcut?.shift,
-	);
+	return Boolean(shortcut?.meta || shortcut?.ctrl || shortcut?.alt || shortcut?.shift);
 }
 
 function formatRecordingPrompt(draft: Shortcut | null) {
@@ -63,9 +61,7 @@ export function ShortcutsSettingsPane() {
 	const { t } = useTranslation("commands");
 	const { actionsWithBindings, bindings } = useShortcutBindings();
 	const [filter, setFilter] = useState("");
-	const [recordingActionId, setRecordingActionId] = useState<string | null>(
-		null,
-	);
+	const [recordingActionId, setRecordingActionId] = useState<string | null>(null);
 	const [recordingDraft, setRecordingDraft] = useState<Shortcut | null>(null);
 	const [busyActionId, setBusyActionId] = useState<string | null>(null);
 	const [error, setError] = useState("");
@@ -94,9 +90,7 @@ export function ShortcutsSettingsPane() {
 		for (const action of filteredActions) {
 			groups.get(action.category)?.push(action);
 		}
-		return Array.from(groups.entries()).filter(
-			([, actions]) => actions.length > 0,
-		);
+		return Array.from(groups.entries()).filter(([, actions]) => actions.length > 0);
 	}, [filteredActions]);
 
 	const handleDisable = async (actionId: string) => {
@@ -105,9 +99,7 @@ export function ShortcutsSettingsPane() {
 		try {
 			await setShortcutBinding(actionId, null);
 		} catch (cause) {
-			setError(
-				cause instanceof Error ? cause.message : "Failed to disable shortcut.",
-			);
+			setError(cause instanceof Error ? cause.message : "Failed to disable shortcut.");
 		} finally {
 			setBusyActionId(null);
 		}
@@ -119,14 +111,10 @@ export function ShortcutsSettingsPane() {
 		try {
 			await resetShortcutBinding(actionId);
 		} catch (cause) {
-			setError(
-				cause instanceof Error ? cause.message : "Failed to reset shortcut.",
-			);
+			setError(cause instanceof Error ? cause.message : "Failed to reset shortcut.");
 		} finally {
 			setBusyActionId(null);
-			setRecordingActionId((current) =>
-				current === actionId ? null : current,
-			);
+			setRecordingActionId((current) => (current === actionId ? null : current));
 		}
 	};
 
@@ -150,11 +138,7 @@ export function ShortcutsSettingsPane() {
 				setError(validation.reason ?? "Invalid shortcut.");
 				return;
 			}
-			const conflictId = findShortcutConflict(
-				nextBinding,
-				bindings as ShortcutBindings,
-				actionId,
-			);
+			const conflictId = findShortcutConflict(nextBinding, bindings as ShortcutBindings, actionId);
 			if (conflictId) {
 				const conflict = getShortcutActionDefinition(conflictId);
 				setError(
@@ -170,9 +154,7 @@ export function ShortcutsSettingsPane() {
 				setRecordingActionId(null);
 				setRecordingDraft(null);
 			} catch (cause) {
-				setError(
-					cause instanceof Error ? cause.message : "Failed to save shortcut.",
-				);
+				setError(cause instanceof Error ? cause.message : "Failed to save shortcut.");
 			} finally {
 				setBusyActionId(null);
 			}
@@ -246,9 +228,7 @@ export function ShortcutsSettingsPane() {
 										<button
 											type="button"
 											className={
-												isRecording
-													? "shortcutRecordButton is-recording"
-													: "shortcutRecordButton"
+												isRecording ? "shortcutRecordButton is-recording" : "shortcutRecordButton"
 											}
 											onClick={() => {
 												setError("");
@@ -286,10 +266,7 @@ export function ShortcutsSettingsPane() {
 												aria-label="Reset shortcut"
 												title="Reset shortcut"
 											>
-												<HugeiconsIcon
-													icon={ReloadIcon}
-													size="var(--icon-md)"
-												/>
+												<HugeiconsIcon icon={ReloadIcon} size="var(--icon-md)" />
 											</Button>
 										</div>
 									</div>

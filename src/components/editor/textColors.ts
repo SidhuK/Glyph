@@ -68,10 +68,9 @@ export const EDITOR_TEXT_COLORS = [
 	},
 ] as const satisfies readonly EditorTextColorOption[];
 
-const EDITOR_TEXT_COLOR_RECORD: Record<EditorTextColor, EditorTextColorOption> =
-	Object.fromEntries(
-		EDITOR_TEXT_COLORS.map((option) => [option.id, option]),
-	) as Record<EditorTextColor, EditorTextColorOption>;
+const EDITOR_TEXT_COLOR_RECORD: Record<EditorTextColor, EditorTextColorOption> = Object.fromEntries(
+	EDITOR_TEXT_COLORS.map((option) => [option.id, option]),
+) as Record<EditorTextColor, EditorTextColorOption>;
 
 export function isEditorTextColor(value: string): value is EditorTextColor {
 	return value in EDITOR_TEXT_COLOR_RECORD;

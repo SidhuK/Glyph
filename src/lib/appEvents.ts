@@ -27,9 +27,7 @@ export function dispatchFileTreeStartRename(detail: FileTreeStartRenameDetail) {
 	);
 }
 
-export function dispatchOpenLocalConnections(
-	detail: OpenLocalConnectionsDetail,
-) {
+export function dispatchOpenLocalConnections(detail: OpenLocalConnectionsDetail) {
 	window.dispatchEvent(
 		new CustomEvent<OpenLocalConnectionsDetail>(OPEN_LOCAL_CONNECTIONS_EVENT, {
 			detail,
@@ -45,15 +43,10 @@ export function dispatchEditorMenuAction(detail: EditorMenuActionDetail) {
 	);
 }
 
-export function dispatchToggleNoteInfoSidebar(
-	detail: ToggleNoteInfoSidebarDetail,
-) {
+export function dispatchToggleNoteInfoSidebar(detail: ToggleNoteInfoSidebarDetail) {
 	window.dispatchEvent(
-		new CustomEvent<ToggleNoteInfoSidebarDetail>(
-			TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
-			{
-				detail,
-			},
-		),
+		new CustomEvent<ToggleNoteInfoSidebarDetail>(TOGGLE_NOTE_INFO_SIDEBAR_EVENT, {
+			detail,
+		}),
 	);
 }

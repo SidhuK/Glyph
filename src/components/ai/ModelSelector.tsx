@@ -32,12 +32,7 @@ interface ModelSelectorProps {
 	provider: AiProviderKind | null;
 }
 
-export function ModelSelector({
-	profileId,
-	value,
-	onChange,
-	provider,
-}: ModelSelectorProps) {
+export function ModelSelector({ profileId, value, onChange, provider }: ModelSelectorProps) {
 	const [open, setOpen] = useState(false);
 	const [detailModelId, setDetailModelId] = useState<string | null>(null);
 	const [modelQuery, setModelQuery] = useState("");
@@ -97,8 +92,7 @@ export function ModelSelector({
 		if (!open) return;
 		const handleClick = (e: globalThis.MouseEvent) => {
 			const t = e.target as Node;
-			if (triggerRef.current?.contains(t) || dropdownRef.current?.contains(t))
-				return;
+			if (triggerRef.current?.contains(t) || dropdownRef.current?.contains(t)) return;
 			handleClose();
 		};
 		document.addEventListener("mousedown", handleClick);
@@ -107,16 +101,12 @@ export function ModelSelector({
 
 	const selectedModel = models?.find((m) => m.id === value);
 	const displayLabel = selectedModel?.name ?? value ?? "Model";
-	const detailModel = detailModelId
-		? (models?.find((m) => m.id === detailModelId) ?? null)
-		: null;
+	const detailModel = detailModelId ? (models?.find((m) => m.id === detailModelId) ?? null) : null;
 	const filteredModels = useMemo(() => {
 		const list = models ?? [];
 		const q = modelQuery.trim().toLowerCase();
 		if (!q) return list;
-		return list.filter(
-			(m) => m.id.toLowerCase().includes(q) || m.name.toLowerCase().includes(q),
-		);
+		return list.filter((m) => m.id.toLowerCase().includes(q) || m.name.toLowerCase().includes(q));
 	}, [models, modelQuery]);
 
 	const logoProvider = useMemo(
@@ -131,9 +121,7 @@ export function ModelSelector({
 		detailProviderKey && providerSupportQuery.data
 			? providerSupportQuery.data[detailProviderKey]
 			: undefined;
-	const listProviderKey = provider
-		? providerSupportKeyMap[provider]
-		: undefined;
+	const listProviderKey = provider ? providerSupportKeyMap[provider] : undefined;
 	const listProviderSupport =
 		listProviderKey && providerSupportQuery.data
 			? providerSupportQuery.data[listProviderKey]
@@ -155,16 +143,11 @@ export function ModelSelector({
 			>
 				{logoProvider && (
 					<span className={styles.triggerLogo} title={providerTitle}>
-						<ProviderLogo
-							provider={logoProvider}
-							className={styles.providerSvg}
-						/>
+						<ProviderLogo provider={logoProvider} className={styles.providerSvg} />
 					</span>
 				)}
 				<span className={styles.triggerLabel}>{displayLabel}</span>
-				<span
-					className={`${styles.triggerIcon} ${open ? styles.triggerIconOpen : ""}`}
-				>
+				<span className={`${styles.triggerIcon} ${open ? styles.triggerIconOpen : ""}`}>
 					<ChevronDown size="var(--icon-sm)" />
 				</span>
 			</button>
@@ -184,16 +167,11 @@ export function ModelSelector({
 						<div className={styles.dropdownHeader}>
 							{logoProvider && (
 								<span className={styles.providerIcon} title={providerTitle}>
-									<ProviderLogo
-										provider={logoProvider}
-										className={styles.providerSvg}
-									/>
+									<ProviderLogo provider={logoProvider} className={styles.providerSvg} />
 								</span>
 							)}
 							<span className={styles.dropdownTitle}>Models</span>
-							{models && (
-								<span className={styles.dropdownCount}>{models.length}</span>
-							)}
+							{models && <span className={styles.dropdownCount}>{models.length}</span>}
 						</div>
 						<div className={styles.dropdownBody}>
 							<div className={styles.dropdownList}>
@@ -201,19 +179,13 @@ export function ModelSelector({
 									<div className={styles.dropdownError}>
 										{error}
 										<br />
-										<button
-											type="button"
-											className={styles.retryBtn}
-											onClick={handleRetry}
-										>
+										<button type="button" className={styles.retryBtn} onClick={handleRetry}>
 											Retry
 										</button>
 									</div>
 								)}
 								{!error && models?.length === 0 && (
-									<div className={styles.dropdownEmpty}>
-										No models available
-									</div>
+									<div className={styles.dropdownEmpty}>No models available</div>
 								)}
 								{!error && (models?.length ?? 0) > 0 && (
 									<input
@@ -224,39 +196,25 @@ export function ModelSelector({
 										onChange={(e) => setModelQuery(e.target.value)}
 									/>
 								)}
-								{!error &&
-									models &&
-									models.length > 0 &&
-									filteredModels.length === 0 && (
-										<div className={styles.dropdownEmpty}>
-											No models match your search
-										</div>
-									)}
+								{!error && models && models.length > 0 && filteredModels.length === 0 && (
+									<div className={styles.dropdownEmpty}>No models match your search</div>
+								)}
 								{!error &&
 									filteredModels.map((m) => {
-										const detailAvailable = hasDetailData(
-											m,
-											listProviderSupport,
-										);
+										const detailAvailable = hasDetailData(m, listProviderSupport);
 										const infoActive = detailModel?.id === m.id;
 										const handleInfoToggle = () =>
 											setDetailModelId((prev) => (prev === m.id ? null : m.id));
-										const handleInfoMouseDown = (
-											e: ReactMouseEvent<HTMLButtonElement>,
-										) => {
+										const handleInfoMouseDown = (e: ReactMouseEvent<HTMLButtonElement>) => {
 											e.preventDefault();
 											e.stopPropagation();
 										};
-										const handleInfoClick = (
-											e: ReactMouseEvent<HTMLButtonElement>,
-										) => {
+										const handleInfoClick = (e: ReactMouseEvent<HTMLButtonElement>) => {
 											e.preventDefault();
 											e.stopPropagation();
 											handleInfoToggle();
 										};
-										const infoLabel = infoActive
-											? "Hide model details"
-											: "Show model details";
+										const infoLabel = infoActive ? "Hide model details" : "Show model details";
 										return (
 											<div className={styles.modelItemRow} key={m.id}>
 												<button
@@ -285,10 +243,7 @@ export function ModelSelector({
 														aria-label={infoLabel}
 														aria-pressed={infoActive}
 													>
-														<HugeiconsIcon
-															icon={InformationCircleIcon}
-															size="var(--icon-md)"
-														/>
+														<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-md)" />
 													</button>
 												)}
 											</div>
@@ -296,10 +251,7 @@ export function ModelSelector({
 									})}
 							</div>
 							{detailModel && (
-								<ModelDetail
-									model={detailModel}
-									providerSupport={detailProviderSupport}
-								/>
+								<ModelDetail model={detailModel} providerSupport={detailProviderSupport} />
 							)}
 						</div>
 					</div>,

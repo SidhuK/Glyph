@@ -15,9 +15,7 @@ import type { WorkspaceEditorPane, WorkspaceTab } from "./useTabManager";
 
 const WORKSPACE_SESSION_SAVE_DEBOUNCE_MS = 250;
 
-function buildWorkspaceSessionTabs(
-	tabs: WorkspaceTab[],
-): WorkspaceSessionTabSnapshot[] {
+function buildWorkspaceSessionTabs(tabs: WorkspaceTab[]): WorkspaceSessionTabSnapshot[] {
 	const seenTargets = new Set<string>();
 	const snapshotTabs: WorkspaceSessionTabSnapshot[] = [];
 	for (const tab of tabs) {
@@ -42,9 +40,7 @@ function buildWorkspaceSessionTabs(
 async function validateRestorableSessionTabs(
 	tabs: WorkspaceSessionTabSnapshot[],
 ): Promise<WorkspaceSessionTabSnapshot[]> {
-	const fileTargets = tabs
-		.filter((tab) => tab.kind === "file")
-		.map((tab) => tab.target);
+	const fileTargets = tabs.filter((tab) => tab.kind === "file").map((tab) => tab.target);
 	if (!fileTargets.length) return tabs;
 
 	try {
@@ -53,9 +49,7 @@ async function validateRestorableSessionTabs(
 			limit: null,
 		});
 		const existingTargets = new Set(markdownFiles.map((file) => file.rel_path));
-		return tabs.filter(
-			(tab) => tab.kind === "special" || existingTargets.has(tab.target),
-		);
+		return tabs.filter((tab) => tab.kind === "special" || existingTargets.has(tab.target));
 	} catch {
 		return tabs.filter((tab) => tab.kind === "special");
 	}
@@ -123,9 +117,7 @@ export function useWorkspaceSession({
 			clearSaveTimer();
 			saveQueueRef.current = saveQueueRef.current
 				.catch(() => {})
-				.then(() =>
-					saveWorkspaceSessionSnapshot(pending.spacePath, pending.snapshot),
-				);
+				.then(() => saveWorkspaceSessionSnapshot(pending.spacePath, pending.snapshot));
 		}
 		// Callers at a teardown boundary must be able to wait for queued writes too.
 		const queuedSave = saveQueueRef.current;
@@ -169,10 +161,7 @@ export function useWorkspaceSession({
 			const requestedTabs = resumeLastSession
 				? snapshot.tabs
 				: snapshot.tabs.filter((tab) => tab.isPinned);
-			if (
-				!requestedTabs.length &&
-				!(resumeLastSession && snapshot.splitLayout)
-			) {
+			if (!requestedTabs.length && !(resumeLastSession && snapshot.splitLayout)) {
 				return;
 			}
 			const restorableTabs = await validateRestorableSessionTabs(requestedTabs);
@@ -186,9 +175,7 @@ export function useWorkspaceSession({
 				return;
 			}
 
-			const activeTabTarget = restorableTabs.some(
-				(tab) => tab.target === snapshot.activeTabTarget,
-			)
+			const activeTabTarget = restorableTabs.some((tab) => tab.target === snapshot.activeTabTarget)
 				? snapshot.activeTabTarget
 				: null;
 			restoreWorkspaceTabs(
@@ -225,8 +212,7 @@ export function useWorkspaceSession({
 			return;
 		}
 		const snapshotTabs = buildWorkspaceSessionTabs(tabs);
-		const activeTarget =
-			snapshotTabs.find((tab) => tab.target === activeTabPath)?.target ?? null;
+		const activeTarget = snapshotTabs.find((tab) => tab.target === activeTabPath)?.target ?? null;
 		const activeTabTargetByPane = Object.fromEntries(
 			Object.values(panes).map((pane) => [pane.id, pane.activeTabPath]),
 		);
@@ -271,10 +257,7 @@ export function useWorkspaceSession({
 				try {
 					await flushPendingSave();
 				} catch (cause) {
-					console.error(
-						"Failed to save workspace session before closing",
-						cause,
-					);
+					console.error("Failed to save workspace session before closing", cause);
 					toast.error("Could not close Glyph", {
 						description: "The open tabs could not be saved. Please try again.",
 					});
@@ -308,8 +291,7 @@ export function useWorkspaceSession({
 			.catch((cause) => {
 				console.error("Failed to install workspace close handler", cause);
 				toast.error("Session saving is unavailable", {
-					description:
-						"Restart Glyph before closing to preserve your open tabs.",
+					description: "Restart Glyph before closing to preserve your open tabs.",
 				});
 			});
 		return () => {
@@ -325,10 +307,7 @@ export function useWorkspaceSession({
 			void flushPendingSave()
 				.then(() => invoke("app_confirm_exit"))
 				.catch((cause) => {
-					console.error(
-						"Failed to save workspace session before quitting",
-						cause,
-					);
+					console.error("Failed to save workspace session before quitting", cause);
 					toast.error("Could not quit Glyph", {
 						description: "The open tabs could not be saved. Please try again.",
 					});
@@ -344,15 +323,11 @@ export function useWorkspaceSession({
 			})
 			.catch((cause) => {
 				void invoke("app_report_exit_listener_failure").catch((reportCause) => {
-					console.error(
-						"Failed to report unavailable app exit handler",
-						reportCause,
-					);
+					console.error("Failed to report unavailable app exit handler", reportCause);
 				});
 				console.error("Failed to install app exit handler", cause);
 				toast.error("Session saving is unavailable", {
-					description:
-						"Restart Glyph before quitting to preserve your open tabs.",
+					description: "Restart Glyph before quitting to preserve your open tabs.",
 				});
 			});
 		return () => {

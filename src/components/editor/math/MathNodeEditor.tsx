@@ -54,9 +54,7 @@ export function MathNodeEditor({
 				setRenderError("");
 			} catch (error: unknown) {
 				preview.textContent = draft;
-				setRenderError(
-					error instanceof Error ? error.message : "Invalid LaTeX",
-				);
+				setRenderError(error instanceof Error ? error.message : "Invalid LaTeX");
 			}
 		});
 		return () => window.cancelAnimationFrame(frame);
@@ -65,11 +63,7 @@ export function MathNodeEditor({
 	return (
 		<Popover open onOpenChange={(open) => !open && onCancel()}>
 			<PopoverTrigger asChild>
-				<span
-					className="mathNodeEditorAnchor"
-					style={anchorStyle}
-					aria-hidden
-				/>
+				<span className="mathNodeEditorAnchor" style={anchorStyle} aria-hidden />
 			</PopoverTrigger>
 			<PopoverContent
 				align="start"
@@ -98,16 +92,9 @@ export function MathNodeEditor({
 					data-error={renderError ? "true" : undefined}
 					aria-label="Equation preview"
 				/>
-				{renderError ? (
-					<output className="mathNodeEditorError">{renderError}</output>
-				) : null}
+				{renderError ? <output className="mathNodeEditorError">{renderError}</output> : null}
 				<div className="mathNodeEditorActions">
-					<Button
-						type="button"
-						size="sm"
-						variant="destructive"
-						onClick={onDelete}
-					>
+					<Button type="button" size="sm" variant="destructive" onClick={onDelete}>
 						Delete
 					</Button>
 					<span className="mathNodeEditorActionsSpacer" />

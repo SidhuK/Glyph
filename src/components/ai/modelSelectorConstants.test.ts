@@ -1,17 +1,10 @@
-import { describe, expect, it } from "vitest";
-import {
-	guessOpenRouterProvider,
-	resolveLogoProvider,
-} from "./modelSelectorConstants";
+import { describe, expect, it } from "vite-plus/test";
+import { guessOpenRouterProvider, resolveLogoProvider } from "./modelSelectorConstants";
 
 describe("OpenRouter provider logo hints", () => {
 	it("does not classify Meta Llama models as llama.cpp", () => {
-		expect(guessOpenRouterProvider("meta-llama/llama-3.1-8b-instruct")).toBe(
-			null,
-		);
-		expect(resolveLogoProvider("openrouter", "meta-llama/llama-4-scout")).toBe(
-			"openrouter",
-		);
+		expect(guessOpenRouterProvider("meta-llama/llama-3.1-8b-instruct")).toBe(null);
+		expect(resolveLogoProvider("openrouter", "meta-llama/llama-4-scout")).toBe("openrouter");
 	});
 
 	it("still detects explicit llama.cpp model names", () => {

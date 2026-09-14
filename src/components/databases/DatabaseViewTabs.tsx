@@ -4,10 +4,7 @@ import { m } from "motion/react";
 import { useCallback, useRef } from "react";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import { isNativeContextMenuAvailable } from "../../lib/nativeContextMenu";
-import type {
-	DatabaseConfig,
-	WorkspaceDatabaseDocument,
-} from "../../lib/tauri";
+import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 import { Kanban, Plus, Table } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { ActionMenuTrigger } from "./ActionMenuTrigger";
@@ -76,11 +73,7 @@ export function DatabaseViewTabs({
 
 	return (
 		<div className="databasesViewTabsCluster">
-			<div
-				className="databasesViewTabs"
-				role="tablist"
-				aria-label="Collection views"
-			>
+			<div className="databasesViewTabs" role="tablist" aria-label="Collection views">
 				{views.map((view) => {
 					const isActive = view.id === activeView.id;
 					if (renamingViewId === view.id) {
@@ -139,17 +132,9 @@ export function DatabaseViewTabs({
 								)
 							) : null}
 							{view.layout === "board" ? (
-								<Kanban
-									size="var(--icon-sm)"
-									className="databasesViewTabIcon"
-									aria-hidden
-								/>
+								<Kanban size="var(--icon-sm)" className="databasesViewTabIcon" aria-hidden />
 							) : (
-								<Table
-									size="var(--icon-sm)"
-									className="databasesViewTabIcon"
-									aria-hidden
-								/>
+								<Table size="var(--icon-sm)" className="databasesViewTabIcon" aria-hidden />
 							)}
 							<span className="databasesViewTabLabel">{view.name}</span>
 						</m.button>

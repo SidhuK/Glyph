@@ -61,8 +61,7 @@ export const HighlightedText = MarkExtension.create({
 				tag: "mark[data-glyph-highlight]",
 				getAttrs: (element) => {
 					if (!(element instanceof HTMLElement)) return false;
-					const color =
-						element.getAttribute("data-glyph-highlight")?.trim() ?? "";
+					const color = element.getAttribute("data-glyph-highlight")?.trim() ?? "";
 					if (!isEditorTextHighlight(color)) return false;
 					return { color };
 				},
@@ -80,17 +79,13 @@ export const HighlightedText = MarkExtension.create({
 		return `${getEditorTextHighlightBridgeOpenToken(color)}${helpers.renderChildren(node)}${EDITOR_TEXT_HIGHLIGHT_BRIDGE_CLOSE_TOKEN}`;
 	},
 	parseMarkdown(token, helpers) {
-		const parsed = parseGlyphHighlightMark(
-			(token.raw ?? token.text ?? "").toString(),
-		);
+		const parsed = parseGlyphHighlightMark((token.raw ?? token.text ?? "").toString());
 		if (!parsed) {
 			return helpers.createTextNode((token.text ?? token.raw ?? "").toString());
 		}
-		return helpers.applyMark(
-			"highlightedText",
-			helpers.parseInline(token.tokens ?? []),
-			{ color: parsed.color },
-		);
+		return helpers.applyMark("highlightedText", helpers.parseInline(token.tokens ?? []), {
+			color: parsed.color,
+		});
 	},
 	markdownTokenizer: {
 		name: "highlightedText",
@@ -132,9 +127,7 @@ export const HighlightedText = MarkExtension.create({
 					if (editor.isActive("code") || editor.isActive("codeBlock")) {
 						return false;
 					}
-					return chain()
-						.unsetMark(this.name, { extendEmptyMarkRange: true })
-						.run();
+					return chain().unsetMark(this.name, { extendEmptyMarkRange: true }).run();
 				},
 		};
 	},

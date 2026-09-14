@@ -10,10 +10,7 @@ export function databaseNoteAppearanceStyle(
 	notePath: string,
 	appearance?: FileTreeAppearance | null,
 ): CSSProperties | undefined {
-	const color =
-		appearance?.color && isEditorTextColor(appearance.color)
-			? appearance.color
-			: null;
+	const color = appearance?.color && isEditorTextColor(appearance.color) ? appearance.color : null;
 	if (!color) return undefined;
 	return {
 		...databaseValueToneStyleForColor(notePath, color),
@@ -35,13 +32,7 @@ export function DatabaseNoteAppearanceIcon({
 	const { Icon, color } = getFileTypeInfo(notePath, isMarkdownPath(notePath));
 
 	if (appearance?.icon) {
-		return (
-			<DatabaseColumnIcon
-				iconName={appearance.icon}
-				size={size}
-				className={className}
-			/>
-		);
+		return <DatabaseColumnIcon iconName={appearance.icon} size={size} className={className} />;
 	}
 
 	return (

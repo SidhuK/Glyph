@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-	type NotePreviewData,
-	loadNotePreviewFromPath,
-} from "./notePreviewShared";
+import { type NotePreviewData, loadNotePreviewFromPath } from "./notePreviewShared";
 
 export type NotePreviewLoader = (key: string) => Promise<NotePreviewData>;
 
@@ -11,10 +8,7 @@ interface UseNotePreviewOptions {
 	load?: NotePreviewLoader;
 }
 
-export function useNotePreview(
-	path: string | null,
-	options: UseNotePreviewOptions = {},
-) {
+export function useNotePreview(path: string | null, options: UseNotePreviewOptions = {}) {
 	const { delayMs = 0, load = loadNotePreviewFromPath } = options;
 	const [preview, setPreview] = useState<{
 		key: string;

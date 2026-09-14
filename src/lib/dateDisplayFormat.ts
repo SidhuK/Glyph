@@ -46,15 +46,8 @@ const ENGLISH_WEEKDAYS = [
 /** Pure calendar-date string: YYYY-MM-DD (no time component). */
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-export function isDateDisplayFormat(
-	value: unknown,
-): value is DateDisplayFormat {
-	return (
-		value === "us" ||
-		value === "european" ||
-		value === "friendly" ||
-		value === "iso"
-	);
+export function isDateDisplayFormat(value: unknown): value is DateDisplayFormat {
+	return value === "us" || value === "european" || value === "friendly" || value === "iso";
 }
 
 export function normalizeDateDisplayFormat(value: unknown): DateDisplayFormat {
@@ -70,9 +63,7 @@ function pad2(value: number): string {
  * Date-only `YYYY-MM-DD` stays on that calendar day in every time zone.
  * Timestamps keep normal local conversion of the instant.
  */
-export function parseDisplayDateInput(
-	value: string | number | Date,
-): Date | null {
+export function parseDisplayDateInput(value: string | number | Date): Date | null {
 	if (value instanceof Date) {
 		return Number.isNaN(value.getTime()) ? null : value;
 	}
@@ -93,11 +84,7 @@ export function parseDisplayDateInput(
 		// Date(year, …) maps 0–99 → 1900–1999; setFullYear keeps 0000–0099 as-is.
 		const local = new Date(year, month - 1, day);
 		local.setFullYear(year);
-		if (
-			local.getFullYear() !== year ||
-			local.getMonth() !== month - 1 ||
-			local.getDate() !== day
-		) {
+		if (local.getFullYear() !== year || local.getMonth() !== month - 1 || local.getDate() !== day) {
 			return null;
 		}
 		return local;

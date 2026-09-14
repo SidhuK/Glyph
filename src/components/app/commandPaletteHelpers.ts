@@ -67,11 +67,7 @@ export function parsePaletteQuery(raw: string): ParsedPaletteQuery {
 	if (!prefix) return { raw: trimmed, text: trimmed, scope: "all" };
 	const prefixName = prefix[1]?.toLowerCase();
 	const scope: PaletteQueryScope =
-		prefixName === "settings"
-			? "settings"
-			: prefixName === "folder"
-				? "folders"
-				: "templates";
+		prefixName === "settings" ? "settings" : prefixName === "folder" ? "folders" : "templates";
 	return { raw: trimmed, text: trimmed.slice(prefix[0].length), scope };
 }
 
@@ -105,10 +101,7 @@ function kindsForScope(scope: PaletteQueryScope): readonly PaletteResultKind[] {
 	}
 }
 
-function paletteResultMatchesScope(
-	result: PaletteResult,
-	scope: PaletteQueryScope,
-): boolean {
+function paletteResultMatchesScope(result: PaletteResult, scope: PaletteQueryScope): boolean {
 	return kindsForScope(scope).includes(result.kind);
 }
 
@@ -150,11 +143,9 @@ export function movePaletteSelection(
 ): string | null {
 	if (!results.some((result) => result.enabled !== false)) return null;
 	const selectedIndex = results.findIndex((result) => result.id === selectedId);
-	const startIndex =
-		selectedIndex >= 0 ? selectedIndex : direction === 1 ? -1 : 0;
+	const startIndex = selectedIndex >= 0 ? selectedIndex : direction === 1 ? -1 : 0;
 	for (let offset = 1; offset <= results.length; offset += 1) {
-		const index =
-			(startIndex + direction * offset + results.length) % results.length;
+		const index = (startIndex + direction * offset + results.length) % results.length;
 		const result = results[index];
 		if (result?.enabled !== false) return result?.id ?? null;
 	}
@@ -167,19 +158,13 @@ export function stepPaletteOption(
 	direction: -1 | 1,
 ): string | number | null {
 	if (!options.length) return null;
-	const currentIndex = options.findIndex(
-		(option) => option.value === currentValue,
-	);
-	const startIndex =
-		currentIndex >= 0 ? currentIndex : direction === 1 ? -1 : 0;
+	const currentIndex = options.findIndex((option) => option.value === currentValue);
+	const startIndex = currentIndex >= 0 ? currentIndex : direction === 1 ? -1 : 0;
 	const nextIndex = (startIndex + direction + options.length) % options.length;
 	return options[nextIndex]?.value ?? null;
 }
 
-export function parseSearchQueryWithPeople(
-	raw: string,
-	enablePeople: boolean,
-): ParsedSearchQuery {
+export function parseSearchQueryWithPeople(raw: string, enablePeople: boolean): ParsedSearchQuery {
 	const tokens = tokenize(raw.trim());
 	const request: SearchAdvancedRequest = {
 		tags: [],
@@ -231,8 +216,7 @@ function quoteIfNeeded(v: string): string {
 
 export function buildSearchQuery(request: SearchAdvancedRequest): string {
 	const parts: string[] = [];
-	for (const tag of request.tags ?? [])
-		parts.push(tag.startsWith("#") ? tag : `#${tag}`);
+	for (const tag of request.tags ?? []) parts.push(tag.startsWith("#") ? tag : `#${tag}`);
 	for (const person of request.people ?? [])
 		parts.push(person.startsWith("@") ? person : `@${person}`);
 	if (request.tag_only) parts.push("tag:only");

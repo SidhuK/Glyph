@@ -38,8 +38,7 @@ const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 	"yaml",
 ] as const;
 
-export type SupportedCodeBlockLanguage =
-	(typeof SUPPORTED_CODE_BLOCK_LANGUAGES)[number];
+export type SupportedCodeBlockLanguage = (typeof SUPPORTED_CODE_BLOCK_LANGUAGES)[number];
 
 /**
  * Loads and registers the grammar backing `language` if it is supported and
@@ -63,10 +62,7 @@ function ensureGrammar(language: string): Promise<boolean> | null {
 }
 
 function codeBlocksIn(editor: Editor) {
-	return findChildren(
-		editor.state.doc,
-		(node) => node.type.name === "codeBlock",
-	);
+	return findChildren(editor.state.doc, (node) => node.type.name === "codeBlock");
 }
 
 /**
@@ -87,7 +83,7 @@ function refreshCodeBlockDecorations(editor: Editor) {
 
 function loadGrammarsForLanguages(editor: Editor, languages: Iterable<string>) {
 	for (const language of languages) {
-		ensureGrammar(language)?.then((registered) => {
+		void ensureGrammar(language)?.then((registered) => {
 			if (registered && !editor.isDestroyed) {
 				refreshCodeBlockDecorations(editor);
 			}
@@ -154,10 +150,9 @@ export function getCodeBlockLanguageOptions(): ReadonlyArray<{
 	}));
 }
 
-const NORMALIZED_LANGUAGE_BY_ALIAS = new Map<
-	string,
-	SupportedCodeBlockLanguage
->(SUPPORTED_CODE_BLOCK_LANGUAGES.map((language) => [language, language]));
+const NORMALIZED_LANGUAGE_BY_ALIAS = new Map<string, SupportedCodeBlockLanguage>(
+	SUPPORTED_CODE_BLOCK_LANGUAGES.map((language) => [language, language]),
+);
 
 // Derive UI-level aliases from the grammar alias table. Aliases that are
 // themselves supported languages (html, svg, mermaid) keep their own entry so

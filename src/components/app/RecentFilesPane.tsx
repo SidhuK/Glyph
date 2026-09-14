@@ -1,11 +1,7 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
-import {
-	displayFolderFromPath,
-	displayNameFromPath,
-	isMarkdownPath,
-} from "../../utils/path";
+import { displayFolderFromPath, displayNameFromPath, isMarkdownPath } from "../../utils/path";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 
 interface RecentFilesPaneProps {
@@ -32,26 +28,17 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 		<div className="fileTreeScroll">
 			<ul className="fileTreeList">
 				{recentFiles.map((file) => {
-					const { Icon, color } = getFileTypeInfo(
-						file.path,
-						isMarkdownPath(file.path),
-					);
+					const { Icon, color } = getFileTypeInfo(file.path, isMarkdownPath(file.path));
 					const folder = displayFolderFromPath(file.path);
 					return (
 						<li
 							key={file.path}
-							className={
-								file.path === activeFilePath
-									? "fileTreeItem active"
-									: "fileTreeItem"
-							}
+							className={file.path === activeFilePath ? "fileTreeItem active" : "fileTreeItem"}
 						>
 							<div className="fileTreeRowShell">
 								<button
 									type="button"
-									className={
-										folder ? "fileTreeRow fileTreePreviewRow" : "fileTreeRow"
-									}
+									className={folder ? "fileTreeRow fileTreePreviewRow" : "fileTreeRow"}
 									onClick={() => onOpenFile(file.path)}
 									title={file.path}
 								>
@@ -62,12 +49,8 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 										aria-hidden="true"
 									/>
 									<span className="fileTreeFileText">
-										<span className="fileTreeName">
-											{displayNameFromPath(file.path)}
-										</span>
-										{folder ? (
-											<span className="fileTreeFilePreview">{folder}</span>
-										) : null}
+										<span className="fileTreeName">{displayNameFromPath(file.path)}</span>
+										{folder ? <span className="fileTreeFilePreview">{folder}</span> : null}
 									</span>
 								</button>
 							</div>

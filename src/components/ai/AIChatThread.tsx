@@ -3,20 +3,10 @@ import { m, useReducedMotion } from "motion/react";
 import { Fragment, memo, useMemo, useState } from "react";
 import { type OrbState, ThinkingOrb } from "thinking-orbs";
 import { isMarkdownPath } from "../../utils/path";
-import {
-	ChevronDown,
-	File,
-	Files,
-	FolderOpen,
-	RefreshCw,
-	Save,
-} from "../Icons";
+import { ChevronDown, File, Files, FolderOpen, RefreshCw, Save } from "../Icons";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
-import {
-	AIActivityTimeline,
-	type AIActivityTimelineEvent,
-} from "./AIActivityTimeline";
+import { AIActivityTimeline, type AIActivityTimelineEvent } from "./AIActivityTimeline";
 import { AIMessageMarkdown } from "./AIMessageMarkdown";
 import { messageText } from "./aiPanelConstants";
 import type { RigChatStatus, UIMessage } from "./hooks/useRigChat";
@@ -160,26 +150,15 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 			{isPendingAssistant ? (
 				<m.div
 					className="aiPendingHeader"
-					initial={
-						shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.99 }
-					}
+					initial={shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.99 }}
 					animate={{ opacity: 1, y: 0, scale: 1 }}
-					transition={
-						shouldReduceMotion
-							? { duration: 0 }
-							: { duration: 0.18, ease: "easeOut" }
-					}
+					transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.18, ease: "easeOut" }}
 				>
-					<ThinkingOrb
-						state={activityState}
-						size={20}
-						aria-label={phaseStatusText}
-					/>
+					<ThinkingOrb state={activityState} size={20} aria-label={phaseStatusText} />
 					<span>{phaseStatusText}</span>
 				</m.div>
 			) : msg.role === "assistant" ? (
-				!isChatMode &&
-				isLastAssistantWithTimeline ? null : isStreamingAssistant ? (
+				!isChatMode && isLastAssistantWithTimeline ? null : isStreamingAssistant ? (
 					<div className="aiStreamingCaretWrap">
 						<AIMessageMarkdown markdown={text} streaming />
 						<span className="aiStreamingCaret">▍</span>
@@ -192,10 +171,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 					{msg.context?.length ? (
 						<div className="aiChatContextPills">
 							{msg.context.map((item) => (
-								<span
-									className="aiChatContextPill"
-									key={`${item.kind}:${item.label}`}
-								>
+								<span className="aiChatContextPill" key={`${item.kind}:${item.label}`}>
 									{item.kind === "file" || item.kind === "selection" ? (
 										<File size="var(--icon-xs)" />
 									) : (
@@ -213,11 +189,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 				<div className="aiInlineError">
 					<span className="aiInlineErrorDot" />
 					<span className="aiInlineErrorText">Response failed</span>
-					<button
-						type="button"
-						className="aiInlineRetryBtn"
-						onClick={() => onRetry(index)}
-					>
+					<button type="button" className="aiInlineRetryBtn" onClick={() => onRetry(index)}>
 						<RefreshCw size="var(--icon-xs)" />
 						<span>Retry</span>
 					</button>
@@ -279,14 +251,9 @@ export function AIChatThread({
 	onRetry,
 }: AIChatThreadProps) {
 	const shouldReduceMotion = useReducedMotion();
-	const citations = useMemo(
-		() => extractCitations(activityTimeline),
-		[activityTimeline],
-	);
+	const citations = useMemo(() => extractCitations(activityTimeline), [activityTimeline]);
 	const [citationsOpen, setCitationsOpen] = useState(false);
-	const hasInterleavedTextTimeline = activityTimeline.some(
-		(e) => e.kind === "text",
-	);
+	const hasInterleavedTextTimeline = activityTimeline.some((e) => e.kind === "text");
 	const lastAssistantMessageIndex = (() => {
 		for (let i = messages.length - 1; i >= 0; i -= 1) {
 			if (messages[i]?.role === "assistant") return i;
@@ -308,22 +275,16 @@ export function AIChatThread({
 					) : null}
 					<div className="aiChatEmptyTitle">Talk to your notes</div>
 					<div className="aiChatEmptyMeta">
-						Ask naturally, or use <code>@</code> to add notes and folders to the
-						conversation
+						Ask naturally, or use <code>@</code> to add notes and folders to the conversation
 					</div>
 				</div>
 			) : null}
 			{messages.map((msg, index) => {
 				const text = messageText(msg).trim();
 				const isPendingAssistant =
-					msg.role === "assistant" &&
-					!text &&
-					isAwaitingResponse &&
-					index === messages.length - 1;
+					msg.role === "assistant" && !text && isAwaitingResponse && index === messages.length - 1;
 				const isFailedAssistant =
-					msg.role === "assistant" &&
-					chatStatus === "error" &&
-					index === messages.length - 1;
+					msg.role === "assistant" && chatStatus === "error" && index === messages.length - 1;
 				if (!text && !isPendingAssistant && !isFailedAssistant) return null;
 				const isStreamingAssistant =
 					msg.role === "assistant" &&
@@ -347,8 +308,7 @@ export function AIChatThread({
 								isFailedAssistant={isFailedAssistant}
 								isStreamingAssistant={isStreamingAssistant}
 								isLastAssistantWithTimeline={
-									index === lastAssistantMessageIndex &&
-									hasInterleavedTextTimeline
+									index === lastAssistantMessageIndex && hasInterleavedTextTimeline
 								}
 								phaseStatusText={phaseStatusText}
 								activityState={activityState}
@@ -395,13 +355,7 @@ export function AIChatThread({
 										aria-expanded={citationsOpen}
 									>
 										<span>Cited Notes</span>
-										<span
-											className={cn(
-												"aiCitationsChevron",
-												citationsOpen && "open",
-											)}
-											aria-hidden
-										>
+										<span className={cn("aiCitationsChevron", citationsOpen && "open")} aria-hidden>
 											<ChevronDown size="var(--icon-sm)" />
 										</span>
 									</button>
@@ -445,21 +399,11 @@ export function AIChatThread({
 			{messages.length > 0 && showIdleActivity ? (
 				<m.div
 					className="aiIdleAssistant"
-					initial={
-						shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.98 }
-					}
+					initial={shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.98 }}
 					animate={{ opacity: 1, y: 0, scale: 1 }}
-					transition={
-						shouldReduceMotion
-							? { duration: 0 }
-							: { duration: 0.18, ease: "easeOut" }
-					}
+					transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.18, ease: "easeOut" }}
 				>
-					<ThinkingOrb
-						state="shaping"
-						size={20}
-						aria-label="Shaping your thought"
-					/>
+					<ThinkingOrb state="shaping" size={20} aria-label="Shaping your thought" />
 				</m.div>
 			) : null}
 		</>

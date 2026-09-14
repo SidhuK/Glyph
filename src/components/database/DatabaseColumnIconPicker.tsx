@@ -3,10 +3,7 @@ import {
 	resolveDatabaseColumnIconName,
 } from "../../lib/database/columnIcons";
 import type { DatabaseColumn } from "../../lib/database/types";
-import {
-	AppearancePicker,
-	AppearancePickerIconTrigger,
-} from "../AppearancePicker";
+import { AppearancePicker, AppearancePickerIconTrigger } from "../AppearancePicker";
 
 interface DatabaseColumnIconPickerProps {
 	column: DatabaseColumn;

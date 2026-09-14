@@ -1,14 +1,11 @@
-import { bench, describe } from "vitest";
+import { bench, describe } from "vite-plus/test";
 import { normalizeInlineMarkdown } from "../src/lib/markdownUtils";
 import {
 	joinYamlFrontmatter,
 	parseNotePreview,
 	splitYamlFrontmatter,
 } from "../src/lib/notePreview";
-import {
-	type RelationshipGroup,
-	groupRelationshipsByField,
-} from "../src/lib/relationships";
+import { type RelationshipGroup, groupRelationshipsByField } from "../src/lib/relationships";
 import type { NoteRelationship } from "../src/lib/tauri";
 import { countWords } from "../src/lib/textStats";
 import {
@@ -80,8 +77,7 @@ describe("notePreview", () => {
 
 describe("relationships", () => {
 	bench("groupRelationshipsByField on 500 relationships", () => {
-		const grouped: RelationshipGroup[] =
-			groupRelationshipsByField(relationships);
+		const grouped: RelationshipGroup[] = groupRelationshipsByField(relationships);
 		void grouped;
 	});
 });

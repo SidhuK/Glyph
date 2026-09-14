@@ -1,5 +1,4 @@
-const DATABASES_SELECTED_DATABASE_STORAGE_KEY =
-	"glyph.databases.selectedDatabaseId";
+const DATABASES_SELECTED_DATABASE_STORAGE_KEY = "glyph.databases.selectedDatabaseId";
 const DATABASES_SELECTED_VIEWS_STORAGE_KEY = "glyph.databases.selectedViews";
 
 function readStorage(key: string): string | null {
@@ -20,10 +19,7 @@ export function writeStoredSelectedDatabaseId(databaseId: string | null) {
 	if (typeof window === "undefined") return;
 	try {
 		if (databaseId) {
-			window.localStorage.setItem(
-				DATABASES_SELECTED_DATABASE_STORAGE_KEY,
-				databaseId,
-			);
+			window.localStorage.setItem(DATABASES_SELECTED_DATABASE_STORAGE_KEY, databaseId);
 			return;
 		}
 		window.localStorage.removeItem(DATABASES_SELECTED_DATABASE_STORAGE_KEY);
@@ -60,10 +56,7 @@ export function readStoredSelectedViewId(
 	return viewIds && !viewIds.includes(viewId) ? null : viewId;
 }
 
-export function writeStoredSelectedViewId(
-	databaseId: string | null,
-	viewId: string | null,
-) {
+export function writeStoredSelectedViewId(databaseId: string | null, viewId: string | null) {
 	if (typeof window === "undefined" || !databaseId) return;
 	try {
 		const selectedViews = readStoredSelectedViews();

@@ -69,9 +69,9 @@ export function clearInlineImageHydrationCache() {
 function maybeDeleteSourceGeneration(sourcePath: string) {
 	const prefix = `${sourcePath}::`;
 	const hasEntries =
-		[...urlCache.keys()].some((key) => key.startsWith(prefix)) ||
-		[...missCache].some((key) => key.startsWith(prefix)) ||
-		[...inFlightCache.keys()].some((key) => key.startsWith(prefix));
+		Array.from(urlCache.keys()).some((key) => key.startsWith(prefix)) ||
+		Array.from(missCache).some((key) => key.startsWith(prefix)) ||
+		Array.from(inFlightCache.keys()).some((key) => key.startsWith(prefix));
 	if (!hasEntries && (sourceConsumers.get(sourcePath) ?? 0) === 0) {
 		sourceGeneration.delete(sourcePath);
 	}
@@ -82,13 +82,13 @@ function clearInlineImageHydrationCacheForSource(sourcePath: string) {
 	const prefix = `${sourcePath}::`;
 	// Wiki image-link keys are global (`wiki-image-link::...`) and intentionally
 	// survive per-source invalidation because they do not depend on sourcePath.
-	for (const key of [...urlCache.keys()]) {
+	for (const key of urlCache.keys()) {
 		if (key.startsWith(prefix)) urlCache.delete(key);
 	}
-	for (const key of [...missCache]) {
+	for (const key of missCache) {
 		if (key.startsWith(prefix)) missCache.delete(key);
 	}
-	for (const key of [...inFlightCache.keys()]) {
+	for (const key of inFlightCache.keys()) {
 		if (key.startsWith(prefix)) inFlightCache.delete(key);
 	}
 	maybeDeleteSourceGeneration(sourcePath);
@@ -110,9 +110,7 @@ function decrementInlineImageHydrationConsumers(sourcePath: string) {
 }
 
 function isDirectImageUrl(src: string): boolean {
-	return /^(https?:|data:|blob:|asset:|tauri:|file:|glyphasset:|\/\/)/i.test(
-		src,
-	);
+	return /^(https?:|data:|blob:|asset:|tauri:|file:|glyphasset:|\/\/)/i.test(src);
 }
 
 function dedupeCandidates(href: string): string[] {
@@ -142,9 +140,7 @@ function getInlineImageCacheKey(
 }
 
 function getResolverKindForImage(image: Element): InlineImageResolverKind {
-	return image.getAttribute("data-wikilink-embed") === "true"
-		? "wiki-image-link"
-		: "markdown-link";
+	return image.getAttribute("data-wikilink-embed") === "true" ? "wiki-image-link" : "markdown-link";
 }
 
 async function resolveSpaceImagePath(
@@ -187,13 +183,7 @@ async function resolveInlineImageSrc(
 	const promise = (async () => {
 		try {
 			const relPath = await resolveSpaceImagePath(sourcePath, rawSrc, kind);
-			if (
-				!matchesGeneration(
-					sourcePath,
-					expectedGlobalGeneration,
-					expectedSourceGeneration,
-				)
-			) {
+			if (!matchesGeneration(sourcePath, expectedGlobalGeneration, expectedSourceGeneration)) {
 				return null;
 			}
 			if (!relPath) {
@@ -206,13 +196,7 @@ async function resolveInlineImageSrc(
 			trimOldestCacheEntries();
 			return src;
 		} catch {
-			if (
-				matchesGeneration(
-					sourcePath,
-					expectedGlobalGeneration,
-					expectedSourceGeneration,
-				)
-			) {
+			if (matchesGeneration(sourcePath, expectedGlobalGeneration, expectedSourceGeneration)) {
 				missCache.add(key);
 				trimOldestCacheEntries();
 			}
@@ -273,10 +257,7 @@ function hydrateImageNodesInDocument(
 	}
 }
 
-export function useHydrateInlineImages(
-	editor: Editor | null,
-	sourcePath: string,
-) {
+export function useHydrateInlineImages(editor: Editor | null, sourcePath: string) {
 	useEffect(() => {
 		if (!editor || editor.isDestroyed || !sourcePath) return;
 
@@ -291,8 +272,7 @@ export function useHydrateInlineImages(
 		const hydrateImage = (image: HTMLImageElement) => {
 			const current = image.getAttribute("src")?.trim() ?? "";
 			if (!current) return;
-			const originalSrc =
-				image.getAttribute("data-glyph-origin-src")?.trim() ?? current;
+			const originalSrc = image.getAttribute("data-glyph-origin-src")?.trim() ?? current;
 			if (!originalSrc || isDirectImageUrl(originalSrc)) return;
 			if (image.getAttribute("data-glyph-origin-src") !== originalSrc) {
 				image.setAttribute("data-glyph-origin-src", originalSrc);
@@ -301,29 +281,22 @@ export function useHydrateInlineImages(
 			const key = getInlineImageCacheKey(sourcePath, originalSrc, resolverKind);
 			if (image.getAttribute("data-glyph-hydrated-key") === key) return;
 			image.dataset.glyphHydrationState = "loading";
-			void resolveInlineImageSrc(sourcePath, originalSrc, resolverKind).then(
-				(src) => {
-					if (cancelled || editor.isDestroyed || !image.isConnected) return;
-					const currentOrigin =
-						image.getAttribute("data-glyph-origin-src")?.trim() ?? "";
-					const currentKey = currentOrigin
-						? getInlineImageCacheKey(
-								sourcePath,
-								currentOrigin,
-								getResolverKindForImage(image),
-							)
-						: "";
-					if (currentKey !== key) return;
-					if (!src) {
-						image.dataset.glyphHydrationState = "failed";
-						return;
-					}
-					hydrateImageNodesInDocument(editor, image, originalSrc, src);
-					image.setAttribute("data-glyph-hydrated-key", key);
-					image.setAttribute("src", src);
-					image.dataset.glyphHydrationState = "ready";
-				},
-			);
+			void resolveInlineImageSrc(sourcePath, originalSrc, resolverKind).then((src) => {
+				if (cancelled || editor.isDestroyed || !image.isConnected) return;
+				const currentOrigin = image.getAttribute("data-glyph-origin-src")?.trim() ?? "";
+				const currentKey = currentOrigin
+					? getInlineImageCacheKey(sourcePath, currentOrigin, getResolverKindForImage(image))
+					: "";
+				if (currentKey !== key) return;
+				if (!src) {
+					image.dataset.glyphHydrationState = "failed";
+					return;
+				}
+				hydrateImageNodesInDocument(editor, image, originalSrc, src);
+				image.setAttribute("data-glyph-hydrated-key", key);
+				image.setAttribute("src", src);
+				image.dataset.glyphHydrationState = "ready";
+			});
 		};
 
 		const hydrateImages = () => {
@@ -338,18 +311,13 @@ export function useHydrateInlineImages(
 				image.loading = "lazy";
 				image.decoding = "async";
 				const current = image.getAttribute("src")?.trim() ?? "";
-				const originalSrc =
-					image.getAttribute("data-glyph-origin-src")?.trim() ?? current;
+				const originalSrc = image.getAttribute("data-glyph-origin-src")?.trim() ?? current;
 				if (!originalSrc || isDirectImageUrl(originalSrc)) continue;
 				if (image.getAttribute("data-glyph-origin-src") !== originalSrc) {
 					image.setAttribute("data-glyph-origin-src", originalSrc);
 				}
 				const resolverKind = getResolverKindForImage(image);
-				const key = getInlineImageCacheKey(
-					sourcePath,
-					originalSrc,
-					resolverKind,
-				);
+				const key = getInlineImageCacheKey(sourcePath, originalSrc, resolverKind);
 				if (image.getAttribute("data-glyph-hydrated-key") === key) continue;
 				if (image.dataset.glyphHydrationState === "loading") continue;
 				if (!intersectionObserver) {

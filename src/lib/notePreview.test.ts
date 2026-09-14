@@ -1,9 +1,5 @@
-import { describe, expect, it } from "vitest";
-import {
-	joinYamlFrontmatter,
-	parseNotePreview,
-	splitYamlFrontmatter,
-} from "./notePreview";
+import { describe, expect, it } from "vite-plus/test";
+import { joinYamlFrontmatter, parseNotePreview, splitYamlFrontmatter } from "./notePreview";
 
 describe("notePreview", () => {
 	it("uses frontmatter title when present", () => {
@@ -26,15 +22,11 @@ Body`;
 
 	it("normalizes CRLF and strips frontmatter from content", () => {
 		const text = "---\r\ntitle: Win\r\n---\r\nLine 1\r\nLine 2";
-		expect(parseNotePreview("notes/abc.md", text).content).toBe(
-			"Line 1\nLine 2",
-		);
+		expect(parseNotePreview("notes/abc.md", text).content).toBe("Line 1\nLine 2");
 	});
 
 	it("truncates preview content to first 20 lines", () => {
-		const lines = Array.from({ length: 25 }, (_, i) => `line-${i + 1}`).join(
-			"\n",
-		);
+		const lines = Array.from({ length: 25 }, (_, i) => `line-${i + 1}`).join("\n");
 		const parsed = parseNotePreview("notes/abc.md", lines);
 		const previewLines = parsed.content.split("\n");
 		expect(previewLines).toHaveLength(21);
@@ -57,8 +49,6 @@ Body`;
 		const split = splitYamlFrontmatter(markdown);
 		expect(split.frontmatter).toContain("title: X");
 		expect(split.body).toBe("\nBody");
-		expect(joinYamlFrontmatter(split.frontmatter, split.body)).toContain(
-			"title: X",
-		);
+		expect(joinYamlFrontmatter(split.frontmatter, split.body)).toContain("title: X");
 	});
 });

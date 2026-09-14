@@ -9,8 +9,7 @@ import type { TemplateInsertRequest } from "../slashCommands";
 export function useInlineTemplateInsertion(relPath: string) {
 	const { t } = useTranslation("editor");
 	const { spacePath } = useSpace();
-	const { openSettings, settingsSpacePath, templateFolder } =
-		useUILayoutContext();
+	const { openSettings, settingsSpacePath, templateFolder } = useUILayoutContext();
 	const requestTemplate = useCallback(
 		(request: TemplateInsertRequest) => {
 			if (settingsSpacePath !== spacePath) {

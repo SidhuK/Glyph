@@ -1,11 +1,4 @@
-import {
-	type Day,
-	addDays,
-	addMonths,
-	endOfWeek,
-	startOfMonth,
-	startOfWeek,
-} from "date-fns";
+import { type Day, addDays, addMonths, endOfWeek, startOfMonth, startOfWeek } from "date-fns";
 
 const WEEKS_IN_GRID = 6;
 const DAYS_IN_WEEK = 7;
@@ -14,9 +7,7 @@ const DAYS_IN_WEEK = 7;
 export function buildMonthWeeks(month: Date, weekStartsOn: Day): Date[][] {
 	const firstCell = startOfWeek(startOfMonth(month), { weekStartsOn });
 	return Array.from({ length: WEEKS_IN_GRID }, (_, week) =>
-		Array.from({ length: DAYS_IN_WEEK }, (_, day) =>
-			addDays(firstCell, week * DAYS_IN_WEEK + day),
-		),
+		Array.from({ length: DAYS_IN_WEEK }, (_, day) => addDays(firstCell, week * DAYS_IN_WEEK + day)),
 	);
 }
 
@@ -34,11 +25,7 @@ export function weekdayLabels(
 }
 
 /** Grid keyboard model: arrows by day/week, Home/End by week, PageUp/Down by month. */
-export function dateForNavigationKey(
-	key: string,
-	from: Date,
-	weekStartsOn: Day,
-): Date | null {
+export function dateForNavigationKey(key: string, from: Date, weekStartsOn: Day): Date | null {
 	switch (key) {
 		case "ArrowLeft":
 			return addDays(from, -1);

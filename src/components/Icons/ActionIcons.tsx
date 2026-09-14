@@ -18,10 +18,7 @@ export const Trash2 = (props: IconProps) => (
 	<HugeiconsIcon icon={Delete} {...withDefaultIconSize(props)} />
 );
 export const RefreshCw = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={ArrowReloadHorizontalIcon}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={ArrowReloadHorizontalIcon} {...withDefaultIconSize(props)} />
 );
 export const Save = (props: IconProps) => (
 	<HugeiconsIcon icon={SaveIcon} {...withDefaultIconSize(props)} />

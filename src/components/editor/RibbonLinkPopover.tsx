@@ -103,9 +103,7 @@ export function RibbonLinkPopover({
 					<input
 						type="checkbox"
 						checked={linkTarget === "_blank"}
-						onChange={(event) =>
-							setLinkTarget(event.target.checked ? "_blank" : "_self")
-						}
+						onChange={(event) => setLinkTarget(event.target.checked ? "_blank" : "_self")}
 					/>
 					<span>Open in new tab</span>
 				</label>

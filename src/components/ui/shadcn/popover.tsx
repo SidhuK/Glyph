@@ -5,15 +5,11 @@ import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Popover({
-	...props
-}: React.ComponentProps<typeof PopoverPrimitive.Root>) {
+function Popover({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
 	return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
 
-function PopoverTrigger({
-	...props
-}: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
+function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
 	return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
@@ -53,19 +49,10 @@ function PopoverHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function PopoverTitle({ className, ...props }: React.ComponentProps<"h2">) {
-	return (
-		<div
-			data-slot="popover-title"
-			className={cn("font-medium", className)}
-			{...props}
-		/>
-	);
+	return <div data-slot="popover-title" className={cn("font-medium", className)} {...props} />;
 }
 
-function PopoverDescription({
-	className,
-	...props
-}: React.ComponentProps<"p">) {
+function PopoverDescription({ className, ...props }: React.ComponentProps<"p">) {
 	return (
 		<p
 			data-slot="popover-description"
@@ -75,11 +62,4 @@ function PopoverDescription({
 	);
 }
 
-export {
-	Popover,
-	PopoverTrigger,
-	PopoverContent,
-	PopoverHeader,
-	PopoverTitle,
-	PopoverDescription,
-};
+export { Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverTitle, PopoverDescription };

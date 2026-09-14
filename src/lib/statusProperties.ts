@@ -40,15 +40,7 @@ const STATUS_OPTIONS = [
 		label: "Todo",
 		color: "gray",
 		iconKey: "task",
-		aliases: [
-			"todo",
-			"to do",
-			"not started",
-			"not-started",
-			"open",
-			"new",
-			"unstarted",
-		],
+		aliases: ["todo", "to do", "not started", "not-started", "open", "new", "unstarted"],
 	},
 	{
 		id: "in_progress",
@@ -162,9 +154,7 @@ const STATUS_PICKER_ORDER = [
 const STATUS_ALIAS_TO_ID = new Map<string, string>(
 	STATUS_OPTIONS.flatMap((option) => [
 		[option.id, option.id] as const,
-		...option.aliases.map(
-			(alias) => [normalizeStatusText(alias), option.id] as const,
-		),
+		...option.aliases.map((alias) => [normalizeStatusText(alias), option.id] as const),
 	]),
 );
 
@@ -177,9 +167,7 @@ function statusIdFromValue(value: string | null | undefined): string | null {
 	return normalized ? (STATUS_ALIAS_TO_ID.get(normalized) ?? null) : null;
 }
 
-export function statusOptionFromValue(
-	value: string | null | undefined,
-): StatusOption | null {
+export function statusOptionFromValue(value: string | null | undefined): StatusOption | null {
 	const statusId = statusIdFromValue(value);
 	return statusId ? (STATUS_BY_ID.get(statusId) ?? null) : null;
 }
@@ -214,9 +202,7 @@ export function statusTextStyle(
 	};
 }
 
-export function statusColorKey(
-	value: string | null | undefined,
-): string | null {
+export function statusColorKey(value: string | null | undefined): string | null {
 	const trimmed = (value ?? "").trim();
 	if (!trimmed) return null;
 	const option = statusOptionFromValue(trimmed);
@@ -239,12 +225,7 @@ export function statusOptionsWithCustomValues(
 	for (const value of values) {
 		const label = (value ?? "").trim();
 		const statusId = statusColorKey(label);
-		if (
-			!label ||
-			!statusId ||
-			seen.has(statusId) ||
-			STATUS_BY_ID.has(statusId)
-		) {
+		if (!label || !statusId || seen.has(statusId) || STATUS_BY_ID.has(statusId)) {
 			continue;
 		}
 		seen.add(statusId);

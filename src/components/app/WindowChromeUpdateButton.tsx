@@ -26,9 +26,7 @@ export function WindowChromeUpdateButton({
 					exit={{ opacity: 0, scale: 0.92, x: -6 }}
 					transition={{ type: "spring", stiffness: 420, damping: 32 }}
 					onClick={onInstallUpdate}
-					title={
-						updateVersion ? `Install update ${updateVersion}` : "Install update"
-					}
+					title={updateVersion ? `Install update ${updateVersion}` : "Install update"}
 				>
 					<HugeiconsIcon icon={Download04Icon} />
 					<span>Update</span>

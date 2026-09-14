@@ -1,9 +1,6 @@
 import type { Editor, JSONContent } from "@tiptap/core";
 import { useEffect } from "react";
-import {
-	EDITOR_MENU_ACTION_EVENT,
-	type EditorMenuActionDetail,
-} from "../../../lib/appEvents";
+import { EDITOR_MENU_ACTION_EVENT, type EditorMenuActionDetail } from "../../../lib/appEvents";
 import { invoke } from "../../../lib/tauri";
 import { createCalloutContent, executeEditorAction } from "../editorActions";
 import { isVisibleEditorHost } from "./editorDomUtils";
@@ -19,9 +16,7 @@ interface UseRibbonCommandsOptions {
 	onOpenLinkDialog: (href: string, target: "_self" | "_blank") => void;
 	onSendSelectionToAi?: () => void;
 	onTriggerExtractToNote?: () => void;
-	onRegisterCalloutInserter?: (
-		inserter: ((type: string) => void) | null,
-	) => void;
+	onRegisterCalloutInserter?: (inserter: ((type: string) => void) | null) => void;
 }
 
 /** @internal Shared reference used to route editor menu actions to the focused editor instance. */
@@ -90,9 +85,7 @@ export function useRibbonCommands({
 			} else if (lastFocusedNoteEditorHost !== host) {
 				return;
 			}
-			const scrollHost = host.closest(
-				".rfNodeNoteEditorBody",
-			) as HTMLElement | null;
+			const scrollHost = host.closest(".rfNodeNoteEditorBody") as HTMLElement | null;
 			const scrollTop = scrollHost?.scrollTop ?? 0;
 			const isReadOnlySafeAction =
 				action === "collapse_all_headings" || action === "expand_all_headings";
@@ -111,18 +104,11 @@ export function useRibbonCommands({
 							to: editor.state.selection.to,
 						};
 						if (plain.includes("\n") && !editor.isActive("codeBlock")) {
-							if (
-								!editor.commands.insertContentAt(
-									selection,
-									createPlainTextPasteContent(plain),
-								)
-							) {
+							if (!editor.commands.insertContentAt(selection, createPlainTextPasteContent(plain))) {
 								return;
 							}
 						} else {
-							editor.view.dispatch(
-								editor.state.tr.insertText(plain, selection.from, selection.to),
-							);
+							editor.view.dispatch(editor.state.tr.insertText(plain, selection.from, selection.to));
 						}
 						editor.view.focus();
 						if (scrollHost) {
@@ -140,10 +126,7 @@ export function useRibbonCommands({
 			const handled = executeEditorAction({
 				action,
 				editor,
-				chain: editor
-					.chain()
-					.focus(null, { scrollIntoView: false })
-					.extendMarkRange("link"),
+				chain: editor.chain().focus(null, { scrollIntoView: false }).extendMarkRange("link"),
 				onOpenLinkDialog,
 				onSendSelectionToAi,
 				onTriggerExtractToNote,
@@ -158,9 +141,7 @@ export function useRibbonCommands({
 
 		const onEditorMenuAction = (event: Event) => {
 			const detail =
-				event instanceof CustomEvent
-					? (event.detail as EditorMenuActionDetail | null)
-					: null;
+				event instanceof CustomEvent ? (event.detail as EditorMenuActionDetail | null) : null;
 			if (!detail?.action) return;
 			runEditorAction(detail.action);
 		};
@@ -187,9 +168,7 @@ export function useRibbonCommands({
 		}
 		onRegisterCalloutInserter((type: string) => {
 			if (editor.isDestroyed) return;
-			const host = tiptapHostRef.current?.closest(
-				".rfNodeNoteEditorBody",
-			) as HTMLElement | null;
+			const host = tiptapHostRef.current?.closest(".rfNodeNoteEditorBody") as HTMLElement | null;
 			const scrollTop = host?.scrollTop ?? 0;
 			editor
 				.chain()
@@ -218,16 +197,10 @@ export function useRibbonCommands({
 				const activeElement = document.activeElement;
 				// Palette editor actions run before focus is restored, so retain the
 				// editor that opened the palette until its command has been dispatched.
-				if (
-					activeElement instanceof HTMLElement &&
-					activeElement.closest(".commandPalette")
-				) {
+				if (activeElement instanceof HTMLElement && activeElement.closest(".commandPalette")) {
 					return;
 				}
-				if (
-					lastFocusedNoteEditorHost === currentHost &&
-					!currentHost.contains(activeElement)
-				) {
+				if (lastFocusedNoteEditorHost === currentHost && !currentHost.contains(activeElement)) {
 					lastFocusedNoteEditorHost = null;
 				}
 			}, 0);

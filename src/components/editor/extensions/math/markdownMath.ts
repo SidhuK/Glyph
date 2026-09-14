@@ -27,9 +27,7 @@ function displayFromToken(token: MarkdownToken): boolean {
 	return value === true;
 }
 
-export function createGlyphMathExtensions({
-	onEditRequest,
-}: CreateGlyphMathExtensionsOptions) {
+export function createGlyphMathExtensions({ onEditRequest }: CreateGlyphMathExtensionsOptions) {
 	const GlyphInlineMath = InlineMath.extend({
 		addAttributes() {
 			return {
@@ -42,17 +40,13 @@ export function createGlyphMathExtensions({
 				},
 				display: {
 					default: false,
-					parseHTML: (element) =>
-						element.getAttribute("data-type") === "block-math",
+					parseHTML: (element) => element.getAttribute("data-type") === "block-math",
 					renderHTML: () => ({}),
 				},
 			};
 		},
 		parseHTML() {
-			return [
-				{ tag: 'span[data-type="inline-math"]' },
-				{ tag: 'span[data-type="block-math"]' },
-			];
+			return [{ tag: 'span[data-type="inline-math"]' }, { tag: 'span[data-type="block-math"]' }];
 		},
 		renderHTML({ node, HTMLAttributes }) {
 			return [
@@ -73,9 +67,7 @@ export function createGlyphMathExtensions({
 		},
 		renderMarkdown(node) {
 			const latex = String(node.attrs?.latex ?? "");
-			return node.attrs?.display
-				? inlineDisplayMathMarkdown(latex)
-				: inlineMathMarkdown(latex);
+			return node.attrs?.display ? inlineDisplayMathMarkdown(latex) : inlineMathMarkdown(latex);
 		},
 		markdownTokenizer: {
 			name: "inlineMath",
@@ -153,11 +145,7 @@ export function createGlyphMathExtensions({
 						const latex = match[3] ?? "";
 						if (!latex || /^[\d.,]+$/.test(latex)) return;
 						const leadingLength = match[1]?.length ?? 0;
-						state.tr.replaceWith(
-							range.from + leadingLength,
-							range.to,
-							this.type.create({ latex }),
-						);
+						state.tr.replaceWith(range.from + leadingLength, range.to, this.type.create({ latex }));
 					},
 				}),
 			];
@@ -192,8 +180,7 @@ export function createGlyphMathExtensions({
 		},
 	}).configure({
 		katexOptions: GLYPH_KATEX_OPTIONS,
-		onClick: (node, pos) =>
-			onEditRequest({ kind: "block", latex: String(node.attrs.latex), pos }),
+		onClick: (node, pos) => onEditRequest({ kind: "block", latex: String(node.attrs.latex), pos }),
 	});
 
 	return [GlyphInlineMath, GlyphBlockMath];

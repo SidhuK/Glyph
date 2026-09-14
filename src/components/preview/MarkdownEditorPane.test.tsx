@@ -2,15 +2,14 @@
 
 import { type ReactNode, act } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
-const { noteInlineEditorMock, localNoteConnectionsDialogMock, invokeMock } =
-	vi.hoisted(() => ({
-		noteInlineEditorMock: vi.fn(),
-		localNoteConnectionsDialogMock: vi.fn(),
-		invokeMock: vi.fn(),
-	}));
+const { noteInlineEditorMock, localNoteConnectionsDialogMock, invokeMock } = vi.hoisted(() => ({
+	noteInlineEditorMock: vi.fn(),
+	localNoteConnectionsDialogMock: vi.fn(),
+	invokeMock: vi.fn(),
+}));
 
 // React 19 expects tests to opt into act-aware scheduling.
 (
@@ -84,11 +83,7 @@ vi.mock("../editor/NoteInlineEditor", () => ({
 }));
 
 vi.mock("../editor/rollover/DailyNoteRollover", () => ({
-	DailyNoteRollover: ({
-		children,
-	}: {
-		children: (actions: null) => ReactNode;
-	}) => children(null),
+	DailyNoteRollover: ({ children }: { children: (actions: null) => ReactNode }) => children(null),
 }));
 
 vi.mock("../editor/FloatingTOC", () => ({
@@ -107,23 +102,13 @@ vi.mock("../connections/LocalNoteConnectionsDialog", () => ({
 		connectionsRefreshKey?: number;
 	}) => {
 		localNoteConnectionsDialogMock({ open, noteId, connectionsRefreshKey });
-		return open ? (
-			<div data-testid="local-note-connections">Local connections</div>
-		) : null;
+		return open ? <div data-testid="local-note-connections">Local connections</div> : null;
 	},
 }));
 
 vi.mock("./NotesInfoSidebar", () => ({
-	NotesInfoSidebar: ({
-		open,
-		saveLabel,
-	}: {
-		open: boolean;
-		saveLabel: string;
-	}) =>
-		open ? (
-			<div data-testid="notes-info-sidebar">Save status {saveLabel}</div>
-		) : null,
+	NotesInfoSidebar: ({ open, saveLabel }: { open: boolean; saveLabel: string }) =>
+		open ? <div data-testid="notes-info-sidebar">Save status {saveLabel}</div> : null,
 }));
 
 vi.mock("./useUnlinkedMentions", () => ({
@@ -160,10 +145,7 @@ describe("MarkdownEditorPane", () => {
 			| [command: "space_write_text", params: WriteTextArgs]
 			| [command: "backlinks", params: { note_id: string }]
 			| [command: "note_relationships", params: { note_id: string }]
-			| [
-					command: "note_frontmatter_parse_properties",
-					params: { frontmatter?: string | null },
-			  ]
+			| [command: "note_frontmatter_parse_properties", params: { frontmatter?: string | null }]
 			| [command: "task_summary", params: { markdown: string }]
 			| [command: "databases_preview_context", params: { note_path: string }]
 	) {
@@ -248,8 +230,8 @@ describe("MarkdownEditorPane", () => {
 			);
 		});
 
-		const changeButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.textContent?.includes("Type latest text"),
+		const changeButton = Array.from(container.querySelectorAll("button")).find((button) =>
+			button.textContent?.includes("Type latest text"),
 		);
 		expect(changeButton).not.toBeNull();
 
@@ -287,8 +269,8 @@ describe("MarkdownEditorPane", () => {
 			);
 		});
 
-		const changeButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.textContent?.includes("Type latest text"),
+		const changeButton = Array.from(container.querySelectorAll("button")).find((button) =>
+			button.textContent?.includes("Type latest text"),
 		);
 		expect(changeButton).not.toBeNull();
 		await act(async () => {
@@ -356,9 +338,7 @@ describe("MarkdownEditorPane", () => {
 	});
 
 	it("renders save status in info sidebar through dirty, saving, and saved states", async () => {
-		let resolveWrite:
-			| ((value: { etag: string; mtime_ms: number }) => void)
-			| null = null;
+		let resolveWrite: ((value: { etag: string; mtime_ms: number }) => void) | null = null;
 		invokeMock.mockImplementation((...args: Parameters<typeof mockInvoke>) => {
 			const [command, params] = args;
 			if (command === "space_write_text") {
@@ -418,8 +398,8 @@ describe("MarkdownEditorPane", () => {
 		expect(container.textContent).toContain("Save status");
 		expect(container.textContent).toContain("Saved");
 
-		const changeButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.textContent?.includes("Type latest text"),
+		const changeButton = Array.from(container.querySelectorAll("button")).find((button) =>
+			button.textContent?.includes("Type latest text"),
 		);
 		expect(changeButton).not.toBeNull();
 

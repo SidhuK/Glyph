@@ -7,10 +7,7 @@ import {
 	normalizeTagIconKey,
 	resolveTagIconName,
 } from "../lib/tagIcons";
-import {
-	AppearancePicker,
-	AppearancePickerIconTrigger,
-} from "./AppearancePicker";
+import { AppearancePicker, AppearancePickerIconTrigger } from "./AppearancePicker";
 
 interface TagIconPickerProps {
 	tag: string;
@@ -46,8 +43,7 @@ export function TagIconPicker({
 	const defaultDisplayIconName = isTagIconName(defaultIconName)
 		? defaultIconName
 		: DEFAULT_TAG_ICON_NAME;
-	const overrideIconName =
-		value === undefined ? resolveOverrideIconName(tag, overrides) : value;
+	const overrideIconName = value === undefined ? resolveOverrideIconName(tag, overrides) : value;
 
 	return (
 		<AppearancePicker

@@ -1,11 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Feedback, PointerActivationConstraints } from "@dnd-kit/dom";
 import { OptimisticSortingPlugin } from "@dnd-kit/dom/sortable";
-import {
-	type DragEndEvent,
-	PointerSensor,
-	useDragDropMonitor,
-} from "@dnd-kit/react";
+import { type DragEndEvent, PointerSensor, useDragDropMonitor } from "@dnd-kit/react";
 import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import { DragDropVerticalIcon } from "@hugeicons/core-free-icons";
 import { useMemo } from "react";
@@ -22,16 +18,11 @@ const SIDEBAR_ITEM_DND_GROUP = "settings-sidebar-order";
 
 const SIDEBAR_ITEM_SENSORS = [
 	PointerSensor.configure({
-		activationConstraints: [
-			new PointerActivationConstraints.Distance({ value: 5 }),
-		],
+		activationConstraints: [new PointerActivationConstraints.Distance({ value: 5 })],
 	}),
 ];
 
-const SIDEBAR_ITEM_PLUGINS = [
-	OptimisticSortingPlugin,
-	Feedback.configure({ feedback: "clone" }),
-];
+const SIDEBAR_ITEM_PLUGINS = [OptimisticSortingPlugin, Feedback.configure({ feedback: "clone" })];
 
 function moveSidebarItem(
 	order: SidebarOrder,
@@ -152,10 +143,7 @@ function AppearanceSidebarItem({
 							aria-label={reorderLabel}
 							title={reorderLabel}
 						>
-							<HugeiconsIcon
-								icon={DragDropVerticalIcon}
-								size="var(--icon-md)"
-							/>
+							<HugeiconsIcon icon={DragDropVerticalIcon} size="var(--icon-md)" />
 						</button>
 						{label}
 					</span>
@@ -167,9 +155,7 @@ function AppearanceSidebarItem({
 						checked={visible}
 						disabled={disabled}
 						ariaLabel={t("sidebar.showItem", { label })}
-						onCheckedChange={(nextVisible) =>
-							onVisibilityChange(itemKey, nextVisible)
-						}
+						onCheckedChange={(nextVisible) => onVisibilityChange(itemKey, nextVisible)}
 					/>
 				</div>
 			</SettingsRow>

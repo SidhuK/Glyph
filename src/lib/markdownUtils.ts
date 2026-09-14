@@ -1,12 +1,6 @@
 export function normalizeInlineMarkdown(text: string): string {
-	const withoutImages = text.replace(
-		/!\[([^\]]*)\]\((?:[^()\\]|\\.)*\)/g,
-		"$1",
-	);
-	const withoutLinks = withoutImages.replace(
-		/\[([^\]]+)\]\((?:[^()\\]|\\.)*\)/g,
-		"$1",
-	);
+	const withoutImages = text.replace(/!\[([^\]]*)\]\((?:[^()\\]|\\.)*\)/g, "$1");
+	const withoutLinks = withoutImages.replace(/\[([^\]]+)\]\((?:[^()\\]|\\.)*\)/g, "$1");
 	const withoutWikiLinks = withoutLinks.replace(
 		/!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
 		(_, target: string, label?: string) => (label ?? target).trim(),

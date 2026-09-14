@@ -3,9 +3,7 @@ import { extractErrorMessage } from "./errorUtils";
 import { invoke } from "./tauri";
 import { toast } from "./toast";
 
-export async function openMarkdownInExternalWindow(
-	relPath: string,
-): Promise<void> {
+export async function openMarkdownInExternalWindow(relPath: string): Promise<void> {
 	if (!isMarkdownPath(relPath)) return;
 	try {
 		await invoke("open_external_markdown_path", { path: relPath });

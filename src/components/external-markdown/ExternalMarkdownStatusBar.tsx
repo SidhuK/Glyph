@@ -16,10 +16,7 @@ export function ExternalMarkdownStatusBar({
 	onDismissError,
 }: ExternalMarkdownStatusBarProps) {
 	return (
-		<footer
-			className="externalMarkdownStatusBar"
-			data-error={error ? "true" : undefined}
-		>
+		<footer className="externalMarkdownStatusBar" data-error={error ? "true" : undefined}>
 			{error ? (
 				<>
 					<span className="externalMarkdownStatusError">{error}</span>
@@ -37,11 +34,7 @@ export function ExternalMarkdownStatusBar({
 					<span className="externalMarkdownStatusCounts">
 						{wordCount === 1 ? "1 word" : `${wordCount.toLocaleString()} words`}
 					</span>
-					<span
-						className="externalMarkdownSaveStatus"
-						data-state={saveState}
-						aria-live="polite"
-					>
+					<span className="externalMarkdownSaveStatus" data-state={saveState} aria-live="polite">
 						{saveStatus ?? ""}
 					</span>
 				</>

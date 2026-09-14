@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { FolioNotesListPane } from "./FolioNotesListPane";
 import type { FolioScope } from "./folioScopes";
 
@@ -18,9 +18,10 @@ vi.mock("@tanstack/react-virtual", () => ({
 		getItemKey: (index: number) => string | number;
 	}) => {
 		const starts = Array.from({ length: count }, (_, index) =>
-			Array.from({ length: index }, (__, previousIndex) =>
-				estimateSize(previousIndex),
-			).reduce((total, size) => total + size, 0),
+			Array.from({ length: index }, (__, previousIndex) => estimateSize(previousIndex)).reduce(
+				(total, size) => total + size,
+				0,
+			),
 		);
 		return {
 			getVirtualItems: () =>
@@ -46,14 +47,12 @@ vi.mock("@tanstack/react-virtual", () => ({
 	},
 }));
 
-const { loadAllDocsMock, prefetchNoteMock, invokeMock, scopeRef } = vi.hoisted(
-	() => ({
-		loadAllDocsMock: vi.fn(),
-		prefetchNoteMock: vi.fn(),
-		invokeMock: vi.fn(),
-		scopeRef: { current: { kind: "all" } as FolioScope },
-	}),
-);
+const { loadAllDocsMock, prefetchNoteMock, invokeMock, scopeRef } = vi.hoisted(() => ({
+	loadAllDocsMock: vi.fn(),
+	prefetchNoteMock: vi.fn(),
+	invokeMock: vi.fn(),
+	scopeRef: { current: { kind: "all" } as FolioScope },
+}));
 
 vi.mock("../../contexts", () => ({
 	useSpace: () => ({ spacePath: "/space" }),
@@ -69,8 +68,7 @@ vi.mock("../../contexts", () => ({
 }));
 
 vi.mock("../../lib/tauri", async () => {
-	const actual =
-		await vi.importActual<typeof import("../../lib/tauri")>("../../lib/tauri");
+	const actual = await vi.importActual<typeof import("../../lib/tauri")>("../../lib/tauri");
 	return {
 		...actual,
 		invoke: invokeMock,
@@ -78,9 +76,9 @@ vi.mock("../../lib/tauri", async () => {
 });
 
 vi.mock("../../lib/navigationPrefetch", async () => {
-	const actual = await vi.importActual<
-		typeof import("../../lib/navigationPrefetch")
-	>("../../lib/navigationPrefetch");
+	const actual = await vi.importActual<typeof import("../../lib/navigationPrefetch")>(
+		"../../lib/navigationPrefetch",
+	);
 	return {
 		...actual,
 		loadAllDocs: loadAllDocsMock,
@@ -97,10 +95,7 @@ vi.mock("../../lib/tauriEvents", () => ({
 }));
 
 vi.mock("../../lib/settings", async () => {
-	const actual =
-		await vi.importActual<typeof import("../../lib/settings")>(
-			"../../lib/settings",
-		);
+	const actual = await vi.importActual<typeof import("../../lib/settings")>("../../lib/settings");
 	return {
 		...actual,
 		loadSettings: vi.fn().mockResolvedValue({
@@ -177,9 +172,7 @@ describe("FolioNotesListPane", () => {
 		onDeleteFile = vi.fn(async () => true);
 		originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
 		scrollIntoViewArgs = [];
-		HTMLElement.prototype.scrollIntoView = (
-			arg?: boolean | ScrollIntoViewOptions,
-		) => {
+		HTMLElement.prototype.scrollIntoView = (arg?: boolean | ScrollIntoViewOptions) => {
 			scrollIntoViewArgs.push(arg);
 		};
 		container = document.createElement("div");
@@ -218,10 +211,7 @@ describe("FolioNotesListPane", () => {
 		expect(container.textContent).toContain("Launch planning and milestones");
 		expect(container.textContent).toContain("Sketch");
 		expect(container.querySelector(".folioNotesTitle")).toBeNull();
-		expect(renderedNotePaths(container)).toEqual([
-			"Projects/Roadmap.md",
-			"Ideas/Sketch.md",
-		]);
+		expect(renderedNotePaths(container)).toEqual(["Projects/Roadmap.md", "Ideas/Sketch.md"]);
 		expect(
 			container
 				.querySelector('[data-folio-note-path="Projects/Roadmap.md"]')
@@ -240,10 +230,7 @@ describe("FolioNotesListPane", () => {
 
 		await act(async () => {
 			if (!input) return;
-			const valueSetter = Object.getOwnPropertyDescriptor(
-				HTMLInputElement.prototype,
-				"value",
-			)?.set;
+			const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
 			valueSetter?.call(input, "road");
 			input.dispatchEvent(new Event("input", { bubbles: true }));
 		});
@@ -260,9 +247,11 @@ describe("FolioNotesListPane", () => {
 			'select[aria-label="Sort notes"]',
 		) as HTMLSelectElement | null;
 		expect(select).toBeTruthy();
-		expect(
-			Array.from(select?.options ?? []).map((option) => option.textContent),
-		).toEqual(["Alphabetically", "Edited", "Created"]);
+		expect(Array.from(select?.options ?? []).map((option) => option.textContent)).toEqual([
+			"Alphabetically",
+			"Edited",
+			"Created",
+		]);
 
 		await act(async () => {
 			if (!select) return;
@@ -274,10 +263,7 @@ describe("FolioNotesListPane", () => {
 			select.dispatchEvent(new Event("change", { bubbles: true }));
 		});
 
-		expect(renderedNotePaths(container)).toEqual([
-			"Ideas/Sketch.md",
-			"Projects/Roadmap.md",
-		]);
+		expect(renderedNotePaths(container)).toEqual(["Ideas/Sketch.md", "Projects/Roadmap.md"]);
 	});
 
 	it("sorts by created time when selected", async () => {
@@ -299,10 +285,7 @@ describe("FolioNotesListPane", () => {
 			select.dispatchEvent(new Event("change", { bubbles: true }));
 		});
 
-		expect(renderedNotePaths(container)).toEqual([
-			"Projects/Roadmap.md",
-			"Ideas/Sketch.md",
-		]);
+		expect(renderedNotePaths(container)).toEqual(["Projects/Roadmap.md", "Ideas/Sketch.md"]);
 	});
 
 	it("keeps sort control arrow keys inside the select", async () => {
@@ -339,15 +322,10 @@ describe("FolioNotesListPane", () => {
 	it("opens a note on row click", async () => {
 		await act(async () => renderPane());
 		await waitFor(
-			() =>
-				container.querySelector(
-					'[data-folio-note-path="Projects/Roadmap.md"]',
-				) !== null,
+			() => container.querySelector('[data-folio-note-path="Projects/Roadmap.md"]') !== null,
 		);
 
-		const row = container.querySelector(
-			'[data-folio-note-path="Projects/Roadmap.md"]',
-		);
+		const row = container.querySelector('[data-folio-note-path="Projects/Roadmap.md"]');
 		expect(row).toBeTruthy();
 
 		await act(async () => {
@@ -360,10 +338,7 @@ describe("FolioNotesListPane", () => {
 	it("opens adjacent notes with arrow keys", async () => {
 		await act(async () => renderPane("Projects/Roadmap.md"));
 		await waitFor(
-			() =>
-				container.querySelector(
-					'[data-folio-note-path="Projects/Roadmap.md"]',
-				) !== null,
+			() => container.querySelector('[data-folio-note-path="Projects/Roadmap.md"]') !== null,
 		);
 
 		const row = container.querySelector(
@@ -373,9 +348,7 @@ describe("FolioNotesListPane", () => {
 
 		await act(async () => {
 			row?.focus();
-			row?.dispatchEvent(
-				new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
-			);
+			row?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
 		});
 
 		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Ideas/Sketch.md");
@@ -404,10 +377,7 @@ describe("FolioNotesListPane", () => {
 	it("scrolls the selected row into view during keyboard navigation", async () => {
 		await act(async () => renderPane("Projects/Roadmap.md"));
 		await waitFor(
-			() =>
-				container.querySelector(
-					'[data-folio-note-path="Projects/Roadmap.md"]',
-				) !== null,
+			() => container.querySelector('[data-folio-note-path="Projects/Roadmap.md"]') !== null,
 		);
 		scrollIntoViewArgs = [];
 

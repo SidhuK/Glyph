@@ -85,9 +85,7 @@ export function useWorkspaceLinkEvents({
 			const sourceDir = sourcePath ? parentDir(sourcePath) : "";
 			const hasExplicitPath = normalizedTarget.includes("/");
 			const nextRelPathBase =
-				hasExplicitPath || !sourceDir
-					? normalizedTarget
-					: `${sourceDir}/${normalizedTarget}`;
+				hasExplicitPath || !sourceDir ? normalizedTarget : `${sourceDir}/${normalizedTarget}`;
 			const nextRelPath = isMarkdownPath(nextRelPathBase)
 				? nextRelPathBase
 				: `${nextRelPathBase}.md`;
@@ -152,13 +150,10 @@ export function useWorkspaceLinkEvents({
 					}
 
 					if (!isMarkdownCreatablePath(normalizedTarget)) {
-						setError(
-							`Unsupported non-markdown wikilink target: ${detail.target}`,
-						);
+						setError(`Unsupported non-markdown wikilink target: ${detail.target}`);
 						return;
 					}
-					const headingAnchor =
-						detail.anchorKind === "heading" ? detail.anchor : null;
+					const headingAnchor = detail.anchorKind === "heading" ? detail.anchor : null;
 					const openedPath = await openOrCreateWikiLinkTarget(
 						detail.target,
 						sourcePath,
@@ -171,9 +166,7 @@ export function useWorkspaceLinkEvents({
 						});
 					}
 				} catch (e) {
-					setError(
-						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
-					);
+					setError(`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`);
 				}
 			})();
 		};
@@ -203,9 +196,7 @@ export function useWorkspaceLinkEvents({
 					}
 					setError(`Could not resolve markdown link: ${detail.href}`);
 				} catch (e) {
-					setError(
-						`Failed to open markdown link: ${e instanceof Error ? e.message : String(e)}`,
-					);
+					setError(`Failed to open markdown link: ${e instanceof Error ? e.message : String(e)}`);
 				}
 			})();
 		};
@@ -218,10 +209,7 @@ export function useWorkspaceLinkEvents({
 		const onPersonClick = (event: Event) => {
 			const detail = (event as CustomEvent<PersonClickDetail>).detail;
 			if (!detail?.handle) return;
-			openPalette(
-				"search",
-				detail.handle.startsWith("@") ? detail.handle : `@${detail.handle}`,
-			);
+			openPalette("search", detail.handle.startsWith("@") ? detail.handle : `@${detail.handle}`);
 		};
 		window.addEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
 		window.addEventListener(MARKDOWN_LINK_CLICK_EVENT, onMarkdownLinkClick);
@@ -229,10 +217,7 @@ export function useWorkspaceLinkEvents({
 		window.addEventListener(PERSON_CLICK_EVENT, onPersonClick);
 		return () => {
 			window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
-			window.removeEventListener(
-				MARKDOWN_LINK_CLICK_EVENT,
-				onMarkdownLinkClick,
-			);
+			window.removeEventListener(MARKDOWN_LINK_CLICK_EVENT, onMarkdownLinkClick);
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 			window.removeEventListener(PERSON_CLICK_EVENT, onPersonClick);
 		};

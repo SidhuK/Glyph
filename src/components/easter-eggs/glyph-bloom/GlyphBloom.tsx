@@ -22,12 +22,7 @@ export function GlyphBloom({ iconUrl }: GlyphBloomProps) {
 
 	return (
 		<div className={styles.trigger} onMouseDown={handleMouseDown}>
-			<img
-				className={`${styles.icon} welcomeScreenIcon`}
-				src={iconUrl}
-				alt=""
-				aria-hidden="true"
-			/>
+			<img className={`${styles.icon} welcomeScreenIcon`} src={iconUrl} alt="" aria-hidden="true" />
 			{bloomId !== null ? (
 				<span
 					key={bloomId}

@@ -38,7 +38,11 @@ base64 = "0.22"
 encoding_rs = "0.8"
 notify = "6"
 regex = "1"
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }
+reqwest = { version = "0.12", default-features = false, features = [
+	"rustls-tls",
+	"json",
+	"stream",
+] }
 rusqlite = { version = "0.31", features = ["bundled"] }
 url = "2"
 futures-util = "0.3"
@@ -56,23 +60,23 @@ tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 [target.'cfg(target_os = "macos")'.dependencies]
 core-text = "20"
 objc2-app-kit = { version = "0.3", default-features = false, features = [
-  "std",
-  "NSAlert",
-  "NSApplication",
-  "NSImage",
-  "NSButton",
-  "NSControl",
-  "NSResponder",
-  "NSTextField",
-  "NSView",
-  "NSWindow",
-  "NSPasteboard",
+	"std",
+	"NSAlert",
+	"NSApplication",
+	"NSImage",
+	"NSButton",
+	"NSControl",
+	"NSResponder",
+	"NSTextField",
+	"NSView",
+	"NSWindow",
+	"NSPasteboard",
 ] }
 objc2-foundation = { version = "0.3", default-features = false, features = [
-  "std",
-  "NSString",
-  "NSData",
-  "NSUserDefaults",
+	"std",
+	"NSString",
+	"NSData",
+	"NSUserDefaults",
 ] }
 
 [profile.release]

@@ -13,10 +13,7 @@ const DATABASE_BOARD_ROW_PAGE_SIZE = 48;
 
 export interface UseDatabasesPaneOptions {
 	onOpenFile: (relPath: string) => Promise<void>;
-	onRenameNotePath?: (
-		notePath: string,
-		nextName: string,
-	) => Promise<string | null>;
+	onRenameNotePath?: (notePath: string, nextName: string) => Promise<string | null>;
 	databasesOpenRequest: DatabasesOpenRequest;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 }

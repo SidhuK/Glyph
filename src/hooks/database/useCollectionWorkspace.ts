@@ -24,10 +24,7 @@ import {
 	setPrefetchedDatabaseDocument,
 } from "../../lib/navigationPrefetch";
 import type { SpaceChange } from "../../lib/spaceChange";
-import type {
-	WorkspaceDatabaseDefinition,
-	WorkspaceDatabaseDocument,
-} from "../../lib/tauri";
+import type { WorkspaceDatabaseDefinition, WorkspaceDatabaseDocument } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath, parentDir } from "../../utils/path";
@@ -50,11 +47,7 @@ function changedRelPaths(change: SpaceChange): string[] {
 	return [change.rel_path];
 }
 
-function pathTouchesFolder(
-	relPath: string,
-	folder: string,
-	recursive: boolean,
-): boolean {
+function pathTouchesFolder(relPath: string, folder: string, recursive: boolean): boolean {
 	const rel = normalizeRelPath(relPath);
 	const root = normalizeCollectionFolderPath(folder);
 	if (!root) return true;
@@ -84,22 +77,16 @@ export function useCollectionWorkspace({
 	initialDocument = null,
 }: UseCollectionWorkspaceOptions) {
 	const queryClient = useQueryClient();
-	const [selectedDatabaseIdState, setSelectedDatabaseIdState] = useState<
-		string | null
-	>(() => databasesOpenRequest.databaseId ?? readStoredSelectedDatabaseId());
-	const [selectedViewIdState, setSelectedViewIdState] = useState<string | null>(
-		null,
+	const [selectedDatabaseIdState, setSelectedDatabaseIdState] = useState<string | null>(
+		() => databasesOpenRequest.databaseId ?? readStoredSelectedDatabaseId(),
 	);
-	const [nameDraft, setNameDraft] = useState(
-		() => initialDocument?.database.name ?? "",
-	);
+	const [selectedViewIdState, setSelectedViewIdState] = useState<string | null>(null);
+	const [nameDraft, setNameDraft] = useState(() => initialDocument?.database.name ?? "");
 	const [namedDocumentId, setNamedDocumentId] = useState<string | null>(
 		() => initialDocument?.database.id ?? null,
 	);
 	const [createCollectionOpen, setCreateCollectionOpen] = useState(false);
-	const [seenRequestKey, setSeenRequestKey] = useState(() =>
-		requestKey(databasesOpenRequest),
-	);
+	const [seenRequestKey, setSeenRequestKey] = useState(() => requestKey(databasesOpenRequest));
 
 	const saveQueueRef = useRef(Promise.resolve());
 	const collectionRefreshTimerRef = useRef<number | null>(null);
@@ -163,14 +150,8 @@ export function useCollectionWorkspace({
 	}
 
 	const selectedViewId =
-		selectedDatabaseId &&
-		document &&
-		document.database.id === selectedDatabaseId
-			? resolveSelectedViewId(
-					selectedDatabaseId,
-					document.database.views,
-					selectedViewIdState,
-				)
+		selectedDatabaseId && document && document.database.id === selectedDatabaseId
+			? resolveSelectedViewId(selectedDatabaseId, document.database.views, selectedViewIdState)
 			: selectedViewIdState;
 	if (
 		selectedDatabaseId &&
@@ -187,10 +168,7 @@ export function useCollectionWorkspace({
 		const activeDatabaseId = selectedDatabaseIdRef.current;
 		if (!activeDatabaseId) return;
 		const activeDocument = documentRef.current;
-		if (
-			activeDocument &&
-			!collectionChangeIsRelevant(change, activeDocument.database.source)
-		) {
+		if (activeDocument && !collectionChangeIsRelevant(change, activeDocument.database.source)) {
 			return;
 		}
 		if (collectionRefreshTimerRef.current !== null) {
@@ -246,10 +224,7 @@ export function useCollectionWorkspace({
 					setPrefetchedDatabaseDocument(saved.database.id, saved);
 					setNameDraft(saved.database.name);
 					invalidateDatabasePrefetch(saved.database.id);
-					if (
-						!prevDatabase ||
-						shouldReloadSummaries(prevDatabase, saved.database)
-					) {
+					if (!prevDatabase || shouldReloadSummaries(prevDatabase, saved.database)) {
 						await loadSummaries();
 					}
 					return saved;
@@ -270,11 +245,7 @@ export function useCollectionWorkspace({
 	);
 
 	const commitDatabaseRename = useCallback(() => {
-		if (
-			!document ||
-			!nameDraft.trim() ||
-			nameDraft === document.database.name
-		) {
+		if (!document || !nameDraft.trim() || nameDraft === document.database.name) {
 			return;
 		}
 		void saveDatabase({ ...document.database, name: nameDraft.trim() });
@@ -317,9 +288,7 @@ export function useCollectionWorkspace({
 			clearError();
 			queryClient.setQueryData(
 				databaseSummariesQueryOptions().queryKey,
-				(getPrefetchedDatabaseSummaries() ?? []).filter(
-					(summary) => summary.id !== deletedId,
-				),
+				(getPrefetchedDatabaseSummaries() ?? []).filter((summary) => summary.id !== deletedId),
 			);
 			await loadSummaries();
 			queryClient.removeQueries({
@@ -337,9 +306,7 @@ export function useCollectionWorkspace({
 			setSelectedDatabaseIdState(created.database.id);
 			setNamedDocumentId(created.database.id);
 			setNameDraft(created.database.name);
-			setSelectedViewIdState(
-				resolveSelectedViewId(created.database.id, created.database.views),
-			);
+			setSelectedViewIdState(resolveSelectedViewId(created.database.id, created.database.views));
 			await loadSummaries();
 		},
 		[clearError, loadSummaries],

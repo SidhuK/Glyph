@@ -1,12 +1,6 @@
 import type { GitSyncStatus } from "./tauri";
 
-type GitSyncTone =
-	| "idle"
-	| "healthy"
-	| "syncing"
-	| "paused"
-	| "warning"
-	| "error";
+type GitSyncTone = "idle" | "healthy" | "syncing" | "paused" | "warning" | "error";
 
 export interface GitSyncPresentation {
 	tone: GitSyncTone;
@@ -71,9 +65,9 @@ export function getGitSyncRepoStateLabel(status: GitSyncStatus | null): string {
 export function canShowGitHistory(status: GitSyncStatus | null): boolean {
 	return Boolean(
 		status?.git_installed &&
-			status.repo_detected &&
-			status.repo_root_matches_space &&
-			!status.unsupported_parent_repo,
+		status.repo_detected &&
+		status.repo_root_matches_space &&
+		!status.unsupported_parent_repo,
 	);
 }
 
@@ -96,14 +90,8 @@ export function getGitSyncConnectionHelp(
 	return "Git Sync becomes available automatically when the opened space already contains a .git repository at its root.";
 }
 
-export function getGitSyncPresentation(
-	status: GitSyncStatus | null,
-): GitSyncPresentation {
-	const issueText =
-		status?.conflict_risk ??
-		status?.preflight_issue ??
-		status?.last_error ??
-		null;
+export function getGitSyncPresentation(status: GitSyncStatus | null): GitSyncPresentation {
+	const issueText = status?.conflict_risk ?? status?.preflight_issue ?? status?.last_error ?? null;
 	const branchLabel = status?.branch ?? status?.detected_branch ?? null;
 	const remoteLabel = status?.remote_url ?? status?.detected_remote_url ?? null;
 	const phaseLabel = gitSyncPhaseLabel(status);
@@ -129,8 +117,7 @@ export function getGitSyncPresentation(
 			tone: "warning",
 			triggerLabel: "Missing",
 			headline: "Install Git to enable sync",
-			supportingCopy:
-				"Glyph uses your system Git install and existing credentials.",
+			supportingCopy: "Glyph uses your system Git install and existing credentials.",
 			statusBadge: "Missing",
 		};
 	}
@@ -141,8 +128,7 @@ export function getGitSyncPresentation(
 			tone: "warning",
 			triggerLabel: "Unsupported",
 			headline: "This space sits inside another repo",
-			supportingCopy:
-				"Glyph only supports repositories rooted exactly at the opened space.",
+			supportingCopy: "Glyph only supports repositories rooted exactly at the opened space.",
 			statusBadge: "Unsupported",
 		};
 	}
@@ -180,8 +166,7 @@ export function getGitSyncPresentation(
 			tone: "error",
 			triggerLabel: "Attention",
 			headline: "Git Sync needs attention",
-			supportingCopy:
-				"Glyph found something that needs to be resolved before the next safe sync.",
+			supportingCopy: "Glyph found something that needs to be resolved before the next safe sync.",
 			statusBadge: "Attention",
 			canSyncNow: false,
 		};

@@ -43,33 +43,23 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 		tabs: [
 			{
 				id: "general",
-				renderIcon: () => (
-					<HugeiconsIcon icon={Settings01Icon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={Settings01Icon} size="var(--icon-md)" />,
 			},
 			{
 				id: "appearance",
-				renderIcon: () => (
-					<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" />,
 			},
 			{
 				id: "editor",
-				renderIcon: () => (
-					<HugeiconsIcon icon={PencilEdit02Icon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={PencilEdit02Icon} size="var(--icon-md)" />,
 			},
 			{
 				id: "shortcuts",
-				renderIcon: () => (
-					<HugeiconsIcon icon={CommandIcon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={CommandIcon} size="var(--icon-md)" />,
 			},
 			{
 				id: "about",
-				renderIcon: () => (
-					<HugeiconsIcon icon={Archive02Icon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={Archive02Icon} size="var(--icon-md)" />,
 			},
 		],
 	},
@@ -83,21 +73,15 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 			},
 			{
 				id: "git",
-				renderIcon: () => (
-					<HugeiconsIcon icon={GitBranchIcon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={GitBranchIcon} size="var(--icon-md)" />,
 			},
 			{
 				id: "ai",
-				renderIcon: () => (
-					<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />,
 			},
 			{
 				id: "usage",
-				renderIcon: () => (
-					<HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" />,
 			},
 		],
 	},
@@ -107,14 +91,10 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 		tabs: [
 			{
 				id: "experimental",
-				renderIcon: () => (
-					<HugeiconsIcon icon={TestTubeIcon} size="var(--icon-md)" />
-				),
+				renderIcon: () => <HugeiconsIcon icon={TestTubeIcon} size="var(--icon-md)" />,
 			},
 		],
 	},
 ];
 
-export const SETTINGS_TABS: SettingsTabMeta[] = SETTINGS_TAB_GROUPS.flatMap(
-	(group) => group.tabs,
-);
+export const SETTINGS_TABS: SettingsTabMeta[] = SETTINGS_TAB_GROUPS.flatMap((group) => group.tabs);

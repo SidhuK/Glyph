@@ -61,6 +61,5 @@ textarea {
 
 .plainTextInput.plainTextInput:focus-visible {
 	outline: none;
-	box-shadow: 0 1px 0
-		color-mix(in srgb, var(--interactive-accent) 58%, transparent);
+	box-shadow: 0 1px 0 color-mix(in srgb, var(--interactive-accent) 58%, transparent);
 }

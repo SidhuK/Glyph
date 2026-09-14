@@ -152,10 +152,9 @@ Details blocks use TipTap's official `@tiptap/extension-details` package with `p
 
 ```html
 <details open>
-<summary>Toggle title</summary>
+	<summary>Toggle title</summary>
 
-Toggle content.
-
+	Toggle content.
 </details>
 ```
 
@@ -212,9 +211,9 @@ This avoids concurrent writes to the same note from the same pane.
 
 ```ts
 invoke("space_write_text", {
-  path,
-  text: nextText,
-  base_mtime_ms: mtimeRef.current,
+	path,
+	text: nextText,
+	base_mtime_ms: mtimeRef.current,
 });
 ```
 
@@ -383,7 +382,7 @@ object for the same note on every autosave** (`persistDoc` calls
 `setPrefetchedNote` with the just-saved text). Any re-render that recomputed
 the `MainContent` memo (for example, the file-tree refresh that follows every
 save because the note is reindexed) then delivered a new `initialDoc` whose
-text was the *last saved* snapshot.
+text was the _last saved_ snapshot.
 
 The failure sequence:
 

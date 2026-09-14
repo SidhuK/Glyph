@@ -1,9 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	ArrowLeft02Icon,
-	ArrowUpRight01Icon,
-	TestTubeIcon,
-} from "@hugeicons/core-free-icons";
+import { ArrowLeft02Icon, ArrowUpRight01Icon, TestTubeIcon } from "@hugeicons/core-free-icons";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,12 +26,9 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 		() => searchSettingsEntries(settingsSearchQuery, 8, i18n.language),
 		[settingsSearchQuery, i18n.language],
 	);
-	const hasSearchQuery =
-		settingsSearchActive && settingsSearchQuery.trim().length > 0;
+	const hasSearchQuery = settingsSearchActive && settingsSearchQuery.trim().length > 0;
 
-	const selectSearchResult = (
-		result: (typeof settingsSearchResults)[number],
-	) => {
+	const selectSearchResult = (result: (typeof settingsSearchResults)[number]) => {
 		setSettingsSearchActive(false);
 		setSettingsSearchQuery("");
 		setSettingsTab(result.tab);
@@ -106,24 +99,17 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 									type="button"
 									className={cn(
 										"settingsSearchResultButton",
-										settingsTab === result.tab &&
-											"settingsSearchResultButtonActive",
+										settingsTab === result.tab && "settingsSearchResultButtonActive",
 									)}
 									onClick={() => selectSearchResult(result)}
 									aria-current={settingsTab === result.tab ? "page" : undefined}
 								>
-									<span className="settingsSearchResultTitle">
-										{result.title}
-									</span>
+									<span className="settingsSearchResultTitle">{result.title}</span>
 									<span className="settingsSearchResultMeta">
-										{result.section
-											? `${result.tabLabel} / ${result.section}`
-											: result.tabLabel}
+										{result.section ? `${result.tabLabel} / ${result.section}` : result.tabLabel}
 									</span>
 									{result.description ? (
-										<span className="settingsSearchResultDescription">
-											{result.description}
-										</span>
+										<span className="settingsSearchResultDescription">{result.description}</span>
 									) : null}
 								</button>
 							))
@@ -166,10 +152,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 										</span>
 										{tab.id === "usage" ? (
 											<span className="settingsTabLabsBadge">
-												<HugeiconsIcon
-													icon={TestTubeIcon}
-													size="var(--icon-sm)"
-												/>
+												<HugeiconsIcon icon={TestTubeIcon} size="var(--icon-sm)" />
 											</span>
 										) : null}
 									</button>
@@ -184,9 +167,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 				{licenseStatus?.mode === "community_build" ? (
 					<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
 						<span className="settingsFeedbackBadge">Community build</span>
-						<div className="settingsFeedbackTitle">
-							Thanks for building Glyph
-						</div>
+						<div className="settingsFeedbackTitle">Thanks for building Glyph</div>
 						<p className="settingsFeedbackBody">
 							Get automatic updates and the official build with a license.
 						</p>
@@ -206,8 +187,8 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 						<span className="settingsFeedbackBadge">Early access</span>
 						<div className="settingsFeedbackTitle">Help shape Glyph</div>
 						<p className="settingsFeedbackBody">
-							Glyph is actively evolving — you may hit rough edges. If something
-							feels off, I'd love to hear about it.
+							Glyph is actively evolving — you may hit rough edges. If something feels off, I'd love
+							to hear about it.
 						</p>
 						<Button
 							type="button"

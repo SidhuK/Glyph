@@ -1,9 +1,5 @@
 import type { MutableRefObject } from "react";
-import {
-	isBooleanColumn,
-	isDateColumn,
-	isNumberColumn,
-} from "../../lib/database/columns";
+import { isBooleanColumn, isDateColumn, isNumberColumn } from "../../lib/database/columns";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
@@ -14,10 +10,7 @@ import { ChevronDown, Plus, Trash2 } from "../Icons";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { DatabaseTagPicker } from "./DatabaseTagPicker";
-import {
-	type DatabaseFilterPreset,
-	databaseFilterPresets,
-} from "./databaseViewPresets";
+import { type DatabaseFilterPreset, databaseFilterPresets } from "./databaseViewPresets";
 
 interface FiltersPanelProps {
 	config: DatabaseConfig;
@@ -35,13 +28,7 @@ interface FiltersPanelProps {
 	) => Promise<void>;
 }
 
-const DATE_SHORTCUT_OPTIONS = [
-	"Overdue",
-	"Today",
-	"This Week",
-	"Last 7 Days",
-	"Last 30 Days",
-];
+const DATE_SHORTCUT_OPTIONS = ["Overdue", "Today", "This Week", "Last 7 Days", "Last 30 Days"];
 
 const SUPPORTED_FILTER_OPERATORS = [
 	"equals",
@@ -62,21 +49,15 @@ const SUPPORTED_FILTER_OPERATORS = [
 	"within_last_7_days",
 ] as const satisfies readonly DatabaseFilter["operator"][];
 
-function isSupportedFilterOperator(
-	operator: string,
-): operator is DatabaseFilter["operator"] {
-	return SUPPORTED_FILTER_OPERATORS.includes(
-		operator as DatabaseFilter["operator"],
-	);
+function isSupportedFilterOperator(operator: string): operator is DatabaseFilter["operator"] {
+	return SUPPORTED_FILTER_OPERATORS.includes(operator as DatabaseFilter["operator"]);
 }
 
 function isTagFilterColumn(column?: DatabaseColumn | null): boolean {
 	return column?.type === "tags" || column?.property_kind === "tags";
 }
 
-function defaultOperatorForColumn(
-	column?: DatabaseColumn | null,
-): DatabaseFilter["operator"] {
+function defaultOperatorForColumn(column?: DatabaseColumn | null): DatabaseFilter["operator"] {
 	if (isTagFilterColumn(column)) return "tags_contains";
 	if (isBooleanColumn(column)) return "is_true";
 	if (isDateColumn(column)) return "within_last_7_days";
@@ -94,13 +75,9 @@ function emptyFilter(column?: DatabaseColumn | null): DatabaseFilter {
 
 function operatorNeedsValue(operator: string): boolean {
 	if (!isSupportedFilterOperator(operator)) return false;
-	return ![
-		"is_empty",
-		"is_not_empty",
-		"is_true",
-		"is_false",
-		"within_last_7_days",
-	].includes(operator);
+	return !["is_empty", "is_not_empty", "is_true", "is_false", "within_last_7_days"].includes(
+		operator,
+	);
 }
 
 function operatorLabel(operator: string): string {
@@ -150,14 +127,7 @@ function operatorOptions(
 		: isDateColumn(column)
 			? ["within_last_7_days", "equals", "is_empty", "is_not_empty"]
 			: isNumberColumn(column)
-				? [
-						"equals",
-						"not_equals",
-						"greater_than",
-						"less_than",
-						"is_empty",
-						"is_not_empty",
-					]
+				? ["equals", "not_equals", "greater_than", "less_than", "is_empty", "is_not_empty"]
 				: isTagFilterColumn(column)
 					? ["tags_contains", "equals", "not_equals", "any_of", "none_of"]
 					: [
@@ -175,17 +145,14 @@ function operatorOptions(
 		label: operatorLabel(operator),
 		disabled: false,
 	}));
-	if (options.some((operator) => operator === currentOperator))
-		return normalized;
+	if (options.some((operator) => operator === currentOperator)) return normalized;
 
 	const currentOption = {
 		value: currentOperator,
 		label: operatorLabel(currentOperator),
 		disabled: !isSupportedFilterOperator(currentOperator),
 	};
-	return currentOption.disabled
-		? [currentOption, ...normalized]
-		: [...normalized, currentOption];
+	return currentOption.disabled ? [currentOption, ...normalized] : [...normalized, currentOption];
 }
 
 export function nextFilterForColumn(
@@ -212,10 +179,7 @@ function FilterJoiner({ index }: { index: number }) {
 	);
 }
 
-function isFilterPresetApplied(
-	filters: DatabaseFilter[],
-	preset: DatabaseFilterPreset,
-): boolean {
+function isFilterPresetApplied(filters: DatabaseFilter[], preset: DatabaseFilterPreset): boolean {
 	if (!preset.filter) return false;
 	return filters.some(
 		(filter) =>
@@ -260,10 +224,7 @@ export function FiltersPanel({
 			? `Filter ${invalidOperatorIndex + 1} uses an unsupported operator. Choose a supported operator to restore results.`
 			: "";
 	return (
-		<section
-			className="databaseViewOptionsPanel is-wide"
-			aria-label="Filter by"
-		>
+		<section className="databaseViewOptionsPanel is-wide" aria-label="Filter by">
 			<div className="databaseViewPanelHeader">
 				<span>Filter by</span>
 				{config.filters.length > 0 ? (
@@ -282,8 +243,7 @@ export function FiltersPanel({
 				) : null}
 			</div>
 			<p className="databaseViewPanelHint">
-				Narrow this view by column values. To search note text, use the search
-				box in the toolbar.
+				Narrow this view by column values. To search note text, use the search box in the toolbar.
 			</p>
 			<div className="databaseViewPresetGroup" aria-label="Filter presets">
 				<span className="databaseViewPresetLabel">Presets</span>
@@ -307,9 +267,7 @@ export function FiltersPanel({
 				</div>
 			</div>
 			{filterError || invalidOperatorError ? (
-				<div className="databaseViewPanelError">
-					{filterError || invalidOperatorError}
-				</div>
+				<div className="databaseViewPanelError">{filterError || invalidOperatorError}</div>
 			) : null}
 			{config.filters.length === 0 ? (
 				<button
@@ -328,37 +286,25 @@ export function FiltersPanel({
 			) : (
 				<div className="databaseViewFilterList">
 					{config.filters.map((filter, index) => {
-						const selectedColumn =
-							columns.find((column) => column.id === filter.column_id) ?? null;
-						const availableOperators = operatorOptions(
-							selectedColumn,
-							filter.operator,
-						);
+						const selectedColumn = columns.find((column) => column.id === filter.column_id) ?? null;
+						const availableOperators = operatorOptions(selectedColumn, filter.operator);
 						const showsValue = operatorNeedsValue(filter.operator);
-						const usesTagPicker =
-							showsValue && isTagFilterColumn(selectedColumn);
+						const usesTagPicker = showsValue && isTagFilterColumn(selectedColumn);
 						return (
 							<div
-								key={
-									filterUiKeys[index] ?? `filter-fallback-${filter.column_id}`
-								}
+								key={filterUiKeys[index] ?? `filter-fallback-${filter.column_id}`}
 								className="databaseViewFilterRow"
 							>
 								<FilterJoiner index={index} />
 								<span className="databaseViewFilterColumn">
-									<DatabaseColumnIcon
-										column={selectedColumn ?? undefined}
-										size="var(--icon-lg)"
-									/>
+									<DatabaseColumnIcon column={selectedColumn ?? undefined} size="var(--icon-lg)" />
 									<select
 										className="databaseViewInlineSelect"
 										value={filter.column_id}
 										aria-label={`Filter ${index + 1} field`}
 										onChange={(event) => {
 											const nextColumn =
-												columns.find(
-													(column) => column.id === event.target.value,
-												) ?? null;
+												columns.find((column) => column.id === event.target.value) ?? null;
 											onChangeFilterColumn(index, nextColumn);
 										}}
 									>
@@ -379,8 +325,7 @@ export function FiltersPanel({
 												i === index
 													? {
 															...entry,
-															operator: event.target
-																.value as DatabaseFilter["operator"],
+															operator: event.target.value as DatabaseFilter["operator"],
 															value_text:
 																event.target.value === "within_last_7_days"
 																	? "Last 7 Days"
@@ -392,11 +337,7 @@ export function FiltersPanel({
 									}
 								>
 									{availableOperators.map((option) => (
-										<option
-											key={option.value}
-											value={option.value}
-											disabled={option.disabled}
-										>
+										<option key={option.value} value={option.value} disabled={option.disabled}>
 											{option.label}
 										</option>
 									))}

@@ -9,9 +9,7 @@ export function lockEditorScrollDuringSuggestion(
 	editor: Editor,
 	getSuggestionMenu?: SuggestionMenuGetter,
 ): UnlockEditorScroll {
-	const host = editor.view.dom.closest<HTMLElement>(
-		EDITOR_SCROLL_HOST_SELECTOR,
-	);
+	const host = editor.view.dom.closest<HTMLElement>(EDITOR_SCROLL_HOST_SELECTOR);
 	if (!host) return () => {};
 
 	const scrollTop = host.scrollTop;

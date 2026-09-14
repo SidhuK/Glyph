@@ -1,16 +1,8 @@
-import {
-	Node,
-	mergeAttributes,
-	nodeInputRule,
-	nodePasteRule,
-} from "@tiptap/core";
+import { Node, mergeAttributes, nodeInputRule, nodePasteRule } from "@tiptap/core";
 import type { MarkdownToken } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
-import {
-	type EditorLinkSuggestion,
-	isImageTarget,
-} from "../../../lib/linkSuggestions";
+import { type EditorLinkSuggestion, isImageTarget } from "../../../lib/linkSuggestions";
 import {
 	parseWikiLink,
 	splitWikiLinkQuery,
@@ -38,20 +30,10 @@ function isEmbedSuggestionContext(
 ): boolean {
 	if (rangeFrom <= 1) return false;
 	try {
-		const previousChar = editor.state.doc.textBetween(
-			rangeFrom - 1,
-			rangeFrom,
-			"",
-			"",
-		);
+		const previousChar = editor.state.doc.textBetween(rangeFrom - 1, rangeFrom, "", "");
 		if (previousChar !== "!") return false;
 		if (rangeFrom <= 2) return true;
-		const beforePreviousChar = editor.state.doc.textBetween(
-			rangeFrom - 2,
-			rangeFrom - 1,
-			"",
-			"",
-		);
+		const beforePreviousChar = editor.state.doc.textBetween(rangeFrom - 2, rangeFrom - 1, "", "");
 		return beforePreviousChar !== "!";
 	} catch {
 		return false;
@@ -81,9 +63,7 @@ function insertWikiLinkNode(
 	inner: string,
 	asEmbed: boolean,
 ): boolean {
-	const replaceFrom = asEmbed
-		? getEmbedReplacementFrom(editor, range.from)
-		: range.from;
+	const replaceFrom = asEmbed ? getEmbedReplacementFrom(editor, range.from) : range.from;
 	const raw = asEmbed ? `![[${inner}]]` : `[[${inner}]]`;
 	const parsed = parseWikiLink(raw);
 	if (!parsed) return false;
@@ -109,9 +89,7 @@ function completeWikiLinkTarget(
 	insertText: string,
 	asEmbed: boolean,
 ): void {
-	const replaceFrom = asEmbed
-		? getEmbedReplacementFrom(editor, range.from)
-		: range.from;
+	const replaceFrom = asEmbed ? getEmbedReplacementFrom(editor, range.from) : range.from;
 	const next = `${asEmbed ? "![[" : "[["}${insertText}`;
 	editor
 		.chain()
@@ -204,10 +182,7 @@ export const WikiLink = Node.create({
 				tag: 'img[data-wikilink-embed="true"]',
 				getAttrs: (element) => {
 					if (!(element instanceof HTMLElement)) return false;
-					const target =
-						element.getAttribute("data-target") ??
-						element.getAttribute("src") ??
-						"";
+					const target = element.getAttribute("data-target") ?? element.getAttribute("src") ?? "";
 					if (!target || !isImageTarget(target)) return false;
 					const alias = element.getAttribute("data-alias");
 					return {
@@ -221,10 +196,8 @@ export const WikiLink = Node.create({
 		];
 	},
 	renderHTML({ node, HTMLAttributes }) {
-		const alias =
-			typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";
-		const target =
-			typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
+		const alias = typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";
+		const target = typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
 		const imageLike = target && isImageTarget(target);
 		if (node.attrs.embed && imageLike) {
 			const fallbackName = target.split("/").pop() ?? target;
@@ -353,12 +326,7 @@ export const WikiLink = Node.create({
 				allowedPrefixes: null,
 				startOfLine: false,
 				allow: ({ state, range }) => {
-					const query = state.doc.textBetween(
-						range.from + 2,
-						range.to,
-						"\n",
-						"\n",
-					);
+					const query = state.doc.textBetween(range.from + 2, range.to, "\n", "\n");
 					return (
 						!query.includes("]]") &&
 						!query.includes("[") &&
@@ -383,8 +351,7 @@ export const WikiLink = Node.create({
 						menuClassName: "wikiLinkSuggestionMenu",
 						itemContent: (item) => ({
 							title: item.title,
-							description:
-								item.kind === "heading" ? `#${item.slug}` : item.path,
+							description: item.kind === "heading" ? `#${item.slug}` : item.path,
 						}),
 						onTab: acceptWikiLinkSuggestion,
 						onEmptyEnter: (props) =>

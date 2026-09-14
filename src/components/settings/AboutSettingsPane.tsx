@@ -16,19 +16,13 @@ import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 
 export function AboutSettingsPane() {
-	const { status: licenseStatus, loading: licenseLoading } =
-		useLicenseStatus(false);
+	const { status: licenseStatus, loading: licenseLoading } = useLicenseStatus(false);
 	const autoUpdater = useUpdaterContext();
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
-	const [releaseChannelState, setReleaseChannelState] =
-		useState<ReleaseChannel>("stable");
+	const [releaseChannelState, setReleaseChannelState] = useState<ReleaseChannel>("stable");
 	const releaseChannelTouchedRef = useRef(false);
 	const [isSavingReleaseChannel, setIsSavingReleaseChannel] = useState(false);
 	const [error, setError] = useState("");
@@ -84,9 +78,7 @@ export function AboutSettingsPane() {
 				`v${update.version} is downloaded and ready. Click the update button to install it.`,
 			);
 		} catch (e) {
-			setUpdateStatus(
-				e instanceof Error ? e.message : "Failed to check for updates",
-			);
+			setUpdateStatus(e instanceof Error ? e.message : "Failed to check for updates");
 		}
 	};
 	return (
@@ -103,9 +95,7 @@ export function AboutSettingsPane() {
 					/>
 					<h2 id="about-title" className="aboutAppName">
 						{appInfo?.name ?? "Glyph"}
-						{versionLabel ? (
-							<span className="aboutVersion">{versionLabel}</span>
-						) : null}
+						{versionLabel ? <span className="aboutVersion">{versionLabel}</span> : null}
 					</h2>
 					<p className="aboutTagline">
 						Your thoughts deserve a home,
@@ -226,9 +216,7 @@ export function AboutSettingsPane() {
 									ariaLabel="Alpha releases"
 									onCheckedChange={(checked) => {
 										const previous = releaseChannelState;
-										const nextChannel: ReleaseChannel = checked
-											? "alpha"
-											: "stable";
+										const nextChannel: ReleaseChannel = checked ? "alpha" : "stable";
 										releaseChannelTouchedRef.current = true;
 										setError("");
 										setUpdateStatus("");
@@ -239,9 +227,7 @@ export function AboutSettingsPane() {
 											.catch((cause) => {
 												setReleaseChannelState(previous);
 												setError(
-													cause instanceof Error
-														? cause.message
-														: "Failed to save release channel",
+													cause instanceof Error ? cause.message : "Failed to save release channel",
 												);
 											})
 											.finally(() => {

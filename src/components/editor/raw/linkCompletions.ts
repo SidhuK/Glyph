@@ -23,9 +23,7 @@ type WikiLinkCompletion = Completion & {
 	[WIKI_LINK_COMPLETION]: WikiLinkCompletionMeta;
 };
 
-function isWikiLinkCompletion(
-	completion: Completion | null,
-): completion is WikiLinkCompletion {
+function isWikiLinkCompletion(completion: Completion | null): completion is WikiLinkCompletion {
 	return Boolean(completion && WIKI_LINK_COMPLETION in completion);
 }
 
@@ -34,12 +32,7 @@ function completionApply(
 	closing: string,
 	isCurrentContext: (text: string) => boolean,
 ) {
-	return (
-		view: EditorView,
-		completion: Completion,
-		from: number,
-		to: number,
-	) => {
+	return (view: EditorView, completion: Completion, from: number, to: number) => {
 		if (!isCurrentContext(view.state.doc.sliceString(from, to))) return;
 		const existingClosing = view.state.doc.sliceString(to, to + closing.length);
 		const replaceTo = existingClosing === closing ? to + closing.length : to;
@@ -65,12 +58,8 @@ function applyWikiLinkCompletion(options: {
 	const markdown = options.closeLink
 		? `${options.opening}${options.insertText}]]`
 		: `${options.opening}${options.insertText}`;
-	const existingClosing = options.view.state.doc.sliceString(
-		options.to,
-		options.to + 2,
-	);
-	const replaceTo =
-		options.closeLink && existingClosing === "]]" ? options.to + 2 : options.to;
+	const existingClosing = options.view.state.doc.sliceString(options.to, options.to + 2);
+	const replaceTo = options.closeLink && existingClosing === "]]" ? options.to + 2 : options.to;
 	options.view.dispatch({
 		changes: { from: options.from, to: replaceTo, insert: markdown },
 		selection: { anchor: options.from + markdown.length },
@@ -79,12 +68,7 @@ function applyWikiLinkCompletion(options: {
 }
 
 function wikiLinkApply(meta: WikiLinkCompletionMeta) {
-	return (
-		view: EditorView,
-		completion: Completion,
-		from: number,
-		to: number,
-	) => {
+	return (view: EditorView, completion: Completion, from: number, to: number) => {
 		applyWikiLinkCompletion({
 			view,
 			completion,
@@ -101,11 +85,7 @@ function isInTableOrCode(view: EditorView, pos: number): boolean {
 	let node = syntaxTree(view.state).resolveInner(pos, -1);
 	while (node) {
 		if (node.name === "Table") return true;
-		if (
-			node.name === "FencedCode" ||
-			node.name === "CodeBlock" ||
-			node.name === "InlineCode"
-		) {
+		if (node.name === "FencedCode" || node.name === "CodeBlock" || node.name === "InlineCode") {
 			return true;
 		}
 		if (!node.parent) return false;
@@ -140,9 +120,7 @@ function closeOpenWikiLink(view: EditorView): boolean {
 	return true;
 }
 
-async function wikiLinkCompletions(
-	context: CompletionContext,
-): Promise<CompletionResult | null> {
+async function wikiLinkCompletions(context: CompletionContext): Promise<CompletionResult | null> {
 	const match = context.matchBefore(/!?\[\[[^\]\n]*/);
 	if (!match) return null;
 	const asEmbed = match.text.startsWith("![[");
@@ -185,18 +163,16 @@ async function markdownLinkCompletions(
 		limit: COMPLETION_LIMIT,
 	});
 	if (context.aborted) return null;
-	const options = results.map(
-		(item): Completion => ({
-			label: item.title,
-			detail: item.insertText,
-			apply: completionApply(
-				`](${item.insertText})`,
-				")",
-				(text) => text.startsWith("](") && !text.includes("\n"),
-			),
-			type: "text",
-		}),
-	);
+	const options = results.map((item): Completion => ({
+		label: item.title,
+		detail: item.insertText,
+		apply: completionApply(
+			`](${item.insertText})`,
+			")",
+			(text) => text.startsWith("](") && !text.includes("\n"),
+		),
+		type: "text",
+	}));
 	return { from: match.from, options, filter: false };
 }
 
@@ -204,8 +180,7 @@ export function createRawLinkCompletionSource(getRelPath: () => string) {
 	return async (context: CompletionContext) => {
 		try {
 			return (
-				(await wikiLinkCompletions(context)) ??
-				(await markdownLinkCompletions(context, getRelPath))
+				(await wikiLinkCompletions(context)) ?? (await markdownLinkCompletions(context, getRelPath))
 			);
 		} catch (error) {
 			console.warn("Failed to load raw editor link suggestions", error);

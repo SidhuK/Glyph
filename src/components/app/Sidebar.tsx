@@ -11,10 +11,7 @@ interface SidebarProps extends SidebarContentProps {
 	sidebarCollapsed: boolean;
 }
 
-export const Sidebar = memo(function Sidebar({
-	sidebarCollapsed,
-	...contentProps
-}: SidebarProps) {
+export const Sidebar = memo(function Sidebar({ sidebarCollapsed, ...contentProps }: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
@@ -43,17 +40,11 @@ export const Sidebar = memo(function Sidebar({
 						initial={shouldReduceMotion ? false : { opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={shouldReduceMotion ? {} : { opacity: 0 }}
-						transition={
-							shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }
-						}
+						transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }}
 					>
 						{settingsMode ? (
 							<>
-								<div
-									aria-hidden="true"
-									className="sidebarDragLayer"
-									data-tauri-drag-region
-								/>
+								<div aria-hidden="true" className="sidebarDragLayer" data-tauri-drag-region />
 								<div className="sidebarHeader" data-tauri-drag-region />
 								<SidebarSettingsContent />
 							</>

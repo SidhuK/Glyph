@@ -17,15 +17,16 @@
 	justify-content: center;
 	cursor: pointer;
 	box-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 10%, transparent);
-	transition: border-color var(--transition-fast), color var(--transition-fast),
+	transition:
+		border-color var(--transition-fast),
+		color var(--transition-fast),
 		box-shadow var(--transition-fast);
 }
 
 .aiScrollFab:hover {
 	border-color: var(--border-default);
 	color: var(--text-primary);
-	box-shadow: 0 4px 12px
-		color-mix(in srgb, var(--text-primary) 14%, transparent);
+	box-shadow: 0 4px 12px color-mix(in srgb, var(--text-primary) 14%, transparent);
 }
 
 /* ── CODE BLOCK ENHANCEMENTS ── */
@@ -40,8 +41,7 @@
 	gap: 6px;
 	padding: 4px 8px;
 	margin: -8px -8px 8px -8px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 40%, transparent);
+	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
 	border-radius: var(--radius-md) var(--radius-md) 0 0;
 	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
 	font-size: 0;
@@ -64,7 +64,9 @@
 	border-radius: var(--radius-sm);
 	padding: 2px 8px;
 	cursor: pointer;
-	transition: color var(--transition-fast), border-color var(--transition-fast),
+	transition:
+		color var(--transition-fast),
+		border-color var(--transition-fast),
 		background var(--transition-fast);
 }
 

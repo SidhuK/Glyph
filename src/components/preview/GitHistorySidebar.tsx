@@ -8,11 +8,7 @@ import {
 	parseDisplayDateInput,
 } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import {
-	type GitCommitDiff,
-	type GitHistoryCommit,
-	invoke,
-} from "../../lib/tauri";
+import { type GitCommitDiff, type GitHistoryCommit, invoke } from "../../lib/tauri";
 import { cn } from "../../lib/utils";
 
 interface GitHistorySidebarProps {
@@ -22,10 +18,7 @@ interface GitHistorySidebarProps {
 	onSelectDiff: (diff: GitCommitDiff) => void;
 }
 
-function formatCommitDate(
-	timestampMs: number,
-	dateFormat: DateDisplayFormat,
-): string {
+function formatCommitDate(timestampMs: number, dateFormat: DateDisplayFormat): string {
 	if (!timestampMs) return "";
 	const date = parseDisplayDateInput(timestampMs);
 	if (!date) return "";
@@ -36,10 +29,7 @@ function formatCommitDate(
 
 function formatCommitAge(timestampMs: number): string {
 	if (!timestampMs) return "";
-	const elapsedMinutes = Math.max(
-		0,
-		Math.floor((Date.now() - timestampMs) / 60_000),
-	);
+	const elapsedMinutes = Math.max(0, Math.floor((Date.now() - timestampMs) / 60_000));
 	if (elapsedMinutes < 1) return "now";
 	if (elapsedMinutes < 60) return `${elapsedMinutes}m`;
 
@@ -76,8 +66,7 @@ export function GitHistorySidebar({
 	);
 	const historyQuery = useQuery({
 		queryKey: ["git", "history", relPath],
-		queryFn: () =>
-			relPath ? invoke("git_history_list", { path: relPath, limit: 40 }) : [],
+		queryFn: () => (relPath ? invoke("git_history_list", { path: relPath, limit: 40 }) : []),
 		enabled: open && Boolean(relPath),
 		staleTime: 0,
 	});
@@ -106,11 +95,7 @@ export function GitHistorySidebar({
 				{historyQuery.isLoading ? (
 					<div className="markdownEditorInfoEmpty">Loading versions</div>
 				) : null}
-				{error ? (
-					<div className="markdownEditorInfoEmpty">
-						{extractErrorMessage(error)}
-					</div>
-				) : null}
+				{error ? <div className="markdownEditorInfoEmpty">{extractErrorMessage(error)}</div> : null}
 				{!historyQuery.isLoading && !error && commits.length === 0 ? (
 					<div className="markdownEditorInfoEmpty">No saved versions yet.</div>
 				) : null}
@@ -119,17 +104,13 @@ export function GitHistorySidebar({
 						{commits.map((commit) => {
 							const isSelected = selectedCommitHash === commit.hash;
 							const isLoading =
-								diffMutation.isPending &&
-								diffMutation.variables?.hash === commit.hash;
+								diffMutation.isPending && diffMutation.variables?.hash === commit.hash;
 							const changes = changeCounts(commit);
 							return (
 								<li className="gitHistoryEntry" key={commit.hash}>
 									<button
 										type="button"
-										className={cn(
-											"gitHistoryItem",
-											isSelected && "gitHistoryItemSelected",
-										)}
+										className={cn("gitHistoryItem", isSelected && "gitHistoryItemSelected")}
 										onClick={() => diffMutation.mutate(commit)}
 										aria-pressed={isSelected}
 									>
@@ -138,8 +119,7 @@ export function GitHistorySidebar({
 												{commit.subject || "Untitled version"}
 											</span>
 											<span className="gitHistoryAside">
-												{!isLoading &&
-												(changes.added > 0 || changes.deleted > 0) ? (
+												{!isLoading && (changes.added > 0 || changes.deleted > 0) ? (
 													<span className="gitHistoryStats">
 														{changes.added > 0 ? (
 															<span className="gitHistoryStat gitHistoryStatAdd">
@@ -155,14 +135,9 @@ export function GitHistorySidebar({
 												) : null}
 												<span
 													className="gitHistoryMeta"
-													title={formatCommitDate(
-														commit.timestamp_ms,
-														dateDisplayFormat,
-													)}
+													title={formatCommitDate(commit.timestamp_ms, dateDisplayFormat)}
 												>
-													{isLoading
-														? "Opening…"
-														: formatCommitAge(commit.timestamp_ms)}
+													{isLoading ? "Opening…" : formatCommitAge(commit.timestamp_ms)}
 												</span>
 											</span>
 										</span>

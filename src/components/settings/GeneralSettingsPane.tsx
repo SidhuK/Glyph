@@ -1,11 +1,7 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import {
-	type AppLanguage,
-	LANGUAGE_OPTIONS,
-	isAppLanguage,
-} from "../../i18n/locales";
+import { type AppLanguage, LANGUAGE_OPTIONS, isAppLanguage } from "../../i18n/locales";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	DATE_DISPLAY_FORMAT_OPTIONS,
@@ -18,11 +14,7 @@ import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { FileTreeSettingsSection } from "./FileTreeSettingsSection";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
@@ -53,8 +45,7 @@ export function GeneralSettingsPane() {
 	);
 
 	const setResumeLastSessionChecked = resumeLastSession.setChecked;
-	const setKeepRunningOnLastWindowCloseChecked =
-		keepRunningOnLastWindowClose.setChecked;
+	const setKeepRunningOnLastWindowCloseChecked = keepRunningOnLastWindowClose.setChecked;
 	const setFolderCountsChecked = folderCounts.setChecked;
 	const setInitialDateFormat = dateFormat.setInitialValue;
 	const setDateFormatValue = dateFormat.setValue;
@@ -68,9 +59,7 @@ export function GeneralSettingsPane() {
 				setLanguageState(settings.ui.language);
 				setInitialDateFormat(settings.ui.dateDisplayFormat);
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
-				setKeepRunningOnLastWindowCloseChecked(
-					settings.ui.keepRunningOnLastWindowClose,
-				);
+				setKeepRunningOnLastWindowCloseChecked(settings.ui.keepRunningOnLastWindowClose);
 				setFolderCountsChecked(settings.ui.showFileTreeFolderCounts);
 			})
 			.catch((cause) => {
@@ -98,18 +87,12 @@ export function GeneralSettingsPane() {
 				if (isDateDisplayFormat(payload.ui?.dateDisplayFormat)) {
 					setDateFormatValue(payload.ui.dateDisplayFormat);
 				}
-				applyIfBoolean(
-					payload.ui?.resumeLastSession,
-					setResumeLastSessionChecked,
-				);
+				applyIfBoolean(payload.ui?.resumeLastSession, setResumeLastSessionChecked);
 				applyIfBoolean(
 					payload.ui?.keepRunningOnLastWindowClose,
 					setKeepRunningOnLastWindowCloseChecked,
 				);
-				applyIfBoolean(
-					payload.ui?.showFileTreeFolderCounts,
-					setFolderCountsChecked,
-				);
+				applyIfBoolean(payload.ui?.showFileTreeFolderCounts, setFolderCountsChecked);
 			},
 			[
 				setDateFormatValue,
@@ -162,10 +145,7 @@ export function GeneralSettingsPane() {
 						/>
 					</SettingsRow>
 				</SettingsSection>
-				<FileTreeSettingsSection
-					folderCounts={folderCounts}
-					setError={setError}
-				/>
+				<FileTreeSettingsSection folderCounts={folderCounts} setError={setError} />
 				<LicenseSettingsCard />
 				<SettingsSection
 					title={t("language.sectionTitle")}

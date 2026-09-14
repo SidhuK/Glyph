@@ -17,10 +17,7 @@ import {
 	boardRowHasLane,
 	canManageBoardLanes,
 } from "../../lib/database/board";
-import {
-	databaseCellValueFromRow,
-	formatDatabaseDateTime,
-} from "../../lib/database/config";
+import { databaseCellValueFromRow, formatDatabaseDateTime } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import type { DateDisplayFormat } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -47,10 +44,7 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import { Input } from "../ui/shadcn/input";
-import {
-	DatabaseBoardCardView,
-	DatabaseBoardLaneView,
-} from "./DatabaseBoardViews";
+import { DatabaseBoardCardView, DatabaseBoardLaneView } from "./DatabaseBoardViews";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import {
 	DatabaseNoteAppearanceIcon,
@@ -73,19 +67,14 @@ interface DatabaseBoardProps {
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	laneOrderByGroup?: Record<string, string[]>;
 	cardOrderByGroup?: Record<string, Record<string, string[]>>;
-	onLaneOrderChange?: (
-		groupColumnId: string,
-		laneOrder: string[],
-	) => void | Promise<void>;
+	onLaneOrderChange?: (groupColumnId: string, laneOrder: string[]) => void | Promise<void>;
 	onCardOrderChange?: (
 		groupColumnId: string,
 		cardOrder: Record<string, string[]>,
 	) => void | Promise<void>;
 	laneColors?: Record<string, string>;
 	statusColors?: Record<string, EditorTextColor>;
-	onLaneColorChange?:
-		| ((laneId: string, color: EditorTextColor | null) => void)
-		| null;
+	onLaneColorChange?: ((laneId: string, color: EditorTextColor | null) => void) | null;
 	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
 	boardCardFields?: string[];
 	hasMoreRows?: boolean;
@@ -147,10 +136,7 @@ function boardCardTitle(row: DatabaseRow, activeLaneLabel: string): string {
 	return indexedTitle;
 }
 
-function boardCardTextPropertyValues(
-	row: DatabaseRow,
-	kind: "status" | "priority",
-): string[] {
+function boardCardTextPropertyValues(row: DatabaseRow, kind: "status" | "priority"): string[] {
 	const values: string[] = [];
 	for (const property of Object.values(row.properties)) {
 		if (property.kind !== kind) continue;
@@ -160,10 +146,7 @@ function boardCardTextPropertyValues(
 	return values;
 }
 
-function formatCompactBoardDateTime(
-	value: string,
-	dateFormat: DateDisplayFormat,
-): string {
+function formatCompactBoardDateTime(value: string, dateFormat: DateDisplayFormat): string {
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) {
 		return formatDatabaseDateTime(value, dateFormat);
@@ -216,24 +199,17 @@ export function DatabaseBoard({
 	const dateDisplayFormat = useDateDisplayFormat();
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion();
-	const {
-		groupColumn,
-		groupColumns,
-		lanes,
-		addLane,
-		moveLaneToIndex,
-		renameLane,
-		moveCardToLane,
-	} = useDatabaseBoard({
-		rows,
-		columns,
-		initialGroupColumnId: persistedGroupColumnId,
-		initialLaneOrderByGroup: laneOrderByGroup,
-		initialCardOrderByGroup: cardOrderByGroup,
-		onGroupColumnIdChange,
-		onLaneOrderChange,
-		onCardOrderChange,
-	});
+	const { groupColumn, groupColumns, lanes, addLane, moveLaneToIndex, renameLane, moveCardToLane } =
+		useDatabaseBoard({
+			rows,
+			columns,
+			initialGroupColumnId: persistedGroupColumnId,
+			initialLaneOrderByGroup: laneOrderByGroup,
+			initialCardOrderByGroup: cardOrderByGroup,
+			onGroupColumnIdChange,
+			onLaneOrderChange,
+			onCardOrderChange,
+		});
 	const [moveError, setMoveError] = useState("");
 	const [laneEdit, setLaneEdit] = useState<LaneEditState | null>(null);
 	const boardShellRef = useRef<HTMLDivElement | null>(null);
@@ -301,9 +277,7 @@ export function DatabaseBoard({
 		if (!laneEdit || !groupColumn || !canManageLanes) return;
 		const laneId = boardLaneIdFromLabel(groupColumn, laneEdit.value);
 		if (!laneId) return;
-		if (
-			lanes.some((lane) => lane.id === laneId && lane.id !== laneEdit.lane?.id)
-		) {
+		if (lanes.some((lane) => lane.id === laneId && lane.id !== laneEdit.lane?.id)) {
 			setMoveError(`"${laneId}" already exists.`);
 			return;
 		}
@@ -327,10 +301,7 @@ export function DatabaseBoard({
 							? {
 									kind: cell.kind,
 									value_list: Array.from(
-										new Set([
-											...cell.value_list.filter((value) => value !== lane.id),
-											laneId,
-										]),
+										new Set([...cell.value_list.filter((value) => value !== lane.id), laneId]),
 									),
 								}
 							: boardLaneValue(groupColumn, laneId);
@@ -342,15 +313,7 @@ export function DatabaseBoard({
 		} catch (error) {
 			setMoveError(extractErrorMessage(error));
 		}
-	}, [
-		addLane,
-		canManageLanes,
-		groupColumn,
-		laneEdit,
-		lanes,
-		onSaveCell,
-		renameLane,
-	]);
+	}, [addLane, canManageLanes, groupColumn, laneEdit, lanes, onSaveCell, renameLane]);
 
 	const handleLaneDrop = useCallback(
 		async (
@@ -402,8 +365,7 @@ export function DatabaseBoard({
 			if (event.canceled) return;
 
 			const { source, target } = event.operation;
-			const notePath =
-				typeof source?.data.notePath === "string" ? source.data.notePath : null;
+			const notePath = typeof source?.data.notePath === "string" ? source.data.notePath : null;
 			const targetLaneId =
 				typeof target?.data.laneId === "string"
 					? target.data.laneId
@@ -413,9 +375,7 @@ export function DatabaseBoard({
 			const targetNotePath =
 				typeof target?.data.notePath === "string" ? target.data.notePath : null;
 			const sourceLaneId =
-				typeof source?.data.sourceLaneId === "string"
-					? source.data.sourceLaneId
-					: null;
+				typeof source?.data.sourceLaneId === "string" ? source.data.sourceLaneId : null;
 			if (!targetLaneId) return;
 
 			void handleLaneDrop(notePath, targetLaneId, sourceLaneId, targetNotePath);
@@ -442,9 +402,7 @@ export function DatabaseBoard({
 			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>
-							{laneEdit?.mode === "rename" ? "Rename lane" : "Add lane"}
-						</DialogTitle>
+						<DialogTitle>{laneEdit?.mode === "rename" ? "Rename lane" : "Add lane"}</DialogTitle>
 						<DialogDescription>
 							{groupColumn
 								? laneEdit?.mode === "rename"
@@ -471,16 +429,10 @@ export function DatabaseBoard({
 							}
 						/>
 						<DialogFooter>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setLaneEdit(null)}
-							>
+							<Button type="button" variant="outline" onClick={() => setLaneEdit(null)}>
 								Cancel
 							</Button>
-							<Button type="submit">
-								{laneEdit?.mode === "rename" ? "Rename" : "Add"}
-							</Button>
+							<Button type="submit">{laneEdit?.mode === "rename" ? "Rename" : "Add"}</Button>
 						</DialogFooter>
 					</form>
 				</DialogContent>
@@ -490,9 +442,7 @@ export function DatabaseBoard({
 					className="databaseBoardError"
 					initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={
-						shouldReduceMotion ? { duration: 0 } : springPresets.snappy
-					}
+					transition={shouldReduceMotion ? { duration: 0 } : springPresets.snappy}
 				>
 					{moveError}
 				</m.div>
@@ -502,25 +452,15 @@ export function DatabaseBoard({
 					className="databaseBoardEmptyState"
 					initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={
-						shouldReduceMotion ? { duration: 0 } : springPresets.snappy
-					}
+					transition={shouldReduceMotion ? { duration: 0 } : springPresets.snappy}
 				>
-					<div className="databaseBoardEmptyTitle">
-						Add a field to create board lanes
-					</div>
+					<div className="databaseBoardEmptyTitle">Add a field to create board lanes</div>
 					<div className="databaseBoardEmptyText">
-						Board view groups notes into lanes. Add a status, priority,
-						checkbox, tag, or similar field to your notes, then pick it in the
-						toolbar above.
+						Board view groups notes into lanes. Add a status, priority, checkbox, tag, or similar
+						field to your notes, then pick it in the toolbar above.
 					</div>
 					<div className="databaseBoardEmptyActions">
-						<Button
-							type="button"
-							variant="ghost"
-							size="sm"
-							onClick={onOpenColumns}
-						>
+						<Button type="button" variant="ghost" size="sm" onClick={onOpenColumns}>
 							Open view settings
 						</Button>
 					</div>
@@ -541,9 +481,7 @@ export function DatabaseBoard({
 									isPriorityGroup={isPriorityGroup}
 									isTagGroup={isTagGroup}
 									shouldReduceMotion={shouldReduceMotion}
-									onLaneColorChange={
-										isPriorityGroup ? null : handleLaneColorChange
-									}
+									onLaneColorChange={isPriorityGroup ? null : handleLaneColorChange}
 									onAddLane={canManageLanes ? handleAddLane : undefined}
 									onRenameLane={canManageLanes ? handleRenameLane : undefined}
 									reorderableLanes={reorderableLanes}
@@ -554,49 +492,29 @@ export function DatabaseBoard({
 											const title = boardCardTitle(row, lane.label);
 											const maxVisibleTags = 2;
 											const visibleTags = row.tags.slice(0, maxVisibleTags);
-											const extraTagCount = Math.max(
-												row.tags.length - maxVisibleTags,
-												0,
-											);
-											const statusValues = boardCardTextPropertyValues(
-												row,
-												"status",
-											);
+											const extraTagCount = Math.max(row.tags.length - maxVisibleTags, 0);
+											const statusValues = boardCardTextPropertyValues(row, "status");
 											const maxVisibleStatuses = 2;
-											const visibleStatuses = statusValues.slice(
-												0,
-												maxVisibleStatuses,
-											);
+											const visibleStatuses = statusValues.slice(0, maxVisibleStatuses);
 											const extraStatusCount = Math.max(
 												statusValues.length - maxVisibleStatuses,
 												0,
 											);
-											const priorityValues = boardCardTextPropertyValues(
-												row,
-												"priority",
-											);
+											const priorityValues = boardCardTextPropertyValues(row, "priority");
 											const maxVisiblePriorities = 2;
-											const visiblePriorities = priorityValues.slice(
-												0,
-												maxVisiblePriorities,
-											);
+											const visiblePriorities = priorityValues.slice(0, maxVisiblePriorities);
 											const extraPriorityCount = Math.max(
 												priorityValues.length - maxVisiblePriorities,
 												0,
 											);
-											const updatedLabel = formatDatabaseDateTime(
-												row.updated,
-												dateDisplayFormat,
-											);
+											const updatedLabel = formatDatabaseDateTime(row.updated, dateDisplayFormat);
 											const compactUpdatedLabel = formatCompactBoardDateTime(
 												row.updated,
 												dateDisplayFormat,
 											);
 											const taskSummary =
-												taskSummariesByPath?.[row.note_path] ??
-												EMPTY_TASK_SUMMARY;
-											const noteAppearance =
-												itemAppearance[row.note_path] ?? null;
+												taskSummariesByPath?.[row.note_path] ?? EMPTY_TASK_SUMMARY;
+											const noteAppearance = itemAppearance[row.note_path] ?? null;
 											const noteAppearanceStyle = databaseNoteAppearanceStyle(
 												row.note_path,
 												noteAppearance,
@@ -629,28 +547,18 @@ export function DatabaseBoard({
 																		...otherLanes.map((targetLane) => ({
 																			label: `Move to ${targetLane.label}`,
 																			action: () =>
-																				void handleLaneDrop(
-																					row.note_path,
-																					targetLane.id,
-																					lane.id,
-																				),
+																				void handleLaneDrop(row.note_path, targetLane.id, lane.id),
 																		})),
 																	]
 																: []),
 														]).catch((error: unknown) => {
-															console.error(
-																"Failed to show board card context menu",
-																error,
-															);
+															console.error("Failed to show board card context menu", error);
 														});
 													}}
 												>
 													<div className="databaseBoardCardHead">
 														<div className="databaseBoardCardHeaderRow">
-															<span
-																className="databaseBoardCardTitle"
-																style={noteAppearanceStyle}
-															>
+															<span className="databaseBoardCardTitle" style={noteAppearanceStyle}>
 																<DatabaseNoteAppearanceIcon
 																	notePath={row.note_path}
 																	appearance={noteAppearance}
@@ -683,10 +591,8 @@ export function DatabaseBoard({
 															) : null}
 														</div>
 													</div>
-													{(isCardFieldVisible("status") &&
-														visibleStatuses.length > 0) ||
-													(isCardFieldVisible("priority") &&
-														visiblePriorities.length > 0) ? (
+													{(isCardFieldVisible("status") && visibleStatuses.length > 0) ||
+													(isCardFieldVisible("priority") && visiblePriorities.length > 0) ? (
 														<div className="databaseBoardCardMetaRow">
 															<div className="databaseBoardCardMetaGroup">
 																{isCardFieldVisible("status") &&
@@ -698,8 +604,7 @@ export function DatabaseBoard({
 																			className="databaseBoardCardStatus"
 																		/>
 																	))}
-																{isCardFieldVisible("status") &&
-																extraStatusCount > 0 ? (
+																{isCardFieldVisible("status") && extraStatusCount > 0 ? (
 																	<span className="databaseBoardTag is-muted">
 																		+{extraStatusCount}
 																	</span>
@@ -707,17 +612,14 @@ export function DatabaseBoard({
 															</div>
 															<div className="databaseBoardCardMetaGroup is-priority">
 																{isCardFieldVisible("priority") &&
-																	visiblePriorities.map(
-																		(priority, priorityIndex) => (
-																			<PriorityPropertyPill
-																				key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
-																				value={priority}
-																				className="databaseBoardCardStatus"
-																			/>
-																		),
-																	)}
-																{isCardFieldVisible("priority") &&
-																extraPriorityCount > 0 ? (
+																	visiblePriorities.map((priority, priorityIndex) => (
+																		<PriorityPropertyPill
+																			key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
+																			value={priority}
+																			className="databaseBoardCardStatus"
+																		/>
+																	))}
+																{isCardFieldVisible("priority") && extraPriorityCount > 0 ? (
 																	<span className="databaseBoardTag is-muted">
 																		+{extraPriorityCount}
 																	</span>
@@ -725,16 +627,13 @@ export function DatabaseBoard({
 															</div>
 														</div>
 													) : null}
-													{isCardFieldVisible("tags") &&
-													visibleTags.length > 0 ? (
+													{isCardFieldVisible("tags") && visibleTags.length > 0 ? (
 														<div className="databaseBoardCardTags">
 															{visibleTags.map((tag) => (
 																<span
 																	key={`${row.note_path}:${tag}`}
 																	className="databaseBoardTag"
-																	data-beautiful-tags={
-																		beautifulTags ? "true" : undefined
-																	}
+																	data-beautiful-tags={beautifulTags ? "true" : undefined}
 																	title={formatDatabaseTagLabel(tag)}
 																>
 																	<DatabaseColumnIcon
@@ -746,9 +645,7 @@ export function DatabaseBoard({
 																</span>
 															))}
 															{extraTagCount > 0 ? (
-																<span className="databaseBoardTag is-muted">
-																	+{extraTagCount}
-																</span>
+																<span className="databaseBoardTag is-muted">+{extraTagCount}</span>
 															) : null}
 														</div>
 													) : null}
@@ -774,10 +671,7 @@ export function DatabaseBoard({
 											title={`Add note to ${lane.label}`}
 											aria-label={`Add note to ${lane.label}`}
 										>
-											<span
-												className="databaseBoardAddCardIcon"
-												aria-hidden="true"
-											>
+											<span className="databaseBoardAddCardIcon" aria-hidden="true">
 												<Plus size="var(--icon-sm)" />
 											</span>
 											<span className="databaseBoardAddCardLabel">New</span>
@@ -801,11 +695,7 @@ export function DatabaseBoard({
 				</DragDropProvider>
 			)}
 			{hasMoreRows ? (
-				<div
-					ref={loadMoreRef}
-					className="databaseBoardLoadMoreSentinel"
-					aria-hidden="true"
-				/>
+				<div ref={loadMoreRef} className="databaseBoardLoadMoreSentinel" aria-hidden="true" />
 			) : null}
 		</div>
 	);

@@ -9,11 +9,7 @@ export function GitSyncProvider({ children }: { children: ReactNode }) {
 	const { spacePath } = useSpace();
 	const { saveAllEditors } = useEditorContext();
 	const gitSync = useGitSync({ spacePath, saveEditors: saveAllEditors });
-	return (
-		<GitSyncContext.Provider value={gitSync}>
-			{children}
-		</GitSyncContext.Provider>
-	);
+	return <GitSyncContext.Provider value={gitSync}>{children}</GitSyncContext.Provider>;
 }
 
 export function useGitSyncContext(): GitSyncController {

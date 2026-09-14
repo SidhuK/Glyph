@@ -43,11 +43,8 @@ export const FloatingTOC = memo(function FloatingTOC({
 	const [previewHeadingId, setPreviewHeadingId] = useState<string | null>(null);
 	const [outlineOpen, setOutlineOpen] = useState(false);
 	const panelId = useId();
-	const previewHeading =
-		headings.find((heading) => heading.id === previewHeadingId) ?? null;
-	const previewHeadingIndex = headings.findIndex(
-		(heading) => heading.id === previewHeadingId,
-	);
+	const previewHeading = headings.find((heading) => heading.id === previewHeadingId) ?? null;
+	const previewHeadingIndex = headings.findIndex((heading) => heading.id === previewHeadingId);
 	const previewText = previewHeading ? getHeadingPreview(previewHeading) : null;
 
 	if (headings.length < MIN_HEADINGS) return null;
@@ -58,10 +55,7 @@ export const FloatingTOC = memo(function FloatingTOC({
 			onMouseLeave={() => setPreviewHeadingId(null)}
 			onBlur={(event) => {
 				const nextFocus = event.relatedTarget;
-				if (
-					nextFocus instanceof Node &&
-					event.currentTarget.contains(nextFocus)
-				) {
+				if (nextFocus instanceof Node && event.currentTarget.contains(nextFocus)) {
 					return;
 				}
 				setPreviewHeadingId(null);
@@ -91,15 +85,10 @@ export const FloatingTOC = memo(function FloatingTOC({
 								setOutlineOpen(false);
 							}
 						}}
-						aria-describedby={
-							heading.id === previewHeadingId ? panelId : undefined
-						}
+						aria-describedby={heading.id === previewHeadingId ? panelId : undefined}
 						aria-label={heading.text}
 					>
-						<span
-							className="floatingTocDash"
-							style={{ width: DASH_WIDTHS[heading.level] ?? 6 }}
-						/>
+						<span className="floatingTocDash" style={{ width: DASH_WIDTHS[heading.level] ?? 6 }} />
 					</button>
 				))}
 			</nav>
@@ -151,16 +140,10 @@ export const FloatingTOC = memo(function FloatingTOC({
 					title={previewHeading.text}
 				>
 					<span className="floatingTocPreviewHeading">
-						<span className="floatingTocPreviewTitle">
-							{previewHeading.text}
-						</span>
-						<span className="floatingTocPreviewLevel">
-							H{previewHeading.level}
-						</span>
+						<span className="floatingTocPreviewTitle">{previewHeading.text}</span>
+						<span className="floatingTocPreviewLevel">H{previewHeading.level}</span>
 					</span>
-					{previewText ? (
-						<span className="floatingTocPreviewText">{previewText}</span>
-					) : null}
+					{previewText ? <span className="floatingTocPreviewText">{previewText}</span> : null}
 				</button>
 			) : null}
 		</div>

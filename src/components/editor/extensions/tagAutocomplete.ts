@@ -3,10 +3,7 @@ import { PluginKey } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
 import type { TagCount } from "../../../lib/tauri";
 import { invoke } from "../../../lib/tauri";
-import {
-	normalizeTagDraftPrefix,
-	normalizeTagToken,
-} from "../noteProperties/utils";
+import { normalizeTagDraftPrefix, normalizeTagToken } from "../noteProperties/utils";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const TAG_SUGGESTION_KEY = new PluginKey("tag-suggestion");
@@ -17,11 +14,7 @@ interface TagSuggestionItem {
 	isNew?: boolean;
 }
 
-function rankInlineTag(
-	tag: string,
-	normalizedQuery: string,
-	descendantPrefix: string,
-): number {
+function rankInlineTag(tag: string, normalizedQuery: string, descendantPrefix: string): number {
 	if (tag === normalizedQuery) return 0;
 	if (tag.startsWith(descendantPrefix)) return 1;
 	if (tag.startsWith(normalizedQuery)) return 2;
@@ -62,20 +55,11 @@ export const TagAutocomplete = Extension.create({
 			const matches = tags
 				.filter(
 					({ tag, is_explicit }) =>
-						is_explicit &&
-						(tag.startsWith(normalizedQuery) || tag.includes(normalizedQuery)),
+						is_explicit && (tag.startsWith(normalizedQuery) || tag.includes(normalizedQuery)),
 				)
 				.sort((left, right) => {
-					const leftRank = rankInlineTag(
-						left.tag,
-						normalizedQuery,
-						descendantPrefix,
-					);
-					const rightRank = rankInlineTag(
-						right.tag,
-						normalizedQuery,
-						descendantPrefix,
-					);
+					const leftRank = rankInlineTag(left.tag, normalizedQuery, descendantPrefix);
+					const rightRank = rankInlineTag(right.tag, normalizedQuery, descendantPrefix);
 					if (leftRank !== rightRank) return leftRank - rightRank;
 					return left.tag.localeCompare(right.tag);
 				})
@@ -114,12 +98,7 @@ export const TagAutocomplete = Extension.create({
 				},
 				items: ({ query }) => getItems(query),
 				command: ({ editor, range, props }) => {
-					editor
-						.chain()
-						.focus()
-						.deleteRange(range)
-						.insertContent(`#${props.tag} `)
-						.run();
+					editor.chain().focus().deleteRange(range).insertContent(`#${props.tag} `).run();
 				},
 				render: () =>
 					createTipTapTextSuggestionMenu<TagSuggestionItem>({

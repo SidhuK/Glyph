@@ -21,16 +21,8 @@ export function requestSearchJump(request: SearchJumpRequest): void {
 }
 
 /** Consume a pending jump for a note in a specific editor pane (once). */
-export function consumeSearchJump(
-	path: string,
-	targetPaneId: string,
-): SearchJumpRequest | null {
-	if (
-		!pending ||
-		pending.path !== path ||
-		pending.targetPaneId !== targetPaneId
-	)
-		return null;
+export function consumeSearchJump(path: string, targetPaneId: string): SearchJumpRequest | null {
+	if (!pending || pending.path !== path || pending.targetPaneId !== targetPaneId) return null;
 	const next = pending;
 	pending = null;
 	return next;

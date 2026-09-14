@@ -1,10 +1,7 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
-import {
-	type EditorLinkSuggestion,
-	suggestMarkdownLinks,
-} from "../../../lib/linkSuggestions";
+import { type EditorLinkSuggestion, suggestMarkdownLinks } from "../../../lib/linkSuggestions";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const MD_LINK_SUGGESTION_KEY = new PluginKey("markdown-link-suggestion");
@@ -44,12 +41,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 				items: ({ query }) => getItems(query),
 				command: ({ editor, range, props }) => {
 					const lookbackFrom = Math.max(0, range.from - 300);
-					const before = editor.state.doc.textBetween(
-						lookbackFrom,
-						range.from,
-						"\n",
-						"\n",
-					);
+					const before = editor.state.doc.textBetween(lookbackFrom, range.from, "\n", "\n");
 					const imagePrefixMatch = before.match(/!\[([^\]\n]*)$/);
 					if (imagePrefixMatch) {
 						const imagePrefixLength = imagePrefixMatch[0]?.length ?? 0;
@@ -64,12 +56,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 							.run();
 						return;
 					}
-					editor
-						.chain()
-						.focus()
-						.deleteRange(range)
-						.insertContent(`](${props.insertText})`)
-						.run();
+					editor.chain().focus().deleteRange(range).insertContent(`](${props.insertText})`).run();
 				},
 				render: () =>
 					createTipTapTextSuggestionMenu<EditorLinkSuggestion>({

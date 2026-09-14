@@ -70,9 +70,7 @@ export function normalizeTagToken(value: string): string | null {
 		return null;
 	}
 	const segments = normalized.split("/");
-	return segments.every((segment) => TAG_SEGMENT_PATTERN.test(segment))
-		? normalized
-		: null;
+	return segments.every((segment) => TAG_SEGMENT_PATTERN.test(segment)) ? normalized : null;
 }
 
 export function normalizeTagDraftPrefix(value: string): string {
@@ -93,8 +91,7 @@ export function normalizeForKind(property: NoteProperty): NoteProperty {
 			return {
 				...property,
 				value_bool:
-					property.value_bool ??
-					(property.value_text ?? "").trim().toLowerCase() === "true",
+					property.value_bool ?? (property.value_text ?? "").trim().toLowerCase() === "true",
 			};
 		case "tags":
 			return {
@@ -149,13 +146,9 @@ export function buildTagSuggestions(
 		return [];
 	}
 	const selectedTagSet = new Set(
-		selectedTags
-			.map((tag) => normalizeTagToken(tag))
-			.filter((tag): tag is string => Boolean(tag)),
+		selectedTags.map((tag) => normalizeTagToken(tag)).filter((tag): tag is string => Boolean(tag)),
 	);
-	const descendantPrefix = normalizedDraft.endsWith("/")
-		? normalizedDraft
-		: `${normalizedDraft}/`;
+	const descendantPrefix = normalizedDraft.endsWith("/") ? normalizedDraft : `${normalizedDraft}/`;
 	return availableTags
 		.filter(
 			({ tag, is_explicit }) =>
@@ -164,16 +157,8 @@ export function buildTagSuggestions(
 				(tag.startsWith(normalizedDraft) || tag.includes(normalizedDraft)),
 		)
 		.sort((left, right) => {
-			const leftRank = rankSuggestion(
-				left.tag,
-				normalizedDraft,
-				descendantPrefix,
-			);
-			const rightRank = rankSuggestion(
-				right.tag,
-				normalizedDraft,
-				descendantPrefix,
-			);
+			const leftRank = rankSuggestion(left.tag, normalizedDraft, descendantPrefix);
+			const rightRank = rankSuggestion(right.tag, normalizedDraft, descendantPrefix);
 			if (leftRank !== rightRank) {
 				return leftRank - rightRank;
 			}
@@ -183,11 +168,7 @@ export function buildTagSuggestions(
 		.slice(0, limit);
 }
 
-function rankSuggestion(
-	tag: string,
-	normalizedDraft: string,
-	descendantPrefix: string,
-): number {
+function rankSuggestion(tag: string, normalizedDraft: string, descendantPrefix: string): number {
 	if (tag === normalizedDraft) {
 		return 0;
 	}

@@ -90,10 +90,7 @@ export function customThemeId(name: string): CustomUiThemeId {
 	return `${CUSTOM_THEME_ID_PREFIX}${customThemeSlug(name)}`;
 }
 
-function parsePalette(
-	value: unknown,
-	mode: "light" | "dark",
-): CustomThemePalette {
+function parsePalette(value: unknown, mode: "light" | "dark"): CustomThemePalette {
 	if (!value || typeof value !== "object") {
 		throw new Error(`Missing "${mode}" colors`);
 	}
@@ -121,9 +118,7 @@ export function parseCustomTheme(value: unknown): CustomTheme {
 	}
 	const name = typeof source.name === "string" ? source.name.trim() : "";
 	if (!name || name.length > MAX_CUSTOM_THEME_NAME_LENGTH) {
-		throw new Error(
-			`"name" must be 1-${MAX_CUSTOM_THEME_NAME_LENGTH} characters`,
-		);
+		throw new Error(`"name" must be 1-${MAX_CUSTOM_THEME_NAME_LENGTH} characters`);
 	}
 	if (!customThemeSlug(name)) {
 		throw new Error('"name" must contain letters or numbers');
@@ -155,9 +150,7 @@ function mix(color: string, percent: number, into: string): string {
 }
 
 /** Full variable set for one mode: explicit tokens plus values derived from them. */
-function paletteVariables(
-	palette: CustomThemePalette,
-): Array<[string, string]> {
+function paletteVariables(palette: CustomThemePalette): Array<[string, string]> {
 	const { background, surface, elevated, canvas, foreground, border } = palette;
 	const { accent, accentHover, link, danger } = palette;
 	return [
@@ -221,9 +214,7 @@ export function applyCustomThemes(themes: readonly CustomTheme[]): void {
 	style.textContent = buildCustomThemeCss(themes);
 }
 
-export function customThemeOption(
-	theme: CustomTheme,
-): UiThemeOption<CustomUiThemeId> {
+export function customThemeOption(theme: CustomTheme): UiThemeOption<CustomUiThemeId> {
 	return {
 		id: customThemeId(theme.name),
 		label: theme.name,

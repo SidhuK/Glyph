@@ -19,15 +19,8 @@ import {
 	MIN_SPLIT_RATIO,
 	type SplitEditorNode,
 } from "../../lib/splitEditor";
-import {
-	resolveSplitDragSource,
-	splitPaneDroppable,
-	splitPaneIdOf,
-} from "./splitEditorDnd";
-import type {
-	SplitEditorDragSource,
-	SplitEditorDropTarget,
-} from "./splitEditorDnd";
+import { resolveSplitDragSource, splitPaneDroppable, splitPaneIdOf } from "./splitEditorDnd";
+import type { SplitEditorDragSource, SplitEditorDropTarget } from "./splitEditorDnd";
 
 const KEYBOARD_RESIZE_STEP = 0.02;
 const KEYBOARD_RESIZE_LARGE_STEP = 0.05;
@@ -51,10 +44,7 @@ interface SplitEditorLayoutProps {
 	layout: SplitEditorNode;
 	focusedPaneId: string;
 	onFocusPane: (paneId: string) => void;
-	onDrop: (
-		source: SplitEditorDragSource,
-		target: SplitEditorDropTarget,
-	) => void;
+	onDrop: (source: SplitEditorDragSource, target: SplitEditorDropTarget) => void;
 	onResizeSplit: (splitId: string, ratio: number) => void;
 	renderPane: (paneId: string, focused: boolean) => ReactNode;
 }
@@ -67,9 +57,7 @@ export function SplitEditorLayout({
 	onResizeSplit,
 	renderPane,
 }: SplitEditorLayoutProps) {
-	const [dropPreview, setDropPreview] = useState<SplitEditorDropTarget | null>(
-		null,
-	);
+	const [dropPreview, setDropPreview] = useState<SplitEditorDropTarget | null>(null);
 	const setPreview = useCallback((next: SplitEditorDropTarget | null) => {
 		setDropPreview((current) => {
 			if (current?.paneId === next?.paneId && current?.edge === next?.edge) {
@@ -93,10 +81,7 @@ export function SplitEditorLayout({
 				const { x, y } = event.operation.position.current;
 				const edge = dropEdgeAtPoint(element.getBoundingClientRect(), x, y);
 				// Dropping a tab back into the centre of its own pane is a no-op.
-				const isSelfDrop =
-					source.kind === "tab" &&
-					source.paneId === paneId &&
-					edge === "center";
+				const isSelfDrop = source.kind === "tab" && source.paneId === paneId && edge === "center";
 				setPreview(isSelfDrop ? null : { paneId, edge });
 			},
 			onDragEnd(event: DragEndEvent) {
@@ -110,10 +95,7 @@ export function SplitEditorLayout({
 
 				const { x, y } = event.operation.position.current;
 				const edge = dropEdgeAtPoint(element.getBoundingClientRect(), x, y);
-				const isSelfDrop =
-					source.kind === "tab" &&
-					source.paneId === paneId &&
-					edge === "center";
+				const isSelfDrop = source.kind === "tab" && source.paneId === paneId && edge === "center";
 				if (isSelfDrop) return;
 
 				onDrop(source, { paneId, edge });
@@ -132,9 +114,7 @@ export function SplitEditorLayout({
 						key={node.paneId}
 						paneId={node.paneId}
 						focused={focused}
-						dropEdge={
-							dropPreview?.paneId === node.paneId ? dropPreview.edge : null
-						}
+						dropEdge={dropPreview?.paneId === node.paneId ? dropPreview.edge : null}
 						onFocusPane={onFocusPane}
 					>
 						{renderPane(node.paneId, focused)}
@@ -143,15 +123,8 @@ export function SplitEditorLayout({
 			}
 
 			return (
-				<div
-					key={node.id}
-					className="splitEditorBranch"
-					data-direction={node.direction}
-				>
-					<div
-						className="splitEditorBranchChild"
-						style={{ flexBasis: `${node.ratio * 100}%` }}
-					>
+				<div key={node.id} className="splitEditorBranch" data-direction={node.direction}>
+					<div className="splitEditorBranchChild" style={{ flexBasis: `${node.ratio * 100}%` }}>
 						{renderNode(node.first)}
 					</div>
 					<SplitDivider
@@ -199,11 +172,7 @@ function SplitEditorPaneSection({
 		>
 			{children}
 			{dropEdge ? (
-				<div
-					className="splitEditorDropPreview"
-					data-edge={dropEdge}
-					aria-hidden="true"
-				/>
+				<div className="splitEditorDropPreview" data-edge={dropEdge} aria-hidden="true" />
 			) : null}
 		</section>
 	);
@@ -220,21 +189,18 @@ function SplitDivider({
 }) {
 	const [isResizing, setIsResizing] = useState(false);
 	const resizeRef = useRef<{ pointerId: number; rect: DOMRect } | null>(null);
-	const handlePointerDown = useCallback(
-		(event: ReactPointerEvent<HTMLDivElement>) => {
-			const divider = event.currentTarget;
-			const branch = divider.parentElement;
-			if (!branch) return;
-			event.preventDefault();
-			setIsResizing(true);
-			divider.setPointerCapture(event.pointerId);
-			resizeRef.current = {
-				pointerId: event.pointerId,
-				rect: branch.getBoundingClientRect(),
-			};
-		},
-		[],
-	);
+	const handlePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+		const divider = event.currentTarget;
+		const branch = divider.parentElement;
+		if (!branch) return;
+		event.preventDefault();
+		setIsResizing(true);
+		divider.setPointerCapture(event.pointerId);
+		resizeRef.current = {
+			pointerId: event.pointerId,
+			rect: branch.getBoundingClientRect(),
+		};
+	}, []);
 	const handlePointerMove = useCallback(
 		(event: ReactPointerEvent<HTMLDivElement>) => {
 			const resize = resizeRef.current;
@@ -247,20 +213,15 @@ function SplitDivider({
 		},
 		[direction, onResize],
 	);
-	const handlePointerEnd = useCallback(
-		(event: ReactPointerEvent<HTMLDivElement>) => {
-			if (resizeRef.current?.pointerId !== event.pointerId) return;
-			resizeRef.current = null;
-			setIsResizing(false);
-		},
-		[],
-	);
+	const handlePointerEnd = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+		if (resizeRef.current?.pointerId !== event.pointerId) return;
+		resizeRef.current = null;
+		setIsResizing(false);
+	}, []);
 
 	const handleKeyDown = useCallback(
 		(event: ReactKeyboardEvent<HTMLDivElement>) => {
-			const step = event.shiftKey
-				? KEYBOARD_RESIZE_LARGE_STEP
-				: KEYBOARD_RESIZE_STEP;
+			const step = event.shiftKey ? KEYBOARD_RESIZE_LARGE_STEP : KEYBOARD_RESIZE_STEP;
 			let nextRatio: number | null = null;
 
 			if (

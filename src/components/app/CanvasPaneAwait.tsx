@@ -9,10 +9,7 @@ interface CanvasPaneAwaitProps {
 export function CanvasPaneAwait({ variant }: CanvasPaneAwaitProps) {
 	return (
 		<div
-			className={cn(
-				"canvasPaneAwait",
-				variant === "connections" && "localNoteConnectionsViewport",
-			)}
+			className={cn("canvasPaneAwait", variant === "connections" && "localNoteConnectionsViewport")}
 			data-variant={variant}
 			aria-busy="true"
 			aria-live="polite"

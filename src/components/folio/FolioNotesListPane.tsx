@@ -1,13 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import {
-	type CSSProperties,
-	memo,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -75,10 +67,7 @@ function writeStoredFolioSortMode(sortMode: FolioNotesSortMode) {
 
 function noteTitle(note: FolioItem): string {
 	const fallback = basename(note.note_path);
-	return (
-		note.title.trim() ||
-		(note.is_markdown ? fallback.replace(/\.md$/i, "") : fallback)
-	);
+	return note.title.trim() || (note.is_markdown ? fallback.replace(/\.md$/i, "") : fallback);
 }
 
 function noteMatchesFilter(note: FolioItem, query: string): boolean {
@@ -96,10 +85,7 @@ function timestampMs(value: string | null): number | null {
 	return Number.isNaN(parsed) ? null : parsed;
 }
 
-function compareNullableDates(
-	left: string | null,
-	right: string | null,
-): number {
+function compareNullableDates(left: string | null, right: string | null): number {
 	const leftMs = timestampMs(left);
 	const rightMs = timestampMs(right);
 	if (leftMs === null && rightMs === null) return 0;
@@ -115,22 +101,12 @@ function compareTitles(left: FolioItem, right: FolioItem): number {
 	);
 }
 
-function compareNotes(
-	left: FolioItem,
-	right: FolioItem,
-	sortMode: FolioNotesSortMode,
-): number {
+function compareNotes(left: FolioItem, right: FolioItem, sortMode: FolioNotesSortMode): number {
 	if (sortMode === "edited") {
-		return (
-			compareNullableDates(left.updated, right.updated) ||
-			compareTitles(left, right)
-		);
+		return compareNullableDates(left.updated, right.updated) || compareTitles(left, right);
 	}
 	if (sortMode === "created") {
-		return (
-			compareNullableDates(left.created, right.created) ||
-			compareTitles(left, right)
-		);
+		return compareNullableDates(left.created, right.created) || compareTitles(left, right);
 	}
 	return compareTitles(left, right);
 }
@@ -153,23 +129,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onDeleteFile,
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
-	const {
-		beautifulTags,
-		itemAppearance,
-		setActiveDirPath,
-		setItemAppearance,
-		tagAppearance,
-	} = useFileTreeContext();
-	const { notes, filesTruncated, error, nonMarkdownFileLimit } =
-		useFolioNotes(folioScope);
+	const { beautifulTags, itemAppearance, setActiveDirPath, setItemAppearance, tagAppearance } =
+		useFileTreeContext();
+	const { notes, filesTruncated, error, nonMarkdownFileLimit } = useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortMode, setSortMode] = useState<FolioNotesSortMode>(
-		readStoredFolioSortMode,
-	);
+	const [sortMode, setSortMode] = useState<FolioNotesSortMode>(readStoredFolioSortMode);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
-	const [appearancePickerPath, setAppearancePickerPath] = useState<
-		string | null
-	>(null);
+	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
 	const sortedNotes = useMemo(
@@ -190,24 +156,16 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		[visibleNotes],
 	);
 	const selectedIndex = useMemo(
-		() =>
-			activeTabPath
-				? visibleNotes.findIndex((note) => note.note_path === activeTabPath)
-				: -1,
+		() => (activeTabPath ? visibleNotes.findIndex((note) => note.note_path === activeTabPath) : -1),
 		[activeTabPath, visibleNotes],
 	);
 	const selectedVirtualIndex = useMemo(
 		() =>
-			activeTabPath
-				? virtualRows.findIndex((row) => row.note.note_path === activeTabPath)
-				: -1,
+			activeTabPath ? virtualRows.findIndex((row) => row.note.note_path === activeTabPath) : -1,
 		[activeTabPath, virtualRows],
 	);
 	const taskSummaryPaths = useMemo(
-		() =>
-			visibleNotes
-				.filter((note) => note.is_markdown)
-				.map((note) => note.note_path),
+		() => visibleNotes.filter((note) => note.is_markdown).map((note) => note.note_path),
 		[visibleNotes],
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(taskSummaryPaths, true);
@@ -236,9 +194,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const virtualItems = rowVirtualizer.getVirtualItems();
 
 	const focusPane = useCallback(() => {
-		requestAnimationFrame(() =>
-			paneRef.current?.focus({ preventScroll: true }),
-		);
+		requestAnimationFrame(() => paneRef.current?.focus({ preventScroll: true }));
 	}, []);
 	const changeSortMode = useCallback((nextSortMode: FolioNotesSortMode) => {
 		setSortMode(nextSortMode);
@@ -307,10 +263,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			try {
 				await setItemAppearance(path, appearance);
 			} catch (error) {
-				console.error(
-					"Failed to update folio file appearance",
-					extractErrorMessage(error),
-				);
+				console.error("Failed to update folio file appearance", extractErrorMessage(error));
 			}
 		},
 		[setItemAppearance],
@@ -327,7 +280,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		(nextAppearance: FileTreeAppearance) => {
 			if (!appearancePickerPath) return;
 			void changeAppearance(appearancePickerPath, {
-				...(itemAppearance[appearancePickerPath] ?? {}),
+				...itemAppearance[appearancePickerPath],
 				...nextAppearance,
 			});
 		},
@@ -336,8 +289,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const openAdjacentNote = useCallback(
 		(direction: 1 | -1) => {
 			if (!visibleNotes.length || selectedIndex < 0) return;
-			const nextIndex =
-				(selectedIndex + direction + visibleNotes.length) % visibleNotes.length;
+			const nextIndex = (selectedIndex + direction + visibleNotes.length) % visibleNotes.length;
 			const nextNote = visibleNotes[nextIndex];
 			if (!nextNote) return;
 			scrollNoteIntoView(nextNote.note_path);
@@ -356,8 +308,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		if (error) {
 			return (
 				<div className="folioNotesState">
-					Could not load notes:{" "}
-					{error instanceof Error ? error.message : String(error)}
+					Could not load notes: {error instanceof Error ? error.message : String(error)}
 				</div>
 			);
 		}
@@ -406,18 +357,14 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								onRename={onRenameFile ? renameNote : undefined}
 								onDelete={deleteNote}
 								onFocus={focusPane}
-								isRenaming={
-									Boolean(onRenameFile) && renamingPath === row.note.note_path
-								}
+								isRenaming={Boolean(onRenameFile) && renamingPath === row.note.note_path}
 								onCommitRename={commitRename}
 								onCancelRename={cancelRename}
 								appearance={itemAppearance[row.note.note_path] ?? null}
 								onOpenAppearancePicker={setAppearancePickerPath}
 								iconNameForTag={iconNameForTag}
 								taskSummary={
-									row.note.is_markdown
-										? (taskSummariesByPath?.[row.note.note_path] ?? null)
-										: null
+									row.note.is_markdown ? (taskSummariesByPath?.[row.note.note_path] ?? null) : null
 								}
 							/>
 						);
@@ -454,8 +401,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 					const pathFromFocusedRow = event.currentTarget.contains(row)
 						? row?.dataset.folioNotePath
 						: null;
-					const selectedNote =
-						selectedIndex >= 0 ? visibleNotes[selectedIndex] : null;
+					const selectedNote = selectedIndex >= 0 ? visibleNotes[selectedIndex] : null;
 					const path = pathFromFocusedRow ?? selectedNote?.note_path;
 					if (!path) return;
 					event.preventDefault();

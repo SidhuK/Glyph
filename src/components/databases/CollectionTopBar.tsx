@@ -1,9 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	CursorAddSelection02Icon,
-	LibraryIcon,
-	StarIcon,
-} from "@hugeicons/core-free-icons";
+import { CursorAddSelection02Icon, LibraryIcon, StarIcon } from "@hugeicons/core-free-icons";
 import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { UseDatabasesPaneReturn } from "../../hooks/database/useDatabasesPane";
@@ -27,10 +23,7 @@ interface CollectionTopBarProps {
 	>;
 	selection: Pick<
 		UseDatabasesPaneReturn["selection"],
-		| "summaries"
-		| "selectedDatabaseId"
-		| "setSelectedDatabaseId"
-		| "openCreateCollectionDialog"
+		"summaries" | "selectedDatabaseId" | "setSelectedDatabaseId" | "openCreateCollectionDialog"
 	>;
 	views: Pick<UseDatabasesPaneReturn["views"], "activeConfig">;
 	actions: Pick<UseDatabasesPaneReturn["actions"], "handleCreateRow">;
@@ -60,9 +53,7 @@ export function CollectionTopBar({
 		],
 	);
 
-	const collectionMenuLabel = doc.document
-		? "Switch collection"
-		: "Select collection";
+	const collectionMenuLabel = doc.document ? "Switch collection" : "Select collection";
 	const isPinned = doc.document?.database.pinned ?? false;
 
 	return (
@@ -99,18 +90,11 @@ export function CollectionTopBar({
 					)}
 
 					{doc.collectionFolderBreadcrumb.length > 0 ? (
-						<nav
-							className="databasesCollectionBreadcrumb"
-							aria-label="Collection folder"
-						>
+						<nav className="databasesCollectionBreadcrumb" aria-label="Collection folder">
 							{doc.collectionFolderBreadcrumb.map((part, index) => {
-								const isCurrent =
-									index === doc.collectionFolderBreadcrumb.length - 1;
+								const isCurrent = index === doc.collectionFolderBreadcrumb.length - 1;
 								return (
-									<span
-										key={part.path || "space"}
-										className="databasesCollectionBreadcrumbItem"
-									>
+									<span key={part.path || "space"} className="databasesCollectionBreadcrumbItem">
 										{index > 0 ? (
 											<ChevronRight
 												size="var(--icon-xs)"
@@ -142,9 +126,7 @@ export function CollectionTopBar({
 					itemClassName="databasesDropdownItem databasesCollectionMenuItem"
 				>
 					<HugeiconsIcon icon={LibraryIcon} size="var(--icon-sm)" />
-					<span className="databasesCollectionSwitcherLabel">
-						{collectionMenuLabel}
-					</span>
+					<span className="databasesCollectionSwitcherLabel">{collectionMenuLabel}</span>
 					<ChevronDown size="var(--icon-sm)" />
 				</ActionMenuTrigger>
 			</div>
@@ -182,10 +164,7 @@ export function CollectionTopBar({
 						onClick={() => void actions.handleCreateRow()}
 						title="New note"
 					>
-						<HugeiconsIcon
-							icon={CursorAddSelection02Icon}
-							size="var(--icon-lg)"
-						/>
+						<HugeiconsIcon icon={CursorAddSelection02Icon} size="var(--icon-lg)" />
 						New Note
 					</button>
 				</div>

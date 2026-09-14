@@ -18,9 +18,7 @@ export function clampPercent(value: number): number {
 	return Math.max(0, Math.min(100, value));
 }
 
-export function toneForRateLimitUsed(
-	usedPercent: number,
-): "ok" | "warn" | "danger" {
+export function toneForRateLimitUsed(usedPercent: number): "ok" | "warn" | "danger" {
 	const clamped = clampPercent(usedPercent);
 	const remaining = 100 - clamped;
 	if (remaining <= 20) return "danger";
@@ -71,10 +69,7 @@ function formatCountdown(targetEpochMs: number, nowMs: number): string {
 	return parts.slice(0, 2).join(" ");
 }
 
-export function formatResetDuration(
-	timestamp: number | null,
-	nowMs: number,
-): string {
+export function formatResetDuration(timestamp: number | null, nowMs: number): string {
 	const resetEpochMs = toEpochMs(timestamp);
 	if (!resetEpochMs) return "Reset time unavailable";
 	if (resetEpochMs <= nowMs) return "Reset reached";

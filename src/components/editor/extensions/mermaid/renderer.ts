@@ -4,9 +4,7 @@ import { extractMermaidErrorMessage } from "../../../../lib/mermaid";
 
 const MERMAID_RENDER_CACHE_LIMIT = 50;
 
-type MermaidRenderResult =
-	| { ok: true; svgHtml: string }
-	| { ok: false; message: string };
+type MermaidRenderResult = { ok: true; svgHtml: string } | { ok: false; message: string };
 
 const MERMAID_CANVAS_RENDER_OPTIONS = {
 	bg: "var(--bg-primary)",
@@ -19,10 +17,7 @@ const MERMAID_CANVAS_RENDER_OPTIONS = {
 
 const renderCache = new Map<string, MermaidRenderResult>();
 
-function rememberRenderResult(
-	source: string,
-	result: MermaidRenderResult,
-): MermaidRenderResult {
+function rememberRenderResult(source: string, result: MermaidRenderResult): MermaidRenderResult {
 	if (renderCache.has(source)) {
 		renderCache.delete(source);
 	}
@@ -49,10 +44,7 @@ function sanitizeMermaidSvg(svg: string): MermaidRenderResult {
 
 	const doc = new DOMParser().parseFromString(sanitizedSvg, "image/svg+xml");
 	const root = doc.documentElement;
-	if (
-		root.tagName.toLowerCase() !== "svg" ||
-		doc.getElementsByTagName("parsererror").length > 0
-	) {
+	if (root.tagName.toLowerCase() !== "svg" || doc.getElementsByTagName("parsererror").length > 0) {
 		return { ok: false, message: "Unable to render Mermaid diagram." };
 	}
 

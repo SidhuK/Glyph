@@ -26,9 +26,7 @@ function encodeQueryValue(value: string): string {
 
 function buildQuery(params: Record<string, string>): string {
 	return Object.entries(params)
-		.map(
-			([key, value]) => `${encodeURIComponent(key)}=${encodeQueryValue(value)}`,
-		)
+		.map(([key, value]) => `${encodeURIComponent(key)}=${encodeQueryValue(value)}`)
 		.join("&");
 }
 
@@ -56,7 +54,6 @@ export function isGlyphDeeplink(href: string): boolean {
  */
 export function isSameSpacePath(left: string | null, right: string): boolean {
 	if (!left) return false;
-	const normalize = (value: string) =>
-		value.replace(/\\/g, "/").replace(/\/+$/, "");
+	const normalize = (value: string) => value.replace(/\\/g, "/").replace(/\/+$/, "");
 	return normalize(left) === normalize(right);
 }

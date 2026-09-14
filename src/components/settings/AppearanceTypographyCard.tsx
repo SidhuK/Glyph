@@ -59,7 +59,7 @@ export function FontSizeControl({
 					onChange={(event) => {
 						const next = Number(event.target.value);
 						if (!Number.isFinite(next)) return;
-						void onChange(clampFontSize(next, min, max));
+						onChange(clampFontSize(next, min, max));
 					}}
 					aria-label={valueAriaLabel}
 				/>
@@ -93,7 +93,7 @@ export function AppearanceTypographyCard({
 				<SettingsSelect
 					id="settingsFontFamily"
 					value={fontFamily}
-					onChange={(event) => void onFontFamilyChange(event.target.value)}
+					onChange={(event) => onFontFamilyChange(event.target.value)}
 				>
 					{availableFonts.map((font) => (
 						<option key={font} value={font}>
@@ -111,7 +111,7 @@ export function AppearanceTypographyCard({
 				<SettingsSelect
 					id="settingsMonoFontFamily"
 					value={monoFontFamily}
-					onChange={(event) => void onMonoFontFamilyChange(event.target.value)}
+					onChange={(event) => onMonoFontFamilyChange(event.target.value)}
 				>
 					{availableMonospaceFonts.map((font) => (
 						<option key={font} value={font}>

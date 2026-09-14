@@ -1,20 +1,12 @@
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type {
-	ThemeMode,
-	UiDarkThemeId,
-	UiLightThemeId,
-} from "../../lib/settings";
+import type { ThemeMode, UiDarkThemeId, UiLightThemeId } from "../../lib/settings";
 import { type UiThemeOption, sortUiThemeOptions } from "../../lib/uiThemes";
 import { ChevronDown } from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { AppearanceThemeModePicker } from "./AppearanceThemeModePicker";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 
 interface AppearanceThemeCardProps {
 	themeMode: ThemeMode;
@@ -29,10 +21,7 @@ interface AppearanceThemeCardProps {
 	onTranslucentAppChange: (enabled: boolean) => Promise<void>;
 }
 
-function ThemeBadge({
-	mode,
-	themeId,
-}: { mode: "light" | "dark"; themeId: string }) {
+function ThemeBadge({ mode, themeId }: { mode: "light" | "dark"; themeId: string }) {
 	return (
 		<span
 			className={cn("appearanceThemeBadge appearanceThemePreview", mode)}
@@ -60,10 +49,7 @@ function ThemeSelector<T extends string>({
 	onSelect: (themeId: T) => Promise<void>;
 }) {
 	const [open, setOpen] = useState(false);
-	const sortedOptions = useMemo(
-		() => sortUiThemeOptions(options, mode),
-		[mode, options],
-	);
+	const sortedOptions = useMemo(() => sortUiThemeOptions(options, mode), [mode, options]);
 
 	return (
 		<SettingsRow label={label} interactive={false}>
@@ -76,16 +62,9 @@ function ThemeSelector<T extends string>({
 					>
 						<span className="appearanceThemeDropdownLeading">
 							<ThemeBadge mode={mode} themeId={selected.id} />
-							<span className="appearanceThemeDropdownTitle">
-								{selected.label}
-							</span>
+							<span className="appearanceThemeDropdownTitle">{selected.label}</span>
 						</span>
-						<span
-							className={cn(
-								"appearanceThemeDropdownChevron",
-								open && "is-open",
-							)}
-						>
+						<span className={cn("appearanceThemeDropdownChevron", open && "is-open")}>
 							<ChevronDown size="var(--icon-md)" />
 						</span>
 					</button>
@@ -109,10 +88,7 @@ function ThemeSelector<T extends string>({
 								<button
 									key={option.id}
 									type="button"
-									className={cn(
-										"appearanceThemeDropdownOption",
-										selectedOption && "is-selected",
-									)}
+									className={cn("appearanceThemeDropdownOption", selectedOption && "is-selected")}
 									onClick={() => {
 										void onSelect(option.id);
 										setOpen(false);
@@ -121,9 +97,7 @@ function ThemeSelector<T extends string>({
 								>
 									<span className="appearanceThemeDropdownOptionLead">
 										<ThemeBadge mode={mode} themeId={option.id} />
-										<span className="appearanceThemeDropdownOptionTitle">
-											{option.label}
-										</span>
+										<span className="appearanceThemeDropdownOptionTitle">{option.label}</span>
 									</span>
 								</button>
 							);
@@ -149,19 +123,13 @@ export function AppearanceThemeCard({
 }: AppearanceThemeCardProps) {
 	const { t } = useTranslation("settings.appearance");
 	return (
-		<SettingsSection
-			title={t("theme.sectionTitle")}
-			description={t("theme.sectionDescription")}
-		>
+		<SettingsSection title={t("theme.sectionTitle")} description={t("theme.sectionDescription")}>
 			<SettingsRow
 				label={t("theme.appearance.label")}
 				description={t("theme.appearance.description")}
 				interactive={false}
 			>
-				<AppearanceThemeModePicker
-					themeMode={themeMode}
-					onThemeModeChange={onThemeModeChange}
-				/>
+				<AppearanceThemeModePicker themeMode={themeMode} onThemeModeChange={onThemeModeChange} />
 			</SettingsRow>
 
 			<ThemeSelector

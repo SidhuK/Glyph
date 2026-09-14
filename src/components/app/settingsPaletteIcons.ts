@@ -74,7 +74,5 @@ const SETTING_ICONS: Record<string, SettingIcon> = {
 };
 
 export function getPaletteSettingIcon(settingId: string | undefined) {
-	return settingId
-		? (SETTING_ICONS[settingId] ?? Settings01Icon)
-		: Settings01Icon;
+	return settingId ? (SETTING_ICONS[settingId] ?? Settings01Icon) : Settings01Icon;
 }

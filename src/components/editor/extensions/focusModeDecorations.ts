@@ -17,9 +17,7 @@ interface FocusModePluginState {
 	focusMode: FocusMode;
 }
 
-const focusModePluginKey = new PluginKey<FocusModePluginState>(
-	"focus-mode-decorations",
-);
+const focusModePluginKey = new PluginKey<FocusModePluginState>("focus-mode-decorations");
 
 function rangesIntersect(first: FocusRange, second: FocusRange): boolean {
 	return first.from < second.to && second.from < first.to;
@@ -91,10 +89,7 @@ function codeLineRanges(node: ProseMirrorNode, from: number): FocusRange[] {
 	return ranges;
 }
 
-function writingUnits(
-	doc: ProseMirrorNode,
-	focusMode: FocusMode,
-): WritingUnit[] {
+function writingUnits(doc: ProseMirrorNode, focusMode: FocusMode): WritingUnit[] {
 	const units: WritingUnit[] = [];
 	doc.descendants((node, pos, parent) => {
 		const contentRange = { from: pos + 1, to: pos + node.content.size + 1 };
@@ -121,9 +116,7 @@ function writingUnits(
 			node.type.name === "paragraph" &&
 			parent?.type.name !== "blockquote"
 		) {
-			units.push(
-				...sentenceRanges(node.textContent, pos + 1).map((range) => [range]),
-			);
+			units.push(...sentenceRanges(node.textContent, pos + 1).map((range) => [range]));
 			return;
 		}
 		units.push([contentRange]);
@@ -158,18 +151,12 @@ function activeRanges(
 	return precedingUnit ?? [];
 }
 
-function inactiveDecorations(
-	doc: ProseMirrorNode,
-	active: FocusRange[],
-): Decoration[] {
+function inactiveDecorations(doc: ProseMirrorNode, active: FocusRange[]): Decoration[] {
 	if (active.length === 0) return [];
 	const decorations: Decoration[] = [];
 	let activeIndex = 0;
 	const addInactive = (from: number, to: number) => {
-		if (from < to)
-			decorations.push(
-				Decoration.inline(from, to, { class: "focusModeInactive" }),
-			);
+		if (from < to) decorations.push(Decoration.inline(from, to, { class: "focusModeInactive" }));
 	};
 	doc.descendants((node, pos) => {
 		if (!node.isText || !node.text) return;
@@ -244,11 +231,7 @@ export const FocusModeDecorations = Extension.create({
 						}
 						return {
 							focusMode,
-							decorations: buildFocusDecorations(
-								newState.doc,
-								newState.selection,
-								focusMode,
-							),
+							decorations: buildFocusDecorations(newState.doc, newState.selection, focusMode),
 						};
 					},
 				},

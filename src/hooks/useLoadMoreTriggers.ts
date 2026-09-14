@@ -27,14 +27,7 @@ export function useVirtualLoadMore({
 		if (!lastVirtualItem) return;
 		if (lastVirtualItem.index < totalItems - remainingItems) return;
 		void onLoadMore();
-	}, [
-		hasMore,
-		isLoading,
-		onLoadMore,
-		remainingItems,
-		totalItems,
-		virtualItems,
-	]);
+	}, [hasMore, isLoading, onLoadMore, remainingItems, totalItems, virtualItems]);
 }
 
 interface SentinelLoadMoreOptions<
@@ -46,10 +39,7 @@ interface SentinelLoadMoreOptions<
 	rootMargin?: string;
 }
 
-export function useSentinelLoadMore<
-	TRoot extends Element,
-	TSentinel extends Element,
->({
+export function useSentinelLoadMore<TRoot extends Element, TSentinel extends Element>({
 	hasMore,
 	isLoading,
 	onLoadMore,

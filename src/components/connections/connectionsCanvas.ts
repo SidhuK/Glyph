@@ -1,8 +1,5 @@
 import type Sigma from "sigma";
-import type {
-	NodeHoverDrawingFunction,
-	NodeLabelDrawingFunction,
-} from "sigma/rendering";
+import type { NodeHoverDrawingFunction, NodeLabelDrawingFunction } from "sigma/rendering";
 import type { Coordinates, EdgeDisplayData } from "sigma/types";
 import type {
 	ConnectionsEdgeAttributes,
@@ -27,10 +24,7 @@ const TRANSPARENT = "rgba(0, 0, 0, 0)";
 interface BundledEdgesDrawingOptions {
 	readonly canvas: HTMLCanvasElement;
 	readonly context: CanvasRenderingContext2D;
-	readonly renderer: Sigma<
-		ConnectionsNodeAttributes,
-		ConnectionsEdgeAttributes
-	>;
+	readonly renderer: Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>;
 	readonly graph: ConnectionsGraph;
 	readonly resolveStyle: (
 		edge: string,
@@ -194,8 +188,7 @@ export function drawConnectionsNodeLabel(
 	const size = data.size ?? 1;
 	const emphasized = Boolean(data.highlighted);
 	const fontSize = settings.labelSize;
-	const weight =
-		data.highlighted || data.forceLabel ? "600" : settings.labelWeight;
+	const weight = data.highlighted || data.forceLabel ? "600" : settings.labelWeight;
 
 	context.save();
 	context.font = `${weight} ${fontSize}px ${settings.labelFont}`;
@@ -234,14 +227,7 @@ export function drawConnectionsNodeLabel(
 		const pillX = textX - paddingX;
 		const pillY = Math.round(data.y - pillHeight / 2);
 		const pillWidth = Math.ceil(textWidth + paddingX * 2);
-		roundedRectPath(
-			context,
-			pillX,
-			pillY,
-			pillWidth,
-			pillHeight,
-			Math.min(9, pillHeight / 2),
-		);
+		roundedRectPath(context, pillX, pillY, pillWidth, pillHeight, Math.min(9, pillHeight / 2));
 		context.fillStyle = palette.labelBackground;
 		context.fill();
 		context.strokeStyle = palette.labelBorder;

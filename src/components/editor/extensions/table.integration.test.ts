@@ -2,7 +2,7 @@
 
 import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createEditorExtensions } from "./index";
 
 function createMarkdownManager() {

@@ -1,8 +1,4 @@
-import {
-	getTodayDateString,
-	joinDatedNotePath,
-	parseIsoDate,
-} from "./dailyNotes";
+import { getTodayDateString, joinDatedNotePath, parseIsoDate } from "./dailyNotes";
 
 export const PERIOD_KINDS = ["day", "week", "month", "quarter"] as const;
 export type PeriodKind = (typeof PERIOD_KINDS)[number];
@@ -41,10 +37,7 @@ export function periodNotesEnabledFromSettings(
 	};
 }
 
-export function isPeriodNoteEnabled(
-	kind: PeriodKind,
-	enabled: PeriodNotesEnabled,
-): boolean {
+export function isPeriodNoteEnabled(kind: PeriodKind, enabled: PeriodNotesEnabled): boolean {
 	if (kind === "day") return true;
 	return enabled[kind];
 }
@@ -82,16 +75,12 @@ function pad2(value: number): string {
 }
 
 export function isoWeekFromDate(date: Date): { isoYear: number; week: number } {
-	const utc = new Date(
-		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-	);
+	const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 	const day = utc.getUTCDay() || 7;
 	utc.setUTCDate(utc.getUTCDate() + 4 - day);
 	const isoYear = utc.getUTCFullYear();
 	const yearStart = new Date(Date.UTC(isoYear, 0, 1));
-	const week = Math.ceil(
-		((utc.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
-	);
+	const week = Math.ceil(((utc.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 	return { isoYear, week };
 }
 
@@ -131,10 +120,7 @@ export function periodIdFromDate(kind: PeriodKind, date: Date): PeriodId {
 	}
 }
 
-export function periodIdFromIsoDate(
-	kind: PeriodKind,
-	isoDate: string,
-): PeriodId | null {
+export function periodIdFromIsoDate(kind: PeriodKind, isoDate: string): PeriodId | null {
 	const date = parseIsoDate(isoDate);
 	if (!date) return null;
 	return periodIdFromDate(kind, date);

@@ -24,17 +24,11 @@ import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
-import type {
-	CreateMarkdownFileOptions,
-	ExtractToNoteActions,
-} from "../editor/types";
+import type { CreateMarkdownFileOptions, ExtractToNoteActions } from "../editor/types";
 import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { TabBar } from "./TabBar";
-import {
-	loadActivityTimelinePane,
-	loadDatabasesPane,
-} from "./prefetchablePanes";
+import { loadActivityTimelinePane, loadDatabasesPane } from "./prefetchablePanes";
 import type { WorkspaceEditorPane } from "./useTabManager";
 
 const PinnedDocsPane = lazy(() =>
@@ -57,9 +51,7 @@ interface EditorPaneCanvasProps {
 	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	emptyState: ReactNode;
-	createMarkdownFileAtPath: (
-		options: CreateMarkdownFileOptions,
-	) => Promise<string | null>;
+	createMarkdownFileAtPath: (options: CreateMarkdownFileOptions) => Promise<string | null>;
 	onRenameFile: (path: string, nextName: string) => Promise<string | null>;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onBrowseFile: (relPath: string) => Promise<void>;
@@ -146,12 +138,8 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 		<div
 			className="canvasPaneHost"
 			data-editor-pane-id={pane.id}
-			data-space-connections={
-				viewerPath === SPACE_CONNECTIONS_TAB_ID ? "true" : undefined
-			}
-			data-all-docs={
-				viewerPath === ACTIVITY_TIMELINE_TAB_ID ? "true" : undefined
-			}
+			data-space-connections={viewerPath === SPACE_CONNECTIONS_TAB_ID ? "true" : undefined}
+			data-all-docs={viewerPath === ACTIVITY_TIMELINE_TAB_ID ? "true" : undefined}
 			data-databases={viewerPath === DATABASES_TAB_ID ? "true" : undefined}
 		>
 			{!zenMode && pane.tabs.length > 0 ? (
@@ -228,10 +216,7 @@ function EditorPaneContent({
 	if (viewerPath === PINNED_DOCS_TAB_ID) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-				<PinnedDocsPane
-					onOpenFile={onBrowseFile}
-					onOpenDatabase={onOpenDatabase}
-				/>
+				<PinnedDocsPane onOpenFile={onBrowseFile} onOpenDatabase={onOpenDatabase} />
 			</Suspense>
 		);
 	}
@@ -251,9 +236,7 @@ function EditorPaneContent({
 					onRenameNotePath={onRenameFile}
 					databasesOpenRequest={databasesOpenRequest}
 					initialDocument={
-						initialDatabaseId
-							? getPrefetchedDatabaseDocument(initialDatabaseId)
-							: null
+						initialDatabaseId ? getPrefetchedDatabaseDocument(initialDatabaseId) : null
 					}
 				/>
 			</Suspense>
@@ -285,9 +268,7 @@ function EditorPaneContent({
 			onGitDiffChange={setGitDiff}
 			onDirtyChange={(dirty) =>
 				setDirtyByPath((previous) =>
-					previous[viewerPath] === dirty
-						? previous
-						: { ...previous, [viewerPath]: dirty },
+					previous[viewerPath] === dirty ? previous : { ...previous, [viewerPath]: dirty },
 				)
 			}
 		/>

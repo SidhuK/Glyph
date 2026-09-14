@@ -2,10 +2,7 @@
 	--external-markdown-chrome-height: 56px;
 	--external-markdown-status-height: 28px;
 	--external-markdown-editor-min-height: calc(
-		100vh -
-		var(--external-markdown-chrome-height) -
-		var(--external-markdown-status-height) -
-		24px
+		100vh - var(--external-markdown-chrome-height) - var(--external-markdown-status-height) - 24px
 	);
 
 	position: relative;
@@ -94,7 +91,9 @@
 	font-size: calc(var(--text-base) * 0.78);
 	line-height: 1.35;
 	cursor: pointer;
-	transition: color var(--transition-fast), background var(--transition-fast);
+	transition:
+		color var(--transition-fast),
+		background var(--transition-fast);
 }
 
 .externalMarkdownMetaButton:hover,
@@ -114,8 +113,7 @@
 .externalMarkdownBadge {
 	flex: 0 0 auto;
 	padding: 1px 6px;
-	border: 1px solid
-		color-mix(in srgb, var(--status-warning-fg) 28%, transparent);
+	border: 1px solid color-mix(in srgb, var(--status-warning-fg) 28%, transparent);
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--status-warning-fg) 10%, transparent);
 	color: color-mix(in srgb, var(--status-warning-fg) 88%, var(--text-primary));
@@ -152,7 +150,9 @@
 	line-height: 1;
 	white-space: nowrap;
 	cursor: pointer;
-	transition: background var(--transition-fast), color var(--transition-fast),
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast),
 		border-color var(--transition-fast);
 }
 
@@ -192,18 +192,12 @@
 	transform: translateY(-2px);
 }
 
-.externalMarkdownModeSwitch
-	.markdownEditorModeSwitch:hover
-	.markdownEditorModeBubble,
-.externalMarkdownModeSwitch
-	.markdownEditorModeSwitch[data-open="true"]
-	.markdownEditorModeBubble {
+.externalMarkdownModeSwitch .markdownEditorModeSwitch:hover .markdownEditorModeBubble,
+.externalMarkdownModeSwitch .markdownEditorModeSwitch[data-open="true"] .markdownEditorModeBubble {
 	transform: translateY(0);
 }
 
-.externalMarkdownModeSwitch
-	.markdownEditorModeBubble
-	.markdownEditorModeBtn[data-active="true"] {
+.externalMarkdownModeSwitch .markdownEditorModeBubble .markdownEditorModeBtn[data-active="true"] {
 	background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
 	color: var(--text-primary);
 }
@@ -248,13 +242,8 @@
 	gap: 12px;
 	min-height: var(--external-markdown-status-height);
 	padding: 0 16px;
-	border-top: 1px solid
-		color-mix(in srgb, var(--border-default) 36%, transparent);
-	background: color-mix(
-		in srgb,
-		var(--bg-canvas, var(--bg-primary)) 88%,
-		transparent
-	);
+	border-top: 1px solid color-mix(in srgb, var(--border-default) 36%, transparent);
+	background: color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 88%, transparent);
 	color: var(--text-tertiary);
 	font-size: calc(var(--text-base) * 0.76);
 	font-variant-numeric: tabular-nums;
@@ -309,17 +298,13 @@
 .externalMarkdownEditorShell {
 	--readable-content-outer-width: min(
 		100%,
-		calc(
-			var(--editor-readable-content-max-width) +
-			(2 * var(--editor-readable-content-gutter))
-		)
+		calc(var(--editor-readable-content-max-width) + (2 * var(--editor-readable-content-gutter)))
 	);
 
 	width: var(--readable-content-outer-width);
 	min-height: 100%;
 	margin: 0 auto;
-	padding: calc(var(--external-markdown-chrome-height) + 6px)
-		var(--editor-readable-content-gutter)
+	padding: calc(var(--external-markdown-chrome-height) + 6px) var(--editor-readable-content-gutter)
 		calc(50vh + var(--external-markdown-status-height));
 }
 

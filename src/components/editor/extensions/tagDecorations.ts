@@ -73,8 +73,7 @@ export const TagDecorations = Extension.create({
 		return [
 			createIncrementalTextDecorationPlugin({
 				pluginKey: "tag-decorations",
-				collectDecorations: (context) =>
-					collectTagDecorations(context, enablePeopleMentions),
+				collectDecorations: (context) => collectTagDecorations(context, enablePeopleMentions),
 			}),
 		];
 	},

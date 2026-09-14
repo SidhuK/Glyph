@@ -1,7 +1,4 @@
-import type {
-	ConnectionsCommunity,
-	ConnectionsCommunityModel,
-} from "./connectionsCommunities";
+import type { ConnectionsCommunity, ConnectionsCommunityModel } from "./connectionsCommunities";
 import type { SerializedGraphPosition } from "./connectionsLayout";
 import { hashString } from "./connectionsRandom";
 
@@ -45,7 +42,7 @@ function distributeAroundRing(
 	disconnected: readonly RadialMember[],
 ) {
 	const nodeCount = connected.length + disconnected.length;
-	const slots = new Array<RadialMember | undefined>(nodeCount);
+	const slots: Array<RadialMember | undefined> = Array.from({ length: nodeCount });
 
 	if (connected.length > 0) {
 		connected.forEach((member, index) => {

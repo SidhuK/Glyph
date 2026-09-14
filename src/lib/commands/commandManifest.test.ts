@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	APP_COMMANDS,
 	listCommandDefinitions,
@@ -52,9 +52,7 @@ describe("app command manifest", () => {
 	});
 
 	it("contains every renderer-handled native menu command", () => {
-		const commandIds = new Set(
-			listCommandDefinitions().map((command) => command.id),
-		);
+		const commandIds = new Set(listCommandDefinitions().map((command) => command.id));
 
 		for (const commandId of FRONTEND_MENU_COMMAND_IDS) {
 			expect(commandIds.has(commandId)).toBe(true);

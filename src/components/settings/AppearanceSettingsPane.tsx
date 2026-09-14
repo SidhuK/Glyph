@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	type CustomTheme,
-	customThemeId,
-	customThemeOptions,
-} from "../../lib/customThemes";
+import { type CustomTheme, customThemeId, customThemeOptions } from "../../lib/customThemes";
 import {
 	DEFAULT_UI_TRANSLUCENT_APP,
 	type ThemeMode,
@@ -12,10 +8,7 @@ import {
 	type UiLightThemeId,
 	loadSettings,
 } from "../../lib/settings";
-import {
-	DURABLE_SETTINGS,
-	writeSidebarLayout,
-} from "../../lib/settings/definitions";
+import { DURABLE_SETTINGS, writeSidebarLayout } from "../../lib/settings/definitions";
 import {
 	DEFAULT_SIDEBAR_ORDER,
 	DEFAULT_SIDEBAR_VISIBILITY,
@@ -43,11 +36,7 @@ import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
 import { AppearanceSidebarItems } from "./AppearanceSidebarItems";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsToggle,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
 import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
@@ -57,11 +46,7 @@ export function AppearanceSettingsPane() {
 	const { t } = useTranslation("settings.appearance");
 	const [customThemes, setCustomThemesState] = useState<CustomTheme[]>([]);
 	const [error, setError] = useState("");
-	const themeMode = useSettingsValue<ThemeMode>(
-		"system",
-		DURABLE_SETTINGS.theme.write,
-		setError,
-	);
+	const themeMode = useSettingsValue<ThemeMode>("system", DURABLE_SETTINGS.theme.write, setError);
 	const lightThemeId = useSettingsValue<UiLightThemeId>(
 		GLYPH_DEFAULT_LIGHT_THEME_ID,
 		DURABLE_SETTINGS.lightThemeId.write,
@@ -172,8 +157,7 @@ export function AppearanceSettingsPane() {
 		) {
 			themeMode.setValue(payload.ui.theme);
 		}
-		if (payload.ui?.lightThemeId)
-			lightThemeId.setValue(payload.ui.lightThemeId);
+		if (payload.ui?.lightThemeId) lightThemeId.setValue(payload.ui.lightThemeId);
 		if (payload.ui?.darkThemeId) darkThemeId.setValue(payload.ui.darkThemeId);
 		applyIfBoolean(payload.ui?.translucentApp, translucentApp.setValue);
 		if (payload.ui?.cornerRadiusStyle) {
@@ -194,10 +178,7 @@ export function AppearanceSettingsPane() {
 		if (typeof payload.ui?.editorFontSize === "number") {
 			setEditorFontSize(payload.ui.editorFontSize);
 		}
-		applyIfBoolean(
-			payload.database?.showColumnColor,
-			setShowColumnColorChecked,
-		);
+		applyIfBoolean(payload.database?.showColumnColor, setShowColumnColorChecked);
 	});
 
 	const onSidebarVisibilityChange = useCallback(
@@ -222,9 +203,7 @@ export function AppearanceSettingsPane() {
 				sidebarOrder.setValue(DEFAULT_SIDEBAR_ORDER);
 			})
 			.catch((cause) => {
-				setError(
-					cause instanceof Error ? cause.message : t("sidebar.resetError"),
-				);
+				setError(cause instanceof Error ? cause.message : t("sidebar.resetError"));
 			})
 			.finally(() => {
 				setIsResettingSidebar(false);
@@ -239,14 +218,14 @@ export function AppearanceSettingsPane() {
 	);
 
 	const onLightThemeChange = useCallback(
-		async (next: UiLightThemeId | string) => {
+		async (next: string) => {
 			lightThemeId.onChange(asUiLightThemeId(next));
 		},
 		[lightThemeId.onChange],
 	);
 
 	const onDarkThemeChange = useCallback(
-		async (next: UiDarkThemeId | string) => {
+		async (next: string) => {
 			darkThemeId.onChange(asUiDarkThemeId(next));
 		},
 		[darkThemeId.onChange],
@@ -277,13 +256,9 @@ export function AppearanceSettingsPane() {
 			setError("");
 			const removedId = customThemeId(theme.name);
 			const nextLight =
-				lightThemeId.value === removedId
-					? GLYPH_DEFAULT_LIGHT_THEME_ID
-					: lightThemeId.value;
+				lightThemeId.value === removedId ? GLYPH_DEFAULT_LIGHT_THEME_ID : lightThemeId.value;
 			const nextDark =
-				darkThemeId.value === removedId
-					? GLYPH_DEFAULT_DARK_THEME_ID
-					: darkThemeId.value;
+				darkThemeId.value === removedId ? GLYPH_DEFAULT_DARK_THEME_ID : darkThemeId.value;
 			if (nextLight !== lightThemeId.value) {
 				await DURABLE_SETTINGS.lightThemeId.write(nextLight);
 				lightThemeId.setValue(nextLight);
@@ -293,9 +268,7 @@ export function AppearanceSettingsPane() {
 				darkThemeId.setValue(nextDark);
 			}
 			await persistCustomThemes(
-				customThemes.filter(
-					(existing) => customThemeId(existing.name) !== removedId,
-				),
+				customThemes.filter((existing) => customThemeId(existing.name) !== removedId),
 			);
 		},
 		[
@@ -385,11 +358,7 @@ export function AppearanceSettingsPane() {
 							size="icon-sm"
 							aria-label={t("sidebar.resetToDefaults")}
 							title={t("sidebar.resetToDefaults")}
-							disabled={
-								sidebarVisibility.isSaving ||
-								sidebarOrder.isSaving ||
-								isResettingSidebar
-							}
+							disabled={sidebarVisibility.isSaving || sidebarOrder.isSaving || isResettingSidebar}
 							onClick={onResetSidebar}
 						>
 							<RefreshCw size="var(--icon-md)" aria-hidden="true" />
@@ -399,11 +368,7 @@ export function AppearanceSettingsPane() {
 					<AppearanceSidebarItems
 						order={sidebarOrder.value}
 						visibility={sidebarVisibility.value}
-						disabled={
-							sidebarOrder.isSaving ||
-							sidebarVisibility.isSaving ||
-							isResettingSidebar
-						}
+						disabled={sidebarOrder.isSaving || sidebarVisibility.isSaving || isResettingSidebar}
 						onReorder={sidebarOrder.onChange}
 						onVisibilityChange={onSidebarVisibilityChange}
 					/>

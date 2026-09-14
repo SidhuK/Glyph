@@ -55,9 +55,7 @@ export function AIActivityTimeline({
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -6 }}
 						transition={{ type: "spring", stiffness: 340, damping: 27 }}
-						className={
-							event.kind === "text" ? "aiActivityText" : "aiInlineError"
-						}
+						className={event.kind === "text" ? "aiActivityText" : "aiInlineError"}
 					>
 						{event.kind === "text" ? (
 							<AIMessageMarkdown markdown={event.text} streaming={streaming} />
@@ -72,11 +70,7 @@ export function AIActivityTimeline({
 			</AnimatePresence>
 			{streaming ? (
 				<div className="aiActivity">
-					<ThinkingOrb
-						state={activityState}
-						size={20}
-						aria-label={statusText}
-					/>
+					<ThinkingOrb state={activityState} size={20} aria-label={statusText} />
 					<span>{statusText}</span>
 				</div>
 			) : null}

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import type React from "react";
 import { type Root, createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { FileTreePane } from "./FileTreePane";
 
 vi.mock("@tanstack/react-virtual", () => ({
@@ -18,9 +18,10 @@ vi.mock("@tanstack/react-virtual", () => ({
 		getItemKey: (index: number) => string | number;
 	}) => {
 		const starts = Array.from({ length: count }, (_, index) =>
-			Array.from({ length: index }, (__, previousIndex) =>
-				estimateSize(previousIndex),
-			).reduce((total, size) => total + size, 0),
+			Array.from({ length: index }, (__, previousIndex) => estimateSize(previousIndex)).reduce(
+				(total, size) => total + size,
+				0,
+			),
 		);
 		return {
 			getVirtualItems: () =>
@@ -41,25 +42,18 @@ vi.mock("@tanstack/react-virtual", () => ({
 	},
 }));
 
-const {
-	invokeMock,
-	loadSettingsMock,
-	useFileTreeContextMock,
-	useSpaceMock,
-	useTauriEventMock,
-} = vi.hoisted(() => ({
-	invokeMock: vi.fn(() => Promise.resolve([])),
-	loadSettingsMock: vi.fn(),
-	useFileTreeContextMock: vi.fn(),
-	useSpaceMock: vi.fn(),
-	useTauriEventMock: vi.fn(),
-}));
+const { invokeMock, loadSettingsMock, useFileTreeContextMock, useSpaceMock, useTauriEventMock } =
+	vi.hoisted(() => ({
+		invokeMock: vi.fn(() => Promise.resolve([])),
+		loadSettingsMock: vi.fn(),
+		useFileTreeContextMock: vi.fn(),
+		useSpaceMock: vi.fn(),
+		useTauriEventMock: vi.fn(),
+	}));
 
 vi.mock("motion/react", async () => {
 	const React = await vi.importActual<typeof import("react")>("react");
-	const stripMotionProps = (
-		props: Record<string, unknown> & { children?: React.ReactNode },
-	) => {
+	const stripMotionProps = (props: Record<string, unknown> & { children?: React.ReactNode }) => {
 		const {
 			animate: _animate,
 			exit: _exit,
@@ -89,9 +83,7 @@ vi.mock("motion/react", async () => {
 	);
 	return {
 		m: motion,
-		AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-			<>{children}</>
-		),
+		AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 	};
 });
 
@@ -105,10 +97,7 @@ vi.mock("../../contexts", () => ({
 }));
 
 vi.mock("../../lib/settings", async () => {
-	const actual =
-		await vi.importActual<typeof import("../../lib/settings")>(
-			"../../lib/settings",
-		);
+	const actual = await vi.importActual<typeof import("../../lib/settings")>("../../lib/settings");
 	return {
 		...actual,
 		loadSettings: loadSettingsMock,
@@ -239,9 +228,9 @@ describe("FileTreePane", () => {
 		const activeItem = container.querySelector(".fileTreeItem.active");
 		expect(activeItem?.textContent).toContain("alpha");
 
-		const alphaButton = Array.from(
-			container.querySelectorAll("[data-file-tree-file='true']"),
-		).find((node) => node.textContent?.includes("alpha"));
+		const alphaButton = Array.from(container.querySelectorAll("[data-file-tree-file='true']")).find(
+			(node) => node.textContent?.includes("alpha"),
+		);
 		await act(async () => {
 			(alphaButton as HTMLButtonElement | undefined)?.click();
 		});

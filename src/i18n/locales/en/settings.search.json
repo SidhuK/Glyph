@@ -85,13 +85,7 @@
 		"general-license": {
 			"title": "License",
 			"description": "Trial status, license key, activation, and official build.",
-			"keywords": [
-				"trial",
-				"activate",
-				"activation",
-				"subscription",
-				"purchase"
-			]
+			"keywords": ["trial", "activate", "activation", "subscription", "purchase"]
 		},
 		"general-trial-status": {
 			"title": "Trial status",
@@ -580,14 +574,7 @@
 		"general-editor-zen-mode": {
 			"title": "Zen mode",
 			"section": "Experimental",
-			"keywords": [
-				"focus",
-				"distraction",
-				"minimal",
-				"sidebar",
-				"tabs",
-				"editor"
-			]
+			"keywords": ["focus", "distraction", "minimal", "sidebar", "tabs", "editor"]
 		},
 		"general-editor-focus-mode": {
 			"title": "Focus mode",
@@ -628,14 +615,7 @@
 		"general-file-tree-non-markdown-files": {
 			"title": "Show non-Markdown files",
 			"section": "Experimental",
-			"keywords": [
-				"sidebar",
-				"attachments",
-				"pdf",
-				"images",
-				"folio",
-				"file tree"
-			]
+			"keywords": ["sidebar", "attachments", "pdf", "images", "folio", "file tree"]
 		},
 		"general-file-tree-sort": {
 			"title": "File tree sort",

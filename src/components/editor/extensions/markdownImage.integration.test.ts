@@ -4,7 +4,7 @@ import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { NodeSelection } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createEditorExtensions } from "./index";
 import { MarkdownImage } from "./markdownImage";
 
@@ -80,9 +80,7 @@ describe("MarkdownImage markdown manager integration", () => {
 			const imagePos = findImagePos(editor);
 			expect(imagePos).toBeGreaterThanOrEqual(0);
 			editor.view.dispatch(
-				editor.state.tr.setSelection(
-					NodeSelection.create(editor.state.doc, imagePos),
-				),
+				editor.state.tr.setSelection(NodeSelection.create(editor.state.doc, imagePos)),
 			);
 			expect(element.textContent).toContain("![](img.png)");
 

@@ -2,10 +2,8 @@ import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import type { AiProviderKind } from "../../lib/tauri";
 import { getProviderLogoSrc, providerLogoMeta } from "./providerLogos";
 
-export const providerLogoMap: Record<
-	AiProviderKind,
-	{ src: string; label: string }
-> = providerLogoMeta;
+export const providerLogoMap: Record<AiProviderKind, { src: string; label: string }> =
+	providerLogoMeta;
 
 const openRouterProviderHints: Array<{
 	kind: AiProviderKind;
@@ -18,9 +16,7 @@ const openRouterProviderHints: Array<{
 	{ kind: "llama_cpp", keywords: ["llama.cpp", "llama_cpp"] },
 ];
 
-export function guessOpenRouterProvider(
-	modelName: string,
-): AiProviderKind | null {
+export function guessOpenRouterProvider(modelName: string): AiProviderKind | null {
 	const normalized = modelName.toLowerCase();
 	for (const hint of openRouterProviderHints) {
 		if (hint.keywords.some((kw) => normalized.includes(kw))) return hint.kind;

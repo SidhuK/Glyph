@@ -4,11 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { AiProviderKind } from "../../../lib/tauri";
 import { ChevronDown } from "../../Icons/NavigationIcons";
 import { ProviderLogo } from "../../ai/modelSelectorConstants";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "../../ui/shadcn/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/shadcn/popover";
 import { SettingsRow } from "../SettingsScaffold";
 import { SettingsSegmentedPicker } from "../SettingsSegmentedPicker";
 
@@ -65,10 +61,7 @@ function connectionForProvider(provider: AiProviderKind): AiConnectionOption {
 }
 
 function connectionForType(type: AiConnectionType): AiConnectionOption {
-	return (
-		CONNECTION_OPTIONS.find((option) => option.value === type) ??
-		CONNECTION_OPTIONS[0]
-	);
+	return CONNECTION_OPTIONS.find((option) => option.value === type) ?? CONNECTION_OPTIONS[0];
 }
 
 function ConnectionPreview({ option }: { option: AiConnectionOption }) {
@@ -81,10 +74,7 @@ function ConnectionPreview({ option }: { option: AiConnectionOption }) {
 					data-provider={provider.value}
 					aria-hidden="true"
 				>
-					<ProviderLogo
-						provider={provider.value}
-						className="aiConnectionPreviewLogoImage"
-					/>
+					<ProviderLogo provider={provider.value} className="aiConnectionPreviewLogoImage" />
 				</span>
 			))}
 		</span>
@@ -94,15 +84,8 @@ function ConnectionPreview({ option }: { option: AiConnectionOption }) {
 function ProviderIdentity({ option }: { option: AiProviderOption }) {
 	return (
 		<>
-			<span
-				className="aiProviderDropdownLogo"
-				data-provider={option.value}
-				aria-hidden="true"
-			>
-				<ProviderLogo
-					provider={option.value}
-					className="aiProviderDropdownLogoImage"
-				/>
+			<span className="aiProviderDropdownLogo" data-provider={option.value} aria-hidden="true">
+				<ProviderLogo provider={option.value} className="aiProviderDropdownLogoImage" />
 			</span>
 			<span className="appearanceThemeDropdownTitle">{option.label}</span>
 		</>
@@ -114,16 +97,12 @@ interface AiConnectionPickerProps {
 	onProviderChange: (provider: AiProviderKind) => Promise<void>;
 }
 
-export function AiConnectionPicker({
-	provider,
-	onProviderChange,
-}: AiConnectionPickerProps) {
+export function AiConnectionPicker({ provider, onProviderChange }: AiConnectionPickerProps) {
 	const { t } = useTranslation("settings.ai");
 	const [providerMenuOpen, setProviderMenuOpen] = useState(false);
 	const connection = connectionForProvider(provider);
 	const selectedProvider =
-		connection.providers.find((option) => option.value === provider) ??
-		connection.providers[0];
+		connection.providers.find((option) => option.value === provider) ?? connection.providers[0];
 	const pickerOptions = CONNECTION_OPTIONS.map((option) => ({
 		value: option.value,
 		label: t(`connection.types.${option.value}.label`),
@@ -145,37 +124,27 @@ export function AiConnectionPicker({
 					onChange={(next) => {
 						void onProviderChange(connectionForType(next).providers[0].value);
 					}}
-					renderPreview={(value) => (
-						<ConnectionPreview option={connectionForType(value)} />
-					)}
+					renderPreview={(value) => <ConnectionPreview option={connectionForType(value)} />}
 				/>
 			</SettingsRow>
 
 			<SettingsRow
 				label={t("connection.provider.label")}
-				description={t(
-					`connection.types.${connection.value}.providerDescription`,
-				)}
+				description={t(`connection.types.${connection.value}.providerDescription`)}
 				interactive={false}
 			>
 				<Popover open={providerMenuOpen} onOpenChange={setProviderMenuOpen}>
 					<PopoverTrigger asChild>
 						<button
 							type="button"
-							className={cn(
-								"appearanceThemeDropdownTrigger",
-								providerMenuOpen && "is-open",
-							)}
+							className={cn("appearanceThemeDropdownTrigger", providerMenuOpen && "is-open")}
 							aria-expanded={providerMenuOpen}
 						>
 							<span className="appearanceThemeDropdownLeading">
 								<ProviderIdentity option={selectedProvider} />
 							</span>
 							<span
-								className={cn(
-									"appearanceThemeDropdownChevron",
-									providerMenuOpen && "is-open",
-								)}
+								className={cn("appearanceThemeDropdownChevron", providerMenuOpen && "is-open")}
 								aria-hidden="true"
 							>
 								<ChevronDown size="var(--icon-md)" />
@@ -204,10 +173,7 @@ export function AiConnectionPicker({
 									<button
 										key={option.value}
 										type="button"
-										className={cn(
-											"appearanceThemeDropdownOption",
-											isSelected && "is-selected",
-										)}
+										className={cn("appearanceThemeDropdownOption", isSelected && "is-selected")}
 										onClick={() => {
 											void onProviderChange(option.value);
 											setProviderMenuOpen(false);

@@ -1,9 +1,4 @@
-import {
-	joinRelPath,
-	normalizeRelPath,
-	parentDir,
-	validateRelFolderPath,
-} from "../utils/path";
+import { joinRelPath, normalizeRelPath, parentDir, validateRelFolderPath } from "../utils/path";
 import type { AttachmentStorageMode } from "./settings";
 
 export const DEFAULT_ATTACHMENT_FOLDER = "assets";
@@ -80,8 +75,6 @@ export function modesUseDifferentFolderSemantics(
 	);
 }
 
-export function modeRequiresAttachmentFolder(
-	mode: AttachmentStorageMode,
-): boolean {
+export function modeRequiresAttachmentFolder(mode: AttachmentStorageMode): boolean {
 	return mode === "specific-folder" || mode === "note-subfolder";
 }

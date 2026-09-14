@@ -62,13 +62,7 @@
 		"general-license": {
 			"title": "License",
 			"description": "Trial status, license key, activation, and official build.",
-			"keywords": [
-				"trial",
-				"activate",
-				"activation",
-				"subscription",
-				"purchase"
-			]
+			"keywords": ["trial", "activate", "activation", "subscription", "purchase"]
 		},
 		"general-trial-status": {
 			"title": "Trial status",
@@ -116,16 +110,7 @@
 			"title": "日付形式",
 			"section": "日付と時刻",
 			"description": "Glyph 全体での完全な日付の表示方法を選びます。",
-			"keywords": [
-				"日付",
-				"形式",
-				"カレンダー",
-				"US",
-				"European",
-				"Friendly",
-				"ISO",
-				"表示"
-			]
+			"keywords": ["日付", "形式", "カレンダー", "US", "European", "Friendly", "ISO", "表示"]
 		},
 		"general-resume-last-session": {
 			"title": "前回のタブを開く",
@@ -168,16 +153,7 @@
 			"title": "テーマを選択",
 			"section": "テーマ",
 			"description": "システム、ライト、ダークモードを選びます。",
-			"keywords": [
-				"モード",
-				"システム",
-				"ライト",
-				"ダーク",
-				"mode",
-				"system",
-				"light",
-				"dark"
-			]
+			"keywords": ["モード", "システム", "ライト", "ダーク", "mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
 			"title": "ライト",
@@ -224,28 +200,12 @@
 		"appearance-editor-font": {
 			"title": "エディタフォント",
 			"section": "タイポグラフィ",
-			"keywords": [
-				"フォント",
-				"エディタ",
-				"ノート",
-				"散文",
-				"font",
-				"editor",
-				"notes",
-				"prose"
-			]
+			"keywords": ["フォント", "エディタ", "ノート", "散文", "font", "editor", "notes", "prose"]
 		},
 		"appearance-ui-font-size": {
 			"title": "UI フォントサイズ",
 			"section": "タイポグラフィ",
-			"keywords": [
-				"フォント",
-				"テキスト",
-				"インターフェース",
-				"font",
-				"text",
-				"interface"
-			]
+			"keywords": ["フォント", "テキスト", "インターフェース", "font", "text", "interface"]
 		},
 		"appearance-editor-font-size": {
 			"title": "エディタフォントサイズ",
@@ -508,14 +468,7 @@
 		"general-editor-frontmatter": {
 			"title": "エディタで frontmatter を表示",
 			"section": "エディタ",
-			"keywords": [
-				"プロパティ",
-				"yaml",
-				"メタデータ",
-				"properties",
-				"metadata",
-				"frontmatter"
-			]
+			"keywords": ["プロパティ", "yaml", "メタデータ", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "カラフルな見出し",
@@ -545,14 +498,7 @@
 		"appearance-editor-presentation-width": {
 			"title": "エディタの幅",
 			"section": "エディタの表示",
-			"keywords": [
-				"コンパクト",
-				"快適",
-				"ワイド",
-				"compact",
-				"comfortable",
-				"wide"
-			]
+			"keywords": ["コンパクト", "快適", "ワイド", "compact", "comfortable", "wide"]
 		},
 		"general-editor-collapsible-headings": {
 			"title": "折りたたみ可能な見出し",
@@ -640,14 +586,7 @@
 		"appearance-database-column-color": {
 			"title": "データベース列の色を表示",
 			"section": "データベース",
-			"keywords": [
-				"コレクション",
-				"データベース",
-				"色",
-				"collection",
-				"database",
-				"color"
-			]
+			"keywords": ["コレクション", "データベース", "色", "collection", "database", "color"]
 		},
 		"about-app": {
 			"title": "Glyph",

@@ -62,37 +62,44 @@ Glyph is an offline-first desktop note-taking application. It combines a Tauri 2
 
 ## Prerequisites
 
-| Dependency | Version                                                   |
-| ---------- | --------------------------------------------------------- |
-| Node.js    | ≥ 20                                                      |
-| pnpm       | ≥ 10 (`corepack enable && corepack prepare pnpm@10.28.2`) |
-| Rust       | stable (latest)                                           |
-| Xcode CLT  | required for macOS native compilation                     |
-| macOS      | primary target — full Tauri app dev requires macOS        |
+| Dependency | Version                                            |
+| ---------- | -------------------------------------------------- |
+| Node.js    | 24.21.0                                            |
+| Vite+      | 0.3.1 (`curl -fsSL https://vite.plus \| bash`)     |
+| pnpm       | ≥ 10 (managed by Vite+)                            |
+| Rust       | stable (latest)                                    |
+| Xcode CLT  | required for macOS native compilation              |
+| macOS      | primary target — full Tauri app dev requires macOS |
 
 ## Build & Run
 
 ```bash
 # Install frontend dependencies
-pnpm install
+vp install
 
-# Development — frontend only (Vite on :1420)
-pnpm dev
+# Development — frontend only (Vite+ on :1420)
+vp dev
 
-# Development — full Tauri app (compiles Rust backend + launches Vite)
-pnpm tauri dev
+# Development — full Tauri app (compiles Rust backend + launches Vite+)
+vp run tauri dev
+# Equivalent: pnpm tauri dev
 
-# Production build (tsc + vite build; Tauri hooks run beforeBuildCommand)
-pnpm build
+# Production frontend build
+vp build
 
-# Lint & format (Biome)
-pnpm check          # check only
-pnpm format         # auto-fix
+# Production macOS app build
+vp run tauri build
+# Equivalent: pnpm tauri build
 
-# Tests (Vitest)
-pnpm test                              # all tests
-pnpm test -- src/lib/diff.test.ts      # single file
-pnpm test -- -t "test name"            # single test by name
+# Format, lint, and type-check
+vp check            # check only
+vp check --fix      # auto-fix
+vp fmt              # format only
+
+# Tests
+vp test                                      # all tests
+vp test src/lib/diff.test.ts                 # single file
+vp test -t "test name"                       # single test by name
 
 # Rust checks
 cd src-tauri && cargo check            # typecheck
@@ -103,16 +110,16 @@ cd src-tauri && cargo clippy           # lint
 ### Pre-push checklist
 
 ```bash
-pnpm check && pnpm build && cd src-tauri && cargo check
+vp check && vp test && vp build && cd src-tauri && cargo check
 ```
 
 ## Built with
 
-- **Frontend:** React 19, TipTap 3, TypeScript, Vite 8, Tailwind 4, Radix UI (via shadcn/ui), Motion 12, TanStack Table, cmdk, Zod 4, date-fns, Mermaid 11, highlight.js/lowlight, react-resizable-panels, Sonner, react-hook-form
+- **Frontend:** React 19, TipTap 3, TypeScript, Vite+, Tailwind 4, Radix UI (via shadcn/ui), Motion 12, TanStack Table, cmdk, Zod 4, date-fns, Mermaid 11, highlight.js/lowlight, react-resizable-panels, Sonner, react-hook-form
 
 - **Backend:** Tauri 2 (`macos-private-api`), Rust, rig-core 0.24, rusqlite 0.31 (bundled), notify 6, reqwest 0.12 (rustls), tokio, serde/serde_json/serde_yaml, chrono, uuid, sha2, window-vibrancy, core-text (macOS)
 
-- **Tooling:** Biome, Vitest 4, Tauri CLI 2, pnpm 10
+- **Tooling:** Vite+, Oxlint, Oxfmt, Vitest 4, Tauri CLI 2, pnpm 10
 
 ## Conventions
 

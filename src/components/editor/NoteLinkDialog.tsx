@@ -30,12 +30,7 @@ interface NoteLinkDialogProps {
  * Dialog for setting, editing, or removing a link on the current editor selection.
  * Owns no mutable state — receives state + setter from the parent.
  */
-export function NoteLinkDialog({
-	editor,
-	canEdit,
-	state,
-	onStateChange,
-}: NoteLinkDialogProps) {
+export function NoteLinkDialog({ editor, canEdit, state, onStateChange }: NoteLinkDialogProps) {
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const close = useCallback(() => onStateChange(null), [onStateChange]);
 
@@ -48,10 +43,7 @@ export function NoteLinkDialog({
 
 	const remove = useCallback(() => {
 		if (!editor || !canEdit || !state) return;
-		removeEditorLink(
-			editor.chain().focus(null, { scrollIntoView: false }),
-			state.range,
-		);
+		removeEditorLink(editor.chain().focus(null, { scrollIntoView: false }), state.range);
 		onStateChange(null);
 	}, [canEdit, editor, onStateChange, state]);
 
@@ -74,9 +66,7 @@ export function NoteLinkDialog({
 			>
 				<DialogHeader>
 					<DialogTitle>Link</DialogTitle>
-					<DialogDescription>
-						Paste a URL, or leave it blank to remove the link.
-					</DialogDescription>
+					<DialogDescription>Paste a URL, or leave it blank to remove the link.</DialogDescription>
 				</DialogHeader>
 				<form
 					className="editorLinkDialogForm"
@@ -90,9 +80,7 @@ export function NoteLinkDialog({
 						className="editorLinkDialogInput"
 						value={state?.href ?? ""}
 						onChange={(event) =>
-							onStateChange(
-								state ? { ...state, href: event.target.value } : state,
-							)
+							onStateChange(state ? { ...state, href: event.target.value } : state)
 						}
 						placeholder="https://example.com"
 						aria-label="Link URL"

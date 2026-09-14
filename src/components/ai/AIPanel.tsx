@@ -29,11 +29,7 @@ import { useAiActions } from "./hooks/useAiActions";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
 import { useRigChat } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
-import {
-	fetchAiHistoryDetail,
-	useAiHistory,
-	useRestoredAiChat,
-} from "./useAiHistory";
+import { fetchAiHistoryDetail, useAiHistory, useRestoredAiChat } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
 
 const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
@@ -42,9 +38,7 @@ interface AIPanelProps {
 	onClose: () => void;
 }
 
-function timelineFromStoredToolEvents(
-	toolEvents: AiStoredToolEvent[],
-): AIActivityTimelineEvent[] {
+function timelineFromStoredToolEvents(toolEvents: AiStoredToolEvent[]): AIActivityTimelineEvent[] {
 	return toolEvents
 		.filter((event) => event.phase === "result")
 		.map((event) => ({
@@ -68,8 +62,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	const [addPanelQuery, setAddPanelQuery] = useState("");
 	const [historyExpanded, setHistoryExpanded] = useState(false);
 	const [showScrollFab, setShowScrollFab] = useState(false);
-	const [selectionContext, setSelectionContext] =
-		useState<AiSelectionContext | null>(null);
+	const [selectionContext, setSelectionContext] = useState<AiSelectionContext | null>(null);
 	const [selectionMessageBaseline, setSelectionMessageBaseline] = useState(0);
 	const [hydratedJobId, setHydratedJobId] = useState<string | null>(null);
 
@@ -107,9 +100,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		chat.setMessages(restored.messages);
 		toolEvents.resetToolState();
 		toolEvents.setResponsePhase("idle");
-		toolEvents.setActivityTimeline(
-			timelineFromStoredToolEvents(restored.toolEvents),
-		);
+		toolEvents.setActivityTimeline(timelineFromStoredToolEvents(restored.toolEvents));
 		chat.clearError();
 	}
 
@@ -141,9 +132,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 				context.addContext("file", path);
 				const marker = `\uE000file${path}\uE001`;
 				setInput((prev) =>
-					prev.includes(marker)
-						? prev
-						: `${prev}${prev && !/\s$/.test(prev) ? " " : ""}${marker} `,
+					prev.includes(marker) ? prev : `${prev}${prev && !/\s$/.test(prev) ? " " : ""}${marker} `,
 				);
 			}
 			setAddPanelOpen(false);
@@ -165,9 +154,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		(Boolean(stripChipMarkers(input).trim()) ||
 			(chat.status === "ready" &&
 				chat.messages.some(
-					(message) =>
-						message.role === "assistant" &&
-						Boolean(messageText(message).trim()),
+					(message) => message.role === "assistant" && Boolean(messageText(message).trim()),
 				)));
 	const activeProvider = profiles.activeProfile?.provider;
 	const sendWithCurrentContext = useCallback(
@@ -213,11 +200,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	const handleSend = useCallback(async () => {
 		const text = context.resolveMentionsFromInput(input);
 		const sanitized = stripChipMarkers(text).trim();
-		if (
-			!sanitized ||
-			toolEvents.isAwaitingResponse ||
-			!profiles.activeProfileId
-		) {
+		if (!sanitized || toolEvents.isAwaitingResponse || !profiles.activeProfileId) {
 			return;
 		}
 		actions.setAssistantActionError("");
@@ -262,8 +245,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	]);
 
 	const handleRetry = useMemo(
-		() =>
-			actions.createRetryHandler(sendWithCurrentContext, context.payloadError),
+		() => actions.createRetryHandler(sendWithCurrentContext, context.payloadError),
 		[actions, sendWithCurrentContext, context.payloadError],
 	);
 
@@ -275,16 +257,12 @@ export function AIPanel({ onClose }: AIPanelProps) {
 				setInput((prev) => {
 					const before = prev.slice(0, trigger.start).trimEnd();
 					const after = prev.slice(trigger.end).replace(/^\s+/, "");
-					const parts = prev.includes(marker)
-						? [before, after]
-						: [before, marker, after];
+					const parts = prev.includes(marker) ? [before, after] : [before, marker, after];
 					return parts.filter(Boolean).join(" ");
 				});
 			} else {
 				setInput((prev) =>
-					prev.includes(marker)
-						? prev
-						: `${prev}${prev && !/\s$/.test(prev) ? " " : ""}${marker} `,
+					prev.includes(marker) ? prev : `${prev}${prev && !/\s$/.test(prev) ? " " : ""}${marker} `,
 				);
 			}
 			setAddPanelOpen(false);
@@ -321,9 +299,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			setHydratedJobId(jobId);
 			toolEvents.resetToolState();
 			toolEvents.setResponsePhase("idle");
-			toolEvents.setActivityTimeline(
-				timelineFromStoredToolEvents(loaded.toolEvents),
-			);
+			toolEvents.setActivityTimeline(timelineFromStoredToolEvents(loaded.toolEvents));
 			chat.setThreadId(jobId);
 			chat.setMessages(loaded.messages);
 			chat.clearError();
@@ -356,11 +332,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	}, [actions, chat, scheduleResize, toolEvents]);
 
 	const latestSelectionAssistantText = useMemo(() => {
-		for (
-			let index = chat.messages.length - 1;
-			index >= selectionMessageBaseline;
-			index -= 1
-		) {
+		for (let index = chat.messages.length - 1; index >= selectionMessageBaseline; index -= 1) {
 			const message = chat.messages[index];
 			if (message?.role === "assistant") return messageText(message).trim();
 		}
@@ -370,10 +342,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	const applySelectionResponse = useCallback(
 		(mode: "replace" | "insert") => {
 			if (!selectionContext || !latestSelectionAssistantText) return;
-			const result = selectionContext.applyResponse(
-				mode,
-				latestSelectionAssistantText,
-			);
+			const result = selectionContext.applyResponse(mode, latestSelectionAssistantText);
 			if (result === "applied") {
 				setSelectionContext(null);
 				return;
@@ -397,7 +366,6 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		setShowScrollFab(distanceFromBottom > 120);
 	}, []);
 	const msgCount = chat.messages.length;
-	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
 	useEffect(() => {
 		const el = threadRef.current;
 		if (el) {
@@ -412,11 +380,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	}, [chat.messages, toolEvents.isAwaitingResponse]);
 
 	return (
-		<div
-			className="aiPanel"
-			data-ai-mode={aiAssistantMode}
-			data-window-drag-ignore
-		>
+		<div className="aiPanel" data-ai-mode={aiAssistantMode} data-window-drag-ignore>
 			<div
 				className="aiPanelHeader drag"
 				data-tauri-drag-region
@@ -425,10 +389,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 				<div className="aiPanelHeaderLeft">
 					<button
 						type="button"
-						className={cn(
-							"aiPanelHistoryButton",
-							historyExpanded && "aiPanelHistoryButton-active",
-						)}
+						className={cn("aiPanelHistoryButton", historyExpanded && "aiPanelHistoryButton-active")}
 						aria-pressed={historyExpanded}
 						onClick={() => setHistoryExpanded((prev) => !prev)}
 						title="Recent chats"
@@ -483,11 +444,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 						onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
 					/>
 				) : null}
-				<div
-					className="aiChatThread"
-					ref={threadRef}
-					onScroll={handleThreadScroll}
-				>
+				<div className="aiChatThread" ref={threadRef} onScroll={handleThreadScroll}>
 					<AIChatThread
 						messages={chat.messages}
 						isChatMode={isChatMode}
@@ -529,20 +486,13 @@ export function AIPanel({ onClose }: AIPanelProps) {
 				{actions.assistantActionError ? (
 					<div className="aiPanelError">
 						<span>{actions.assistantActionError}</span>
-						<button
-							type="button"
-							onClick={() => actions.setAssistantActionError("")}
-						>
+						<button type="button" onClick={() => actions.setAssistantActionError("")}>
 							<X size="var(--icon-xs)" />
 						</button>
 					</div>
 				) : null}
-				{profiles.error ? (
-					<div className="aiPanelError">{profiles.error}</div>
-				) : null}
-				{history.error ? (
-					<div className="aiPanelError">{history.error}</div>
-				) : null}
+				{profiles.error ? <div className="aiPanelError">{profiles.error}</div> : null}
+				{history.error ? <div className="aiPanelError">{history.error}</div> : null}
 				{selectionContext ? (
 					<div className="aiSelectionContext">
 						<div className="aiSelectionContextHeader">
@@ -558,18 +508,14 @@ export function AIPanel({ onClose }: AIPanelProps) {
 								<X size="var(--icon-xs)" />
 							</Button>
 						</div>
-						<div className="aiSelectionContextText">
-							{selectionContext.text}
-						</div>
+						<div className="aiSelectionContextText">{selectionContext.text}</div>
 						<div className="aiSelectionActions">
 							<Button
 								type="button"
 								variant="outline"
 								size="sm"
 								disabled={toolEvents.isAwaitingResponse}
-								onClick={() =>
-									void sendWithCurrentContext(t("selectionAi.summarizePrompt"))
-								}
+								onClick={() => void sendWithCurrentContext(t("selectionAi.summarizePrompt"))}
 							>
 								{t("selectionAi.summarize")}
 							</Button>
@@ -578,14 +524,11 @@ export function AIPanel({ onClose }: AIPanelProps) {
 								variant="outline"
 								size="sm"
 								disabled={toolEvents.isAwaitingResponse}
-								onClick={() =>
-									void sendWithCurrentContext(t("selectionAi.rephrasePrompt"))
-								}
+								onClick={() => void sendWithCurrentContext(t("selectionAi.rephrasePrompt"))}
 							>
 								{t("selectionAi.rephrase")}
 							</Button>
-							{latestSelectionAssistantText &&
-							!toolEvents.isAwaitingResponse ? (
+							{latestSelectionAssistantText && !toolEvents.isAwaitingResponse ? (
 								<>
 									<Button
 										type="button"

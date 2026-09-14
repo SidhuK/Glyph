@@ -16,18 +16,15 @@
 	overflow: hidden;
 	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
 	background: transparent;
-	transition: border-color 180ms ease, background-color 180ms ease, box-shadow
-		180ms ease;
+	transition:
+		border-color 180ms ease,
+		background-color 180ms ease,
+		box-shadow 180ms ease;
 }
 
 .rfNodeNoteEditor:focus-within {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 28%,
-		var(--border-default)
-	);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 28%, var(--border-default));
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 }
 
 .rfNodeNoteEditorRibbonAnchor {
@@ -50,11 +47,7 @@
 	padding: 5px 9px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 86%, transparent);
 	border-radius: var(--radius-lg);
-	background-color: color-mix(
-		in srgb,
-		var(--bg-primary) 94%,
-		var(--bg-secondary)
-	);
+	background-color: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
 	color: var(--editor-body-color);
 	flex-shrink: 0;
 	overflow-x: auto;
@@ -72,7 +65,9 @@
 
 .rfNodeNoteEditorRibbonBottom {
 	transform-origin: center bottom;
-	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14), 0 2px 4px rgba(0, 0, 0, 0.08),
+	box-shadow:
+		0 14px 34px rgba(0, 0, 0, 0.14),
+		0 2px 4px rgba(0, 0, 0, 0.08),
 		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 84%, transparent);
 }
 
@@ -109,24 +104,25 @@
 	border-radius: var(--radius-sm);
 	color: var(--editor-body-color);
 	flex: 0 0 auto;
-	transition: background-color var(--transition-base), color
-		var(--transition-base), box-shadow var(--transition-base), transform
-		var(--transition-base);
+	transition:
+		background-color var(--transition-base),
+		color var(--transition-base),
+		box-shadow var(--transition-base),
+		transform var(--transition-base);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:hover {
 	background: color-mix(in srgb, var(--editor-body-color) 6%, transparent);
 	color: var(--editor-body-color);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--editor-body-color) 10%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--editor-body-color) 10%, transparent);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn.active {
 	background: color-mix(in srgb, var(--editor-body-color) 10%, var(--bg-hover));
 	color: var(--interactive-accent);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--editor-body-color) 14%, transparent), inset 0 -1px
-		0 color-mix(in srgb, var(--bg-primary) 54%, transparent);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--editor-body-color) 14%, transparent),
+		inset 0 -1px 0 color-mix(in srgb, var(--bg-primary) 54%, transparent);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:disabled {
@@ -205,7 +201,9 @@
 	background: transparent;
 	color: var(--text-secondary);
 	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
 }
 
 .noteFindButtonGlyph {
@@ -255,12 +253,10 @@
 }
 
 .frontmatterPreview {
-	/* biome-ignore format: stylelint rejects a line break immediately after the + operator. */
 	width: min(
 		100%,
 		calc(
-			var(--editor-readable-content-max-width)
-			+ (2 * var(--editor-readable-content-gutter-compact))
+			var(--editor-readable-content-max-width) + (2 * var(--editor-readable-content-gutter-compact))
 		)
 	);
 	margin: 0 auto 6px;

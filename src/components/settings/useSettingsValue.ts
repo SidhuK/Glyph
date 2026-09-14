@@ -39,9 +39,7 @@ export function useSettingsValue<T>(
 					const latestPersisted = persistedRef.current;
 					changedRef.current = latestPersisted !== null;
 					setValueState(
-						latestPersisted !== persisted && latestPersisted
-							? latestPersisted.value
-							: previous,
+						latestPersisted !== persisted && latestPersisted ? latestPersisted.value : previous,
 					);
 					setError(extractErrorMessage(cause));
 				})

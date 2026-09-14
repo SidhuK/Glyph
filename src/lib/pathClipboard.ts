@@ -8,10 +8,7 @@ function relativePathLabel(relPath: string): string {
 	return relPath || "/";
 }
 
-async function absoluteSpacePath(
-	spacePath: string | null,
-	relPath: string,
-): Promise<string> {
+async function absoluteSpacePath(spacePath: string | null, relPath: string): Promise<string> {
 	if (!spacePath) {
 		throw new Error("No space is open.");
 	}
@@ -30,39 +27,25 @@ export async function copyPathToClipboard(
 		await clipboard.writeText(path);
 		toast.success(successMessage);
 	} catch (error) {
-		const message =
-			error instanceof Error ? error.message : "Could not copy path.";
+		const message = error instanceof Error ? error.message : "Could not copy path.";
 		toast.error("Could not copy path", { description: message });
 	}
 }
 
 export async function copyRelativePath(relPath: string): Promise<void> {
-	await copyPathToClipboard(
-		relativePathLabel(relPath),
-		"Copied relative path.",
-	);
+	await copyPathToClipboard(relativePathLabel(relPath), "Copied relative path.");
 }
 
-export async function copyAbsolutePath(
-	spacePath: string | null,
-	relPath: string,
-): Promise<void> {
+export async function copyAbsolutePath(spacePath: string | null, relPath: string): Promise<void> {
 	try {
-		await copyPathToClipboard(
-			await absoluteSpacePath(spacePath, relPath),
-			"Copied absolute path.",
-		);
+		await copyPathToClipboard(await absoluteSpacePath(spacePath, relPath), "Copied absolute path.");
 	} catch (error) {
-		const message =
-			error instanceof Error ? error.message : "Could not copy path.";
+		const message = error instanceof Error ? error.message : "Could not copy path.";
 		toast.error("Could not copy path", { description: message });
 	}
 }
 
-export async function copyNoteDeeplink(
-	spacePath: string | null,
-	relPath: string,
-): Promise<void> {
+export async function copyNoteDeeplink(spacePath: string | null, relPath: string): Promise<void> {
 	// Own the clipboard write so failures use the localized deeplink toast
 	// instead of the generic path-copy message from `copyPathToClipboard`.
 	try {

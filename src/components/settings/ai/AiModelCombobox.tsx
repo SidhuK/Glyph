@@ -51,11 +51,7 @@ export function AiModelCombobox({
 		void modelsQuery.refetch();
 	}, [canFetchModels, modelsQuery, onModelsChange]);
 
-	const statusLabel = loading
-		? "Connecting..."
-		: models
-			? `${models.length} models`
-			: null;
+	const statusLabel = loading ? "Connecting..." : models ? `${models.length} models` : null;
 
 	return (
 		<div className="modelCombobox">
@@ -74,26 +70,18 @@ export function AiModelCombobox({
 					))}
 				</SettingsSelect>
 				{statusLabel ? (
-					<span
-						className={`modelComboboxBadge ${loading ? "modelComboboxBadgeLoading" : ""}`}
-					>
+					<span className={`modelComboboxBadge ${loading ? "modelComboboxBadgeLoading" : ""}`}>
 						{statusLabel}
 					</span>
 				) : null}
 			</div>
 			{!canFetchModels ? (
-				<div className="modelComboboxStatus">
-					Save an API key to load models for this provider.
-				</div>
+				<div className="modelComboboxStatus">Save an API key to load models for this provider.</div>
 			) : null}
 			{error ? (
 				<div className="modelComboboxStatus modelComboboxError">
 					<span>{error}</span>
-					<button
-						type="button"
-						className="modelComboboxRetry"
-						onClick={handleRetry}
-					>
+					<button type="button" className="modelComboboxRetry" onClick={handleRetry}>
 						Retry
 					</button>
 				</div>

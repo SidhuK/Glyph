@@ -133,22 +133,16 @@ export function GitSettingsPane() {
 
 	const inclusions = config?.inclusions ?? DEFAULT_INCLUSIONS;
 	const gitEnabledForSpace =
-		Boolean(config) &&
-		!status?.unsupported_parent_repo &&
-		status?.repo_detected;
-	const repoStateLabel = useMemo(
-		() => getGitSyncRepoStateLabel(status),
-		[status],
-	);
+		Boolean(config) && !status?.unsupported_parent_repo && status?.repo_detected;
+	const repoStateLabel = useMemo(() => getGitSyncRepoStateLabel(status), [status]);
 	const connectionHelp = useMemo(
 		() => getGitSyncConnectionHelp(status, Boolean(config)),
 		[config, status],
 	);
 	const presentation = useMemo(() => getGitSyncPresentation(status), [status]);
 	const specificFolderModeLabel =
-		ATTACHMENT_LOCATION_OPTIONS.find(
-			(option) => option.value === "specific-folder",
-		)?.label ?? "One folder for all attachments";
+		ATTACHMENT_LOCATION_OPTIONS.find((option) => option.value === "specific-folder")?.label ??
+		"One folder for all attachments";
 	const attachmentFilteringHelp =
 		attachmentStorageMode === "specific-folder"
 			? "Sync files from the configured attachments folder."
@@ -169,12 +163,7 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={
-								<HugeiconsIcon
-									icon={CheckmarkCircle02Icon}
-									size="var(--icon-md)"
-								/>
-							}
+							icon={<HugeiconsIcon icon={CheckmarkCircle02Icon} size="var(--icon-md)" />}
 							value={status?.git_installed ? "Installed" : "Missing"}
 						/>
 					</SettingsRow>
@@ -185,12 +174,7 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={
-								<HugeiconsIcon
-									icon={InformationCircleIcon}
-									size="var(--icon-md)"
-								/>
-							}
+							icon={<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-md)" />}
 							value={repoStateLabel}
 						/>
 					</SettingsRow>
@@ -202,10 +186,7 @@ export function GitSettingsPane() {
 					>
 						<SettingsValueCard
 							icon={<HugeiconsIcon icon={Link01Icon} size="var(--icon-md)" />}
-							value={
-								config?.remote_url ??
-								"Open a folder that already has Git initialized."
-							}
+							value={config?.remote_url ?? "Open a folder that already has Git initialized."}
 							mono={Boolean(config?.remote_url)}
 						/>
 					</SettingsRow>
@@ -217,9 +198,7 @@ export function GitSettingsPane() {
 							interactive={false}
 						>
 							<SettingsValueCard
-								icon={
-									<HugeiconsIcon icon={GitBranchIcon} size="var(--icon-md)" />
-								}
+								icon={<HugeiconsIcon icon={GitBranchIcon} size="var(--icon-md)" />}
 								value={config.branch}
 								mono
 							/>
@@ -258,10 +237,7 @@ export function GitSettingsPane() {
 							}}
 						/>
 					</SettingsRow>
-					<SettingsRow
-						label="Interval"
-						description="How often Glyph should run scheduled syncs."
-					>
+					<SettingsRow label="Interval" description="How often Glyph should run scheduled syncs.">
 						<SettingsSelect
 							aria-label="Git sync interval"
 							value={String(config?.interval_minutes ?? 10)}
@@ -290,15 +266,11 @@ export function GitSettingsPane() {
 								size="sm"
 								variant="default"
 								onClick={() => void handleSyncNow()}
-								disabled={
-									!gitEnabledForSpace || busy || !presentation.canSyncNow
-								}
+								disabled={!gitEnabledForSpace || busy || !presentation.canSyncNow}
 							>
 								Sync Now
 							</Button>
-							<div className="settingsHelp gitSettingsInlineStatus">
-								{presentation.headline}
-							</div>
+							<div className="settingsHelp gitSettingsInlineStatus">{presentation.headline}</div>
 							{presentation.showResume ? (
 								<Button
 									type="button"
@@ -324,18 +296,14 @@ export function GitSettingsPane() {
 					description="Choose which side Glyph should favor when local and remote edits conflict."
 					className={!gitEnabledForSpace ? "settingsSectionMuted" : undefined}
 				>
-					<SettingsRow
-						label="Policy"
-						description="Glyph resolves conflicts automatically."
-					>
+					<SettingsRow label="Policy" description="Glyph resolves conflicts automatically.">
 						<SettingsSelect
 							aria-label="Conflict policy"
 							value={config?.conflict_policy ?? "local_wins"}
 							disabled={!gitEnabledForSpace || busy}
 							onChange={(event) => {
 								void updatePatch({
-									conflict_policy: event.currentTarget
-										.value as GitSyncConflictPolicy,
+									conflict_policy: event.currentTarget.value as GitSyncConflictPolicy,
 								});
 							}}
 						>
@@ -368,10 +336,7 @@ export function GitSettingsPane() {
 							}}
 						/>
 					</SettingsRow>
-					<SettingsRow
-						label="Include attachments"
-						description={attachmentFilteringHelp}
-					>
+					<SettingsRow label="Include attachments" description={attachmentFilteringHelp}>
 						<SettingsToggle
 							ariaLabel="Include attachments"
 							checked={inclusions.include_attachments}

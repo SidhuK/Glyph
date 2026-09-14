@@ -31,28 +31,15 @@ export function useFolderFileCounts({
 	parentDirs,
 	treeRevision,
 }: FolderFileCountsArgs): Record<string, number> {
-	const dirs = useMemo(
-		() => Array.from(new Set(parentDirs)).sort(),
-		[parentDirs],
-	);
+	const dirs = useMemo(() => Array.from(new Set(parentDirs)).sort(), [parentDirs]);
 	const enabled =
-		Boolean(spacePath) &&
-		includeNonMarkdown !== null &&
-		dirs.length > 0 &&
-		Boolean(treeRevision);
+		Boolean(spacePath) && includeNonMarkdown !== null && dirs.length > 0 && Boolean(treeRevision);
 
 	const countsQuery = useQuery({
-		queryKey: [
-			"folder-file-counts",
-			spacePath,
-			includeNonMarkdown,
-			dirs,
-			treeRevision,
-		],
+		queryKey: ["folder-file-counts", spacePath, includeNonMarkdown, dirs, treeRevision],
 		enabled,
 		placeholderData: (previousData, previousQuery) =>
-			previousQuery?.queryKey[1] === spacePath &&
-			previousQuery.queryKey[2] === includeNonMarkdown
+			previousQuery?.queryKey[1] === spacePath && previousQuery.queryKey[2] === includeNonMarkdown
 				? previousData
 				: undefined,
 		queryFn: async () => {

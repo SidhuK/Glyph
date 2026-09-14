@@ -19,30 +19,12 @@ import {
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "./lib/appearance";
-import {
-	type CustomTheme,
-	applyCustomThemes,
-	normalizeCustomThemes,
-} from "./lib/customThemes";
-import {
-	isEditorViewMode,
-	setCachedDefaultEditorViewMode,
-} from "./lib/editorMode";
-import {
-	applyEditorHeadingPalette,
-	isHeadingPaletteId,
-} from "./lib/headingPalettes";
+import { type CustomTheme, applyCustomThemes, normalizeCustomThemes } from "./lib/customThemes";
+import { isEditorViewMode, setCachedDefaultEditorViewMode } from "./lib/editorMode";
+import { applyEditorHeadingPalette, isHeadingPaletteId } from "./lib/headingPalettes";
 import { queryClient } from "./lib/queryClient";
-import type {
-	UiCornerRadiusStyle,
-	UiDarkThemeId,
-	UiLightThemeId,
-} from "./lib/settings";
-import {
-	isUiCornerRadiusStyle,
-	loadSettings,
-	reloadFromDisk,
-} from "./lib/settings";
+import type { UiCornerRadiusStyle, UiDarkThemeId, UiLightThemeId } from "./lib/settings";
+import { isUiCornerRadiusStyle, loadSettings, reloadFromDisk } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
@@ -65,31 +47,18 @@ function LanguageBridge() {
 
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
-	const [lightThemeId, setLightThemeId] = React.useState<UiLightThemeId | null>(
-		null,
-	);
-	const [darkThemeId, setDarkThemeId] = React.useState<UiDarkThemeId | null>(
-		null,
-	);
+	const [lightThemeId, setLightThemeId] = React.useState<UiLightThemeId | null>(null);
+	const [darkThemeId, setDarkThemeId] = React.useState<UiDarkThemeId | null>(null);
 	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
-	const [editorFontFamily, setEditorFontFamily] = React.useState<string | null>(
-		null,
-	);
-	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
-		null,
-	);
+	const [editorFontFamily, setEditorFontFamily] = React.useState<string | null>(null);
+	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(null);
 	const [uiFontSize, setUiFontSize] = React.useState<number | null>(null);
-	const [editorFontSize, setEditorFontSize] = React.useState<number | null>(
+	const [editorFontSize, setEditorFontSize] = React.useState<number | null>(null);
+	const [translucentApp, setTranslucentApp] = React.useState<boolean | null>(null);
+	const [cornerRadiusStyle, setCornerRadiusStyle] = React.useState<UiCornerRadiusStyle | null>(
 		null,
 	);
-	const [translucentApp, setTranslucentApp] = React.useState<boolean | null>(
-		null,
-	);
-	const [cornerRadiusStyle, setCornerRadiusStyle] =
-		React.useState<UiCornerRadiusStyle | null>(null);
-	const [customThemes, setCustomThemes] = React.useState<CustomTheme[] | null>(
-		null,
-	);
+	const [customThemes, setCustomThemes] = React.useState<CustomTheme[] | null>(null);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -147,11 +116,7 @@ function ThemeAndTypographyBridge() {
 
 	useTauriEvent("settings:updated", (payload) => {
 		const nextTheme = payload.ui?.theme;
-		if (
-			nextTheme === "light" ||
-			nextTheme === "dark" ||
-			nextTheme === "system"
-		) {
+		if (nextTheme === "light" || nextTheme === "dark" || nextTheme === "system") {
 			setTheme(nextTheme);
 		}
 		if (payload.ui?.customThemes) {
@@ -172,10 +137,7 @@ function ThemeAndTypographyBridge() {
 		if (typeof payload.ui?.monoFontFamily === "string") {
 			setMonoFontFamily(payload.ui.monoFontFamily);
 		}
-		if (
-			typeof payload.ui?.fontSize === "number" &&
-			Number.isFinite(payload.ui.fontSize)
-		) {
+		if (typeof payload.ui?.fontSize === "number" && Number.isFinite(payload.ui.fontSize)) {
 			setUiFontSize(payload.ui.fontSize);
 		}
 		if (
@@ -234,13 +196,7 @@ function ThemeAndTypographyBridge() {
 		return () => {
 			window.removeEventListener("resize", applyTypography);
 		};
-	}, [
-		editorFontFamily,
-		editorFontSize,
-		fontFamily,
-		monoFontFamily,
-		uiFontSize,
-	]);
+	}, [editorFontFamily, editorFontSize, fontFamily, monoFontFamily, uiFontSize]);
 
 	React.useEffect(() => {
 		if (!customThemes) return;
@@ -265,9 +221,7 @@ function ThemeAndTypographyBridge() {
 	React.useEffect(() => {
 		if (typeof translucentApp !== "boolean") return;
 		if (!translucentApp) {
-			void invoke("set_window_vibrancy_theme", { theme: "none" }).catch(
-				() => {},
-			);
+			void invoke("set_window_vibrancy_theme", { theme: "none" }).catch(() => {});
 			return;
 		}
 		if (resolvedTheme !== "dark" && resolvedTheme !== "light") return;
@@ -277,9 +231,7 @@ function ThemeAndTypographyBridge() {
 					? "system-dark"
 					: "system-light"
 				: resolvedTheme;
-		void invoke("set_window_vibrancy_theme", { theme: vibrancyTheme }).catch(
-			() => {},
-		);
+		void invoke("set_window_vibrancy_theme", { theme: vibrancyTheme }).catch(() => {});
 	}, [resolvedTheme, theme, translucentApp]);
 
 	return null;
@@ -319,9 +271,7 @@ function currentWindowLabel(): string {
 
 const windowLabel = currentWindowLabel();
 const isQuickNoteWindow = windowLabel === QUICK_NOTE_WINDOW_LABEL;
-const isExternalMarkdownWindow = windowLabel.startsWith(
-	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
-);
+const isExternalMarkdownWindow = windowLabel.startsWith(EXTERNAL_MARKDOWN_WINDOW_PREFIX);
 
 void initI18n()
 	.then(() => syncNativeMenuLabels().catch(() => {}))

@@ -7,14 +7,8 @@ import {
 	destroyLazyCodeBlockPreviewWidget,
 } from "./codeBlockPreviewHydration";
 import { createCodeBlockPreviewExtension } from "./codeBlockPreviewPlugin";
-import {
-	createMermaidCanvas,
-	createMermaidErrorCanvas,
-} from "./mermaid/canvas";
-import {
-	clearMermaidRenderCache,
-	renderMermaidCanvasSvg,
-} from "./mermaid/renderer";
+import { createMermaidCanvas, createMermaidErrorCanvas } from "./mermaid/canvas";
+import { clearMermaidRenderCache, renderMermaidCanvasSvg } from "./mermaid/renderer";
 
 const mermaidPreviewPluginKey = new PluginKey("mermaid-preview");
 
@@ -76,9 +70,7 @@ export const MermaidPreview = createCodeBlockPreviewExtension({
 		}),
 	destroyWidget: destroyLazyCodeBlockPreviewWidget,
 	shouldRefresh: (transaction) => {
-		const meta = transaction.getMeta(mermaidPreviewPluginKey) as
-			| MermaidPreviewMeta
-			| undefined;
+		const meta = transaction.getMeta(mermaidPreviewPluginKey) as MermaidPreviewMeta | undefined;
 		return meta?.type === "refresh";
 	},
 }).extend({

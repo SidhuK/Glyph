@@ -3,11 +3,7 @@ import type { KeyboardEvent } from "react";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
-import type {
-	AllDocsItem,
-	FileTreeAppearance,
-	NoteTaskSummary,
-} from "../../lib/tauri";
+import type { AllDocsItem, FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import type { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import {
 	DatabaseNoteAppearanceIcon,
@@ -28,11 +24,7 @@ export type PreviewLine = {
 	text: string;
 };
 
-function pushPreviewLine(
-	parsed: PreviewLine[],
-	kind: PreviewLineKind,
-	text: string,
-) {
+function pushPreviewLine(parsed: PreviewLine[], kind: PreviewLineKind, text: string) {
 	parsed.push({ key: `${kind}:${parsed.length}:${text}`, kind, text });
 }
 
@@ -45,7 +37,7 @@ export function previewLines(preview: string, title: string): PreviewLine[] {
 	for (const raw of lines) {
 		const line = raw.trim();
 		if (!line) continue;
-		if (/^```/.test(line)) {
+		if (line.startsWith("```")) {
 			inFence = !inFence;
 			continue;
 		}
@@ -70,9 +62,7 @@ export function previewLines(preview: string, title: string): PreviewLine[] {
 			continue;
 		}
 
-		const taskMatch = line.match(
-			/^(?:(?:[-*+]|\d+\.)\s+)?\[(?: |x|X)\]\s+(.*)$/,
-		);
+		const taskMatch = line.match(/^(?:(?:[-*+]|\d+\.)\s+)?\[(?: |x|X)\]\s+(.*)$/);
 		if (taskMatch?.[1]) {
 			const text = normalizeInlineMarkdown(taskMatch[1]);
 			if (text) pushPreviewLine(parsed, "task", text);
@@ -91,9 +81,7 @@ export function previewLines(preview: string, title: string): PreviewLine[] {
 	}
 
 	const filtered = parsed.filter((line) => {
-		const normalizedLine = normalizeInlineMarkdown(line.text)
-			.trim()
-			.toLowerCase();
+		const normalizedLine = normalizeInlineMarkdown(line.text).trim().toLowerCase();
 		return !(normalizedTitle && normalizedLine === normalizedTitle);
 	});
 
@@ -189,10 +177,7 @@ export function AllDocsCard({
 			onSelect();
 		}
 	};
-	const noteAppearanceStyle = databaseNoteAppearanceStyle(
-		notePath,
-		noteAppearance,
-	);
+	const noteAppearanceStyle = databaseNoteAppearanceStyle(notePath, noteAppearance);
 
 	return (
 		<m.button
@@ -223,11 +208,7 @@ export function AllDocsCard({
 		>
 			<div className="allDocsCardSurface">
 				<div className="allDocsCardTop">
-					<span
-						className="allDocsCardTitle"
-						title={title}
-						style={noteAppearanceStyle}
-					>
+					<span className="allDocsCardTitle" title={title} style={noteAppearanceStyle}>
 						<DatabaseNoteAppearanceIcon
 							notePath={notePath}
 							appearance={noteAppearance}
@@ -238,10 +219,7 @@ export function AllDocsCard({
 					</span>
 					{taskSummary && taskCount > 0 ? (
 						<span className="allDocsCardTaskSummary">
-							<TaskProgressComponent
-								summary={taskSummary}
-								className="allDocsCardTaskProgress"
-							/>
+							<TaskProgressComponent summary={taskSummary} className="allDocsCardTaskProgress" />
 							<span className="allDocsCardTaskText">
 								{taskSummary.completed_count}/{taskCount}
 							</span>
@@ -260,9 +238,7 @@ export function AllDocsCard({
 						))}
 					</div>
 				) : (
-					<div className="allDocsCardPreview is-placeholder">
-						No preview yet
-					</div>
+					<div className="allDocsCardPreview is-placeholder">No preview yet</div>
 				)}
 			</div>
 		</m.button>

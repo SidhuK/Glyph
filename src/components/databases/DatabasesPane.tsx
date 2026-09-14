@@ -21,10 +21,7 @@ import { DatabaseViewTabs } from "./DatabaseViewTabs";
 
 interface DatabasesPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
-	onRenameNotePath?: (
-		notePath: string,
-		nextName: string,
-	) => Promise<string | null>;
+	onRenameNotePath?: (notePath: string, nextName: string) => Promise<string | null>;
 	databasesOpenRequest: DatabasesOpenRequest;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 }
@@ -59,21 +56,14 @@ function DatabasesPaneContent({
 
 	return (
 		<div className="databaseHostPane">
-			<CollectionTopBar
-				document={doc}
-				selection={selection}
-				views={views}
-				actions={actions}
-			/>
+			<CollectionTopBar document={doc} selection={selection} views={views} actions={actions} />
 
 			{activeCollection ? (
 				<>
 					<div className="databasesViewBar">
 						<DatabaseViewTabs
 							document={activeCollection.document}
-							selectedViewId={
-								viewSelection.selectedViewId ?? activeCollection.view.id
-							}
+							selectedViewId={viewSelection.selectedViewId ?? activeCollection.view.id}
 							setSelectedViewId={viewSelection.setSelectedViewId}
 							saveDatabase={doc.saveDatabase}
 							clearError={ui.clearError}
@@ -85,37 +75,26 @@ function DatabasesPaneContent({
 							className="databaseToolbarInline"
 							databaseView={activeCollection.config.view.layout}
 							groupColumns={views.groupColumns}
-							groupColumnId={
-								activeCollection.config.view.board_group_by ?? null
-							}
+							groupColumnId={activeCollection.config.view.board_group_by ?? null}
 							config={activeCollection.config}
-							availableProperties={
-								activeCollection.document.available_properties
-							}
+							availableProperties={activeCollection.document.available_properties}
 							onGroupColumnIdChange={views.handleGroupColumnIdChange}
 							onChangeConfig={views.handleSaveConfig}
 							viewOptionsOpen={views.viewOptionsOpen}
 							onViewOptionsOpenChange={views.setViewOptionsOpen}
 						/>
 					</div>
-					{ui.error ? (
-						<div className="databaseNotice databaseNoticeError">{ui.error}</div>
-					) : null}
-					{activeCollection.config.view.layout === "board" &&
-					views.boardHandlers ? (
+					{ui.error ? <div className="databaseNotice databaseNoticeError">{ui.error}</div> : null}
+					{activeCollection.config.view.layout === "board" && views.boardHandlers ? (
 						<DatabaseBoard
 							rows={rows.rows}
 							columns={views.resolvedColumns ?? activeCollection.config.columns}
-							groupColumnId={
-								activeCollection.config.view.board_group_by ?? null
-							}
+							groupColumnId={activeCollection.config.view.board_group_by ?? null}
 							laneOrderByGroup={
-								activeCollection.config.view.board_lane_order ??
-								EMPTY_BOARD_LANE_ORDER
+								activeCollection.config.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER
 							}
 							cardOrderByGroup={
-								activeCollection.config.view.board_card_order ??
-								EMPTY_BOARD_CARD_ORDER
+								activeCollection.config.view.board_card_order ?? EMPTY_BOARD_CARD_ORDER
 							}
 							laneColors={activeCollection.config.view.board_lane_colors ?? {}}
 							statusColors={display.statusColors}
@@ -126,8 +105,7 @@ function DatabasesPaneContent({
 							onCreateRow={actions.handleCreateRow}
 							onOpenColumns={() => views.setViewOptionsOpen(true)}
 							boardCardFields={
-								activeCollection.config.view.board_card_fields ??
-								EMPTY_BOARD_CARD_FIELDS
+								activeCollection.config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS
 							}
 							onGroupColumnIdChange={views.handleGroupColumnIdChange}
 							onLaneOrderChange={views.boardHandlers.onLaneOrderChange}
@@ -151,9 +129,7 @@ function DatabasesPaneContent({
 							groupColumn={views.activeGroupColumn}
 							cardOrderByGroup={
 								views.activeGroupColumn
-									? activeCollection.config.view.board_card_order?.[
-											views.activeGroupColumn.id
-										]
+									? activeCollection.config.view.board_card_order?.[views.activeGroupColumn.id]
 									: undefined
 							}
 							onCardOrderChange={views.persistCardOrder}
@@ -173,9 +149,7 @@ function DatabasesPaneContent({
 				</>
 			) : (
 				<div className="databasesEmptyState">
-					{ui.error ? (
-						<div className="databaseNotice databaseNoticeError">{ui.error}</div>
-					) : null}
+					{ui.error ? <div className="databaseNotice databaseNoticeError">{ui.error}</div> : null}
 					<HugeiconsIcon icon={LibraryIcon} size="var(--icon-3xl)" />
 					<div className="databasesEmptyTitle">
 						{selection.summaries.length === 0
@@ -194,12 +168,11 @@ function DatabasesPaneContent({
 									<strong>Choose notes</strong> — pick a folder, tag, or search.
 								</li>
 								<li>
-									<strong>Shape the view</strong> — show columns, filters, and
-									sorting.
+									<strong>Shape the view</strong> — show columns, filters, and sorting.
 								</li>
 								<li>
-									<strong>Track work</strong> — switch to board view and group
-									by status, tags, or another field.
+									<strong>Track work</strong> — switch to board view and group by status, tags, or
+									another field.
 								</li>
 							</ol>
 							<Button

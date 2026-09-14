@@ -2,7 +2,7 @@
 
 import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
@@ -87,9 +87,7 @@ describe("ColoredText markdown integration", () => {
 		editor.commands.toggleBold();
 		editor.commands.unsetTextColor();
 
-		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe(
-			"**done**",
-		);
+		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe("**done**");
 
 		editor.destroy();
 	});

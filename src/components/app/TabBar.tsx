@@ -1,10 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
-import {
-	type DragEndEvent,
-	PointerSensor,
-	useDragDropMonitor,
-} from "@dnd-kit/react";
+import { type DragEndEvent, PointerSensor, useDragDropMonitor } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon, PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -53,9 +49,7 @@ interface TabBarProps {
 
 const MAIN_TAB_SENSORS = [
 	PointerSensor.configure({
-		activationConstraints: [
-			new PointerActivationConstraints.Distance({ value: 5 }),
-		],
+		activationConstraints: [new PointerActivationConstraints.Distance({ value: 5 })],
 	}),
 ];
 const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
@@ -98,9 +92,7 @@ export function TabBar({
 	const { getBinding } = useShortcutBindings();
 	const [tabsOverflow, setTabsOverflow] = useState(false);
 	const suppressClickRef = useRef(false);
-	const suppressClickResetTimerRef = useRef<ReturnType<
-		typeof window.setTimeout
-	> | null>(null);
+	const suppressClickResetTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
 	useEffect(() => {
 		return () => {
 			if (suppressClickResetTimerRef.current !== null) {
@@ -126,8 +118,7 @@ export function TabBar({
 			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
 			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
 			if (tab.target === PINNED_DOCS_TAB_ID) return t("tabs.pinned");
-			if (tab.target === SPACE_CONNECTIONS_TAB_ID)
-				return t("sidebar.connections");
+			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return t("sidebar.connections");
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
 			return compactLabel(stripFileExtension(rawName));
@@ -156,9 +147,7 @@ export function TabBar({
 
 	const newTabShortcut = getBinding("new-tab");
 	const activeMarkdownPath =
-		activeTabPath &&
-		!isPathSpecial(activeTabPath) &&
-		isMarkdownPath(activeTabPath)
+		activeTabPath && !isPathSpecial(activeTabPath) && isMarkdownPath(activeTabPath)
 			? activeTabPath
 			: null;
 	// Reorder only when one of this pane's tabs is dropped onto another tab in
@@ -168,10 +157,8 @@ export function TabBar({
 		() => ({
 			onDragEnd(event: DragEndEvent) {
 				const { source, target } = event.operation;
-				const sourceTabId =
-					typeof source?.data.tabId === "string" ? source.data.tabId : null;
-				const sourcePaneId =
-					typeof source?.data.paneId === "string" ? source.data.paneId : null;
+				const sourceTabId = typeof source?.data.tabId === "string" ? source.data.tabId : null;
+				const sourcePaneId = typeof source?.data.paneId === "string" ? source.data.paneId : null;
 				if (!sourceTabId || sourcePaneId !== paneId) return;
 
 				suppressClickRef.current = true;
@@ -186,10 +173,8 @@ export function TabBar({
 				}, DRAG_CLICK_SUPPRESSION_DELAY_MS);
 				if (event.canceled) return;
 
-				const targetTabId =
-					typeof target?.data.tabId === "string" ? target.data.tabId : null;
-				const targetPaneId =
-					typeof target?.data.paneId === "string" ? target.data.paneId : null;
+				const targetTabId = typeof target?.data.tabId === "string" ? target.data.tabId : null;
+				const targetPaneId = typeof target?.data.paneId === "string" ? target.data.paneId : null;
 				if (!targetTabId || targetPaneId !== paneId) return;
 				if (targetTabId === sourceTabId) return;
 
@@ -206,10 +191,7 @@ export function TabBar({
 			data-tauri-drag-region={allowWindowDrag ? "" : undefined}
 			onMouseDown={allowWindowDrag ? onWindowDragMouseDown : undefined}
 		>
-			<div
-				className="mainTabsBar"
-				data-empty-state={useWindowBackground ? "true" : "false"}
-			>
+			<div className="mainTabsBar" data-empty-state={useWindowBackground ? "true" : "false"}>
 				<div className="mainTabNavControls">
 					<button
 						type="button"
@@ -232,10 +214,7 @@ export function TabBar({
 						→
 					</button>
 				</div>
-				<ActiveFileTitle
-					path={activeMarkdownPath}
-					onRenameFile={onRenameFile}
-				/>
+				<ActiveFileTitle path={activeMarkdownPath} onRenameFile={onRenameFile} />
 				{tabs.length > 0 ? (
 					<div className="mainTabsStrip">
 						<div className="mainTabsStripTabs" ref={measureTabsRef}>
@@ -261,9 +240,7 @@ export function TabBar({
 							className="mainTabAdd"
 							onClick={onOpenBlankTab}
 							title={`Open blank tab${
-								newTabShortcut
-									? ` (${formatShortcutForPlatform(newTabShortcut)})`
-									: ""
+								newTabShortcut ? ` (${formatShortcutForPlatform(newTabShortcut)})` : ""
 							}`}
 							aria-label="Open blank tab"
 						>
@@ -382,8 +359,7 @@ const TabItem = memo(function TabItem({
 		[onToggleTabPinned, tab.id],
 	);
 	const handleDoubleClick = useCallback(() => {
-		if (!tab.target || tab.kind === "blank" || isPathSpecial(tab.target))
-			return;
+		if (!tab.target || tab.kind === "blank" || isPathSpecial(tab.target)) return;
 		onStartRenamePath(tab.target);
 	}, [onStartRenamePath, tab.kind, tab.target]);
 
@@ -410,11 +386,7 @@ const TabItem = memo(function TabItem({
 					title={t("tabs.unpinNamed", { label })}
 					aria-label={t("tabs.unpinNamed", { label })}
 				>
-					<HugeiconsIcon
-						icon={PinIcon}
-						size={13}
-						className="mainTabPinIcon mainTabPinIconPinned"
-					/>
+					<HugeiconsIcon icon={PinIcon} size={13} className="mainTabPinIcon mainTabPinIconPinned" />
 					<HugeiconsIcon
 						icon={PinOffIcon}
 						size={13}

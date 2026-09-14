@@ -7,9 +7,7 @@ import { type NoteTaskSummary, invoke } from "../lib/tauri";
 
 const EMPTY_TASK_SUMMARIES: Record<string, NoteTaskSummary> = {};
 
-function summarizeFromCachedMarkdown(
-	paths: string[],
-): Record<string, NoteTaskSummary> {
+function summarizeFromCachedMarkdown(paths: string[]): Record<string, NoteTaskSummary> {
 	const next: Record<string, NoteTaskSummary> = {};
 	for (const path of paths) {
 		const cached = peekCachedMarkdownDoc(path);
@@ -22,10 +20,7 @@ function summarizeFromCachedMarkdown(
 	return next;
 }
 
-export function useTaskSummariesForPaths(
-	paths: string[],
-	enabled: boolean | null,
-) {
+export function useTaskSummariesForPaths(paths: string[], enabled: boolean | null) {
 	const taskSummaryPaths = useMemo(
 		() => Array.from(new Set(paths.filter(Boolean))).sort(),
 		[paths],
@@ -39,9 +34,7 @@ export function useTaskSummariesForPaths(
 		enabled: enabled === true && taskSummaryPaths.length > 0,
 		staleTime: 30_000,
 		placeholderData: (previousData) =>
-			previousData && Object.keys(previousData).length > 0
-				? previousData
-				: cachedSummaries,
+			previousData && Object.keys(previousData).length > 0 ? previousData : cachedSummaries,
 		queryFn: async () => {
 			const items = await invoke("task_summaries_for_paths", {
 				note_paths: taskSummaryPaths,

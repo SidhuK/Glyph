@@ -36,10 +36,7 @@ export const Quote = (props: IconProps) => (
 	<HugeiconsIcon icon={QuoteIcon} {...withDefaultIconSize(props)} />
 );
 export const List = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={LeftToRightListBulletIcon}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={LeftToRightListBulletIcon} {...withDefaultIconSize(props)} />
 );
 export const ListOrdered = (props: IconProps) => (
 	<HugeiconsIcon icon={ListOrderedIcon} {...withDefaultIconSize(props)} />

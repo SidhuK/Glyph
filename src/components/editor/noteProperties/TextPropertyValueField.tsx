@@ -4,10 +4,7 @@ import type { NoteProperty } from "../../../lib/tauri";
 import { Edit } from "../../Icons";
 import { Button } from "../../ui/shadcn/button";
 import { Input } from "../../ui/shadcn/input";
-import {
-	WikiLinkSuggestionList,
-	useWikiLinkAutocomplete,
-} from "../hooks/useWikiLinkAutocomplete";
+import { WikiLinkSuggestionList, useWikiLinkAutocomplete } from "../hooks/useWikiLinkAutocomplete";
 import { findWikiLinkSpans } from "../markdown/wikiLinkCodec";
 import { WikiLinkedText } from "./WikiLinkedText";
 
@@ -25,8 +22,7 @@ export function TextPropertyValueField({
 	const { t } = useTranslation("menu");
 	const value = property.value_text ?? "";
 	const isTextProperty = property.kind === "text";
-	const containsWikiLinks =
-		isTextProperty && findWikiLinkSpans(value).length > 0;
+	const containsWikiLinks = isTextProperty && findWikiLinkSpans(value).length > 0;
 	const [draft, setDraft] = useState(value);
 	const [isEditing, setIsEditing] = useState(() => !containsWikiLinks);
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -70,23 +66,14 @@ export function TextPropertyValueField({
 				autoFocus={hasWikiLinks}
 				className="plainTextInput notePropertyFieldInput"
 				style={{ color: "var(--text-primary)" }}
-				type={
-					property.kind === "date"
-						? "date"
-						: property.kind === "url"
-							? "url"
-							: "text"
-				}
+				type={property.kind === "date" ? "date" : property.kind === "url" ? "url" : "text"}
 				value={draft}
 				placeholder={draft ? "" : "—"}
 				aria-label={`${property.key || "Property"} value`}
 				onChange={(event) => {
 					const nextValue = event.target.value;
 					setDraft(nextValue);
-					wikiLinkAutocomplete.refresh(
-						nextValue,
-						event.currentTarget.selectionStart,
-					);
+					wikiLinkAutocomplete.refresh(nextValue, event.currentTarget.selectionStart);
 				}}
 				onBlur={commitDraft}
 				onFocus={(event) => {

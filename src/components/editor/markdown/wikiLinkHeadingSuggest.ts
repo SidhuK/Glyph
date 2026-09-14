@@ -1,7 +1,4 @@
-import {
-	type EditorLinkSuggestion,
-	suggestWikiLinks,
-} from "../../../lib/linkSuggestions";
+import { type EditorLinkSuggestion, suggestWikiLinks } from "../../../lib/linkSuggestions";
 import { noteDocumentQueryOptions } from "../../../lib/navigationPrefetch";
 import { splitYamlFrontmatter } from "../../../lib/notePreview";
 import { queryClient } from "../../../lib/queryClient";
@@ -36,9 +33,7 @@ async function suggestWikiLinkHeadings(options: {
 	const path = await resolveWikiLinkPath(options.target);
 	if (!path) return [];
 	try {
-		const { text } = await queryClient.fetchQuery(
-			noteDocumentQueryOptions(path),
-		);
+		const { text } = await queryClient.fetchQuery(noteDocumentQueryOptions(path));
 		const { body } = splitYamlFrontmatter(text);
 		const headings = analyzeNoteInfo(body, body, {
 			includeHeadings: true,
@@ -46,10 +41,7 @@ async function suggestWikiLinkHeadings(options: {
 		}).headings;
 		return headings
 			.filter((heading) =>
-				queryMatchesText(
-					options.headingQuery,
-					`${heading.text} ${heading.slug ?? ""}`,
-				),
+				queryMatchesText(options.headingQuery, `${heading.text} ${heading.slug ?? ""}`),
 			)
 			.slice(0, options.limit)
 			.map((heading) => {

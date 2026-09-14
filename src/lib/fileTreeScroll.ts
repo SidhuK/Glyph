@@ -11,12 +11,7 @@ export function scheduleScrollFileTreePathIntoView(
 	path: string,
 	options: ScrollFileTreePathOptions = {},
 ): () => void {
-	const {
-		focus = false,
-		maxAttempts = 10,
-		retryMs = 45,
-		warmupFrames = 1,
-	} = options;
+	const { focus = false, maxAttempts = 10, retryMs = 45, warmupFrames = 1 } = options;
 	let attempts = 0;
 	let cancelled = false;
 	let retryTimer: number | null = null;

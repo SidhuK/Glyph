@@ -8,11 +8,7 @@
 	--color-foreground: var(--text-primary);
 	--color-card: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
 	--color-card-foreground: var(--text-primary);
-	--color-popover: color-mix(
-		in srgb,
-		var(--bg-primary) 96%,
-		var(--bg-secondary)
-	);
+	--color-popover: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
 	--color-popover-foreground: var(--text-primary);
 	--color-primary: var(--interactive-accent);
 	--color-primary-foreground: var(--text-inverse);

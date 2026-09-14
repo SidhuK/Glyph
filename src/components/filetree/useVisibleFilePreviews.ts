@@ -42,10 +42,7 @@ function markdownPreviewSnippet(markdown: string): string {
 	return lines.join(" ");
 }
 
-export function useVisibleFilePreviews(
-	spacePath: string | null,
-	focusedDirPath: string | null,
-) {
+export function useVisibleFilePreviews(spacePath: string | null, focusedDirPath: string | null) {
 	const [filePreviewsByPath, setFilePreviewsByPath] = useState<
 		Record<string, string | null | undefined>
 	>({});
@@ -104,21 +101,13 @@ export function useVisibleFilePreviews(
 		}
 
 		const missingPaths = filePreviewPaths.filter(
-			(path) =>
-				filePreviewsByPath[path] === undefined ||
-				filePreviewsByPath[path] === "",
+			(path) => filePreviewsByPath[path] === undefined || filePreviewsByPath[path] === "",
 		);
 		if (missingPaths.length === 0) return;
 
 		const chunks: string[][] = [];
-		for (
-			let offset = 0;
-			offset < missingPaths.length;
-			offset += TEXT_PREVIEW_BATCH_MAX_PATHS
-		) {
-			chunks.push(
-				missingPaths.slice(offset, offset + TEXT_PREVIEW_BATCH_MAX_PATHS),
-			);
+		for (let offset = 0; offset < missingPaths.length; offset += TEXT_PREVIEW_BATCH_MAX_PATHS) {
+			chunks.push(missingPaths.slice(offset, offset + TEXT_PREVIEW_BATCH_MAX_PATHS));
 		}
 
 		let cancelled = false;
@@ -130,10 +119,7 @@ export function useVisibleFilePreviews(
 				}).then((results) => ({ chunkPaths, results })),
 			),
 		).then((settled) => {
-			if (
-				cancelled ||
-				filePreviewRequestRef.current !== filePreviewRequestKey
-			) {
+			if (cancelled || filePreviewRequestRef.current !== filePreviewRequestKey) {
 				return;
 			}
 			setFilePreviewsByPath((prev) => {
@@ -167,13 +153,7 @@ export function useVisibleFilePreviews(
 		return () => {
 			cancelled = true;
 		};
-	}, [
-		filePreviewPaths,
-		filePreviewRequestKey,
-		filePreviewsByPath,
-		focusedDirPath,
-		spacePath,
-	]);
+	}, [filePreviewPaths, filePreviewRequestKey, filePreviewsByPath, focusedDirPath, spacePath]);
 
 	return {
 		filePreviewsByPath,

@@ -8,13 +8,8 @@ import {
 } from "./appearanceOptions";
 import { useSettingsValue } from "./useSettingsValue";
 
-function includeSelectedFonts(
-	fonts: string[],
-	selectedFonts: string[],
-): string[] {
-	const missingFonts = Array.from(
-		new Set(selectedFonts.filter((font) => !fonts.includes(font))),
-	);
+function includeSelectedFonts(fonts: string[], selectedFonts: string[]): string[] {
+	const missingFonts = Array.from(new Set(selectedFonts.filter((font) => !fonts.includes(font))));
 	return missingFonts.length ? [...missingFonts, ...fonts] : fonts;
 }
 
@@ -22,9 +17,7 @@ interface UseAppearanceTypographyOptions {
 	setError: (message: string) => void;
 }
 
-export function useAppearanceTypography({
-	setError,
-}: UseAppearanceTypographyOptions) {
+export function useAppearanceTypography({ setError }: UseAppearanceTypographyOptions) {
 	const fontFamily = useSettingsValue<UiFontFamily>(
 		DEFAULT_FONT_FAMILY,
 		DURABLE_SETTINGS.fontFamily.write,
@@ -40,22 +33,16 @@ export function useAppearanceTypography({
 		DURABLE_SETTINGS.monoFontFamily.write,
 		setError,
 	);
-	const uiFontSize = useSettingsValue<UiFontSize>(
-		14,
-		DURABLE_SETTINGS.fontSize.write,
-		setError,
-	);
+	const uiFontSize = useSettingsValue<UiFontSize>(14, DURABLE_SETTINGS.fontSize.write, setError);
 	const editorFontSize = useSettingsValue<UiFontSize>(
 		16,
 		DURABLE_SETTINGS.editorFontSize.write,
 		setError,
 	);
-	const [availableFonts, setAvailableFonts] = useState<string[]>([
-		DEFAULT_FONT_FAMILY,
+	const [availableFonts, setAvailableFonts] = useState<string[]>([DEFAULT_FONT_FAMILY]);
+	const [availableMonospaceFonts, setAvailableMonospaceFonts] = useState<string[]>([
+		"JetBrains Mono",
 	]);
-	const [availableMonospaceFonts, setAvailableMonospaceFonts] = useState<
-		string[]
-	>(["JetBrains Mono"]);
 
 	const typography = useMemo(
 		() => ({
@@ -83,8 +70,7 @@ export function useAppearanceTypography({
 				setAvailableMonospaceFonts(monospaceFonts);
 			})
 			.catch((cause: unknown) => {
-				if (!cancelled)
-					setError(cause instanceof Error ? cause.message : String(cause));
+				if (!cancelled) setError(cause instanceof Error ? cause.message : String(cause));
 			});
 		return () => {
 			cancelled = true;
@@ -110,9 +96,7 @@ export function useAppearanceTypography({
 
 	return {
 		...typography,
-		availableFonts: includeSelectedFonts(availableFonts, [
-			typography.fontFamily,
-		]),
+		availableFonts: includeSelectedFonts(availableFonts, [typography.fontFamily]),
 		availableMonospaceFonts: includeSelectedFonts(availableMonospaceFonts, [
 			typography.monoFontFamily,
 		]),

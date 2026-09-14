@@ -25,22 +25,14 @@ import { SETTINGS_SEARCH_ENTRIES } from "../settings/settingsSearch";
 
 type PaletteSettingValue = string | number | boolean | null;
 
-export type PaletteSettingControl =
-	| "toggle"
-	| "choice"
-	| "number"
-	| "text"
-	| "path"
-	| "action";
+export type PaletteSettingControl = "toggle" | "choice" | "number" | "text" | "path" | "action";
 
 export interface PaletteSettingOption {
 	value: string | number;
 	label: string | (() => string);
 }
 
-export function paletteSettingOptionLabel(
-	option: PaletteSettingOption,
-): string {
+export function paletteSettingOptionLabel(option: PaletteSettingOption): string {
 	return typeof option.label === "function" ? option.label() : option.label;
 }
 
@@ -54,26 +46,18 @@ export interface PaletteSettingDefinition {
 	max?: number;
 	options?: readonly PaletteSettingOption[];
 	read: (settings: AppSettings) => PaletteSettingValue;
-	write: (
-		value: PaletteSettingValue,
-		spacePath: string | null,
-	) => Promise<void>;
+	write: (value: PaletteSettingValue, spacePath: string | null) => Promise<void>;
 }
 
 type EditablePaletteSettingDefinition = Omit<PaletteSettingDefinition, "tab">;
-type SettingBinding = Pick<
-	EditablePaletteSettingDefinition,
-	"id" | "scope" | "read" | "write"
->;
+type SettingBinding = Pick<EditablePaletteSettingDefinition, "id" | "scope" | "read" | "write">;
 
 function invalidValue(): never {
 	throw new Error(i18n.t("shell:commandPalette.invalidSettingValue"));
 }
 
 function searchableId<Value>(
-	definition:
-		| ApplicationSettingDefinition<Value>
-		| SpaceSettingDefinition<Value>,
+	definition: ApplicationSettingDefinition<Value> | SpaceSettingDefinition<Value>,
 ): string {
 	if (definition.discovery.kind === "search") return definition.discovery.id;
 	throw new Error(`Palette setting is hidden: ${definition.discovery.reason}`);
@@ -263,10 +247,7 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "choice",
 		options: HEADING_PALETTE_OPTIONS.map(({ id }) => ({
 			value: id,
-			label: () =>
-				i18n.t(
-					`settings.general:editor.colorfulHeadings.palette.options.${id}`,
-				),
+			label: () => i18n.t(`settings.general:editor.colorfulHeadings.palette.options.${id}`),
 		})),
 	},
 	{
@@ -301,18 +282,15 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		options: [
 			{
 				value: "rich",
-				label: () =>
-					i18n.t("settings.general:editor.defaultEditorMode.options.rich"),
+				label: () => i18n.t("settings.general:editor.defaultEditorMode.options.rich"),
 			},
 			{
 				value: "preview",
-				label: () =>
-					i18n.t("settings.general:editor.defaultEditorMode.options.preview"),
+				label: () => i18n.t("settings.general:editor.defaultEditorMode.options.preview"),
 			},
 			{
 				value: "plain",
-				label: () =>
-					i18n.t("settings.general:editor.defaultEditorMode.options.plain"),
+				label: () => i18n.t("settings.general:editor.defaultEditorMode.options.plain"),
 			},
 		],
 	},
@@ -342,13 +320,11 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 			},
 			{
 				value: "paragraph",
-				label: () =>
-					i18n.t("settings.general:editor.focusMode.options.paragraph"),
+				label: () => i18n.t("settings.general:editor.focusMode.options.paragraph"),
 			},
 			{
 				value: "sentence",
-				label: () =>
-					i18n.t("settings.general:editor.focusMode.options.sentence"),
+				label: () => i18n.t("settings.general:editor.focusMode.options.sentence"),
 			},
 		],
 	},
@@ -392,19 +368,15 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 		read: DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.read,
 		write: async (value, spacePath) => {
-			const result =
-				DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.parse(value);
+			const result = DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.parse(value);
 			if (!result.ok) invalidValue();
-			const previous = (await loadSettings({ spacePath })).editor
-				.enablePeopleMentionsAsTags;
+			const previous = (await loadSettings({ spacePath })).editor.enablePeopleMentionsAsTags;
 			try {
 				await invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: result.value,
 				});
 				if (spacePath) await invoke("index_rebuild");
-				await DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.write(
-					result.value,
-				);
+				await DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.write(result.value);
 			} catch (cause) {
 				await invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: previous,
@@ -428,15 +400,12 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	},
 ];
 
-const settingsTabById = new Map(
-	SETTINGS_SEARCH_ENTRIES.map(({ id, tab }) => [id, tab]),
-);
+const settingsTabById = new Map(SETTINGS_SEARCH_ENTRIES.map(({ id, tab }) => [id, tab]));
 
 export const PALETTE_SETTINGS_REGISTRY: readonly PaletteSettingDefinition[] =
 	editableDefinitions.map((definition) => {
 		const tab = settingsTabById.get(definition.id);
-		if (!tab)
-			throw new Error(`Missing settings search entry: ${definition.id}`);
+		if (!tab) throw new Error(`Missing settings search entry: ${definition.id}`);
 		return { ...definition, tab };
 	});
 

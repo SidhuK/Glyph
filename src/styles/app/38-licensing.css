@@ -4,7 +4,8 @@
 	align-items: center;
 	justify-content: center;
 	padding: 32px 20px;
-	background: radial-gradient(
+	background:
+		radial-gradient(
 			circle at top left,
 			color-mix(in srgb, var(--interactive-accent) 14%, transparent),
 			transparent 34%
@@ -13,7 +14,8 @@
 			circle at bottom right,
 			color-mix(in srgb, var(--color-yellow-500) 10%, transparent),
 			transparent 28%
-		), color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+		),
+		color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
 }
 
 .licenseLockPanel {
@@ -26,8 +28,7 @@
 		color-mix(in srgb, var(--bg-secondary) 74%, transparent),
 		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary))
 	);
-	box-shadow: 0 20px 70px
-		color-mix(in srgb, var(--text-primary) 26%, transparent);
+	box-shadow: 0 20px 70px color-mix(in srgb, var(--text-primary) 26%, transparent);
 }
 
 .licenseLockTitle {
@@ -88,8 +89,7 @@
 
 .licenseLockField input:focus-visible,
 .licenseSettingsInputWrap input:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
 }
 
@@ -118,8 +118,7 @@
 }
 
 .licenseLockLinkButton:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 	outline-offset: 4px;
 	box-shadow: none;
 }
@@ -149,26 +148,19 @@
 	margin: 8px 8px 12px;
 	padding: 14px;
 	border-radius: calc(var(--radius-lg) + 2px);
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 42%,
-		var(--border-light)
-	);
+	border-color: color-mix(in srgb, var(--interactive-accent) 42%, var(--border-light));
 	background: linear-gradient(
 		180deg,
 		color-mix(in srgb, var(--interactive-accent) 14%, var(--bg-primary)),
 		color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-secondary))
 	);
-	box-shadow: inset 0 1px 0 color-mix(in srgb, white 56%, transparent), 0 10px
-		26px color-mix(in srgb, var(--text-primary) 16%, transparent);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 56%, transparent),
+		0 10px 26px color-mix(in srgb, var(--text-primary) 16%, transparent);
 }
 
 .licenseSidebarFooter[data-urgent="true"] {
-	border-color: color-mix(
-		in srgb,
-		var(--color-yellow-500) 38%,
-		var(--border-light)
-	);
+	border-color: color-mix(in srgb, var(--color-yellow-500) 38%, var(--border-light));
 	background: linear-gradient(
 		180deg,
 		color-mix(in srgb, var(--color-yellow-500) 12%, transparent),
@@ -285,7 +277,9 @@
 	font-weight: var(--font-semibold);
 	cursor: pointer;
 	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 14%, transparent);
-	transition: background var(--transition-fast), transform 140ms ease,
+	transition:
+		background var(--transition-fast),
+		transform 140ms ease,
 		box-shadow var(--transition-fast);
 }
 
@@ -294,16 +288,14 @@
 	flex: 0 0 auto;
 	min-height: 32px;
 	font-size: calc(var(--text-base) * 0.86);
-	box-shadow: 0 6px 14px
-		color-mix(in srgb, var(--interactive-accent) 26%, transparent);
+	box-shadow: 0 6px 14px color-mix(in srgb, var(--interactive-accent) 26%, transparent);
 }
 
 .licenseSidebarAction:hover {
 	background: var(--interactive-accent-hover);
 	color: var(--text-inverse);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 6px
-		color-mix(in srgb, var(--interactive-accent) 35%, transparent);
+	box-shadow: 0 2px 6px color-mix(in srgb, var(--interactive-accent) 35%, transparent);
 }
 
 .licenseSidebarAction:active {
@@ -312,8 +304,7 @@
 
 .licenseSidebarInfo:focus-visible,
 .licenseSidebarAction:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 	outline-offset: 2px;
 }
 

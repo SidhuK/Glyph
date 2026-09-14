@@ -12,12 +12,7 @@ interface LicenseLockScreenProps {
 	onRetry: () => void;
 }
 
-export function LicenseLockScreen({
-	status,
-	error,
-	onActivated,
-	onRetry,
-}: LicenseLockScreenProps) {
+export function LicenseLockScreen({ status, error, onActivated, onRetry }: LicenseLockScreenProps) {
 	const autoUpdater = useUpdaterContext();
 	const [licenseKey, setLicenseKey] = useState("");
 	const [submitError, setSubmitError] = useState("");
@@ -30,9 +25,7 @@ export function LicenseLockScreen({
 			const result = await activateLicenseKey(licenseKey);
 			onActivated(result.status);
 		} catch (cause) {
-			setSubmitError(
-				cause instanceof Error ? cause.message : "Failed to verify license key",
-			);
+			setSubmitError(cause instanceof Error ? cause.message : "Failed to verify license key");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -44,8 +37,8 @@ export function LicenseLockScreen({
 				<div className="licenseLockEyebrow">Official Release</div>
 				<h1 className="licenseLockTitle">Glyph requires a license key</h1>
 				<p className="licenseLockBody">
-					This official build includes a 7-day free trial. After that, a
-					lifetime Gumroad license unlocks Glyph forever on all of your devices.
+					This official build includes a 7-day free trial. After that, a lifetime Gumroad license
+					unlocks Glyph forever on all of your devices.
 				</p>
 				{status?.mode === "trial_expired" ? (
 					<div className="licenseLockMetaRow">
@@ -77,9 +70,7 @@ export function LicenseLockScreen({
 					/>
 				</div>
 
-				{submitError ? (
-					<div className="settingsError">{submitError}</div>
-				) : null}
+				{submitError ? <div className="settingsError">{submitError}</div> : null}
 				{error ? <div className="settingsError">{error}</div> : null}
 
 				<div className="licenseLockActions">

@@ -37,20 +37,14 @@ import { type Dispatch, type SetStateAction, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import { i18n } from "../../i18n";
-import {
-	dispatchOpenLocalConnections,
-	dispatchToggleNoteInfoSidebar,
-} from "../../lib/appEvents";
+import { dispatchOpenLocalConnections, dispatchToggleNoteInfoSidebar } from "../../lib/appEvents";
 import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { getLicenseStatus } from "../../lib/license";
 import { copyAbsolutePath, copyRelativePath } from "../../lib/pathClipboard";
 import type { PeriodKind, PeriodNotesEnabled } from "../../lib/periodNotes";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
-import {
-	type ShortcutActionId,
-	isShortcutActionId,
-} from "../../lib/shortcuts/registry";
+import { type ShortcutActionId, isShortcutActionId } from "../../lib/shortcuts/registry";
 import type { SplitDropEdge } from "../../lib/splitEditor";
 import { toast } from "../../lib/toast";
 import { isMarkdownPath, parentDir } from "../../utils/path";
@@ -308,12 +302,7 @@ export function useAppCommands({
 		const baseCommands: Command[] = [
 			{
 				id: "new-note",
-				icon: (
-					<HugeiconsIcon
-						icon={CursorAddSelection02Icon}
-						size="var(--icon-lg)"
-					/>
-				),
+				icon: <HugeiconsIcon icon={CursorAddSelection02Icon} size="var(--icon-lg)" />,
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),
 				action: () => void createNoteInSelectedFolder(),
@@ -377,14 +366,9 @@ export function useAppCommands({
 			},
 			{
 				id: "toggle-pin-active-tab",
-				labelKey: activeTabIsPinned
-					? "shell:tabs.unpinTab"
-					: "shell:tabs.pinTab",
+				labelKey: activeTabIsPinned ? "shell:tabs.unpinTab" : "shell:tabs.pinTab",
 				icon: (
-					<HugeiconsIcon
-						icon={activeTabIsPinned ? PinOffIcon : PinIcon}
-						size="var(--icon-lg)"
-					/>
+					<HugeiconsIcon icon={activeTabIsPinned ? PinOffIcon : PinIcon} size="var(--icon-lg)" />
 				),
 				enabled: activeTabCanPin,
 				action: toggleActiveTabPinned,
@@ -410,17 +394,14 @@ export function useAppCommands({
 				icon: <HugeiconsIcon icon={Folder01Icon} size="var(--icon-lg)" />,
 				enabled: Boolean(spacePath),
 				action: () => {
-					const dir =
-						activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+					const dir = activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
 					void fileTree.requestCreateFolder(dir);
 				},
 			},
 			{
 				id: "duplicate-current-note",
 				icon: <HugeiconsIcon icon={NoteIcon} size="var(--icon-lg)" />,
-				enabled:
-					activeMarkdownTabPath !== null &&
-					isMarkdownPath(activeMarkdownTabPath),
+				enabled: activeMarkdownTabPath !== null && isMarkdownPath(activeMarkdownTabPath),
 				action: () => void handleDuplicateActiveMarkdown(),
 			},
 			{
@@ -456,11 +437,7 @@ export function useAppCommands({
 						: "shell:fileTree.pinFile",
 				icon: (
 					<HugeiconsIcon
-						icon={
-							activeFilePath && pinnedFiles.includes(activeFilePath)
-								? PinOffIcon
-								: PinIcon
-						}
+						icon={activeFilePath && pinnedFiles.includes(activeFilePath) ? PinOffIcon : PinIcon}
 						size="var(--icon-lg)"
 					/>
 				),
@@ -481,9 +458,7 @@ export function useAppCommands({
 			},
 			{
 				id: "open-local-connections",
-				icon: (
-					<HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-lg)" />
-				),
+				icon: <HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-lg)" />,
 				shortcut: { meta: true, shift: true, key: "g" },
 				enabled: Boolean(activeMarkdownTabPath),
 				allowInEditable: true,
@@ -494,9 +469,7 @@ export function useAppCommands({
 			},
 			{
 				id: "toggle-note-info-sidebar",
-				icon: (
-					<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-lg)" />
-				),
+				icon: <HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-lg)" />,
 				shortcut: { meta: true, shift: true, key: "i" },
 				enabled: Boolean(activeMarkdownTabPath),
 				allowInEditable: true,
@@ -581,9 +554,7 @@ export function useAppCommands({
 			{
 				id: "open-connections",
 				label: "Open Connections",
-				icon: (
-					<HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-lg)" />
-				),
+				icon: <HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-lg)" />,
 				enabled: Boolean(spacePath),
 				action: openConnectionsView,
 			},
@@ -608,9 +579,7 @@ export function useAppCommands({
 			},
 			{
 				id: "open-space",
-				labelKey: spacePath
-					? "shell:workspace.openAnotherSpace"
-					: "shell:workspace.openSpace",
+				labelKey: spacePath ? "shell:workspace.openAnotherSpace" : "shell:workspace.openSpace",
 				icon: <HugeiconsIcon icon={FolderOpenIcon} size="var(--icon-lg)" />,
 				shortcut: { meta: true, key: "o" },
 				action: onOpenSpace,
@@ -655,10 +624,7 @@ export function useAppCommands({
 					} catch (error) {
 						console.error("Failed to open Gumroad purchase page", error);
 						toast.error("Could not open the license page", {
-							description:
-								error instanceof Error
-									? error.message
-									: "Try again in a moment.",
+							description: error instanceof Error ? error.message : "Try again in a moment.",
 						});
 					}
 				},

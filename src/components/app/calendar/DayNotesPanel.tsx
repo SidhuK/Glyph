@@ -9,11 +9,7 @@ import {
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../../contexts";
-import {
-	PERIOD_KINDS,
-	type PeriodKind,
-	isPeriodNoteEnabled,
-} from "../../../lib/periodNotes";
+import { PERIOD_KINDS, type PeriodKind, isPeriodNoteEnabled } from "../../../lib/periodNotes";
 import type { CalendarDateNote } from "../../../lib/tauri";
 
 const PERIOD_NOTE_ICONS = {
@@ -39,28 +35,15 @@ function folderOf(path: string): string | null {
 	return separator > 0 ? path.slice(0, separator) : null;
 }
 
-function NoteRow({
-	note,
-	onOpen,
-}: {
-	note: CalendarDateNote;
-	onOpen: (path: string) => void;
-}) {
+function NoteRow({ note, onOpen }: { note: CalendarDateNote; onOpen: (path: string) => void }) {
 	const isDaily = note.kinds.includes("daily");
 	const folder = folderOf(note.path);
 
 	return (
 		<li>
-			<button
-				type="button"
-				className="calendarNoteRow"
-				onClick={() => onOpen(note.path)}
-			>
+			<button type="button" className="calendarNoteRow" onClick={() => onOpen(note.path)}>
 				<span className="calendarNoteIcon" data-daily={isDaily}>
-					<HugeiconsIcon
-						icon={isDaily ? Calendar03Icon : NoteIcon}
-						size="var(--icon-md)"
-					/>
+					<HugeiconsIcon icon={isDaily ? Calendar03Icon : NoteIcon} size="var(--icon-md)" />
 				</span>
 				<span className="calendarNoteText">
 					<span className="calendarNoteTitle">{note.title}</span>
@@ -125,10 +108,7 @@ export function DayNotesPanel({
 									title={label}
 									onClick={() => onOpenPeriodNote(kind)}
 								>
-									<HugeiconsIcon
-										icon={PERIOD_NOTE_ICONS[kind]}
-										size="var(--icon-md)"
-									/>
+									<HugeiconsIcon icon={PERIOD_NOTE_ICONS[kind]} size="var(--icon-md)" />
 								</button>
 							);
 						})}

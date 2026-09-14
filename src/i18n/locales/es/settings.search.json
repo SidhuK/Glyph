@@ -62,13 +62,7 @@
 		"general-license": {
 			"title": "License",
 			"description": "Trial status, license key, activation, and official build.",
-			"keywords": [
-				"trial",
-				"activate",
-				"activation",
-				"subscription",
-				"purchase"
-			]
+			"keywords": ["trial", "activate", "activation", "subscription", "purchase"]
 		},
 		"general-trial-status": {
 			"title": "Trial status",
@@ -110,14 +104,7 @@
 			"title": "Idioma",
 			"section": "Idioma",
 			"description": "Elige el idioma de la interfaz de Glyph.",
-			"keywords": [
-				"locale",
-				"traducción",
-				"i18n",
-				"idioma",
-				"language",
-				"translation"
-			]
+			"keywords": ["locale", "traducción", "i18n", "idioma", "language", "translation"]
 		},
 		"general-date-format": {
 			"title": "Formato de fecha",
@@ -175,16 +162,7 @@
 			"title": "Seleccionar tema",
 			"section": "Temas",
 			"description": "Elige modo sistema, claro u oscuro.",
-			"keywords": [
-				"modo",
-				"sistema",
-				"claro",
-				"oscuro",
-				"mode",
-				"system",
-				"light",
-				"dark"
-			]
+			"keywords": ["modo", "sistema", "claro", "oscuro", "mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
 			"title": "Claro",
@@ -231,15 +209,7 @@
 		"appearance-editor-font": {
 			"title": "Fuente del editor",
 			"section": "Tipografía",
-			"keywords": [
-				"fuente",
-				"editor",
-				"notas",
-				"prosa",
-				"font",
-				"notes",
-				"prose"
-			]
+			"keywords": ["fuente", "editor", "notas", "prosa", "font", "notes", "prose"]
 		},
 		"appearance-ui-font-size": {
 			"title": "Tamaño de fuente de la UI",
@@ -507,14 +477,7 @@
 		"general-editor-frontmatter": {
 			"title": "Mostrar frontmatter en el editor",
 			"section": "Editor",
-			"keywords": [
-				"propiedades",
-				"yaml",
-				"metadatos",
-				"properties",
-				"metadata",
-				"frontmatter"
-			]
+			"keywords": ["propiedades", "yaml", "metadatos", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "Encabezados con color",
@@ -544,37 +507,17 @@
 		"appearance-editor-presentation-width": {
 			"title": "Ancho del editor",
 			"section": "Presentación del editor",
-			"keywords": [
-				"compacto",
-				"cómodo",
-				"ancho",
-				"compact",
-				"comfortable",
-				"wide"
-			]
+			"keywords": ["compacto", "cómodo", "ancho", "compact", "comfortable", "wide"]
 		},
 		"general-editor-collapsible-headings": {
 			"title": "Encabezados plegables",
 			"section": "Editor",
-			"keywords": [
-				"plegar",
-				"contraer",
-				"expandir",
-				"fold",
-				"collapse",
-				"expand"
-			]
+			"keywords": ["plegar", "contraer", "expandir", "fold", "collapse", "expand"]
 		},
 		"general-editor-spell-check": {
 			"title": "Corrector ortográfico",
 			"section": "Editor",
-			"keywords": [
-				"ortografía",
-				"typo",
-				"diccionario",
-				"spelling",
-				"dictionary"
-			]
+			"keywords": ["ortografía", "typo", "diccionario", "spelling", "dictionary"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Modo Vim",
@@ -593,14 +536,7 @@
 		"general-editor-format-bar": {
 			"title": "Barra de formato",
 			"section": "Experimental",
-			"keywords": [
-				"formato",
-				"barra",
-				"toolbar",
-				"ribbon",
-				"enriquecido",
-				"editor"
-			]
+			"keywords": ["formato", "barra", "toolbar", "ribbon", "enriquecido", "editor"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
@@ -659,13 +595,7 @@
 		"appearance-database-column-color": {
 			"title": "Mostrar color de columna de la base de datos",
 			"section": "Base de datos",
-			"keywords": [
-				"colección",
-				"base de datos",
-				"color",
-				"collection",
-				"database"
-			]
+			"keywords": ["colección", "base de datos", "color", "collection", "database"]
 		},
 		"about-app": {
 			"title": "Glyph",

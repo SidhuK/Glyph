@@ -64,9 +64,7 @@ function GraphOptionSlider({
 				max={max}
 				value={value}
 				style={NATIVE_RANGE_STYLE}
-				onChange={(event) =>
-					onChange(clampOption(Number(event.target.value), min, max))
-				}
+				onChange={(event) => onChange(clampOption(Number(event.target.value), min, max))}
 			/>
 			<input
 				id={`${id}-value`}
@@ -77,9 +75,7 @@ function GraphOptionSlider({
 				step={1}
 				value={value}
 				aria-label={label}
-				onChange={(event) =>
-					onChange(clampOption(Number(event.target.value), min, max))
-				}
+				onChange={(event) => onChange(clampOption(Number(event.target.value), min, max))}
 			/>
 		</div>
 	);

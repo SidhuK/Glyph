@@ -190,8 +190,7 @@
 }
 
 .sidebarSectionContent button:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
 }
 
@@ -232,7 +231,9 @@ button.sidebarViewTab {
 	font-weight: var(--font-medium);
 	line-height: 1.25;
 	cursor: pointer;
-	transition: background var(--transition-fast), color var(--transition-fast),
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast),
 		box-shadow var(--transition-fast);
 }
 
