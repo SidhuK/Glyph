@@ -6,27 +6,26 @@ import {
 	lazy,
 	memo,
 	useCallback,
-	useState,
+	useMemo,
 } from "react";
-import { useUILayoutContext } from "../../contexts";
+import { useSpace, useUILayoutContext } from "../../contexts";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	getPrefetchedDatabaseDocument,
-	getPrefetchedNote,
 	prefetchAllDocs,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
-import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
+import type { FsEntry } from "../../lib/tauri";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
-import type { CreateMarkdownFileOptions, ExtractToNoteActions } from "../editor/types";
-import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
+import type { CreateMarkdownFileOptions } from "../editor/types";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
+import { MarkdownPaneContent } from "./MarkdownPaneContent";
 import { TabBar } from "./TabBar";
 import { loadActivityTimelinePane, loadDatabasesPane } from "./prefetchablePanes";
 import type { WorkspaceEditorPane } from "./useTabManager";
@@ -100,6 +99,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	databasesOpenRequest,
 }: EditorPaneCanvasProps) {
 	const { zenMode } = useUILayoutContext();
+	const { spacePath } = useSpace();
 	const handlePrefetchTab = useCallback(
 		(target: string | null) => {
 			if (!target) return;
@@ -117,23 +117,40 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	);
 
 	const viewerPath = pane.activeTabPath;
-	const content = viewerPath ? (
-		<EditorPaneContent
-			key={pane.activeTabId}
-			viewerPath={viewerPath}
-			focused={focused}
-			createMarkdownFileAtPath={createMarkdownFileAtPath}
-			onRenameFile={onRenameFile}
-			onOpenFile={onOpenFile}
-			onBrowseFile={onBrowseFile}
-			onOpenFileInNewTab={onOpenFileInNewTab}
-			onOpenDatabase={onOpenDatabase}
-			setDirtyByPath={setDirtyByPath}
-			onInfoSidebarOpenChange={onInfoSidebarOpenChange}
-			databasesOpenRequest={databasesOpenRequest}
-		/>
-	) : null;
-
+	const content = useMemo(
+		() =>
+			viewerPath ? (
+				<EditorPaneContent
+					key={`${spacePath}\0${pane.activeTabId}`}
+					viewerPath={viewerPath}
+					focused={focused}
+					createMarkdownFileAtPath={createMarkdownFileAtPath}
+					onRenameFile={onRenameFile}
+					onOpenFile={onOpenFile}
+					onBrowseFile={onBrowseFile}
+					onOpenFileInNewTab={onOpenFileInNewTab}
+					onOpenDatabase={onOpenDatabase}
+					setDirtyByPath={setDirtyByPath}
+					onInfoSidebarOpenChange={onInfoSidebarOpenChange}
+					databasesOpenRequest={databasesOpenRequest}
+				/>
+			) : null,
+		[
+			viewerPath,
+			spacePath,
+			pane.activeTabId,
+			focused,
+			createMarkdownFileAtPath,
+			onRenameFile,
+			onOpenFile,
+			onBrowseFile,
+			onOpenFileInNewTab,
+			onOpenDatabase,
+			setDirtyByPath,
+			onInfoSidebarOpenChange,
+			databasesOpenRequest,
+		],
+	);
 	return (
 		<div
 			className="canvasPaneHost"
@@ -211,8 +228,6 @@ function EditorPaneContent({
 	onInfoSidebarOpenChange,
 	databasesOpenRequest,
 }: EditorPaneContentProps) {
-	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
-
 	if (viewerPath === PINNED_DOCS_TAB_ID) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
@@ -251,26 +266,15 @@ function EditorPaneContent({
 	}
 	if (!isMarkdownPath(viewerPath)) return null;
 
-	const extractToNoteActions = {
-		createMarkdownFile: createMarkdownFileAtPath,
-		openNote: onOpenFile,
-		openNoteInNewTab: onOpenFileInNewTab,
-	} satisfies ExtractToNoteActions;
-
 	return (
-		<MarkdownEditorPane
-			relPath={viewerPath}
-			initialDoc={getPrefetchedNote(viewerPath)}
-			extractToNoteActions={extractToNoteActions}
-			active={focused}
-			onInfoSidebarOpenChange={focused ? onInfoSidebarOpenChange : undefined}
-			gitDiff={gitDiff}
-			onGitDiffChange={setGitDiff}
-			onDirtyChange={(dirty) =>
-				setDirtyByPath((previous) =>
-					previous[viewerPath] === dirty ? previous : { ...previous, [viewerPath]: dirty },
-				)
-			}
+		<MarkdownPaneContent
+			viewerPath={viewerPath}
+			focused={focused}
+			createMarkdownFileAtPath={createMarkdownFileAtPath}
+			onOpenFile={onOpenFile}
+			onOpenFileInNewTab={onOpenFileInNewTab}
+			setDirtyByPath={setDirtyByPath}
+			onInfoSidebarOpenChange={onInfoSidebarOpenChange}
 		/>
 	);
 }

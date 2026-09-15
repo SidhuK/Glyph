@@ -32,6 +32,7 @@ import { NoteEditorSurface } from "./NoteEditorSurface";
 import { NoteFindBar } from "./NoteFindBar";
 import { NoteLinkDialog, type NoteLinkDialogState } from "./NoteLinkDialog";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
+import { PlainNoteInlineEditor } from "./PlainNoteInlineEditor";
 import {
 	type SupportedCodeBlockLanguage,
 	normalizeCodeBlockLanguage,
@@ -64,12 +65,6 @@ import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";
 
 const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
-
-const RawMarkdownEditor = lazy(() =>
-	import("./raw/RawMarkdownEditor").then((module) => ({
-		default: module.RawMarkdownEditor,
-	})),
-);
 
 const MathNodeEditor = lazy(() =>
 	import("./math/MathNodeEditor").then((module) => ({
@@ -192,7 +187,15 @@ async function openFrontmatterHref(href: string, sourcePath: string): Promise<vo
 	dispatchMarkdownLinkClick({ href, sourcePath });
 }
 
-export const NoteInlineEditor = memo(function NoteInlineEditor({
+export const NoteInlineEditor = memo(function NoteInlineEditor(props: NoteInlineEditorProps) {
+	return props.mode === "plain" ? (
+		<PlainNoteInlineEditor {...props} />
+	) : (
+		<RichNoteInlineEditor {...props} mode={props.mode} />
+	);
+});
+
+const RichNoteInlineEditor = memo(function RichNoteInlineEditor({
 	markdown,
 	relPath,
 	mode,
@@ -210,13 +213,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	onTemplateInsertRequest,
 	onRegisterCalloutInserter,
 	onEditorReady,
-	onRawEditorReady,
 	onFlushPendingEditsReady,
 	onChange,
 	onFrontmatterCommit,
 	extractToNoteActions,
 	rolloverTaskActions,
-}: NoteInlineEditorProps) {
+}: Omit<NoteInlineEditorProps, "mode"> & {
+	mode: Exclude<NoteInlineEditorProps["mode"], "plain">;
+}) {
 	const { t } = useTranslation("editor");
 	const chromeMinimal = chrome === "minimal";
 	const mathNodeEditor = useMathNodeEditor();
@@ -290,13 +294,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	}, [flushMarkdownSync, onFlushPendingEditsReady]);
 
 	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
-	const handleRawEditorRef = useCallback(
-		(editor: RawMarkdownEditorHandle | null) => {
-			rawEditorRef.current = editor;
-			onRawEditorReady?.(editor);
-		},
-		[onRawEditorReady],
-	);
 	const previousRelPathRef = useRef(relPath);
 	useLayoutEffect(() => {
 		// Mode and document identity define the lifetime of an edit request.
@@ -837,17 +834,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						onQueryChange={noteFind.updateFindQuery}
 					/>
 				) : null}
-				{mode === "plain" ? (
-					<Suspense fallback={<div className="rfNodeNoteEditorLoading" />}>
-						<RawMarkdownEditor
-							key={relPath}
-							ref={handleRawEditorRef}
-							markdown={markdown}
-							relPath={relPath}
-							onChange={onChange}
-						/>
-					</Suspense>
-				) : null}
 				{mode === "rich" && showFrontmatterInEditor && frontmatterDraft ? (
 					<div className="frontmatterPreview mono">
 						<NotePropertiesPanel
@@ -861,20 +847,18 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}
-				{mode !== "plain" ? (
-					<NoteEditorSurface
-						editor={liveEditor}
-						mode={mode}
-						colorfulHeadings={colorfulHeadings}
-						showHeadingPrefixes={showHeadingPrefixes}
-						canEdit={canEdit}
-						hostRef={handleTiptapHostRef}
-						hostNode={tiptapHostNode}
-						rolloverTaskActions={rolloverTaskActions}
-						tableControls={tableControls}
-						codeBlock={codeBlockControls}
-					/>
-				) : null}
+				<NoteEditorSurface
+					editor={liveEditor}
+					mode={mode}
+					colorfulHeadings={colorfulHeadings}
+					showHeadingPrefixes={showHeadingPrefixes}
+					canEdit={canEdit}
+					hostRef={handleTiptapHostRef}
+					hostNode={tiptapHostNode}
+					rolloverTaskActions={rolloverTaskActions}
+					tableControls={tableControls}
+					codeBlock={codeBlockControls}
+				/>
 			</div>
 			<AnimatePresence
 				onExitComplete={() => {

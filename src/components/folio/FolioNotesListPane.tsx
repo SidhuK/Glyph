@@ -4,7 +4,7 @@ import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { prefetchNote } from "../../lib/navigationPrefetch";
+import { prefetchAdjacentNotes, prefetchNote } from "../../lib/navigationPrefetch";
 import {
 	DEFAULT_TAG_ICON_NAME,
 	resolveTagIconName,
@@ -146,6 +146,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		() => sortedNotes.filter((note) => noteMatchesFilter(note, searchQuery)),
 		[sortedNotes, searchQuery],
 	);
+	const navigationPaths = useMemo(() => visibleNotes.map((note) => note.note_path), [visibleNotes]);
 	const virtualRows = useMemo<FolioVirtualRow[]>(
 		() =>
 			visibleNotes.map((note) => ({
@@ -158,11 +159,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const selectedIndex = useMemo(
 		() => (activeTabPath ? visibleNotes.findIndex((note) => note.note_path === activeTabPath) : -1),
 		[activeTabPath, visibleNotes],
-	);
-	const selectedVirtualIndex = useMemo(
-		() =>
-			activeTabPath ? virtualRows.findIndex((row) => row.note.note_path === activeTabPath) : -1,
-		[activeTabPath, virtualRows],
 	);
 	const taskSummaryPaths = useMemo(
 		() => visibleNotes.filter((note) => note.is_markdown).map((note) => note.note_path),
@@ -194,20 +190,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const virtualItems = rowVirtualizer.getVirtualItems();
 
 	const focusPane = useCallback(() => {
-		requestAnimationFrame(() => paneRef.current?.focus({ preventScroll: true }));
+		paneRef.current?.focus({ preventScroll: true });
 	}, []);
 	const changeSortMode = useCallback((nextSortMode: FolioNotesSortMode) => {
 		setSortMode(nextSortMode);
 		writeStoredFolioSortMode(nextSortMode);
 	}, []);
-	const scrollNoteIntoView = useCallback(
-		(path: string) => {
-			const index = virtualRows.findIndex((row) => row.note.note_path === path);
-			if (index < 0) return;
-			rowVirtualizer.scrollToIndex(index, { align: "auto" });
-		},
-		[rowVirtualizer, virtualRows],
-	);
 	const openNote = useCallback(
 		(path: string) => {
 			void onOpenFile(path);
@@ -292,17 +280,18 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			const nextIndex = (selectedIndex + direction + visibleNotes.length) % visibleNotes.length;
 			const nextNote = visibleNotes[nextIndex];
 			if (!nextNote) return;
-			scrollNoteIntoView(nextNote.note_path);
+			prefetchAdjacentNotes(navigationPaths, nextIndex, direction, true);
+			rowVirtualizer.scrollToIndex(nextIndex, { align: "auto" });
 			openNote(nextNote.note_path);
 		},
-		[openNote, scrollNoteIntoView, selectedIndex, visibleNotes],
+		[navigationPaths, openNote, rowVirtualizer, selectedIndex, visibleNotes],
 	);
 
 	useEffect(() => {
 		if (!activeTabPath) return;
-		if (selectedVirtualIndex < 0) return;
-		rowVirtualizer.scrollToIndex(selectedVirtualIndex, { align: "auto" });
-	}, [activeTabPath, rowVirtualizer, selectedVirtualIndex]);
+		if (selectedIndex < 0) return;
+		rowVirtualizer.scrollToIndex(selectedIndex, { align: "auto" });
+	}, [activeTabPath, rowVirtualizer, selectedIndex]);
 
 	const body = (() => {
 		if (error) {
