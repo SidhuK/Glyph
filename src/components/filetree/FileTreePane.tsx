@@ -30,6 +30,7 @@ import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { prefetchAdjacentNotes } from "../../lib/navigationPrefetch";
 import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
 import { MAX_SIDEBAR_FOLDER_TABS } from "../../lib/settings/definitions";
 import { registerPreviewInvalidator } from "../../lib/spaceChange";
@@ -427,6 +428,26 @@ function TreeEntries({
 			onVisiblePreviewPathsChangeRef.current?.([]);
 		};
 	}, []);
+	const fileButtonsRef = useRef(new Map<string, HTMLButtonElement>());
+	const pendingFocusRef = useRef<{ path: string; origin: HTMLElement } | null>(null);
+	const registerFileButton = useCallback((path: string, element: HTMLButtonElement | null) => {
+		if (!element) {
+			fileButtonsRef.current.delete(path);
+			return;
+		}
+		fileButtonsRef.current.set(path, element);
+		const pending = pendingFocusRef.current;
+		if (pending?.path !== path) return;
+		pendingFocusRef.current = null;
+		// A virtual row can mount after scrolling. Focus it on attachment rather
+		// than guessing when it will exist with an animation-frame callback.
+		if (
+			document.activeElement === pending.origin ||
+			(!pending.origin.isConnected && document.activeElement === document.body)
+		) {
+			element.focus({ preventScroll: true });
+		}
+	}, []);
 	const handleVirtualArrowNavigate = useCallback(
 		(path: string, direction: -1 | 1, currentTarget: HTMLElement) => {
 			const currentIndex = virtualRows.findIndex(
@@ -440,15 +461,24 @@ function TreeEntries({
 			) {
 				const nextRow = virtualRows[nextIndex];
 				if (!nextRow || nextRow.entry.kind !== "file") continue;
-				const pane = currentTarget.closest(".fileTreePane");
+				const neighbors: string[] = [];
+				for (
+					let index = nextIndex;
+					index >= 0 && index < virtualRows.length && neighbors.length < 4;
+					index += direction
+				) {
+					const entry = virtualRows[index]?.entry;
+					if (entry?.kind === "file") neighbors.push(entry.rel_path);
+				}
+				prefetchAdjacentNotes(neighbors, 0, 1);
+				pendingFocusRef.current = { path: nextRow.entry.rel_path, origin: currentTarget };
 				rowVirtualizer.scrollToIndex(nextIndex, { align: "auto" });
+				const nextButton = fileButtonsRef.current.get(nextRow.entry.rel_path);
+				if (nextButton) {
+					pendingFocusRef.current = null;
+					nextButton.focus({ preventScroll: true });
+				}
 				onOpenFile(nextRow.entry.rel_path);
-				requestAnimationFrame(() => {
-					const nextButton = Array.from(
-						pane?.querySelectorAll<HTMLElement>("[data-file-tree-file='true']") ?? [],
-					).find((button) => button.dataset.fileTreePath === nextRow.entry.rel_path);
-					nextButton?.focus();
-				});
 				return;
 			}
 		},
@@ -536,6 +566,7 @@ function TreeEntries({
 						onTogglePinned={onTogglePinnedFile}
 						onMoveClickSuppressRef={onMoveClickSuppressRef}
 						onArrowNavigate={handleVirtualArrowNavigate}
+						onRegisterButton={registerFileButton}
 						taskSummary={taskSummariesByPath[entry.rel_path] ?? null}
 						previewText={
 							showFilePreviews && entry.is_markdown

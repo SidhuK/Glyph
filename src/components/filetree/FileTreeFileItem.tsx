@@ -48,6 +48,7 @@ interface FileTreeFileItemProps {
 	onTogglePinned: (path: string) => Promise<void> | void;
 	onMoveClickSuppressRef?: MutableRefObject<boolean>;
 	onArrowNavigate?: (path: string, direction: -1 | 1, currentTarget: HTMLButtonElement) => void;
+	onRegisterButton?: (path: string, element: HTMLButtonElement | null) => void;
 	taskSummary?: NoteTaskSummary | null;
 	previewText?: string | null;
 	virtualRowRef?: Ref<HTMLLIElement>;
@@ -77,6 +78,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onTogglePinned,
 	onMoveClickSuppressRef = DEFAULT_MOVE_CLICK_SUPPRESS_REF,
 	onArrowNavigate,
+	onRegisterButton,
 	taskSummary = null,
 	previewText = null,
 	virtualRowRef,
@@ -120,8 +122,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		(element: HTMLButtonElement | null) => {
 			draggableRef(element);
 			handleRef(element);
+			onRegisterButton?.(entry.rel_path, element);
 		},
-		[draggableRef, handleRef],
+		[draggableRef, entry.rel_path, handleRef, onRegisterButton],
 	);
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
