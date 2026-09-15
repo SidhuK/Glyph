@@ -204,10 +204,14 @@
 	margin: 10px 8px 6px;
 	padding: 2px 0;
 	border-radius: var(--radius-8);
-	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
+	background: transparent;
 	flex-shrink: 0;
 	overflow-x: auto;
 	scrollbar-width: none;
+}
+
+:root[data-translucent-sidebar="false"] .sidebarViewTabs {
+	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
 }
 
 .sidebarViewTabs::-webkit-scrollbar {
