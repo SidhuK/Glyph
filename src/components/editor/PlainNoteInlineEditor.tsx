@@ -19,13 +19,6 @@ export function PlainNoteInlineEditor({
 	const hostRef = useRef<HTMLDivElement | null>(null);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
 	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
-	const registerEditor = useCallback(
-		(editor: RawMarkdownEditorHandle | null) => {
-			rawEditorRef.current = editor;
-			onRawEditorReady?.(editor);
-		},
-		[onRawEditorReady],
-	);
 	const find = useNoteFind({
 		editor: null,
 		markdown,
@@ -36,6 +29,15 @@ export function PlainNoteInlineEditor({
 		rawEditorRef,
 		tiptapHostRef,
 	});
+	const { restoreFindSelection } = find;
+	const registerEditor = useCallback(
+		(editor: RawMarkdownEditorHandle | null) => {
+			rawEditorRef.current = editor;
+			if (editor) restoreFindSelection();
+			onRawEditorReady?.(editor);
+		},
+		[onRawEditorReady, restoreFindSelection],
+	);
 	return (
 		<div
 			ref={hostRef}

@@ -272,6 +272,10 @@ export function useNoteFind({
 		[mode, selectPlainFindMatch, selectRichFindMatch],
 	);
 
+	const restoreFindSelection = useCallback(() => {
+		if (findOpen && findQuery) selectFindMatch(effectiveFindActiveIndex);
+	}, [effectiveFindActiveIndex, findOpen, findQuery, selectFindMatch]);
+
 	const moveFindMatch = useCallback(
 		(direction: 1 | -1) => {
 			if (!findMatches.length) return;
@@ -462,6 +466,7 @@ export function useNoteFind({
 		handleEditorKeyDownCapture,
 		handleFindInputKeyDown,
 		moveFindMatch,
+		restoreFindSelection,
 		updateFindQuery,
 	};
 }

@@ -62,11 +62,11 @@ export const NoteNavigationPreview = memo(function NoteNavigationPreview({
 	markdown: string;
 }) {
 	const plain = initialEditorMode(markdown) === "plain";
-	const source = markdown.slice(0, PREVIEW_SOURCE_LIMIT);
-	const html = useMemo(
-		() => (plain ? "" : renderPreview(splitYamlFrontmatter(source).body)),
-		[plain, source],
+	const source = (plain ? markdown : splitYamlFrontmatter(markdown).body).slice(
+		0,
+		PREVIEW_SOURCE_LIMIT,
 	);
+	const html = useMemo(() => (plain ? "" : renderPreview(source)), [plain, source]);
 	return (
 		<section
 			className="filePreviewPane markdownEditorPane noteNavigationPreview"

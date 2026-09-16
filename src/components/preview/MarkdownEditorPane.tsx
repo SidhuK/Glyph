@@ -378,7 +378,7 @@ export function MarkdownEditorPane({
 	);
 
 	useLayoutEffect(() => {
-		if (error || (mode === "plain" && rawEditorReady && loadedRelPath === relPath)) {
+		if (loadedRelPath === relPath && (error || (mode === "plain" && rawEditorReady))) {
 			onContentReady?.(relPath);
 		}
 	}, [error, loadedRelPath, mode, onContentReady, rawEditorReady, relPath]);
