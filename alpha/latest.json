@@ -1,15 +1,15 @@
 {
-  "version": "0.8.19-alpha.2",
-  "notes": "## What's Changed\n* Fix translucent sidebar tab background by @SidhuK in https://github.com/SidhuK/Glyph/pull/561\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.19-alpha.1...v0.8.19-alpha.2",
-  "pub_date": "2026-09-15T05:21:29.771Z",
+  "version": "0.8.19-alpha.4",
+  "notes": "## What's Changed\n* Speed up note navigation with previews and parsed document caching by @SidhuK in https://github.com/SidhuK/Glyph/pull/562\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.19-alpha.2...v0.8.19-alpha.4",
+  "pub_date": "2026-09-16T14:21:44.129Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNC9DNEVPOWVDTjB2ZnpIRTNCNjV1MzAvU00yd0RWYWQ0U29kay9BVVEzMkF5K2J6a3RGelJmUUY3TkdWdGl3ZzVGWHR1bU9ZV29SNzBzeW1EbHdBM1FFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5NDQ5NjgzCWZpbGU6R2x5cGguYXBwLnRhci5negppMFd0blNVV21VYXFsblRmQlM5Q2grQmhTVm50QkJqUG55aWdGUngxSFhWd1drcXRvTlk5MnZ5OFJUeHNqRCtDd0JlUk5wNTd3ZnJGZy90SHgrcGVCQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.19-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDhXQ1lEMFdNZlJtUVcrVU9WV2xmVzNzQnFmUWNlbE5HSGNIVEFzQ1k3OEl4M2dqS0g1SnFsMkFRVXJqa3ZxelJ3Znk4ZDFmMkpaOVlTczBrRlhMTVFFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5NTY4NDk4CWZpbGU6R2x5cGguYXBwLnRhci5negpoOHdmMmsveVN1NHgxRXE4WVNUbjRtREo3WkNhQ0hYSUk3YkRIYnpNZFRRUDQzOHlQOHhZTWtKdWY2ZTg5M3RrV0xFZml3a1dmUWQ3V3VKVE9rRkVEZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.19-alpha.4/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNC9DNEVPOWVDTjB2ZnpIRTNCNjV1MzAvU00yd0RWYWQ0U29kay9BVVEzMkF5K2J6a3RGelJmUUY3TkdWdGl3ZzVGWHR1bU9ZV29SNzBzeW1EbHdBM1FFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5NDQ5NjgzCWZpbGU6R2x5cGguYXBwLnRhci5negppMFd0blNVV21VYXFsblRmQlM5Q2grQmhTVm50QkJqUG55aWdGUngxSFhWd1drcXRvTlk5MnZ5OFJUeHNqRCtDd0JlUk5wNTd3ZnJGZy90SHgrcGVCQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.19-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDhXQ1lEMFdNZlJtUVcrVU9WV2xmVzNzQnFmUWNlbE5HSGNIVEFzQ1k3OEl4M2dqS0g1SnFsMkFRVXJqa3ZxelJ3Znk4ZDFmMkpaOVlTczBrRlhMTVFFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5NTY4NDk4CWZpbGU6R2x5cGguYXBwLnRhci5negpoOHdmMmsveVN1NHgxRXE4WVNUbjRtREo3WkNhQ0hYSUk3YkRIYnpNZFRRUDQzOHlQOHhZTWtKdWY2ZTg5M3RrV0xFZml3a1dmUWQ3V3VKVE9rRkVEZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.19-alpha.4/Glyph_aarch64.app.tar.gz"
     }
   }
 }
