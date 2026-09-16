@@ -622,6 +622,7 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		CodeBlockCopyControls,
 		EditorLink,
 		TaskList,
+		NoteSearch,
 		TaskItem.configure({ nested: true }),
 		...(enableEditingExtensions
 			? [
@@ -629,7 +630,6 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 					TaskDetailShortcut,
 					MarkdownLinkSyntaxCollapse,
 					MarkdownImageLivePreview,
-					NoteSearch,
 					TableEnterNavigation,
 				]
 			: []),
