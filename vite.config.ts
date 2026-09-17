@@ -16,6 +16,7 @@ export default defineConfig(async () => ({
 			".pnpm-store/**",
 			".sc/**",
 			"dist/**",
+			"Glyph.icon/icon.json",
 			"src-tauri/gen/**",
 			"src-tauri/target/**",
 		],
