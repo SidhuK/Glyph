@@ -12,7 +12,6 @@ import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
 import { handleTagDecorationMouseDown } from "../extensions/tagDecorations";
 import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
-import { createPreparedMarkdownCache } from "../markdown/preparedMarkdownCache";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
@@ -215,7 +214,7 @@ function shouldHandleSmartMarkdownPaste(clipboardText: string, clipboardHtml: st
 interface UseNoteEditorOptions {
 	additionalExtensions?: AnyExtension[];
 	markdown: string;
-	mode: Exclude<NoteInlineEditorMode, "plain">;
+	mode: NoteInlineEditorMode;
 	relPath?: string;
 	interactive?: boolean;
 	enableFocusMode?: boolean;
@@ -307,12 +306,15 @@ export function useNoteEditor({
 	onTemplateInsertRequest,
 }: UseNoteEditorOptions) {
 	const { frontmatter, editorBody } = useMemo(() => {
+		if (mode === "plain") {
+			return { frontmatter: null, editorBody: "" };
+		}
 		const split = splitYamlFrontmatter(markdown);
 		return {
 			...split,
 			editorBody: preprocessMarkdownForEditor(split.body),
 		};
-	}, [markdown]);
+	}, [markdown, mode]);
 
 	const frontmatterRef = useRef(frontmatter);
 	const lastAppliedBodyRef = useRef(editorBody);
@@ -322,6 +324,7 @@ export function useNoteEditor({
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
 	const modeRef = useRef(mode);
+	const previousModeRef = useRef(mode);
 	const {
 		attachmentFolderRef,
 		attachmentStorageModeRef,
@@ -337,6 +340,7 @@ export function useNoteEditor({
 		spellCheck: spellCheckEnabled,
 	} = useNoteEditorSettings();
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
+	const committedEditorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const pendingMarkdownSyncRef = useRef<PendingMarkdownSync | null>(null);
 	const pendingSelectionRestoreRef = useRef<SelectionSnapshot | null>(null);
 	const editorContentRelPathRef = useRef(relPath);
@@ -345,9 +349,8 @@ export function useNoteEditor({
 	const pasteMarkdownBehaviorRef = useRef(pasteMarkdownBehavior);
 	const listCollapseLoadVersionRef = useRef(0);
 	const listCollapseSaveRef = useRef(Promise.resolve());
-	const listCollapseEnabled = showCollapsibleLists;
-	const editingEnabled = mode === "rich";
-	const externalLinkPreviewsEnabled = showExternalLinkPreviews && editingEnabled;
+	const listCollapseEnabled = showCollapsibleLists && mode !== "plain";
+	const externalLinkPreviewsEnabled = showExternalLinkPreviews && mode !== "plain";
 	const handleListCollapseChange = useCallback((branches: string[]) => {
 		const path = relPathRef.current;
 		if (!path) return;
@@ -369,7 +372,6 @@ export function useNoteEditor({
 		() =>
 			createEditorExtensions({
 				additionalExtensions,
-				enableEditingExtensions: editingEnabled,
 				currentPath: "",
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
@@ -383,7 +385,6 @@ export function useNoteEditor({
 			}),
 		[
 			additionalExtensions,
-			editingEnabled,
 			enableMarkdownLinkAutocomplete,
 			enableFocusMode,
 			externalLinkPreviewsEnabled,
@@ -394,9 +395,6 @@ export function useNoteEditor({
 			placeholder,
 		],
 	);
-	// Each extension configuration owns its parsed documents. Content is the key,
-	// so edits and external changes cannot reuse an older version of a note.
-	const preparedDocuments = useMemo(() => createPreparedMarkdownCache(), [extensions]);
 	const markdownManager = useMemo(
 		() =>
 			pasteMarkdownBehavior === "smart-markdown"
@@ -411,17 +409,13 @@ export function useNoteEditor({
 		[extensions, pasteMarkdownBehavior],
 	);
 
-	// Deferred renders can be abandoned. Publish callbacks and document identity
-	// only at commit so the mounted editor never observes a speculative path.
-	useLayoutEffect(() => {
-		frontmatterRef.current = frontmatter;
-		markdownManagerRef.current = markdownManager;
-		onChangeRef.current = onChange;
-		pasteMarkdownBehaviorRef.current = pasteMarkdownBehavior;
-		relPathRef.current = relPath;
-		interactiveRef.current = interactive;
-		modeRef.current = mode;
-	}, [frontmatter, interactive, markdownManager, mode, onChange, pasteMarkdownBehavior, relPath]);
+	frontmatterRef.current = frontmatter;
+	markdownManagerRef.current = markdownManager;
+	onChangeRef.current = onChange;
+	pasteMarkdownBehaviorRef.current = pasteMarkdownBehavior;
+	relPathRef.current = relPath;
+	interactiveRef.current = interactive;
+	modeRef.current = mode;
 
 	const clearScheduledMarkdownSync = useCallback(() => {
 		if (markdownSyncTimeoutRef.current !== null) {
@@ -487,7 +481,7 @@ export function useNoteEditor({
 		void mode;
 		void placeholder;
 		return () => {
-			const snapshot = snapshotFocusedSelection(editorRef.current, relPath);
+			const snapshot = snapshotFocusedSelection(committedEditorRef.current, relPath);
 			if (snapshot) pendingSelectionRestoreRef.current = snapshot;
 			flushMarkdownSync(relPath);
 		};
@@ -509,20 +503,11 @@ export function useNoteEditor({
 			? pendingSync.instance.getMarkdown()
 			: editorBody;
 
-	const cachedContent = preparedDocuments.peek(editorContent);
 	const editor = useEditor(
 		{
 			extensions,
-			content: cachedContent ?? editorContent,
-			contentType: cachedContent ? "json" : "markdown",
-			onBeforeCreate: ({ editor: instance }) => {
-				// Markdown's extension has already parsed the initial content here.
-				// Cache that JSON before any node views or image hydration run.
-				const parsed = instance.options.content;
-				if (parsed && typeof parsed !== "string" && !Array.isArray(parsed)) {
-					preparedDocuments.remember(editorContent, parsed);
-				}
-			},
+			content: editorContent,
+			contentType: "markdown",
 			editorProps: {
 				attributes: {
 					class: "tiptapContentInline",
@@ -699,6 +684,7 @@ export function useNoteEditor({
 			placeholder,
 		],
 	);
+	editorRef.current = editor;
 
 	useEffect(() => {
 		if (editor?.isDestroyed) return;
@@ -719,7 +705,7 @@ export function useNoteEditor({
 	}, [editor, relPath]);
 
 	useLayoutEffect(() => {
-		editorRef.current = editor;
+		committedEditorRef.current = editor;
 	}, [editor]);
 
 	useEffect(() => {
@@ -739,27 +725,23 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor || editor.isDestroyed) return;
-		if (markdown === lastEmittedMarkdownRef.current) {
+		const previousMode = previousModeRef.current;
+		previousModeRef.current = mode;
+		if (mode === "plain") return;
+		const isHydratingFromPlainMode = previousMode === "plain";
+		if (!isHydratingFromPlainMode && markdown === lastEmittedMarkdownRef.current) {
 			return;
 		}
 		if (editorBody === lastAppliedBodyRef.current) return;
 		flushMarkdownSync(relPath);
-		const snapshot = snapshotFocusedSelection(editor, editorContentRelPathRef.current);
-		const document = preparedDocuments.prepare(editorBody, (body) => {
-			if (!editor.markdown) throw new Error("Markdown parser is unavailable");
-			return editor.markdown.parse(body);
-		});
 		suppressUpdateRef.current = true;
-		try {
-			editor.commands.setContent(document);
-		} finally {
-			suppressUpdateRef.current = false;
-		}
+		const snapshot = snapshotFocusedSelection(editor, editorContentRelPathRef.current);
+		editor.commands.setContent(editorBody, { contentType: "markdown" });
 		if (snapshot) restoreSelectionSnapshot(editor, snapshot, relPath);
 		editorContentRelPathRef.current = relPath;
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
-	}, [editor, editorBody, flushMarkdownSync, markdown, mode, preparedDocuments, relPath]);
+	}, [editor, editorBody, flushMarkdownSync, markdown, mode, relPath]);
 
 	useEffect(() => {
 		if (!editor || editor.isDestroyed) return;

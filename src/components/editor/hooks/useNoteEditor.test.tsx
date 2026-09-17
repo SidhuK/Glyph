@@ -47,12 +47,6 @@ const {
 		insertContentAt: vi.fn(() => true),
 	};
 	const mockEditor = {
-		markdown: {
-			parse: vi.fn((source: string) => ({
-				type: "doc",
-				content: [{ type: "paragraph", content: [{ type: "text", text: source }] }],
-			})),
-		},
 		isEditable: true,
 		isActive: vi.fn(() => false),
 		setEditable: vi.fn(),
@@ -368,7 +362,6 @@ describe("useNoteEditor", () => {
 		mockEditor.chain.mockClear();
 		mockEditor.can.mockClear();
 		mockEditor.commands.setContent.mockReset();
-		mockEditor.markdown.parse.mockClear();
 		mockEditor.commands.setHeadingCollapseEnabled.mockReset();
 		mockEditor.commands.setListCollapseEnabled.mockReset();
 		mockEditor.commands.setListCollapseKeys.mockReset();
@@ -654,10 +647,8 @@ describe("useNoteEditor", () => {
 			root.render(<Harness markdown="changed body" onChange={onChange} />);
 		});
 
-		expect(mockEditor.markdown.parse).toHaveBeenCalledWith("changed body");
-		expect(mockEditor.commands.setContent).toHaveBeenCalledWith({
-			type: "doc",
-			content: [{ type: "paragraph", content: [{ type: "text", text: "changed body" }] }],
+		expect(mockEditor.commands.setContent).toHaveBeenCalledWith("changed body", {
+			contentType: "markdown",
 		});
 		expect(mockEditor.commands.setTextSelection).toHaveBeenCalledWith({
 			from: 3,
@@ -684,10 +675,8 @@ describe("useNoteEditor", () => {
 			root.render(<Harness markdown="changed body" onChange={onChange} />);
 		});
 
-		expect(mockEditor.markdown.parse).toHaveBeenCalledWith("changed body");
-		expect(mockEditor.commands.setContent).toHaveBeenCalledWith({
-			type: "doc",
-			content: [{ type: "paragraph", content: [{ type: "text", text: "changed body" }] }],
+		expect(mockEditor.commands.setContent).toHaveBeenCalledWith("changed body", {
+			contentType: "markdown",
 		});
 	});
 

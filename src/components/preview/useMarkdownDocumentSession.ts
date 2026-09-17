@@ -1,4 +1,3 @@
-import { isCancelledError } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -22,7 +21,6 @@ const EXTERNAL_RELOAD_DEBOUNCE_MS = 180;
 
 interface UseMarkdownDocumentSessionOptions {
 	initialDoc: TextFileDoc | null;
-	initialDocValidated: boolean;
 	initialError: string;
 	onTextReplaced: (text: string) => void;
 	relPath: string;
@@ -33,7 +31,6 @@ interface UseMarkdownDocumentSessionOptions {
 
 export function useMarkdownDocumentSession({
 	initialDoc,
-	initialDocValidated,
 	initialError,
 	onTextReplaced,
 	relPath,
@@ -156,8 +153,7 @@ export function useMarkdownDocumentSession({
 		setError(initialError);
 		setEditorMode(resolveEditorModeForNote(cached));
 		setLoadedRelPath(relPath);
-		// Raw readiness follows the editor ref. Its new handle may already have
-		// attached during this commit; resetting it here would discard that signal.
+		setRawEditorReady(false);
 		activeRelPathRef.current = relPath;
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
@@ -211,7 +207,6 @@ export function useMarkdownDocumentSession({
 						})
 					: await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
-				flushPendingEdits();
 				const shouldReplaceText = textRef.current === savedTextRef.current;
 				const shouldChooseInitialMode =
 					textRef.current.length === 0 && savedTextRef.current.length === 0;
@@ -220,7 +215,7 @@ export function useMarkdownDocumentSession({
 					if (shouldChooseInitialMode) {
 						setEditorMode(resolveEditorModeForNote(doc.text));
 					}
-					if (doc.text !== textRef.current) replaceText(doc.text);
+					replaceText(doc.text);
 					hasUserEditsRef.current = false;
 				} else {
 					// User edited before this read resolved; keep the dirty edit
@@ -233,18 +228,11 @@ export function useMarkdownDocumentSession({
 				setLastSavedMtimeMs(doc.mtime_ms);
 				setLoadedRelPath(relPath);
 			} catch (e) {
-				if (!isCurrentSession(sessionId) || isCancelledError(e)) return;
+				if (!isCurrentSession(sessionId)) return;
 				setError(extractErrorMessage(e));
 			}
 		},
-		[
-			flushPendingEdits,
-			isCurrentSession,
-			relPath,
-			replaceText,
-			resolveEditorModeForNote,
-			setEditorMode,
-		],
+		[isCurrentSession, relPath, replaceText, resolveEditorModeForNote, setEditorMode],
 	);
 
 	const loadDocFromExternalChange = useCallback(async () => {
@@ -275,7 +263,7 @@ export function useMarkdownDocumentSession({
 				return;
 			}
 			setPrefetchedNote(relPath, doc);
-			if (doc.text !== textRef.current) replaceText(doc.text);
+			replaceText(doc.text);
 			savedTextRef.current = doc.text;
 			mtimeRef.current = doc.mtime_ms;
 			setSavedText(doc.text);
@@ -292,11 +280,10 @@ export function useMarkdownDocumentSession({
 	useEffect(() => {
 		const spaceChanged = loadedSpacePathRef.current !== spacePath;
 		loadedSpacePathRef.current = spacePath;
-		// A cold navigation already read this document for the current query
-		// observer. Cached opens still revalidate, including missed FS events.
-		if (!spaceChanged && initialDocValidated) return;
+		// Cached text seeds the editor, but opening a note must revalidate disk
+		// content even if its filesystem change event was missed.
 		void loadDoc(!spaceChanged);
-	}, [initialDocValidated, loadDoc, spacePath]);
+	}, [loadDoc, spacePath]);
 
 	const persistDoc = useCallback(
 		async (

@@ -80,12 +80,11 @@ pub async fn space_read_text(
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
         let bytes = std::fs::read(&abs).map_err(|e| e.to_string())?;
-        let etag = etag_for(&bytes);
         let text =
-            String::from_utf8(bytes).map_err(|_| "file is not valid UTF-8".to_string())?;
+            String::from_utf8(bytes.clone()).map_err(|_| "file is not valid UTF-8".to_string())?;
         Ok(TextFileDoc {
             rel_path: rel.to_string_lossy().to_string(),
-            etag,
+            etag: etag_for(&bytes),
             mtime_ms: file_mtime_ms(&abs),
             text,
         })
@@ -109,13 +108,12 @@ pub async fn space_read_texts_batch(
                 deny_hidden_rel_path(&rel)?;
                 let abs = paths::join_under(&root, &rel)?;
                 let bytes = std::fs::read(&abs).map_err(|e| e.to_string())?;
-                let etag = etag_for(&bytes);
-                let text = String::from_utf8(bytes)
+                let text = String::from_utf8(bytes.clone())
                     .map_err(|_| "file is not valid UTF-8".to_string())?;
                 Ok(TextFileDocBatch {
                     rel_path: rel.to_string_lossy().to_string(),
                     text: Some(text),
-                    etag: Some(etag),
+                    etag: Some(etag_for(&bytes)),
                     mtime_ms: file_mtime_ms(&abs),
                     error: None,
                 })

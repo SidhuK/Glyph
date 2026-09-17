@@ -397,7 +397,6 @@ export const HeadingCollapse = Extension.create<{
 			setHeadingCollapseEnabled:
 				(enabled: boolean) =>
 				({ state, dispatch }) => {
-					if (headingCollapsePluginKey.getState(state)?.headingsEnabled === enabled) return true;
 					dispatch?.(
 						state.tr.setMeta(headingCollapsePluginKey, {
 							type: "headings-enabled",
@@ -431,7 +430,6 @@ export const HeadingCollapse = Extension.create<{
 			setListCollapseEnabled:
 				(enabled: boolean) =>
 				({ state, dispatch }) => {
-					if (headingCollapsePluginKey.getState(state)?.listsEnabled === enabled) return true;
 					dispatch?.(
 						state.tr.setMeta(headingCollapsePluginKey, {
 							type: "lists-enabled",
@@ -443,8 +441,6 @@ export const HeadingCollapse = Extension.create<{
 			setListCollapseKeys:
 				(keys: string[]) =>
 				({ state, dispatch }) => {
-					const current = headingCollapsePluginKey.getState(state);
-					if (keys.length === 0 && current?.collapsedListPositions.size === 0) return true;
 					dispatch?.(
 						state.tr.setMeta(headingCollapsePluginKey, {
 							type: "lists-collapsed",
@@ -481,9 +477,6 @@ export const HeadingCollapse = Extension.create<{
 						) {
 							return previous;
 						}
-
-						// Cursor/focus transactions cannot change collapse ranges or decorations.
-						if (!transaction.docChanged && !meta) return previous;
 
 						const headings = extractHeadingRanges(nextState.doc);
 						const branches = extractListBranches(nextState.doc);
