@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { AiBrain04Icon, LayoutAlignRightIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
@@ -49,14 +49,12 @@ import { useMarkdownDocumentSession } from "./useMarkdownDocumentSession";
 import { useUnlinkedMentions } from "./useUnlinkedMentions";
 
 interface MarkdownEditorPaneProps {
-	onContentReady?: (path: string) => void;
 	relPath: string;
 	onDirtyChange?: (dirty: boolean) => void;
 	onInfoSidebarOpenChange?: (open: boolean) => void;
 	gitDiff?: GitCommitDiff | null;
 	onGitDiffChange?: (diff: GitCommitDiff | null) => void;
 	initialDoc?: TextFileDoc | null;
-	initialDocValidated?: boolean;
 	initialError?: string;
 	extractToNoteActions?: ExtractToNoteActions;
 	active?: boolean;
@@ -142,12 +140,10 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 export function MarkdownEditorPane({
 	relPath,
 	onDirtyChange,
-	onContentReady,
 	onInfoSidebarOpenChange,
 	gitDiff = null,
 	onGitDiffChange,
 	initialDoc = null,
-	initialDocValidated = false,
 	initialError = "",
 	extractToNoteActions,
 	active = true,
@@ -200,7 +196,6 @@ export function MarkdownEditorPane({
 		rawEditorReady,
 	} = useMarkdownDocumentSession({
 		initialDoc,
-		initialDocValidated,
 		initialError,
 		onTextReplaced: handleDocumentTextReplaced,
 		relPath,
@@ -372,16 +367,9 @@ export function MarkdownEditorPane({
 	const handleEditorReady = useCallback(
 		(editor: Editor | null, contentRoot: HTMLElement | null) => {
 			handleTocEditorReady(editor, contentRoot);
-			if (editor && contentRoot && loadedRelPath === relPath) onContentReady?.(relPath);
 		},
-		[handleTocEditorReady, loadedRelPath, onContentReady, relPath],
+		[handleTocEditorReady],
 	);
-
-	useLayoutEffect(() => {
-		if (loadedRelPath === relPath && (error || (mode === "plain" && rawEditorReady))) {
-			onContentReady?.(relPath);
-		}
-	}, [error, loadedRelPath, mode, onContentReady, rawEditorReady, relPath]);
 
 	useEffect(() => {
 		if (!infoPanelOpen) return;

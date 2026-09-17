@@ -31,37 +31,6 @@
 	border-bottom-right-radius: 0;
 }
 
-.noteNavigationContent,
-.noteNavigationEditor {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	min-width: 0;
-	min-height: 0;
-}
-
-.noteNavigationEditor[data-pending="true"] {
-	visibility: hidden;
-	pointer-events: none;
-}
-
-.noteNavigationContent > .noteNavigationPreview,
-.noteNavigationContent > .canvasPaneAwait {
-	position: absolute;
-	inset: 0;
-	z-index: 1;
-	overflow: hidden;
-}
-
-.noteNavigationPreview .rfNodeNoteEditorBody {
-	overflow: hidden;
-}
-
-.noteNavigationPreview pre.tiptapContentInline {
-	white-space: pre-wrap;
-}
-
 .canvasPaneHost[data-space-connections="true"] :is(.spaceConnectionsHost, .canvasPaneAwait),
 .canvasPaneHost[data-all-docs="true"] :is(.activityTimelinePane, .canvasPaneAwait),
 .canvasPaneHost[data-databases="true"] :is(.databaseHostPane, .canvasPaneAwait) {

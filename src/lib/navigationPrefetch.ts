@@ -1,6 +1,4 @@
 import { clearMarkdownDocCache, setCachedMarkdownDoc } from "../components/preview/markdownCache";
-import { i18n } from "../i18n";
-import { isMarkdownPath } from "../utils/path";
 import {
 	readStoredSelectedDatabaseId,
 	resolveSelectedDatabaseId,
@@ -81,23 +79,17 @@ export const navigationQueryKeys = {
 	taskSummaries: () => [...navigationQueryKeys.all, "task-summaries"] as const,
 };
 
-async function fetchNote(path: string, signal: AbortSignal): Promise<TextFileDoc> {
-	const previousDoc = getPrefetchedNote(path);
+async function fetchNote(path: string): Promise<TextFileDoc> {
 	const doc = await invoke("space_read_text", { path });
-	// IPC cannot be aborted, but a removed query must not repopulate the text
-	// cache after a space switch or filesystem invalidation.
-	signal.throwIfAborted();
-	const currentDoc = getPrefetchedNote(path);
-	const latestDoc = currentDoc && currentDoc !== previousDoc ? currentDoc : doc;
-	setCachedMarkdownDoc(path, latestDoc.text);
-	return latestDoc;
+	setCachedMarkdownDoc(path, doc.text);
+	return doc;
 }
 
 export function noteDocumentQueryOptions(path: string) {
 	const normalized = path.trim();
 	return {
 		queryKey: navigationQueryKeys.note(normalized),
-		queryFn: ({ signal }: { signal: AbortSignal }) => fetchNote(normalized, signal),
+		queryFn: () => fetchNote(normalized),
 		staleTime: NAVIGATION_STALE_TIME_MS,
 		gcTime: NOTE_PREFETCH_GC_TIME_MS,
 	};
@@ -107,58 +99,6 @@ export function prefetchNote(path: string) {
 	const normalized = path.trim();
 	if (!normalized) return;
 	void queryClient.prefetchQuery(noteDocumentQueryOptions(normalized));
-}
-
-/** Warm the destination and up to three neighbors without one IPC per note. */
-export function prefetchAdjacentNotes(
-	paths: readonly string[],
-	index: number,
-	direction: -1 | 1,
-	wrap = false,
-) {
-	const candidates: string[] = [];
-	for (let offset = 0; offset < Math.min(4, paths.length); offset += 1) {
-		const nextIndex = index + offset * direction;
-		const path = paths[wrap ? (nextIndex + paths.length) % paths.length : nextIndex];
-		if (path && isMarkdownPath(path)) candidates.push(path);
-	}
-	const now = Date.now();
-	const missing = [...new Set(candidates)].filter((path) => {
-		const state = queryClient.getQueryState<TextFileDoc>(navigationQueryKeys.note(path));
-		return (
-			state?.fetchStatus !== "fetching" &&
-			(!state?.data || state.isInvalidated || now - state.dataUpdatedAt >= NAVIGATION_STALE_TIME_MS)
-		);
-	});
-	if (!missing.length) return;
-	const batch = invoke("space_read_texts_batch", { paths: missing });
-	for (const path of missing) {
-		void queryClient.prefetchQuery({
-			...noteDocumentQueryOptions(path),
-			// A failed speculative read is retried by the normal document loader.
-			retry: false,
-			queryFn: async ({ signal }): Promise<TextFileDoc> => {
-				const previousDoc = getPrefetchedNote(path);
-				const results = await batch;
-				signal.throwIfAborted();
-				const result = results.find((item) => item.rel_path === path);
-				if (!result || result.error || result.text === null || result.etag === null) {
-					throw new Error(result?.error ?? i18n.t("shell:calendar.loadFailedShort"));
-				}
-				const doc: TextFileDoc = {
-					rel_path: path,
-					text: result.text,
-					etag: result.etag,
-					mtime_ms: result.mtime_ms,
-				};
-				// A save that completed during the batch read wins over its snapshot.
-				const currentDoc = getPrefetchedNote(path);
-				const latestDoc = currentDoc && currentDoc !== previousDoc ? currentDoc : doc;
-				setCachedMarkdownDoc(path, latestDoc.text);
-				return latestDoc;
-			},
-		});
-	}
 }
 
 export function getPrefetchedNote(path: string): TextFileDoc | null {
