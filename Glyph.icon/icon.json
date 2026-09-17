@@ -1,98 +1,111 @@
 {
-	"fill-specializations": [
-		{
-			"value": {
-				"linear-gradient": ["extended-gray:1.00000,1.00000", "extended-gray:0.75000,1.00000"],
-				"orientation": {
-					"start": {
-						"x": 0.5,
-						"y": 0
-					},
-					"stop": {
-						"x": 0.5,
-						"y": 0.7
-					}
-				}
-			}
-		},
-		{
-			"appearance": "dark",
-			"value": {
-				"automatic-gradient": "srgb:0.00000,0.00000,0.00000,1.00000",
-				"orientation": {
-					"start": {
-						"x": 0.5,
-						"y": 0
-					},
-					"stop": {
-						"x": 0.5,
-						"y": 0.7
-					}
-				}
-			}
-		}
-	],
-	"groups": [
-		{
-			"layers": [
-				{
-					"glass": false,
-					"image-name": "05-indigo-pocket.png",
-					"name": "05-indigo-pocket",
-					"position": {
-						"scale": 1.16,
-						"translation-in-points": [0, 0]
-					}
-				},
-				{
-					"glass": false,
-					"image-name": "04-ivory-asterisk.png",
-					"name": "04-ivory-asterisk",
-					"position": {
-						"scale": 1.16,
-						"translation-in-points": [0, 0]
-					}
-				},
-				{
-					"glass": false,
-					"image-name": "03-violet-page.png",
-					"name": "03-violet-page",
-					"position": {
-						"scale": 1.16,
-						"translation-in-points": [0, 0]
-					}
-				},
-				{
-					"glass": false,
-					"image-name": "02-coral-page.png",
-					"name": "02-coral-page",
-					"position": {
-						"scale": 1.16,
-						"translation-in-points": [0, 0]
-					}
-				},
-				{
-					"glass": false,
-					"image-name": "01-blue-page.png",
-					"name": "01-blue-page",
-					"position": {
-						"scale": 1.16,
-						"translation-in-points": [17.4, 2.32]
-					}
-				}
-			],
-			"shadow": {
-				"kind": "neutral",
-				"opacity": 0.35
-			},
-			"translucency": {
-				"enabled": true,
-				"value": 0.5
-			}
-		}
-	],
-	"supported-platforms": {
-		"circles": ["watchOS"],
-		"squares": "shared"
-	}
+  "fill-specializations" : [
+    {
+      "value" : {
+        "linear-gradient" : [
+          "extended-gray:1.00000,1.00000",
+          "extended-gray:0.75000,1.00000"
+        ],
+        "orientation" : {
+          "start" : {
+            "x" : 0.5,
+            "y" : 0
+          },
+          "stop" : {
+            "x" : 0.5,
+            "y" : 0.7
+          }
+        }
+      }
+    },
+    {
+      "appearance" : "dark",
+      "value" : {
+        "linear-gradient" : [
+          "extended-gray:0.25000,1.00000",
+          "srgb:0.00000,0.00000,0.00000,1.00000"
+        ]
+      }
+    }
+  ],
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "05-indigo-pocket.png",
+          "name" : "05-indigo-pocket",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "04-ivory-asterisk.png",
+          "name" : "04-ivory-asterisk",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "03-violet-page.png",
+          "name" : "03-violet-page",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "02-coral-page.png",
+          "name" : "02-coral-page",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "01-blue-page.png",
+          "name" : "01-blue-page",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              17.4,
+              2.32
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.35
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
 }
