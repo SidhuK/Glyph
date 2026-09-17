@@ -202,6 +202,16 @@
 			"section": "Typographie",
 			"keywords": ["police", "éditeur", "notes", "prose", "font", "editor"]
 		},
+		"appearance-heading-font-enabled": {
+			"title": "Police de titres distincte",
+			"section": "Typographie",
+			"keywords": ["police", "titre", "h1", "h2", "aperçu", "font", "heading"]
+		},
+		"appearance-heading-font": {
+			"title": "Police des titres",
+			"section": "Typographie",
+			"keywords": ["police", "titre", "h1", "h2", "font", "heading"]
+		},
 		"appearance-ui-font-size": {
 			"title": "Taille de police de l’UI",
 			"section": "Typographie",

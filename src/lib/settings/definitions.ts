@@ -441,6 +441,22 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.editorFontFamily,
 		change: (value) => ({ ui: { editorFontFamily: value } }),
 	}),
+	headingFontEnabled: booleanSetting({
+		key: "ui.headingFontEnabled",
+		defaultValue: false,
+		discovery: searchable("appearance-heading-font-enabled"),
+		read: (settings) => settings.ui.headingFontEnabled,
+		change: (value) => ({ ui: { headingFontEnabled: value } }),
+	}),
+	headingFontFamily: defineApplicationSetting({
+		key: "ui.headingFontFamily",
+		defaultValue: DEFAULT_UI_FONT_FAMILY,
+		discovery: searchable("appearance-heading-font"),
+		normalize: (value) => normalizeUiFontFamily(value, DEFAULT_UI_FONT_FAMILY),
+		parse: parseString,
+		read: (settings) => settings.ui.headingFontFamily,
+		change: (value) => ({ ui: { headingFontFamily: value } }),
+	}),
 	monoFontFamily: defineApplicationSetting({
 		key: "ui.monoFontFamily",
 		defaultValue: DEFAULT_UI_MONO_FONT_FAMILY,

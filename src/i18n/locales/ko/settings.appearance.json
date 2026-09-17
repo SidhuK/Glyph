@@ -93,6 +93,15 @@
 			"label": "편집기 글꼴",
 			"description": "인라인 코드와 코드 블록을 제외한 일반 노트 텍스트에 사용됩니다."
 		},
+		"headingFontEnabled": {
+			"label": "별도 제목 글꼴",
+			"description": "편집 및 미리보기 모드의 H1-H6에 다른 글꼴을 사용합니다.",
+			"ariaLabel": "별도 제목 글꼴"
+		},
+		"headingFont": {
+			"label": "제목 글꼴",
+			"description": "별도 제목 글꼴이 켜져 있을 때 H1-H6에 사용됩니다. 원시 Markdown은 편집기 글꼴을 유지합니다."
+		},
 		"monospaceFont": {
 			"label": "고정폭 글꼴",
 			"description": "Markdown 소스, 인라인 코드, 개발자용 화면에 사용됩니다."

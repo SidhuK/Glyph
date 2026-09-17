@@ -61,6 +61,8 @@ function getCompactDisplayBoost(): number {
 export interface UiTypographyPreferences {
 	fontFamily: UiFontFamily;
 	editorFontFamily: UiFontFamily;
+	headingFontEnabled: boolean;
+	headingFontFamily: UiFontFamily;
 	monoFontFamily: UiFontFamily;
 	uiFontSize: UiFontSize;
 	editorFontSize: UiFontSize;
@@ -69,6 +71,8 @@ export interface UiTypographyPreferences {
 export function applyUiTypography({
 	fontFamily,
 	editorFontFamily,
+	headingFontEnabled,
+	headingFontFamily,
 	monoFontFamily,
 	uiFontSize,
 	editorFontSize,
@@ -76,6 +80,7 @@ export function applyUiTypography({
 	const root = document.documentElement;
 	const safeFamily = fontFamily.trim() || "Geist";
 	const safeEditorFamily = editorFontFamily.trim() || safeFamily;
+	const safeHeadingFamily = headingFontFamily.trim() || safeEditorFamily;
 	const safeMonoFamily = monoFontFamily.trim() || "JetBrains Mono";
 	const uiScale = Math.max(0.5, Math.min(3, uiFontSize / 14));
 	const compactDisplayBoost = getCompactDisplayBoost();
@@ -95,9 +100,11 @@ export function applyUiTypography({
 		"--font-sans",
 		`"${safeFamily}", "Inter", -apple-system, BlinkMacSystemFont, sans-serif`,
 	);
+	const editorFontStack = `"${safeEditorFamily}", "${safeFamily}", "Inter", -apple-system, BlinkMacSystemFont, sans-serif`;
+	root.style.setProperty("--font-editor", editorFontStack);
 	root.style.setProperty(
-		"--font-editor",
-		`"${safeEditorFamily}", "${safeFamily}", "Inter", -apple-system, BlinkMacSystemFont, sans-serif`,
+		"--font-heading",
+		headingFontEnabled ? `"${safeHeadingFamily}", ${editorFontStack}` : editorFontStack,
 	);
 	root.style.setProperty(
 		"--font-mono",

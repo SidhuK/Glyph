@@ -51,6 +51,16 @@ export function EditorSettingsPane() {
 		DURABLE_SETTINGS.editorFontFamily.write,
 		setError,
 	);
+	const headingFontEnabled = useSettingsBoolean(
+		false,
+		DURABLE_SETTINGS.headingFontEnabled.write,
+		setError,
+	);
+	const headingFontFamily = useSettingsValue<UiFontFamily>(
+		DEFAULT_FONT_FAMILY,
+		DURABLE_SETTINGS.headingFontFamily.write,
+		setError,
+	);
 	const editorFontSize = useSettingsValue<UiFontSize>(
 		16,
 		DURABLE_SETTINGS.editorFontSize.write,
@@ -128,6 +138,10 @@ export function EditorSettingsPane() {
 	const setEditorWidthModeValue = editorWidthMode.setValue;
 	const setInitialEditorFontFamily = editorFontFamily.setInitialValue;
 	const setEditorFontFamilyValue = editorFontFamily.setValue;
+	const setHeadingFontEnabledChecked = headingFontEnabled.setChecked;
+	const setInitialHeadingFontEnabled = headingFontEnabled.setInitialChecked;
+	const setInitialHeadingFontFamily = headingFontFamily.setInitialValue;
+	const setHeadingFontFamilyValue = headingFontFamily.setValue;
 	const setInitialEditorFontSize = editorFontSize.setInitialValue;
 	const setEditorFontSizeValue = editorFontSize.setValue;
 
@@ -165,6 +179,8 @@ export function EditorSettingsPane() {
 				setInitialSpellCheck(settings.editor.spellCheck);
 				setInitialBeautifulTags(settings.editor.beautifulTags);
 				setInitialEditorFontFamily(settings.ui.editorFontFamily);
+				setInitialHeadingFontEnabled(settings.ui.headingFontEnabled);
+				setInitialHeadingFontFamily(settings.ui.headingFontFamily);
 				setInitialEditorFontSize(settings.ui.editorFontSize);
 			})
 			.catch((cause) => {
@@ -185,6 +201,8 @@ export function EditorSettingsPane() {
 		setInitialEditorFontFamily,
 		setInitialEditorFontSize,
 		setInitialEditorWidthMode,
+		setInitialHeadingFontEnabled,
+		setInitialHeadingFontFamily,
 		setInitialHeadingPalette,
 		setInitialShowFrontmatter,
 		setInitialShowToc,
@@ -201,6 +219,9 @@ export function EditorSettingsPane() {
 				if (typeof payload.ui?.editorFontSize === "number") {
 					setEditorFontSizeValue(payload.ui.editorFontSize);
 				}
+				if (typeof payload.ui?.headingFontFamily === "string") {
+					setHeadingFontFamilyValue(payload.ui.headingFontFamily);
+				}
 				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
 					setDefaultEditorModeValue(payload.editor.defaultEditorMode);
 				}
@@ -211,6 +232,7 @@ export function EditorSettingsPane() {
 					setEditorWidthModeValue(payload.editor.editorWidthMode);
 				}
 				applyIfBoolean(payload.ui?.showToc, setShowTocChecked);
+				applyIfBoolean(payload.ui?.headingFontEnabled, setHeadingFontEnabledChecked);
 				applyIfBoolean(payload.editor?.showFrontmatterInEditor, setShowFrontmatterChecked);
 				applyIfBoolean(payload.editor?.colorfulHeadings, setColorfulHeadingsChecked);
 				applyIfBoolean(payload.editor?.showHeadingPrefixes, setHeadingPrefixesChecked);
@@ -228,6 +250,8 @@ export function EditorSettingsPane() {
 				setEditorFontFamilyValue,
 				setEditorFontSizeValue,
 				setEditorWidthModeValue,
+				setHeadingFontEnabledChecked,
+				setHeadingFontFamilyValue,
 				setHeadingPaletteValue,
 				setHeadingPrefixesChecked,
 				setShowFrontmatterChecked,
@@ -265,6 +289,46 @@ export function EditorSettingsPane() {
 							))}
 						</SettingsSelect>
 					</SettingsRow>
+					<SettingsRow
+						label={tAppearance("typography.headingFontEnabled.label")}
+						description={tAppearance("typography.headingFontEnabled.description")}
+						searchId={
+							headingFontEnabled.checked
+								? "appearance-heading-font-enabled"
+								: "appearance-heading-font"
+						}
+					>
+						<SettingsToggle
+							checked={headingFontEnabled.checked}
+							disabled={headingFontEnabled.isSaving}
+							ariaLabel={tAppearance("typography.headingFontEnabled.ariaLabel")}
+							onCheckedChange={headingFontEnabled.onCheckedChange}
+						/>
+					</SettingsRow>
+					{headingFontEnabled.checked ? (
+						<SettingsRow
+							label={tAppearance("typography.headingFont.label")}
+							htmlFor="settingsHeadingFontFamily"
+							description={tAppearance("typography.headingFont.description")}
+							searchId="appearance-heading-font"
+						>
+							<SettingsSelect
+								id="settingsHeadingFontFamily"
+								value={headingFontFamily.value}
+								disabled={headingFontFamily.isSaving}
+								onChange={(event) => headingFontFamily.onChange(event.target.value)}
+							>
+								{(availableFonts.includes(headingFontFamily.value)
+									? availableFonts
+									: [headingFontFamily.value, ...availableFonts]
+								).map((font) => (
+									<option key={font} value={font}>
+										{font}
+									</option>
+								))}
+							</SettingsSelect>
+						</SettingsRow>
+					) : null}
 					<FontSizeControl
 						id="settingsEditorFontSize"
 						label={tAppearance("typography.editorFontSize.label")}

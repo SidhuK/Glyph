@@ -51,6 +51,8 @@ function ThemeAndTypographyBridge() {
 	const [darkThemeId, setDarkThemeId] = React.useState<UiDarkThemeId | null>(null);
 	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
 	const [editorFontFamily, setEditorFontFamily] = React.useState<string | null>(null);
+	const [headingFontEnabled, setHeadingFontEnabled] = React.useState<boolean | null>(null);
+	const [headingFontFamily, setHeadingFontFamily] = React.useState<string | null>(null);
 	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(null);
 	const [uiFontSize, setUiFontSize] = React.useState<number | null>(null);
 	const [editorFontSize, setEditorFontSize] = React.useState<number | null>(null);
@@ -76,6 +78,8 @@ function ThemeAndTypographyBridge() {
 				setDarkThemeId(settings.ui.darkThemeId);
 				setFontFamily(settings.ui.fontFamily);
 				setEditorFontFamily(settings.ui.editorFontFamily);
+				setHeadingFontEnabled(settings.ui.headingFontEnabled);
+				setHeadingFontFamily(settings.ui.headingFontFamily);
 				setMonoFontFamily(settings.ui.monoFontFamily);
 				setUiFontSize(settings.ui.fontSize);
 				setEditorFontSize(settings.ui.editorFontSize);
@@ -134,6 +138,12 @@ function ThemeAndTypographyBridge() {
 		if (typeof payload.ui?.editorFontFamily === "string") {
 			setEditorFontFamily(payload.ui.editorFontFamily);
 		}
+		if (typeof payload.ui?.headingFontEnabled === "boolean") {
+			setHeadingFontEnabled(payload.ui.headingFontEnabled);
+		}
+		if (typeof payload.ui?.headingFontFamily === "string") {
+			setHeadingFontFamily(payload.ui.headingFontFamily);
+		}
 		if (typeof payload.ui?.monoFontFamily === "string") {
 			setMonoFontFamily(payload.ui.monoFontFamily);
 		}
@@ -176,6 +186,8 @@ function ThemeAndTypographyBridge() {
 		if (
 			!fontFamily ||
 			!editorFontFamily ||
+			typeof headingFontEnabled !== "boolean" ||
+			!headingFontFamily ||
 			!monoFontFamily ||
 			typeof uiFontSize !== "number" ||
 			typeof editorFontSize !== "number"
@@ -186,6 +198,8 @@ function ThemeAndTypographyBridge() {
 			applyUiTypography({
 				fontFamily,
 				editorFontFamily,
+				headingFontEnabled,
+				headingFontFamily,
 				monoFontFamily,
 				uiFontSize,
 				editorFontSize,
@@ -196,7 +210,15 @@ function ThemeAndTypographyBridge() {
 		return () => {
 			window.removeEventListener("resize", applyTypography);
 		};
-	}, [editorFontFamily, editorFontSize, fontFamily, monoFontFamily, uiFontSize]);
+	}, [
+		editorFontFamily,
+		editorFontSize,
+		fontFamily,
+		headingFontEnabled,
+		headingFontFamily,
+		monoFontFamily,
+		uiFontSize,
+	]);
 
 	React.useEffect(() => {
 		if (!customThemes) return;

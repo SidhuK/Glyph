@@ -205,6 +205,16 @@
 			"section": "Typografia",
 			"keywords": ["czcionka", "edytor", "notatki", "proza"]
 		},
+		"appearance-heading-font-enabled": {
+			"title": "Oddzielna czcionka nagłówków",
+			"section": "Typografia",
+			"keywords": ["czcionka", "nagłówek", "h1", "h2", "podgląd", "font", "heading"]
+		},
+		"appearance-heading-font": {
+			"title": "Czcionka nagłówków",
+			"section": "Typografia",
+			"keywords": ["czcionka", "nagłówek", "tytuł", "h1", "h2", "font", "heading"]
+		},
 		"appearance-ui-font-size": {
 			"title": "Rozmiar czcionki interfejsu",
 			"section": "Typografia",

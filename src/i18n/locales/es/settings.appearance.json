@@ -93,6 +93,15 @@
 			"label": "Fuente del editor",
 			"description": "Se usa para el texto normal de las notas, fuera del código en línea y los bloques de código."
 		},
+		"headingFontEnabled": {
+			"label": "Fuente de encabezados independiente",
+			"description": "Usa una fuente diferente para H1-H6 en los modos de edición y vista previa.",
+			"ariaLabel": "Fuente de encabezados independiente"
+		},
+		"headingFont": {
+			"label": "Fuente de encabezados",
+			"description": "Se usa para H1-H6 cuando la fuente independiente está activada. Markdown sin formato conserva la fuente del editor."
+		},
 		"monospaceFont": {
 			"label": "Fuente monoespaciada",
 			"description": "Se usa para el origen Markdown, el código en línea y las superficies orientadas a desarrolladores."

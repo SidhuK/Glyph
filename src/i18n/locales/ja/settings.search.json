@@ -202,6 +202,16 @@
 			"section": "タイポグラフィ",
 			"keywords": ["フォント", "エディタ", "ノート", "散文", "font", "editor", "notes", "prose"]
 		},
+		"appearance-heading-font-enabled": {
+			"title": "見出し用フォントを分ける",
+			"section": "タイポグラフィ",
+			"keywords": ["フォント", "見出し", "h1", "h2", "プレビュー", "font", "heading"]
+		},
+		"appearance-heading-font": {
+			"title": "見出しフォント",
+			"section": "タイポグラフィ",
+			"keywords": ["フォント", "見出し", "タイトル", "h1", "h2", "font", "heading"]
+		},
 		"appearance-ui-font-size": {
 			"title": "UI フォントサイズ",
 			"section": "タイポグラフィ",

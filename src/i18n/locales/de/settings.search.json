@@ -201,6 +201,16 @@
 			"section": "Typografie",
 			"keywords": ["schrift", "editor", "notizen", "prosa", "font", "notes", "prose"]
 		},
+		"appearance-heading-font-enabled": {
+			"title": "Eigene Überschriftenschrift",
+			"section": "Typografie",
+			"keywords": ["schrift", "überschrift", "h1", "h2", "vorschau", "font", "heading"]
+		},
+		"appearance-heading-font": {
+			"title": "Überschriftenschrift",
+			"section": "Typografie",
+			"keywords": ["schrift", "überschrift", "titel", "h1", "h2", "font", "heading"]
+		},
 		"appearance-ui-font-size": {
 			"title": "UI-Schriftgröße",
 			"section": "Typografie",

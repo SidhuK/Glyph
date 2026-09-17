@@ -93,6 +93,15 @@
 			"label": "Czcionka edytora",
 			"description": "Używana do zwykłego tekstu notatek poza kodem w tekście i blokami kodu."
 		},
+		"headingFontEnabled": {
+			"label": "Oddzielna czcionka nagłówków",
+			"description": "Używaj innej czcionki dla H1-H6 w trybie edycji i podglądu.",
+			"ariaLabel": "Oddzielna czcionka nagłówków"
+		},
+		"headingFont": {
+			"label": "Czcionka nagłówków",
+			"description": "Używana dla H1-H6 po włączeniu oddzielnej czcionki. Surowy Markdown zachowuje czcionkę edytora."
+		},
 		"monospaceFont": {
 			"label": "Czcionka o stałej szerokości",
 			"description": "Używana do kodu źródłowego Markdown, kodu w tekście i powierzchni przeznaczonych dla programistów."

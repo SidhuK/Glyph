@@ -106,6 +106,15 @@
 			"label": "Editor font",
 			"description": "Used for regular note text outside inline code and code blocks."
 		},
+		"headingFontEnabled": {
+			"label": "Separate heading font",
+			"description": "Use a different font for H1-H6 in edit and preview modes.",
+			"ariaLabel": "Separate heading font"
+		},
+		"headingFont": {
+			"label": "Heading font",
+			"description": "Used for H1-H6 when the separate heading font is on. Raw Markdown keeps the editor font."
+		},
 		"monospaceFont": {
 			"label": "Monospace font",
 			"description": "Used for markdown source, inline code, and developer-oriented surfaces."

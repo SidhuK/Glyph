@@ -203,6 +203,16 @@
 			"section": "Tipografia",
 			"keywords": ["fonte", "editor", "notas", "prosa", "font", "notes", "prose"]
 		},
+		"appearance-heading-font-enabled": {
+			"title": "Fonte separada para títulos",
+			"section": "Tipografia",
+			"keywords": ["fonte", "título", "h1", "h2", "visualização", "font", "heading"]
+		},
+		"appearance-heading-font": {
+			"title": "Fonte dos títulos",
+			"section": "Tipografia",
+			"keywords": ["fonte", "título", "h1", "h2", "font", "heading"]
+		},
 		"appearance-ui-font-size": {
 			"title": "Tamanho da fonte da UI",
 			"section": "Tipografia",

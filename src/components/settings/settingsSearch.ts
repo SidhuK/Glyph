@@ -44,6 +44,8 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "appearance-interface-font", tab: "appearance" },
 	{ id: "appearance-monospace-font", tab: "appearance" },
 	{ id: "appearance-editor-font", tab: "editor" },
+	{ id: "appearance-heading-font-enabled", tab: "editor" },
+	{ id: "appearance-heading-font", tab: "editor" },
 	{ id: "appearance-ui-font-size", tab: "appearance" },
 	{ id: "appearance-editor-font-size", tab: "editor" },
 	{ id: "shortcuts-customize", tab: "shortcuts" },

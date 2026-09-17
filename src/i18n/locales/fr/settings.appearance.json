@@ -93,6 +93,15 @@
 			"label": "Police de l’éditeur",
 			"description": "Utilisée pour le texte normal des notes, hors code en ligne et blocs de code."
 		},
+		"headingFontEnabled": {
+			"label": "Police de titres distincte",
+			"description": "Utiliser une autre police pour les titres H1 à H6 en mode édition et aperçu.",
+			"ariaLabel": "Police de titres distincte"
+		},
+		"headingFont": {
+			"label": "Police des titres",
+			"description": "Utilisée pour les titres H1 à H6 lorsque la police distincte est activée. Le Markdown brut conserve la police de l’éditeur."
+		},
 		"monospaceFont": {
 			"label": "Police monospace",
 			"description": "Utilisée pour la source Markdown, le code en ligne et les surfaces orientées développeur."
