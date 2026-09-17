@@ -93,6 +93,15 @@
 			"label": "エディタフォント",
 			"description": "インラインコードとコードブロック以外の通常のノート本文に使用されます。"
 		},
+		"headingFontEnabled": {
+			"label": "見出し用フォントを分ける",
+			"description": "編集モードとプレビューモードの H1〜H6 に別のフォントを使用します。",
+			"ariaLabel": "見出し用フォントを分ける"
+		},
+		"headingFont": {
+			"label": "見出しフォント",
+			"description": "見出し用フォントがオンのとき H1〜H6 に使用します。Raw Markdown ではエディタフォントを維持します。"
+		},
 		"monospaceFont": {
 			"label": "等幅フォント",
 			"description": "Markdown ソース、インラインコード、開発者向けの画面に使用されます。"

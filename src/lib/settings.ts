@@ -448,6 +448,8 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 		entries.get(DURABLE_SETTINGS.editorFontFamily.key) == null
 			? fontFamily
 			: DURABLE_SETTINGS.editorFontFamily.load(entries);
+	const headingFontEnabled = DURABLE_SETTINGS.headingFontEnabled.load(entries);
+	const headingFontFamily = DURABLE_SETTINGS.headingFontFamily.load(entries);
 	const monoFontFamily = DURABLE_SETTINGS.monoFontFamily.load(entries);
 	const fontSize = DURABLE_SETTINGS.fontSize.load(entries);
 	const editorFontSize = DURABLE_SETTINGS.editorFontSize.load(entries);
@@ -598,6 +600,8 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			customThemes,
 			fontFamily,
 			editorFontFamily,
+			headingFontEnabled,
+			headingFontFamily,
 			monoFontFamily,
 			fontSize,
 			editorFontSize,

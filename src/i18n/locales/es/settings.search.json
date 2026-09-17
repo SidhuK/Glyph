@@ -211,6 +211,16 @@
 			"section": "Tipografía",
 			"keywords": ["fuente", "editor", "notas", "prosa", "font", "notes", "prose"]
 		},
+		"appearance-heading-font-enabled": {
+			"title": "Fuente de encabezados independiente",
+			"section": "Tipografía",
+			"keywords": ["fuente", "encabezado", "h1", "h2", "vista previa", "font", "heading"]
+		},
+		"appearance-heading-font": {
+			"title": "Fuente de encabezados",
+			"section": "Tipografía",
+			"keywords": ["fuente", "encabezado", "título", "h1", "h2", "font", "heading"]
+		},
 		"appearance-ui-font-size": {
 			"title": "Tamaño de fuente de la UI",
 			"section": "Tipografía",

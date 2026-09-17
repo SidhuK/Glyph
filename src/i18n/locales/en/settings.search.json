@@ -227,6 +227,16 @@
 			"section": "Typography",
 			"keywords": ["font", "editor", "notes", "prose"]
 		},
+		"appearance-heading-font-enabled": {
+			"title": "Separate heading font",
+			"section": "Typography",
+			"keywords": ["font", "heading", "h1", "h2", "preview"]
+		},
+		"appearance-heading-font": {
+			"title": "Heading font",
+			"section": "Typography",
+			"keywords": ["font", "heading", "title", "h1", "h2"]
+		},
 		"appearance-ui-font-size": {
 			"title": "UI font size",
 			"section": "Typography",

@@ -190,6 +190,8 @@ export interface AppSettings {
 		customThemes: CustomTheme[];
 		fontFamily: UiFontFamily;
 		editorFontFamily: UiFontFamily;
+		headingFontEnabled: boolean;
+		headingFontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;

@@ -148,6 +148,14 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "text",
 	},
 	{
+		...bindApplicationSetting(DURABLE_SETTINGS.headingFontEnabled),
+		control: "toggle",
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.headingFontFamily),
+		control: "text",
+	},
+	{
 		...bindApplicationSetting(DURABLE_SETTINGS.monoFontFamily),
 		control: "text",
 	},

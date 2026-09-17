@@ -93,6 +93,15 @@
 			"label": "Fonte do editor",
 			"description": "Usada no texto normal das notas, fora de código em linha e blocos de código."
 		},
+		"headingFontEnabled": {
+			"label": "Fonte separada para títulos",
+			"description": "Use uma fonte diferente para H1-H6 nos modos de edição e visualização.",
+			"ariaLabel": "Fonte separada para títulos"
+		},
+		"headingFont": {
+			"label": "Fonte dos títulos",
+			"description": "Usada para H1-H6 quando a fonte separada está ativada. O Markdown bruto mantém a fonte do editor."
+		},
 		"monospaceFont": {
 			"label": "Fonte monoespaçada",
 			"description": "Usada na origem Markdown, código em linha e superfícies orientadas a desenvolvedores."

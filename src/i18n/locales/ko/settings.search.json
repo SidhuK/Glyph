@@ -174,6 +174,16 @@
 			"section": "타이포그래피",
 			"keywords": ["글꼴", "편집기", "노트", "산문", "font", "editor", "notes", "prose"]
 		},
+		"appearance-heading-font-enabled": {
+			"title": "별도 제목 글꼴",
+			"section": "타이포그래피",
+			"keywords": ["글꼴", "제목", "h1", "h2", "미리보기", "font", "heading"]
+		},
+		"appearance-heading-font": {
+			"title": "제목 글꼴",
+			"section": "타이포그래피",
+			"keywords": ["글꼴", "제목", "h1", "h2", "font", "heading"]
+		},
 		"appearance-ui-font-size": {
 			"title": "UI 글꼴 크기",
 			"section": "타이포그래피",
