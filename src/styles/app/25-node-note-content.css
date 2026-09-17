@@ -315,11 +315,14 @@
 .tiptapContentInline h5,
 .tiptapContentInline h6 {
 	margin: calc(var(--space-4) + 2px) 0 calc(var(--space-2) + 2px);
-	font-family: var(--font-heading, var(--font-editor));
 	font-weight: var(--font-medium);
 	line-height: 1.32;
 	letter-spacing: -0.014em;
 	text-wrap: balance;
+}
+
+.tiptapHostInline .tiptapContentInline :is(h1, h2, h3, h4, h5, h6) {
+	font-family: var(--font-heading, var(--font-editor));
 }
 
 .tiptapContentInline > :first-child:is(h1, h2, h3, h4, h5, h6) {

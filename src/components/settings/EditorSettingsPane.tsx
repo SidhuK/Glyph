@@ -292,7 +292,11 @@ export function EditorSettingsPane() {
 					<SettingsRow
 						label={tAppearance("typography.headingFontEnabled.label")}
 						description={tAppearance("typography.headingFontEnabled.description")}
-						searchId="appearance-heading-font"
+						searchId={
+							headingFontEnabled.checked
+								? "appearance-heading-font-enabled"
+								: "appearance-heading-font"
+						}
 					>
 						<SettingsToggle
 							checked={headingFontEnabled.checked}
@@ -306,6 +310,7 @@ export function EditorSettingsPane() {
 							label={tAppearance("typography.headingFont.label")}
 							htmlFor="settingsHeadingFontFamily"
 							description={tAppearance("typography.headingFont.description")}
+							searchId="appearance-heading-font"
 						>
 							<SettingsSelect
 								id="settingsHeadingFontFamily"
