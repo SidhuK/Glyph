@@ -1,15 +1,15 @@
 {
-  "version": "0.8.19-alpha.6",
-  "notes": "## What's Changed\n* Revert note navigation changes causing editor flicker (#568) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/568\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.19-alpha.5...v0.8.19-alpha.6",
-  "pub_date": "2026-09-17T19:10:01.591Z",
+  "version": "0.8.19",
+  "notes": "## What's Changed\n* Add Recents tab to the sidebar by @SidhuK in https://github.com/SidhuK/Glyph/pull/558\n* Add native overflow picker for editor tabs by @SidhuK in https://github.com/SidhuK/Glyph/pull/559\n* Migrate frontend toolchain to Vite+ (#560)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/560\n* Fix translucent sidebar tab background by @SidhuK in https://github.com/SidhuK/Glyph/pull/561\n* Speed up note navigation with previews and parsed document caching by @SidhuK in https://github.com/SidhuK/Glyph/pull/562\n* Fix settings sidebar overlap at small window heights by @SidhuK in https://github.com/SidhuK/Glyph/pull/564\n* Update dark Liquid Glass icon gradient by @SidhuK in https://github.com/SidhuK/Glyph/pull/565\n* Add optional heading font setting (#566)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/566\n* Revert note navigation changes causing editor flicker (#568) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/568\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.18...v0.8.19",
+  "pub_date": "2026-09-18T06:29:43.627Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDRndWVRWWsydlRvWXVQbTlsS3hGRURFb0pYZHZDalR5Qnp4a2hqSnNFVmd0dXA2RFc5T2NnRENxeDlOL1FwaTJFbTdzbVR5NTgydGt6cGJJZ21rZlFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5NjcyMTYzCWZpbGU6R2x5cGguYXBwLnRhci5negpuQTZWYkh5dlFYTVJzWllkbkNTVUJ0RlkvQnF3c1FvbXZWZW92cHZ3cjBGOW1nL0lWUjJrNVJQMDU4ME8yWmVQTFdLY1VZejFaNTU4TlpGd2RoUWFCdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.19-alpha.6/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHhycmVUeTZTZEVJVDRkdEtOaHVmQ3VtUWFHbUJBb01URUZickhMS21JNitac2RGWHF5NU1YdkthclQzZFNzdEdZQnpSVFUrK2QweENiZGVKWGI0M3dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5NzEyOTc4CWZpbGU6R2x5cGguYXBwLnRhci5negpZYTNuWmhZdnBUdkY4Ni9sYzZXVkt2dXlBMjZKTUNIV3U2dGVjZWRJcVZIazZ6clBiK1BPM01Vb1JqV295b2VyZkhjakZnRnJETVBPZzZ5cTJKV3lCUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.19/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDRndWVRWWsydlRvWXVQbTlsS3hGRURFb0pYZHZDalR5Qnp4a2hqSnNFVmd0dXA2RFc5T2NnRENxeDlOL1FwaTJFbTdzbVR5NTgydGt6cGJJZ21rZlFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5NjcyMTYzCWZpbGU6R2x5cGguYXBwLnRhci5negpuQTZWYkh5dlFYTVJzWllkbkNTVUJ0RlkvQnF3c1FvbXZWZW92cHZ3cjBGOW1nL0lWUjJrNVJQMDU4ME8yWmVQTFdLY1VZejFaNTU4TlpGd2RoUWFCdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.19-alpha.6/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHhycmVUeTZTZEVJVDRkdEtOaHVmQ3VtUWFHbUJBb01URUZickhMS21JNitac2RGWHF5NU1YdkthclQzZFNzdEdZQnpSVFUrK2QweENiZGVKWGI0M3dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5NzEyOTc4CWZpbGU6R2x5cGguYXBwLnRhci5negpZYTNuWmhZdnBUdkY4Ni9sYzZXVkt2dXlBMjZKTUNIV3U2dGVjZWRJcVZIazZ6clBiK1BPM01Vb1JqV295b2VyZkhjakZnRnJETVBPZzZ5cTJKV3lCUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.19/Glyph_aarch64.app.tar.gz"
     }
   }
 }
