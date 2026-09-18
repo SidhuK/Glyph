@@ -34,6 +34,35 @@
 		"createdNewest": "Creadas más recientes",
 		"createdOldest": "Creadas más antiguas"
 	},
+	"folio": {
+		"collapse": "Contraer lista de notas",
+		"expand": "Expandir lista de notas",
+		"listAria": "Lista de notas",
+		"filter": "Filtrar notas",
+		"noDate": "Sin fecha",
+		"noPreview": "Sin vista previa",
+		"noFolder": "Sin carpeta",
+		"untitled": "Sin título",
+		"emptySearch": "No hay notas coincidentes.",
+		"empty": "No se encontraron notas.",
+		"filesTruncated": "Se muestran los primeros {{count}} archivos.",
+		"loadMore": "Cargar más notas",
+		"loadingMore": "Cargando más notas…",
+		"scope": {
+			"all": "Todas las notas",
+			"folder": "Carpeta · {{folder}}",
+			"tag": "Etiqueta · #{{tag}}",
+			"person": "Persona · @{{person}}",
+			"clear": "Borrar filtro de notas"
+		},
+		"delete": {
+			"confirmNote": "¿Eliminar esta nota?",
+			"confirmFile": "¿Eliminar este archivo?",
+			"title": "Confirmar eliminación",
+			"confirm": "Eliminar",
+			"cancel": "Cancelar"
+		}
+	},
 	"pinned": {
 		"title": "Fijadas",
 		"loading": "Cargando elementos fijados...",
@@ -58,6 +87,7 @@
 	},
 	"fileTree": {
 		"open": "Abrir",
+		"openInNewTab": "Abrir en una pestaña nueva",
 		"openInNewWindow": "Abrir en una ventana nueva",
 		"showInFolder": "Mostrar en la carpeta",
 		"showInFinder": "Mostrar en el Finder",
@@ -68,6 +98,10 @@
 		"pinFile": "Fijar archivo",
 		"unpinFile": "Desfijar archivo",
 		"iconAndColor": "Icono y color…",
+		"appearance": {
+			"title": "Elegir apariencia del archivo",
+			"updateFailed": "No se pudo actualizar la apariencia del archivo"
+		},
 		"addFile": "Añadir archivo",
 		"createFromTemplate": "Crear desde plantilla",
 		"addFolder": "Añadir carpeta",

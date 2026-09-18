@@ -24,6 +24,13 @@
 	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 52%, transparent);
 }
 
+.folioNotesScopeRow {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 9px;
+}
+
 .appShell.appShellSidebarCollapsed .folioNotesHeader {
 	padding-left: max(14px, var(--collapsed-sidebar-top-reserve));
 }
@@ -35,8 +42,9 @@
 }
 
 .folioNotesTitle {
+	flex: 1 1 auto;
 	min-width: 0;
-	margin: 0 0 9px;
+	margin: 0;
 	overflow: hidden;
 	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
 	font-size: calc(var(--text-base) * 0.8);
@@ -44,6 +52,28 @@
 	line-height: 1.25;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.folioNotesRestoreButton {
+	width: 30px;
+	flex: 0 0 30px;
+	align-self: stretch;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 14px 0 0;
+	border: 0;
+	border-right: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	background: var(--bg-primary);
+	color: var(--text-tertiary);
+	cursor: default;
+}
+
+.folioNotesRestoreButton:hover,
+.folioNotesRestoreButton:focus-visible {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	outline: none;
 }
 
 .folioNotesSearch {
@@ -210,6 +240,18 @@
 	border-bottom-color: transparent;
 	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
+.folioNoteRow[data-dragging="true"] {
+	opacity: 0.45;
+}
+
+@media (max-width: 900px) {
+	.folioNotesPane {
+		flex-basis: min(var(--folio-notes-width, 320px), 300px);
+		width: min(var(--folio-notes-width, 320px), 300px);
+		min-width: 220px;
+	}
 }
 
 .dark .folioNoteRow[data-state="selected"] {

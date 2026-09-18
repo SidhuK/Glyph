@@ -561,9 +561,19 @@
 			"keywords": ["asystent", "wywołania narzędzi"]
 		},
 		"appearance-layout-folio-mode": {
-			"title": "Tryb Folio",
-			"section": "Eksperymentalne",
-			"keywords": ["układ", "czytanie"]
+			"title": "Układ przestrzeni roboczej",
+			"section": "Układ",
+			"keywords": ["układ", "domyślny", "pasek boczny", "folio", "czytanie"]
+		},
+		"appearance-layout-folio-sort": {
+			"title": "Domyślne sortowanie Folio",
+			"section": "Układ",
+			"keywords": ["folio", "sortowanie", "nazwa", "zmieniono", "utworzono"]
+		},
+		"appearance-layout-folio-width": {
+			"title": "Szerokość listy notatek Folio",
+			"section": "Układ",
+			"keywords": ["folio", "szerokość", "kolumna", "rozmiar"]
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek notatki",

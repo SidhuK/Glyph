@@ -15,7 +15,9 @@ use super::relationships::{query_note_relationships, NoteRelationship};
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_matches::expand_text_matches;
 use super::search_hybrid::hybrid_search;
-use super::tags::{people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
+use super::tags::{
+    normalize_tag, person_handle_to_tag, people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE,
+};
 use super::types::{
     BacklinkItem, IndexProgress, IndexRebuildResult, LocalConnectionsEdge, LocalConnectionsNode,
     LocalConnectionsTagEdge, LocalConnectionsTagNode, LocalNoteConnections, PersonCount,
@@ -65,6 +67,12 @@ fn escape_like(value: &str) -> String {
         .replace('\\', "\\\\")
         .replace('%', "\\%")
         .replace('_', "\\_")
+}
+
+fn normalize_folder_prefix(value: Option<String>) -> Option<String> {
+    value
+        .map(|folder| folder.trim().trim_matches('/').replace('\\', "/"))
+        .filter(|folder| !folder.is_empty())
 }
 
 pub(crate) fn parse_raw_search_query(raw_query: &str, limit: Option<u32>) -> SearchAdvancedRequest {
@@ -248,13 +256,33 @@ pub async fn all_docs_list(
     limit: Option<u32>,
     offset: Option<u32>,
     folder_prefix: Option<String>,
+    tag: Option<String>,
+    person: Option<String>,
+    sort_mode: Option<String>,
+    query: Option<String>,
 ) -> Result<Vec<AllDocsItem>, String> {
     let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(2_000).clamp(1, 5_000) as i64;
     let offset = offset.unwrap_or(0) as i64;
-    let folder_prefix = folder_prefix
-        .map(|value| value.trim().trim_matches('/').replace('\\', "/"))
+    let folder_prefix = normalize_folder_prefix(folder_prefix);
+    let tag = tag.as_deref().and_then(normalize_tag);
+    let person_tag = person
+        .as_deref()
+        .and_then(person_handle_to_tag);
+    let query = query
+        .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty());
+    let order_template = match sort_mode.as_deref() {
+        Some("name-desc") => "COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE DESC, $table.path COLLATE NOCASE DESC, $table.id DESC",
+        Some("modified-asc") => "CASE WHEN $table.updated IS NULL OR $table.updated = '' THEN 1 ELSE 0 END, $table.updated ASC, COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE ASC, $table.path COLLATE NOCASE ASC, $table.id ASC",
+        Some("modified-desc") => "CASE WHEN $table.updated IS NULL OR $table.updated = '' THEN 1 ELSE 0 END, $table.updated DESC, COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE ASC, $table.path COLLATE NOCASE ASC, $table.id ASC",
+        Some("created-desc") => "CASE WHEN $table.created IS NULL OR $table.created = '' THEN 1 ELSE 0 END, $table.created DESC, COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE ASC, $table.path COLLATE NOCASE ASC, $table.id ASC",
+        Some("created-asc") => "CASE WHEN $table.created IS NULL OR $table.created = '' THEN 1 ELSE 0 END, $table.created ASC, COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE ASC, $table.path COLLATE NOCASE ASC, $table.id ASC",
+        Some("name-asc") => "COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE ASC, $table.path COLLATE NOCASE ASC, $table.id ASC",
+        _ => "$table.updated DESC, $table.id DESC",
+    };
+    let notes_order = order_template.replace("$table", "n");
+    let visible_order = order_template.replace("$table", "vn");
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<AllDocsItem>, String> {
         let conn = open_db(&root)?;
         let mut sql = String::from(
@@ -263,15 +291,45 @@ pub async fn all_docs_list(
                  FROM notes n ",
         );
         let mut params: Vec<rusqlite::types::Value> = Vec::new();
+        let mut filters: Vec<&str> = Vec::new();
         if let Some(prefix) = folder_prefix.as_ref() {
-            sql.push_str("WHERE n.path LIKE ? ESCAPE '\\' ");
+            filters.push("n.path LIKE ? ESCAPE '\\'");
             params.push(rusqlite::types::Value::from(format!(
                 "{}/%",
                 escape_like(prefix)
             )));
         }
+        if let Some(tag) = tag.as_ref() {
+            filters.push(
+                "EXISTS (SELECT 1 FROM tags filtered_tag WHERE filtered_tag.note_id = n.id AND filtered_tag.tag NOT LIKE 'people/%' AND filtered_tag.tag = ? COLLATE NOCASE)",
+            );
+            params.push(rusqlite::types::Value::from(tag.clone()));
+        }
+        if let Some(person_tag) = person_tag.as_ref() {
+            filters.push(
+                "EXISTS (SELECT 1 FROM tags filtered_person WHERE filtered_person.note_id = n.id AND filtered_person.tag = ? COLLATE NOCASE)",
+            );
+            params.push(rusqlite::types::Value::from(person_tag.clone()));
+        }
+        if let Some(query) = query.as_ref() {
+            filters.push(
+                "(n.path LIKE ? ESCAPE '\\' OR n.title LIKE ? ESCAPE '\\' OR n.preview LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM tags filtered_search WHERE filtered_search.note_id = n.id AND filtered_search.tag LIKE ? ESCAPE '\\'))",
+            );
+            let contains = format!("%{}%", escape_like(query));
+            params.push(rusqlite::types::Value::from(contains.clone()));
+            params.push(rusqlite::types::Value::from(contains.clone()));
+            params.push(rusqlite::types::Value::from(contains.clone()));
+            params.push(rusqlite::types::Value::from(contains));
+        }
+        if !filters.is_empty() {
+            sql.push_str("WHERE ");
+            sql.push_str(&filters.join(" AND "));
+            sql.push(' ');
+        }
+        sql.push_str("ORDER BY ");
+        sql.push_str(&notes_order);
         sql.push_str(
-            "ORDER BY n.updated DESC, n.id DESC LIMIT ? OFFSET ?
+            " LIMIT ? OFFSET ?
              ),
              tag_blob AS (
                  SELECT ordered_tags.note_id, GROUP_CONCAT(ordered_tags.tag, '\n') AS tags
@@ -300,8 +358,9 @@ pub async fn all_docs_list(
              FROM visible_notes vn
              LEFT JOIN tag_blob ON tag_blob.note_id = vn.id
              LEFT JOIN people_blob ON people_blob.note_id = vn.id
-             ORDER BY vn.updated DESC, vn.id DESC",
+             ORDER BY ",
         );
+        sql.push_str(&visible_order);
         params.push(rusqlite::types::Value::from(limit));
         params.push(rusqlite::types::Value::from(offset));
         let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
@@ -343,9 +402,7 @@ pub async fn all_docs_count(
     folder_prefix: Option<String>,
 ) -> Result<u32, String> {
     let root = state.root_for_window(&window)?;
-    let folder_prefix = folder_prefix
-        .map(|value| value.trim().trim_matches('/').replace('\\', "/"))
-        .filter(|value| !value.is_empty());
+    let folder_prefix = normalize_folder_prefix(folder_prefix);
     tauri::async_runtime::spawn_blocking(move || -> Result<u32, String> {
         let conn = open_db(&root)?;
         let mut sql = String::from("SELECT COUNT(*) FROM notes n ");

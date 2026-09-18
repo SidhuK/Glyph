@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type CustomTheme, customThemeId, customThemeOptions } from "../../lib/customThemes";
+import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import {
 	DEFAULT_UI_TRANSLUCENT_APP,
 	type ThemeMode,
@@ -8,10 +9,20 @@ import {
 	type UiLightThemeId,
 	loadSettings,
 } from "../../lib/settings";
-import { DURABLE_SETTINGS, writeSidebarLayout } from "../../lib/settings/definitions";
+import {
+	DEFAULT_FILE_TREE_SORT_MODE,
+	DEFAULT_FOLIO_NOTES_WIDTH,
+	DURABLE_SETTINGS,
+	MAX_FOLIO_NOTES_WIDTH,
+	MIN_FOLIO_NOTES_WIDTH,
+	isFileTreeSortMode,
+	normalizeFolioNotesWidth,
+	writeSidebarLayout,
+} from "../../lib/settings/definitions";
 import {
 	DEFAULT_SIDEBAR_ORDER,
 	DEFAULT_SIDEBAR_VISIBILITY,
+	type FileTreeSortMode,
 	type SidebarOrder,
 	type SidebarVisibility,
 	type SidebarVisibilityKey,
@@ -30,13 +41,17 @@ import {
 } from "../../lib/uiThemes";
 import { RefreshCw } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import { Input } from "../ui/shadcn/input";
 import { AppearanceAppIconCard } from "./AppearanceAppIconCard";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
+import { AppearanceLayoutPreview } from "./AppearancePreviewFrame";
 import { AppearanceSidebarItems } from "./AppearanceSidebarItems";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
+import { SettingsSegmentedPicker } from "./SettingsSegmentedPicker";
+import { SettingsSelect } from "./SettingsSelect";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
 import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
@@ -46,6 +61,17 @@ export function AppearanceSettingsPane() {
 	const { t } = useTranslation("settings.appearance");
 	const [customThemes, setCustomThemesState] = useState<CustomTheme[]>([]);
 	const [error, setError] = useState("");
+	const folioMode = useSettingsBoolean(false, DURABLE_SETTINGS.folioMode.write, setError);
+	const folioSortMode = useSettingsValue<FileTreeSortMode>(
+		DEFAULT_FILE_TREE_SORT_MODE,
+		DURABLE_SETTINGS.folioSortMode.write,
+		setError,
+	);
+	const folioNotesWidth = useSettingsValue<number>(
+		DEFAULT_FOLIO_NOTES_WIDTH,
+		DURABLE_SETTINGS.folioNotesWidth.write,
+		setError,
+	);
 	const themeMode = useSettingsValue<ThemeMode>("system", DURABLE_SETTINGS.theme.write, setError);
 	const lightThemeId = useSettingsValue<UiLightThemeId>(
 		GLYPH_DEFAULT_LIGHT_THEME_ID,
@@ -102,6 +128,20 @@ export function AppearanceSettingsPane() {
 	} = useAppearanceTypography({ setError });
 
 	const setShowColumnColorChecked = showColumnColor.setChecked;
+	const setInitialFolioMode = folioMode.setInitialChecked;
+	const workspaceLayout = folioMode.checked ? "folio" : "default";
+	const workspaceLayoutOptions = [
+		{
+			value: "default",
+			label: t("layout.folioMode.options.default.label"),
+			description: t("layout.folioMode.options.default.description"),
+		},
+		{
+			value: "folio",
+			label: t("layout.folioMode.options.folio.label"),
+			description: t("layout.folioMode.options.folio.description"),
+		},
+	] as const;
 
 	useEffect(() => {
 		let cancelled = false;
@@ -116,6 +156,9 @@ export function AppearanceSettingsPane() {
 				sidebarVisibility.setInitialValue(settings.ui.sidebarVisibility);
 				sidebarOrder.setInitialValue(settings.ui.sidebarOrder);
 				setCustomThemesState(settings.ui.customThemes);
+				setInitialFolioMode(settings.ui.folioMode);
+				folioSortMode.setInitialValue(settings.ui.folioSortMode);
+				folioNotesWidth.setInitialValue(settings.ui.folioNotesWidth);
 				setShowColumnColorChecked(settings.database.showColumnColor);
 				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
 				setInitialTypography(settings);
@@ -130,6 +173,7 @@ export function AppearanceSettingsPane() {
 		};
 	}, [
 		setShowColumnColorChecked,
+		setInitialFolioMode,
 		darkThemeId.setInitialValue,
 		lightThemeId.setInitialValue,
 		setInitialCornerRadiusStyle,
@@ -138,6 +182,8 @@ export function AppearanceSettingsPane() {
 		sidebarOrder.setInitialValue,
 		themeMode.setInitialValue,
 		translucentApp.setInitialValue,
+		folioSortMode.setInitialValue,
+		folioNotesWidth.setInitialValue,
 	]);
 
 	useTauriEvent("settings:updated", (payload) => {
@@ -160,6 +206,11 @@ export function AppearanceSettingsPane() {
 		if (payload.ui?.lightThemeId) lightThemeId.setValue(payload.ui.lightThemeId);
 		if (payload.ui?.darkThemeId) darkThemeId.setValue(payload.ui.darkThemeId);
 		applyIfBoolean(payload.ui?.translucentApp, translucentApp.setValue);
+		applyIfBoolean(payload.ui?.folioMode, folioMode.setChecked);
+		if (payload.ui?.folioSortMode) folioSortMode.setValue(payload.ui.folioSortMode);
+		if (typeof payload.ui?.folioNotesWidth === "number") {
+			folioNotesWidth.setValue(payload.ui.folioNotesWidth);
+		}
 		if (payload.ui?.cornerRadiusStyle) {
 			setCornerRadiusStyle(payload.ui.cornerRadiusStyle);
 		}
@@ -332,6 +383,72 @@ export function AppearanceSettingsPane() {
 					onMonoFontFamilyChange={onMonoFontFamilyChange}
 					onUiFontSizeChange={onUiFontSizeChange}
 				/>
+				<SettingsSection
+					title={t("layout.sectionTitle")}
+					description={t("layout.sectionDescription")}
+				>
+					<SettingsRow
+						label={t("layout.folioMode.label")}
+						description={t("layout.folioMode.description")}
+						interactive={false}
+						searchId="appearance-layout-folio-mode"
+					>
+						<SettingsSegmentedPicker
+							name="settings-workspace-layout"
+							ariaLabel={t("layout.folioMode.ariaLabel")}
+							value={workspaceLayout}
+							options={workspaceLayoutOptions}
+							disabled={folioMode.isSaving}
+							onChange={(layout) => folioMode.onCheckedChange(layout === "folio")}
+							renderPreview={(layout) => <AppearanceLayoutPreview layout={layout} />}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("layout.folioSort.label")}
+						description={t("layout.folioSort.description")}
+						interactive={false}
+						searchId="appearance-layout-folio-sort"
+					>
+						<SettingsSelect
+							aria-label={t("layout.folioSort.ariaLabel")}
+							value={folioSortMode.value}
+							disabled={folioSortMode.isSaving}
+							onChange={(event) => {
+								const nextSortMode = event.currentTarget.value;
+								if (isFileTreeSortMode(nextSortMode)) folioSortMode.onChange(nextSortMode);
+							}}
+						>
+							{FILE_TREE_SORT_MODES.map((mode) => (
+								<option key={mode} value={mode}>
+									{fileTreeSortLabel(mode)}
+								</option>
+							))}
+						</SettingsSelect>
+					</SettingsRow>
+					<SettingsRow
+						label={t("layout.folioWidth.label")}
+						description={t("layout.folioWidth.description")}
+						htmlFor="folio-notes-width"
+						searchId="appearance-layout-folio-width"
+					>
+						<Input
+							id="folio-notes-width"
+							type="number"
+							className="w-20 [font-variant-numeric:tabular-nums]"
+							min={MIN_FOLIO_NOTES_WIDTH}
+							max={MAX_FOLIO_NOTES_WIDTH}
+							step={10}
+							value={folioNotesWidth.value}
+							disabled={folioNotesWidth.isSaving}
+							aria-label={t("layout.folioWidth.ariaLabel")}
+							onChange={(event) => {
+								const nextWidth = event.currentTarget.valueAsNumber;
+								if (!Number.isFinite(nextWidth)) return;
+								folioNotesWidth.onChange(normalizeFolioNotesWidth(nextWidth));
+							}}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 				<SettingsSection
 					title={t("database.sectionTitle")}
 					description={t("database.sectionDescription")}

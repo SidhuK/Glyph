@@ -118,10 +118,32 @@
 		}
 	},
 	"layout": {
+		"sectionTitle": "레이아웃",
+		"sectionDescription": "탐색과 노트가 작업 공간을 나누는 방식을 선택합니다.",
 		"folioMode": {
-			"label": "Folio 모드",
-			"description": "탐색, 노트, 편집기를 3열 작업 공간으로 표시합니다.",
-			"ariaLabel": "Folio 모드"
+			"label": "작업 공간 레이아웃",
+			"description": "탐색, 노트 목록, 편집기의 배치를 선택합니다.",
+			"ariaLabel": "작업 공간 레이아웃",
+			"options": {
+				"default": {
+					"label": "기본",
+					"description": "사이드바 및 편집기"
+				},
+				"folio": {
+					"label": "Folio",
+					"description": "사이드바, 노트 목록 및 편집기"
+				}
+			}
+		},
+		"folioSort": {
+			"label": "기본 Folio 정렬",
+			"description": "Folio 노트 목록의 기본 파일 순서를 선택합니다.",
+			"ariaLabel": "기본 Folio 정렬"
+		},
+		"folioWidth": {
+			"label": "노트 목록 너비",
+			"description": "Folio 노트 열의 너비를 픽셀로 설정합니다. 드래그해서 조절할 수도 있습니다.",
+			"ariaLabel": "Folio 노트 목록 너비"
 		}
 	},
 	"editorPresentation": {

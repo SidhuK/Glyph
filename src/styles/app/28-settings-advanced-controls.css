@@ -185,6 +185,15 @@
 	transform: scale(0.98);
 }
 
+.settingsSegmentedTrack:has(.settingsSegmentedInput:disabled) {
+	cursor: wait;
+	opacity: 0.58;
+}
+
+.settingsSegmentedOption:has(.settingsSegmentedInput:disabled) {
+	pointer-events: none;
+}
+
 .settingsSegmentedInput {
 	position: absolute;
 	opacity: 0;
@@ -395,6 +404,77 @@
 	border-radius: var(--settings-corner-radius-preview, var(--radius-md));
 	background: color-mix(in srgb, var(--interactive-accent) 72%, var(--bg-primary));
 	box-shadow: inset 0 1px 0 color-mix(in srgb, white 22%, transparent);
+}
+
+.settingsLayoutPreviewPane {
+	gap: 3px;
+	padding: 5px;
+}
+
+.settingsLayoutPreviewWorkspace {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
+	border-radius: var(--radius-2xs);
+}
+
+.settingsLayoutPreviewSidebar,
+.settingsLayoutPreviewNoteList,
+.settingsLayoutPreviewEditor {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	gap: 2px;
+	padding: 3px 2px;
+}
+
+.settingsLayoutPreviewSidebar {
+	flex: 0 0 24%;
+	border-right: 1px solid color-mix(in srgb, var(--border-light) 58%, transparent);
+	background: color-mix(in srgb, var(--bg-tertiary) 78%, transparent);
+}
+
+.settingsLayoutPreviewNoteList {
+	flex: 0 0 32%;
+	border-right: 1px solid color-mix(in srgb, var(--border-light) 58%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 44%, transparent);
+}
+
+.settingsLayoutPreviewEditor {
+	flex: 1 1 auto;
+	padding: 4px 3px;
+}
+
+.settingsLayoutPreviewSearch,
+.settingsLayoutPreviewNote,
+.settingsLayoutPreviewTitle {
+	display: block;
+	height: 2px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--text-tertiary) 24%, transparent);
+}
+
+.settingsAppearancePreviewLine.is-active,
+.settingsLayoutPreviewNote.is-active {
+	background: color-mix(in srgb, var(--interactive-accent) 58%, transparent);
+}
+
+.settingsLayoutPreviewSearch {
+	height: 3px;
+	margin-bottom: 1px;
+}
+
+.settingsLayoutPreviewNote {
+	height: 4px;
+	background: color-mix(in srgb, var(--text-tertiary) 16%, transparent);
+}
+
+.settingsLayoutPreviewTitle {
+	width: 54%;
+	height: 3px;
+	margin-bottom: 1px;
+	background: color-mix(in srgb, var(--text-secondary) 34%, transparent);
 }
 
 .settingsAppearancePreviewPane.is-light .settingsAppearancePreviewButton,

@@ -1,13 +1,16 @@
 import { i18n } from "../../i18n";
 import { LANGUAGE_OPTIONS } from "../../i18n/locales";
+import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import { HEADING_PALETTE_OPTIONS } from "../../lib/headingPalettes";
 import {
 	type AppSettings,
 	DATE_DISPLAY_FORMAT_OPTIONS,
 	DURABLE_SETTINGS,
 	MAX_EDITOR_FONT_SIZE,
+	MAX_FOLIO_NOTES_WIDTH,
 	MAX_UI_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
+	MIN_FOLIO_NOTES_WIDTH,
 	MIN_UI_FONT_SIZE,
 	SPACE_SETTINGS,
 	loadSettings,
@@ -92,6 +95,11 @@ function bindSpaceSetting<Value extends PaletteSettingValue>(
 		},
 	};
 }
+
+const fileTreeSortOptions = FILE_TREE_SORT_MODES.map((mode) => ({
+	value: mode,
+	label: () => fileTreeSortLabel(mode),
+}));
 
 const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
@@ -342,6 +350,17 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		defaultVisible: true,
 	},
 	{
+		...bindApplicationSetting(DURABLE_SETTINGS.folioSortMode),
+		control: "choice",
+		options: fileTreeSortOptions,
+	},
+	{
+		...bindApplicationSetting(DURABLE_SETTINGS.folioNotesWidth),
+		control: "number",
+		min: MIN_FOLIO_NOTES_WIDTH,
+		max: MAX_FOLIO_NOTES_WIDTH,
+	},
+	{
 		...bindApplicationSetting(DURABLE_SETTINGS.noteSidePeek),
 		control: "toggle",
 	},
@@ -357,14 +376,7 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		...bindApplicationSetting(DURABLE_SETTINGS.fileTreeSortMode),
 		control: "choice",
 		defaultVisible: true,
-		options: [
-			{ value: "name-asc", label: "Name A–Z" },
-			{ value: "name-desc", label: "Name Z–A" },
-			{ value: "modified-desc", label: "Modified newest" },
-			{ value: "modified-asc", label: "Modified oldest" },
-			{ value: "created-desc", label: "Created newest" },
-			{ value: "created-asc", label: "Created oldest" },
-		],
+		options: fileTreeSortOptions,
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.databaseShowColumnColor),

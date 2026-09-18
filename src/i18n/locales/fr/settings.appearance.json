@@ -118,10 +118,32 @@
 		}
 	},
 	"layout": {
+		"sectionTitle": "Disposition",
+		"sectionDescription": "Choisissez comment la navigation et les notes partagent l’espace de travail.",
 		"folioMode": {
-			"label": "Mode Folio",
-			"description": "Afficher la navigation, les notes et l’éditeur dans un espace de travail à trois colonnes.",
-			"ariaLabel": "Mode Folio"
+			"label": "Disposition de l’espace de travail",
+			"description": "Choisissez comment la navigation, la liste des notes et l’éditeur sont organisés.",
+			"ariaLabel": "Disposition de l’espace de travail",
+			"options": {
+				"default": {
+					"label": "Par défaut",
+					"description": "Barre latérale et éditeur"
+				},
+				"folio": {
+					"label": "Folio",
+					"description": "Barre latérale, liste des notes et éditeur"
+				}
+			}
+		},
+		"folioSort": {
+			"label": "Tri par défaut de Folio",
+			"description": "Choisissez l’ordre initial des fichiers dans la liste de notes Folio.",
+			"ariaLabel": "Tri par défaut de Folio"
+		},
+		"folioWidth": {
+			"label": "Largeur de la liste des notes",
+			"description": "Définissez en pixels la largeur de la colonne des notes Folio. Vous pouvez aussi la redimensionner en la faisant glisser.",
+			"ariaLabel": "Largeur de la liste des notes Folio"
 		}
 	},
 	"editorPresentation": {

@@ -35,7 +35,7 @@ import { MAX_SIDEBAR_FOLDER_TABS } from "../../lib/settings/definitions";
 import { registerPreviewInvalidator } from "../../lib/spaceChange";
 import type { FileTreeAppearance, FsEntry, NoteTaskSummary } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { isDeleteKey } from "../../utils/keyboard";
+import { isDeleteKey, isEditableTarget } from "../../utils/keyboard";
 import { parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
@@ -144,15 +144,6 @@ function FileTreeRootDrop({
 		>
 			{children}
 		</div>
-	);
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-	return (
-		target instanceof HTMLInputElement ||
-		target instanceof HTMLTextAreaElement ||
-		target instanceof HTMLSelectElement ||
-		(target instanceof HTMLElement && target.isContentEditable)
 	);
 }
 
@@ -767,12 +758,12 @@ export const FileTreePane = memo(function FileTreePane({
 			} catch (error) {
 				const message = extractErrorMessage(error);
 				setError(message);
-				toast.error("Could not update file tree appearance", {
+				toast.error(t("fileTree.appearance.updateFailed"), {
 					description: message,
 				});
 			}
 		},
-		[setError, setItemAppearance],
+		[setError, setItemAppearance, t],
 	);
 
 	const handleOpenAppearancePicker = useCallback((entry: FsEntry) => {
@@ -981,7 +972,7 @@ export const FileTreePane = memo(function FileTreePane({
 			onKeyDown={handleTreeKeyDown}
 		>
 			<AppearancePicker
-				title="Choose file tree appearance"
+				title={t("fileTree.appearance.title")}
 				open={appearancePickerTarget !== null}
 				onOpenChange={(open) => {
 					if (!open) setAppearancePickerTarget(null);

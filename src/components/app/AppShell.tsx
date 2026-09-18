@@ -1389,6 +1389,10 @@ export function AppShell() {
 					openNonMarkdownExternally: fileTree.openNonMarkdownExternally,
 					onRenameDir: fileTree.onRenameDir,
 					onDeletePath: fileTree.onDeletePath,
+					onNewFileInDir: fileTree.onNewFileInDir,
+					onCreateFromTemplateInDir: (dirPath) => void openTemplatePicker(dirPath),
+					onRequestCreateFolder: (dirPath) => fileTree.requestCreateFolder(dirPath),
+					onDuplicateFile: duplicateFileWithActiveEditorFlush,
 				}}
 				onOpenFile={openWorkspaceFile}
 				onBrowseFile={openBrowseNote}

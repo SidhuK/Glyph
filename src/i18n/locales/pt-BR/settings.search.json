@@ -546,9 +546,19 @@
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
-			"title": "Modo Folio",
-			"section": "Experimental",
-			"keywords": ["layout", "leitura", "reading", "folio"]
+			"title": "Layout do espaço de trabalho",
+			"section": "Layout",
+			"keywords": ["layout", "padrão", "barra lateral", "leitura", "reading", "folio"]
+		},
+		"appearance-layout-folio-sort": {
+			"title": "Ordenação padrão do Folio",
+			"section": "Layout",
+			"keywords": ["folio", "ordenar", "nome", "modificado", "criado"]
+		},
+		"appearance-layout-folio-width": {
+			"title": "Largura da lista de notas do Folio",
+			"section": "Layout",
+			"keywords": ["folio", "largura", "coluna", "redimensionar"]
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek de nota",

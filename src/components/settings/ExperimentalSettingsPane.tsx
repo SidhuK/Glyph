@@ -25,14 +25,12 @@ function VimModeInfo() {
 
 export function ExperimentalSettingsPane() {
 	const { t } = useTranslation("settings.general");
-	const { t: tAppearance } = useTranslation("settings.appearance");
 	const queryClient = useQueryClient();
 	const [error, setError] = useState("");
 	const settingsQuery = useQuery({
 		queryKey: [SETTINGS_QUERY_ROOT],
 		queryFn: () => loadSettings(),
 	});
-	const folioMode = useSettingsBoolean(false, DURABLE_SETTINGS.folioMode.write, setError);
 	const noteSidePeek = useSettingsBoolean(false, DURABLE_SETTINGS.noteSidePeek.write, setError);
 	const legacyConnections = useSettingsBoolean(
 		false,
@@ -62,7 +60,6 @@ export function ExperimentalSettingsPane() {
 		setError,
 	);
 
-	const setInitialFolioMode = folioMode.setInitialChecked;
 	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
 	const setInitialLegacyConnections = legacyConnections.setInitialChecked;
 	const setInitialExternalLinkPreviews = externalLinkPreviews.setInitialChecked;
@@ -75,7 +72,6 @@ export function ExperimentalSettingsPane() {
 	const settings = settingsQuery.data;
 	useEffect(() => {
 		if (!settings) return;
-		setInitialFolioMode(settings.ui.folioMode);
 		setInitialNoteSidePeek(settings.ui.noteSidePeek);
 		setInitialLegacyConnections(settings.ui.legacyConnections);
 		setInitialExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
@@ -87,7 +83,6 @@ export function ExperimentalSettingsPane() {
 	}, [
 		settings,
 		setInitialExternalLinkPreviews,
-		setInitialFolioMode,
 		setInitialFormatBar,
 		setInitialZenMode,
 		setInitialNoteSidePeek,
@@ -111,17 +106,6 @@ export function ExperimentalSettingsPane() {
 					title={t("experimental.sectionTitle")}
 					description={t("experimental.sectionDescription")}
 				>
-					<SettingsRow
-						label={tAppearance("layout.folioMode.label")}
-						description={tAppearance("layout.folioMode.description")}
-					>
-						<SettingsToggle
-							checked={folioMode.checked}
-							disabled={folioMode.isSaving}
-							ariaLabel={tAppearance("layout.folioMode.ariaLabel")}
-							onCheckedChange={folioMode.onCheckedChange}
-						/>
-					</SettingsRow>
 					<SettingsRow
 						label={t("experimental.legacyConnections.label")}
 						description={t("experimental.legacyConnections.description")}

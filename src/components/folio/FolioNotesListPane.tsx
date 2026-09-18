@@ -1,23 +1,34 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { type CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type CSSProperties,
+	memo,
+	useCallback,
+	useDeferredValue,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
-
+import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
+import type { FileTreeSortMode } from "../../lib/settings";
 import {
 	DEFAULT_TAG_ICON_NAME,
 	resolveTagIconName,
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
 import type { FileTreeAppearance } from "../../lib/tauri";
-import { isDeleteKey } from "../../utils/keyboard";
-import { basename, parentDir } from "../../utils/path";
+import { toast } from "../../lib/toast";
+import { isDeleteKey, isEditableTarget } from "../../utils/keyboard";
+import { isMarkdownPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
+import { Button } from "../ui/shadcn/button";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
-import type { FolioNotesSortMode } from "./folioScopes";
 import { type FolioItem, useFolioNotes } from "./useFolioNotes";
 
 interface FolioNotesListPaneProps {
@@ -27,56 +38,26 @@ interface FolioNotesListPaneProps {
 	onNavigateBreadcrumbPath?: (dirPath: string) => void;
 	onRenameFile?: (relPath: string, nextName: string) => Promise<string | null>;
 	onDeleteFile: (relPath: string) => Promise<boolean>;
+	onNewFileInDir: (dirPath: string) => Promise<string | null>;
+	onCreateFromTemplateInDir: (dirPath: string) => void;
+	onRequestCreateFolder: (dirPath: string) => void;
+	onDuplicateFile: (path: string) => Promise<string | null>;
+	onCollapse: () => void;
 }
 
-const FOLIO_SORT_MODE_STORAGE_KEY = "glyph.folio.sortMode";
 const FOLIO_NOTE_ROW_ESTIMATE = 104;
 const FOLIO_FILE_ROW_ESTIMATE = 42;
-const titleCollator = new Intl.Collator(undefined, {
-	sensitivity: "base",
-	numeric: true,
-});
-type FolioVirtualRow = {
-	id: string;
-	kind: "note";
-	note: FolioItem;
-};
 
-function isFolioNotesSortMode(value: unknown): value is FolioNotesSortMode {
-	return value === "alphabetical" || value === "edited" || value === "created";
+function sqliteNoCase(value: string): string {
+	return value.replace(/[A-Z]/g, (character) => character.toLowerCase());
 }
 
-function readStoredFolioSortMode(): FolioNotesSortMode {
-	if (typeof window === "undefined") return "alphabetical";
-	try {
-		const value = window.localStorage.getItem(FOLIO_SORT_MODE_STORAGE_KEY);
-		return isFolioNotesSortMode(value) ? value : "alphabetical";
-	} catch {
-		return "alphabetical";
-	}
-}
-
-function writeStoredFolioSortMode(sortMode: FolioNotesSortMode) {
-	if (typeof window === "undefined") return;
-	try {
-		window.localStorage.setItem(FOLIO_SORT_MODE_STORAGE_KEY, sortMode);
-	} catch {
-		// Best-effort UI persistence.
-	}
-}
-
-function noteTitle(note: FolioItem): string {
-	const fallback = basename(note.note_path);
-	return note.title.trim() || (note.is_markdown ? fallback.replace(/\.md$/i, "") : fallback);
-}
-
-function noteMatchesFilter(note: FolioItem, query: string): boolean {
-	const normalized = query.trim().toLowerCase();
-	if (!normalized) return true;
-	const haystack = [noteTitle(note), note.preview, note.note_path, ...note.tags]
-		.join(" ")
-		.toLowerCase();
-	return haystack.includes(normalized);
+function compareSqliteNoCase(left: string, right: string): number {
+	const normalizedLeft = sqliteNoCase(left);
+	const normalizedRight = sqliteNoCase(right);
+	if (normalizedLeft < normalizedRight) return -1;
+	if (normalizedLeft > normalizedRight) return 1;
+	return 0;
 }
 
 function timestampMs(value: string | null): number | null {
@@ -85,39 +66,47 @@ function timestampMs(value: string | null): number | null {
 	return Number.isNaN(parsed) ? null : parsed;
 }
 
-function compareNullableDates(left: string | null, right: string | null): number {
+function compareNullableDates(
+	left: string | null,
+	right: string | null,
+	direction: "asc" | "desc",
+): number {
 	const leftMs = timestampMs(left);
 	const rightMs = timestampMs(right);
 	if (leftMs === null && rightMs === null) return 0;
 	if (leftMs === null) return 1;
 	if (rightMs === null) return -1;
-	return rightMs - leftMs;
+	return direction === "desc" ? rightMs - leftMs : leftMs - rightMs;
 }
 
 function compareTitles(left: FolioItem, right: FolioItem): number {
+	const leftTitle = left.title.trim() || left.note_path;
+	const rightTitle = right.title.trim() || right.note_path;
 	return (
-		titleCollator.compare(noteTitle(left), noteTitle(right)) ||
-		left.note_path.localeCompare(right.note_path)
+		compareSqliteNoCase(leftTitle, rightTitle) ||
+		compareSqliteNoCase(left.note_path, right.note_path)
 	);
 }
 
-function compareNotes(left: FolioItem, right: FolioItem, sortMode: FolioNotesSortMode): number {
-	if (sortMode === "edited") {
-		return compareNullableDates(left.updated, right.updated) || compareTitles(left, right);
+function compareNotes(left: FolioItem, right: FolioItem, sortMode: FileTreeSortMode): number {
+	switch (sortMode) {
+		case "name-desc":
+			return -compareTitles(left, right);
+		case "modified-desc":
+			return (
+				compareNullableDates(left.updated, right.updated, "desc") || compareTitles(left, right)
+			);
+		case "modified-asc":
+			return compareNullableDates(left.updated, right.updated, "asc") || compareTitles(left, right);
+		case "created-desc":
+			return (
+				compareNullableDates(left.created, right.created, "desc") || compareTitles(left, right)
+			);
+		case "created-asc":
+			return compareNullableDates(left.created, right.created, "asc") || compareTitles(left, right);
+		default:
+			return compareTitles(left, right);
 	}
-	if (sortMode === "created") {
-		return compareNullableDates(left.created, right.created) || compareTitles(left, right);
-	}
-	return compareTitles(left, right);
-}
-
-function isFolioHeaderControl(target: EventTarget | null): boolean {
-	return (
-		target instanceof HTMLInputElement ||
-		target instanceof HTMLSelectElement ||
-		target instanceof HTMLTextAreaElement ||
-		(target instanceof HTMLElement && target.isContentEditable)
-	);
 }
 
 export const FolioNotesListPane = memo(function FolioNotesListPane({
@@ -127,46 +116,43 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onNavigateBreadcrumbPath,
 	onRenameFile,
 	onDeleteFile,
+	onNewFileInDir,
+	onCreateFromTemplateInDir,
+	onRequestCreateFolder,
+	onDuplicateFile,
+	onCollapse,
 }: FolioNotesListPaneProps) {
-	const { folioScope } = useUILayoutContext();
+	const { t } = useTranslation("shell");
+	const { folioScope, folioSortMode, setFolioScope, setFolioSortMode } = useUILayoutContext();
 	const { beautifulTags, itemAppearance, setActiveDirPath, setItemAppearance, tagAppearance } =
 		useFileTreeContext();
-	const { notes, filesTruncated, error, nonMarkdownFileLimit } = useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortMode, setSortMode] = useState<FolioNotesSortMode>(readStoredFolioSortMode);
+	const deferredSearchQuery = useDeferredValue(searchQuery);
+	const {
+		notes,
+		filesTruncated,
+		error,
+		nonMarkdownFileLimit,
+		hasNextPage,
+		isFetchingNextPage,
+		isLoading,
+		fetchNextPage,
+	} = useFolioNotes(folioScope, folioSortMode, deferredSearchQuery);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
 	const sortedNotes = useMemo(
-		() => [...notes].sort((left, right) => compareNotes(left, right, sortMode)),
-		[notes, sortMode],
-	);
-	const visibleNotes = useMemo(
-		() => sortedNotes.filter((note) => noteMatchesFilter(note, searchQuery)),
-		[sortedNotes, searchQuery],
-	);
-	const virtualRows = useMemo<FolioVirtualRow[]>(
-		() =>
-			visibleNotes.map((note) => ({
-				id: `note:${note.note_path}`,
-				kind: "note",
-				note,
-			})),
-		[visibleNotes],
+		() => [...notes].sort((left, right) => compareNotes(left, right, folioSortMode)),
+		[folioSortMode, notes],
 	);
 	const selectedIndex = useMemo(
-		() => (activeTabPath ? visibleNotes.findIndex((note) => note.note_path === activeTabPath) : -1),
-		[activeTabPath, visibleNotes],
-	);
-	const selectedVirtualIndex = useMemo(
-		() =>
-			activeTabPath ? virtualRows.findIndex((row) => row.note.note_path === activeTabPath) : -1,
-		[activeTabPath, virtualRows],
+		() => (activeTabPath ? sortedNotes.findIndex((note) => note.note_path === activeTabPath) : -1),
+		[activeTabPath, sortedNotes],
 	);
 	const taskSummaryPaths = useMemo(
-		() => visibleNotes.filter((note) => note.is_markdown).map((note) => note.note_path),
-		[visibleNotes],
+		() => sortedNotes.filter((note) => note.is_markdown).map((note) => note.note_path),
+		[sortedNotes],
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(taskSummaryPaths, true);
 	const tagIconOverrides = useMemo(
@@ -181,32 +167,36 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		[beautifulTags, tagIconOverrides],
 	);
 	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLLIElement>({
-		count: virtualRows.length,
+		count: sortedNotes.length,
 		estimateSize: (index) => {
-			const row = virtualRows[index];
-			if (row && !row.note.is_markdown) return FOLIO_FILE_ROW_ESTIMATE;
+			const note = sortedNotes[index];
+			if (note && !note.is_markdown) return FOLIO_FILE_ROW_ESTIMATE;
 			return FOLIO_NOTE_ROW_ESTIMATE;
 		},
 		getScrollElement: () => listRef.current,
-		getItemKey: (index) => virtualRows[index]?.id ?? index,
+		getItemKey: (index) => sortedNotes[index]?.note_path ?? index,
 		overscan: 4,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
+	useVirtualLoadMore({
+		hasMore: hasNextPage,
+		isLoading: isFetchingNextPage,
+		onLoadMore: fetchNextPage,
+		virtualItems,
+		totalItems: sortedNotes.length,
+		remainingItems: 4,
+	});
 
 	const focusPane = useCallback(() => {
 		requestAnimationFrame(() => paneRef.current?.focus({ preventScroll: true }));
 	}, []);
-	const changeSortMode = useCallback((nextSortMode: FolioNotesSortMode) => {
-		setSortMode(nextSortMode);
-		writeStoredFolioSortMode(nextSortMode);
-	}, []);
 	const scrollNoteIntoView = useCallback(
 		(path: string) => {
-			const index = virtualRows.findIndex((row) => row.note.note_path === path);
+			const index = sortedNotes.findIndex((note) => note.note_path === path);
 			if (index < 0) return;
 			rowVirtualizer.scrollToIndex(index, { align: "auto" });
 		},
-		[rowVirtualizer, virtualRows],
+		[rowVirtualizer, sortedNotes],
 	);
 	const openNote = useCallback(
 		(path: string) => {
@@ -223,9 +213,11 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	);
 	const showNoteInFolder = useCallback(
 		(path: string) => {
-			(onNavigateBreadcrumbPath ?? setActiveDirPath)(parentDir(path));
+			const folder = parentDir(path);
+			setFolioScope(folder ? { kind: "folder", folderPrefix: folder } : { kind: "all" });
+			(onNavigateBreadcrumbPath ?? setActiveDirPath)(folder);
 		},
-		[onNavigateBreadcrumbPath, setActiveDirPath],
+		[onNavigateBreadcrumbPath, setActiveDirPath, setFolioScope],
 	);
 	const renameNote = useCallback((path: string) => {
 		setRenamingPath(path);
@@ -245,28 +237,42 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		[onRenameFile],
 	);
+	const duplicateFile = useCallback(
+		async (path: string) => {
+			const duplicatedPath = await onDuplicateFile(path);
+			if (duplicatedPath) setRenamingPath(duplicatedPath);
+		},
+		[onDuplicateFile],
+	);
 	const deleteNote = useCallback(
 		async (path: string) => {
+			const item = notes.find((note) => note.note_path === path);
+			const isMarkdown = item?.is_markdown ?? isMarkdownPath(path);
 			const { confirm } = await import("@tauri-apps/plugin-dialog");
-			const confirmed = await confirm("Delete this note?", {
-				title: "Confirm delete",
-				okLabel: "Delete",
-				cancelLabel: "Cancel",
-			});
+			const confirmed = await confirm(
+				isMarkdown ? t("folio.delete.confirmNote") : t("folio.delete.confirmFile"),
+				{
+					title: t("folio.delete.title"),
+					okLabel: t("folio.delete.confirm"),
+					cancelLabel: t("folio.delete.cancel"),
+				},
+			);
 			if (!confirmed) return;
 			await onDeleteFile(path);
 		},
-		[onDeleteFile],
+		[notes, onDeleteFile, t],
 	);
 	const changeAppearance = useCallback(
 		async (path: string, appearance: FileTreeAppearance) => {
 			try {
 				await setItemAppearance(path, appearance);
 			} catch (error) {
-				console.error("Failed to update folio file appearance", extractErrorMessage(error));
+				toast.error(t("fileTree.appearance.updateFailed"), {
+					description: extractErrorMessage(error),
+				});
 			}
 		},
-		[setItemAppearance],
+		[setItemAppearance, t],
 	);
 	const pickerAppearance = appearancePickerPath
 		? (itemAppearance[appearancePickerPath] ?? null)
@@ -288,34 +294,31 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	);
 	const openAdjacentNote = useCallback(
 		(direction: 1 | -1) => {
-			if (!visibleNotes.length || selectedIndex < 0) return;
-			const nextIndex = (selectedIndex + direction + visibleNotes.length) % visibleNotes.length;
-			const nextNote = visibleNotes[nextIndex];
+			if (!sortedNotes.length || selectedIndex < 0) return;
+			const nextIndex = (selectedIndex + direction + sortedNotes.length) % sortedNotes.length;
+			const nextNote = sortedNotes[nextIndex];
 			if (!nextNote) return;
 			scrollNoteIntoView(nextNote.note_path);
 			openNote(nextNote.note_path);
 		},
-		[openNote, scrollNoteIntoView, selectedIndex, visibleNotes],
+		[openNote, scrollNoteIntoView, selectedIndex, sortedNotes],
 	);
 
-	useEffect(() => {
-		if (!activeTabPath) return;
-		if (selectedVirtualIndex < 0) return;
-		rowVirtualizer.scrollToIndex(selectedVirtualIndex, { align: "auto" });
-	}, [activeTabPath, rowVirtualizer, selectedVirtualIndex]);
-
 	const body = (() => {
+		if (isLoading) {
+			return <div className="folioNotesState">{t("calendar.loading")}</div>;
+		}
 		if (error) {
 			return (
 				<div className="folioNotesState">
-					Could not load notes: {error instanceof Error ? error.message : String(error)}
+					{t("calendar.loadFailed", { message: extractErrorMessage(error) })}
 				</div>
 			);
 		}
-		if (!visibleNotes.length) {
+		if (!sortedNotes.length) {
 			return (
 				<div className="folioNotesState">
-					{searchQuery.trim() ? "No matching notes." : "No notes found."}
+					{searchQuery.trim() ? t("folio.emptySearch") : t("folio.empty")}
 				</div>
 			);
 		}
@@ -323,7 +326,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			<>
 				{filesTruncated ? (
 					<div className="folioNotesState">
-						Showing the first {nonMarkdownFileLimit.toLocaleString()} files.
+						{t("folio.filesTruncated", {
+							count: nonMarkdownFileLimit.toLocaleString(),
+						})}
 					</div>
 				) : null}
 				<ul
@@ -336,8 +341,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 					}
 				>
 					{virtualItems.map((virtualRow) => {
-						const row = virtualRows[virtualRow.index];
-						if (!row) return null;
+						const note = sortedNotes[virtualRow.index];
+						if (!note) return null;
 						const virtualStyle = {
 							transform: `translateY(${virtualRow.start}px)`,
 						};
@@ -348,28 +353,44 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								ref={(node) => rowVirtualizer.measureElement(node)}
 								className="folioNotesVirtualRow"
 								style={virtualStyle}
-								note={row.note}
-								selected={activeTabPath === row.note.note_path}
+								note={note}
+								selected={activeTabPath === note.note_path}
 								onOpen={openNote}
 								onOpenInNewTab={openNoteInNewTab}
 								onShowInFolder={showNoteInFolder}
 								onPrefetch={prefetchNote}
 								onRename={onRenameFile ? renameNote : undefined}
 								onDelete={deleteNote}
+								onDuplicate={duplicateFile}
+								onNewFileInDir={onNewFileInDir}
+								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+								onRequestCreateFolder={onRequestCreateFolder}
 								onFocus={focusPane}
-								isRenaming={Boolean(onRenameFile) && renamingPath === row.note.note_path}
+								isRenaming={Boolean(onRenameFile) && renamingPath === note.note_path}
 								onCommitRename={commitRename}
 								onCancelRename={cancelRename}
-								appearance={itemAppearance[row.note.note_path] ?? null}
+								appearance={itemAppearance[note.note_path] ?? null}
 								onOpenAppearancePicker={setAppearancePickerPath}
 								iconNameForTag={iconNameForTag}
 								taskSummary={
-									row.note.is_markdown ? (taskSummariesByPath?.[row.note.note_path] ?? null) : null
+									note.is_markdown ? (taskSummariesByPath?.[note.note_path] ?? null) : null
 								}
 							/>
 						);
 					})}
 				</ul>
+				{hasNextPage ? (
+					<Button
+						type="button"
+						className="mx-3 mb-2 mt-1"
+						variant="ghost"
+						size="sm"
+						disabled={isFetchingNextPage}
+						onClick={() => void fetchNextPage()}
+					>
+						{isFetchingNextPage ? t("folio.loadingMore") : t("folio.loadMore")}
+					</Button>
+				) : null}
 			</>
 		);
 	})();
@@ -378,10 +399,11 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		<aside
 			ref={paneRef}
 			className="folioNotesPane"
-			aria-label="Notes list"
+			aria-label={t("folio.listAria")}
+			aria-busy={isLoading || isFetchingNextPage}
 			tabIndex={-1}
 			onKeyDown={(event) => {
-				if (isFolioHeaderControl(event.target)) return;
+				if (isEditableTarget(event.target)) return;
 				if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 					event.preventDefault();
 					openAdjacentNote(event.key === "ArrowDown" ? 1 : -1);
@@ -389,7 +411,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				}
 				if (event.key === "Enter") {
 					event.preventDefault();
-					const note = selectedIndex >= 0 ? visibleNotes[selectedIndex] : null;
+					const note = selectedIndex >= 0 ? sortedNotes[selectedIndex] : null;
 					if (note) openNote(note.note_path);
 					return;
 				}
@@ -401,7 +423,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 					const pathFromFocusedRow = event.currentTarget.contains(row)
 						? row?.dataset.folioNotePath
 						: null;
-					const selectedNote = selectedIndex >= 0 ? visibleNotes[selectedIndex] : null;
+					const selectedNote = selectedIndex >= 0 ? sortedNotes[selectedIndex] : null;
 					const path = pathFromFocusedRow ?? selectedNote?.note_path;
 					if (!path) return;
 					event.preventDefault();
@@ -410,7 +432,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			}}
 		>
 			<AppearancePicker
-				title="Choose file appearance"
+				title={t("fileTree.appearance.title")}
 				open={appearancePickerPath !== null}
 				onOpenChange={(open) => {
 					if (!open) setAppearancePickerPath(null);
@@ -433,10 +455,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				}}
 			/>
 			<FolioScopeHeader
+				scope={folioScope}
 				searchQuery={searchQuery}
-				sortMode={sortMode}
+				sortMode={folioSortMode}
+				onClearScope={() => setFolioScope({ kind: "all" })}
+				onCollapse={onCollapse}
 				onSearchQueryChange={setSearchQuery}
-				onSortModeChange={changeSortMode}
+				onSortModeChange={setFolioSortMode}
 			/>
 			{body}
 		</aside>

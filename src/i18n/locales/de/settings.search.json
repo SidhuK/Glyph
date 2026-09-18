@@ -544,9 +544,19 @@
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
-			"title": "Folio-Modus",
-			"section": "Experimentell",
-			"keywords": ["layout", "lesen", "reading", "folio"]
+			"title": "Arbeitsbereichslayout",
+			"section": "Layout",
+			"keywords": ["layout", "standard", "seitenleiste", "lesen", "reading", "folio"]
+		},
+		"appearance-layout-folio-sort": {
+			"title": "Standard-Sortierung in Folio",
+			"section": "Layout",
+			"keywords": ["folio", "sortieren", "name", "geändert", "erstellt"]
+		},
+		"appearance-layout-folio-width": {
+			"title": "Breite der Folio-Notizenliste",
+			"section": "Layout",
+			"keywords": ["folio", "breite", "spalte", "größe"]
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Notiz-Peek",

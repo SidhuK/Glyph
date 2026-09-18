@@ -118,10 +118,32 @@
 		}
 	},
 	"layout": {
+		"sectionTitle": "Layout",
+		"sectionDescription": "Lege fest, wie Navigation und Notizen den Arbeitsbereich teilen.",
 		"folioMode": {
-			"label": "Folio-Modus",
-			"description": "Navigation, Notizen und Editor in einem dreispaltigen Arbeitsbereich anzeigen.",
-			"ariaLabel": "Folio-Modus"
+			"label": "Arbeitsbereichslayout",
+			"description": "Wähle, wie Navigation, Notizenliste und Editor angeordnet sind.",
+			"ariaLabel": "Arbeitsbereichslayout",
+			"options": {
+				"default": {
+					"label": "Standard",
+					"description": "Seitenleiste und Editor"
+				},
+				"folio": {
+					"label": "Folio",
+					"description": "Seitenleiste, Notizenliste und Editor"
+				}
+			}
+		},
+		"folioSort": {
+			"label": "Standard-Sortierung in Folio",
+			"description": "Lege die anfängliche Reihenfolge der Dateien in der Folio-Notizenliste fest.",
+			"ariaLabel": "Standard-Sortierung in Folio"
+		},
+		"folioWidth": {
+			"label": "Breite der Notizenliste",
+			"description": "Lege die Breite der Folio-Notizenspalte in Pixeln fest. Sie kann auch durch Ziehen geändert werden.",
+			"ariaLabel": "Breite der Folio-Notizenliste"
 		}
 	},
 	"editorPresentation": {

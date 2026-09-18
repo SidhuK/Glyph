@@ -204,6 +204,8 @@ export interface AppSettings {
 		fileTreeSortMode: FileTreeSortMode;
 		sidebarFolderTabs: string[];
 		folioMode: boolean;
+		folioSortMode: FileTreeSortMode;
+		folioNotesWidth: number;
 		noteSidePeek: boolean;
 		legacyConnections: boolean;
 		resumeLastSession: boolean;

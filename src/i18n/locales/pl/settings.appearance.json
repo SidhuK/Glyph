@@ -118,10 +118,32 @@
 		}
 	},
 	"layout": {
+		"sectionTitle": "Układ",
+		"sectionDescription": "Wybierz, jak nawigacja i notatki dzielą przestrzeń roboczą.",
 		"folioMode": {
-			"label": "Tryb Folio",
-			"description": "Wyświetl nawigację, notatki i edytor w trójkolumnowej przestrzeni roboczej.",
-			"ariaLabel": "Tryb Folio"
+			"label": "Układ przestrzeni roboczej",
+			"description": "Wybierz sposób rozmieszczenia nawigacji, listy notatek i edytora.",
+			"ariaLabel": "Układ przestrzeni roboczej",
+			"options": {
+				"default": {
+					"label": "Domyślny",
+					"description": "Pasek boczny i edytor"
+				},
+				"folio": {
+					"label": "Folio",
+					"description": "Pasek boczny, lista notatek i edytor"
+				}
+			}
+		},
+		"folioSort": {
+			"label": "Domyślne sortowanie Folio",
+			"description": "Wybierz początkową kolejność plików na liście notatek Folio.",
+			"ariaLabel": "Domyślne sortowanie Folio"
+		},
+		"folioWidth": {
+			"label": "Szerokość listy notatek",
+			"description": "Ustaw szerokość kolumny notatek Folio w pikselach. Możesz też zmienić ją przez przeciąganie.",
+			"ariaLabel": "Szerokość listy notatek Folio"
 		}
 	},
 	"editorPresentation": {

@@ -156,6 +156,10 @@ interface MainContentProps {
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 		onRenameDir: (path: string, nextName: string, kind: "dir" | "file") => Promise<string | null>;
 		onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
+		onNewFileInDir: (dirPath: string) => Promise<string | null>;
+		onCreateFromTemplateInDir: (dirPath: string) => void;
+		onRequestCreateFolder: (dirPath: string) => void;
+		onDuplicateFile: (path: string) => Promise<string | null>;
 	};
 	onOpenFile: (relPath: string) => Promise<void>;
 	onBrowseFile: (relPath: string) => Promise<void>;
@@ -483,6 +487,10 @@ export const MainContent = memo(function MainContent({
 							onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
 							onRenameFile={(path, nextName) => fileTree.onRenameDir(path, nextName, "file")}
 							onDeleteFile={(path) => fileTree.onDeletePath(path, "file")}
+							onNewFileInDir={fileTree.onNewFileInDir}
+							onCreateFromTemplateInDir={fileTree.onCreateFromTemplateInDir}
+							onRequestCreateFolder={fileTree.onRequestCreateFolder}
+							onDuplicateFile={fileTree.onDuplicateFile}
 						>
 							{editorCanvas}
 						</FolioWorkspace>

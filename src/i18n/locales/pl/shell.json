@@ -34,6 +34,35 @@
 		"createdNewest": "Utworzone: najnowsze",
 		"createdOldest": "Utworzone: najstarsze"
 	},
+	"folio": {
+		"collapse": "Zwiń listę notatek",
+		"expand": "Rozwiń listę notatek",
+		"listAria": "Lista notatek",
+		"filter": "Filtruj notatki",
+		"noDate": "Brak daty",
+		"noPreview": "Brak podglądu",
+		"noFolder": "Brak folderu",
+		"untitled": "Bez tytułu",
+		"emptySearch": "Brak pasujących notatek.",
+		"empty": "Nie znaleziono notatek.",
+		"filesTruncated": "Wyświetlono pierwsze {{count}} plików.",
+		"loadMore": "Wczytaj więcej notatek",
+		"loadingMore": "Wczytywanie kolejnych notatek…",
+		"scope": {
+			"all": "Wszystkie notatki",
+			"folder": "Folder · {{folder}}",
+			"tag": "Tag · #{{tag}}",
+			"person": "Osoba · @{{person}}",
+			"clear": "Wyczyść filtr notatek"
+		},
+		"delete": {
+			"confirmNote": "Usunąć tę notatkę?",
+			"confirmFile": "Usunąć ten plik?",
+			"title": "Potwierdź usunięcie",
+			"confirm": "Usuń",
+			"cancel": "Anuluj"
+		}
+	},
 	"pinned": {
 		"title": "Przypięte",
 		"loading": "Ładowanie przypiętych elementów...",
@@ -58,6 +87,7 @@
 	},
 	"fileTree": {
 		"open": "Otwórz",
+		"openInNewTab": "Otwórz w nowej karcie",
 		"openInNewWindow": "Otwórz w nowym oknie",
 		"showInFolder": "Pokaż w folderze",
 		"showInFinder": "Pokaż w programie Finder",
@@ -68,6 +98,10 @@
 		"pinFile": "Przypnij plik",
 		"unpinFile": "Odepnij plik",
 		"iconAndColor": "Ikona i kolor...",
+		"appearance": {
+			"title": "Wybierz wygląd pliku",
+			"updateFailed": "Nie udało się zmienić wyglądu pliku"
+		},
 		"addFile": "Dodaj plik",
 		"createFromTemplate": "Utwórz z szablonu",
 		"addFolder": "Dodaj folder",

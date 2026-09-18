@@ -69,7 +69,10 @@ const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
 const DEFAULT_UI_FONT_SIZE = 14;
 const DEFAULT_EDITOR_FONT_SIZE = 16;
-const DEFAULT_FILE_TREE_SORT_MODE: FileTreeSortMode = "name-asc";
+export const DEFAULT_FILE_TREE_SORT_MODE: FileTreeSortMode = "name-asc";
+export const DEFAULT_FOLIO_NOTES_WIDTH = 320;
+export const MIN_FOLIO_NOTES_WIDTH = 260;
+export const MAX_FOLIO_NOTES_WIDTH = 420;
 const DEFAULT_EDITOR_WIDTH_MODE: EditorWidthMode = "compact";
 const DEFAULT_FOCUS_MODE: FocusMode = "off";
 const DEFAULT_ATTACHMENT_STORAGE_MODE: AttachmentStorageMode = "note-folder";
@@ -240,6 +243,11 @@ export function isFileTreeSortMode(value: unknown): value is FileTreeSortMode {
 		value === "created-desc" ||
 		value === "created-asc"
 	);
+}
+
+export function normalizeFolioNotesWidth(value: unknown): number {
+	if (typeof value !== "number" || !Number.isFinite(value)) return DEFAULT_FOLIO_NOTES_WIDTH;
+	return Math.min(MAX_FOLIO_NOTES_WIDTH, Math.max(MIN_FOLIO_NOTES_WIDTH, Math.round(value)));
 }
 
 function isAiAssistantMode(value: unknown): value is "chat" | "create" {
@@ -582,6 +590,27 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("appearance-layout-folio-mode"),
 		read: (settings) => settings.ui.folioMode,
 		change: (value) => ({ ui: { folioMode: value } }),
+	}),
+	folioSortMode: defineApplicationSetting({
+		key: "ui.folio.sortMode",
+		defaultValue: DEFAULT_FILE_TREE_SORT_MODE,
+		discovery: searchable("appearance-layout-folio-sort"),
+		normalize: (value) => (isFileTreeSortMode(value) ? value : DEFAULT_FILE_TREE_SORT_MODE),
+		parse: (value) => (isFileTreeSortMode(value) ? parsed(value) : INVALID_PARSE_RESULT),
+		read: (settings) => settings.ui.folioSortMode,
+		change: (value) => ({ ui: { folioSortMode: value } }),
+	}),
+	folioNotesWidth: defineApplicationSetting({
+		key: "ui.folio.notesWidth",
+		defaultValue: DEFAULT_FOLIO_NOTES_WIDTH,
+		discovery: searchable("appearance-layout-folio-width"),
+		normalize: normalizeFolioNotesWidth,
+		parse: (value) =>
+			typeof value === "number" && Number.isFinite(value)
+				? parsed(normalizeFolioNotesWidth(value))
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.folioNotesWidth,
+		change: (value) => ({ ui: { folioNotesWidth: value } }),
 	}),
 	noteSidePeek: booleanSetting({
 		key: "ui.noteSidePeek",

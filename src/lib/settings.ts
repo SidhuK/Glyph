@@ -41,8 +41,10 @@ export {
 	DEFAULT_UI_TRANSLUCENT_APP,
 	DURABLE_SETTINGS,
 	MAX_EDITOR_FONT_SIZE,
+	MAX_FOLIO_NOTES_WIDTH,
 	MAX_UI_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
+	MIN_FOLIO_NOTES_WIDTH,
 	MIN_UI_FONT_SIZE,
 	SPACE_SETTINGS,
 	isAttachmentStorageMode,
@@ -462,6 +464,8 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 	const showNonMarkdownFiles = DURABLE_SETTINGS.showNonMarkdownFiles.load(entries);
 	const fileTreeSortMode = DURABLE_SETTINGS.fileTreeSortMode.load(entries);
 	const folioMode = DURABLE_SETTINGS.folioMode.load(entries);
+	const folioSortMode = DURABLE_SETTINGS.folioSortMode.load(entries);
+	const folioNotesWidth = DURABLE_SETTINGS.folioNotesWidth.load(entries);
 	const noteSidePeek = DURABLE_SETTINGS.noteSidePeek.load(entries);
 	const legacyConnections = DURABLE_SETTINGS.legacyConnections.load(entries);
 	const resumeLastSession = DURABLE_SETTINGS.resumeLastSession.load(entries);
@@ -616,6 +620,8 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			fileTreeSortMode,
 			sidebarFolderTabs,
 			folioMode,
+			folioSortMode,
+			folioNotesWidth,
 			noteSidePeek,
 			legacyConnections,
 			resumeLastSession,
