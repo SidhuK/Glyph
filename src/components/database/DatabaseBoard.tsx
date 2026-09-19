@@ -1,6 +1,4 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
-import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
@@ -28,7 +26,6 @@ import {
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
 import type { NoteTaskSummary } from "../../lib/tauri";
-import { Plus } from "../Icons";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import type { EditorTextColor } from "../editor/textColors";
 import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
@@ -64,7 +61,6 @@ interface DatabaseBoardProps {
 		initialValue?: { column: DatabaseColumn; laneId: string } | null,
 	) => void | Promise<void>;
 	onOpenColumns: () => void;
-	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	laneOrderByGroup?: Record<string, string[]>;
 	cardOrderByGroup?: Record<string, Record<string, string[]>>;
 	onLaneOrderChange?: (groupColumnId: string, laneOrder: string[]) => void | Promise<void>;
@@ -92,9 +88,8 @@ interface DatabaseBoardProps {
 	) => Promise<void>;
 }
 
-interface LaneEditState {
-	mode: "add" | "rename";
-	lane: DatabaseBoardLane | null;
+interface LaneRenameState {
+	lane: DatabaseBoardLane;
 	value: string;
 }
 
@@ -153,15 +148,7 @@ function formatCompactBoardDateTime(value: string, dateFormat: DateDisplayFormat
 	}
 	const month = date.toLocaleString("en-US", { month: "short" });
 	const day = date.getDate();
-	const time = date
-		.toLocaleString("en-US", {
-			hour: "numeric",
-			minute: "2-digit",
-			hour12: true,
-		})
-		.toLowerCase()
-		.replace(/\s/g, "");
-	return `${month} ${day}, ${time}`;
+	return `${month} ${day}`;
 }
 
 export function DatabaseBoard({
@@ -174,7 +161,6 @@ export function DatabaseBoard({
 	onOpenRow,
 	onCreateRow,
 	onOpenColumns,
-	onGroupColumnIdChange,
 	laneOrderByGroup = {},
 	cardOrderByGroup = {},
 	onLaneOrderChange,
@@ -199,20 +185,19 @@ export function DatabaseBoard({
 	const dateDisplayFormat = useDateDisplayFormat();
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion();
-	const { groupColumn, groupColumns, lanes, addLane, moveLaneToIndex, renameLane, moveCardToLane } =
+	const { groupColumn, groupColumns, lanes, moveLaneToIndex, renameLane, moveCardToLane } =
 		useDatabaseBoard({
 			rows,
 			columns,
 			initialGroupColumnId: persistedGroupColumnId,
 			initialLaneOrderByGroup: laneOrderByGroup,
 			initialCardOrderByGroup: cardOrderByGroup,
-			onGroupColumnIdChange,
 			onLaneOrderChange,
 			onCardOrderChange,
 		});
 	const [moveError, setMoveError] = useState("");
-	const [laneEdit, setLaneEdit] = useState<LaneEditState | null>(null);
-	const boardShellRef = useRef<HTMLDivElement | null>(null);
+	const [laneRename, setLaneRename] = useState<LaneRenameState | null>(null);
+	const boardScrollRef = useRef<HTMLDivElement | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const suppressClickRef = useRef(false);
 
@@ -258,38 +243,27 @@ export function DatabaseBoard({
 		[groupColumn, onCreateRow],
 	);
 
-	const handleAddLane = useCallback(() => {
-		if (!groupColumn || !canManageLanes) return;
-		setMoveError("");
-		setLaneEdit({ mode: "add", lane: null, value: "" });
-	}, [canManageLanes, groupColumn]);
-
 	const handleRenameLane = useCallback(
 		(lane: DatabaseBoardLane) => {
 			if (!groupColumn || !canManageLanes) return;
 			setMoveError("");
-			setLaneEdit({ mode: "rename", lane, value: lane.label });
+			setLaneRename({ lane, value: lane.label });
 		},
 		[canManageLanes, groupColumn],
 	);
 
-	const commitLaneEdit = useCallback(async () => {
-		if (!laneEdit || !groupColumn || !canManageLanes) return;
-		const laneId = boardLaneIdFromLabel(groupColumn, laneEdit.value);
+	const commitLaneRename = useCallback(async () => {
+		if (!laneRename || !groupColumn || !canManageLanes) return;
+		const laneId = boardLaneIdFromLabel(groupColumn, laneRename.value);
 		if (!laneId) return;
-		if (lanes.some((lane) => lane.id === laneId && lane.id !== laneEdit.lane?.id)) {
+		if (lanes.some((lane) => lane.id === laneId && lane.id !== laneRename.lane.id)) {
 			setMoveError(`"${laneId}" already exists.`);
 			return;
 		}
 		setMoveError("");
-		if (laneEdit.mode === "add") {
-			addLane(laneId);
-			setLaneEdit(null);
-			return;
-		}
-		const lane = laneEdit.lane;
-		if (!lane || laneId === lane.id) {
-			setLaneEdit(null);
+		const lane = laneRename.lane;
+		if (laneId === lane.id) {
+			setLaneRename(null);
 			return;
 		}
 		try {
@@ -309,11 +283,11 @@ export function DatabaseBoard({
 				}),
 			);
 			renameLane(lane.id, laneId);
-			setLaneEdit(null);
+			setLaneRename(null);
 		} catch (error) {
 			setMoveError(extractErrorMessage(error));
 		}
-	}, [addLane, canManageLanes, groupColumn, laneEdit, lanes, onSaveCell, renameLane]);
+	}, [canManageLanes, groupColumn, laneRename, lanes, onSaveCell, renameLane]);
 
 	const handleLaneDrop = useCallback(
 		async (
@@ -384,55 +358,53 @@ export function DatabaseBoard({
 	);
 
 	useSentinelLoadMore({
-		hasMore: hasMoreRows,
+		hasMore: hasMoreRows && groupColumns.length > 0,
 		isLoading: isLoadingMoreRows,
 		onLoadMore: onLoadMoreRows,
-		rootRef: boardShellRef,
+		rootRef: boardScrollRef,
 		sentinelRef: loadMoreRef,
 		rootMargin: "480px 0px",
 	});
 
 	return (
-		<div ref={boardShellRef} className="databaseBoardShell">
+		<div className="databaseBoardShell">
 			<Dialog
-				open={laneEdit != null}
+				open={laneRename != null}
 				onOpenChange={(open) => {
-					if (!open) setLaneEdit(null);
+					if (!open) setLaneRename(null);
 				}}
 			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>{laneEdit?.mode === "rename" ? "Rename lane" : "Add lane"}</DialogTitle>
+						<DialogTitle>Rename lane</DialogTitle>
 						<DialogDescription>
 							{groupColumn
-								? laneEdit?.mode === "rename"
-									? `Rename this ${groupColumn.label.toLowerCase()} lane. Cards here keep that value.`
-									: `Cards you add or move here will get this ${groupColumn.label.toLowerCase()}.`
-								: "Set the value for this board lane."}
+								? `Rename this ${groupColumn.label.toLowerCase()} lane. Cards here keep that value.`
+								: "Rename this board lane."}
 						</DialogDescription>
 					</DialogHeader>
 					<form
 						className="grid gap-4"
 						onSubmit={(event) => {
 							event.preventDefault();
-							void commitLaneEdit();
+							void commitLaneRename();
 						}}
 					>
 						<Input
 							autoFocus
-							value={laneEdit?.value ?? ""}
+							value={laneRename?.value ?? ""}
 							aria-label="Lane name"
 							onChange={(event) =>
-								setLaneEdit((current) =>
+								setLaneRename((current) =>
 									current ? { ...current, value: event.target.value } : current,
 								)
 							}
 						/>
 						<DialogFooter>
-							<Button type="button" variant="outline" onClick={() => setLaneEdit(null)}>
+							<Button type="button" variant="outline" onClick={() => setLaneRename(null)}>
 								Cancel
 							</Button>
-							<Button type="submit">{laneEdit?.mode === "rename" ? "Rename" : "Add"}</Button>
+							<Button type="submit">Rename</Button>
 						</DialogFooter>
 					</form>
 				</DialogContent>
@@ -467,7 +439,7 @@ export function DatabaseBoard({
 				</m.div>
 			) : (
 				<DragDropProvider onDragEnd={handleDragEnd}>
-					<div className="databaseBoardHorizontal">
+					<div ref={boardScrollRef} className="databaseBoardHorizontal">
 						<div className="databaseBoardScroller">
 							{lanes.map((lane, laneIndex) => (
 								<DatabaseBoardLaneView
@@ -482,7 +454,7 @@ export function DatabaseBoard({
 									isTagGroup={isTagGroup}
 									shouldReduceMotion={shouldReduceMotion}
 									onLaneColorChange={isPriorityGroup ? null : handleLaneColorChange}
-									onAddLane={canManageLanes ? handleAddLane : undefined}
+									onAddCard={onCreateRow ? () => handleCreateRowInLane(lane.id) : undefined}
 									onRenameLane={canManageLanes ? handleRenameLane : undefined}
 									reorderableLanes={reorderableLanes}
 									moveLaneToIndex={moveLaneToIndex}
@@ -490,9 +462,8 @@ export function DatabaseBoard({
 									{lane.rows.length > 0 ? (
 										lane.rows.map((row) => {
 											const title = boardCardTitle(row, lane.label);
-											const maxVisibleTags = 2;
-											const visibleTags = row.tags.slice(0, maxVisibleTags);
-											const extraTagCount = Math.max(row.tags.length - maxVisibleTags, 0);
+											const visibleTags = row.tags.slice(0, 1);
+											const extraTagCount = Math.max(row.tags.length - 1, 0);
 											const statusValues = boardCardTextPropertyValues(row, "status");
 											const maxVisibleStatuses = 2;
 											const visibleStatuses = statusValues.slice(0, maxVisibleStatuses);
@@ -519,6 +490,10 @@ export function DatabaseBoard({
 												row.note_path,
 												noteAppearance,
 											);
+											const hasStatusOrPriority =
+												(isCardFieldVisible("status") && visibleStatuses.length > 0) ||
+												(isCardFieldVisible("priority") && visiblePriorities.length > 0);
+											const hasTags = isCardFieldVisible("tags") && visibleTags.length > 0;
 											const otherLanes = lanes.filter(
 												(l) =>
 													l.id !== lane.id &&
@@ -556,7 +531,7 @@ export function DatabaseBoard({
 														});
 													}}
 												>
-													<div className="databaseBoardCardHead">
+													<div className="databaseBoardCardMain">
 														<div className="databaseBoardCardHeaderRow">
 															<span className="databaseBoardCardTitle" style={noteAppearanceStyle}>
 																<DatabaseNoteAppearanceIcon
@@ -567,21 +542,6 @@ export function DatabaseBoard({
 																/>
 																{title}
 															</span>
-															{isCardFieldVisible("date") ? (
-																<div className="databaseBoardCardTitleMeta">
-																	<span
-																		className="databaseBoardCardTimestamp"
-																		title={`Updated ${updatedLabel}`}
-																	>
-																		<HugeiconsIcon
-																			icon={Calendar03Icon}
-																			size="var(--icon-xs)"
-																			aria-hidden="true"
-																		/>
-																		{compactUpdatedLabel}
-																	</span>
-																</div>
-															) : null}
 															{isCardFieldVisible("task_progress") &&
 															taskSummary.total_count > 0 ? (
 																<TaskProgressIndicator
@@ -590,62 +550,77 @@ export function DatabaseBoard({
 																/>
 															) : null}
 														</div>
-													</div>
-													{(isCardFieldVisible("status") && visibleStatuses.length > 0) ||
-													(isCardFieldVisible("priority") && visiblePriorities.length > 0) ? (
-														<div className="databaseBoardCardMetaRow">
-															<div className="databaseBoardCardMetaGroup">
-																{isCardFieldVisible("status") &&
-																	visibleStatuses.map((status, statusIndex) => (
-																		<StatusPropertyPill
-																			key={`${row.note_path}:status:${statusIndex}:${status}`}
-																			value={status}
-																			colors={statusColors}
-																			className="databaseBoardCardStatus"
-																		/>
-																	))}
-																{isCardFieldVisible("status") && extraStatusCount > 0 ? (
-																	<span className="databaseBoardTag is-muted">
-																		+{extraStatusCount}
-																	</span>
-																) : null}
-															</div>
-															<div className="databaseBoardCardMetaGroup is-priority">
-																{isCardFieldVisible("priority") &&
-																	visiblePriorities.map((priority, priorityIndex) => (
-																		<PriorityPropertyPill
-																			key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
-																			value={priority}
-																			className="databaseBoardCardStatus"
-																		/>
-																	))}
-																{isCardFieldVisible("priority") && extraPriorityCount > 0 ? (
-																	<span className="databaseBoardTag is-muted">
-																		+{extraPriorityCount}
-																	</span>
-																) : null}
-															</div>
-														</div>
-													) : null}
-													{isCardFieldVisible("tags") && visibleTags.length > 0 ? (
-														<div className="databaseBoardCardTags">
-															{visibleTags.map((tag) => (
+														{isCardFieldVisible("date") ? (
+															<div className="databaseBoardCardSubline">
 																<span
-																	key={`${row.note_path}:${tag}`}
-																	className="databaseBoardTag"
-																	data-beautiful-tags={beautifulTags ? "true" : undefined}
-																	title={formatDatabaseTagLabel(tag)}
+																	className="databaseBoardCardTimestamp"
+																	title={`Updated ${updatedLabel}`}
 																>
-																	<DatabaseColumnIcon
-																		iconName={iconNameForTag(tag)}
-																		className="databaseTagPillIcon"
-																		size="var(--icon-xs)"
-																	/>
-																	{formatDatabaseTagLabel(tag)}
+																	{compactUpdatedLabel}
 																</span>
-															))}
-															{extraTagCount > 0 ? (
-																<span className="databaseBoardTag is-muted">+{extraTagCount}</span>
+															</div>
+														) : null}
+													</div>
+													{hasStatusOrPriority || hasTags ? (
+														<div className="databaseBoardCardFooter">
+															{hasStatusOrPriority ? (
+																<div className="databaseBoardCardMetaRow">
+																	<div className="databaseBoardCardMetaGroup">
+																		{isCardFieldVisible("status") &&
+																			visibleStatuses.map((status, statusIndex) => (
+																				<StatusPropertyPill
+																					key={`${row.note_path}:status:${statusIndex}:${status}`}
+																					value={status}
+																					colors={statusColors}
+																					className="databaseBoardCardStatus"
+																				/>
+																			))}
+																		{isCardFieldVisible("status") && extraStatusCount > 0 ? (
+																			<span className="databaseBoardTag is-muted">
+																				+{extraStatusCount}
+																			</span>
+																		) : null}
+																	</div>
+																	<div className="databaseBoardCardMetaGroup">
+																		{isCardFieldVisible("priority") &&
+																			visiblePriorities.map((priority, priorityIndex) => (
+																				<PriorityPropertyPill
+																					key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
+																					value={priority}
+																					className="databaseBoardCardStatus"
+																				/>
+																			))}
+																		{isCardFieldVisible("priority") && extraPriorityCount > 0 ? (
+																			<span className="databaseBoardTag is-muted">
+																				+{extraPriorityCount}
+																			</span>
+																		) : null}
+																	</div>
+																</div>
+															) : null}
+															{hasTags ? (
+																<div className="databaseBoardCardTags">
+																	{visibleTags.map((tag) => (
+																		<span
+																			key={`${row.note_path}:${tag}`}
+																			className="databaseBoardTag"
+																			data-beautiful-tags={beautifulTags ? "true" : undefined}
+																			title={formatDatabaseTagLabel(tag)}
+																		>
+																			<DatabaseColumnIcon
+																				iconName={iconNameForTag(tag)}
+																				className="databaseTagPillIcon"
+																				size="var(--icon-xs)"
+																			/>
+																			{formatDatabaseTagLabel(tag)}
+																		</span>
+																	))}
+																	{extraTagCount > 0 ? (
+																		<span className="databaseBoardTag is-muted">
+																			+{extraTagCount}
+																		</span>
+																	) : null}
+																</div>
 															) : null}
 														</div>
 													) : null}
@@ -663,40 +638,15 @@ export function DatabaseBoard({
 														: "Drop notes here or add one below"}
 										</div>
 									)}
-									{onCreateRow ? (
-										<button
-											type="button"
-											className="databaseBoardAddCardButton"
-											onClick={() => handleCreateRowInLane(lane.id)}
-											title={`Add note to ${lane.label}`}
-											aria-label={`Add note to ${lane.label}`}
-										>
-											<span className="databaseBoardAddCardIcon" aria-hidden="true">
-												<Plus size="var(--icon-sm)" />
-											</span>
-											<span className="databaseBoardAddCardLabel">New</span>
-										</button>
-									) : null}
 								</DatabaseBoardLaneView>
 							))}
-							{canManageLanes ? (
-								<button
-									type="button"
-									className="databaseBoardAddLaneButton"
-									onClick={handleAddLane}
-									title="Add lane"
-									aria-label="Add board lane"
-								>
-									<Plus size="var(--icon-md)" aria-hidden="true" />
-								</button>
-							) : null}
 						</div>
+						{hasMoreRows ? (
+							<div ref={loadMoreRef} className="databaseBoardLoadMoreSentinel" aria-hidden="true" />
+						) : null}
 					</div>
 				</DragDropProvider>
 			)}
-			{hasMoreRows ? (
-				<div ref={loadMoreRef} className="databaseBoardLoadMoreSentinel" aria-hidden="true" />
-			) : null}
 		</div>
 	);
 }

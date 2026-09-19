@@ -76,7 +76,12 @@
 		"allNotesCollection": "All notes"
 	},
 	"collections": {
+		"addView": "Add view",
+		"clearSearch": "Clear search",
+		"delete": "Delete collection",
+		"options": "Collection options",
 		"pin": "Pin collection",
+		"searchView": "Search this view",
 		"unpin": "Unpin collection",
 		"unpinNamed": "Unpin {{name}}",
 		"unpinFailed": "Could not unpin collection"

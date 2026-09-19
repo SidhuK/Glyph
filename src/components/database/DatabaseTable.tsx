@@ -67,7 +67,7 @@ interface DatabaseTableProps {
 const EMPTY_LANE_COLORS: Record<string, string> = {};
 const EMPTY_CARD_ORDER: Record<string, string[]> = {};
 const DATABASE_TABLE_ROW_HEIGHT = 38;
-const DATABASE_TABLE_GROUP_ROW_HEIGHT = 34;
+const DATABASE_TABLE_GROUP_ROW_HEIGHT = 38;
 
 type DatabaseDisplayItem =
 	| {

@@ -100,7 +100,7 @@
 
 .databaseToolbarInline .databaseToolbarActions {
 	margin-left: auto;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	justify-content: flex-end;
 }
 
@@ -114,8 +114,8 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	width: min(220px, 28vw);
-	min-width: 150px;
+	width: min(200px, 24vw);
+	min-width: 132px;
 	height: var(--database-control-height);
 	padding: 0 7px;
 	border: 1px solid var(--database-control-border);
@@ -124,10 +124,6 @@
 	color: var(--text-tertiary);
 	margin-right: 8px;
 	cursor: text;
-}
-
-.databaseToolbarSearchButton {
-	margin-right: 8px;
 }
 
 .databaseToolbarSearch:focus-within {
@@ -171,9 +167,15 @@
 }
 
 .databaseToolbarChip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: var(--database-control-height);
+	padding: 0 9px;
 	border-radius: var(--database-radius-md);
-	border-color: var(--border-light);
-	background: var(--bg-primary);
+	border: 1px solid var(--database-control-border);
+	background: var(--database-control-background);
 	color: var(--text-secondary);
 	transition:
 		transform 180ms ease,
@@ -195,13 +197,15 @@
 	color: var(--text-primary);
 }
 
-/* New note: filled accent icon */
 .databaseToolbarChip[data-kind="new-note"] > svg {
 	color: var(--interactive-accent);
 }
 
-.databaseToolbarChip[data-kind="new-note"] > svg path {
-	fill: currentcolor;
+.databaseToolbarChip[data-kind="new-note"] {
+	padding-inline: 10px 12px;
+	font-size: calc(var(--text-base) * 0.86);
+	font-weight: var(--font-semibold);
+	box-shadow: none;
 }
 
 .databaseToolbarGroupBy {
@@ -221,7 +225,7 @@
 
 .databaseToolbarGroupBySelect {
 	box-sizing: border-box;
-	height: 32px;
+	height: var(--database-control-height);
 	padding: 2px 28px 2px 10px;
 	border-radius: var(--database-control-radius);
 	border: 1px solid var(--database-control-border);

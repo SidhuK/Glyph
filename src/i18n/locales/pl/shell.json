@@ -67,7 +67,12 @@
 		"allNotesCollection": "Wszystkie notatki"
 	},
 	"collections": {
+		"addView": "Dodaj widok",
+		"clearSearch": "Wyczyść wyszukiwanie",
+		"delete": "Usuń kolekcję",
+		"options": "Opcje kolekcji",
 		"pin": "Przypnij",
+		"searchView": "Przeszukaj ten widok",
 		"unpin": "Odepnij",
 		"unpinNamed": "Odepnij {{name}}",
 		"unpinFailed": "Nie można odpiąć kolekcji"

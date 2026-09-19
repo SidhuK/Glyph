@@ -1,11 +1,11 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
 import { Search, X } from "../Icons";
-import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseViewOptionsPopover } from "./DatabaseViewOptionsPopover";
 
@@ -21,6 +21,8 @@ interface DatabaseToolbarProps {
 	onViewOptionsOpenChange?: (open: boolean) => void;
 	className?: string;
 }
+
+const DATABASE_SEARCH_DEBOUNCE_MS = 300;
 
 function groupColumnOptionLabel(column: DatabaseColumn): string {
 	if (column.type === "tags" || column.property_kind === "tags") {
@@ -44,31 +46,32 @@ export function DatabaseToolbar({
 	onViewOptionsOpenChange,
 	className,
 }: DatabaseToolbarProps) {
+	const { t } = useTranslation("shell");
 	const searchValue = config.view.search ?? "";
 	const searchInputId = useId();
-	const searchInputRef = useRef<HTMLInputElement | null>(null);
-	const justExpandedRef = useRef(false);
 	const configRef = useRef(config);
-	const [searchDraft, setSearchDraft] = useState(searchValue);
-	const [searchExpanded, setSearchExpanded] = useState(Boolean(searchValue));
+	const [searchState, setSearchState] = useState({
+		draft: searchValue,
+		source: searchValue,
+	});
+	if (searchState.source !== searchValue) {
+		setSearchState({ draft: searchValue, source: searchValue });
+	}
+	const searchDraft = searchState.source === searchValue ? searchState.draft : searchValue;
+	const setSearchDraft = (draft: string) => {
+		setSearchState({ draft, source: searchValue });
+	};
 	configRef.current = config;
-	const hasSelectedGroupColumn =
-		groupColumnId != null && groupColumns.some((column) => column.id === groupColumnId);
 	const selectedGroupColumn =
-		(hasSelectedGroupColumn ? groupColumns.find((column) => column.id === groupColumnId) : null) ??
+		groupColumns.find((column) => column.id === groupColumnId) ??
 		(databaseView === "board" ? groupColumns[0] : null) ??
 		null;
-	const selectedGroupColumnId =
-		selectedGroupColumn?.id ?? (databaseView === "board" ? groupColumns[0]?.id : "") ?? "";
+	const selectedGroupColumnId = selectedGroupColumn?.id ?? "";
 	const groupByLabel = "Grouped by";
 
 	useEffect(() => {
-		setSearchDraft(searchValue);
-		if (searchValue) setSearchExpanded(true);
-	}, [searchValue]);
-
-	useEffect(() => {
 		if (searchDraft === searchValue) return;
+		// Search is durable view configuration, so avoid saving the database on every keystroke.
 		const timer = window.setTimeout(() => {
 			const latestConfig = configRef.current;
 			void onChangeConfig({
@@ -78,72 +81,41 @@ export function DatabaseToolbar({
 					search: searchDraft,
 				},
 			});
-		}, 300);
+		}, DATABASE_SEARCH_DEBOUNCE_MS);
 		return () => window.clearTimeout(timer);
 	}, [onChangeConfig, searchDraft, searchValue]);
-
-	useEffect(() => {
-		if (!searchExpanded || !justExpandedRef.current) return;
-		justExpandedRef.current = false;
-		searchInputRef.current?.focus();
-	}, [searchExpanded]);
 
 	return (
 		<div className={["databaseToolbar", className].filter(Boolean).join(" ")}>
 			<div className="databaseToolbarActions">
-				{searchExpanded || searchDraft ? (
-					<label className="databaseToolbarSearch" htmlFor={searchInputId}>
-						<Search size="var(--icon-sm)" aria-hidden="true" />
-						<Input
-							ref={searchInputRef}
-							id={searchInputId}
-							className="databaseToolbarSearchInput"
-							value={searchDraft}
-							placeholder="Search this view"
-							aria-label="Search this view"
-							onBlur={() => {
-								if (!searchDraft) setSearchExpanded(false);
-							}}
-							onKeyDown={(event) => {
-								if (event.key !== "Escape") return;
-								event.preventDefault();
-								setSearchDraft("");
-								setSearchExpanded(false);
-							}}
-							onChange={(event) => setSearchDraft(event.target.value)}
-						/>
-						{searchDraft ? (
-							<button
-								type="button"
-								className="databaseToolbarSearchClear"
-								onMouseDown={(event) => event.preventDefault()}
-								onClick={() => {
-									setSearchDraft("");
-									setSearchExpanded(false);
-								}}
-								title="Clear search"
-								aria-label="Clear search"
-							>
-								<X size="var(--icon-sm)" />
-							</button>
-						) : null}
-					</label>
-				) : (
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						className="databaseToolbarChip databaseToolbarSearchButton"
-						onClick={() => {
-							justExpandedRef.current = true;
-							setSearchExpanded(true);
+				<label className="databaseToolbarSearch" htmlFor={searchInputId}>
+					<Search size="var(--icon-sm)" aria-hidden="true" />
+					<Input
+						id={searchInputId}
+						className="databaseToolbarSearchInput"
+						value={searchDraft}
+						placeholder={t("collections.searchView")}
+						aria-label={t("collections.searchView")}
+						onKeyDown={(event) => {
+							if (event.key !== "Escape") return;
+							event.preventDefault();
+							setSearchDraft("");
 						}}
-						title="Search view"
-						aria-label="Search view"
-					>
-						<Search size="var(--icon-sm)" />
-					</Button>
-				)}
+						onChange={(event) => setSearchDraft(event.target.value)}
+					/>
+					{searchDraft ? (
+						<button
+							type="button"
+							className="databaseToolbarSearchClear"
+							onMouseDown={(event) => event.preventDefault()}
+							onClick={() => setSearchDraft("")}
+							title={t("collections.clearSearch")}
+							aria-label={t("collections.clearSearch")}
+						>
+							<X size="var(--icon-sm)" />
+						</button>
+					) : null}
+				</label>
 				{groupColumns.length > 0 ? (
 					<label className="databaseToolbarGroupBy">
 						<span className="databaseToolbarGroupByLabel">{groupByLabel}</span>

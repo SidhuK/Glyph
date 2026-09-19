@@ -30,7 +30,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath, parentDir } from "../../utils/path";
 import type { PaneErrorHandlers, SaveDatabaseInput } from "./types";
 
-export interface UseCollectionWorkspaceOptions extends PaneErrorHandlers {
+interface UseCollectionWorkspaceOptions extends PaneErrorHandlers {
 	databasesOpenRequest: DatabasesOpenRequest;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 }
@@ -328,7 +328,6 @@ export function useCollectionWorkspace({
 		summaries,
 		selectedDatabaseId,
 		setSelectedDatabaseId,
-		loadSummaries,
 		createCollectionOpen,
 		setCreateCollectionOpen,
 		openCreateCollectionDialog,

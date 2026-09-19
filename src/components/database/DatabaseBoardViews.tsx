@@ -20,6 +20,7 @@ import {
 } from "../../lib/nativeContextMenu";
 import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
+import { Plus } from "../Icons";
 import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
 import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
@@ -53,7 +54,7 @@ interface DatabaseBoardLaneViewProps {
 	isTagGroup: boolean;
 	shouldReduceMotion: boolean | null;
 	onLaneColorChange?: ((laneId: string, color: EditorTextColor | null) => void) | null;
-	onAddLane?: () => void;
+	onAddCard?: () => void;
 	onRenameLane?: (lane: DatabaseBoardLane) => void;
 	reorderableLanes: DatabaseBoardLane[];
 	moveLaneToIndex: (sourceLaneId: string, targetIndex: number) => void;
@@ -71,7 +72,7 @@ export function DatabaseBoardLaneView({
 	isTagGroup,
 	shouldReduceMotion,
 	onLaneColorChange,
-	onAddLane,
+	onAddCard,
 	onRenameLane,
 	reorderableLanes,
 	moveLaneToIndex,
@@ -92,22 +93,14 @@ export function DatabaseBoardLaneView({
 						},
 					]
 				: []),
-			...(onAddLane
-				? [
-						{
-							label: "Add lane",
-							action: onAddLane,
-						},
-					]
-				: []),
-			...(onRenameLane || onAddLane ? [{ type: "separator" as const }] : []),
+			...(onRenameLane ? [{ type: "separator" as const }] : []),
 			...reorderableLanes.map((targetLane, index) => ({
 				label: `Position ${index + 1}: ${targetLane.label}`,
 				enabled: targetLane.id !== lane.id,
 				action: () => moveLaneToIndex(lane.id, index),
 			})),
 		],
-		[lane, moveLaneToIndex, onAddLane, onRenameLane, reorderableLanes],
+		[lane, moveLaneToIndex, onRenameLane, reorderableLanes],
 	);
 	const handleLaneContextMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
@@ -177,50 +170,63 @@ export function DatabaseBoardLaneView({
 			}
 		>
 			<div className="databaseBoardLaneHeader">
-				{onLaneColorChange ? (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<button
-								type="button"
-								className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
-								aria-label={`Set color for ${lane.label}`}
-								title={`Set color for ${lane.label}`}
-							>
-								{laneTitleContent}
-							</button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="start" className="databaseBoardColorMenu">
-							<div className="databaseBoardColorRibbon">
-								{EDITOR_TEXT_COLORS.map((color) => (
-									<button
-										key={color.id}
-										type="button"
-										className="databaseBoardColorRibbonSwatch"
-										style={databaseValueToneStyleForColor(color.id, color.id)}
-										onClick={() => onLaneColorChange(lane.id, color.id)}
-										title={color.label}
-										aria-label={`Set ${lane.label} color to ${color.label}`}
-									/>
-								))}
+				<div className="databaseBoardLaneTitleSection">
+					{onLaneColorChange ? (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
 								<button
 									type="button"
-									className="databaseBoardColorRibbonClear"
-									onClick={() => onLaneColorChange(lane.id, null)}
-									title="Clear color"
-									aria-label={`Clear color for ${lane.label}`}
+									className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
+									aria-label={`Set color for ${lane.label}`}
+									title={`Set color for ${lane.label}`}
 								>
-									<span />
+									{laneTitleContent}
 								</button>
-							</div>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				) : (
-					<div className="databaseBoardLaneTitleGroup">{laneTitleContent}</div>
-				)}
-				<div className="databaseBoardLaneHeaderActions">
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="start" className="databaseBoardColorMenu">
+								<div className="databaseBoardColorRibbon">
+									{EDITOR_TEXT_COLORS.map((color) => (
+										<button
+											key={color.id}
+											type="button"
+											className="databaseBoardColorRibbonSwatch"
+											style={databaseValueToneStyleForColor(color.id, color.id)}
+											onClick={() => onLaneColorChange(lane.id, color.id)}
+											title={color.label}
+											aria-label={`Set ${lane.label} color to ${color.label}`}
+										/>
+									))}
+									<button
+										type="button"
+										className="databaseBoardColorRibbonClear"
+										onClick={() => onLaneColorChange(lane.id, null)}
+										title="Clear color"
+										aria-label={`Clear color for ${lane.label}`}
+									>
+										<span />
+									</button>
+								</div>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					) : (
+						<div className="databaseBoardLaneTitleGroup">{laneTitleContent}</div>
+					)}
 					<span className="databaseBoardLaneCount" aria-label={`${lane.cardCount} cards`}>
 						{lane.cardCount}
 					</span>
+				</div>
+				<div className="databaseBoardLaneHeaderActions">
+					{onAddCard ? (
+						<button
+							type="button"
+							className="databaseBoardLaneAddCardButton"
+							onClick={onAddCard}
+							aria-label={`Add note to ${lane.label}`}
+							title={`Add note to ${lane.label}`}
+						>
+							<Plus size="var(--icon-sm)" aria-hidden="true" />
+						</button>
+					) : null}
 					<button
 						type="button"
 						className="databaseBoardLaneHandle"

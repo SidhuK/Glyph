@@ -1,10 +1,12 @@
 import type { WorkspaceDatabaseSummary } from "../tauri";
 import type { ActionMenuItem } from "./actionMenuItems";
 
-export type DatabaseViewLayout = "table" | "board";
+type DatabaseViewLayout = "table" | "board";
 
-export interface ViewMenuActions {
+interface ViewMenuActions {
 	onSelectLayout: (layout: DatabaseViewLayout) => void;
+	createLabel: string;
+	onCreate: () => void;
 	onRename: () => void;
 	onDelete: () => void;
 }
@@ -36,6 +38,12 @@ export function buildViewMenuItems(
 			label: "Rename",
 			iconKey: "edit",
 			onSelect: actions.onRename,
+		},
+		{
+			type: "item",
+			label: actions.createLabel,
+			iconKey: "plus",
+			onSelect: actions.onCreate,
 		},
 		{ type: "separator" },
 		{

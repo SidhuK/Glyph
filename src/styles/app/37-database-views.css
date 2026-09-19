@@ -3,8 +3,18 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	padding: 6px 18px 8px;
+	min-height: 48px;
+	padding: 8px 14px 8px 16px;
 	min-width: 0;
+	background: var(--bg-primary);
+}
+
+.databasesViewBarPrimary {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	flex: 1 1 auto;
 }
 
 .databasesViewTabsCluster {
@@ -12,11 +22,11 @@
 	align-items: center;
 	gap: 0;
 	min-width: 0;
-	max-width: min(500px, 50vw);
+	max-width: min(500px, 46vw);
 	flex: 0 1 auto;
-	padding: 3px;
+	padding: 0;
 	border-radius: var(--database-radius-lg);
-	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	background: transparent;
 	border: none;
 }
 
@@ -42,8 +52,8 @@ button.databasesViewTab {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	height: 32px;
-	padding: 0 12px;
+	height: 30px;
+	padding: 0 10px;
 	border: none;
 	border-radius: var(--database-radius-md);
 	background: transparent;
@@ -84,9 +94,9 @@ button.databasesViewTab:focus-visible {
 	inset: 0;
 	box-sizing: border-box;
 	border-radius: inherit;
-	border: 1px solid var(--border-default);
-	background: var(--bg-primary);
-	box-shadow: 0 1px 2px color-mix(in srgb, black 7%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 78%, var(--bg-primary));
+	box-shadow: none;
 }
 
 button.databasesViewTab > *:not(.databasesViewTabBg) {
@@ -124,8 +134,8 @@ button.databasesViewTab.is-active .databasesViewTabIcon {
 	align-items: center;
 	gap: 0;
 	flex: 0 0 auto;
-	padding-left: 3px;
-	margin-left: 3px;
+	padding-left: 2px;
+	margin-left: 2px;
 }
 
 .databasesViewTabsActions .databaseToolbarChip {
@@ -142,13 +152,12 @@ button.databasesViewTab.is-active .databasesViewTabIcon {
 	box-shadow: none;
 }
 
-.databasesViewTabMenu,
-.databasesViewTabCreate {
+.databasesViewTabMenu {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	min-width: 32px;
-	height: 32px;
+	height: 30px;
 	padding: 0;
 	flex: 0 0 auto;
 	border-radius: var(--database-radius-md);
@@ -168,7 +177,7 @@ button.databasesViewTab.is-active .databasesViewTabIcon {
 	width: auto;
 	min-width: 72px;
 	max-width: 140px;
-	height: 32px;
+	height: 30px;
 	margin: 0;
 	padding: 0 12px;
 	border: 1px solid var(--border-default);
@@ -180,6 +189,51 @@ button.databasesViewTab.is-active .databasesViewTabIcon {
 	letter-spacing: -0.01em;
 	box-shadow: 0 1px 2px color-mix(in srgb, black 7%, transparent);
 	flex: 0 0 auto;
+}
+
+button.databaseToolbarChip.databasesNewNoteButton {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 0;
+	height: 30px;
+	min-height: 30px;
+	gap: 8px;
+	padding: 0 8px;
+	border-color: transparent;
+	background: transparent;
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
+	box-shadow: none;
+}
+
+button.databaseToolbarChip.databasesNewNoteButton:hover {
+	border-color: transparent;
+	background: var(--bg-hover);
+}
+
+button.databaseToolbarChip.databasesNewNoteButton > svg path {
+	fill: currentcolor;
+}
+
+@media (max-width: 980px) {
+	.databasesViewBar {
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.databasesViewBarPrimary,
+	.databaseToolbarInline {
+		width: 100%;
+	}
+
+	.databaseToolbarInline .databaseToolbarActions {
+		flex-wrap: wrap;
+	}
+
+	.databasesViewTabsCluster {
+		max-width: none;
+		flex: 1 1 auto;
+	}
 }
 
 .databasesViewTabMenuContent {
