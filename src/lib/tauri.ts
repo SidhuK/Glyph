@@ -1,5 +1,5 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
-import type { AppSettings, AttachmentStorageMode } from "./settings";
+import type { AppSettings, AttachmentStorageMode, FileTreeSortMode } from "./settings";
 
 export interface AppInfo {
 	name: string;
@@ -1130,6 +1130,10 @@ interface TauriCommands {
 			limit?: number | null;
 			offset?: number | null;
 			folder_prefix?: string | null;
+			tag?: string | null;
+			person?: string | null;
+			sort_mode?: FileTreeSortMode | null;
+			query?: string | null;
 		},
 		AllDocsItem[]
 	>;

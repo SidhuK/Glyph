@@ -15,6 +15,7 @@ interface SettingsSegmentedPickerProps<T extends string> {
 	onChange: (value: T) => void;
 	renderPreview: (value: T) => ReactNode;
 	getDataAttributes?: (value: T) => Record<`data-${string}`, string>;
+	disabled?: boolean;
 }
 
 export function SettingsSegmentedPicker<T extends string>({
@@ -25,6 +26,7 @@ export function SettingsSegmentedPicker<T extends string>({
 	onChange,
 	renderPreview,
 	getDataAttributes,
+	disabled = false,
 }: SettingsSegmentedPickerProps<T>) {
 	return (
 		<div className="settingsSegmentedPicker">
@@ -41,6 +43,7 @@ export function SettingsSegmentedPicker<T extends string>({
 							name={name}
 							checked={value === option.value}
 							onChange={() => onChange(option.value)}
+							disabled={disabled}
 							className="settingsSegmentedInput"
 							aria-label={option.label}
 						/>

@@ -29,10 +29,16 @@ import {
 	periodNotesEnabledFromSettings,
 } from "../lib/periodNotes";
 import { type AiAssistantMode, loadSettings, reloadFromDisk } from "../lib/settings";
-import { DURABLE_SETTINGS } from "../lib/settings/definitions";
+import {
+	DEFAULT_FOLIO_NOTES_WIDTH,
+	DEFAULT_FILE_TREE_SORT_MODE,
+	DURABLE_SETTINGS,
+	normalizeFolioNotesWidth,
+} from "../lib/settings/definitions";
 import {
 	DEFAULT_SIDEBAR_ORDER,
 	DEFAULT_SIDEBAR_VISIBILITY,
+	type FileTreeSortMode,
 	type SidebarOrder,
 	type SidebarVisibility,
 	normalizeSidebarOrder,
@@ -72,6 +78,11 @@ interface UILayoutContextValue {
 	setFolioMode: (enabled: boolean) => void;
 	folioScope: FolioScope;
 	setFolioScope: (scope: FolioScope) => void;
+	folioSortMode: FileTreeSortMode;
+	setFolioSortMode: (sortMode: FileTreeSortMode) => void;
+	folioNotesWidth: number;
+	setFolioNotesWidth: (width: number) => void;
+	commitFolioNotesWidth: (width: number) => void;
 	settingsMode: boolean;
 	settingsTab: SettingsTab;
 	openSettings: (tab?: SettingsTab) => void;
@@ -109,6 +120,8 @@ type UIState = {
 	zenMode: boolean;
 	folioMode: boolean;
 	folioScope: FolioScope;
+	folioSortMode: FileTreeSortMode;
+	folioNotesWidth: number;
 	settingsMode: boolean;
 	settingsTab: SettingsTab;
 	aiEnabled: boolean;
@@ -140,6 +153,8 @@ type UIAction =
 	| { type: "setZenMode"; value: boolean }
 	| { type: "setFolioMode"; value: boolean }
 	| { type: "setFolioScope"; value: FolioScope }
+	| { type: "setFolioSortMode"; value: FileTreeSortMode }
+	| { type: "setFolioNotesWidth"; value: number }
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
@@ -165,6 +180,8 @@ type UIAction =
 			showToc: boolean;
 			zenMode: boolean;
 			folioMode: boolean;
+			folioSortMode: FileTreeSortMode;
+			folioNotesWidth: number;
 			dateDisplayFormat: DateDisplayFormat;
 	  }
 	| {
@@ -195,6 +212,8 @@ const initialUIState: UIState = {
 	zenMode: false,
 	folioMode: false,
 	folioScope: DEFAULT_FOLIO_SCOPE,
+	folioSortMode: DEFAULT_FILE_TREE_SORT_MODE,
+	folioNotesWidth: DEFAULT_FOLIO_NOTES_WIDTH,
 	settingsMode: false,
 	settingsTab: "general" as SettingsTab,
 	aiEnabled: true,
@@ -253,6 +272,10 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			};
 		case "setFolioScope":
 			return { ...state, folioScope: action.value };
+		case "setFolioSortMode":
+			return { ...state, folioSortMode: action.value };
+		case "setFolioNotesWidth":
+			return { ...state, folioNotesWidth: normalizeFolioNotesWidth(action.value) };
 		case "setAiEnabled":
 			return {
 				...state,
@@ -323,6 +346,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				showToc: action.showToc,
 				zenMode: action.zenMode,
 				folioMode: action.folioMode,
+				folioSortMode: action.folioSortMode,
+				folioNotesWidth: action.folioNotesWidth,
 				dateDisplayFormat: action.dateDisplayFormat,
 			};
 		default:
@@ -340,6 +365,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const sidebarOrderRevisionRef = useRef(0);
 	const zenModeRef = useRef(initialUIState.zenMode);
 	const zenModeRevisionRef = useRef(0);
+	const folioSortModeRef = useRef(initialUIState.folioSortMode);
+	const folioSortModeRevisionRef = useRef(0);
+	const folioNotesWidthRef = useRef(initialUIState.folioNotesWidth);
+	const folioNotesWidthRevisionRef = useRef(0);
 	const {
 		sidebarCollapsed,
 		sidebarWidth,
@@ -358,6 +387,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		zenMode,
 		folioMode,
 		folioScope,
+		folioSortMode,
+		folioNotesWidth,
 		settingsMode,
 		settingsTab,
 		aiEnabled,
@@ -412,6 +443,18 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const nextFolioMode = payload.ui?.folioMode;
 		if (typeof nextFolioMode === "boolean") {
 			dispatch({ type: "setFolioMode", value: nextFolioMode });
+		}
+		const nextFolioSortMode = payload.ui?.folioSortMode;
+		if (nextFolioSortMode) {
+			folioSortModeRevisionRef.current += 1;
+			folioSortModeRef.current = nextFolioSortMode;
+			dispatch({ type: "setFolioSortMode", value: nextFolioSortMode });
+		}
+		const nextFolioNotesWidth = payload.ui?.folioNotesWidth;
+		if (typeof nextFolioNotesWidth === "number") {
+			folioNotesWidthRevisionRef.current += 1;
+			folioNotesWidthRef.current = nextFolioNotesWidth;
+			dispatch({ type: "setFolioNotesWidth", value: nextFolioNotesWidth });
 		}
 		if (isDateDisplayFormat(payload.ui?.dateDisplayFormat)) {
 			dispatch({
@@ -496,6 +539,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				const sidebarVisibilityRevision = sidebarVisibilityRevisionRef.current;
 				const sidebarOrderRevision = sidebarOrderRevisionRef.current;
 				const zenModeRevision = zenModeRevisionRef.current;
+				const folioSortModeRevision = folioSortModeRevisionRef.current;
+				const folioNotesWidthRevision = folioNotesWidthRevisionRef.current;
 				const s = await loadSettings({ spacePath: requestedSpacePath });
 				// Discard if unmounted or the active space changed mid-load so we
 				// never stamp the previous space's folders/template as the new one.
@@ -511,8 +556,18 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					sidebarOrderRevision === sidebarOrderRevisionRef.current
 						? s.ui.sidebarOrder
 						: sidebarOrderRef.current;
+				const nextFolioSortMode =
+					folioSortModeRevision === folioSortModeRevisionRef.current
+						? s.ui.folioSortMode
+						: folioSortModeRef.current;
+				const nextFolioNotesWidth =
+					folioNotesWidthRevision === folioNotesWidthRevisionRef.current
+						? s.ui.folioNotesWidth
+						: folioNotesWidthRef.current;
 				sidebarVisibilityRef.current = nextSidebarVisibility;
 				sidebarOrderRef.current = nextSidebarOrder;
+				folioSortModeRef.current = nextFolioSortMode;
+				folioNotesWidthRef.current = nextFolioNotesWidth;
 				dispatch({
 					type: "hydrateSettings",
 					spacePath: requestedSpacePath,
@@ -528,6 +583,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					showToc: s.ui.showToc,
 					zenMode: nextZenMode,
 					folioMode: s.ui.folioMode,
+					folioSortMode: nextFolioSortMode,
+					folioNotesWidth: nextFolioNotesWidth,
 					dateDisplayFormat: s.ui.dateDisplayFormat,
 				});
 			} catch {
@@ -602,6 +659,25 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		(scope: FolioScope) => dispatch({ type: "setFolioScope", value: scope }),
 		[],
 	);
+	const setFolioSortMode = useCallback((sortMode: FileTreeSortMode) => {
+		folioSortModeRevisionRef.current += 1;
+		folioSortModeRef.current = sortMode;
+		dispatch({ type: "setFolioSortMode", value: sortMode });
+		void DURABLE_SETTINGS.folioSortMode.write(sortMode);
+	}, []);
+	const setFolioNotesWidth = useCallback((width: number) => {
+		const normalizedWidth = normalizeFolioNotesWidth(width);
+		folioNotesWidthRevisionRef.current += 1;
+		folioNotesWidthRef.current = normalizedWidth;
+		dispatch({ type: "setFolioNotesWidth", value: normalizedWidth });
+	}, []);
+	const commitFolioNotesWidth = useCallback((width: number) => {
+		const normalizedWidth = normalizeFolioNotesWidth(width);
+		folioNotesWidthRevisionRef.current += 1;
+		folioNotesWidthRef.current = normalizedWidth;
+		dispatch({ type: "setFolioNotesWidth", value: normalizedWidth });
+		void DURABLE_SETTINGS.folioNotesWidth.write(normalizedWidth);
+	}, []);
 
 	const setSidebarCollapsed = useCallback(
 		(collapsed: boolean) => dispatch({ type: "setSidebarCollapsed", value: collapsed }),
@@ -673,6 +749,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setFolioMode,
 			folioScope,
 			setFolioScope,
+			folioSortMode,
+			setFolioSortMode,
+			folioNotesWidth,
+			setFolioNotesWidth,
+			commitFolioNotesWidth,
 			settingsMode,
 			settingsTab,
 			openSettings,
@@ -705,6 +786,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setFolioMode,
 			folioScope,
 			setFolioScope,
+			folioSortMode,
+			setFolioSortMode,
+			folioNotesWidth,
+			setFolioNotesWidth,
+			commitFolioNotesWidth,
 			settingsMode,
 			settingsTab,
 			openSettings,

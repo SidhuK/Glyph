@@ -6,13 +6,15 @@ import {
 	SearchIcon,
 } from "@hugeicons/core-free-icons";
 import { memo } from "react";
-import type { FolioNotesSortMode } from "./folioScopes";
+import { useTranslation } from "react-i18next";
+import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
+import { isFileTreeSortMode, type FileTreeSortMode } from "../../lib/settings";
 
 interface FolioScopeHeaderProps {
 	searchQuery: string;
-	sortMode: FolioNotesSortMode;
+	sortMode: FileTreeSortMode;
 	onSearchQueryChange: (query: string) => void;
-	onSortModeChange: (sortMode: FolioNotesSortMode) => void;
+	onSortModeChange: (sortMode: FileTreeSortMode) => void;
 }
 
 export const FolioScopeHeader = memo(function FolioScopeHeader({
@@ -21,12 +23,12 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 	onSearchQueryChange,
 	onSortModeChange,
 }: FolioScopeHeaderProps) {
-	const sortIcon =
-		sortMode === "alphabetical"
-			? ArrangeByLettersAZIcon
-			: sortMode === "created"
-				? Calendar03Icon
-				: Clock01Icon;
+	const { t } = useTranslation("shell");
+	const sortIcon = sortMode.startsWith("name-")
+		? ArrangeByLettersAZIcon
+		: sortMode.startsWith("created-")
+			? Calendar03Icon
+			: Clock01Icon;
 
 	return (
 		<header className="folioNotesHeader">
@@ -37,8 +39,8 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 						type="text"
 						inputMode="search"
 						value={searchQuery}
-						placeholder="Filter notes"
-						aria-label="Filter notes"
+						placeholder={t("folio.filter")}
+						aria-label={t("folio.filter")}
 						onChange={(event) => onSearchQueryChange(event.currentTarget.value)}
 					/>
 				</label>
@@ -47,15 +49,17 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 					<select
 						className="folioNotesSortSelect"
 						value={sortMode}
-						aria-label="Sort notes"
+						aria-label={t("sidebar.sortNotes")}
 						onChange={(event) => {
-							const value = event.currentTarget.value;
-							onSortModeChange(value === "edited" || value === "created" ? value : "alphabetical");
+							const mode = event.currentTarget.value;
+							if (isFileTreeSortMode(mode)) onSortModeChange(mode);
 						}}
 					>
-						<option value="alphabetical">Alphabetically</option>
-						<option value="edited">Edited</option>
-						<option value="created">Created</option>
+						{FILE_TREE_SORT_MODES.map((mode) => (
+							<option key={mode} value={mode}>
+								{fileTreeSortLabel(mode)}
+							</option>
+						))}
 					</select>
 				</label>
 			</div>

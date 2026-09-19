@@ -34,6 +34,26 @@
 		"createdNewest": "作成日（新しい順）",
 		"createdOldest": "作成日（古い順）"
 	},
+	"folio": {
+		"listAria": "ノート一覧",
+		"filter": "ノートを絞り込む",
+		"noDate": "日付なし",
+		"noPreview": "プレビューなし",
+		"noFolder": "フォルダなし",
+		"untitled": "無題",
+		"emptySearch": "一致するノートはありません。",
+		"empty": "ノートが見つかりません。",
+		"filesTruncated": "最初の{{count}}件のファイルを表示しています。",
+		"loadMore": "さらにノートを読み込む",
+		"loadingMore": "さらにノートを読み込み中…",
+		"delete": {
+			"confirmNote": "このノートを削除しますか？",
+			"confirmFile": "このファイルを削除しますか？",
+			"title": "削除の確認",
+			"confirm": "削除",
+			"cancel": "キャンセル"
+		}
+	},
 	"pinned": {
 		"title": "ピン留め",
 		"loading": "ピン留めした項目を読み込み中...",
@@ -58,6 +78,7 @@
 	},
 	"fileTree": {
 		"open": "開く",
+		"openInNewTab": "新しいタブで開く",
 		"openInNewWindow": "新しいウィンドウで開く",
 		"showInFolder": "フォルダで表示",
 		"showInFinder": "Finder で表示",
@@ -68,6 +89,10 @@
 		"pinFile": "ファイルをピン留め",
 		"unpinFile": "ピン留めを解除",
 		"iconAndColor": "アイコンと色…",
+		"appearance": {
+			"title": "ファイルの外観を選択",
+			"updateFailed": "ファイルの外観を更新できませんでした"
+		},
 		"addFile": "ファイルを追加",
 		"createFromTemplate": "テンプレートから作成",
 		"addFolder": "フォルダを追加",

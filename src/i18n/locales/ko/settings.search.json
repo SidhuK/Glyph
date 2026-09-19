@@ -517,9 +517,19 @@
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
-			"title": "Folio 모드",
-			"section": "실험적",
-			"keywords": ["레이아웃", "읽기", "layout", "reading", "folio"]
+			"title": "작업 공간 레이아웃",
+			"section": "레이아웃",
+			"keywords": ["레이아웃", "기본", "사이드바", "읽기", "layout", "reading", "folio"]
+		},
+		"appearance-layout-folio-sort": {
+			"title": "기본 Folio 정렬",
+			"section": "레이아웃",
+			"keywords": ["folio", "정렬", "이름", "수정", "생성"]
+		},
+		"appearance-layout-folio-width": {
+			"title": "Folio 노트 목록 너비",
+			"section": "레이아웃",
+			"keywords": ["folio", "너비", "열", "크기"]
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "노트 피크",

@@ -1,4 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { useDraggable } from "@dnd-kit/react";
 import {
 	type CSSProperties,
 	type KeyboardEvent,
@@ -8,23 +9,35 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { useSpace } from "../../contexts";
+import {
+	useDateDisplayFormat,
+	useEditorContext,
+	useFileTreeContext,
+	useSpace,
+} from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
+import { formatDisplayDate } from "../../lib/dateDisplayFormat";
+import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
-import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { basename, parentDir, splitEditableFileName } from "../../utils/path";
+import { basename, displayNameFromPath, parentDir, splitEditableFileName } from "../../utils/path";
 import { InlineRenameInput } from "../InlineRenameInput";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
-import { fileTreeAppearanceNativeMenu } from "../filetree/fileTreeNativeContextMenu";
+import { buildFileTreeFileNativeMenu } from "../filetree/fileTreeNativeContextMenu";
+import {
+	FILE_TREE_ENTRY_SENSORS,
+	FILE_TREE_ENTRY_TYPE,
+	fileTreeEntryDragId,
+} from "../filetree/fileTreeDnd";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import type { FolioItem } from "./useFolioNotes";
 
@@ -37,6 +50,10 @@ interface FolioNoteListItemProps {
 	onPrefetch: (path: string) => void;
 	onRename?: (path: string) => void;
 	onDelete: (path: string) => void;
+	onDuplicate: (path: string) => void;
+	onNewFileInDir: (dirPath: string) => unknown;
+	onCreateFromTemplateInDir: (dirPath: string) => unknown;
+	onRequestCreateFolder: (dirPath: string) => unknown;
 	onFocus: () => void;
 	taskSummary?: NoteTaskSummary | null;
 	isRenaming?: boolean;
@@ -59,6 +76,7 @@ const FOLIO_THUMBNAIL_MAX_BYTES = 4 * 1024 * 1024;
 const FOLIO_NOTE_IMAGE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
 const FOLIO_NOTE_URL_SCAN_MAX_BYTES = 256 * 1024;
 const FOLIO_NOTE_URL_READ_CONCURRENCY = 4;
+const FOLIO_DRAG_CLICK_DISTANCE_PX = 5;
 const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
 const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
@@ -70,23 +88,7 @@ interface FolioImageCandidate {
 	ref: FolioImageRef;
 }
 
-function titleFromPath(notePath: string): string {
-	return basename(notePath).replace(/\.md$/i, "") || "Untitled";
-}
-
-function dateLabel(iso: string | null): string {
-	if (!iso) return "No date";
-	try {
-		return new Intl.DateTimeFormat(undefined, {
-			month: "short",
-			day: "numeric",
-		}).format(new Date(iso));
-	} catch {
-		return "No date";
-	}
-}
-
-function previewText(preview: string, title: string): string {
+function previewText(preview: string, title: string, emptyLabel: string): string {
 	const lowerTitle = title.trim().toLowerCase();
 	const lines = preview.replace(/\r\n?/g, "\n").split("\n");
 	const previewLines: string[] = [];
@@ -112,7 +114,7 @@ function previewText(preview: string, title: string): string {
 		previewLines.push(normalized);
 	}
 
-	return previewLines.join(" ") || "No preview";
+	return previewLines.join(" ") || emptyLabel;
 }
 
 function cleanUrl(rawUrl: string): string {
@@ -335,6 +337,10 @@ export const FolioNoteListItem = memo(
 			onPrefetch,
 			onRename,
 			onDelete,
+			onDuplicate,
+			onNewFileInDir,
+			onCreateFromTemplateInDir,
+			onRequestCreateFolder,
 			onFocus,
 			taskSummary = null,
 			isRenaming = false,
@@ -350,9 +356,14 @@ export const FolioNoteListItem = memo(
 		ref,
 	) {
 		const { t } = useTranslation("shell");
-		const title = note.title.trim() || titleFromPath(note.note_path);
+		const dateDisplayFormat = useDateDisplayFormat();
+		const untitledLabel = t("folio.untitled");
+		const title = note.title.trim() || displayNameFromPath(note.note_path) || untitledLabel;
 		const isMarkdown = note.is_markdown;
 		const { spacePath } = useSpace();
+		const { getEditorState, saveCurrentEditor } = useEditorContext();
+		const { pinnedFiles, togglePinnedFile } = useFileTreeContext();
+		const isPinned = pinnedFiles.includes(note.note_path);
 		const { stem: fileStem, ext: fileExt } = splitEditableFileName(basename(note.note_path));
 		const { Icon, color } = getFileTypeInfo(note.note_path, isMarkdown);
 		const customColor =
@@ -365,9 +376,12 @@ export const FolioNoteListItem = memo(
 		const iconColor = customColor ? "var(--folio-file-color)" : color;
 		const extBadge = !isMarkdown && fileExt ? fileExt.slice(1) : "";
 		const preview = useMemo(() => {
-			return previewText(note.preview, title);
-		}, [note.preview, title]);
-		const updated = isMarkdown ? dateLabel(note.updated) : "";
+			return previewText(note.preview, title, t("folio.noPreview"));
+		}, [note.preview, t, title]);
+		const updated =
+			isMarkdown && note.updated
+				? formatDisplayDate(note.updated, dateDisplayFormat)
+				: t("folio.noDate");
 		const visibleTags = note.tags.slice(0, 2);
 		const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);
 		const folder = parentDir(note.note_path);
@@ -381,6 +395,28 @@ export const FolioNoteListItem = memo(
 		const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
 			if (isMarkdown) onPrefetch(note.note_path);
 		});
+		const dragOriginRef = useRef<{ x: number; y: number } | null>(null);
+		const suppressDragClickRef = useRef(false);
+		const {
+			ref: draggableRef,
+			handleRef,
+			isDragging,
+		} = useDraggable({
+			id: fileTreeEntryDragId("file", note.note_path),
+			type: FILE_TREE_ENTRY_TYPE,
+			sensors: FILE_TREE_ENTRY_SENSORS,
+			data: {
+				path: note.note_path,
+				kind: "file",
+			},
+		});
+		const setRowRef = useCallback(
+			(element: HTMLButtonElement | null) => {
+				draggableRef(element);
+				handleRef(element);
+			},
+			[draggableRef, handleRef],
+		);
 		const handleRevealInFinder = useCallback(async () => {
 			try {
 				await invoke("space_reveal_path", { path: note.note_path });
@@ -388,50 +424,59 @@ export const FolioNoteListItem = memo(
 				console.error("Failed to show file in Finder", error);
 			}
 		}, [note.note_path]);
+		const handleOpenInSeparateWindow = useCallback(async () => {
+			const editorState = getEditorState();
+			if (editorState?.relPath === note.note_path && editorState.isDirty) {
+				await saveCurrentEditor();
+			}
+			await openMarkdownInExternalWindow(note.note_path);
+		}, [getEditorState, note.note_path, saveCurrentEditor]);
 		const handleContextMenu = useCallback(
 			(event: MouseEvent) => {
-				void showNativeContextMenu(event, [
-					{
-						label: "Open",
-						action: () => onOpen(note.note_path),
-					},
-					{
-						label: "Open in New Tab",
-						action: () => onOpenInNewTab(note.note_path),
-					},
-					{
-						label: "Show in Finder",
-						action: () => void handleRevealInFinder(),
-					},
-					...buildPathCopyMenuItems(spacePath, note.note_path),
-					{ type: "separator" },
-					...(onRename
-						? [
-								{
-									label: "Rename",
-									action: () => onRename(note.note_path),
-								},
-							]
-						: []),
-					fileTreeAppearanceNativeMenu(() => onOpenAppearancePicker(note.note_path)),
-					{ type: "separator" },
-					{
-						label: "Delete",
-						action: () => onDelete(note.note_path),
-					},
-				]).catch((error: unknown) => {
+				void showNativeContextMenu(
+					event,
+					buildFileTreeFileNativeMenu({
+						path: note.note_path,
+						spacePath,
+						isMarkdown,
+						isPinned,
+						onOpen: () => onOpen(note.note_path),
+						onOpenInNewTab: () => onOpenInNewTab(note.note_path),
+						onOpenInNewWindow: () => void handleOpenInSeparateWindow(),
+						onBrowseFolder: () => onShowInFolder(note.note_path),
+						onRevealInFinder: () => void handleRevealInFinder(),
+						...(onRename ? { onRename: () => onRename(note.note_path) } : {}),
+						onDuplicate: () => onDuplicate(note.note_path),
+						onTogglePinned: () => void togglePinnedFile(note.note_path),
+						onOpenAppearancePicker: () => onOpenAppearancePicker(note.note_path),
+						onNewFile: () => void onNewFileInDir(folder),
+						onCreateFromTemplate: () => void onCreateFromTemplateInDir(folder),
+						onCreateFolder: () => void onRequestCreateFolder(folder),
+						onDelete: () => onDelete(note.note_path),
+					}),
+				).catch((error: unknown) => {
 					console.error("Failed to show folio context menu", error);
 				});
 			},
 			[
+				folder,
+				handleOpenInSeparateWindow,
 				handleRevealInFinder,
+				isMarkdown,
+				isPinned,
 				note.note_path,
+				onCreateFromTemplateInDir,
 				onDelete,
+				onDuplicate,
+				onNewFileInDir,
 				onOpen,
 				onOpenAppearancePicker,
 				onOpenInNewTab,
 				onRename,
+				onRequestCreateFolder,
+				onShowInFolder,
 				spacePath,
+				togglePinnedFile,
 			],
 		);
 		const fileIcon = appearance?.icon ? (
@@ -516,7 +561,7 @@ export const FolioNoteListItem = memo(
 								</span>
 							))
 						) : firstUrl ? null : (
-							<span className="folioNoteFolder">{folder || "No folder"}</span>
+							<span className="folioNoteFolder">{folder || t("folio.noFolder")}</span>
 						)}
 						{hiddenTagCount > 0 ? (
 							<span className="databaseCellPill databaseCellPillMore folioNoteTag">
@@ -555,11 +600,12 @@ export const FolioNoteListItem = memo(
 						<span className="folioNoteRowTop">
 							<InlineRenameInput
 								key={`${note.note_path}:${fileStem}`}
-								initialValue={fileStem || titleFromPath(note.note_path)}
+								initialValue={fileStem || displayNameFromPath(note.note_path) || untitledLabel}
 								className="plainTextInput folioNoteRenameInput"
-								placeholder="Untitled"
+								placeholder={untitledLabel}
 								onCommit={(draftName) => {
-									const initialName = fileStem || titleFromPath(note.note_path);
+									const initialName =
+										fileStem || displayNameFromPath(note.note_path) || untitledLabel;
 									const nextStem = draftName.trim() || fileStem || initialName.trim();
 									return onCommitRename(note.note_path, `${nextStem}${fileExt}`);
 								}}
@@ -571,6 +617,7 @@ export const FolioNoteListItem = memo(
 					</div>
 				) : (
 					<button
+						ref={setRowRef}
 						type="button"
 						className="folioNoteRow"
 						data-state={selected ? "selected" : "idle"}
@@ -579,17 +626,44 @@ export const FolioNoteListItem = memo(
 						aria-current={selected ? "page" : undefined}
 						onClick={(event) => {
 							cancelHoverPrefetch();
-							if (event.metaKey || event.ctrlKey) {
+							if (suppressDragClickRef.current) {
+								suppressDragClickRef.current = false;
+								return;
+							}
+							if (isMarkdown && (event.metaKey || event.ctrlKey)) {
 								onOpenInNewTab(note.note_path);
 								return;
 							}
 							onOpen(note.note_path);
 						}}
+						onPointerDown={(event) => {
+							event.currentTarget.setPointerCapture(event.pointerId);
+							dragOriginRef.current = { x: event.clientX, y: event.clientY };
+							suppressDragClickRef.current = false;
+						}}
+						onPointerMove={(event) => {
+							const origin = dragOriginRef.current;
+							if (!origin) return;
+							const distanceX = event.clientX - origin.x;
+							const distanceY = event.clientY - origin.y;
+							if (
+								distanceX * distanceX + distanceY * distanceY >=
+								FOLIO_DRAG_CLICK_DISTANCE_PX * FOLIO_DRAG_CLICK_DISTANCE_PX
+							) {
+								suppressDragClickRef.current = true;
+							}
+						}}
+						onPointerCancel={() => {
+							dragOriginRef.current = null;
+							suppressDragClickRef.current = false;
+						}}
 						onContextMenu={handleContextMenu}
-						onDoubleClick={() => onOpenInNewTab(note.note_path)}
+						onDoubleClick={() => {
+							if (isMarkdown) onOpenInNewTab(note.note_path);
+						}}
 						onAuxClick={(event) => {
 							cancelHoverPrefetch();
-							if (event.button === 1) onOpenInNewTab(note.note_path);
+							if (isMarkdown && event.button === 1) onOpenInNewTab(note.note_path);
 						}}
 						{...hoverPrefetchProps}
 						onFocus={(event) => {
@@ -599,6 +673,8 @@ export const FolioNoteListItem = memo(
 						}}
 						title={note.note_path}
 						style={rowStyle}
+						data-draggable="true"
+						data-dragging={isDragging ? "true" : undefined}
 					>
 						{isMarkdown ? (
 							<>

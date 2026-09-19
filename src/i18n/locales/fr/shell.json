@@ -36,6 +36,26 @@
 		"createdNewest": "Créées (plus récentes)",
 		"createdOldest": "Créées (plus anciennes)"
 	},
+	"folio": {
+		"listAria": "Liste des notes",
+		"filter": "Filtrer les notes",
+		"noDate": "Aucune date",
+		"noPreview": "Aucun aperçu",
+		"noFolder": "Aucun dossier",
+		"untitled": "Sans titre",
+		"emptySearch": "Aucune note correspondante.",
+		"empty": "Aucune note trouvée.",
+		"filesTruncated": "Affichage des {{count}} premiers fichiers.",
+		"loadMore": "Charger plus de notes",
+		"loadingMore": "Chargement d’autres notes…",
+		"delete": {
+			"confirmNote": "Supprimer cette note ?",
+			"confirmFile": "Supprimer ce fichier ?",
+			"title": "Confirmer la suppression",
+			"confirm": "Supprimer",
+			"cancel": "Annuler"
+		}
+	},
 	"pinned": {
 		"title": "Épinglées",
 		"loading": "Chargement des éléments épinglés...",
@@ -60,6 +80,7 @@
 	},
 	"fileTree": {
 		"open": "Ouvrir",
+		"openInNewTab": "Ouvrir dans un nouvel onglet",
 		"openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
 		"showInFolder": "Afficher dans le dossier",
 		"showInFinder": "Afficher dans le Finder",
@@ -70,6 +91,10 @@
 		"pinFile": "Épingler le fichier",
 		"unpinFile": "Désépingler le fichier",
 		"iconAndColor": "Icône et couleur…",
+		"appearance": {
+			"title": "Choisir l’apparence du fichier",
+			"updateFailed": "Impossible de modifier l’apparence du fichier"
+		},
 		"addFile": "Ajouter un fichier",
 		"createFromTemplate": "Créer à partir d’un modèle",
 		"addFolder": "Ajouter un dossier",

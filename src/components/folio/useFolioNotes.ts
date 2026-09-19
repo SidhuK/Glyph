@@ -1,12 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { allDocsListQueryOptions } from "../../lib/navigationPrefetch";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useRef } from "react";
+import type { AllDocsPage } from "../../lib/navigationPrefetch";
 import { loadSettings } from "../../lib/settings";
-import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
+import type { FileTreeSortMode } from "../../lib/settings/model";
+import type { AllDocsItem, FsEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { basename } from "../../utils/path";
-import { type FolioScope, normalizeFolioPath } from "./folioScopes";
+import { basename, displayNameFromPath, normalizeRelPath } from "../../utils/path";
+import type { FolioScope } from "./folioScopes";
 
 export interface FolioItem extends Omit<AllDocsItem, "created" | "updated"> {
 	created: string | null;
@@ -14,65 +15,40 @@ export interface FolioItem extends Omit<AllDocsItem, "created" | "updated"> {
 	is_markdown: boolean;
 }
 
+const FOLIO_NOTES_PAGE_SIZE = 200;
 const FOLIO_NON_MARKDOWN_FILE_LIMIT = 5_000;
+const FILE_VISIBILITY_QUERY_KEY = ["settings", "folio-file-visibility"] as const;
 
-const folioFilesQueryKey = (folderPrefix: string | null) =>
-	["navigation", "folio-files", folderPrefix ?? "__all__"] as const;
-
-function folderForScope(scope: FolioScope): string | null {
-	if (scope.kind !== "folder") return null;
-	return normalizeFolioPath(scope.folderPrefix) || null;
-}
-
-function tagMatches(noteTags: string[], tag: string): boolean {
-	const normalizedTag = tag.trim().replace(/^[#@]/, "").toLowerCase();
-	if (!normalizedTag) return false;
-	return noteTags.some(
-		(noteTag) => noteTag.trim().replace(/^[#@]/, "").toLowerCase() === normalizedTag,
-	);
-}
-
-function personMatches(notePeople: string[] | undefined, handle: string): boolean {
-	const normalizedHandle = handle.trim().replace(/^@/, "").toLowerCase();
-	if (!normalizedHandle) return false;
-	return (notePeople ?? []).some(
-		(notePerson) => notePerson.trim().replace(/^@/, "").toLowerCase() === normalizedHandle,
-	);
-}
-
-function filterNotesForScope(notes: FolioItem[], scope: FolioScope): FolioItem[] {
-	const folderPrefix = scope.kind === "folder" ? normalizeFolioPath(scope.folderPrefix) : "";
+function scopeQueryKey(scope: FolioScope): readonly string[] {
 	switch (scope.kind) {
 		case "folder":
-			return notes.filter((note) => {
-				const notePath = normalizeRelPath(note.note_path);
-				return notePath === folderPrefix || notePath.startsWith(`${folderPrefix}/`);
-			});
+			return ["folder", normalizeRelPath(scope.folderPrefix)];
 		case "tag":
-			return notes.filter((note) => note.is_markdown && tagMatches(note.tags, scope.tag));
+			return ["tag", scope.tag.trim()];
 		case "person":
-			return notes.filter((note) => note.is_markdown && personMatches(note.people, scope.handle));
+			return ["person", scope.handle.trim()];
 		default:
-			return notes;
+			return ["all"];
 	}
 }
 
-function normalizeRelPath(path: string): string {
-	return path
-		.trim()
-		.replace(/\\/g, "/")
-		.replace(/^\/+|\/+$/g, "");
-}
-
-function titleFromFilePath(path: string): string {
-	const name = basename(path);
-	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
+function scopeInvokeArgs(scope: FolioScope) {
+	switch (scope.kind) {
+		case "folder":
+			return { folder_prefix: normalizeRelPath(scope.folderPrefix) || null };
+		case "tag":
+			return { tag: scope.tag };
+		case "person":
+			return { person: scope.handle };
+		default:
+			return {};
+	}
 }
 
 function fileEntryToFolioItem(entry: FsEntry): FolioItem {
 	return {
 		note_path: normalizeRelPath(entry.rel_path),
-		title: titleFromFilePath(entry.rel_path),
+		title: entry.is_markdown ? displayNameFromPath(entry.rel_path) : basename(entry.rel_path),
 		preview: "",
 		updated: entry.updated ?? null,
 		created: entry.created ?? null,
@@ -87,86 +63,120 @@ async function listNonMarkdownFiles(folderPrefix: string | null) {
 		dir: folderPrefix,
 		limit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
 	});
-	const list =
-		result !== null && typeof result === "object" ? (result as Partial<FsEntryList>) : {};
-	const files = Array.isArray(list.files) ? list.files : [];
 	return {
-		files: files.map(fileEntryToFolioItem),
-		truncated: list.truncated === true,
+		files: result.files.map(fileEntryToFolioItem),
+		truncated: result.truncated,
 	};
 }
 
-function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
-	const out = new Map<string, FolioItem>();
+async function listNotesPage(
+	scope: FolioScope,
+	sortMode: FileTreeSortMode,
+	query: string,
+	offset: number,
+): Promise<AllDocsPage> {
+	const items = await invoke("all_docs_list", {
+		...scopeInvokeArgs(scope),
+		limit: FOLIO_NOTES_PAGE_SIZE + 1,
+		offset,
+		sort_mode: sortMode,
+		query: query.trim() || null,
+	});
+	const pageItems = items.slice(0, FOLIO_NOTES_PAGE_SIZE);
+	return {
+		items: pageItems,
+		nextOffset: items.length > FOLIO_NOTES_PAGE_SIZE ? offset + pageItems.length : null,
+	};
+}
+
+function fileMatchesQuery(file: FolioItem, query: string): boolean {
+	const normalizedQuery = query.trim().toLocaleLowerCase();
+	if (!normalizedQuery) return true;
+	return `${file.title} ${file.note_path}`.toLocaleLowerCase().includes(normalizedQuery);
+}
+
+function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[], query: string) {
+	const itemsByPath = new Map<string, FolioItem>();
 	for (const note of notes) {
 		const path = normalizeRelPath(note.note_path);
 		if (!path) continue;
-		out.set(path, { ...note, note_path: path, is_markdown: true });
+		itemsByPath.set(path, { ...note, note_path: path, is_markdown: true });
 	}
 	for (const file of files) {
-		if (!file.note_path || out.has(file.note_path)) continue;
-		out.set(file.note_path, file);
+		if (!file.note_path || itemsByPath.has(file.note_path) || !fileMatchesQuery(file, query))
+			continue;
+		itemsByPath.set(file.note_path, file);
 	}
-	return Array.from(out.values());
+	return Array.from(itemsByPath.values());
 }
 
-export function useFolioNotes(scope: FolioScope) {
-	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<boolean | null>(null);
-	const settingsVersionRef = useRef(0);
-	const folderPrefix = folderForScope(scope);
+export function useFolioNotes(scope: FolioScope, sortMode: FileTreeSortMode, query: string) {
+	const queryClient = useQueryClient();
+	const visibilityRevisionRef = useRef(0);
+	const latestVisibilityRef = useRef<boolean | null>(null);
+	const folderPrefix =
+		scope.kind === "folder" ? normalizeRelPath(scope.folderPrefix) || null : null;
+	const visibilityQuery = useQuery({
+		queryKey: FILE_VISIBILITY_QUERY_KEY,
+		queryFn: async () => {
+			const revision = visibilityRevisionRef.current;
+			try {
+				const loaded = (await loadSettings()).ui.showNonMarkdownFiles;
+				return revision === visibilityRevisionRef.current
+					? loaded
+					: (latestVisibilityRef.current ?? loaded);
+			} catch {
+				return latestVisibilityRef.current ?? true;
+			}
+		},
+	});
 	const includesNonMarkdownFiles =
-		showNonMarkdownFiles === true && scope.kind !== "tag" && scope.kind !== "person";
-
-	useEffect(() => {
-		let cancelled = false;
-		const loadId = settingsVersionRef.current + 1;
-		settingsVersionRef.current = loadId;
-		void loadSettings()
-			.then((settings) => {
-				if (!cancelled && loadId === settingsVersionRef.current) {
-					setShowNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
-				}
-			})
-			.catch(() => {
-				if (!cancelled && loadId === settingsVersionRef.current) {
-					setShowNonMarkdownFiles(true);
-				}
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, []);
+		visibilityQuery.data === true && scope.kind !== "tag" && scope.kind !== "person";
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
-			settingsVersionRef.current += 1;
-			setShowNonMarkdownFiles(payload.ui.showNonMarkdownFiles);
+			const nextVisibility = payload.ui.showNonMarkdownFiles;
+			visibilityRevisionRef.current += 1;
+			latestVisibilityRef.current = nextVisibility;
+			queryClient.setQueryData(FILE_VISIBILITY_QUERY_KEY, nextVisibility);
 		}
 	});
 
-	const query = useQuery(allDocsListQueryOptions(folderPrefix));
+	const notesQuery = useInfiniteQuery({
+		queryKey: ["navigation", "all-docs", "folio", ...scopeQueryKey(scope), sortMode, query.trim()],
+		queryFn: ({ pageParam }) => listNotesPage(scope, sortMode, query, pageParam),
+		initialPageParam: 0,
+		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
+	});
 	const filesQuery = useQuery({
-		queryKey: folioFilesQueryKey(folderPrefix),
+		queryKey: ["navigation", "all-docs", "folio-files", folderPrefix],
 		queryFn: () => listNonMarkdownFiles(folderPrefix),
 		enabled: includesNonMarkdownFiles,
 	});
 
 	const items = useMemo(
 		() =>
-			filterNotesForScope(
-				mergeFolioItems(
-					query.data ?? [],
-					includesNonMarkdownFiles ? (filesQuery.data?.files ?? []) : [],
-				),
-				scope,
+			mergeFolioItems(
+				notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
+				includesNonMarkdownFiles ? (filesQuery.data?.files ?? []) : [],
+				query,
 			),
-		[filesQuery.data?.files, includesNonMarkdownFiles, query.data, scope],
+		[filesQuery.data?.files, includesNonMarkdownFiles, notesQuery.data?.pages, query],
 	);
+	const loadedPageCount = notesQuery.data?.pages.length ?? 0;
+	const fetchNextPage = useCallback(async () => {
+		const result = await notesQuery.fetchNextPage();
+		return result.data?.pages[loadedPageCount]?.items ?? [];
+	}, [loadedPageCount, notesQuery.fetchNextPage]);
 
 	return {
 		notes: items,
 		filesTruncated: includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
-		error: query.error ?? filesQuery.error,
+		error: notesQuery.error ?? (includesNonMarkdownFiles ? filesQuery.error : null),
 		nonMarkdownFileLimit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
+		hasNextPage: notesQuery.hasNextPage,
+		isFetchingNextPage: notesQuery.isFetchingNextPage,
+		isLoading: notesQuery.isPending,
+		fetchNextPage,
 	};
 }

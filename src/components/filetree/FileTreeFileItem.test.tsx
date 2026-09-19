@@ -6,28 +6,38 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { FileTreeFileItem } from "./FileTreeFileItem";
 
-const showNativeContextMenuMock = vi.hoisted(() => vi.fn());
+const { showNativeContextMenuMock, translate } = vi.hoisted(() => {
+	const labels: Record<string, string> = {
+		"fileTree.open": "Open",
+		"fileTree.openInNewWindow": "Open in New Window",
+		"fileTree.showInFinder": "Show in Finder",
+		"fileTree.rename": "Rename",
+		"fileTree.duplicateFile": "Duplicate file",
+		"fileTree.pinFile": "Pin file",
+		"fileTree.unpinFile": "Unpin file",
+		"fileTree.addFile": "Add file",
+		"fileTree.createFromTemplate": "Create from template",
+		"fileTree.addFolder": "Add folder",
+		"fileTree.deleteFile": "Delete file",
+		"fileTree.iconAndColor": "Icon & Color...",
+	};
+	return {
+		showNativeContextMenuMock: vi.fn(),
+		translate: (key: string, options?: { defaultValue?: string }) => {
+			const normalizedKey = key.replace(/^shell:/, "");
+			return labels[normalizedKey] ?? options?.defaultValue ?? normalizedKey;
+		},
+	};
+});
 
 vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
-		t: (key: string, options?: { defaultValue?: string }) => {
-			const labels: Record<string, string> = {
-				"fileTree.open": "Open",
-				"fileTree.openInNewWindow": "Open in New Window",
-				"fileTree.showInFinder": "Show in Finder",
-				"fileTree.rename": "Rename",
-				"fileTree.duplicateFile": "Duplicate file",
-				"fileTree.pinFile": "Pin file",
-				"fileTree.unpinFile": "Unpin file",
-				"fileTree.addFile": "Add file",
-				"fileTree.createFromTemplate": "Create from template",
-				"fileTree.addFolder": "Add folder",
-				"fileTree.deleteFile": "Delete file",
-				"fileTree.iconAndColor": "Icon & Color...",
-			};
-			return labels[key] ?? options?.defaultValue ?? key;
-		},
+		t: translate,
 	}),
+}));
+
+vi.mock("../../i18n", () => ({
+	i18n: { t: translate },
 }));
 
 vi.mock("../../lib/nativeContextMenu", () => ({

@@ -4,12 +4,10 @@ import { StarIcon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import type { CSSProperties, KeyboardEvent, MouseEvent, MutableRefObject, Ref } from "react";
 import { memo, useCallback } from "react";
-import { useTranslation } from "react-i18next";
 import { useEditorContext, useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
-import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { invoke } from "../../lib/tauri";
 import type { FileTreeAppearance, FsEntry, NoteTaskSummary } from "../../lib/tauri";
 import { basename, splitEditableFileName } from "../../utils/path";
@@ -19,7 +17,7 @@ import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
 import { FILE_TREE_ENTRY_SENSORS, FILE_TREE_ENTRY_TYPE, fileTreeEntryDragId } from "./fileTreeDnd";
 import { buildRowStyle, rowVariants, springTransition } from "./fileTreeItemHelpers";
-import { fileTreeAppearanceNativeMenu } from "./fileTreeNativeContextMenu";
+import { buildFileTreeFileNativeMenu } from "./fileTreeNativeContextMenu";
 import { getFileTypeInfo } from "./fileTypeUtils";
 
 const DEFAULT_MOVE_CLICK_SUPPRESS_REF: MutableRefObject<boolean> = {
@@ -83,7 +81,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	virtualRowStyle,
 	virtualRowIndex,
 }: FileTreeFileItemProps) {
-	const { t } = useTranslation("shell");
 	const { spacePath } = useSpace();
 	const { getEditorState, saveCurrentEditor } = useEditorContext();
 	const customColor =
@@ -147,59 +144,26 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	}, [entry.rel_path, getEditorState, saveCurrentEditor]);
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
-			void showNativeContextMenu(event, [
-				{
-					label: t("fileTree.open"),
-					action: () => onOpenFile(entry.rel_path),
-				},
-				...(entry.is_markdown
-					? [
-							{
-								label: t("fileTree.openInNewWindow"),
-								action: () => void handleOpenInSeparateWindow(),
-							},
-						]
-					: []),
-				{
-					label: t("fileTree.showInFinder"),
-					action: () => void handleRevealInFinder(),
-				},
-				...buildPathCopyMenuItems(spacePath, entry.rel_path, {
-					includeDeeplink: entry.is_markdown,
+			void showNativeContextMenu(
+				event,
+				buildFileTreeFileNativeMenu({
+					path: entry.rel_path,
+					spacePath,
+					isMarkdown: entry.is_markdown,
+					isPinned,
+					onOpen: () => onOpenFile(entry.rel_path),
+					onOpenInNewWindow: () => void handleOpenInSeparateWindow(),
+					onRevealInFinder: () => void handleRevealInFinder(),
+					onRename: onStartRename,
+					onDuplicate: () => void onDuplicateFile(entry.rel_path),
+					onTogglePinned: () => void onTogglePinned(entry.rel_path),
+					onOpenAppearancePicker: onOpenAppearancePicker ?? (() => undefined),
+					onNewFile: () => void onNewFileInDir(parentDirPath),
+					onCreateFromTemplate: () => void onCreateFromTemplateInDir(parentDirPath),
+					onCreateFolder: () => void onRequestCreateFolder(parentDirPath),
+					onDelete: () => onDeletePath(entry.rel_path, "file"),
 				}),
-				{ type: "separator" },
-				{
-					label: t("fileTree.rename"),
-					action: onStartRename,
-				},
-				{
-					label: t("fileTree.duplicateFile"),
-					action: () => void onDuplicateFile(entry.rel_path),
-				},
-				{
-					label: isPinned ? t("fileTree.unpinFile") : t("fileTree.pinFile"),
-					action: () => void onTogglePinned(entry.rel_path),
-				},
-				fileTreeAppearanceNativeMenu(onOpenAppearancePicker ?? (() => undefined)),
-				{ type: "separator" },
-				{
-					label: t("fileTree.addFile"),
-					action: () => void onNewFileInDir(parentDirPath),
-				},
-				{
-					label: t("fileTree.createFromTemplate"),
-					action: () => void onCreateFromTemplateInDir(parentDirPath),
-				},
-				{
-					label: t("fileTree.addFolder"),
-					action: () => void onRequestCreateFolder(parentDirPath),
-				},
-				{ type: "separator" },
-				{
-					label: t("fileTree.deleteFile"),
-					action: () => onDeletePath(entry.rel_path, "file"),
-				},
-			]).catch((error: unknown) => {
+			).catch((error: unknown) => {
 				console.error("Failed to show file context menu", error);
 			});
 		},
@@ -220,7 +184,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			onTogglePinned,
 			parentDirPath,
 			spacePath,
-			t,
 		],
 	);
 

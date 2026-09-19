@@ -118,10 +118,32 @@
 		}
 	},
 	"layout": {
+		"sectionTitle": "Diseño",
+		"sectionDescription": "Elige cómo comparten el espacio de trabajo la navegación y las notas.",
 		"folioMode": {
-			"label": "Modo Folio",
-			"description": "Mostrar navegación, notas y editor en un espacio de trabajo de tres columnas.",
-			"ariaLabel": "Modo Folio"
+			"label": "Diseño del espacio de trabajo",
+			"description": "Elige cómo se organizan la navegación, la lista de notas y el editor.",
+			"ariaLabel": "Diseño del espacio de trabajo",
+			"options": {
+				"default": {
+					"label": "Predeterminado",
+					"description": "Barra lateral y editor"
+				},
+				"folio": {
+					"label": "Folio",
+					"description": "Barra lateral, lista de notas y editor"
+				}
+			}
+		},
+		"folioSort": {
+			"label": "Orden predeterminado de Folio",
+			"description": "Elige el orden inicial de los archivos en la lista de notas de Folio.",
+			"ariaLabel": "Orden predeterminado de Folio"
+		},
+		"folioWidth": {
+			"label": "Ancho de la lista de notas",
+			"description": "Define en píxeles el ancho de la columna de notas de Folio. También puedes arrastrarla para cambiarlo.",
+			"ariaLabel": "Ancho de la lista de notas de Folio"
 		}
 	},
 	"editorPresentation": {

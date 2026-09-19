@@ -34,6 +34,26 @@
 		"createdNewest": "Erstellt (neueste)",
 		"createdOldest": "Erstellt (älteste)"
 	},
+	"folio": {
+		"listAria": "Notizenliste",
+		"filter": "Notizen filtern",
+		"noDate": "Kein Datum",
+		"noPreview": "Keine Vorschau",
+		"noFolder": "Kein Ordner",
+		"untitled": "Ohne Titel",
+		"emptySearch": "Keine passenden Notizen.",
+		"empty": "Keine Notizen gefunden.",
+		"filesTruncated": "Die ersten {{count}} Dateien werden angezeigt.",
+		"loadMore": "Weitere Notizen laden",
+		"loadingMore": "Weitere Notizen werden geladen…",
+		"delete": {
+			"confirmNote": "Diese Notiz löschen?",
+			"confirmFile": "Diese Datei löschen?",
+			"title": "Löschen bestätigen",
+			"confirm": "Löschen",
+			"cancel": "Abbrechen"
+		}
+	},
 	"pinned": {
 		"title": "Angeheftet",
 		"loading": "Angeheftete Elemente werden geladen...",
@@ -58,6 +78,7 @@
 	},
 	"fileTree": {
 		"open": "Öffnen",
+		"openInNewTab": "In neuem Tab öffnen",
 		"openInNewWindow": "In neuem Fenster öffnen",
 		"showInFolder": "Im Ordner anzeigen",
 		"showInFinder": "Im Finder anzeigen",
@@ -68,6 +89,10 @@
 		"pinFile": "Datei anheften",
 		"unpinFile": "Datei lösen",
 		"iconAndColor": "Symbol & Farbe…",
+		"appearance": {
+			"title": "Dateidarstellung auswählen",
+			"updateFailed": "Dateidarstellung konnte nicht aktualisiert werden"
+		},
 		"addFile": "Datei hinzufügen",
 		"createFromTemplate": "Aus Vorlage erstellen",
 		"addFolder": "Ordner hinzufügen",

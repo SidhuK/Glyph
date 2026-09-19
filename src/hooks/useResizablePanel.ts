@@ -7,6 +7,7 @@ interface UseResizablePanelOptions {
 	/** "right" means drag-right = wider (sidebar), "left" means drag-left = wider (AI panel) */
 	direction?: "right" | "left";
 	onResize: (width: number) => void;
+	onResizeEnd?: (width: number) => void;
 	currentWidth: number;
 }
 
@@ -16,12 +17,14 @@ export function useResizablePanel({
 	disabled = false,
 	direction = "right",
 	onResize,
+	onResizeEnd,
 	currentWidth,
 }: UseResizablePanelOptions) {
 	const resizeRef = useRef<HTMLDivElement>(null);
 	const dragStartXRef = useRef(0);
 	const dragStartWidthRef = useRef(0);
 	const isDraggingRef = useRef(false);
+	const latestWidthRef = useRef(currentWidth);
 
 	const calcWidth = useCallback(
 		(clientX: number) => {
@@ -38,6 +41,7 @@ export function useResizablePanel({
 			isDraggingRef.current = true;
 			dragStartXRef.current = e.clientX;
 			dragStartWidthRef.current = currentWidth;
+			latestWidthRef.current = currentWidth;
 			resizeRef.current?.setPointerCapture(e.pointerId);
 		},
 		[currentWidth, disabled],
@@ -46,14 +50,18 @@ export function useResizablePanel({
 	const handlePointerMove = useCallback(
 		(e: React.PointerEvent) => {
 			if (!isDraggingRef.current) return;
-			onResize(calcWidth(e.clientX));
+			const nextWidth = calcWidth(e.clientX);
+			latestWidthRef.current = nextWidth;
+			onResize(nextWidth);
 		},
 		[calcWidth, onResize],
 	);
 
 	const handlePointerUp = useCallback(() => {
+		if (!isDraggingRef.current) return;
 		isDraggingRef.current = false;
-	}, []);
+		onResizeEnd?.(latestWidthRef.current);
+	}, [onResizeEnd]);
 
 	return {
 		resizeRef,

@@ -34,18 +34,6 @@
 	gap: 6px;
 }
 
-.folioNotesTitle {
-	min-width: 0;
-	margin: 0 0 9px;
-	overflow: hidden;
-	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-semibold);
-	line-height: 1.25;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
 .folioNotesSearch {
 	height: 28px;
 	flex: 1 1 auto;
@@ -210,6 +198,18 @@
 	border-bottom-color: transparent;
 	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
+.folioNoteRow[data-dragging="true"] {
+	opacity: 0.45;
+}
+
+@media (max-width: 900px) {
+	.folioNotesPane {
+		flex-basis: min(var(--folio-notes-width, 320px), 300px);
+		width: min(var(--folio-notes-width, 320px), 300px);
+		min-width: 220px;
+	}
 }
 
 .dark .folioNoteRow[data-state="selected"] {

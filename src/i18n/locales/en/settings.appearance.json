@@ -131,10 +131,32 @@
 		}
 	},
 	"layout": {
+		"sectionTitle": "Layout",
+		"sectionDescription": "Choose how navigation and notes share the workspace.",
 		"folioMode": {
-			"label": "Folio Mode",
-			"description": "Show navigation, notes, and editor in a three-column workspace.",
-			"ariaLabel": "Folio Mode"
+			"label": "Workspace layout",
+			"description": "Choose how navigation, the notes list, and the editor are arranged.",
+			"ariaLabel": "Workspace layout",
+			"options": {
+				"default": {
+					"label": "Default",
+					"description": "Sidebar and editor"
+				},
+				"folio": {
+					"label": "Folio",
+					"description": "Sidebar, notes list, and editor"
+				}
+			}
+		},
+		"folioSort": {
+			"label": "Default Folio sorting",
+			"description": "Choose the initial order of files in the Folio notes list.",
+			"ariaLabel": "Default Folio sorting"
+		},
+		"folioWidth": {
+			"label": "Notes list width",
+			"description": "Set the Folio notes column width in pixels. You can also resize it by dragging.",
+			"ariaLabel": "Folio notes list width"
 		}
 	},
 	"editorPresentation": {

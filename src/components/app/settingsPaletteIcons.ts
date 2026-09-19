@@ -65,6 +65,8 @@ const SETTING_ICONS: Record<string, SettingIcon> = {
 	"general-editor-spell-check": TextCheckIcon,
 	"general-editor-vim-mode": CommandIcon,
 	"appearance-layout-folio-mode": BookOpen01Icon,
+	"appearance-layout-folio-sort": SortByUp01Icon,
+	"appearance-layout-folio-width": Layout01Icon,
 	"appearance-layout-note-side-peek": LayoutAlignRightIcon,
 	"general-file-tree-folder-counts": Folder01Icon,
 	"general-file-tree-non-markdown-files": File01Icon,

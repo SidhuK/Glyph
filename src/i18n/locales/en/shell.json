@@ -43,6 +43,26 @@
 		"createdNewest": "Created newest",
 		"createdOldest": "Created oldest"
 	},
+	"folio": {
+		"listAria": "Notes list",
+		"filter": "Filter notes",
+		"noDate": "No date",
+		"noPreview": "No preview",
+		"noFolder": "No folder",
+		"untitled": "Untitled",
+		"emptySearch": "No matching notes.",
+		"empty": "No notes found.",
+		"filesTruncated": "Showing the first {{count}} files.",
+		"loadMore": "Load more notes",
+		"loadingMore": "Loading more notes…",
+		"delete": {
+			"confirmNote": "Delete this note?",
+			"confirmFile": "Delete this file?",
+			"title": "Confirm delete",
+			"confirm": "Delete",
+			"cancel": "Cancel"
+		}
+	},
 	"pinned": {
 		"title": "Pinned",
 		"loading": "Loading pinned items...",
@@ -67,6 +87,7 @@
 	},
 	"fileTree": {
 		"open": "Open",
+		"openInNewTab": "Open in New Tab",
 		"openInNewWindow": "Open in New Window",
 		"showInFolder": "Show in Folder",
 		"showInFinder": "Show in Finder",
@@ -77,6 +98,10 @@
 		"pinFile": "Pin file",
 		"unpinFile": "Unpin file",
 		"iconAndColor": "Icon & Color...",
+		"appearance": {
+			"title": "Choose file appearance",
+			"updateFailed": "Could not update file appearance"
+		},
 		"addFolderTab": "Add to Quick Folders",
 		"removeFolderTab": "Remove from Quick Folders",
 		"addFile": "Add file",

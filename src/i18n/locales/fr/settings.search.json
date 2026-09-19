@@ -551,9 +551,27 @@
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
-			"title": "Mode Folio",
-			"section": "Expérimental",
-			"keywords": ["disposition", "lecture", "layout", "reading", "folio"]
+			"title": "Disposition de l’espace de travail",
+			"section": "Disposition",
+			"keywords": [
+				"disposition",
+				"défaut",
+				"barre latérale",
+				"lecture",
+				"layout",
+				"reading",
+				"folio"
+			]
+		},
+		"appearance-layout-folio-sort": {
+			"title": "Tri par défaut de Folio",
+			"section": "Disposition",
+			"keywords": ["folio", "tri", "nom", "modifié", "créé"]
+		},
+		"appearance-layout-folio-width": {
+			"title": "Largeur de la liste des notes Folio",
+			"section": "Disposition",
+			"keywords": ["folio", "largeur", "colonne", "redimensionner"]
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek de note",

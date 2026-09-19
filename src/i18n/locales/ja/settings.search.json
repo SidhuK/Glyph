@@ -545,9 +545,19 @@
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
-			"title": "Folio モード",
-			"section": "実験的",
-			"keywords": ["レイアウト", "読書", "layout", "reading", "folio"]
+			"title": "ワークスペースのレイアウト",
+			"section": "レイアウト",
+			"keywords": ["レイアウト", "標準", "サイドバー", "読書", "layout", "reading", "folio"]
+		},
+		"appearance-layout-folio-sort": {
+			"title": "Folio の既定の並び順",
+			"section": "レイアウト",
+			"keywords": ["folio", "並べ替え", "名前", "更新日", "作成日"]
+		},
+		"appearance-layout-folio-width": {
+			"title": "Folio のノート一覧の幅",
+			"section": "レイアウト",
+			"keywords": ["folio", "幅", "列", "サイズ"]
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "ノートプレビュー",

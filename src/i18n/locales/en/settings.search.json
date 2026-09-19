@@ -597,9 +597,19 @@
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
-			"title": "Folio Mode",
-			"section": "Experimental",
-			"keywords": ["layout", "reading"]
+			"title": "Workspace layout",
+			"section": "Layout",
+			"keywords": ["layout", "default", "folio", "sidebar", "reading"]
+		},
+		"appearance-layout-folio-sort": {
+			"title": "Default Folio sorting",
+			"section": "Layout",
+			"keywords": ["folio", "sort", "name", "modified", "created"]
+		},
+		"appearance-layout-folio-width": {
+			"title": "Folio notes list width",
+			"section": "Layout",
+			"keywords": ["folio", "width", "column", "resize"]
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Note peek",

@@ -417,14 +417,17 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 	const handleSidebarViewChange = useCallback(
 		(view: "files" | "recents" | "tags") => {
+			if (
+				folioMode &&
+				activeSidebarView.kind !== view &&
+				(activeSidebarView.kind === "folder" || view === "files" || view === "recents")
+			) {
+				handleSelectFolioFolder("");
+			}
 			if (activeSidebarView.kind === view) return;
 			setSidebarView({ kind: view });
-			if (activeSidebarView.kind === "folder") {
-				if (folioMode) {
-					handleSelectFolioFolder("");
-				} else {
-					onSelectDir("");
-				}
+			if (activeSidebarView.kind === "folder" && !folioMode) {
+				onSelectDir("");
 			}
 			if (view === "tags") {
 				void ensureTagsFresh();

@@ -7,6 +7,32 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { FolioNotesListPane } from "./FolioNotesListPane";
 import type { FolioScope } from "./folioScopes";
 
+const translate = vi.hoisted(() => {
+	const labels: Record<string, string> = {
+		"folio.filter": "Filter notes",
+		"sidebar.sortNotes": "Sort notes",
+		"folio.untitled": "Untitled",
+		"folio.noPreview": "No preview",
+		"folio.noDate": "No date",
+		"folio.noFolder": "No folder",
+		"sort.nameAsc": "Name A-Z",
+		"sort.nameDesc": "Name Z-A",
+		"sort.modifiedNewest": "Modified newest",
+		"sort.modifiedOldest": "Modified oldest",
+		"sort.createdNewest": "Created newest",
+		"sort.createdOldest": "Created oldest",
+	};
+	return (key: string) => labels[key.replace(/^shell:/, "")] ?? key;
+});
+
+vi.mock("react-i18next", () => ({
+	useTranslation: () => ({ t: translate }),
+}));
+
+vi.mock("../../i18n", () => ({
+	i18n: { t: translate },
+}));
+
 vi.mock("@tanstack/react-virtual", () => ({
 	useVirtualizer: ({
 		count,
@@ -47,23 +73,52 @@ vi.mock("@tanstack/react-virtual", () => ({
 	},
 }));
 
-const { loadAllDocsMock, prefetchNoteMock, invokeMock, scopeRef } = vi.hoisted(() => ({
-	loadAllDocsMock: vi.fn(),
-	prefetchNoteMock: vi.fn(),
-	invokeMock: vi.fn(),
-	scopeRef: { current: { kind: "all" } as FolioScope },
-}));
+vi.mock("@dnd-kit/react", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@dnd-kit/react")>();
+	return {
+		...actual,
+		useDraggable: () => ({
+			ref: () => {},
+			handleRef: () => {},
+			isDragging: false,
+		}),
+	};
+});
+
+const { prefetchNoteMock, invokeMock, scopeRef, sortModeRef, setFolioSortModeMock } = vi.hoisted(
+	() => {
+		const scopeRef: { current: FolioScope } = { current: { kind: "all" } };
+		const sortModeRef = { current: "name-asc" };
+		return {
+			prefetchNoteMock: vi.fn(),
+			invokeMock: vi.fn(),
+			scopeRef,
+			sortModeRef,
+			setFolioSortModeMock: vi.fn((sortMode: string) => {
+				sortModeRef.current = sortMode;
+			}),
+		};
+	},
+);
 
 vi.mock("../../contexts", () => ({
 	useSpace: () => ({ spacePath: "/space" }),
+	useDateDisplayFormat: () => "friendly",
+	useEditorContext: () => ({ getEditorState: () => null, saveCurrentEditor: vi.fn() }),
 	useUILayoutContext: () => ({
 		folioScope: scopeRef.current,
+		folioSortMode: sortModeRef.current,
+		setFolioScope: vi.fn(),
+		setFolioSortMode: setFolioSortModeMock,
 	}),
 	useFileTreeContext: () => ({
 		itemAppearance: {},
 		setItemAppearance: vi.fn(),
+		setActiveDirPath: vi.fn(),
 		tagAppearance: {},
 		beautifulTags: false,
+		pinnedFiles: [],
+		togglePinnedFile: vi.fn(),
 	}),
 }));
 
@@ -81,12 +136,7 @@ vi.mock("../../lib/navigationPrefetch", async () => {
 	);
 	return {
 		...actual,
-		loadAllDocs: loadAllDocsMock,
 		prefetchNote: prefetchNoteMock,
-		allDocsListQueryOptions: (folderPrefix?: string | null) => ({
-			...actual.allDocsListQueryOptions(folderPrefix),
-			queryFn: () => loadAllDocsMock(folderPrefix),
-		}),
 	};
 });
 
@@ -161,9 +211,24 @@ describe("FolioNotesListPane", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		scopeRef.current = { kind: "all" };
+		sortModeRef.current = "name-asc";
 
-		loadAllDocsMock.mockResolvedValue(notes);
-		invokeMock.mockResolvedValue([]);
+		invokeMock.mockImplementation((command: string, args?: Record<string, unknown>) => {
+			if (command === "space_list_non_markdown_files") {
+				return Promise.resolve({ files: [], truncated: false });
+			}
+			if (command !== "all_docs_list") return Promise.resolve([]);
+			const person = typeof args?.person === "string" ? args.person.replace(/^@/, "") : "";
+			const query = typeof args?.query === "string" ? args.query.toLowerCase() : "";
+			return Promise.resolve(
+				notes.filter(
+					(note) =>
+						(!person || note.people.includes(person)) &&
+						(!query ||
+							`${note.title} ${note.preview} ${note.note_path}`.toLowerCase().includes(query)),
+				),
+			);
+		});
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false, gcTime: 0 } },
 		});
@@ -198,6 +263,10 @@ describe("FolioNotesListPane", () => {
 					onOpenFile={onOpenFile}
 					onOpenFileInNewTab={onOpenFileInNewTab}
 					onDeleteFile={onDeleteFile}
+					onNewFileInDir={vi.fn(async () => null)}
+					onCreateFromTemplateInDir={vi.fn()}
+					onRequestCreateFolder={vi.fn()}
+					onDuplicateFile={vi.fn(async () => null)}
 				/>
 			</QueryClientProvider>,
 		);
@@ -210,7 +279,6 @@ describe("FolioNotesListPane", () => {
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).toContain("Launch planning and milestones");
 		expect(container.textContent).toContain("Sketch");
-		expect(container.querySelector(".folioNotesTitle")).toBeNull();
 		expect(renderedNotePaths(container)).toEqual(["Projects/Roadmap.md", "Ideas/Sketch.md"]);
 		expect(
 			container
@@ -219,7 +287,7 @@ describe("FolioNotesListPane", () => {
 		).toBe("selected");
 	});
 
-	it("filters rows locally", async () => {
+	it("filters rows", async () => {
 		await act(async () => renderPane());
 		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
 
@@ -234,6 +302,11 @@ describe("FolioNotesListPane", () => {
 			valueSetter?.call(input, "road");
 			input.dispatchEvent(new Event("input", { bubbles: true }));
 		});
+		await waitFor(
+			() =>
+				(container.textContent?.includes("Roadmap") ?? false) &&
+				!(container.textContent?.includes("Sketch") ?? false),
+		);
 
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).not.toContain("Sketch");
@@ -248,9 +321,12 @@ describe("FolioNotesListPane", () => {
 		) as HTMLSelectElement | null;
 		expect(select).toBeTruthy();
 		expect(Array.from(select?.options ?? []).map((option) => option.textContent)).toEqual([
-			"Alphabetically",
-			"Edited",
-			"Created",
+			"Name A-Z",
+			"Name Z-A",
+			"Modified newest",
+			"Modified oldest",
+			"Created newest",
+			"Created oldest",
 		]);
 
 		await act(async () => {
@@ -259,9 +335,11 @@ describe("FolioNotesListPane", () => {
 				HTMLSelectElement.prototype,
 				"value",
 			)?.set;
-			valueSetter?.call(select, "edited");
+			valueSetter?.call(select, "modified-desc");
 			select.dispatchEvent(new Event("change", { bubbles: true }));
+			renderPane();
 		});
+		await waitFor(() => renderedNotePaths(container).length === 2);
 
 		expect(renderedNotePaths(container)).toEqual(["Ideas/Sketch.md", "Projects/Roadmap.md"]);
 	});
@@ -281,9 +359,11 @@ describe("FolioNotesListPane", () => {
 				HTMLSelectElement.prototype,
 				"value",
 			)?.set;
-			valueSetter?.call(select, "created");
+			valueSetter?.call(select, "created-desc");
 			select.dispatchEvent(new Event("change", { bubbles: true }));
+			renderPane();
 		});
+		await waitFor(() => renderedNotePaths(container).length === 2);
 
 		expect(renderedNotePaths(container)).toEqual(["Projects/Roadmap.md", "Ideas/Sketch.md"]);
 	});

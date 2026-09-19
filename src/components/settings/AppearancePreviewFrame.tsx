@@ -61,3 +61,32 @@ export function AppearancePreviewFrame({ mode = "default" }: AppearancePreviewFr
 		</span>
 	);
 }
+
+export function AppearanceLayoutPreview({ layout }: { layout: "default" | "folio" }) {
+	return (
+		<span className="settingsAppearancePreview" aria-hidden="true">
+			<span className="settingsAppearancePreviewPane settingsLayoutPreviewPane">
+				<AppearancePreviewChrome />
+				<span className="settingsLayoutPreviewWorkspace">
+					<span className="settingsLayoutPreviewSidebar">
+						<span className="settingsAppearancePreviewLine is-active" />
+						<span className="settingsAppearancePreviewLine" />
+						<span className="settingsAppearancePreviewLine is-short" />
+					</span>
+					{layout === "folio" ? (
+						<span className="settingsLayoutPreviewNoteList">
+							<span className="settingsLayoutPreviewSearch" />
+							<span className="settingsLayoutPreviewNote is-active" />
+							<span className="settingsLayoutPreviewNote" />
+						</span>
+					) : null}
+					<span className="settingsLayoutPreviewEditor">
+						<span className="settingsLayoutPreviewTitle" />
+						<span className="settingsAppearancePreviewLine" />
+						<span className="settingsAppearancePreviewLine is-short" />
+					</span>
+				</span>
+			</span>
+		</span>
+	);
+}
