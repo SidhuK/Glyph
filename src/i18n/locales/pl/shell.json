@@ -46,13 +46,6 @@
 		"filesTruncated": "Wyświetlono pierwsze {{count}} plików.",
 		"loadMore": "Wczytaj więcej notatek",
 		"loadingMore": "Wczytywanie kolejnych notatek…",
-		"scope": {
-			"all": "Wszystkie notatki",
-			"folder": "Folder · {{folder}}",
-			"tag": "Tag · #{{tag}}",
-			"person": "Osoba · @{{person}}",
-			"clear": "Wyczyść filtr notatek"
-		},
 		"delete": {
 			"confirmNote": "Usunąć tę notatkę?",
 			"confirmFile": "Usunąć ten plik?",

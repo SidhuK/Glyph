@@ -46,13 +46,6 @@
 		"filesTruncated": "처음 {{count}}개의 파일을 표시합니다.",
 		"loadMore": "노트 더 불러오기",
 		"loadingMore": "노트 더 불러오는 중…",
-		"scope": {
-			"all": "모든 노트",
-			"folder": "폴더 · {{folder}}",
-			"tag": "태그 · #{{tag}}",
-			"person": "사람 · @{{person}}",
-			"clear": "노트 필터 지우기"
-		},
 		"delete": {
 			"confirmNote": "이 노트를 삭제할까요?",
 			"confirmFile": "이 파일을 삭제할까요?",

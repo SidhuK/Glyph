@@ -453,10 +453,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				}}
 			/>
 			<FolioScopeHeader
-				scope={folioScope}
 				searchQuery={searchQuery}
 				sortMode={folioSortMode}
-				onClearScope={() => setFolioScope({ kind: "all" })}
 				onSearchQueryChange={setSearchQuery}
 				onSortModeChange={setFolioSortMode}
 			/>

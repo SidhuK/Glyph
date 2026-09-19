@@ -55,13 +55,6 @@
 		"filesTruncated": "Showing the first {{count}} files.",
 		"loadMore": "Load more notes",
 		"loadingMore": "Loading more notes…",
-		"scope": {
-			"all": "All notes",
-			"folder": "Folder · {{folder}}",
-			"tag": "Tag · #{{tag}}",
-			"person": "Person · @{{person}}",
-			"clear": "Clear note filter"
-		},
 		"delete": {
 			"confirmNote": "Delete this note?",
 			"confirmFile": "Delete this file?",

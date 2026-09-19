@@ -48,13 +48,6 @@
 		"filesTruncated": "Affichage des {{count}} premiers fichiers.",
 		"loadMore": "Charger plus de notes",
 		"loadingMore": "Chargement d’autres notes…",
-		"scope": {
-			"all": "Toutes les notes",
-			"folder": "Dossier · {{folder}}",
-			"tag": "Étiquette · #{{tag}}",
-			"person": "Personne · @{{person}}",
-			"clear": "Effacer le filtre de notes"
-		},
 		"delete": {
 			"confirmNote": "Supprimer cette note ?",
 			"confirmFile": "Supprimer ce fichier ?",

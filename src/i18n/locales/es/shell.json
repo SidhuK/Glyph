@@ -46,13 +46,6 @@
 		"filesTruncated": "Se muestran los primeros {{count}} archivos.",
 		"loadMore": "Cargar más notas",
 		"loadingMore": "Cargando más notas…",
-		"scope": {
-			"all": "Todas las notas",
-			"folder": "Carpeta · {{folder}}",
-			"tag": "Etiqueta · #{{tag}}",
-			"person": "Persona · @{{person}}",
-			"clear": "Borrar filtro de notas"
-		},
 		"delete": {
 			"confirmNote": "¿Eliminar esta nota?",
 			"confirmFile": "¿Eliminar este archivo?",

@@ -9,7 +9,6 @@ import type { FolioScope } from "./folioScopes";
 
 const translate = vi.hoisted(() => {
 	const labels: Record<string, string> = {
-		"folio.scope.all": "All notes",
 		"folio.filter": "Filter notes",
 		"sidebar.sortNotes": "Sort notes",
 		"folio.untitled": "Untitled",
@@ -280,7 +279,6 @@ describe("FolioNotesListPane", () => {
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).toContain("Launch planning and milestones");
 		expect(container.textContent).toContain("Sketch");
-		expect(container.querySelector(".folioNotesTitle")?.textContent).toBe("All notes");
 		expect(renderedNotePaths(container)).toEqual(["Projects/Roadmap.md", "Ideas/Sketch.md"]);
 		expect(
 			container

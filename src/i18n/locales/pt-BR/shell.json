@@ -46,13 +46,6 @@
 		"filesTruncated": "Mostrando os primeiros {{count}} arquivos.",
 		"loadMore": "Carregar mais notas",
 		"loadingMore": "Carregando mais notas…",
-		"scope": {
-			"all": "Todas as notas",
-			"folder": "Pasta · {{folder}}",
-			"tag": "Tag · #{{tag}}",
-			"person": "Pessoa · @{{person}}",
-			"clear": "Limpar filtro de notas"
-		},
 		"delete": {
 			"confirmNote": "Excluir esta nota?",
 			"confirmFile": "Excluir este arquivo?",

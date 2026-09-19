@@ -46,13 +46,6 @@
 		"filesTruncated": "Die ersten {{count}} Dateien werden angezeigt.",
 		"loadMore": "Weitere Notizen laden",
 		"loadingMore": "Weitere Notizen werden geladen…",
-		"scope": {
-			"all": "Alle Notizen",
-			"folder": "Ordner · {{folder}}",
-			"tag": "Tag · #{{tag}}",
-			"person": "Person · @{{person}}",
-			"clear": "Notizfilter löschen"
-		},
 		"delete": {
 			"confirmNote": "Diese Notiz löschen?",
 			"confirmFile": "Diese Datei löschen?",
