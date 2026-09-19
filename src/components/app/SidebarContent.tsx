@@ -419,6 +419,7 @@ export const SidebarContent = memo(function SidebarContent({
 		(view: "files" | "recents" | "tags") => {
 			if (
 				folioMode &&
+				activeSidebarView.kind !== view &&
 				(activeSidebarView.kind === "folder" || view === "files" || view === "recents")
 			) {
 				handleSelectFolioFolder("");

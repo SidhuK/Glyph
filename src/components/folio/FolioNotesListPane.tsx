@@ -176,13 +176,23 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		overscan: 4,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
+	const setListElement = useCallback(
+		(element: HTMLUListElement | null) => {
+			listRef.current = element;
+			if (element && activeTabPath && selectedIndex >= 0) {
+				rowVirtualizer.scrollToIndex(selectedIndex, { align: "auto" });
+			}
+		},
+		[activeTabPath, rowVirtualizer, selectedIndex],
+	);
+	const hasNonMarkdownRows = notes.some((note) => !note.is_markdown);
 	useVirtualLoadMore({
 		hasMore: hasNextPage,
 		isLoading: isFetchingNextPage,
 		onLoadMore: fetchNextPage,
 		virtualItems,
 		totalItems: sortedNotes.length,
-		remainingItems: 4,
+		remainingItems: hasNonMarkdownRows ? sortedNotes.length : 4,
 	});
 
 	const focusPane = useCallback(() => {
@@ -293,13 +303,25 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const openAdjacentNote = useCallback(
 		(direction: 1 | -1) => {
 			if (!sortedNotes.length || selectedIndex < 0) return;
+			if (direction === 1 && selectedIndex === sortedNotes.length - 1 && hasNextPage) {
+				if (!isFetchingNextPage) void fetchNextPage();
+				return;
+			}
 			const nextIndex = (selectedIndex + direction + sortedNotes.length) % sortedNotes.length;
 			const nextNote = sortedNotes[nextIndex];
 			if (!nextNote) return;
 			scrollNoteIntoView(nextNote.note_path);
 			openNote(nextNote.note_path);
 		},
-		[openNote, scrollNoteIntoView, selectedIndex, sortedNotes],
+		[
+			fetchNextPage,
+			hasNextPage,
+			isFetchingNextPage,
+			openNote,
+			scrollNoteIntoView,
+			selectedIndex,
+			sortedNotes,
+		],
 	);
 
 	const body = (() => {
@@ -330,7 +352,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 					</div>
 				) : null}
 				<ul
-					ref={listRef}
+					ref={setListElement}
 					className="folioNotesList is-virtualized"
 					style={
 						{

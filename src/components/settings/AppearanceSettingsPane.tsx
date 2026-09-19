@@ -57,6 +57,42 @@ import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
 
+interface FolioNotesWidthInputProps {
+	value: number;
+	disabled: boolean;
+	ariaLabel: string;
+	onCommit: (width: number) => void;
+}
+
+function FolioNotesWidthInput({ value, disabled, ariaLabel, onCommit }: FolioNotesWidthInputProps) {
+	const [draft, setDraft] = useState(() => String(value));
+	const commitDraft = () => {
+		const parsed = draft.trim() ? Number(draft) : Number.NaN;
+		const nextWidth = Number.isFinite(parsed) ? normalizeFolioNotesWidth(parsed) : value;
+		setDraft(String(nextWidth));
+		if (nextWidth !== value) onCommit(nextWidth);
+	};
+
+	return (
+		<Input
+			id="folio-notes-width"
+			type="number"
+			className="w-20 [font-variant-numeric:tabular-nums]"
+			min={MIN_FOLIO_NOTES_WIDTH}
+			max={MAX_FOLIO_NOTES_WIDTH}
+			step={10}
+			value={draft}
+			disabled={disabled}
+			aria-label={ariaLabel}
+			onChange={(event) => setDraft(event.currentTarget.value)}
+			onKeyDown={(event) => {
+				if (event.key === "Enter") event.currentTarget.blur();
+			}}
+			onBlur={commitDraft}
+		/>
+	);
+}
+
 export function AppearanceSettingsPane() {
 	const { t } = useTranslation("settings.appearance");
 	const [customThemes, setCustomThemesState] = useState<CustomTheme[]>([]);
@@ -431,21 +467,12 @@ export function AppearanceSettingsPane() {
 						htmlFor="folio-notes-width"
 						searchId="appearance-layout-folio-width"
 					>
-						<Input
-							id="folio-notes-width"
-							type="number"
-							className="w-20 [font-variant-numeric:tabular-nums]"
-							min={MIN_FOLIO_NOTES_WIDTH}
-							max={MAX_FOLIO_NOTES_WIDTH}
-							step={10}
+						<FolioNotesWidthInput
+							key={folioNotesWidth.value}
 							value={folioNotesWidth.value}
 							disabled={folioNotesWidth.isSaving}
-							aria-label={t("layout.folioWidth.ariaLabel")}
-							onChange={(event) => {
-								const nextWidth = event.currentTarget.valueAsNumber;
-								if (!Number.isFinite(nextWidth)) return;
-								folioNotesWidth.onChange(normalizeFolioNotesWidth(nextWidth));
-							}}
+							ariaLabel={t("layout.folioWidth.ariaLabel")}
+							onCommit={folioNotesWidth.onChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>

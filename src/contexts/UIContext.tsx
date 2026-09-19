@@ -365,6 +365,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const sidebarOrderRevisionRef = useRef(0);
 	const zenModeRef = useRef(initialUIState.zenMode);
 	const zenModeRevisionRef = useRef(0);
+	const folioSortModeRef = useRef(initialUIState.folioSortMode);
+	const folioSortModeRevisionRef = useRef(0);
+	const folioNotesWidthRef = useRef(initialUIState.folioNotesWidth);
+	const folioNotesWidthRevisionRef = useRef(0);
 	const {
 		sidebarCollapsed,
 		sidebarWidth,
@@ -442,10 +446,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		}
 		const nextFolioSortMode = payload.ui?.folioSortMode;
 		if (nextFolioSortMode) {
+			folioSortModeRevisionRef.current += 1;
+			folioSortModeRef.current = nextFolioSortMode;
 			dispatch({ type: "setFolioSortMode", value: nextFolioSortMode });
 		}
 		const nextFolioNotesWidth = payload.ui?.folioNotesWidth;
 		if (typeof nextFolioNotesWidth === "number") {
+			folioNotesWidthRevisionRef.current += 1;
+			folioNotesWidthRef.current = nextFolioNotesWidth;
 			dispatch({ type: "setFolioNotesWidth", value: nextFolioNotesWidth });
 		}
 		if (isDateDisplayFormat(payload.ui?.dateDisplayFormat)) {
@@ -531,6 +539,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				const sidebarVisibilityRevision = sidebarVisibilityRevisionRef.current;
 				const sidebarOrderRevision = sidebarOrderRevisionRef.current;
 				const zenModeRevision = zenModeRevisionRef.current;
+				const folioSortModeRevision = folioSortModeRevisionRef.current;
+				const folioNotesWidthRevision = folioNotesWidthRevisionRef.current;
 				const s = await loadSettings({ spacePath: requestedSpacePath });
 				// Discard if unmounted or the active space changed mid-load so we
 				// never stamp the previous space's folders/template as the new one.
@@ -546,8 +556,18 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					sidebarOrderRevision === sidebarOrderRevisionRef.current
 						? s.ui.sidebarOrder
 						: sidebarOrderRef.current;
+				const nextFolioSortMode =
+					folioSortModeRevision === folioSortModeRevisionRef.current
+						? s.ui.folioSortMode
+						: folioSortModeRef.current;
+				const nextFolioNotesWidth =
+					folioNotesWidthRevision === folioNotesWidthRevisionRef.current
+						? s.ui.folioNotesWidth
+						: folioNotesWidthRef.current;
 				sidebarVisibilityRef.current = nextSidebarVisibility;
 				sidebarOrderRef.current = nextSidebarOrder;
+				folioSortModeRef.current = nextFolioSortMode;
+				folioNotesWidthRef.current = nextFolioNotesWidth;
 				dispatch({
 					type: "hydrateSettings",
 					spacePath: requestedSpacePath,
@@ -563,8 +583,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					showToc: s.ui.showToc,
 					zenMode: nextZenMode,
 					folioMode: s.ui.folioMode,
-					folioSortMode: s.ui.folioSortMode,
-					folioNotesWidth: s.ui.folioNotesWidth,
+					folioSortMode: nextFolioSortMode,
+					folioNotesWidth: nextFolioNotesWidth,
 					dateDisplayFormat: s.ui.dateDisplayFormat,
 				});
 			} catch {
@@ -640,14 +660,21 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[],
 	);
 	const setFolioSortMode = useCallback((sortMode: FileTreeSortMode) => {
+		folioSortModeRevisionRef.current += 1;
+		folioSortModeRef.current = sortMode;
 		dispatch({ type: "setFolioSortMode", value: sortMode });
 		void DURABLE_SETTINGS.folioSortMode.write(sortMode);
 	}, []);
 	const setFolioNotesWidth = useCallback((width: number) => {
-		dispatch({ type: "setFolioNotesWidth", value: width });
+		const normalizedWidth = normalizeFolioNotesWidth(width);
+		folioNotesWidthRevisionRef.current += 1;
+		folioNotesWidthRef.current = normalizedWidth;
+		dispatch({ type: "setFolioNotesWidth", value: normalizedWidth });
 	}, []);
 	const commitFolioNotesWidth = useCallback((width: number) => {
 		const normalizedWidth = normalizeFolioNotesWidth(width);
+		folioNotesWidthRevisionRef.current += 1;
+		folioNotesWidthRef.current = normalizedWidth;
 		dispatch({ type: "setFolioNotesWidth", value: normalizedWidth });
 		void DURABLE_SETTINGS.folioNotesWidth.write(normalizedWidth);
 	}, []);

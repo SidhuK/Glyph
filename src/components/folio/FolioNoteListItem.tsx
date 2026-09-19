@@ -9,6 +9,7 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
@@ -75,6 +76,7 @@ const FOLIO_THUMBNAIL_MAX_BYTES = 4 * 1024 * 1024;
 const FOLIO_NOTE_IMAGE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
 const FOLIO_NOTE_URL_SCAN_MAX_BYTES = 256 * 1024;
 const FOLIO_NOTE_URL_READ_CONCURRENCY = 4;
+const FOLIO_DRAG_CLICK_DISTANCE_PX = 5;
 const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
 const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
@@ -393,6 +395,8 @@ export const FolioNoteListItem = memo(
 		const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
 			if (isMarkdown) onPrefetch(note.note_path);
 		});
+		const dragOriginRef = useRef<{ x: number; y: number } | null>(null);
+		const suppressDragClickRef = useRef(false);
 		const {
 			ref: draggableRef,
 			handleRef,
@@ -622,11 +626,36 @@ export const FolioNoteListItem = memo(
 						aria-current={selected ? "page" : undefined}
 						onClick={(event) => {
 							cancelHoverPrefetch();
+							if (suppressDragClickRef.current) {
+								suppressDragClickRef.current = false;
+								return;
+							}
 							if (isMarkdown && (event.metaKey || event.ctrlKey)) {
 								onOpenInNewTab(note.note_path);
 								return;
 							}
 							onOpen(note.note_path);
+						}}
+						onPointerDown={(event) => {
+							event.currentTarget.setPointerCapture(event.pointerId);
+							dragOriginRef.current = { x: event.clientX, y: event.clientY };
+							suppressDragClickRef.current = false;
+						}}
+						onPointerMove={(event) => {
+							const origin = dragOriginRef.current;
+							if (!origin) return;
+							const distanceX = event.clientX - origin.x;
+							const distanceY = event.clientY - origin.y;
+							if (
+								distanceX * distanceX + distanceY * distanceY >=
+								FOLIO_DRAG_CLICK_DISTANCE_PX * FOLIO_DRAG_CLICK_DISTANCE_PX
+							) {
+								suppressDragClickRef.current = true;
+							}
+						}}
+						onPointerCancel={() => {
+							dragOriginRef.current = null;
+							suppressDragClickRef.current = false;
 						}}
 						onContextMenu={handleContextMenu}
 						onDoubleClick={() => {

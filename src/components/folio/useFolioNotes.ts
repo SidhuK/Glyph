@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import type { AllDocsPage } from "../../lib/navigationPrefetch";
 import { loadSettings } from "../../lib/settings";
 import type { FileTreeSortMode } from "../../lib/settings/model";
@@ -112,18 +112,33 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[], query: string
 
 export function useFolioNotes(scope: FolioScope, sortMode: FileTreeSortMode, query: string) {
 	const queryClient = useQueryClient();
+	const visibilityRevisionRef = useRef(0);
+	const latestVisibilityRef = useRef<boolean | null>(null);
 	const folderPrefix =
 		scope.kind === "folder" ? normalizeRelPath(scope.folderPrefix) || null : null;
 	const visibilityQuery = useQuery({
 		queryKey: FILE_VISIBILITY_QUERY_KEY,
-		queryFn: async () => (await loadSettings()).ui.showNonMarkdownFiles,
+		queryFn: async () => {
+			const revision = visibilityRevisionRef.current;
+			try {
+				const loaded = (await loadSettings()).ui.showNonMarkdownFiles;
+				return revision === visibilityRevisionRef.current
+					? loaded
+					: (latestVisibilityRef.current ?? loaded);
+			} catch {
+				return latestVisibilityRef.current ?? true;
+			}
+		},
 	});
 	const includesNonMarkdownFiles =
 		visibilityQuery.data === true && scope.kind !== "tag" && scope.kind !== "person";
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
-			queryClient.setQueryData(FILE_VISIBILITY_QUERY_KEY, payload.ui.showNonMarkdownFiles);
+			const nextVisibility = payload.ui.showNonMarkdownFiles;
+			visibilityRevisionRef.current += 1;
+			latestVisibilityRef.current = nextVisibility;
+			queryClient.setQueryData(FILE_VISIBILITY_QUERY_KEY, nextVisibility);
 		}
 	});
 
@@ -134,7 +149,7 @@ export function useFolioNotes(scope: FolioScope, sortMode: FileTreeSortMode, que
 		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
 	});
 	const filesQuery = useQuery({
-		queryKey: ["navigation", "all-docs", "folio-files", folderPrefix ?? "__all__"],
+		queryKey: ["navigation", "all-docs", "folio-files", folderPrefix],
 		queryFn: () => listNonMarkdownFiles(folderPrefix),
 		enabled: includesNonMarkdownFiles,
 	});
