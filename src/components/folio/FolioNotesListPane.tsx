@@ -126,7 +126,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		useFileTreeContext();
 	const [searchQuery, setSearchQuery] = useState("");
 	const deferredSearchQuery = useDeferredValue(searchQuery);
-	const navigationQueryIdentity = JSON.stringify([folioScope, folioSortMode, searchQuery.trim()]);
+	const navigationQueryIdentity = JSON.stringify([
+		folioScope,
+		folioSortMode,
+		searchQuery.trim(),
+		activeTabPath,
+	]);
 	const navigationQueryIdentityRef = useRef(navigationQueryIdentity);
 	navigationQueryIdentityRef.current = navigationQueryIdentity;
 	const {
@@ -313,7 +318,11 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				if (isFetchingNextPage) return;
 				const pendingQueryIdentity = navigationQueryIdentity;
 				const [nextNote] = await fetchNextPage();
-				if (navigationQueryIdentityRef.current === pendingQueryIdentity && nextNote) {
+				if (
+					listRef.current &&
+					navigationQueryIdentityRef.current === pendingQueryIdentity &&
+					nextNote
+				) {
 					openNote(nextNote.note_path);
 				}
 				return;
