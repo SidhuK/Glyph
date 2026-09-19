@@ -130,10 +130,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		folioScope,
 		folioSortMode,
 		searchQuery.trim(),
+		deferredSearchQuery.trim(),
 		activeTabPath,
 	]);
 	const navigationQueryIdentityRef = useRef(navigationQueryIdentity);
-	navigationQueryIdentityRef.current = navigationQueryIdentity;
 	const {
 		notes,
 		filesTruncated,
@@ -187,11 +187,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const setListElement = useCallback(
 		(element: HTMLUListElement | null) => {
 			listRef.current = element;
+			navigationQueryIdentityRef.current = navigationQueryIdentity;
 			if (element && activeTabPath && selectedIndex >= 0) {
 				rowVirtualizer.scrollToIndex(selectedIndex, { align: "auto" });
 			}
 		},
-		[activeTabPath, rowVirtualizer, selectedIndex],
+		[activeTabPath, navigationQueryIdentity, rowVirtualizer, selectedIndex],
 	);
 	const paginationBoundary = sortedNotes.reduce(
 		(boundary, note, index) => (note.is_markdown ? index + 1 : boundary),
@@ -315,7 +316,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		async (direction: 1 | -1) => {
 			if (!sortedNotes.length || selectedIndex < 0) return;
 			if (direction === 1 && selectedIndex === sortedNotes.length - 1 && hasNextPage) {
-				if (isFetchingNextPage) return;
+				if (isFetchingNextPage || searchQuery.trim() !== deferredSearchQuery.trim()) return;
 				const pendingQueryIdentity = navigationQueryIdentity;
 				const [nextNote] = await fetchNextPage();
 				if (
@@ -334,11 +335,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			openNote(nextNote.note_path);
 		},
 		[
+			deferredSearchQuery,
 			fetchNextPage,
 			hasNextPage,
 			isFetchingNextPage,
 			navigationQueryIdentity,
 			openNote,
+			searchQuery,
 			scrollNoteIntoView,
 			selectedIndex,
 			sortedNotes,

@@ -59,17 +59,17 @@ import { useSettingsValue } from "./useSettingsValue";
 
 interface FolioNotesWidthInputProps {
 	value: number;
-	disabled: boolean;
 	ariaLabel: string;
 	onCommit: (width: number) => void;
 }
 
-function FolioNotesWidthInput({ value, disabled, ariaLabel, onCommit }: FolioNotesWidthInputProps) {
-	const [draft, setDraft] = useState(() => String(value));
+function FolioNotesWidthInput({ value, ariaLabel, onCommit }: FolioNotesWidthInputProps) {
+	const [draft, setDraft] = useState(() => ({ value, text: String(value) }));
+	const draftText = draft.value === value ? draft.text : String(value);
 	const commitDraft = () => {
-		const parsed = draft.trim() ? Number(draft) : Number.NaN;
+		const parsed = draftText.trim() ? Number(draftText) : Number.NaN;
 		const nextWidth = Number.isFinite(parsed) ? normalizeFolioNotesWidth(parsed) : value;
-		setDraft(String(nextWidth));
+		setDraft({ value: nextWidth, text: String(nextWidth) });
 		if (nextWidth !== value) onCommit(nextWidth);
 	};
 
@@ -81,12 +81,11 @@ function FolioNotesWidthInput({ value, disabled, ariaLabel, onCommit }: FolioNot
 			min={MIN_FOLIO_NOTES_WIDTH}
 			max={MAX_FOLIO_NOTES_WIDTH}
 			step={10}
-			value={draft}
-			disabled={disabled}
+			value={draftText}
 			aria-label={ariaLabel}
 			onChange={(event) => {
 				const nextDraft = event.currentTarget.value;
-				setDraft(nextDraft);
+				setDraft({ value, text: nextDraft });
 				const parsed = nextDraft.trim() ? Number(nextDraft) : Number.NaN;
 				if (
 					Number.isFinite(parsed) &&
@@ -94,7 +93,10 @@ function FolioNotesWidthInput({ value, disabled, ariaLabel, onCommit }: FolioNot
 					parsed <= MAX_FOLIO_NOTES_WIDTH
 				) {
 					const nextWidth = normalizeFolioNotesWidth(parsed);
-					if (nextWidth !== value) onCommit(nextWidth);
+					if (nextWidth !== value) {
+						setDraft({ value: nextWidth, text: String(nextWidth) });
+						onCommit(nextWidth);
+					}
 				}
 			}}
 			onKeyDown={(event) => {
@@ -480,9 +482,7 @@ export function AppearanceSettingsPane() {
 						searchId="appearance-layout-folio-width"
 					>
 						<FolioNotesWidthInput
-							key={folioNotesWidth.value}
 							value={folioNotesWidth.value}
-							disabled={folioNotesWidth.isSaving}
 							ariaLabel={t("layout.folioWidth.ariaLabel")}
 							onCommit={folioNotesWidth.onChange}
 						/>
