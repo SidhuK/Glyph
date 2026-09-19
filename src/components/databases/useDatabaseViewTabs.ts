@@ -1,4 +1,5 @@
 import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import { createDefaultDatabaseView } from "../../lib/database/defaultView";
 import { resolveSelectedViewId } from "../../lib/database/selectedViewStorage";
@@ -26,6 +27,7 @@ export function useDatabaseViewTabs({
 	patchActiveView,
 	onBeginRenameFromMenu,
 }: UseDatabaseViewTabsOptions) {
+	const { t } = useTranslation("shell");
 	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
@@ -170,7 +172,10 @@ export function useDatabaseViewTabs({
 		() =>
 			buildViewMenuItems(activeView.layout, viewCount, {
 				onSelectLayout: handleSelectViewLayout,
-				onCreate: () => void handleCreateView(),
+				createLabel: t("collections.addView"),
+				onCreate: () => {
+					void handleCreateView().catch(() => undefined);
+				},
 				onRename: handleRenameFromMenu,
 				onDelete: handleDeleteActiveView,
 			}),
@@ -180,6 +185,7 @@ export function useDatabaseViewTabs({
 			handleCreateView,
 			handleRenameFromMenu,
 			handleSelectViewLayout,
+			t,
 			viewCount,
 		],
 	);

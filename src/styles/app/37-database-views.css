@@ -212,6 +212,10 @@ button.databaseToolbarChip.databasesNewNoteButton {
 		width: 100%;
 	}
 
+	.databaseToolbarInline .databaseToolbarActions {
+		flex-wrap: wrap;
+	}
+
 	.databasesViewTabsCluster {
 		max-width: none;
 		flex: 1 1 auto;

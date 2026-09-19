@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LibraryIcon } from "@hugeicons/core-free-icons";
 import { useReducedMotion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { useDatabasesPane } from "../../hooks/database/useDatabasesPane";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import {
@@ -32,6 +33,7 @@ function DatabasesPaneContent({
 	databasesOpenRequest,
 	initialDocument = null,
 }: DatabasesPaneProps) {
+	const { t } = useTranslation("shell");
 	const reduceMotion = useReducedMotion();
 	const {
 		selection,
@@ -77,8 +79,8 @@ function DatabasesPaneContent({
 								className="databaseToolbarChip databasesNewNoteButton"
 								data-kind="new-note"
 								onClick={() => void actions.handleCreateRow()}
-								title="New note"
-								aria-label="New note"
+								title={t("sidebar.newNote")}
+								aria-label={t("sidebar.newNote")}
 							>
 								<Plus size="var(--icon-sm)" aria-hidden="true" />
 							</button>

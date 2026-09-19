@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
@@ -45,10 +46,21 @@ export function DatabaseToolbar({
 	onViewOptionsOpenChange,
 	className,
 }: DatabaseToolbarProps) {
+	const { t } = useTranslation("shell");
 	const searchValue = config.view.search ?? "";
 	const searchInputId = useId();
 	const configRef = useRef(config);
-	const [searchDraft, setSearchDraft] = useState(searchValue);
+	const [searchState, setSearchState] = useState({
+		draft: searchValue,
+		source: searchValue,
+	});
+	if (searchState.source !== searchValue) {
+		setSearchState({ draft: searchValue, source: searchValue });
+	}
+	const searchDraft = searchState.source === searchValue ? searchState.draft : searchValue;
+	const setSearchDraft = (draft: string) => {
+		setSearchState({ draft, source: searchValue });
+	};
 	configRef.current = config;
 	const hasSelectedGroupColumn =
 		groupColumnId != null && groupColumns.some((column) => column.id === groupColumnId);
@@ -85,8 +97,8 @@ export function DatabaseToolbar({
 						id={searchInputId}
 						className="databaseToolbarSearchInput"
 						value={searchDraft}
-						placeholder="Search this view"
-						aria-label="Search this view"
+						placeholder={t("collections.searchView")}
+						aria-label={t("collections.searchView")}
 						onKeyDown={(event) => {
 							if (event.key !== "Escape") return;
 							event.preventDefault();
@@ -100,8 +112,8 @@ export function DatabaseToolbar({
 							className="databaseToolbarSearchClear"
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={() => setSearchDraft("")}
-							title="Clear search"
-							aria-label="Clear search"
+							title={t("collections.clearSearch")}
+							aria-label={t("collections.clearSearch")}
 						>
 							<X size="var(--icon-sm)" />
 						</button>

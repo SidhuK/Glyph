@@ -202,7 +202,7 @@ export function DatabaseBoard({
 		});
 	const [moveError, setMoveError] = useState("");
 	const [laneEdit, setLaneEdit] = useState<LaneEditState | null>(null);
-	const boardShellRef = useRef<HTMLDivElement | null>(null);
+	const boardScrollRef = useRef<HTMLDivElement | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const suppressClickRef = useRef(false);
 
@@ -377,13 +377,13 @@ export function DatabaseBoard({
 		hasMore: hasMoreRows,
 		isLoading: isLoadingMoreRows,
 		onLoadMore: onLoadMoreRows,
-		rootRef: boardShellRef,
+		rootRef: boardScrollRef,
 		sentinelRef: loadMoreRef,
 		rootMargin: "480px 0px",
 	});
 
 	return (
-		<div ref={boardShellRef} className="databaseBoardShell">
+		<div className="databaseBoardShell">
 			<Dialog
 				open={laneEdit != null}
 				onOpenChange={(open) => {
@@ -457,7 +457,7 @@ export function DatabaseBoard({
 				</m.div>
 			) : (
 				<DragDropProvider onDragEnd={handleDragEnd}>
-					<div className="databaseBoardHorizontal">
+					<div ref={boardScrollRef} className="databaseBoardHorizontal">
 						<div className="databaseBoardScroller">
 							{lanes.map((lane, laneIndex) => (
 								<DatabaseBoardLaneView
@@ -672,12 +672,12 @@ export function DatabaseBoard({
 								</button>
 							) : null}
 						</div>
+						{hasMoreRows ? (
+							<div ref={loadMoreRef} className="databaseBoardLoadMoreSentinel" aria-hidden="true" />
+						) : null}
 					</div>
 				</DragDropProvider>
 			)}
-			{hasMoreRows ? (
-				<div ref={loadMoreRef} className="databaseBoardLoadMoreSentinel" aria-hidden="true" />
-			) : null}
 		</div>
 	);
 }

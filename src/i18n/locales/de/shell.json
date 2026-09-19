@@ -67,8 +67,12 @@
 		"allNotesCollection": "Alle Notizen"
 	},
 	"collections": {
+		"addView": "Ansicht hinzufügen",
+		"clearSearch": "Suche löschen",
+		"delete": "Sammlung löschen",
 		"options": "Sammlungsoptionen",
 		"pin": "Sammlung anheften",
+		"searchView": "Diese Ansicht durchsuchen",
 		"unpin": "Sammlung lösen",
 		"unpinNamed": "{{name}} lösen",
 		"unpinFailed": "Sammlung konnte nicht gelöst werden"

@@ -67,8 +67,12 @@
 		"allNotesCollection": "모든 노트"
 	},
 	"collections": {
+		"addView": "보기 추가",
+		"clearSearch": "검색 지우기",
+		"delete": "컬렉션 삭제",
 		"options": "컬렉션 옵션",
 		"pin": "컬렉션 고정",
+		"searchView": "이 보기 검색",
 		"unpin": "컬렉션 고정 해제",
 		"unpinNamed": "{{name}} 고정 해제",
 		"unpinFailed": "컬렉션 고정을 해제할 수 없습니다"

@@ -67,8 +67,12 @@
 		"allNotesCollection": "Todas las notas"
 	},
 	"collections": {
+		"addView": "Añadir vista",
+		"clearSearch": "Borrar búsqueda",
+		"delete": "Eliminar colección",
 		"options": "Opciones de colección",
 		"pin": "Fijar colección",
+		"searchView": "Buscar en esta vista",
 		"unpin": "Desfijar colección",
 		"unpinNamed": "Desfijar {{name}}",
 		"unpinFailed": "No se pudo desfijar la colección"

@@ -56,13 +56,13 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 		() => [
 			{
 				type: "item",
-				label: "Delete collection",
+				label: t("collections.delete"),
 				destructive: true,
 				iconKey: "trash",
 				onSelect: () => void doc.handleDeleteDatabase(),
 			},
 		],
-		[doc.handleDeleteDatabase],
+		[doc.handleDeleteDatabase, t],
 	);
 
 	return (

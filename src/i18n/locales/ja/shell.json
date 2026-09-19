@@ -67,8 +67,12 @@
 		"allNotesCollection": "すべてのノート"
 	},
 	"collections": {
+		"addView": "ビューを追加",
+		"clearSearch": "検索をクリア",
+		"delete": "コレクションを削除",
 		"options": "コレクションのオプション",
 		"pin": "コレクションをピン留め",
+		"searchView": "このビューを検索",
 		"unpin": "コレクションのピン留めを解除",
 		"unpinNamed": "{{name}}のピン留めを解除",
 		"unpinFailed": "コレクションのピン留めを解除できませんでした"
