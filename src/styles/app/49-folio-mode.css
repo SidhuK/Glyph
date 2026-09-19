@@ -54,28 +54,6 @@
 	white-space: nowrap;
 }
 
-.folioNotesRestoreButton {
-	width: 30px;
-	flex: 0 0 30px;
-	align-self: stretch;
-	display: flex;
-	align-items: flex-start;
-	justify-content: center;
-	padding: 14px 0 0;
-	border: 0;
-	border-right: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	background: var(--bg-primary);
-	color: var(--text-tertiary);
-	cursor: default;
-}
-
-.folioNotesRestoreButton:hover,
-.folioNotesRestoreButton:focus-visible {
-	background: var(--bg-hover);
-	color: var(--text-primary);
-	outline: none;
-}
-
 .folioNotesSearch {
 	height: 28px;
 	flex: 1 1 auto;

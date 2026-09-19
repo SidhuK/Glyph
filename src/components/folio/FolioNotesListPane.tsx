@@ -42,7 +42,6 @@ interface FolioNotesListPaneProps {
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onRequestCreateFolder: (dirPath: string) => void;
 	onDuplicateFile: (path: string) => Promise<string | null>;
-	onCollapse: () => void;
 }
 
 const FOLIO_NOTE_ROW_ESTIMATE = 104;
@@ -120,7 +119,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onCreateFromTemplateInDir,
 	onRequestCreateFolder,
 	onDuplicateFile,
-	onCollapse,
 }: FolioNotesListPaneProps) {
 	const { t } = useTranslation("shell");
 	const { folioScope, folioSortMode, setFolioScope, setFolioSortMode } = useUILayoutContext();
@@ -459,7 +457,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				searchQuery={searchQuery}
 				sortMode={folioSortMode}
 				onClearScope={() => setFolioScope({ kind: "all" })}
-				onCollapse={onCollapse}
 				onSearchQueryChange={setSearchQuery}
 				onSortModeChange={setFolioSortMode}
 			/>

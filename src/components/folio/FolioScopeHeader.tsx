@@ -4,7 +4,6 @@ import {
 	Calendar03Icon,
 	Cancel01Icon,
 	Clock01Icon,
-	PanelLeftCloseIcon,
 	SearchIcon,
 } from "@hugeicons/core-free-icons";
 import { memo } from "react";
@@ -19,7 +18,6 @@ interface FolioScopeHeaderProps {
 	searchQuery: string;
 	sortMode: FileTreeSortMode;
 	onClearScope: () => void;
-	onCollapse: () => void;
 	onSearchQueryChange: (query: string) => void;
 	onSortModeChange: (sortMode: FileTreeSortMode) => void;
 }
@@ -29,7 +27,6 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 	searchQuery,
 	sortMode,
 	onClearScope,
-	onCollapse,
 	onSearchQueryChange,
 	onSortModeChange,
 }: FolioScopeHeaderProps) {
@@ -69,15 +66,6 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 						<HugeiconsIcon icon={Cancel01Icon} size="var(--icon-sm)" />
 					</button>
 				) : null}
-				<button
-					type="button"
-					className="sidebarStackHeaderAction"
-					aria-label={t("folio.collapse")}
-					title={t("folio.collapse")}
-					onClick={onCollapse}
-				>
-					<HugeiconsIcon icon={PanelLeftCloseIcon} size="var(--icon-md)" />
-				</button>
 			</div>
 			<div className="folioNotesControls">
 				<label className="folioNotesSearch">

@@ -268,7 +268,6 @@ describe("FolioNotesListPane", () => {
 					onCreateFromTemplateInDir={vi.fn()}
 					onRequestCreateFolder={vi.fn()}
 					onDuplicateFile={vi.fn(async () => null)}
-					onCollapse={vi.fn()}
 				/>
 			</QueryClientProvider>,
 		);

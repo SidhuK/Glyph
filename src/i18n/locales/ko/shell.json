@@ -35,8 +35,6 @@
 		"createdOldest": "생성일 (오래된순)"
 	},
 	"folio": {
-		"collapse": "노트 목록 접기",
-		"expand": "노트 목록 펼치기",
 		"listAria": "노트 목록",
 		"filter": "노트 필터링",
 		"noDate": "날짜 없음",

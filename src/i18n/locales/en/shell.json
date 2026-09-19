@@ -44,8 +44,6 @@
 		"createdOldest": "Created oldest"
 	},
 	"folio": {
-		"collapse": "Collapse notes list",
-		"expand": "Expand notes list",
 		"listAria": "Notes list",
 		"filter": "Filter notes",
 		"noDate": "No date",

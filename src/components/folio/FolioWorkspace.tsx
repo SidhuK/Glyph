@@ -1,7 +1,4 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { ViewSidebarLeftIcon } from "@hugeicons/core-free-icons";
-import { Activity, type CSSProperties, type ReactNode, memo, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { type CSSProperties, type ReactNode, memo, useMemo } from "react";
 import { useUILayoutContext } from "../../contexts";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { MAX_FOLIO_NOTES_WIDTH, MIN_FOLIO_NOTES_WIDTH } from "../../lib/settings/definitions";
@@ -34,9 +31,7 @@ export const FolioWorkspace = memo(function FolioWorkspace({
 	onRequestCreateFolder,
 	onDuplicateFile,
 }: FolioWorkspaceProps) {
-	const { t } = useTranslation("shell");
 	const { folioNotesWidth, setFolioNotesWidth, commitFolioNotesWidth } = useUILayoutContext();
-	const [notesCollapsed, setNotesCollapsed] = useState(false);
 	const resize = useResizablePanel({
 		min: MIN_FOLIO_NOTES_WIDTH,
 		max: MAX_FOLIO_NOTES_WIDTH,
@@ -55,41 +50,27 @@ export const FolioWorkspace = memo(function FolioWorkspace({
 
 	return (
 		<div className="folioWorkspace" style={style}>
-			<Activity mode={notesCollapsed ? "hidden" : "visible"}>
-				<FolioNotesListPane
-					activeTabPath={activeTabPath}
-					onOpenFile={onOpenFile}
-					onOpenFileInNewTab={onOpenFileInNewTab}
-					onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
-					onRenameFile={onRenameFile}
-					onDeleteFile={onDeleteFile}
-					onNewFileInDir={onNewFileInDir}
-					onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-					onRequestCreateFolder={onRequestCreateFolder}
-					onDuplicateFile={onDuplicateFile}
-					onCollapse={() => setNotesCollapsed(true)}
-				/>
-				<div
-					ref={resize.resizeRef}
-					className="folioNotesResizeHandle"
-					onPointerDown={resize.handlePointerDown}
-					onPointerMove={resize.handlePointerMove}
-					onPointerUp={resize.handlePointerUp}
-					onPointerCancel={resize.handlePointerUp}
-					data-window-drag-ignore
-				/>
-			</Activity>
-			{notesCollapsed ? (
-				<button
-					type="button"
-					className="folioNotesRestoreButton"
-					aria-label={t("folio.expand")}
-					title={t("folio.expand")}
-					onClick={() => setNotesCollapsed(false)}
-				>
-					<HugeiconsIcon icon={ViewSidebarLeftIcon} size="var(--icon-md)" />
-				</button>
-			) : null}
+			<FolioNotesListPane
+				activeTabPath={activeTabPath}
+				onOpenFile={onOpenFile}
+				onOpenFileInNewTab={onOpenFileInNewTab}
+				onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
+				onRenameFile={onRenameFile}
+				onDeleteFile={onDeleteFile}
+				onNewFileInDir={onNewFileInDir}
+				onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+				onRequestCreateFolder={onRequestCreateFolder}
+				onDuplicateFile={onDuplicateFile}
+			/>
+			<div
+				ref={resize.resizeRef}
+				className="folioNotesResizeHandle"
+				onPointerDown={resize.handlePointerDown}
+				onPointerMove={resize.handlePointerMove}
+				onPointerUp={resize.handlePointerUp}
+				onPointerCancel={resize.handlePointerUp}
+				data-window-drag-ignore
+			/>
 			<div className="folioEditorHost">{children}</div>
 		</div>
 	);

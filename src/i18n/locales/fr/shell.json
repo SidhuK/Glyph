@@ -37,8 +37,6 @@
 		"createdOldest": "Créées (plus anciennes)"
 	},
 	"folio": {
-		"collapse": "Réduire la liste des notes",
-		"expand": "Développer la liste des notes",
 		"listAria": "Liste des notes",
 		"filter": "Filtrer les notes",
 		"noDate": "Aucune date",

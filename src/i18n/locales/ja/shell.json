@@ -35,8 +35,6 @@
 		"createdOldest": "作成日（古い順）"
 	},
 	"folio": {
-		"collapse": "ノート一覧を折りたたむ",
-		"expand": "ノート一覧を展開",
 		"listAria": "ノート一覧",
 		"filter": "ノートを絞り込む",
 		"noDate": "日付なし",

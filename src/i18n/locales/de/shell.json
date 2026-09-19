@@ -35,8 +35,6 @@
 		"createdOldest": "Erstellt (älteste)"
 	},
 	"folio": {
-		"collapse": "Notizenliste einklappen",
-		"expand": "Notizenliste ausklappen",
 		"listAria": "Notizenliste",
 		"filter": "Notizen filtern",
 		"noDate": "Kein Datum",

@@ -35,8 +35,6 @@
 		"createdOldest": "Utworzone: najstarsze"
 	},
 	"folio": {
-		"collapse": "Zwiń listę notatek",
-		"expand": "Rozwiń listę notatek",
 		"listAria": "Lista notatek",
 		"filter": "Filtruj notatki",
 		"noDate": "Brak daty",
