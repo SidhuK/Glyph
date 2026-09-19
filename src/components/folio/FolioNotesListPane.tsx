@@ -185,14 +185,17 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		[activeTabPath, rowVirtualizer, selectedIndex],
 	);
-	const hasNonMarkdownRows = notes.some((note) => !note.is_markdown);
+	const paginationBoundary = sortedNotes.reduce(
+		(boundary, note, index) => (note.is_markdown ? index + 1 : boundary),
+		0,
+	);
 	useVirtualLoadMore({
 		hasMore: hasNextPage,
 		isLoading: isFetchingNextPage,
 		onLoadMore: fetchNextPage,
 		virtualItems,
-		totalItems: sortedNotes.length,
-		remainingItems: hasNonMarkdownRows ? sortedNotes.length : 4,
+		totalItems: paginationBoundary,
+		remainingItems: 4,
 	});
 
 	const focusPane = useCallback(() => {
@@ -301,10 +304,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		[appearancePickerPath, changeAppearance, itemAppearance],
 	);
 	const openAdjacentNote = useCallback(
-		(direction: 1 | -1) => {
+		async (direction: 1 | -1) => {
 			if (!sortedNotes.length || selectedIndex < 0) return;
 			if (direction === 1 && selectedIndex === sortedNotes.length - 1 && hasNextPage) {
-				if (!isFetchingNextPage) void fetchNextPage();
+				if (isFetchingNextPage) return;
+				const [nextNote] = await fetchNextPage();
+				if (nextNote) openNote(nextNote.note_path);
 				return;
 			}
 			const nextIndex = (selectedIndex + direction + sortedNotes.length) % sortedNotes.length;
@@ -426,7 +431,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				if (isEditableTarget(event.target)) return;
 				if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 					event.preventDefault();
-					openAdjacentNote(event.key === "ArrowDown" ? 1 : -1);
+					void openAdjacentNote(event.key === "ArrowDown" ? 1 : -1);
 					return;
 				}
 				if (event.key === "Enter") {

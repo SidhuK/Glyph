@@ -84,7 +84,19 @@ function FolioNotesWidthInput({ value, disabled, ariaLabel, onCommit }: FolioNot
 			value={draft}
 			disabled={disabled}
 			aria-label={ariaLabel}
-			onChange={(event) => setDraft(event.currentTarget.value)}
+			onChange={(event) => {
+				const nextDraft = event.currentTarget.value;
+				setDraft(nextDraft);
+				const parsed = nextDraft.trim() ? Number(nextDraft) : Number.NaN;
+				if (
+					Number.isFinite(parsed) &&
+					parsed >= MIN_FOLIO_NOTES_WIDTH &&
+					parsed <= MAX_FOLIO_NOTES_WIDTH
+				) {
+					const nextWidth = normalizeFolioNotesWidth(parsed);
+					if (nextWidth !== value) onCommit(nextWidth);
+				}
+			}}
 			onKeyDown={(event) => {
 				if (event.key === "Enter") event.currentTarget.blur();
 			}}

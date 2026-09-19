@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import type { AllDocsPage } from "../../lib/navigationPrefetch";
 import { loadSettings } from "../../lib/settings";
 import type { FileTreeSortMode } from "../../lib/settings/model";
@@ -163,6 +163,11 @@ export function useFolioNotes(scope: FolioScope, sortMode: FileTreeSortMode, que
 			),
 		[filesQuery.data?.files, includesNonMarkdownFiles, notesQuery.data?.pages, query],
 	);
+	const loadedPageCount = notesQuery.data?.pages.length ?? 0;
+	const fetchNextPage = useCallback(async () => {
+		const result = await notesQuery.fetchNextPage();
+		return result.data?.pages[loadedPageCount]?.items ?? [];
+	}, [loadedPageCount, notesQuery.fetchNextPage]);
 
 	return {
 		notes: items,
@@ -172,6 +177,6 @@ export function useFolioNotes(scope: FolioScope, sortMode: FileTreeSortMode, que
 		hasNextPage: notesQuery.hasNextPage,
 		isFetchingNextPage: notesQuery.isFetchingNextPage,
 		isLoading: notesQuery.isPending,
-		fetchNextPage: notesQuery.fetchNextPage,
+		fetchNextPage,
 	};
 }
