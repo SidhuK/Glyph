@@ -1,9 +1,8 @@
-import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
 	createBoardLanes,
-	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
 	moveBoardCardToLane,
 	moveBoardLaneToIndex,
@@ -18,7 +17,6 @@ interface UseDatabaseBoardParams {
 	initialGroupColumnId?: string | null;
 	initialLaneOrderByGroup?: Record<string, string[]>;
 	initialCardOrderByGroup?: Record<string, Record<string, string[]>>;
-	onGroupColumnIdChange?: (groupColumnId: string | null) => void;
 	onLaneOrderChange?: (groupColumnId: string, laneOrder: string[]) => void | Promise<void>;
 	onCardOrderChange?: (
 		groupColumnId: string,
@@ -123,12 +121,10 @@ export function useDatabaseBoard({
 	initialGroupColumnId = null,
 	initialLaneOrderByGroup = {},
 	initialCardOrderByGroup = {},
-	onGroupColumnIdChange,
 	onLaneOrderChange,
 	onCardOrderChange,
 }: UseDatabaseBoardParams) {
 	const groupColumns = useMemo(() => getBoardGroupColumns(columns), [columns]);
-	const [rawGroupColumnId, setRawGroupColumnId] = useState<string | null>(() => null);
 	const [laneOrderByGroup, setLaneOrderByGroup] = useState<Record<string, string[]>>(
 		() => initialLaneOrderByGroup,
 	);
@@ -165,20 +161,10 @@ export function useDatabaseBoard({
 		);
 	}, [initialCardOrderByGroup]);
 
-	const effectiveGroupColumnId = useMemo(() => {
-		const candidate = rawGroupColumnId ?? initialGroupColumnId;
-		if (candidate && groupColumns.some((column) => column.id === candidate)) {
-			return candidate;
-		}
-		return defaultBoardGroupColumnId(groupColumns);
-	}, [groupColumns, initialGroupColumnId, rawGroupColumnId]);
-
 	const groupColumn = useMemo(
 		() =>
-			groupColumns.find((column) => column.id === effectiveGroupColumnId) ??
-			groupColumns[0] ??
-			null,
-		[effectiveGroupColumnId, groupColumns],
+			groupColumns.find((column) => column.id === initialGroupColumnId) ?? groupColumns[0] ?? null,
+		[groupColumns, initialGroupColumnId],
 	);
 
 	const lanes = useMemo(() => {
@@ -387,15 +373,10 @@ export function useDatabaseBoard({
 	return {
 		groupColumns,
 		groupColumn,
-		groupColumnId: effectiveGroupColumnId,
 		lanes,
 		addLane,
 		moveLaneToIndex,
 		renameLane,
 		moveCardToLane,
-		setGroupColumnId: (nextColumnId: string | null) => {
-			startTransition(() => setRawGroupColumnId(nextColumnId));
-			onGroupColumnIdChange?.(nextColumnId);
-		},
 	};
 }

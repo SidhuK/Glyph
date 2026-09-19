@@ -578,11 +578,6 @@
 	opacity: 1;
 }
 
-.databaseTable .databaseGroupCell {
-	border-top: 1px solid var(--border-light);
-	border-bottom: 1px solid var(--border-light);
-}
-
 .databaseGroupLabel {
 	min-width: 0;
 	overflow: hidden;
@@ -649,15 +644,6 @@
 	.databaseToolbar,
 	.databaseToolbarActions {
 		flex-wrap: wrap;
-		grid-template-columns: 1fr;
-	}
-
-	.databaseTableShell {
-		padding: 0;
-	}
-
-	.databaseBoardShell {
-		padding: 0;
 	}
 }
 

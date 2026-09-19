@@ -46,7 +46,6 @@ function DatabasesPaneContent({
 		actions,
 		ui,
 	} = useDatabasesPane({
-		onOpenFile,
 		onRenameNotePath,
 		databasesOpenRequest,
 		initialDocument,
@@ -86,7 +85,6 @@ function DatabasesPaneContent({
 							</button>
 						</div>
 						<DatabaseToolbar
-							key={activeCollection.view.id}
 							className="databaseToolbarInline"
 							databaseView={activeCollection.config.view.layout}
 							groupColumns={views.groupColumns}
@@ -122,7 +120,6 @@ function DatabasesPaneContent({
 							boardCardFields={
 								activeCollection.config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS
 							}
-							onGroupColumnIdChange={views.handleGroupColumnIdChange}
 							onLaneOrderChange={views.boardHandlers.onLaneOrderChange}
 							onCardOrderChange={views.boardHandlers.onCardOrderChange}
 							onLaneColorChange={views.boardHandlers.onLaneColorChange}

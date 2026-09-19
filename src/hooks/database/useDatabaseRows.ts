@@ -18,7 +18,7 @@ import type {
 import { invoke } from "../../lib/tauri";
 import type { PaneErrorHandlers } from "./types";
 
-export interface UseDatabaseRowsOptions extends PaneErrorHandlers {
+interface UseDatabaseRowsOptions extends PaneErrorHandlers {
 	selectedDatabaseId: string | null;
 	selectedViewId: string | null;
 	document: WorkspaceDatabaseDocument | null;
@@ -130,10 +130,6 @@ export function useDatabaseRows({
 		[pageSize, queryClient, rowsQueryKey, selectedDatabaseId, selectedViewId],
 	);
 
-	const clearRows = useCallback(() => {
-		setSelectedRowPath(null);
-	}, []);
-
 	useEffect(() => {
 		const previous = previousSelectionRef.current;
 		if (
@@ -151,14 +147,6 @@ export function useDatabaseRows({
 		setSelectedRowPath(null);
 	}, [pageSize, selectedDatabaseId, selectedViewId]);
 
-	const loadRows = useCallback(async () => {
-		if (!canLoadRows) {
-			setSelectedRowPath(null);
-			return;
-		}
-		await rowsQuery.refetch();
-	}, [canLoadRows, rowsQuery]);
-
 	useEffect(() => {
 		if (rowsQuery.error) {
 			setError(extractErrorMessage(rowsQuery.error));
@@ -173,7 +161,5 @@ export function useDatabaseRows({
 		loadMoreRows: rowsQuery.fetchNextPage,
 		selectedRowPath,
 		setSelectedRowPath,
-		loadRows,
-		clearRows,
 	};
 }

@@ -5,7 +5,7 @@ import { viewToConfig } from "../../lib/database/viewConfig";
 import type { DatabaseColumn, DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 import type { DatabaseView } from "./types";
 
-export interface ActiveViewConfig {
+interface ActiveViewConfig {
 	activeConfig: DatabaseConfig | null;
 	activeView: DatabaseView | null;
 	groupColumns: DatabaseColumn[];
@@ -14,7 +14,7 @@ export interface ActiveViewConfig {
 	resolvedColumns: DatabaseColumn[];
 }
 
-export interface UseActiveViewConfigOptions {
+interface UseActiveViewConfigOptions {
 	document: WorkspaceDatabaseDocument | null;
 	selectedViewId: string | null;
 }

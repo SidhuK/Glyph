@@ -62,14 +62,11 @@ export function DatabaseToolbar({
 		setSearchState({ draft, source: searchValue });
 	};
 	configRef.current = config;
-	const hasSelectedGroupColumn =
-		groupColumnId != null && groupColumns.some((column) => column.id === groupColumnId);
 	const selectedGroupColumn =
-		(hasSelectedGroupColumn ? groupColumns.find((column) => column.id === groupColumnId) : null) ??
+		groupColumns.find((column) => column.id === groupColumnId) ??
 		(databaseView === "board" ? groupColumns[0] : null) ??
 		null;
-	const selectedGroupColumnId =
-		selectedGroupColumn?.id ?? (databaseView === "board" ? groupColumns[0]?.id : "") ?? "";
+	const selectedGroupColumnId = selectedGroupColumn?.id ?? "";
 	const groupByLabel = "Grouped by";
 
 	useEffect(() => {

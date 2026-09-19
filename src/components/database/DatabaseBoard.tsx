@@ -62,7 +62,6 @@ interface DatabaseBoardProps {
 		initialValue?: { column: DatabaseColumn; laneId: string } | null,
 	) => void | Promise<void>;
 	onOpenColumns: () => void;
-	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	laneOrderByGroup?: Record<string, string[]>;
 	cardOrderByGroup?: Record<string, Record<string, string[]>>;
 	onLaneOrderChange?: (groupColumnId: string, laneOrder: string[]) => void | Promise<void>;
@@ -164,7 +163,6 @@ export function DatabaseBoard({
 	onOpenRow,
 	onCreateRow,
 	onOpenColumns,
-	onGroupColumnIdChange,
 	laneOrderByGroup = {},
 	cardOrderByGroup = {},
 	onLaneOrderChange,
@@ -196,7 +194,6 @@ export function DatabaseBoard({
 			initialGroupColumnId: persistedGroupColumnId,
 			initialLaneOrderByGroup: laneOrderByGroup,
 			initialCardOrderByGroup: cardOrderByGroup,
-			onGroupColumnIdChange,
 			onLaneOrderChange,
 			onCardOrderChange,
 		});
@@ -601,7 +598,7 @@ export function DatabaseBoard({
 																			</span>
 																		) : null}
 																	</div>
-																	<div className="databaseBoardCardMetaGroup is-priority">
+																	<div className="databaseBoardCardMetaGroup">
 																		{isCardFieldVisible("priority") &&
 																			visiblePriorities.map((priority, priorityIndex) => (
 																				<PriorityPropertyPill

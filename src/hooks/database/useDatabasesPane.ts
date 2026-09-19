@@ -11,8 +11,7 @@ import { useDatabaseViewActions } from "./useDatabaseViewActions";
 const DATABASE_TABLE_ROW_PAGE_SIZE = 200;
 const DATABASE_BOARD_ROW_PAGE_SIZE = 48;
 
-export interface UseDatabasesPaneOptions {
-	onOpenFile: (relPath: string) => Promise<void>;
+interface UseDatabasesPaneOptions {
 	onRenameNotePath?: (notePath: string, nextName: string) => Promise<string | null>;
 	databasesOpenRequest: DatabasesOpenRequest;
 	initialDocument?: WorkspaceDatabaseDocument | null;
@@ -78,7 +77,6 @@ export function useDatabasesPane({
 			summaries: workspace.summaries,
 			selectedDatabaseId: workspace.selectedDatabaseId,
 			setSelectedDatabaseId: workspace.setSelectedDatabaseId,
-			loadSummaries: workspace.loadSummaries,
 			createCollectionOpen: workspace.createCollectionOpen,
 			setCreateCollectionOpen: workspace.setCreateCollectionOpen,
 			openCreateCollectionDialog: workspace.openCreateCollectionDialog,

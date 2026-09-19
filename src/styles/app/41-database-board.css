@@ -437,10 +437,6 @@
 	overflow: hidden;
 }
 
-.databaseBoardCardMetaGroup.is-priority {
-	justify-content: flex-start;
-}
-
 .databaseBoardCardTags {
 	display: flex;
 	flex-wrap: nowrap;

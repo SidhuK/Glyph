@@ -21,7 +21,7 @@ function fileNameFromTitle(notePath: string, nextTitle: string): string {
 	return `${nextTitle}${currentName.slice(fallbackDotIndex)}`;
 }
 
-export interface UseDatabaseRowActionsOptions extends PaneErrorHandlers {
+interface UseDatabaseRowActionsOptions extends PaneErrorHandlers {
 	document: WorkspaceDatabaseDocument | null;
 	selectedViewId: string | null;
 	activeColumns: DatabaseColumn[];

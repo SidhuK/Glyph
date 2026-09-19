@@ -1,9 +1,9 @@
 import type { WorkspaceDatabaseSummary } from "../tauri";
 import type { ActionMenuItem } from "./actionMenuItems";
 
-export type DatabaseViewLayout = "table" | "board";
+type DatabaseViewLayout = "table" | "board";
 
-export interface ViewMenuActions {
+interface ViewMenuActions {
 	onSelectLayout: (layout: DatabaseViewLayout) => void;
 	createLabel: string;
 	onCreate: () => void;

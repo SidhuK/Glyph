@@ -6,7 +6,7 @@ import { resolveSelectedViewId } from "../../lib/database/selectedViewStorage";
 import { buildViewMenuItems } from "../../lib/database/viewMenuItems";
 import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 
-export interface UseDatabaseViewTabsOptions {
+interface UseDatabaseViewTabsOptions {
 	document: WorkspaceDatabaseDocument;
 	selectedViewId: string;
 	setSelectedViewId: (viewId: string | null) => void;
@@ -147,7 +147,7 @@ export function useDatabaseViewTabs({
 	);
 
 	const handleDeleteActiveView = useCallback(() => {
-		void handleDeleteView(activeView.id).catch(() => undefined);
+		void handleDeleteView(activeView.id);
 	}, [activeView.id, handleDeleteView]);
 
 	const handleCreateView = useCallback(async () => {
@@ -192,11 +192,9 @@ export function useDatabaseViewTabs({
 
 	return {
 		views,
-		activeView,
 		renamingViewId,
 		viewNameDraft,
 		viewNameInputRef,
-		setSelectedViewId,
 		startViewRename,
 		commitViewRename,
 		setViewNameDraft,
