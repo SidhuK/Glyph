@@ -257,8 +257,10 @@ export function AppearanceSettingsPane() {
 		if (payload.ui?.darkThemeId) darkThemeId.setValue(payload.ui.darkThemeId);
 		applyIfBoolean(payload.ui?.translucentApp, translucentApp.setValue);
 		applyIfBoolean(payload.ui?.folioMode, folioMode.setChecked);
-		if (payload.ui?.folioSortMode) folioSortMode.setValue(payload.ui.folioSortMode);
-		if (typeof payload.ui?.folioNotesWidth === "number") {
+		if (payload.ui?.folioSortMode && !folioSortMode.isSaving) {
+			folioSortMode.setValue(payload.ui.folioSortMode);
+		}
+		if (typeof payload.ui?.folioNotesWidth === "number" && !folioNotesWidth.isSaving) {
 			folioNotesWidth.setValue(payload.ui.folioNotesWidth);
 		}
 		if (payload.ui?.cornerRadiusStyle) {
