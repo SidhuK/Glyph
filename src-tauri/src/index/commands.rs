@@ -249,7 +249,7 @@ pub fn index_set_people_mentions_as_tags_enabled(enabled: bool) -> Result<(), St
     Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn all_docs_list(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
