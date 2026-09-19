@@ -371,7 +371,7 @@ export function DatabaseBoard({
 	);
 
 	useSentinelLoadMore({
-		hasMore: hasMoreRows,
+		hasMore: hasMoreRows && groupColumns.length > 0,
 		isLoading: isLoadingMoreRows,
 		onLoadMore: onLoadMoreRows,
 		rootRef: boardScrollRef,
