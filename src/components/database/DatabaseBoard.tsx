@@ -26,7 +26,6 @@ import {
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
 import type { NoteTaskSummary } from "../../lib/tauri";
-import { Plus } from "../Icons";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import type { EditorTextColor } from "../editor/textColors";
 import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
@@ -89,9 +88,8 @@ interface DatabaseBoardProps {
 	) => Promise<void>;
 }
 
-interface LaneEditState {
-	mode: "add" | "rename";
-	lane: DatabaseBoardLane | null;
+interface LaneRenameState {
+	lane: DatabaseBoardLane;
 	value: string;
 }
 
@@ -187,7 +185,7 @@ export function DatabaseBoard({
 	const dateDisplayFormat = useDateDisplayFormat();
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion();
-	const { groupColumn, groupColumns, lanes, addLane, moveLaneToIndex, renameLane, moveCardToLane } =
+	const { groupColumn, groupColumns, lanes, moveLaneToIndex, renameLane, moveCardToLane } =
 		useDatabaseBoard({
 			rows,
 			columns,
@@ -198,7 +196,7 @@ export function DatabaseBoard({
 			onCardOrderChange,
 		});
 	const [moveError, setMoveError] = useState("");
-	const [laneEdit, setLaneEdit] = useState<LaneEditState | null>(null);
+	const [laneRename, setLaneRename] = useState<LaneRenameState | null>(null);
 	const boardScrollRef = useRef<HTMLDivElement | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const suppressClickRef = useRef(false);
@@ -245,38 +243,27 @@ export function DatabaseBoard({
 		[groupColumn, onCreateRow],
 	);
 
-	const handleAddLane = useCallback(() => {
-		if (!groupColumn || !canManageLanes) return;
-		setMoveError("");
-		setLaneEdit({ mode: "add", lane: null, value: "" });
-	}, [canManageLanes, groupColumn]);
-
 	const handleRenameLane = useCallback(
 		(lane: DatabaseBoardLane) => {
 			if (!groupColumn || !canManageLanes) return;
 			setMoveError("");
-			setLaneEdit({ mode: "rename", lane, value: lane.label });
+			setLaneRename({ lane, value: lane.label });
 		},
 		[canManageLanes, groupColumn],
 	);
 
-	const commitLaneEdit = useCallback(async () => {
-		if (!laneEdit || !groupColumn || !canManageLanes) return;
-		const laneId = boardLaneIdFromLabel(groupColumn, laneEdit.value);
+	const commitLaneRename = useCallback(async () => {
+		if (!laneRename || !groupColumn || !canManageLanes) return;
+		const laneId = boardLaneIdFromLabel(groupColumn, laneRename.value);
 		if (!laneId) return;
-		if (lanes.some((lane) => lane.id === laneId && lane.id !== laneEdit.lane?.id)) {
+		if (lanes.some((lane) => lane.id === laneId && lane.id !== laneRename.lane.id)) {
 			setMoveError(`"${laneId}" already exists.`);
 			return;
 		}
 		setMoveError("");
-		if (laneEdit.mode === "add") {
-			addLane(laneId);
-			setLaneEdit(null);
-			return;
-		}
-		const lane = laneEdit.lane;
-		if (!lane || laneId === lane.id) {
-			setLaneEdit(null);
+		const lane = laneRename.lane;
+		if (laneId === lane.id) {
+			setLaneRename(null);
 			return;
 		}
 		try {
@@ -296,11 +283,11 @@ export function DatabaseBoard({
 				}),
 			);
 			renameLane(lane.id, laneId);
-			setLaneEdit(null);
+			setLaneRename(null);
 		} catch (error) {
 			setMoveError(extractErrorMessage(error));
 		}
-	}, [addLane, canManageLanes, groupColumn, laneEdit, lanes, onSaveCell, renameLane]);
+	}, [canManageLanes, groupColumn, laneRename, lanes, onSaveCell, renameLane]);
 
 	const handleLaneDrop = useCallback(
 		async (
@@ -382,44 +369,42 @@ export function DatabaseBoard({
 	return (
 		<div className="databaseBoardShell">
 			<Dialog
-				open={laneEdit != null}
+				open={laneRename != null}
 				onOpenChange={(open) => {
-					if (!open) setLaneEdit(null);
+					if (!open) setLaneRename(null);
 				}}
 			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>{laneEdit?.mode === "rename" ? "Rename lane" : "Add lane"}</DialogTitle>
+						<DialogTitle>Rename lane</DialogTitle>
 						<DialogDescription>
 							{groupColumn
-								? laneEdit?.mode === "rename"
-									? `Rename this ${groupColumn.label.toLowerCase()} lane. Cards here keep that value.`
-									: `Cards you add or move here will get this ${groupColumn.label.toLowerCase()}.`
-								: "Set the value for this board lane."}
+								? `Rename this ${groupColumn.label.toLowerCase()} lane. Cards here keep that value.`
+								: "Rename this board lane."}
 						</DialogDescription>
 					</DialogHeader>
 					<form
 						className="grid gap-4"
 						onSubmit={(event) => {
 							event.preventDefault();
-							void commitLaneEdit();
+							void commitLaneRename();
 						}}
 					>
 						<Input
 							autoFocus
-							value={laneEdit?.value ?? ""}
+							value={laneRename?.value ?? ""}
 							aria-label="Lane name"
 							onChange={(event) =>
-								setLaneEdit((current) =>
+								setLaneRename((current) =>
 									current ? { ...current, value: event.target.value } : current,
 								)
 							}
 						/>
 						<DialogFooter>
-							<Button type="button" variant="outline" onClick={() => setLaneEdit(null)}>
+							<Button type="button" variant="outline" onClick={() => setLaneRename(null)}>
 								Cancel
 							</Button>
-							<Button type="submit">{laneEdit?.mode === "rename" ? "Rename" : "Add"}</Button>
+							<Button type="submit">Rename</Button>
 						</DialogFooter>
 					</form>
 				</DialogContent>
@@ -470,7 +455,6 @@ export function DatabaseBoard({
 									shouldReduceMotion={shouldReduceMotion}
 									onLaneColorChange={isPriorityGroup ? null : handleLaneColorChange}
 									onAddCard={onCreateRow ? () => handleCreateRowInLane(lane.id) : undefined}
-									onAddLane={canManageLanes ? handleAddLane : undefined}
 									onRenameLane={canManageLanes ? handleRenameLane : undefined}
 									reorderableLanes={reorderableLanes}
 									moveLaneToIndex={moveLaneToIndex}
@@ -478,9 +462,8 @@ export function DatabaseBoard({
 									{lane.rows.length > 0 ? (
 										lane.rows.map((row) => {
 											const title = boardCardTitle(row, lane.label);
-											const maxVisibleTags = 2;
-											const visibleTags = row.tags.slice(0, maxVisibleTags);
-											const extraTagCount = Math.max(row.tags.length - maxVisibleTags, 0);
+											const visibleTags = row.tags.slice(0, 1);
+											const extraTagCount = Math.max(row.tags.length - 1, 0);
 											const statusValues = boardCardTextPropertyValues(row, "status");
 											const maxVisibleStatuses = 2;
 											const visibleStatuses = statusValues.slice(0, maxVisibleStatuses);
@@ -657,17 +640,6 @@ export function DatabaseBoard({
 									)}
 								</DatabaseBoardLaneView>
 							))}
-							{canManageLanes ? (
-								<button
-									type="button"
-									className="databaseBoardAddLaneButton"
-									onClick={handleAddLane}
-									title="Add lane"
-									aria-label="Add board lane"
-								>
-									<Plus size="var(--icon-md)" aria-hidden="true" />
-								</button>
-							) : null}
 						</div>
 						{hasMoreRows ? (
 							<div ref={loadMoreRef} className="databaseBoardLoadMoreSentinel" aria-hidden="true" />

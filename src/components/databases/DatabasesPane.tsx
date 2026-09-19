@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LibraryIcon } from "@hugeicons/core-free-icons";
+import { CursorAddSelection02Icon, LibraryIcon } from "@hugeicons/core-free-icons";
 import { useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { useDatabasesPane } from "../../hooks/database/useDatabasesPane";
@@ -81,7 +81,12 @@ function DatabasesPaneContent({
 								title={t("sidebar.newNote")}
 								aria-label={t("sidebar.newNote")}
 							>
-								<Plus size="var(--icon-sm)" aria-hidden="true" />
+								<HugeiconsIcon
+									icon={CursorAddSelection02Icon}
+									size="var(--icon-lg)"
+									aria-hidden="true"
+								/>
+								<span>{t("sidebar.newNote")}</span>
 							</button>
 						</div>
 						<DatabaseToolbar

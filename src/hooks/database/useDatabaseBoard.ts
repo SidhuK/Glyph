@@ -266,28 +266,6 @@ export function useDatabaseBoard({
 		[groupColumn, groupColumns, laneOrderByGroup, lanes],
 	);
 
-	const addLane = useCallback(
-		(laneId: string) => {
-			if (!groupColumn || laneId === DATABASE_BOARD_EMPTY_LANE_ID) return;
-			const currentLaneOrder =
-				laneOrderByGroup[groupColumn.id] ??
-				displayedLaneIdsRef.current[groupColumn.id] ??
-				displayLaneOrder(lanes);
-			if (currentLaneOrder.includes(laneId)) return;
-			const nextLaneOrder = [...currentLaneOrder, laneId];
-			displayedLaneIdsRef.current = {
-				...displayedLaneIdsRef.current,
-				[groupColumn.id]: nextLaneOrder,
-			};
-			setLaneOrderByGroup((current) => ({
-				...current,
-				[groupColumn.id]: nextLaneOrder,
-			}));
-			void onLaneOrderChangeRef.current?.(groupColumn.id, nextLaneOrder);
-		},
-		[groupColumn, laneOrderByGroup, lanes],
-	);
-
 	const renameLane = useCallback(
 		(sourceLaneId: string, nextLaneId: string) => {
 			if (
@@ -374,7 +352,6 @@ export function useDatabaseBoard({
 		groupColumns,
 		groupColumn,
 		lanes,
-		addLane,
 		moveLaneToIndex,
 		renameLane,
 		moveCardToLane,

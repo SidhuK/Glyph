@@ -78,13 +78,12 @@
 	--database-tone: var(--color-blue-500);
 
 	display: flex;
-	flex: 1 0 clamp(288px, 29vw, 360px);
+	flex: 0 0 clamp(280px, 24vw, 336px);
 	flex-direction: column;
-	width: clamp(288px, 29vw, 360px);
+	width: clamp(280px, 24vw, 336px);
 	overflow: visible;
 	scroll-snap-align: start;
 	border: 0;
-	border-right: 1px solid var(--border-light);
 	border-radius: 0;
 	background: var(--bg-primary);
 	box-shadow: none;
@@ -127,7 +126,6 @@
 	gap: 7px;
 	flex: 1 1 auto;
 	min-width: 0;
-	overflow: hidden;
 }
 
 .databaseBoardLaneTitleSection .databaseBoardLaneTitleGroup {
@@ -146,7 +144,7 @@
 }
 
 .databaseBoardLaneHandle,
-.databaseBoardLaneAddButton,
+.databaseBoardLaneAddCardButton,
 .databaseBoardCard {
 	transition:
 		background-color 140ms ease,
@@ -155,7 +153,7 @@
 }
 
 .databaseBoardLaneHandle,
-.databaseBoardLaneAddButton {
+.databaseBoardLaneAddCardButton {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -173,12 +171,12 @@
 	cursor: context-menu;
 }
 
-.databaseBoardLaneAddButton {
+.databaseBoardLaneAddCardButton {
 	cursor: pointer;
 }
 
 .databaseBoardLaneHandle:hover:not(:disabled),
-.databaseBoardLaneAddButton:hover {
+.databaseBoardLaneAddCardButton:hover {
 	opacity: 1;
 	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
 	color: var(--text-primary);
@@ -251,6 +249,28 @@
 	padding: 0 16px 56px;
 	min-height: calc(100% - 58px);
 	overflow: visible;
+}
+
+.databaseBoardScroller:has(> .databaseBoardLane:nth-child(-n + 2):last-child) {
+	width: 100%;
+}
+
+.databaseBoardScroller:has(> .databaseBoardLane:nth-child(-n + 2):last-child) > .databaseBoardLane {
+	flex: 1 0 280px;
+	width: auto;
+	max-width: 688px;
+}
+
+.databaseBoardScroller:has(> .databaseBoardLane:nth-child(-n + 2):last-child)
+	.databaseBoardLaneBody {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+	align-content: start;
+}
+
+.databaseBoardScroller:has(> .databaseBoardLane:nth-child(-n + 2):last-child)
+	.databaseBoardLaneEmptyCard {
+	grid-column: 1 / -1;
 }
 
 .databaseBoardCard {
@@ -399,11 +419,11 @@
 .databaseBoardCardFooter {
 	display: flex;
 	align-items: center;
-	flex-wrap: wrap;
 	gap: 8px;
 	min-width: 0;
 	padding: 12px 16px 14px;
 	border-top: 1px solid color-mix(in srgb, var(--border-default) 62%, transparent);
+	overflow: hidden;
 }
 
 .databaseBoardCardTaskProgress {
@@ -423,7 +443,6 @@
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	flex-wrap: wrap;
 	gap: 6px;
 	min-width: 0;
 	overflow: hidden;
@@ -444,7 +463,12 @@
 	gap: 5px;
 	min-width: 0;
 	overflow: hidden;
-	flex: 0 0 auto;
+	flex: 0 1 auto;
+}
+
+.databaseBoardCardTags > .databaseBoardTag:not(.is-muted) {
+	flex: 0 1 auto;
+	overflow: hidden;
 }
 
 .databaseBoardCardStatus.propertyValueText {
@@ -551,26 +575,6 @@
 	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
-}
-
-.databaseBoardAddLaneButton {
-	appearance: none;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 34px;
-	height: 34px;
-	margin-top: 10px;
-	border: 1px dashed color-mix(in srgb, var(--border-default) 78%, transparent);
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
-	color: var(--text-tertiary);
-	cursor: pointer;
-}
-
-.databaseBoardAddLaneButton:hover {
-	color: var(--text-primary);
-	background: var(--bg-hover);
 }
 
 .databaseTable {

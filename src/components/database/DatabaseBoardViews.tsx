@@ -55,7 +55,6 @@ interface DatabaseBoardLaneViewProps {
 	shouldReduceMotion: boolean | null;
 	onLaneColorChange?: ((laneId: string, color: EditorTextColor | null) => void) | null;
 	onAddCard?: () => void;
-	onAddLane?: () => void;
 	onRenameLane?: (lane: DatabaseBoardLane) => void;
 	reorderableLanes: DatabaseBoardLane[];
 	moveLaneToIndex: (sourceLaneId: string, targetIndex: number) => void;
@@ -74,7 +73,6 @@ export function DatabaseBoardLaneView({
 	shouldReduceMotion,
 	onLaneColorChange,
 	onAddCard,
-	onAddLane,
 	onRenameLane,
 	reorderableLanes,
 	moveLaneToIndex,
@@ -95,22 +93,14 @@ export function DatabaseBoardLaneView({
 						},
 					]
 				: []),
-			...(onAddLane
-				? [
-						{
-							label: "Add lane",
-							action: onAddLane,
-						},
-					]
-				: []),
-			...(onRenameLane || onAddLane ? [{ type: "separator" as const }] : []),
+			...(onRenameLane ? [{ type: "separator" as const }] : []),
 			...reorderableLanes.map((targetLane, index) => ({
 				label: `Position ${index + 1}: ${targetLane.label}`,
 				enabled: targetLane.id !== lane.id,
 				action: () => moveLaneToIndex(lane.id, index),
 			})),
 		],
-		[lane, moveLaneToIndex, onAddLane, onRenameLane, reorderableLanes],
+		[lane, moveLaneToIndex, onRenameLane, reorderableLanes],
 	);
 	const handleLaneContextMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
@@ -229,7 +219,7 @@ export function DatabaseBoardLaneView({
 					{onAddCard ? (
 						<button
 							type="button"
-							className="databaseBoardLaneAddButton"
+							className="databaseBoardLaneAddCardButton"
 							onClick={onAddCard}
 							aria-label={`Add note to ${lane.label}`}
 							title={`Add note to ${lane.label}`}
