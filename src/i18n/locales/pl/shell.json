@@ -67,6 +67,7 @@
 		"allNotesCollection": "Wszystkie notatki"
 	},
 	"collections": {
+		"options": "Opcje kolekcji",
 		"pin": "Przypnij",
 		"unpin": "Odepnij",
 		"unpinNamed": "Odepnij {{name}}",

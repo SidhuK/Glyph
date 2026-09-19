@@ -76,6 +76,7 @@
 		"allNotesCollection": "All notes"
 	},
 	"collections": {
+		"options": "Collection options",
 		"pin": "Pin collection",
 		"unpin": "Unpin collection",
 		"unpinNamed": "Unpin {{name}}",

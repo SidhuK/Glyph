@@ -29,8 +29,13 @@
 	padding-bottom: 0;
 	padding-right: 10px;
 	border-bottom: 1px solid var(--border-light);
+	border-right: 1px solid color-mix(in srgb, var(--border-light) 62%, transparent);
 	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
+}
+
+.databaseTable .databaseHeadCell:last-child {
+	border-right: 0;
 }
 
 .databaseHeadCell:first-child {
@@ -170,6 +175,11 @@
 	padding-bottom: 0;
 	padding-right: 10px;
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 44%, transparent);
+	border-right: 1px solid color-mix(in srgb, var(--border-light) 52%, transparent);
+}
+
+.databaseBodyCell:last-child {
+	border-right: 0;
 }
 
 .databaseBodyCell:has(.databaseTagSuggestions),
@@ -527,11 +537,13 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	min-height: 34px;
-	padding: 8px 14px;
-	background: color-mix(in srgb, var(--bg-secondary) 55%, var(--bg-primary));
+	min-height: 38px;
+	padding: 8px 16px;
+	background: color-mix(in srgb, var(--bg-secondary) 58%, var(--bg-primary));
 	color: var(--text-secondary);
-	border-radius: var(--database-radius-md);
+	border-radius: 0;
+	border-top: 1px solid var(--border-light);
+	border-bottom: 1px solid var(--border-light);
 }
 
 .databaseGroupAddButton {
@@ -567,8 +579,8 @@
 }
 
 .databaseTable .databaseGroupCell {
-	border-top: none;
-	border-bottom: none;
+	border-top: 1px solid var(--border-light);
+	border-bottom: 1px solid var(--border-light);
 }
 
 .databaseGroupLabel {
@@ -645,7 +657,7 @@
 	}
 
 	.databaseBoardShell {
-		padding: 12px;
+		padding: 0;
 	}
 }
 
@@ -725,10 +737,14 @@
 }
 
 .databaseBoardLaneEmptyCard {
-	padding: 16px 12px;
-	border: 1px dashed color-mix(in srgb, var(--border-light) 62%, transparent);
-	border-radius: var(--database-radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 130px;
+	padding: 18px 14px;
+	border: 1px dashed var(--border-default);
+	border-radius: var(--radius-xl);
+	background: var(--bg-secondary);
 	font-size: calc(var(--text-base) * 0.82);
 	line-height: 1.35;
 	color: var(--text-tertiary);

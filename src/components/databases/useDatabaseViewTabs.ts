@@ -170,12 +170,14 @@ export function useDatabaseViewTabs({
 		() =>
 			buildViewMenuItems(activeView.layout, viewCount, {
 				onSelectLayout: handleSelectViewLayout,
+				onCreate: () => void handleCreateView(),
 				onRename: handleRenameFromMenu,
 				onDelete: handleDeleteActiveView,
 			}),
 		[
 			activeView.layout,
 			handleDeleteActiveView,
+			handleCreateView,
 			handleRenameFromMenu,
 			handleSelectViewLayout,
 			viewCount,
@@ -194,7 +196,6 @@ export function useDatabaseViewTabs({
 		setViewNameDraft,
 		setRenamingViewId,
 		handleViewTabKeyDown,
-		handleCreateView,
 		viewActionMenuItems,
 	};
 }

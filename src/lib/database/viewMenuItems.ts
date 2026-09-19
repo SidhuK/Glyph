@@ -5,6 +5,7 @@ export type DatabaseViewLayout = "table" | "board";
 
 export interface ViewMenuActions {
 	onSelectLayout: (layout: DatabaseViewLayout) => void;
+	onCreate: () => void;
 	onRename: () => void;
 	onDelete: () => void;
 }
@@ -36,6 +37,12 @@ export function buildViewMenuItems(
 			label: "Rename",
 			iconKey: "edit",
 			onSelect: actions.onRename,
+		},
+		{
+			type: "item",
+			label: "Add view",
+			iconKey: "plus",
+			onSelect: actions.onCreate,
 		},
 		{ type: "separator" },
 		{

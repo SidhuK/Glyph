@@ -1,11 +1,11 @@
 .databaseTableShell {
-	--database-table-header-height: 34px;
+	--database-table-header-height: 38px;
 
 	flex: 1;
 	min-height: 0;
 	position: relative;
 	overflow: auto;
-	padding: 4px 18px 18px;
+	padding: 0;
 }
 
 .databaseTableShell [data-slot="table-container"] {
@@ -17,18 +17,19 @@
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
-	padding: 10px 18px 18px;
-	overflow-y: auto;
-	overflow-x: hidden;
+	gap: 0;
+	padding: 0;
+	overflow: hidden;
 }
 
 .databaseBoardHorizontal {
-	flex: 0 0 auto;
+	flex: 1 1 auto;
 	min-width: 0;
+	min-height: 0;
 	overflow-x: auto;
-	overflow-y: visible;
-	padding: 10px 6px 12px;
+	overflow-y: hidden;
+	scroll-snap-type: x proximity;
+	scrollbar-width: thin;
 }
 
 .databaseBoardLoadMoreSentinel {
@@ -44,6 +45,15 @@
 	color: var(--text-secondary);
 }
 
+.databaseBoardError {
+	flex: 0 0 auto;
+	margin: 10px 16px;
+	padding: 9px 11px;
+	border: 1px solid color-mix(in srgb, var(--text-error) 20%, var(--border-light));
+	border-radius: var(--database-radius-lg);
+	background: color-mix(in srgb, var(--text-error) 6%, var(--bg-primary));
+}
+
 .databaseBoardError,
 .databaseCellError {
 	color: var(--text-error);
@@ -55,74 +65,76 @@
 }
 
 .databaseBoardScroller {
-	display: grid;
-	grid-auto-flow: column;
-	grid-auto-columns: minmax(248px, 300px);
+	display: flex;
 	width: max-content;
-	gap: 14px;
-	min-height: min-content;
-	height: auto;
-	align-items: start;
+	min-width: 100%;
+	min-height: 100%;
+	height: 100%;
+	align-items: stretch;
 }
 
 .databaseBoardLane {
 	--database-tone: var(--color-blue-500);
 
 	display: flex;
-	flex: 1;
+	flex: 1 0 clamp(288px, 29vw, 360px);
 	flex-direction: column;
+	width: clamp(288px, 29vw, 360px);
 	min-height: 0;
-	height: auto;
-	border-radius: var(--database-radius-lg);
-	border: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
-	background: color-mix(in srgb, var(--database-tone) 5%, var(--bg-secondary));
+	height: 100%;
+	overflow-y: auto;
+	overscroll-behavior-y: contain;
+	scroll-snap-align: start;
+	border: 0;
+	border-right: 1px solid var(--border-light);
+	border-radius: 0;
+	background: var(--bg-primary);
 	box-shadow: none;
-}
-
-.databaseBoardLane[data-show-column-color="false"] {
-	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--border-light) 48%, transparent);
-}
-
-.databaseBoardLane[data-show-column-color="true"][data-workflow-state="done"] {
-	background: color-mix(in srgb, var(--database-tone) 4%, var(--bg-secondary));
+	scrollbar-width: thin;
 }
 
 .databaseBoardLane[data-workflow-state="archived"] {
 	opacity: 0.82;
 }
 
-.databaseBoardLane[data-show-column-color="true"][data-workflow-state="archived"] {
-	background: color-mix(in srgb, var(--text-tertiary) 6%, var(--bg-secondary));
-}
-
 .databaseBoardLane[data-active="true"] {
-	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary));
-	border-color: color-mix(in srgb, var(--database-tone) 28%, transparent);
+	background: color-mix(in srgb, var(--database-tone) 5%, var(--bg-primary));
 	outline: none;
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--database-tone) 16%, transparent);
-}
-
-.databaseBoardLane[data-show-column-color="false"][data-active="true"] {
-	background: color-mix(in srgb, var(--bg-hover) 80%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-default) 28%, transparent);
+	box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--database-tone) 18%, transparent);
 }
 
 .databaseBoardLaneHeader {
+	position: sticky;
+	top: 0;
+	z-index: 3;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-2);
-	padding: 11px 12px 8px;
+	min-height: 58px;
+	padding: 14px 16px 18px;
 	border-bottom: none;
+	background: linear-gradient(to bottom, var(--bg-primary) calc(100% - 16px), transparent);
 }
 
 .databaseBoardLaneHeaderActions,
 .databaseBoardColorRibbon {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 4px;
+}
+
+.databaseBoardLaneTitleSection {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.databaseBoardLaneTitleSection .databaseBoardLaneTitleGroup {
+	flex: 0 1 auto;
 }
 
 .databaseBoardLaneCount {
@@ -137,6 +149,7 @@
 }
 
 .databaseBoardLaneHandle,
+.databaseBoardLaneAddButton,
 .databaseBoardCard {
 	transition:
 		background-color 140ms ease,
@@ -144,26 +157,34 @@
 		box-shadow 140ms ease;
 }
 
-.databaseBoardLaneHandle {
+.databaseBoardLaneHandle,
+.databaseBoardLaneAddButton {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	width: 24px;
+	height: 24px;
 	padding: 0;
 	border: 1px solid transparent;
-	border-radius: 999px;
+	border-radius: var(--database-radius-md);
 	background: transparent;
 	color: var(--text-tertiary);
-	cursor: context-menu;
-	opacity: 0.55;
+	opacity: 0.64;
 }
 
-.databaseBoardLaneHandle:hover:not(:disabled) {
+.databaseBoardLaneHandle {
+	cursor: context-menu;
+}
+
+.databaseBoardLaneAddButton {
+	cursor: pointer;
+}
+
+.databaseBoardLaneHandle:hover:not(:disabled),
+.databaseBoardLaneAddButton:hover {
 	opacity: 1;
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 70%, transparent);
-	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
+	color: var(--text-primary);
 }
 
 .databaseBoardLaneHandle:disabled {
@@ -181,9 +202,9 @@
 }
 
 .databaseBoardLaneTitle {
-	font-size: calc(var(--text-base) * 0.88);
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
-	color: color-mix(in srgb, var(--database-tone) 42%, var(--text-primary));
+	color: var(--text-primary);
 	letter-spacing: -0.01em;
 	text-transform: none;
 	line-height: 1.15;
@@ -195,7 +216,7 @@
 .databaseBoardLaneTitleIcon {
 	flex: 0 0 auto;
 	color: var(--database-tone);
-	opacity: 0.92;
+	opacity: 1;
 }
 
 .databaseBoardLaneTitleButton {
@@ -227,66 +248,12 @@
 
 .databaseBoardLaneBody {
 	display: flex;
-	flex: 0 0 auto;
+	flex: 1 0 auto;
 	flex-direction: column;
-	gap: 8px;
-	padding: 4px 10px 12px;
-	min-height: auto;
+	gap: 14px;
+	padding: 0 16px 56px;
+	min-height: calc(100% - 58px);
 	overflow: visible;
-}
-
-.databaseBoardAddCardButton {
-	appearance: none;
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-	gap: 7px;
-	min-height: 32px;
-	width: 100%;
-	padding: 0 10px;
-	border: 1px solid transparent;
-	border-radius: var(--database-radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 48%, transparent);
-	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.86);
-	font-weight: var(--font-medium);
-	letter-spacing: -0.01em;
-	cursor: pointer;
-	transition:
-		background-color 140ms ease,
-		border-color 140ms ease,
-		color 140ms ease;
-}
-
-.databaseBoardAddCardIcon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 18px;
-	height: 18px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--database-tone) 12%, transparent);
-	color: color-mix(in srgb, var(--database-tone) 55%, var(--text-secondary));
-	flex: 0 0 auto;
-}
-
-.databaseBoardAddCardLabel {
-	line-height: 1;
-}
-
-.databaseBoardAddCardButton:hover {
-	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--database-tone) 16%, transparent);
-	color: var(--text-primary);
-}
-
-.databaseBoardAddCardButton:hover .databaseBoardAddCardIcon {
-	background: color-mix(in srgb, var(--database-tone) 18%, transparent);
-	color: color-mix(in srgb, var(--database-tone) 72%, var(--text-primary));
-}
-
-.databaseBoardAddCardButton:active {
-	background: color-mix(in srgb, var(--database-tone) 12%, var(--bg-primary));
 }
 
 .databaseBoardCard {
@@ -297,12 +264,15 @@
 	width: 100%;
 	min-width: 0;
 	height: auto;
-	gap: 8px;
-	padding: 11px 12px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 52%, transparent);
-	border-radius: var(--database-radius-md);
+	gap: 0;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-xl);
 	background: var(--bg-primary);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 4%, transparent);
+	box-shadow:
+		0 2px 4px color-mix(in srgb, var(--text-primary) 3%, transparent),
+		0 1px 2px color-mix(in srgb, var(--text-primary) 5%, transparent),
+		0 0 0 3px color-mix(in srgb, var(--border-default) 12%, transparent);
 	color: inherit;
 	cursor: pointer;
 	font: inherit;
@@ -317,31 +287,36 @@
 }
 
 .databaseBoardCard:hover {
-	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
-	box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 8%, transparent);
+	box-shadow:
+		0 2px 4px color-mix(in srgb, var(--text-primary) 4%, transparent),
+		0 1px 2px color-mix(in srgb, var(--text-primary) 6%, transparent),
+		0 4px 12px color-mix(in srgb, var(--text-primary) 6%, transparent),
+		0 0 0 3px color-mix(in srgb, var(--border-default) 18%, transparent);
 }
 
 .databaseBoardCard[data-dragging="true"]:not([data-dnd-placeholder]),
 .databaseBoardCard[data-dnd-dragging]:not([data-dnd-placeholder]) {
 	overflow: visible;
 	cursor: grabbing;
-	border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
 	box-shadow:
-		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 28%, transparent),
-		0 12px 28px color-mix(in srgb, var(--text-primary) 14%, transparent);
-	rotate: 3deg;
+		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 24%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 16%, transparent),
+		0 2px 12px color-mix(in srgb, var(--text-primary) 8%, transparent),
+		0 6px 16px color-mix(in srgb, var(--text-primary) 12%, transparent);
+	rotate: -3deg;
 }
 
 .databaseBoardCard[data-dnd-placeholder] {
 	visibility: visible !important;
 	opacity: 0.34;
 	pointer-events: none;
-	box-shadow: none;
-	border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
+	box-shadow: 0 0 0 1px var(--border-default);
 }
 
 .databaseBoardCard[data-drop-target="true"] {
-	border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 42%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -353,11 +328,18 @@
 
 .dark .databaseBoardCard {
 	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
-	box-shadow: 0 1px 2px color-mix(in srgb, black 18%, transparent);
+	box-shadow:
+		0 2px 4px color-mix(in srgb, black 16%, transparent),
+		0 1px 2px color-mix(in srgb, black 22%, transparent),
+		0 0 0 3px color-mix(in srgb, var(--border-default) 16%, transparent);
 }
 
 .dark .databaseBoardCard:hover {
-	box-shadow: 0 6px 16px color-mix(in srgb, black 18%, transparent);
+	box-shadow:
+		0 2px 4px color-mix(in srgb, black 18%, transparent),
+		0 1px 2px color-mix(in srgb, black 24%, transparent),
+		0 5px 14px color-mix(in srgb, black 18%, transparent),
+		0 0 0 3px color-mix(in srgb, var(--border-default) 24%, transparent);
 }
 
 .dark .databaseBoardCard[data-state="selected"] {
@@ -366,15 +348,17 @@
 
 .databaseBoardCard[data-state="selected"] {
 	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 34%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 }
 
 .databaseBoardCardTitle {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: calc(var(--text-base) * 1.02);
+	font-size: calc(var(--text-base) * 0.96);
 	font-weight: var(--font-semibold);
-	line-height: 1.28;
+	line-height: 1.3;
 	letter-spacing: -0.01em;
 	color: var(--database-note-appearance-color, var(--text-primary));
 	overflow: hidden;
@@ -382,7 +366,7 @@
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	white-space: normal;
-	text-wrap: balance;
+	text-wrap: pretty;
 }
 
 .databaseBoardCardTitleIcon {
@@ -393,11 +377,12 @@
 	vertical-align: -2px;
 }
 
-.databaseBoardCardHead {
+.databaseBoardCardMain {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 8px;
 	min-width: 0;
+	padding: 16px;
 }
 
 .databaseBoardCardHeaderRow {
@@ -405,17 +390,23 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 8px;
-	padding-bottom: 1px;
-	border-bottom: 0;
 }
 
-.databaseBoardCardTitleMeta {
+.databaseBoardCardSubline {
 	display: flex;
-	flex: 0 0 auto;
 	align-items: center;
-	justify-content: flex-end;
-	gap: 6px;
+	min-width: 0;
 	color: var(--text-tertiary);
+}
+
+.databaseBoardCardFooter {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	min-width: 0;
+	padding: 12px 16px 14px;
+	border-top: 1px solid color-mix(in srgb, var(--border-default) 62%, transparent);
 }
 
 .databaseBoardCardTaskProgress {
@@ -436,7 +427,7 @@
 	align-items: center;
 	justify-content: flex-start;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 6px;
 	min-width: 0;
 	overflow: hidden;
 }
@@ -457,7 +448,7 @@
 	display: flex;
 	flex-wrap: nowrap;
 	align-items: center;
-	gap: 6px;
+	gap: 5px;
 	min-width: 0;
 	overflow: hidden;
 	flex: 0 0 auto;
@@ -527,26 +518,18 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	min-height: 22px;
-	padding: 0 7px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
-	border-radius: var(--pill-radius);
-	background: color-mix(in srgb, var(--bg-secondary) 45%, var(--bg-primary));
+	min-height: 16px;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
 	font-size: calc(var(--text-base) * 0.76);
-	font-weight: var(--font-medium);
+	font-weight: var(--font-regular);
 	line-height: 1.2;
 	color: var(--text-tertiary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-
-.databaseBoardCardTimestamp svg {
-	transform: translateY(-1px);
-}
-
-.databaseBoardCardTitleMeta .databaseBoardCardTimestamp {
-	flex: 0 0 auto;
 }
 
 .databaseBoardEmptyState {

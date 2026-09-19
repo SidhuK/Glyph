@@ -5,7 +5,7 @@ import { useCallback, useRef } from "react";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import { isNativeContextMenuAvailable } from "../../lib/nativeContextMenu";
 import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
-import { Kanban, Plus, Table } from "../Icons";
+import { Kanban, Table } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { ActionMenuTrigger } from "./ActionMenuTrigger";
 import { useDatabaseViewTabs } from "./useDatabaseViewTabs";
@@ -43,7 +43,6 @@ export function DatabaseViewTabs({
 		setViewNameDraft,
 		setRenamingViewId,
 		handleViewTabKeyDown,
-		handleCreateView,
 		viewActionMenuItems,
 	} = useDatabaseViewTabs({
 		document,
@@ -167,15 +166,6 @@ export function DatabaseViewTabs({
 						aria-hidden
 					/>
 				</ActionMenuTrigger>
-				<button
-					type="button"
-					className="databasesViewTabCreate databaseToolbarChip"
-					onClick={() => void handleCreateView()}
-					title="Add view"
-					aria-label="Add view"
-				>
-					<Plus size="var(--icon-sm)" />
-				</button>
 			</div>
 		</div>
 	);

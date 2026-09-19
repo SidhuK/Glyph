@@ -56,22 +56,35 @@ function DatabasesPaneContent({
 
 	return (
 		<div className="databaseHostPane">
-			<CollectionTopBar document={doc} selection={selection} views={views} actions={actions} />
+			<CollectionTopBar document={doc} selection={selection} views={views} />
 
 			{activeCollection ? (
 				<>
 					<div className="databasesViewBar">
-						<DatabaseViewTabs
-							document={activeCollection.document}
-							selectedViewId={viewSelection.selectedViewId ?? activeCollection.view.id}
-							setSelectedViewId={viewSelection.setSelectedViewId}
-							saveDatabase={doc.saveDatabase}
-							clearError={ui.clearError}
-							activeView={activeCollection.view}
-							patchActiveView={views.patchActiveView}
-							reduceMotion={reduceMotion}
-						/>
+						<div className="databasesViewBarPrimary">
+							<DatabaseViewTabs
+								document={activeCollection.document}
+								selectedViewId={viewSelection.selectedViewId ?? activeCollection.view.id}
+								setSelectedViewId={viewSelection.setSelectedViewId}
+								saveDatabase={doc.saveDatabase}
+								clearError={ui.clearError}
+								activeView={activeCollection.view}
+								patchActiveView={views.patchActiveView}
+								reduceMotion={reduceMotion}
+							/>
+							<button
+								type="button"
+								className="databaseToolbarChip databasesNewNoteButton"
+								data-kind="new-note"
+								onClick={() => void actions.handleCreateRow()}
+								title="New note"
+								aria-label="New note"
+							>
+								<Plus size="var(--icon-sm)" aria-hidden="true" />
+							</button>
+						</div>
 						<DatabaseToolbar
+							key={activeCollection.view.id}
 							className="databaseToolbarInline"
 							databaseView={activeCollection.config.view.layout}
 							groupColumns={views.groupColumns}

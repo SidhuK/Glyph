@@ -67,6 +67,7 @@
 		"allNotesCollection": "Alle Notizen"
 	},
 	"collections": {
+		"options": "Sammlungsoptionen",
 		"pin": "Sammlung anheften",
 		"unpin": "Sammlung lösen",
 		"unpinNamed": "{{name}} lösen",

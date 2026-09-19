@@ -67,6 +67,7 @@
 		"allNotesCollection": "すべてのノート"
 	},
 	"collections": {
+		"options": "コレクションのオプション",
 		"pin": "コレクションをピン留め",
 		"unpin": "コレクションのピン留めを解除",
 		"unpinNamed": "{{name}}のピン留めを解除",
