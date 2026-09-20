@@ -555,11 +555,6 @@
 			"section": "Layout",
 			"keywords": ["folio", "sortieren", "name", "geändert", "erstellt"]
 		},
-		"appearance-layout-folio-width": {
-			"title": "Breite der Folio-Notizenliste",
-			"section": "Layout",
-			"keywords": ["folio", "breite", "spalte", "größe"]
-		},
 		"appearance-layout-note-side-peek": {
 			"title": "Notiz-Peek",
 			"section": "Experimentell",

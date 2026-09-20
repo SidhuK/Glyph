@@ -603,7 +603,7 @@ export const DURABLE_SETTINGS = {
 	folioNotesWidth: defineApplicationSetting({
 		key: "ui.folio.notesWidth",
 		defaultValue: DEFAULT_FOLIO_NOTES_WIDTH,
-		discovery: searchable("appearance-layout-folio-width"),
+		discovery: hidden("The Folio notes list width is controlled by its drag handle."),
 		normalize: normalizeFolioNotesWidth,
 		parse: (value) =>
 			typeof value === "number" && Number.isFinite(value)

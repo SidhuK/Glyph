@@ -45,8 +45,6 @@
 		"emptySearch": "Brak pasujących notatek.",
 		"empty": "Nie znaleziono notatek.",
 		"filesTruncated": "Wyświetlono pierwsze {{count}} plików.",
-		"loadMore": "Wczytaj więcej notatek",
-		"loadingMore": "Wczytywanie kolejnych notatek…",
 		"delete": {
 			"confirmNote": "Usunąć tę notatkę?",
 			"confirmFile": "Usunąć ten plik?",

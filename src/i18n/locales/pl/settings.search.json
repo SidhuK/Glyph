@@ -572,11 +572,6 @@
 			"section": "Układ",
 			"keywords": ["folio", "sortowanie", "nazwa", "zmieniono", "utworzono"]
 		},
-		"appearance-layout-folio-width": {
-			"title": "Szerokość listy notatek Folio",
-			"section": "Układ",
-			"keywords": ["folio", "szerokość", "kolumna", "rozmiar"]
-		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek notatki",
 			"section": "Eksperymentalne",

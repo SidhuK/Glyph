@@ -1134,6 +1134,7 @@ interface TauriCommands {
 			person?: string | null;
 			sort_mode?: FileTreeSortMode | null;
 			query?: string | null;
+			pinned_paths?: string[] | null;
 		},
 		AllDocsItem[]
 	>;

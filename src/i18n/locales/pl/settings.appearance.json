@@ -139,11 +139,6 @@
 			"label": "Domyślne sortowanie Folio",
 			"description": "Wybierz początkową kolejność plików na liście notatek Folio.",
 			"ariaLabel": "Domyślne sortowanie Folio"
-		},
-		"folioWidth": {
-			"label": "Szerokość listy notatek",
-			"description": "Ustaw szerokość kolumny notatek Folio w pikselach. Możesz też zmienić ją przez przeciąganie.",
-			"ariaLabel": "Szerokość listy notatek Folio"
 		}
 	},
 	"editorPresentation": {

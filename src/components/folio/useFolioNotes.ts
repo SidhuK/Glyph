@@ -73,6 +73,7 @@ async function listNotesPage(
 	scope: FolioScope,
 	sortMode: FileTreeSortMode,
 	query: string,
+	pinnedPaths: string[],
 	offset: number,
 ): Promise<AllDocsPage> {
 	const items = await invoke("all_docs_list", {
@@ -81,6 +82,7 @@ async function listNotesPage(
 		offset,
 		sort_mode: sortMode,
 		query: query.trim() || null,
+		pinned_paths: pinnedPaths,
 	});
 	const pageItems = items.slice(0, FOLIO_NOTES_PAGE_SIZE);
 	return {
@@ -110,7 +112,12 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[], query: string
 	return Array.from(itemsByPath.values());
 }
 
-export function useFolioNotes(scope: FolioScope, sortMode: FileTreeSortMode, query: string) {
+export function useFolioNotes(
+	scope: FolioScope,
+	sortMode: FileTreeSortMode,
+	query: string,
+	pinnedPaths: string[],
+) {
 	const queryClient = useQueryClient();
 	const visibilityRevisionRef = useRef(0);
 	const latestVisibilityRef = useRef<boolean | null>(null);
@@ -143,8 +150,16 @@ export function useFolioNotes(scope: FolioScope, sortMode: FileTreeSortMode, que
 	});
 
 	const notesQuery = useInfiniteQuery({
-		queryKey: ["navigation", "all-docs", "folio", ...scopeQueryKey(scope), sortMode, query.trim()],
-		queryFn: ({ pageParam }) => listNotesPage(scope, sortMode, query, pageParam),
+		queryKey: [
+			"navigation",
+			"all-docs",
+			"folio",
+			...scopeQueryKey(scope),
+			sortMode,
+			query.trim(),
+			pinnedPaths,
+		],
+		queryFn: ({ pageParam }) => listNotesPage(scope, sortMode, query, pinnedPaths, pageParam),
 		initialPageParam: 0,
 		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
 	});

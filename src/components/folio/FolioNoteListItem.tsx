@@ -1,8 +1,9 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useDraggable } from "@dnd-kit/react";
+import { PinIcon } from "@hugeicons/core-free-icons";
 import {
 	type CSSProperties,
-	type KeyboardEvent,
 	type MouseEvent,
 	forwardRef,
 	memo,
@@ -13,12 +14,7 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	useDateDisplayFormat,
-	useEditorContext,
-	useFileTreeContext,
-	useSpace,
-} from "../../contexts";
+import { useDateDisplayFormat, useEditorContext, useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
@@ -29,7 +25,6 @@ import { invoke } from "../../lib/tauri";
 import { basename, displayNameFromPath, parentDir, splitEditableFileName } from "../../utils/path";
 import { InlineRenameInput } from "../InlineRenameInput";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
-import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
 import { buildFileTreeFileNativeMenu } from "../filetree/fileTreeNativeContextMenu";
@@ -38,7 +33,6 @@ import {
 	FILE_TREE_ENTRY_TYPE,
 	fileTreeEntryDragId,
 } from "../filetree/fileTreeDnd";
-import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import type { FolioItem } from "./useFolioNotes";
 
 interface FolioNoteListItemProps {
@@ -55,13 +49,15 @@ interface FolioNoteListItemProps {
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
 	onRequestCreateFolder: (dirPath: string) => unknown;
 	onFocus: () => void;
+	isPinned: boolean;
+	onTogglePinned: (path: string) => Promise<void> | void;
+	nowMs: number;
 	taskSummary?: NoteTaskSummary | null;
 	isRenaming?: boolean;
 	onCommitRename: (path: string, nextName: string) => Promise<boolean> | boolean;
 	onCancelRename: () => void;
 	appearance?: FileTreeAppearance | null;
 	onOpenAppearancePicker: (path: string) => void;
-	iconNameForTag: (tag: string) => string;
 	className?: string;
 	style?: CSSProperties;
 	virtualIndex?: number;
@@ -77,15 +73,64 @@ const FOLIO_NOTE_IMAGE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
 const FOLIO_NOTE_URL_SCAN_MAX_BYTES = 256 * 1024;
 const FOLIO_NOTE_URL_READ_CONCURRENCY = 4;
 const FOLIO_DRAG_CLICK_DISTANCE_PX = 5;
+const MINUTE_MS = 60 * 1_000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+const WEEK_MS = 7 * DAY_MS;
+const MONTH_MS = 30 * DAY_MS;
+const YEAR_MS = 365 * DAY_MS;
 const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
 const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
 let activeFolioUrlReads = 0;
 const queuedFolioUrlReads: Array<() => void> = [];
+const compactRelativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();
 
 interface FolioImageCandidate {
 	index: number;
 	ref: FolioImageRef;
+}
+
+function compactRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
+	const existing = compactRelativeTimeFormatters.get(locale);
+	if (existing) return existing;
+	const formatter = new Intl.RelativeTimeFormat(locale, {
+		numeric: "always",
+		style: "narrow",
+	});
+	compactRelativeTimeFormatters.set(locale, formatter);
+	return formatter;
+}
+
+function compactRelativeTimeValue(elapsedMs: number): [number, Intl.RelativeTimeFormatUnit] {
+	const direction = elapsedMs >= 0 ? -1 : 1;
+	const absoluteMs = Math.abs(elapsedMs);
+	if (absoluteMs < MINUTE_MS) {
+		return [direction * Math.floor(absoluteMs / 1_000), "second"];
+	}
+	if (absoluteMs < HOUR_MS) {
+		return [direction * Math.floor(absoluteMs / MINUTE_MS), "minute"];
+	}
+	if (absoluteMs < DAY_MS) {
+		return [direction * Math.floor(absoluteMs / HOUR_MS), "hour"];
+	}
+	if (absoluteMs < WEEK_MS) {
+		return [direction * Math.floor(absoluteMs / DAY_MS), "day"];
+	}
+	if (absoluteMs < MONTH_MS) {
+		return [direction * Math.floor(absoluteMs / WEEK_MS), "week"];
+	}
+	if (absoluteMs < YEAR_MS) {
+		return [direction * Math.floor(absoluteMs / MONTH_MS), "month"];
+	}
+	return [direction * Math.floor(absoluteMs / YEAR_MS), "year"];
+}
+
+function formatCompactRelativeTime(value: string, locale: string, nowMs: number): string {
+	const timestamp = Date.parse(value);
+	if (!Number.isFinite(timestamp)) return value;
+	const [amount, unit] = compactRelativeTimeValue(nowMs - timestamp);
+	return compactRelativeTimeFormatter(locale).format(amount, unit);
 }
 
 function previewText(preview: string, title: string, emptyLabel: string): string {
@@ -342,30 +387,29 @@ export const FolioNoteListItem = memo(
 			onCreateFromTemplateInDir,
 			onRequestCreateFolder,
 			onFocus,
+			isPinned,
+			onTogglePinned,
+			nowMs,
 			taskSummary = null,
 			isRenaming = false,
 			onCommitRename,
 			onCancelRename,
 			appearance = null,
 			onOpenAppearancePicker,
-			iconNameForTag,
 			className,
 			style,
 			virtualIndex,
 		},
 		ref,
 	) {
-		const { t } = useTranslation("shell");
+		const { i18n, t } = useTranslation("shell");
 		const dateDisplayFormat = useDateDisplayFormat();
 		const untitledLabel = t("folio.untitled");
 		const title = note.title.trim() || displayNameFromPath(note.note_path) || untitledLabel;
 		const isMarkdown = note.is_markdown;
 		const { spacePath } = useSpace();
 		const { getEditorState, saveCurrentEditor } = useEditorContext();
-		const { pinnedFiles, togglePinnedFile } = useFileTreeContext();
-		const isPinned = pinnedFiles.includes(note.note_path);
 		const { stem: fileStem, ext: fileExt } = splitEditableFileName(basename(note.note_path));
-		const { Icon, color } = getFileTypeInfo(note.note_path, isMarkdown);
 		const customColor =
 			appearance?.color && isEditorTextColor(appearance.color) ? appearance.color : null;
 		const rowStyle = customColor
@@ -373,15 +417,21 @@ export const FolioNoteListItem = memo(
 					"--folio-file-color": `var(${getEditorTextColorOption(customColor).cssVar})`,
 				} as CSSProperties)
 			: undefined;
-		const iconColor = customColor ? "var(--folio-file-color)" : color;
 		const extBadge = !isMarkdown && fileExt ? fileExt.slice(1) : "";
 		const preview = useMemo(() => {
 			return previewText(note.preview, title, t("folio.noPreview"));
 		}, [note.preview, t, title]);
-		const updated =
-			isMarkdown && note.updated
-				? formatDisplayDate(note.updated, dateDisplayFormat)
-				: t("folio.noDate");
+		const updatedTitle =
+			isMarkdown && note.updated ? formatDisplayDate(note.updated, dateDisplayFormat) : undefined;
+		const updated = note.updated
+			? formatCompactRelativeTime(
+					note.updated,
+					i18n?.resolvedLanguage ??
+						i18n?.language ??
+						Intl.DateTimeFormat().resolvedOptions().locale,
+					nowMs,
+				)
+			: t("folio.noDate");
 		const visibleTags = note.tags.slice(0, 2);
 		const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);
 		const folder = parentDir(note.note_path);
@@ -447,7 +497,7 @@ export const FolioNoteListItem = memo(
 						onRevealInFinder: () => void handleRevealInFinder(),
 						...(onRename ? { onRename: () => onRename(note.note_path) } : {}),
 						onDuplicate: () => onDuplicate(note.note_path),
-						onTogglePinned: () => void togglePinnedFile(note.note_path),
+						onTogglePinned: () => void onTogglePinned(note.note_path),
 						onOpenAppearancePicker: () => onOpenAppearancePicker(note.note_path),
 						onNewFile: () => void onNewFileInDir(folder),
 						onCreateFromTemplate: () => void onCreateFromTemplateInDir(folder),
@@ -475,107 +525,71 @@ export const FolioNoteListItem = memo(
 				onRename,
 				onRequestCreateFolder,
 				onShowInFolder,
+				onTogglePinned,
 				spacePath,
-				togglePinnedFile,
 			],
 		);
-		const fileIcon = appearance?.icon ? (
-			<DatabaseColumnIcon
-				iconName={appearance.icon}
-				size="var(--icon-lg)"
-				className="folioNoteFileIcon"
-			/>
-		) : (
-			<Icon
-				size="var(--icon-lg)"
-				className="folioNoteFileIcon"
-				style={{ color: iconColor }}
-				aria-hidden="true"
-			/>
-		);
-		const noteTitleIcon = (
-			<span
-				role="button"
-				tabIndex={0}
-				className="folioNoteTitleIcon"
-				aria-label={t("fileTree.showInFolder")}
-				onClick={(event) => {
-					event.preventDefault();
-					event.stopPropagation();
-					onShowInFolder(note.note_path);
-				}}
-				onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
-					if (event.key !== "Enter" && event.key !== " ") return;
-					event.preventDefault();
-					event.stopPropagation();
-					onShowInFolder(note.note_path);
-				}}
-			>
-				{fileIcon}
-			</span>
-		);
+		const pinIcon = isPinned ? (
+			<>
+				<HugeiconsIcon
+					icon={PinIcon}
+					size="var(--icon-sm)"
+					className="folioNotePinIcon"
+					aria-hidden="true"
+				/>
+				<span className="sr-only">{t("sidebar.pinned")}</span>
+			</>
+		) : null;
 		const rowDetails = (
 			<div className="folioNoteBody">
-				<span className="folioNoteCopy">
-					<span className="folioNotePreview">{preview}</span>
+				<span className="folioNoteMeta">
+					<span className="folioNoteDates" title={updatedTitle}>
+						{updated}
+					</span>
+					{firstUrl ? (
+						<a
+							href={firstUrl}
+							className="databaseCellPill folioNoteTag folioNoteUrl"
+							title={firstUrl}
+							onClick={(event) => {
+								event.preventDefault();
+								event.stopPropagation();
+								void openUrl(firstUrl);
+							}}
+						>
+							{firstUrlLabel}
+						</a>
+					) : null}
+					{visibleTags.length > 0 ? (
+						visibleTags.map((tag) => (
+							<span
+								key={tag}
+								className="databaseCellPill folioNoteTag"
+								title={formatDatabaseTagLabel(tag)}
+							>
+								{formatDatabaseTagLabel(tag)}
+							</span>
+						))
+					) : firstUrl ? null : (
+						<span className="folioNoteFolder">{folder || t("folio.noFolder")}</span>
+					)}
+					{hiddenTagCount > 0 ? (
+						<span className="databaseCellPill databaseCellPillMore folioNoteTag">
+							+{hiddenTagCount}
+						</span>
+					) : null}
 				</span>
+				<span className="folioNotePreview">{preview}</span>
 				{thumbnailSrc ? (
 					<span className="folioNoteThumbnail" aria-hidden="true">
 						<img src={thumbnailSrc} alt="" />
 					</span>
 				) : null}
-				<span className="folioNoteFooter">
-					<span className="folioNoteTags">
-						{firstUrl ? (
-							<a
-								href={firstUrl}
-								className="databaseCellPill folioNoteTag folioNoteUrl"
-								title={firstUrl}
-								onClick={(event) => {
-									event.preventDefault();
-									event.stopPropagation();
-									void openUrl(firstUrl);
-								}}
-							>
-								<DatabaseColumnIcon
-									iconName="link"
-									className="folioNoteUrlIcon"
-									size="var(--icon-xs)"
-								/>
-								{firstUrlLabel}
-							</a>
-						) : null}
-						{visibleTags.length > 0 ? (
-							visibleTags.map((tag) => (
-								<span
-									key={tag}
-									className="databaseCellPill folioNoteTag"
-									title={formatDatabaseTagLabel(tag)}
-								>
-									<DatabaseColumnIcon
-										iconName={iconNameForTag(tag)}
-										className="folioNoteTagIcon"
-										size="var(--icon-xs)"
-									/>
-									{formatDatabaseTagLabel(tag)}
-								</span>
-							))
-						) : firstUrl ? null : (
-							<span className="folioNoteFolder">{folder || t("folio.noFolder")}</span>
-						)}
-						{hiddenTagCount > 0 ? (
-							<span className="databaseCellPill databaseCellPillMore folioNoteTag">
-								+{hiddenTagCount}
-							</span>
-						) : null}
-					</span>
-					<span className="folioNoteDates">{updated}</span>
-				</span>
 			</div>
 		);
 		const fileDetails = (
 			<span className="folioFileLine">
-				{fileIcon}
+				{isRenaming ? null : pinIcon}
 				<span className="folioFileName">{fileStem || title}</span>
 				{extBadge ? <span className="fileTreeExtBadge">{extBadge}</span> : null}
 			</span>
@@ -596,8 +610,10 @@ export const FolioNoteListItem = memo(
 						data-folio-note-path={note.note_path}
 						title={note.note_path}
 						style={rowStyle}
+						data-pinned={isPinned ? "true" : undefined}
 					>
 						<span className="folioNoteRowTop">
+							{pinIcon}
 							<InlineRenameInput
 								key={`${note.note_path}:${fileStem}`}
 								initialValue={fileStem || displayNameFromPath(note.note_path) || untitledLabel}
@@ -675,13 +691,14 @@ export const FolioNoteListItem = memo(
 						style={rowStyle}
 						data-draggable="true"
 						data-dragging={isDragging ? "true" : undefined}
+						data-pinned={isPinned ? "true" : undefined}
 					>
 						{isMarkdown ? (
 							<>
 								<span className="folioNoteRowTop">
+									{pinIcon}
 									<span className="folioNoteTitle">{title}</span>
 									{taskProgress}
-									{noteTitleIcon}
 								</span>
 								{rowDetails}
 							</>

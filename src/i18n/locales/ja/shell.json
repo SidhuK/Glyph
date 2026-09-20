@@ -45,8 +45,6 @@
 		"emptySearch": "一致するノートはありません。",
 		"empty": "ノートが見つかりません。",
 		"filesTruncated": "最初の{{count}}件のファイルを表示しています。",
-		"loadMore": "さらにノートを読み込む",
-		"loadingMore": "さらにノートを読み込み中…",
 		"delete": {
 			"confirmNote": "このノートを削除しますか？",
 			"confirmFile": "このファイルを削除しますか？",

@@ -139,11 +139,6 @@
 			"label": "Ordenação padrão do Folio",
 			"description": "Escolha a ordem inicial dos arquivos na lista de notas do Folio.",
 			"ariaLabel": "Ordenação padrão do Folio"
-		},
-		"folioWidth": {
-			"label": "Largura da lista de notas",
-			"description": "Defina em pixels a largura da coluna de notas do Folio. Você também pode redimensioná-la arrastando.",
-			"ariaLabel": "Largura da lista de notas do Folio"
 		}
 	},
 	"editorPresentation": {

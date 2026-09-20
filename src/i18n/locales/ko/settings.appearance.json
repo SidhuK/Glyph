@@ -139,11 +139,6 @@
 			"label": "기본 Folio 정렬",
 			"description": "Folio 노트 목록의 기본 파일 순서를 선택합니다.",
 			"ariaLabel": "기본 Folio 정렬"
-		},
-		"folioWidth": {
-			"label": "노트 목록 너비",
-			"description": "Folio 노트 열의 너비를 픽셀로 설정합니다. 드래그해서 조절할 수도 있습니다.",
-			"ariaLabel": "Folio 노트 목록 너비"
 		}
 	},
 	"editorPresentation": {

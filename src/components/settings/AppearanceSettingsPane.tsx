@@ -11,12 +11,8 @@ import {
 } from "../../lib/settings";
 import {
 	DEFAULT_FILE_TREE_SORT_MODE,
-	DEFAULT_FOLIO_NOTES_WIDTH,
 	DURABLE_SETTINGS,
-	MAX_FOLIO_NOTES_WIDTH,
-	MIN_FOLIO_NOTES_WIDTH,
 	isFileTreeSortMode,
-	normalizeFolioNotesWidth,
 	writeSidebarLayout,
 } from "../../lib/settings/definitions";
 import {
@@ -41,7 +37,6 @@ import {
 } from "../../lib/uiThemes";
 import { RefreshCw } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import { Input } from "../ui/shadcn/input";
 import { AppearanceAppIconCard } from "./AppearanceAppIconCard";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
@@ -57,56 +52,6 @@ import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
 
-interface FolioNotesWidthInputProps {
-	value: number;
-	ariaLabel: string;
-	onCommit: (width: number) => void;
-}
-
-function FolioNotesWidthInput({ value, ariaLabel, onCommit }: FolioNotesWidthInputProps) {
-	const [draft, setDraft] = useState(() => ({ value, text: String(value) }));
-	const draftText = draft.value === value ? draft.text : String(value);
-	const commitDraft = () => {
-		const parsed = draftText.trim() ? Number(draftText) : Number.NaN;
-		const nextWidth = Number.isFinite(parsed) ? normalizeFolioNotesWidth(parsed) : value;
-		setDraft({ value: nextWidth, text: String(nextWidth) });
-		if (nextWidth !== value) onCommit(nextWidth);
-	};
-
-	return (
-		<Input
-			id="folio-notes-width"
-			type="number"
-			className="w-20 [font-variant-numeric:tabular-nums]"
-			min={MIN_FOLIO_NOTES_WIDTH}
-			max={MAX_FOLIO_NOTES_WIDTH}
-			step={10}
-			value={draftText}
-			aria-label={ariaLabel}
-			onChange={(event) => {
-				const nextDraft = event.currentTarget.value;
-				setDraft({ value, text: nextDraft });
-				const parsed = nextDraft.trim() ? Number(nextDraft) : Number.NaN;
-				if (
-					Number.isFinite(parsed) &&
-					parsed >= MIN_FOLIO_NOTES_WIDTH &&
-					parsed <= MAX_FOLIO_NOTES_WIDTH
-				) {
-					const nextWidth = normalizeFolioNotesWidth(parsed);
-					if (nextWidth !== value) {
-						setDraft({ value: nextWidth, text: String(nextWidth) });
-						onCommit(nextWidth);
-					}
-				}
-			}}
-			onKeyDown={(event) => {
-				if (event.key === "Enter") event.currentTarget.blur();
-			}}
-			onBlur={commitDraft}
-		/>
-	);
-}
-
 export function AppearanceSettingsPane() {
 	const { t } = useTranslation("settings.appearance");
 	const [customThemes, setCustomThemesState] = useState<CustomTheme[]>([]);
@@ -115,11 +60,6 @@ export function AppearanceSettingsPane() {
 	const folioSortMode = useSettingsValue<FileTreeSortMode>(
 		DEFAULT_FILE_TREE_SORT_MODE,
 		DURABLE_SETTINGS.folioSortMode.write,
-		setError,
-	);
-	const folioNotesWidth = useSettingsValue<number>(
-		DEFAULT_FOLIO_NOTES_WIDTH,
-		DURABLE_SETTINGS.folioNotesWidth.write,
 		setError,
 	);
 	const themeMode = useSettingsValue<ThemeMode>("system", DURABLE_SETTINGS.theme.write, setError);
@@ -208,7 +148,6 @@ export function AppearanceSettingsPane() {
 				setCustomThemesState(settings.ui.customThemes);
 				setInitialFolioMode(settings.ui.folioMode);
 				folioSortMode.setInitialValue(settings.ui.folioSortMode);
-				folioNotesWidth.setInitialValue(settings.ui.folioNotesWidth);
 				setShowColumnColorChecked(settings.database.showColumnColor);
 				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
 				setInitialTypography(settings);
@@ -233,7 +172,6 @@ export function AppearanceSettingsPane() {
 		themeMode.setInitialValue,
 		translucentApp.setInitialValue,
 		folioSortMode.setInitialValue,
-		folioNotesWidth.setInitialValue,
 	]);
 
 	useTauriEvent("settings:updated", (payload) => {
@@ -259,9 +197,6 @@ export function AppearanceSettingsPane() {
 		applyIfBoolean(payload.ui?.folioMode, folioMode.setChecked);
 		if (payload.ui?.folioSortMode && !folioSortMode.isSaving) {
 			folioSortMode.setValue(payload.ui.folioSortMode);
-		}
-		if (typeof payload.ui?.folioNotesWidth === "number" && !folioNotesWidth.isSaving) {
-			folioNotesWidth.setValue(payload.ui.folioNotesWidth);
 		}
 		if (payload.ui?.cornerRadiusStyle) {
 			setCornerRadiusStyle(payload.ui.cornerRadiusStyle);
@@ -476,18 +411,6 @@ export function AppearanceSettingsPane() {
 								</option>
 							))}
 						</SettingsSelect>
-					</SettingsRow>
-					<SettingsRow
-						label={t("layout.folioWidth.label")}
-						description={t("layout.folioWidth.description")}
-						htmlFor="folio-notes-width"
-						searchId="appearance-layout-folio-width"
-					>
-						<FolioNotesWidthInput
-							value={folioNotesWidth.value}
-							ariaLabel={t("layout.folioWidth.ariaLabel")}
-							onCommit={folioNotesWidth.onChange}
-						/>
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection

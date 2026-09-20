@@ -45,8 +45,6 @@
 		"emptySearch": "No hay notas coincidentes.",
 		"empty": "No se encontraron notas.",
 		"filesTruncated": "Se muestran los primeros {{count}} archivos.",
-		"loadMore": "Cargar más notas",
-		"loadingMore": "Cargando más notas…",
 		"delete": {
 			"confirmNote": "¿Eliminar esta nota?",
 			"confirmFile": "¿Eliminar este archivo?",

@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
 	type CSSProperties,
@@ -15,18 +16,12 @@ import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { FileTreeSortMode } from "../../lib/settings";
-import {
-	DEFAULT_TAG_ICON_NAME,
-	resolveTagIconName,
-	tagIconOverridesFromAppearance,
-} from "../../lib/tagIcons";
 import type { FileTreeAppearance } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { isDeleteKey, isEditableTarget } from "../../utils/keyboard";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
-import { Button } from "../ui/shadcn/button";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
 import { type FolioItem, useFolioNotes } from "./useFolioNotes";
@@ -44,8 +39,9 @@ interface FolioNotesListPaneProps {
 	onDuplicateFile: (path: string) => Promise<string | null>;
 }
 
-const FOLIO_NOTE_ROW_ESTIMATE = 104;
+const FOLIO_NOTE_ROW_ESTIMATE = 100;
 const FOLIO_FILE_ROW_ESTIMATE = 42;
+const FOLIO_RELATIVE_TIME_REFRESH_MS = 60_000;
 
 function sqliteNoCase(value: string): string {
 	return value.replace(/[A-Z]/g, (character) => character.toLowerCase());
@@ -87,7 +83,19 @@ function compareTitles(left: FolioItem, right: FolioItem): number {
 	);
 }
 
-function compareNotes(left: FolioItem, right: FolioItem, sortMode: FileTreeSortMode): number {
+function compareNotes(
+	left: FolioItem,
+	right: FolioItem,
+	sortMode: FileTreeSortMode,
+	pinnedRanks: ReadonlyMap<string, number>,
+): number {
+	const leftPinnedRank = pinnedRanks.get(left.note_path);
+	const rightPinnedRank = pinnedRanks.get(right.note_path);
+	if (leftPinnedRank !== undefined || rightPinnedRank !== undefined) {
+		if (leftPinnedRank === undefined) return 1;
+		if (rightPinnedRank === undefined) return -1;
+		return leftPinnedRank - rightPinnedRank;
+	}
 	switch (sortMode) {
 		case "name-desc":
 			return -compareTitles(left, right);
@@ -122,7 +130,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 }: FolioNotesListPaneProps) {
 	const { t } = useTranslation("shell");
 	const { folioScope, folioSortMode, setFolioScope, setFolioSortMode } = useUILayoutContext();
-	const { beautifulTags, itemAppearance, setActiveDirPath, setItemAppearance, tagAppearance } =
+	const { itemAppearance, pinnedFiles, setActiveDirPath, setItemAppearance, togglePinnedFile } =
 		useFileTreeContext();
 	const [searchQuery, setSearchQuery] = useState("");
 	const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -132,6 +140,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		searchQuery.trim(),
 		deferredSearchQuery.trim(),
 		activeTabPath,
+		pinnedFiles,
 	]);
 	const navigationQueryIdentityRef = useRef(navigationQueryIdentity);
 	const {
@@ -143,14 +152,25 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		isFetchingNextPage,
 		isLoading,
 		fetchNextPage,
-	} = useFolioNotes(folioScope, folioSortMode, deferredSearchQuery);
+	} = useFolioNotes(folioScope, folioSortMode, deferredSearchQuery, pinnedFiles);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
+	const { data: nowMs } = useQuery({
+		queryKey: ["folio", "relative-time-clock"],
+		queryFn: () => Date.now(),
+		initialData: () => Date.now(),
+		refetchInterval: FOLIO_RELATIVE_TIME_REFRESH_MS,
+	});
+	const pinnedRanks = useMemo(() => {
+		const ranks = new Map<string, number>();
+		pinnedFiles.forEach((path, index) => ranks.set(path, index));
+		return ranks;
+	}, [pinnedFiles]);
 	const sortedNotes = useMemo(
-		() => [...notes].sort((left, right) => compareNotes(left, right, folioSortMode)),
-		[folioSortMode, notes],
+		() => [...notes].sort((left, right) => compareNotes(left, right, folioSortMode, pinnedRanks)),
+		[folioSortMode, notes, pinnedRanks],
 	);
 	const selectedIndex = useMemo(
 		() => (activeTabPath ? sortedNotes.findIndex((note) => note.note_path === activeTabPath) : -1),
@@ -161,17 +181,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		[sortedNotes],
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(taskSummaryPaths, true);
-	const tagIconOverrides = useMemo(
-		() => tagIconOverridesFromAppearance(tagAppearance),
-		[tagAppearance],
-	);
-	const iconNameForTag = useCallback(
-		(tag: string) =>
-			beautifulTags
-				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
-				: DEFAULT_TAG_ICON_NAME,
-		[beautifulTags, tagIconOverrides],
-	);
 	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLLIElement>({
 		count: sortedNotes.length,
 		estimateSize: (index) => {
@@ -410,12 +419,14 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 								onRequestCreateFolder={onRequestCreateFolder}
 								onFocus={focusPane}
+								isPinned={pinnedRanks.has(note.note_path)}
+								onTogglePinned={togglePinnedFile}
+								nowMs={nowMs}
 								isRenaming={Boolean(onRenameFile) && renamingPath === note.note_path}
 								onCommitRename={commitRename}
 								onCancelRename={cancelRename}
 								appearance={itemAppearance[note.note_path] ?? null}
 								onOpenAppearancePicker={setAppearancePickerPath}
-								iconNameForTag={iconNameForTag}
 								taskSummary={
 									note.is_markdown ? (taskSummariesByPath?.[note.note_path] ?? null) : null
 								}
@@ -423,18 +434,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 						);
 					})}
 				</ul>
-				{hasNextPage ? (
-					<Button
-						type="button"
-						className="mx-3 mb-2 mt-1"
-						variant="ghost"
-						size="sm"
-						disabled={isFetchingNextPage}
-						onClick={() => void fetchNextPage()}
-					>
-						{isFetchingNextPage ? t("folio.loadingMore") : t("folio.loadMore")}
-					</Button>
-				) : null}
 			</>
 		);
 	})();

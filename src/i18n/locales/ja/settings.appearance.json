@@ -139,11 +139,6 @@
 			"label": "Folio の既定の並び順",
 			"description": "Folio のノート一覧に表示するファイルの初期順序を選択します。",
 			"ariaLabel": "Folio の既定の並び順"
-		},
-		"folioWidth": {
-			"label": "ノート一覧の幅",
-			"description": "Folio のノート列の幅をピクセル単位で設定します。ドラッグでも変更できます。",
-			"ariaLabel": "Folio のノート一覧の幅"
 		}
 	},
 	"editorPresentation": {
