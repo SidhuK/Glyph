@@ -8,7 +8,7 @@ import {
 	useCallback,
 	useState,
 } from "react";
-import { useUILayoutContext } from "../../contexts";
+import { useAISidebarContext, useUILayoutContext } from "../../contexts";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
@@ -217,6 +217,7 @@ function EditorPaneContent({
 	onInfoSidebarOpenChange,
 	databasesOpenRequest,
 }: EditorPaneContentProps) {
+	const { aiEnabled } = useAISidebarContext();
 	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
 
 	if (viewerPath === PINNED_DOCS_TAB_ID) {
@@ -256,6 +257,7 @@ function EditorPaneContent({
 		);
 	}
 	if (viewerPath === AGENT_VIEW_TAB_ID) {
+		if (!aiEnabled) return null;
 		return (
 			<Suspense fallback={<div className="aiAgentView" />}>
 				<div className="aiAgentView">

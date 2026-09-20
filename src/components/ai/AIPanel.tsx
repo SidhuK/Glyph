@@ -20,16 +20,11 @@ import {
 	consumePendingAiSelectionContext,
 } from "./aiContextEvents";
 import { messageText, parseAddTrigger } from "./aiPanelConstants";
-import {
-	endAiPanelKeepMounted,
-	setActiveAiHistoryJobId,
-	useAiPanelSession,
-} from "./aiPanelSession";
+import { setActiveAiHistoryJobId, useAiPanelSession } from "./aiPanelSession";
 import { useAiActions } from "./hooks/useAiActions";
-import { useAiToolEvents } from "./hooks/useAiToolEvents";
-import { useRigChat } from "./hooks/useRigChat";
+import { useAIConversation } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
-import { fetchAiHistoryDetail, useAiHistory, useRestoredAiChat } from "./useAiHistory";
+import { useAiHistory, useRestoredAiChat } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
 
 const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
@@ -66,18 +61,7 @@ export function AIPanel(props: AIPanelProps) {
 
 	const session = useAiPanelSession();
 	const history = useAiHistory(14, { enabled: historyExpanded });
-	const chat = useRigChat({
-		onComplete: (historyId, keepAliveEpoch) => {
-			setActiveAiHistoryJobId(historyId);
-			setHydratedJobId(historyId);
-			void history.refresh();
-			void fetchAiHistoryDetail(historyId)
-				.catch(() => {})
-				.finally(() => {
-					endAiPanelKeepMounted(keepAliveEpoch);
-				});
-		},
-	});
+	const { chat, toolEvents } = useAIConversation();
 	const shouldRestore =
 		Boolean(session.jobId) &&
 		chat.messages.length === 0 &&
@@ -89,7 +73,6 @@ export function AIPanel(props: AIPanelProps) {
 	const showAddPanel = addPanelOpen || Boolean(trigger);
 	const panelQuery = addPanelOpen ? addPanelQuery : (trigger?.query ?? "");
 	const context = useAiContext(panelQuery);
-	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
 
 	if (restored && session.jobId && hydratedJobId !== session.jobId) {
@@ -385,9 +368,9 @@ export function AIPanel(props: AIPanelProps) {
 			data-window-drag-ignore
 		>
 			<div
-				className="aiPanelHeader drag"
-				data-tauri-drag-region
-				onMouseDown={onWindowDragMouseDown}
+				className={cn("aiPanelHeader", props.surface === "sidebar" && "drag")}
+				data-tauri-drag-region={props.surface === "sidebar" ? "" : undefined}
+				onMouseDown={props.surface === "sidebar" ? onWindowDragMouseDown : undefined}
 			>
 				<div className="aiPanelHeaderLeft">
 					<button
