@@ -225,5 +225,13 @@
 		"largeGraphTitle": "大きな接続グラフ",
 		"largeGraphBody": "このスペースには {{count}} 件のノートがあります。グラフの構築に時間がかかり、Glyph の反応が遅くなることがあります。",
 		"largeGraphContinue": "続ける"
+	},
+	"spaceSwitcher": {
+		"label": "スペース",
+		"switchTo": "{{name}} に切り替える",
+		"changeIcon": "アイコンを変更…",
+		"closeSpace": "スペースを閉じる",
+		"chooseIcon": "スペースのアイコンを選択",
+		"menuFailed": "スペースメニューを開けませんでした"
 	}
 }

@@ -11,11 +11,11 @@
 		"textHighlight": "Destaque do texto",
 		"ai": "IA",
 		"space": "Espaço",
-		"recentSpaces": "Espaços recentes",
+		"recentSpaces": "Espaços",
 		"window": "Janela",
 		"help": "Ajuda"
 	},
 	"recentSpaces": {
-		"empty": "Nenhum espaço recente"
+		"empty": "Nenhum espaço"
 	}
 }

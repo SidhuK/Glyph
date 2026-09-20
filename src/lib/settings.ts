@@ -23,7 +23,9 @@ import {
 	invalidateSettingsCache,
 	loadSettingsEntries,
 	saveSettingsStore,
+	withSettingsStoreWriteLock,
 } from "./settingsStore";
+import { emitSpacePathsUpdated } from "./spaceRegistry";
 import {
 	type Shortcut,
 	areShortcutsEqual,
@@ -101,18 +103,6 @@ function resolveSelectedThemeId<T extends string>(
 
 export interface SettingsScope {
 	spacePath?: string | null;
-}
-
-let spaceScopedSettingsWriteQueue: Promise<unknown> = Promise.resolve();
-
-async function withSpaceScopedSettingsWriteLock<T>(operation: () => Promise<T>): Promise<T> {
-	const locks = typeof navigator !== "undefined" && "locks" in navigator ? navigator.locks : null;
-	if (locks) {
-		return locks.request("glyph-space-scoped-settings", operation);
-	}
-	const run = spaceScopedSettingsWriteQueue.then(operation, operation);
-	spaceScopedSettingsWriteQueue = run.catch(() => {});
-	return run;
 }
 
 function isShortcutBindingRecord(value: unknown): value is Record<string, Shortcut | null> {
@@ -313,7 +303,7 @@ async function updateActiveSpaceSettings(
 ): Promise<string | null> {
 	const spacePath = await activeSpacePath(scope);
 	if (!spacePath) return null;
-	await withSpaceScopedSettingsWriteLock(async () => {
+	await withSettingsStoreWriteLock(async () => {
 		const store = await getSettingsStore();
 		const map = normalizeSpaceScopedSettingsMap(
 			await store.get<unknown>(INTERNAL_SETTING_KEYS.spaceScopedSettings),
@@ -655,13 +645,44 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 	};
 }
 
-export async function setCurrentSpacePath(path: string): Promise<void> {
+function normalizeRegisteredSpacePaths(value: unknown): string[] {
+	if (!Array.isArray(value)) return [];
+	return [
+		...new Set(value.filter((item): item is string => typeof item === "string" && item.length > 0)),
+	].slice(-20);
+}
+
+export async function loadRegisteredSpacePaths(): Promise<string[]> {
 	const store = await getSettingsStore();
-	await store.set(INTERNAL_SETTING_KEYS.currentSpacePath, path);
-	const prev = (await store.get<string[] | null>(INTERNAL_SETTING_KEYS.recentSpaces)) ?? [];
-	const next = [path, ...prev.filter((p) => p !== path)].slice(0, 20);
-	await store.set(INTERNAL_SETTING_KEYS.recentSpaces, next);
-	await saveSettingsStore(store);
+	return normalizeRegisteredSpacePaths(
+		await store.get<unknown>(INTERNAL_SETTING_KEYS.recentSpaces),
+	);
+}
+
+export async function setCurrentSpacePath(path: string): Promise<void> {
+	await withSettingsStoreWriteLock(async () => {
+		const store = await getSettingsStore();
+		await store.set(INTERNAL_SETTING_KEYS.currentSpacePath, path);
+		const recent = normalizeRegisteredSpacePaths(
+			await store.get<unknown>(INTERNAL_SETTING_KEYS.recentSpaces),
+		);
+		const registered = recent.includes(path) ? recent : [...recent.slice(-19), path];
+		await store.set(INTERNAL_SETTING_KEYS.recentSpaces, registered);
+		await saveSettingsStore(store);
+	});
+	await emitSpacePathsUpdated();
+}
+
+export async function removeRegisteredSpacePath({ path }: { path: string }): Promise<void> {
+	await withSettingsStoreWriteLock(async () => {
+		const store = await getSettingsStore();
+		const registered = normalizeRegisteredSpacePaths(
+			await store.get<unknown>(INTERNAL_SETTING_KEYS.recentSpaces),
+		).filter((value) => value !== path);
+		await store.set(INTERNAL_SETTING_KEYS.recentSpaces, registered);
+		await saveSettingsStore(store);
+	});
+	await emitSpacePathsUpdated();
 }
 
 async function saveShortcutBindingsToStore(bindings: ShortcutBindings) {

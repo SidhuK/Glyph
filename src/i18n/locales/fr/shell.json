@@ -228,5 +228,13 @@
 		"largeGraphTitle": "Graphe de connexions volumineux",
 		"largeGraphBody": "Cet espace contient {{count}} notes. La construction du graphe complet peut prendre du temps et rendre Glyph moins réactif.",
 		"largeGraphContinue": "Continuer"
+	},
+	"spaceSwitcher": {
+		"label": "Espaces",
+		"switchTo": "Passer à {{name}}",
+		"changeIcon": "Changer l'icône…",
+		"closeSpace": "Fermer l'espace",
+		"chooseIcon": "Choisir une icône d'espace",
+		"menuFailed": "Impossible d'ouvrir le menu des espaces"
 	}
 }

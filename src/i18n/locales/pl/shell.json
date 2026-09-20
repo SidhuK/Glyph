@@ -260,5 +260,13 @@
 		"largeGraphTitle": "Duży graf połączeń",
 		"largeGraphBody": "Ta przestrzeń zawiera {{count}} notatek. Zbudowanie pełnego grafu może chwilę potrwać i spowolnić Glyph.",
 		"largeGraphContinue": "Kontynuuj"
+	},
+	"spaceSwitcher": {
+		"label": "Przestrzenie",
+		"switchTo": "Przełącz na {{name}}",
+		"changeIcon": "Zmień ikonę…",
+		"closeSpace": "Zamknij przestrzeń",
+		"chooseIcon": "Wybierz ikonę przestrzeni",
+		"menuFailed": "Nie udało się otworzyć menu przestrzeni"
 	}
 }

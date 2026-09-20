@@ -225,8 +225,8 @@ fn default_menu_label(id: &str) -> String {
         "editor.text_highlight.menu" => "Text Highlight".to_string(),
         "menu.ai" => "AI".to_string(),
         "menu.space" => "Space".to_string(),
-        "space.recent.menu" => "Recent Spaces".to_string(),
-        "space.recent.empty" => "No Recent Spaces".to_string(),
+        "space.recent.menu" => "Spaces".to_string(),
+        "space.recent.empty" => "No Spaces".to_string(),
         "menu.window" => "Window".to_string(),
         "menu.help" => "Help".to_string(),
         _ => menu_manifest::command_for_menu_id(id)

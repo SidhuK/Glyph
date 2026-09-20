@@ -226,5 +226,13 @@
 		"largeGraphTitle": "Grafo de conexões grande",
 		"largeGraphBody": "Este espaço contém {{count}} notas. Montar o grafo completo pode demorar e deixar o Glyph menos responsivo.",
 		"largeGraphContinue": "Continuar"
+	},
+	"spaceSwitcher": {
+		"label": "Espaços",
+		"switchTo": "Mudar para {{name}}",
+		"changeIcon": "Alterar ícone…",
+		"closeSpace": "Fechar espaço",
+		"chooseIcon": "Escolher ícone do espaço",
+		"menuFailed": "Não foi possível abrir o menu de espaços"
 	}
 }

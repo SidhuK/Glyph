@@ -448,7 +448,7 @@ export const MainContent = memo(function MainContent({
 								<h2 className="settingsPanelTitle">{settingsPanelTitle}</h2>
 							</div>
 						</header>
-						<SettingsTabContent tab={settingsTab} />
+						<SettingsTabContent key={spacePath ?? "no-space"} tab={settingsTab} />
 					</div>
 				</main>
 				{aiPanelKeepMounted ? rightSidebarSurface : null}

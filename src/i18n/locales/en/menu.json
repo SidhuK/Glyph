@@ -12,11 +12,11 @@
 		"textHighlight": "Text Highlight",
 		"ai": "AI",
 		"space": "Space",
-		"recentSpaces": "Recent Spaces",
+		"recentSpaces": "Spaces",
 		"window": "Window",
 		"help": "Help"
 	},
 	"recentSpaces": {
-		"empty": "No Recent Spaces"
+		"empty": "No Spaces"
 	}
 }

@@ -11,11 +11,11 @@
 		"textHighlight": "텍스트 강조",
 		"ai": "AI",
 		"space": "스페이스",
-		"recentSpaces": "최근 스페이스",
+		"recentSpaces": "스페이스",
 		"window": "창",
 		"help": "도움말"
 	},
 	"recentSpaces": {
-		"empty": "최근 스페이스 없음"
+		"empty": "스페이스 없음"
 	}
 }

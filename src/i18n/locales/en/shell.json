@@ -271,5 +271,13 @@
 		"largeGraphTitle": "Large connections graph",
 		"largeGraphBody": "This space contains {{count}} notes. Building the full connections graph may take a while and make Glyph temporarily less responsive.",
 		"largeGraphContinue": "Continue"
+	},
+	"spaceSwitcher": {
+		"label": "Spaces",
+		"switchTo": "Switch to {{name}}",
+		"changeIcon": "Change icon…",
+		"closeSpace": "Close space",
+		"chooseIcon": "Choose a space icon",
+		"menuFailed": "Could not open the space menu"
 	}
 }
