@@ -12,7 +12,12 @@ import { clearAiPanelCaches } from "../components/ai/cache";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
-import { loadSettings, removeRegisteredSpacePath, setCurrentSpacePath } from "../lib/settings";
+import {
+	loadRegisteredSpacePaths,
+	loadSettings,
+	removeRegisteredSpacePath,
+	setCurrentSpacePath,
+} from "../lib/settings";
 import {
 	buildSpaceDefinitions,
 	loadSpaceIconOverrides,
@@ -90,6 +95,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 	const isOpeningSpaceRef = useRef(false);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
+	const registryRefreshIdRef = useRef(0);
 	const indexSyncRef = useRef<{
 		spacePath: string;
 		promise: Promise<void>;
@@ -111,13 +117,29 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		syncRecentSpacesMenu(spacePaths.filter((path) => path !== spacePath).slice(0, 20));
 	}, [spacePaths, spacePath, syncRecentSpacesMenu]);
 
+	const refreshSpaceRegistry = useCallback(
+		async ({ currentSpacePath }: { currentSpacePath?: string | null } = {}) => {
+			const refreshId = ++registryRefreshIdRef.current;
+			const [registeredPaths, iconOverrides] = await Promise.all([
+				loadRegisteredSpacePaths(),
+				loadSpaceIconOverrides(),
+			]);
+			if (refreshId !== registryRefreshIdRef.current) return;
+			const activePath =
+				currentSpacePath === undefined ? currentSpacePathRef.current : currentSpacePath;
+			setSpacePaths(normalizeSpacePaths(registeredPaths, activePath));
+			setSpaceIconOverrides(iconOverrides);
+		},
+		[],
+	);
+
 	useTauriEvent("space:registry_updated", (payload) => {
 		switch (payload.kind) {
 			case "icons":
-				setSpaceIconOverrides(payload.iconOverrides);
-				return;
 			case "paths":
-				setSpacePaths(normalizeSpacePaths(payload.paths, currentSpacePathRef.current));
+				void refreshSpaceRegistry().catch((error) => {
+					console.warn("Failed to refresh the space registry", error);
+				});
 				return;
 			default: {
 				const exhaustive: never = payload;
@@ -235,8 +257,8 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setWelcomeNotePath(spaceInfo.welcome_note_path ?? null);
 				setSpacePaths((prev) => normalizeSpacePaths(prev, spaceInfo.root));
 				try {
-					const registered = await setCurrentSpacePath(spaceInfo.root);
-					setSpacePaths(normalizeSpacePaths(registered, spaceInfo.root));
+					await setCurrentSpacePath(spaceInfo.root);
+					await refreshSpaceRegistry({ currentSpacePath: spaceInfo.root });
 				} catch (err) {
 					setError(extractErrorMessage(err));
 				}
@@ -249,26 +271,32 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setSwitchingSpacePath(null);
 			}
 		},
-		[],
+		[refreshSpaceRegistry],
 	);
 
-	const setSpaceIcon = useCallback(async (path: string, iconName: string | null) => {
-		try {
-			const next = await writeSpaceIconOverride(path, iconName);
-			setSpaceIconOverrides(next);
-		} catch (err) {
-			setError(extractErrorMessage(err));
-		}
-	}, []);
+	const setSpaceIcon = useCallback(
+		async (path: string, iconName: string | null) => {
+			try {
+				await writeSpaceIconOverride(path, iconName);
+				await refreshSpaceRegistry();
+			} catch (err) {
+				setError(extractErrorMessage(err));
+			}
+		},
+		[refreshSpaceRegistry],
+	);
 
-	const removeSpaceFromSwitcher = useCallback(async (path: string) => {
-		try {
-			const registered = await removeRegisteredSpacePath({ path });
-			setSpacePaths(registered);
-		} catch (err) {
-			setError(extractErrorMessage(err));
-		}
-	}, []);
+	const removeSpaceFromSwitcher = useCallback(
+		async (path: string) => {
+			try {
+				await removeRegisteredSpacePath({ path });
+				await refreshSpaceRegistry();
+			} catch (err) {
+				setError(extractErrorMessage(err));
+			}
+		},
+		[refreshSpaceRegistry],
+	);
 
 	const closeSpace = useCallback(async () => {
 		const closingSpacePath = currentSpacePathRef.current;
@@ -280,13 +308,13 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			setSpacePath(null);
 			setWelcomeNotePath(null);
 			if (closingSpacePath) {
-				const registered = await removeRegisteredSpacePath({ path: closingSpacePath });
-				setSpacePaths(registered);
+				await removeRegisteredSpacePath({ path: closingSpacePath });
+				await refreshSpaceRegistry({ currentSpacePath: null });
 			}
 		} catch (err) {
 			setError(extractErrorMessage(err));
 		}
-	}, []);
+	}, [refreshSpaceRegistry]);
 
 	const consumeWelcomeNotePath = useCallback(() => {
 		setWelcomeNotePath(null);

@@ -33,9 +33,7 @@ export interface SpaceDefinition {
 	iconOverride: TagIconName | null;
 }
 
-export type SpaceRegistryUpdatedPayload =
-	| { kind: "icons"; iconOverrides: SpaceIconOverrides }
-	| { kind: "paths"; paths: string[] };
+export type SpaceRegistryUpdatedPayload = { kind: "icons" } | { kind: "paths" };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -100,20 +98,17 @@ async function emitSpaceRegistryUpdated(payload: SpaceRegistryUpdatedPayload): P
 	}
 }
 
-export async function emitSpacePathsUpdated(paths: string[]): Promise<void> {
-	await emitSpaceRegistryUpdated({ kind: "paths", paths });
+export async function emitSpacePathsUpdated(): Promise<void> {
+	await emitSpaceRegistryUpdated({ kind: "paths" });
 }
 
-export async function writeSpaceIconOverride(
-	path: string,
-	iconName: string | null,
-): Promise<SpaceIconOverrides> {
+export async function writeSpaceIconOverride(path: string, iconName: string | null): Promise<void> {
 	if (!path) throw new Error("A space path is required");
 	if (iconName !== null && !isTagIconName(iconName)) {
 		throw new Error("The selected space icon is invalid");
 	}
 
-	const next = await withSettingsStoreWriteLock(async () => {
+	await withSettingsStoreWriteLock(async () => {
 		const store = await getSettingsStore();
 		const current = normalizeSpaceIconOverrides(await store.get<unknown>(SPACE_ICON_OVERRIDES_KEY));
 		const updated: Record<string, TagIconName> = { ...current };
@@ -124,8 +119,6 @@ export async function writeSpaceIconOverride(
 		}
 		await store.set(SPACE_ICON_OVERRIDES_KEY, updated);
 		await saveSettingsStore(store);
-		return updated;
 	});
-	await emitSpaceRegistryUpdated({ kind: "icons", iconOverrides: next });
-	return next;
+	await emitSpaceRegistryUpdated({ kind: "icons" });
 }
