@@ -4,7 +4,7 @@ import type { SaveDatabase } from "./types";
 import { useActiveViewConfig } from "./useActiveViewConfig";
 import { useViewConfigMutations } from "./useViewConfigMutations";
 
-export interface UseDatabaseViewActionsOptions {
+interface UseDatabaseViewActionsOptions {
 	document: WorkspaceDatabaseDocument | null;
 	selectedViewId: string | null;
 	saveDatabase: SaveDatabase;

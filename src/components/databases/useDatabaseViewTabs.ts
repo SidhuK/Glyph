@@ -1,11 +1,12 @@
 import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import { createDefaultDatabaseView } from "../../lib/database/defaultView";
 import { resolveSelectedViewId } from "../../lib/database/selectedViewStorage";
 import { buildViewMenuItems } from "../../lib/database/viewMenuItems";
 import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 
-export interface UseDatabaseViewTabsOptions {
+interface UseDatabaseViewTabsOptions {
 	document: WorkspaceDatabaseDocument;
 	selectedViewId: string;
 	setSelectedViewId: (viewId: string | null) => void;
@@ -26,6 +27,7 @@ export function useDatabaseViewTabs({
 	patchActiveView,
 	onBeginRenameFromMenu,
 }: UseDatabaseViewTabsOptions) {
+	const { t } = useTranslation("shell");
 	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
@@ -145,7 +147,7 @@ export function useDatabaseViewTabs({
 	);
 
 	const handleDeleteActiveView = useCallback(() => {
-		void handleDeleteView(activeView.id).catch(() => undefined);
+		void handleDeleteView(activeView.id);
 	}, [activeView.id, handleDeleteView]);
 
 	const handleCreateView = useCallback(async () => {
@@ -170,31 +172,34 @@ export function useDatabaseViewTabs({
 		() =>
 			buildViewMenuItems(activeView.layout, viewCount, {
 				onSelectLayout: handleSelectViewLayout,
+				createLabel: t("collections.addView"),
+				onCreate: () => {
+					void handleCreateView().catch(() => undefined);
+				},
 				onRename: handleRenameFromMenu,
 				onDelete: handleDeleteActiveView,
 			}),
 		[
 			activeView.layout,
 			handleDeleteActiveView,
+			handleCreateView,
 			handleRenameFromMenu,
 			handleSelectViewLayout,
+			t,
 			viewCount,
 		],
 	);
 
 	return {
 		views,
-		activeView,
 		renamingViewId,
 		viewNameDraft,
 		viewNameInputRef,
-		setSelectedViewId,
 		startViewRename,
 		commitViewRename,
 		setViewNameDraft,
 		setRenamingViewId,
 		handleViewTabKeyDown,
-		handleCreateView,
 		viewActionMenuItems,
 	};
 }

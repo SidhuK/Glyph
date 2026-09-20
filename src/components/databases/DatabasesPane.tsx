@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LibraryIcon } from "@hugeicons/core-free-icons";
+import { CursorAddSelection02Icon, LibraryIcon } from "@hugeicons/core-free-icons";
 import { useReducedMotion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { useDatabasesPane } from "../../hooks/database/useDatabasesPane";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import {
@@ -32,6 +33,7 @@ function DatabasesPaneContent({
 	databasesOpenRequest,
 	initialDocument = null,
 }: DatabasesPaneProps) {
+	const { t } = useTranslation("shell");
 	const reduceMotion = useReducedMotion();
 	const {
 		selection,
@@ -44,7 +46,6 @@ function DatabasesPaneContent({
 		actions,
 		ui,
 	} = useDatabasesPane({
-		onOpenFile,
 		onRenameNotePath,
 		databasesOpenRequest,
 		initialDocument,
@@ -56,21 +57,38 @@ function DatabasesPaneContent({
 
 	return (
 		<div className="databaseHostPane">
-			<CollectionTopBar document={doc} selection={selection} views={views} actions={actions} />
+			<CollectionTopBar document={doc} selection={selection} views={views} />
 
 			{activeCollection ? (
 				<>
 					<div className="databasesViewBar">
-						<DatabaseViewTabs
-							document={activeCollection.document}
-							selectedViewId={viewSelection.selectedViewId ?? activeCollection.view.id}
-							setSelectedViewId={viewSelection.setSelectedViewId}
-							saveDatabase={doc.saveDatabase}
-							clearError={ui.clearError}
-							activeView={activeCollection.view}
-							patchActiveView={views.patchActiveView}
-							reduceMotion={reduceMotion}
-						/>
+						<div className="databasesViewBarPrimary">
+							<DatabaseViewTabs
+								document={activeCollection.document}
+								selectedViewId={viewSelection.selectedViewId ?? activeCollection.view.id}
+								setSelectedViewId={viewSelection.setSelectedViewId}
+								saveDatabase={doc.saveDatabase}
+								clearError={ui.clearError}
+								activeView={activeCollection.view}
+								patchActiveView={views.patchActiveView}
+								reduceMotion={reduceMotion}
+							/>
+							<button
+								type="button"
+								className="databaseToolbarChip databasesNewNoteButton"
+								data-kind="new-note"
+								onClick={() => void actions.handleCreateRow()}
+								title={t("sidebar.newNote")}
+								aria-label={t("sidebar.newNote")}
+							>
+								<HugeiconsIcon
+									icon={CursorAddSelection02Icon}
+									size="var(--icon-lg)"
+									aria-hidden="true"
+								/>
+								<span>{t("sidebar.newNote")}</span>
+							</button>
+						</div>
 						<DatabaseToolbar
 							className="databaseToolbarInline"
 							databaseView={activeCollection.config.view.layout}
@@ -107,7 +125,6 @@ function DatabasesPaneContent({
 							boardCardFields={
 								activeCollection.config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS
 							}
-							onGroupColumnIdChange={views.handleGroupColumnIdChange}
 							onLaneOrderChange={views.boardHandlers.onLaneOrderChange}
 							onCardOrderChange={views.boardHandlers.onCardOrderChange}
 							onLaneColorChange={views.boardHandlers.onLaneColorChange}

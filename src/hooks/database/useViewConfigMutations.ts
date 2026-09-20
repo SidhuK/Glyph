@@ -12,7 +12,7 @@ import type { DatabaseBoardHandlers, SaveDatabase } from "./types";
 const MIN_DATABASE_COLUMN_WIDTH = 120;
 const MAX_DATABASE_COLUMN_WIDTH = 900;
 
-export interface UseViewConfigMutationsOptions {
+interface UseViewConfigMutationsOptions {
 	document: WorkspaceDatabaseDocument | null;
 	selectedViewId: string | null;
 	activeConfig: DatabaseConfig | null;
