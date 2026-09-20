@@ -9,6 +9,15 @@
 		"searchAriaLabel": "설정 검색",
 		"clearSearchAriaLabel": "설정 검색 지우기"
 	},
+	"about": {
+		"developer": {
+			"madeBy": "만든 사람",
+			"eyebrow": "개발자 만나기",
+			"bio": "Karat의 본업은 생의학자이자 연구 과학자입니다. 연구를 통해 Texas A&M University와 University of Vermont 같은 곳들과 인연을 맺었습니다. 자신의 문제를 해결하는 재미로 소프트웨어를 만들며, Glyph도 그렇게 만든 도구 중 하나입니다.",
+			"github": "GitHub",
+			"twitter": "X / Twitter"
+		}
+	},
 	"usage": {
 		"loading": "인사이트를 불러오는 중…",
 		"noSpace": "인사이트를 보려면 공간을 여세요.",

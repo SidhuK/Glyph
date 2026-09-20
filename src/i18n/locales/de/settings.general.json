@@ -9,6 +9,15 @@
 		"searchAriaLabel": "Einstellungen durchsuchen",
 		"clearSearchAriaLabel": "Einstellungssuche löschen"
 	},
+	"about": {
+		"developer": {
+			"madeBy": "Entwickelt von",
+			"eyebrow": "Lerne den Entwickler kennen",
+			"bio": "Tagsüber arbeitet Karat als Biomediziner und Forschungswissenschaftler. Seine Forschung hat ihn an Einrichtungen wie die Texas A&M University und die University of Vermont geführt. Er entwickelt Software, weil es ihm Spaß macht, seine eigenen Probleme zu lösen. Glyph ist eines dieser Werkzeuge.",
+			"github": "GitHub",
+			"twitter": "X / Twitter"
+		}
+	},
 	"usage": {
 		"loading": "Einblicke werden geladen …",
 		"noSpace": "Öffne einen Space, um Einblicke zu sehen.",
