@@ -202,6 +202,11 @@
 	position: relative;
 }
 
+.sidebarBottomLayer:has(.spaceSwitcher)::before {
+	content: "";
+	flex: 0 0 44px;
+}
+
 .spaceSwitcher {
 	display: flex;
 	align-items: center;
@@ -212,7 +217,7 @@
 	padding: 3px 5px;
 	position: absolute;
 	left: 50%;
-	bottom: calc(100% + 10px);
+	top: 0;
 	transform: translateX(-50%);
 	z-index: 10;
 	border-radius: 999px;
