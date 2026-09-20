@@ -73,7 +73,7 @@
 		"delete": "Excluir coleção",
 		"options": "Opções da coleção",
 		"pin": "Fixar coleção",
-		"searchView": "Pesquisar nesta visualização",
+		"searchView": "Pesquisar na coleção",
 		"unpin": "Desafixar coleção",
 		"unpinNamed": "Desafixar {{name}}",
 		"unpinFailed": "Não foi possível desafixar a coleção"

@@ -17,8 +17,11 @@ import {
 	moveBoardCardToLane,
 } from "../../lib/database/board";
 import { databaseCellValueFromRow } from "../../lib/database/config";
+import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow, DatabaseSort } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { priorityToneStyle } from "../../lib/priorityProperties";
+import { statusToneStyle } from "../../lib/statusProperties";
 import { ChevronDown, ChevronUp } from "../Icons";
 import { type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/shadcn/table";
@@ -66,8 +69,8 @@ interface DatabaseTableProps {
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
 const EMPTY_CARD_ORDER: Record<string, string[]> = {};
-const DATABASE_TABLE_ROW_HEIGHT = 38;
-const DATABASE_TABLE_GROUP_ROW_HEIGHT = 38;
+const DATABASE_TABLE_ROW_HEIGHT = 46;
+const DATABASE_TABLE_GROUP_ROW_HEIGHT = 44;
 
 type DatabaseDisplayItem =
 	| {
@@ -534,6 +537,12 @@ export function DatabaseTable({
 						const transform = `translateY(${virtualRow.start}px)`;
 						if (item.kind === "group") {
 							const { group } = item;
+							const groupToneStyle =
+								groupColumn?.property_kind === "status"
+									? statusToneStyle(group.label, statusColors)
+									: groupColumn?.property_kind === "priority"
+										? priorityToneStyle(group.label)
+										: databaseValueToneStyleForColor(group.id, safeLaneColors[group.id]);
 							return (
 								<DatabaseTableGroupHeader
 									key={virtualRow.key}
@@ -542,6 +551,7 @@ export function DatabaseTable({
 									rowCount={group.rowCount}
 									visibleColumnCount={visibleColumnCount}
 									style={{
+										...groupToneStyle,
 										height: `${DATABASE_TABLE_GROUP_ROW_HEIGHT}px`,
 										transform,
 									}}
@@ -600,7 +610,18 @@ export function DatabaseTable({
 									height: `${DATABASE_TABLE_ROW_HEIGHT}px`,
 									transform,
 								}}
+								tabIndex={0}
 								onClick={() => onSelectRow(row.original.note_path)}
+								onKeyDown={(event) => {
+									if (event.target !== event.currentTarget) return;
+									if (event.key === "Enter") {
+										event.preventDefault();
+										onOpenRow(row.original.note_path);
+									} else if (event.key === " ") {
+										event.preventDefault();
+										onSelectRow(row.original.note_path);
+									}
+								}}
 							>
 								{cells}
 							</TableRow>
