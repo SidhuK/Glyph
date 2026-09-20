@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowLeft02Icon, ArrowUpRight01Icon, TestTubeIcon } from "@hugeicons/core-free-icons";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { memo, type ReactNode, useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
@@ -16,11 +16,7 @@ import {
 } from "../settings/settingsSearch";
 import { Button } from "../ui/shadcn/button";
 
-export const SidebarSettingsContent = memo(function SidebarSettingsContent({
-	bottomAccessory,
-}: {
-	bottomAccessory: ReactNode;
-}) {
+export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 	const { t: tGeneral, i18n } = useTranslation("settings.general");
 	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
 	const { status: licenseStatus } = useLicenseStatus(false);
@@ -168,7 +164,6 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent({
 			</div>
 
 			<div className="sidebarBottomLayer">
-				{bottomAccessory}
 				<div className="settingsSidebarFooter">
 					{licenseStatus?.mode === "community_build" ? (
 						<div className="settingsFeedbackCard settingsFeedbackCardCommunity">

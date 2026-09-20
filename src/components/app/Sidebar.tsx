@@ -73,7 +73,7 @@ export const Sidebar = memo(function Sidebar({
 							<>
 								<div aria-hidden="true" className="sidebarDragLayer" data-tauri-drag-region />
 								<div className="sidebarHeader" data-tauri-drag-region />
-								<SidebarSettingsContent bottomAccessory={spaceSwitcher} />
+								<SidebarSettingsContent />
 							</>
 						) : (
 							<>
