@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowLeft02Icon, ArrowUpRight01Icon, TestTubeIcon } from "@hugeicons/core-free-icons";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { memo, useMemo, useState } from "react";
+import { memo, type ReactNode, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
@@ -16,7 +16,11 @@ import {
 } from "../settings/settingsSearch";
 import { Button } from "../ui/shadcn/button";
 
-export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
+export const SidebarSettingsContent = memo(function SidebarSettingsContent({
+	bottomAccessory,
+}: {
+	bottomAccessory: ReactNode;
+}) {
 	const { t: tGeneral, i18n } = useTranslation("settings.general");
 	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
 	const { status: licenseStatus } = useLicenseStatus(false);
@@ -163,45 +167,48 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 				)}
 			</div>
 
-			<div className="settingsSidebarFooter">
-				{licenseStatus?.mode === "community_build" ? (
-					<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
-						<span className="settingsFeedbackBadge">Community build</span>
-						<div className="settingsFeedbackTitle">Thanks for building Glyph</div>
-						<p className="settingsFeedbackBody">
-							Get automatic updates and the official build with a license.
-						</p>
-						<Button
-							type="button"
-							variant="ghost"
-							size="sm"
-							className="settingsFeedbackAction settingsFeedbackActionCommunity"
-							onClick={() => void openUrl(licenseStatus.purchase_url)}
-						>
-							Buy official license
-							<HugeiconsIcon icon={ArrowUpRight01Icon} size="var(--icon-sm)" />
-						</Button>
-					</div>
-				) : (
-					<div className="settingsFeedbackCard">
-						<span className="settingsFeedbackBadge">Early access</span>
-						<div className="settingsFeedbackTitle">Help shape Glyph</div>
-						<p className="settingsFeedbackBody">
-							Glyph is actively evolving — you may hit rough edges. If something feels off, I'd love
-							to hear about it.
-						</p>
-						<Button
-							type="button"
-							variant="ghost"
-							size="sm"
-							className="settingsFeedbackAction"
-							onClick={() => void openUrl(GLYPH_LINKS.discord)}
-						>
-							Send feedback
-							<HugeiconsIcon icon={ArrowUpRight01Icon} size="var(--icon-sm)" />
-						</Button>
-					</div>
-				)}
+			<div className="sidebarBottomLayer">
+				{bottomAccessory}
+				<div className="settingsSidebarFooter">
+					{licenseStatus?.mode === "community_build" ? (
+						<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
+							<span className="settingsFeedbackBadge">Community build</span>
+							<div className="settingsFeedbackTitle">Thanks for building Glyph</div>
+							<p className="settingsFeedbackBody">
+								Get automatic updates and the official build with a license.
+							</p>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="settingsFeedbackAction settingsFeedbackActionCommunity"
+								onClick={() => void openUrl(licenseStatus.purchase_url)}
+							>
+								Buy official license
+								<HugeiconsIcon icon={ArrowUpRight01Icon} size="var(--icon-sm)" />
+							</Button>
+						</div>
+					) : (
+						<div className="settingsFeedbackCard">
+							<span className="settingsFeedbackBadge">Early access</span>
+							<div className="settingsFeedbackTitle">Help shape Glyph</div>
+							<p className="settingsFeedbackBody">
+								Glyph is actively evolving — you may hit rough edges. If something feels off, I'd
+								love to hear about it.
+							</p>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="settingsFeedbackAction"
+								onClick={() => void openUrl(GLYPH_LINKS.discord)}
+							>
+								Send feedback
+								<HugeiconsIcon icon={ArrowUpRight01Icon} size="var(--icon-sm)" />
+							</Button>
+						</div>
+					)}
+				</div>
 			</div>
 		</>
 	);

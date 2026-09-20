@@ -32,6 +32,16 @@ export const Sidebar = memo(function Sidebar({
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
+	const spaceSwitcher = (
+		<SpaceSwitcher
+			spaces={spaces}
+			activeSpacePath={activeSpacePath}
+			switchingSpacePath={switchingSpacePath}
+			onSelectSpace={onSelectSpace}
+			onSetSpaceIcon={onSetSpaceIcon}
+			onCloseSpace={onCloseSpace}
+		/>
+	);
 
 	return (
 		<m.aside
@@ -63,23 +73,18 @@ export const Sidebar = memo(function Sidebar({
 							<>
 								<div aria-hidden="true" className="sidebarDragLayer" data-tauri-drag-region />
 								<div className="sidebarHeader" data-tauri-drag-region />
-								<SidebarSettingsContent />
+								<SidebarSettingsContent bottomAccessory={spaceSwitcher} />
 							</>
 						) : (
 							<>
 								<SidebarHeader />
 								<SidebarContent key={activeSpacePath ?? "no-space"} {...contentProps} />
+								<div className="sidebarBottomLayer">
+									{spaceSwitcher}
+									<LicenseStatusFooter />
+								</div>
 							</>
 						)}
-						<SpaceSwitcher
-							spaces={spaces}
-							activeSpacePath={activeSpacePath}
-							switchingSpacePath={switchingSpacePath}
-							onSelectSpace={onSelectSpace}
-							onSetSpaceIcon={onSetSpaceIcon}
-							onCloseSpace={onCloseSpace}
-						/>
-						{settingsMode ? null : <LicenseStatusFooter />}
 					</m.div>
 				)}
 			</AnimatePresence>
