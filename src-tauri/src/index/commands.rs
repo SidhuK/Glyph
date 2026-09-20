@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use serde::Serialize;
@@ -260,6 +260,7 @@ pub async fn all_docs_list(
     person: Option<String>,
     sort_mode: Option<String>,
     query: Option<String>,
+    pinned_paths: Option<Vec<String>>,
 ) -> Result<Vec<AllDocsItem>, String> {
     let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(2_000).clamp(1, 5_000) as i64;
@@ -272,6 +273,14 @@ pub async fn all_docs_list(
     let query = query
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty());
+    let mut seen_pinned_paths = HashSet::new();
+    let pinned_paths = pinned_paths
+        .unwrap_or_default()
+        .into_iter()
+        .map(|path| path.trim().trim_matches('/').replace('\\', "/"))
+        .filter(|path| !path.is_empty())
+        .filter(|path| seen_pinned_paths.insert(path.clone()))
+        .collect::<Vec<_>>();
     let order_template = match sort_mode.as_deref() {
         Some("name-desc") => "COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE DESC, $table.path COLLATE NOCASE DESC, $table.id DESC",
         Some("modified-asc") => "CASE WHEN $table.updated IS NULL OR $table.updated = '' THEN 1 ELSE 0 END, $table.updated ASC, COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE ASC, $table.path COLLATE NOCASE ASC, $table.id ASC",
@@ -285,12 +294,28 @@ pub async fn all_docs_list(
     let visible_order = order_template.replace("$table", "vn");
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<AllDocsItem>, String> {
         let conn = open_db(&root)?;
-        let mut sql = String::from(
-            "WITH visible_notes AS (
-                 SELECT n.id, n.path, n.title, n.preview, n.updated, n.created
-                 FROM notes n ",
-        );
         let mut params: Vec<rusqlite::types::Value> = Vec::new();
+        let mut sql = String::from("WITH pinned_paths(path, pin_rank) AS (");
+        if pinned_paths.is_empty() {
+            sql.push_str("SELECT NULL, NULL WHERE 0");
+        } else {
+            sql.push_str("VALUES ");
+            for (rank, path) in pinned_paths.iter().enumerate() {
+                if rank > 0 {
+                    sql.push_str(", ");
+                }
+                sql.push_str(&format!("(?, {rank})"));
+                params.push(rusqlite::types::Value::from(path.clone()));
+            }
+        }
+        sql.push_str(
+            "),
+             visible_notes AS (
+                 SELECT n.id, n.path, n.title, n.preview, n.updated, n.created,
+                        pinned.pin_rank
+                 FROM notes n
+                 LEFT JOIN pinned_paths pinned ON pinned.path = n.path ",
+        );
         let mut filters: Vec<&str> = Vec::new();
         if let Some(prefix) = folder_prefix.as_ref() {
             filters.push("n.path LIKE ? ESCAPE '\\'");
@@ -326,7 +351,10 @@ pub async fn all_docs_list(
             sql.push_str(&filters.join(" AND "));
             sql.push(' ');
         }
-        sql.push_str("ORDER BY ");
+        sql.push_str(&format!(
+            "ORDER BY COALESCE(pinned.pin_rank, {}), ",
+            pinned_paths.len()
+        ));
         sql.push_str(&notes_order);
         sql.push_str(
             " LIMIT ? OFFSET ?
@@ -360,6 +388,10 @@ pub async fn all_docs_list(
              LEFT JOIN people_blob ON people_blob.note_id = vn.id
              ORDER BY ",
         );
+        sql.push_str(&format!(
+            "COALESCE(vn.pin_rank, {}), ",
+            pinned_paths.len()
+        ));
         sql.push_str(&visible_order);
         params.push(rusqlite::types::Value::from(limit));
         params.push(rusqlite::types::Value::from(offset));

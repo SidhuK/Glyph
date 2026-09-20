@@ -139,11 +139,6 @@
 			"label": "Tri par défaut de Folio",
 			"description": "Choisissez l’ordre initial des fichiers dans la liste de notes Folio.",
 			"ariaLabel": "Tri par défaut de Folio"
-		},
-		"folioWidth": {
-			"label": "Largeur de la liste des notes",
-			"description": "Définissez en pixels la largeur de la colonne des notes Folio. Vous pouvez aussi la redimensionner en la faisant glisser.",
-			"ariaLabel": "Largeur de la liste des notes Folio"
 		}
 	},
 	"editorPresentation": {

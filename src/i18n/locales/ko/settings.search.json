@@ -537,11 +537,6 @@
 			"section": "레이아웃",
 			"keywords": ["folio", "정렬", "이름", "수정", "생성"]
 		},
-		"appearance-layout-folio-width": {
-			"title": "Folio 노트 목록 너비",
-			"section": "레이아웃",
-			"keywords": ["folio", "너비", "열", "크기"]
-		},
 		"appearance-layout-note-side-peek": {
 			"title": "노트 피크",
 			"section": "실험적",

@@ -45,8 +45,6 @@
 		"emptySearch": "Keine passenden Notizen.",
 		"empty": "Keine Notizen gefunden.",
 		"filesTruncated": "Die ersten {{count}} Dateien werden angezeigt.",
-		"loadMore": "Weitere Notizen laden",
-		"loadingMore": "Weitere Notizen werden geladen…",
 		"delete": {
 			"confirmNote": "Diese Notiz löschen?",
 			"confirmFile": "Diese Datei löschen?",

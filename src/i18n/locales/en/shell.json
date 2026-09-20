@@ -54,8 +54,6 @@
 		"emptySearch": "No matching notes.",
 		"empty": "No notes found.",
 		"filesTruncated": "Showing the first {{count}} files.",
-		"loadMore": "Load more notes",
-		"loadingMore": "Loading more notes…",
 		"delete": {
 			"confirmNote": "Delete this note?",
 			"confirmFile": "Delete this file?",

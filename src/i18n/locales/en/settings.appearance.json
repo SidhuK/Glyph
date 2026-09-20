@@ -152,11 +152,6 @@
 			"label": "Default Folio sorting",
 			"description": "Choose the initial order of files in the Folio notes list.",
 			"ariaLabel": "Default Folio sorting"
-		},
-		"folioWidth": {
-			"label": "Notes list width",
-			"description": "Set the Folio notes column width in pixels. You can also resize it by dragging.",
-			"ariaLabel": "Folio notes list width"
 		}
 	},
 	"editorPresentation": {

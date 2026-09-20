@@ -7,10 +7,8 @@ import {
 	DATE_DISPLAY_FORMAT_OPTIONS,
 	DURABLE_SETTINGS,
 	MAX_EDITOR_FONT_SIZE,
-	MAX_FOLIO_NOTES_WIDTH,
 	MAX_UI_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
-	MIN_FOLIO_NOTES_WIDTH,
 	MIN_UI_FONT_SIZE,
 	SPACE_SETTINGS,
 	loadSettings,
@@ -353,12 +351,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		...bindApplicationSetting(DURABLE_SETTINGS.folioSortMode),
 		control: "choice",
 		options: fileTreeSortOptions,
-	},
-	{
-		...bindApplicationSetting(DURABLE_SETTINGS.folioNotesWidth),
-		control: "number",
-		min: MIN_FOLIO_NOTES_WIDTH,
-		max: MAX_FOLIO_NOTES_WIDTH,
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.noteSidePeek),

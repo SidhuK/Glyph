@@ -573,11 +573,6 @@
 			"section": "Diseño",
 			"keywords": ["folio", "ordenar", "nombre", "modificado", "creado"]
 		},
-		"appearance-layout-folio-width": {
-			"title": "Ancho de la lista de notas de Folio",
-			"section": "Diseño",
-			"keywords": ["folio", "ancho", "columna", "redimensionar"]
-		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek de nota",
 			"section": "Experimental",

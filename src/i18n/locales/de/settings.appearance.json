@@ -139,11 +139,6 @@
 			"label": "Standard-Sortierung in Folio",
 			"description": "Lege die anfängliche Reihenfolge der Dateien in der Folio-Notizenliste fest.",
 			"ariaLabel": "Standard-Sortierung in Folio"
-		},
-		"folioWidth": {
-			"label": "Breite der Notizenliste",
-			"description": "Lege die Breite der Folio-Notizenspalte in Pixeln fest. Sie kann auch durch Ziehen geändert werden.",
-			"ariaLabel": "Breite der Folio-Notizenliste"
 		}
 	},
 	"editorPresentation": {

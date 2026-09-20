@@ -608,11 +608,6 @@
 			"section": "Layout",
 			"keywords": ["folio", "sort", "name", "modified", "created"]
 		},
-		"appearance-layout-folio-width": {
-			"title": "Folio notes list width",
-			"section": "Layout",
-			"keywords": ["folio", "width", "column", "resize"]
-		},
 		"appearance-layout-note-side-peek": {
 			"title": "Note peek",
 			"section": "Experimental",

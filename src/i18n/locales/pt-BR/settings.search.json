@@ -557,11 +557,6 @@
 			"section": "Layout",
 			"keywords": ["folio", "ordenar", "nome", "modificado", "criado"]
 		},
-		"appearance-layout-folio-width": {
-			"title": "Largura da lista de notas do Folio",
-			"section": "Layout",
-			"keywords": ["folio", "largura", "coluna", "redimensionar"]
-		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek de nota",
 			"section": "Experimental",

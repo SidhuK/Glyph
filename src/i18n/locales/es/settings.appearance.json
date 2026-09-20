@@ -139,11 +139,6 @@
 			"label": "Orden predeterminado de Folio",
 			"description": "Elige el orden inicial de los archivos en la lista de notas de Folio.",
 			"ariaLabel": "Orden predeterminado de Folio"
-		},
-		"folioWidth": {
-			"label": "Ancho de la lista de notas",
-			"description": "Define en píxeles el ancho de la columna de notas de Folio. También puedes arrastrarla para cambiarlo.",
-			"ariaLabel": "Ancho de la lista de notas de Folio"
 		}
 	},
 	"editorPresentation": {

@@ -45,8 +45,6 @@
 		"emptySearch": "일치하는 노트가 없습니다.",
 		"empty": "노트를 찾을 수 없습니다.",
 		"filesTruncated": "처음 {{count}}개의 파일을 표시합니다.",
-		"loadMore": "노트 더 불러오기",
-		"loadingMore": "노트 더 불러오는 중…",
 		"delete": {
 			"confirmNote": "이 노트를 삭제할까요?",
 			"confirmFile": "이 파일을 삭제할까요?",

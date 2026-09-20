@@ -556,11 +556,6 @@
 			"section": "レイアウト",
 			"keywords": ["folio", "並べ替え", "名前", "更新日", "作成日"]
 		},
-		"appearance-layout-folio-width": {
-			"title": "Folio のノート一覧の幅",
-			"section": "レイアウト",
-			"keywords": ["folio", "幅", "列", "サイズ"]
-		},
 		"appearance-layout-note-side-peek": {
 			"title": "ノートプレビュー",
 			"section": "実験的",

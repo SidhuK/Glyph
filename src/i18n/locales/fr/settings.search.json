@@ -570,11 +570,6 @@
 			"section": "Disposition",
 			"keywords": ["folio", "tri", "nom", "modifié", "créé"]
 		},
-		"appearance-layout-folio-width": {
-			"title": "Largeur de la liste des notes Folio",
-			"section": "Disposition",
-			"keywords": ["folio", "largeur", "colonne", "redimensionner"]
-		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek de note",
 			"section": "Expérimental",
