@@ -1,15 +1,15 @@
 {
-  "version": "0.8.20-alpha.1",
-  "notes": "## What's Changed\n* Make Folio a first-class workspace mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/569\n* Redesign collection and Kanban views by @SidhuK in https://github.com/SidhuK/Glyph/pull/570\n* Add full-width AI agent view by @SidhuK in https://github.com/SidhuK/Glyph/pull/571\n* Redesign database table view by @SidhuK in https://github.com/SidhuK/Glyph/pull/572\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.19...v0.8.20-alpha.1",
-  "pub_date": "2026-09-20T04:51:15.738Z",
+  "version": "0.8.20-alpha.2",
+  "notes": "## What's Changed\n* Add sidebar space switcher by @SidhuK in https://github.com/SidhuK/Glyph/pull/573\n* Improve Folio notes list layout and pinning (#574)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/574\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.20-alpha.1...v0.8.20-alpha.2",
+  "pub_date": "2026-09-20T10:13:50.157Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDJOZlY3blkyZ3ZZVVYvdlJyaHdyaDNGUFZGYzduTklVNVBkb2FQanpxRWRZT2ZhSFdRZlM0anJZYUJQVldONVJIbGZxQWZHVmxTWkkzMWRXb0V5aXdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5ODc5ODcwCWZpbGU6R2x5cGguYXBwLnRhci5negpwUU9teFN2MmxDcDJkMnJkRUR2OHc3dDFVYUE1V256N0EvY2Fqd0lvL2I0WG1DaFNtKzRScDVWWTVpdlFIeUpCQUMrRGJBWnM0NDZlY0dtQ0NORmlCUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDBKQitKMzdUeEt1VWZ2N1Q3dDZKdFZvYTVySTR1TzNTUjlFZ2ZFRGJaZ3Q0bU1wbEZzRWZXUFZoeG92T2VXeGNYd0hLQjBvQW1yN2l6Y1p3Mlk5bXdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5ODk5MjE2CWZpbGU6R2x5cGguYXBwLnRhci5negpYMXI4VFV6VjhuWklHR1pFcUVUNDRBeXBJQUNlcFRkYjVjRTFZKzJGRm83TGwwUVNzRVRUY2pOLzV3QUJrZ0tMSCtBeWFBWTQwVUp5eGFCWmx6OGFEdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.2/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDJOZlY3blkyZ3ZZVVYvdlJyaHdyaDNGUFZGYzduTklVNVBkb2FQanpxRWRZT2ZhSFdRZlM0anJZYUJQVldONVJIbGZxQWZHVmxTWkkzMWRXb0V5aXdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5ODc5ODcwCWZpbGU6R2x5cGguYXBwLnRhci5negpwUU9teFN2MmxDcDJkMnJkRUR2OHc3dDFVYUE1V256N0EvY2Fqd0lvL2I0WG1DaFNtKzRScDVWWTVpdlFIeUpCQUMrRGJBWnM0NDZlY0dtQ0NORmlCUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDBKQitKMzdUeEt1VWZ2N1Q3dDZKdFZvYTVySTR1TzNTUjlFZ2ZFRGJaZ3Q0bU1wbEZzRWZXUFZoeG92T2VXeGNYd0hLQjBvQW1yN2l6Y1p3Mlk5bXdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5ODk5MjE2CWZpbGU6R2x5cGguYXBwLnRhci5negpYMXI4VFV6VjhuWklHR1pFcUVUNDRBeXBJQUNlcFRkYjVjRTFZKzJGRm83TGwwUVNzRVRUY2pOLzV3QUJrZ0tMSCtBeWFBWTQwVUp5eGFCWmx6OGFEdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.2/Glyph_aarch64.app.tar.gz"
     }
   }
 }
