@@ -9,7 +9,7 @@ import {
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import karatPortrait from "../../assets/karat-sidhu-blueprint.png";
+import karatPortrait from "../../assets/karat-sidhu-blueprint.webp";
 import { useUpdaterContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { useLicenseStatus } from "../../lib/license";
