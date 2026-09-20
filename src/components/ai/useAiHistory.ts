@@ -49,6 +49,10 @@ export function fetchAiHistoryDetail(jobId: string): Promise<AiChatHistoryDetail
 	});
 }
 
+export function invalidateAiHistory(): Promise<void> {
+	return queryClient.invalidateQueries({ queryKey: aiHistoryQueryKeys.all });
+}
+
 export function useRestoredAiChat(jobId: string | null): LoadedAiChat | null {
 	const query = useQuery({
 		queryKey: aiHistoryQueryKeys.detail(jobId ?? ""),

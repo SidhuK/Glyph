@@ -20,23 +20,16 @@ import {
 	consumePendingAiSelectionContext,
 } from "./aiContextEvents";
 import { messageText, parseAddTrigger } from "./aiPanelConstants";
-import {
-	endAiPanelKeepMounted,
-	setActiveAiHistoryJobId,
-	useAiPanelSession,
-} from "./aiPanelSession";
+import { setActiveAiHistoryJobId, useAiPanelSession } from "./aiPanelSession";
 import { useAiActions } from "./hooks/useAiActions";
-import { useAiToolEvents } from "./hooks/useAiToolEvents";
-import { useRigChat } from "./hooks/useRigChat";
+import { useAIConversation } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
-import { fetchAiHistoryDetail, useAiHistory, useRestoredAiChat } from "./useAiHistory";
+import { useAiHistory, useRestoredAiChat } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
 
 const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
 
-interface AIPanelProps {
-	onClose: () => void;
-}
+type AIPanelProps = { surface: "sidebar"; onClose: () => void } | { surface: "agent" };
 
 function timelineFromStoredToolEvents(toolEvents: AiStoredToolEvent[]): AIActivityTimelineEvent[] {
 	return toolEvents
@@ -51,7 +44,7 @@ function stripChipMarkers(text: string): string {
 	return text.replace(CHIP_MARKER_RE, "");
 }
 
-export function AIPanel({ onClose }: AIPanelProps) {
+export function AIPanel(props: AIPanelProps) {
 	const { t } = useTranslation("editor");
 	const { aiAssistantMode } = useAISidebarContext();
 	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
@@ -68,18 +61,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 
 	const session = useAiPanelSession();
 	const history = useAiHistory(14, { enabled: historyExpanded });
-	const chat = useRigChat({
-		onComplete: (historyId, keepAliveEpoch) => {
-			setActiveAiHistoryJobId(historyId);
-			setHydratedJobId(historyId);
-			void history.refresh();
-			void fetchAiHistoryDetail(historyId)
-				.catch(() => {})
-				.finally(() => {
-					endAiPanelKeepMounted(keepAliveEpoch);
-				});
-		},
-	});
+	const { chat, toolEvents } = useAIConversation();
 	const shouldRestore =
 		Boolean(session.jobId) &&
 		chat.messages.length === 0 &&
@@ -91,7 +73,6 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	const showAddPanel = addPanelOpen || Boolean(trigger);
 	const panelQuery = addPanelOpen ? addPanelQuery : (trigger?.query ?? "");
 	const context = useAiContext(panelQuery);
-	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
 
 	if (restored && session.jobId && hydratedJobId !== session.jobId) {
@@ -380,11 +361,16 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	}, [chat.messages, toolEvents.isAwaitingResponse]);
 
 	return (
-		<div className="aiPanel" data-ai-mode={aiAssistantMode} data-window-drag-ignore>
+		<div
+			className="aiPanel"
+			data-ai-mode={aiAssistantMode}
+			data-ai-surface={props.surface}
+			data-window-drag-ignore
+		>
 			<div
-				className="aiPanelHeader drag"
-				data-tauri-drag-region
-				onMouseDown={onWindowDragMouseDown}
+				className={cn("aiPanelHeader", props.surface === "sidebar" && "drag")}
+				data-tauri-drag-region={props.surface === "sidebar" ? "" : undefined}
+				onMouseDown={props.surface === "sidebar" ? onWindowDragMouseDown : undefined}
 			>
 				<div className="aiPanelHeaderLeft">
 					<button
@@ -423,18 +409,20 @@ export function AIPanel({ onClose }: AIPanelProps) {
 					>
 						<SettingsIcon size="var(--icon-sm)" />
 					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						data-action="minimize"
-						aria-label="Minimize"
-						onClick={onClose}
-						title="Minimize"
-						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
-					>
-						<HugeiconsIcon icon={Logout05Icon} size="var(--icon-sm)" />
-					</Button>
+					{props.surface === "sidebar" ? (
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon-sm"
+							data-action="minimize"
+							aria-label="Minimize"
+							onClick={props.onClose}
+							title="Minimize"
+							onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+						>
+							<HugeiconsIcon icon={Logout05Icon} size="var(--icon-sm)" />
+						</Button>
+					) : null}
 				</div>
 			</div>
 			<div className="aiPanelBody">

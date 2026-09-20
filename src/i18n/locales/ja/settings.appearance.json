@@ -173,6 +173,9 @@
 		"reorder": "{{label}}の順序を変更",
 		"showItem": "サイドバーに{{label}}を表示",
 		"items": {
+			"agent": {
+				"label": "エージェント"
+			},
 			"newNote": {
 				"label": "新規ノート"
 			},

@@ -31,6 +31,7 @@ import { usePeriodNote } from "../../hooks/usePeriodNote";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
+import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { dispatchEditorMenuAction, dispatchFileTreeStartRename } from "../../lib/appEvents";
 import {
 	INITIAL_DATABASES_OPEN_REQUEST,
@@ -910,8 +911,9 @@ export function AppShell() {
 	useSpaceChangePropagation(spaceChangeHost);
 
 	const activeTopSection = useMemo<
-		"all-notes" | "connections" | "databases" | "pinned-notes" | null
+		"agent" | "all-notes" | "connections" | "databases" | "pinned-notes" | null
 	>(() => {
+		if (activeTabPath === AGENT_VIEW_TAB_ID) return "agent";
 		if (activeTabPath === ACTIVITY_TIMELINE_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
@@ -931,6 +933,10 @@ export function AppShell() {
 	const openAllDocsTab = useCallback(() => {
 		openSpecialTab(ACTIVITY_TIMELINE_TAB_ID);
 	}, [openSpecialTab]);
+	const openAgentView = useCallback(() => {
+		setAiPanelOpen(false);
+		openSpecialTab(AGENT_VIEW_TAB_ID);
+	}, [openSpecialTab, setAiPanelOpen]);
 	const openPinnedDocsTab = useCallback(() => {
 		openSpecialTab(PINNED_DOCS_TAB_ID);
 	}, [openSpecialTab]);
@@ -1188,6 +1194,7 @@ export function AppShell() {
 		onCreateSpace: handleCreateSpace,
 		onOpenSpace: handleOpenSpace,
 		openAllDocsTab,
+		openAgentView,
 		openBlankTab,
 		splitPaneWithBlank,
 		openDatabasesTab,
@@ -1360,6 +1367,7 @@ export function AppShell() {
 						onOpenAllDocs={openAllDocsTab}
 						onOpenPinnedDocs={openPinnedDocsTab}
 						onOpenConnections={openConnectionsView}
+						onOpenAgent={openAgentView}
 						onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 						onOpenCalendar={openCalendar}
 						onOpenSearch={openSearchPalette}

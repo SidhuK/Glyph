@@ -209,6 +209,8 @@
 				"databases",
 				"connections",
 				"templates",
+				"agent",
+				"ai",
 				"git sync"
 			]
 		},

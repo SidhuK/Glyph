@@ -274,6 +274,10 @@
 			"label": "Ouvrir les réglages IA",
 			"description": "Ouvrir les réglages IA."
 		},
+		"open-agent": {
+			"label": "Ouvrir l'agent",
+			"description": "Ouvrir l'agent IA dans la vue principale."
+		},
 		"open-all-docs": {
 			"label": "Ouvrir toutes les notes",
 			"description": "Ouvrir la vue de toutes les notes."

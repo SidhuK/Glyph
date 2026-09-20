@@ -31,6 +31,7 @@ export type EditorWidthMode = "compact" | "comfortable" | "wide";
 export type FocusMode = "off" | "paragraph" | "sentence";
 
 const SIDEBAR_VISIBILITY_KEYS = [
+	"agent",
 	"newNote",
 	"pinned",
 	"allNotes",
@@ -53,6 +54,7 @@ export type SidebarVisibility = {
 export type SidebarOrder = readonly SidebarVisibilityKey[];
 
 export const DEFAULT_SIDEBAR_ORDER: SidebarOrder = [
+	"agent",
 	"newNote",
 	"pinned",
 	"allNotes",
@@ -67,6 +69,7 @@ export const DEFAULT_SIDEBAR_ORDER: SidebarOrder = [
 ];
 
 export const DEFAULT_SIDEBAR_VISIBILITY = {
+	agent: false,
 	newNote: true,
 	pinned: true,
 	allNotes: true,
@@ -91,6 +94,7 @@ export function normalizeSidebarVisibility(value: unknown): SidebarVisibility {
 		return typeof current === "boolean" ? current : DEFAULT_SIDEBAR_VISIBILITY[key];
 	};
 	return {
+		agent: read("agent"),
 		newNote: read("newNote"),
 		pinned: read("pinned"),
 		allNotes: read("allNotes"),

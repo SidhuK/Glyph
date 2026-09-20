@@ -274,6 +274,10 @@
 			"label": "KI-Einstellungen öffnen",
 			"description": "KI-Einstellungen öffnen."
 		},
+		"open-agent": {
+			"label": "Agent öffnen",
+			"description": "Den KI-Agenten in der Hauptansicht öffnen."
+		},
 		"open-all-docs": {
 			"label": "Alle Notizen öffnen",
 			"description": "Die Ansicht „Alle Notizen“ öffnen."

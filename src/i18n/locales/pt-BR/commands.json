@@ -274,6 +274,10 @@
 			"label": "Abrir configurações de IA",
 			"description": "Abrir as configurações de IA."
 		},
+		"open-agent": {
+			"label": "Abrir agente",
+			"description": "Abrir o agente de IA na visualização principal."
+		},
 		"open-all-docs": {
 			"label": "Abrir todas as notas",
 			"description": "Abrir a visualização de todas as notas."

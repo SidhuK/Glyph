@@ -186,6 +186,9 @@
 		"reorder": "Reorder {{label}}",
 		"showItem": "Show {{label}} in sidebar",
 		"items": {
+			"agent": {
+				"label": "Agent"
+			},
 			"newNote": {
 				"label": "New Note"
 			},

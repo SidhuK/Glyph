@@ -1,4 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	type ReactNode,
+	createContext,
+	createElement,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
+import { useAISidebarContext } from "../../../contexts/UIContext";
 import {
 	type AiAssistantMode,
 	type AiMessage,
@@ -11,7 +21,10 @@ import {
 	beginAiPanelKeepMounted,
 	endAiPanelKeepMounted,
 	isAiPanelKeepMounted,
+	setActiveAiHistoryJobId,
 } from "../aiPanelSession";
+import { fetchAiHistoryDetail, invalidateAiHistory } from "../useAiHistory";
+import { useAiToolEvents } from "./useAiToolEvents";
 
 type UIMessagePart = { type: "text"; text: string };
 
@@ -45,10 +58,6 @@ type SendMessageOptions = {
 	};
 };
 
-interface UseRigChatOptions {
-	onComplete?: (historyId: string, keepAliveEpoch: number) => void;
-}
-
 export type RigChatStatus = "ready" | "submitted" | "streaming" | "error";
 const DONE_SETTLE_MS = 140;
 
@@ -66,7 +75,7 @@ function asAiMessages(messages: UIMessage[]): AiMessage[] {
 	return out;
 }
 
-export function useRigChat(options: UseRigChatOptions = {}) {
+export function useRigChat() {
 	const [messages, setMessages] = useState<UIMessage[]>([]);
 	const [status, setStatus] = useState<RigChatStatus>("ready");
 	const [error, setError] = useState<Error | null>(null);
@@ -79,8 +88,6 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	const stopListenersRef = useRef<Array<() => void>>([]);
 	const doneTimerRef = useRef<number | null>(null);
 	const flushStreamingRef = useRef<(() => void) | null>(null);
-	const onComplete = options.onComplete;
-
 	const updateMessages = useCallback((next: UIMessage[] | ((prev: UIMessage[]) => UIMessage[])) => {
 		const resolved = typeof next === "function" ? next(messagesRef.current) : next;
 		messagesRef.current = resolved;
@@ -110,13 +117,19 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 		awaitingStartRef.current = false;
 		cleanupListeners();
 		setStatus("ready");
-		if (historyId && onComplete) {
+		if (historyId) {
 			activeThreadIdRef.current = historyId;
-			onComplete(historyId, keepAliveEpoch);
+			setActiveAiHistoryJobId(historyId);
+			void invalidateAiHistory();
+			void fetchAiHistoryDetail(historyId)
+				.catch(() => {})
+				.finally(() => {
+					endAiPanelKeepMounted(keepAliveEpoch);
+				});
 			return;
 		}
 		endAiPanelKeepMounted(keepAliveEpoch);
-	}, [cleanupListeners, clearDoneTimer, onComplete]);
+	}, [cleanupListeners, clearDoneTimer]);
 
 	const clearError = useCallback(() => {
 		setError(null);
@@ -373,4 +386,27 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 		clearError,
 		stop,
 	};
+}
+
+type AIConversationContextValue = {
+	chat: ReturnType<typeof useRigChat>;
+	toolEvents: ReturnType<typeof useAiToolEvents>;
+};
+
+const AIConversationContext = createContext<AIConversationContextValue | null>(null);
+
+export function AIConversationProvider({ children }: { children: ReactNode }) {
+	const { aiAssistantMode } = useAISidebarContext();
+	const chat = useRigChat();
+	const toolEvents = useAiToolEvents({
+		isChatMode: aiAssistantMode === "chat",
+		chatStatus: chat.status,
+	});
+	return createElement(AIConversationContext.Provider, { value: { chat, toolEvents } }, children);
+}
+
+export function useAIConversation(): AIConversationContextValue {
+	const context = useContext(AIConversationContext);
+	if (!context) throw new Error("useAIConversation must be used within AIConversationProvider");
+	return context;
 }
