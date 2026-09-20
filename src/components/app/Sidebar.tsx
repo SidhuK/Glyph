@@ -2,16 +2,33 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
+import type { SpaceDefinition } from "../../lib/spaceRegistry";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
 import { SidebarContent, type SidebarContentProps } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSettingsContent } from "./SidebarSettingsContent";
+import { SpaceSwitcher } from "./SpaceSwitcher";
 
 interface SidebarProps extends SidebarContentProps {
 	sidebarCollapsed: boolean;
+	spaces: SpaceDefinition[];
+	activeSpacePath: string | null;
+	switchingSpacePath: string | null;
+	onSelectSpace: (path: string) => Promise<boolean>;
+	onSetSpaceIcon: (path: string, iconName: string | null) => Promise<void>;
+	onCloseSpace: (path: string) => Promise<void>;
 }
 
-export const Sidebar = memo(function Sidebar({ sidebarCollapsed, ...contentProps }: SidebarProps) {
+export const Sidebar = memo(function Sidebar({
+	sidebarCollapsed,
+	spaces,
+	activeSpacePath,
+	switchingSpacePath,
+	onSelectSpace,
+	onSetSpaceIcon,
+	onCloseSpace,
+	...contentProps
+}: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
@@ -51,10 +68,18 @@ export const Sidebar = memo(function Sidebar({ sidebarCollapsed, ...contentProps
 						) : (
 							<>
 								<SidebarHeader />
-								<SidebarContent {...contentProps} />
-								<LicenseStatusFooter />
+								<SidebarContent key={activeSpacePath ?? "no-space"} {...contentProps} />
 							</>
 						)}
+						<SpaceSwitcher
+							spaces={spaces}
+							activeSpacePath={activeSpacePath}
+							switchingSpacePath={switchingSpacePath}
+							onSelectSpace={onSelectSpace}
+							onSetSpaceIcon={onSetSpaceIcon}
+							onCloseSpace={onCloseSpace}
+						/>
+						{settingsMode ? null : <LicenseStatusFooter />}
 					</m.div>
 				)}
 			</AnimatePresence>

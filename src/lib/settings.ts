@@ -659,8 +659,26 @@ export async function setCurrentSpacePath(path: string): Promise<void> {
 	const store = await getSettingsStore();
 	await store.set(INTERNAL_SETTING_KEYS.currentSpacePath, path);
 	const prev = (await store.get<string[] | null>(INTERNAL_SETTING_KEYS.recentSpaces)) ?? [];
-	const next = [path, ...prev.filter((p) => p !== path)].slice(0, 20);
+	const ordered = [...new Set(prev.filter((item) => typeof item === "string" && item.length > 0))];
+	const next = ordered.includes(path) ? ordered.slice(0, 20) : [...ordered.slice(0, 19), path];
 	await store.set(INTERNAL_SETTING_KEYS.recentSpaces, next);
+	await saveSettingsStore(store);
+}
+
+export async function removeRegisteredSpacePath(path: string): Promise<void> {
+	const store = await getSettingsStore();
+	const currentPath = await store.get<unknown>(INTERNAL_SETTING_KEYS.currentSpacePath);
+	if (currentPath === path) {
+		await store.delete(INTERNAL_SETTING_KEYS.currentSpacePath);
+	}
+	const storedPaths = await store.get<unknown>(INTERNAL_SETTING_KEYS.recentSpaces);
+	const paths = Array.isArray(storedPaths)
+		? storedPaths.filter((value): value is string => typeof value === "string")
+		: [];
+	await store.set(
+		INTERNAL_SETTING_KEYS.recentSpaces,
+		[...new Set(paths)].filter((value) => value !== path).slice(0, 20),
+	);
 	await saveSettingsStore(store);
 }
 

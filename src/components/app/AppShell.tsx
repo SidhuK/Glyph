@@ -100,9 +100,13 @@ export function AppShell() {
 	const {
 		spacePath,
 		setError,
+		spaces,
+		switchingSpacePath,
 		onOpenSpace: openSpace,
 		onOpenSpaceAtPath: openSpaceAtPath,
 		onCreateSpace: createSpace,
+		setSpaceIcon,
+		removeSpaceFromSwitcher,
 		closeSpace,
 		welcomeNotePath,
 		consumeWelcomeNotePath,
@@ -417,6 +421,17 @@ export function AppShell() {
 		if (!(await prepareForSpaceChange())) return;
 		await closeSpace();
 	}, [closeSpace, prepareForSpaceChange]);
+
+	const handleCloseSpaceFromSwitcher = useCallback(
+		async (path: string) => {
+			if (path === spacePath) {
+				await handleCloseSpace();
+				return;
+			}
+			await removeSpaceFromSwitcher(path);
+		},
+		[handleCloseSpace, removeSpaceFromSwitcher, spacePath],
+	);
 
 	useEffect(() => {
 		const visible = activeMarkdownTabPath !== null && isMarkdownPath(activeMarkdownTabPath);
@@ -1341,6 +1356,12 @@ export function AppShell() {
 			{!zenMode || settingsMode ? (
 				<>
 					<Sidebar
+						spaces={spaces}
+						activeSpacePath={spacePath}
+						switchingSpacePath={switchingSpacePath}
+						onSelectSpace={handleSelectSpace}
+						onSetSpaceIcon={setSpaceIcon}
+						onCloseSpace={handleCloseSpaceFromSwitcher}
 						onSelectDir={setActiveDirPath}
 						onOpenFile={(p) => void openWorkspaceFile(p)}
 						onNewNote={() => void createNoteInSelectedFolder()}

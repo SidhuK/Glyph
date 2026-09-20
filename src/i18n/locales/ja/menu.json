@@ -11,11 +11,11 @@
 		"textHighlight": "テキストハイライト",
 		"ai": "AI",
 		"space": "スペース",
-		"recentSpaces": "最近のスペース",
+		"recentSpaces": "スペース",
 		"window": "ウィンドウ",
 		"help": "ヘルプ"
 	},
 	"recentSpaces": {
-		"empty": "最近のスペースはありません"
+		"empty": "スペースはありません"
 	}
 }

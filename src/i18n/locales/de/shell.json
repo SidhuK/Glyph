@@ -226,5 +226,13 @@
 		"largeGraphTitle": "Großer Verbindungsgraph",
 		"largeGraphBody": "Dieser Bereich enthält {{count}} Notizen. Der vollständige Graph kann eine Weile dauern und Glyph vorübergehend weniger reaktionsschnell machen.",
 		"largeGraphContinue": "Weiter"
+	},
+	"spaceSwitcher": {
+		"label": "Spaces",
+		"switchTo": "Zu {{name}} wechseln",
+		"changeIcon": "Symbol ändern…",
+		"closeSpace": "Space schließen",
+		"chooseIcon": "Space-Symbol auswählen",
+		"menuFailed": "Das Space-Menü konnte nicht geöffnet werden"
 	}
 }

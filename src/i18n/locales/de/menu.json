@@ -11,11 +11,11 @@
 		"textHighlight": "Texthervorhebung",
 		"ai": "KI",
 		"space": "Space",
-		"recentSpaces": "Zuletzt verwendete Spaces",
+		"recentSpaces": "Spaces",
 		"window": "Fenster",
 		"help": "Hilfe"
 	},
 	"recentSpaces": {
-		"empty": "Keine zuletzt verwendeten Spaces"
+		"empty": "Keine Spaces"
 	}
 }

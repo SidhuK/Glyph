@@ -225,5 +225,13 @@
 		"largeGraphTitle": "큰 연결 그래프",
 		"largeGraphBody": "이 스페이스에는 노트가 {{count}}개 있습니다. 전체 그래프를 만드는 데 시간이 걸리고 Glyph가 잠시 느려질 수 있습니다.",
 		"largeGraphContinue": "계속"
+	},
+	"spaceSwitcher": {
+		"label": "스페이스",
+		"switchTo": "{{name}}(으)로 전환",
+		"changeIcon": "아이콘 변경…",
+		"closeSpace": "스페이스 닫기",
+		"chooseIcon": "스페이스 아이콘 선택",
+		"menuFailed": "스페이스 메뉴를 열 수 없습니다"
 	}
 }

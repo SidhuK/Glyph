@@ -226,5 +226,13 @@
 		"largeGraphTitle": "Grafo de conexiones grande",
 		"largeGraphBody": "Este espacio contiene {{count}} notas. Construir el grafo completo puede tardar y hacer que Glyph responda más lento.",
 		"largeGraphContinue": "Continuar"
+	},
+	"spaceSwitcher": {
+		"label": "Espacios",
+		"switchTo": "Cambiar a {{name}}",
+		"changeIcon": "Cambiar icono…",
+		"closeSpace": "Cerrar espacio",
+		"chooseIcon": "Elegir icono del espacio",
+		"menuFailed": "No se pudo abrir el menú de espacios"
 	}
 }

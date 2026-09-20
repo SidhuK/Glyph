@@ -52,6 +52,7 @@ import { type PeriodKind, isPeriodNoteEnabled } from "../../lib/periodNotes";
 import { isFileTreeSortMode } from "../../lib/settings";
 import type { SidebarOrder, SidebarVisibilityKey } from "../../lib/settings/model";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
+import { spaceDisplayName } from "../../lib/spaceRegistry";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { basename } from "../../utils/path";
@@ -108,13 +109,6 @@ type SidebarView =
 	| { kind: "recents" }
 	| { kind: "tags" }
 	| { kind: "folder"; path: string };
-
-function formatSpaceLabel(path: string): string {
-	const normalized = path.replace(/\\/g, "/").replace(/\/+$/, "");
-	const parts = normalized.split("/").filter(Boolean);
-	if (parts.length === 0) return path;
-	return parts[parts.length - 1] ?? path;
-}
 
 function isSpaceContainerEntry(entry: FsEntry, spaceLabel: string): boolean {
 	const normalizedSpaceLabel = spaceLabel.trim().toLocaleLowerCase();
@@ -308,7 +302,7 @@ export const SidebarContent = memo(function SidebarContent({
 	} = useHoverPrefetch(() => {
 		onPrefetchDatabases();
 	});
-	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
+	const spaceLabel = spacePath ? spaceDisplayName(spacePath) : "Glyph";
 	const folioSpaceContainerPath = useMemo(() => {
 		if (!folioMode) return null;
 		return rootEntries.find((entry) => isSpaceContainerEntry(entry, spaceLabel))?.rel_path ?? null;

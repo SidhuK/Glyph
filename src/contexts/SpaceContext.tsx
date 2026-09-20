@@ -12,15 +12,24 @@ import { clearAiPanelCaches } from "../components/ai/cache";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
-import { loadSettings, setCurrentSpacePath } from "../lib/settings";
+import { loadSettings, removeRegisteredSpacePath, setCurrentSpacePath } from "../lib/settings";
+import {
+	buildSpaceDefinitions,
+	loadSpaceIconOverrides,
+	type SpaceDefinition,
+	type SpaceIconOverrides,
+	writeSpaceIconOverride,
+} from "../lib/spaceRegistry";
 import { invoke } from "../lib/tauri";
+import { useTauriEvent } from "../lib/tauriEvents";
 import { toast } from "../lib/toast";
 
 interface SpaceContextValue {
 	setError: (error: string) => void;
 	spacePath: string | null;
 	welcomeNotePath: string | null;
-	recentSpaces: string[];
+	spaces: SpaceDefinition[];
+	switchingSpacePath: string | null;
 	isIndexing: boolean;
 	settingsLoaded: boolean;
 	consumeWelcomeNotePath: () => void;
@@ -30,24 +39,29 @@ interface SpaceContextValue {
 	/** Resolves to whether the space is now open. */
 	onOpenSpaceAtPath: (path: string) => Promise<boolean>;
 	onCreateSpace: () => Promise<void>;
+	setSpaceIcon: (path: string, iconName: string | null) => Promise<void>;
+	removeSpaceFromSwitcher: (path: string) => Promise<void>;
 	closeSpace: () => Promise<void>;
 }
 
 const SpaceContext = createContext<SpaceContextValue | null>(null);
 
-function normalizeRecentSpaces(recent: string[], currentSpacePath: string | null): string[] {
+function normalizeSpacePaths(paths: string[], currentSpacePath: string | null): string[] {
 	const out: string[] = [];
 	const seen = new Set<string>();
 	const pushUnique = (value: string | null) => {
 		if (!value) return;
-		const trimmed = value.trim();
-		if (!trimmed || seen.has(trimmed)) return;
-		seen.add(trimmed);
-		out.push(trimmed);
+		if (seen.has(value)) return;
+		seen.add(value);
+		out.push(value);
 	};
-	pushUnique(currentSpacePath);
-	for (const value of recent) pushUnique(value);
-	return out.slice(0, 20);
+	for (const value of paths) pushUnique(value);
+	const normalized = out.slice(0, 20);
+	const current = currentSpacePath;
+	if (!current || normalized.includes(current)) return normalized;
+	if (normalized.length === 20) normalized.pop();
+	normalized.push(current);
+	return normalized;
 }
 
 // Space-level errors surface as top toasts; there is no persistent error state.
@@ -69,7 +83,9 @@ async function selectSpaceFolder(): Promise<string | null> {
 export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [spacePath, setSpacePath] = useState<string | null>(null);
 	const [welcomeNotePath, setWelcomeNotePath] = useState<string | null>(null);
-	const [recentSpaces, setRecentSpaces] = useState<string[]>([]);
+	const [spacePaths, setSpacePaths] = useState<string[]>([]);
+	const [spaceIconOverrides, setSpaceIconOverrides] = useState<SpaceIconOverrides>({});
+	const [switchingSpacePath, setSwitchingSpacePath] = useState<string | null>(null);
 	const [isIndexing, setIsIndexing] = useState(false);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 	const isOpeningSpaceRef = useRef(false);
@@ -92,18 +108,26 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	useEffect(() => {
-		syncRecentSpacesMenu(recentSpaces.filter((path) => path !== spacePath).slice(0, 20));
-	}, [recentSpaces, spacePath, syncRecentSpacesMenu]);
+		syncRecentSpacesMenu(spacePaths.filter((path) => path !== spacePath).slice(0, 20));
+	}, [spacePaths, spacePath, syncRecentSpacesMenu]);
+
+	useTauriEvent("space:registry_updated", ({ iconOverrides }) => {
+		setSpaceIconOverrides(iconOverrides);
+	});
 
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
 			try {
-				const settings = await loadSettings();
+				const [settings, iconOverrides] = await Promise.all([
+					loadSettings(),
+					loadSpaceIconOverrides(),
+				]);
 				if (cancelled) return;
-				setRecentSpaces(
-					normalizeRecentSpaces(settings.recentSpaces, settings.currentSpacePath ?? null),
+				setSpacePaths(
+					normalizeSpacePaths(settings.recentSpaces, settings.currentSpacePath ?? null),
 				);
+				setSpaceIconOverrides(iconOverrides);
 				try {
 					await invoke("index_set_people_mentions_as_tags_enabled", {
 						enabled: settings.editor.enablePeopleMentionsAsTags,
@@ -117,6 +141,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 					if (!cancelled) {
 						setSpacePath(currentWindowSpaceInfo.root);
 						setWelcomeNotePath(currentWindowSpaceInfo.welcome_note_path ?? null);
+						setSpacePaths((prev) => normalizeSpacePaths(prev, currentWindowSpaceInfo.root));
 					}
 				} else if (settings.currentSpacePath) {
 					try {
@@ -183,6 +208,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		async (path: string, mode: "open" | "create"): Promise<boolean> => {
 			if (isOpeningSpaceRef.current) return false;
 			isOpeningSpaceRef.current = true;
+			setSwitchingSpacePath(path);
 			try {
 				if (path === currentSpacePathRef.current) return true;
 				const spaceInfo =
@@ -194,7 +220,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				invalidateNavigationPrefetch();
 				setSpacePath(spaceInfo.root);
 				setWelcomeNotePath(spaceInfo.welcome_note_path ?? null);
-				setRecentSpaces((prev) => normalizeRecentSpaces(prev, spaceInfo.root));
+				setSpacePaths((prev) => normalizeSpacePaths(prev, spaceInfo.root));
 				await setCurrentSpacePath(spaceInfo.root);
 				return true;
 			} catch (err) {
@@ -202,12 +228,32 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				return false;
 			} finally {
 				isOpeningSpaceRef.current = false;
+				setSwitchingSpacePath(null);
 			}
 		},
 		[],
 	);
 
+	const setSpaceIcon = useCallback(async (path: string, iconName: string | null) => {
+		try {
+			const next = await writeSpaceIconOverride(path, iconName);
+			setSpaceIconOverrides(next);
+		} catch (err) {
+			setError(extractErrorMessage(err));
+		}
+	}, []);
+
+	const removeSpaceFromSwitcher = useCallback(async (path: string) => {
+		setSpacePaths((prev) => prev.filter((spacePath) => spacePath !== path));
+		try {
+			await removeRegisteredSpacePath(path);
+		} catch (err) {
+			setError(extractErrorMessage(err));
+		}
+	}, []);
+
 	const closeSpace = useCallback(async () => {
+		const closingSpacePath = currentSpacePathRef.current;
 		try {
 			await invoke("space_close");
 			clearAiPanelCaches();
@@ -215,10 +261,13 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			invalidateNavigationPrefetch();
 			setSpacePath(null);
 			setWelcomeNotePath(null);
+			if (closingSpacePath) {
+				await removeSpaceFromSwitcher(closingSpacePath);
+			}
 		} catch (err) {
 			setError(extractErrorMessage(err));
 		}
-	}, []);
+	}, [removeSpaceFromSwitcher]);
 
 	const consumeWelcomeNotePath = useCallback(() => {
 		setWelcomeNotePath(null);
@@ -239,12 +288,18 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		if (path) await applySpaceSelection(path, "create");
 	}, [applySpaceSelection]);
 
+	const spaces = useMemo(
+		() => buildSpaceDefinitions(spacePaths, spaceIconOverrides),
+		[spaceIconOverrides, spacePaths],
+	);
+
 	const value = useMemo<SpaceContextValue>(
 		() => ({
 			setError,
 			spacePath,
 			welcomeNotePath,
-			recentSpaces,
+			spaces,
+			switchingSpacePath,
 			isIndexing,
 			settingsLoaded,
 			consumeWelcomeNotePath,
@@ -253,12 +308,15 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			onOpenSpace,
 			onOpenSpaceAtPath,
 			onCreateSpace,
+			setSpaceIcon,
+			removeSpaceFromSwitcher,
 			closeSpace,
 		}),
 		[
 			spacePath,
 			welcomeNotePath,
-			recentSpaces,
+			spaces,
+			switchingSpacePath,
 			isIndexing,
 			settingsLoaded,
 			consumeWelcomeNotePath,
@@ -267,6 +325,8 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			onOpenSpace,
 			onOpenSpaceAtPath,
 			onCreateSpace,
+			setSpaceIcon,
+			removeSpaceFromSwitcher,
 			closeSpace,
 		],
 	);

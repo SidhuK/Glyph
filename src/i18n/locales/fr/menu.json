@@ -11,11 +11,11 @@
 		"textHighlight": "Surlignage du texte",
 		"ai": "IA",
 		"space": "Espace",
-		"recentSpaces": "Espaces récents",
+		"recentSpaces": "Espaces",
 		"window": "Fenêtre",
 		"help": "Aide"
 	},
 	"recentSpaces": {
-		"empty": "Aucun espace récent"
+		"empty": "Aucun espace"
 	}
 }
