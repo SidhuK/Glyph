@@ -197,9 +197,15 @@
 .spaceSwitcher {
 	display: flex;
 	align-items: center;
+	align-self: center;
+	width: max-content;
+	max-width: calc(100% - 16px);
 	min-width: 0;
-	padding: 7px 8px 6px;
+	margin: 6px 8px 10px;
+	padding: 3px 5px;
 	flex-shrink: 0;
+	position: relative;
+	z-index: 10;
 	-webkit-app-region: no-drag;
 }
 
@@ -209,7 +215,7 @@
 	justify-content: safe center;
 	gap: 3px;
 	min-width: 0;
-	flex: 1;
+	flex: 0 1 auto;
 	overflow-x: auto;
 	scrollbar-width: none;
 }
