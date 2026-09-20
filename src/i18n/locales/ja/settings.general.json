@@ -9,6 +9,15 @@
 		"searchAriaLabel": "設定を検索",
 		"clearSearchAriaLabel": "設定の検索をクリア"
 	},
+	"about": {
+		"developer": {
+			"madeBy": "開発者",
+			"eyebrow": "開発者について",
+			"bio": "Karat の本職は生物医学者兼研究者です。研究を通じて、Texas A&M University や University of Vermont などに携わってきました。自分自身の課題を解く楽しさからソフトウェアを作っており、Glyph もその一つです。",
+			"github": "GitHub",
+			"twitter": "X / Twitter"
+		}
+	},
 	"usage": {
 		"loading": "インサイトを読み込んでいます…",
 		"noSpace": "インサイトを見るにはスペースを開いてください。",

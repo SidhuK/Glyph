@@ -9,6 +9,15 @@
 		"searchAriaLabel": "Buscar configurações",
 		"clearSearchAriaLabel": "Limpar busca de configurações"
 	},
+	"about": {
+		"developer": {
+			"madeBy": "Criado por",
+			"eyebrow": "Conheça o desenvolvedor",
+			"bio": "Durante o dia, Karat é cientista biomédico e pesquisador. Sua pesquisa o levou a lugares como a Texas A&M University e a University of Vermont. Cria software pelo prazer de resolver os próprios problemas, e o Glyph é uma dessas ferramentas.",
+			"github": "GitHub",
+			"twitter": "X / Twitter"
+		}
+	},
 	"usage": {
 		"loading": "Carregando insights…",
 		"noSpace": "Abra um espaço para ver os insights.",

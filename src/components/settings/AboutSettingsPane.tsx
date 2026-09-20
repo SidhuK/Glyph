@@ -8,6 +8,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import karatPortrait from "../../assets/karat-sidhu-blueprint.png";
 import { useUpdaterContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { useLicenseStatus } from "../../lib/license";
@@ -19,6 +21,7 @@ import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 
 export function AboutSettingsPane() {
+	const { t } = useTranslation("settings.general");
 	const { status: licenseStatus, loading: licenseLoading } = useLicenseStatus(false);
 	const autoUpdater = useUpdaterContext();
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
@@ -102,16 +105,42 @@ export function AboutSettingsPane() {
 						<br />
 						not a server.
 					</p>
-					<p className="aboutAttribution">
-						Made by{" "}
-						<button
-							type="button"
-							className="settingsInlineLink"
-							onClick={() => void openUrl(GLYPH_LINKS.x)}
-						>
-							Karat Sidhu
-						</button>
-					</p>
+					<details className="aboutDeveloperDetails">
+						<summary className="aboutAttribution aboutDeveloperSummary">
+							{t("about.developer.madeBy")} <span className="settingsInlineLink">Karat Sidhu</span>
+						</summary>
+						<article className="aboutDeveloperCard">
+							<div className="aboutDeveloperPortrait">
+								<span className="aboutDeveloperMark" aria-hidden="true">
+									KS / 01
+								</span>
+								<img src={karatPortrait} alt="" />
+							</div>
+							<div className="aboutDeveloperStory">
+								<p className="aboutDeveloperEyebrow">{t("about.developer.eyebrow")}</p>
+								<h3>Karat Sidhu</h3>
+								<p className="aboutDeveloperBio">{t("about.developer.bio")}</p>
+								<div className="aboutDeveloperLinks">
+									<button
+										type="button"
+										className="aboutDeveloperLink"
+										onClick={() => void openUrl(GLYPH_LINKS.github)}
+									>
+										{t("about.developer.github")}
+										<span aria-hidden="true">↗</span>
+									</button>
+									<button
+										type="button"
+										className="aboutDeveloperLink"
+										onClick={() => void openUrl(GLYPH_LINKS.x)}
+									>
+										{t("about.developer.twitter")}
+										<span aria-hidden="true">↗</span>
+									</button>
+								</div>
+							</div>
+						</article>
+					</details>
 					<div className="aboutQuickLinks" aria-label="About links">
 						<Button
 							type="button"

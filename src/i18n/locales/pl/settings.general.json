@@ -9,6 +9,15 @@
 		"searchAriaLabel": "Szukaj w ustawieniach",
 		"clearSearchAriaLabel": "Wyczyść wyszukiwanie ustawień"
 	},
+	"about": {
+		"developer": {
+			"madeBy": "Autor",
+			"eyebrow": "Poznaj twórcę",
+			"bio": "Na co dzień Karat jest naukowcem biomedycznym i badaczem. Jego praca badawcza zaprowadziła go do miejsc takich jak Texas A&M University i University of Vermont. Tworzy oprogramowanie dla przyjemności rozwiązywania własnych problemów, a Glyph jest jednym z takich narzędzi.",
+			"github": "GitHub",
+			"twitter": "X / Twitter"
+		}
+	},
 	"usage": {
 		"loading": "Ładowanie statystyk…",
 		"noSpace": "Otwórz przestrzeń, aby wyświetlić statystyki.",
