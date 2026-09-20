@@ -173,6 +173,9 @@
 		"reorder": "{{label}} neu anordnen",
 		"showItem": "{{label}} in der Seitenleiste anzeigen",
 		"items": {
+			"agent": {
+				"label": "Agent"
+			},
 			"newNote": {
 				"label": "Neue Notiz"
 			},

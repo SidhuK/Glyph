@@ -173,6 +173,9 @@
 		"reorder": "Reordenar {{label}}",
 		"showItem": "Mostrar {{label}} en la barra lateral",
 		"items": {
+			"agent": {
+				"label": "Agente"
+			},
 			"newNote": {
 				"label": "Nueva nota"
 			},

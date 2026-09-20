@@ -94,6 +94,7 @@ interface UseAppCommandsDeps {
 	moveTargetDirs: string[];
 	onCreateSpace: () => void;
 	onOpenSpace: () => void;
+	openAgentView: () => void;
 	openAllDocsTab: () => void;
 	openBlankTab: () => void;
 	splitPaneWithBlank: (edge: SplitDropEdge) => void;
@@ -131,6 +132,7 @@ function buildAiCommands({
 	aiEnabled,
 	attachAllOpenNotesToAi,
 	attachCurrentNoteToAi,
+	openAgentView,
 	openMarkdownTabsLength,
 	setAiPanelOpen,
 	spacePath,
@@ -140,12 +142,19 @@ function buildAiCommands({
 	| "aiEnabled"
 	| "attachAllOpenNotesToAi"
 	| "attachCurrentNoteToAi"
+	| "openAgentView"
 	| "openMarkdownTabsLength"
 	| "setAiPanelOpen"
 	| "spacePath"
 >): Command[] {
 	if (!aiEnabled) return [];
 	return [
+		{
+			id: "open-agent",
+			icon: <HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-lg)" />,
+			enabled: Boolean(spacePath),
+			action: openAgentView,
+		},
 		{
 			id: "toggle-ai",
 			icon: <HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-lg)" />,
@@ -242,6 +251,7 @@ export function useAppCommands({
 	moveTargetDirs,
 	onCreateSpace,
 	onOpenSpace,
+	openAgentView,
 	openAllDocsTab,
 	openBlankTab,
 	splitPaneWithBlank,
@@ -288,6 +298,7 @@ export function useAppCommands({
 			aiEnabled,
 			attachAllOpenNotesToAi,
 			attachCurrentNoteToAi,
+			openAgentView,
 			openMarkdownTabsLength,
 			setAiPanelOpen,
 			spacePath,
@@ -689,6 +700,7 @@ export function useAppCommands({
 		closeSpace,
 		onCreateSpace,
 		onOpenSpace,
+		openAgentView,
 		openMarkdownTabsLength,
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,

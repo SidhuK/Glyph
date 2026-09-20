@@ -282,6 +282,10 @@
 			"label": "Open AI Settings",
 			"description": "Open AI settings."
 		},
+		"open-agent": {
+			"label": "Open Agent",
+			"description": "Open the AI agent in the main view."
+		},
 		"open-all-docs": {
 			"label": "Open All Notes",
 			"description": "Open the all notes view."

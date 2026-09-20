@@ -34,9 +34,7 @@ import { useAiProfiles } from "./useAiProfiles";
 
 const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
 
-interface AIPanelProps {
-	onClose: () => void;
-}
+type AIPanelProps = { surface: "sidebar"; onClose: () => void } | { surface: "agent" };
 
 function timelineFromStoredToolEvents(toolEvents: AiStoredToolEvent[]): AIActivityTimelineEvent[] {
 	return toolEvents
@@ -51,7 +49,7 @@ function stripChipMarkers(text: string): string {
 	return text.replace(CHIP_MARKER_RE, "");
 }
 
-export function AIPanel({ onClose }: AIPanelProps) {
+export function AIPanel(props: AIPanelProps) {
 	const { t } = useTranslation("editor");
 	const { aiAssistantMode } = useAISidebarContext();
 	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
@@ -380,7 +378,12 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	}, [chat.messages, toolEvents.isAwaitingResponse]);
 
 	return (
-		<div className="aiPanel" data-ai-mode={aiAssistantMode} data-window-drag-ignore>
+		<div
+			className="aiPanel"
+			data-ai-mode={aiAssistantMode}
+			data-ai-surface={props.surface}
+			data-window-drag-ignore
+		>
 			<div
 				className="aiPanelHeader drag"
 				data-tauri-drag-region
@@ -423,18 +426,20 @@ export function AIPanel({ onClose }: AIPanelProps) {
 					>
 						<SettingsIcon size="var(--icon-sm)" />
 					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						data-action="minimize"
-						aria-label="Minimize"
-						onClick={onClose}
-						title="Minimize"
-						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
-					>
-						<HugeiconsIcon icon={Logout05Icon} size="var(--icon-sm)" />
-					</Button>
+					{props.surface === "sidebar" ? (
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon-sm"
+							data-action="minimize"
+							aria-label="Minimize"
+							onClick={props.onClose}
+							title="Minimize"
+							onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+						>
+							<HugeiconsIcon icon={Logout05Icon} size="var(--icon-sm)" />
+						</Button>
+					) : null}
 				</div>
 			</div>
 			<div className="aiPanelBody">

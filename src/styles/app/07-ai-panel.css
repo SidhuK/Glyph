@@ -55,6 +55,33 @@
 	overflow: hidden;
 }
 
+.aiAgentView {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	background: var(--bg-primary);
+}
+
+.aiPanel[data-ai-surface="agent"] .aiPanelHeader {
+	padding: 12px clamp(16px, 3vw, 36px);
+}
+
+.aiPanel[data-ai-surface="agent"]
+	:is(.aiHistory, .aiChatThread, .aiPanelError, .aiSelectionContext, .aiComposer, .aiAddPanel) {
+	width: min(100%, 1040px);
+	box-sizing: border-box;
+	margin-inline: auto;
+}
+
+.aiPanel[data-ai-surface="agent"] .aiChatThread {
+	padding: clamp(20px, 4vw, 48px);
+}
+
+.aiPanel[data-ai-surface="agent"] .aiComposer {
+	padding: 12px clamp(20px, 4vw, 48px) 24px;
+}
+
 .aiPanel[data-ai-mode="chat"] {
 	--ai-mode-accent: var(--ai-accent-chat);
 }

@@ -806,6 +806,16 @@
 			"commandPalette": true,
 			"menuId": "ai.settings"
 		},
+		"open-agent": {
+			"id": "open-agent",
+			"label": "Open Agent",
+			"description": "Open the AI agent in the main view.",
+			"category": "ai",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
 		"open-all-docs": {
 			"id": "open-all-docs",
 			"label": "Open All Notes",

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useUILayoutContext } from "../../contexts";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
+import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
@@ -38,6 +39,11 @@ const PinnedDocsPane = lazy(() =>
 );
 const DatabasesPane = lazy(loadDatabasesPane);
 const ActivityTimelinePane = lazy(loadActivityTimelinePane);
+const AIPanel = lazy(() =>
+	import("../ai/AIPanel").then((module) => ({
+		default: module.AIPanel,
+	})),
+);
 const SpaceConnectionsView = lazy(() =>
 	import("../connections/SpaceConnectionsView").then((module) => ({
 		default: module.SpaceConnectionsView,
@@ -246,6 +252,15 @@ function EditorPaneContent({
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="connections" />}>
 				<SpaceConnectionsView />
+			</Suspense>
+		);
+	}
+	if (viewerPath === AGENT_VIEW_TAB_ID) {
+		return (
+			<Suspense fallback={<div className="aiAgentView" />}>
+				<div className="aiAgentView">
+					<AIPanel surface="agent" />
+				</div>
 			</Suspense>
 		);
 	}

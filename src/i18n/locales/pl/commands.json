@@ -282,6 +282,10 @@
 			"label": "Otwórz ustawienia AI",
 			"description": "Otwórz ustawienia sztucznej inteligencji."
 		},
+		"open-agent": {
+			"label": "Otwórz agenta",
+			"description": "Otwórz agenta AI w widoku głównym."
+		},
 		"open-all-docs": {
 			"label": "Otwórz wszystkie notatki",
 			"description": "Otwórz widok wszystkich notatek."

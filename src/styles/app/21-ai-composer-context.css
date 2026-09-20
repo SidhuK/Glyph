@@ -96,7 +96,7 @@
 	font-size: var(--text-sm);
 	color: var(--text-primary);
 	line-height: var(--leading-relaxed);
-	background: var(--bg-primary);
+	background: var(--bg-tertiary);
 	border-radius: var(--radius-lg);
 	border: 1px solid color-mix(in srgb, var(--border-default) 35%, transparent);
 	transition: border-color var(--transition-fast);

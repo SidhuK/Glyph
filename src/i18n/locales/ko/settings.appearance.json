@@ -173,6 +173,9 @@
 		"reorder": "{{label}} 순서 변경",
 		"showItem": "사이드바에 {{label}} 표시",
 		"items": {
+			"agent": {
+				"label": "에이전트"
+			},
 			"newNote": {
 				"label": "새 노트"
 			},

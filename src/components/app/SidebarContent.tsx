@@ -1,5 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
+	AiBrain04Icon,
 	Archive04Icon,
 	ArrowShrinkIcon,
 	Calendar03Icon,
@@ -33,7 +34,7 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { useFileTreeContext, useUILayoutContext } from "../../contexts";
+import { useAISidebarContext, useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
@@ -91,8 +92,9 @@ export interface SidebarContentProps {
 	onOpenAllDocs: () => void;
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
+	onOpenAgent: () => void;
 	spacePath: string | null;
-	activeTopSection: "all-notes" | "connections" | "databases" | "pinned-notes" | null;
+	activeTopSection: "agent" | "all-notes" | "connections" | "databases" | "pinned-notes" | null;
 	onOpenCalendar: () => void;
 	onOpenSearch: () => void;
 	onOpenPeriodNote: (kind: PeriodKind) => void;
@@ -165,6 +167,7 @@ function SidebarActionButton({
 	label,
 	onClick,
 	disabled,
+	active,
 	"data-sidebar-key": sidebarKey,
 }: {
 	icon: ComponentProps<typeof HugeiconsIcon>["icon"];
@@ -172,6 +175,7 @@ function SidebarActionButton({
 	label: string;
 	onClick: () => void;
 	disabled?: boolean;
+	active?: boolean;
 	"data-sidebar-key"?: SidebarVisibilityKey;
 }) {
 	return (
@@ -180,7 +184,10 @@ function SidebarActionButton({
 			className="sidebarQuickActionBtn sidebarNavBtn"
 			data-sidebar-key={sidebarKey}
 			data-kind={kind}
+			data-active={active ? "true" : undefined}
 			aria-label={label}
+			aria-pressed={active}
+			aria-current={active ? "page" : undefined}
 			onClick={onClick}
 			disabled={disabled}
 			title={label}
@@ -231,6 +238,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenAllDocs,
 	onOpenPinnedDocs,
 	onOpenConnections,
+	onOpenAgent,
 	spacePath,
 	activeTopSection,
 	onOpenCalendar,
@@ -243,6 +251,7 @@ export const SidebarContent = memo(function SidebarContent({
 	const { t } = useTranslation("shell");
 	// Contexts
 	const { getBinding } = useShortcutBindings();
+	const { aiEnabled } = useAISidebarContext();
 	const {
 		rootEntries,
 		childrenByDir,
@@ -514,6 +523,17 @@ export const SidebarContent = memo(function SidebarContent({
 				<div className="sidebarSectionContent">
 					<div className="sidebarTopNavigation">
 						<OrderedSidebarItems order={sidebarOrder}>
+							{aiEnabled && sidebarVisibility.agent ? (
+								<SidebarActionButton
+									key="agent"
+									data-sidebar-key="agent"
+									kind="agent"
+									label={t("sidebar.agent")}
+									icon={AiBrain04Icon}
+									active={activeTopSection === "agent"}
+									onClick={onOpenAgent}
+								/>
+							) : null}
 							{sidebarVisibility.newNote ? (
 								<button
 									key="newNote"

@@ -274,6 +274,10 @@
 			"label": "AI 設定を開く",
 			"description": "AI 設定を開きます。"
 		},
+		"open-agent": {
+			"label": "エージェントを開く",
+			"description": "メインビューで AI エージェントを開きます。"
+		},
 		"open-all-docs": {
 			"label": "すべてのノートを開く",
 			"description": "すべてのノートビューを開きます。"
