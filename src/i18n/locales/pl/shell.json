@@ -73,7 +73,7 @@
 		"delete": "Usuń kolekcję",
 		"options": "Opcje kolekcji",
 		"pin": "Przypnij",
-		"searchView": "Przeszukaj ten widok",
+		"searchView": "Przeszukaj kolekcję",
 		"unpin": "Odepnij",
 		"unpinNamed": "Odepnij {{name}}",
 		"unpinFailed": "Nie można odpiąć kolekcji"

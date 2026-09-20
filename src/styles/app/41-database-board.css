@@ -6,6 +6,8 @@
 	position: relative;
 	overflow: auto;
 	padding: 0;
+	background: var(--bg-primary);
+	scrollbar-width: thin;
 }
 
 .databaseTableShell [data-slot="table-container"] {
@@ -582,7 +584,7 @@
 	border-spacing: 0;
 	min-width: 100%;
 	table-layout: fixed;
-	background: var(--bg-primary);
+	background: color-mix(in srgb, var(--bg-secondary) 18%, var(--bg-primary));
 }
 
 .databaseTable.is-virtualized {
@@ -594,7 +596,6 @@
 	top: 0;
 	z-index: 8;
 	display: grid;
-	background: var(--bg-primary);
 }
 
 .databaseTable.is-virtualized [data-slot="table-body"] {
@@ -610,7 +611,6 @@
 	display: flex;
 	width: max-content;
 	min-width: 100%;
-	background: var(--bg-primary);
 }
 
 .databaseTable.is-virtualized .databaseHeaderRow {

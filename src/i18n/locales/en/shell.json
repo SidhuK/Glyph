@@ -82,7 +82,7 @@
 		"delete": "Delete collection",
 		"options": "Collection options",
 		"pin": "Pin collection",
-		"searchView": "Search this view",
+		"searchView": "Search Collection",
 		"unpin": "Unpin collection",
 		"unpinNamed": "Unpin {{name}}",
 		"unpinFailed": "Could not unpin collection"

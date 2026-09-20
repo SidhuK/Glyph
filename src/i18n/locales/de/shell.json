@@ -73,7 +73,7 @@
 		"delete": "Sammlung löschen",
 		"options": "Sammlungsoptionen",
 		"pin": "Sammlung anheften",
-		"searchView": "Diese Ansicht durchsuchen",
+		"searchView": "Sammlung durchsuchen",
 		"unpin": "Sammlung lösen",
 		"unpinNamed": "{{name}} lösen",
 		"unpinFailed": "Sammlung konnte nicht gelöst werden"

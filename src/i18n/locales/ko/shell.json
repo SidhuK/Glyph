@@ -73,7 +73,7 @@
 		"delete": "컬렉션 삭제",
 		"options": "컬렉션 옵션",
 		"pin": "컬렉션 고정",
-		"searchView": "이 보기 검색",
+		"searchView": "컬렉션 검색",
 		"unpin": "컬렉션 고정 해제",
 		"unpinNamed": "{{name}} 고정 해제",
 		"unpinFailed": "컬렉션 고정을 해제할 수 없습니다"

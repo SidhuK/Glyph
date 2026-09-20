@@ -75,7 +75,7 @@
 		"delete": "Supprimer la collection",
 		"options": "Options de la collection",
 		"pin": "Épingler la collection",
-		"searchView": "Rechercher dans cette vue",
+		"searchView": "Rechercher dans la collection",
 		"unpin": "Désépingler la collection",
 		"unpinNamed": "Désépingler {{name}}",
 		"unpinFailed": "Impossible de désépingler la collection"
