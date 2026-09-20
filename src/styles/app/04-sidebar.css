@@ -180,6 +180,10 @@
 	flex-direction: column;
 }
 
+.sidebarContentRoot:has(.spaceSwitcher) .sidebarViewContent > .sidebarViewPanel {
+	padding-bottom: 44px;
+}
+
 .sidebarSectionContent * {
 	-webkit-app-region: no-drag;
 }
@@ -202,11 +206,6 @@
 	position: relative;
 }
 
-.sidebarBottomLayer:has(.spaceSwitcher)::before {
-	content: "";
-	flex: 0 0 44px;
-}
-
 .spaceSwitcher {
 	display: flex;
 	align-items: center;
@@ -217,7 +216,7 @@
 	padding: 3px 5px;
 	position: absolute;
 	left: 50%;
-	top: 0;
+	bottom: calc(100% + 10px);
 	transform: translateX(-50%);
 	z-index: 10;
 	border-radius: 999px;
