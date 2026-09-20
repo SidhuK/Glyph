@@ -8,6 +8,17 @@ let settingsEntriesPromise: Promise<Map<string, unknown>> | null = null;
 let settingsEntriesGeneration = 0;
 let settingsInvalidationUnlisten: UnlistenFn | null = null;
 let settingsInvalidationUnlistenPromise: Promise<UnlistenFn> | null = null;
+let settingsStoreWriteQueue: Promise<unknown> = Promise.resolve();
+
+export async function withSettingsStoreWriteLock<T>(operation: () => Promise<T>): Promise<T> {
+	const locks = typeof navigator !== "undefined" && "locks" in navigator ? navigator.locks : null;
+	if (locks) {
+		return locks.request("glyph-settings-store-write", operation);
+	}
+	const run = settingsStoreWriteQueue.then(operation, operation);
+	settingsStoreWriteQueue = run.catch(() => {});
+	return run;
+}
 
 function runSettingsInvalidationUnlisten(unlisten: UnlistenFn): void {
 	try {

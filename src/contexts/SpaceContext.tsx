@@ -46,7 +46,7 @@ interface SpaceContextValue {
 
 const SpaceContext = createContext<SpaceContextValue | null>(null);
 
-function normalizeSpacePaths(paths: string[], currentSpacePath: string | null): string[] {
+function normalizeSpacePaths(paths: readonly string[], currentSpacePath: string | null): string[] {
 	const out: string[] = [];
 	const seen = new Set<string>();
 	const pushUnique = (value: string | null) => {
@@ -56,10 +56,10 @@ function normalizeSpacePaths(paths: string[], currentSpacePath: string | null): 
 		out.push(value);
 	};
 	for (const value of paths) pushUnique(value);
-	const normalized = out.slice(0, 20);
+	const normalized = out.slice(-20);
 	const current = currentSpacePath;
 	if (!current || normalized.includes(current)) return normalized;
-	if (normalized.length === 20) normalized.pop();
+	if (normalized.length === 20) normalized.shift();
 	normalized.push(current);
 	return normalized;
 }
@@ -111,8 +111,19 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		syncRecentSpacesMenu(spacePaths.filter((path) => path !== spacePath).slice(0, 20));
 	}, [spacePaths, spacePath, syncRecentSpacesMenu]);
 
-	useTauriEvent("space:registry_updated", ({ iconOverrides }) => {
-		setSpaceIconOverrides(iconOverrides);
+	useTauriEvent("space:registry_updated", (payload) => {
+		switch (payload.kind) {
+			case "icons":
+				setSpaceIconOverrides(payload.iconOverrides);
+				return;
+			case "paths":
+				setSpacePaths(normalizeSpacePaths(payload.paths, currentSpacePathRef.current));
+				return;
+			default: {
+				const exhaustive: never = payload;
+				return exhaustive;
+			}
+		}
 	});
 
 	useEffect(() => {
@@ -124,9 +135,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 					loadSpaceIconOverrides(),
 				]);
 				if (cancelled) return;
-				setSpacePaths(
-					normalizeSpacePaths(settings.recentSpaces, settings.currentSpacePath ?? null),
-				);
+				const savedSpacePath =
+					settings.currentSpacePath && settings.recentSpaces.includes(settings.currentSpacePath)
+						? settings.currentSpacePath
+						: null;
+				setSpacePaths(normalizeSpacePaths(settings.recentSpaces, savedSpacePath));
 				setSpaceIconOverrides(iconOverrides);
 				try {
 					await invoke("index_set_people_mentions_as_tags_enabled", {
@@ -143,10 +156,10 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 						setWelcomeNotePath(currentWindowSpaceInfo.welcome_note_path ?? null);
 						setSpacePaths((prev) => normalizeSpacePaths(prev, currentWindowSpaceInfo.root));
 					}
-				} else if (settings.currentSpacePath) {
+				} else if (savedSpacePath) {
 					try {
 						const spaceInfo = await invoke("space_open", {
-							path: settings.currentSpacePath,
+							path: savedSpacePath,
 						});
 						if (!cancelled) {
 							setSpacePath(spaceInfo.root);
@@ -221,7 +234,12 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setSpacePath(spaceInfo.root);
 				setWelcomeNotePath(spaceInfo.welcome_note_path ?? null);
 				setSpacePaths((prev) => normalizeSpacePaths(prev, spaceInfo.root));
-				await setCurrentSpacePath(spaceInfo.root);
+				try {
+					const registered = await setCurrentSpacePath(spaceInfo.root);
+					setSpacePaths(normalizeSpacePaths(registered, spaceInfo.root));
+				} catch (err) {
+					setError(extractErrorMessage(err));
+				}
 				return true;
 			} catch (err) {
 				setError(extractErrorMessage(err));
@@ -244,9 +262,9 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const removeSpaceFromSwitcher = useCallback(async (path: string) => {
-		setSpacePaths((prev) => prev.filter((spacePath) => spacePath !== path));
 		try {
-			await removeRegisteredSpacePath(path);
+			const registered = await removeRegisteredSpacePath({ path });
+			setSpacePaths(registered);
 		} catch (err) {
 			setError(extractErrorMessage(err));
 		}
@@ -262,12 +280,13 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			setSpacePath(null);
 			setWelcomeNotePath(null);
 			if (closingSpacePath) {
-				await removeSpaceFromSwitcher(closingSpacePath);
+				const registered = await removeRegisteredSpacePath({ path: closingSpacePath });
+				setSpacePaths(registered);
 			}
 		} catch (err) {
 			setError(extractErrorMessage(err));
 		}
-	}, [removeSpaceFromSwitcher]);
+	}, []);
 
 	const consumeWelcomeNotePath = useCallback(() => {
 		setWelcomeNotePath(null);

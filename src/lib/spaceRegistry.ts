@@ -5,7 +5,7 @@ import {
 	isTagIconName,
 	resolveTagIconName,
 } from "./tagIcons";
-import { getSettingsStore, saveSettingsStore } from "./settingsStore";
+import { getSettingsStore, saveSettingsStore, withSettingsStoreWriteLock } from "./settingsStore";
 
 const SPACE_ICON_OVERRIDES_KEY = "space.iconOverrides";
 
@@ -33,9 +33,9 @@ export interface SpaceDefinition {
 	iconOverride: TagIconName | null;
 }
 
-export interface SpaceRegistryUpdatedPayload {
-	iconOverrides: SpaceIconOverrides;
-}
+export type SpaceRegistryUpdatedPayload =
+	| { kind: "icons"; iconOverrides: SpaceIconOverrides }
+	| { kind: "paths"; paths: string[] };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -92,6 +92,18 @@ export async function loadSpaceIconOverrides(): Promise<SpaceIconOverrides> {
 	return normalizeSpaceIconOverrides(await store.get<unknown>(SPACE_ICON_OVERRIDES_KEY));
 }
 
+async function emitSpaceRegistryUpdated(payload: SpaceRegistryUpdatedPayload): Promise<void> {
+	try {
+		await emit<SpaceRegistryUpdatedPayload>("space:registry_updated", payload);
+	} catch {
+		// Cross-window synchronization is best effort during window teardown.
+	}
+}
+
+export async function emitSpacePathsUpdated(paths: string[]): Promise<void> {
+	await emitSpaceRegistryUpdated({ kind: "paths", paths });
+}
+
 export async function writeSpaceIconOverride(
 	path: string,
 	iconName: string | null,
@@ -101,22 +113,19 @@ export async function writeSpaceIconOverride(
 		throw new Error("The selected space icon is invalid");
 	}
 
-	const store = await getSettingsStore();
-	const current = normalizeSpaceIconOverrides(await store.get<unknown>(SPACE_ICON_OVERRIDES_KEY));
-	const next: Record<string, TagIconName> = { ...current };
-	if (iconName === null) {
-		delete next[path];
-	} else {
-		next[path] = iconName;
-	}
-	await store.set(SPACE_ICON_OVERRIDES_KEY, next);
-	await saveSettingsStore(store);
-	try {
-		await emit<SpaceRegistryUpdatedPayload>("space:registry_updated", {
-			iconOverrides: next,
-		});
-	} catch {
-		// Cross-window synchronization is best effort during window teardown.
-	}
+	const next = await withSettingsStoreWriteLock(async () => {
+		const store = await getSettingsStore();
+		const current = normalizeSpaceIconOverrides(await store.get<unknown>(SPACE_ICON_OVERRIDES_KEY));
+		const updated: Record<string, TagIconName> = { ...current };
+		if (iconName === null) {
+			delete updated[path];
+		} else {
+			updated[path] = iconName;
+		}
+		await store.set(SPACE_ICON_OVERRIDES_KEY, updated);
+		await saveSettingsStore(store);
+		return updated;
+	});
+	await emitSpaceRegistryUpdated({ kind: "icons", iconOverrides: next });
 	return next;
 }
