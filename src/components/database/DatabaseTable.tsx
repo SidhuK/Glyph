@@ -610,7 +610,18 @@ export function DatabaseTable({
 									height: `${DATABASE_TABLE_ROW_HEIGHT}px`,
 									transform,
 								}}
+								tabIndex={0}
 								onClick={() => onSelectRow(row.original.note_path)}
+								onKeyDown={(event) => {
+									if (event.target !== event.currentTarget) return;
+									if (event.key === "Enter") {
+										event.preventDefault();
+										onOpenRow(row.original.note_path);
+									} else if (event.key === " ") {
+										event.preventDefault();
+										onSelectRow(row.original.note_path);
+									}
+								}}
 							>
 								{cells}
 							</TableRow>
