@@ -281,6 +281,9 @@ pub async fn all_docs_list(
         .filter(|path| !path.is_empty())
         .filter(|path| seen_pinned_paths.insert(path.clone()))
         .collect::<Vec<_>>();
+    let pinned_paths_len = pinned_paths.len();
+    let pinned_paths_json =
+        serde_json::to_string(&pinned_paths).map_err(|error| error.to_string())?;
     let order_template = match sort_mode.as_deref() {
         Some("name-desc") => "COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE DESC, $table.path COLLATE NOCASE DESC, $table.id DESC",
         Some("modified-asc") => "CASE WHEN $table.updated IS NULL OR $table.updated = '' THEN 1 ELSE 0 END, $table.updated ASC, COALESCE(NULLIF(TRIM($table.title), ''), $table.path) COLLATE NOCASE ASC, $table.path COLLATE NOCASE ASC, $table.id ASC",
@@ -294,22 +297,12 @@ pub async fn all_docs_list(
     let visible_order = order_template.replace("$table", "vn");
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<AllDocsItem>, String> {
         let conn = open_db(&root)?;
-        let mut params: Vec<rusqlite::types::Value> = Vec::new();
-        let mut sql = String::from("WITH pinned_paths(path, pin_rank) AS (");
-        if pinned_paths.is_empty() {
-            sql.push_str("SELECT NULL, NULL WHERE 0");
-        } else {
-            sql.push_str("VALUES ");
-            for (rank, path) in pinned_paths.iter().enumerate() {
-                if rank > 0 {
-                    sql.push_str(", ");
-                }
-                sql.push_str(&format!("(?, {rank})"));
-                params.push(rusqlite::types::Value::from(path.clone()));
-            }
-        }
-        sql.push_str(
-            "),
+        let mut params = vec![rusqlite::types::Value::from(pinned_paths_json)];
+        let mut sql = String::from(
+            "WITH pinned_paths(path, pin_rank) AS (
+                 SELECT CAST(value AS TEXT), CAST(key AS INTEGER)
+                 FROM json_each(?)
+             ),
              visible_notes AS (
                  SELECT n.id, n.path, n.title, n.preview, n.updated, n.created,
                         pinned.pin_rank
@@ -353,7 +346,7 @@ pub async fn all_docs_list(
         }
         sql.push_str(&format!(
             "ORDER BY COALESCE(pinned.pin_rank, {}), ",
-            pinned_paths.len()
+            pinned_paths_len
         ));
         sql.push_str(&notes_order);
         sql.push_str(
@@ -390,7 +383,7 @@ pub async fn all_docs_list(
         );
         sql.push_str(&format!(
             "COALESCE(vn.pin_rank, {}), ",
-            pinned_paths.len()
+            pinned_paths_len
         ));
         sql.push_str(&visible_order);
         params.push(rusqlite::types::Value::from(limit));

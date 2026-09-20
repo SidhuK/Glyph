@@ -51,6 +51,7 @@ interface FolioNoteListItemProps {
 	onFocus: () => void;
 	isPinned: boolean;
 	onTogglePinned: (path: string) => Promise<void> | void;
+	nowMs: number;
 	taskSummary?: NoteTaskSummary | null;
 	isRenaming?: boolean;
 	onCommitRename: (path: string, nextName: string) => Promise<boolean> | boolean;
@@ -125,10 +126,10 @@ function compactRelativeTimeValue(elapsedMs: number): [number, Intl.RelativeTime
 	return [direction * Math.floor(absoluteMs / YEAR_MS), "year"];
 }
 
-function formatCompactRelativeTime(value: string, locale: string): string {
+function formatCompactRelativeTime(value: string, locale: string, nowMs: number): string {
 	const timestamp = Date.parse(value);
 	if (!Number.isFinite(timestamp)) return value;
-	const [amount, unit] = compactRelativeTimeValue(Date.now() - timestamp);
+	const [amount, unit] = compactRelativeTimeValue(nowMs - timestamp);
 	return compactRelativeTimeFormatter(locale).format(amount, unit);
 }
 
@@ -388,6 +389,7 @@ export const FolioNoteListItem = memo(
 			onFocus,
 			isPinned,
 			onTogglePinned,
+			nowMs,
 			taskSummary = null,
 			isRenaming = false,
 			onCommitRename,
@@ -427,6 +429,7 @@ export const FolioNoteListItem = memo(
 					i18n?.resolvedLanguage ??
 						i18n?.language ??
 						Intl.DateTimeFormat().resolvedOptions().locale,
+					nowMs,
 				)
 			: t("folio.noDate");
 		const visibleTags = note.tags.slice(0, 2);

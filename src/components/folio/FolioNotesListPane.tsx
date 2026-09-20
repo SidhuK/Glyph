@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
 	type CSSProperties,
@@ -40,6 +41,7 @@ interface FolioNotesListPaneProps {
 
 const FOLIO_NOTE_ROW_ESTIMATE = 100;
 const FOLIO_FILE_ROW_ESTIMATE = 42;
+const FOLIO_RELATIVE_TIME_REFRESH_MS = 60_000;
 
 function sqliteNoCase(value: string): string {
 	return value.replace(/[A-Z]/g, (character) => character.toLowerCase());
@@ -155,6 +157,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
+	const { data: nowMs } = useQuery({
+		queryKey: ["folio", "relative-time-clock"],
+		queryFn: () => Date.now(),
+		initialData: () => Date.now(),
+		refetchInterval: FOLIO_RELATIVE_TIME_REFRESH_MS,
+	});
 	const pinnedRanks = useMemo(() => {
 		const ranks = new Map<string, number>();
 		pinnedFiles.forEach((path, index) => ranks.set(path, index));
@@ -413,6 +421,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								onFocus={focusPane}
 								isPinned={pinnedRanks.has(note.note_path)}
 								onTogglePinned={togglePinnedFile}
+								nowMs={nowMs}
 								isRenaming={Boolean(onRenameFile) && renamingPath === note.note_path}
 								onCommitRename={commitRename}
 								onCancelRename={cancelRename}
