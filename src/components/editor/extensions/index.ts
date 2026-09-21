@@ -639,6 +639,15 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		TableCell,
 		MarkdownImage.configure({
 			allowBase64: true,
+			resize: enableEditingExtensions
+				? {
+						enabled: true,
+						directions: ["top-left", "top-right", "bottom-left", "bottom-right"],
+						minWidth: 48,
+						minHeight: 48,
+						alwaysPreserveAspectRatio: true,
+					}
+				: false,
 		}),
 		...glyphDetailsExtensions,
 		...additionalExtensions,

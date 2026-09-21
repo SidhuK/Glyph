@@ -2,7 +2,7 @@ import { Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { type EditorState, Plugin, PluginKey, Selection, TextSelection } from "@tiptap/pm/state";
 import { changedRangesFromTransactions } from "./changedRanges";
-import { encodeMarkdownImageSrc } from "./markdownImage";
+import { encodeMarkdownImageSrc, hasMarkdownImageDisplaySize } from "./markdownImage";
 
 export const markdownImagePreviewPluginKey = new PluginKey("markdown-image-preview");
 
@@ -22,6 +22,7 @@ function parseStandaloneMarkdownImage(
 }
 
 function buildImageMarkdown(attrs: Record<string, unknown>): string | null {
+	if (hasMarkdownImageDisplaySize(attrs)) return null;
 	const originSrc =
 		typeof attrs.originSrc === "string" && attrs.originSrc.trim()
 			? attrs.originSrc.trim()
@@ -121,7 +122,7 @@ export const MarkdownImageLivePreview = Extension.create({
 						if (node.type === image) {
 							if (!caretInside || !selectionChanged) return false;
 							if (oldState.doc.nodeAt(pos)?.type !== image) return false;
-							const markdown = buildImageMarkdown(node.attrs as Record<string, unknown>);
+							const markdown = buildImageMarkdown(node.attrs);
 							if (!markdown) return false;
 							const $pos = newState.doc.resolve(pos);
 							const index = $pos.index();
