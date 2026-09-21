@@ -87,6 +87,7 @@
 .tiptapContentInline .markdownImage {
 	display: block;
 	max-width: min(100%, 720px);
+	height: auto;
 	margin: var(--space-2) 0;
 	border-radius: var(--radius-md);
 }
@@ -94,13 +95,6 @@
 .tiptapContentInline img:not([width]),
 .tiptapContentInline .markdownImage:not([width]) {
 	width: auto;
-}
-
-.tiptapContentInline img:not([height]),
-.tiptapContentInline img[width],
-.tiptapContentInline .markdownImage:not([height]),
-.tiptapContentInline .markdownImage[width] {
-	height: auto;
 }
 
 .tiptapHostInline .tiptapContentInline [data-resize-container][data-node="image"] {
