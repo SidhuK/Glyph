@@ -1,10 +1,9 @@
 import type { Editor } from "@tiptap/core";
 import { useEffect } from "react";
-import { invoke } from "../../../lib/tauri";
+import { invoke, spaceAssetUrl } from "../../../lib/tauri";
 
 const INLINE_IMAGE_CACHE_MAX = 64;
 const INLINE_IMAGE_HYDRATION_ROOT_MARGIN = "720px 0px";
-const GLYPH_ASSET_SCHEME = "glyphasset";
 
 const urlCache = new Map<string, string>();
 const missCache = new Set<string>();
@@ -13,17 +12,6 @@ const sourceGeneration = new Map<string, number>();
 const sourceConsumers = new Map<string, number>();
 let globalGeneration = 0;
 let nextSourceGeneration = 1;
-
-export function spaceAssetUrl(relPath: string): string {
-	const encoded = relPath
-		.replace(/\\/g, "/")
-		.replace(/^\/+/, "")
-		.split("/")
-		.filter((segment) => segment.length > 0)
-		.map((segment) => encodeURIComponent(segment))
-		.join("/");
-	return `${GLYPH_ASSET_SCHEME}://localhost/${encoded}`;
-}
 
 function getSourceGeneration(sourcePath: string): number {
 	const existing = sourceGeneration.get(sourcePath);

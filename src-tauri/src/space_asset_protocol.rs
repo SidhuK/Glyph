@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use tauri::http::{header, StatusCode};
 use tauri::{Manager, Runtime, UriSchemeContext, UriSchemeResponder};
@@ -59,27 +59,23 @@ fn load_image<R: Runtime>(
     }
 
     let rel = decode_rel_path(uri.path()).ok_or(StatusCode::NOT_FOUND)?;
-    deny_hidden_rel_path(&rel).map_err(|_| StatusCode::NOT_FOUND)?;
-
-    let ext = rel
-        .extension()
-        .and_then(|value| value.to_str())
-        .map(|value| value.to_ascii_lowercase())
-        .unwrap_or_default();
-    let mime = mime_for_image_ext(&ext).ok_or(StatusCode::NOT_FOUND)?;
-
     let space_state = app.try_state::<SpaceState>().ok_or(StatusCode::NOT_FOUND)?;
     let root = space_state
         .root_for_webview_label(webview_label)
         .map_err(|_| StatusCode::NOT_FOUND)?;
-    let abs = paths::join_under(&root, &rel).map_err(|_| StatusCode::NOT_FOUND)?;
-    let canonical_path = abs.canonicalize().map_err(|_| StatusCode::NOT_FOUND)?;
-    if !canonical_path.starts_with(&root) || !canonical_path.is_file() {
-        return Err(StatusCode::NOT_FOUND);
-    }
+    read_space_image(&root, &rel).ok_or(StatusCode::NOT_FOUND)
+}
 
-    let bytes = std::fs::read(&canonical_path).map_err(|_| StatusCode::NOT_FOUND)?;
-    Ok((mime, bytes))
+pub(crate) fn read_space_image(root: &Path, rel: &Path) -> Option<(&'static str, Vec<u8>)> {
+    deny_hidden_rel_path(rel).ok()?;
+    let ext = rel.extension()?.to_str()?.to_ascii_lowercase();
+    let mime = mime_for_image_ext(&ext)?;
+    let abs = paths::join_under(root, rel).ok()?;
+    let canonical_path = abs.canonicalize().ok()?;
+    if !canonical_path.starts_with(root) || !canonical_path.is_file() {
+        return None;
+    }
+    Some((mime, std::fs::read(canonical_path).ok()?))
 }
 
 fn decode_rel_path(uri_path: &str) -> Option<PathBuf> {

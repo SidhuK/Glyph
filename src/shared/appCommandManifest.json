@@ -1029,14 +1029,25 @@
 		},
 		"print-note": {
 			"id": "print-note",
-			"label": "Print Note",
-			"description": "Print the current note.",
+			"label": "Export Note as PDF…",
+			"description": "Open the macOS Print dialog to save the current note as PDF.",
 			"category": "file",
 			"context": "editor",
 			"defaultBinding": null,
 			"allowInEditable": true,
 			"commandPalette": true,
 			"menuId": "file.print_note"
+		},
+		"export-note-docx": {
+			"id": "export-note-docx",
+			"label": "Export Note as Word…",
+			"description": "Export the current note as a Word document.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "file.export_note_docx"
 		},
 		"quick-open": {
 			"id": "quick-open",

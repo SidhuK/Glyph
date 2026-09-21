@@ -228,6 +228,7 @@ vi.mock("../../../lib/settings", () => ({
 
 vi.mock("../../../lib/tauri", () => ({
 	invoke: invokeMock,
+	spaceAssetUrl: (relPath: string) => `glyphasset://localhost/${relPath}`,
 }));
 
 vi.mock("../../../lib/tauriEvents", () => ({

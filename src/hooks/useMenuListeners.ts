@@ -16,6 +16,7 @@ interface UseMenuListenersProps {
 	onOpenPeriodNote: (kind: PeriodKind) => void;
 	onSaveNote: () => void;
 	onPrintNote: () => void;
+	onExportDocx: () => void;
 	onCloseTab: () => void;
 	onOpenSpace: () => void;
 	onOpenRecentSpaceAtPath: (path: string) => void | Promise<void>;
@@ -87,6 +88,7 @@ export function useMenuListeners({
 	onOpenPeriodNote,
 	onSaveNote,
 	onPrintNote,
+	onExportDocx,
 	onCloseTab,
 	onOpenSpace,
 	onOpenRecentSpaceAtPath,
@@ -126,6 +128,7 @@ export function useMenuListeners({
 				"open-quarterly-note": () => onOpenPeriodNote("quarter"),
 				"save-note": onSaveNote,
 				"print-note": onPrintNote,
+				"export-note-docx": onExportDocx,
 				"close-active-tab": onCloseTab,
 				"open-space": onOpenSpace,
 				"create-space": onCreateSpace,
@@ -170,6 +173,7 @@ export function useMenuListeners({
 			onOpenAiSettings,
 			onOpenPeriodNote,
 			onOpenGitSettings,
+			onExportDocx,
 			onOpenSpace,
 			onOpenSpaceSettings,
 			onPrintNote,
