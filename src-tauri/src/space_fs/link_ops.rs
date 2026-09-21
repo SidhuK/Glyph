@@ -428,21 +428,27 @@ pub async fn space_resolve_image_sources_batch(
     if root != Path::new(&expected_space_path) {
         return Err("The active space changed during document export.".to_string());
     }
-    tauri::async_runtime::spawn_blocking(move || {
+    let resolved = tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
-        Ok(sources
-            .iter()
-            .map(|source| {
-                if source.wiki_embed {
-                    resolve_image_wikilink_target(&entries, &source.href)
-                } else {
-                    resolve_markdown_link_target(&entries, &source_path, &source.href)
-                }
-            })
-            .collect())
+        Ok::<Vec<Option<String>>, String>(
+            sources
+                .iter()
+                .map(|source| {
+                    if source.wiki_embed {
+                        resolve_image_wikilink_target(&entries, &source.href)
+                    } else {
+                        resolve_markdown_link_target(&entries, &source_path, &source.href)
+                    }
+                })
+                .collect(),
+        )
     })
     .await
-    .map_err(|error| error.to_string())?
+    .map_err(|error| error.to_string())??;
+    if state.root_for_window(&window)? != Path::new(&expected_space_path) {
+        return Err("The active space changed during document export.".to_string());
+    }
+    Ok(resolved)
 }
 
 #[cfg(test)]

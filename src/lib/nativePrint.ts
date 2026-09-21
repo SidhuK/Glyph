@@ -2,6 +2,7 @@ import { invoke } from "./tauri";
 
 const PRINT_ROOT_ID = "glyph-native-print-document";
 const PRINT_STYLE_ID = "glyph-native-print-styles";
+const PRINT_IMAGE_WAIT_TIMEOUT_MS = 10_000;
 
 function afterNextPaint(): Promise<void> {
 	return new Promise((resolve) => {
@@ -15,9 +16,6 @@ interface MountedPrintDocument {
 }
 
 function mountPrintDocument(html: string): MountedPrintDocument {
-	document.getElementById(PRINT_ROOT_ID)?.remove();
-	document.getElementById(PRINT_STYLE_ID)?.remove();
-
 	const parsed = new DOMParser().parseFromString(html, "text/html");
 	const printRoot = document.createElement("div");
 	printRoot.id = PRINT_ROOT_ID;
@@ -65,23 +63,35 @@ html, body {
 	};
 }
 
-async function waitForImage(image: HTMLImageElement): Promise<void> {
-	if (!image.complete) {
-		await new Promise<void>((resolve) => {
-			const finish = () => {
-				image.removeEventListener("load", finish);
-				image.removeEventListener("error", finish);
-				resolve();
-			};
-			image.addEventListener("load", finish, { once: true });
-			image.addEventListener("error", finish, { once: true });
-			if (image.complete) finish();
-		});
-	}
-	await image.decode().catch(() => undefined);
+function waitForImage(image: HTMLImageElement): Promise<void> {
+	return new Promise((resolve) => {
+		let timeoutId: number | null = null;
+		let settled = false;
+		const finish = () => {
+			if (settled) return;
+			settled = true;
+			if (timeoutId !== null) window.clearTimeout(timeoutId);
+			image.removeEventListener("load", handleLoad);
+			image.removeEventListener("error", finish);
+			resolve();
+		};
+		const handleLoad = () => {
+			void image
+				.decode()
+				.catch(() => undefined)
+				.then(finish);
+		};
+		image.addEventListener("load", handleLoad, { once: true });
+		image.addEventListener("error", finish, { once: true });
+		timeoutId = window.setTimeout(finish, PRINT_IMAGE_WAIT_TIMEOUT_MS);
+		if (image.complete) handleLoad();
+	});
 }
 
 export async function openNativePrintDialog(html: string): Promise<void> {
+	if (document.getElementById(PRINT_ROOT_ID) || document.getElementById(PRINT_STYLE_ID)) {
+		throw new Error("A native print operation is already in progress.");
+	}
 	const { images, unmount } = mountPrintDocument(html);
 	window.addEventListener("afterprint", unmount, { once: true });
 	try {

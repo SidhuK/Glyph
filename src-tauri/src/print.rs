@@ -91,12 +91,16 @@ pub async fn document_read_images_batch(
     if root != Path::new(&expected_space_path) {
         return Err("The active space changed during document export.".to_string());
     }
-    tauri::async_runtime::spawn_blocking(move || {
+    let images = tauri::async_runtime::spawn_blocking(move || {
         paths
             .into_iter()
             .map(|path| read_image_data(&root, path))
             .collect()
     })
     .await
-    .map_err(|error| error.to_string())
+    .map_err(|error| error.to_string())?;
+    if state.root_for_window(&window)? != Path::new(&expected_space_path) {
+        return Err("The active space changed during document export.".to_string());
+    }
+    Ok(images)
 }
