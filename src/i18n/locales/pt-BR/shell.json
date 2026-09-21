@@ -38,6 +38,7 @@
 	"folio": {
 		"listAria": "Lista de notas",
 		"filter": "Filtrar notas",
+		"justNow": "Agora mesmo",
 		"noDate": "Sem data",
 		"noPreview": "Sem prévia",
 		"noFolder": "Sem pasta",

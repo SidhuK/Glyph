@@ -179,6 +179,10 @@ export function useFolioNotes(
 		[filesQuery.data?.files, includesNonMarkdownFiles, notesQuery.data?.pages, query],
 	);
 	const loadedPageCount = notesQuery.data?.pages.length ?? 0;
+	const contentUpdatedAtMs = Math.max(
+		notesQuery.dataUpdatedAt,
+		includesNonMarkdownFiles ? filesQuery.dataUpdatedAt : 0,
+	);
 	const fetchNextPage = useCallback(async () => {
 		const result = await notesQuery.fetchNextPage();
 		return result.data?.pages[loadedPageCount]?.items ?? [];
@@ -186,6 +190,7 @@ export function useFolioNotes(
 
 	return {
 		notes: items,
+		contentUpdatedAtMs,
 		filesTruncated: includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
 		error: notesQuery.error ?? (includesNonMarkdownFiles ? filesQuery.error : null),
 		nonMarkdownFileLimit: FOLIO_NON_MARKDOWN_FILE_LIMIT,

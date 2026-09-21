@@ -78,7 +78,7 @@ const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
 const WEEK_MS = 7 * DAY_MS;
 const MONTH_MS = 30 * DAY_MS;
-const YEAR_MS = 365 * DAY_MS;
+const CALENDAR_DATE_THRESHOLD_MS = 3 * MONTH_MS;
 const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
 const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
@@ -102,35 +102,42 @@ function compactRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
 	return formatter;
 }
 
-function compactRelativeTimeValue(elapsedMs: number): [number, Intl.RelativeTimeFormatUnit] {
-	const direction = elapsedMs >= 0 ? -1 : 1;
-	const absoluteMs = Math.abs(elapsedMs);
-	if (absoluteMs < MINUTE_MS) {
-		return [direction * Math.floor(absoluteMs / 1_000), "second"];
-	}
-	if (absoluteMs < HOUR_MS) {
-		return [direction * Math.floor(absoluteMs / MINUTE_MS), "minute"];
-	}
-	if (absoluteMs < DAY_MS) {
-		return [direction * Math.floor(absoluteMs / HOUR_MS), "hour"];
-	}
-	if (absoluteMs < WEEK_MS) {
-		return [direction * Math.floor(absoluteMs / DAY_MS), "day"];
-	}
-	if (absoluteMs < MONTH_MS) {
-		return [direction * Math.floor(absoluteMs / WEEK_MS), "week"];
-	}
-	if (absoluteMs < YEAR_MS) {
-		return [direction * Math.floor(absoluteMs / MONTH_MS), "month"];
-	}
-	return [direction * Math.floor(absoluteMs / YEAR_MS), "year"];
-}
-
-function formatCompactRelativeTime(value: string, locale: string, nowMs: number): string {
+function formatFolioUpdatedTime({
+	value,
+	locale,
+	nowMs,
+	justNowLabel,
+	absoluteDate,
+}: {
+	value: string;
+	locale: string;
+	nowMs: number;
+	justNowLabel: string;
+	absoluteDate: string;
+}): string {
 	const timestamp = Date.parse(value);
 	if (!Number.isFinite(timestamp)) return value;
-	const [amount, unit] = compactRelativeTimeValue(nowMs - timestamp);
-	return compactRelativeTimeFormatter(locale).format(amount, unit);
+
+	const elapsedMs = Math.max(0, nowMs - timestamp);
+	if (elapsedMs < MINUTE_MS) return justNowLabel;
+
+	const formatter = compactRelativeTimeFormatter(locale);
+	if (elapsedMs < HOUR_MS) {
+		return formatter.format(-Math.floor(elapsedMs / MINUTE_MS), "minute");
+	}
+	if (elapsedMs < DAY_MS) {
+		return formatter.format(-Math.floor(elapsedMs / HOUR_MS), "hour");
+	}
+	if (elapsedMs < WEEK_MS) {
+		return formatter.format(-Math.floor(elapsedMs / DAY_MS), "day");
+	}
+	if (elapsedMs < MONTH_MS) {
+		return formatter.format(-Math.floor(elapsedMs / WEEK_MS), "week");
+	}
+	if (elapsedMs < CALENDAR_DATE_THRESHOLD_MS) {
+		return formatter.format(-Math.floor(elapsedMs / MONTH_MS), "month");
+	}
+	return absoluteDate;
 }
 
 function previewText(preview: string, title: string, emptyLabel: string): string {
@@ -421,16 +428,21 @@ export const FolioNoteListItem = memo(
 		const preview = useMemo(() => {
 			return previewText(note.preview, title, t("folio.noPreview"));
 		}, [note.preview, t, title]);
-		const updatedTitle =
-			isMarkdown && note.updated ? formatDisplayDate(note.updated, dateDisplayFormat) : undefined;
+		const updatedDate = note.updated
+			? formatDisplayDate(note.updated, dateDisplayFormat)
+			: undefined;
+		const updatedTitle = isMarkdown ? updatedDate : undefined;
 		const updated = note.updated
-			? formatCompactRelativeTime(
-					note.updated,
-					i18n?.resolvedLanguage ??
+			? formatFolioUpdatedTime({
+					value: note.updated,
+					locale:
+						i18n?.resolvedLanguage ??
 						i18n?.language ??
 						Intl.DateTimeFormat().resolvedOptions().locale,
 					nowMs,
-				)
+					justNowLabel: t("folio.justNow"),
+					absoluteDate: updatedDate ?? note.updated,
+				})
 			: t("folio.noDate");
 		const visibleTags = note.tags.slice(0, 2);
 		const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);

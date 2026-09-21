@@ -38,6 +38,7 @@
 	"folio": {
 		"listAria": "Lista notatek",
 		"filter": "Filtruj notatki",
+		"justNow": "Przed chwilą",
 		"noDate": "Brak daty",
 		"noPreview": "Brak podglądu",
 		"noFolder": "Brak folderu",

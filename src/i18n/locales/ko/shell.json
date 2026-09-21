@@ -38,6 +38,7 @@
 	"folio": {
 		"listAria": "노트 목록",
 		"filter": "노트 필터링",
+		"justNow": "방금",
 		"noDate": "날짜 없음",
 		"noPreview": "미리보기 없음",
 		"noFolder": "폴더 없음",
