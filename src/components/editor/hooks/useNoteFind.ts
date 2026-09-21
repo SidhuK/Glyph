@@ -423,7 +423,8 @@ export function useNoteFind({
 
 	useEffect(() => {
 		if (!editor || editor.isDestroyed) return;
-		if (mode === "plain" || !findOpen) {
+		if (mode === "plain") return;
+		if (!findOpen) {
 			editor.commands.setNoteSearch({ query: "", activeIndex: 0 });
 			return;
 		}
