@@ -4,8 +4,8 @@ mod types;
 use std::sync::Mutex;
 
 use tauri::{
-    AppHandle, LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, Position, Size,
-    WebviewWindow, WindowEvent,
+    AppHandle, LogicalPosition, LogicalSize, Manager, Monitor, Position, Size, WebviewWindow,
+    WindowEvent,
 };
 use tracing::warn;
 
@@ -15,36 +15,25 @@ use types::{WindowGeometryRecord, WINDOW_GEOMETRY_STORE_VERSION};
 pub const MAIN_WINDOW_LABEL: &str = "main";
 
 /// Must match `tauri.conf.json` `minWidth` / `minHeight` for the main window.
-pub const MIN_INNER_WIDTH: u32 = 680;
+const MIN_INNER_WIDTH: f64 = 680.0;
 /// Must match `tauri.conf.json` `minWidth` / `minHeight` for the main window.
-pub const MIN_INNER_HEIGHT: u32 = 460;
+const MIN_INNER_HEIGHT: f64 = 460.0;
 /// Must match `tauri.conf.json` `width` for the main window.
 const DEFAULT_INNER_WIDTH: f64 = 800.0;
 /// Must match `tauri.conf.json` `height` for the main window.
 const DEFAULT_INNER_HEIGHT: f64 = 600.0;
 
-const MIN_VISIBLE_WIDTH: i32 = 200;
-const MIN_VISIBLE_HEIGHT: i32 = 80;
+const MIN_VISIBLE_WIDTH: f64 = 200.0;
+const MIN_VISIBLE_HEIGHT: f64 = 80.0;
 
 static LATEST_HOST_WINDOW_GEOMETRY: Mutex<Option<WindowGeometryRecord>> = Mutex::new(None);
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 struct Rect {
-    x: i32,
-    y: i32,
-    width: i32,
-    height: i32,
-}
-
-fn monitor_rect(monitor: &Monitor) -> Rect {
-    let position = monitor.position();
-    let size = monitor.size();
-    Rect {
-        x: position.x,
-        y: position.y,
-        width: size.width as i32,
-        height: size.height as i32,
-    }
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
 }
 
 fn intersection(window: Rect, monitor: Rect) -> Option<Rect> {
@@ -63,47 +52,75 @@ fn intersection(window: Rect, monitor: Rect) -> Option<Rect> {
     })
 }
 
-fn is_geometry_visible_for_rects(
-    width: u32,
-    height: u32,
-    x: i32,
-    y: i32,
-    monitors: &[Rect],
+fn has_visible_area(
+    window: Rect,
+    monitor: Rect,
+    min_visible_width: f64,
+    min_visible_height: f64,
 ) -> bool {
-    if width < MIN_INNER_WIDTH || height < MIN_INNER_HEIGHT || monitors.is_empty() {
-        return false;
-    }
-
-    let window = Rect {
-        x,
-        y,
-        width: width as i32,
-        height: height as i32,
-    };
-
-    monitors.iter().any(|monitor| {
-        intersection(window, *monitor).is_some_and(|visible| {
-            visible.width >= MIN_VISIBLE_WIDTH && visible.height >= MIN_VISIBLE_HEIGHT
-        })
+    intersection(window, monitor).is_some_and(|visible| {
+        visible.width >= min_visible_width && visible.height >= min_visible_height
     })
 }
 
+fn is_valid_size(width: f64, height: f64) -> bool {
+    width >= MIN_INNER_WIDTH && height >= MIN_INNER_HEIGHT
+}
+
 fn is_geometry_visible_on_monitors(
-    width: u32,
-    height: u32,
-    x: i32,
-    y: i32,
+    width: f64,
+    height: f64,
+    x: f64,
+    y: f64,
     monitors: &[Monitor],
 ) -> bool {
-    if monitors.is_empty() {
+    if !is_valid_size(width, height) {
         return false;
     }
-    let rects: Vec<Rect> = monitors.iter().map(monitor_rect).collect();
-    is_geometry_visible_for_rects(width, height, x, y, &rects)
+    let position = LogicalPosition::new(x, y);
+    let size = LogicalSize::new(width, height);
+    monitors.iter().any(|monitor| {
+        let scale_factor = monitor.scale_factor();
+        let window_position = position.to_physical::<f64>(scale_factor);
+        let window_size = size.to_physical::<f64>(scale_factor);
+        let monitor_position = monitor.position();
+        let monitor_size = monitor.size();
+        has_visible_area(
+            Rect {
+                x: window_position.x,
+                y: window_position.y,
+                width: window_size.width,
+                height: window_size.height,
+            },
+            Rect {
+                x: f64::from(monitor_position.x),
+                y: f64::from(monitor_position.y),
+                width: f64::from(monitor_size.width),
+                height: f64::from(monitor_size.height),
+            },
+            MIN_VISIBLE_WIDTH * scale_factor,
+            MIN_VISIBLE_HEIGHT * scale_factor,
+        )
+    })
+}
+
+fn restore_position(record: &WindowGeometryRecord) -> LogicalPosition<f64> {
+    if record.maximized || record.fullscreen {
+        LogicalPosition::new(record.previous_x, record.previous_y)
+    } else {
+        LogicalPosition::new(record.x, record.y)
+    }
 }
 
 fn should_restore_record(record: &WindowGeometryRecord, monitors: &[Monitor]) -> bool {
-    is_geometry_visible_on_monitors(record.width, record.height, record.x, record.y, monitors)
+    let position = restore_position(record);
+    is_geometry_visible_on_monitors(
+        record.width,
+        record.height,
+        position.x,
+        position.y,
+        monitors,
+    )
 }
 
 fn apply_default_centered_geometry(window: &WebviewWindow) -> Result<(), String> {
@@ -118,26 +135,34 @@ fn apply_default_centered_geometry(window: &WebviewWindow) -> Result<(), String>
 
 fn apply_geometry(window: &WebviewWindow, record: &WindowGeometryRecord) -> Result<(), String> {
     window
-        .set_size(Size::Physical(PhysicalSize::new(
-            record.width,
-            record.height,
-        )))
+        .set_size(Size::Logical(LogicalSize::new(record.width, record.height)))
         .map_err(|error| error.to_string())?;
     window
-        .set_position(Position::Physical(PhysicalPosition::new(
-            record.x, record.y,
-        )))
+        .set_position(Position::Logical(restore_position(record)))
         .map_err(|error| error.to_string())?;
     if record.maximized {
         window.maximize().map_err(|error| error.to_string())?;
+    }
+    if record.fullscreen {
+        window
+            .set_fullscreen(true)
+            .map_err(|error| error.to_string())?;
     }
     Ok(())
 }
 
 fn capture_geometry(window: &WebviewWindow) -> Result<WindowGeometryRecord, String> {
-    let size = window.inner_size().map_err(|error| error.to_string())?;
-    let position = window.outer_position().map_err(|error| error.to_string())?;
-    let maximized = window.is_maximized().unwrap_or(false);
+    let scale_factor = window.scale_factor().map_err(|error| error.to_string())?;
+    let size = window
+        .inner_size()
+        .map_err(|error| error.to_string())?
+        .to_logical::<f64>(scale_factor);
+    let position = window
+        .outer_position()
+        .map_err(|error| error.to_string())?
+        .to_logical::<f64>(scale_factor);
+    let maximized = window.is_maximized().map_err(|error| error.to_string())?;
+    let fullscreen = window.is_fullscreen().map_err(|error| error.to_string())?;
 
     Ok(WindowGeometryRecord {
         version: WINDOW_GEOMETRY_STORE_VERSION,
@@ -145,23 +170,11 @@ fn capture_geometry(window: &WebviewWindow) -> Result<WindowGeometryRecord, Stri
         height: size.height,
         x: position.x,
         y: position.y,
+        previous_x: position.x,
+        previous_y: position.y,
         maximized,
+        fullscreen,
     })
-}
-
-fn save_host_window_geometry(window: &WebviewWindow) {
-    let record = match capture_geometry(window) {
-        Ok(record) => record,
-        Err(error) => {
-            warn!("Failed to capture host window geometry: {error}");
-            return;
-        }
-    };
-    save_host_window_geometry_record(window, &record);
-}
-
-fn save_host_window_geometry_record(window: &WebviewWindow, record: &WindowGeometryRecord) {
-    save_host_window_geometry_record_for_app(window.app_handle(), record);
 }
 
 fn save_host_window_geometry_record_for_app(app: &AppHandle, record: &WindowGeometryRecord) {
@@ -194,58 +207,102 @@ fn latest_host_window_geometry() -> Option<WindowGeometryRecord> {
     }
 }
 
-fn remember_captured_geometry(window: &WebviewWindow) {
-    match capture_geometry(window) {
-        Ok(record) => remember_host_window_geometry(record),
-        Err(error) => warn!("Failed to capture host window geometry: {error}"),
+fn update_position(record: &mut WindowGeometryRecord, position: LogicalPosition<f64>) {
+    if record.x == position.x && record.y == position.y {
+        return;
     }
+    record.previous_x = record.x;
+    record.previous_y = record.y;
+    record.x = position.x;
+    record.y = position.y;
+}
+
+fn refresh_host_window_geometry(window: &WebviewWindow) -> Result<(), String> {
+    let Some(mut record) = latest_host_window_geometry() else {
+        remember_host_window_geometry(capture_geometry(window)?);
+        return Ok(());
+    };
+
+    record.fullscreen = window.is_fullscreen().map_err(|error| error.to_string())?;
+    if !record.fullscreen {
+        record.maximized = window.is_maximized().map_err(|error| error.to_string())?;
+        let minimized = window.is_minimized().map_err(|error| error.to_string())?;
+        if !record.maximized && !minimized {
+            let scale_factor = window.scale_factor().map_err(|error| error.to_string())?;
+            let size = window
+                .inner_size()
+                .map_err(|error| error.to_string())?
+                .to_logical::<f64>(scale_factor);
+            let position = window
+                .outer_position()
+                .map_err(|error| error.to_string())?
+                .to_logical::<f64>(scale_factor);
+            record.width = size.width;
+            record.height = size.height;
+            update_position(&mut record, position);
+        }
+    }
+
+    remember_host_window_geometry(record);
+    Ok(())
 }
 
 fn flush_latest_host_window_geometry(window: &WebviewWindow) {
+    if let Err(error) = refresh_host_window_geometry(window) {
+        warn!("Failed to refresh host window geometry before save: {error}");
+    }
     if let Some(record) = latest_host_window_geometry() {
-        save_host_window_geometry_record(window, &record);
-    } else {
-        save_host_window_geometry(window);
+        save_host_window_geometry_record_for_app(window.app_handle(), &record);
     }
 }
 
 pub fn flush_host_window_geometry(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
+        flush_latest_host_window_geometry(&window);
+        return;
+    }
     if let Some(record) = latest_host_window_geometry() {
         save_host_window_geometry_record_for_app(app, &record);
-    } else if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
-        save_host_window_geometry(&window);
     }
 }
 
-fn try_restore_saved_geometry(window: &WebviewWindow) -> Result<bool, String> {
+fn try_restore_saved_geometry(
+    window: &WebviewWindow,
+) -> Result<Option<WindowGeometryRecord>, String> {
     let path = store_path(window.app_handle())?;
     let Some(record) = load_record(&path)? else {
-        return Ok(false);
+        return Ok(None);
     };
     let monitors = window
         .available_monitors()
         .map_err(|error| error.to_string())?;
     if !should_restore_record(&record, &monitors) {
-        return Ok(false);
+        return Ok(None);
     }
     apply_geometry(window, &record)?;
-    Ok(true)
+    Ok(Some(record))
 }
 
 fn restore_host_window(window: &WebviewWindow) {
-    let use_default = match try_restore_saved_geometry(window) {
-        Ok(true) => false,
-        Ok(false) => true,
+    let restored_record = match try_restore_saved_geometry(window) {
+        Ok(record) => record,
         Err(error) => {
             warn!("Failed to restore host window geometry, using default: {error}");
-            true
+            None
         }
     };
 
-    if use_default {
-        if let Err(error) = apply_default_centered_geometry(window) {
-            warn!("Failed to apply default host window geometry: {error}");
-        }
+    if let Some(record) = restored_record {
+        remember_host_window_geometry(record);
+        return;
+    }
+
+    if let Err(error) = apply_default_centered_geometry(window) {
+        warn!("Failed to apply default host window geometry: {error}");
+    }
+    match capture_geometry(window) {
+        Ok(record) => remember_host_window_geometry(record),
+        Err(error) => warn!("Failed to capture default host window geometry: {error}"),
     }
 }
 
@@ -255,19 +312,28 @@ pub fn install_host_window_persistence(window: &WebviewWindow) {
     }
 
     restore_host_window(window);
-    remember_captured_geometry(window);
 
     let window_for_events = window.clone();
     window_for_events
         .clone()
         .on_window_event(move |event| match event {
-            WindowEvent::Resized(_)
-            | WindowEvent::Moved(_)
+            WindowEvent::Moved(_)
+            | WindowEvent::Resized(_)
             | WindowEvent::ScaleFactorChanged { .. } => {
-                remember_captured_geometry(&window_for_events);
+                if let Err(error) = refresh_host_window_geometry(&window_for_events) {
+                    warn!("Failed to refresh host window geometry: {error}");
+                }
             }
-            WindowEvent::CloseRequested { .. } | WindowEvent::Destroyed => {
+            WindowEvent::CloseRequested { .. } => {
                 flush_latest_host_window_geometry(&window_for_events);
+            }
+            WindowEvent::Destroyed => {
+                if let Some(record) = latest_host_window_geometry() {
+                    save_host_window_geometry_record_for_app(
+                        window_for_events.app_handle(),
+                        &record,
+                    );
+                }
             }
             _ => {}
         });
@@ -276,72 +342,77 @@ pub fn install_host_window_persistence(window: &WebviewWindow) {
 #[cfg(test)]
 mod tests {
     use super::{
-        intersection, is_geometry_visible_for_rects, Rect, MIN_INNER_HEIGHT, MIN_INNER_WIDTH,
+        has_visible_area, intersection, is_valid_size, Rect, MIN_INNER_HEIGHT, MIN_INNER_WIDTH,
+        MIN_VISIBLE_HEIGHT, MIN_VISIBLE_WIDTH,
     };
 
     #[test]
     fn intersection_returns_overlap_rect() {
         let window = Rect {
-            x: 100,
-            y: 100,
-            width: 800,
-            height: 600,
+            x: 100.0,
+            y: 100.0,
+            width: 800.0,
+            height: 600.0,
         };
         let monitor = Rect {
-            x: 0,
-            y: 0,
-            width: 1440,
-            height: 900,
+            x: 0.0,
+            y: 0.0,
+            width: 1440.0,
+            height: 900.0,
         };
         let overlap = intersection(window, monitor).expect("overlap");
-        assert_eq!(overlap.x, 100);
-        assert_eq!(overlap.y, 100);
-        assert_eq!(overlap.width, 800);
-        assert_eq!(overlap.height, 600);
+        assert_eq!(overlap.x, 100.0);
+        assert_eq!(overlap.y, 100.0);
+        assert_eq!(overlap.width, 800.0);
+        assert_eq!(overlap.height, 600.0);
     }
 
     #[test]
     fn geometry_is_invalid_when_fully_off_screen() {
-        let monitors = vec![Rect {
-            x: 0,
-            y: 0,
-            width: 1440,
-            height: 900,
-        }];
-        assert!(!is_geometry_visible_for_rects(
-            MIN_INNER_WIDTH,
-            MIN_INNER_HEIGHT,
-            3000,
-            3000,
-            &monitors,
+        let monitor = Rect {
+            x: 0.0,
+            y: 0.0,
+            width: 1440.0,
+            height: 900.0,
+        };
+        let window = Rect {
+            x: 3000.0,
+            y: 3000.0,
+            width: 680.0,
+            height: 460.0,
+        };
+        assert!(!has_visible_area(
+            window,
+            monitor,
+            MIN_VISIBLE_WIDTH,
+            MIN_VISIBLE_HEIGHT,
         ));
     }
 
     #[test]
     fn geometry_is_valid_when_partially_visible() {
-        let monitors = vec![Rect {
-            x: 0,
-            y: 0,
-            width: 1440,
-            height: 900,
-        }];
-        assert!(is_geometry_visible_for_rects(900, 700, -100, 50, &monitors));
+        let monitor = Rect {
+            x: 0.0,
+            y: 0.0,
+            width: 1440.0,
+            height: 900.0,
+        };
+        let window = Rect {
+            x: -100.0,
+            y: 50.0,
+            width: 900.0,
+            height: 700.0,
+        };
+        assert!(has_visible_area(
+            window,
+            monitor,
+            MIN_VISIBLE_WIDTH,
+            MIN_VISIBLE_HEIGHT,
+        ));
     }
 
     #[test]
     fn geometry_is_invalid_when_too_small() {
-        let monitors = vec![Rect {
-            x: 0,
-            y: 0,
-            width: 1440,
-            height: 900,
-        }];
-        assert!(!is_geometry_visible_for_rects(
-            MIN_INNER_WIDTH - 1,
-            MIN_INNER_HEIGHT,
-            100,
-            100,
-            &monitors,
-        ));
+        assert!(!is_valid_size(MIN_INNER_WIDTH - 1.0, MIN_INNER_HEIGHT,));
     }
 }
