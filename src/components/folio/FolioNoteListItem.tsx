@@ -77,6 +77,8 @@ const MINUTE_MS = 60 * 1_000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
 const WEEK_MS = 7 * DAY_MS;
+const MONTH_MS = 30 * DAY_MS;
+const CALENDAR_DATE_THRESHOLD_MS = 3 * MONTH_MS;
 const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
 const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
@@ -128,6 +130,12 @@ function formatFolioUpdatedTime({
 	}
 	if (elapsedMs < WEEK_MS) {
 		return formatter.format(-Math.floor(elapsedMs / DAY_MS), "day");
+	}
+	if (elapsedMs < MONTH_MS) {
+		return formatter.format(-Math.floor(elapsedMs / WEEK_MS), "week");
+	}
+	if (elapsedMs < CALENDAR_DATE_THRESHOLD_MS) {
+		return formatter.format(-Math.floor(elapsedMs / MONTH_MS), "month");
 	}
 	return absoluteDate;
 }
