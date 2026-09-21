@@ -83,12 +83,15 @@ async function waitForImage(image: HTMLImageElement): Promise<void> {
 
 export async function openNativePrintDialog(html: string): Promise<void> {
 	const { images, unmount } = mountPrintDocument(html);
+	window.addEventListener("afterprint", unmount, { once: true });
 	try {
 		await document.fonts.ready;
 		await afterNextPaint();
 		await Promise.all(images.map(waitForImage));
 		await invoke("document_print_current_window");
-	} finally {
+	} catch (error) {
+		window.removeEventListener("afterprint", unmount);
 		unmount();
+		throw error;
 	}
 }
