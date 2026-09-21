@@ -145,6 +145,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const navigationQueryIdentityRef = useRef(navigationQueryIdentity);
 	const {
 		notes,
+		contentUpdatedAtMs,
 		filesTruncated,
 		error,
 		nonMarkdownFileLimit,
@@ -157,12 +158,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
-	const { data: nowMs } = useQuery({
+	const { data: clockNowMs } = useQuery({
 		queryKey: ["folio", "relative-time-clock"],
 		queryFn: () => Date.now(),
 		initialData: () => Date.now(),
 		refetchInterval: FOLIO_RELATIVE_TIME_REFRESH_MS,
 	});
+	const nowMs = Math.max(clockNowMs, contentUpdatedAtMs);
 	const pinnedRanks = useMemo(() => {
 		const ranks = new Map<string, number>();
 		pinnedFiles.forEach((path, index) => ranks.set(path, index));

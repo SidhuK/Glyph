@@ -38,6 +38,7 @@
 	"folio": {
 		"listAria": "ノート一覧",
 		"filter": "ノートを絞り込む",
+		"justNow": "たった今",
 		"noDate": "日付なし",
 		"noPreview": "プレビューなし",
 		"noFolder": "フォルダなし",
