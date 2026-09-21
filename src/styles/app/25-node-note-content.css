@@ -87,10 +87,81 @@
 .tiptapContentInline .markdownImage {
 	display: block;
 	max-width: min(100%, 720px);
-	width: auto;
-	height: auto;
 	margin: var(--space-2) 0;
 	border-radius: var(--radius-md);
+}
+
+.tiptapHostInline .tiptapContentInline [data-resize-container][data-node="image"] {
+	max-width: 100%;
+	margin: var(--space-2) 0;
+}
+
+.tiptapHostInline
+	.tiptapContentInline
+	[data-resize-container][data-node="image"]
+	[data-resize-wrapper] {
+	max-width: 100%;
+	line-height: 0;
+}
+
+.tiptapHostInline .tiptapContentInline [data-resize-container][data-node="image"] img {
+	max-width: 100%;
+	margin: 0;
+}
+
+.tiptapHostInline:not(.is-preview)
+	.tiptapContentInline
+	[data-resize-container][data-node="image"]
+	[data-resize-handle] {
+	width: 12px;
+	height: 12px;
+	box-sizing: border-box;
+	border: 2px solid var(--bg-primary);
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	box-shadow: 0 1px 3px color-mix(in srgb, #000 28%, transparent);
+	opacity: 0;
+	pointer-events: none;
+	touch-action: none;
+	transition: opacity 120ms ease;
+}
+
+.tiptapHostInline:not(.is-preview)
+	.tiptapContentInline
+	[data-resize-container][data-node="image"]:is(
+		:hover,
+		.ProseMirror-selectednode,
+		[data-resize-state="true"]
+	)
+	[data-resize-handle] {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.tiptapContentInline [data-resize-handle="top-left"],
+.tiptapContentInline [data-resize-handle="bottom-right"] {
+	cursor: nwse-resize;
+}
+
+.tiptapContentInline [data-resize-handle="top-right"],
+.tiptapContentInline [data-resize-handle="bottom-left"] {
+	cursor: nesw-resize;
+}
+
+.tiptapContentInline [data-resize-handle="top-left"] {
+	transform: translate(-50%, -50%);
+}
+
+.tiptapContentInline [data-resize-handle="top-right"] {
+	transform: translate(50%, -50%);
+}
+
+.tiptapContentInline [data-resize-handle="bottom-left"] {
+	transform: translate(-50%, 50%);
+}
+
+.tiptapContentInline [data-resize-handle="bottom-right"] {
+	transform: translate(50%, 50%);
 }
 
 .tiptapContentInline img[data-glyph-hydration-state="pending"],
