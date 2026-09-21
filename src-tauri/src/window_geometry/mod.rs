@@ -4,8 +4,8 @@ mod types;
 use std::sync::Mutex;
 
 use tauri::{
-    AppHandle, LogicalPosition, LogicalSize, Manager, Monitor, PhysicalPosition, Position, Size,
-    WebviewWindow, WindowEvent,
+    AppHandle, LogicalPosition, LogicalSize, Manager, Monitor, Position, Size, WebviewWindow,
+    WindowEvent,
 };
 use tracing::warn;
 
@@ -36,18 +36,6 @@ struct Rect {
     height: f64,
 }
 
-fn monitor_rect(monitor: &Monitor) -> Rect {
-    let scale_factor = monitor.scale_factor();
-    let position = monitor.position().to_logical::<f64>(scale_factor);
-    let size = monitor.size().to_logical::<f64>(scale_factor);
-    Rect {
-        x: position.x,
-        y: position.y,
-        width: size.width,
-        height: size.height,
-    }
-}
-
 fn intersection(window: Rect, monitor: Rect) -> Option<Rect> {
     let left = window.x.max(monitor.x);
     let top = window.y.max(monitor.y);
@@ -64,29 +52,19 @@ fn intersection(window: Rect, monitor: Rect) -> Option<Rect> {
     })
 }
 
-fn is_geometry_visible_for_rects(
-    width: f64,
-    height: f64,
-    x: f64,
-    y: f64,
-    monitors: &[Rect],
+fn has_visible_area(
+    window: Rect,
+    monitor: Rect,
+    min_visible_width: f64,
+    min_visible_height: f64,
 ) -> bool {
-    if width < MIN_INNER_WIDTH || height < MIN_INNER_HEIGHT || monitors.is_empty() {
-        return false;
-    }
-
-    let window = Rect {
-        x,
-        y,
-        width,
-        height,
-    };
-
-    monitors.iter().any(|monitor| {
-        intersection(window, *monitor).is_some_and(|visible| {
-            visible.width >= MIN_VISIBLE_WIDTH && visible.height >= MIN_VISIBLE_HEIGHT
-        })
+    intersection(window, monitor).is_some_and(|visible| {
+        visible.width >= min_visible_width && visible.height >= min_visible_height
     })
+}
+
+fn is_valid_size(width: f64, height: f64) -> bool {
+    width >= MIN_INNER_WIDTH && height >= MIN_INNER_HEIGHT
 }
 
 fn is_geometry_visible_on_monitors(
@@ -96,11 +74,34 @@ fn is_geometry_visible_on_monitors(
     y: f64,
     monitors: &[Monitor],
 ) -> bool {
-    if monitors.is_empty() {
+    if !is_valid_size(width, height) {
         return false;
     }
-    let rects: Vec<Rect> = monitors.iter().map(monitor_rect).collect();
-    is_geometry_visible_for_rects(width, height, x, y, &rects)
+    let position = LogicalPosition::new(x, y);
+    let size = LogicalSize::new(width, height);
+    monitors.iter().any(|monitor| {
+        let scale_factor = monitor.scale_factor();
+        let window_position = position.to_physical::<f64>(scale_factor);
+        let window_size = size.to_physical::<f64>(scale_factor);
+        let monitor_position = monitor.position();
+        let monitor_size = monitor.size();
+        has_visible_area(
+            Rect {
+                x: window_position.x,
+                y: window_position.y,
+                width: window_size.width,
+                height: window_size.height,
+            },
+            Rect {
+                x: f64::from(monitor_position.x),
+                y: f64::from(monitor_position.y),
+                width: f64::from(monitor_size.width),
+                height: f64::from(monitor_size.height),
+            },
+            MIN_VISIBLE_WIDTH * scale_factor,
+            MIN_VISIBLE_HEIGHT * scale_factor,
+        )
+    })
 }
 
 fn restore_position(record: &WindowGeometryRecord) -> LogicalPosition<f64> {
@@ -216,22 +217,6 @@ fn update_position(record: &mut WindowGeometryRecord, position: LogicalPosition<
     record.y = position.y;
 }
 
-fn remember_host_window_position(
-    window: &WebviewWindow,
-    position: PhysicalPosition<i32>,
-) -> Result<(), String> {
-    if window.is_minimized().map_err(|error| error.to_string())? {
-        return Ok(());
-    }
-    let Some(mut record) = latest_host_window_geometry() else {
-        return Ok(());
-    };
-    let scale_factor = window.scale_factor().map_err(|error| error.to_string())?;
-    update_position(&mut record, position.to_logical(scale_factor));
-    remember_host_window_geometry(record);
-    Ok(())
-}
-
 fn refresh_host_window_geometry(window: &WebviewWindow) -> Result<(), String> {
     let Some(mut record) = latest_host_window_geometry() else {
         remember_host_window_geometry(capture_geometry(window)?);
@@ -332,12 +317,9 @@ pub fn install_host_window_persistence(window: &WebviewWindow) {
     window_for_events
         .clone()
         .on_window_event(move |event| match event {
-            WindowEvent::Moved(position) => {
-                if let Err(error) = remember_host_window_position(&window_for_events, *position) {
-                    warn!("Failed to refresh host window position: {error}");
-                }
-            }
-            WindowEvent::Resized(_) | WindowEvent::ScaleFactorChanged { .. } => {
+            WindowEvent::Moved(_)
+            | WindowEvent::Resized(_)
+            | WindowEvent::ScaleFactorChanged { .. } => {
                 if let Err(error) = refresh_host_window_geometry(&window_for_events) {
                     warn!("Failed to refresh host window geometry: {error}");
                 }
@@ -360,7 +342,8 @@ pub fn install_host_window_persistence(window: &WebviewWindow) {
 #[cfg(test)]
 mod tests {
     use super::{
-        intersection, is_geometry_visible_for_rects, Rect, MIN_INNER_HEIGHT, MIN_INNER_WIDTH,
+        has_visible_area, intersection, is_valid_size, Rect, MIN_INNER_HEIGHT, MIN_INNER_WIDTH,
+        MIN_VISIBLE_HEIGHT, MIN_VISIBLE_WIDTH,
     };
 
     #[test]
@@ -386,48 +369,50 @@ mod tests {
 
     #[test]
     fn geometry_is_invalid_when_fully_off_screen() {
-        let monitors = vec![Rect {
+        let monitor = Rect {
             x: 0.0,
             y: 0.0,
             width: 1440.0,
             height: 900.0,
-        }];
-        assert!(!is_geometry_visible_for_rects(
-            MIN_INNER_WIDTH,
-            MIN_INNER_HEIGHT,
-            3000.0,
-            3000.0,
-            &monitors,
+        };
+        let window = Rect {
+            x: 3000.0,
+            y: 3000.0,
+            width: 680.0,
+            height: 460.0,
+        };
+        assert!(!has_visible_area(
+            window,
+            monitor,
+            MIN_VISIBLE_WIDTH,
+            MIN_VISIBLE_HEIGHT,
         ));
     }
 
     #[test]
     fn geometry_is_valid_when_partially_visible() {
-        let monitors = vec![Rect {
+        let monitor = Rect {
             x: 0.0,
             y: 0.0,
             width: 1440.0,
             height: 900.0,
-        }];
-        assert!(is_geometry_visible_for_rects(
-            900.0, 700.0, -100.0, 50.0, &monitors
+        };
+        let window = Rect {
+            x: -100.0,
+            y: 50.0,
+            width: 900.0,
+            height: 700.0,
+        };
+        assert!(has_visible_area(
+            window,
+            monitor,
+            MIN_VISIBLE_WIDTH,
+            MIN_VISIBLE_HEIGHT,
         ));
     }
 
     #[test]
     fn geometry_is_invalid_when_too_small() {
-        let monitors = vec![Rect {
-            x: 0.0,
-            y: 0.0,
-            width: 1440.0,
-            height: 900.0,
-        }];
-        assert!(!is_geometry_visible_for_rects(
-            MIN_INNER_WIDTH - 1.0,
-            MIN_INNER_HEIGHT,
-            100.0,
-            100.0,
-            &monitors,
-        ));
+        assert!(!is_valid_size(MIN_INNER_WIDTH - 1.0, MIN_INNER_HEIGHT,));
     }
 }
