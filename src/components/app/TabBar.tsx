@@ -94,7 +94,7 @@ export function TabBar({
 	const { getBinding } = useShortcutBindings();
 	const [tabsOverflow, setTabsOverflow] = useState(false);
 	const suppressClickRef = useRef(false);
-	const suppressClickResetTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+	const suppressClickResetTimerRef = useRef<number | null>(null);
 	useEffect(() => {
 		return () => {
 			if (suppressClickResetTimerRef.current !== null) {

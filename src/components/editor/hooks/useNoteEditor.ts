@@ -5,7 +5,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import { i18n } from "../../../i18n";
 import { resolveAttachmentTargetDir } from "../../../lib/attachmentStorage";
 import { joinYamlFrontmatter, splitYamlFrontmatter } from "../../../lib/notePreview";
-import { invoke } from "../../../lib/tauri";
+import { invoke, spaceAssetUrl } from "../../../lib/tauri";
 import { toast } from "../../../lib/toast";
 import { handleEditorClick } from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
@@ -19,7 +19,7 @@ import {
 import type { TemplateInsertRequest } from "../slashCommands";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { applyEditorSpellCheck } from "./useEditorSpellCheck";
-import { spaceAssetUrl, useHydrateInlineImages } from "./useHydrateInlineImages";
+import { useHydrateInlineImages } from "./useHydrateInlineImages";
 import { useNoteEditorSettings } from "./useNoteEditorSettings";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";

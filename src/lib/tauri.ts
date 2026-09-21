@@ -936,7 +936,12 @@ interface TauriCommands {
 	custom_theme_write: CommandDef<{ path: string; text: string }, void>;
 	external_markdown_reveal: CommandDef<void, void>;
 	external_markdown_finish_close: CommandDef<void, void>;
-	print_write_html: CommandDef<{ file_stem: string; html: string }, string>;
+	document_print_current_window: CommandDef<void, void>;
+	document_write_docx: CommandDef<{ destination: string; bytes: number[] }, void>;
+	document_read_images_batch: CommandDef<
+		{ paths: string[] },
+		Array<{ relPath: string; dataUrl: string | null }>
+	>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
 	license_clear_local: CommandDef<void, LicenseActivateResult>;
@@ -1048,6 +1053,13 @@ interface TauriCommands {
 	space_resolve_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_image_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_markdown_link: CommandDef<{ href: string; sourcePath: string }, string | null>;
+	space_resolve_image_sources_batch: CommandDef<
+		{
+			sourcePath: string;
+			sources: Array<{ href: string; wikiEmbed: boolean }>;
+		},
+		Array<string | null>
+	>;
 	space_suggest_links: CommandDef<
 		{
 			request: {
@@ -1272,6 +1284,17 @@ function asInvokePayload(value: unknown): Record<string, unknown> {
 type ArgsTuple<K extends keyof TauriCommands> = TauriCommands[K]["args"] extends void
 	? []
 	: [TauriCommands[K]["args"]];
+
+export function spaceAssetUrl(relPath: string): string {
+	const encoded = relPath
+		.replace(/\\/g, "/")
+		.replace(/^\/+/, "")
+		.split("/")
+		.filter((segment) => segment.length > 0)
+		.map((segment) => encodeURIComponent(segment))
+		.join("/");
+	return `glyphasset://localhost/${encoded}`;
+}
 
 export async function invoke<K extends keyof TauriCommands>(
 	command: K,

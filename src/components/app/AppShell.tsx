@@ -51,7 +51,6 @@ import {
 	periodIdFromIsoDate,
 } from "../../lib/periodNotes";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
-import { buildPrintHtml } from "../../lib/printHtml";
 import { requestSearchJump } from "../../lib/searchJump";
 import { loadSettings } from "../../lib/settings";
 import { toTauriAccelerator } from "../../lib/shortcuts";
@@ -61,7 +60,7 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate, selectTemplateFile } from "../../lib/templates";
 import { toast } from "../../lib/toast";
-import { displayNameFromPath, isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import { CalendarPaletteController, preloadCalendarPalette } from "./CalendarPaletteController";
@@ -71,6 +70,7 @@ import { Sidebar } from "./Sidebar";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import { loadActivityTimelinePane, loadDatabasesPane } from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
+import { useDocumentExport } from "./useDocumentExport";
 import { useTabManager } from "./useTabManager";
 import { useWorkspaceLinkEvents } from "./useWorkspaceLinkEvents";
 import { useWorkspaceSession } from "./useWorkspaceSession";
@@ -161,6 +161,11 @@ export function AppShell() {
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
 	const { getCurrentMarkdown, saveCurrentEditor, saveAllEditors, setCurrentEditorMode } =
 		useEditorContext();
+	const { exportPdf, exportDocx } = useDocumentExport({
+		activeNotePath: activeMarkdownTabPath,
+		spacePath,
+		getCurrentMarkdown,
+	});
 
 	const [paletteLaunchMode, setPaletteLaunchMode] = useState<"commands" | "search">("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
@@ -1008,39 +1013,6 @@ export function AppShell() {
 		}
 	}, [activeMarkdownTabPath, getCurrentMarkdown]);
 
-	const handlePrintActiveNote = useCallback(async () => {
-		if (!activeMarkdownTabPath) return;
-		try {
-			await saveCurrentEditor();
-			const markdown =
-				getCurrentMarkdown(activeMarkdownTabPath) ??
-				(
-					await invoke("space_read_text", {
-						path: activeMarkdownTabPath,
-					})
-				).text;
-			const noteAbsPath = await invoke("space_resolve_abs_path", {
-				path: activeMarkdownTabPath,
-			});
-			const html = buildPrintHtml({
-				markdown,
-				notePath: activeMarkdownTabPath,
-				noteAbsPath,
-			});
-			const path = await invoke("print_write_html", {
-				file_stem: displayNameFromPath(activeMarkdownTabPath).trim() || "Untitled",
-				html,
-			});
-			await openPath(path);
-			toast.success("Opened note for printing.");
-		} catch (error) {
-			console.error("Failed to print note", error);
-			toast.error("Could not open the note for printing", {
-				description: error instanceof Error ? error.message : "Try again in a moment.",
-			});
-		}
-	}, [activeMarkdownTabPath, getCurrentMarkdown, saveCurrentEditor]);
-
 	const duplicateFileWithActiveEditorFlush = useCallback(
 		async (path: string) => {
 			if (activeMarkdownTabPath === path) {
@@ -1151,7 +1123,8 @@ export function AppShell() {
 		onImportFolder: handleImportFolderFromMenu,
 		onOpenPeriodNote: handleOpenPeriodNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
-		onPrintNote: handlePrintActiveNote,
+		onPrintNote: exportPdf,
+		onExportDocx: exportDocx,
 		onCloseTab: () => void handleCloseTabOrWindow(),
 		onOpenSpace: handleOpenSpace,
 		onOpenRecentSpaceAtPath: (path) => {
@@ -1200,6 +1173,8 @@ export function AppShell() {
 		handleImportFilesFromMenu,
 		handleImportFolderFromMenu,
 		handleDuplicateActiveMarkdown,
+		exportPdf,
+		exportDocx,
 		handleGitSyncFailure,
 		handleOpenAiSettings,
 		handleOpenSpaceSettings,

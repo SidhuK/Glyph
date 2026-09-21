@@ -224,6 +224,15 @@
 		"openAnotherSpace": "Open another space",
 		"switchSaveFailed": "The current space could not be saved. Please try again."
 	},
+	"documentExport": {
+		"untitled": "Untitled",
+		"docxDialogTitle": "Export Note as Word",
+		"docxFormat": "Word Document",
+		"docxComplete": "Exported note as Word.",
+		"pdfFailed": "Could not export the note as PDF",
+		"docxFailed": "Could not export the note as Word",
+		"tryAgain": "Try again in a moment."
+	},
 	"gitSync": {
 		"commitTitle": "Sync with Git",
 		"commitDescription": "Optionally add a message to the local commit created by this manual sync.",

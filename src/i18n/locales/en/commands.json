@@ -355,8 +355,12 @@
 			"description": "Move to the previous tab."
 		},
 		"print-note": {
-			"label": "Print Note",
-			"description": "Print the current note."
+			"label": "Export Note as PDF…",
+			"description": "Open the macOS Print dialog to save the current note as PDF."
+		},
+		"export-note-docx": {
+			"label": "Export Note as Word…",
+			"description": "Export the current note as a Word document."
 		},
 		"quick-open": {
 			"label": "Quick Open",

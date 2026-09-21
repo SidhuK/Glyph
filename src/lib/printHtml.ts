@@ -1,8 +1,12 @@
 import DOMPurify from "dompurify";
 import { Marked } from "marked";
 import { preprocessHtmlEmbeds } from "../components/editor/markdown/htmlEmbedMarkdown";
-import { wikiLinksToStandardMarkdown } from "../components/editor/markdown/wikiLinkCodec";
-import { displayNameFromPath, parentDir } from "../utils/path";
+import {
+	findWikiLinkSpans,
+	parseWikiLink,
+	wikiLinksToStandardMarkdown,
+} from "../components/editor/markdown/wikiLinkCodec";
+import { displayNameFromPath } from "../utils/path";
 import {
 	type HtmlEmbedKind,
 	replaceHtmlEmbedFences,
@@ -10,11 +14,11 @@ import {
 	wrapHtmlEmbedBody,
 } from "./htmlEmbed";
 import { splitYamlFrontmatter } from "./notePreview";
+import { invoke, spaceAssetUrl } from "./tauri";
 
 interface BuildPrintHtmlOptions {
 	markdown: string;
 	notePath: string;
-	noteAbsPath: string;
 }
 
 const PRINT_CSS = `
@@ -33,8 +37,11 @@ body {
 	width: min(760px, calc(100vw - 48px));
 	margin: 0 auto;
 	padding: 48px 0 72px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	line-height: 1.62;
 	font-size: 16px;
+	color: #171717;
+	background: #ffffff;
 }
 h1, h2, h3, h4, h5, h6 {
 	line-height: 1.2;
@@ -150,14 +157,23 @@ function escapeHtml(value: string): string {
 		.replace(/"/g, "&quot;");
 }
 
-function fileUrlForPath(path: string): string {
-	const encoded = path.split("/").map(encodeURIComponent).join("/");
-	return `file://${encoded}`;
-}
-
-function baseHrefForNote(noteAbsPath: string): string {
-	const dir = parentDir(noteAbsPath);
-	return `${fileUrlForPath(dir)}/`;
+function replaceWikiLinksForDocument(markdown: string): string {
+	const spans = findWikiLinkSpans(markdown);
+	if (spans.length === 0) return markdown;
+	let cursor = 0;
+	let output = "";
+	for (const span of spans) {
+		output += markdown.slice(cursor, span.start);
+		const link = parseWikiLink(span.raw);
+		if (link?.embed) {
+			const alt = link.alias?.trim() || displayNameFromPath(link.target);
+			output += `<img src="${escapeHtml(link.target)}" alt="${escapeHtml(alt)}" data-wikilink-embed="true">`;
+		} else {
+			output += wikiLinksToStandardMarkdown(span.raw);
+		}
+		cursor = span.end;
+	}
+	return output + markdown.slice(cursor);
 }
 
 function parseMarkdownSync(markdown: string): string {
@@ -169,14 +185,14 @@ function parseMarkdownSync(markdown: string): string {
 	return typeof rendered === "string" ? rendered : "";
 }
 
-export function buildPrintHtml({ markdown, notePath, noteAbsPath }: BuildPrintHtmlOptions): string {
+export function buildPrintHtml({ markdown, notePath }: BuildPrintHtmlOptions): string {
 	const { body: markdownBody } = splitYamlFrontmatter(markdown);
 	const preparedMarkdown = replaceHtmlEmbedsForPrint(
-		wikiLinksToStandardMarkdown(preprocessHtmlEmbeds(markdownBody)),
+		replaceWikiLinksForDocument(preprocessHtmlEmbeds(markdownBody)),
 	);
 	const rendered = parseMarkdownSync(preparedMarkdown);
 	let body = DOMPurify.sanitize(rendered, {
-		ADD_ATTR: ["class", "checked"],
+		ADD_ATTR: ["class", "checked", "data-wikilink-embed"],
 	});
 	if (!body.trim() && preparedMarkdown.trim()) {
 		body = `<pre class="glyph-print-fallback">${escapeHtml(preparedMarkdown)}</pre>`;
@@ -187,7 +203,6 @@ export function buildPrintHtml({ markdown, notePath, noteAbsPath }: BuildPrintHt
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<base href="${escapeHtml(baseHrefForNote(noteAbsPath))}">
 <title>${escapeHtml(title)}</title>
 <style>${PRINT_CSS}</style>
 </head>
@@ -195,10 +210,35 @@ export function buildPrintHtml({ markdown, notePath, noteAbsPath }: BuildPrintHt
 <main class="glyph-print">
 ${body}
 </main>
-<script>
-window.addEventListener("load", () => window.print(), { once: true });
-</script>
 </body>
 </html>
 `;
+}
+
+function isRemoteOrEmbeddedImage(src: string): boolean {
+	return /^(?:https?:|data:|blob:|glyphasset:|\/\/)/i.test(src);
+}
+
+export async function resolveDocumentImages(html: string, notePath: string): Promise<string> {
+	const document = new DOMParser().parseFromString(html, "text/html");
+	const localImages = Array.from(document.querySelectorAll("img[src]")).filter((image) => {
+		const src = image.getAttribute("src")?.trim() ?? "";
+		return src.length > 0 && !isRemoteOrEmbeddedImage(src);
+	});
+	if (localImages.length === 0) return html;
+
+	const paths = await invoke("space_resolve_image_sources_batch", {
+		sourcePath: notePath,
+		sources: localImages.map((image) => ({
+			href: image.getAttribute("src")?.trim() ?? "",
+			wikiEmbed: image.getAttribute("data-wikilink-embed") === "true",
+		})),
+	});
+	for (const [index, image] of localImages.entries()) {
+		const relPath = paths[index];
+		if (!relPath) continue;
+		image.setAttribute("src", spaceAssetUrl(relPath));
+		image.setAttribute("data-glyph-export-path", relPath);
+	}
+	return `<!doctype html>\n${document.documentElement.outerHTML}`;
 }

@@ -33,6 +33,13 @@ pub struct LinkSuggestRequest {
     pub limit: Option<u32>,
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageSourceRequest {
+    pub href: String,
+    pub wiki_embed: bool,
+}
+
 fn normalize(input: &str) -> String {
     input.to_lowercase().trim().replace('\\', "/")
 }
@@ -354,45 +361,78 @@ pub async fn space_resolve_markdown_link(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
-        let encoded_raw = href
-            .split('#')
-            .next()
-            .unwrap_or("")
-            .trim()
-            .replace('\\', "/");
-        let raw = percent_decode_utf8(&encoded_raw).unwrap_or(encoded_raw);
-        if raw.is_empty() || raw.starts_with("http://") || raw.starts_with("https://") {
-            return Ok(None);
-        }
-        let source_dir = parent_dir(&source_path);
-        let normalized_raw = raw.trim_start_matches("./");
-        let mut candidates = Vec::<String>::new();
-        if raw.starts_with('/') {
-            candidates.push(normalize_segments(&raw));
-        } else {
-            candidates.push(normalize_segments(&format!(
-                "{source_dir}/{normalized_raw}"
-            )));
-            candidates.push(normalize_segments(normalized_raw));
-        }
-        let mut expanded = candidates.clone();
-        for c in &candidates {
-            if !c.to_lowercase().ends_with(".md") {
-                expanded.push(format!("{c}.md"));
-            }
-        }
-        for c in expanded {
-            if let Some(hit) = entries
-                .iter()
-                .find(|e| normalize_path(&e.rel_path).eq_ignore_ascii_case(&c))
-            {
-                return Ok(Some(hit.rel_path.clone()));
-            }
-        }
-        Ok(None)
+        Ok(resolve_markdown_link_target(&entries, &source_path, &href))
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+fn resolve_markdown_link_target(
+    entries: &[FileEntry],
+    source_path: &str,
+    href: &str,
+) -> Option<String> {
+    let encoded_raw = href
+        .split('#')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .replace('\\', "/");
+    let raw = percent_decode_utf8(&encoded_raw).unwrap_or(encoded_raw);
+    if raw.is_empty() || raw.starts_with("http://") || raw.starts_with("https://") {
+        return None;
+    }
+    let source_dir = parent_dir(source_path);
+    let normalized_raw = raw.trim_start_matches("./");
+    let mut candidates = Vec::<String>::new();
+    if raw.starts_with('/') {
+        candidates.push(normalize_segments(&raw));
+    } else {
+        candidates.push(normalize_segments(&format!(
+            "{source_dir}/{normalized_raw}"
+        )));
+        candidates.push(normalize_segments(normalized_raw));
+    }
+    let mut expanded = candidates.clone();
+    for candidate in &candidates {
+        if !candidate.to_lowercase().ends_with(".md") {
+            expanded.push(format!("{candidate}.md"));
+        }
+    }
+    for candidate in expanded {
+        if let Some(hit) = entries
+            .iter()
+            .find(|entry| normalize_path(&entry.rel_path).eq_ignore_ascii_case(&candidate))
+        {
+            return Some(hit.rel_path.clone());
+        }
+    }
+    None
+}
+
+#[tauri::command]
+pub async fn space_resolve_image_sources_batch(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    source_path: String,
+    sources: Vec<ImageSourceRequest>,
+) -> Result<Vec<Option<String>>, String> {
+    let root = state.root_for_window(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let entries = list_files(&root, false, 80_000)?;
+        Ok(sources
+            .iter()
+            .map(|source| {
+                if source.wiki_embed {
+                    resolve_image_wikilink_target(&entries, &source.href)
+                } else {
+                    resolve_markdown_link_target(&entries, &source_path, &source.href)
+                }
+            })
+            .collect())
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 #[cfg(test)]

@@ -10,6 +10,7 @@ import {
 	ColorsIcon,
 	CursorAddSelection02Icon,
 	CursorInWindowIcon,
+	FileExportIcon,
 	FileImportIcon,
 	Folder01Icon,
 	FolderImportIcon,
@@ -86,6 +87,8 @@ interface UseAppCommandsDeps {
 	handleImportFilesFromMenu: () => void;
 	handleImportFolderFromMenu: () => void;
 	handleDuplicateActiveMarkdown: () => Promise<void>;
+	exportPdf: () => Promise<void>;
+	exportDocx: () => Promise<void>;
 	handleGitSyncFailure: (cause: unknown) => void;
 	handleOpenAiSettings: () => void;
 	handleOpenSpaceSettings: () => void;
@@ -243,6 +246,8 @@ export function useAppCommands({
 	handleImportFilesFromMenu,
 	handleImportFolderFromMenu,
 	handleDuplicateActiveMarkdown,
+	exportPdf,
+	exportDocx,
 	handleGitSyncFailure,
 	handleOpenAiSettings,
 	handleOpenSpaceSettings,
@@ -468,6 +473,20 @@ export function useAppCommands({
 				action: () => void saveCurrentEditor(),
 			},
 			{
+				id: "print-note",
+				icon: <HugeiconsIcon icon={FileExportIcon} size="var(--icon-lg)" />,
+				enabled: Boolean(activeMarkdownTabPath),
+				allowInEditable: true,
+				action: () => void exportPdf(),
+			},
+			{
+				id: "export-note-docx",
+				icon: <HugeiconsIcon icon={FileExportIcon} size="var(--icon-lg)" />,
+				enabled: Boolean(activeMarkdownTabPath),
+				allowInEditable: true,
+				action: () => void exportDocx(),
+			},
+			{
 				id: "open-local-connections",
 				icon: <HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-lg)" />,
 				shortcut: { meta: true, shift: true, key: "g" },
@@ -691,6 +710,8 @@ export function useAppCommands({
 		handleGitSyncFailure,
 		handleCopyOpenNoteAsMarkdown,
 		handleDuplicateActiveMarkdown,
+		exportPdf,
+		exportDocx,
 		handleImportFilesFromMenu,
 		handleImportFolderFromMenu,
 		handleOpenAiSettings,

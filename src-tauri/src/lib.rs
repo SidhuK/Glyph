@@ -541,6 +541,14 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         show_markdown_menu,
         None,
     )?;
+    let export_note_docx = menu_item_with_shortcut(
+        app,
+        menu_labels,
+        menu_shortcuts,
+        "file.export_note_docx",
+        show_markdown_menu,
+        None,
+    )?;
     let close_tab = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.close_tab",
         true,
         Some("CmdOrCtrl+W"),
@@ -729,6 +737,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &PredefinedMenuItem::separator(app)?,
             &save_note,
             &print_note,
+            &export_note_docx,
             &PredefinedMenuItem::separator(app)?,
             &close_tab,
         ],
@@ -1643,6 +1652,9 @@ pub fn run() {
             "file.print_note" => {
                 dispatch_menu_command_to_main(app, "print-note");
             }
+            "file.export_note_docx" => {
+                dispatch_menu_command_to_main(app, "export-note-docx");
+            }
             "file.close_tab" => {
                 // External markdown windows close themselves via Close Tab;
                 // the main window owns tab management everywhere else.
@@ -1831,7 +1843,9 @@ pub fn run() {
             external_link_preview::external_link_preview,
             custom_theme::custom_theme_read,
             custom_theme::custom_theme_write,
-            print::print_write_html,
+            print::document_print_current_window,
+            print::document_write_docx,
+            print::document_read_images_batch,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,
             license::commands::license_clear_local,
@@ -1907,6 +1921,7 @@ pub fn run() {
             space_fs::link_ops::space_resolve_wikilink,
             space_fs::link_ops::space_resolve_image_wikilink,
             space_fs::link_ops::space_resolve_markdown_link,
+            space_fs::link_ops::space_resolve_image_sources_batch,
             space_fs::link_ops::space_suggest_links,
             space_fs::summary::space_dir_children_summary,
             space_fs::read_write::text::space_read_text,

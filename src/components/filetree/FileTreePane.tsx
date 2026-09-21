@@ -591,7 +591,7 @@ export const FileTreePane = memo(function FileTreePane({
 		useState<AppearancePickerTarget | null>(null);
 	const [externalDropTargetPath, setExternalDropTargetPath] = useState<string | null>(null);
 	const moveClickSuppressRef = useRef(false);
-	const moveClickSuppressResetTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+	const moveClickSuppressResetTimerRef = useRef<number | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const focusedDirPathRef = useRef(focusedDirPath);
 	const settingsVersionRef = useRef(0);
