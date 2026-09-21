@@ -9,7 +9,12 @@ function afterNextPaint(): Promise<void> {
 	});
 }
 
-function mountPrintDocument(html: string): () => void {
+interface MountedPrintDocument {
+	images: HTMLImageElement[];
+	unmount: () => void;
+}
+
+function mountPrintDocument(html: string): MountedPrintDocument {
 	document.getElementById(PRINT_ROOT_ID)?.remove();
 	document.getElementById(PRINT_STYLE_ID)?.remove();
 
@@ -22,6 +27,8 @@ function mountPrintDocument(html: string): () => void {
 	const documentStyles = document.createElement("style");
 	documentStyles.textContent = parsed.head.querySelector("style")?.textContent ?? "";
 	const printBody = document.importNode(parsed.body, true);
+	const images = Array.from(printBody.querySelectorAll("img"));
+	for (const image of images) image.loading = "eager";
 	shadowRoot.append(documentStyles, printBody);
 
 	const printStyles = document.createElement("style");
@@ -49,22 +56,39 @@ html, body {
 }`;
 	document.body.append(printStyles, printRoot);
 
-	return () => {
-		printRoot.remove();
-		printStyles.remove();
+	return {
+		images,
+		unmount: () => {
+			printRoot.remove();
+			printStyles.remove();
+		},
 	};
 }
 
+async function waitForImage(image: HTMLImageElement): Promise<void> {
+	if (!image.complete) {
+		await new Promise<void>((resolve) => {
+			const finish = () => {
+				image.removeEventListener("load", finish);
+				image.removeEventListener("error", finish);
+				resolve();
+			};
+			image.addEventListener("load", finish, { once: true });
+			image.addEventListener("error", finish, { once: true });
+			if (image.complete) finish();
+		});
+	}
+	await image.decode().catch(() => undefined);
+}
+
 export async function openNativePrintDialog(html: string): Promise<void> {
-	const unmount = mountPrintDocument(html);
-	window.addEventListener("afterprint", unmount, { once: true });
+	const { images, unmount } = mountPrintDocument(html);
 	try {
 		await document.fonts.ready;
 		await afterNextPaint();
+		await Promise.all(images.map(waitForImage));
 		await invoke("document_print_current_window");
-	} catch (error) {
-		window.removeEventListener("afterprint", unmount);
+	} finally {
 		unmount();
-		throw error;
 	}
 }

@@ -937,9 +937,18 @@ interface TauriCommands {
 	external_markdown_reveal: CommandDef<void, void>;
 	external_markdown_finish_close: CommandDef<void, void>;
 	document_print_current_window: CommandDef<void, void>;
-	document_write_docx: CommandDef<{ destination: string; bytes: number[] }, void>;
+	document_write_docx: CommandDef<
+		{
+			bytes: number[];
+			dialog_title: string;
+			expected_space_path: string;
+			file_name: string;
+			format_name: string;
+		},
+		boolean
+	>;
 	document_read_images_batch: CommandDef<
-		{ paths: string[] },
+		{ expectedSpacePath: string; paths: string[] },
 		Array<{ relPath: string; dataUrl: string | null }>
 	>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
@@ -1055,6 +1064,7 @@ interface TauriCommands {
 	space_resolve_markdown_link: CommandDef<{ href: string; sourcePath: string }, string | null>;
 	space_resolve_image_sources_batch: CommandDef<
 		{
+			expectedSpacePath: string;
 			sourcePath: string;
 			sources: Array<{ href: string; wikiEmbed: boolean }>;
 		},

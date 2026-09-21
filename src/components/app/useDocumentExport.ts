@@ -1,5 +1,4 @@
-import { join } from "@tauri-apps/api/path";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { openNativePrintDialog } from "../../lib/nativePrint";
 import { buildPrintHtml, resolveDocumentImages } from "../../lib/printHtml";
@@ -28,15 +27,27 @@ export function useDocumentExport({
 	getCurrentMarkdown,
 }: UseDocumentExportOptions) {
 	const { t } = useTranslation("shell");
+	const currentSpacePathRef = useRef(spacePath);
+	currentSpacePathRef.current = spacePath;
+
+	const ensureSpaceUnchanged = useCallback((expectedSpacePath: string) => {
+		if (currentSpacePathRef.current !== expectedSpacePath) {
+			throw new Error("The active space changed during document export.");
+		}
+	}, []);
 
 	const exportPdf = useCallback(async () => {
-		if (!activeNotePath) return;
+		if (!activeNotePath || !spacePath) return;
+		const exportSpacePath = spacePath;
 		try {
 			const markdown = await readNoteMarkdown(activeNotePath, getCurrentMarkdown);
+			ensureSpaceUnchanged(exportSpacePath);
 			const html = await resolveDocumentImages(
 				buildPrintHtml({ markdown, notePath: activeNotePath }),
 				activeNotePath,
+				exportSpacePath,
 			);
+			ensureSpaceUnchanged(exportSpacePath);
 			await openNativePrintDialog(html);
 		} catch (error) {
 			console.error("Failed to export note as PDF", error);
@@ -44,33 +55,32 @@ export function useDocumentExport({
 				description: t("documentExport.tryAgain"),
 			});
 		}
-	}, [activeNotePath, getCurrentMarkdown, t]);
+	}, [activeNotePath, ensureSpaceUnchanged, getCurrentMarkdown, spacePath, t]);
 
 	const exportDocx = useCallback(async () => {
 		if (!activeNotePath || !spacePath) return;
+		const exportSpacePath = spacePath;
 		try {
 			const fileName = displayNameFromPath(activeNotePath).trim() || t("documentExport.untitled");
-			const { save } = await import("@tauri-apps/plugin-dialog");
-			const selectedPath = await save({
-				title: t("documentExport.docxDialogTitle"),
-				defaultPath: await join(spacePath, `${fileName}.docx`),
-				filters: [{ name: t("documentExport.docxFormat"), extensions: ["docx"] }],
-			});
-			if (!selectedPath) return;
-			const destination = selectedPath.toLowerCase().endsWith(".docx")
-				? selectedPath
-				: `${selectedPath}.docx`;
 			const markdown = await readNoteMarkdown(activeNotePath, getCurrentMarkdown);
+			ensureSpaceUnchanged(exportSpacePath);
 			const html = await resolveDocumentImages(
 				buildPrintHtml({ markdown, notePath: activeNotePath }),
 				activeNotePath,
+				exportSpacePath,
 			);
+			ensureSpaceUnchanged(exportSpacePath);
 			const { buildDocxBytes } = await import("../../lib/docxExport");
-			const bytes = await buildDocxBytes(html, activeNotePath);
-			await invoke("document_write_docx", {
-				destination,
+			const bytes = await buildDocxBytes(html, activeNotePath, exportSpacePath);
+			ensureSpaceUnchanged(exportSpacePath);
+			const saved = await invoke("document_write_docx", {
 				bytes: Array.from(bytes),
+				dialog_title: t("documentExport.docxDialogTitle"),
+				expected_space_path: exportSpacePath,
+				file_name: `${fileName}.docx`,
+				format_name: t("documentExport.docxFormat"),
 			});
+			if (!saved) return;
 			toast.success(t("documentExport.docxComplete"));
 		} catch (error) {
 			console.error("Failed to export note as Word", error);
@@ -78,7 +88,7 @@ export function useDocumentExport({
 				description: t("documentExport.tryAgain"),
 			});
 		}
-	}, [activeNotePath, getCurrentMarkdown, spacePath, t]);
+	}, [activeNotePath, ensureSpaceUnchanged, getCurrentMarkdown, spacePath, t]);
 
 	return { exportPdf, exportDocx };
 }

@@ -16,7 +16,7 @@ function ensureConverterGlobals(buffer: typeof import("buffer").Buffer): void {
 	}
 }
 
-async function prepareDocxHtml(html: string): Promise<string> {
+async function prepareDocxHtml(html: string, spacePath: string): Promise<string> {
 	const document = new DOMParser().parseFromString(html, "text/html");
 	const images = Array.from(document.querySelectorAll("img"));
 	const paths = Array.from(
@@ -28,7 +28,10 @@ async function prepareDocxHtml(html: string): Promise<string> {
 	);
 	const dataByPath = new Map<string, string>();
 	if (paths.length > 0) {
-		const imageData = await invoke("document_read_images_batch", { paths });
+		const imageData = await invoke("document_read_images_batch", {
+			expectedSpacePath: spacePath,
+			paths,
+		});
 		for (const entry of imageData) {
 			if (entry.dataUrl) dataByPath.set(entry.relPath, entry.dataUrl);
 		}
@@ -41,15 +44,22 @@ async function prepareDocxHtml(html: string): Promise<string> {
 			image.setAttribute("src", dataUrl);
 			continue;
 		}
-		if (image.getAttribute("src")?.startsWith("data:")) continue;
+		if (/^data:/i.test(image.getAttribute("src") ?? "")) continue;
 		const alt = image.getAttribute("alt")?.trim();
 		image.replaceWith(document.createTextNode(alt ? `[${alt}]` : ""));
 	}
 	return `<!doctype html>\n${document.documentElement.outerHTML}`;
 }
 
-export async function buildDocxBytes(html: string, notePath: string): Promise<Uint8Array> {
-	const [{ Buffer }, preparedHtml] = await Promise.all([import("buffer"), prepareDocxHtml(html)]);
+export async function buildDocxBytes(
+	html: string,
+	notePath: string,
+	spacePath: string,
+): Promise<Uint8Array> {
+	const [{ Buffer }, preparedHtml] = await Promise.all([
+		import("buffer"),
+		prepareDocxHtml(html, spacePath),
+	]);
 	ensureConverterGlobals(Buffer);
 	const { default: convertHtmlToDocx } = await import("@turbodocx/html-to-docx");
 	const result = await convertHtmlToDocx(preparedHtml, null, {

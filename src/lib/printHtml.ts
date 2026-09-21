@@ -219,7 +219,11 @@ function isRemoteOrEmbeddedImage(src: string): boolean {
 	return /^(?:https?:|data:|blob:|glyphasset:|\/\/)/i.test(src);
 }
 
-export async function resolveDocumentImages(html: string, notePath: string): Promise<string> {
+export async function resolveDocumentImages(
+	html: string,
+	notePath: string,
+	spacePath: string,
+): Promise<string> {
 	const document = new DOMParser().parseFromString(html, "text/html");
 	const localImages = Array.from(document.querySelectorAll("img[src]")).filter((image) => {
 		const src = image.getAttribute("src")?.trim() ?? "";
@@ -228,6 +232,7 @@ export async function resolveDocumentImages(html: string, notePath: string): Pro
 	if (localImages.length === 0) return html;
 
 	const paths = await invoke("space_resolve_image_sources_batch", {
+		expectedSpacePath: spacePath,
 		sourcePath: notePath,
 		sources: localImages.map((image) => ({
 			href: image.getAttribute("src")?.trim() ?? "",

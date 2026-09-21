@@ -71,19 +71,19 @@ fn title_from_rel(path: &str) -> String {
         .to_string()
 }
 
-fn normalize_segments(path: &str) -> String {
+fn normalize_segments(path: &str) -> Option<String> {
     let mut stack: Vec<&str> = Vec::new();
     for part in path.split('/') {
         if part.is_empty() || part == "." {
             continue;
         }
         if part == ".." {
-            let _ = stack.pop();
+            stack.pop()?;
             continue;
         }
         stack.push(part);
     }
-    stack.join("/")
+    Some(stack.join("/"))
 }
 
 fn parent_dir(path: &str) -> String {
@@ -177,7 +177,7 @@ fn choose_unambiguous_match(matches: Vec<String>) -> Option<String> {
 }
 
 fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<String> {
-    let raw = target
+    let encoded_raw = target
         .split('#')
         .next()
         .unwrap_or("")
@@ -186,13 +186,14 @@ fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<
         .unwrap_or("")
         .trim()
         .replace('\\', "/");
+    let raw = percent_decode_utf8(&encoded_raw).unwrap_or(encoded_raw);
     if raw.is_empty() {
         return None;
     }
 
     let pre_normalized = raw.trim_start_matches("./");
     let is_explicit_path = pre_normalized.starts_with('/') || pre_normalized.contains('/');
-    let normalized = normalize_segments(pre_normalized);
+    let normalized = normalize_segments(pre_normalized)?;
     if normalized.is_empty() {
         return None;
     }
@@ -258,7 +259,7 @@ fn resolve_standard_wikilink_target(entries: &[FileEntry], target: &str) -> Opti
 
     let pre_normalized = raw.trim_start_matches("./");
     let is_explicit_path = pre_normalized.starts_with('/') || pre_normalized.contains('/');
-    let normalized = normalize_segments(pre_normalized);
+    let normalized = normalize_segments(pre_normalized)?;
     if normalized.is_empty() {
         return None;
     }
@@ -386,12 +387,17 @@ fn resolve_markdown_link_target(
     let normalized_raw = raw.trim_start_matches("./");
     let mut candidates = Vec::<String>::new();
     if raw.starts_with('/') {
-        candidates.push(normalize_segments(&raw));
+        candidates.push(normalize_segments(&raw)?);
     } else {
-        candidates.push(normalize_segments(&format!(
-            "{source_dir}/{normalized_raw}"
-        )));
-        candidates.push(normalize_segments(normalized_raw));
+        if let Some(candidate) = normalize_segments(&format!("{source_dir}/{normalized_raw}")) {
+            candidates.push(candidate);
+        }
+        if let Some(candidate) = normalize_segments(normalized_raw) {
+            candidates.push(candidate);
+        }
+        if candidates.is_empty() {
+            return None;
+        }
     }
     let mut expanded = candidates.clone();
     for candidate in &candidates {
@@ -414,10 +420,14 @@ fn resolve_markdown_link_target(
 pub async fn space_resolve_image_sources_batch(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
+    expected_space_path: String,
     source_path: String,
     sources: Vec<ImageSourceRequest>,
 ) -> Result<Vec<Option<String>>, String> {
     let root = state.root_for_window(&window)?;
+    if root != Path::new(&expected_space_path) {
+        return Err("The active space changed during document export.".to_string());
+    }
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
         Ok(sources
