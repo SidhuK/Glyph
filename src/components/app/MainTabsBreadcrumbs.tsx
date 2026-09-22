@@ -6,7 +6,6 @@ import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
-import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
@@ -73,7 +72,6 @@ function isPathSpecial(path: string): boolean {
 		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === AGENT_VIEW_TAB_ID ||
 		path === DATABASES_TAB_ID ||
-		path === PINNED_DOCS_TAB_ID ||
 		path === SPACE_CONNECTIONS_TAB_ID
 	);
 }

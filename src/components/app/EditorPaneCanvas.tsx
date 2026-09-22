@@ -20,7 +20,6 @@ import {
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
-import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
 import { isExcalidrawPath, isMarkdownPath } from "../../utils/path";
@@ -32,11 +31,6 @@ import { TabBar } from "./TabBar";
 import { loadActivityTimelinePane, loadDatabasesPane } from "./prefetchablePanes";
 import type { WorkspaceEditorPane } from "./useTabManager";
 
-const PinnedDocsPane = lazy(() =>
-	import("./PinnedDocsPane").then((module) => ({
-		default: module.PinnedDocsPane,
-	})),
-);
 const DatabasesPane = lazy(loadDatabasesPane);
 const ActivityTimelinePane = lazy(loadActivityTimelinePane);
 const AIPanel = lazy(() =>
@@ -67,7 +61,6 @@ interface EditorPaneCanvasProps {
 	onOpenFile: (relPath: string) => Promise<void>;
 	onBrowseFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
-	onOpenDatabase: (databaseId: string) => void;
 	onStartRenamePath: (path: string) => void;
 	onNavigateBreadcrumbPath: (dirPath: string) => void;
 	onLoadBreadcrumbDir: (dirPath: string) => Promise<void>;
@@ -95,7 +88,6 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	onOpenFile,
 	onBrowseFile,
 	onOpenFileInNewTab,
-	onOpenDatabase,
 	onStartRenamePath,
 	onNavigateBreadcrumbPath,
 	onLoadBreadcrumbDir,
@@ -138,7 +130,6 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			onOpenFile={onOpenFile}
 			onBrowseFile={onBrowseFile}
 			onOpenFileInNewTab={onOpenFileInNewTab}
-			onOpenDatabase={onOpenDatabase}
 			setDirtyByPath={setDirtyByPath}
 			onInfoSidebarOpenChange={onInfoSidebarOpenChange}
 			databasesOpenRequest={databasesOpenRequest}
@@ -203,7 +194,6 @@ interface EditorPaneContentProps {
 	onOpenFile: EditorPaneCanvasProps["onOpenFile"];
 	onBrowseFile: EditorPaneCanvasProps["onBrowseFile"];
 	onOpenFileInNewTab: EditorPaneCanvasProps["onOpenFileInNewTab"];
-	onOpenDatabase: EditorPaneCanvasProps["onOpenDatabase"];
 	setDirtyByPath: EditorPaneCanvasProps["setDirtyByPath"];
 	onInfoSidebarOpenChange: EditorPaneCanvasProps["onInfoSidebarOpenChange"];
 	databasesOpenRequest: DatabasesOpenRequest;
@@ -217,7 +207,6 @@ function EditorPaneContent({
 	onOpenFile,
 	onBrowseFile,
 	onOpenFileInNewTab,
-	onOpenDatabase,
 	setDirtyByPath,
 	onInfoSidebarOpenChange,
 	databasesOpenRequest,
@@ -232,13 +221,6 @@ function EditorPaneContent({
 		[setDirtyByPath, viewerPath],
 	);
 
-	if (viewerPath === PINNED_DOCS_TAB_ID) {
-		return (
-			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-				<PinnedDocsPane onOpenFile={onBrowseFile} onOpenDatabase={onOpenDatabase} />
-			</Suspense>
-		);
-	}
 	if (viewerPath === ACTIVITY_TIMELINE_TAB_ID) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>

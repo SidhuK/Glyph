@@ -177,9 +177,6 @@
 			"newCanvas": {
 				"label": "Nuevo lienzo"
 			},
-			"pinned": {
-				"label": "Fijadas"
-			},
 			"allNotes": {
 				"label": "Todas las notas"
 			},

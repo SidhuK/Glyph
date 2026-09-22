@@ -362,6 +362,18 @@ button.sidebarViewTab {
 	opacity: 0.64;
 }
 
+.sidebarViewTabIconAccent {
+	color: var(--interactive-accent);
+}
+
+.sidebarViewTabIconFilled path,
+button.sidebarViewTab .pinnedFileIcon path {
+	fill: currentcolor;
+	fill-opacity: 0.2;
+	stroke: currentcolor;
+	stroke-opacity: 1;
+}
+
 .sidebarViewTabLabel {
 	min-width: 0;
 	overflow: hidden;

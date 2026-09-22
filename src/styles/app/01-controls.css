@@ -79,3 +79,11 @@ button:focus-visible {
 	outline: 2px solid var(--border-focus);
 	outline-offset: 2px;
 }
+
+.pinnedFileIcon {
+	color: var(--interactive-accent);
+}
+
+.pinnedFileIcon path {
+	fill: currentcolor;
+}

@@ -100,15 +100,6 @@
 	color: var(--text-primary);
 }
 
-/* ── Pinned notes star: always filled gold ── */
-.sidebarNavBtn[data-kind="pinned-notes"] > svg {
-	color: #e8b830;
-}
-
-.sidebarNavBtn[data-kind="pinned-notes"] > svg path {
-	fill: currentColor;
-}
-
 /* ── New note: filled accent icon ── */
 .sidebarNavBtn[data-kind="new-note"] > svg {
 	color: var(--interactive-accent);

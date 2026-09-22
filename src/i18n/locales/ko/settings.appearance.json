@@ -177,9 +177,6 @@
 			"newCanvas": {
 				"label": "새 캔버스"
 			},
-			"pinned": {
-				"label": "고정됨"
-			},
 			"allNotes": {
 				"label": "모든 노트"
 			},

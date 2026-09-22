@@ -546,7 +546,7 @@ export const FolioNoteListItem = memo(
 				<HugeiconsIcon
 					icon={PinIcon}
 					size="var(--icon-sm)"
-					className="folioNotePinIcon"
+					className="folioNotePinIcon pinnedFileIcon"
 					aria-hidden="true"
 				/>
 				<span className="sr-only">{t("sidebar.pinned")}</span>

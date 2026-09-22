@@ -190,9 +190,6 @@
 			"newCanvas": {
 				"label": "New Canvas"
 			},
-			"pinned": {
-				"label": "Pinned"
-			},
 			"allNotes": {
 				"label": "All Notes"
 			},

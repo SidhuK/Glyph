@@ -177,9 +177,6 @@
 			"newCanvas": {
 				"label": "Neue Zeichenfläche"
 			},
-			"pinned": {
-				"label": "Angeheftet"
-			},
 			"allNotes": {
 				"label": "Alle Notizen"
 			},

@@ -11,7 +11,6 @@ import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { DATABASES_TAB_ID } from "../../lib/databases";
-import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry } from "../../lib/tauri";
@@ -60,7 +59,6 @@ function isPathSpecial(path: string): boolean {
 		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === AGENT_VIEW_TAB_ID ||
 		path === DATABASES_TAB_ID ||
-		path === PINNED_DOCS_TAB_ID ||
 		path === SPACE_CONNECTIONS_TAB_ID
 	);
 }
@@ -120,7 +118,6 @@ export function TabBar({
 			if (tab.target === AGENT_VIEW_TAB_ID) return t("sidebar.agent");
 			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
 			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
-			if (tab.target === PINNED_DOCS_TAB_ID) return t("tabs.pinned");
 			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return t("sidebar.connections");
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
