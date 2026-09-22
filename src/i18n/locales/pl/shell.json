@@ -4,6 +4,7 @@
 		"expand": "Rozwiń pasek boczny",
 		"devBadge": "DEV",
 		"newNote": "Nowa notatka",
+		"newCanvas": "Nowe płótno",
 		"pinned": "Przypięte",
 		"allNotes": "Wszystkie",
 		"collections": "Kolekcje",
@@ -259,6 +260,11 @@
 		"largeGraphTitle": "Duży graf połączeń",
 		"largeGraphBody": "Ta przestrzeń zawiera {{count}} notatek. Zbudowanie pełnego grafu może chwilę potrwać i spowolnić Glyph.",
 		"largeGraphContinue": "Kontynuuj"
+	},
+	"canvas": {
+		"dropNote": "Upuść notatkę, aby dodać ją do płótna",
+		"loadError": "Nie można otworzyć płótna: {{message}}",
+		"saveError": "Nie można zapisać płótna: {{message}}"
 	},
 	"spaceSwitcher": {
 		"label": "Przestrzenie",

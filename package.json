@@ -26,6 +26,7 @@
 		"@codemirror/view": "^6.43.6",
 		"@dnd-kit/dom": "^0.5.0",
 		"@dnd-kit/react": "^0.5.0",
+		"@excalidraw/excalidraw": "^0.18.1",
 		"@hugeicons/core-free-icons": "^4.2.2",
 		"@hugeicons/react": "^1.1.9",
 		"@lezer/common": "^1.5.2",

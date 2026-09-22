@@ -44,11 +44,13 @@ async function validateRestorableSessionTabs(
 	if (!fileTargets.length) return tabs;
 
 	try {
-		const markdownFiles = await invoke("space_list_markdown_files", {
-			recursive: true,
-			limit: null,
-		});
-		const existingTargets = new Set(markdownFiles.map((file) => file.rel_path));
+		const [markdownFiles, nonMarkdownFiles] = await Promise.all([
+			invoke("space_list_markdown_files", { recursive: true, limit: null }),
+			invoke("space_list_non_markdown_files", { limit: null }),
+		]);
+		const existingTargets = new Set(
+			[...markdownFiles, ...nonMarkdownFiles.files].map((file) => file.rel_path),
+		);
 		return tabs.filter((tab) => tab.kind === "special" || existingTargets.has(tab.target));
 	} catch {
 		return tabs.filter((tab) => tab.kind === "special");

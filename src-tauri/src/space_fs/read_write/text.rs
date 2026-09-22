@@ -11,7 +11,7 @@ use crate::index::unlinked_mentions::{
 use crate::note_mutation::{
     commit_markdown, emit_changed, CommitCtx, PersistMode, SpaceChange,
 };
-use crate::space::state::RecentLocalChanges;
+use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index, io_atomic, paths, space::SpaceState, utils};
 
 use super::super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
@@ -48,6 +48,7 @@ fn write_text_under_root(
         ));
     }
     let abs = paths::join_under(root, rel)?;
+    let existed = abs.exists();
     if let Some(expected) = expected_mtime_ms {
         let actual = file_mtime_ms(&abs);
         if actual == 0 || actual != expected {
@@ -59,12 +60,18 @@ fn write_text_under_root(
     }
     let bytes = text.as_bytes();
     io_atomic::write_atomic(&abs, bytes).map_err(|error| error.to_string())?;
+    let rel_path = rel.to_string_lossy().into_owned();
+    mark_recent_local_change(recent_local_changes, &rel_path);
     Ok((
         TextFileWriteResult {
             etag: etag_for(bytes),
             mtime_ms: file_mtime_ms(&abs),
         },
-        None,
+        Some(if existed {
+            SpaceChange::content(space_path, rel_path)
+        } else {
+            SpaceChange::create(space_path, rel_path)
+        }),
     ))
 }
 

@@ -722,6 +722,16 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
+		"new-canvas": {
+			"id": "new-canvas",
+			"label": "New Canvas",
+			"description": "Create a new Excalidraw canvas in the current folder.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
 		"new-folder": {
 			"id": "new-folder",
 			"label": "New Folder",

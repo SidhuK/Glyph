@@ -1,4 +1,4 @@
-import { isMarkdownPath, normalizeRelPath } from "../utils/path";
+import { isWorkspaceDocumentPath, normalizeRelPath } from "../utils/path";
 import { ACTIVITY_TIMELINE_TAB_ID } from "./activityTimeline";
 import { getSettingsStore, saveSettingsStore } from "./settingsStore";
 import {
@@ -53,7 +53,7 @@ function normalizeWorkspaceSessionTab(
 
 	if (value.kind === "file") {
 		const target = normalizeRelPath(value.target);
-		if (!isMarkdownPath(target)) return null;
+		if (!isWorkspaceDocumentPath(target)) return null;
 		const key = `file\0${target}`;
 		const paneKey = `${paneId}\0${target}`;
 		if (seenTargets.has(key) || seenTargets.has(paneKey)) return null;

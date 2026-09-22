@@ -76,6 +76,7 @@ interface UseAppCommandsDeps {
 	closeAllTabs: () => void;
 	closeSpace: () => void;
 	createDatabaseAndOpen: () => void;
+	createCanvasInSelectedFolder: () => Promise<string | null>;
 	createNoteInSelectedFolder: () => Promise<string | null>;
 	fileTree: UseFileTreeResult;
 	getBinding: (actionId: ShortcutActionId) => EffectiveShortcutBindings[string];
@@ -235,6 +236,7 @@ export function useAppCommands({
 	closeAllTabs,
 	closeSpace,
 	createDatabaseAndOpen,
+	createCanvasInSelectedFolder,
 	createNoteInSelectedFolder,
 	fileTree,
 	getBinding,
@@ -322,6 +324,12 @@ export function useAppCommands({
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),
 				action: () => void createNoteInSelectedFolder(),
+			},
+			{
+				id: "new-canvas",
+				icon: <HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-lg)" />,
+				enabled: Boolean(spacePath),
+				action: () => void createCanvasInSelectedFolder(),
 			},
 			{
 				id: "open-quick-note",
@@ -724,6 +732,7 @@ export function useAppCommands({
 		openAgentView,
 		openMarkdownTabsLength,
 		createDatabaseAndOpen,
+		createCanvasInSelectedFolder,
 		createNoteInSelectedFolder,
 		periodNotesEnabled,
 		requestOpenDailyNote,

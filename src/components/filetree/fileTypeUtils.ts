@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { IconProps } from "../Icons";
 import {
 	Archive,
+	Brush,
 	Cpu,
 	Database,
 	File,
@@ -35,6 +36,9 @@ export function getFileTypeInfo(relPath: string, isMarkdown: boolean): FileTypeI
 
 	if (isMarkdown) {
 		return { Icon: FileText, color: "var(--text-accent)", label: "markdown" };
+	}
+	if (ext === "excalidraw") {
+		return { Icon: Brush, color: "currentColor", label: "canvas" };
 	}
 	if (["png", "jpg", "jpeg", "gif", "webp", "svg", "ico", "avif", "heic"].includes(ext)) {
 		return { Icon: FileImage, color: "var(--color-green-500)", label: ext };

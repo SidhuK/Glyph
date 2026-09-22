@@ -246,6 +246,10 @@
 			"label": "Nouvelle collection",
 			"description": "Créer une nouvelle collection."
 		},
+		"new-canvas": {
+			"label": "Nouveau canevas",
+			"description": "Créer un canevas Excalidraw dans le dossier actuel."
+		},
 		"new-folder": {
 			"label": "Nouveau dossier",
 			"description": "Créer un nouveau dossier."

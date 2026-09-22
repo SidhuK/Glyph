@@ -23,7 +23,7 @@ import {
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
-import { isMarkdownPath } from "../../utils/path";
+import { isExcalidrawPath, isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CreateMarkdownFileOptions, ExtractToNoteActions } from "../editor/types";
 import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
@@ -47,6 +47,11 @@ const AIPanel = lazy(() =>
 const SpaceConnectionsView = lazy(() =>
 	import("../connections/SpaceConnectionsView").then((module) => ({
 		default: module.SpaceConnectionsView,
+	})),
+);
+const ExcalidrawCanvasPane = lazy(() =>
+	import("../excalidraw/ExcalidrawCanvasPane").then((module) => ({
+		default: module.ExcalidrawCanvasPane,
 	})),
 );
 
@@ -217,8 +222,15 @@ function EditorPaneContent({
 	onInfoSidebarOpenChange,
 	databasesOpenRequest,
 }: EditorPaneContentProps) {
-	const { aiEnabled } = useAISidebarContext();
+	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
 	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
+	const handleDirtyChange = useCallback(
+		(dirty: boolean) =>
+			setDirtyByPath((previous) =>
+				previous[viewerPath] === dirty ? previous : { ...previous, [viewerPath]: dirty },
+			),
+		[setDirtyByPath, viewerPath],
+	);
 
 	if (viewerPath === PINNED_DOCS_TAB_ID) {
 		return (
@@ -266,6 +278,18 @@ function EditorPaneContent({
 			</Suspense>
 		);
 	}
+	if (isExcalidrawPath(viewerPath)) {
+		return (
+			<Suspense fallback={<div className="canvasPaneAwait" aria-busy="true" />}>
+				<ExcalidrawCanvasPane
+					relPath={viewerPath}
+					active={focused && !aiPanelOpen}
+					onOpenNote={onOpenFileInNewTab}
+					onDirtyChange={handleDirtyChange}
+				/>
+			</Suspense>
+		);
+	}
 	if (!isMarkdownPath(viewerPath)) return null;
 
 	const extractToNoteActions = {
@@ -283,11 +307,7 @@ function EditorPaneContent({
 			onInfoSidebarOpenChange={focused ? onInfoSidebarOpenChange : undefined}
 			gitDiff={gitDiff}
 			onGitDiffChange={setGitDiff}
-			onDirtyChange={(dirty) =>
-				setDirtyByPath((previous) =>
-					previous[viewerPath] === dirty ? previous : { ...previous, [viewerPath]: dirty },
-				)
-			}
+			onDirtyChange={handleDirtyChange}
 		/>
 	);
 }

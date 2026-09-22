@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	Archive as ArchiveIcon,
+	BrushIcon,
 	Cpu as CpuIcon,
 	CssFile01Icon,
 	Csv01Icon,
@@ -92,6 +93,9 @@ export const Cpu = (props: IconProps) => (
 );
 export const Palette = (props: IconProps) => (
 	<HugeiconsIcon icon={PaletteIcon} {...withDefaultIconSize(props)} />
+);
+export const Brush = (props: IconProps) => (
+	<HugeiconsIcon icon={BrushIcon} {...withDefaultIconSize(props)} />
 );
 export const Hash = (props: IconProps) => (
 	<HugeiconsIcon icon={HashIcon} {...withDefaultIconSize(props)} />

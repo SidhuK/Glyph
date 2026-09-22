@@ -187,6 +187,9 @@
 			"newNote": {
 				"label": "New Note"
 			},
+			"newCanvas": {
+				"label": "New Canvas"
+			},
 			"pinned": {
 				"label": "Pinned"
 			},

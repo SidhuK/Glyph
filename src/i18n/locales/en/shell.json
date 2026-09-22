@@ -8,6 +8,7 @@
 		"expand": "Expand sidebar",
 		"devBadge": "DEV",
 		"newNote": "New Note",
+		"newCanvas": "New Canvas",
 		"newNoteInFolder": "Create new note in {{folder}}",
 		"newNoteInRoot": "Create new note in the workspace root",
 		"pinned": "Pinned",
@@ -279,6 +280,11 @@
 		"largeGraphTitle": "Large connections graph",
 		"largeGraphBody": "This space contains {{count}} notes. Building the full connections graph may take a while and make Glyph temporarily less responsive.",
 		"largeGraphContinue": "Continue"
+	},
+	"canvas": {
+		"dropNote": "Drop note to add it to the canvas",
+		"loadError": "Could not open canvas: {{message}}",
+		"saveError": "Could not save canvas: {{message}}"
 	},
 	"spaceSwitcher": {
 		"label": "Spaces",

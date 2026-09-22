@@ -246,6 +246,10 @@
 			"label": "Nueva colección",
 			"description": "Crear una colección nueva."
 		},
+		"new-canvas": {
+			"label": "Nuevo lienzo",
+			"description": "Crear un lienzo de Excalidraw en la carpeta actual."
+		},
 		"new-folder": {
 			"label": "Nueva carpeta",
 			"description": "Crear una carpeta nueva."

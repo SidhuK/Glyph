@@ -7,7 +7,7 @@ import {
 	splitEditorPane,
 	updateSplitRatio,
 } from "../../lib/splitEditor";
-import { isMarkdownPath } from "../../utils/path";
+import { isMarkdownPath, isWorkspaceDocumentPath } from "../../utils/path";
 import type { TabHistoryById, WorkspaceEditorPane, WorkspaceTab } from "./useTabManager";
 
 interface UseSplitEditorTabsArgs {
@@ -67,7 +67,7 @@ export function useSplitEditorTabs({
 
 	const openFileInPane = useCallback(
 		(path: string, paneId: string) => {
-			if (!isMarkdownPath(path)) return false;
+			if (!isWorkspaceDocumentPath(path)) return false;
 			const existing = tabsRef.current.find((tab) => tab.kind === "file" && tab.target === path);
 			if (existing) {
 				commitTabsChange(tabsRef.current, existing.id);
@@ -87,7 +87,7 @@ export function useSplitEditorTabs({
 					? tabsRef.current.map((candidate) => (candidate.id === tab.id ? tab : candidate))
 					: [...tabsRef.current, tab];
 			if (paneActive?.kind === "blank") clearHistoryForTab(tab.id);
-			pushNoteHistory(tab.id, path);
+			if (isMarkdownPath(path)) pushNoteHistory(tab.id, path);
 			commitTabsChange(nextTabs, tab.id);
 			return true;
 		},
@@ -101,7 +101,7 @@ export function useSplitEditorTabs({
 			if (nextLayout === currentLayout) return;
 			const tab = createTab(kind, target, newPaneId);
 			setSplitLayout(nextLayout);
-			if (kind === "file" && target) pushNoteHistory(tab.id, target);
+			if (kind === "file" && target && isMarkdownPath(target)) pushNoteHistory(tab.id, target);
 			commitTabsChange([...tabsRef.current, tab], tab.id);
 		},
 		[commitTabsChange, createTab, pushNoteHistory, setSplitLayout, splitLayoutRef, tabsRef],
@@ -109,7 +109,7 @@ export function useSplitEditorTabs({
 
 	const splitPaneWithFile = useCallback(
 		(paneId: string, edge: SplitDropEdge, path: string) => {
-			if (!isMarkdownPath(path)) return;
+			if (!isWorkspaceDocumentPath(path)) return;
 			const existing = tabsRef.current.find((tab) => tab.kind === "file" && tab.target === path);
 			if (existing) {
 				setActiveTabId(existing.id);
