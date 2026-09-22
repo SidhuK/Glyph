@@ -194,7 +194,11 @@
 	"ai": {
 		"toolFailed": "Échec de {{tool}}",
 		"activeFile": "Fichier actif",
-		"addToContext": "Ajouter {{name}} au contexte"
+		"addToContext": "Ajouter {{name}} au contexte",
+		"commands": {
+			"label": "Commandes d'IA",
+			"canvas": "Créer ou modifier un canevas Excalidraw"
+		}
 	},
 	"connections": {
 		"loading": "Chargement des notes et des liens…",

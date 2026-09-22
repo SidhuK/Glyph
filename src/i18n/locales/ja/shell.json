@@ -191,7 +191,11 @@
 	"ai": {
 		"toolFailed": "{{tool}} に失敗しました",
 		"activeFile": "アクティブなファイル",
-		"addToContext": "{{name}} をコンテキストに追加"
+		"addToContext": "{{name}} をコンテキストに追加",
+		"commands": {
+			"label": "AI コマンド",
+			"canvas": "Excalidraw キャンバスを作成または編集"
+		}
 	},
 	"connections": {
 		"loading": "ノートとリンクを読み込み中…",

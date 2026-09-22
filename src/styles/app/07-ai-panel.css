@@ -68,7 +68,15 @@
 }
 
 .aiPanel[data-ai-surface="agent"]
-	:is(.aiHistory, .aiChatThread, .aiPanelError, .aiSelectionContext, .aiComposer, .aiAddPanel) {
+	:is(
+		.aiHistory,
+		.aiChatThread,
+		.aiPanelError,
+		.aiSelectionContext,
+		.aiComposer,
+		.aiAddPanel,
+		.aiSlashCommandMenu
+	) {
 	width: min(100%, 1040px);
 	box-sizing: border-box;
 	margin-inline: auto;

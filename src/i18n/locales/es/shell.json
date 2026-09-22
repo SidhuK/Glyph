@@ -192,7 +192,11 @@
 	"ai": {
 		"toolFailed": "Falló {{tool}}",
 		"activeFile": "Archivo activo",
-		"addToContext": "Añadir {{name}} al contexto"
+		"addToContext": "Añadir {{name}} al contexto",
+		"commands": {
+			"label": "Comandos de IA",
+			"canvas": "Crear o editar un lienzo de Excalidraw"
+		}
 	},
 	"connections": {
 		"loading": "Cargando notas y enlaces…",
