@@ -4,6 +4,7 @@
 		"expand": "サイドバーを展開",
 		"devBadge": "DEV",
 		"newNote": "新規ノート",
+		"newCanvas": "新しいキャンバス",
 		"pinned": "ピン留め",
 		"allNotes": "すべてのノート",
 		"collections": "コレクション",
@@ -224,6 +225,11 @@
 		"largeGraphTitle": "大きな接続グラフ",
 		"largeGraphBody": "このスペースには {{count}} 件のノートがあります。グラフの構築に時間がかかり、Glyph の反応が遅くなることがあります。",
 		"largeGraphContinue": "続ける"
+	},
+	"canvas": {
+		"dropNote": "ノートをドロップしてキャンバスに追加",
+		"loadError": "キャンバスを開けませんでした: {{message}}",
+		"saveError": "キャンバスを保存できませんでした: {{message}}"
 	},
 	"spaceSwitcher": {
 		"label": "スペース",

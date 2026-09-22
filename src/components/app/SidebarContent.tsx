@@ -14,6 +14,7 @@ import {
 	LibraryIcon,
 	Link01Icon,
 	NoteIcon,
+	PaintBoardIcon,
 	SearchIcon,
 	Sorting01Icon,
 	StarIcon,
@@ -70,6 +71,7 @@ export interface SidebarContentProps {
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
 	onNewNote: () => void;
+	onNewCanvas: () => void;
 	newNoteFolder: string;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
@@ -213,6 +215,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onSelectDir,
 	onOpenFile,
 	onNewNote,
+	onNewCanvas,
 	newNoteFolder,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
@@ -549,6 +552,16 @@ export const SidebarContent = memo(function SidebarContent({
 										</span>
 									) : null}
 								</button>
+							) : null}
+							{sidebarVisibility.newCanvas ? (
+								<SidebarActionButton
+									key="newCanvas"
+									data-sidebar-key="newCanvas"
+									kind="new-canvas"
+									label={t("sidebar.newCanvas")}
+									icon={PaintBoardIcon}
+									onClick={onNewCanvas}
+								/>
 							) : null}
 							{sidebarVisibility.pinned ? (
 								<button

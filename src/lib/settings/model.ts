@@ -33,6 +33,7 @@ export type FocusMode = "off" | "paragraph" | "sentence";
 const SIDEBAR_VISIBILITY_KEYS = [
 	"agent",
 	"newNote",
+	"newCanvas",
 	"pinned",
 	"allNotes",
 	"databases",
@@ -56,6 +57,7 @@ export type SidebarOrder = readonly SidebarVisibilityKey[];
 export const DEFAULT_SIDEBAR_ORDER: SidebarOrder = [
 	"agent",
 	"newNote",
+	"newCanvas",
 	"pinned",
 	"allNotes",
 	"databases",
@@ -71,6 +73,7 @@ export const DEFAULT_SIDEBAR_ORDER: SidebarOrder = [
 export const DEFAULT_SIDEBAR_VISIBILITY = {
 	agent: false,
 	newNote: true,
+	newCanvas: true,
 	pinned: true,
 	allNotes: true,
 	databases: true,
@@ -96,6 +99,7 @@ export function normalizeSidebarVisibility(value: unknown): SidebarVisibility {
 	return {
 		agent: read("agent"),
 		newNote: read("newNote"),
+		newCanvas: read("newCanvas"),
 		pinned: read("pinned"),
 		allNotes: read("allNotes"),
 		databases: read("databases"),

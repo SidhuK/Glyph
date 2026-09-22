@@ -4,6 +4,7 @@
 		"expand": "Expandir barra lateral",
 		"devBadge": "DEV",
 		"newNote": "Nueva nota",
+		"newCanvas": "Nuevo lienzo",
 		"pinned": "Fijadas",
 		"allNotes": "Todas las notas",
 		"collections": "Colecciones",
@@ -225,6 +226,11 @@
 		"largeGraphTitle": "Grafo de conexiones grande",
 		"largeGraphBody": "Este espacio contiene {{count}} notas. Construir el grafo completo puede tardar y hacer que Glyph responda más lento.",
 		"largeGraphContinue": "Continuar"
+	},
+	"canvas": {
+		"dropNote": "Suelta la nota para añadirla al lienzo",
+		"loadError": "No se pudo abrir el lienzo: {{message}}",
+		"saveError": "No se pudo guardar el lienzo: {{message}}"
 	},
 	"spaceSwitcher": {
 		"label": "Espacios",

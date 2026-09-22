@@ -246,6 +246,10 @@
 			"label": "Nova coleção",
 			"description": "Criar uma nova coleção."
 		},
+		"new-canvas": {
+			"label": "Nova tela",
+			"description": "Criar uma tela do Excalidraw na pasta atual."
+		},
 		"new-folder": {
 			"label": "Nova pasta",
 			"description": "Criar uma nova pasta."

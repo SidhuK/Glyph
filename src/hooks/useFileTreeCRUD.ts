@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { i18n } from "../i18n";
 import { dispatchFileTreeStartRename } from "../lib/appEvents";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { EMPTY_EXCALIDRAW_DOCUMENT } from "../lib/excalidrawDocument";
 import { isMissingFileError } from "../lib/fsErrors";
 import {
 	optimisticallyAddAllDocsNote,
@@ -214,6 +215,45 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	const onNewFile = useCallback(async () => {
 		return onNewFileInDir("");
 	}, [onNewFileInDir]);
+
+	const onNewCanvasInDir = useCallback(
+		async (dirPath: string) => {
+			if (!spacePath) return null;
+			setError("");
+			try {
+				const siblings = await invoke("space_list_dir", dirPath ? { dir: dirPath } : {});
+				const siblingNames = new Set(siblings.map((entry) => entry.name.toLowerCase()));
+				let fileName = "Untitled.excalidraw";
+				if (siblingNames.has(fileName.toLowerCase())) {
+					let suffix = 2;
+					while (siblingNames.has(`untitled ${suffix}.excalidraw`)) suffix += 1;
+					fileName = `Untitled ${suffix}.excalidraw`;
+				}
+				const canvasPath = dirPath ? `${dirPath}/${fileName}` : fileName;
+				await invoke("space_write_text", {
+					path: canvasPath,
+					text: EMPTY_EXCALIDRAW_DOCUMENT,
+					base_mtime_ms: null,
+				});
+				insertEntryOptimistic(dirPath, {
+					name: fileName,
+					rel_path: canvasPath,
+					kind: "file",
+					is_markdown: false,
+				});
+				if (dirPath) {
+					updateExpandedDirs((previous) => new Set(previous).add(dirPath));
+				}
+				await refreshAfterCreate(dirPath);
+				dispatchFileTreeStartRename({ path: canvasPath });
+				return canvasPath;
+			} catch (error) {
+				setError(extractErrorMessage(error));
+				return null;
+			}
+		},
+		[insertEntryOptimistic, refreshAfterCreate, setError, spacePath, updateExpandedDirs],
+	);
 
 	const createFolderInDir = useCallback(
 		async (dirPath: string, folderName: string) => {
@@ -579,6 +619,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		createMarkdownFileAtPath,
 		onNewFile,
 		onNewFileInDir,
+		onNewCanvasInDir,
 		createFolderInDir,
 		onDuplicateFile,
 		onRenameDir,

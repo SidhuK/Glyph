@@ -4,6 +4,7 @@
 		"expand": "사이드바 펼치기",
 		"devBadge": "DEV",
 		"newNote": "새 노트",
+		"newCanvas": "새 캔버스",
 		"pinned": "고정됨",
 		"allNotes": "모든 노트",
 		"collections": "컬렉션",
@@ -224,6 +225,11 @@
 		"largeGraphTitle": "큰 연결 그래프",
 		"largeGraphBody": "이 스페이스에는 노트가 {{count}}개 있습니다. 전체 그래프를 만드는 데 시간이 걸리고 Glyph가 잠시 느려질 수 있습니다.",
 		"largeGraphContinue": "계속"
+	},
+	"canvas": {
+		"dropNote": "노트를 놓아 캔버스에 추가",
+		"loadError": "캔버스를 열 수 없습니다: {{message}}",
+		"saveError": "캔버스를 저장할 수 없습니다: {{message}}"
 	},
 	"spaceSwitcher": {
 		"label": "스페이스",

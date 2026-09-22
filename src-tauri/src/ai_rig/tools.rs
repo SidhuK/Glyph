@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     fs,
     path::{Path, PathBuf},
     time::UNIX_EPOCH,
@@ -16,7 +17,7 @@ use crate::note_mutation::{
     commit_markdown, emit_changed, reindex_after_rename, unindex_path, CommitCtx, PersistMode,
     SpaceChange,
 };
-use crate::space::state::RecentLocalChanges;
+use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index::open_db, io_atomic, paths, utils};
 
 const MAX_READ_BYTES: u64 = 512 * 1024;
@@ -731,6 +732,151 @@ impl Tool for DeleteTool {
 }
 
 #[derive(Clone)]
+pub struct CreateCanvasTool {
+    pub root: PathBuf,
+    ctx: SpaceWriteCtx,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct CanvasNodeArgs {
+    id: String,
+    label: String,
+    note_path: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct CanvasEdgeArgs {
+    from: String,
+    to: String,
+    label: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct CreateCanvasArgs {
+    path: String,
+    nodes: Vec<CanvasNodeArgs>,
+    edges: Vec<CanvasEdgeArgs>,
+    overwrite: bool,
+}
+
+impl Tool for CreateCanvasTool {
+    const NAME: &'static str = "create_canvas";
+    type Args = CreateCanvasArgs;
+    type Output = String;
+    type Error = ToolError;
+
+    async fn definition(&self, _prompt: String) -> ToolDefinition {
+        tool_definition::<CreateCanvasArgs>(
+            Self::NAME,
+            "Create a .excalidraw mind-map canvas. Nodes are laid out automatically. Set note_path to a space-relative Markdown path to create an openable note card; use null for a plain card. Edges connect node ids.",
+        )
+    }
+
+    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        let root = self.root.clone();
+        let ctx = self.ctx.clone();
+        tauri::async_runtime::spawn_blocking(move || {
+            let mut args = args;
+            let rel = normalize_rel_path(&args.path)?;
+            if !rel.to_ascii_lowercase().ends_with(".excalidraw") {
+                return Ok(err_payload("canvas path must end in .excalidraw"));
+            }
+            if args.nodes.len() > 100 || args.edges.len() > 200 {
+                return Ok(err_payload("canvas is limited to 100 nodes and 200 edges"));
+            }
+            let mut node_ids = HashSet::new();
+            for node in &mut args.nodes {
+                if node.id.trim().is_empty() || node.label.trim().is_empty() {
+                    return Ok(err_payload("every node requires a non-empty id and label"));
+                }
+                if node.id.len() > 120 || node.label.chars().count() > 240 {
+                    return Ok(err_payload("node id or label is too long"));
+                }
+                if !node_ids.insert(node.id.clone()) {
+                    return Ok(err_payload("node ids must be unique"));
+                }
+                if let Some(note_path) = &mut node.note_path {
+                    let normalized = normalize_rel_path(note_path)?;
+                    if !utils::is_markdown_path(Path::new(&normalized)) {
+                        return Ok(err_payload("note_path must point to a Markdown file"));
+                    }
+                    *note_path = normalized;
+                }
+            }
+            for edge in &args.edges {
+                if !node_ids.contains(&edge.from) || !node_ids.contains(&edge.to) {
+                    return Ok(err_payload("every edge endpoint must match a node id"));
+                }
+            }
+
+            let abs = safe_join(&root, &rel)?;
+            let existed = abs.exists();
+            if existed && !args.overwrite {
+                return Ok(err_payload("file already exists"));
+            }
+            if let Some(parent) = abs.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            let nodes = args
+                .nodes
+                .into_iter()
+                .enumerate()
+                .map(|(index, node)| {
+                    let column = index % 3;
+                    let row = index / 3;
+                    json!({
+                        "id": node.id,
+                        "label": node.label,
+                        "notePath": node.note_path,
+                        "x": 80 + column * 380,
+                        "y": 80 + row * 220,
+                    })
+                })
+                .collect::<Vec<_>>();
+            let edges = args
+                .edges
+                .into_iter()
+                .map(|edge| {
+                    json!({
+                        "from": edge.from,
+                        "to": edge.to,
+                        "label": edge.label,
+                    })
+                })
+                .collect::<Vec<_>>();
+            let node_count = nodes.len();
+            let edge_count = edges.len();
+            let document = json!({
+                "type": "excalidraw",
+                "version": 2,
+                "source": "glyph-agent",
+                "elements": [],
+                "appState": {},
+                "files": {},
+                "glyphCanvas": { "version": 1, "nodes": nodes, "edges": edges },
+            });
+            let bytes = serde_json::to_vec_pretty(&document)
+                .map_err(|error| ToolError(error.to_string()))?;
+            io_atomic::write_atomic(&abs, &bytes).map_err(|error| ToolError(error.to_string()))?;
+            mark_recent_local_change(&ctx.recent, &rel);
+            let change = if existed {
+                SpaceChange::content(space_path(&root), rel.clone())
+            } else {
+                SpaceChange::create(space_path(&root), rel.clone())
+            };
+            emit_changed(&ctx.app, &ctx.window_label, &change);
+            Ok(ok(json!({
+                "path": rel,
+                "nodes_created": node_count,
+                "edges_created": edge_count,
+            })))
+        })
+        .await
+        .map_err(|error| ToolError(error.to_string()))?
+    }
+}
+
+#[derive(Clone)]
 pub struct ToolBundle {
     pub list_dir: ListDirTool,
     pub search: SearchTool,
@@ -742,6 +888,7 @@ pub struct ToolBundle {
     pub move_path: MoveTool,
     pub mkdir: MkdirTool,
     pub delete: DeleteTool,
+    pub create_canvas: CreateCanvasTool,
 }
 
 impl ToolBundle {
@@ -770,6 +917,10 @@ impl ToolBundle {
                 ctx: ctx.clone(),
             },
             mkdir: MkdirTool { root: root.clone() },
+            create_canvas: CreateCanvasTool {
+                root: root.clone(),
+                ctx: ctx.clone(),
+            },
             delete: DeleteTool { root, ctx },
         }
     }

@@ -721,6 +721,7 @@ where
         .tool(tools.read_file.clone())
         .tool(tools.read_files_batch.clone())
         .tool(tools.write_file.clone())
+        .tool(tools.create_canvas.clone())
         .tool(tools.apply_patch.clone())
         .tool(tools.move_path.clone())
         .tool(tools.mkdir.clone())

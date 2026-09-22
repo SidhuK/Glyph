@@ -1,5 +1,5 @@
 import type { SplitDropEdge } from "../../lib/splitEditor";
-import { isMarkdownPath } from "../../utils/path";
+import { isWorkspaceDocumentPath } from "../../utils/path";
 import { FILE_TREE_ENTRY_TYPE } from "../filetree/fileTreeDnd";
 
 /** Draggable type for editor tabs, shared so pane droppables can accept them. */
@@ -53,7 +53,7 @@ export function resolveSplitDragSource(
 	if (typeof tabId === "string" && typeof paneId === "string") {
 		return { kind: "tab", paneId, tabId };
 	}
-	if (kind === "file" && typeof path === "string" && isMarkdownPath(path)) {
+	if (kind === "file" && typeof path === "string" && isWorkspaceDocumentPath(path)) {
 		return { kind: "file", path };
 	}
 	return null;

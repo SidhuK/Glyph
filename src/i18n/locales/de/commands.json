@@ -246,6 +246,10 @@
 			"label": "Neue Sammlung",
 			"description": "Eine neue Sammlung erstellen."
 		},
+		"new-canvas": {
+			"label": "Neue Zeichenfläche",
+			"description": "Eine neue Excalidraw-Zeichenfläche im aktuellen Ordner erstellen."
+		},
 		"new-folder": {
 			"label": "Neuer Ordner",
 			"description": "Einen neuen Ordner erstellen."

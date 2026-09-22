@@ -23,6 +23,7 @@ export interface UseFileTreeResult {
 	createMarkdownFileAtPath: (options: CreateMarkdownFileOptions) => Promise<string | null>;
 	onNewFile: () => Promise<string | null>;
 	onNewFileInDir: (dirPath: string) => Promise<string | null>;
+	onNewCanvasInDir: (dirPath: string) => Promise<string | null>;
 	requestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (path: string, nextName: string, kind: "dir" | "file") => Promise<string | null>;
@@ -289,6 +290,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		createMarkdownFileAtPath,
 		onNewFile,
 		onNewFileInDir,
+		onNewCanvasInDir,
 		onDuplicateFile,
 		onRenameDir,
 		onDeletePath,
@@ -329,6 +331,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		createMarkdownFileAtPath,
 		onNewFile,
 		onNewFileInDir,
+		onNewCanvasInDir,
 		requestCreateFolder,
 		onDuplicateFile,
 		onRenameDir,

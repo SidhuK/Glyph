@@ -246,6 +246,10 @@
 			"label": "新規コレクション",
 			"description": "新しいコレクションを作成します。"
 		},
+		"new-canvas": {
+			"label": "新しいキャンバス",
+			"description": "現在のフォルダに Excalidraw キャンバスを作成します。"
+		},
 		"new-folder": {
 			"label": "新規フォルダ",
 			"description": "新しいフォルダを作成します。"

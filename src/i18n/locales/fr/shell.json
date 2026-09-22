@@ -4,6 +4,7 @@
 		"expand": "Développer la barre latérale",
 		"devBadge": "DEV",
 		"newNote": "Nouvelle note",
+		"newCanvas": "Nouveau canevas",
 		"newNoteInFolder": "Créer une note dans {{folder}}",
 		"newNoteInRoot": "Créer une note à la racine de l’espace",
 		"pinned": "Épinglées",
@@ -227,6 +228,11 @@
 		"largeGraphTitle": "Graphe de connexions volumineux",
 		"largeGraphBody": "Cet espace contient {{count}} notes. La construction du graphe complet peut prendre du temps et rendre Glyph moins réactif.",
 		"largeGraphContinue": "Continuer"
+	},
+	"canvas": {
+		"dropNote": "Déposez la note pour l’ajouter au canevas",
+		"loadError": "Impossible d’ouvrir le canevas : {{message}}",
+		"saveError": "Impossible d’enregistrer le canevas : {{message}}"
 	},
 	"spaceSwitcher": {
 		"label": "Espaces",

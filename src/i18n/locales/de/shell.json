@@ -4,6 +4,7 @@
 		"expand": "Seitenleiste ausklappen",
 		"devBadge": "DEV",
 		"newNote": "Neue Notiz",
+		"newCanvas": "Neue Zeichenfläche",
 		"pinned": "Angeheftet",
 		"allNotes": "Alle Notizen",
 		"collections": "Sammlungen",
@@ -225,6 +226,11 @@
 		"largeGraphTitle": "Großer Verbindungsgraph",
 		"largeGraphBody": "Dieser Bereich enthält {{count}} Notizen. Der vollständige Graph kann eine Weile dauern und Glyph vorübergehend weniger reaktionsschnell machen.",
 		"largeGraphContinue": "Weiter"
+	},
+	"canvas": {
+		"dropNote": "Notiz ablegen, um sie zur Zeichenfläche hinzuzufügen",
+		"loadError": "Zeichenfläche konnte nicht geöffnet werden: {{message}}",
+		"saveError": "Zeichenfläche konnte nicht gespeichert werden: {{message}}"
 	},
 	"spaceSwitcher": {
 		"label": "Spaces",

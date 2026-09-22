@@ -254,6 +254,10 @@
 			"label": "Nowa kolekcja",
 			"description": "Utwórz nową kolekcję."
 		},
+		"new-canvas": {
+			"label": "Nowe płótno",
+			"description": "Utwórz płótno Excalidraw w bieżącym folderze."
+		},
 		"new-folder": {
 			"label": "Nowy folder",
 			"description": "Utwórz nowy folder."

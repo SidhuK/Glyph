@@ -8,7 +8,7 @@ import {
 	paneIdsInLayout,
 	removeEditorPane,
 } from "../../lib/splitEditor";
-import { isMarkdownPath } from "../../utils/path";
+import { isMarkdownPath, isWorkspaceDocumentPath } from "../../utils/path";
 import { useSplitEditorTabs } from "./useSplitEditorTabs";
 
 export interface WorkspaceTab {
@@ -401,7 +401,7 @@ export function useTabManager(spacePath: string | null) {
 
 	const canGoForward = (activeHistory?.index ?? -1) < (activeHistory?.entries.length ?? 0) - 1;
 
-	const canOpenInMainPane = useCallback((path: string) => isMarkdownPath(path), []);
+	const canOpenInMainPane = useCallback((path: string) => isWorkspaceDocumentPath(path), []);
 
 	const openFileTab = useCallback(
 		(path: string) => {

@@ -246,6 +246,10 @@
 			"label": "새 컬렉션",
 			"description": "새 컬렉션을 만듭니다."
 		},
+		"new-canvas": {
+			"label": "새 캔버스",
+			"description": "현재 폴더에 Excalidraw 캔버스를 만듭니다."
+		},
 		"new-folder": {
 			"label": "새 폴더",
 			"description": "새 폴더를 만듭니다."

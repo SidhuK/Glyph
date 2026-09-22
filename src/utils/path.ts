@@ -28,6 +28,14 @@ export function isMarkdownPath(relPath: string): boolean {
 	return ext === "md" || ext === "markdown";
 }
 
+export function isExcalidrawPath(relPath: string): boolean {
+	return fileExtension(relPath) === "excalidraw";
+}
+
+export function isWorkspaceDocumentPath(relPath: string): boolean {
+	return isMarkdownPath(relPath) || isExcalidrawPath(relPath);
+}
+
 const IMAGE_EXTENSIONS = new Set([
 	"avif",
 	"bmp",

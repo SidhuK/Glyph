@@ -60,7 +60,12 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate, selectTemplateFile } from "../../lib/templates";
 import { toast } from "../../lib/toast";
-import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import {
+	isMarkdownPath,
+	isWorkspaceDocumentPath,
+	normalizeRelPath,
+	parentDir,
+} from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import { CalendarPaletteController, preloadCalendarPalette } from "./CalendarPaletteController";
@@ -473,8 +478,8 @@ export function AppShell() {
 		async (path: string) => {
 			if (!path) return;
 			closeNotePeek();
-			if (isMarkdownPath(path)) {
-				prefetchNote(path);
+			if (isWorkspaceDocumentPath(path)) {
+				if (isMarkdownPath(path)) prefetchNote(path);
 				setActiveDirPath(parentDir(path));
 				openFileTab(path);
 				return;
@@ -526,7 +531,7 @@ export function AppShell() {
 		async (path: string) => {
 			if (!path) return;
 			closeNotePeek();
-			if (!isMarkdownPath(path)) {
+			if (!isWorkspaceDocumentPath(path)) {
 				await fileTree.openFile(path);
 				return;
 			}
@@ -539,7 +544,7 @@ export function AppShell() {
 	const openWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (!isMarkdownPath(path)) {
+			if (!isWorkspaceDocumentPath(path)) {
 				await openWorkspaceFile(path);
 				return;
 			}
@@ -557,7 +562,7 @@ export function AppShell() {
 	const openFolioWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (!isMarkdownPath(path)) {
+			if (!isWorkspaceDocumentPath(path)) {
 				await openFolioWorkspaceFile(path);
 				return;
 			}
@@ -852,6 +857,12 @@ export function AppShell() {
 		if (!spacePath) return null;
 		return fileTree.onNewFileInDir(newNoteFolder);
 	}, [fileTree, newNoteFolder, spacePath]);
+	const createCanvasInSelectedFolder = useCallback(async () => {
+		if (!spacePath) return null;
+		const path = await fileTree.onNewCanvasInDir(newNoteFolder);
+		if (path) await openWorkspaceFile(path);
+		return path;
+	}, [fileTree, newNoteFolder, openWorkspaceFile, spacePath]);
 
 	const handleNewNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -1072,7 +1083,7 @@ export function AppShell() {
 	const handleStartRenameFromTab = useCallback(
 		async (path: string) => {
 			const nextPath = path.trim();
-			if (!nextPath || !isMarkdownPath(nextPath)) return;
+			if (!nextPath || !isWorkspaceDocumentPath(nextPath)) return;
 			setSidebarCollapsed(false);
 			const parentPath = parentDir(nextPath);
 			const ancestorDirs: string[] = [];
@@ -1162,6 +1173,7 @@ export function AppShell() {
 		closeAllTabs,
 		closeSpace: handleCloseSpace,
 		createDatabaseAndOpen,
+		createCanvasInSelectedFolder,
 		createNoteInSelectedFolder,
 		fileTree,
 		getBinding,
@@ -1340,6 +1352,7 @@ export function AppShell() {
 						onSelectDir={setActiveDirPath}
 						onOpenFile={(p) => void openWorkspaceFile(p)}
 						onNewNote={() => void createNoteInSelectedFolder()}
+						onNewCanvas={() => void createCanvasInSelectedFolder()}
 						newNoteFolder={newNoteFolder}
 						onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 						onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
