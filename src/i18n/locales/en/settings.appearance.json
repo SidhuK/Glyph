@@ -221,14 +221,5 @@
 				"label": "Git Sync"
 			}
 		}
-	},
-	"database": {
-		"sectionTitle": "Database",
-		"sectionDescription": "Choose how databases are presented across Glyph.",
-		"showColumnColor": {
-			"label": "Show database column color",
-			"description": "Keep the lane pill and tag colors while toggling the full column tint.",
-			"ariaLabel": "Show database column color"
-		}
 	}
 }

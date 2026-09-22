@@ -208,14 +208,5 @@
 				"label": "Sincronización con Git"
 			}
 		}
-	},
-	"database": {
-		"sectionTitle": "Base de datos",
-		"sectionDescription": "Elige cómo se presentan las bases de datos en Glyph.",
-		"showColumnColor": {
-			"label": "Mostrar color de columna de la base de datos",
-			"description": "Mantener el color de la pastilla del carril y de las etiquetas al alternar el tinte completo de la columna.",
-			"ariaLabel": "Mostrar color de columna de la base de datos"
-		}
 	}
 }

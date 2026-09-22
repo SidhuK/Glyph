@@ -600,11 +600,6 @@
 				"order"
 			]
 		},
-		"appearance-database-column-color": {
-			"title": "データベース列の色を表示",
-			"section": "データベース",
-			"keywords": ["コレクション", "データベース", "色", "collection", "database", "color"]
-		},
 		"about-app": {
 			"title": "Glyph",
 			"description": "View Glyph app name, version, attribution, and quick links.",

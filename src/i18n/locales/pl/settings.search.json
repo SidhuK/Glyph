@@ -597,11 +597,6 @@
 			"section": "Drzewo plików",
 			"keywords": ["pasek boczny", "foldery", "pliki", "kolejność"]
 		},
-		"appearance-database-column-color": {
-			"title": "Pokaż kolor kolumny bazy danych",
-			"section": "Baza danych",
-			"keywords": ["kolekcja", "baza danych", "kolor"]
-		},
 		"about-app": {
 			"title": "Glyph",
 			"description": "Wyświetl nazwę, wersję, autorstwo i szybkie odnośniki aplikacji Glyph.",

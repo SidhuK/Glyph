@@ -208,14 +208,5 @@
 				"label": "Git-Synchronisierung"
 			}
 		}
-	},
-	"database": {
-		"sectionTitle": "Datenbank",
-		"sectionDescription": "Wähle, wie Datenbanken in Glyph dargestellt werden.",
-		"showColumnColor": {
-			"label": "Datenbankspaltenfarbe anzeigen",
-			"description": "Lane-Pill- und Tag-Farben beibehalten, während die volle Spaltenfärbung umgeschaltet wird.",
-			"ariaLabel": "Datenbankspaltenfarbe anzeigen"
-		}
 	}
 }

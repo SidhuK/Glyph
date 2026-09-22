@@ -46,7 +46,6 @@ function boardCardDragId(notePath: string, laneId: string): string {
 interface DatabaseBoardLaneViewProps {
 	lane: DatabaseBoardLane;
 	laneIndex: number;
-	showColumnColor: boolean;
 	laneColors: Record<string, string>;
 	statusColors: Record<string, EditorTextColor>;
 	isStatusGroup: boolean;
@@ -64,7 +63,6 @@ interface DatabaseBoardLaneViewProps {
 export function DatabaseBoardLaneView({
 	lane,
 	laneIndex,
-	showColumnColor,
 	laneColors,
 	statusColors,
 	isStatusGroup,
@@ -148,7 +146,6 @@ export function DatabaseBoardLaneView({
 		<m.div
 			ref={ref}
 			className="databaseBoardLane"
-			data-show-column-color={showColumnColor ? "true" : "false"}
 			data-workflow-state={lane.workflowState}
 			style={
 				isStatusGroup

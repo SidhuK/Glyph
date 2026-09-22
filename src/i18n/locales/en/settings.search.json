@@ -638,11 +638,6 @@
 			"section": "File tree",
 			"keywords": ["sidebar", "folders", "files", "order"]
 		},
-		"appearance-database-column-color": {
-			"title": "Show database column color",
-			"section": "Database",
-			"keywords": ["collection", "database", "color"]
-		},
 		"about-app": {
 			"title": "Glyph",
 			"description": "View Glyph app name, version, attribution, and quick links.",

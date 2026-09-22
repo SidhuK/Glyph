@@ -132,10 +132,6 @@ export function normalizeSidebarOrder(value: unknown): SidebarOrder {
 	return order;
 }
 
-export interface DatabaseSettings {
-	showColumnColor: boolean;
-}
-
 export interface QuickNotesSettings {
 	folder: string;
 }
@@ -236,7 +232,6 @@ export interface AppSettings {
 	};
 	shortcuts: ShortcutSettings;
 	editor: EditorSettings;
-	database: DatabaseSettings;
 	connectionsGraph: ConnectionsGraphOptions;
 }
 
@@ -266,7 +261,6 @@ interface SettingsChangeSections {
 	quickNotes: AppSettings["quickNotes"];
 	noteCreation: AppSettings["noteCreation"];
 	templates: AppSettings["templates"];
-	database: AppSettings["database"];
 	editor: AppSettings["editor"];
 	connectionsGraph: AppSettings["connectionsGraph"];
 	shortcuts: Pick<ShortcutSettings, "bindings">;

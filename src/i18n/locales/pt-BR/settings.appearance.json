@@ -208,14 +208,5 @@
 				"label": "Sincronização Git"
 			}
 		}
-	},
-	"database": {
-		"sectionTitle": "Banco de dados",
-		"sectionDescription": "Escolha como os bancos de dados são apresentados no Glyph.",
-		"showColumnColor": {
-			"label": "Mostrar cor da coluna do banco de dados",
-			"description": "Manter as cores da pílula da faixa e das tags ao alternar o tom completo da coluna.",
-			"ariaLabel": "Mostrar cor da coluna do banco de dados"
-		}
 	}
 }

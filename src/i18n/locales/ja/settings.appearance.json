@@ -208,14 +208,5 @@
 				"label": "Git 同期"
 			}
 		}
-	},
-	"database": {
-		"sectionTitle": "データベース",
-		"sectionDescription": "Glyph 全体でのデータベースの表示方法を選びます。",
-		"showColumnColor": {
-			"label": "データベース列の色を表示",
-			"description": "レーンのピルとタグの色は維持しつつ、列全体の色合いの表示を切り替えます。",
-			"ariaLabel": "データベース列の色を表示"
-		}
 	}
 }

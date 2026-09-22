@@ -208,14 +208,5 @@
 				"label": "Git 동기화"
 			}
 		}
-	},
-	"database": {
-		"sectionTitle": "데이터베이스",
-		"sectionDescription": "Glyph 전반에서 데이터베이스가 표시되는 방식을 선택합니다.",
-		"showColumnColor": {
-			"label": "데이터베이스 열 색상 표시",
-			"description": "레인 필과 태그 색상은 유지하면서 전체 열 색조 표시를 전환합니다.",
-			"ariaLabel": "데이터베이스 열 색상 표시"
-		}
 	}
 }

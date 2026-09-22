@@ -765,13 +765,6 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.editor.focusMode,
 		change: (value) => ({ editor: { focusMode: value } }),
 	}),
-	databaseShowColumnColor: booleanSetting({
-		key: "database.showColumnColor",
-		defaultValue: true,
-		discovery: searchable("appearance-database-column-color"),
-		read: (settings) => settings.database.showColumnColor,
-		change: (value) => ({ database: { showColumnColor: value } }),
-	}),
 } as const;
 
 export async function writeSidebarLayout({

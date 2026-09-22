@@ -371,10 +371,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		options: fileTreeSortOptions,
 	},
 	{
-		...bindApplicationSetting(DURABLE_SETTINGS.databaseShowColumnColor),
-		control: "toggle",
-	},
-	{
 		id: searchableId(DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags),
 		scope: "application",
 		control: "toggle",

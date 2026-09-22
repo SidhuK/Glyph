@@ -613,11 +613,6 @@
 				"order"
 			]
 		},
-		"appearance-database-column-color": {
-			"title": "Afficher la couleur des colonnes de base de données",
-			"section": "Base de données",
-			"keywords": ["collection", "base de données", "couleur", "database", "color"]
-		},
 		"about-app": {
 			"title": "Glyph",
 			"description": "View Glyph app name, version, attribution, and quick links.",

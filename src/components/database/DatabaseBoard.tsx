@@ -53,7 +53,6 @@ interface DatabaseBoardProps {
 	rows: DatabaseRow[];
 	columns: DatabaseColumn[];
 	groupColumnId?: string | null;
-	showColumnColor?: boolean;
 	selectedRowPath: string | null;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
@@ -155,7 +154,6 @@ export function DatabaseBoard({
 	rows,
 	columns,
 	groupColumnId: persistedGroupColumnId,
-	showColumnColor = true,
 	selectedRowPath,
 	onSelectRow,
 	onOpenRow,
@@ -446,7 +444,6 @@ export function DatabaseBoard({
 									key={lane.id}
 									lane={lane}
 									laneIndex={laneIndex}
-									showColumnColor={showColumnColor}
 									laneColors={laneColors}
 									statusColors={statusColors}
 									isStatusGroup={isStatusGroup}

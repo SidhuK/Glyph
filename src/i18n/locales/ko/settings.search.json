@@ -572,11 +572,6 @@
 			"section": "파일 트리",
 			"keywords": ["사이드바", "폴더", "파일", "순서", "sidebar", "folders", "files", "order"]
 		},
-		"appearance-database-column-color": {
-			"title": "데이터베이스 열 색상 표시",
-			"section": "데이터베이스",
-			"keywords": ["컬렉션", "데이터베이스", "색상", "collection", "database", "color"]
-		},
 		"about-app": {
 			"title": "Glyph",
 			"description": "View Glyph app name, version, attribution, and quick links.",

@@ -575,9 +575,6 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 		zenMode: DURABLE_SETTINGS.editorZenMode.load(entries),
 		focusMode: DURABLE_SETTINGS.editorFocusMode.load(entries),
 	};
-	const database: AppSettings["database"] = {
-		showColumnColor: DURABLE_SETTINGS.databaseShowColumnColor.load(entries),
-	};
 	setCachedDefaultEditorViewMode(editor.defaultEditorMode);
 	return {
 		currentSpacePath,
@@ -640,7 +637,6 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 		},
 		shortcuts,
 		editor,
-		database,
 		connectionsGraph,
 	};
 }
