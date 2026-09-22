@@ -51,6 +51,36 @@
 	width: 100%;
 }
 
+.sidebarCreateRow {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	width: calc(100% - 16px);
+	margin-inline: 8px;
+}
+
+.sidebarCreateRow .sidebarNewNoteBtn {
+	flex: 1 1 auto;
+	min-width: 0;
+	width: auto;
+}
+
+button.sidebarNewCanvasIconBtn {
+	flex: 0 0 26px;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	margin-left: auto;
+	border-radius: var(--radius-8);
+	color: var(--text-secondary);
+}
+
+button.sidebarNewCanvasIconBtn:hover,
+button.sidebarNewCanvasIconBtn:active {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
 .sidebarQuickActionShortcut {
 	display: inline-flex;
 	align-items: center;

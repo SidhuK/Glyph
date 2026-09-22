@@ -520,37 +520,48 @@ export const SidebarContent = memo(function SidebarContent({
 									onClick={onOpenAgent}
 								/>
 							) : null}
-							{sidebarVisibility.newNote ? (
-								<button
-									key="newNote"
-									type="button"
-									className="sidebarQuickActionBtn sidebarNavBtn"
-									data-sidebar-key="newNote"
-									data-kind="new-note"
-									aria-label={t("sidebar.newNote")}
-									onClick={onNewNote}
-									title={`${newNoteTitle}${
-										newNoteShortcut ? ` (${formatShortcutForPlatform(newNoteShortcut)})` : ""
-									}`}
+							{sidebarVisibility.newNote || sidebarVisibility.newCanvas ? (
+								<div
+									key="create"
+									className="sidebarCreateRow"
+									data-sidebar-key={sidebarVisibility.newNote ? "newNote" : "newCanvas"}
 								>
-									<HugeiconsIcon icon={CursorAddSelection02Icon} size="var(--icon-lg)" />
-									<span className="sidebarQuickActionLabel">{t("sidebar.newNote")}</span>
-									{newNoteShortcut ? (
-										<span className="sidebarQuickActionShortcut">
-											{formatShortcutForPlatform(newNoteShortcut)}
-										</span>
+									{sidebarVisibility.newNote ? (
+										<button
+											type="button"
+											className="sidebarQuickActionBtn sidebarNavBtn sidebarNewNoteBtn"
+											data-kind="new-note"
+											aria-label={t("sidebar.newNote")}
+											onClick={onNewNote}
+											title={`${newNoteTitle}${
+												newNoteShortcut ? ` (${formatShortcutForPlatform(newNoteShortcut)})` : ""
+											}`}
+										>
+											<HugeiconsIcon icon={CursorAddSelection02Icon} size="var(--icon-lg)" />
+											<span className="sidebarQuickActionLabel">{t("sidebar.newNote")}</span>
+											{newNoteShortcut ? (
+												<span className="sidebarQuickActionShortcut">
+													{formatShortcutForPlatform(newNoteShortcut)}
+												</span>
+											) : null}
+										</button>
 									) : null}
-								</button>
-							) : null}
-							{sidebarVisibility.newCanvas ? (
-								<SidebarActionButton
-									key="newCanvas"
-									data-sidebar-key="newCanvas"
-									kind="new-canvas"
-									label={t("sidebar.newCanvas")}
-									icon={PaintBoardIcon}
-									onClick={onNewCanvas}
-								/>
+									{sidebarVisibility.newCanvas ? (
+										<button
+											type="button"
+											className="sidebarNewCanvasIconBtn"
+											aria-label={t("sidebar.newCanvas")}
+											title={t("sidebar.newCanvas")}
+											onClick={onNewCanvas}
+										>
+											<HugeiconsIcon
+												icon={PaintBoardIcon}
+												size="var(--icon-md)"
+												aria-hidden="true"
+											/>
+										</button>
+									) : null}
+								</div>
 							) : null}
 							{sidebarVisibility.allNotes ? (
 								<button
@@ -739,44 +750,10 @@ export const SidebarContent = memo(function SidebarContent({
 								<HugeiconsIcon
 									icon={Folder01Icon}
 									size="var(--icon-md)"
-									className="sidebarViewTabIcon sidebarViewTabIconAccent sidebarViewTabIconFilled"
+									className="sidebarViewTabIcon sidebarViewTabIconFilled"
 									aria-hidden="true"
 								/>
 								<span className="sidebarViewTabLabel">{t("sidebar.files")}</span>
-							</button>
-							<button
-								type="button"
-								className="sidebarViewTab"
-								id="sidebar-recents-tab"
-								role="tab"
-								aria-selected={activeSidebarView.kind === "recents"}
-								aria-controls="sidebar-recents-panel"
-								onClick={() => handleSidebarViewChange("recents")}
-							>
-								<HugeiconsIcon
-									icon={HistoryIcon}
-									size="var(--icon-md)"
-									className="sidebarViewTabIcon sidebarViewTabIconAccent"
-									aria-hidden="true"
-								/>
-								<span className="sidebarViewTabLabel">{t("sidebar.recents")}</span>
-							</button>
-							<button
-								type="button"
-								className="sidebarViewTab"
-								id="sidebar-tags-tab"
-								role="tab"
-								aria-selected={activeSidebarView.kind === "tags"}
-								aria-controls="sidebar-tags-panel"
-								onClick={() => handleSidebarViewChange("tags")}
-							>
-								<HugeiconsIcon
-									icon={Tag01Icon}
-									size="var(--icon-md)"
-									className="sidebarViewTabIcon sidebarViewTabIconAccent sidebarViewTabIconFilled"
-									aria-hidden="true"
-								/>
-								<span className="sidebarViewTabLabel">{t("tags.header")}</span>
 							</button>
 							<button
 								type="button"
@@ -790,10 +767,44 @@ export const SidebarContent = memo(function SidebarContent({
 								<HugeiconsIcon
 									icon={PinIcon}
 									size="var(--icon-md)"
-									className="sidebarViewTabIcon pinnedFileIcon"
+									className="sidebarViewTabIcon sidebarViewTabIconFilled"
 									aria-hidden="true"
 								/>
 								<span className="sidebarViewTabLabel">{t("sidebar.pinned")}</span>
+							</button>
+							<button
+								type="button"
+								className="sidebarViewTab"
+								id="sidebar-tags-tab"
+								role="tab"
+								aria-selected={activeSidebarView.kind === "tags"}
+								aria-controls="sidebar-tags-panel"
+								onClick={() => handleSidebarViewChange("tags")}
+							>
+								<HugeiconsIcon
+									icon={Tag01Icon}
+									size="var(--icon-md)"
+									className="sidebarViewTabIcon sidebarViewTabIconFilled"
+									aria-hidden="true"
+								/>
+								<span className="sidebarViewTabLabel">{t("tags.header")}</span>
+							</button>
+							<button
+								type="button"
+								className="sidebarViewTab"
+								id="sidebar-recents-tab"
+								role="tab"
+								aria-selected={activeSidebarView.kind === "recents"}
+								aria-controls="sidebar-recents-panel"
+								onClick={() => handleSidebarViewChange("recents")}
+							>
+								<HugeiconsIcon
+									icon={HistoryIcon}
+									size="var(--icon-md)"
+									className="sidebarViewTabIcon sidebarViewTabIconFilled"
+									aria-hidden="true"
+								/>
+								<span className="sidebarViewTabLabel">{t("sidebar.recents")}</span>
 							</button>
 							{sidebarFolderTabs.map((folderPath, index) => {
 								const appearance = itemAppearance[folderPath];

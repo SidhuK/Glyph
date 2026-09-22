@@ -177,6 +177,9 @@
 			"newCanvas": {
 				"label": "新しいキャンバス"
 			},
+			"newNoteAndCanvas": {
+				"label": "新規ノートとキャンバス"
+			},
 			"allNotes": {
 				"label": "すべてのノート"
 			},

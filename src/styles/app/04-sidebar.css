@@ -366,8 +366,7 @@ button.sidebarViewTab {
 	color: var(--interactive-accent);
 }
 
-.sidebarViewTabIconFilled path,
-button.sidebarViewTab .pinnedFileIcon path {
+.sidebarViewTabIconFilled path {
 	fill: currentcolor;
 	fill-opacity: 0.2;
 	stroke: currentcolor;
