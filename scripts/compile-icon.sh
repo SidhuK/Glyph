@@ -38,4 +38,10 @@ for size in 32 64 128; do
 done
 cp "$ICONSET_PATH/icon_128x128@2x.png" "$OUTPUT_PATH/128x128@2x.png"
 
+# Settings display these at 40 points; keep previews separate from Dock artwork.
+for icon in blue-star blue-glyph confetti-star; do
+  sips -z 128 128 "$OUTPUT_PATH/alternates/$icon.png" \
+    --out "$ROOT_DIR/public/app-icons/$icon.png" >/dev/null
+done
+
 echo "Exported Assets.car, ICNS, PNG sizes, and the in-app icon preview."

@@ -36,7 +36,7 @@
           "image-name" : "05-indigo-pocket.png",
           "name" : "05-indigo-pocket",
           "position" : {
-            "scale" : 1.16,
+            "scale" : 2.9696,
             "translation-in-points" : [
               0,
               0
@@ -48,7 +48,7 @@
           "image-name" : "04-ivory-asterisk.png",
           "name" : "04-ivory-asterisk",
           "position" : {
-            "scale" : 1.16,
+            "scale" : 2.9696,
             "translation-in-points" : [
               0,
               0
@@ -60,7 +60,7 @@
           "image-name" : "03-violet-page.png",
           "name" : "03-violet-page",
           "position" : {
-            "scale" : 1.16,
+            "scale" : 2.9696,
             "translation-in-points" : [
               0,
               0
@@ -72,7 +72,7 @@
           "image-name" : "02-coral-page.png",
           "name" : "02-coral-page",
           "position" : {
-            "scale" : 1.16,
+            "scale" : 2.9696,
             "translation-in-points" : [
               0,
               0
@@ -84,7 +84,7 @@
           "image-name" : "01-blue-page.png",
           "name" : "01-blue-page",
           "position" : {
-            "scale" : 1.16,
+            "scale" : 2.9696,
             "translation-in-points" : [
               17.4,
               2.32
