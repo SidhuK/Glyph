@@ -617,11 +617,6 @@
 				"order"
 			]
 		},
-		"appearance-database-column-color": {
-			"title": "Mostrar color de columna de la base de datos",
-			"section": "Base de datos",
-			"keywords": ["colección", "base de datos", "color", "collection", "database"]
-		},
 		"about-app": {
 			"title": "Glyph",
 			"description": "View Glyph app name, version, attribution, and quick links.",

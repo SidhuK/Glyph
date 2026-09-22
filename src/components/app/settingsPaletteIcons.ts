@@ -21,7 +21,6 @@ import {
 	Settings01Icon,
 	SortByUp01Icon,
 	Sun01Icon,
-	Table01Icon,
 	Tag01Icon,
 	TextCheckIcon,
 	TextFontIcon,
@@ -70,7 +69,6 @@ const SETTING_ICONS: Record<string, SettingIcon> = {
 	"general-file-tree-folder-counts": Folder01Icon,
 	"general-file-tree-non-markdown-files": File01Icon,
 	"general-file-tree-sort": SortByUp01Icon,
-	"appearance-database-column-color": Table01Icon,
 	"about-alpha-releases": Megaphone01Icon,
 };
 

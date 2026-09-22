@@ -208,14 +208,5 @@
 				"label": "Synchronizacja Git"
 			}
 		}
-	},
-	"database": {
-		"sectionTitle": "Baza danych",
-		"sectionDescription": "Wybierz sposób prezentacji baz danych w programie Glyph.",
-		"showColumnColor": {
-			"label": "Pokaż kolor kolumny bazy danych",
-			"description": "Zachowaj kolory pigułek pasów i tagów, przełączając pełne przyciemnienie kolumny.",
-			"ariaLabel": "Pokaż kolor kolumny bazy danych"
-		}
 	}
 }

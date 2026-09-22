@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import type { WorkspaceDatabaseDocument } from "../../lib/tauri";
+import { useStatusPropertyColors } from "../useStatusPropertyColors";
 import type { ActiveCollection } from "./types";
 import { useCollectionWorkspace } from "./useCollectionWorkspace";
-import { useDatabaseDisplaySettings } from "./useDatabaseDisplaySettings";
 import { useDatabaseRowActions } from "./useDatabaseRowActions";
 import { useDatabaseRows } from "./useDatabaseRows";
 import { useDatabaseViewActions } from "./useDatabaseViewActions";
@@ -32,7 +32,7 @@ export function useDatabasesPane({
 		initialDocument,
 	});
 
-	const display = useDatabaseDisplaySettings();
+	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
 
 	const views = useDatabaseViewActions({
 		document: workspace.document,
@@ -94,7 +94,7 @@ export function useDatabasesPane({
 			selectCollection: workspace.selectCollection,
 		},
 		rows,
-		display,
+		display: { statusColors, setStatusColor },
 		views,
 		viewSelection: {
 			selectedViewId: workspace.selectedViewId,

@@ -44,7 +44,7 @@ import { AppearanceLayoutPreview } from "./AppearancePreviewFrame";
 import { AppearanceSidebarItems } from "./AppearanceSidebarItems";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
-import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
+import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSegmentedPicker } from "./SettingsSegmentedPicker";
 import { SettingsSelect } from "./SettingsSelect";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
@@ -89,11 +89,6 @@ export function AppearanceSettingsPane() {
 		setError,
 	);
 	const [isResettingSidebar, setIsResettingSidebar] = useState(false);
-	const showColumnColor = useSettingsBoolean(
-		true,
-		DURABLE_SETTINGS.databaseShowColumnColor.write,
-		setError,
-	);
 	const {
 		cornerRadiusStyle,
 		setCornerRadiusStyle,
@@ -117,7 +112,6 @@ export function AppearanceSettingsPane() {
 		setEditorFontSize,
 	} = useAppearanceTypography({ setError });
 
-	const setShowColumnColorChecked = showColumnColor.setChecked;
 	const setInitialFolioMode = folioMode.setInitialChecked;
 	const workspaceLayout = folioMode.checked ? "folio" : "default";
 	const workspaceLayoutOptions = [
@@ -148,7 +142,6 @@ export function AppearanceSettingsPane() {
 				setCustomThemesState(settings.ui.customThemes);
 				setInitialFolioMode(settings.ui.folioMode);
 				folioSortMode.setInitialValue(settings.ui.folioSortMode);
-				setShowColumnColorChecked(settings.database.showColumnColor);
 				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
 				setInitialTypography(settings);
 			} catch (e) {
@@ -161,7 +154,6 @@ export function AppearanceSettingsPane() {
 			cancelled = true;
 		};
 	}, [
-		setShowColumnColorChecked,
 		setInitialFolioMode,
 		darkThemeId.setInitialValue,
 		lightThemeId.setInitialValue,
@@ -216,7 +208,6 @@ export function AppearanceSettingsPane() {
 		if (typeof payload.ui?.editorFontSize === "number") {
 			setEditorFontSize(payload.ui.editorFontSize);
 		}
-		applyIfBoolean(payload.database?.showColumnColor, setShowColumnColorChecked);
 	});
 
 	const onSidebarVisibilityChange = useCallback(
@@ -419,22 +410,6 @@ export function AppearanceSettingsPane() {
 								</option>
 							))}
 						</SettingsSelect>
-					</SettingsRow>
-				</SettingsSection>
-				<SettingsSection
-					title={t("database.sectionTitle")}
-					description={t("database.sectionDescription")}
-				>
-					<SettingsRow
-						label={t("database.showColumnColor.label")}
-						description={t("database.showColumnColor.description")}
-					>
-						<SettingsToggle
-							checked={showColumnColor.checked}
-							disabled={showColumnColor.isSaving}
-							ariaLabel={t("database.showColumnColor.ariaLabel")}
-							onCheckedChange={showColumnColor.onCheckedChange}
-						/>
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection

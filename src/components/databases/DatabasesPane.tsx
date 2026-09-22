@@ -116,7 +116,6 @@ function DatabasesPaneContent({
 							}
 							laneColors={activeCollection.config.view.board_lane_colors ?? {}}
 							statusColors={display.statusColors}
-							showColumnColor={display.showDatabaseColumnColor}
 							selectedRowPath={rows.selectedRowPath}
 							onSelectRow={rows.setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}

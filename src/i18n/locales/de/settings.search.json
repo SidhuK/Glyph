@@ -599,11 +599,6 @@
 				"order"
 			]
 		},
-		"appearance-database-column-color": {
-			"title": "Datenbankspaltenfarbe anzeigen",
-			"section": "Datenbank",
-			"keywords": ["sammlung", "datenbank", "farbe", "collection", "database", "color"]
-		},
 		"about-app": {
 			"title": "Glyph",
 			"description": "View Glyph app name, version, attribution, and quick links.",
