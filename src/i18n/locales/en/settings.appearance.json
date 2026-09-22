@@ -190,6 +190,9 @@
 			"newCanvas": {
 				"label": "New Canvas"
 			},
+			"newNoteAndCanvas": {
+				"label": "New Note and Canvas"
+			},
 			"allNotes": {
 				"label": "All Notes"
 			},

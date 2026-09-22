@@ -177,6 +177,9 @@
 			"newCanvas": {
 				"label": "Neue Zeichenfläche"
 			},
+			"newNoteAndCanvas": {
+				"label": "Neue Notiz und Zeichenfläche"
+			},
 			"allNotes": {
 				"label": "Alle Notizen"
 			},

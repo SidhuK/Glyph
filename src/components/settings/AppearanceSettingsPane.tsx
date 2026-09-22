@@ -221,6 +221,14 @@ export function AppearanceSettingsPane() {
 
 	const onSidebarVisibilityChange = useCallback(
 		(key: SidebarVisibilityKey, visible: boolean) => {
+			if (key === "newNote") {
+				sidebarVisibility.onChange({
+					...sidebarVisibility.value,
+					newNote: visible,
+					newCanvas: visible,
+				});
+				return;
+			}
 			sidebarVisibility.onChange({
 				...sidebarVisibility.value,
 				[key]: visible,

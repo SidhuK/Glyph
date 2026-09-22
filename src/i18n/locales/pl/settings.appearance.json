@@ -177,6 +177,9 @@
 			"newCanvas": {
 				"label": "Nowe płótno"
 			},
+			"newNoteAndCanvas": {
+				"label": "Nowa notatka i płótno"
+			},
 			"allNotes": {
 				"label": "Wszystkie notatki"
 			},

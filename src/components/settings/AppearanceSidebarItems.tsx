@@ -45,6 +45,16 @@ function moveSidebarItem(
 	return next;
 }
 
+function appearanceSidebarOrder(order: SidebarOrder): SidebarOrder {
+	return order.filter((key) => key !== "newCanvas");
+}
+
+function restoreCombinedSidebarOrder(order: SidebarOrder): SidebarOrder {
+	const newNoteIndex = order.indexOf("newNote");
+	if (newNoteIndex < 0) return [...order, "newNote", "newCanvas"];
+	return [...order.slice(0, newNoteIndex + 1), "newCanvas", ...order.slice(newNoteIndex + 1)];
+}
+
 export function AppearanceSidebarItems({
 	order,
 	visibility,
@@ -58,6 +68,7 @@ export function AppearanceSidebarItems({
 	onReorder: (next: SidebarOrder) => void;
 	onVisibilityChange: (key: SidebarVisibilityKey, visible: boolean) => void;
 }) {
+	const appearanceOrder = useMemo(() => appearanceSidebarOrder(order), [order]);
 	const dragDropHandlers = useMemo(
 		() => ({
 			onDragEnd(event: DragEndEvent) {
@@ -70,22 +81,22 @@ export function AppearanceSidebarItems({
 				) {
 					return;
 				}
-				const next = moveSidebarItem(order, source.initialIndex, source.index);
-				if (next) onReorder(next);
+				const next = moveSidebarItem(appearanceOrder, source.initialIndex, source.index);
+				if (next) onReorder(restoreCombinedSidebarOrder(next));
 			},
 		}),
-		[disabled, onReorder, order],
+		[appearanceOrder, disabled, onReorder],
 	);
 	useDragDropMonitor(dragDropHandlers);
 
 	return (
 		<>
-			{order.map((key, index) => (
+			{appearanceOrder.map((key, index) => (
 				<AppearanceSidebarItem
 					key={key}
 					itemKey={key}
 					index={index}
-					visible={visibility[key]}
+					visible={key === "newNote" ? visibility.newNote || visibility.newCanvas : visibility[key]}
 					disabled={disabled}
 					onVisibilityChange={onVisibilityChange}
 				/>
@@ -108,7 +119,11 @@ function AppearanceSidebarItem({
 	onVisibilityChange: (key: SidebarVisibilityKey, visible: boolean) => void;
 }) {
 	const { t } = useTranslation("settings.appearance");
-	const label = t(`sidebar.items.${itemKey}.label`);
+	const label = t(
+		itemKey === "newNote"
+			? "sidebar.items.newNoteAndCanvas.label"
+			: `sidebar.items.${itemKey}.label`,
+	);
 	const { ref, handleRef, isDragging } = useSortable({
 		id: itemKey,
 		index,
