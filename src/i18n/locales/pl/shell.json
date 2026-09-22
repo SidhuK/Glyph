@@ -226,7 +226,11 @@
 	"ai": {
 		"toolFailed": "Narzędzie {{tool}} nie powiodło się",
 		"activeFile": "Aktywny plik",
-		"addToContext": "Dodaj {{name}} do kontekstu"
+		"addToContext": "Dodaj {{name}} do kontekstu",
+		"commands": {
+			"label": "Polecenia AI",
+			"canvas": "Utwórz lub edytuj kanwę Excalidraw"
+		}
 	},
 	"connections": {
 		"loading": "Wczytywanie notatek i łączy…",

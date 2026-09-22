@@ -623,13 +623,13 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		EditorLink,
 		TaskList,
 		TaskItem.configure({ nested: true }),
+		NoteSearch,
 		...(enableEditingExtensions
 			? [
 					TaskListMarkdownShortcut,
 					TaskDetailShortcut,
 					MarkdownLinkSyntaxCollapse,
 					MarkdownImageLivePreview,
-					NoteSearch,
 					TableEnterNavigation,
 				]
 			: []),

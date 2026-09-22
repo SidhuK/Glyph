@@ -192,7 +192,11 @@
 	"ai": {
 		"toolFailed": "{{tool}} ist fehlgeschlagen",
 		"activeFile": "Aktive Datei",
-		"addToContext": "{{name}} zum Kontext hinzufügen"
+		"addToContext": "{{name}} zum Kontext hinzufügen",
+		"commands": {
+			"label": "KI-Befehle",
+			"canvas": "Eine Excalidraw-Zeichenfläche erstellen oder bearbeiten"
+		}
 	},
 	"connections": {
 		"loading": "Notizen und Verknüpfungen werden geladen…",

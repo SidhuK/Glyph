@@ -19,7 +19,12 @@ import {
 	type AiSelectionContext,
 	consumePendingAiSelectionContext,
 } from "./aiContextEvents";
-import { messageText, parseAddTrigger } from "./aiPanelConstants";
+import {
+	CANVAS_SYSTEM_PROMPT,
+	isCanvasCommand,
+	messageText,
+	parseAddTrigger,
+} from "./aiPanelConstants";
 import { setActiveAiHistoryJobId, useAiPanelSession } from "./aiPanelSession";
 import { useAiActions } from "./hooks/useAiActions";
 import { useAIConversation } from "./hooks/useRigChat";
@@ -161,6 +166,7 @@ export function AIPanel(props: AIPanelProps) {
 						mode: aiAssistantMode,
 						context: built.payload || undefined,
 						context_manifest: built.manifest ?? undefined,
+						system_prompt: isCanvasCommand(sanitized) ? CANVAS_SYSTEM_PROMPT : undefined,
 						audit: true,
 					},
 				},
@@ -208,6 +214,7 @@ export function AIPanel(props: AIPanelProps) {
 					mode: aiAssistantMode,
 					context: built.payload || undefined,
 					context_manifest: built.manifest ?? undefined,
+					system_prompt: isCanvasCommand(sanitized) ? CANVAS_SYSTEM_PROMPT : undefined,
 					audit: true,
 				},
 			},

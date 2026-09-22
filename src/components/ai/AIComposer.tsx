@@ -8,6 +8,7 @@ import {
 	type RefObject,
 	type SetStateAction,
 	useCallback,
+	useId,
 	useLayoutEffect,
 	useMemo,
 	useRef,
@@ -19,6 +20,7 @@ import { normalizeRelPath } from "../../utils/path";
 import { File, Plus, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
+import { CANVAS_COMMAND, CANVAS_COMMAND_INSERTION, isCanvasCommandQuery } from "./aiPanelConstants";
 import { truncateLabel } from "./modelSelectorConstants";
 import type { useAiContext } from "./useAiContext";
 import type { useAiProfiles } from "./useAiProfiles";
@@ -246,9 +248,23 @@ export function AIComposer({
 }: AIComposerProps) {
 	const isDarkTheme = useIsDarkTheme();
 	const { t } = useTranslation("shell");
+	const canvasCommandMenuId = useId();
+	const canvasCommandOptionId = `${canvasCommandMenuId}-option`;
 	const hasDraftText = Boolean(input.replace(CHIP_RE, "").trim());
 	const beamSize = isStreamingResponse ? "pulse-inner" : "md";
 	const beamStrength = isStreamingResponse ? 0.3 : hasDraftText ? 0.28 : 0.7;
+	const showCanvasCommand = isCanvasCommandQuery(input) && !isAwaitingResponse;
+
+	const selectCanvasCommand = useCallback(() => {
+		setInput(CANVAS_COMMAND_INSERTION);
+		window.requestAnimationFrame(() => {
+			const el = composerInputRef.current;
+			if (!el) return;
+			el.focus();
+			setCaretOffset(el, CANVAS_COMMAND_INSERTION.length);
+			scheduleComposerInputResize();
+		});
+	}, [composerInputRef, scheduleComposerInputResize, setInput]);
 
 	const handleInsertMentionTrigger = useCallback(() => {
 		if (isAwaitingResponse) return;
@@ -406,17 +422,50 @@ export function AIComposer({
 
 	const handleKeyDown = useCallback(
 		(event: ReactKeyboardEvent<HTMLDivElement>) => {
+			const selectsCanvasCommand =
+				event.key === "Tab" ||
+				(event.key === "Enter" &&
+					!event.shiftKey &&
+					!event.metaKey &&
+					!event.ctrlKey &&
+					!event.nativeEvent.isComposing);
+			if (showCanvasCommand && selectsCanvasCommand) {
+				event.preventDefault();
+				selectCanvasCommand();
+				return;
+			}
 			if (event.key === "Enter" && !event.shiftKey && !event.metaKey && !event.ctrlKey) {
 				if (event.nativeEvent.isComposing || !canSend) return;
 				event.preventDefault();
 				onSend();
 			}
 		},
-		[canSend, onSend],
+		[canSend, onSend, selectCanvasCommand, showCanvasCommand],
 	);
 
 	return (
 		<>
+			{showCanvasCommand ? (
+				<div
+					id={canvasCommandMenuId}
+					className="aiSlashCommandMenu"
+					role="listbox"
+					aria-label={t("ai.commands.label")}
+				>
+					<button
+						id={canvasCommandOptionId}
+						type="button"
+						className="aiSlashCommandItem"
+						role="option"
+						aria-selected="true"
+						onMouseDown={(event) => event.preventDefault()}
+						onClick={selectCanvasCommand}
+					>
+						<span className="aiSlashCommandName">{CANVAS_COMMAND}</span>
+						<span className="aiSlashCommandDescription">{t("ai.commands.canvas")}</span>
+					</button>
+				</div>
+			) : null}
 			{showAddPanel ? (
 				<div className="aiAddPanel">
 					<input
@@ -498,6 +547,10 @@ export function AIComposer({
 							tabIndex={0}
 							aria-multiline="true"
 							aria-label="Message"
+							aria-autocomplete="list"
+							aria-controls={showCanvasCommand ? canvasCommandMenuId : undefined}
+							aria-expanded={showCanvasCommand}
+							aria-activedescendant={showCanvasCommand ? canvasCommandOptionId : undefined}
 							data-placeholder={activeFilePath ? undefined : APP_TAGLINE}
 							spellCheck
 							onInput={handleInput}

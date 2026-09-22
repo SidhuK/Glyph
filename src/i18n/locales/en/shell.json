@@ -246,7 +246,11 @@
 	"ai": {
 		"toolFailed": "{{tool}} failed",
 		"activeFile": "Active file",
-		"addToContext": "Add {{name}} to context"
+		"addToContext": "Add {{name}} to context",
+		"commands": {
+			"label": "AI commands",
+			"canvas": "Create or edit an Excalidraw canvas"
+		}
 	},
 	"connections": {
 		"loading": "Loading notes and links…",

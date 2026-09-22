@@ -191,7 +191,11 @@
 	"ai": {
 		"toolFailed": "{{tool}} 실패",
 		"activeFile": "활성 파일",
-		"addToContext": "{{name}}을(를) 컨텍스트에 추가"
+		"addToContext": "{{name}}을(를) 컨텍스트에 추가",
+		"commands": {
+			"label": "AI 명령",
+			"canvas": "Excalidraw 캔버스 만들기 또는 편집"
+		}
 	},
 	"connections": {
 		"loading": "노트와 링크를 불러오는 중…",
