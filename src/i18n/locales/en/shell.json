@@ -28,6 +28,7 @@
 		"gitSync": "Git Sync",
 		"files": "Files",
 		"recents": "Recents",
+		"noPinnedFiles": "No pinned files yet.",
 		"noRecentFiles": "No recent files yet.",
 		"openFolderTab": "Open {{folder}}",
 		"removeFolderTab": "Remove {{folder}} from quick folders",
@@ -63,18 +64,6 @@
 			"confirm": "Delete",
 			"cancel": "Cancel"
 		}
-	},
-	"pinned": {
-		"title": "Pinned",
-		"loading": "Loading pinned items...",
-		"loadFailed": "Could not load pinned collections",
-		"empty": "Nothing pinned yet. Pin a note or collection to keep it here.",
-		"collections": "Collections",
-		"notes": "Notes",
-		"savedSearch": "Saved search",
-		"tagCollection": "Tag · #{{tag}}",
-		"folderCollection": "Folder · {{folder}}",
-		"allNotesCollection": "All notes"
 	},
 	"collections": {
 		"addView": "Add view",
@@ -215,7 +204,6 @@
 	"tabs": {
 		"allNotes": "All Notes",
 		"collections": "Collections",
-		"pinned": "Pinned",
 		"pinTab": "Pin Active Tab",
 		"unpinTab": "Unpin Active Tab",
 		"unpinNamed": "Unpin {{label}}"

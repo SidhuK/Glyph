@@ -314,6 +314,7 @@ describe("settings workspace session restore", () => {
 					{ kind: "file", target: "Notes/C.txt" },
 					{ kind: "unknown", target: "Notes/D.md" },
 					{ kind: "special", target: "x".repeat(121) },
+					{ kind: "special", target: "__glyph_pinned_docs__" },
 					{ kind: "special", target: "all-docs" },
 				],
 				activeTabTarget: "missing",

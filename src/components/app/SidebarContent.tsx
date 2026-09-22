@@ -15,9 +15,9 @@ import {
 	Link01Icon,
 	NoteIcon,
 	PaintBoardIcon,
+	PinIcon,
 	SearchIcon,
 	Sorting01Icon,
-	StarIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -44,24 +44,20 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
-import {
-	allDocsCountQueryOptions,
-	formatAllDocsCountLabel,
-	navigationQueryKeys,
-} from "../../lib/navigationPrefetch";
+import { allDocsCountQueryOptions, formatAllDocsCountLabel } from "../../lib/navigationPrefetch";
 import { type PeriodKind, isPeriodNoteEnabled } from "../../lib/periodNotes";
 import { isFileTreeSortMode } from "../../lib/settings";
 import type { SidebarOrder, SidebarVisibilityKey } from "../../lib/settings/model";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { spaceDisplayName } from "../../lib/spaceRegistry";
-import { type FsEntry, invoke } from "../../lib/tauri";
+import type { FsEntry } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
 import { FileTreePane } from "../filetree";
-import { RecentFilesPane } from "./RecentFilesPane";
+import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
 
 export interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -93,11 +89,10 @@ export interface SidebarContentProps {
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	onOpenAllDocs: () => void;
-	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
 	onOpenAgent: () => void;
 	spacePath: string | null;
-	activeTopSection: "agent" | "all-notes" | "connections" | "databases" | "pinned-notes" | null;
+	activeTopSection: "agent" | "all-notes" | "connections" | "databases" | null;
 	onOpenCalendar: () => void;
 	onOpenSearch: () => void;
 	onOpenPeriodNote: (kind: PeriodKind) => void;
@@ -108,6 +103,7 @@ export interface SidebarContentProps {
 
 type SidebarView =
 	| { kind: "files" }
+	| { kind: "pinned" }
 	| { kind: "recents" }
 	| { kind: "tags" }
 	| { kind: "folder"; path: string };
@@ -143,18 +139,6 @@ function AllNotesCountBadge() {
 	const label = formatAllDocsCountLabel(countQuery.data ?? 0);
 	if (!label) return null;
 	return <span className="sidebarQuickActionCount">{label}</span>;
-}
-
-function PinnedCountBadge({ noteCount }: { noteCount: number }) {
-	const collectionsQuery = useQuery({
-		queryKey: navigationQueryKeys.databaseSummaries(),
-		queryFn: () => invoke("databases_list"),
-	});
-	const collectionCount =
-		collectionsQuery.data?.filter((collection) => collection.pinned).length ?? 0;
-	const count = noteCount + collectionCount;
-	if (count === 0) return null;
-	return <span className="sidebarQuickActionCount">{count}</span>;
 }
 
 function SidebarActionButton({
@@ -233,7 +217,6 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	onOpenAllDocs,
-	onOpenPinnedDocs,
 	onOpenConnections,
 	onOpenAgent,
 	spacePath,
@@ -289,9 +272,12 @@ export const SidebarContent = memo(function SidebarContent({
 		t("sidebar.searchPlaceholder") !== "sidebar.searchPlaceholder"
 			? t("sidebar.searchPlaceholder")
 			: t("sidebar.search");
-	const sidebarViewTabsLabel = [t("sidebar.files"), t("sidebar.recents"), t("tags.header")].join(
-		" / ",
-	);
+	const sidebarViewTabsLabel = [
+		t("sidebar.files"),
+		t("sidebar.recents"),
+		t("tags.header"),
+		t("sidebar.pinned"),
+	].join(" / ");
 	const newNoteTitle = newNoteFolder
 		? t("sidebar.newNoteInFolder", { folder: newNoteFolder })
 		: t("sidebar.newNoteInRoot");
@@ -422,11 +408,14 @@ export const SidebarContent = memo(function SidebarContent({
 		[onSelectDir, setFolioScope],
 	);
 	const handleSidebarViewChange = useCallback(
-		(view: "files" | "recents" | "tags") => {
+		(view: "files" | "pinned" | "recents" | "tags") => {
 			if (
 				folioMode &&
 				activeSidebarView.kind !== view &&
-				(activeSidebarView.kind === "folder" || view === "files" || view === "recents")
+				(activeSidebarView.kind === "folder" ||
+					view === "files" ||
+					view === "pinned" ||
+					view === "recents")
 			) {
 				handleSelectFolioFolder("");
 			}
@@ -562,25 +551,6 @@ export const SidebarContent = memo(function SidebarContent({
 									icon={PaintBoardIcon}
 									onClick={onNewCanvas}
 								/>
-							) : null}
-							{sidebarVisibility.pinned ? (
-								<button
-									key="pinned"
-									type="button"
-									className="sidebarQuickActionBtn sidebarNavBtn"
-									data-sidebar-key="pinned"
-									data-kind="pinned-notes"
-									data-active={activeTopSection === "pinned-notes" ? "true" : "false"}
-									aria-label={t("sidebar.pinned")}
-									aria-pressed={activeTopSection === "pinned-notes"}
-									aria-current={activeTopSection === "pinned-notes" ? "page" : undefined}
-									onClick={onOpenPinnedDocs}
-									title={t("sidebar.pinned")}
-								>
-									<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
-									<span className="sidebarQuickActionLabel">{t("sidebar.pinned")}</span>
-									<PinnedCountBadge noteCount={pinnedFiles.length} />
-								</button>
 							) : null}
 							{sidebarVisibility.allNotes ? (
 								<button
@@ -769,7 +739,7 @@ export const SidebarContent = memo(function SidebarContent({
 								<HugeiconsIcon
 									icon={Folder01Icon}
 									size="var(--icon-md)"
-									className="sidebarViewTabIcon"
+									className="sidebarViewTabIcon sidebarViewTabIconAccent sidebarViewTabIconFilled"
 									aria-hidden="true"
 								/>
 								<span className="sidebarViewTabLabel">{t("sidebar.files")}</span>
@@ -786,7 +756,7 @@ export const SidebarContent = memo(function SidebarContent({
 								<HugeiconsIcon
 									icon={HistoryIcon}
 									size="var(--icon-md)"
-									className="sidebarViewTabIcon"
+									className="sidebarViewTabIcon sidebarViewTabIconAccent"
 									aria-hidden="true"
 								/>
 								<span className="sidebarViewTabLabel">{t("sidebar.recents")}</span>
@@ -803,10 +773,27 @@ export const SidebarContent = memo(function SidebarContent({
 								<HugeiconsIcon
 									icon={Tag01Icon}
 									size="var(--icon-md)"
-									className="sidebarViewTabIcon"
+									className="sidebarViewTabIcon sidebarViewTabIconAccent sidebarViewTabIconFilled"
 									aria-hidden="true"
 								/>
 								<span className="sidebarViewTabLabel">{t("tags.header")}</span>
+							</button>
+							<button
+								type="button"
+								className="sidebarViewTab"
+								id="sidebar-pinned-tab"
+								role="tab"
+								aria-selected={activeSidebarView.kind === "pinned"}
+								aria-controls="sidebar-pinned-panel"
+								onClick={() => handleSidebarViewChange("pinned")}
+							>
+								<HugeiconsIcon
+									icon={PinIcon}
+									size="var(--icon-md)"
+									className="sidebarViewTabIcon pinnedFileIcon"
+									aria-hidden="true"
+								/>
+								<span className="sidebarViewTabLabel">{t("sidebar.pinned")}</span>
 							</button>
 							{sidebarFolderTabs.map((folderPath, index) => {
 								const appearance = itemAppearance[folderPath];
@@ -843,13 +830,13 @@ export const SidebarContent = memo(function SidebarContent({
 											<DatabaseColumnIcon
 												iconName={appearance.icon}
 												size="var(--icon-md)"
-												className="sidebarViewTabIcon"
+												className="sidebarViewTabIcon sidebarViewTabIconAccent sidebarViewTabIconFilled"
 											/>
 										) : (
 											<HugeiconsIcon
 												icon={Folder01Icon}
 												size="var(--icon-md)"
-												className="sidebarViewTabIcon"
+												className="sidebarViewTabIcon sidebarViewTabIconAccent sidebarViewTabIconFilled"
 												aria-hidden="true"
 											/>
 										)}
@@ -975,6 +962,21 @@ export const SidebarContent = memo(function SidebarContent({
 									onToggleSidebarFolderTab={handleToggleSidebarFolderTab}
 									pinnedFiles={folioMode ? [] : pinnedFiles}
 									onTogglePinnedFile={togglePinnedFile}
+								/>
+							</section>
+						</Activity>
+						<Activity mode={activeSidebarView.kind === "pinned" ? "visible" : "hidden"}>
+							<section
+								className="sidebarStackItem sidebarStackItemGrow sidebarViewPanel"
+								data-section="pinned"
+								id="sidebar-pinned-panel"
+								role="tabpanel"
+								aria-labelledby="sidebar-pinned-tab"
+							>
+								<PinnedFilesPane
+									pinnedFiles={pinnedFiles}
+									activeFilePath={activeFilePath}
+									onOpenFile={onOpenFile}
 								/>
 							</section>
 						</Activity>

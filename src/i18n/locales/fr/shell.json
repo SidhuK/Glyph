@@ -24,6 +24,7 @@
 		"gitSync": "Synchronisation Git",
 		"files": "Fichiers",
 		"recents": "Récents",
+		"noPinnedFiles": "Aucun fichier épinglé.",
 		"noRecentFiles": "Aucun fichier récent.",
 		"sortNotes": "Trier les notes",
 		"sort": "Trier",
@@ -56,18 +57,6 @@
 			"confirm": "Supprimer",
 			"cancel": "Annuler"
 		}
-	},
-	"pinned": {
-		"title": "Épinglées",
-		"loading": "Chargement des éléments épinglés...",
-		"loadFailed": "Impossible de charger les collections épinglées",
-		"empty": "Aucun élément épinglé. Épinglez une note ou une collection pour la conserver ici.",
-		"collections": "Collections",
-		"notes": "Notes",
-		"savedSearch": "Recherche enregistrée",
-		"tagCollection": "Étiquette · #{{tag}}",
-		"folderCollection": "Dossier · {{folder}}",
-		"allNotesCollection": "Toutes les notes"
 	},
 	"collections": {
 		"addView": "Ajouter une vue",
@@ -188,8 +177,7 @@
 	},
 	"tabs": {
 		"allNotes": "Toutes les notes",
-		"collections": "Collections",
-		"pinned": "Épinglées"
+		"collections": "Collections"
 	},
 	"ai": {
 		"toolFailed": "Échec de {{tool}}",

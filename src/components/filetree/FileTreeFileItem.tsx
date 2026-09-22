@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { useDraggable } from "@dnd-kit/react";
-import { PaintBoardIcon, StarIcon } from "@hugeicons/core-free-icons";
+import { PaintBoardIcon, PinIcon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import type { CSSProperties, KeyboardEvent, MouseEvent, MutableRefObject, Ref } from "react";
 import { memo, useCallback } from "react";
@@ -279,7 +279,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							<span className="fileTreeExtBadge">{extBadge}</span>
 						) : null}
 						{isPinned ? (
-							<HugeiconsIcon icon={StarIcon} size="var(--icon-sm)" className="fileTreePinIcon" />
+							<HugeiconsIcon
+								icon={PinIcon}
+								size="var(--icon-sm)"
+								className="fileTreePinIcon pinnedFileIcon"
+								aria-hidden="true"
+							/>
 						) : null}
 					</m.button>
 				)}

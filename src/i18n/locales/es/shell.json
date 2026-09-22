@@ -22,6 +22,7 @@
 		"gitSync": "Sincronización con Git",
 		"files": "Archivos",
 		"recents": "Recientes",
+		"noPinnedFiles": "Aún no hay archivos fijados.",
 		"noRecentFiles": "Aún no hay archivos recientes.",
 		"sortNotes": "Ordenar notas",
 		"sort": "Ordenar",
@@ -54,18 +55,6 @@
 			"confirm": "Eliminar",
 			"cancel": "Cancelar"
 		}
-	},
-	"pinned": {
-		"title": "Fijadas",
-		"loading": "Cargando elementos fijados...",
-		"loadFailed": "No se pudieron cargar las colecciones fijadas",
-		"empty": "Aún no hay nada fijado. Fija una nota o colección para guardarla aquí.",
-		"collections": "Colecciones",
-		"notes": "Notas",
-		"savedSearch": "Búsqueda guardada",
-		"tagCollection": "Etiqueta · #{{tag}}",
-		"folderCollection": "Carpeta · {{folder}}",
-		"allNotesCollection": "Todas las notas"
 	},
 	"collections": {
 		"addView": "Añadir vista",
@@ -186,8 +175,7 @@
 	},
 	"tabs": {
 		"allNotes": "Todas las notas",
-		"collections": "Colecciones",
-		"pinned": "Fijadas"
+		"collections": "Colecciones"
 	},
 	"ai": {
 		"toolFailed": "Falló {{tool}}",

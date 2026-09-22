@@ -260,11 +260,6 @@
 
 .folioNotePinIcon {
 	flex: 0 0 auto;
-	color: var(--interactive-accent);
-}
-
-.folioNotePinIcon path {
-	fill: currentcolor;
 }
 
 .folioNoteRenameInput {

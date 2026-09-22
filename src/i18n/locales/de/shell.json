@@ -22,6 +22,7 @@
 		"gitSync": "Git-Synchronisierung",
 		"files": "Dateien",
 		"recents": "Zuletzt",
+		"noPinnedFiles": "Noch keine angehefteten Dateien.",
 		"noRecentFiles": "Keine kürzlich geöffneten Dateien.",
 		"sortNotes": "Notizen sortieren",
 		"sort": "Sortieren",
@@ -54,18 +55,6 @@
 			"confirm": "Löschen",
 			"cancel": "Abbrechen"
 		}
-	},
-	"pinned": {
-		"title": "Angeheftet",
-		"loading": "Angeheftete Elemente werden geladen...",
-		"loadFailed": "Angeheftete Sammlungen konnten nicht geladen werden",
-		"empty": "Noch nichts angeheftet. Hefte eine Notiz oder Sammlung an.",
-		"collections": "Sammlungen",
-		"notes": "Notizen",
-		"savedSearch": "Gespeicherte Suche",
-		"tagCollection": "Tag · #{{tag}}",
-		"folderCollection": "Ordner · {{folder}}",
-		"allNotesCollection": "Alle Notizen"
 	},
 	"collections": {
 		"addView": "Ansicht hinzufügen",
@@ -186,8 +175,7 @@
 	},
 	"tabs": {
 		"allNotes": "Alle Notizen",
-		"collections": "Sammlungen",
-		"pinned": "Angeheftet"
+		"collections": "Sammlungen"
 	},
 	"ai": {
 		"toolFailed": "{{tool}} ist fehlgeschlagen",

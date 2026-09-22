@@ -50,7 +50,6 @@ import {
 	periodIdFromDate,
 	periodIdFromIsoDate,
 } from "../../lib/periodNotes";
-import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { requestSearchJump } from "../../lib/searchJump";
 import { loadSettings } from "../../lib/settings";
 import { toTauriAccelerator } from "../../lib/shortcuts";
@@ -942,13 +941,12 @@ export function AppShell() {
 	useSpaceChangePropagation(spaceChangeHost);
 
 	const activeTopSection = useMemo<
-		"agent" | "all-notes" | "connections" | "databases" | "pinned-notes" | null
+		"agent" | "all-notes" | "connections" | "databases" | null
 	>(() => {
 		if (activeTabPath === AGENT_VIEW_TAB_ID) return "agent";
 		if (activeTabPath === ACTIVITY_TIMELINE_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
-		if (activeTabPath === PINNED_DOCS_TAB_ID) return "pinned-notes";
 		return null;
 	}, [activeTabPath]);
 	const openCommandPalette = useCallback(() => {
@@ -968,9 +966,6 @@ export function AppShell() {
 		setAiPanelOpen(false);
 		openSpecialTab(AGENT_VIEW_TAB_ID);
 	}, [openSpecialTab, setAiPanelOpen]);
-	const openPinnedDocsTab = useCallback(() => {
-		openSpecialTab(PINNED_DOCS_TAB_ID);
-	}, [openSpecialTab]);
 	const openDatabasesTab = useCallback(
 		(databaseId?: string | null, options?: { openCreateDialog?: boolean }) => {
 			setDatabasesOpenRequest((current) =>
@@ -1374,7 +1369,6 @@ export function AppShell() {
 						sidebarCollapsed={sidebarCollapsed}
 						spacePath={spacePath}
 						onOpenAllDocs={openAllDocsTab}
-						onOpenPinnedDocs={openPinnedDocsTab}
 						onOpenConnections={openConnectionsView}
 						onOpenAgent={openAgentView}
 						onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
@@ -1417,7 +1411,6 @@ export function AppShell() {
 				onOpenFileInNewTab={openWorkspaceFileInNewTab}
 				onOpenFolioFileInNewTab={openFolioWorkspaceFileInNewTab}
 				onOpenCommandPalette={openCommandPalette}
-				onOpenDatabase={(databaseId) => openDatabasesTab(databaseId)}
 				panes={panes}
 				splitLayout={splitLayout}
 				focusedPaneId={focusedPaneId}

@@ -376,11 +376,6 @@
 
 .fileTreePinIcon {
 	flex-shrink: 0;
-	color: #e8b830;
-}
-
-.fileTreePinIcon path {
-	fill: currentcolor;
 }
 
 .fileTreeTaskProgress {

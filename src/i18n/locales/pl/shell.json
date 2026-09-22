@@ -22,6 +22,7 @@
 		"gitSync": "Synchronizacja Git",
 		"files": "Pliki",
 		"recents": "Ostatnie",
+		"noPinnedFiles": "Brak przypiętych plików.",
 		"noRecentFiles": "Brak ostatnio otwieranych plików.",
 		"sortNotes": "Sortuj",
 		"sort": "Sortuj",
@@ -54,18 +55,6 @@
 			"confirm": "Usuń",
 			"cancel": "Anuluj"
 		}
-	},
-	"pinned": {
-		"title": "Przypięte",
-		"loading": "Ładowanie przypiętych elementów...",
-		"loadFailed": "Nie udało się wczytać przypiętych kolekcji",
-		"empty": "Brak przypiętych elementów. Przypnij notatkę lub kolekcję, aby zachować ją tutaj.",
-		"collections": "Kolekcje",
-		"notes": "Notatki",
-		"savedSearch": "Zapisane wyszukiwanie",
-		"tagCollection": "Tag · #{{tag}}",
-		"folderCollection": "Folder · {{folder}}",
-		"allNotesCollection": "Wszystkie notatki"
 	},
 	"collections": {
 		"addView": "Dodaj widok",
@@ -213,7 +202,6 @@
 	"tabs": {
 		"allNotes": "Wszystkie",
 		"collections": "Kolekcje",
-		"pinned": "Przypięte",
 		"pinTab": "Przypnij",
 		"unpinTab": "Odepnij",
 		"unpinNamed": "Odepnij {{label}}"

@@ -167,7 +167,6 @@ interface MainContentProps {
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenFolioFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
-	onOpenDatabase: (databaseId: string) => void;
 	panes: Record<string, WorkspaceEditorPane>;
 	splitLayout: SplitEditorNode;
 	focusedPaneId: string;
@@ -211,7 +210,6 @@ export const MainContent = memo(function MainContent({
 	onOpenFileInNewTab,
 	onOpenFolioFileInNewTab,
 	onOpenCommandPalette,
-	onOpenDatabase,
 	panes,
 	splitLayout,
 	focusedPaneId,
@@ -358,7 +356,6 @@ export const MainContent = memo(function MainContent({
 					onOpenFile={onOpenFile}
 					onBrowseFile={onBrowseFile}
 					onOpenFileInNewTab={onOpenFileInNewTab}
-					onOpenDatabase={onOpenDatabase}
 					onStartRenamePath={onStartRenamePath}
 					onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
 					onLoadBreadcrumbDir={onLoadBreadcrumbDir}
@@ -384,7 +381,6 @@ export const MainContent = memo(function MainContent({
 			handleRenameFile,
 			onLoadBreadcrumbDir,
 			onNavigateBreadcrumbPath,
-			onOpenDatabase,
 			onOpenFile,
 			onBrowseFile,
 			onOpenFileInNewTab,

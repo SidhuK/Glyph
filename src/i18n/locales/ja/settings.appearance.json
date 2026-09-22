@@ -177,9 +177,6 @@
 			"newCanvas": {
 				"label": "新しいキャンバス"
 			},
-			"pinned": {
-				"label": "ピン留め"
-			},
 			"allNotes": {
 				"label": "すべてのノート"
 			},
