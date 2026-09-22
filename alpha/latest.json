@@ -1,15 +1,15 @@
 {
-  "version": "0.8.20-alpha.4",
-  "notes": "## What's Changed\n* Add Excalidraw canvas support by @SidhuK in https://github.com/SidhuK/Glyph/pull/580\n* Add /canvas command to AI composer by @SidhuK in https://github.com/SidhuK/Glyph/pull/581\n* Reduce macOS image asset size (#582)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/582\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.20-alpha.3...v0.8.20-alpha.4",
-  "pub_date": "2026-09-22T07:49:28.921Z",
+  "version": "0.8.20-alpha.5",
+  "notes": "## What's Changed\n* Polish file type badges by @SidhuK in https://github.com/SidhuK/Glyph/pull/583\n* Move pinned files into sidebar tabs (#584)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/584\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.20-alpha.4...v0.8.20-alpha.5",
+  "pub_date": "2026-09-22T11:14:31.745Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDVjOFZMajg2NlJUZFNuaVFyK1AwVTdJQlRZa3U2T2lNNXZyWnoza1NuWG1oUm9XOEZQeHRhUXJmeUh5Z2ZKcmxXenFJMi9FUjJWSmlmdW1QOWRydmdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwMDYzMzYyCWZpbGU6R2x5cGguYXBwLnRhci5negoxZXIrWkRFOHVleTN1ek1HNE9UQmVPZjVka2l4cURNRzMvQWFRS3pOeUo4Tndsd0dlZi9xOTNTVHBHaFZPR2MyUi95L29QQ3VNNm9oeXZIR3k4bDZEZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.4/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHllWGE3ZHBOd1BPZEM3VWhpUFNKV2Z6cmJSMS91NnROaStGYXFVZWZrRmFwbzhucmVoQnBaaDJhY200UDlMREoyZnJMN1FpdHVWOTlsUzRCZkdsaGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwMDc1NjY2CWZpbGU6R2x5cGguYXBwLnRhci5negp1VGxJWHRjMWhQL2U3TmVZd0FUeVE4T0dDcU53V2ZOckNlai9lZkoxYzlQa0N1TG5lclRsaGt6WXNSZTBMR1VFWlhOSUlQTndVTHAyMStna2VRTjVDQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.5/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDVjOFZMajg2NlJUZFNuaVFyK1AwVTdJQlRZa3U2T2lNNXZyWnoza1NuWG1oUm9XOEZQeHRhUXJmeUh5Z2ZKcmxXenFJMi9FUjJWSmlmdW1QOWRydmdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwMDYzMzYyCWZpbGU6R2x5cGguYXBwLnRhci5negoxZXIrWkRFOHVleTN1ek1HNE9UQmVPZjVka2l4cURNRzMvQWFRS3pOeUo4Tndsd0dlZi9xOTNTVHBHaFZPR2MyUi95L29QQ3VNNm9oeXZIR3k4bDZEZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.4/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHllWGE3ZHBOd1BPZEM3VWhpUFNKV2Z6cmJSMS91NnROaStGYXFVZWZrRmFwbzhucmVoQnBaaDJhY200UDlMREoyZnJMN1FpdHVWOTlsUzRCZkdsaGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwMDc1NjY2CWZpbGU6R2x5cGguYXBwLnRhci5negp1VGxJWHRjMWhQL2U3TmVZd0FUeVE4T0dDcU53V2ZOckNlai9lZkoxYzlQa0N1TG5lclRsaGt6WXNSZTBMR1VFWlhOSUlQTndVTHAyMStna2VRTjVDQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.5/Glyph_aarch64.app.tar.gz"
     }
   }
 }
