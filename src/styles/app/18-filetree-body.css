@@ -349,19 +349,29 @@
 }
 
 .fileTreeExtBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	flex-shrink: 0;
-	font-size: calc(var(--text-base) * 0.8);
+	min-height: 16px;
+	padding: 0 4px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.7);
+	font-weight: var(--font-medium);
 	line-height: 1;
-	padding: 2px 5px;
-	border: 0;
-	border-radius: var(--pill-radius);
-	background: color-mix(in srgb, var(--bg-hover) 78%, var(--bg-secondary));
-	color: color-mix(in srgb, var(--text-secondary) 78%, var(--text-tertiary));
 	text-transform: uppercase;
-	letter-spacing: 0.03em;
+	letter-spacing: 0.04em;
 	margin-left: auto;
 	white-space: nowrap;
-	box-shadow: var(--pill-shadow);
+}
+
+.fileTreeTypeIcon {
+	flex-shrink: 0;
+	margin-left: auto;
+	color: var(--text-tertiary);
 }
 
 .fileTreePinIcon {
@@ -387,6 +397,7 @@
 
 .fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge {
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-hover));
+	border-color: color-mix(in srgb, var(--database-tone) 22%, transparent);
 	color: color-mix(in srgb, var(--database-tone) 66%, var(--text-primary));
 }
 

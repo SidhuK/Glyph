@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { useDraggable } from "@dnd-kit/react";
-import { StarIcon } from "@hugeicons/core-free-icons";
+import { PaintBoardIcon, StarIcon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import type { CSSProperties, KeyboardEvent, MouseEvent, MutableRefObject, Ref } from "react";
 import { memo, useCallback } from "react";
@@ -91,14 +91,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		onPrefetchFile?.(entry.rel_path);
 	});
 	const { stem: fileStem, ext: fileExt } = splitEditableFileName(entry.name);
-	const isMd = fileExt.toLowerCase() === ".md";
+	const isExcalidraw = fileExt.toLowerCase() === ".excalidraw";
 	const displayStem =
 		fileStem.trim() ||
 		basename(entry.rel_path)
 			.replace(/\.[^.]+$/, "")
 			.trim() ||
 		"Untitled";
-	const extBadge = !isMd && fileExt ? fileExt.slice(1) : "";
+	const extBadge = !entry.is_markdown && !isExcalidraw && fileExt ? fileExt.slice(1) : "";
 	const iconColor = customColor ? "var(--file-tree-row-icon-color)" : color;
 	const {
 		ref: draggableRef,
@@ -265,13 +265,22 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							<span className="fileTreeName">{displayStem}</span>
 							{previewText ? <span className="fileTreeFilePreview">{previewText}</span> : null}
 						</span>
-						{isPinned ? (
-							<HugeiconsIcon icon={StarIcon} size="var(--icon-sm)" className="fileTreePinIcon" />
-						) : null}
 						{taskSummary && taskSummary.total_count > 0 ? (
 							<TaskProgressIndicator summary={taskSummary} className="fileTreeTaskProgress" />
 						) : null}
-						{extBadge && <span className="fileTreeExtBadge">{extBadge}</span>}
+						{isExcalidraw ? (
+							<HugeiconsIcon
+								icon={PaintBoardIcon}
+								size="var(--icon-sm)"
+								className="fileTreeTypeIcon"
+								aria-hidden="true"
+							/>
+						) : extBadge ? (
+							<span className="fileTreeExtBadge">{extBadge}</span>
+						) : null}
+						{isPinned ? (
+							<HugeiconsIcon icon={StarIcon} size="var(--icon-sm)" className="fileTreePinIcon" />
+						) : null}
 					</m.button>
 				)}
 			</div>
