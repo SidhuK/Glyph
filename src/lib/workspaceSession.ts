@@ -10,8 +10,10 @@ import {
 } from "./splitEditor";
 
 const LEGACY_ALL_DOCS_TAB_ID = "__glyph_all_docs__";
+const LEGACY_PINNED_DOCS_TAB_ID = "__glyph_pinned_docs__";
 
-function normalizeSpecialTabTarget(target: string): string {
+function normalizeSpecialTabTarget(target: string): string | null {
+	if (target === LEGACY_PINNED_DOCS_TAB_ID) return null;
 	return target === LEGACY_ALL_DOCS_TAB_ID ? ACTIVITY_TIMELINE_TAB_ID : target;
 }
 
