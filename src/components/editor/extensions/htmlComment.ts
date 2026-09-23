@@ -3,7 +3,7 @@ import { Node, type MarkdownToken } from "@tiptap/core";
 const HTML_COMMENT_RE = /^ {0,3}<!--[\s\S]*?-->$/;
 const INLINE_COMMENT_RE = /^<!--[\s\S]*?-->/;
 const BLOCK_COMMENT_RE = /^ {0,3}<!--[\s\S]*?-->[\t ]*(?:\n|$)/;
-const BLOCK_COMMENT_START_RE = /^ {0,3}<!--/;
+const MIXED_COMMENT_LINE_RE = /^( {0,3}<!--[\s\S]*?-->)([^\n]*\S[^\n]*)(?:\n|$)/;
 
 function isHtmlCommentSource(value: unknown): value is string {
 	return typeof value === "string" && HTML_COMMENT_RE.test(value);
@@ -88,6 +88,9 @@ export const HtmlCommentBlock = Node.create({
 		return commentRaw(node.attrs.raw);
 	},
 	parseMarkdown(token, helpers) {
+		if (token.tokens?.length) {
+			return helpers.createNode("paragraph", undefined, helpers.parseInline(token.tokens));
+		}
 		return helpers.createNode("htmlCommentBlock", { raw: commentFromToken(token) });
 	},
 	renderMarkdown(node) {
@@ -97,9 +100,17 @@ export const HtmlCommentBlock = Node.create({
 		name: "htmlCommentBlock",
 		level: "block",
 		start(source) {
-			return BLOCK_COMMENT_START_RE.test(source) ? 0 : -1;
+			return BLOCK_COMMENT_RE.test(source) || MIXED_COMMENT_LINE_RE.test(source) ? 0 : -1;
 		},
-		tokenize(source) {
+		tokenize(source, _tokens, helpers) {
+			const mixed = source.match(MIXED_COMMENT_LINE_RE);
+			if (mixed) {
+				return {
+					type: "htmlCommentBlock",
+					raw: mixed[0],
+					tokens: helpers.inlineTokens(mixed[1] + mixed[2]),
+				};
+			}
 			const match = source.match(BLOCK_COMMENT_RE);
 			return match ? { type: "htmlCommentBlock", raw: match[0], text: match[0] } : undefined;
 		},

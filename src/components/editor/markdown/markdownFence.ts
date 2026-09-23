@@ -37,7 +37,7 @@ export function isInsideMarkdownCodeFence(tracker: MarkdownFenceTracker): boolea
 	return tracker.activeFence !== null;
 }
 
-function findInlineCodeClose(line: string, openStart: number, tickCount: number): number {
+export function findInlineCodeClose(line: string, openStart: number, tickCount: number): number {
 	let search = openStart + tickCount;
 	while (search < line.length) {
 		const next = line.indexOf("`".repeat(tickCount), search);

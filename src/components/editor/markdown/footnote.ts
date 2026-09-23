@@ -1,10 +1,16 @@
-import { transformMarkdownOutsideCode } from "./markdownFence";
+import {
+	createMarkdownFenceTracker,
+	findInlineCodeClose,
+	isInsideMarkdownCodeFence,
+	updateMarkdownFenceTracker,
+} from "./markdownFence";
 
 // Matches a footnote token such as `[^1]` or `[^note]`. The id may not contain
 // whitespace or closing brackets.
 export const FOOTNOTE_PATTERN = /\[\^([^\]\s]+)\]/g;
 const UNESCAPED_FOOTNOTE_PATTERN = /(?<!\\)\[\^([^\]\s]+)\]/g;
-const ESCAPED_FOOTNOTE_PATTERN = /\\\[\^([^\]\\\s]+)\\\]/g;
+const PROTECTED_FOOTNOTE_MARKER = "\u2063";
+const ESCAPED_FOOTNOTE_PATTERN = /\\\[\^([^\]\s]+)\\\]\u2063/g;
 
 export type FootnoteKind = "ref" | "def";
 
@@ -57,34 +63,58 @@ export function findFootnoteCounterpartOffset(
 
 function transformOutsideComments(input: string, transform: (text: string) => string): string {
 	let insideComment = false;
-	return transformMarkdownOutsideCode(input, (text) => {
-		let output = "";
-		let cursor = 0;
-		while (cursor < text.length) {
-			if (insideComment) {
-				const end = text.indexOf("-->", cursor);
-				if (end === -1) return output + text.slice(cursor);
-				output += text.slice(cursor, end + 3);
-				cursor = end + 3;
-				insideComment = false;
-				continue;
+	const fence = createMarkdownFenceTracker();
+	return input
+		.split("\n")
+		.map((line) => {
+			if (!insideComment) {
+				if (/^( {4}|\t)/.test(line)) return line;
+				if (updateMarkdownFenceTracker(line, fence) || isInsideMarkdownCodeFence(fence))
+					return line;
 			}
-			const start = text.indexOf("<!--", cursor);
-			if (start === -1) return output + transform(text.slice(cursor));
-			output += transform(text.slice(cursor, start));
-			insideComment = true;
-			cursor = start;
-		}
-		return output;
-	});
+			let output = "";
+			let cursor = 0;
+			while (cursor < line.length) {
+				if (insideComment) {
+					const end = line.indexOf("-->", cursor);
+					if (end === -1) return output + line.slice(cursor);
+					output += line.slice(cursor, end + 3);
+					cursor = end + 3;
+					insideComment = false;
+					continue;
+				}
+				const start = line.indexOf("<!--", cursor);
+				const tickStart = line.indexOf("`", cursor);
+				if (tickStart !== -1 && (start === -1 || tickStart < start)) {
+					output += transform(line.slice(cursor, tickStart));
+					const ticks = line.slice(tickStart).match(/^`+/)?.[0] ?? "`";
+					const close = findInlineCodeClose(line, tickStart, ticks.length);
+					if (close === -1) return output + line.slice(tickStart);
+					output += line.slice(tickStart, close + ticks.length);
+					cursor = close + ticks.length;
+					continue;
+				}
+				if (start === -1) return output + transform(line.slice(cursor));
+				output += transform(line.slice(cursor, start));
+				insideComment = true;
+				cursor = start;
+			}
+			return output;
+		})
+		.join("\n");
 }
 
 export function protectFootnotes(input: string): string {
 	return transformOutsideComments(input, (text) =>
-		text.replace(UNESCAPED_FOOTNOTE_PATTERN, String.raw`\[^$1\]`),
+		text.replace(UNESCAPED_FOOTNOTE_PATTERN, String.raw`\[^$1\]${PROTECTED_FOOTNOTE_MARKER}`),
 	);
 }
 
 export function restoreEscapedFootnotes(input: string): string {
-	return transformOutsideComments(input, (text) => text.replace(ESCAPED_FOOTNOTE_PATTERN, "[^$1]"));
+	return transformOutsideComments(input, (text) =>
+		text.replace(
+			ESCAPED_FOOTNOTE_PATTERN,
+			(_match, id: string) => `[^${id.replace(/\\\\/g, "\\")}]`,
+		),
+	);
 }
