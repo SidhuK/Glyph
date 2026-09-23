@@ -161,7 +161,7 @@ Errors from the iframe surface in `.htmlEmbedError` under the preview frame.
 | `src/components/editor/extensions/htmlEmbedPreview.ts`     | Preview decorations, play-to-render toggling |
 | `src/components/editor/extensions/htmlEmbed/sandbox.ts`    | `srcdoc` builder, CSP, iframe widget, sizing |
 | `src/components/editor/markdown/htmlEmbedMarkdown.ts`      | Raw HTML preprocess/postprocess              |
-| `src/components/editor/markdown/wikiLinkMarkdownBridge.ts` | Pipeline wiring                              |
+| `src/components/editor/markdown/editorMarkdownBridge.ts`   | Pipeline wiring                              |
 | `src/lib/printHtml.ts`                                     | Static sanitization for print                |
 | `src/styles/app/26-node-note-overlays.css`                 | `.htmlEmbedWidget`, frame, error styles      |
 

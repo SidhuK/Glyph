@@ -32,7 +32,6 @@ export const HtmlCommentInline = Node.create({
 	group: "inline",
 	inline: true,
 	atom: true,
-	selectable: true,
 	markdownTokenName: "htmlCommentInline",
 	addAttributes() {
 		return { raw: { default: "" } };
@@ -67,7 +66,6 @@ export const HtmlCommentBlock = Node.create({
 	name: "htmlCommentBlock",
 	group: "block",
 	atom: true,
-	selectable: true,
 	markdownTokenName: "htmlCommentBlock",
 	addAttributes() {
 		return { raw: { default: "" } };
