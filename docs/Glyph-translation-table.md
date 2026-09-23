@@ -632,13 +632,10 @@ This is a simple worksheet for translating Glyph into any language. Leave the En
 | About Vim Mode                                                                                                                                                                                                   |                             |
 | Vim Mode is available only in Raw Markdown mode.                                                                                                                                                                 |                             |
 | File tree                                                                                                                                                                                                        |                             |
-| Choose what appears in the sidebar file tree and Folio list.                                                                                                                                                     |                             |
+| Configure the sidebar file tree.                                                                                                                                                                                 |                             |
 | Show folder file counts                                                                                                                                                                                          |                             |
 | Show a recursive file total at the end of each folder row in the file tree.                                                                                                                                      |                             |
 | Show folder file counts                                                                                                                                                                                          |                             |
-| Show non-Markdown files                                                                                                                                                                                          |                             |
-| Show PDFs, images, and other attachments in the file tree and Folio list. Turning this off hides them from those views only.                                                                                     |                             |
-| Show non-Markdown files                                                                                                                                                                                          |                             |
 | File tree sort                                                                                                                                                                                                   |                             |
 | Choose how folders and files are ordered in the sidebar tree.                                                                                                                                                    |                             |
 | File tree sort                                                                                                                                                                                                   |                             |
@@ -927,9 +924,6 @@ This is a simple worksheet for translating Glyph into any language. Leave the En
 | Show folder file counts                                                                    |                             |
 | File tree                                                                                  |                             |
 | Search keywords: sidebar, counts                                                           |                             |
-| Show non-Markdown files                                                                    |                             |
-| File tree                                                                                  |                             |
-| Search keywords: sidebar, attachments, pdf, images, folio, file tree                       |                             |
 | File tree sort                                                                             |                             |
 | File tree                                                                                  |                             |
 | Search keywords: sidebar, folders, files, order                                            |                             |

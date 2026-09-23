@@ -188,16 +188,11 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Arborescence des fichiers",
-		"sectionDescription": "Choisissez ce qui apparaît dans l’arborescence de la barre latérale et dans la liste Folio.",
+		"sectionDescription": "Configurez l’arborescence de la barre latérale.",
 		"folderCounts": {
 			"label": "Afficher le nombre de fichiers par dossier",
 			"description": "Afficher le total récursif de fichiers à la fin de chaque ligne de dossier dans l’arborescence.",
 			"ariaLabel": "Afficher le nombre de fichiers par dossier"
-		},
-		"nonMarkdownFiles": {
-			"label": "Afficher les fichiers non Markdown",
-			"description": "Afficher les PDF, images et autres pièces jointes dans l’arborescence et la liste Folio. Si désactivé, ils sont masqués uniquement dans ces vues.",
-			"ariaLabel": "Afficher les fichiers non Markdown"
 		},
 		"sort": {
 			"label": "Tri de l’arborescence",

@@ -1,11 +1,9 @@
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useRef } from "react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 import type { AllDocsPage } from "../../lib/navigationPrefetch";
-import { loadSettings } from "../../lib/settings";
 import type { FileTreeSortMode } from "../../lib/settings/model";
 import type { AllDocsItem, FsEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { basename, displayNameFromPath, normalizeRelPath } from "../../utils/path";
 import type { FolioScope } from "./folioScopes";
 
@@ -17,7 +15,6 @@ export interface FolioItem extends Omit<AllDocsItem, "created" | "updated"> {
 
 const FOLIO_NOTES_PAGE_SIZE = 200;
 const FOLIO_NON_MARKDOWN_FILE_LIMIT = 5_000;
-const FILE_VISIBILITY_QUERY_KEY = ["settings", "folio-file-visibility"] as const;
 
 function scopeQueryKey(scope: FolioScope): readonly string[] {
 	switch (scope.kind) {
@@ -118,36 +115,9 @@ export function useFolioNotes(
 	query: string,
 	pinnedPaths: string[],
 ) {
-	const queryClient = useQueryClient();
-	const visibilityRevisionRef = useRef(0);
-	const latestVisibilityRef = useRef<boolean | null>(null);
 	const folderPrefix =
 		scope.kind === "folder" ? normalizeRelPath(scope.folderPrefix) || null : null;
-	const visibilityQuery = useQuery({
-		queryKey: FILE_VISIBILITY_QUERY_KEY,
-		queryFn: async () => {
-			const revision = visibilityRevisionRef.current;
-			try {
-				const loaded = (await loadSettings()).ui.showNonMarkdownFiles;
-				return revision === visibilityRevisionRef.current
-					? loaded
-					: (latestVisibilityRef.current ?? loaded);
-			} catch {
-				return latestVisibilityRef.current ?? true;
-			}
-		},
-	});
-	const includesNonMarkdownFiles =
-		visibilityQuery.data === true && scope.kind !== "tag" && scope.kind !== "person";
-
-	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
-			const nextVisibility = payload.ui.showNonMarkdownFiles;
-			visibilityRevisionRef.current += 1;
-			latestVisibilityRef.current = nextVisibility;
-			queryClient.setQueryData(FILE_VISIBILITY_QUERY_KEY, nextVisibility);
-		}
-	});
+	const includesNonMarkdownFiles = scope.kind !== "tag" && scope.kind !== "person";
 
 	const notesQuery = useInfiniteQuery({
 		queryKey: [

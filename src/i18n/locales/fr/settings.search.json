@@ -585,20 +585,6 @@
 			"section": "Arborescence des fichiers",
 			"keywords": ["barre latérale", "compteurs", "sidebar", "counts"]
 		},
-		"general-file-tree-non-markdown-files": {
-			"title": "Afficher les fichiers non Markdown",
-			"section": "Expérimental",
-			"keywords": [
-				"barre latérale",
-				"pièces jointes",
-				"pdf",
-				"images",
-				"folio",
-				"arborescence",
-				"sidebar",
-				"attachments"
-			]
-		},
 		"general-file-tree-sort": {
 			"title": "Tri de l’arborescence",
 			"section": "Arborescence des fichiers",

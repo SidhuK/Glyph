@@ -177,16 +177,11 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Árbol de archivos",
-		"sectionDescription": "Elige qué aparece en el árbol de archivos de la barra lateral y en la lista de Folio.",
+		"sectionDescription": "Configura el árbol de archivos de la barra lateral.",
 		"folderCounts": {
 			"label": "Mostrar recuento de archivos por carpeta",
 			"description": "Mostrar el total recursivo de archivos al final de cada fila de carpeta en el árbol.",
 			"ariaLabel": "Mostrar recuento de archivos por carpeta"
-		},
-		"nonMarkdownFiles": {
-			"label": "Mostrar archivos que no son Markdown",
-			"description": "Mostrar PDF, imágenes y otros adjuntos en el árbol de archivos y en la lista de Folio. Si lo desactivas, solo se ocultan en esas vistas.",
-			"ariaLabel": "Mostrar archivos que no son Markdown"
 		},
 		"sort": {
 			"label": "Orden del árbol de archivos",

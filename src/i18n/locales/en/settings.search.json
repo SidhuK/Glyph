@@ -628,11 +628,6 @@
 			"description": "Add up to three folder shortcuts to the Files and Tags switcher.",
 			"keywords": ["sidebar", "folders", "quick folders", "shortcuts"]
 		},
-		"general-file-tree-non-markdown-files": {
-			"title": "Show non-Markdown files",
-			"section": "Experimental",
-			"keywords": ["sidebar", "attachments", "pdf", "images", "folio", "file tree"]
-		},
 		"general-file-tree-sort": {
 			"title": "File tree sort",
 			"section": "File tree",

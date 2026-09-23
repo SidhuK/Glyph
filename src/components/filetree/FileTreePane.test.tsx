@@ -135,7 +135,6 @@ describe("FileTreePane", () => {
 		loadSettingsMock.mockResolvedValue({
 			ui: {
 				showFileTreeFolderCounts: false,
-				showNonMarkdownFiles: true,
 				fileTreeSortMode: "name-asc",
 			},
 		});
@@ -274,15 +273,7 @@ describe("FileTreePane", () => {
 		expect(container.querySelector(".fileTreePinnedSection")).toBeNull();
 	});
 
-	it("hides non-markdown files when the setting is off", async () => {
-		loadSettingsMock.mockResolvedValue({
-			ui: {
-				showFileTreeFolderCounts: false,
-				showNonMarkdownFiles: false,
-				fileTreeSortMode: "name-asc",
-			},
-		});
-
+	it("shows non-markdown files", async () => {
 		await act(async () => {
 			root.render(
 				<QueryClientProvider client={queryClient}>
@@ -330,6 +321,6 @@ describe("FileTreePane", () => {
 		});
 
 		expect(container.textContent).toContain("note");
-		expect(container.textContent).not.toContain("image");
+		expect(container.textContent).toContain("image");
 	});
 });

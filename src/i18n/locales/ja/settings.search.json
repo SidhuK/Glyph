@@ -571,21 +571,6 @@
 			"section": "ファイルツリー",
 			"keywords": ["サイドバー", "件数", "sidebar", "counts"]
 		},
-		"general-file-tree-non-markdown-files": {
-			"title": "Markdown 以外のファイルを表示",
-			"section": "実験的",
-			"keywords": [
-				"サイドバー",
-				"添付",
-				"pdf",
-				"画像",
-				"folio",
-				"ファイルツリー",
-				"sidebar",
-				"attachments",
-				"images"
-			]
-		},
 		"general-file-tree-sort": {
 			"title": "ファイルツリーの並べ替え",
 			"section": "ファイルツリー",

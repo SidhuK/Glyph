@@ -552,21 +552,6 @@
 			"section": "파일 트리",
 			"keywords": ["사이드바", "개수", "sidebar", "counts"]
 		},
-		"general-file-tree-non-markdown-files": {
-			"title": "Markdown이 아닌 파일 표시",
-			"section": "실험적",
-			"keywords": [
-				"사이드바",
-				"첨부",
-				"pdf",
-				"이미지",
-				"folio",
-				"파일 트리",
-				"sidebar",
-				"attachments",
-				"images"
-			]
-		},
 		"general-file-tree-sort": {
 			"title": "파일 트리 정렬",
 			"section": "파일 트리",

@@ -177,16 +177,11 @@
 	},
 	"fileTree": {
 		"sectionTitle": "ファイルツリー",
-		"sectionDescription": "サイドバーのファイルツリーと Folio リストに表示する内容を選びます。",
+		"sectionDescription": "サイドバーのファイルツリーを設定します。",
 		"folderCounts": {
 			"label": "フォルダのファイル数を表示",
 			"description": "ファイルツリーの各フォルダ行の末尾に、再帰的なファイル合計を表示します。",
 			"ariaLabel": "フォルダのファイル数を表示"
-		},
-		"nonMarkdownFiles": {
-			"label": "Markdown 以外のファイルを表示",
-			"description": "PDF、画像、その他の添付ファイルをファイルツリーと Folio リストに表示します。オフにすると、これらのビューからのみ非表示になります。",
-			"ariaLabel": "Markdown 以外のファイルを表示"
 		},
 		"sort": {
 			"label": "ファイルツリーの並べ替え",

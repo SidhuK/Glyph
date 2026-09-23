@@ -187,16 +187,11 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Drzewo plików",
-		"sectionDescription": "Wybierz, co pojawia się w drzewie plików na pasku bocznym oraz na liście Folio.",
+		"sectionDescription": "Skonfiguruj drzewo plików na pasku bocznym.",
 		"folderCounts": {
 			"label": "Pokaż liczbę plików w folderach",
 			"description": "Pokaż rekurencyjną sumę plików na końcu każdego wiersza folderu w drzewie plików.",
 			"ariaLabel": "Pokaż liczbę plików w folderach"
-		},
-		"nonMarkdownFiles": {
-			"label": "Pokaż pliki inne niż Markdown",
-			"description": "Pokaż pliki PDF, obrazy i inne załączniki w drzewie plików i na liście Folio. Wyłączenie tej opcji ukrywa je tylko w tych widokach.",
-			"ariaLabel": "Pokaż pliki inne niż Markdown"
 		},
 		"sort": {
 			"label": "Sortowanie drzewa plików",

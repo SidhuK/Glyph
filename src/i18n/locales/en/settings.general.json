@@ -203,16 +203,11 @@
 	},
 	"fileTree": {
 		"sectionTitle": "File tree",
-		"sectionDescription": "Choose what appears in the sidebar file tree and Folio list.",
+		"sectionDescription": "Configure the sidebar file tree.",
 		"folderCounts": {
 			"label": "Show folder file counts",
 			"description": "Show a recursive file total at the end of each folder row in the file tree.",
 			"ariaLabel": "Show folder file counts"
-		},
-		"nonMarkdownFiles": {
-			"label": "Show non-Markdown files",
-			"description": "Show PDFs, images, and other attachments in the file tree and Folio list. Turning this off hides them from those views only.",
-			"ariaLabel": "Show non-Markdown files"
 		},
 		"sort": {
 			"label": "File tree sort",
