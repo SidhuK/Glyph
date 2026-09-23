@@ -55,7 +55,6 @@ import { toast } from "../../lib/toast";
 import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
-import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
 import { FileTreePane } from "../filetree";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
 
@@ -808,22 +807,11 @@ export const SidebarContent = memo(function SidebarContent({
 							</button>
 							{sidebarFolderTabs.map((folderPath, index) => {
 								const appearance = itemAppearance[folderPath];
-								const customColor =
-									appearance?.color && isEditorTextColor(appearance.color)
-										? getEditorTextColorOption(appearance.color)
-										: null;
 								return (
 									<button
 										key={folderPath}
 										type="button"
-										className="sidebarViewTab sidebarViewFolderTab"
-										style={
-											customColor
-												? {
-														color: `var(${customColor.cssVar}, ${customColor.fallbackHex})`,
-													}
-												: undefined
-										}
+										className="sidebarViewTab"
 										id={`sidebar-folder-tab-${index + 1}`}
 										role="tab"
 										aria-label={t("sidebar.openFolderTab", {
@@ -841,13 +829,13 @@ export const SidebarContent = memo(function SidebarContent({
 											<DatabaseColumnIcon
 												iconName={appearance.icon}
 												size="var(--icon-md)"
-												className="sidebarViewTabIcon sidebarViewTabIconAccent sidebarViewTabIconFilled"
+												className="sidebarViewTabIcon sidebarViewTabIconFilled"
 											/>
 										) : (
 											<HugeiconsIcon
 												icon={Folder01Icon}
 												size="var(--icon-md)"
-												className="sidebarViewTabIcon sidebarViewTabIconAccent sidebarViewTabIconFilled"
+												className="sidebarViewTabIcon sidebarViewTabIconFilled"
 												aria-hidden="true"
 											/>
 										)}

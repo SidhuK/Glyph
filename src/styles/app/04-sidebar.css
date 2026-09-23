@@ -362,10 +362,6 @@ button.sidebarViewTab {
 	opacity: 0.64;
 }
 
-.sidebarViewTabIconAccent {
-	color: var(--interactive-accent);
-}
-
 .sidebarViewTabIconFilled path {
 	fill: currentcolor;
 	fill-opacity: 0.2;

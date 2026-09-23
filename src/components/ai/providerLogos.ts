@@ -1,8 +1,7 @@
 import openaiLightThemeLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
 import ampLogoUrl from "../../assets/provider-logos/amp.svg?url";
 import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
-import codexDarkThemeLogoUrl from "../../assets/provider-logos/codex-dark.svg?url";
-import codexLightThemeLogoUrl from "../../assets/provider-logos/codex-light.svg?url";
+import codexLogoUrl from "../../assets/provider-logos/codex-color.svg?url";
 import cursorDarkThemeLogoUrl from "../../assets/provider-logos/cursor-dark.svg?url";
 import cursorLightThemeLogoUrl from "../../assets/provider-logos/cursor-light.svg?url";
 import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
@@ -38,8 +37,7 @@ export const providerLogoMeta: Record<
 	ollama: { src: ollamaLogoUrl, label: "Ollama" },
 	llama_cpp: { src: llamacppLogoUrl, label: "llama.cpp" },
 	codex_chatgpt: {
-		src: codexLightThemeLogoUrl,
-		darkSrc: codexDarkThemeLogoUrl,
+		src: codexLogoUrl,
 		label: "Codex (ChatGPT)",
 	},
 	amp: { src: ampLogoUrl, label: "Amp" },
