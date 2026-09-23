@@ -314,29 +314,6 @@
 			"section": "Klucz API",
 			"keywords": ["sekret", "token", "poświadczenie", "zaktualizuj klucz"]
 		},
-		"ai-chatgpt-account": {
-			"title": "Konto ChatGPT",
-			"section": "Konto ChatGPT",
-			"keywords": ["codex", "konto", "uwierzytelnianie", "limity żądań"]
-		},
-		"ai-chatgpt-identity": {
-			"title": "Tożsamość",
-			"section": "Konto ChatGPT",
-			"description": "Połączone konto, z którego Glyph obecnie korzysta dla funkcji Codex.",
-			"keywords": ["e-mail", "nazwa wyświetlana", "połącz", "rozłącz"]
-		},
-		"ai-chatgpt-authentication": {
-			"title": "Uwierzytelnianie",
-			"section": "Konto ChatGPT",
-			"description": "Sposób uwierzytelniania bieżącej sesji ChatGPT.",
-			"keywords": ["tryb uwierzytelniania", "sesja"]
-		},
-		"ai-chatgpt-rate-limits": {
-			"title": "Limity żądań",
-			"section": "Konto ChatGPT",
-			"description": "Sprawdź pozostałą pojemność dla połączonego konta.",
-			"keywords": ["użycie", "pozostało", "resetuje się"]
-		},
 		"space-daily-notes-folder": {
 			"title": "Folder",
 			"section": "Notatki dzienne",

@@ -14,7 +14,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::ai_rig::{
     events::{emit_chunk, emit_status},
-    helpers::{cli_runtime_path, emit_tool, find_cli_binary, pipe_stderr, price_string, value_as_u32},
+    helpers::{cli_runtime_path, emit_tool, find_cli_binary, pipe_stderr},
     providers::build_transcript,
     types::{
         AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiReasoningEffortOption,
@@ -70,15 +70,6 @@ async fn abort_and_stop(child: &mut Child, stdin: &mut Option<ChildStdin>) {
     }
 }
 
-fn string_list(value: Option<&Value>) -> Option<Vec<String>> {
-    let items = value?
-        .as_array()?
-        .iter()
-        .filter_map(|item| item.as_str().map(str::to_string))
-        .collect::<Vec<_>>();
-    (!items.is_empty()).then_some(items)
-}
-
 fn reasoning_options(model: &Value) -> Option<Vec<AiReasoningEffortOption>> {
     if model.get("reasoning").and_then(|v| v.as_bool()) != Some(true) {
         return None;
@@ -125,27 +116,11 @@ fn parse_pi_model(value: &Value) -> Option<AiModel> {
         }
         _ => raw_name.to_string(),
     };
-    let cost = value.get("cost").unwrap_or(&Value::Null);
     let reasoning_effort = reasoning_options(value);
 
     Some(AiModel {
         id,
         name,
-        context_length: value_as_u32(value.get("contextWindow")),
-        description: provider.map(|provider| format!("PI provider: {provider}")),
-        input_modalities: string_list(value.get("input")),
-        output_modalities: None,
-        tokenizer: None,
-        prompt_pricing: price_string(cost.get("input")),
-        completion_pricing: price_string(cost.get("output")),
-        supported_parameters: Some(
-            ["tools"]
-                .into_iter()
-                .chain(reasoning_effort.is_some().then_some("reasoning"))
-                .map(str::to_string)
-                .collect(),
-        ),
-        max_completion_tokens: value_as_u32(value.get("maxTokens")),
         reasoning_effort,
         default_reasoning_effort: value
             .get("reasoning")

@@ -740,15 +740,6 @@ interface AiChatStartResult {
 export interface AiModel {
 	id: string;
 	name: string;
-	context_length: number | null;
-	description: string | null;
-	input_modalities: string[] | null;
-	output_modalities: string[] | null;
-	tokenizer: string | null;
-	prompt_pricing: string | null;
-	completion_pricing: string | null;
-	supported_parameters: string[] | null;
-	max_completion_tokens: number | null;
 	reasoning_effort?: AiReasoningEffortOption[] | null;
 	default_reasoning_effort?: string | null;
 }
@@ -756,16 +747,6 @@ export interface AiModel {
 interface AiReasoningEffortOption {
 	effort: string;
 	description?: string | null;
-}
-
-export interface ProviderSupportEntry {
-	display_name: string;
-	url: string | null;
-	endpoints: Record<string, boolean>;
-}
-
-interface ProviderSupportDocument {
-	providers: Record<string, ProviderSupportEntry>;
 }
 
 export interface AiChatHistorySummary {
@@ -792,23 +773,6 @@ export interface AiStoredToolEvent {
 export interface AiChatHistoryDetail {
 	messages: AiMessage[];
 	tool_events: AiStoredToolEvent[];
-}
-
-interface CodexRateLimitWindow {
-	used_percent: number;
-	window_duration_mins?: number | null;
-	resets_at?: number | null;
-}
-
-interface CodexRateLimitBucket {
-	limit_id?: string | null;
-	limit_name?: string | null;
-	primary?: CodexRateLimitWindow | null;
-	secondary?: CodexRateLimitWindow | null;
-}
-
-interface CodexRateLimits {
-	buckets: CodexRateLimitBucket[];
 }
 
 type CommandDef<Args, Result> = { args: Args; result: Result };
@@ -1153,7 +1117,6 @@ interface TauriCommands {
 	ai_secret_set: CommandDef<{ profile_id: string; api_key: string }, void>;
 	ai_secret_clear: CommandDef<{ profile_id: string }, void>;
 	ai_secret_status: CommandDef<{ profile_id: string }, boolean>;
-	ai_provider_support: CommandDef<void, ProviderSupportDocument>;
 	ai_chat_start: CommandDef<
 		{
 			request: {
@@ -1172,30 +1135,6 @@ interface TauriCommands {
 	ai_models_list: CommandDef<{ profile_id: string; provider?: AiProviderKind | null }, AiModel[]>;
 	ai_chat_history_list: CommandDef<{ limit?: number | null }, AiChatHistorySummary[]>;
 	ai_chat_history_get: CommandDef<{ job_id: string }, AiChatHistoryDetail>;
-	codex_account_read: CommandDef<
-		void,
-		{
-			status: string;
-			email?: string | null;
-			display_name?: string | null;
-			auth_mode?: string | null;
-		}
-	>;
-	codex_login_start: CommandDef<
-		void,
-		{
-			auth_url: string;
-			flow_id: string;
-		}
-	>;
-	codex_login_complete: CommandDef<
-		{ flow_id: string },
-		{
-			connected: boolean;
-		}
-	>;
-	codex_logout: CommandDef<void, void>;
-	codex_rate_limits_read: CommandDef<void, CodexRateLimits>;
 	ai_context_index: CommandDef<void, AiContextIndexResponse>;
 	ai_context_build: CommandDef<
 		{

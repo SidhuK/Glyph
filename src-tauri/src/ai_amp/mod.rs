@@ -139,36 +139,15 @@ fn handle_amp_event(
 
 pub fn list_models() -> Vec<AiModel> {
     [
-        (
-            "smart",
-            "Smart",
-            "State-of-the-art Amp mode for maximum capability and autonomy.",
-        ),
-        (
-            "rush",
-            "Rush",
-            "Faster, cheaper Amp mode for small well-defined tasks.",
-        ),
-        ("deep", "Deep", "Deep reasoning Amp mode for complex work."),
-        (
-            "large",
-            "Large",
-            "Large-context Amp mode for broad codebase tasks.",
-        ),
+        ("smart", "Smart"),
+        ("rush", "Rush"),
+        ("deep", "Deep"),
+        ("large", "Large"),
     ]
     .into_iter()
-    .map(|(id, name, description)| AiModel {
+    .map(|(id, name)| AiModel {
         id: id.to_string(),
         name: format!("Amp {name}"),
-        context_length: None,
-        description: Some(description.to_string()),
-        input_modalities: None,
-        output_modalities: None,
-        tokenizer: None,
-        prompt_pricing: None,
-        completion_pricing: None,
-        supported_parameters: Some(vec!["tools".to_string()]),
-        max_completion_tokens: None,
         reasoning_effort: None,
         default_reasoning_effort: None,
     })

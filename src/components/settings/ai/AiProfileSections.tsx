@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { AiApiKeySection } from "./AiApiKeySection";
-import { AiCodexAccountSection } from "./AiCodexAccountSection";
 import { AiProviderSection } from "./AiProviderSection";
 import { providerNeedsApiKey } from "./providerCapabilities";
 import { useApiKeySettings } from "./useApiKeySettings";
-import { useCodexAccount } from "./useCodexAccount";
 
 interface AiProfileSectionsProps {
 	profiles: AiProfile[];
@@ -61,9 +59,6 @@ function AiProfileSectionsBody({
 
 	const { apiState, setApiKeyDraft, handleSetApiKey, handleClearApiKey } =
 		useApiKeySettings(activeProfileId);
-	const { codexState, nowMs, handleCodexConnect, handleCodexDisconnect } = useCodexAccount(
-		profileDraft?.provider,
-	);
 
 	const providerUsesApiKey = useMemo(
 		() => !profileDraft?.provider || providerNeedsApiKey(profileDraft.provider),
@@ -110,15 +105,6 @@ function AiProfileSectionsBody({
 			) : null}
 
 			{apiState.error ? <div className="settingsError">{apiState.error}</div> : null}
-
-			{profileDraft?.provider === "codex_chatgpt" ? (
-				<AiCodexAccountSection
-					codexState={codexState}
-					nowMs={nowMs}
-					onConnect={handleCodexConnect}
-					onDisconnect={handleCodexDisconnect}
-				/>
-			) : null}
 
 			{profileDraft && providerUsesApiKey ? (
 				<AiApiKeySection

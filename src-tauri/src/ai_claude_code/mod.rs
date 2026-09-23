@@ -24,44 +24,23 @@ const RUN_TIMEOUT: Duration = Duration::from_secs(600);
 const EXIT_AFTER_RESULT_GRACE: Duration = Duration::from_secs(2);
 const STARTUP_OUTPUT_TIMEOUT: Duration = Duration::from_secs(30);
 const DEFAULT_MODEL_ID: &str = "default";
-const CLAUDE_CODE_ALIAS_MODELS: &[(&str, &str, &str)] = &[
-    (
-        DEFAULT_MODEL_ID,
-        "Default",
-        "Claude Code runtime default for the signed-in account.",
-    ),
-    ("sonnet", "Sonnet", "Claude Code latest Sonnet alias."),
-    (
-        "sonnet[1m]",
-        "Sonnet (1M context)",
-        "Claude Code latest Sonnet alias with a 1 million token context window.",
-    ),
-    ("opus", "Opus", "Claude Code latest Opus alias."),
-    (
-        "opusplan",
-        "Opus Plan",
-        "Claude Code uses Opus for planning and Sonnet for execution.",
-    ),
-    ("haiku", "Haiku", "Claude Code latest Haiku alias."),
+const CLAUDE_CODE_ALIAS_MODELS: &[(&str, &str)] = &[
+    (DEFAULT_MODEL_ID, "Default"),
+    ("sonnet", "Sonnet"),
+    ("sonnet[1m]", "Sonnet (1M context)"),
+    ("opus", "Opus"),
+    ("opusplan", "Opus Plan"),
+    ("haiku", "Haiku"),
 ];
 
 fn find_claude_binary() -> Result<PathBuf, String> {
     find_cli_binary("Claude Code", "CLAUDE_CODE_CLI_PATH", "claude")
 }
 
-fn model_entry(id: &str, name: &str, description: &str) -> AiModel {
+fn model_entry(id: &str, name: &str) -> AiModel {
     AiModel {
         id: id.to_string(),
         name: name.to_string(),
-        context_length: None,
-        description: Some(description.to_string()),
-        input_modalities: None,
-        output_modalities: None,
-        tokenizer: None,
-        prompt_pricing: None,
-        completion_pricing: None,
-        supported_parameters: Some(vec!["tools".to_string()]),
-        max_completion_tokens: None,
         reasoning_effort: None,
         default_reasoning_effort: None,
     }
@@ -199,17 +178,13 @@ fn title_word(value: &str) -> String {
 }
 
 fn model_entry_for_id(id: &str) -> AiModel {
-    if let Some((_, name, description)) = CLAUDE_CODE_ALIAS_MODELS
+    if let Some((_, name)) = CLAUDE_CODE_ALIAS_MODELS
         .iter()
-        .find(|(alias, _, _)| *alias == id)
+        .find(|(alias, _)| *alias == id)
     {
-        return model_entry(id, name, description);
+        return model_entry(id, name);
     }
-    model_entry(
-        id,
-        &claude_model_name(id),
-        "Claude Code model discovered from the installed Claude Code runtime.",
-    )
+    model_entry(id, &claude_model_name(id))
 }
 
 pub fn list_models(root: &Path, profile: &AiProfile) -> Result<Vec<AiModel>, String> {
@@ -217,7 +192,7 @@ pub fn list_models(root: &Path, profile: &AiProfile) -> Result<Vec<AiModel>, Str
     let mut seen = HashSet::new();
     let mut ids = Vec::new();
 
-    for (id, _, _) in CLAUDE_CODE_ALIAS_MODELS {
+    for (id, _) in CLAUDE_CODE_ALIAS_MODELS {
         push_model_id(&mut ids, &mut seen, id);
     }
     collect_models_from_runtime(&binary, &mut ids, &mut seen);

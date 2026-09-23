@@ -316,29 +316,6 @@
 			"section": "API Key",
 			"keywords": ["secret", "token", "credential", "update key"]
 		},
-		"ai-chatgpt-account": {
-			"title": "ChatGPT Account",
-			"section": "ChatGPT Account",
-			"keywords": ["codex", "account", "authentication", "rate limits"]
-		},
-		"ai-chatgpt-identity": {
-			"title": "Identity",
-			"section": "ChatGPT Account",
-			"description": "The connected account Glyph is currently using for Codex.",
-			"keywords": ["email", "display name", "connect", "disconnect"]
-		},
-		"ai-chatgpt-authentication": {
-			"title": "Authentication",
-			"section": "ChatGPT Account",
-			"description": "How the current ChatGPT session is authenticated.",
-			"keywords": ["auth mode", "session"]
-		},
-		"ai-chatgpt-rate-limits": {
-			"title": "Rate limits",
-			"section": "ChatGPT Account",
-			"description": "Review remaining capacity for the connected account.",
-			"keywords": ["usage", "remaining", "resets"]
-		},
 		"space-daily-notes-folder": {
 			"title": "Folder",
 			"section": "Daily Notes",

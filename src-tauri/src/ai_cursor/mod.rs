@@ -42,15 +42,6 @@ fn model_entry(id: &str, name: &str) -> AiModel {
     AiModel {
         id: id.to_string(),
         name: name.to_string(),
-        context_length: None,
-        description: None,
-        input_modalities: None,
-        output_modalities: None,
-        tokenizer: None,
-        prompt_pricing: None,
-        completion_pricing: None,
-        supported_parameters: Some(vec!["tools".to_string()]),
-        max_completion_tokens: None,
         reasoning_effort: None,
         default_reasoning_effort: None,
     }

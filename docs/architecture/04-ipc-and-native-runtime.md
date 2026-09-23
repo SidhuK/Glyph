@@ -85,9 +85,9 @@ The command map covers these groups:
 - Databases: list, get, create, update, delete, query rows, mutate cells, create rows, status colors, preview context
 - Git sync: status, config, run, disconnect
 - Git history: commit list and diffs (`git_history_list`, `git_history_diff`)
-- AI: profiles, secrets, models, chat, context, history, provider support, Codex account and rate limits
+- AI: profiles, secrets, models, chat, context, history
 
-Keep command names descriptive. Most existing commands use a module prefix: `space_`, `index_`-style index names, `databases_`, `ai_`, `codex_`, `git_sync_`, `git_history_`, `external_markdown_`.
+Keep command names descriptive. Most existing commands use a module prefix: `space_`, `index_`-style index names, `databases_`, `ai_`, `git_sync_`, `git_history_`, `external_markdown_`.
 
 ## Note mutation boundary
 
@@ -204,7 +204,6 @@ The shortcut emits a native action that opens the quick note window. Keep this p
 
 During setup, Rust:
 
-- refreshes AI provider support metadata in the background
 - restores persisted main window geometry through `window_geometry`, falling back to 80 percent of the current monitor on first launch
 - applies macOS vibrancy when available
 
