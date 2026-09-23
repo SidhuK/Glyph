@@ -1,7 +1,16 @@
 import { Node, type MarkdownToken } from "@tiptap/core";
 
+const HTML_COMMENT_RE = /^ {0,3}<!--[\s\S]*?-->$/;
+const INLINE_COMMENT_RE = /^<!--[\s\S]*?-->/;
+const BLOCK_COMMENT_RE = /^ {0,3}<!--[\s\S]*?-->[\t ]*(?:\n|$)/;
+const BLOCK_COMMENT_START_RE = /^ {0,3}<!--/;
+
+function isHtmlCommentSource(value: unknown): value is string {
+	return typeof value === "string" && HTML_COMMENT_RE.test(value);
+}
+
 function commentFromToken(token: MarkdownToken): string {
-	return (token.raw ?? token.text ?? "").trimEnd();
+	return commentRaw((token.raw ?? token.text ?? "").trimEnd());
 }
 
 function commentStart(source: string): number {
@@ -9,7 +18,13 @@ function commentStart(source: string): number {
 }
 
 function commentRaw(value: unknown): string {
-	return typeof value === "string" ? value : "";
+	if (!isHtmlCommentSource(value)) throw new Error("Invalid HTML comment node");
+	return value;
+}
+
+function commentAttrsFromElement(element: HTMLElement): { raw: string } | false {
+	const raw = element.textContent;
+	return isHtmlCommentSource(raw) ? { raw } : false;
 }
 
 export const HtmlCommentInline = Node.create({
@@ -23,7 +38,7 @@ export const HtmlCommentInline = Node.create({
 		return { raw: { default: "" } };
 	},
 	parseHTML() {
-		return [{ tag: "span[data-glyph-html-comment]", getAttrs: (element) => ({ raw: element.textContent ?? "" }) }];
+		return [{ tag: "span[data-glyph-html-comment]", getAttrs: commentAttrsFromElement }];
 	},
 	renderHTML({ node }) {
 		return ["span", { "data-glyph-html-comment": "", class: "htmlComment" }, commentRaw(node.attrs.raw)];
@@ -42,7 +57,7 @@ export const HtmlCommentInline = Node.create({
 		level: "inline",
 		start: commentStart,
 		tokenize(source) {
-			const match = source.match(/^<!--[\s\S]*?-->/);
+			const match = source.match(INLINE_COMMENT_RE);
 			return match ? { type: "htmlCommentInline", raw: match[0], text: match[0] } : undefined;
 		},
 	},
@@ -58,7 +73,7 @@ export const HtmlCommentBlock = Node.create({
 		return { raw: { default: "" } };
 	},
 	parseHTML() {
-		return [{ tag: "div[data-glyph-html-comment]", getAttrs: (element) => ({ raw: element.textContent ?? "" }) }];
+		return [{ tag: "div[data-glyph-html-comment]", getAttrs: commentAttrsFromElement }];
 	},
 	renderHTML({ node }) {
 		return ["div", { "data-glyph-html-comment": "", class: "htmlComment" }, commentRaw(node.attrs.raw)];
@@ -76,10 +91,10 @@ export const HtmlCommentBlock = Node.create({
 		name: "htmlCommentBlock",
 		level: "block",
 		start(source) {
-			return /^ {0,3}<!--/.test(source) ? 0 : -1;
+			return BLOCK_COMMENT_START_RE.test(source) ? 0 : -1;
 		},
 		tokenize(source) {
-			const match = source.match(/^ {0,3}<!--[\s\S]*?-->[\t ]*(?:\n|$)/);
+			const match = source.match(BLOCK_COMMENT_RE);
 			return match ? { type: "htmlCommentBlock", raw: match[0], text: match[0] } : undefined;
 		},
 	},

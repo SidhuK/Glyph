@@ -1,6 +1,10 @@
+import { transformMarkdownOutsideCode } from "./markdownFence";
+
 // Matches a footnote token such as `[^1]` or `[^note]`. The id may not contain
 // whitespace or closing brackets.
 export const FOOTNOTE_PATTERN = /\[\^([^\]\s]+)\]/g;
+const UNESCAPED_FOOTNOTE_PATTERN = /(?<!\\)\[\^([^\]\s]+)\]/g;
+const ESCAPED_FOOTNOTE_PATTERN = /\\\[\^([^\]\\\s]+)\\\]/g;
 
 export type FootnoteKind = "ref" | "def";
 
@@ -77,13 +81,12 @@ function transformOutsideComments(input: string, transform: (text: string) => st
 
 export function protectFootnotes(input: string): string {
 	return transformOutsideComments(input, (text) =>
-		text.replace(/(?<!\\)\[\^([^\]\s]+)\]/g, String.raw`\[^$1\]`),
+		text.replace(UNESCAPED_FOOTNOTE_PATTERN, String.raw`\[^$1\]`),
 	);
 }
 
 export function restoreEscapedFootnotes(input: string): string {
 	return transformOutsideComments(input, (text) =>
-		text.replace(/\\\[\^([^\]\\\s]+)\\\]/g, "[^$1]"),
+		text.replace(ESCAPED_FOOTNOTE_PATTERN, "[^$1]"),
 	);
 }
-import { transformMarkdownOutsideCode } from "./markdownFence";
