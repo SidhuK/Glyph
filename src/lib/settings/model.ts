@@ -205,7 +205,6 @@ export interface AppSettings {
 		folioSortMode: FileTreeSortMode;
 		folioNotesWidth: number;
 		noteSidePeek: boolean;
-		legacyConnections: boolean;
 		resumeLastSession: boolean;
 		keepRunningOnLastWindowClose: boolean;
 		aiAssistantMode: AiAssistantMode;

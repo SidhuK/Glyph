@@ -31,19 +31,12 @@ export interface ConnectionsLayoutGraph {
 }
 
 export interface ConnectionsCommunity {
-	readonly id: number;
 	readonly members: readonly string[];
 	readonly hubId: string;
-	readonly radius: number;
 }
 
 export interface ConnectionsCommunityModel {
 	readonly communities: readonly ConnectionsCommunity[];
-	readonly communityBridges: ReadonlyMap<string, number>;
-}
-
-export function communityBridgeKey(left: number, right: number) {
-	return left < right ? `${left}:${right}` : `${right}:${left}`;
 }
 
 type CommunityGraph = Graph<Record<string, never>, CommunityGraphEdgeAttributes>;
@@ -156,8 +149,7 @@ export function detectConnectionsCommunities(
 		return hashString(left[0] ?? "") - hashString(right[0] ?? "");
 	});
 
-	const nodeCommunity = new Map<string, number>();
-	const communities = components.map((members, id) => {
+	const communities = components.map((members) => {
 		const memberSet = new Set(members);
 		members.sort((left, right) => {
 			const degreeDifference =
@@ -165,29 +157,11 @@ export function detectConnectionsCommunities(
 				internalWeightedDegree(left, memberSet, graph);
 			return degreeDifference || hashString(left) - hashString(right);
 		});
-		for (const member of members) nodeCommunity.set(member, id);
 		return {
-			id,
 			members,
 			hubId: members[0] ?? "",
-			radius: Math.max(18, 18 * Math.sqrt(members.length / Math.PI) * 1.15),
 		};
 	});
 
-	const communityBridges = new Map<string, number>();
-	graph.forEachEdge((_edge, attributes, source, target) => {
-		const sourceCommunity = nodeCommunity.get(source);
-		const targetCommunity = nodeCommunity.get(target);
-		if (
-			sourceCommunity === undefined ||
-			targetCommunity === undefined ||
-			sourceCommunity === targetCommunity
-		) {
-			return;
-		}
-		const key = communityBridgeKey(sourceCommunity, targetCommunity);
-		communityBridges.set(key, (communityBridges.get(key) ?? 0) + attributes.weight);
-	});
-
-	return { communities, communityBridges };
+	return { communities };
 }

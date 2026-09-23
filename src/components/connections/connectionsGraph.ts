@@ -7,7 +7,7 @@ import { hashString, randomUnit } from "./connectionsRandom";
 export type ConnectionsNodeKind = "note" | "tag";
 export type ConnectionsEdgeColorRole = "default" | "accent" | "internal";
 
-export type ConnectionsGraphVariant = "space" | "space-legacy" | "local";
+export type ConnectionsGraphVariant = "space" | "local";
 
 export interface ConnectionsNodeAttributes {
 	x: number;

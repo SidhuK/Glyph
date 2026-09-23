@@ -7,19 +7,10 @@ import {
 import type { SpaceConnections } from "../../lib/tauri";
 import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 import { type ConnectionsGraph, buildSpaceConnectionsGraph } from "./connectionsGraph";
-import type {
-	ConnectionsLayoutMode,
-	ConnectionsLayoutRequest,
-	ConnectionsLayoutResponse,
-	GraphPosition,
-} from "./connectionsLayout";
+import type { ConnectionsLayoutResponse, GraphPosition } from "./connectionsLayout";
 import { hashString } from "./connectionsRandom";
 
-function layoutSpaceConnections(
-	payload: SpaceConnections,
-	mode: ConnectionsLayoutMode,
-	signal: AbortSignal,
-) {
+function layoutSpaceConnections(payload: SpaceConnections, signal: AbortSignal) {
 	return new Promise<ReadonlyMap<string, GraphPosition>>((resolve, reject) => {
 		const worker = new Worker(new URL("./connectionsLayout.worker.ts", import.meta.url), {
 			type: "module",
@@ -41,8 +32,6 @@ function layoutSpaceConnections(
 				noteId: edge.note_id,
 			})),
 		};
-		const request: ConnectionsLayoutRequest = { graph, mode };
-
 		const abort = () => {
 			worker.terminate();
 			reject(new DOMException("Aborted", "AbortError"));
@@ -75,7 +64,7 @@ function layoutSpaceConnections(
 			worker.terminate();
 			reject(new Error(event.message || "Could not lay out connections"));
 		};
-		worker.postMessage(request);
+		worker.postMessage(graph);
 	});
 }
 
@@ -136,7 +125,6 @@ export function useSpaceConnectionsGraph(
 	payload: SpaceConnections | null,
 	spacePath: string,
 	options: ConnectionsGraphOptions,
-	mode: ConnectionsLayoutMode,
 ) {
 	const filteredPayload = useMemo(
 		() => (payload ? filterSpaceConnections(payload, options) : null),
@@ -148,7 +136,7 @@ export function useSpaceConnectionsGraph(
 	);
 
 	const layoutQuery = useQuery({
-		queryKey: ["space-connections-layout", spacePath, layoutFingerprint, mode],
+		queryKey: ["space-connections-layout", spacePath, layoutFingerprint],
 		enabled: Boolean(filteredPayload && filteredPayload.nodes.length > 0),
 		staleTime: Number.POSITIVE_INFINITY,
 		gcTime: 0,
@@ -157,7 +145,7 @@ export function useSpaceConnectionsGraph(
 			if (!filteredPayload) {
 				return Promise.reject(new Error("Missing connections payload"));
 			}
-			return layoutSpaceConnections(filteredPayload, mode, signal);
+			return layoutSpaceConnections(filteredPayload, signal);
 		},
 	});
 
