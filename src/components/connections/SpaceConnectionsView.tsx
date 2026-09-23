@@ -11,7 +11,6 @@ import {
 	connectionsLinkOpacity,
 	connectionsLinkThicknessScale,
 	connectionsNodeSizeScale,
-	legacyConnectionsLinkOpacity,
 } from "../../lib/connectionsGraphOptions";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -114,8 +113,6 @@ export function SpaceConnectionsView() {
 		queryFn: () => loadSettings({ spacePath: scopedSpacePath }),
 	});
 	const options = settingsQuery.data?.connectionsGraph ?? DEFAULT_CONNECTIONS_GRAPH_OPTIONS;
-	const legacyConnections = settingsQuery.data?.ui.legacyConnections ?? false;
-	const layoutMode = legacyConnections ? "legacy" : "bundled";
 
 	const optionsMutation = useMutation({
 		mutationFn: (next: ConnectionsGraphOptions) =>
@@ -176,24 +173,22 @@ export function SpaceConnectionsView() {
 		: "";
 
 	const { filteredPayload, graph, layoutError, layoutLoading, refetchLayout } =
-		useSpaceConnectionsGraph(payload, scopedSpacePath, options, layoutMode);
+		useSpaceConnectionsGraph(payload, scopedSpacePath, options);
 	const loading = dataLoading || layoutLoading;
 	const visibleError = error || layoutError;
 	const display = useMemo(
 		() => ({
 			nodeSizeScale: connectionsNodeSizeScale(options.nodeSize),
-			linkOpacity: legacyConnections
-				? legacyConnectionsLinkOpacity(options.linkOpacity)
-				: connectionsLinkOpacity(options.linkOpacity),
+			linkOpacity: connectionsLinkOpacity(options.linkOpacity),
 			linkThicknessScale: connectionsLinkThicknessScale(options.linkThickness),
 		}),
-		[legacyConnections, options.linkOpacity, options.linkThickness, options.nodeSize],
+		[options.linkOpacity, options.linkThickness, options.nodeSize],
 	);
 
 	const overlay = useSigmaConnections({
 		graph,
 		containerRef,
-		variant: legacyConnections ? "space-legacy" : "space",
+		variant: "space",
 		enabled: Boolean(graph && !loading && !visibleError),
 		display,
 		labelZoomThreshold: options.labelZoomThreshold,
@@ -243,9 +238,7 @@ export function SpaceConnectionsView() {
 					optionsMutation.mutate(next);
 					overlay.current.setDisplay({
 						nodeSizeScale: connectionsNodeSizeScale(next.nodeSize),
-						linkOpacity: legacyConnections
-							? legacyConnectionsLinkOpacity(next.linkOpacity)
-							: connectionsLinkOpacity(next.linkOpacity),
+						linkOpacity: connectionsLinkOpacity(next.linkOpacity),
 						linkThicknessScale: connectionsLinkThicknessScale(next.linkThickness),
 					});
 					overlay.current.setLabelZoomThreshold(next.labelZoomThreshold);

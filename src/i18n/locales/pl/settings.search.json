@@ -572,11 +572,6 @@
 			"section": "Eksperymentalne",
 			"keywords": ["peek", "podgląd", "wiki", "wszystkie notatki", "arc"]
 		},
-		"experimental-legacy-connections": {
-			"title": "Klasyczne połączenia",
-			"section": "Eksperymentalne",
-			"keywords": ["połączenia", "graf", "klasyczne", "układ"]
-		},
 		"general-file-tree-folder-counts": {
 			"title": "Pokaż liczbę plików w folderach",
 			"section": "Drzewo plików",

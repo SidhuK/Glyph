@@ -1,11 +1,8 @@
-import {
-	type ConnectionsLayoutRequest,
-	type ConnectionsLayoutResponse,
-	computeSpaceConnectionsLayout,
-} from "./connectionsLayout";
+import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
+import { type ConnectionsLayoutResponse, computeSpaceConnectionsLayout } from "./connectionsLayout";
 
 interface ConnectionsWorkerScope {
-	onmessage: ((event: MessageEvent<ConnectionsLayoutRequest>) => void) | null;
+	onmessage: ((event: MessageEvent<ConnectionsLayoutGraph>) => void) | null;
 	postMessage: (response: ConnectionsLayoutResponse) => void;
 }
 

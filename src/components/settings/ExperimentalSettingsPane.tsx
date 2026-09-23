@@ -32,11 +32,6 @@ export function ExperimentalSettingsPane() {
 		queryFn: () => loadSettings(),
 	});
 	const noteSidePeek = useSettingsBoolean(false, DURABLE_SETTINGS.noteSidePeek.write, setError);
-	const legacyConnections = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.legacyConnections.write,
-		setError,
-	);
 	const formatBar = useSettingsBoolean(true, DURABLE_SETTINGS.editorShowFormatBar.write, setError);
 	const zenMode = useSettingsBoolean(false, DURABLE_SETTINGS.editorZenMode.write, setError);
 	const rawMarkdownVimMode = useSettingsBoolean(
@@ -51,7 +46,6 @@ export function ExperimentalSettingsPane() {
 	);
 
 	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
-	const setInitialLegacyConnections = legacyConnections.setInitialChecked;
 	const setInitialFormatBar = formatBar.setInitialChecked;
 	const setInitialZenMode = zenMode.setInitialChecked;
 	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
@@ -61,7 +55,6 @@ export function ExperimentalSettingsPane() {
 	useEffect(() => {
 		if (!settings) return;
 		setInitialNoteSidePeek(settings.ui.noteSidePeek);
-		setInitialLegacyConnections(settings.ui.legacyConnections);
 		setInitialFormatBar(settings.editor.showFormatBar);
 		setInitialZenMode(settings.editor.zenMode);
 		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
@@ -71,7 +64,6 @@ export function ExperimentalSettingsPane() {
 		setInitialFormatBar,
 		setInitialZenMode,
 		setInitialNoteSidePeek,
-		setInitialLegacyConnections,
 		setInitialFocusMode,
 		setInitialRawMarkdownVimMode,
 	]);
@@ -90,18 +82,6 @@ export function ExperimentalSettingsPane() {
 					title={t("experimental.sectionTitle")}
 					description={t("experimental.sectionDescription")}
 				>
-					<SettingsRow
-						label={t("experimental.legacyConnections.label")}
-						description={t("experimental.legacyConnections.description")}
-						searchId="experimental-legacy-connections"
-					>
-						<SettingsToggle
-							checked={legacyConnections.checked}
-							disabled={legacyConnections.isSaving}
-							ariaLabel={t("experimental.legacyConnections.ariaLabel")}
-							onCheckedChange={legacyConnections.onCheckedChange}
-						/>
-					</SettingsRow>
 					<SettingsRow
 						label={t("experimental.noteSidePeek.label")}
 						description={t("experimental.noteSidePeek.description")}
