@@ -32,55 +32,6 @@ export function resolveLogoProvider(
 	return guessOpenRouterProvider(modelName) ?? provider;
 }
 
-export const providerSupportKeyMap: Record<AiProviderKind, string> = {
-	openai: "openai",
-	openai_compat: "openai_like",
-	openrouter: "openrouter",
-	anthropic: "anthropic",
-	gemini: "gemini",
-	ollama: "ollama",
-	llama_cpp: "llama_cpp",
-	codex_chatgpt: "openai",
-	amp: "amp",
-	claude_code: "anthropic",
-	cursor: "cursor",
-	grok: "grok",
-	opencode: "opencode",
-	pi: "pi",
-};
-
-const endpointLabelMap: Record<string, string> = {
-	chat_completions: "Chat completions",
-	messages: "Messages",
-	responses: "Responses",
-	embeddings: "Embeddings",
-	image_generations: "Image generation",
-	image_variations: "Image variations",
-	image_edits: "Image edits",
-	audio_transcriptions: "Audio transcription",
-	audio_speech: "Text to speech",
-	moderations: "Moderations",
-	batches: "Batches",
-	rerank: "Re-rank",
-	a2a: "Agent-to-agent",
-	interactions: "Google Interactions",
-	vector_store_files: "Vector store files",
-	vector_stores_create: "Vector store create",
-	vector_stores_search: "Vector store search",
-	assistants: "Assistants",
-	container: "Containers",
-	container_files: "Container files",
-	fine_tuning: "Fine tuning",
-	search: "Search",
-	realtime: "Realtime",
-	text_completion: "Text completion",
-	compact: "Compact responses",
-};
-
-export function formatEndpointLabel(endpoint: string): string {
-	return endpointLabelMap[endpoint] ?? endpoint.replace(/_/g, " ");
-}
-
 export function truncateLabel(name: string, max = 30): string {
 	if (name.length <= max) return name;
 	const visibleChars = max === 30 ? 27 : max - 1;

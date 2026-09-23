@@ -1700,7 +1700,6 @@ pub fn run() {
                 error!("Failed to initialize app-support index root: {error}");
                 return Err(std::io::Error::other(error).into());
             }
-            ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
             #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
             {
@@ -1854,16 +1853,10 @@ pub fn run() {
             ai_rig::commands::ai_secret_set,
             ai_rig::commands::ai_secret_clear,
             ai_rig::commands::ai_secret_status,
-            ai_rig::commands::ai_provider_support,
             ai_rig::commands::ai_chat_start,
             ai_rig::commands::ai_chat_cancel,
             ai_rig::commands::ai_chat_history_list,
             ai_rig::commands::ai_chat_history_get,
-            ai_codex::commands::codex_account_read,
-            ai_codex::commands::codex_login_start,
-            ai_codex::commands::codex_login_complete,
-            ai_codex::commands::codex_logout,
-            ai_codex::commands::codex_rate_limits_read,
             ai_rig::context::ai_context_index,
             ai_rig::context::ai_context_build,
             ai_rig::models::ai_models_list,

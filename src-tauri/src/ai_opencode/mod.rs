@@ -16,7 +16,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::{
     events::AiStatusEvent,
-    helpers::{emit_tool, find_cli_binary, price_string, value_as_u32},
+    helpers::{emit_tool, find_cli_binary},
     providers::build_transcript,
     types::AiModel,
     types::{AiAssistantMode, AiChunkEvent, AiMessage, AiProfile, AiStoredToolEvent},
@@ -187,47 +187,6 @@ async fn get_json(
     response.json::<Value>().await.map_err(|e| e.to_string())
 }
 
-fn modality_list(capabilities: &Value, key: &str) -> Option<Vec<String>> {
-    let entries = capabilities.get(key)?.as_object()?;
-    let modalities = entries
-        .iter()
-        .filter_map(|(name, enabled)| enabled.as_bool().filter(|v| *v).map(|_| name.clone()))
-        .collect::<Vec<_>>();
-    (!modalities.is_empty()).then_some(modalities)
-}
-
-fn supported_parameters(capabilities: &Value) -> Option<Vec<String>> {
-    let mut parameters = Vec::new();
-    for key in ["temperature", "reasoning", "attachment", "toolcall"] {
-        if capabilities.get(key).and_then(|v| v.as_bool()) == Some(true) {
-            parameters.push(key.to_string());
-        }
-    }
-    (!parameters.is_empty()).then_some(parameters)
-}
-
-fn model_description(provider: &Value, model: &Value) -> Option<String> {
-    let mut parts = Vec::new();
-    if let Some(source) = provider.get("source").and_then(|v| v.as_str()) {
-        parts.push(format!("Source: {source}"));
-    }
-    if let Some(status) = model.get("status").and_then(|v| v.as_str()) {
-        parts.push(format!("Status: {status}"));
-    }
-    if let Some(family) = model.get("family").and_then(|v| v.as_str()) {
-        parts.push(format!("Family: {family}"));
-    }
-    if model
-        .get("providerID")
-        .and_then(|v| v.as_str())
-        .or_else(|| provider.get("id").and_then(|v| v.as_str()))
-        == Some("opencode")
-    {
-        parts.push("OpenCode hosted model".to_string());
-    }
-    (!parts.is_empty()).then_some(parts.join(" | "))
-}
-
 fn default_model_ids(value: &Value) -> HashSet<String> {
     value
         .get("default")
@@ -296,9 +255,6 @@ fn parse_provider_models(value: &Value, connected_only: bool) -> Vec<AiModel> {
                 .get("name")
                 .and_then(|v| v.as_str())
                 .unwrap_or(model_id);
-            let capabilities = model.get("capabilities").unwrap_or(&Value::Null);
-            let limit = model.get("limit").unwrap_or(&Value::Null);
-            let cost = model.get("cost").unwrap_or(&Value::Null);
             let is_default = defaults.contains(&glyph_id)
                 || defaults.contains(model_id)
                 || connected.contains(model_provider_id);
@@ -307,15 +263,6 @@ fn parse_provider_models(value: &Value, connected_only: bool) -> Vec<AiModel> {
                 AiModel {
                     id: glyph_id,
                     name: format!("{provider_name}: {model_name}"),
-                    context_length: value_as_u32(limit.get("context")),
-                    description: model_description(&provider, &model),
-                    input_modalities: modality_list(capabilities, "input"),
-                    output_modalities: modality_list(capabilities, "output"),
-                    tokenizer: None,
-                    prompt_pricing: price_string(cost.get("input")),
-                    completion_pricing: price_string(cost.get("output")),
-                    supported_parameters: supported_parameters(capabilities),
-                    max_completion_tokens: value_as_u32(limit.get("output")),
                     reasoning_effort: None,
                     default_reasoning_effort: None,
                 },

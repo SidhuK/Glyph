@@ -15,7 +15,7 @@ Frontend:
 - `src/components/ai/useAiProfiles.ts`: profile state
 - `src/components/ai/useAiContext.ts`: context attachment and build flow
 - `src/components/settings/AiSettingsPane.tsx`: AI settings shell
-- `src/components/settings/ai/`: provider, API key, model, Codex account settings
+- `src/components/settings/ai/`: provider, API key, and model settings
 
 Backend:
 
@@ -28,7 +28,7 @@ Backend:
 - `src-tauri/src/ai_rig/local_secrets.rs`: per-space API keys
 - `src-tauri/src/ai_rig/history.rs`: chat history readers
 - `src-tauri/src/ai_rig/audit.rs`: audit/history writes
-- `src-tauri/src/ai_codex/`: Codex account and chat runtime
+- `src-tauri/src/ai_codex/`: Codex chat runtime
 - `src-tauri/src/ai_amp/`, `ai_claude_code/`, `ai_cursor/`, `ai_grok/`, `ai_opencode/`, `ai_pi/`: dedicated provider runtimes
 
 ## Provider Model
@@ -264,15 +264,7 @@ Context response includes:
 
 The manifest gets written to audit logs so users can inspect what the model saw.
 
-## Codex Account Runtime
-
-`ai_codex/commands.rs` exposes account commands:
-
-- `codex_account_read`
-- `codex_login_start`
-- `codex_login_complete`
-- `codex_logout`
-- `codex_rate_limits_read`
+## Codex chat runtime
 
 `ai_codex/chat.rs` runs Codex chat through a JSON-RPC transport held in `CodexState`.
 
@@ -334,12 +326,6 @@ History commands:
 
 The title generator uses the selected provider when possible. Dedicated runtimes return fixed titles such as `Codex Chat`.
 
-## Provider Metadata
-
-On startup, Rust refreshes provider support metadata from LiteLLM's provider endpoint support JSON. It caches the document in app config and falls back to cached data when network fetch fails.
-
-This powers provider settings UI. The app should tolerate missing metadata because offline use remains a core constraint.
-
 ## Change Checklist
 
 When changing AI behavior:
@@ -362,4 +348,3 @@ When changing AI behavior:
 - Tools can read hidden files: inspect `normalize_rel_path()` and `safe_join()`.
 - Context too large: inspect `ai_context_build` budget and manifest.
 - History missing: inspect active space and `write_audit_log()`.
-- Codex login hangs: inspect `codex_login_complete` notification matching by flow id.

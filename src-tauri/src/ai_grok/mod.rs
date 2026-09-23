@@ -28,27 +28,11 @@ const STARTUP_OUTPUT_TIMEOUT: Duration = Duration::from_secs(30);
 const LIST_MODELS_TIMEOUT: Duration = Duration::from_secs(30);
 const DEFAULT_MODEL_ID: &str = "grok-build";
 const CHAT_TOOLS: &str = "read_file,grep,list_dir";
-const GROK_ALIAS_MODELS: &[(&str, &str, &str)] = &[
-    (
-        DEFAULT_MODEL_ID,
-        "Grok Build",
-        "Default Grok coding agent for the signed-in xAI account.",
-    ),
-    (
-        "grok-4.6",
-        "Grok 4.6",
-        "Latest general Grok model advertised by the Grok CLI.",
-    ),
-    (
-        "grok-4.5",
-        "Grok 4.5",
-        "Previous general Grok model advertised by the Grok CLI.",
-    ),
-    (
-        "grok-code-fast-1",
-        "Grok Code Fast",
-        "Faster coding alias for Grok Build.",
-    ),
+const GROK_ALIAS_MODELS: &[(&str, &str)] = &[
+    (DEFAULT_MODEL_ID, "Grok Build"),
+    ("grok-4.6", "Grok 4.6"),
+    ("grok-4.5", "Grok 4.5"),
+    ("grok-code-fast-1", "Grok Code Fast"),
 ];
 
 fn find_grok_binary() -> Result<PathBuf, String> {
@@ -65,19 +49,10 @@ fn reasoning_options() -> Vec<AiReasoningEffortOption> {
         .collect()
 }
 
-fn model_entry(id: &str, name: &str, description: &str) -> AiModel {
+fn model_entry(id: &str, name: &str) -> AiModel {
     AiModel {
         id: id.to_string(),
         name: name.to_string(),
-        context_length: None,
-        description: Some(description.to_string()),
-        input_modalities: None,
-        output_modalities: None,
-        tokenizer: None,
-        prompt_pricing: None,
-        completion_pricing: None,
-        supported_parameters: Some(vec!["tools".to_string(), "reasoning".to_string()]),
-        max_completion_tokens: None,
         reasoning_effort: Some(reasoning_options()),
         default_reasoning_effort: None,
     }
@@ -98,16 +73,10 @@ fn grok_model_name(id: &str) -> String {
 }
 
 fn model_entry_for_id(id: &str) -> AiModel {
-    if let Some((_, name, description)) =
-        GROK_ALIAS_MODELS.iter().find(|(alias, _, _)| *alias == id)
-    {
-        return model_entry(id, name, description);
+    if let Some((_, name)) = GROK_ALIAS_MODELS.iter().find(|(alias, _)| *alias == id) {
+        return model_entry(id, name);
     }
-    model_entry(
-        id,
-        &grok_model_name(id),
-        "Grok model discovered from the installed Grok CLI.",
-    )
+    model_entry(id, &grok_model_name(id))
 }
 
 fn push_model_id(models: &mut Vec<String>, seen: &mut HashSet<String>, id: &str) {
@@ -222,7 +191,7 @@ pub async fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
     let mut seen = HashSet::new();
     let mut ids = Vec::new();
 
-    for (id, _, _) in GROK_ALIAS_MODELS {
+    for (id, _) in GROK_ALIAS_MODELS {
         push_model_id(&mut ids, &mut seen, id);
     }
     collect_models_from_runtime(&binary, &mut ids, &mut seen).await;

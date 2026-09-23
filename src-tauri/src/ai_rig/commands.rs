@@ -4,7 +4,7 @@ use tracing::warn;
 use crate::space::SpaceState;
 
 use super::audit::{write_audit_log, AuditLogParams};
-use super::helpers::{http_client, parse_base_url, split_system_and_messages};
+use super::helpers::{parse_base_url, split_system_and_messages};
 use super::history;
 use super::local_secrets;
 use super::runtime;
@@ -16,16 +16,9 @@ use super::types::{
     AiAssistantMode, AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiMessage,
     AiProfile, AiStoredToolEvent,
 };
-use serde::{Deserialize, Serialize};
-use serde_json;
-use std::collections::HashMap;
-use std::fs;
 use std::path::PathBuf;
 use tokio_util::sync::CancellationToken;
 
-const PROVIDER_SUPPORT_URL: &str =
-    "https://raw.githubusercontent.com/BerriAI/litellm/refs/heads/main/provider_endpoints_support.json";
-const PROVIDER_SUPPORT_CACHE_FILE: &str = "provider_endpoints_support.json";
 const CHAT_NAMING_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(45);
 const CHAT_NAMING_CLEANUP_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 
@@ -37,64 +30,6 @@ fn is_transient_ai_error(message: &str) -> bool {
         || msg.contains("temporarily unavailable")
         || msg.contains("upstream")
         || msg.contains("timeout")
-}
-
-#[derive(Serialize, Deserialize)]
-pub(crate) struct ProviderSupportEntry {
-    display_name: String,
-    #[serde(default)]
-    url: Option<String>,
-    #[serde(default)]
-    endpoints: HashMap<String, bool>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub(crate) struct ProviderSupportDocument {
-    #[serde(default)]
-    providers: HashMap<String, ProviderSupportEntry>,
-}
-
-async fn fetch_provider_support(cache_path: &PathBuf) -> Result<ProviderSupportDocument, String> {
-    let client = http_client()?;
-    let resp = client
-        .get(PROVIDER_SUPPORT_URL)
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
-    if !resp.status().is_success() {
-        return Err(format!("fetch failed ({})", resp.status()));
-    }
-    let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
-    let doc: ProviderSupportDocument = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
-    let _ = fs::write(cache_path, &bytes);
-    Ok(doc)
-}
-
-fn read_cached_provider_support(cache_path: &PathBuf) -> Option<ProviderSupportDocument> {
-    fs::read(cache_path)
-        .ok()
-        .and_then(|bytes| serde_json::from_slice(&bytes).ok())
-}
-
-fn provider_support_cache_path(app: &AppHandle) -> Result<PathBuf, String> {
-    let dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
-    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    Ok(dir.join(PROVIDER_SUPPORT_CACHE_FILE))
-}
-
-pub fn refresh_provider_support_on_startup(app: AppHandle) {
-    tauri::async_runtime::spawn(async move {
-        let cache_path = match provider_support_cache_path(&app) {
-            Ok(path) => path,
-            Err(err) => {
-                warn!("provider support startup refresh skipped: {err}");
-                return;
-            }
-        };
-        if let Err(err) = fetch_provider_support(&cache_path).await {
-            warn!("provider support startup refresh failed: {err}");
-        }
-    });
 }
 
 fn normalized_store_for_space(
@@ -247,22 +182,6 @@ pub async fn ai_secret_status(
     };
     let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_status(&root, &profile_id)
-}
-
-#[tauri::command]
-pub async fn ai_provider_support(app: AppHandle) -> Result<ProviderSupportDocument, String> {
-    let cache_path = provider_support_cache_path(&app)?;
-    match fetch_provider_support(&cache_path).await {
-        Ok(doc) => Ok(doc),
-        Err(fetch_err) => {
-            if let Some(cached) = read_cached_provider_support(&cache_path) {
-                return Ok(cached);
-            }
-            Err(format!(
-                "provider metadata unavailable ({fetch_err}); no cached provider data found"
-            ))
-        }
-    }
 }
 
 #[tauri::command]

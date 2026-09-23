@@ -804,21 +804,6 @@ This is a simple worksheet for translating Glyph into any language. Leave the En
 | Set key                                                                                    |                             |
 | API Key                                                                                    |                             |
 | Search keywords: secret, token, credential, update key                                     |                             |
-| ChatGPT Account                                                                            |                             |
-| ChatGPT Account                                                                            |                             |
-| Search keywords: codex, account, authentication, rate limits                               |                             |
-| Identity                                                                                   |                             |
-| ChatGPT Account                                                                            |                             |
-| The connected account Glyph is currently using for Codex.                                  |                             |
-| Search keywords: email, display name, connect, disconnect                                  |                             |
-| Authentication                                                                             |                             |
-| ChatGPT Account                                                                            |                             |
-| How the current ChatGPT session is authenticated.                                          |                             |
-| Search keywords: auth mode, session                                                        |                             |
-| Rate limits                                                                                |                             |
-| ChatGPT Account                                                                            |                             |
-| Review remaining capacity for the connected account.                                       |                             |
-| Search keywords: usage, remaining, resets                                                  |                             |
 | Folder                                                                                     |                             |
 | Daily Notes                                                                                |                             |
 | Choose where daily notes are created.                                                      |                             |
