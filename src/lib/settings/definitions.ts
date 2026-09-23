@@ -728,13 +728,6 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.editor.spellCheck,
 		change: (value) => ({ editor: { spellCheck: value } }),
 	}),
-	editorShowExternalLinkPreviews: booleanSetting({
-		key: "editor.showExternalLinkPreviews",
-		defaultValue: false,
-		discovery: searchable("general-editor-external-link-previews"),
-		read: (settings) => settings.editor.showExternalLinkPreviews,
-		change: (value) => ({ editor: { showExternalLinkPreviews: value } }),
-	}),
 	editorShowFormatBar: booleanSetting({
 		key: "editor.showFormatBar",
 		defaultValue: true,

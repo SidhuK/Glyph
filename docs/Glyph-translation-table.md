@@ -622,9 +622,6 @@ This is a simple worksheet for translating Glyph into any language. Leave the En
 | Spell check                                                                                                                                                                                                      |                             |
 | Underline typos as you type. Right-click a word to see spelling suggestions.                                                                                                                                     |                             |
 | Spell check                                                                                                                                                                                                      |                             |
-| External link previews                                                                                                                                                                                           |                             |
-| Show standalone web links as cards in Rich and Preview modes. Glyph fetches preview details directly from each linked site.                                                                                      |                             |
-| Show external link previews                                                                                                                                                                                      |                             |
 | Vim Mode                                                                                                                                                                                                         |                             |
 | Vim Mode                                                                                                                                                                                                         |                             |
 | Enable Vim keybindings.                                                                                                                                                                                          |                             |
@@ -906,9 +903,6 @@ This is a simple worksheet for translating Glyph into any language. Leave the En
 | Spell check                                                                                |                             |
 | Editor                                                                                     |                             |
 | Search keywords: spelling, typo, dictionary                                                |                             |
-| External link previews                                                                     |                             |
-| Editor                                                                                     |                             |
-| Search keywords: link, web, website, card, open graph, metadata                            |                             |
 | Vim Mode                                                                                   |                             |
 | Editor                                                                                     |                             |
 | Search keywords: vim, raw, markdown, keybindings, keyboard                                 |                             |

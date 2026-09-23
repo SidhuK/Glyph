@@ -15,7 +15,6 @@ interface NoteEditorSettings {
 	showHeadingPrefixes: boolean;
 	colorfulHeadings: boolean;
 	peopleMentionsEnabled: boolean;
-	showExternalLinkPreviews: boolean;
 	showFormatBar: boolean;
 	focusMode: FocusMode;
 	spellCheck: boolean;
@@ -28,7 +27,6 @@ const DEFAULT_NOTE_EDITOR_SETTINGS: NoteEditorSettings = {
 	showHeadingPrefixes: true,
 	colorfulHeadings: false,
 	peopleMentionsEnabled: false,
-	showExternalLinkPreviews: false,
 	showFormatBar: true,
 	focusMode: "off",
 	spellCheck: true,
@@ -42,7 +40,6 @@ function sameNoteEditorSettings(left: NoteEditorSettings, right: NoteEditorSetti
 		left.showHeadingPrefixes === right.showHeadingPrefixes &&
 		left.colorfulHeadings === right.colorfulHeadings &&
 		left.peopleMentionsEnabled === right.peopleMentionsEnabled &&
-		left.showExternalLinkPreviews === right.showExternalLinkPreviews &&
 		left.showFormatBar === right.showFormatBar &&
 		left.focusMode === right.focusMode &&
 		left.spellCheck === right.spellCheck
@@ -67,7 +64,6 @@ export function useNoteEditorSettings() {
 					showHeadingPrefixes: loaded.editor.showHeadingPrefixes,
 					colorfulHeadings: loaded.editor.colorfulHeadings,
 					peopleMentionsEnabled: loaded.editor.enablePeopleMentionsAsTags,
-					showExternalLinkPreviews: loaded.editor.showExternalLinkPreviews,
 					showFormatBar: liveShowFormatBarRef.current
 						? current.showFormatBar
 						: loaded.editor.showFormatBar,
@@ -132,10 +128,6 @@ export function useNoteEditorSettings() {
 					typeof editor.enablePeopleMentionsAsTags === "boolean"
 						? editor.enablePeopleMentionsAsTags
 						: current.peopleMentionsEnabled,
-				showExternalLinkPreviews:
-					typeof editor.showExternalLinkPreviews === "boolean"
-						? editor.showExternalLinkPreviews
-						: current.showExternalLinkPreviews,
 				showFormatBar:
 					typeof editor.showFormatBar === "boolean" ? editor.showFormatBar : current.showFormatBar,
 				focusMode: isFocusMode(editor.focusMode) ? editor.focusMode : current.focusMode,

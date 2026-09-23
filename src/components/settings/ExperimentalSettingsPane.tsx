@@ -37,11 +37,6 @@ export function ExperimentalSettingsPane() {
 		DURABLE_SETTINGS.legacyConnections.write,
 		setError,
 	);
-	const externalLinkPreviews = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorShowExternalLinkPreviews.write,
-		setError,
-	);
 	const formatBar = useSettingsBoolean(true, DURABLE_SETTINGS.editorShowFormatBar.write, setError);
 	const zenMode = useSettingsBoolean(false, DURABLE_SETTINGS.editorZenMode.write, setError);
 	const rawMarkdownVimMode = useSettingsBoolean(
@@ -57,7 +52,6 @@ export function ExperimentalSettingsPane() {
 
 	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
 	const setInitialLegacyConnections = legacyConnections.setInitialChecked;
-	const setInitialExternalLinkPreviews = externalLinkPreviews.setInitialChecked;
 	const setInitialFormatBar = formatBar.setInitialChecked;
 	const setInitialZenMode = zenMode.setInitialChecked;
 	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
@@ -68,14 +62,12 @@ export function ExperimentalSettingsPane() {
 		if (!settings) return;
 		setInitialNoteSidePeek(settings.ui.noteSidePeek);
 		setInitialLegacyConnections(settings.ui.legacyConnections);
-		setInitialExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
 		setInitialFormatBar(settings.editor.showFormatBar);
 		setInitialZenMode(settings.editor.zenMode);
 		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
 		setInitialFocusMode(settings.editor.focusMode);
 	}, [
 		settings,
-		setInitialExternalLinkPreviews,
 		setInitialFormatBar,
 		setInitialZenMode,
 		setInitialNoteSidePeek,
@@ -138,17 +130,6 @@ export function ExperimentalSettingsPane() {
 							disabled={rawMarkdownVimMode.isSaving}
 							ariaLabel={t("editor.vimMode.ariaLabel")}
 							onCheckedChange={rawMarkdownVimMode.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("editor.externalLinkPreviews.label")}
-						description={t("editor.externalLinkPreviews.description")}
-					>
-						<SettingsToggle
-							checked={externalLinkPreviews.checked}
-							disabled={externalLinkPreviews.isSaving}
-							ariaLabel={t("editor.externalLinkPreviews.ariaLabel")}
-							onCheckedChange={externalLinkPreviews.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

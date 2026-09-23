@@ -109,7 +109,6 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "general-editor-collapsible-lists", tab: "editor" },
 	{ id: "general-editor-spell-check", tab: "editor" },
 	{ id: "general-editor-default-mode", tab: "editor" },
-	{ id: "general-editor-external-link-previews", tab: "experimental" },
 	{ id: "general-editor-format-bar", tab: "experimental" },
 	{ id: "general-editor-zen-mode", tab: "experimental" },
 	{ id: "general-editor-focus-mode", tab: "experimental" },
