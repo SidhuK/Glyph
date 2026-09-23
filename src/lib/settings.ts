@@ -569,7 +569,6 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 		enablePeopleMentionsAsTags: DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.load(entries),
 		rawMarkdownVimMode: DURABLE_SETTINGS.editorRawMarkdownVimMode.load(entries),
 		spellCheck: DURABLE_SETTINGS.editorSpellCheck.load(entries),
-		showExternalLinkPreviews: DURABLE_SETTINGS.editorShowExternalLinkPreviews.load(entries),
 		showFormatBar: DURABLE_SETTINGS.editorShowFormatBar.load(entries),
 		zenMode: DURABLE_SETTINGS.editorZenMode.load(entries),
 		focusMode: DURABLE_SETTINGS.editorFocusMode.load(entries),

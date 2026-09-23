@@ -309,10 +309,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		],
 	},
 	{
-		...bindApplicationSetting(DURABLE_SETTINGS.editorShowExternalLinkPreviews),
-		control: "toggle",
-	},
-	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorRawMarkdownVimMode),
 		control: "toggle",
 	},

@@ -567,11 +567,6 @@
 			"section": "Editor",
 			"keywords": ["rich", "preview", "raw", "markdown"]
 		},
-		"general-editor-external-link-previews": {
-			"title": "External link previews",
-			"section": "Experimental",
-			"keywords": ["link", "web", "website", "card", "open graph", "metadata"]
-		},
 		"general-editor-vim-mode": {
 			"title": "Vim Mode",
 			"section": "Experimental",

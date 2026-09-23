@@ -54,15 +54,12 @@ fn is_forbidden_ip(ip: IpAddr) -> bool {
     }
 }
 
-pub fn public_url_addresses(
-    url: &Url,
-    allow_private_hosts: bool,
-) -> Result<Vec<SocketAddr>, String> {
+pub fn validate_url_host(url: &Url, allow_private_hosts: bool) -> Result<(), String> {
     if !matches!(url.scheme(), "http" | "https") {
         return Err("only http(s) urls are allowed".to_string());
     }
     if allow_private_hosts {
-        return Ok(Vec::new());
+        return Ok(());
     }
 
     let host = url
@@ -96,11 +93,7 @@ pub fn public_url_addresses(
     if addrs.iter().any(|address| is_forbidden_ip(address.ip())) {
         return Err("forbidden host".to_string());
     }
-    Ok(addrs)
-}
-
-pub fn validate_url_host(url: &Url, allow_private_hosts: bool) -> Result<(), String> {
-    public_url_addresses(url, allow_private_hosts).map(|_| ())
+    Ok(())
 }
 
 #[cfg(test)]

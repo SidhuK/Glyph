@@ -13,7 +13,6 @@ mod databases;
 mod daily_note_rollover;
 mod deeplink;
 mod external_markdown;
-mod external_link_preview;
 mod file_tree_appearance;
 mod git_sync;
 mod glyph_paths;
@@ -1840,7 +1839,6 @@ pub fn run() {
             external_markdown::external_markdown_write,
             external_markdown::external_markdown_reveal,
             external_markdown::external_markdown_finish_close,
-            external_link_preview::external_link_preview,
             custom_theme::custom_theme_read,
             custom_theme::custom_theme_write,
             print::document_print_current_window,

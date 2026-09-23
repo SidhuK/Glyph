@@ -155,7 +155,6 @@ export interface EditorSettings {
 	enablePeopleMentionsAsTags: boolean;
 	rawMarkdownVimMode: boolean;
 	spellCheck: boolean;
-	showExternalLinkPreviews: boolean;
 	showFormatBar: boolean;
 	zenMode: boolean;
 	focusMode: FocusMode;

@@ -542,11 +542,6 @@
 			"section": "Edytor",
 			"keywords": ["pisownia", "literówka", "słownik"]
 		},
-		"general-editor-external-link-previews": {
-			"title": "Podglądy linków zewnętrznych",
-			"section": "Eksperymentalne",
-			"keywords": ["link", "sieć", "witryna", "karta", "open graph", "metadane"]
-		},
 		"general-editor-vim-mode": {
 			"title": "Tryb Vim",
 			"section": "Eksperymentalne",

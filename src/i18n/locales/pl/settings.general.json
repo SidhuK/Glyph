@@ -166,11 +166,6 @@
 			"description": "Podkreślaj błędy ortograficzne podczas pisania. Kliknij słowo prawym przyciskiem myszy, aby wyświetlić sugerowane pisownie.",
 			"ariaLabel": "Sprawdzanie pisowni"
 		},
-		"externalLinkPreviews": {
-			"label": "Podglądy linków zewnętrznych",
-			"description": "Wyświetlaj samodzielne linki internetowe jako karty w trybie wzbogaconym i podglądu. Glyph pobiera szczegóły podglądu bezpośrednio z każdej połączonej witryny.",
-			"ariaLabel": "Pokaż podglądy linków zewnętrznych"
-		},
 		"vimMode": {
 			"title": "Tryb Vim",
 			"label": "Tryb Vim",
