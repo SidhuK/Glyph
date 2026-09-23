@@ -6,7 +6,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
-} from "../markdown/wikiLinkMarkdownBridge";
+} from "../markdown/editorMarkdownBridge";
 import { createEditorExtensions } from "./index";
 
 function createMarkdownManager() {

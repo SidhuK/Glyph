@@ -15,7 +15,7 @@ import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
-} from "../markdown/wikiLinkMarkdownBridge";
+} from "../markdown/editorMarkdownBridge";
 import type { TemplateInsertRequest } from "../slashCommands";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { applyEditorSpellCheck } from "./useEditorSpellCheck";

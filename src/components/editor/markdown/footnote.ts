@@ -50,3 +50,40 @@ export function findFootnoteCounterpartOffset(
 	}
 	return null;
 }
+
+function transformOutsideComments(input: string, transform: (text: string) => string): string {
+	let insideComment = false;
+	return transformMarkdownOutsideCode(input, (text) => {
+		let output = "";
+		let cursor = 0;
+		while (cursor < text.length) {
+			if (insideComment) {
+				const end = text.indexOf("-->", cursor);
+				if (end === -1) return output + text.slice(cursor);
+				output += text.slice(cursor, end + 3);
+				cursor = end + 3;
+				insideComment = false;
+				continue;
+			}
+			const start = text.indexOf("<!--", cursor);
+			if (start === -1) return output + transform(text.slice(cursor));
+			output += transform(text.slice(cursor, start));
+			insideComment = true;
+			cursor = start;
+		}
+		return output;
+	});
+}
+
+export function protectFootnotes(input: string): string {
+	return transformOutsideComments(input, (text) =>
+		text.replace(/(?<!\\)\[\^([^\]\s]+)\]/g, String.raw`\[^$1\]`),
+	);
+}
+
+export function restoreEscapedFootnotes(input: string): string {
+	return transformOutsideComments(input, (text) =>
+		text.replace(/\\\[\^([^\]\\\s]+)\\\]/g, "[^$1]"),
+	);
+}
+import { transformMarkdownOutsideCode } from "./markdownFence";

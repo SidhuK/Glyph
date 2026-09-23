@@ -236,6 +236,13 @@
 	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 }
 
+.tiptapContentInline .htmlComment {
+	color: var(--text-tertiary);
+	font-family: var(--font-mono);
+	font-size: 0.85em;
+	white-space: pre-wrap;
+}
+
 .tiptapContentInline .personToken {
 	display: inline-block;
 	color: var(--pill-contrast-fg);

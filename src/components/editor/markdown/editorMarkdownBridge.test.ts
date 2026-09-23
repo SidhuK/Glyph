@@ -2,9 +2,9 @@ import { describe, expect, it } from "vite-plus/test";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
-} from "./wikiLinkMarkdownBridge";
+} from "./editorMarkdownBridge";
 
-describe("wikiLinkMarkdownBridge", () => {
+describe("editorMarkdownBridge", () => {
 	it("keeps non-wikilink markdown unchanged", () => {
 		const md = "# Title\n\nRegular [link](https://example.com)";
 		expect(preprocessMarkdownForEditor(md)).toBe(md);

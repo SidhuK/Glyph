@@ -58,7 +58,7 @@ import {
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
-import { preprocessMarkdownForEditor } from "./markdown/wikiLinkMarkdownBridge";
+import { preprocessMarkdownForEditor } from "./markdown/editorMarkdownBridge";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
 import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";

@@ -1,7 +1,7 @@
 import { MarkdownManager } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import { describe, expect, it } from "vite-plus/test";
-import { postprocessMarkdownFromEditor } from "../markdown/wikiLinkMarkdownBridge";
+import { postprocessMarkdownFromEditor } from "../markdown/editorMarkdownBridge";
 import { WikiLink } from "./wikiLink";
 
 describe("WikiLink markdown manager integration", () => {

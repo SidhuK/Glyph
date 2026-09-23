@@ -3,7 +3,7 @@ import { postprocessHtmlEmbeds, preprocessHtmlEmbeds } from "./htmlEmbedMarkdown
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
-} from "./wikiLinkMarkdownBridge";
+} from "./editorMarkdownBridge";
 
 describe("htmlEmbedMarkdown", () => {
 	it("keeps fenced html blocks unchanged through preprocess", () => {
@@ -69,7 +69,7 @@ describe("htmlEmbedMarkdown", () => {
 	});
 });
 
-describe("wikiLinkMarkdownBridge html embeds", () => {
+describe("editorMarkdownBridge html embeds", () => {
 	it("round-trips fenced html embeds through the editor bridge", () => {
 		const md = "```html\n<div>Bridge</div>\n```";
 		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);
