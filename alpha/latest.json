@@ -1,15 +1,15 @@
 {
-  "version": "0.8.20-alpha.5",
-  "notes": "## What's Changed\n* Polish file type badges by @SidhuK in https://github.com/SidhuK/Glyph/pull/583\n* Move pinned files into sidebar tabs (#584)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/584\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.20-alpha.4...v0.8.20-alpha.5",
-  "pub_date": "2026-09-22T11:14:31.745Z",
+  "version": "0.9.0-alpha.1",
+  "notes": "## What's Changed\n* Refine sidebar navigation controls by @SidhuK in https://github.com/SidhuK/Glyph/pull/585\n* Remove obsolete database column color setting by @SidhuK in https://github.com/SidhuK/Glyph/pull/586\n* Remove non-Markdown file visibility toggle by @SidhuK in https://github.com/SidhuK/Glyph/pull/587\n* Remove external link previews by @SidhuK in https://github.com/SidhuK/Glyph/pull/588\n* Remove legacy Connections mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/589\n* Remove Space Insights settings and code by @SidhuK in https://github.com/SidhuK/Glyph/pull/590\n* Simplify AI settings and use native model menu by @SidhuK in https://github.com/SidhuK/Glyph/pull/591\n* Reorganize settings and remove redundant preferences by @SidhuK in https://github.com/SidhuK/Glyph/pull/592\n* Preserve footnotes and HTML comments in rich editor (#593)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/593\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.20-alpha.5...v0.9.0-alpha.1",
+  "pub_date": "2026-09-23T08:56:26.346Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHllWGE3ZHBOd1BPZEM3VWhpUFNKV2Z6cmJSMS91NnROaStGYXFVZWZrRmFwbzhucmVoQnBaaDJhY200UDlMREoyZnJMN1FpdHVWOTlsUzRCZkdsaGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwMDc1NjY2CWZpbGU6R2x5cGguYXBwLnRhci5negp1VGxJWHRjMWhQL2U3TmVZd0FUeVE4T0dDcU53V2ZOckNlai9lZkoxYzlQa0N1TG5lclRsaGt6WXNSZTBMR1VFWlhOSUlQTndVTHAyMStna2VRTjVDQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.5/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNC9iay9Pb1ZtcndoLzNDQnF5UWxuMFoxajI1UVdIb2w1KzBSVG1QZGtWenJFSlBRQTNLQ1drNTcyWENSd2lGbi9uVWJUN0tCVHlQV3RuNWp3MXVhZFFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwMTUzNzgwCWZpbGU6R2x5cGguYXBwLnRhci5negpkS3l6TFEwZ3RkY2hjZll3cTZZWXRjM3pIc1dIeUR1amZkdGZaNmRQUGhIUEUxdnBBNGFFK1JUL2dwd1FyS1NQSjdld09BVHl6Wjh0OC84b2djbTNEZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.0-alpha.1/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHllWGE3ZHBOd1BPZEM3VWhpUFNKV2Z6cmJSMS91NnROaStGYXFVZWZrRmFwbzhucmVoQnBaaDJhY200UDlMREoyZnJMN1FpdHVWOTlsUzRCZkdsaGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwMDc1NjY2CWZpbGU6R2x5cGguYXBwLnRhci5negp1VGxJWHRjMWhQL2U3TmVZd0FUeVE4T0dDcU53V2ZOckNlai9lZkoxYzlQa0N1TG5lclRsaGt6WXNSZTBMR1VFWlhOSUlQTndVTHAyMStna2VRTjVDQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.20-alpha.5/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNC9iay9Pb1ZtcndoLzNDQnF5UWxuMFoxajI1UVdIb2w1KzBSVG1QZGtWenJFSlBRQTNLQ1drNTcyWENSd2lGbi9uVWJUN0tCVHlQV3RuNWp3MXVhZFFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwMTUzNzgwCWZpbGU6R2x5cGguYXBwLnRhci5negpkS3l6TFEwZ3RkY2hjZll3cTZZWXRjM3pIc1dIeUR1amZkdGZaNmRQUGhIUEUxdnBBNGFFK1JUL2dwd1FyS1NQSjdld09BVHl6Wjh0OC84b2djbTNEZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.0-alpha.1/Glyph_aarch64.app.tar.gz"
     }
   }
 }
