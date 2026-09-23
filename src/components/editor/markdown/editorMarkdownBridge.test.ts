@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import {
-	postprocessMarkdownFromEditor,
-	preprocessMarkdownForEditor,
-} from "./editorMarkdownBridge";
+import { postprocessMarkdownFromEditor, preprocessMarkdownForEditor } from "./editorMarkdownBridge";
 
 describe("editorMarkdownBridge", () => {
 	it("keeps non-wikilink markdown unchanged", () => {

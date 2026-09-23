@@ -174,7 +174,9 @@ export function postprocessMarkdownFromEditor(markdown: string): string {
 					postprocessColoredText(
 						postprocessDetailsMarkdown(
 							postprocessHtmlEmbeds(
-								canonicalizeWikiLinks(restoreEscapedBracketSyntax(restoreEscapedFootnotes(markdown))),
+								canonicalizeWikiLinks(
+									restoreEscapedBracketSyntax(restoreEscapedFootnotes(markdown)),
+								),
 							),
 						),
 					),

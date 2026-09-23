@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { postprocessHtmlEmbeds, preprocessHtmlEmbeds } from "./htmlEmbedMarkdown";
-import {
-	postprocessMarkdownFromEditor,
-	preprocessMarkdownForEditor,
-} from "./editorMarkdownBridge";
+import { postprocessMarkdownFromEditor, preprocessMarkdownForEditor } from "./editorMarkdownBridge";
 
 describe("htmlEmbedMarkdown", () => {
 	it("keeps fenced html blocks unchanged through preprocess", () => {

@@ -86,7 +86,5 @@ export function protectFootnotes(input: string): string {
 }
 
 export function restoreEscapedFootnotes(input: string): string {
-	return transformOutsideComments(input, (text) =>
-		text.replace(ESCAPED_FOOTNOTE_PATTERN, "[^$1]"),
-	);
+	return transformOutsideComments(input, (text) => text.replace(ESCAPED_FOOTNOTE_PATTERN, "[^$1]"));
 }

@@ -40,7 +40,11 @@ export const HtmlCommentInline = Node.create({
 		return [{ tag: "span[data-glyph-html-comment]", getAttrs: commentAttrsFromElement }];
 	},
 	renderHTML({ node }) {
-		return ["span", { "data-glyph-html-comment": "", class: "htmlComment" }, commentRaw(node.attrs.raw)];
+		return [
+			"span",
+			{ "data-glyph-html-comment": "", class: "htmlComment" },
+			commentRaw(node.attrs.raw),
+		];
 	},
 	renderText({ node }) {
 		return commentRaw(node.attrs.raw);
@@ -74,7 +78,11 @@ export const HtmlCommentBlock = Node.create({
 		return [{ tag: "div[data-glyph-html-comment]", getAttrs: commentAttrsFromElement }];
 	},
 	renderHTML({ node }) {
-		return ["div", { "data-glyph-html-comment": "", class: "htmlComment" }, commentRaw(node.attrs.raw)];
+		return [
+			"div",
+			{ "data-glyph-html-comment": "", class: "htmlComment" },
+			commentRaw(node.attrs.raw),
+		];
 	},
 	renderText({ node }) {
 		return commentRaw(node.attrs.raw);
