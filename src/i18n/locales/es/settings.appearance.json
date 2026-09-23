@@ -82,41 +82,6 @@
 			}
 		}
 	},
-	"typography": {
-		"sectionTitle": "Tipografía",
-		"sectionDescription": "Ajusta por separado el tipo de la interfaz, el estilo del código y la escala de lectura.",
-		"interfaceFont": {
-			"label": "Fuente de la interfaz",
-			"description": "Se usa en la navegación, los ajustes y la mayor parte del texto de la UI de Glyph."
-		},
-		"editorFont": {
-			"label": "Fuente del editor",
-			"description": "Se usa para el texto normal de las notas, fuera del código en línea y los bloques de código."
-		},
-		"headingFontEnabled": {
-			"label": "Fuente de encabezados independiente",
-			"description": "Usa una fuente diferente para H1-H6 en los modos de edición y vista previa.",
-			"ariaLabel": "Fuente de encabezados independiente"
-		},
-		"headingFont": {
-			"label": "Fuente de encabezados",
-			"description": "Se usa para H1-H6 cuando la fuente independiente está activada. Markdown sin formato conserva la fuente del editor."
-		},
-		"monospaceFont": {
-			"label": "Fuente monoespaciada",
-			"description": "Se usa para el origen Markdown, el código en línea y las superficies orientadas a desarrolladores."
-		},
-		"uiFontSize": {
-			"label": "Tamaño de fuente de la UI",
-			"description": "Ajusta el tamaño base de menús, paneles, controles y ajustes.",
-			"valueAriaLabel": "Valor del tamaño de fuente de la UI"
-		},
-		"editorFontSize": {
-			"label": "Tamaño de fuente del editor",
-			"description": "Ajusta el tamaño de lectura del editor de notas, la vista previa Markdown y la edición de texto sin formato.",
-			"valueAriaLabel": "Valor del tamaño de fuente del editor"
-		}
-	},
 	"layout": {
 		"sectionTitle": "Diseño",
 		"sectionDescription": "Elige cómo comparten el espacio de trabajo la navegación y las notas.",
@@ -139,74 +104,6 @@
 			"label": "Orden predeterminado de Folio",
 			"description": "Elige el orden inicial de los archivos en la lista de notas de Folio.",
 			"ariaLabel": "Orden predeterminado de Folio"
-		}
-	},
-	"editorPresentation": {
-		"sectionTitle": "Presentación del editor",
-		"sectionDescription": "Elige cómo se ven las notas al editarlas.",
-		"beautifulTags": {
-			"label": "Etiquetas bonitas",
-			"description": "Activar la presentación experimental Beautiful Tags para las etiquetas.",
-			"ariaLabel": "Etiquetas bonitas"
-		},
-		"editorWidth": {
-			"label": "Ancho del editor",
-			"description": "Compacto mantiene las líneas más cortas, Cómodo da un poco más de espacio y Ancho usa todo el ancho del editor.",
-			"ariaLabel": "Ancho del editor",
-			"options": {
-				"compact": "Compacto",
-				"comfortable": "Cómodo",
-				"wide": "Ancho"
-			}
-		}
-	},
-	"sidebar": {
-		"sectionTitle": "Barra lateral",
-		"sectionDescription": "Elige los elementos de navegación visibles y su orden.",
-		"resetToDefaults": "Restaurar el diseño predeterminado de la barra lateral",
-		"resetError": "No se pudo restaurar el diseño predeterminado de la barra lateral.",
-		"reorder": "Reordenar {{label}}",
-		"showItem": "Mostrar {{label}} en la barra lateral",
-		"items": {
-			"agent": {
-				"label": "Agente"
-			},
-			"newNote": {
-				"label": "Nueva nota"
-			},
-			"newCanvas": {
-				"label": "Nuevo lienzo"
-			},
-			"newNoteAndCanvas": {
-				"label": "Nueva nota y lienzo"
-			},
-			"allNotes": {
-				"label": "Todas las notas"
-			},
-			"databases": {
-				"label": "Colecciones / Bases de datos"
-			},
-			"connections": {
-				"label": "Conexiones"
-			},
-			"calendar": {
-				"label": "Calendario"
-			},
-			"search": {
-				"label": "Buscar / Apertura rápida"
-			},
-			"periodNotes": {
-				"label": "Notas diarias, semanales, mensuales y trimestrales"
-			},
-			"quickNote": {
-				"label": "Nota rápida"
-			},
-			"templates": {
-				"label": "Plantillas"
-			},
-			"gitSync": {
-				"label": "Sincronización con Git"
-			}
 		}
 	}
 }

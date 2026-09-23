@@ -39,6 +39,8 @@ import { ExperimentalSettingsPane } from "../settings/ExperimentalSettingsPane";
 import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
 import { GitSettingsPane } from "../settings/GitSettingsPane";
 import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
+import { SidebarSettingsPane } from "../settings/SidebarSettingsPane";
+import { TypographySettingsPane } from "../settings/TypographySettingsPane";
 import type { SettingsTab } from "../settings/settingsConfig";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
@@ -114,6 +116,10 @@ function SettingsTabContent({ tab }: { tab: SettingsTab }) {
 			return <GeneralSettingsPane />;
 		case "appearance":
 			return <AppearanceSettingsPane />;
+		case "typography":
+			return <TypographySettingsPane />;
+		case "sidebar":
+			return <SidebarSettingsPane />;
 		case "editor":
 			return <EditorSettingsPane />;
 		case "shortcuts":

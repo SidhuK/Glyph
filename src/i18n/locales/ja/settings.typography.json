@@ -1,0 +1,35 @@
+{
+	"sectionTitle": "タイポグラフィ",
+	"sectionDescription": "インターフェース書体、コードスタイル、読書スケールを個別に調整します。",
+	"interfaceFont": {
+		"label": "インターフェースフォント",
+		"description": "ナビゲーション、設定、Glyph のほとんどの UI テキストに使用されます。"
+	},
+	"editorFont": {
+		"label": "エディタフォント",
+		"description": "インラインコードとコードブロック以外の通常のノート本文に使用されます。"
+	},
+	"headingFontEnabled": {
+		"label": "見出し用フォントを分ける",
+		"description": "編集モードとプレビューモードの H1〜H6 に別のフォントを使用します。",
+		"ariaLabel": "見出し用フォントを分ける"
+	},
+	"headingFont": {
+		"label": "見出しフォント",
+		"description": "見出し用フォントがオンのとき H1〜H6 に使用します。Raw Markdown ではエディタフォントを維持します。"
+	},
+	"monospaceFont": {
+		"label": "等幅フォント",
+		"description": "Markdown ソース、インラインコード、開発者向けの画面に使用されます。"
+	},
+	"uiFontSize": {
+		"label": "UI フォントサイズ",
+		"description": "メニュー、ペイン、コントロール、設定で使う基本サイズを調整します。",
+		"valueAriaLabel": "UI フォントサイズの値"
+	},
+	"editorFontSize": {
+		"label": "エディタフォントサイズ",
+		"description": "ノートエディタ、Markdown プレビュー、生テキスト編集の読みやすさを調整します。",
+		"valueAriaLabel": "エディタフォントサイズの値"
+	}
+}

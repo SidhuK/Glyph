@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "일반",
 		"appearance": "모양",
+		"typography": "타이포그래피",
+		"sidebar": "사이드바",
 		"editor": "편집기",
 		"experimental": "실험적",
 		"shortcuts": "Shortcuts",
@@ -20,6 +22,16 @@
 			"title": "모양 설정",
 			"description": "모양 설정을 엽니다.",
 			"keywords": ["모양"]
+		},
+		"typography": {
+			"title": "타이포그래피",
+			"description": "인터페이스 서체, 코드 스타일, 읽기 배율을 각각 조정합니다.",
+			"keywords": ["font", "type"]
+		},
+		"sidebar": {
+			"title": "사이드바",
+			"description": "표시할 탐색 항목과 순서를 선택합니다.",
+			"keywords": ["사이드바"]
 		},
 		"editor": {
 			"title": "편집기 설정",
@@ -117,15 +129,8 @@
 			"description": "열어 두었던 탭으로 이 스페이스를 시작합니다.",
 			"keywords": ["복원", "시작", "실행", "이어서", "탭", "세션", "restore", "startup", "tabs"]
 		},
-		"general-keep-running-on-close": {
-			"title": "마지막 창을 닫아도 Glyph 계속 실행",
-			"section": "시작",
-			"description": "Glyph를 종료하지 않고 마지막 창을 숨깁니다.",
-			"keywords": ["닫기", "창", "종료", "숨기기", "dock"]
-		},
-		"appearance-sidebar": {
+		"sidebar-layout": {
 			"title": "사이드바",
-			"section": "모양",
 			"description": "표시할 탐색 항목과 순서를 설정합니다.",
 			"keywords": [
 				"사이드바",
@@ -169,39 +174,39 @@
 			"description": "JSON 팔레트를 새 테마로 가져옵니다.",
 			"keywords": ["테마", "JSON", "가져오기", "사용자 지정"]
 		},
-		"appearance-interface-font": {
+		"typography-interface-font": {
 			"title": "인터페이스 글꼴",
 			"section": "타이포그래피",
 			"keywords": ["글꼴", "ui", "sans", "font"]
 		},
-		"appearance-monospace-font": {
+		"typography-monospace-font": {
 			"title": "고정폭 글꼴",
 			"section": "타이포그래피",
 			"keywords": ["글꼴", "코드", "mono", "font", "code"]
 		},
-		"appearance-editor-font": {
+		"typography-editor-font": {
 			"title": "편집기 글꼴",
-			"section": "타이포그래피",
+			"section": "편집기",
 			"keywords": ["글꼴", "편집기", "노트", "산문", "font", "editor", "notes", "prose"]
 		},
-		"appearance-heading-font-enabled": {
+		"typography-heading-font-enabled": {
 			"title": "별도 제목 글꼴",
-			"section": "타이포그래피",
+			"section": "편집기",
 			"keywords": ["글꼴", "제목", "h1", "h2", "미리보기", "font", "heading"]
 		},
-		"appearance-heading-font": {
+		"typography-heading-font": {
 			"title": "제목 글꼴",
-			"section": "타이포그래피",
+			"section": "편집기",
 			"keywords": ["글꼴", "제목", "h1", "h2", "font", "heading"]
 		},
-		"appearance-ui-font-size": {
+		"typography-ui-font-size": {
 			"title": "UI 글꼴 크기",
 			"section": "타이포그래피",
 			"keywords": ["글꼴", "텍스트", "인터페이스", "font", "text", "interface"]
 		},
-		"appearance-editor-font-size": {
+		"typography-editor-font-size": {
 			"title": "편집기 글꼴 크기",
-			"section": "타이포그래피",
+			"section": "편집기",
 			"keywords": ["글꼴", "텍스트", "노트", "font", "text", "notes"]
 		},
 		"shortcuts-customize": {

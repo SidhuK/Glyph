@@ -6,8 +6,10 @@ import {
 	GitBranchIcon,
 	PencilEdit02Icon,
 	Settings01Icon,
+	SidebarLeftIcon,
 	Sun03Icon,
 	TestTubeIcon,
+	TextFontIcon,
 } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { FolderOpen } from "../Icons/NavigationIcons";
@@ -15,6 +17,8 @@ import { FolderOpen } from "../Icons/NavigationIcons";
 export type SettingsTab =
 	| "general"
 	| "appearance"
+	| "typography"
+	| "sidebar"
 	| "editor"
 	| "shortcuts"
 	| "ai"
@@ -46,6 +50,14 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 			{
 				id: "appearance",
 				renderIcon: () => <HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" />,
+			},
+			{
+				id: "typography",
+				renderIcon: () => <HugeiconsIcon icon={TextFontIcon} size="var(--icon-md)" />,
+			},
+			{
+				id: "sidebar",
+				renderIcon: () => <HugeiconsIcon icon={SidebarLeftIcon} size="var(--icon-md)" />,
 			},
 			{
 				id: "editor",

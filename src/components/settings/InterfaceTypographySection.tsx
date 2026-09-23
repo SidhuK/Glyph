@@ -9,7 +9,7 @@ import { Input } from "../ui/shadcn/input";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 
-interface AppearanceTypographyCardProps {
+interface InterfaceTypographySectionProps {
 	fontFamily: UiFontFamily;
 	monoFontFamily: UiFontFamily;
 	uiFontSize: UiFontSize;
@@ -22,6 +22,7 @@ interface AppearanceTypographyCardProps {
 
 interface FontSizeControlProps {
 	id: string;
+	searchId?: string;
 	label: string;
 	description: string;
 	valueAriaLabel: string;
@@ -37,6 +38,7 @@ function clampFontSize(value: number, min: number, max: number): UiFontSize {
 
 export function FontSizeControl({
 	id,
+	searchId,
 	label,
 	description,
 	valueAriaLabel,
@@ -46,7 +48,7 @@ export function FontSizeControl({
 	onChange,
 }: FontSizeControlProps) {
 	return (
-		<SettingsRow label={label} htmlFor={id} description={description}>
+		<SettingsRow label={label} htmlFor={id} description={description} searchId={searchId}>
 			<div className="flex w-full justify-end">
 				<Input
 					id={id}
@@ -68,7 +70,7 @@ export function FontSizeControl({
 	);
 }
 
-export function AppearanceTypographyCard({
+export function InterfaceTypographySection({
 	fontFamily,
 	monoFontFamily,
 	uiFontSize,
@@ -77,18 +79,16 @@ export function AppearanceTypographyCard({
 	onFontFamilyChange,
 	onMonoFontFamilyChange,
 	onUiFontSizeChange,
-}: AppearanceTypographyCardProps) {
-	const { t } = useTranslation("settings.appearance");
+}: InterfaceTypographySectionProps) {
+	const { t } = useTranslation("settings.typography");
 
 	return (
-		<SettingsSection
-			title={t("typography.sectionTitle")}
-			description={t("typography.sectionDescription")}
-		>
+		<SettingsSection title={t("sectionTitle")} description={t("sectionDescription")}>
 			<SettingsRow
-				label={t("typography.interfaceFont.label")}
+				label={t("interfaceFont.label")}
 				htmlFor="settingsFontFamily"
-				description={t("typography.interfaceFont.description")}
+				description={t("interfaceFont.description")}
+				searchId="typography-interface-font"
 			>
 				<SettingsSelect
 					id="settingsFontFamily"
@@ -104,9 +104,10 @@ export function AppearanceTypographyCard({
 			</SettingsRow>
 
 			<SettingsRow
-				label={t("typography.monospaceFont.label")}
+				label={t("monospaceFont.label")}
 				htmlFor="settingsMonoFontFamily"
-				description={t("typography.monospaceFont.description")}
+				description={t("monospaceFont.description")}
+				searchId="typography-monospace-font"
 			>
 				<SettingsSelect
 					id="settingsMonoFontFamily"
@@ -123,9 +124,10 @@ export function AppearanceTypographyCard({
 
 			<FontSizeControl
 				id="settingsUiFontSize"
-				label={t("typography.uiFontSize.label")}
-				description={t("typography.uiFontSize.description")}
-				valueAriaLabel={t("typography.uiFontSize.valueAriaLabel")}
+				searchId="typography-ui-font-size"
+				label={t("uiFontSize.label")}
+				description={t("uiFontSize.description")}
+				valueAriaLabel={t("uiFontSize.valueAriaLabel")}
 				value={uiFontSize}
 				min={MIN_UI_FONT_SIZE}
 				max={MAX_UI_FONT_SIZE}

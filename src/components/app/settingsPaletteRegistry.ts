@@ -118,10 +118,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 	},
 	{
-		...bindApplicationSetting(DURABLE_SETTINGS.keepRunningOnLastWindowClose),
-		control: "toggle",
-	},
-	{
 		...bindApplicationSetting(DURABLE_SETTINGS.theme),
 		control: "choice",
 		defaultVisible: true,

@@ -48,16 +48,10 @@
 	},
 	"startup": {
 		"sectionTitle": "Démarrage",
-		"sectionDescription": "Choisissez le comportement de Glyph au démarrage et à la fermeture de la dernière fenêtre.",
 		"openPreviousTabs": {
 			"label": "Ouvrir les onglets précédents",
 			"description": "Démarrer cet espace avec les onglets que vous aviez laissés ouverts.",
 			"ariaLabel": "Reprendre la dernière session"
-		},
-		"keepRunningOnClose": {
-			"label": "Garder Glyph actif après la fermeture de la dernière fenêtre",
-			"description": "La fermeture de la dernière fenêtre la masque tandis que Glyph reste ouvert. Utilisez Quitter Glyph pour fermer l’application.",
-			"ariaLabel": "Garder Glyph actif après la fermeture de la dernière fenêtre"
 		}
 	},
 	"experimental": {
@@ -178,5 +172,24 @@
 		"week": "Modèle de note hebdomadaire par défaut",
 		"month": "Modèle de note mensuelle par défaut",
 		"quarter": "Modèle de note trimestrielle par défaut"
+	},
+	"editorPresentation": {
+		"sectionTitle": "Présentation de l’éditeur",
+		"sectionDescription": "Choisissez l’apparence des notes pendant l’édition.",
+		"beautifulTags": {
+			"label": "Belles étiquettes",
+			"description": "Activer la présentation expérimentale Beautiful Tags pour les étiquettes.",
+			"ariaLabel": "Belles étiquettes"
+		},
+		"editorWidth": {
+			"label": "Largeur de l’éditeur",
+			"description": "Compacte garde des lignes plus courtes, Confortable donne un peu plus d’espace, et Large utilise toute la largeur de l’éditeur.",
+			"ariaLabel": "Largeur de l’éditeur",
+			"options": {
+				"compact": "Compacte",
+				"comfortable": "Confortable",
+				"wide": "Large"
+			}
+		}
 	}
 }

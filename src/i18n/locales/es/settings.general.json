@@ -37,16 +37,10 @@
 	},
 	"startup": {
 		"sectionTitle": "Inicio",
-		"sectionDescription": "Elige qué hace Glyph al iniciarse y al cerrar la última ventana.",
 		"openPreviousTabs": {
 			"label": "Abrir pestañas anteriores",
 			"description": "Iniciar este espacio con las pestañas que dejaste abiertas.",
 			"ariaLabel": "Reanudar la última sesión"
-		},
-		"keepRunningOnClose": {
-			"label": "Mantener Glyph en ejecución al cerrar la última ventana",
-			"description": "Al cerrar la última ventana, esta se oculta y Glyph permanece abierto. Usa Salir de Glyph para cerrarlo.",
-			"ariaLabel": "Mantener Glyph en ejecución al cerrar la última ventana"
 		}
 	},
 	"experimental": {
@@ -167,5 +161,24 @@
 		"week": "Plantilla predeterminada de nota semanal",
 		"month": "Plantilla predeterminada de nota mensual",
 		"quarter": "Plantilla predeterminada de nota trimestral"
+	},
+	"editorPresentation": {
+		"sectionTitle": "Presentación del editor",
+		"sectionDescription": "Elige cómo se ven las notas al editarlas.",
+		"beautifulTags": {
+			"label": "Etiquetas bonitas",
+			"description": "Activar la presentación experimental Beautiful Tags para las etiquetas.",
+			"ariaLabel": "Etiquetas bonitas"
+		},
+		"editorWidth": {
+			"label": "Ancho del editor",
+			"description": "Compacto mantiene las líneas más cortas, Cómodo da un poco más de espacio y Ancho usa todo el ancho del editor.",
+			"ariaLabel": "Ancho del editor",
+			"options": {
+				"compact": "Compacto",
+				"comfortable": "Cómodo",
+				"wide": "Ancho"
+			}
+		}
 	}
 }

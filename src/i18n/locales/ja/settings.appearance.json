@@ -82,41 +82,6 @@
 			}
 		}
 	},
-	"typography": {
-		"sectionTitle": "タイポグラフィ",
-		"sectionDescription": "インターフェース書体、コードスタイル、読書スケールを個別に調整します。",
-		"interfaceFont": {
-			"label": "インターフェースフォント",
-			"description": "ナビゲーション、設定、Glyph のほとんどの UI テキストに使用されます。"
-		},
-		"editorFont": {
-			"label": "エディタフォント",
-			"description": "インラインコードとコードブロック以外の通常のノート本文に使用されます。"
-		},
-		"headingFontEnabled": {
-			"label": "見出し用フォントを分ける",
-			"description": "編集モードとプレビューモードの H1〜H6 に別のフォントを使用します。",
-			"ariaLabel": "見出し用フォントを分ける"
-		},
-		"headingFont": {
-			"label": "見出しフォント",
-			"description": "見出し用フォントがオンのとき H1〜H6 に使用します。Raw Markdown ではエディタフォントを維持します。"
-		},
-		"monospaceFont": {
-			"label": "等幅フォント",
-			"description": "Markdown ソース、インラインコード、開発者向けの画面に使用されます。"
-		},
-		"uiFontSize": {
-			"label": "UI フォントサイズ",
-			"description": "メニュー、ペイン、コントロール、設定で使う基本サイズを調整します。",
-			"valueAriaLabel": "UI フォントサイズの値"
-		},
-		"editorFontSize": {
-			"label": "エディタフォントサイズ",
-			"description": "ノートエディタ、Markdown プレビュー、生テキスト編集の読みやすさを調整します。",
-			"valueAriaLabel": "エディタフォントサイズの値"
-		}
-	},
 	"layout": {
 		"sectionTitle": "レイアウト",
 		"sectionDescription": "ナビゲーションとノートのワークスペース配置を選択します。",
@@ -139,74 +104,6 @@
 			"label": "Folio の既定の並び順",
 			"description": "Folio のノート一覧に表示するファイルの初期順序を選択します。",
 			"ariaLabel": "Folio の既定の並び順"
-		}
-	},
-	"editorPresentation": {
-		"sectionTitle": "エディタの表示",
-		"sectionDescription": "編集中のノートの見た目を選びます。",
-		"beautifulTags": {
-			"label": "Beautiful Tags",
-			"description": "タグ向けの実験的な Beautiful Tags 表示を有効にします。",
-			"ariaLabel": "Beautiful Tags"
-		},
-		"editorWidth": {
-			"label": "エディタの幅",
-			"description": "コンパクトは行を短く保ち、快適は少し余裕を与え、ワイドはエディタ全幅を使います。",
-			"ariaLabel": "エディタの幅",
-			"options": {
-				"compact": "コンパクト",
-				"comfortable": "快適",
-				"wide": "ワイド"
-			}
-		}
-	},
-	"sidebar": {
-		"sectionTitle": "サイドバー",
-		"sectionDescription": "表示するナビゲーション項目と順序を選択します。",
-		"resetToDefaults": "サイドバーを既定の配置に戻す",
-		"resetError": "サイドバーを既定の配置に戻せませんでした。",
-		"reorder": "{{label}}の順序を変更",
-		"showItem": "サイドバーに{{label}}を表示",
-		"items": {
-			"agent": {
-				"label": "エージェント"
-			},
-			"newNote": {
-				"label": "新規ノート"
-			},
-			"newCanvas": {
-				"label": "新しいキャンバス"
-			},
-			"newNoteAndCanvas": {
-				"label": "新規ノートとキャンバス"
-			},
-			"allNotes": {
-				"label": "すべてのノート"
-			},
-			"databases": {
-				"label": "コレクション / データベース"
-			},
-			"connections": {
-				"label": "接続"
-			},
-			"calendar": {
-				"label": "カレンダー"
-			},
-			"search": {
-				"label": "検索 / クイックオープン"
-			},
-			"periodNotes": {
-				"label": "日次・週次・月次・四半期ノート"
-			},
-			"quickNote": {
-				"label": "クイックノート"
-			},
-			"templates": {
-				"label": "テンプレート"
-			},
-			"gitSync": {
-				"label": "Git 同期"
-			}
 		}
 	}
 }

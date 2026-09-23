@@ -37,16 +37,10 @@
 	},
 	"startup": {
 		"sectionTitle": "시작",
-		"sectionDescription": "Glyph를 시작할 때와 마지막 창을 닫을 때의 동작을 선택합니다.",
 		"openPreviousTabs": {
 			"label": "이전 탭 열기",
 			"description": "열어 두었던 탭으로 이 스페이스를 시작합니다.",
 			"ariaLabel": "마지막 세션 이어하기"
-		},
-		"keepRunningOnClose": {
-			"label": "마지막 창을 닫아도 Glyph 계속 실행",
-			"description": "마지막 창을 닫으면 창만 숨겨지고 Glyph는 계속 열려 있습니다. 종료하려면 Glyph 종료를 사용하세요.",
-			"ariaLabel": "마지막 창을 닫아도 Glyph 계속 실행"
 		}
 	},
 	"experimental": {
@@ -167,5 +161,24 @@
 		"week": "기본 주간 노트 템플릿",
 		"month": "기본 월간 노트 템플릿",
 		"quarter": "기본 분기 노트 템플릿"
+	},
+	"editorPresentation": {
+		"sectionTitle": "편집기 표시",
+		"sectionDescription": "편집 중 노트의 모습을 선택합니다.",
+		"beautifulTags": {
+			"label": "Beautiful Tags",
+			"description": "태그를 위한 실험적 Beautiful Tags 표시를 사용합니다.",
+			"ariaLabel": "Beautiful Tags"
+		},
+		"editorWidth": {
+			"label": "편집기 너비",
+			"description": "컴팩트는 줄을 짧게 유지하고, 편안함은 조금 더 여유를 주며, 넓음은 편집기 전체 너비를 사용합니다.",
+			"ariaLabel": "편집기 너비",
+			"options": {
+				"compact": "컴팩트",
+				"comfortable": "편안함",
+				"wide": "넓음"
+			}
+		}
 	}
 }

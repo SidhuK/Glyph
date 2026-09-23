@@ -95,41 +95,6 @@
 			}
 		}
 	},
-	"typography": {
-		"sectionTitle": "Typography",
-		"sectionDescription": "Tune interface type, code styling, and reading scale independently.",
-		"interfaceFont": {
-			"label": "Interface font",
-			"description": "Used for navigation, settings, and most UI copy across Glyph."
-		},
-		"editorFont": {
-			"label": "Editor font",
-			"description": "Used for regular note text outside inline code and code blocks."
-		},
-		"headingFontEnabled": {
-			"label": "Separate heading font",
-			"description": "Use a different font for H1-H6 in edit and preview modes.",
-			"ariaLabel": "Separate heading font"
-		},
-		"headingFont": {
-			"label": "Heading font",
-			"description": "Used for H1-H6 when the separate heading font is on. Raw Markdown keeps the editor font."
-		},
-		"monospaceFont": {
-			"label": "Monospace font",
-			"description": "Used for markdown source, inline code, and developer-oriented surfaces."
-		},
-		"uiFontSize": {
-			"label": "UI font size",
-			"description": "Adjust the base size used by menus, panes, controls, and settings.",
-			"valueAriaLabel": "UI font size value"
-		},
-		"editorFontSize": {
-			"label": "Editor font size",
-			"description": "Adjust the reading size for the note editor, markdown preview, and raw text editing.",
-			"valueAriaLabel": "Editor font size value"
-		}
-	},
 	"layout": {
 		"sectionTitle": "Layout",
 		"sectionDescription": "Choose how navigation and notes share the workspace.",
@@ -152,74 +117,6 @@
 			"label": "Default Folio sorting",
 			"description": "Choose the initial order of files in the Folio notes list.",
 			"ariaLabel": "Default Folio sorting"
-		}
-	},
-	"editorPresentation": {
-		"sectionTitle": "Editor presentation",
-		"sectionDescription": "Choose how notes look while you edit them.",
-		"beautifulTags": {
-			"label": "Beautiful Tags",
-			"description": "Enable the experimental Beautiful Tags presentation for tags.",
-			"ariaLabel": "Beautiful Tags"
-		},
-		"editorWidth": {
-			"label": "Editor width",
-			"description": "Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width.",
-			"ariaLabel": "Editor width",
-			"options": {
-				"compact": "Compact",
-				"comfortable": "Comfortable",
-				"wide": "Wide"
-			}
-		}
-	},
-	"sidebar": {
-		"sectionTitle": "Sidebar",
-		"sectionDescription": "Choose which navigation items appear in the sidebar and set their order. Hiding an item does not disable its feature.",
-		"resetToDefaults": "Restore default sidebar layout",
-		"resetError": "Failed to restore the default sidebar layout.",
-		"reorder": "Reorder {{label}}",
-		"showItem": "Show {{label}} in sidebar",
-		"items": {
-			"agent": {
-				"label": "Agent"
-			},
-			"newNote": {
-				"label": "New Note"
-			},
-			"newCanvas": {
-				"label": "New Canvas"
-			},
-			"newNoteAndCanvas": {
-				"label": "New Note and Canvas"
-			},
-			"allNotes": {
-				"label": "All Notes"
-			},
-			"databases": {
-				"label": "Collections / Databases"
-			},
-			"connections": {
-				"label": "Connections"
-			},
-			"calendar": {
-				"label": "Calendar"
-			},
-			"search": {
-				"label": "Search / Quick Open"
-			},
-			"periodNotes": {
-				"label": "Daily, Weekly, Monthly, Quarterly Notes"
-			},
-			"quickNote": {
-				"label": "Quick Note"
-			},
-			"templates": {
-				"label": "Templates"
-			},
-			"gitSync": {
-				"label": "Git Sync"
-			}
 		}
 	}
 }

@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "General",
 		"appearance": "Appearance",
+		"typography": "Typography",
+		"sidebar": "Sidebar",
 		"editor": "Editor",
 		"experimental": "Experimental",
 		"shortcuts": "Shortcuts",
@@ -20,6 +22,16 @@
 			"title": "Appearance settings",
 			"description": "Open Appearance settings.",
 			"keywords": ["Appearance"]
+		},
+		"typography": {
+			"title": "Typography settings",
+			"description": "Tune interface type, code styling, and reading scale independently.",
+			"keywords": ["font", "type"]
+		},
+		"sidebar": {
+			"title": "Sidebar settings",
+			"description": "Choose which navigation items appear in the sidebar and set their order. Hiding an item does not disable its feature.",
+			"keywords": ["Sidebar"]
 		},
 		"editor": {
 			"title": "Editor settings",
@@ -152,12 +164,6 @@
 				"workspace session"
 			]
 		},
-		"general-keep-running-on-close": {
-			"title": "Keep Glyph running after closing the last window",
-			"section": "Startup",
-			"description": "Hide the last window without quitting Glyph.",
-			"keywords": ["close", "window", "quit", "hide", "dock", "keep running"]
-		},
 		"appearance-theme-mode": {
 			"title": "Select Theme",
 			"section": "Themes",
@@ -187,9 +193,8 @@
 			"description": "Import a JSON palette as a new theme.",
 			"keywords": ["theme", "json", "import", "custom"]
 		},
-		"appearance-sidebar": {
+		"sidebar-layout": {
 			"title": "Sidebar",
-			"section": "Appearance",
 			"description": "Choose which navigation items appear in the sidebar and set their order.",
 			"keywords": [
 				"sidebar",
@@ -207,39 +212,39 @@
 				"git sync"
 			]
 		},
-		"appearance-interface-font": {
+		"typography-interface-font": {
 			"title": "Interface font",
 			"section": "Typography",
 			"keywords": ["font", "ui", "sans"]
 		},
-		"appearance-monospace-font": {
+		"typography-monospace-font": {
 			"title": "Monospace font",
 			"section": "Typography",
 			"keywords": ["font", "code", "mono"]
 		},
-		"appearance-editor-font": {
+		"typography-editor-font": {
 			"title": "Editor font",
-			"section": "Typography",
+			"section": "Editor",
 			"keywords": ["font", "editor", "notes", "prose"]
 		},
-		"appearance-heading-font-enabled": {
+		"typography-heading-font-enabled": {
 			"title": "Separate heading font",
-			"section": "Typography",
+			"section": "Editor",
 			"keywords": ["font", "heading", "h1", "h2", "preview"]
 		},
-		"appearance-heading-font": {
+		"typography-heading-font": {
 			"title": "Heading font",
-			"section": "Typography",
+			"section": "Editor",
 			"keywords": ["font", "heading", "title", "h1", "h2"]
 		},
-		"appearance-ui-font-size": {
+		"typography-ui-font-size": {
 			"title": "UI font size",
 			"section": "Typography",
 			"keywords": ["font", "text", "interface"]
 		},
-		"appearance-editor-font-size": {
+		"typography-editor-font-size": {
 			"title": "Editor font size",
-			"section": "Typography",
+			"section": "Editor",
 			"keywords": ["font", "text", "notes"]
 		},
 		"shortcuts-customize": {
@@ -582,12 +587,6 @@
 			"title": "Show folder file counts",
 			"section": "File tree",
 			"keywords": ["sidebar", "counts"]
-		},
-		"general-file-tree-folder-tabs": {
-			"title": "Quick folders",
-			"section": "File tree",
-			"description": "Add up to three folder shortcuts to the Files and Tags switcher.",
-			"keywords": ["sidebar", "folders", "quick folders", "shortcuts"]
 		},
 		"general-file-tree-sort": {
 			"title": "File tree sort",

@@ -1,7 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef } from "react";
-import { loadSettings } from "../../lib/settings";
 import type { SplitEditorNode } from "../../lib/splitEditor";
 import { invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
@@ -265,22 +264,6 @@ export function useWorkspaceSession({
 					});
 					await currentWindow.show();
 					return;
-				}
-				try {
-					const settings = await loadSettings();
-					if (settings.ui.keepRunningOnLastWindowClose) {
-						return;
-					}
-				} catch (cause) {
-					console.error("Failed to load settings before closing", cause);
-					toast.error("Could not close Glyph");
-					return;
-				}
-				try {
-					await currentWindow.destroy();
-				} catch (cause) {
-					console.error("Failed to destroy window while closing", cause);
-					toast.error("Could not close Glyph");
 				}
 			})
 			.then((stopListening) => {

@@ -37,16 +37,10 @@
 	},
 	"startup": {
 		"sectionTitle": "起動",
-		"sectionDescription": "Glyph の起動時と最後のウインドウを閉じたときの動作を選択します。",
 		"openPreviousTabs": {
 			"label": "前回のタブを開く",
 			"description": "前回開いていたタブでこのスペースを開始します。",
 			"ariaLabel": "前回のセッションを再開"
-		},
-		"keepRunningOnClose": {
-			"label": "最後のウインドウを閉じても Glyph を実行し続ける",
-			"description": "最後のウインドウを閉じると非表示になりますが、Glyph は開いたままです。終了するには「Glyph を終了」を使用します。",
-			"ariaLabel": "最後のウインドウを閉じても Glyph を実行し続ける"
 		}
 	},
 	"experimental": {
@@ -167,5 +161,24 @@
 		"week": "ウィークリーノートのデフォルトテンプレート",
 		"month": "マンスリーノートのデフォルトテンプレート",
 		"quarter": "四半期ノートのデフォルトテンプレート"
+	},
+	"editorPresentation": {
+		"sectionTitle": "エディタの表示",
+		"sectionDescription": "編集中のノートの見た目を選びます。",
+		"beautifulTags": {
+			"label": "Beautiful Tags",
+			"description": "タグ向けの実験的な Beautiful Tags 表示を有効にします。",
+			"ariaLabel": "Beautiful Tags"
+		},
+		"editorWidth": {
+			"label": "エディタの幅",
+			"description": "コンパクトは行を短く保ち、快適は少し余裕を与え、ワイドはエディタ全幅を使います。",
+			"ariaLabel": "エディタの幅",
+			"options": {
+				"compact": "コンパクト",
+				"comfortable": "快適",
+				"wide": "ワイド"
+			}
+		}
 	}
 }

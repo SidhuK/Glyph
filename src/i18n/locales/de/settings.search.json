@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "Allgemein",
 		"appearance": "Darstellung",
+		"typography": "Typografie",
+		"sidebar": "Seitenleiste",
 		"editor": "Editor",
 		"experimental": "Experimentell",
 		"shortcuts": "Shortcuts",
@@ -20,6 +22,16 @@
 			"title": "Darstellungseinstellungen",
 			"description": "Darstellungseinstellungen öffnen.",
 			"keywords": ["Darstellung"]
+		},
+		"typography": {
+			"title": "Typografie",
+			"description": "Oberflächenschrift, Codestil und Leseskala unabhängig einstellen.",
+			"keywords": ["font", "type"]
+		},
+		"sidebar": {
+			"title": "Seitenleiste",
+			"description": "Wähle sichtbare Navigationseinträge und ihre Reihenfolge.",
+			"keywords": ["Seitenleiste"]
 		},
 		"editor": {
 			"title": "Editor-Einstellungen",
@@ -126,15 +138,8 @@
 				"startup"
 			]
 		},
-		"general-keep-running-on-close": {
-			"title": "Glyph nach dem Schließen des letzten Fensters weiter ausführen",
-			"section": "Start",
-			"description": "Das letzte Fenster ausblenden, ohne Glyph zu beenden.",
-			"keywords": ["schließen", "fenster", "beenden", "ausblenden", "dock"]
-		},
-		"appearance-sidebar": {
+		"sidebar-layout": {
 			"title": "Seitenleiste",
-			"section": "Darstellung",
 			"description": "Sichtbare Navigationseinträge und ihre Reihenfolge festlegen.",
 			"keywords": [
 				"Seitenleiste",
@@ -187,39 +192,39 @@
 			"description": "Eine JSON-Palette als neues Theme importieren.",
 			"keywords": ["Theme", "JSON", "Import", "eigen"]
 		},
-		"appearance-interface-font": {
+		"typography-interface-font": {
 			"title": "Oberflächenschrift",
 			"section": "Typografie",
 			"keywords": ["schrift", "ui", "sans", "font"]
 		},
-		"appearance-monospace-font": {
+		"typography-monospace-font": {
 			"title": "Monospace-Schrift",
 			"section": "Typografie",
 			"keywords": ["schrift", "code", "mono", "font"]
 		},
-		"appearance-editor-font": {
+		"typography-editor-font": {
 			"title": "Editorschrift",
-			"section": "Typografie",
+			"section": "Editor",
 			"keywords": ["schrift", "editor", "notizen", "prosa", "font", "notes", "prose"]
 		},
-		"appearance-heading-font-enabled": {
+		"typography-heading-font-enabled": {
 			"title": "Eigene Überschriftenschrift",
-			"section": "Typografie",
+			"section": "Editor",
 			"keywords": ["schrift", "überschrift", "h1", "h2", "vorschau", "font", "heading"]
 		},
-		"appearance-heading-font": {
+		"typography-heading-font": {
 			"title": "Überschriftenschrift",
-			"section": "Typografie",
+			"section": "Editor",
 			"keywords": ["schrift", "überschrift", "titel", "h1", "h2", "font", "heading"]
 		},
-		"appearance-ui-font-size": {
+		"typography-ui-font-size": {
 			"title": "UI-Schriftgröße",
 			"section": "Typografie",
 			"keywords": ["schrift", "text", "oberfläche", "font", "interface"]
 		},
-		"appearance-editor-font-size": {
+		"typography-editor-font-size": {
 			"title": "Editor-Schriftgröße",
-			"section": "Typografie",
+			"section": "Editor",
 			"keywords": ["schrift", "text", "notizen", "font", "notes"]
 		},
 		"shortcuts-customize": {

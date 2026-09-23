@@ -33,11 +33,6 @@ export function GeneralSettingsPane() {
 		DURABLE_SETTINGS.resumeLastSession.write,
 		setError,
 	);
-	const keepRunningOnLastWindowClose = useSettingsBoolean(
-		DURABLE_SETTINGS.keepRunningOnLastWindowClose.defaultValue,
-		DURABLE_SETTINGS.keepRunningOnLastWindowClose.write,
-		setError,
-	);
 	const folderCounts = useSettingsBoolean(
 		false,
 		DURABLE_SETTINGS.showFileTreeFolderCounts.write,
@@ -45,7 +40,6 @@ export function GeneralSettingsPane() {
 	);
 
 	const setResumeLastSessionChecked = resumeLastSession.setChecked;
-	const setKeepRunningOnLastWindowCloseChecked = keepRunningOnLastWindowClose.setChecked;
 	const setFolderCountsChecked = folderCounts.setChecked;
 	const setInitialDateFormat = dateFormat.setInitialValue;
 	const setDateFormatValue = dateFormat.setValue;
@@ -59,7 +53,6 @@ export function GeneralSettingsPane() {
 				setLanguageState(settings.ui.language);
 				setInitialDateFormat(settings.ui.dateDisplayFormat);
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
-				setKeepRunningOnLastWindowCloseChecked(settings.ui.keepRunningOnLastWindowClose);
 				setFolderCountsChecked(settings.ui.showFileTreeFolderCounts);
 			})
 			.catch((cause) => {
@@ -70,12 +63,7 @@ export function GeneralSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, [
-		setFolderCountsChecked,
-		setInitialDateFormat,
-		setKeepRunningOnLastWindowCloseChecked,
-		setResumeLastSessionChecked,
-	]);
+	}, [setFolderCountsChecked, setInitialDateFormat, setResumeLastSessionChecked]);
 
 	useTauriEvent(
 		"settings:updated",
@@ -88,18 +76,9 @@ export function GeneralSettingsPane() {
 					setDateFormatValue(payload.ui.dateDisplayFormat);
 				}
 				applyIfBoolean(payload.ui?.resumeLastSession, setResumeLastSessionChecked);
-				applyIfBoolean(
-					payload.ui?.keepRunningOnLastWindowClose,
-					setKeepRunningOnLastWindowCloseChecked,
-				);
 				applyIfBoolean(payload.ui?.showFileTreeFolderCounts, setFolderCountsChecked);
 			},
-			[
-				setDateFormatValue,
-				setFolderCountsChecked,
-				setKeepRunningOnLastWindowCloseChecked,
-				setResumeLastSessionChecked,
-			],
+			[setDateFormatValue, setFolderCountsChecked, setResumeLastSessionChecked],
 		),
 	);
 
@@ -118,10 +97,7 @@ export function GeneralSettingsPane() {
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
-				<SettingsSection
-					title={t("startup.sectionTitle")}
-					description={t("startup.sectionDescription")}
-				>
+				<SettingsSection title={t("startup.sectionTitle")}>
 					<SettingsRow
 						label={t("startup.openPreviousTabs.label")}
 						description={t("startup.openPreviousTabs.description")}
@@ -131,17 +107,6 @@ export function GeneralSettingsPane() {
 							disabled={resumeLastSession.isSaving}
 							ariaLabel={t("startup.openPreviousTabs.ariaLabel")}
 							onCheckedChange={resumeLastSession.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label={t("startup.keepRunningOnClose.label")}
-						description={t("startup.keepRunningOnClose.description")}
-					>
-						<SettingsToggle
-							checked={keepRunningOnLastWindowClose.checked}
-							disabled={keepRunningOnLastWindowClose.isSaving}
-							ariaLabel={t("startup.keepRunningOnClose.ariaLabel")}
-							onCheckedChange={keepRunningOnLastWindowClose.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>

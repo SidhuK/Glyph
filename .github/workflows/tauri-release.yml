@@ -255,7 +255,7 @@ jobs:
           GLYPH_OFFICIAL_BUILD: "1"
           GLYPH_GUMROAD_PRODUCT_ID: "jfc0rwnuPw7VuqCyw5ctTw=="
           GLYPH_GUMROAD_PRODUCT_URL: "https://karatsidhu.gumroad.com/l/sqxfay"
-          GLYPH_SUPPORT_URL: "https://github.com/SidhuK/Glyph/issues"
+          GLYPH_SUPPORT_URL: "https://discord.gg/cNqrBfFx7D"
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}

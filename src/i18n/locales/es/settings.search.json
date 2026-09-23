@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "General",
 		"appearance": "Apariencia",
+		"typography": "Tipografía",
+		"sidebar": "Barra lateral",
 		"editor": "Editor",
 		"experimental": "Experimental",
 		"shortcuts": "Shortcuts",
@@ -20,6 +22,16 @@
 			"title": "Ajustes de apariencia",
 			"description": "Abrir los ajustes de apariencia.",
 			"keywords": ["Apariencia"]
+		},
+		"typography": {
+			"title": "Tipografía",
+			"description": "Ajusta por separado el tipo de la interfaz, el estilo del código y la escala de lectura.",
+			"keywords": ["font", "type"]
+		},
+		"sidebar": {
+			"title": "Barra lateral",
+			"description": "Elige los elementos de navegación visibles y su orden.",
+			"keywords": ["Barra lateral"]
 		},
 		"editor": {
 			"title": "Ajustes del editor",
@@ -136,15 +148,8 @@
 				"tabs"
 			]
 		},
-		"general-keep-running-on-close": {
-			"title": "Mantener Glyph en ejecución al cerrar la última ventana",
-			"section": "Inicio",
-			"description": "Ocultar la última ventana sin salir de Glyph.",
-			"keywords": ["cerrar", "ventana", "salir", "ocultar", "dock"]
-		},
-		"appearance-sidebar": {
+		"sidebar-layout": {
 			"title": "Barra lateral",
-			"section": "Apariencia",
 			"description": "Configura los elementos de navegación visibles y su orden.",
 			"keywords": [
 				"barra lateral",
@@ -197,39 +202,39 @@
 			"description": "Importa una paleta JSON como tema nuevo.",
 			"keywords": ["tema", "json", "importar", "personalizado"]
 		},
-		"appearance-interface-font": {
+		"typography-interface-font": {
 			"title": "Fuente de la interfaz",
 			"section": "Tipografía",
 			"keywords": ["fuente", "ui", "sans", "font"]
 		},
-		"appearance-monospace-font": {
+		"typography-monospace-font": {
 			"title": "Fuente monoespaciada",
 			"section": "Tipografía",
 			"keywords": ["fuente", "código", "mono", "font", "code"]
 		},
-		"appearance-editor-font": {
+		"typography-editor-font": {
 			"title": "Fuente del editor",
-			"section": "Tipografía",
+			"section": "Editor",
 			"keywords": ["fuente", "editor", "notas", "prosa", "font", "notes", "prose"]
 		},
-		"appearance-heading-font-enabled": {
+		"typography-heading-font-enabled": {
 			"title": "Fuente de encabezados independiente",
-			"section": "Tipografía",
+			"section": "Editor",
 			"keywords": ["fuente", "encabezado", "h1", "h2", "vista previa", "font", "heading"]
 		},
-		"appearance-heading-font": {
+		"typography-heading-font": {
 			"title": "Fuente de encabezados",
-			"section": "Tipografía",
+			"section": "Editor",
 			"keywords": ["fuente", "encabezado", "título", "h1", "h2", "font", "heading"]
 		},
-		"appearance-ui-font-size": {
+		"typography-ui-font-size": {
 			"title": "Tamaño de fuente de la UI",
 			"section": "Tipografía",
 			"keywords": ["fuente", "texto", "interfaz", "font", "text", "interface"]
 		},
-		"appearance-editor-font-size": {
+		"typography-editor-font-size": {
 			"title": "Tamaño de fuente del editor",
-			"section": "Tipografía",
+			"section": "Editor",
 			"keywords": ["fuente", "texto", "notas", "font", "text", "notes"]
 		},
 		"shortcuts-customize": {

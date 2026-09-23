@@ -82,41 +82,6 @@
 			}
 		}
 	},
-	"typography": {
-		"sectionTitle": "Typografia",
-		"sectionDescription": "Niezależnie dostosuj czcionkę interfejsu, styl kodu i skalę czytania.",
-		"interfaceFont": {
-			"label": "Czcionka interfejsu",
-			"description": "Używana do nawigacji, ustawień i większości tekstów interfejsu w programie Glyph."
-		},
-		"editorFont": {
-			"label": "Czcionka edytora",
-			"description": "Używana do zwykłego tekstu notatek poza kodem w tekście i blokami kodu."
-		},
-		"headingFontEnabled": {
-			"label": "Oddzielna czcionka nagłówków",
-			"description": "Używaj innej czcionki dla H1-H6 w trybie edycji i podglądu.",
-			"ariaLabel": "Oddzielna czcionka nagłówków"
-		},
-		"headingFont": {
-			"label": "Czcionka nagłówków",
-			"description": "Używana dla H1-H6 po włączeniu oddzielnej czcionki. Surowy Markdown zachowuje czcionkę edytora."
-		},
-		"monospaceFont": {
-			"label": "Czcionka o stałej szerokości",
-			"description": "Używana do kodu źródłowego Markdown, kodu w tekście i powierzchni przeznaczonych dla programistów."
-		},
-		"uiFontSize": {
-			"label": "Rozmiar czcionki interfejsu",
-			"description": "Dostosuj bazowy rozmiar używany przez menu, panele, elementy sterujące i ustawienia.",
-			"valueAriaLabel": "Wartość rozmiaru czcionki interfejsu"
-		},
-		"editorFontSize": {
-			"label": "Rozmiar czcionki edytora",
-			"description": "Dostosuj rozmiar czytania dla edytora notatek, podglądu Markdown i edycji surowego tekstu.",
-			"valueAriaLabel": "Wartość rozmiaru czcionki edytora"
-		}
-	},
 	"layout": {
 		"sectionTitle": "Układ",
 		"sectionDescription": "Wybierz, jak nawigacja i notatki dzielą przestrzeń roboczą.",
@@ -139,74 +104,6 @@
 			"label": "Domyślne sortowanie Folio",
 			"description": "Wybierz początkową kolejność plików na liście notatek Folio.",
 			"ariaLabel": "Domyślne sortowanie Folio"
-		}
-	},
-	"editorPresentation": {
-		"sectionTitle": "Prezentacja edytora",
-		"sectionDescription": "Wybierz wygląd notatek podczas ich edycji.",
-		"beautifulTags": {
-			"label": "Ładne tagi",
-			"description": "Włącz eksperymentalną prezentację ładnych tagów.",
-			"ariaLabel": "Ładne tagi"
-		},
-		"editorWidth": {
-			"label": "Szerokość edytora",
-			"description": "Tryb kompaktowy utrzymuje krótsze wiersze, wygodny daje nieco więcej przestrzeni, a szeroki wykorzystuje pełną szerokość edytora.",
-			"ariaLabel": "Szerokość edytora",
-			"options": {
-				"compact": "Kompaktowa",
-				"comfortable": "Wygodna",
-				"wide": "Szeroka"
-			}
-		}
-	},
-	"sidebar": {
-		"sectionTitle": "Pasek boczny",
-		"sectionDescription": "Wybierz widoczne elementy nawigacji i ich kolejność.",
-		"resetToDefaults": "Przywróć domyślny układ paska bocznego",
-		"resetError": "Nie udało się przywrócić domyślnego układu paska bocznego.",
-		"reorder": "Zmień kolejność: {{label}}",
-		"showItem": "Pokaż {{label}} na pasku bocznym",
-		"items": {
-			"agent": {
-				"label": "Agent"
-			},
-			"newNote": {
-				"label": "Nowa notatka"
-			},
-			"newCanvas": {
-				"label": "Nowe płótno"
-			},
-			"newNoteAndCanvas": {
-				"label": "Nowa notatka i płótno"
-			},
-			"allNotes": {
-				"label": "Wszystkie notatki"
-			},
-			"databases": {
-				"label": "Kolekcje / Bazy danych"
-			},
-			"connections": {
-				"label": "Graf"
-			},
-			"calendar": {
-				"label": "Kalendarz"
-			},
-			"search": {
-				"label": "Szukaj / Szybkie otwieranie"
-			},
-			"periodNotes": {
-				"label": "Notatki dzienne, tygodniowe, miesięczne i kwartalne"
-			},
-			"quickNote": {
-				"label": "Szybka notatka"
-			},
-			"templates": {
-				"label": "Szablony"
-			},
-			"gitSync": {
-				"label": "Synchronizacja Git"
-			}
 		}
 	}
 }

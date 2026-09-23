@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "一般",
 		"appearance": "外観",
+		"typography": "タイポグラフィ",
+		"sidebar": "サイドバー",
 		"editor": "エディタ",
 		"experimental": "実験的",
 		"shortcuts": "Shortcuts",
@@ -20,6 +22,16 @@
 			"title": "外観設定",
 			"description": "外観設定を開きます。",
 			"keywords": ["外観"]
+		},
+		"typography": {
+			"title": "タイポグラフィ",
+			"description": "インターフェース書体、コードスタイル、読書スケールを個別に調整します。",
+			"keywords": ["font", "type"]
+		},
+		"sidebar": {
+			"title": "サイドバー",
+			"description": "表示するナビゲーション項目と順序を選択します。",
+			"keywords": ["サイドバー"]
 		},
 		"editor": {
 			"title": "エディタ設定",
@@ -127,15 +139,8 @@
 				"tabs"
 			]
 		},
-		"general-keep-running-on-close": {
-			"title": "最後のウインドウを閉じても Glyph を実行し続ける",
-			"section": "起動",
-			"description": "Glyph を終了せずに最後のウインドウを非表示にします。",
-			"keywords": ["閉じる", "ウインドウ", "終了", "非表示", "Dock"]
-		},
-		"appearance-sidebar": {
+		"sidebar-layout": {
 			"title": "サイドバー",
-			"section": "外観",
 			"description": "表示するナビゲーション項目と順序を設定します。",
 			"keywords": [
 				"サイドバー",
@@ -188,39 +193,39 @@
 			"description": "JSON のパレットを新しいテーマとしてインポートします。",
 			"keywords": ["テーマ", "JSON", "インポート", "カスタム"]
 		},
-		"appearance-interface-font": {
+		"typography-interface-font": {
 			"title": "インターフェースフォント",
 			"section": "タイポグラフィ",
 			"keywords": ["フォント", "ui", "sans", "font"]
 		},
-		"appearance-monospace-font": {
+		"typography-monospace-font": {
 			"title": "等幅フォント",
 			"section": "タイポグラフィ",
 			"keywords": ["フォント", "コード", "mono", "font", "code"]
 		},
-		"appearance-editor-font": {
+		"typography-editor-font": {
 			"title": "エディタフォント",
-			"section": "タイポグラフィ",
+			"section": "エディタ",
 			"keywords": ["フォント", "エディタ", "ノート", "散文", "font", "editor", "notes", "prose"]
 		},
-		"appearance-heading-font-enabled": {
+		"typography-heading-font-enabled": {
 			"title": "見出し用フォントを分ける",
-			"section": "タイポグラフィ",
+			"section": "エディタ",
 			"keywords": ["フォント", "見出し", "h1", "h2", "プレビュー", "font", "heading"]
 		},
-		"appearance-heading-font": {
+		"typography-heading-font": {
 			"title": "見出しフォント",
-			"section": "タイポグラフィ",
+			"section": "エディタ",
 			"keywords": ["フォント", "見出し", "タイトル", "h1", "h2", "font", "heading"]
 		},
-		"appearance-ui-font-size": {
+		"typography-ui-font-size": {
 			"title": "UI フォントサイズ",
 			"section": "タイポグラフィ",
 			"keywords": ["フォント", "テキスト", "インターフェース", "font", "text", "interface"]
 		},
-		"appearance-editor-font-size": {
+		"typography-editor-font-size": {
 			"title": "エディタフォントサイズ",
-			"section": "タイポグラフィ",
+			"section": "エディタ",
 			"keywords": ["フォント", "テキスト", "ノート", "font", "text", "notes"]
 		},
 		"shortcuts-customize": {

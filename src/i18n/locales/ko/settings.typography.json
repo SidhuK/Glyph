@@ -1,0 +1,35 @@
+{
+	"sectionTitle": "타이포그래피",
+	"sectionDescription": "인터페이스 서체, 코드 스타일, 읽기 배율을 각각 조정합니다.",
+	"interfaceFont": {
+		"label": "인터페이스 글꼴",
+		"description": "탐색, 설정, Glyph UI의 대부분 텍스트에 사용됩니다."
+	},
+	"editorFont": {
+		"label": "편집기 글꼴",
+		"description": "인라인 코드와 코드 블록을 제외한 일반 노트 텍스트에 사용됩니다."
+	},
+	"headingFontEnabled": {
+		"label": "별도 제목 글꼴",
+		"description": "편집 및 미리보기 모드의 H1-H6에 다른 글꼴을 사용합니다.",
+		"ariaLabel": "별도 제목 글꼴"
+	},
+	"headingFont": {
+		"label": "제목 글꼴",
+		"description": "별도 제목 글꼴이 켜져 있을 때 H1-H6에 사용됩니다. 원시 Markdown은 편집기 글꼴을 유지합니다."
+	},
+	"monospaceFont": {
+		"label": "고정폭 글꼴",
+		"description": "Markdown 소스, 인라인 코드, 개발자용 화면에 사용됩니다."
+	},
+	"uiFontSize": {
+		"label": "UI 글꼴 크기",
+		"description": "메뉴, 패널, 컨트롤, 설정에 사용되는 기본 크기를 조정합니다.",
+		"valueAriaLabel": "UI 글꼴 크기 값"
+	},
+	"editorFontSize": {
+		"label": "편집기 글꼴 크기",
+		"description": "노트 편집기, Markdown 미리보기, 원시 텍스트 편집의 읽기 크기를 조정합니다.",
+		"valueAriaLabel": "편집기 글꼴 크기 값"
+	}
+}
