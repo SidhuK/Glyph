@@ -131,11 +131,6 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "about-community-build", tab: "about" },
 	{ id: "about-update-status", tab: "about" },
 	{ id: "about-changelog", tab: "about" },
-	{ id: "usage-insights", tab: "usage" },
-	{ id: "usage-activity", tab: "usage" },
-	{ id: "usage-folder-activity", tab: "usage" },
-	{ id: "usage-tasks", tab: "usage" },
-	{ id: "usage-library", tab: "usage" },
 ];
 
 const SETTINGS_TAB_DEFS: readonly SettingsSearchDef[] = SETTINGS_TABS.map((tab) => ({

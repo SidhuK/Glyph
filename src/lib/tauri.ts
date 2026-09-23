@@ -373,48 +373,6 @@ export interface CalendarDateNote {
 	kinds: Array<"daily" | "created" | "edited">;
 }
 
-export interface UsageInsights {
-	noteCount: number;
-	taskTotal: number;
-	taskCompleted: number;
-	linkCount: number;
-	isolatedNoteCount: number;
-	tagCount: number;
-	totalFileBytes: number;
-	dailyNotesCount: number;
-	activeDayCount: number;
-	longestActivityStreak: number;
-	activity: UsageActivityDay[];
-	folderWeeks: UsageFolderWeek[];
-	folders: UsageFolder[];
-	tags: UsageTag[];
-}
-
-export interface UsageActivityDay {
-	date: string;
-	created: number;
-	lastEdited: number;
-}
-
-export interface UsageFolderWeek {
-	week: string;
-	folder: string;
-	count: number;
-}
-
-export interface UsageFolder {
-	name: string;
-	noteCount: number;
-	taskTotal: number;
-	taskCompleted: number;
-	isolatedNoteCount: number;
-}
-
-export interface UsageTag {
-	tag: string;
-	noteCount: number;
-}
-
 export interface SearchAdvancedRequest {
 	query?: string | null;
 	tags?: string[];
@@ -1165,7 +1123,6 @@ interface TauriCommands {
 		},
 		CalendarDateNote[]
 	>;
-	usage_insights: CommandDef<void, UsageInsights>;
 	tags_list: CommandDef<
 		{ limit?: number | null; offset?: number | null; query?: string | null },
 		TagCount[]

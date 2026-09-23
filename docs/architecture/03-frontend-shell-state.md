@@ -267,7 +267,7 @@ Settings render inside the main app surface rather than as a separate route. `UI
 `src/components/settings/settingsConfig.tsx` groups settings navigation into three categories:
 
 - `application`: general, appearance, editor, shortcuts, and about
-- `workspace`: space, Git, AI, and usage
+- `workspace`: space, Git, and AI
 - `experimental`: the experimental settings pane
 
 The experimental pane includes Note Peek and Zen mode alongside Folio mode, raw Markdown Vim mode, formatting-bar visibility, and focus mode. Search routing in `src/components/settings/settingsSearch.ts` must continue to point each setting at its owning tab.

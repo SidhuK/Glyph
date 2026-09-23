@@ -82,15 +82,6 @@ importers:
       '@replit/codemirror-vim':
         specifier: ^6.3.0
         version: 6.3.0(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/view@6.43.6)
-      '@tanstack/charts':
-        specifier: ^0.8.0
-        version: 0.8.0
-      '@tanstack/charts-scales':
-        specifier: ^0.8.0
-        version: 0.8.0
-      '@tanstack/react-charts':
-        specifier: ^0.8.0
-        version: 0.8.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@tanstack/react-query':
         specifier: ^5.101.2
         version: 5.101.2(react@19.2.7)
@@ -181,9 +172,6 @@ importers:
       codemirror-lang-latex:
         specifier: 0.4.2
         version: 0.4.2(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/view@6.43.6)(@lezer/common@1.5.2)(@lezer/generator@1.8.0)(@lezer/highlight@1.2.3)(@lezer/lr@1.4.10)
-      d3-scale:
-        specifier: 4.0.2
-        version: 4.0.2
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
@@ -251,9 +239,6 @@ importers:
       '@tauri-apps/cli':
         specifier: ^2
         version: 2.9.6
-      '@types/d3-scale':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@types/node':
         specifier: ^26.1.1
         version: 26.1.1
@@ -2208,20 +2193,8 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@tanstack/charts-scales@0.8.0':
-    resolution: {integrity: sha512-R9VDvBeCN24kK7ScFLeXwl2h6xtjdS5SeAlQqvUMMkA7KzcZHX5mIwP6g/gm7d0/tL8QD+9hIW+Vm/JHAADEnw==}
-
-  '@tanstack/charts@0.8.0':
-    resolution: {integrity: sha512-sssLu6xyrK01F1EBPr3fxFEdV4IlvLXpG1JJlrW0SlEL2XaBrquVBnZJtuBsOI0IAPTAVRZKBK90nIC9Z+i5Fg==}
-
   '@tanstack/query-core@5.101.2':
     resolution: {integrity: sha512-hH5MLoJhF7KaIGd7q3xTXGXvslI+GYlM1Z/35aSHHWaCJWB7XvTSHYuV3eM7tw+aE0mT/xMro4M4Q9rCGHT0lw==}
-
-  '@tanstack/react-charts@0.8.0':
-    resolution: {integrity: sha512-p6rhJtSBin/ZINRYVUiylIHqHAvR+DUmqBKqwII1O861eDFbDv3CY5gIpsynAIA28D2aFNmQFf32W2fDkWR69g==}
-    peerDependencies:
-      react: ^19.0.0
-      react-dom: ^19.0.0
 
   '@tanstack/react-query@5.101.2':
     resolution: {integrity: sha512-seDkr6kzGzX1okaaTtZPtgA688CDPlXUz1C6xSg0ESqn04Vuc8tlrYms1s3de+znBqhPVxFRfpAfUf+6XvfPWg==}
@@ -2625,9 +2598,6 @@ packages:
   '@types/d3-interpolate@3.0.4':
     resolution: {integrity: sha512-mgLPETlrpVV1YRJIglr4Ez47g7Yxjl1lj7YKsiMCb27VJH9W8NVM6Bb9d8kkpG/uAQS5AmbA48q2IAolKKo1MA==}
 
-  '@types/d3-path@1.0.11':
-    resolution: {integrity: sha512-4pQMp8ldf7UaB/gR8Fvvy69psNHkTpD/pVw3vmEi8iZAB9EPMBruB1JvHO4BIq9QkUUd2lV1F5YXpMNj7JPBpw==}
-
   '@types/d3-path@3.1.1':
     resolution: {integrity: sha512-VMZBYyQvbGmWyWVea0EHs/BwLgxc+MKi1zLDCONksozI4YJMcTt8ZEuIR4Sb1MMTE8MMW49v0IwI5+b7RmfWlg==}
 
@@ -2640,9 +2610,6 @@ packages:
   '@types/d3-random@3.0.4':
     resolution: {integrity: sha512-UHYId5WTCx4L4YNel7NU00XUXXgvgpgZOvp10PuvsQENjMDXhh2RyFc0KBjO7B45ne4Ha1yVH7ii0vnzKkuzWA==}
 
-  '@types/d3-sankey@0.12.5':
-    resolution: {integrity: sha512-/3RZSew0cLAtzGQ+C89hq/Rp3H20QJuVRSqFy6RKLe7E0B8kd2iOS1oBsodrgds4PcNVpqWhdUEng/SHvBcJ6Q==}
-
   '@types/d3-scale-chromatic@3.1.0':
     resolution: {integrity: sha512-iWMJgwkK7yTRmWqRB5plb1kadXyQ5Sj8V/zYlFGMUBbIPKQScw+Dku9cAAMgJG+z5GYDoMjWGLVOvjghDEFnKQ==}
 
@@ -2651,9 +2618,6 @@ packages:
 
   '@types/d3-selection@3.0.12':
     resolution: {integrity: sha512-Qe/KWYhEiIIxGs7HrAAjMfShxKldx19SJtr5zu53f3afPsdZNz7HHtdTLXo/kqeiWNXVycI24kSnfzBYkTzpgw==}
-
-  '@types/d3-shape@1.3.12':
-    resolution: {integrity: sha512-8oMzcd4+poSLGgV0R1Q1rOlx/xdmozS4Xab7np0eamFFUYq71AU9pOCJEFnkXW2aI/oXdVYJzw6pssbSut7Z9Q==}
 
   '@types/d3-shape@3.1.8':
     resolution: {integrity: sha512-lae0iWfcDeR7qt7rA88BNiqdvPS5pFVPpo5OfjElwNaT2yyekbM0C9vK+yqBqEmHr6lDkRnYNoTBYlAgJa7a4w==}
@@ -3390,9 +3354,6 @@ packages:
   d3-geo@3.1.1:
     resolution: {integrity: sha512-637ln3gXKXOwhalDzinUgY83KzNWZRKbYubaG+fGVuc/dxO64RRljtCTnf5ecMyE1RIdtqpkVcq0IbtU2S8j2Q==}
     engines: {node: '>=12'}
-
-  d3-hexbin@0.2.2:
-    resolution: {integrity: sha512-KS3fUT2ReD4RlGCjvCEm1RgMtp2NFZumdMu4DBzQK8AZv3fXRM6Xm8I4fSU07UXvH4xxg03NwWKWdvxfS/yc4w==}
 
   d3-hierarchy@3.1.2:
     resolution: {integrity: sha512-FX/9frcub54beBdugHjDCdikxThEqjnR93Qt7PvQTOHxyiNCAlvMrHhclk3cD5VeAaq9fxmfRp+CnWw9rEMBuA==}
@@ -6809,36 +6770,7 @@ snapshots:
       tailwindcss: 4.3.2
       vite: '@voidzero-dev/vite-plus-core@0.3.1(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(typescript@7.0.2)'
 
-  '@tanstack/charts-scales@0.8.0': {}
-
-  '@tanstack/charts@0.8.0':
-    dependencies:
-      '@types/d3-force': 3.0.10
-      '@types/d3-geo': 3.1.1
-      '@types/d3-hierarchy': 3.1.7
-      '@types/d3-sankey': 0.12.5
-      '@types/d3-shape': 3.1.8
-      d3-array: 3.2.4
-      d3-brush: 3.0.0
-      d3-contour: 4.0.2
-      d3-delaunay: 6.0.4
-      d3-force: 3.0.0
-      d3-geo: 3.1.1
-      d3-hexbin: 0.2.2
-      d3-hierarchy: 3.1.2
-      d3-sankey: 0.12.3
-      d3-scale: 4.0.2
-      d3-selection: 3.0.0
-      d3-shape: 3.2.0
-      d3-zoom: 3.0.0
-
   '@tanstack/query-core@5.101.2': {}
-
-  '@tanstack/react-charts@0.8.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
-    dependencies:
-      '@tanstack/charts': 0.8.0
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
 
   '@tanstack/react-query@5.101.2(react@19.2.7)':
     dependencies:
@@ -7245,8 +7177,6 @@ snapshots:
     dependencies:
       '@types/d3-color': 3.1.3
 
-  '@types/d3-path@1.0.11': {}
-
   '@types/d3-path@3.1.1': {}
 
   '@types/d3-polygon@3.0.2': {}
@@ -7255,10 +7185,6 @@ snapshots:
 
   '@types/d3-random@3.0.4': {}
 
-  '@types/d3-sankey@0.12.5':
-    dependencies:
-      '@types/d3-shape': 1.3.12
-
   '@types/d3-scale-chromatic@3.1.0': {}
 
   '@types/d3-scale@4.0.9':
@@ -7266,10 +7192,6 @@ snapshots:
       '@types/d3-time': 3.0.4
 
   '@types/d3-selection@3.0.12': {}
-
-  '@types/d3-shape@1.3.12':
-    dependencies:
-      '@types/d3-path': 1.0.11
 
   '@types/d3-shape@3.1.8':
     dependencies:
@@ -7873,8 +7795,6 @@ snapshots:
   d3-geo@3.1.1:
     dependencies:
       d3-array: 3.2.4
-
-  d3-hexbin@0.2.2: {}
 
   d3-hierarchy@3.1.2: {}
 

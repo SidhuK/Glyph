@@ -85,7 +85,6 @@ function invalidateDerived(path: string | null, removed: boolean): void {
 	invalidateCalendarPrefetch();
 	invalidateAllDocsPrefetch();
 	invalidateDatabasePrefetch();
-	void queryClient.invalidateQueries({ queryKey: ["usage-insights"] });
 	void queryClient.invalidateQueries({ queryKey: ["unlinked-mentions"] });
 	void queryClient.invalidateQueries({
 		queryKey: ["navigation", "folio-files"],

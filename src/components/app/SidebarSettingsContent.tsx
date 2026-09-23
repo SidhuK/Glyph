@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { ArrowLeft02Icon, ArrowUpRight01Icon, TestTubeIcon } from "@hugeicons/core-free-icons";
+import { ArrowLeft02Icon, ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -150,11 +150,6 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 										<span className="sidebarQuickActionLabel settingsTabLabel">
 											{localizedSettingsTabLabel(tab.id, i18n.language)}
 										</span>
-										{tab.id === "usage" ? (
-											<span className="settingsTabLabsBadge">
-												<HugeiconsIcon icon={TestTubeIcon} size="var(--icon-sm)" />
-											</span>
-										) : null}
 									</button>
 								))}
 							</section>

@@ -200,7 +200,7 @@ Recent local changes prevent a loop:
 4. The watcher skips duplicate index work and change propagation for that recent local path.
 5. The mutation commit emits the needed `space:fs_changed` event after indexing. The renderer applies the same payload to the file tree, tabs, pinned paths, open-note content, and derived query/prefetch caches.
 
-Frontend application is centralized in `applySpaceChange()` and `useSpaceChangePropagation()` in `src/lib/spaceChange.ts`. It ignores changes for another space, recursively applies batches, reloads affected directories, retargets or closes tabs and pinned paths, refreshes tags, notifies open-note listeners, and invalidates note, calendar, All Notes/activity, database, usage, folio, and unlinked-mention data. The renderer event map in `src/lib/tauriEvents.ts` types `space:fs_changed` as `SpaceChange`.
+Frontend application is centralized in `applySpaceChange()` and `useSpaceChangePropagation()` in `src/lib/spaceChange.ts`. It ignores changes for another space, recursively applies batches, reloads affected directories, retargets or closes tabs and pinned paths, refreshes tags, notifies open-note listeners, and invalidates note, calendar, All Notes/activity, database, folio, and unlinked-mention data. The renderer event map in `src/lib/tauriEvents.ts` types `space:fs_changed` as `SpaceChange`.
 
 ## Rename, Duplicate, Delete
 
