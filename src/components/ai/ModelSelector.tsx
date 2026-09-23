@@ -32,15 +32,17 @@ export function ModelSelector({ profileId, value, onChange, provider }: ModelSel
 
 	async function openModelMenu(anchor: Element): Promise<void> {
 		try {
-			const result = await modelsQuery.refetch();
+			const cachedModels = modelsQuery.data?.length ? modelsQuery.data : null;
+			const result = cachedModels ? null : await modelsQuery.refetch();
 			if (!anchor.isConnected) return;
-			if (result.error) {
+			if (result?.error) {
 				toast.error("Could not load models", {
 					description: result.error instanceof Error ? result.error.message : String(result.error),
 				});
 				return;
 			}
-			const items: NativeContextMenuItem[] = !result.data?.length
+			const models = cachedModels ?? result?.data;
+			const items: NativeContextMenuItem[] = !models?.length
 				? [
 						{
 							label: "No models available",
@@ -48,15 +50,18 @@ export function ModelSelector({ profileId, value, onChange, provider }: ModelSel
 							action: () => {},
 						},
 					]
-				: result.data.map((model) => ({
+				: models.map((model) => ({
 						label: model.name,
 						checked: model.id === value,
-						action: () => onChange(model.id),
+						action: () => {
+							if (anchor.isConnected) onChange(model.id);
+						},
 					}));
 			await showNativePopupMenu(
 				{ currentTarget: anchor, preventDefault: () => {}, stopPropagation: () => {} },
 				items,
 			);
+			if (cachedModels && anchor.isConnected) void modelsQuery.refetch();
 		} catch (error) {
 			toast.error("Could not open model menu", {
 				description: error instanceof Error ? error.message : String(error),
@@ -76,7 +81,7 @@ export function ModelSelector({ profileId, value, onChange, provider }: ModelSel
 			title={value || "Select model"}
 			aria-label="Select model"
 			aria-haspopup="menu"
-			disabled={!profileId || modelsQuery.isFetching}
+			disabled={!profileId || (modelsQuery.isFetching && !modelsQuery.data?.length)}
 		>
 			{logoProvider && (
 				<span className={styles.triggerLogo} title={providerTitle}>
