@@ -7,7 +7,7 @@ import { postprocessDetailsMarkdown, preprocessDetailsMarkdown } from "../markdo
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
-} from "../markdown/wikiLinkMarkdownBridge";
+} from "../markdown/editorMarkdownBridge";
 import { createDetailsBlockContent } from "./detailsBlock";
 import { createEditorExtensions } from "./index";
 

@@ -11,7 +11,7 @@ import {
 	type MathEditRequest,
 } from "./extensions/math/mathOptions";
 import { INLINE_TOC_EDITOR_MARKER } from "./markdown/inlineTocMarkdown";
-import { preprocessMarkdownForEditor } from "./markdown/wikiLinkMarkdownBridge";
+import { preprocessMarkdownForEditor } from "./markdown/editorMarkdownBridge";
 import {
 	createTipTapSuggestionMenu,
 	exitTipTapSuggestion,

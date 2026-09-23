@@ -1,10 +1,59 @@
+import { MarkdownManager } from "@tiptap/markdown";
+import StarterKit from "@tiptap/starter-kit";
 import { describe, expect, it } from "vite-plus/test";
-import {
-	postprocessMarkdownFromEditor,
-	preprocessMarkdownForEditor,
-} from "./wikiLinkMarkdownBridge";
+import { HtmlCommentBlock, HtmlCommentInline } from "../extensions/htmlComment";
+import { postprocessMarkdownFromEditor, preprocessMarkdownForEditor } from "./editorMarkdownBridge";
 
-describe("wikiLinkMarkdownBridge", () => {
+function roundTripThroughEditor(markdown: string): string {
+	const manager = new MarkdownManager({
+		extensions: [StarterKit, HtmlCommentBlock, HtmlCommentInline],
+		markedOptions: { gfm: true, breaks: false },
+	});
+	return postprocessMarkdownFromEditor(
+		manager.serialize(manager.parse(preprocessMarkdownForEditor(markdown))),
+	);
+}
+
+describe("editorMarkdownBridge", () => {
+	it("preserves literal escaped footnotes", () => {
+		expect(roundTripThroughEditor(String.raw`Literal \[^note\] text`)).toBe(
+			String.raw`Literal \[^note\] text`,
+		);
+	});
+
+	it("preserves footnote IDs containing a backslash", () => {
+		expect(roundTripThroughEditor(String.raw`See [^a\b].`)).toBe(String.raw`See [^a\b].`);
+	});
+
+	it("preserves footnote references and definitions", () => {
+		const markdown = "See [^note].\n\n[^note]: Footnote text";
+		const preprocessed = preprocessMarkdownForEditor(markdown);
+		expect(preprocessed).toContain(String.raw`\[^note\]`);
+		expect(roundTripThroughEditor(markdown)).toContain("See [^note].");
+		expect(roundTripThroughEditor(markdown)).toContain("[^note]: Footnote text");
+	});
+
+	it("preserves comments followed by text", () => {
+		expect(roundTripThroughEditor("<!--page break--> text")).toBe("<!--page break--> text");
+		expect(roundTripThroughEditor("<!--\npage break\n--> text")).toBe("<!--\npage break\n--> text");
+	});
+
+	it("preserves standalone and inline comments", () => {
+		expect(roundTripThroughEditor("<!--page break-->\n\nBefore <!--note--> after")).toContain(
+			"<!--page break-->",
+		);
+		expect(roundTripThroughEditor("Before <!--note--> after")).toBe("Before <!--note--> after");
+	});
+
+	it("preserves footnotes after a fence-looking line inside a comment", () => {
+		const markdown = "<!-- note\n```\n-->\n\nSee [^note].";
+		expect(roundTripThroughEditor(markdown)).toContain("See [^note].");
+	});
+
+	it("does not treat an inline code comment marker as a comment", () => {
+		const markdown = "`<!--` See [^note].";
+		expect(roundTripThroughEditor(markdown)).toContain("See [^note].");
+	});
 	it("keeps non-wikilink markdown unchanged", () => {
 		const md = "# Title\n\nRegular [link](https://example.com)";
 		expect(preprocessMarkdownForEditor(md)).toBe(md);

@@ -426,6 +426,6 @@ refreshes mid-session" in `MarkdownEditorPane.test.tsx`.
 - Text jumps to old content: inspect external reload path and dirty checks.
 - Autosave loops: inspect `lastEmittedMarkdownRef`, `savedTextRef`, and transaction suppression.
 - Conflict message appears often: inspect mtime tracking and outside file writes.
-- Wiki links serialize incorrectly: inspect `wikiLinkMarkdownBridge.ts`.
+- Wiki links serialize incorrectly: inspect `editorMarkdownBridge.ts`.
 - Images show in editor but break after reload: inspect `space_save_pasted_image` and inline image hydration.
 - Save shortcut misses active note: inspect `EditorProvider` registration and pane mount order.

@@ -1,5 +1,5 @@
 import type { Editor, JSONContent } from "@tiptap/core";
-import { postprocessMarkdownFromEditor } from "./markdown/wikiLinkMarkdownBridge";
+import { postprocessMarkdownFromEditor } from "./markdown/editorMarkdownBridge";
 
 interface ExtractSelectionDraft {
 	markdown: string;

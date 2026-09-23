@@ -25,6 +25,7 @@ import { FocusModeDecorations } from "./focusModeDecorations";
 import { FootnoteDecorations } from "./footnoteDecorations";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
+import { HtmlCommentBlock, HtmlCommentInline } from "./htmlComment";
 import { HtmlEmbedPreview } from "./htmlEmbedPreview";
 import { InlineTableOfContents } from "./inlineTableOfContents";
 import { MarkdownImage } from "./markdownImage";
@@ -647,6 +648,8 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 				: false,
 		}),
 		...glyphDetailsExtensions,
+		HtmlCommentBlock,
+		HtmlCommentInline,
 		...additionalExtensions,
 		HtmlEmbedPreview,
 		MermaidPreview,

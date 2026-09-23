@@ -1,0 +1,103 @@
+import { Node, type MarkdownToken } from "@tiptap/core";
+
+const HTML_COMMENT_RE = /^ {0,3}<!--[\s\S]*?-->$/;
+const INLINE_COMMENT_RE = /^<!--[\s\S]*?-->/;
+const BLOCK_COMMENT_RE = /^ {0,3}<!--[\s\S]*?-->[\t ]*(?:\n|$)/;
+const MIXED_COMMENT_RE = /^( {0,3}<!--[\s\S]*?-->)([^\n]*\S[^\n]*)(?:\n|$)/;
+
+function isHtmlCommentSource(value: unknown): value is string {
+	return typeof value === "string" && HTML_COMMENT_RE.test(value);
+}
+
+function commentFromToken(token: MarkdownToken): string {
+	return commentRaw((token.raw ?? token.text ?? "").trimEnd());
+}
+
+function commentRaw(value: unknown): string {
+	if (!isHtmlCommentSource(value)) throw new Error("Invalid HTML comment node");
+	return value;
+}
+
+function commentAttrsFromElement(element: HTMLElement): { raw: string } | false {
+	const raw = element.textContent;
+	return isHtmlCommentSource(raw) ? { raw } : false;
+}
+
+export const HtmlCommentInline = Node.create({
+	name: "htmlCommentInline",
+	group: "inline",
+	inline: true,
+	atom: true,
+	addAttributes() {
+		return { raw: { default: "" } };
+	},
+	parseHTML() {
+		return [{ tag: "span[data-glyph-html-comment]", getAttrs: commentAttrsFromElement }];
+	},
+	renderHTML({ node }) {
+		return [
+			"span",
+			{ "data-glyph-html-comment": "", class: "htmlComment" },
+			commentRaw(node.attrs.raw),
+		];
+	},
+	renderText({ node }) {
+		return commentRaw(node.attrs.raw);
+	},
+	parseMarkdown(token, helpers) {
+		return helpers.createNode("htmlCommentInline", { raw: commentFromToken(token) });
+	},
+	renderMarkdown(node) {
+		return commentRaw(node.attrs?.raw);
+	},
+	markdownTokenizer: {
+		name: "htmlCommentInline",
+		level: "inline",
+		start: "<!--",
+		tokenize(source) {
+			const match = source.match(INLINE_COMMENT_RE);
+			return match ? { type: "htmlCommentInline", raw: match[0], text: match[0] } : undefined;
+		},
+	},
+});
+
+export const HtmlCommentBlock = HtmlCommentInline.extend({
+	name: "htmlCommentBlock",
+	group: "block",
+	inline: false,
+	parseHTML() {
+		return [{ tag: "div[data-glyph-html-comment]", getAttrs: commentAttrsFromElement }];
+	},
+	renderHTML({ node }) {
+		return [
+			"div",
+			{ "data-glyph-html-comment": "", class: "htmlComment" },
+			commentRaw(node.attrs.raw),
+		];
+	},
+	parseMarkdown(token, helpers) {
+		if (token.tokens?.length) {
+			return helpers.createNode("paragraph", undefined, helpers.parseInline(token.tokens));
+		}
+		return helpers.createNode("htmlCommentBlock", { raw: commentFromToken(token) });
+	},
+	markdownTokenizer: {
+		name: "htmlCommentBlock",
+		level: "block",
+		start(source) {
+			return BLOCK_COMMENT_RE.test(source) || MIXED_COMMENT_RE.test(source) ? 0 : -1;
+		},
+		tokenize(source, _tokens, helpers) {
+			const mixed = source.match(MIXED_COMMENT_RE);
+			if (mixed) {
+				return {
+					type: "htmlCommentBlock",
+					raw: mixed[0],
+					tokens: helpers.inlineTokens(mixed[1] + mixed[2]),
+				};
+			}
+			const match = source.match(BLOCK_COMMENT_RE);
+			return match ? { type: "htmlCommentBlock", raw: match[0], text: match[0] } : undefined;
+		},
+	},
+});
