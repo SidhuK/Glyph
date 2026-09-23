@@ -8,8 +8,7 @@
 		"ai": "AI",
 		"space": "Przestrzeń",
 		"git": "Synchronizacja Git",
-		"about": "O programie",
-		"usage": "Statystyki przestrzeni"
+		"about": "O programie"
 	},
 	"tabEntry": {
 		"general": {
@@ -56,11 +55,6 @@
 			"title": "Informacje o programie",
 			"description": "Otwórz informacje o programie.",
 			"keywords": ["O programie"]
-		},
-		"usage": {
-			"title": "Ustawienia statystyk przestrzeni",
-			"description": "Wyświetl lokalne statystyki przestrzeni.",
-			"keywords": ["Przestrzeń", "Użycie", "Statystyki", "Aktywność"]
 		}
 	},
 	"entries": {
@@ -634,31 +628,6 @@
 			"section": "Aktualizacje",
 			"description": "Ostatnia aktywność programu aktualizującego z tego okna.",
 			"keywords": ["sprawdzanie", "gotowe", "najnowsza wersja"]
-		},
-		"usage-insights": {
-			"title": "Statystyki przestrzeni",
-			"description": "Lokalne podsumowania notatek, zadań i grafu wiedzy.",
-			"keywords": ["użycie", "statystyki", "dane"]
-		},
-		"usage-activity": {
-			"title": "Aktywność",
-			"description": "Notatki utworzone i ostatnio edytowane w czasie.",
-			"keywords": ["aktywność", "seria", "edycja"]
-		},
-		"usage-folder-activity": {
-			"title": "Utworzone notatki według folderu",
-			"description": "Gdzie pojawiały się nowe notatki przez ostatnie dwanaście tygodni.",
-			"keywords": ["foldery", "strumień", "utworzone"]
-		},
-		"usage-tasks": {
-			"title": "Zadania",
-			"description": "Bieżąca liczba zadań i postęp ich realizacji.",
-			"keywords": ["zadania", "listy kontrolne", "ukończone"]
-		},
-		"usage-library": {
-			"title": "Stan biblioteki",
-			"description": "Foldery, tagi, linki i bieżący rozmiar zajętej przestrzeni.",
-			"keywords": ["foldery", "tagi", "linki", "rozmiar"]
 		},
 		"about-changelog": {
 			"title": "Lista zmian",

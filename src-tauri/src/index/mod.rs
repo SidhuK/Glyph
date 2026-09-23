@@ -5,7 +5,6 @@ pub(crate) mod db;
 mod frontmatter;
 mod helpers;
 mod indexer;
-pub mod insights;
 mod links;
 pub(crate) mod paths;
 mod properties;

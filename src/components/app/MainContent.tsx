@@ -53,11 +53,6 @@ const ShortcutsSettingsPane = lazy(() =>
 		default: module.ShortcutsSettingsPane,
 	})),
 );
-const UsageSettingsPane = lazy(() =>
-	import("../settings/usage/UsageSettingsPane").then((module) => ({
-		default: module.UsageSettingsPane,
-	})),
-);
 
 function EmptyStateCommandPaletteHint({
 	onOpenCommandPalette,
@@ -135,12 +130,6 @@ function SettingsTabContent({ tab }: { tab: SettingsTab }) {
 			return <GitSettingsPane />;
 		case "about":
 			return <AboutSettingsPane />;
-		case "usage":
-			return (
-				<Suspense fallback={null}>
-					<UsageSettingsPane />
-				</Suspense>
-			);
 		case "experimental":
 			return <ExperimentalSettingsPane />;
 		default: {

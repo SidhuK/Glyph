@@ -2,7 +2,6 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	AiBrain04Icon,
 	Archive02Icon,
-	ChartIcon,
 	CommandIcon,
 	GitBranchIcon,
 	PencilEdit02Icon,
@@ -22,7 +21,6 @@ export type SettingsTab =
 	| "space"
 	| "git"
 	| "about"
-	| "usage"
 	| "experimental";
 
 export interface SettingsTabMeta {
@@ -78,10 +76,6 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 			{
 				id: "ai",
 				renderIcon: () => <HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />,
-			},
-			{
-				id: "usage",
-				renderIcon: () => <HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" />,
 			},
 		],
 	},
