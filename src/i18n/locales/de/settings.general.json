@@ -37,16 +37,10 @@
 	},
 	"startup": {
 		"sectionTitle": "Start",
-		"sectionDescription": "Lege fest, was Glyph beim Start und beim Schließen des letzten Fensters tun soll.",
 		"openPreviousTabs": {
 			"label": "Vorherige Tabs öffnen",
 			"description": "Diesen Space mit den Tabs starten, die du offen gelassen hast.",
 			"ariaLabel": "Letzte Sitzung fortsetzen"
-		},
-		"keepRunningOnClose": {
-			"label": "Glyph nach dem Schließen des letzten Fensters weiter ausführen",
-			"description": "Beim Schließen des letzten Fensters wird es ausgeblendet, während Glyph geöffnet bleibt. Beende Glyph mit „Glyph beenden“.",
-			"ariaLabel": "Glyph nach dem Schließen des letzten Fensters weiter ausführen"
 		}
 	},
 	"experimental": {
@@ -167,5 +161,24 @@
 		"week": "Standardvorlage für Wochennotizen",
 		"month": "Standardvorlage für Monatsnotizen",
 		"quarter": "Standardvorlage für Quartalsnotizen"
+	},
+	"editorPresentation": {
+		"sectionTitle": "Editor-Darstellung",
+		"sectionDescription": "Wähle, wie Notizen beim Bearbeiten aussehen.",
+		"beautifulTags": {
+			"label": "Schöne Tags",
+			"description": "Die experimentelle Beautiful-Tags-Darstellung für Tags aktivieren.",
+			"ariaLabel": "Schöne Tags"
+		},
+		"editorWidth": {
+			"label": "Editorbreite",
+			"description": "Kompakt hält Zeilen kürzer, Komfortabel gibt etwas mehr Raum, und Breit nutzt die volle Editorbreite.",
+			"ariaLabel": "Editorbreite",
+			"options": {
+				"compact": "Kompakt",
+				"comfortable": "Komfortabel",
+				"wide": "Breit"
+			}
+		}
 	}
 }

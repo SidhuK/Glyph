@@ -8,6 +8,8 @@ export const namespaces = [
 	"commands",
 	"settings.general",
 	"settings.appearance",
+	"settings.typography",
+	"settings.sidebar",
 	"settings.ai",
 	"settings.search",
 	"editor",

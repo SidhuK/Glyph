@@ -45,7 +45,7 @@ function moveSidebarItem(
 	return next;
 }
 
-function appearanceSidebarOrder(order: SidebarOrder): SidebarOrder {
+function visibleSidebarOrder(order: SidebarOrder): SidebarOrder {
 	return order.filter((key) => key !== "newCanvas");
 }
 
@@ -55,7 +55,7 @@ function restoreCombinedSidebarOrder(order: SidebarOrder): SidebarOrder {
 	return [...order.slice(0, newNoteIndex + 1), "newCanvas", ...order.slice(newNoteIndex + 1)];
 }
 
-export function AppearanceSidebarItems({
+export function SidebarItems({
 	order,
 	visibility,
 	disabled,
@@ -68,7 +68,7 @@ export function AppearanceSidebarItems({
 	onReorder: (next: SidebarOrder) => void;
 	onVisibilityChange: (key: SidebarVisibilityKey, visible: boolean) => void;
 }) {
-	const appearanceOrder = useMemo(() => appearanceSidebarOrder(order), [order]);
+	const visibleOrder = useMemo(() => visibleSidebarOrder(order), [order]);
 	const dragDropHandlers = useMemo(
 		() => ({
 			onDragEnd(event: DragEndEvent) {
@@ -81,18 +81,18 @@ export function AppearanceSidebarItems({
 				) {
 					return;
 				}
-				const next = moveSidebarItem(appearanceOrder, source.initialIndex, source.index);
+				const next = moveSidebarItem(visibleOrder, source.initialIndex, source.index);
 				if (next) onReorder(restoreCombinedSidebarOrder(next));
 			},
 		}),
-		[appearanceOrder, disabled, onReorder],
+		[visibleOrder, disabled, onReorder],
 	);
 	useDragDropMonitor(dragDropHandlers);
 
 	return (
 		<>
-			{appearanceOrder.map((key, index) => (
-				<AppearanceSidebarItem
+			{visibleOrder.map((key, index) => (
+				<SidebarItem
 					key={key}
 					itemKey={key}
 					index={index}
@@ -105,7 +105,7 @@ export function AppearanceSidebarItems({
 	);
 }
 
-function AppearanceSidebarItem({
+function SidebarItem({
 	itemKey,
 	index,
 	visible,
@@ -118,11 +118,9 @@ function AppearanceSidebarItem({
 	disabled: boolean;
 	onVisibilityChange: (key: SidebarVisibilityKey, visible: boolean) => void;
 }) {
-	const { t } = useTranslation("settings.appearance");
+	const { t } = useTranslation("settings.sidebar");
 	const label = t(
-		itemKey === "newNote"
-			? "sidebar.items.newNoteAndCanvas.label"
-			: `sidebar.items.${itemKey}.label`,
+		itemKey === "newNote" ? "items.newNoteAndCanvas.label" : `items.${itemKey}.label`,
 	);
 	const { ref, handleRef, isDragging } = useSortable({
 		id: itemKey,
@@ -133,10 +131,9 @@ function AppearanceSidebarItem({
 		sensors: SIDEBAR_ITEM_SENSORS,
 		plugins: SIDEBAR_ITEM_PLUGINS,
 		disabled,
-		data: { sidebarKey: itemKey },
 		transition: { duration: 160, easing: "ease" },
 	});
-	const reorderLabel = t("sidebar.reorder", { label });
+	const reorderLabel = t("reorder", { label });
 
 	return (
 		<div
@@ -169,7 +166,7 @@ function AppearanceSidebarItem({
 					<SettingsToggle
 						checked={visible}
 						disabled={disabled}
-						ariaLabel={t("sidebar.showItem", { label })}
+						ariaLabel={t("showItem", { label })}
 						onCheckedChange={(nextVisible) => onVisibilityChange(itemKey, nextVisible)}
 					/>
 				</div>

@@ -82,41 +82,6 @@
 			}
 		}
 	},
-	"typography": {
-		"sectionTitle": "타이포그래피",
-		"sectionDescription": "인터페이스 서체, 코드 스타일, 읽기 배율을 각각 조정합니다.",
-		"interfaceFont": {
-			"label": "인터페이스 글꼴",
-			"description": "탐색, 설정, Glyph UI의 대부분 텍스트에 사용됩니다."
-		},
-		"editorFont": {
-			"label": "편집기 글꼴",
-			"description": "인라인 코드와 코드 블록을 제외한 일반 노트 텍스트에 사용됩니다."
-		},
-		"headingFontEnabled": {
-			"label": "별도 제목 글꼴",
-			"description": "편집 및 미리보기 모드의 H1-H6에 다른 글꼴을 사용합니다.",
-			"ariaLabel": "별도 제목 글꼴"
-		},
-		"headingFont": {
-			"label": "제목 글꼴",
-			"description": "별도 제목 글꼴이 켜져 있을 때 H1-H6에 사용됩니다. 원시 Markdown은 편집기 글꼴을 유지합니다."
-		},
-		"monospaceFont": {
-			"label": "고정폭 글꼴",
-			"description": "Markdown 소스, 인라인 코드, 개발자용 화면에 사용됩니다."
-		},
-		"uiFontSize": {
-			"label": "UI 글꼴 크기",
-			"description": "메뉴, 패널, 컨트롤, 설정에 사용되는 기본 크기를 조정합니다.",
-			"valueAriaLabel": "UI 글꼴 크기 값"
-		},
-		"editorFontSize": {
-			"label": "편집기 글꼴 크기",
-			"description": "노트 편집기, Markdown 미리보기, 원시 텍스트 편집의 읽기 크기를 조정합니다.",
-			"valueAriaLabel": "편집기 글꼴 크기 값"
-		}
-	},
 	"layout": {
 		"sectionTitle": "레이아웃",
 		"sectionDescription": "탐색과 노트가 작업 공간을 나누는 방식을 선택합니다.",
@@ -139,74 +104,6 @@
 			"label": "기본 Folio 정렬",
 			"description": "Folio 노트 목록의 기본 파일 순서를 선택합니다.",
 			"ariaLabel": "기본 Folio 정렬"
-		}
-	},
-	"editorPresentation": {
-		"sectionTitle": "편집기 표시",
-		"sectionDescription": "편집 중 노트의 모습을 선택합니다.",
-		"beautifulTags": {
-			"label": "Beautiful Tags",
-			"description": "태그를 위한 실험적 Beautiful Tags 표시를 사용합니다.",
-			"ariaLabel": "Beautiful Tags"
-		},
-		"editorWidth": {
-			"label": "편집기 너비",
-			"description": "컴팩트는 줄을 짧게 유지하고, 편안함은 조금 더 여유를 주며, 넓음은 편집기 전체 너비를 사용합니다.",
-			"ariaLabel": "편집기 너비",
-			"options": {
-				"compact": "컴팩트",
-				"comfortable": "편안함",
-				"wide": "넓음"
-			}
-		}
-	},
-	"sidebar": {
-		"sectionTitle": "사이드바",
-		"sectionDescription": "표시할 탐색 항목과 순서를 선택합니다.",
-		"resetToDefaults": "기본 사이드바 배치 복원",
-		"resetError": "기본 사이드바 배치를 복원하지 못했습니다.",
-		"reorder": "{{label}} 순서 변경",
-		"showItem": "사이드바에 {{label}} 표시",
-		"items": {
-			"agent": {
-				"label": "에이전트"
-			},
-			"newNote": {
-				"label": "새 노트"
-			},
-			"newCanvas": {
-				"label": "새 캔버스"
-			},
-			"newNoteAndCanvas": {
-				"label": "새 노트 및 캔버스"
-			},
-			"allNotes": {
-				"label": "모든 노트"
-			},
-			"databases": {
-				"label": "컬렉션 / 데이터베이스"
-			},
-			"connections": {
-				"label": "연결"
-			},
-			"calendar": {
-				"label": "캘린더"
-			},
-			"search": {
-				"label": "검색 / 빠른 열기"
-			},
-			"periodNotes": {
-				"label": "일간, 주간, 월간, 분기 노트"
-			},
-			"quickNote": {
-				"label": "빠른 노트"
-			},
-			"templates": {
-				"label": "템플릿"
-			},
-			"gitSync": {
-				"label": "Git 동기화"
-			}
 		}
 	}
 }

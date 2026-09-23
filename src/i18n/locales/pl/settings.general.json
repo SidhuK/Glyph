@@ -37,16 +37,10 @@
 	},
 	"startup": {
 		"sectionTitle": "Uruchamianie",
-		"sectionDescription": "Wybierz zachowanie Glyph przy uruchamianiu i zamykaniu ostatniego okna.",
 		"openPreviousTabs": {
 			"label": "Otwórz poprzednie zakładki",
 			"description": "Rozpocznij tę przestrzeń z zakładkami pozostawionymi otwartymi.",
 			"ariaLabel": "Wznów ostatnią sesję"
-		},
-		"keepRunningOnClose": {
-			"label": "Pozostaw Glyph uruchomiony po zamknięciu ostatniego okna",
-			"description": "Zamknięcie ostatniego okna ukrywa je, ale Glyph pozostaje otwarty. Aby zakończyć, użyj opcji Zakończ Glyph.",
-			"ariaLabel": "Pozostaw Glyph uruchomiony po zamknięciu ostatniego okna"
 		}
 	},
 	"experimental": {
@@ -177,5 +171,24 @@
 		"week": "Domyślny szablon notatki tygodniowej",
 		"month": "Domyślny szablon notatki miesięcznej",
 		"quarter": "Domyślny szablon notatki kwartalnej"
+	},
+	"editorPresentation": {
+		"sectionTitle": "Prezentacja edytora",
+		"sectionDescription": "Wybierz wygląd notatek podczas ich edycji.",
+		"beautifulTags": {
+			"label": "Ładne tagi",
+			"description": "Włącz eksperymentalną prezentację ładnych tagów.",
+			"ariaLabel": "Ładne tagi"
+		},
+		"editorWidth": {
+			"label": "Szerokość edytora",
+			"description": "Tryb kompaktowy utrzymuje krótsze wiersze, wygodny daje nieco więcej przestrzeni, a szeroki wykorzystuje pełną szerokość edytora.",
+			"ariaLabel": "Szerokość edytora",
+			"options": {
+				"compact": "Kompaktowa",
+				"comfortable": "Wygodna",
+				"wide": "Szeroka"
+			}
+		}
 	}
 }

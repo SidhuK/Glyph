@@ -82,41 +82,6 @@
 			}
 		}
 	},
-	"typography": {
-		"sectionTitle": "Typografie",
-		"sectionDescription": "Oberflächenschrift, Codestil und Leseskala unabhängig einstellen.",
-		"interfaceFont": {
-			"label": "Oberflächenschrift",
-			"description": "Wird für Navigation, Einstellungen und die meisten UI-Texte in Glyph verwendet."
-		},
-		"editorFont": {
-			"label": "Editorschrift",
-			"description": "Wird für normalen Notiztext außerhalb von Inline-Code und Codeblöcken verwendet."
-		},
-		"headingFontEnabled": {
-			"label": "Eigene Überschriftenschrift",
-			"description": "Für H1-H6 im Bearbeitungs- und Vorschaumodus eine andere Schrift verwenden.",
-			"ariaLabel": "Eigene Überschriftenschrift"
-		},
-		"headingFont": {
-			"label": "Überschriftenschrift",
-			"description": "Wird bei aktivierter eigener Überschriftenschrift für H1-H6 verwendet. Raw-Markdown behält die Editorschrift."
-		},
-		"monospaceFont": {
-			"label": "Monospace-Schrift",
-			"description": "Wird für Markdown-Quelle, Inline-Code und entwicklerorientierte Oberflächen verwendet."
-		},
-		"uiFontSize": {
-			"label": "UI-Schriftgröße",
-			"description": "Die Basisgröße für Menüs, Bereiche, Steuerelemente und Einstellungen anpassen.",
-			"valueAriaLabel": "Wert der UI-Schriftgröße"
-		},
-		"editorFontSize": {
-			"label": "Editor-Schriftgröße",
-			"description": "Die Lesegröße für den Notizeditor, die Markdown-Vorschau und die Raw-Textbearbeitung anpassen.",
-			"valueAriaLabel": "Wert der Editor-Schriftgröße"
-		}
-	},
 	"layout": {
 		"sectionTitle": "Layout",
 		"sectionDescription": "Lege fest, wie Navigation und Notizen den Arbeitsbereich teilen.",
@@ -139,74 +104,6 @@
 			"label": "Standard-Sortierung in Folio",
 			"description": "Lege die anfängliche Reihenfolge der Dateien in der Folio-Notizenliste fest.",
 			"ariaLabel": "Standard-Sortierung in Folio"
-		}
-	},
-	"editorPresentation": {
-		"sectionTitle": "Editor-Darstellung",
-		"sectionDescription": "Wähle, wie Notizen beim Bearbeiten aussehen.",
-		"beautifulTags": {
-			"label": "Schöne Tags",
-			"description": "Die experimentelle Beautiful-Tags-Darstellung für Tags aktivieren.",
-			"ariaLabel": "Schöne Tags"
-		},
-		"editorWidth": {
-			"label": "Editorbreite",
-			"description": "Kompakt hält Zeilen kürzer, Komfortabel gibt etwas mehr Raum, und Breit nutzt die volle Editorbreite.",
-			"ariaLabel": "Editorbreite",
-			"options": {
-				"compact": "Kompakt",
-				"comfortable": "Komfortabel",
-				"wide": "Breit"
-			}
-		}
-	},
-	"sidebar": {
-		"sectionTitle": "Seitenleiste",
-		"sectionDescription": "Wähle sichtbare Navigationseinträge und ihre Reihenfolge.",
-		"resetToDefaults": "Standardlayout der Seitenleiste wiederherstellen",
-		"resetError": "Das Standardlayout der Seitenleiste konnte nicht wiederhergestellt werden.",
-		"reorder": "{{label}} neu anordnen",
-		"showItem": "{{label}} in der Seitenleiste anzeigen",
-		"items": {
-			"agent": {
-				"label": "Agent"
-			},
-			"newNote": {
-				"label": "Neue Notiz"
-			},
-			"newCanvas": {
-				"label": "Neue Zeichenfläche"
-			},
-			"newNoteAndCanvas": {
-				"label": "Neue Notiz und Zeichenfläche"
-			},
-			"allNotes": {
-				"label": "Alle Notizen"
-			},
-			"databases": {
-				"label": "Sammlungen / Datenbanken"
-			},
-			"connections": {
-				"label": "Verbindungen"
-			},
-			"calendar": {
-				"label": "Kalender"
-			},
-			"search": {
-				"label": "Suche / Schnell öffnen"
-			},
-			"periodNotes": {
-				"label": "Tages-, Wochen-, Monats- und Quartalsnotizen"
-			},
-			"quickNote": {
-				"label": "Schnelle Notiz"
-			},
-			"templates": {
-				"label": "Vorlagen"
-			},
-			"gitSync": {
-				"label": "Git-Synchronisierung"
-			}
 		}
 	}
 }

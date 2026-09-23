@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "Ogólne",
 		"appearance": "Wygląd",
+		"typography": "Typografia",
+		"sidebar": "Pasek boczny",
 		"editor": "Edytor",
 		"experimental": "Eksperymentalne",
 		"shortcuts": "Skróty",
@@ -20,6 +22,16 @@
 			"title": "Ustawienia wyglądu",
 			"description": "Otwórz ustawienia wyglądu.",
 			"keywords": ["Wygląd"]
+		},
+		"typography": {
+			"title": "Typografia",
+			"description": "Niezależnie dostosuj czcionkę interfejsu, styl kodu i skalę czytania.",
+			"keywords": ["font", "type"]
+		},
+		"sidebar": {
+			"title": "Pasek boczny",
+			"description": "Wybierz widoczne elementy nawigacji i ich kolejność.",
+			"keywords": ["Pasek boczny"]
 		},
 		"editor": {
 			"title": "Ustawienia edytora",
@@ -134,15 +146,8 @@
 				"sesja przestrzeni roboczej"
 			]
 		},
-		"general-keep-running-on-close": {
-			"title": "Pozostaw Glyph uruchomiony po zamknięciu ostatniego okna",
-			"section": "Uruchamianie",
-			"description": "Ukryj ostatnie okno bez kończenia Glyph.",
-			"keywords": ["zamknij", "okno", "zakończ", "ukryj", "dock"]
-		},
-		"appearance-sidebar": {
+		"sidebar-layout": {
 			"title": "Pasek boczny",
-			"section": "Wygląd",
 			"description": "Ustaw widoczne elementy nawigacji i ich kolejność.",
 			"keywords": [
 				"pasek boczny",
@@ -186,39 +191,39 @@
 			"description": "Zaimportuj paletę JSON jako nowy motyw.",
 			"keywords": ["motyw", "json", "import", "niestandardowy"]
 		},
-		"appearance-interface-font": {
+		"typography-interface-font": {
 			"title": "Czcionka interfejsu",
 			"section": "Typografia",
 			"keywords": ["czcionka", "interfejs", "bezszeryfowa"]
 		},
-		"appearance-monospace-font": {
+		"typography-monospace-font": {
 			"title": "Czcionka o stałej szerokości",
 			"section": "Typografia",
 			"keywords": ["czcionka", "kod", "monowidth"]
 		},
-		"appearance-editor-font": {
+		"typography-editor-font": {
 			"title": "Czcionka edytora",
-			"section": "Typografia",
+			"section": "Edytor",
 			"keywords": ["czcionka", "edytor", "notatki", "proza"]
 		},
-		"appearance-heading-font-enabled": {
+		"typography-heading-font-enabled": {
 			"title": "Oddzielna czcionka nagłówków",
-			"section": "Typografia",
+			"section": "Edytor",
 			"keywords": ["czcionka", "nagłówek", "h1", "h2", "podgląd", "font", "heading"]
 		},
-		"appearance-heading-font": {
+		"typography-heading-font": {
 			"title": "Czcionka nagłówków",
-			"section": "Typografia",
+			"section": "Edytor",
 			"keywords": ["czcionka", "nagłówek", "tytuł", "h1", "h2", "font", "heading"]
 		},
-		"appearance-ui-font-size": {
+		"typography-ui-font-size": {
 			"title": "Rozmiar czcionki interfejsu",
 			"section": "Typografia",
 			"keywords": ["czcionka", "tekst", "interfejs"]
 		},
-		"appearance-editor-font-size": {
+		"typography-editor-font-size": {
 			"title": "Rozmiar czcionki edytora",
-			"section": "Typografia",
+			"section": "Edytor",
 			"keywords": ["czcionka", "tekst", "notatki"]
 		},
 		"shortcuts-customize": {

@@ -13,16 +13,8 @@ import {
 	DEFAULT_FILE_TREE_SORT_MODE,
 	DURABLE_SETTINGS,
 	isFileTreeSortMode,
-	writeSidebarLayout,
 } from "../../lib/settings/definitions";
-import {
-	DEFAULT_SIDEBAR_ORDER,
-	DEFAULT_SIDEBAR_VISIBILITY,
-	type FileTreeSortMode,
-	type SidebarOrder,
-	type SidebarVisibility,
-	type SidebarVisibilityKey,
-} from "../../lib/settings/model";
+import type { FileTreeSortMode } from "../../lib/settings/model";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
 	DARK_THEME_OPTIONS,
@@ -35,20 +27,15 @@ import {
 	getUiDarkThemeOption,
 	getUiLightThemeOption,
 } from "../../lib/uiThemes";
-import { RefreshCw } from "../Icons";
-import { Button } from "../ui/shadcn/button";
 import { AppearanceAppIconCard } from "./AppearanceAppIconCard";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
 import { AppearanceLayoutPreview } from "./AppearancePreviewFrame";
-import { AppearanceSidebarItems } from "./AppearanceSidebarItems";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
-import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSegmentedPicker } from "./SettingsSegmentedPicker";
 import { SettingsSelect } from "./SettingsSelect";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
-import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
 
@@ -78,39 +65,12 @@ export function AppearanceSettingsPane() {
 		DURABLE_SETTINGS.translucentApp.write,
 		setError,
 	);
-	const sidebarVisibility = useSettingsValue<SidebarVisibility>(
-		DEFAULT_SIDEBAR_VISIBILITY,
-		DURABLE_SETTINGS.sidebarVisibility.write,
-		setError,
-	);
-	const sidebarOrder = useSettingsValue<SidebarOrder>(
-		DEFAULT_SIDEBAR_ORDER,
-		DURABLE_SETTINGS.sidebarOrder.write,
-		setError,
-	);
-	const [isResettingSidebar, setIsResettingSidebar] = useState(false);
 	const {
 		cornerRadiusStyle,
 		setCornerRadiusStyle,
 		setInitialCornerRadiusStyle,
 		onCornerRadiusStyleChange,
 	} = useAppearanceCornerRadius({ setError });
-	const {
-		fontFamily,
-		monoFontFamily,
-		uiFontSize,
-		availableFonts,
-		availableMonospaceFonts,
-		onFontFamilyChange,
-		onMonoFontFamilyChange,
-		onUiFontSizeChange,
-		setInitialTypography,
-		setFontFamily,
-		setEditorFontFamily,
-		setMonoFontFamily,
-		setUiFontSize,
-		setEditorFontSize,
-	} = useAppearanceTypography({ setError });
 
 	const setInitialFolioMode = folioMode.setInitialChecked;
 	const workspaceLayout = folioMode.checked ? "folio" : "default";
@@ -137,13 +97,10 @@ export function AppearanceSettingsPane() {
 				lightThemeId.setInitialValue(settings.ui.lightThemeId);
 				darkThemeId.setInitialValue(settings.ui.darkThemeId);
 				translucentApp.setInitialValue(settings.ui.translucentApp);
-				sidebarVisibility.setInitialValue(settings.ui.sidebarVisibility);
-				sidebarOrder.setInitialValue(settings.ui.sidebarOrder);
 				setCustomThemesState(settings.ui.customThemes);
 				setInitialFolioMode(settings.ui.folioMode);
 				folioSortMode.setInitialValue(settings.ui.folioSortMode);
 				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
-				setInitialTypography(settings);
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -158,9 +115,6 @@ export function AppearanceSettingsPane() {
 		darkThemeId.setInitialValue,
 		lightThemeId.setInitialValue,
 		setInitialCornerRadiusStyle,
-		setInitialTypography,
-		sidebarVisibility.setInitialValue,
-		sidebarOrder.setInitialValue,
 		themeMode.setInitialValue,
 		translucentApp.setInitialValue,
 		folioSortMode.setInitialValue,
@@ -169,12 +123,6 @@ export function AppearanceSettingsPane() {
 	useTauriEvent("settings:updated", (payload) => {
 		if (payload.ui?.customThemes) {
 			setCustomThemesState(payload.ui.customThemes);
-		}
-		if (payload.ui?.sidebarVisibility) {
-			sidebarVisibility.setValue(payload.ui.sidebarVisibility);
-		}
-		if (payload.ui?.sidebarOrder) {
-			sidebarOrder.setValue(payload.ui.sidebarOrder);
 		}
 		if (
 			payload.ui?.theme === "system" ||
@@ -193,59 +141,7 @@ export function AppearanceSettingsPane() {
 		if (payload.ui?.cornerRadiusStyle) {
 			setCornerRadiusStyle(payload.ui.cornerRadiusStyle);
 		}
-		if (typeof payload.ui?.fontFamily === "string") {
-			setFontFamily(payload.ui.fontFamily);
-		}
-		if (typeof payload.ui?.editorFontFamily === "string") {
-			setEditorFontFamily(payload.ui.editorFontFamily);
-		}
-		if (typeof payload.ui?.monoFontFamily === "string") {
-			setMonoFontFamily(payload.ui.monoFontFamily);
-		}
-		if (typeof payload.ui?.fontSize === "number") {
-			setUiFontSize(payload.ui.fontSize);
-		}
-		if (typeof payload.ui?.editorFontSize === "number") {
-			setEditorFontSize(payload.ui.editorFontSize);
-		}
 	});
-
-	const onSidebarVisibilityChange = useCallback(
-		(key: SidebarVisibilityKey, visible: boolean) => {
-			if (key === "newNote") {
-				sidebarVisibility.onChange({
-					...sidebarVisibility.value,
-					newNote: visible,
-					newCanvas: visible,
-				});
-				return;
-			}
-			sidebarVisibility.onChange({
-				...sidebarVisibility.value,
-				[key]: visible,
-			});
-		},
-		[sidebarVisibility.onChange, sidebarVisibility.value],
-	);
-
-	const onResetSidebar = useCallback(() => {
-		setError("");
-		setIsResettingSidebar(true);
-		void writeSidebarLayout({
-			visibility: DEFAULT_SIDEBAR_VISIBILITY,
-			order: DEFAULT_SIDEBAR_ORDER,
-		})
-			.then(() => {
-				sidebarVisibility.setValue(DEFAULT_SIDEBAR_VISIBILITY);
-				sidebarOrder.setValue(DEFAULT_SIDEBAR_ORDER);
-			})
-			.catch((cause) => {
-				setError(cause instanceof Error ? cause.message : t("sidebar.resetError"));
-			})
-			.finally(() => {
-				setIsResettingSidebar(false);
-			});
-	}, [sidebarOrder.setValue, sidebarVisibility.setValue, t]);
 
 	const onThemeModeChange = useCallback(
 		async (next: ThemeMode) => {
@@ -359,16 +255,6 @@ export function AppearanceSettingsPane() {
 					cornerRadiusStyle={cornerRadiusStyle}
 					onCornerRadiusStyleChange={onCornerRadiusStyleChange}
 				/>
-				<AppearanceTypographyCard
-					fontFamily={fontFamily}
-					monoFontFamily={monoFontFamily}
-					uiFontSize={uiFontSize}
-					availableFonts={availableFonts}
-					availableMonospaceFonts={availableMonospaceFonts}
-					onFontFamilyChange={onFontFamilyChange}
-					onMonoFontFamilyChange={onMonoFontFamilyChange}
-					onUiFontSizeChange={onUiFontSizeChange}
-				/>
 				<SettingsSection
 					title={t("layout.sectionTitle")}
 					description={t("layout.sectionDescription")}
@@ -411,31 +297,6 @@ export function AppearanceSettingsPane() {
 							))}
 						</SettingsSelect>
 					</SettingsRow>
-				</SettingsSection>
-				<SettingsSection
-					title={t("sidebar.sectionTitle")}
-					description={t("sidebar.sectionDescription")}
-					aside={
-						<Button
-							type="button"
-							variant="outline"
-							size="icon-sm"
-							aria-label={t("sidebar.resetToDefaults")}
-							title={t("sidebar.resetToDefaults")}
-							disabled={sidebarVisibility.isSaving || sidebarOrder.isSaving || isResettingSidebar}
-							onClick={onResetSidebar}
-						>
-							<RefreshCw size="var(--icon-md)" aria-hidden="true" />
-						</Button>
-					}
-				>
-					<AppearanceSidebarItems
-						order={sidebarOrder.value}
-						visibility={sidebarVisibility.value}
-						disabled={sidebarOrder.isSaving || sidebarVisibility.isSaving || isResettingSidebar}
-						onReorder={sidebarOrder.onChange}
-						onVisibilityChange={onSidebarVisibilityChange}
-					/>
 				</SettingsSection>
 			</div>
 		</div>

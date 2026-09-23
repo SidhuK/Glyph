@@ -2,6 +2,8 @@
 	"tabs": {
 		"general": "Général",
 		"appearance": "Apparence",
+		"typography": "Typographie",
+		"sidebar": "Barre latérale",
 		"editor": "Éditeur",
 		"experimental": "Expérimental",
 		"shortcuts": "Shortcuts",
@@ -20,6 +22,16 @@
 			"title": "Réglages d’apparence",
 			"description": "Ouvrir les réglages d’apparence.",
 			"keywords": ["Apparence"]
+		},
+		"typography": {
+			"title": "Typographie",
+			"description": "Réglez indépendamment la police d’interface, le style du code et l’échelle de lecture.",
+			"keywords": ["font", "type"]
+		},
+		"sidebar": {
+			"title": "Barre latérale",
+			"description": "Choisissez les éléments de navigation visibles et leur ordre.",
+			"keywords": ["Barre latérale"]
 		},
 		"editor": {
 			"title": "Réglages de l’éditeur",
@@ -127,15 +139,8 @@
 				"tabs"
 			]
 		},
-		"general-keep-running-on-close": {
-			"title": "Garder Glyph actif après la fermeture de la dernière fenêtre",
-			"section": "Démarrage",
-			"description": "Masquer la dernière fenêtre sans quitter Glyph.",
-			"keywords": ["fermer", "fenêtre", "quitter", "masquer", "dock"]
-		},
-		"appearance-sidebar": {
+		"sidebar-layout": {
 			"title": "Barre latérale",
-			"section": "Apparence",
 			"description": "Configurer les éléments de navigation visibles et leur ordre.",
 			"keywords": [
 				"barre latérale",
@@ -188,39 +193,39 @@
 			"description": "Importer une palette JSON comme nouveau thème.",
 			"keywords": ["thème", "json", "importer", "personnalisé"]
 		},
-		"appearance-interface-font": {
+		"typography-interface-font": {
 			"title": "Police d’interface",
 			"section": "Typographie",
 			"keywords": ["police", "ui", "sans", "font"]
 		},
-		"appearance-monospace-font": {
+		"typography-monospace-font": {
 			"title": "Police monospace",
 			"section": "Typographie",
 			"keywords": ["police", "code", "mono", "font"]
 		},
-		"appearance-editor-font": {
+		"typography-editor-font": {
 			"title": "Police de l’éditeur",
-			"section": "Typographie",
+			"section": "Éditeur",
 			"keywords": ["police", "éditeur", "notes", "prose", "font", "editor"]
 		},
-		"appearance-heading-font-enabled": {
+		"typography-heading-font-enabled": {
 			"title": "Police de titres distincte",
-			"section": "Typographie",
+			"section": "Éditeur",
 			"keywords": ["police", "titre", "h1", "h2", "aperçu", "font", "heading"]
 		},
-		"appearance-heading-font": {
+		"typography-heading-font": {
 			"title": "Police des titres",
-			"section": "Typographie",
+			"section": "Éditeur",
 			"keywords": ["police", "titre", "h1", "h2", "font", "heading"]
 		},
-		"appearance-ui-font-size": {
+		"typography-ui-font-size": {
 			"title": "Taille de police de l’UI",
 			"section": "Typographie",
 			"keywords": ["police", "texte", "interface", "font", "text"]
 		},
-		"appearance-editor-font-size": {
+		"typography-editor-font-size": {
 			"title": "Taille de police de l’éditeur",
-			"section": "Typographie",
+			"section": "Éditeur",
 			"keywords": ["police", "texte", "notes", "font", "text"]
 		},
 		"shortcuts-customize": {

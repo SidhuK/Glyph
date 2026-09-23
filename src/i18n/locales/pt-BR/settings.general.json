@@ -37,16 +37,10 @@
 	},
 	"startup": {
 		"sectionTitle": "Inicialização",
-		"sectionDescription": "Escolha o que o Glyph faz ao iniciar e ao fechar a última janela.",
 		"openPreviousTabs": {
 			"label": "Abrir abas anteriores",
 			"description": "Iniciar este espaço com as abas que você deixou abertas.",
 			"ariaLabel": "Retomar a última sessão"
-		},
-		"keepRunningOnClose": {
-			"label": "Manter o Glyph em execução após fechar a última janela",
-			"description": "Fechar a última janela apenas a oculta enquanto o Glyph permanece aberto. Use Sair do Glyph para encerrar.",
-			"ariaLabel": "Manter o Glyph em execução após fechar a última janela"
 		}
 	},
 	"experimental": {
@@ -167,5 +161,24 @@
 		"week": "Modelo padrão de nota semanal",
 		"month": "Modelo padrão de nota mensal",
 		"quarter": "Modelo padrão de nota trimestral"
+	},
+	"editorPresentation": {
+		"sectionTitle": "Apresentação do editor",
+		"sectionDescription": "Escolha como as notas aparecem enquanto você as edita.",
+		"beautifulTags": {
+			"label": "Beautiful Tags",
+			"description": "Ativar a apresentação experimental Beautiful Tags para tags.",
+			"ariaLabel": "Beautiful Tags"
+		},
+		"editorWidth": {
+			"label": "Largura do editor",
+			"description": "Compacto mantém as linhas mais curtas, Confortável dá um pouco mais de espaço e Largo usa toda a largura do editor.",
+			"ariaLabel": "Largura do editor",
+			"options": {
+				"compact": "Compacto",
+				"comfortable": "Confortável",
+				"wide": "Largo"
+			}
+		}
 	}
 }

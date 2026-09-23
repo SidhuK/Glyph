@@ -85,11 +85,6 @@ type SettingDiscovery =
 	| { readonly kind: "search"; readonly id: string }
 	| { readonly kind: "hidden"; readonly reason: string };
 
-interface NativeConsumption {
-	readonly kind: "settings-store";
-	readonly consumer: "last-window-close-policy" | "app-icon";
-}
-
 export type SettingParseResult<Value> =
 	| { readonly ok: true; readonly value: Value }
 	| { readonly ok: false };
@@ -98,7 +93,6 @@ export interface ApplicationSettingDefinition<Value> {
 	readonly key: string;
 	readonly defaultValue: Value;
 	readonly discovery: SettingDiscovery;
-	readonly nativeConsumption?: NativeConsumption;
 	readonly normalize: (value: unknown) => Value;
 	readonly parse: (value: unknown) => SettingParseResult<Value>;
 	readonly load: (entries: ReadonlyMap<string, unknown>) => Value;
@@ -110,7 +104,6 @@ interface ApplicationSettingConfig<Value> {
 	readonly key: string;
 	readonly defaultValue: Value;
 	readonly discovery: SettingDiscovery;
-	readonly nativeConsumption?: NativeConsumption;
 	readonly normalize: (value: unknown) => Value;
 	readonly parse: (value: unknown) => SettingParseResult<Value>;
 	readonly read: (settings: AppSettings) => Value;
@@ -176,7 +169,6 @@ function defineApplicationSetting<Value>(
 		key: config.key,
 		defaultValue: config.defaultValue,
 		discovery: config.discovery,
-		nativeConsumption: config.nativeConsumption,
 		normalize: config.normalize,
 		parse: config.parse,
 		load: (entries) => config.normalize(entries.get(config.key)),
@@ -434,7 +426,7 @@ export const DURABLE_SETTINGS = {
 	fontFamily: defineApplicationSetting({
 		key: "ui.fontFamily",
 		defaultValue: DEFAULT_UI_FONT_FAMILY,
-		discovery: searchable("appearance-interface-font"),
+		discovery: searchable("typography-interface-font"),
 		normalize: normalizeUiFontFamily,
 		parse: parseString,
 		read: (settings) => settings.ui.fontFamily,
@@ -443,7 +435,7 @@ export const DURABLE_SETTINGS = {
 	editorFontFamily: defineApplicationSetting({
 		key: "ui.editorFontFamily",
 		defaultValue: DEFAULT_UI_FONT_FAMILY,
-		discovery: searchable("appearance-editor-font"),
+		discovery: searchable("typography-editor-font"),
 		normalize: (value) => normalizeUiFontFamily(value, DEFAULT_UI_FONT_FAMILY),
 		parse: parseString,
 		read: (settings) => settings.ui.editorFontFamily,
@@ -452,14 +444,14 @@ export const DURABLE_SETTINGS = {
 	headingFontEnabled: booleanSetting({
 		key: "ui.headingFontEnabled",
 		defaultValue: false,
-		discovery: searchable("appearance-heading-font-enabled"),
+		discovery: searchable("typography-heading-font-enabled"),
 		read: (settings) => settings.ui.headingFontEnabled,
 		change: (value) => ({ ui: { headingFontEnabled: value } }),
 	}),
 	headingFontFamily: defineApplicationSetting({
 		key: "ui.headingFontFamily",
 		defaultValue: DEFAULT_UI_FONT_FAMILY,
-		discovery: searchable("appearance-heading-font"),
+		discovery: searchable("typography-heading-font"),
 		normalize: (value) => normalizeUiFontFamily(value, DEFAULT_UI_FONT_FAMILY),
 		parse: parseString,
 		read: (settings) => settings.ui.headingFontFamily,
@@ -468,7 +460,7 @@ export const DURABLE_SETTINGS = {
 	monoFontFamily: defineApplicationSetting({
 		key: "ui.monoFontFamily",
 		defaultValue: DEFAULT_UI_MONO_FONT_FAMILY,
-		discovery: searchable("appearance-monospace-font"),
+		discovery: searchable("typography-monospace-font"),
 		normalize: normalizeUiMonoFontFamily,
 		parse: parseString,
 		read: (settings) => settings.ui.monoFontFamily,
@@ -477,7 +469,7 @@ export const DURABLE_SETTINGS = {
 	fontSize: defineApplicationSetting({
 		key: "ui.fontSize",
 		defaultValue: DEFAULT_UI_FONT_SIZE,
-		discovery: searchable("appearance-ui-font-size"),
+		discovery: searchable("typography-ui-font-size"),
 		normalize: normalizeUiFontSize,
 		parse: parseFiniteNumber,
 		read: (settings) => settings.ui.fontSize,
@@ -486,7 +478,7 @@ export const DURABLE_SETTINGS = {
 	editorFontSize: defineApplicationSetting({
 		key: "ui.editorFontSize",
 		defaultValue: DEFAULT_EDITOR_FONT_SIZE,
-		discovery: searchable("appearance-editor-font-size"),
+		discovery: searchable("typography-editor-font-size"),
 		normalize: normalizeEditorFontSize,
 		parse: parseFiniteNumber,
 		read: (settings) => settings.ui.editorFontSize,
@@ -496,7 +488,6 @@ export const DURABLE_SETTINGS = {
 		key: "ui.appIcon",
 		defaultValue: "default",
 		discovery: searchable("appearance-app-icon"),
-		nativeConsumption: { kind: "settings-store", consumer: "app-icon" },
 		normalize: (value) =>
 			value === "blue-star" ||
 			value === "blue-glyph" ||
@@ -542,7 +533,7 @@ export const DURABLE_SETTINGS = {
 	sidebarVisibility: defineApplicationSetting({
 		key: "ui.sidebarVisibility",
 		defaultValue: DEFAULT_SIDEBAR_VISIBILITY,
-		discovery: searchable("appearance-sidebar"),
+		discovery: searchable("sidebar-layout"),
 		normalize: normalizeSidebarVisibility,
 		parse: (value) =>
 			value !== null && typeof value === "object" && !Array.isArray(value)
@@ -554,7 +545,7 @@ export const DURABLE_SETTINGS = {
 	sidebarOrder: defineApplicationSetting({
 		key: "ui.sidebarOrder",
 		defaultValue: DEFAULT_SIDEBAR_ORDER,
-		discovery: searchable("appearance-sidebar"),
+		discovery: searchable("sidebar-layout"),
 		normalize: normalizeSidebarOrder,
 		parse: (value) =>
 			Array.isArray(value) ? parsed(normalizeSidebarOrder(value)) : INVALID_PARSE_RESULT,
@@ -618,17 +609,6 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("general-resume-last-session"),
 		read: (settings) => settings.ui.resumeLastSession,
 		change: (value) => ({ ui: { resumeLastSession: value } }),
-	}),
-	keepRunningOnLastWindowClose: booleanSetting({
-		key: "ui.keepRunningOnLastWindowClose",
-		defaultValue: true,
-		discovery: searchable("general-keep-running-on-close"),
-		nativeConsumption: {
-			kind: "settings-store",
-			consumer: "last-window-close-policy",
-		},
-		read: (settings) => settings.ui.keepRunningOnLastWindowClose,
-		change: (value) => ({ ui: { keepRunningOnLastWindowClose: value } }),
 	}),
 	editorShowCollapsibleHeadings: booleanSetting({
 		key: "editor.showCollapsibleHeadings",
@@ -834,7 +814,7 @@ export const SPACE_SETTINGS = {
 		legacyKey: "ui.sidebarFolderTabs",
 		field: "sidebarFolderTabs",
 		defaultValue: [],
-		discovery: searchable("general-file-tree-folder-tabs"),
+		discovery: hidden("Quick folders are managed from folder context menus."),
 		normalize: normalizeSidebarFolderTabs,
 		parse: (value) =>
 			Array.isArray(value) ? parsed(normalizeSidebarFolderTabs(value)) : INVALID_PARSE_RESULT,

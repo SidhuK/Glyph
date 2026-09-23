@@ -48,16 +48,10 @@
 	},
 	"startup": {
 		"sectionTitle": "Startup",
-		"sectionDescription": "Choose what Glyph does when it starts and when you close its last window.",
 		"openPreviousTabs": {
 			"label": "Open previous tabs",
 			"description": "Start this space with the tabs you left open.",
 			"ariaLabel": "Resume last session"
-		},
-		"keepRunningOnClose": {
-			"label": "Keep Glyph running after closing the last window",
-			"description": "Closing the last window hides it while Glyph remains open. Use Quit Glyph to quit.",
-			"ariaLabel": "Keep Glyph running after closing the last window"
 		}
 	},
 	"experimental": {
@@ -168,11 +162,6 @@
 			"label": "File tree sort",
 			"description": "Choose how folders and files are ordered in the sidebar tree.",
 			"ariaLabel": "File tree sort"
-		},
-		"folderTabs": {
-			"label": "Quick folders",
-			"description": "Add up to three folders to the Files and Tags switcher from a folder's context menu.",
-			"managed": "Add or remove folders from their context menu"
 		}
 	},
 	"periodNotes": {
@@ -198,5 +187,24 @@
 		"week": "Default weekly note template",
 		"month": "Default monthly note template",
 		"quarter": "Default quarterly note template"
+	},
+	"editorPresentation": {
+		"sectionTitle": "Editor presentation",
+		"sectionDescription": "Choose how notes look while you edit them.",
+		"beautifulTags": {
+			"label": "Beautiful Tags",
+			"description": "Enable the experimental Beautiful Tags presentation for tags.",
+			"ariaLabel": "Beautiful Tags"
+		},
+		"editorWidth": {
+			"label": "Editor width",
+			"description": "Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width.",
+			"ariaLabel": "Editor width",
+			"options": {
+				"compact": "Compact",
+				"comfortable": "Comfortable",
+				"wide": "Wide"
+			}
+		}
 	}
 }

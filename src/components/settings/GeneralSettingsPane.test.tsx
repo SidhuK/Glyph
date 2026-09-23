@@ -27,7 +27,6 @@ vi.mock("../../lib/settings", () => ({
 				language: "en",
 				dateDisplayFormat: "friendly",
 				resumeLastSession: false,
-				keepRunningOnLastWindowClose: false,
 				showFileTreeFolderCounts: false,
 			},
 		}),
@@ -39,7 +38,6 @@ vi.mock("../../lib/settings/definitions", () => ({
 		language: settingWriter(),
 		dateDisplayFormat: settingWriter(),
 		resumeLastSession: settingWriter(),
-		keepRunningOnLastWindowClose: settingWriter(),
 		showFileTreeFolderCounts: settingWriter(),
 	},
 }));

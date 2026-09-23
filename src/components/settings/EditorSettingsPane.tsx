@@ -13,19 +13,13 @@ import {
 import {
 	DURABLE_SETTINGS,
 	type EditorWidthMode,
-	MAX_EDITOR_FONT_SIZE,
-	MIN_EDITOR_FONT_SIZE,
-	type UiFontFamily,
-	type UiFontSize,
 	isEditorWidthMode,
 	loadSettings,
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { FontSizeControl } from "./AppearanceTypographyCard";
 import { HeadingPalettePicker } from "./HeadingPalettePicker";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
-import { DEFAULT_FONT_FAMILY, loadAvailableFonts } from "./appearanceOptions";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 import { useSettingsValue } from "./useSettingsValue";
 
@@ -43,29 +37,7 @@ const EDITOR_WIDTH_VALUES = [
 
 export function EditorSettingsPane() {
 	const { t } = useTranslation("settings.general");
-	const { t: tAppearance } = useTranslation("settings.appearance");
 	const [error, setError] = useState("");
-	const [availableFonts, setAvailableFonts] = useState<string[]>([DEFAULT_FONT_FAMILY]);
-	const editorFontFamily = useSettingsValue<UiFontFamily>(
-		DEFAULT_FONT_FAMILY,
-		DURABLE_SETTINGS.editorFontFamily.write,
-		setError,
-	);
-	const headingFontEnabled = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.headingFontEnabled.write,
-		setError,
-	);
-	const headingFontFamily = useSettingsValue<UiFontFamily>(
-		DEFAULT_FONT_FAMILY,
-		DURABLE_SETTINGS.headingFontFamily.write,
-		setError,
-	);
-	const editorFontSize = useSettingsValue<UiFontSize>(
-		16,
-		DURABLE_SETTINGS.editorFontSize.write,
-		setError,
-	);
 	const defaultEditorMode = useSettingsValue<EditorViewMode>(
 		getDefaultEditorViewMode,
 		DURABLE_SETTINGS.editorDefaultEditorMode.write,
@@ -136,30 +108,6 @@ export function EditorSettingsPane() {
 	const setHeadingPaletteValue = headingPalette.setValue;
 	const setInitialEditorWidthMode = editorWidthMode.setInitialValue;
 	const setEditorWidthModeValue = editorWidthMode.setValue;
-	const setInitialEditorFontFamily = editorFontFamily.setInitialValue;
-	const setEditorFontFamilyValue = editorFontFamily.setValue;
-	const setHeadingFontEnabledChecked = headingFontEnabled.setChecked;
-	const setInitialHeadingFontEnabled = headingFontEnabled.setInitialChecked;
-	const setInitialHeadingFontFamily = headingFontFamily.setInitialValue;
-	const setHeadingFontFamilyValue = headingFontFamily.setValue;
-	const setInitialEditorFontSize = editorFontSize.setInitialValue;
-	const setEditorFontSizeValue = editorFontSize.setValue;
-
-	useEffect(() => {
-		let cancelled = false;
-		void loadAvailableFonts()
-			.then((fonts) => {
-				if (!cancelled) setAvailableFonts(fonts);
-			})
-			.catch((cause: unknown) => {
-				if (!cancelled) {
-					setError(cause instanceof Error ? cause.message : String(cause));
-				}
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -178,10 +126,6 @@ export function EditorSettingsPane() {
 				setInitialCollapsibleLists(settings.editor.showCollapsibleLists);
 				setInitialSpellCheck(settings.editor.spellCheck);
 				setInitialBeautifulTags(settings.editor.beautifulTags);
-				setInitialEditorFontFamily(settings.ui.editorFontFamily);
-				setInitialHeadingFontEnabled(settings.ui.headingFontEnabled);
-				setInitialHeadingFontFamily(settings.ui.headingFontFamily);
-				setInitialEditorFontSize(settings.ui.editorFontSize);
 			})
 			.catch((cause) => {
 				if (!cancelled) {
@@ -198,11 +142,7 @@ export function EditorSettingsPane() {
 		setInitialColorfulHeadings,
 		setInitialHeadingPrefixes,
 		setInitialDefaultEditorMode,
-		setInitialEditorFontFamily,
-		setInitialEditorFontSize,
 		setInitialEditorWidthMode,
-		setInitialHeadingFontEnabled,
-		setInitialHeadingFontFamily,
 		setInitialHeadingPalette,
 		setInitialShowFrontmatter,
 		setInitialShowToc,
@@ -213,15 +153,6 @@ export function EditorSettingsPane() {
 		"settings:updated",
 		useCallback(
 			(payload) => {
-				if (typeof payload.ui?.editorFontFamily === "string") {
-					setEditorFontFamilyValue(payload.ui.editorFontFamily);
-				}
-				if (typeof payload.ui?.editorFontSize === "number") {
-					setEditorFontSizeValue(payload.ui.editorFontSize);
-				}
-				if (typeof payload.ui?.headingFontFamily === "string") {
-					setHeadingFontFamilyValue(payload.ui.headingFontFamily);
-				}
 				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
 					setDefaultEditorModeValue(payload.editor.defaultEditorMode);
 				}
@@ -232,7 +163,6 @@ export function EditorSettingsPane() {
 					setEditorWidthModeValue(payload.editor.editorWidthMode);
 				}
 				applyIfBoolean(payload.ui?.showToc, setShowTocChecked);
-				applyIfBoolean(payload.ui?.headingFontEnabled, setHeadingFontEnabledChecked);
 				applyIfBoolean(payload.editor?.showFrontmatterInEditor, setShowFrontmatterChecked);
 				applyIfBoolean(payload.editor?.colorfulHeadings, setColorfulHeadingsChecked);
 				applyIfBoolean(payload.editor?.showHeadingPrefixes, setHeadingPrefixesChecked);
@@ -247,11 +177,7 @@ export function EditorSettingsPane() {
 				setCollapsibleListsChecked,
 				setColorfulHeadingsChecked,
 				setDefaultEditorModeValue,
-				setEditorFontFamilyValue,
-				setEditorFontSizeValue,
 				setEditorWidthModeValue,
-				setHeadingFontEnabledChecked,
-				setHeadingFontFamilyValue,
 				setHeadingPaletteValue,
 				setHeadingPrefixesChecked,
 				setShowFrontmatterChecked,
@@ -265,81 +191,6 @@ export function EditorSettingsPane() {
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
-				<SettingsSection
-					title={tAppearance("typography.sectionTitle")}
-					description={tAppearance("typography.sectionDescription")}
-				>
-					<SettingsRow
-						label={tAppearance("typography.editorFont.label")}
-						htmlFor="settingsEditorFontFamily"
-						description={tAppearance("typography.editorFont.description")}
-					>
-						<SettingsSelect
-							id="settingsEditorFontFamily"
-							value={editorFontFamily.value}
-							onChange={(event) => editorFontFamily.onChange(event.target.value)}
-						>
-							{(availableFonts.includes(editorFontFamily.value)
-								? availableFonts
-								: [editorFontFamily.value, ...availableFonts]
-							).map((font) => (
-								<option key={font} value={font}>
-									{font}
-								</option>
-							))}
-						</SettingsSelect>
-					</SettingsRow>
-					<SettingsRow
-						label={tAppearance("typography.headingFontEnabled.label")}
-						description={tAppearance("typography.headingFontEnabled.description")}
-						searchId={
-							headingFontEnabled.checked
-								? "appearance-heading-font-enabled"
-								: "appearance-heading-font"
-						}
-					>
-						<SettingsToggle
-							checked={headingFontEnabled.checked}
-							disabled={headingFontEnabled.isSaving}
-							ariaLabel={tAppearance("typography.headingFontEnabled.ariaLabel")}
-							onCheckedChange={headingFontEnabled.onCheckedChange}
-						/>
-					</SettingsRow>
-					{headingFontEnabled.checked ? (
-						<SettingsRow
-							label={tAppearance("typography.headingFont.label")}
-							htmlFor="settingsHeadingFontFamily"
-							description={tAppearance("typography.headingFont.description")}
-							searchId="appearance-heading-font"
-						>
-							<SettingsSelect
-								id="settingsHeadingFontFamily"
-								value={headingFontFamily.value}
-								disabled={headingFontFamily.isSaving}
-								onChange={(event) => headingFontFamily.onChange(event.target.value)}
-							>
-								{(availableFonts.includes(headingFontFamily.value)
-									? availableFonts
-									: [headingFontFamily.value, ...availableFonts]
-								).map((font) => (
-									<option key={font} value={font}>
-										{font}
-									</option>
-								))}
-							</SettingsSelect>
-						</SettingsRow>
-					) : null}
-					<FontSizeControl
-						id="settingsEditorFontSize"
-						label={tAppearance("typography.editorFontSize.label")}
-						description={tAppearance("typography.editorFontSize.description")}
-						valueAriaLabel={tAppearance("typography.editorFontSize.valueAriaLabel")}
-						value={editorFontSize.value}
-						min={MIN_EDITOR_FONT_SIZE}
-						max={MAX_EDITOR_FONT_SIZE}
-						onChange={editorFontSize.onChange}
-					/>
-				</SettingsSection>
 				<SettingsSection
 					title={t("editor.sectionTitle")}
 					description={t("editor.sectionDescription")}
@@ -457,27 +308,27 @@ export function EditorSettingsPane() {
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
-					title={tAppearance("editorPresentation.sectionTitle")}
-					description={tAppearance("editorPresentation.sectionDescription")}
+					title={t("editorPresentation.sectionTitle")}
+					description={t("editorPresentation.sectionDescription")}
 				>
 					<SettingsRow
-						label={tAppearance("editorPresentation.beautifulTags.label")}
-						description={tAppearance("editorPresentation.beautifulTags.description")}
+						label={t("editorPresentation.beautifulTags.label")}
+						description={t("editorPresentation.beautifulTags.description")}
 					>
 						<SettingsToggle
 							checked={beautifulTags.checked}
 							disabled={beautifulTags.isSaving}
-							ariaLabel={tAppearance("editorPresentation.beautifulTags.ariaLabel")}
+							ariaLabel={t("editorPresentation.beautifulTags.ariaLabel")}
 							onCheckedChange={beautifulTags.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label={tAppearance("editorPresentation.editorWidth.label")}
-						description={tAppearance("editorPresentation.editorWidth.description")}
+						label={t("editorPresentation.editorWidth.label")}
+						description={t("editorPresentation.editorWidth.description")}
 						interactive={false}
 					>
 						<SettingsSelect
-							aria-label={tAppearance("editorPresentation.editorWidth.ariaLabel")}
+							aria-label={t("editorPresentation.editorWidth.ariaLabel")}
 							value={editorWidthMode.value}
 							disabled={editorWidthMode.isSaving}
 							onChange={(event) => {
@@ -487,7 +338,7 @@ export function EditorSettingsPane() {
 						>
 							{EDITOR_WIDTH_VALUES.map((value) => (
 								<option key={value} value={value}>
-									{tAppearance(`editorPresentation.editorWidth.options.${value}`)}
+									{t(`editorPresentation.editorWidth.options.${value}`)}
 								</option>
 							))}
 						</SettingsSelect>

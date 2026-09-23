@@ -12,32 +12,32 @@ interface FileTreeSettingsSectionProps {
 }
 
 export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSettingsSectionProps) {
-	const { t } = useTranslation(["settings.general", "shell"]);
+	const { t } = useTranslation("settings.general");
 	const fileTreeSort = useFileTreeSortMode({ onError: setError });
 
 	return (
 		<SettingsSection
-			title={t("settings.general:fileTree.sectionTitle")}
-			description={t("settings.general:fileTree.sectionDescription")}
+			title={t("fileTree.sectionTitle")}
+			description={t("fileTree.sectionDescription")}
 		>
 			<SettingsRow
-				label={t("settings.general:fileTree.folderCounts.label")}
-				description={t("settings.general:fileTree.folderCounts.description")}
+				label={t("fileTree.folderCounts.label")}
+				description={t("fileTree.folderCounts.description")}
 			>
 				<SettingsToggle
 					checked={folderCounts.checked}
 					disabled={folderCounts.isSaving}
-					ariaLabel={t("settings.general:fileTree.folderCounts.ariaLabel")}
+					ariaLabel={t("fileTree.folderCounts.ariaLabel")}
 					onCheckedChange={folderCounts.onCheckedChange}
 				/>
 			</SettingsRow>
 			<SettingsRow
-				label={t("settings.general:fileTree.sort.label")}
-				description={t("settings.general:fileTree.sort.description")}
+				label={t("fileTree.sort.label")}
+				description={t("fileTree.sort.description")}
 				interactive={false}
 			>
 				<SettingsSelect
-					aria-label={t("settings.general:fileTree.sort.ariaLabel")}
+					aria-label={t("fileTree.sort.ariaLabel")}
 					value={fileTreeSort.sortMode}
 					disabled={fileTreeSort.isSaving}
 					onChange={(event) => {
@@ -51,14 +51,6 @@ export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSett
 						</option>
 					))}
 				</SettingsSelect>
-			</SettingsRow>
-			<SettingsRow
-				searchId="general-file-tree-folder-tabs"
-				label={t("settings.general:fileTree.folderTabs.label")}
-				description={t("settings.general:fileTree.folderTabs.description")}
-				interactive={false}
-			>
-				<span>{t("settings.general:fileTree.folderTabs.managed")}</span>
 			</SettingsRow>
 		</SettingsSection>
 	);

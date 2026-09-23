@@ -1,0 +1,35 @@
+{
+	"sectionTitle": "Typography",
+	"sectionDescription": "Tune interface type, code styling, and reading scale independently.",
+	"interfaceFont": {
+		"label": "Interface font",
+		"description": "Used for navigation, settings, and most UI copy across Glyph."
+	},
+	"editorFont": {
+		"label": "Editor font",
+		"description": "Used for regular note text outside inline code and code blocks."
+	},
+	"headingFontEnabled": {
+		"label": "Separate heading font",
+		"description": "Use a different font for H1-H6 in edit and preview modes.",
+		"ariaLabel": "Separate heading font"
+	},
+	"headingFont": {
+		"label": "Heading font",
+		"description": "Used for H1-H6 when the separate heading font is on. Raw Markdown keeps the editor font."
+	},
+	"monospaceFont": {
+		"label": "Monospace font",
+		"description": "Used for markdown source, inline code, and developer-oriented surfaces."
+	},
+	"uiFontSize": {
+		"label": "UI font size",
+		"description": "Adjust the base size used by menus, panes, controls, and settings.",
+		"valueAriaLabel": "UI font size value"
+	},
+	"editorFontSize": {
+		"label": "Editor font size",
+		"description": "Adjust the reading size for the note editor, markdown preview, and raw text editing.",
+		"valueAriaLabel": "Editor font size value"
+	}
+}

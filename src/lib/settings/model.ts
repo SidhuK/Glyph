@@ -206,7 +206,6 @@ export interface AppSettings {
 		folioNotesWidth: number;
 		noteSidePeek: boolean;
 		resumeLastSession: boolean;
-		keepRunningOnLastWindowClose: boolean;
 		aiAssistantMode: AiAssistantMode;
 		dateDisplayFormat: DateDisplayFormat;
 		sidebarVisibility: SidebarVisibility;

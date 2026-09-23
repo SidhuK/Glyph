@@ -457,7 +457,6 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 	const folioNotesWidth = DURABLE_SETTINGS.folioNotesWidth.load(entries);
 	const noteSidePeek = DURABLE_SETTINGS.noteSidePeek.load(entries);
 	const resumeLastSession = DURABLE_SETTINGS.resumeLastSession.load(entries);
-	const keepRunningOnLastWindowClose = DURABLE_SETTINGS.keepRunningOnLastWindowClose.load(entries);
 	const dailyNotesFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.dailyNotesFolder,
 		entries,
@@ -607,7 +606,6 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			folioNotesWidth,
 			noteSidePeek,
 			resumeLastSession,
-			keepRunningOnLastWindowClose,
 			aiAssistantMode,
 			dateDisplayFormat,
 		},

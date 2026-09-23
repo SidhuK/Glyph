@@ -52,8 +52,6 @@ use tauri::menu::{
 };
 use tauri::{Emitter, Manager, RunEvent, State, Theme, WindowEvent};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
-#[cfg(target_os = "macos")]
-use tauri_plugin_store::StoreExt;
 use tracing::{error, warn};
 
 #[cfg(target_os = "macos")]
@@ -1033,18 +1031,6 @@ fn is_main_window_label(label: &str) -> bool {
     label == window_geometry::MAIN_WINDOW_LABEL
 }
 
-fn is_auxiliary_persisted_window(label: &str) -> bool {
-    label == "settings" || label == QUICK_NOTE_WINDOW_LABEL || label == "quick-task"
-}
-
-fn destroy_auxiliary_persisted_windows(app: &tauri::AppHandle) {
-    for (label, window) in app.webview_windows() {
-        if is_auxiliary_persisted_window(&label) {
-            let _ = window.destroy();
-        }
-    }
-}
-
 fn focused_editor_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
     app.webview_windows().into_iter().find(|(label, window)| {
         (is_main_window_label(label)
@@ -1169,24 +1155,6 @@ fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) -> bool {
         }
     }
     has_external_markdown_windows(app)
-}
-
-fn should_exit_after_external_markdown_close(app: &tauri::AppHandle) -> bool {
-    !app.webview_windows().keys().any(|label| {
-        external_markdown::is_external_markdown_window(label) || is_main_window_label(label)
-    })
-}
-
-#[cfg(target_os = "macos")]
-const KEEP_RUNNING_ON_LAST_WINDOW_CLOSE_SETTING_KEY: &str = "ui.keepRunningOnLastWindowClose";
-
-#[cfg(target_os = "macos")]
-fn keep_running_on_last_window_close(app: &tauri::AppHandle) -> bool {
-    app.store("settings.json")
-        .ok()
-        .and_then(|store| store.get(KEEP_RUNNING_ON_LAST_WINDOW_CLOSE_SETTING_KEY))
-        .and_then(|value| value.as_bool())
-        .unwrap_or(true)
 }
 
 fn emit_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
@@ -1761,10 +1729,6 @@ pub fn run() {
                         ) {
                             warn!("Failed to forget external markdown window: {error}");
                         }
-                        if should_exit_after_external_markdown_close(window.app_handle()) {
-                            destroy_auxiliary_persisted_windows(window.app_handle());
-                            window.app_handle().exit(0);
-                        }
                     }
                     _ => {}
                 }
@@ -1773,16 +1737,10 @@ pub fn run() {
             if is_main_window_label(window.label()) {
                 match event {
                     WindowEvent::CloseRequested { api, .. } => {
-                        #[cfg(target_os = "macos")]
-                        if keep_running_on_last_window_close(window.app_handle()) {
-                            api.prevent_close();
-                            destroy_auxiliary_persisted_windows(window.app_handle());
-                            if let Err(error) = window.hide() {
-                                warn!("Failed to hide main window on close: {error}");
-                            }
-                            return;
+                        api.prevent_close();
+                        if let Err(error) = window.hide() {
+                            warn!("Failed to hide main window on close: {error}");
                         }
-                        destroy_auxiliary_persisted_windows(window.app_handle());
                     }
                     WindowEvent::Destroyed => {
                         if let Some(state) = window.app_handle().try_state::<MenuState>() {
