@@ -177,16 +177,11 @@
 	},
 	"fileTree": {
 		"sectionTitle": "파일 트리",
-		"sectionDescription": "사이드바 파일 트리와 Folio 목록에 표시할 항목을 선택합니다.",
+		"sectionDescription": "사이드바 파일 트리를 설정합니다.",
 		"folderCounts": {
 			"label": "폴더 파일 수 표시",
 			"description": "파일 트리의 각 폴더 행 끝에 재귀적 파일 합계를 표시합니다.",
 			"ariaLabel": "폴더 파일 수 표시"
-		},
-		"nonMarkdownFiles": {
-			"label": "Markdown이 아닌 파일 표시",
-			"description": "PDF, 이미지 및 기타 첨부 파일을 파일 트리와 Folio 목록에 표시합니다. 끄면 해당 보기에서만 숨겨집니다.",
-			"ariaLabel": "Markdown이 아닌 파일 표시"
 		},
 		"sort": {
 			"label": "파일 트리 정렬",

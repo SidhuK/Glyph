@@ -572,21 +572,6 @@
 			"section": "Árvore de arquivos",
 			"keywords": ["barra lateral", "contagem", "sidebar", "counts"]
 		},
-		"general-file-tree-non-markdown-files": {
-			"title": "Mostrar arquivos que não são Markdown",
-			"section": "Experimental",
-			"keywords": [
-				"barra lateral",
-				"anexos",
-				"pdf",
-				"imagens",
-				"folio",
-				"árvore",
-				"sidebar",
-				"attachments",
-				"images"
-			]
-		},
 		"general-file-tree-sort": {
 			"title": "Ordenação da árvore de arquivos",
 			"section": "Árvore de arquivos",

@@ -200,7 +200,6 @@ export interface AppSettings {
 		cornerRadiusStyle: UiCornerRadiusStyle;
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
-		showNonMarkdownFiles: boolean;
 		fileTreeSortMode: FileTreeSortMode;
 		sidebarFolderTabs: string[];
 		folioMode: boolean;

@@ -54,11 +54,6 @@ export function ExperimentalSettingsPane() {
 		DURABLE_SETTINGS.editorFocusMode.write,
 		setError,
 	);
-	const nonMarkdownFiles = useSettingsBoolean(
-		true,
-		DURABLE_SETTINGS.showNonMarkdownFiles.write,
-		setError,
-	);
 
 	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
 	const setInitialLegacyConnections = legacyConnections.setInitialChecked;
@@ -67,7 +62,6 @@ export function ExperimentalSettingsPane() {
 	const setInitialZenMode = zenMode.setInitialChecked;
 	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
 	const setInitialFocusMode = focusMode.setInitialValue;
-	const setInitialNonMarkdownFiles = nonMarkdownFiles.setInitialChecked;
 
 	const settings = settingsQuery.data;
 	useEffect(() => {
@@ -79,7 +73,6 @@ export function ExperimentalSettingsPane() {
 		setInitialZenMode(settings.editor.zenMode);
 		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
 		setInitialFocusMode(settings.editor.focusMode);
-		setInitialNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
 	}, [
 		settings,
 		setInitialExternalLinkPreviews,
@@ -88,7 +81,6 @@ export function ExperimentalSettingsPane() {
 		setInitialNoteSidePeek,
 		setInitialLegacyConnections,
 		setInitialFocusMode,
-		setInitialNonMarkdownFiles,
 		setInitialRawMarkdownVimMode,
 	]);
 
@@ -205,17 +197,6 @@ export function ExperimentalSettingsPane() {
 								</option>
 							))}
 						</SettingsSelect>
-					</SettingsRow>
-					<SettingsRow
-						label={t("fileTree.nonMarkdownFiles.label")}
-						description={t("fileTree.nonMarkdownFiles.description")}
-					>
-						<SettingsToggle
-							checked={nonMarkdownFiles.checked}
-							disabled={nonMarkdownFiles.isSaving}
-							ariaLabel={t("fileTree.nonMarkdownFiles.ariaLabel")}
-							onCheckedChange={nonMarkdownFiles.onCheckedChange}
-						/>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

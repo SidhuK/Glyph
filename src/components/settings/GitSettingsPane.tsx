@@ -146,7 +146,7 @@ export function GitSettingsPane() {
 	const attachmentFilteringHelp =
 		attachmentStorageMode === "specific-folder"
 			? "Sync files from the configured attachments folder."
-			: `Attachment-only filtering works only when attachments use ${specificFolderModeLabel}. In other modes, attachment files follow the broader non-markdown files setting.`;
+			: `Attachment-only filtering works only when attachments use ${specificFolderModeLabel}. In other modes, attachment files follow the Include non-markdown files option.`;
 
 	return (
 		<div className="settingsPane">

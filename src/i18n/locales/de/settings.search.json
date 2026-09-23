@@ -570,21 +570,6 @@
 			"section": "Dateibaum",
 			"keywords": ["seitenleiste", "anzahl", "sidebar", "counts"]
 		},
-		"general-file-tree-non-markdown-files": {
-			"title": "Nicht-Markdown-Dateien anzeigen",
-			"section": "Experimentell",
-			"keywords": [
-				"seitenleiste",
-				"anhänge",
-				"pdf",
-				"bilder",
-				"folio",
-				"dateibaum",
-				"sidebar",
-				"attachments",
-				"images"
-			]
-		},
 		"general-file-tree-sort": {
 			"title": "Dateibaum-Sortierung",
 			"section": "Dateibaum",

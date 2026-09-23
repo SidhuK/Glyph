@@ -54,7 +54,7 @@ Settings include:
 - attachment folder and attachment storage mode
 - date display format
 - editor settings: default editor mode, focus mode, spell check, editor width, raw Markdown Vim mode, frontmatter visibility, collapsible headings, TOC, formatting bar, Zen mode, and people mentions as tags
-- file tree settings: sort mode, folder counts, non-Markdown file visibility, beautiful tags, people mentions
+- file tree settings: sort mode, folder counts, beautiful tags, people mentions
 - database UI settings
 - shortcut bindings
 - onboarding flags

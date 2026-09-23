@@ -270,7 +270,7 @@ Settings render inside the main app surface rather than as a separate route. `UI
 - `workspace`: space, Git, AI, and usage
 - `experimental`: the experimental settings pane
 
-The experimental pane includes Note Peek and Zen mode alongside Folio mode, raw Markdown Vim mode, external link previews, formatting-bar visibility, focus mode, and non-Markdown file visibility. Search routing in `src/components/settings/settingsSearch.ts` must continue to point each setting at its owning tab.
+The experimental pane includes Note Peek and Zen mode alongside Folio mode, raw Markdown Vim mode, external link previews, formatting-bar visibility, and focus mode. Search routing in `src/components/settings/settingsSearch.ts` must continue to point each setting at its owning tab.
 
 Some settings change Rust behavior:
 

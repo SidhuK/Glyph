@@ -121,7 +121,6 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "experimental-legacy-connections", tab: "experimental" },
 	{ id: "general-file-tree-folder-counts", tab: "general" },
 	{ id: "general-file-tree-folder-tabs", tab: "general" },
-	{ id: "general-file-tree-non-markdown-files", tab: "experimental" },
 	{ id: "general-file-tree-sort", tab: "general" },
 	{ id: "about-app", tab: "about" },
 	{ id: "about-website", tab: "about" },

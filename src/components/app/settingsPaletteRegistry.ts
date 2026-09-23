@@ -361,10 +361,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 	},
 	{
-		...bindApplicationSetting(DURABLE_SETTINGS.showNonMarkdownFiles),
-		control: "toggle",
-	},
-	{
 		...bindApplicationSetting(DURABLE_SETTINGS.fileTreeSortMode),
 		control: "choice",
 		defaultVisible: true,

@@ -177,16 +177,11 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Dateibaum",
-		"sectionDescription": "Wähle, was im Dateibaum der Seitenleiste und in der Folio-Liste erscheint.",
+		"sectionDescription": "Passe den Dateibaum der Seitenleiste an.",
 		"folderCounts": {
 			"label": "Dateianzahl in Ordnern anzeigen",
 			"description": "Am Ende jeder Ordnerzeile im Dateibaum die rekursive Dateigesamtzahl anzeigen.",
 			"ariaLabel": "Dateianzahl in Ordnern anzeigen"
-		},
-		"nonMarkdownFiles": {
-			"label": "Nicht-Markdown-Dateien anzeigen",
-			"description": "PDFs, Bilder und andere Anhänge im Dateibaum und in der Folio-Liste anzeigen. Wenn deaktiviert, werden sie nur in diesen Ansichten ausgeblendet.",
-			"ariaLabel": "Nicht-Markdown-Dateien anzeigen"
 		},
 		"sort": {
 			"label": "Dateibaum-Sortierung",

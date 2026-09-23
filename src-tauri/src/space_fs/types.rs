@@ -41,7 +41,6 @@ pub struct DirChildSummary {
     pub dir_rel_path: String,
     pub name: String,
     pub total_files_recursive: u32,
-    pub total_markdown_recursive: u32,
     pub truncated: bool,
 }
 

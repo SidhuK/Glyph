@@ -1,26 +1,6 @@
 import type { FileTreeSortMode } from "../lib/settings";
 import type { FsEntry } from "../lib/tauri";
-import { isExcalidrawPath, normalizeRelPath } from "../utils/path";
-
-export function filterVisibleFileTreeEntries(
-	entries: FsEntry[],
-	showNonMarkdownFiles: boolean,
-): FsEntry[] {
-	if (showNonMarkdownFiles) return entries;
-	return entries.filter(
-		(entry) => entry.kind === "dir" || entry.is_markdown || isExcalidrawPath(entry.rel_path),
-	);
-}
-
-export function hasVisibleFileTreeEntries(
-	entries: FsEntry[],
-	showNonMarkdownFiles: boolean,
-): boolean {
-	if (showNonMarkdownFiles) return entries.length > 0;
-	return entries.some(
-		(entry) => entry.kind === "dir" || entry.is_markdown || isExcalidrawPath(entry.rel_path),
-	);
-}
+import { normalizeRelPath } from "../utils/path";
 
 function compareEntryNames(a: FsEntry, b: FsEntry, direction: 1 | -1): number {
 	const byName = a.name.toLowerCase().localeCompare(b.name.toLowerCase());

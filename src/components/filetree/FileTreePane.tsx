@@ -20,11 +20,7 @@ import { useTranslation } from "react-i18next";
 import { useFileTreeContext, useSpace } from "../../contexts";
 import { toast } from "../../lib/toast";
 
-import {
-	compareEntriesForSort,
-	filterVisibleFileTreeEntries,
-	hasVisibleFileTreeEntries,
-} from "../../hooks/fileTreeHelpers";
+import { compareEntriesForSort } from "../../hooks/fileTreeHelpers";
 import { useFolderFileCounts } from "../../hooks/useFolderFileCounts";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -94,14 +90,8 @@ interface AppearancePickerTarget {
 	entry: FsEntry;
 }
 
-function sortedVisibleFileTreeEntries(
-	entries: FsEntry[],
-	showNonMarkdownFiles: boolean,
-	sortMode: FileTreeSortMode,
-): FsEntry[] {
-	return filterVisibleFileTreeEntries(entries, showNonMarkdownFiles)
-		.slice()
-		.sort(compareEntriesForSort(sortMode));
+function sortedFileTreeEntries(entries: FsEntry[], sortMode: FileTreeSortMode): FsEntry[] {
+	return entries.slice().sort(compareEntriesForSort(sortMode));
 }
 
 function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
@@ -258,7 +248,6 @@ interface TreeEntriesProps {
 	onCancelRename: () => void;
 	itemAppearance: Record<string, FileTreeAppearance>;
 	folderFileCounts: Record<string, number>;
-	showNonMarkdownFiles: boolean;
 	externalDropTargetPath: string | null;
 	onOpenAppearancePicker: (entry: FsEntry) => void;
 	pinnedFiles: string[];
@@ -284,20 +273,15 @@ function flattenVisibleFileTreeRows({
 	parentDepth,
 	childrenByDir,
 	expandedDirs,
-	showNonMarkdownFiles,
 	sortMode,
 }: Pick<
 	TreeEntriesProps,
-	"entries" | "parentDepth" | "childrenByDir" | "expandedDirs" | "showNonMarkdownFiles" | "sortMode"
+	"entries" | "parentDepth" | "childrenByDir" | "expandedDirs" | "sortMode"
 >): VirtualFileTreeRow[] {
 	const rows: VirtualFileTreeRow[] = [];
 	const walk = (currentEntries: FsEntry[], currentParentDepth: number) => {
-		const visibleEntries = sortedVisibleFileTreeEntries(
-			currentEntries,
-			showNonMarkdownFiles,
-			sortMode,
-		);
-		for (const entry of visibleEntries) {
+		const sortedEntries = sortedFileTreeEntries(currentEntries, sortMode);
+		for (const entry of sortedEntries) {
 			const depth = currentParentDepth + 1;
 			rows.push({
 				id: entry.rel_path.trim() || `${entry.kind}:${entry.name.trim()}:${depth}`,
@@ -339,7 +323,6 @@ function TreeEntries({
 	onCancelRename,
 	itemAppearance,
 	folderFileCounts,
-	showNonMarkdownFiles,
 	externalDropTargetPath,
 	onOpenAppearancePicker,
 	pinnedFiles,
@@ -360,10 +343,9 @@ function TreeEntries({
 				parentDepth,
 				childrenByDir,
 				expandedDirs,
-				showNonMarkdownFiles,
 				sortMode,
 			}),
-		[childrenByDir, entries, expandedDirs, parentDepth, showNonMarkdownFiles, sortMode],
+		[childrenByDir, entries, expandedDirs, parentDepth, sortMode],
 	);
 	const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
 	const scrollMarginRef = useRef(0);
@@ -577,7 +559,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance, fileTreeSortMode: sortMode } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
-	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<boolean | null>(null);
 	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(
 		initialFocusedDirPath === undefined ? activeDirPath : initialFocusedDirPath,
 	);
@@ -623,31 +604,18 @@ export const FileTreePane = memo(function FileTreePane({
 			.then((settings) => {
 				if (!cancelled && loadId === settingsVersionRef.current) {
 					setShowFolderFileCounts(settings.ui.showFileTreeFolderCounts);
-					setShowNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
 				}
 			})
-			.catch(() => {
-				if (!cancelled && loadId === settingsVersionRef.current) {
-					setShowNonMarkdownFiles(true);
-				}
-			});
+			.catch(() => {});
 		return () => {
 			cancelled = true;
 		};
 	}, []);
 
 	useTauriEvent("settings:updated", (payload) => {
-		if (
-			typeof payload.ui?.showFileTreeFolderCounts === "boolean" ||
-			typeof payload.ui?.showNonMarkdownFiles === "boolean"
-		) {
-			settingsVersionRef.current += 1;
-		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
+			settingsVersionRef.current += 1;
 			setShowFolderFileCounts(payload.ui.showFileTreeFolderCounts);
-		}
-		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
-			setShowNonMarkdownFiles(payload.ui.showNonMarkdownFiles);
 		}
 	});
 
@@ -677,7 +645,6 @@ export const FileTreePane = memo(function FileTreePane({
 
 	const folderFileCounts = useFolderFileCounts({
 		spacePath,
-		includeNonMarkdown: showNonMarkdownFiles,
 		parentDirs: summaryParentDirs,
 		treeRevision: folderCountTreeRevision,
 	});
@@ -837,19 +804,8 @@ export const FileTreePane = memo(function FileTreePane({
 	);
 
 	const focusedEntries = focusedDirPath ? (childrenByDir[focusedDirPath] ?? null) : null;
-	const hasLoadedFileVisibility = showNonMarkdownFiles !== null;
-	const showNonMarkdownFilesSetting = showNonMarkdownFiles ?? false;
-	const hasVisibleRootEntries = useMemo(
-		() => hasVisibleFileTreeEntries(rootEntries, showNonMarkdownFilesSetting),
-		[rootEntries, showNonMarkdownFilesSetting],
-	);
-	const hasVisibleFocusedEntries = useMemo(
-		() =>
-			focusedEntries === null
-				? null
-				: hasVisibleFileTreeEntries(focusedEntries, showNonMarkdownFilesSetting),
-		[focusedEntries, showNonMarkdownFilesSetting],
-	);
+	const hasVisibleRootEntries = rootEntries.length > 0;
+	const hasVisibleFocusedEntries = focusedEntries === null ? null : focusedEntries.length > 0;
 
 	useEffect(() => {
 		if (!focusedDirPath || focusedEntries || !onLoadDir) return;
@@ -994,7 +950,7 @@ export const FileTreePane = memo(function FileTreePane({
 					});
 				}}
 			/>
-			{!hasLoadedFileVisibility ? null : focusedDirPath ? (
+			{focusedDirPath ? (
 				<FileTreeRootDrop
 					targetDirPath={focusedDirPath}
 					isExternalDropTarget={externalDropTargetPath === focusedDirPath}
@@ -1032,7 +988,6 @@ export const FileTreePane = memo(function FileTreePane({
 							onCancelRename={onCancelRename}
 							itemAppearance={itemAppearance}
 							folderFileCounts={folderFileCounts}
-							showNonMarkdownFiles={showNonMarkdownFilesSetting}
 							externalDropTargetPath={externalDropTargetPath}
 							onOpenAppearancePicker={handleOpenAppearancePicker}
 							pinnedFiles={pinnedFiles}
@@ -1080,7 +1035,6 @@ export const FileTreePane = memo(function FileTreePane({
 						onCancelRename={onCancelRename}
 						itemAppearance={itemAppearance}
 						folderFileCounts={folderFileCounts}
-						showNonMarkdownFiles={showNonMarkdownFilesSetting}
 						externalDropTargetPath={externalDropTargetPath}
 						onOpenAppearancePicker={handleOpenAppearancePicker}
 						pinnedFiles={pinnedFiles}

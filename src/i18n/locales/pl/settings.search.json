@@ -587,11 +587,6 @@
 			"section": "Drzewo plików",
 			"keywords": ["pasek boczny", "liczba"]
 		},
-		"general-file-tree-non-markdown-files": {
-			"title": "Pokaż pliki inne niż Markdown",
-			"section": "Eksperymentalne",
-			"keywords": ["pasek boczny", "załączniki", "pdf", "obrazy", "folio", "drzewo plików"]
-		},
 		"general-file-tree-sort": {
 			"title": "Sortowanie drzewa plików",
 			"section": "Drzewo plików",

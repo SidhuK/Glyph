@@ -568,13 +568,6 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.showFileTreeFolderCounts,
 		change: (value) => ({ ui: { showFileTreeFolderCounts: value } }),
 	}),
-	showNonMarkdownFiles: booleanSetting({
-		key: "ui.fileTree.showNonMarkdownFiles",
-		defaultValue: true,
-		discovery: searchable("general-file-tree-non-markdown-files"),
-		read: (settings) => settings.ui.showNonMarkdownFiles,
-		change: (value) => ({ ui: { showNonMarkdownFiles: value } }),
-	}),
 	fileTreeSortMode: defineApplicationSetting({
 		key: "ui.fileTree.sortMode",
 		defaultValue: DEFAULT_FILE_TREE_SORT_MODE,
