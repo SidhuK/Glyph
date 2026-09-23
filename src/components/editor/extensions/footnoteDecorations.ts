@@ -10,7 +10,6 @@ export const FootnoteDecorations = createIncrementalTextDecorationExtension({
 		const text = node.text;
 		if (!text) return decorations;
 
-		FOOTNOTE_PATTERN.lastIndex = 0;
 		for (const match of text.matchAll(FOOTNOTE_PATTERN)) {
 			const id = match[1];
 			if (!id) continue;

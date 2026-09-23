@@ -3,7 +3,7 @@ import { Node, type MarkdownToken } from "@tiptap/core";
 const HTML_COMMENT_RE = /^ {0,3}<!--[\s\S]*?-->$/;
 const INLINE_COMMENT_RE = /^<!--[\s\S]*?-->/;
 const BLOCK_COMMENT_RE = /^ {0,3}<!--[\s\S]*?-->[\t ]*(?:\n|$)/;
-const MIXED_COMMENT_LINE_RE = /^( {0,3}<!--[\s\S]*?-->)([^\n]*\S[^\n]*)(?:\n|$)/;
+const MIXED_COMMENT_RE = /^( {0,3}<!--[\s\S]*?-->)([^\n]*\S[^\n]*)(?:\n|$)/;
 
 function isHtmlCommentSource(value: unknown): value is string {
 	return typeof value === "string" && HTML_COMMENT_RE.test(value);
@@ -11,10 +11,6 @@ function isHtmlCommentSource(value: unknown): value is string {
 
 function commentFromToken(token: MarkdownToken): string {
 	return commentRaw((token.raw ?? token.text ?? "").trimEnd());
-}
-
-function commentStart(source: string): number {
-	return source.indexOf("<!--");
 }
 
 function commentRaw(value: unknown): string {
@@ -32,7 +28,6 @@ export const HtmlCommentInline = Node.create({
 	group: "inline",
 	inline: true,
 	atom: true,
-	markdownTokenName: "htmlCommentInline",
 	addAttributes() {
 		return { raw: { default: "" } };
 	},
@@ -58,7 +53,7 @@ export const HtmlCommentInline = Node.create({
 	markdownTokenizer: {
 		name: "htmlCommentInline",
 		level: "inline",
-		start: commentStart,
+		start: "<!--",
 		tokenize(source) {
 			const match = source.match(INLINE_COMMENT_RE);
 			return match ? { type: "htmlCommentInline", raw: match[0], text: match[0] } : undefined;
@@ -66,14 +61,10 @@ export const HtmlCommentInline = Node.create({
 	},
 });
 
-export const HtmlCommentBlock = Node.create({
+export const HtmlCommentBlock = HtmlCommentInline.extend({
 	name: "htmlCommentBlock",
 	group: "block",
-	atom: true,
-	markdownTokenName: "htmlCommentBlock",
-	addAttributes() {
-		return { raw: { default: "" } };
-	},
+	inline: false,
 	parseHTML() {
 		return [{ tag: "div[data-glyph-html-comment]", getAttrs: commentAttrsFromElement }];
 	},
@@ -84,26 +75,20 @@ export const HtmlCommentBlock = Node.create({
 			commentRaw(node.attrs.raw),
 		];
 	},
-	renderText({ node }) {
-		return commentRaw(node.attrs.raw);
-	},
 	parseMarkdown(token, helpers) {
 		if (token.tokens?.length) {
 			return helpers.createNode("paragraph", undefined, helpers.parseInline(token.tokens));
 		}
 		return helpers.createNode("htmlCommentBlock", { raw: commentFromToken(token) });
 	},
-	renderMarkdown(node) {
-		return commentRaw(node.attrs?.raw);
-	},
 	markdownTokenizer: {
 		name: "htmlCommentBlock",
 		level: "block",
 		start(source) {
-			return BLOCK_COMMENT_RE.test(source) || MIXED_COMMENT_LINE_RE.test(source) ? 0 : -1;
+			return BLOCK_COMMENT_RE.test(source) || MIXED_COMMENT_RE.test(source) ? 0 : -1;
 		},
 		tokenize(source, _tokens, helpers) {
-			const mixed = source.match(MIXED_COMMENT_LINE_RE);
+			const mixed = source.match(MIXED_COMMENT_RE);
 			if (mixed) {
 				return {
 					type: "htmlCommentBlock",

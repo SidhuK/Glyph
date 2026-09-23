@@ -97,7 +97,6 @@ export function addGlyphInlineDecorations(
 		);
 	}
 	addPatternDecorations(ranges, view, lineFrom, text, COMMENT_PATTERN, "cm-raw-comment");
-	FOOTNOTE_PATTERN.lastIndex = 0;
 	for (const match of text.matchAll(FOOTNOTE_PATTERN)) {
 		if (match.index === undefined || !match[1]) continue;
 		const from = lineFrom + match.index;

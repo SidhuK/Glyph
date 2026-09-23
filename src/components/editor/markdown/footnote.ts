@@ -14,11 +14,7 @@ const ESCAPED_FOOTNOTE_PATTERN = /\\\[\^([^\]\s]+)\\\]\u2063/g;
 
 export type FootnoteKind = "ref" | "def";
 
-export function isFootnoteDefinition(
-	text: string,
-	matchIndex: number,
-	matchLength: number,
-): boolean {
+function isFootnoteDefinition(text: string, matchIndex: number, matchLength: number): boolean {
 	const atLineStart = matchIndex === 0 || text[matchIndex - 1] === "\n";
 	return atLineStart && text[matchIndex + matchLength] === ":";
 }
