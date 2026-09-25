@@ -58,7 +58,6 @@ cd src-tauri && cargo check
 
 - `src/` - React frontend
 - `src-tauri/` - Tauri and Rust backend
-- `docs/` - product, release, and engineering documentation
 
 ## Coding guidelines
 
