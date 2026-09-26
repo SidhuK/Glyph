@@ -322,6 +322,63 @@ fn resolve_standard_wikilink_target(entries: &[FileEntry], target: &str) -> Opti
     None
 }
 
+#[derive(Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum WikiEmbedDocument {
+    Ready {
+        target: String,
+        path: String,
+        text: String,
+    },
+    Error {
+        target: String,
+        message: String,
+    },
+}
+
+#[tauri::command]
+pub async fn space_read_wiki_embeds_batch(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    targets: Vec<String>,
+) -> Result<Vec<WikiEmbedDocument>, String> {
+    let root = state.root_for_window(&window)?;
+    let read_root = root.clone();
+    let documents = tauri::async_runtime::spawn_blocking(move || {
+        let entries = list_files(&read_root, false, 80_000)?;
+        let mut texts = std::collections::HashMap::new();
+        let mut documents = Vec::with_capacity(targets.len());
+        for target in targets {
+            let result = (|| -> Result<(String, String), String> {
+                let path = resolve_standard_wikilink_target(&entries, &target)
+                    .filter(|path| utils::is_markdown_path(Path::new(path)))
+                    .ok_or_else(|| "Note not found".to_string())?;
+                let text = texts
+                    .entry(path.clone())
+                    .or_insert_with(|| {
+                        let rel = Path::new(&path);
+                        super::helpers::deny_hidden_rel_path(rel)?;
+                        let abs = paths::join_under(&read_root, rel)?;
+                        std::fs::read_to_string(abs).map_err(|error| error.to_string())
+                    })
+                    .clone()?;
+                Ok((path, text))
+            })();
+            documents.push(match result {
+                Ok((path, text)) => WikiEmbedDocument::Ready { target, path, text },
+                Err(message) => WikiEmbedDocument::Error { target, message },
+            });
+        }
+        Ok::<_, String>(documents)
+    })
+    .await
+    .map_err(|error| error.to_string())??;
+    if state.root_for_window(&window)? != root {
+        return Err("The active space changed while loading embeds.".to_string());
+    }
+    Ok(documents)
+}
+
 #[tauri::command]
 pub async fn space_resolve_wikilink(
     window: WebviewWindow,
