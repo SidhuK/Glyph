@@ -37,6 +37,7 @@ mod space_asset_protocol;
 mod space_fs;
 mod system_fonts;
 mod tag_appearance;
+mod task_inbox;
 pub(crate) mod utils;
 mod window_geometry;
 
@@ -1858,6 +1859,8 @@ pub fn run() {
             index::commands::people_list,
             index::commands::task_summary,
             index::commands::task_summaries_for_paths,
+            task_inbox::commands::task_inbox_list,
+            task_inbox::commands::task_inbox_update,
             index::commands::backlinks,
             index::commands::unlinked_mentions,
             index::commands::note_relationships,

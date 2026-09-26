@@ -56,6 +56,7 @@ import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { FileTreePane } from "../filetree";
+import { TaskInboxButton } from "../tasks/TaskInboxButton";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
 
 export interface SidebarContentProps {
@@ -736,6 +737,7 @@ export const SidebarContent = memo(function SidebarContent({
 								</div>
 							) : null}
 						</OrderedSidebarItems>
+						<TaskInboxButton onOpenNote={onOpenFile} />
 						<div className="sidebarViewTabs" role="tablist" aria-label={sidebarViewTabsLabel}>
 							<button
 								type="button"
