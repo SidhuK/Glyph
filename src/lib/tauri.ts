@@ -1,4 +1,5 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import i18n from "i18next";
 import type { AppSettings, AttachmentStorageMode, FileTreeSortMode } from "./settings";
 
 export interface AppInfo {
@@ -61,6 +62,7 @@ export interface TextFileDoc {
 }
 
 interface TextFileWriteResult {
+	formatted_text?: string;
 	etag: string;
 	mtime_ms: number;
 }
@@ -1199,6 +1201,13 @@ export async function invoke<K extends keyof TauriCommands>(
 		const payload = args.length > 0 ? asInvokePayload(args[0]) : {};
 		return (await tauriInvoke(command, payload)) as TauriCommands[K]["result"];
 	} catch (raw) {
-		throw new TauriInvokeError(errorMessage(raw), raw);
+		const message = errorMessage(raw);
+		if (command === "space_write_text" && message.startsWith("formatter:")) {
+			const detail = i18n.t(`editor:formatter.errors.${message.slice("formatter:".length)}`, {
+				defaultValue: i18n.t("editor:formatter.errors.unavailable"),
+			});
+			throw new TauriInvokeError(i18n.t("editor:formatter.saveFailed", { detail }), raw);
+		}
+		throw new TauriInvokeError(message, raw);
 	}
 }

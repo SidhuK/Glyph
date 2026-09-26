@@ -293,6 +293,10 @@ export function useMarkdownDocumentSession({
 		): Promise<boolean> => {
 			const applySaveState = (saved: string, mtimeMs: number) => {
 				if (path !== relPath || !isCurrentSession(sessionId)) return;
+				flushPendingEdits();
+				if (saved !== nextText && textRef.current === nextText) {
+					replaceText(saved);
+				}
 				setPrefetchedNote(path, {
 					rel_path: path,
 					text: saved,
@@ -319,7 +323,7 @@ export function useMarkdownDocumentSession({
 					text: nextText,
 					base_mtime_ms: mtimeRef.current,
 				});
-				applySaveState(nextText, result.mtime_ms);
+				applySaveState(result.formatted_text ?? nextText, result.mtime_ms);
 				return true;
 			} catch (e) {
 				if (!isCurrentSession(sessionId)) return false;
@@ -370,7 +374,7 @@ export function useMarkdownDocumentSession({
 							text: nextText,
 							base_mtime_ms: latest.mtime_ms,
 						});
-						applySaveState(nextText, retry.mtime_ms);
+						applySaveState(retry.formatted_text ?? nextText, retry.mtime_ms);
 						return true;
 					}
 					hasUserEditsRef.current = true;
@@ -385,7 +389,7 @@ export function useMarkdownDocumentSession({
 				}
 			}
 		},
-		[flashPulse, isCurrentSession, relPath, replaceText],
+		[flashPulse, flushPendingEdits, isCurrentSession, relPath, replaceText],
 	);
 
 	const onSave = useCallback(async () => {
@@ -427,7 +431,7 @@ export function useMarkdownDocumentSession({
 			setAutosaveBusy(false);
 			const retryQueued = autosaveQueuedRef.current;
 			autosaveQueuedRef.current = false;
-			if (retryQueued && textRef.current !== snapshot) {
+			if (retryQueued && textRef.current !== snapshot && textRef.current !== savedTextRef.current) {
 				return runAutosave();
 			}
 			if (ok && textRef.current !== savedTextRef.current) {

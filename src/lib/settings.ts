@@ -553,6 +553,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 		hasActiveSpace,
 	);
 	const editor: AppSettings["editor"] = {
+		markdownFormatter: DURABLE_SETTINGS.editorMarkdownFormatter.load(entries),
 		showCollapsibleHeadings: DURABLE_SETTINGS.editorShowCollapsibleHeadings.load(entries),
 		showCollapsibleLists: DURABLE_SETTINGS.editorShowCollapsibleLists.load(entries),
 		showFrontmatterInEditor: DURABLE_SETTINGS.editorShowFrontmatterInEditor.load(entries),

@@ -206,5 +206,20 @@
 				"wide": "Wide"
 			}
 		}
+	},
+	"formatter": {
+		"title": "Markdown formatter",
+		"description": "Run a trusted, user-installed formatter before manual saves and autosaves. It must read Markdown from stdin and write Markdown to stdout. If it fails, your edits stay unsaved in the editor.",
+		"enabled": "Format on save",
+		"executable": "Executable path",
+		"executableHelp": "Absolute path to a trusted executable, for example /opt/homebrew/bin/mdformat. No shell is used. Enabling this applies to every Space containing the config file below.",
+		"arguments": "Arguments as a JSON array",
+		"argumentsHelp": "For mdformat use [\"-\"]. Each item is one argument. {config} expands to the detected config path; {filepath} expands to the note path for stdin filename options. Do not use arguments that write files in place.",
+		"configFile": "Config filename",
+		"configHelp": "For mdformat use .mdformat.toml. Glyph searches from the note folder up to the Space root and runs from the nearest config folder. No matching config means no formatting. Install formatter plugins if your notes use wikilinks or other extensions.",
+		"save": "Save formatter settings",
+		"loadFailed": "Could not load formatter settings.",
+		"invalidArguments": "Arguments must be a JSON array of strings.",
+		"invalidSettings": "Enter an absolute executable path and a config filename without slashes. Arguments must be strings."
 	}
 }
