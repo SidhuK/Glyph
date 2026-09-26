@@ -12,58 +12,48 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::json;
 use tauri::AppHandle;
+use tokio_util::sync::CancellationToken;
 
-use crate::note_mutation::{
-    commit_markdown, emit_changed, reindex_after_rename, unindex_path, CommitCtx, PersistMode,
-    SpaceChange,
+use super::{
+    review::{self, Proposal},
+    review_files::WriteContext,
 };
-use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
-use crate::{index::open_db, io_atomic, paths, utils};
+use crate::space::state::RecentLocalChanges;
+use crate::{index::open_db, paths, utils};
 
 const MAX_READ_BYTES: u64 = 512 * 1024;
 const MAX_READ_CHARS: usize = 12_000;
 const MAX_LIST_LIMIT: usize = 5_000;
 const MAX_SEARCH_LIMIT: usize = 200;
-const CONFIRM_TOKEN: &str = "CONFIRM";
 #[derive(Clone)]
 struct SpaceWriteCtx {
     app: AppHandle,
     window_label: String,
     recent: RecentLocalChanges,
+    job_id: String,
+    cancel: CancellationToken,
 }
 
-fn space_path(root: &Path) -> String {
-    root.to_string_lossy().into_owned()
-}
-
-fn commit_markdown_tool(
-    root: &Path,
-    ctx: &SpaceWriteCtx,
-    rel: &str,
-    text: &str,
-    create_only: bool,
-) -> Result<SpaceChange, ToolError> {
-    let committed = commit_markdown(
-        &CommitCtx {
-            root,
-            recent: &ctx.recent,
-            space_path: &space_path(root),
-        },
-        rel,
-        text,
-        if create_only {
-            PersistMode::CreateNew
-        } else {
-            PersistMode::Replace {
-                expected_mtime_ms: None,
-            }
-        },
-    )?;
-    if create_only && !committed.created {
-        return Err(ToolError("file already exists".to_string()));
+impl SpaceWriteCtx {
+    async fn propose(&self, root: PathBuf, proposal: Proposal) -> Result<String, ToolError> {
+        let ctx = self.clone();
+        tauri::async_runtime::spawn_blocking(move || {
+            review::propose(
+                &WriteContext {
+                    root: &root,
+                    app: &ctx.app,
+                    window_label: &ctx.window_label,
+                    recent: &ctx.recent,
+                },
+                &ctx.job_id,
+                proposal,
+                &ctx.cancel,
+            )
+            .map_err(|e| ToolError(e.to_string()))
+        })
+        .await
+        .map_err(|e| ToolError(e.to_string()))?
     }
-    emit_changed(&ctx.app, &ctx.window_label, &committed.change);
-    Ok(committed.change)
 }
 
 #[derive(Debug, Clone)]
@@ -102,7 +92,7 @@ fn is_utf8_text(path: &Path) -> bool {
     std::str::from_utf8(&bytes).is_ok()
 }
 
-fn safe_join(root: &Path, rel: &str) -> Result<PathBuf, ToolError> {
+pub(super) fn safe_join(root: &Path, rel: &str) -> Result<PathBuf, ToolError> {
     let normalized = normalize_rel_path(rel)?;
     let rel = PathBuf::from(normalized);
     deny_hidden_rel_path(&rel)?;
@@ -401,6 +391,7 @@ impl Tool for StatTool {
 #[derive(Clone)]
 pub struct ReadFileTool {
     pub root: PathBuf,
+    job_id: String,
 }
 #[derive(Deserialize, JsonSchema)]
 pub struct ReadFileArgs {
@@ -421,12 +412,15 @@ impl Tool for ReadFileTool {
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let abs = safe_join(&self.root, &args.path)?;
-        let meta = fs::metadata(&abs)?;
-        if meta.len() > MAX_READ_BYTES || !is_utf8_text(&abs) {
-            return Ok(err_payload("binary or oversized file blocked"));
-        }
-        let text = fs::read_to_string(&abs)?;
+        let root = self.root.clone();
+        let job_id = self.job_id.clone();
+        let path = normalize_rel_path(&args.path)?;
+        let text =
+            tauri::async_runtime::spawn_blocking(move || review::read(&root, &job_id, &path))
+                .await
+                .map_err(|e| ToolError(e.to_string()))?
+                .map_err(|e| ToolError(e.to_string()))?
+                .ok_or_else(|| ToolError("File not found".into()))?;
         let start = args.offset.unwrap_or(0).min(text.len());
         let mut end = text.len();
         if let Some(len) = args.length {
@@ -451,6 +445,7 @@ impl Tool for ReadFileTool {
 #[derive(Clone)]
 pub struct ReadFilesBatchTool {
     pub root: PathBuf,
+    job_id: String,
 }
 #[derive(Deserialize, JsonSchema)]
 pub struct ReadFilesBatchArgs {
@@ -474,6 +469,7 @@ impl Tool for ReadFilesBatchTool {
         for path in args.paths.into_iter().take(40) {
             let res = ReadFileTool {
                 root: self.root.clone(),
+                job_id: self.job_id.clone(),
             }
             .call(ReadFileArgs {
                 path,
@@ -509,46 +505,19 @@ impl Tool for WriteFileTool {
     type Output = String;
     type Error = ToolError;
     async fn definition(&self, _prompt: String) -> ToolDefinition {
-        tool_definition::<WriteFileArgs>(Self::NAME, "Create or overwrite a file.")
+        tool_definition::<WriteFileArgs>(Self::NAME, "Propose creating or overwriting a text file. Changes require user review unless immediate mode is enabled.")
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let rel = normalize_rel_path(&args.path)?;
-        let abs = safe_join(&self.root, &args.path)?;
-        if let Some(parent) = abs.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        let exists = abs.exists();
-        let mode = args.mode.unwrap_or_else(|| "overwrite".to_string());
-        if exists && mode == "create_only" {
-            return Ok(err_payload("file already exists"));
-        }
-        if utils::is_markdown_path(&abs) {
-            match commit_markdown_tool(
-                &self.root,
-                &self.ctx,
-                &rel,
-                &args.content,
-                mode == "create_only",
-            ) {
-                Ok(_) => {}
-                Err(error) if error.0.contains("already exists") => {
-                    return Ok(err_payload("file already exists"));
-                }
-                Err(error) => return Err(error),
-            }
-        } else {
-            io_atomic::write_atomic(&abs, args.content.as_bytes())
-                .map_err(|e| ToolError(e.to_string()))?;
-            let change = if exists {
-                SpaceChange::content(space_path(&self.root), rel)
-            } else {
-                SpaceChange::create(space_path(&self.root), rel)
-            };
-            emit_changed(&self.ctx.app, &self.ctx.window_label, &change);
-        }
-        Ok(ok(
-            json!({"path": args.path, "bytes_written": args.content.len()}),
-        ))
+        self.ctx
+            .propose(
+                self.root.clone(),
+                Proposal::Write {
+                    path: normalize_rel_path(&args.path)?,
+                    text: args.content,
+                    create_only: args.mode.as_deref() == Some("create_only"),
+                },
+            )
+            .await
     }
 }
 
@@ -572,32 +541,21 @@ impl Tool for ApplyPatchTool {
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         tool_definition::<ApplyPatchArgs>(
             Self::NAME,
-            "Apply a simple find/replace patch to a text file.",
+            "Propose a find/replace patch. Reads previous proposed edits in this operation.",
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let abs = safe_join(&self.root, &args.path)?;
-        let text = fs::read_to_string(&abs).map_err(|e| ToolError(e.to_string()))?;
-        let updated = if args.all.unwrap_or(false) {
-            text.replace(&args.find, &args.replace)
-        } else {
-            text.replacen(&args.find, &args.replace, 1)
-        };
-        if updated == text {
-            return Ok(err_payload("no matching text for patch"));
-        }
-        let rel = normalize_rel_path(&args.path)?;
-        if utils::is_markdown_path(&abs) {
-            commit_markdown_tool(&self.root, &self.ctx, &rel, &updated, false)?;
-        } else {
-            io_atomic::write_atomic(&abs, updated.as_bytes()).map_err(|e| ToolError(e.to_string()))?;
-            emit_changed(
-                &self.ctx.app,
-                &self.ctx.window_label,
-                &SpaceChange::content(space_path(&self.root), rel),
-            );
-        }
-        Ok(ok(json!({"path": args.path, "patched": true})))
+        self.ctx
+            .propose(
+                self.root.clone(),
+                Proposal::Patch {
+                    path: normalize_rel_path(&args.path)?,
+                    find: args.find,
+                    replace: args.replace,
+                    all: args.all.unwrap_or(false),
+                },
+            )
+            .await
     }
 }
 
@@ -610,7 +568,6 @@ pub struct MoveTool {
 pub struct MoveArgs {
     src: String,
     dest: String,
-    confirm_token: Option<String>,
 }
 impl Tool for MoveTool {
     const NAME: &'static str = "move";
@@ -620,63 +577,19 @@ impl Tool for MoveTool {
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         tool_definition::<MoveArgs>(
             Self::NAME,
-            "Move or rename a path within the space. Overwrites require confirmation.",
+            "Propose moving or renaming one text file to an unused path. Directories are not supported.",
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let src = safe_join(&self.root, &args.src)?;
-        let dest = safe_join(&self.root, &args.dest)?;
-        if let Some(parent) = dest.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        if dest.exists() && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
-            return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"src": args.src, "dest": args.dest, "action": "overwrite_move"}}).to_string());
-        }
-        fs::rename(&src, &dest)?;
-        let from = normalize_rel_path(&args.src)?;
-        let to = normalize_rel_path(&args.dest)?;
-        reindex_after_rename(
-            &self.root,
-            &from,
-            &to,
-            &dest,
-            dest.is_dir(),
-            &self.ctx.recent,
-        );
-        emit_changed(
-            &self.ctx.app,
-            &self.ctx.window_label,
-            &SpaceChange::rename(space_path(&self.root), from, to, dest.is_dir()),
-        );
-        Ok(ok(json!({"src": args.src, "dest": args.dest})))
-    }
-}
-
-#[derive(Clone)]
-pub struct MkdirTool {
-    pub root: PathBuf,
-}
-#[derive(Deserialize, JsonSchema)]
-pub struct MkdirArgs {
-    path: String,
-    parents: Option<bool>,
-}
-impl Tool for MkdirTool {
-    const NAME: &'static str = "mkdir";
-    type Args = MkdirArgs;
-    type Output = String;
-    type Error = ToolError;
-    async fn definition(&self, _prompt: String) -> ToolDefinition {
-        tool_definition::<MkdirArgs>(Self::NAME, "Create a directory path.")
-    }
-    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let abs = safe_join(&self.root, &args.path)?;
-        if args.parents.unwrap_or(true) {
-            fs::create_dir_all(&abs)?;
-        } else {
-            fs::create_dir(&abs)?;
-        }
-        Ok(ok(json!({"path": args.path})))
+        self.ctx
+            .propose(
+                self.root.clone(),
+                Proposal::Move {
+                    src: normalize_rel_path(&args.src)?,
+                    dest: normalize_rel_path(&args.dest)?,
+                },
+            )
+            .await
     }
 }
 
@@ -688,8 +601,6 @@ pub struct DeleteTool {
 #[derive(Deserialize, JsonSchema)]
 pub struct DeleteArgs {
     path: String,
-    recursive: Option<bool>,
-    confirm_token: Option<String>,
 }
 impl Tool for DeleteTool {
     const NAME: &'static str = "delete";
@@ -699,35 +610,18 @@ impl Tool for DeleteTool {
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         tool_definition::<DeleteArgs>(
             Self::NAME,
-            "Delete a file or directory. Recursive deletes require confirmation token.",
+            "Propose deleting one text file. Directories are not supported.",
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let abs = safe_join(&self.root, &args.path)?;
-        let recursive = args.recursive.unwrap_or(false);
-        if (recursive || abs.is_dir()) && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
-            return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"path": args.path, "recursive": recursive, "action": "delete"}}).to_string());
-        }
-        let is_dir = abs.is_dir();
-        if abs.is_dir() {
-            if recursive {
-                fs::remove_dir_all(&abs)?;
-            } else {
-                fs::remove_dir(&abs)?;
-            }
-        } else if abs.exists() {
-            fs::remove_file(&abs)?;
-        } else {
-            return Ok(err_payload("path not found"));
-        }
-        let rel = normalize_rel_path(&args.path)?;
-        unindex_path(&self.root, &rel, &abs, &self.ctx.recent, is_dir);
-        emit_changed(
-            &self.ctx.app,
-            &self.ctx.window_label,
-            &SpaceChange::remove(space_path(&self.root), rel, is_dir),
-        );
-        Ok(ok(json!({"path": args.path, "deleted": true})))
+        self.ctx
+            .propose(
+                self.root.clone(),
+                Proposal::Delete {
+                    path: normalize_rel_path(&args.path)?,
+                },
+            )
+            .await
     }
 }
 
@@ -809,14 +703,6 @@ impl Tool for CreateCanvasTool {
                 }
             }
 
-            let abs = safe_join(&root, &rel)?;
-            let existed = abs.exists();
-            if existed && !args.overwrite {
-                return Ok(err_payload("file already exists"));
-            }
-            if let Some(parent) = abs.parent() {
-                fs::create_dir_all(parent)?;
-            }
             let nodes = args
                 .nodes
                 .into_iter()
@@ -844,8 +730,6 @@ impl Tool for CreateCanvasTool {
                     })
                 })
                 .collect::<Vec<_>>();
-            let node_count = nodes.len();
-            let edge_count = edges.len();
             let document = json!({
                 "type": "excalidraw",
                 "version": 2,
@@ -855,21 +739,24 @@ impl Tool for CreateCanvasTool {
                 "files": {},
                 "glyphCanvas": { "version": 1, "nodes": nodes, "edges": edges },
             });
-            let bytes = serde_json::to_vec_pretty(&document)
-                .map_err(|error| ToolError(error.to_string()))?;
-            io_atomic::write_atomic(&abs, &bytes).map_err(|error| ToolError(error.to_string()))?;
-            mark_recent_local_change(&ctx.recent, &rel);
-            let change = if existed {
-                SpaceChange::content(space_path(&root), rel.clone())
-            } else {
-                SpaceChange::create(space_path(&root), rel.clone())
-            };
-            emit_changed(&ctx.app, &ctx.window_label, &change);
-            Ok(ok(json!({
-                "path": rel,
-                "nodes_created": node_count,
-                "edges_created": edge_count,
-            })))
+            let text =
+                serde_json::to_string_pretty(&document).map_err(|e| ToolError(e.to_string()))?;
+            review::propose(
+                &WriteContext {
+                    root: &root,
+                    app: &ctx.app,
+                    window_label: &ctx.window_label,
+                    recent: &ctx.recent,
+                },
+                &ctx.job_id,
+                Proposal::Write {
+                    path: rel,
+                    text,
+                    create_only: !args.overwrite,
+                },
+                &ctx.cancel,
+            )
+            .map_err(|e| ToolError(e.to_string()))
         })
         .await
         .map_err(|error| ToolError(error.to_string()))?
@@ -886,24 +773,38 @@ pub struct ToolBundle {
     pub write_file: WriteFileTool,
     pub apply_patch: ApplyPatchTool,
     pub move_path: MoveTool,
-    pub mkdir: MkdirTool,
     pub delete: DeleteTool,
     pub create_canvas: CreateCanvasTool,
 }
 
 impl ToolBundle {
-    pub fn new(root: PathBuf, app: AppHandle, window_label: String, recent: RecentLocalChanges) -> Self {
+    pub fn new(
+        root: PathBuf,
+        app: AppHandle,
+        window_label: String,
+        recent: RecentLocalChanges,
+        job_id: String,
+        cancel: CancellationToken,
+    ) -> Self {
         let ctx = SpaceWriteCtx {
             app,
             window_label,
             recent,
+            job_id: job_id.clone(),
+            cancel,
         };
         Self {
             list_dir: ListDirTool { root: root.clone() },
             search: SearchTool { root: root.clone() },
             stat: StatTool { root: root.clone() },
-            read_file: ReadFileTool { root: root.clone() },
-            read_files_batch: ReadFilesBatchTool { root: root.clone() },
+            read_file: ReadFileTool {
+                root: root.clone(),
+                job_id: job_id.clone(),
+            },
+            read_files_batch: ReadFilesBatchTool {
+                root: root.clone(),
+                job_id,
+            },
             write_file: WriteFileTool {
                 root: root.clone(),
                 ctx: ctx.clone(),
@@ -916,7 +817,6 @@ impl ToolBundle {
                 root: root.clone(),
                 ctx: ctx.clone(),
             },
-            mkdir: MkdirTool { root: root.clone() },
             create_canvas: CreateCanvasTool {
                 root: root.clone(),
                 ctx: ctx.clone(),

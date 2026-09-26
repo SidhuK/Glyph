@@ -703,6 +703,32 @@ export type AiProviderKind =
 	| "opencode"
 	| "pi";
 
+export type AiOperationId = string & { readonly __brand: "AiOperationId" };
+export type AiNoteEditId = string & { readonly __brand: "AiNoteEditId" };
+
+export type AiEditDecision =
+	| { kind: "accept"; edit_id: AiNoteEditId }
+	| { kind: "reject"; edit_id: AiNoteEditId }
+	| { kind: "undo" }
+	| { kind: "resume" };
+
+export type AiEditFile = { readonly before: string | null; readonly after: string | null };
+export interface AiEditOperation {
+	readonly job_id: AiOperationId;
+	readonly created_at_ms: number;
+	readonly finished: boolean;
+	readonly recovery_required: boolean;
+	readonly edits: ReadonlyArray<{
+		readonly id: AiNoteEditId;
+		readonly status: "pending" | "accepted" | "rejected" | "undone";
+		readonly files: Readonly<Record<string, AiEditFile>>;
+	}>;
+}
+export interface AiEditResolution {
+	job_id: AiOperationId;
+	decision: AiEditDecision;
+}
+
 export type AiAssistantMode = "chat" | "create";
 
 interface AiHeader {
@@ -1124,6 +1150,7 @@ interface TauriCommands {
 				messages: AiMessage[];
 				thread_id?: string;
 				mode: AiAssistantMode;
+				immediate_edits?: boolean;
 				context?: string;
 				context_manifest?: unknown;
 				audit?: boolean;
@@ -1131,6 +1158,8 @@ interface TauriCommands {
 		},
 		AiChatStartResult
 	>;
+	ai_edits_list: CommandDef<{ thread_id: string }, AiEditOperation[]>;
+	ai_edits_resolve: CommandDef<AiEditResolution, void>;
 	ai_chat_cancel: CommandDef<{ job_id: string }, void>;
 	ai_models_list: CommandDef<{ profile_id: string; provider?: AiProviderKind | null }, AiModel[]>;
 	ai_chat_history_list: CommandDef<{ limit?: number | null }, AiChatHistorySummary[]>;
