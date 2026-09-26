@@ -9,6 +9,7 @@ import {
 } from "@codemirror/view";
 import { addGlyphInlineDecorations, findFrontmatterEnd } from "./contentDecorations";
 import { createRawMarkdownEventHandlers } from "./interactions";
+import { addLiveSyntaxDecoration, rawMarkdownLivePreview } from "./livePresentation";
 import { decorateRecognizedTable } from "./tableDecorations";
 
 const CALLOUT_PATTERN = /^\s*>\s*\[!([\w-]+)\][+-]?/i;
@@ -111,6 +112,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 		enter(node) {
 			const { name } = node.type;
 			if (name !== "Document" && node.from <= frontmatterTo) return false;
+			addLiveSyntaxDecoration(ranges, view, node.node);
 			const heading = name.match(/^(?:ATXHeading|SetextHeading)([1-6])$/);
 			if (heading?.[1]) {
 				addLineDecoration(
@@ -263,7 +265,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 		const last = view.state.doc.lineAt(visible.to).number;
 		for (let lineNumber = first; lineNumber <= last; lineNumber += 1) {
 			const line = view.state.doc.line(lineNumber);
-			addGlyphInlineDecorations(ranges, view, line.from, line.text);
+			if (line.from > frontmatterTo) addGlyphInlineDecorations(ranges, view, line.from, line.text);
 		}
 	}
 	return Decoration.set(ranges, true);
@@ -279,7 +281,14 @@ export function createRawMarkdownDecorations(getRelPath: () => string) {
 			}
 
 			update(update: ViewUpdate) {
-				if (update.docChanged || update.viewportChanged) {
+				if (
+					update.docChanged ||
+					update.viewportChanged ||
+					syntaxTree(update.startState) !== syntaxTree(update.state) ||
+					(update.selectionSet && update.state.facet(rawMarkdownLivePreview)) ||
+					update.startState.facet(rawMarkdownLivePreview) !==
+						update.state.facet(rawMarkdownLivePreview)
+				) {
 					this.decorations = buildVisibleDecorations(update.view);
 				}
 			}

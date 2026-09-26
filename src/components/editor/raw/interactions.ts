@@ -10,6 +10,7 @@ import {
 } from "../markdown/editorEvents";
 import { type FootnoteKind, findFootnoteCounterpartOffset } from "../markdown/footnote";
 import { parseWikiLink } from "../markdown/wikiLinkCodec";
+import { rawMarkdownLivePreview } from "./livePresentation";
 
 function toggleTask(view: EditorView, target: HTMLElement): boolean {
 	const markerPosition = Number(target.dataset.taskMarkerPosition);
@@ -53,7 +54,7 @@ function placeCaretAtEvent(view: EditorView, event: MouseEvent): boolean {
 export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 	return {
 		mousedown: (event: MouseEvent) => {
-			const target = event.target as Element | null;
+			const target = event.target instanceof Element ? event.target : null;
 			if (
 				target?.closest(
 					".cm-raw-task-checkbox, .cm-raw-wiki-link, .cm-raw-markdown-link, .cm-raw-tag, .cm-raw-footnote",
@@ -64,9 +65,17 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			return false;
 		},
 		click: (event: MouseEvent, view: EditorView) => {
-			const target = event.target as Element | null;
+			const target = event.target instanceof Element ? event.target : null;
 			const task = target?.closest<HTMLElement>(".cm-raw-task-checkbox");
 			if (task) return toggleTask(view, task);
+
+			if (
+				view.state.facet(rawMarkdownLivePreview) &&
+				!event.metaKey &&
+				target?.closest(".cm-raw-wiki-link, .cm-raw-markdown-link, .cm-raw-tag, .cm-raw-footnote")
+			) {
+				return placeCaretAtEvent(view, event);
+			}
 
 			const footnote = target?.closest<HTMLElement>(".cm-raw-footnote");
 			if (footnote?.dataset.footnoteId) {

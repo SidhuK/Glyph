@@ -154,6 +154,7 @@ export interface EditorSettings {
 	attachmentFolder: string | null;
 	enablePeopleMentionsAsTags: boolean;
 	rawMarkdownVimMode: boolean;
+	rawMarkdownLivePreview: boolean;
 	spellCheck: boolean;
 	showFormatBar: boolean;
 	zenMode: boolean;

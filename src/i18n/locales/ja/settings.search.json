@@ -503,6 +503,11 @@
 			"section": "エディタ",
 			"keywords": ["スペル", "誤字", "辞書", "spelling", "typo", "dictionary"]
 		},
+		"general-editor-raw-live-preview": {
+			"title": "RAWモードのライブMarkdown",
+			"section": "実験的",
+			"keywords": ["raw", "markdown", "vim", "live", "preview"]
+		},
 		"general-editor-vim-mode": {
 			"title": "Vim モード",
 			"section": "実験的",

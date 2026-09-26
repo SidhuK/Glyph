@@ -512,6 +512,11 @@
 			"section": "Editor",
 			"keywords": ["ortografía", "typo", "diccionario", "spelling", "dictionary"]
 		},
+		"general-editor-raw-live-preview": {
+			"title": "Markdown en vivo en modo RAW",
+			"section": "Experimental",
+			"keywords": ["raw", "markdown", "vim", "live", "preview"]
+		},
 		"general-editor-vim-mode": {
 			"title": "Modo Vim",
 			"section": "Experimental",
