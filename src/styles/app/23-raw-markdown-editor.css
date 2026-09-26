@@ -30,6 +30,28 @@
 	line-height: inherit;
 }
 
+/* Vim page motions need CodeMirror's own bounded scroll area. */
+.rfNodeNoteEditorRaw:has(> .cm-raw-vim) {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.rfNodeNoteEditorRaw .cm-editor.cm-raw-vim {
+	flex: 1;
+	min-height: 0;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-vim .cm-scroller {
+	min-height: 0;
+	overflow: auto;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-vim .cm-panels-bottom {
+	position: static;
+	flex-shrink: 0;
+}
+
 .rfNodeNoteEditorRaw .cm-content {
 	box-sizing: border-box;
 	width: 100%;
