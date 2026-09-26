@@ -34,13 +34,59 @@ fn parse_checklist_line(line: &str) -> Option<ChecklistLineMatch> {
     })
 }
 
-pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
+pub fn parse_checklist_items(markdown: &str) -> impl Iterator<Item = ParsedChecklistItem<'_>> {
+    let mut offset = 0;
+    let mut fence: Option<(char, usize)> = None;
+    let mut frontmatter = false;
+    let mut comment = false;
     markdown
-        .lines()
-        .filter_map(|line| {
-            parse_checklist_line(line).map(|m| ParsedChecklistItem { checked: m.checked })
+        .split_inclusive('\n')
+        .enumerate()
+        .filter_map(move |(line_number, segment)| {
+            let start = offset;
+            offset += segment.len();
+            let line = segment.trim_end_matches(['\r', '\n']);
+            let trimmed = line.trim_start();
+            if line_number == 0 && trimmed.trim_start_matches('\u{feff}') == "---" {
+                frontmatter = true;
+                return None;
+            }
+            if frontmatter {
+                if matches!(trimmed, "---" | "...") {
+                    frontmatter = false;
+                }
+                return None;
+            }
+            if let Some((marker, length)) = fence {
+                let count = trimmed.chars().take_while(|ch| *ch == marker).count();
+                if count >= length && trimmed[count..].trim().is_empty() {
+                    fence = None;
+                }
+                return None;
+            }
+            if comment || trimmed.starts_with("<!--") {
+                comment = !trimmed.contains("-->");
+                return None;
+            }
+            if let Some(marker @ ('`' | '~')) = trimmed.chars().next() {
+                let count = trimmed.chars().take_while(|ch| *ch == marker).count();
+                if count >= 3 {
+                    fence = Some((marker, count));
+                    return None;
+                }
+            }
+            parse_checklist_line(line).map(|parsed| {
+                let indent = line.len() - trimmed.len();
+                ParsedChecklistItem {
+                    checked: parsed.checked,
+                    start,
+                    end: start + line.len(),
+                    checkbox: start + indent + 3,
+                    line: line_number + 1,
+                    text: &trimmed[6..],
+                }
+            })
         })
-        .collect()
 }
 
 pub fn summarize_tasks(markdown: &str) -> NoteTaskSummary {

@@ -790,6 +790,35 @@ export interface RolloverCandidate {
 	source_mtime_ms: number;
 }
 
+export type TaskSchedule =
+	| { kind: "unscheduled"; reminder: string | null }
+	| {
+			kind: "dated";
+			due: string;
+			recurrence: "daily" | "weekly" | "monthly" | null;
+			reminder: string | null;
+	  };
+
+export interface InboxTask {
+	note_path: string;
+	etag: string;
+	start: number;
+	line: number;
+	text: string;
+	checked: boolean;
+	schedule: TaskSchedule;
+}
+
+export type TaskEdit =
+	| { kind: "complete"; checked: boolean }
+	| { kind: "schedule"; schedule: TaskSchedule };
+
+export type TaskUpdateRequest = Pick<InboxTask, "note_path" | "etag" | "start"> & {
+	space_path: string;
+	editor_markdown: string | null;
+	edit: TaskEdit;
+};
+
 export interface RolloverMoveItem {
 	id: string;
 	source_path: string;
@@ -1094,6 +1123,11 @@ interface TauriCommands {
 	people_list: CommandDef<{ limit?: number | null; offset?: number | null }, PersonCount[]>;
 	task_summary: CommandDef<{ markdown: string }, NoteTaskSummary>;
 	task_summaries_for_paths: CommandDef<{ note_paths: string[] }, NoteTaskSummaryItem[]>;
+	task_inbox_list: CommandDef<{ space_path: string }, InboxTask[]>;
+	task_inbox_update: CommandDef<
+		{ request: TaskUpdateRequest },
+		{ kind: "saved" } | { kind: "index_failed" }
+	>;
 	backlinks: CommandDef<{ note_id: string; space_path?: string | null }, BacklinkItem[]>;
 	unlinked_mentions: CommandDef<{ note_id: string }, UnlinkedMentionsResult>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
