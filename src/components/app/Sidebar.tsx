@@ -4,6 +4,7 @@ import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
 import type { SpaceDefinition } from "../../lib/spaceRegistry";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
+import { RecoveryButton } from "../recovery/RecoveryButton";
 import { SidebarContent, type SidebarContentProps } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSettingsContent } from "./SidebarSettingsContent";
@@ -81,6 +82,7 @@ export const Sidebar = memo(function Sidebar({
 								<SidebarContent key={activeSpacePath ?? "no-space"} {...contentProps} />
 								<div className="sidebarBottomLayer">
 									{spaceSwitcher}
+									<RecoveryButton key={activeSpacePath} />
 									<LicenseStatusFooter />
 								</div>
 							</>

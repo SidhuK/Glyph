@@ -286,8 +286,10 @@ pub async fn space_rename_path(
     let emit_to = to_path.clone();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let list_collapse_state_mutex = state.list_collapse_state_mutex();
+    let note_mutation_mutex = state.note_mutation_mutex();
     let (rewrite_result, recursive) = tauri::async_runtime::spawn_blocking(
         move || -> Result<(LinkRewriteResult, bool), String> {
+        let _guard = note_mutation_mutex.lock().map_err(|_| "note mutation mutex poisoned".to_string())?;
         let from_rel = PathBuf::from(&from_path);
         let to_rel = PathBuf::from(&to_path);
         deny_hidden_rel_path(&from_rel)?;
@@ -314,6 +316,7 @@ pub async fn space_rename_path(
         } else {
             None
         };
+        crate::recovery::capture_tree(&root, &from_rel)?;
         std::fs::rename(&from_abs, &to_abs).map_err(|e| e.to_string())?;
         reindex_after_rename(
             &root,
@@ -421,7 +424,11 @@ pub async fn space_delete_path(
     let emit_path = path.clone();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let list_collapse_state_mutex = state.list_collapse_state_mutex();
+    let note_mutation_mutex = state.note_mutation_mutex();
     let recursive_delete = tauri::async_runtime::spawn_blocking(move || -> Result<bool, String> {
+        let _guard = note_mutation_mutex
+            .lock()
+            .map_err(|_| "note mutation mutex poisoned".to_string())?;
         let rel = PathBuf::from(&path);
         if rel.as_os_str().is_empty() {
             return Err("path is required".to_string());
@@ -429,6 +436,7 @@ pub async fn space_delete_path(
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
         let meta = std::fs::metadata(&abs).map_err(|e| e.to_string())?;
+        crate::recovery::capture_tree(&root, &rel)?;
         if meta.is_dir() {
             if recursive.unwrap_or(false) {
                 move_path_to_trash(&abs)

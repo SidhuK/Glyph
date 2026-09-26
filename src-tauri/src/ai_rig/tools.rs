@@ -11,7 +11,7 @@ use rig::tool::Tool;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::json;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::note_mutation::{
     commit_markdown, emit_changed, reindex_after_rename, unindex_path, CommitCtx, PersistMode,
@@ -512,43 +512,51 @@ impl Tool for WriteFileTool {
         tool_definition::<WriteFileArgs>(Self::NAME, "Create or overwrite a file.")
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let rel = normalize_rel_path(&args.path)?;
-        let abs = safe_join(&self.root, &args.path)?;
-        if let Some(parent) = abs.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        let exists = abs.exists();
-        let mode = args.mode.unwrap_or_else(|| "overwrite".to_string());
-        if exists && mode == "create_only" {
-            return Ok(err_payload("file already exists"));
-        }
-        if utils::is_markdown_path(&abs) {
-            match commit_markdown_tool(
-                &self.root,
-                &self.ctx,
-                &rel,
-                &args.content,
-                mode == "create_only",
-            ) {
-                Ok(_) => {}
-                Err(error) if error.0.contains("already exists") => {
-                    return Ok(err_payload("file already exists"));
-                }
-                Err(error) => return Err(error),
+        let root = self.root.clone();
+        let ctx = self.ctx.clone();
+        tauri::async_runtime::spawn_blocking(move || {
+            let mutex = ctx
+                .app
+                .state::<crate::space::SpaceState>()
+                .note_mutation_mutex();
+            let _guard = mutex
+                .lock()
+                .map_err(|_| ToolError("note mutation mutex poisoned".to_string()))?;
+            let rel = normalize_rel_path(&args.path)?;
+            let abs = safe_join(&root, &args.path)?;
+            if let Some(parent) = abs.parent() {
+                fs::create_dir_all(parent)?;
             }
-        } else {
-            io_atomic::write_atomic(&abs, args.content.as_bytes())
-                .map_err(|e| ToolError(e.to_string()))?;
-            let change = if exists {
-                SpaceChange::content(space_path(&self.root), rel)
+            let exists = abs.exists();
+            let mode = args.mode.unwrap_or_else(|| "overwrite".to_string());
+            if exists && mode == "create_only" {
+                return Ok(err_payload("file already exists"));
+            }
+            if utils::is_markdown_path(&abs) {
+                match commit_markdown_tool(&root, &ctx, &rel, &args.content, mode == "create_only")
+                {
+                    Ok(_) => {}
+                    Err(error) if error.0.contains("already exists") => {
+                        return Ok(err_payload("file already exists"));
+                    }
+                    Err(error) => return Err(error),
+                }
             } else {
-                SpaceChange::create(space_path(&self.root), rel)
-            };
-            emit_changed(&self.ctx.app, &self.ctx.window_label, &change);
-        }
-        Ok(ok(
-            json!({"path": args.path, "bytes_written": args.content.len()}),
-        ))
+                io_atomic::write_atomic(&abs, args.content.as_bytes())
+                    .map_err(|e| ToolError(e.to_string()))?;
+                let change = if exists {
+                    SpaceChange::content(space_path(&root), rel)
+                } else {
+                    SpaceChange::create(space_path(&root), rel)
+                };
+                emit_changed(&ctx.app, &ctx.window_label, &change);
+            }
+            Ok(ok(
+                json!({"path": args.path, "bytes_written": args.content.len()}),
+            ))
+        })
+        .await
+        .map_err(|error| ToolError(error.to_string()))?
     }
 }
 
@@ -576,28 +584,42 @@ impl Tool for ApplyPatchTool {
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let abs = safe_join(&self.root, &args.path)?;
-        let text = fs::read_to_string(&abs).map_err(|e| ToolError(e.to_string()))?;
-        let updated = if args.all.unwrap_or(false) {
-            text.replace(&args.find, &args.replace)
-        } else {
-            text.replacen(&args.find, &args.replace, 1)
-        };
-        if updated == text {
-            return Ok(err_payload("no matching text for patch"));
-        }
-        let rel = normalize_rel_path(&args.path)?;
-        if utils::is_markdown_path(&abs) {
-            commit_markdown_tool(&self.root, &self.ctx, &rel, &updated, false)?;
-        } else {
-            io_atomic::write_atomic(&abs, updated.as_bytes()).map_err(|e| ToolError(e.to_string()))?;
-            emit_changed(
-                &self.ctx.app,
-                &self.ctx.window_label,
-                &SpaceChange::content(space_path(&self.root), rel),
-            );
-        }
-        Ok(ok(json!({"path": args.path, "patched": true})))
+        let root = self.root.clone();
+        let ctx = self.ctx.clone();
+        tauri::async_runtime::spawn_blocking(move || {
+            let mutex = ctx
+                .app
+                .state::<crate::space::SpaceState>()
+                .note_mutation_mutex();
+            let _guard = mutex
+                .lock()
+                .map_err(|_| ToolError("note mutation mutex poisoned".to_string()))?;
+            let abs = safe_join(&root, &args.path)?;
+            let text = fs::read_to_string(&abs).map_err(|e| ToolError(e.to_string()))?;
+            let updated = if args.all.unwrap_or(false) {
+                text.replace(&args.find, &args.replace)
+            } else {
+                text.replacen(&args.find, &args.replace, 1)
+            };
+            if updated == text {
+                return Ok(err_payload("no matching text for patch"));
+            }
+            let rel = normalize_rel_path(&args.path)?;
+            if utils::is_markdown_path(&abs) {
+                commit_markdown_tool(&root, &ctx, &rel, &updated, false)?;
+            } else {
+                io_atomic::write_atomic(&abs, updated.as_bytes())
+                    .map_err(|e| ToolError(e.to_string()))?;
+                emit_changed(
+                    &ctx.app,
+                    &ctx.window_label,
+                    &SpaceChange::content(space_path(&root), rel),
+                );
+            }
+            Ok(ok(json!({"path": args.path, "patched": true})))
+        })
+        .await
+        .map_err(|error| ToolError(error.to_string()))?
     }
 }
 
@@ -624,31 +646,43 @@ impl Tool for MoveTool {
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let src = safe_join(&self.root, &args.src)?;
-        let dest = safe_join(&self.root, &args.dest)?;
-        if let Some(parent) = dest.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        if dest.exists() && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
-            return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"src": args.src, "dest": args.dest, "action": "overwrite_move"}}).to_string());
-        }
-        fs::rename(&src, &dest)?;
-        let from = normalize_rel_path(&args.src)?;
-        let to = normalize_rel_path(&args.dest)?;
-        reindex_after_rename(
-            &self.root,
-            &from,
-            &to,
-            &dest,
-            dest.is_dir(),
-            &self.ctx.recent,
-        );
-        emit_changed(
-            &self.ctx.app,
-            &self.ctx.window_label,
-            &SpaceChange::rename(space_path(&self.root), from, to, dest.is_dir()),
-        );
-        Ok(ok(json!({"src": args.src, "dest": args.dest})))
+        let root = self.root.clone();
+        let ctx = self.ctx.clone();
+        tauri::async_runtime::spawn_blocking(move || {
+            let mutex = ctx.app.state::<crate::space::SpaceState>().note_mutation_mutex();
+            let _guard = mutex.lock().map_err(|_| ToolError("note mutation mutex poisoned".to_string()))?;
+            let src = safe_join(&root, &args.src)?;
+            let dest = safe_join(&root, &args.dest)?;
+            if let Some(parent) = dest.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            if dest.exists() && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
+                return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"src": args.src, "dest": args.dest, "action": "overwrite_move"}}).to_string());
+            }
+            let from = normalize_rel_path(&args.src)?;
+            let to = normalize_rel_path(&args.dest)?;
+            crate::recovery::capture_tree(&root, Path::new(&from))?;
+            if dest.exists() {
+                crate::recovery::capture_tree(&root, Path::new(&to))?;
+            }
+            fs::rename(&src, &dest)?;
+            reindex_after_rename(
+                &root,
+                &from,
+                &to,
+                &dest,
+                dest.is_dir(),
+                &ctx.recent,
+            );
+            emit_changed(
+                &ctx.app,
+                &ctx.window_label,
+                &SpaceChange::rename(space_path(&root), from, to, dest.is_dir()),
+            );
+            Ok(ok(json!({"src": args.src, "dest": args.dest})))
+        })
+        .await
+        .map_err(|error| ToolError(error.to_string()))?
     }
 }
 
@@ -703,31 +737,42 @@ impl Tool for DeleteTool {
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let abs = safe_join(&self.root, &args.path)?;
-        let recursive = args.recursive.unwrap_or(false);
-        if (recursive || abs.is_dir()) && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
-            return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"path": args.path, "recursive": recursive, "action": "delete"}}).to_string());
-        }
-        let is_dir = abs.is_dir();
-        if abs.is_dir() {
-            if recursive {
-                fs::remove_dir_all(&abs)?;
-            } else {
-                fs::remove_dir(&abs)?;
+        let root = self.root.clone();
+        let ctx = self.ctx.clone();
+        tauri::async_runtime::spawn_blocking(move || {
+            let mutex = ctx.app.state::<crate::space::SpaceState>().note_mutation_mutex();
+            let _guard = mutex.lock().map_err(|_| ToolError("note mutation mutex poisoned".to_string()))?;
+            let abs = safe_join(&root, &args.path)?;
+            let recursive = args.recursive.unwrap_or(false);
+            if (recursive || abs.is_dir()) && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
+                return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"path": args.path, "recursive": recursive, "action": "delete"}}).to_string());
             }
-        } else if abs.exists() {
-            fs::remove_file(&abs)?;
-        } else {
-            return Ok(err_payload("path not found"));
-        }
-        let rel = normalize_rel_path(&args.path)?;
-        unindex_path(&self.root, &rel, &abs, &self.ctx.recent, is_dir);
-        emit_changed(
-            &self.ctx.app,
-            &self.ctx.window_label,
-            &SpaceChange::remove(space_path(&self.root), rel, is_dir),
-        );
-        Ok(ok(json!({"path": args.path, "deleted": true})))
+            if abs.exists() {
+                crate::recovery::capture_tree(&root, Path::new(&normalize_rel_path(&args.path)?))?;
+            }
+            let is_dir = abs.is_dir();
+            if abs.is_dir() {
+                if recursive {
+                    fs::remove_dir_all(&abs)?;
+                } else {
+                    fs::remove_dir(&abs)?;
+                }
+            } else if abs.exists() {
+                fs::remove_file(&abs)?;
+            } else {
+                return Ok(err_payload("path not found"));
+            }
+            let rel = normalize_rel_path(&args.path)?;
+            unindex_path(&root, &rel, &abs, &ctx.recent, is_dir);
+            emit_changed(
+                &ctx.app,
+                &ctx.window_label,
+                &SpaceChange::remove(space_path(&root), rel, is_dir),
+            );
+            Ok(ok(json!({"path": args.path, "deleted": true})))
+        })
+        .await
+        .map_err(|error| ToolError(error.to_string()))?
     }
 }
 
