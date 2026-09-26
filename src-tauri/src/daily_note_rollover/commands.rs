@@ -220,6 +220,11 @@ pub async fn daily_note_rollover_move(
             })
             .collect::<Result<BTreeMap<_, _>, _>>()?;
 
+        for (path, original) in &originals {
+            if let Some(text) = original {
+                crate::recovery::capture(&root, path, text)?;
+            }
+        }
         let mut committed = Vec::<String>::new();
         for (path, text) in &rewritten {
             let abs = &absolute_paths[path];

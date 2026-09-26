@@ -618,6 +618,24 @@ export interface GitSyncStatus {
 	message: string | null;
 }
 
+export type RecoverySnapshotId = number & { readonly __brand: "RecoverySnapshotId" };
+
+export interface RecoverySnapshot {
+	readonly id: RecoverySnapshotId;
+	readonly path: string;
+	readonly timestamp_ms: number;
+	readonly deleted: boolean;
+}
+
+export type RecoveryCurrentNote =
+	| { readonly kind: "missing" }
+	| { readonly kind: "present"; readonly text: string; readonly etag: string };
+
+export interface RecoveryPreview extends Pick<RecoverySnapshot, "id" | "path"> {
+	readonly text: string;
+	readonly current: RecoveryCurrentNote;
+}
+
 export interface GitHistoryCommit {
 	hash: string;
 	short_hash: string;
@@ -1106,6 +1124,17 @@ interface TauriCommands {
 	git_sync_commit_message_prompt: CommandDef<
 		{ request: GitSyncCommitMessagePromptRequest },
 		string | null
+	>;
+	recovery_list: CommandDef<{ space_path: string; path: string | null }, RecoverySnapshot[]>;
+	recovery_preview: CommandDef<{ space_path: string; id: RecoverySnapshotId }, RecoveryPreview>;
+	recovery_restore: CommandDef<
+		{
+			space_path: string;
+			id: RecoverySnapshotId;
+			expected_path: string;
+			expected_etag: string | null;
+		},
+		void
 	>;
 	git_history_list: CommandDef<{ path: string; limit?: number | null }, GitHistoryCommit[]>;
 	git_history_diff: CommandDef<{ path: string; commit: GitHistoryCommit }, GitCommitDiff>;

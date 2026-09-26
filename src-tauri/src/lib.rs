@@ -31,6 +31,7 @@ mod notes;
 mod paths;
 mod pinned_files;
 mod print;
+mod recovery;
 mod release_channels;
 mod space;
 mod space_asset_protocol;
@@ -1896,6 +1897,9 @@ pub fn run() {
             git_sync::commands::git_sync_config_update,
             git_sync::commands::git_sync_run,
             git_sync::commands::git_sync_commit_message_prompt,
+            recovery::commands::recovery_list,
+            recovery::commands::recovery_preview,
+            recovery::commands::recovery_restore,
             git_sync::commands::git_history_list,
             git_sync::commands::git_history_diff,
             space::commands::space_create,

@@ -53,6 +53,7 @@ pub fn rewrite_links_after_rename(
         let rewrite = rewrite_markdown_links_for_path(&original, plan, &rel_path);
 
         if rewrite.markdown != original {
+            crate::recovery::capture(space_root, &rel_path, &original)?;
             rewrites.push((rel_path, abs, rewrite.markdown, rewrite.changed_links));
         }
     }

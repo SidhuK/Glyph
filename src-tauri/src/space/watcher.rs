@@ -108,6 +108,9 @@ pub fn create_notes_watcher(
     let index_window_label = window_label.clone();
     let index_space_path = root.to_string_lossy().to_string();
     std::thread::spawn(move || {
+        if let Err(error) = crate::recovery::capture_existing(&root_idx) {
+            tracing::warn!(%error, "could not initialize local recovery snapshots");
+        }
         let debounce = std::time::Duration::from_millis(DEBOUNCE_MS);
         let mut pending = HashMap::new();
         loop {
@@ -151,6 +154,9 @@ pub fn create_notes_watcher(
                         Err(_) => continue,
                     };
                     if let Ok(markdown) = std::fs::read_to_string(&abs) {
+                        if let Err(error) = crate::recovery::capture(&root_idx, &rel_s, &markdown) {
+                            tracing::warn!(%error, "external note change could not be snapshotted");
+                        }
                         index::index_note_with_conn(&conn, &rel_s, &markdown, &abs)
                     } else {
                         continue;
