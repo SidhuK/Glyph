@@ -138,6 +138,10 @@ Glyph's source is available under the [GNU Affero General Public License v3.0](L
 - Releases: [GitHub Releases](https://github.com/SidhuK/Glyph/releases)
 - Purchase: [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay)
 
+## PopClip
+
+Save selected text from other apps into a new Glyph note with the [PopClip extension](integrations/popclip/README.md). Installation and space configuration instructions are included there.
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development setup, project conventions, and pull request guidance.

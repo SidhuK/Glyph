@@ -149,7 +149,8 @@ pub fn handle_url(app: &AppHandle, raw: &str, source: DeeplinkSource) {
     match parse_deeplink_url(raw).and_then(validate_action) {
         Ok(action) => dispatch_action(app, &state, action),
         Err(error) => {
-            warn!("Rejected deeplink {raw}: {error}");
+            // URLs may contain captured note text or other private query data.
+            warn!(code = error.code(), "Rejected deeplink");
             dispatch_error(app, &state, &error);
         }
     }

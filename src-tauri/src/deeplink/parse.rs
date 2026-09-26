@@ -12,6 +12,7 @@ pub enum DeeplinkAction {
     OpenSpace { space: String },
     Search { space: String, q: String },
     OpenDailyNote { space: String },
+    CreateNote { space: String, text: String },
 }
 
 impl DeeplinkAction {
@@ -20,6 +21,7 @@ impl DeeplinkAction {
             Self::OpenNote { space, .. }
             | Self::OpenSpace { space }
             | Self::Search { space, .. }
+            | Self::CreateNote { space, .. }
             | Self::OpenDailyNote { space } => space,
         }
     }
@@ -96,7 +98,8 @@ impl std::error::Error for DeeplinkError {}
 /// Parse a raw `glyph://…` URL into a typed action (ADR 013 allowlist only).
 pub fn parse_deeplink_url(raw: &str) -> Result<DeeplinkAction, DeeplinkError> {
     let trimmed = raw.trim();
-    if trimmed.is_empty() {
+    // Bound externally supplied content before allocating decoded query values.
+    if trimmed.is_empty() || trimmed.len() > 256 * 1024 {
         return Err(DeeplinkError::InvalidUrl);
     }
 
@@ -112,6 +115,23 @@ pub fn parse_deeplink_url(raw: &str) -> Result<DeeplinkAction, DeeplinkError> {
     let params = collect_query_params(&url)?;
 
     match route.as_str() {
+        "create/note" => {
+            expect_only_keys(&params, &["space", "text"])?;
+            let space = require_space(&params)?;
+            let text = params
+                .get("text")
+                .ok_or(DeeplinkError::MissingParam("text"))?;
+            if text.trim().is_empty() {
+                return Err(DeeplinkError::EmptyParam("text"));
+            }
+            if text.len() > 64 * 1024 || text.contains('\0') {
+                return Err(DeeplinkError::InvalidUrl);
+            }
+            Ok(DeeplinkAction::CreateNote {
+                space,
+                text: text.clone(),
+            })
+        }
         "open/note" => {
             expect_only_keys(&params, &["space", "path"])?;
             let space = require_space(&params)?;
@@ -312,6 +332,51 @@ mod tests {
             }
         }
         out
+    }
+
+    #[test]
+    fn parses_capture_without_changing_content() {
+        let space = abs_space();
+        let text = "  # Clip\n\n雪 📝 & + % ? #\n\tindented\n";
+        assert_eq!(
+            parse_deeplink_url(&format!(
+                "glyph://create/note?space={}&text={}",
+                encode(&space),
+                encode(text)
+            )),
+            Ok(DeeplinkAction::CreateNote {
+                space,
+                text: text.to_string(),
+            })
+        );
+    }
+
+    #[test]
+    fn capture_rejects_invalid_content_and_parameters() {
+        let prefix = format!("glyph://create/note?space={}", encode(&abs_space()));
+        assert_eq!(
+            parse_deeplink_url(&prefix),
+            Err(DeeplinkError::MissingParam("text"))
+        );
+        assert_eq!(
+            parse_deeplink_url(&format!("{prefix}&text=%20%0A")),
+            Err(DeeplinkError::EmptyParam("text"))
+        );
+        for query in [
+            "text=%00",
+            "text=hello&text=again",
+            "text=hello&path=existing.md",
+            "text=hello#fragment",
+        ] {
+            assert!(parse_deeplink_url(&format!("{prefix}&{query}")).is_err());
+        }
+        assert!(parse_deeplink_url("glyph://create/note?text=hello").is_err());
+        assert!(parse_deeplink_url("glyph://create/note?space=relative&text=hello").is_err());
+        let limit = "a".repeat(64 * 1024);
+        assert!(parse_deeplink_url(&format!("{prefix}&text={limit}")).is_ok());
+        assert!(parse_deeplink_url(&format!("{prefix}&text={limit}a")).is_err());
+        let unicode_over_limit = encode(&"雪".repeat(22_000));
+        assert!(parse_deeplink_url(&format!("{prefix}&text={unicode_over_limit}")).is_err());
     }
 
     #[test]

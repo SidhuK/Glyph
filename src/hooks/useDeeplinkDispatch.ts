@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { type DeeplinkErrorPayload, type DeeplinkEvent, isSameSpacePath } from "../lib/deeplink";
@@ -30,13 +31,35 @@ export interface UseDeeplinkDispatchOptions {
 }
 
 /**
- * Routes native `glyph://` deeplinks onto the existing open/search/daily flows.
+ * Routes native `glyph://` deeplinks onto the existing note and search flows.
  * Native code has already validated the space and note, so failures arrive as
  * `deeplink:error` codes rather than being re-checked here.
  */
 export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 	const { spacePath, settingsSpacePath, settingsLoaded } = options;
 	const { t } = useTranslation("shell");
+	const { mutateAsync: createNote } = useMutation({
+		retry: false,
+		mutationFn: async (event: Extract<DeeplinkEvent, { kind: "create_note" }>) => {
+			// Leave room for the suffix even when every character uses four UTF-8 bytes.
+			const title =
+				Array.from(event.text.split(/\r?\n/, 1)[0] ?? "")
+					.slice(0, 45)
+					.map((char) => (char < " " || char === "\u007f" ? " " : char))
+					.join("")
+					.replace(/[/\\:]/g, " ")
+					.replace(/^[.\s]+/, "")
+					.trim() || t("folio.untitled");
+			const path = `${title} - ${crypto.randomUUID()}.md`;
+			const result = await invoke("space_open_or_create_text", {
+				path,
+				text: event.text,
+				space_path: event.space,
+			});
+			if (!result.created) throw new Error("Capture destination already exists");
+			return path;
+		},
+	});
 
 	const optionsRef = useRef(options);
 	optionsRef.current = options;
@@ -117,6 +140,15 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 					return;
 				}
 				switch (event.kind) {
+					case "create_note": {
+						const path = await createNote(event);
+						if (!isSameSpacePath(optionsRef.current.spacePath, event.space)) {
+							showError();
+							return;
+						}
+						await optionsRef.current.openWorkspaceFile(path);
+						return;
+					}
 					case "open_space":
 						return;
 					case "open_note":
@@ -143,12 +175,13 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 						return _exhaustive;
 					}
 				}
-			} catch (error) {
-				console.error("Failed to run deeplink", error);
+			} catch {
+				// Filesystem errors can include filenames derived from captured text.
+				console.error("Failed to run deeplink", { id: event.id, kind: event.kind });
 				showError();
 			}
 		},
-		[ensureSpace, showError, waitForState],
+		[createNote, ensureSpace, showError, waitForState],
 	);
 
 	const processQueue = useCallback(async () => {
