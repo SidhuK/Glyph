@@ -280,6 +280,10 @@
 		"highlightClear": {
 			"title": "Highlight: Clear",
 			"description": "Remove text highlight"
+		},
+		"collection": {
+			"title": "Collection",
+			"description": "Embed a live, filtered collection view"
 		}
 	},
 	"tableControls": {
@@ -303,5 +307,23 @@
 		"close": "Close peek",
 		"loading": "Loading note…",
 		"empty": "This note is empty."
+	},
+	"collectionEmbed": {
+		"title": "Live collection",
+		"collection": "Collection",
+		"view": "Saved view",
+		"chooseCollection": "Choose a collection",
+		"chooseView": "Choose a view",
+		"help": "Shows the saved view’s filters and sorting. Edit the view in Collections to change which notes appear.",
+		"loading": "Loading collection…",
+		"empty": "No notes match this view.",
+		"unavailable": "Collection or view unavailable",
+		"invalid": "This collection embed has an invalid reference.",
+		"retry": "Retry",
+		"remove": "Remove embed",
+		"previous": "Previous",
+		"next": "Next",
+		"count_one": "{{count}} note",
+		"count_other": "{{count}} notes"
 	}
 }
