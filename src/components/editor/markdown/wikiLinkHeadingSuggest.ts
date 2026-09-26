@@ -66,7 +66,7 @@ export async function suggestWikiLinkItems({
 	query,
 }: SuggestWikiLinkItemsOptions): Promise<EditorLinkSuggestion[]> {
 	const parsed = splitWikiLinkQuery(query);
-	if (embedOnly) {
+	if (embedOnly && parsed.kind === "file") {
 		return suggestWikiLinks({
 			query: parsed.target || query,
 			embedOnly: true,

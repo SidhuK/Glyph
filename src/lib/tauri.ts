@@ -970,6 +970,13 @@ interface TauriCommands {
 	space_resolve_abs_path: CommandDef<{ path: string }, string>;
 	space_reveal_path: CommandDef<{ path: string }, void>;
 	space_relativize_path: CommandDef<{ abs_path: string }, string>;
+	space_read_wiki_embeds_batch: CommandDef<
+		{ targets: string[] },
+		(
+			| { kind: "ready"; target: string; path: string; text: string }
+			| { kind: "error"; target: string; message: string }
+		)[]
+	>;
 	space_resolve_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_image_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_markdown_link: CommandDef<{ href: string; sourcePath: string }, string | null>;

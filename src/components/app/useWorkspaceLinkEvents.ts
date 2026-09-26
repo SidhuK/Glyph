@@ -131,7 +131,7 @@ export function useWorkspaceLinkEvents({
 					const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 					if (!normalizedTarget) return;
 
-					if (detail.embed || isImagePath(normalizedTarget)) {
+					if (isImagePath(normalizedTarget)) {
 						const resolvedImage = await invoke("space_resolve_image_wikilink", {
 							target: normalizedTarget,
 						});

@@ -1,4 +1,4 @@
-import { isImagePath } from "../utils/path";
+import { isImagePath, isMarkdownPath } from "../utils/path";
 import { invoke } from "./tauri";
 
 export type EditorLinkSuggestion =
@@ -70,7 +70,7 @@ export async function suggestWikiLinks({
 		},
 	});
 	return results
-		.filter((item) => !embedOnly || isImageTarget(item.path))
+		.filter((item) => !embedOnly || isImageTarget(item.path) || isMarkdownPath(item.path))
 		.slice(0, limit)
 		.map(toEditorSuggestion);
 }

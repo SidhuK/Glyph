@@ -1,3 +1,4 @@
+import type { QueryFilters } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 import { normalizeRelPath, parentDir } from "../utils/path";
 import { invalidateCalendarPrefetch } from "./calendarActivity";
@@ -107,6 +108,23 @@ export function applySpaceChange(change: SpaceChange): void {
 		for (const child of change.changes) applySpaceChange(child);
 		return;
 	}
+	const embedQueries = {
+		queryKey: ["navigation", "wiki-embed"],
+		predicate: (query) => {
+			if (change.kind !== "content") return true;
+			const data: unknown = query.state.data;
+			return (
+				!data ||
+				(typeof data === "object" &&
+					"path" in data &&
+					data.path === normalizeRelPath(change.rel_path))
+			);
+		},
+	} satisfies QueryFilters;
+	// Cancel in-flight reads too, so a change during the first load cannot leave stale content.
+	void queryClient
+		.cancelQueries(embedQueries)
+		.then(() => queryClient.invalidateQueries(embedQueries));
 	if (change.kind === "rename") {
 		const from = normalizeRelPath(change.from_path);
 		const to = normalizeRelPath(change.to_path);
