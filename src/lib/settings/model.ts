@@ -1,5 +1,6 @@
 import type { AppLanguage } from "../../i18n/locales";
 import type { ConnectionsGraphOptions } from "../connectionsGraphOptions";
+import type { MarkdownFormatterSettings } from "../markdownFormatter";
 import type { CustomTheme } from "../customThemes";
 import type { DateDisplayFormat } from "../dateDisplayFormat";
 import type { EditorViewMode } from "../editorMode";
@@ -141,6 +142,7 @@ export interface NoteCreationSettings {
 }
 
 export interface EditorSettings {
+	markdownFormatter: MarkdownFormatterSettings;
 	showCollapsibleHeadings: boolean;
 	showCollapsibleLists: boolean;
 	showFrontmatterInEditor: boolean;

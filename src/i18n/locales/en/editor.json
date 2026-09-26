@@ -303,5 +303,23 @@
 		"close": "Close peek",
 		"loading": "Loading note…",
 		"empty": "This note is empty."
+	},
+	"formatter": {
+		"saveFailed": "Markdown formatting failed. Your edits have not been saved. {{detail}}",
+		"errors": {
+			"unavailable": "The formatter is unavailable.",
+			"settingsUnavailable": "Could not read formatter settings.",
+			"invalidSettings": "Review the executable path, arguments, and config filename in Settings.",
+			"outsideSpace": "The note or formatter config resolves outside this Space.",
+			"invalidConfig": "The formatter config must be a file.",
+			"configUnreadable": "Could not read the formatter config or note folder.",
+			"startFailed": "Could not start the formatter. Check its executable path and installation.",
+			"ioFailed": "Could not communicate with the formatter.",
+			"outputTooLarge": "Formatter output exceeds 16 MiB.",
+			"invalidOutput": "The formatter returned text that is not valid UTF-8.",
+			"emptyOutput": "The formatter returned empty output for a nonempty note.",
+			"processFailed": "The formatter exited unsuccessfully. Review its configuration and installed plugins.",
+			"timedOut": "The formatter exceeded the 10-second time limit."
+		}
 	}
 }
