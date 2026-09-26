@@ -108,6 +108,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "general-editor-zen-mode", tab: "experimental" },
 	{ id: "general-editor-focus-mode", tab: "experimental" },
 	{ id: "general-editor-vim-mode", tab: "experimental" },
+	{ id: "general-editor-raw-live-preview", tab: "experimental" },
 	{ id: "ai-assistant-behavior-tools", tab: "ai" },
 	{ id: "appearance-layout-folio-mode", tab: "appearance" },
 	{ id: "appearance-layout-folio-sort", tab: "appearance" },

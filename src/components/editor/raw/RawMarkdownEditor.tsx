@@ -1,23 +1,13 @@
 import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import {
-	forwardRef,
-	useCallback,
-	useEffect,
-	useImperativeHandle,
-	useLayoutEffect,
-	useRef,
-} from "react";
-import {
-	applyDomSpellCheck,
-	useEditorSpellCheck,
-	useRawMarkdownVimMode,
-} from "../hooks/useEditorSpellCheck";
+import { forwardRef, useCallback, useImperativeHandle, useLayoutEffect, useRef } from "react";
+import { applyDomSpellCheck, useRawMarkdownSettings } from "../hooks/useEditorSpellCheck";
 import {
 	createRawMarkdownExtensions,
 	createRawMarkdownVimMode,
 	externalRawMarkdownUpdate,
 } from "./extensions";
+import { rawMarkdownLivePreview } from "./livePresentation";
 import type { RawMarkdownEditorHandle } from "./types";
 
 const RAW_MARKDOWN_CHANGE_DEBOUNCE_MS = 120;
@@ -53,8 +43,12 @@ export const RawMarkdownEditor = forwardRef<RawMarkdownEditorHandle, RawMarkdown
 		const hasPendingChangeRef = useRef(false);
 		const lastEmittedMarkdownRef = useRef(markdown);
 		const vimModeCompartmentRef = useRef(new Compartment());
-		const spellCheckEnabled = useEditorSpellCheck();
-		const vimModeEnabled = useRawMarkdownVimMode();
+		const livePreviewCompartmentRef = useRef(new Compartment());
+		const {
+			spellCheck: spellCheckEnabled,
+			rawMarkdownVimMode: vimModeEnabled,
+			rawMarkdownLivePreview: livePreviewEnabled,
+		} = useRawMarkdownSettings();
 		const vimModeEnabledRef = useRef(vimModeEnabled);
 		vimModeEnabledRef.current = vimModeEnabled;
 
@@ -75,18 +69,6 @@ export const RawMarkdownEditor = forwardRef<RawMarkdownEditorHandle, RawMarkdown
 			onChangeRef.current(nextMarkdown);
 		}, []);
 
-		useEffect(() => {
-			applyDomSpellCheck(viewRef.current?.contentDOM, spellCheckEnabled);
-		}, [spellCheckEnabled]);
-
-		useEffect(() => {
-			viewRef.current?.dispatch({
-				effects: vimModeCompartmentRef.current.reconfigure(
-					createRawMarkdownVimMode(vimModeEnabled),
-				),
-			});
-		}, [vimModeEnabled]);
-
 		useLayoutEffect(() => {
 			const host = hostRef.current;
 			if (!host) return;
@@ -106,7 +88,10 @@ export const RawMarkdownEditor = forwardRef<RawMarkdownEditorHandle, RawMarkdown
 							);
 						},
 						() => relPathRef.current ?? "",
-						vimModeCompartmentRef.current.of(createRawMarkdownVimMode(vimModeEnabledRef.current)),
+						[
+							vimModeCompartmentRef.current.of(createRawMarkdownVimMode(vimModeEnabledRef.current)),
+							livePreviewCompartmentRef.current.of(rawMarkdownLivePreview.of(false)),
+						],
 					),
 				}),
 			});
@@ -118,6 +103,28 @@ export const RawMarkdownEditor = forwardRef<RawMarkdownEditorHandle, RawMarkdown
 				view.destroy();
 			};
 		}, [flushPendingChange]);
+
+		// CodeMirror owns this DOM and its extensions. Synchronize each setting
+		// independently so presentation changes preserve Vim mode and undo history.
+		useLayoutEffect(() => {
+			applyDomSpellCheck(viewRef.current?.contentDOM, spellCheckEnabled);
+		}, [spellCheckEnabled]);
+
+		useLayoutEffect(() => {
+			viewRef.current?.dispatch({
+				effects: vimModeCompartmentRef.current.reconfigure(
+					createRawMarkdownVimMode(vimModeEnabled),
+				),
+			});
+		}, [vimModeEnabled]);
+
+		useLayoutEffect(() => {
+			viewRef.current?.dispatch({
+				effects: livePreviewCompartmentRef.current.reconfigure(
+					rawMarkdownLivePreview.of(livePreviewEnabled),
+				),
+			});
+		}, [livePreviewEnabled]);
 
 		useLayoutEffect(() => {
 			const view = viewRef.current;

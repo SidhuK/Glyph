@@ -136,6 +136,10 @@
 			"description": "Underline typos as you type. Right-click a word to see spelling suggestions.",
 			"ariaLabel": "Spell check"
 		},
+		"rawLivePreview": {
+			"label": "Live Markdown in RAW mode",
+			"description": "Hide Markdown punctuation outside the active construct. Works with Vim. Click to edit; Command-click to follow links."
+		},
 		"vimMode": {
 			"title": "Vim Mode",
 			"label": "Vim Mode",

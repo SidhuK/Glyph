@@ -484,6 +484,11 @@
 			"section": "편집기",
 			"keywords": ["맞춤법", "오타", "사전", "spelling", "typo", "dictionary"]
 		},
+		"general-editor-raw-live-preview": {
+			"title": "RAW 모드의 실시간 Markdown",
+			"section": "실험적",
+			"keywords": ["raw", "markdown", "vim", "live", "preview"]
+		},
 		"general-editor-vim-mode": {
 			"title": "Vim 모드",
 			"section": "실험적",

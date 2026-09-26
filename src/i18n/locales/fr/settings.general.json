@@ -121,6 +121,10 @@
 			"description": "Souligner les fautes de frappe pendant la saisie. Cliquez avec le bouton droit sur un mot pour voir des suggestions.",
 			"ariaLabel": "Vérification orthographique"
 		},
+		"rawLivePreview": {
+			"label": "Markdown en direct en mode RAW",
+			"description": "Masquer la syntaxe Markdown hors de l’élément actif. Compatible avec Vim. Cliquez pour modifier ; Commande-clic pour suivre les liens."
+		},
 		"vimMode": {
 			"title": "Mode Vim",
 			"label": "Mode Vim",
