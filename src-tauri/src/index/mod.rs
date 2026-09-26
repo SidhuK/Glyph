@@ -11,6 +11,7 @@ mod properties;
 mod relationships;
 pub(crate) mod schema;
 pub(crate) mod search_advanced;
+mod search_expression;
 mod search_hybrid;
 mod search_matches;
 pub(crate) mod tags;

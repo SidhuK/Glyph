@@ -14,6 +14,7 @@ import { PALETTE_SETTINGS_REGISTRY } from "./settingsPaletteRegistry";
 describe("commandPaletteHelpers", () => {
 	it("parses people and tags from a mixed query", () => {
 		expect(parseSearchQueryWithPeople("@alice #project roadmap", true)).toEqual({
+			kind: "fields",
 			request: {
 				tags: ["#project"],
 				people: ["@alice"],
@@ -46,6 +47,20 @@ describe("commandPaletteHelpers", () => {
 		["template: meeting", "templates", "meeting"],
 	] as const)("parses the universal prefix in %s", (raw, scope, text) => {
 		expect(parsePaletteQuery(raw)).toMatchObject({ scope, text });
+	});
+
+	it("keeps precise expressions intact for saving and routes them to note search", () => {
+		const query = '(folder:"Research notes" OR #research) AND created:this-month';
+		expect(parsePaletteQuery(query)).toMatchObject({ scope: "all", text: query });
+		expect(parseSearchQueryWithPeople(query, true)).toEqual({
+			kind: "expression",
+			expression: query,
+			text: "",
+		});
+	});
+
+	it("does not interpret quoted operators as groups", () => {
+		expect(parseSearchQueryWithPeople('"AND (OR)"', true).text).toBe("AND (OR)");
 	});
 
 	it("ranks exact titles ahead of keyword and description matches", () => {

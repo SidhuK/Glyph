@@ -582,3 +582,73 @@
 		scale: 1;
 	}
 }
+
+.commandSearchFilters {
+	padding: 10px 16px;
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+	border-bottom: 1px solid var(--border-light);
+	font-size: 12px;
+	max-height: 40vh;
+	overflow-y: auto;
+}
+
+.commandSearchFilters summary {
+	cursor: pointer;
+}
+
+.commandSearchFilterFields {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	padding-block: 12px;
+}
+
+.commandSearchFilterFields label {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.commandSearchFilterFields input,
+.commandSearchFilterFields select,
+.commandSearchName {
+	min-width: 0;
+	padding: 6px 8px;
+	border: 1px solid var(--border-light);
+	border-radius: 6px;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font: inherit;
+}
+
+.commandSearchName {
+	width: 130px;
+	font-size: 12px;
+}
+
+.commandSearchFilterButtons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.commandSearchFilterButtons button {
+	padding: 6px 8px;
+	border-radius: 6px;
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.commandSearchFilterButtons button:disabled {
+	opacity: 0.5;
+}
+
+.commandSearchError {
+	margin: 0;
+	padding: 10px 16px;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: 12px;
+}

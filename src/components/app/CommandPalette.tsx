@@ -1,19 +1,11 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
-import { StarIcon } from "@hugeicons/core-free-icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
-import { nextCollectionName } from "../../lib/database/collection";
-import { extractErrorMessage } from "../../lib/errorUtils";
-import {
-	invalidateDatabaseSummariesPrefetch,
-	navigationQueryKeys,
-} from "../../lib/navigationPrefetch";
+import { navigationQueryKeys } from "../../lib/navigationPrefetch";
 import { invoke } from "../../lib/tauri";
 import { listTemplates } from "../../lib/templates";
-import { toast } from "../../lib/toast";
 import { SecretPaletteReveal } from "../easter-eggs/secret-palette/SecretPaletteReveal";
 import { NotePreviewContent } from "../preview/NotePreviewContent";
 import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
@@ -22,6 +14,8 @@ import { localizeSettingsSearchEntry } from "../settings/settingsSearch";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
 import { PaletteSettingEditor } from "./PaletteSettingEditor";
+import { SearchFilters } from "./SearchFilters";
+import { SearchSaveButton } from "./SearchSaveButton";
 import {
 	type Command,
 	type PaletteLaunchMode,
@@ -124,7 +118,7 @@ export function CommandPalette({
 		parsedQuery.scope === "tags" || parsedQuery.scope === "people"
 			? parsedQuery.raw
 			: parsedQuery.text;
-	const { recentFiles, isSearching, titleMatches, contentMatches } = useCommandSearch(
+	const { recentFiles, isSearching, searchError, titleMatches, contentMatches } = useCommandSearch(
 		searchQuery,
 		spacePath,
 		open && searchEnabled,
@@ -140,29 +134,6 @@ export function CommandPalette({
 		queryKey: ["command-palette-templates", spacePath, templateFolder],
 		queryFn: () => listTemplates(templateFolder ?? ""),
 		enabled: open && Boolean(spacePath && templateFolder),
-	});
-	const saveSearch = useMutation({
-		mutationFn: async (rawQuery: string) => {
-			const trimmed = rawQuery.trim();
-			const summaries = databaseSummaries.data;
-			if (!summaries) throw new Error(t("commandPalette.saveSearchFailed"));
-			const baseName = trimmed.length > 56 ? `${trimmed.slice(0, 53)}…` : trimmed;
-			return invoke("databases_create", {
-				name: nextCollectionName(summaries, baseName),
-				folder: null,
-				source: { kind: "search", value: trimmed, recursive: false },
-				pinned: true,
-			});
-		},
-		onSuccess: () => {
-			invalidateDatabaseSummariesPrefetch();
-			toast.success(t("commandPalette.searchSaved"));
-		},
-		onError: (cause) => {
-			toast.error(t("commandPalette.saveSearchFailed"), {
-				description: extractErrorMessage(cause),
-			});
-		},
 	});
 
 	const folders = useMemo(
@@ -409,10 +380,6 @@ export function CommandPalette({
 	const canSaveSearch =
 		!isSecretPalettePhrase &&
 		(parsedQuery.scope === "all" || parsedQuery.scope === "tags" || parsedQuery.scope === "people");
-	const isCurrentSearchSaved = databaseSummaries.data?.some(
-		(collection) =>
-			collection.source.kind === "search" && collection.source.value === normalizedQuery,
-	);
 
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && closeAndRestoreFocus()}>
@@ -503,31 +470,30 @@ export function CommandPalette({
 								/>
 							</div>
 							{normalizedQuery && canSaveSearch ? (
-								<div className="commandSearchActions">
-									<button
-										type="button"
-										className="commandSearchSaveButton"
-										data-saved={isCurrentSearchSaved ? "true" : "false"}
-										disabled={
-											!databaseSummaries.data || saveSearch.isPending || isCurrentSearchSaved
-										}
-										onClick={() => saveSearch.mutate(query)}
-										title={t(
-											isCurrentSearchSaved
-												? "commandPalette.searchSaved"
-												: "commandPalette.saveSearch",
-										)}
-										aria-label={t(
-											isCurrentSearchSaved
-												? "commandPalette.searchSaved"
-												: "commandPalette.saveSearch",
-										)}
-									>
-										<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
-									</button>
-								</div>
+								<SearchSaveButton
+									key={spacePath}
+									query={query}
+									summaries={databaseSummaries.data}
+									disabled={isSearching || Boolean(searchError)}
+								/>
 							) : null}
 						</div>
+						{searchEnabled ? (
+							<SearchFilters
+								key={spacePath}
+								query={query}
+								folders={folders}
+								onChange={(value) => {
+									setQuery(value);
+									setSelectedId(null);
+								}}
+							/>
+						) : null}
+						{searchEnabled && searchError ? (
+							<p className="commandSearchError" role="alert">
+								{t("commandPalette.searchFailed")}
+							</p>
+						) : null}
 						<div
 							className="commandPaletteBody"
 							data-with-preview={selectedPreviewPath ? "true" : "false"}

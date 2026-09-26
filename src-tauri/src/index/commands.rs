@@ -80,6 +80,10 @@ pub(crate) fn parse_raw_search_query(raw_query: &str, limit: Option<u32>) -> Sea
         limit: Some(limit.unwrap_or(1500).clamp(1, 2_000)),
         ..SearchAdvancedRequest::default()
     };
+    if super::search_expression::is_expression(raw_query) {
+        req.expression = Some(raw_query.to_string());
+        return req;
+    }
     let mut tags: Vec<String> = Vec::new();
     let mut people: Vec<String> = Vec::new();
     let mut text_parts: Vec<String> = Vec::new();
@@ -180,7 +184,7 @@ fn run_search_with_matches(
     request: SearchAdvancedRequest,
 ) -> Result<Vec<SearchResult>, String> {
     let limit = request.limit.unwrap_or(200).clamp(1, 2_000) as usize;
-    let expand = !request.title_only && !request.tag_only;
+    let expand = request.expression.is_none() && !request.title_only && !request.tag_only;
     let query_text = request.query.clone().unwrap_or_default();
     let notes = run_search_advanced(conn, request)?;
     if expand {
@@ -226,7 +230,7 @@ pub async fn search_advanced(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn search_parse_and_run(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
