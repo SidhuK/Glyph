@@ -207,14 +207,22 @@ pub async fn ai_chat_start(
             }
         })
         .unwrap_or_else(|| job_id.clone());
-    let cancel = ai_state.register(&job_id);
 
     if !request.audit {
         request.audit = true;
     }
 
     let space_root = ai_space_root(&space_state, &window)?;
-    let store = normalized_store_for_space(&app, Some(&space_root))?;
+    let bootstrap_app = app.clone();
+    let bootstrap_root = space_root.clone();
+    let profile_id = request.profile_id.clone();
+    let (store, api_key) = tauri::async_runtime::spawn_blocking(move || {
+        let store = normalized_store_for_space(&bootstrap_app, Some(&bootstrap_root))?;
+        let api_key = local_secrets::secret_get(&bootstrap_root, &profile_id)?;
+        Ok::<_, String>((store, api_key))
+    })
+    .await
+    .map_err(|e| e.to_string())??;
 
     let profile = store
         .profiles
@@ -237,6 +245,18 @@ pub async fn ai_chat_start(
         return Err("Model not set for this profile".to_string());
     }
 
+    let edit_root = space_root.clone();
+    let edit_job_id = job_id.clone();
+    let edit_thread_id = history_id.clone();
+    let immediate = request.immediate_edits;
+    tauri::async_runtime::spawn_blocking(move || {
+        super::review::begin(&edit_root, &edit_job_id, &edit_thread_id, immediate)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+    let cancel = ai_state.register(&job_id);
+
     let app_for_task = app.clone();
     let job_id_for_task = job_id.clone();
     let window_label = window.label().to_string();
@@ -244,9 +264,6 @@ pub async fn ai_chat_start(
     tauri::async_runtime::spawn(async move {
         let ai_state_for_task = app_for_task.state::<AiState>();
 
-        let api_key = local_secrets::secret_get(&space_root, &profile.id)
-            .ok()
-            .flatten();
         let (system, messages) =
             split_system_and_messages(request.messages.clone(), request.context.clone());
 
@@ -266,22 +283,48 @@ pub async fn ai_chat_start(
         .await;
         if let Err(message) = &result {
             if !cancel.is_cancelled() && is_transient_ai_error(message) {
-                tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-                result = run_request(
-                    &cancel,
-                    &app_for_task,
-                    &job_id_for_task,
-                    &profile,
-                    api_key.as_deref(),
-                    &system,
-                    &messages,
-                    &request.mode,
-                    Some(space_root.as_path()),
-                    &window_label,
-                    request.thread_id.as_deref(),
-                )
+                let retry_root = space_root.clone();
+                let retry_job_id = job_id_for_task.clone();
+                let can_retry = tauri::async_runtime::spawn_blocking(move || {
+                    let _guard = super::review::REVIEW_LOCK
+                        .lock()
+                        .map_err(|e| e.to_string())?;
+                    super::review::load(&retry_root, &retry_job_id)
+                        .map(|operation| operation.edits.is_empty())
+                        .map_err(|e| e.to_string())
+                })
                 .await;
+                if matches!(can_retry, Ok(Ok(true))) {
+                    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                    result = run_request(
+                        &cancel,
+                        &app_for_task,
+                        &job_id_for_task,
+                        &profile,
+                        api_key.as_deref(),
+                        &system,
+                        &messages,
+                        &request.mode,
+                        Some(space_root.as_path()),
+                        &window_label,
+                        request.thread_id.as_deref(),
+                    )
+                    .await;
+                } else if !matches!(can_retry, Ok(Ok(false))) {
+                    warn!(job_id = %job_id_for_task, "Could not inspect edits before retrying chat");
+                }
             }
+        }
+
+        let edit_root = space_root.clone();
+        let edit_job_id = job_id_for_task.clone();
+        if let Err(error) = tauri::async_runtime::spawn_blocking(move || {
+            super::review::finish(&edit_root, &edit_job_id).map_err(|e| e.to_string())
+        })
+        .await
+        .unwrap_or_else(|e| Err(e.to_string()))
+        {
+            result = Err(error);
         }
 
         match result {

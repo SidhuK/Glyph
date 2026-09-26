@@ -1815,6 +1815,8 @@ pub fn run() {
             ai_rig::commands::ai_chat_cancel,
             ai_rig::commands::ai_chat_history_list,
             ai_rig::commands::ai_chat_history_get,
+            ai_rig::review_commands::ai_edits_list,
+            ai_rig::review_commands::ai_edits_resolve,
             ai_rig::context::ai_context_index,
             ai_rig::context::ai_context_build,
             ai_rig::models::ai_models_list,

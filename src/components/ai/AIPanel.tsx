@@ -5,11 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import type { AiStoredToolEvent } from "../../lib/tauri";
+import type { AiProviderKind, AiStoredToolEvent } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import type { AIActivityTimelineEvent } from "./AIActivityTimeline";
+import { AIEditReview } from "./AIEditReview";
 import { AIChatThread } from "./AIChatThread";
 import { AIComposer } from "./AIComposer";
 import { AIHistoryPanel } from "./AIHistoryPanel";
@@ -31,6 +32,16 @@ import { useAIConversation } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
 import { useAiHistory, useRestoredAiChat } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
+
+const REVIEW_PROVIDERS: ReadonlySet<AiProviderKind> = new Set([
+	"openai",
+	"openai_compat",
+	"openrouter",
+	"anthropic",
+	"gemini",
+	"ollama",
+	"llama_cpp",
+]);
 
 const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
 
@@ -453,6 +464,12 @@ export function AIPanel(props: AIPanelProps) {
 						onSave={(t) => void actions.handleSaveAssistantResponse(t)}
 						onRetry={(i) => void handleRetry(i)}
 					/>
+					{!isChatMode ? (
+						<AIEditReview
+							key={session.jobId}
+							supported={activeProvider !== undefined && REVIEW_PROVIDERS.has(activeProvider)}
+						/>
+					) : null}
 				</div>
 				{showScrollFab && (
 					<Button
