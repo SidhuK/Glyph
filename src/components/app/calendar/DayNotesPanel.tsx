@@ -8,8 +8,15 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useUILayoutContext } from "../../../contexts";
-import { PERIOD_KINDS, type PeriodKind, isPeriodNoteEnabled } from "../../../lib/periodNotes";
+import { useUILayoutContext } from "../../../contexts/UIContext";
+import {
+	PERIOD_KINDS,
+	type PeriodKind,
+	getPeriodNotePath,
+	isPeriodNoteEnabled,
+	periodIdFromDate,
+	periodStem,
+} from "../../../lib/periodNotes";
 import type { CalendarDateNote } from "../../../lib/tauri";
 
 const PERIOD_NOTE_ICONS = {
@@ -25,7 +32,6 @@ interface DayNotesPanelProps {
 	notes: CalendarDateNote[];
 	isLoading: boolean;
 	errorMessage: string | null;
-	canOpenDatedNotes: boolean;
 	onOpenPeriodNote: (kind: PeriodKind) => void;
 	onOpenNote: (path: string) => void;
 }
@@ -60,12 +66,17 @@ export function DayNotesPanel({
 	notes,
 	isLoading,
 	errorMessage,
-	canOpenDatedNotes,
 	onOpenPeriodNote,
 	onOpenNote,
 }: DayNotesPanelProps) {
 	const { t } = useTranslation("shell");
-	const { periodNotesEnabled } = useUILayoutContext();
+	const { dailyNotesFolder, periodNotesEnabled } = useUILayoutContext();
+	const weeklyPeriod = periodIdFromDate("week", selectedDate);
+	const weeklyPath =
+		dailyNotesFolder && periodNotesEnabled.week
+			? getPeriodNotePath(dailyNotesFolder, weeklyPeriod)
+			: null;
+	const dayNotes = weeklyPath ? notes.filter((note) => note.path !== weeklyPath) : notes;
 	const openablePeriodKinds = PERIOD_KINDS.filter((kind) =>
 		isPeriodNoteEnabled(kind, periodNotesEnabled),
 	);
@@ -84,8 +95,8 @@ export function DayNotesPanel({
 		? t("calendar.loading")
 		: errorMessage
 			? t("calendar.loadFailedShort")
-			: notes.length > 0
-				? t("calendar.noteCount", { count: notes.length })
+			: dayNotes.length > 0
+				? t("calendar.noteCount", { count: dayNotes.length })
 				: null;
 
 	return (
@@ -95,7 +106,7 @@ export function DayNotesPanel({
 					<h3 className="calendarNotesTitle">{heading}</h3>
 					{summary ? <p className="calendarNotesSummary">{summary}</p> : null}
 				</div>
-				{canOpenDatedNotes ? (
+				{dailyNotesFolder ? (
 					<div className="calendarPeriodNoteActions">
 						{openablePeriodKinds.map((kind) => {
 							const label = t(`calendar.openPeriodNote.${kind}`);
@@ -127,9 +138,9 @@ export function DayNotesPanel({
 					<p className="calendarNotesMessage" role="alert">
 						{t("calendar.loadFailed", { message: errorMessage })}
 					</p>
-				) : notes.length > 0 ? (
+				) : dayNotes.length > 0 ? (
 					<ul className="calendarNotesList">
-						{notes.map((note) => (
+						{dayNotes.map((note) => (
 							<NoteRow key={note.path} note={note} onOpen={onOpenNote} />
 						))}
 					</ul>
@@ -137,6 +148,24 @@ export function DayNotesPanel({
 					<p className="calendarNotesEmpty">{t("calendar.noNotes")}</p>
 				)}
 			</div>
+			{weeklyPath ? (
+				<section className="calendarWeeklyNote" aria-label={t("sidebar.weeklyNote")}>
+					<h4 className="calendarNotesSummary">{t("sidebar.weeklyNote")}</h4>
+					<button
+						type="button"
+						className="calendarNoteRow"
+						onClick={() => onOpenPeriodNote("week")}
+					>
+						<span className="calendarNoteIcon">
+							<HugeiconsIcon icon={CalendarDaysIcon} size="var(--icon-md)" />
+						</span>
+						<span className="calendarNoteText">
+							<span className="calendarNoteTitle">{periodStem(weeklyPeriod)}</span>
+							<span className="calendarNoteFolder">{t("calendar.openOrCreateWeeklyNote")}</span>
+						</span>
+					</button>
+				</section>
+			) : null}
 		</section>
 	);
 }

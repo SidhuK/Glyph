@@ -160,6 +160,7 @@
 		"previousMonth": "Vorheriger Monat",
 		"nextMonth": "Nächster Monat",
 		"openDailyNote": "Tagesnotiz öffnen",
+		"openOrCreateWeeklyNote": "Wochennotiz öffnen oder erstellen",
 		"loading": "Wird geladen…",
 		"noteCount_one": "1 Notiz",
 		"noteCount_other": "{{count}} Notizen",
