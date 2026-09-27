@@ -56,11 +56,9 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 		mousedown: (event: MouseEvent, view: EditorView) => {
 			const target = event.target instanceof Element ? event.target : null;
 			if (
-				target?.closest(".cm-raw-task-checkbox") ||
+				target?.closest(".cm-raw-task-checkbox, .cm-raw-tag, .cm-raw-footnote") ||
 				((!view.state.facet(rawMarkdownLivePreview) || event.metaKey) &&
-					target?.closest(
-						".cm-raw-wiki-link, .cm-raw-markdown-link, .cm-raw-tag, .cm-raw-footnote",
-					))
+					target?.closest(".cm-raw-wiki-link, .cm-raw-markdown-link"))
 			) {
 				event.preventDefault();
 			}
@@ -71,7 +69,11 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			const task = target?.closest<HTMLElement>(".cm-raw-task-checkbox");
 			if (task) return toggleTask(view, task);
 
-			if (view.state.facet(rawMarkdownLivePreview) && !event.metaKey) {
+			if (
+				view.state.facet(rawMarkdownLivePreview) &&
+				!event.metaKey &&
+				target?.closest(".cm-raw-wiki-link, .cm-raw-markdown-link")
+			) {
 				return false;
 			}
 

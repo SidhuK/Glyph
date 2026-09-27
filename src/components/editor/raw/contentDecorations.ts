@@ -21,7 +21,8 @@ function isLiteralPosition(view: EditorView, position: number): boolean {
 			node.name === "FencedCode" ||
 			node.name === "CodeBlock" ||
 			node.name === "InlineCode" ||
-			node.name === "Image" ||
+			(node.name === "Image" &&
+				!parseWikiLink(view.state.doc.sliceString(node.from, node.to))?.embed) ||
 			node.name === "URL" ||
 			node.name === "LinkTitle"
 		) {
@@ -31,6 +32,13 @@ function isLiteralPosition(view: EditorView, position: number): boolean {
 		if (!parent) return false;
 		node = parent;
 	}
+}
+
+function isLiteralRange(view: EditorView, from: number, to: number): boolean {
+	for (let position = from; position < to; position += 1) {
+		if (isLiteralPosition(view, position)) return true;
+	}
+	return false;
 }
 
 function addPatternDecorations(
@@ -66,7 +74,12 @@ export function addGlyphInlineDecorations(
 		if (!parsed.embed && shouldConceal(view, from, to)) {
 			const alias = span.raw.search(WIKI_ALIAS_PATTERN);
 			const labelFrom = from + (alias >= 0 ? alias + 1 : 2);
-			if (labelFrom < to - 2 && (alias < 0 || parsed.alias !== null)) {
+			if (
+				labelFrom < to - 2 &&
+				(alias < 0 || parsed.alias !== null) &&
+				!isLiteralRange(view, from, labelFrom) &&
+				!isLiteralRange(view, to - 2, to)
+			) {
 				concealSyntax(ranges, view, from, labelFrom);
 				concealSyntax(ranges, view, to - 2, to);
 			}
@@ -102,12 +115,21 @@ export function addGlyphInlineDecorations(
 		const from = lineFrom + match.index;
 		if (isLiteralPosition(view, from)) continue;
 		const contentFrom = from + 2;
+		const to = from + match[0].length;
+		const closingFrom = to - 2;
 		const insideWikiLink = wikiLinkSpans.some(
-			(span) => span.start < match.index + match[0].length && span.end > match.index,
+			(span) =>
+				(span.start < match.index + 2 && span.end > match.index) ||
+				(span.start < to - lineFrom && span.end > closingFrom - lineFrom),
 		);
-		if (!insideWikiLink && shouldConceal(view, from, from + match[0].length)) {
+		if (
+			!insideWikiLink &&
+			!isLiteralRange(view, from, contentFrom) &&
+			!isLiteralRange(view, closingFrom, to) &&
+			shouldConceal(view, from, to)
+		) {
 			concealSyntax(ranges, view, from, contentFrom);
-			concealSyntax(ranges, view, from + match[0].length - 2, from + match[0].length);
+			concealSyntax(ranges, view, closingFrom, to);
 		}
 		ranges.push(
 			Decoration.mark({ class: "cm-raw-syntax" }).range(from, contentFrom),

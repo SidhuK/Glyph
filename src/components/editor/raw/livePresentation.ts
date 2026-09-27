@@ -64,6 +64,14 @@ export function addLiveSyntaxDecoration(
 		) {
 			return;
 		}
+		if (
+			ancestor.name === "Link" &&
+			(!ancestor.getChild("URL") ||
+				view.state.doc.lineAt(ancestor.from).number !== view.state.doc.lineAt(ancestor.to).number ||
+				!shouldConceal(view, ancestor.from, ancestor.to))
+		) {
+			return;
+		}
 	}
 	const source = (from: number, to: number) => view.state.doc.sliceString(from, to);
 	const hide = (from: number, to: number) => concealSyntax(ranges, view, from, to);

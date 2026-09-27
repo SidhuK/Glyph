@@ -254,7 +254,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 						attributes: { "data-markdown-href": href },
 					}).range(node.from, node.to),
 				);
-				return false;
+				return name === "Link" ? undefined : false;
 			}
 		},
 	});
