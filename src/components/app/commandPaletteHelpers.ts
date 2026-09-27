@@ -35,13 +35,12 @@ interface ParsedPaletteQuery {
 	scope: PaletteQueryScope;
 }
 
-interface ParsedSearchQuery {
-	request: SearchAdvancedRequest;
-	text: string;
-}
+type ParsedSearchQuery =
+	| { kind: "expression"; expression: string; text: "" }
+	| { kind: "fields"; request: SearchAdvancedRequest; text: string };
 
 function tokenize(raw: string): string[] {
-	return raw.match(/"[^"]*"|\S+/g) ?? [];
+	return raw.match(/(?:"[^"]*"|[^\s"])+/g) ?? [];
 }
 
 function unquote(value: string): string {
@@ -57,6 +56,7 @@ export function parsePaletteQuery(raw: string): ParsedPaletteQuery {
 	if (trimmed.startsWith(">")) {
 		return { raw: trimmed, text: trimmed.slice(1).trim(), scope: "commands" };
 	}
+	if (hasSearchExpression(trimmed)) return { raw: trimmed, text: trimmed, scope: "all" };
 	if (trimmed.startsWith("#")) {
 		return { raw: trimmed, text: trimmed.slice(1).trim(), scope: "tags" };
 	}
@@ -164,7 +164,17 @@ export function stepPaletteOption(
 	return options[nextIndex]?.value ?? null;
 }
 
+function hasSearchExpression(raw: string): boolean {
+	const syntax = raw.replace(/"(?:\\.|[^"\\])*"/g, '""');
+	return (
+		/(?:^|[\s(])(?:folder|created|updated|property|has|missing|text):(?=\S)|(?:^|[\s(])title:(?!only(?:\s|$))/i.test(
+			syntax,
+		) || /[()]|(?:^|\s)(?:AND|OR)(?:\s|$)/.test(syntax)
+	);
+}
+
 export function parseSearchQueryWithPeople(raw: string, enablePeople: boolean): ParsedSearchQuery {
+	if (hasSearchExpression(raw)) return { kind: "expression", expression: raw, text: "" };
 	const tokens = tokenize(raw.trim());
 	const request: SearchAdvancedRequest = {
 		tags: [],
@@ -207,7 +217,7 @@ export function parseSearchQueryWithPeople(raw: string, enablePeople: boolean): 
 
 	const text = textParts.join(" ").trim();
 	request.query = text || null;
-	return { request, text };
+	return { kind: "fields", request, text };
 }
 
 function quoteIfNeeded(v: string): string {

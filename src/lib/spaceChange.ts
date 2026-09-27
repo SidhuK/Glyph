@@ -86,6 +86,7 @@ function invalidateDerived(path: string | null, removed: boolean): void {
 	invalidateAllDocsPrefetch();
 	invalidateDatabasePrefetch();
 	void queryClient.invalidateQueries({ queryKey: ["unlinked-mentions"] });
+	void queryClient.invalidateQueries({ queryKey: ["command-search"] });
 	void queryClient.invalidateQueries({
 		queryKey: ["navigation", "folio-files"],
 	});

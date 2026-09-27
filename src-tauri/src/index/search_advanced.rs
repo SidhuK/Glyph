@@ -4,12 +4,17 @@ use rusqlite::Connection;
 
 use crate::index::people_mentions_as_tags_enabled;
 
+use super::search_expression;
 use super::search_hybrid::hybrid_search;
 use super::tags::{normalize_person_handle, normalize_tag, person_handle_to_tag};
 use super::types::SearchResult;
 
 #[derive(Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
 pub struct SearchAdvancedRequest {
+    /// Internal raw-query routing; not part of the structured-search IPC payload.
+    #[serde(skip)]
+    pub expression: Option<String>,
     #[serde(default)]
     pub query: Option<String>,
     #[serde(default)]
@@ -29,6 +34,10 @@ pub fn run_search_advanced(
     req: SearchAdvancedRequest,
 ) -> Result<Vec<SearchResult>, String> {
     let limit = req.limit.unwrap_or(200).clamp(1, 2_000) as usize;
+    if let Some(expression) = req.expression.as_deref() {
+        let (predicate, params) = search_expression::compile(expression)?;
+        return select_candidates(conn, &predicate, params, limit as i64);
+    }
     let text = req.query.unwrap_or_default().trim().to_string();
     let mut tags = normalize_tags(req.tags)?;
     if people_mentions_as_tags_enabled() {
@@ -70,16 +79,17 @@ pub fn run_search_advanced(
             (limit as i64 * 8).clamp(200, 5_000),
         )?
     } else {
-        select_candidates(
-            conn,
-            &query_text,
-            req.title_only,
-            &tags,
-            (limit as i64 * 8).clamp(200, 5_000),
-        )?
-        .into_iter()
-        .map(|item| item.result)
-        .collect()
+        let mut clauses = Vec::new();
+        let mut params = Vec::new();
+        for tag in &tags {
+            clauses.push("EXISTS (SELECT 1 FROM tags t WHERE t.note_id = n.id AND t.tag = ?)".to_string());
+            params.push(rusqlite::types::Value::from(tag.clone()));
+        }
+        if req.title_only && !query_text.is_empty() {
+            clauses.push("instr(lower(n.title), lower(?)) > 0".to_string());
+            params.push(rusqlite::types::Value::from(query_text.clone()));
+        }
+        select_candidates(conn, &clauses.join(" AND "), params, limit as i64)?
     };
 
     if out.len() > limit {
@@ -88,36 +98,18 @@ pub fn run_search_advanced(
     Ok(out)
 }
 
-struct Candidate {
-    result: SearchResult,
-}
-
 fn select_candidates(
     conn: &Connection,
-    text: &str,
-    title_only: bool,
-    tags: &[String],
+    predicate: &str,
+    mut params: Vec<rusqlite::types::Value>,
     limit: i64,
-) -> Result<Vec<Candidate>, String> {
+) -> Result<Vec<SearchResult>, String> {
     let mut sql = String::from("SELECT n.id, n.title, n.preview FROM notes n ");
-    for i in 0..tags.len() {
-        sql.push_str(&format!(
-            "JOIN tags t{idx} ON t{idx}.note_id = n.id AND t{idx}.tag = ? ",
-            idx = i
-        ));
+    if !predicate.is_empty() {
+        sql.push_str("WHERE ");
+        sql.push_str(predicate);
     }
-    let mut params: Vec<rusqlite::types::Value> = tags
-        .iter()
-        .map(|t| rusqlite::types::Value::from(t.clone()))
-        .collect();
-    if title_only && !text.is_empty() {
-        sql.push_str("WHERE lower(n.title) LIKE ? ");
-        params.push(rusqlite::types::Value::from(format!(
-            "%{}%",
-            text.to_lowercase()
-        )));
-    }
-    sql.push_str("ORDER BY n.updated DESC LIMIT ?");
+    sql.push_str(" ORDER BY n.updated DESC, n.id LIMIT ?");
     params.push(rusqlite::types::Value::from(limit));
 
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
@@ -126,16 +118,14 @@ fn select_candidates(
         .map_err(|e| e.to_string())?;
     let mut out = Vec::new();
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        out.push(Candidate {
-            result: SearchResult {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                snippet: row.get(2).map_err(|e| e.to_string())?,
-                score: 0.0,
-                match_index: None,
-                match_query: None,
-                line: None,
-            },
+        out.push(SearchResult {
+            id: row.get(0).map_err(|e| e.to_string())?,
+            title: row.get(1).map_err(|e| e.to_string())?,
+            snippet: row.get(2).map_err(|e| e.to_string())?,
+            score: 0.0,
+            match_index: None,
+            match_query: None,
+            line: None,
         });
     }
     Ok(out)
@@ -331,4 +321,100 @@ mod tests {
 
         assert!(results.is_empty());
     }
+
+    #[test]
+    fn precise_filters_run_before_limit_and_respect_folder_boundaries() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        for (id, date) in [
+            ("research/old.md", "2026-09-01T00:00:00Z"),
+            ("research/sub/new.md", "2026-09-12T00:00:00Z"),
+            ("research-other/new.md", "2026-09-20T00:00:00Z"),
+        ] {
+            seed_note(&conn, id, "Research", date);
+        }
+        conn.execute(
+            "INSERT INTO note_properties(note_id, key, value_type, value_text, value_json) VALUES (?, 'status', 'text', 'unprocessed', '\"unprocessed\"')",
+            ["research/old.md"],
+        ).unwrap();
+        let results = run_search_advanced(&conn, SearchAdvancedRequest {
+            expression: Some("folder:research property:status=unprocessed created:2026-08-31..2026-09-30".into()),
+            limit: Some(1),
+            ..Default::default()
+        }).unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].id, "research/old.md");
+        let results = run_search_advanced(&conn, SearchAdvancedRequest {
+            expression: Some("folder:research".into()),
+            ..Default::default()
+        }).unwrap();
+        assert_eq!(results.len(), 2);
+    }
+
+    #[test]
+    fn precise_groups_preserve_precedence_and_quoted_values() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        seed_note(&conn, "a.md", "Alpha", "2026-09-01");
+        seed_note(&conn, "b.md", "Beta", "2026-09-01");
+        seed_note(&conn, "c.md", "Gamma", "2026-09-01");
+        for (id, tag) in [("a.md", "work"), ("c.md", "work")] {
+            conn.execute("INSERT INTO tags(note_id, tag) VALUES (?, ?)", [id, tag]).unwrap();
+        }
+        for (expression, expected) in [
+            ("title:Alpha OR title:Beta AND #work", vec!["a.md"]),
+            ("(title:Alpha OR title:Beta) AND #work", vec!["a.md"]),
+            ("(title:Alpha OR title:Beta) OR #work", vec!["a.md", "b.md", "c.md"]),
+            ("title:Alpha OR (title:Beta AND missing:status)", vec!["a.md", "b.md"]),
+            ("title:\"Gamma\" AND has:status", vec![]),
+        ] {
+            let results = run_search_advanced(&conn, SearchAdvancedRequest {
+                expression: Some(expression.into()),
+                ..Default::default()
+            }).unwrap();
+            assert_eq!(results.iter().map(|r| r.id.as_str()).collect::<Vec<_>>(), expected);
+        }
+    }
+
+    #[test]
+    fn precise_queries_reject_incomplete_or_invalid_filters() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        for expression in [
+            "title:only OR #work", "(tag:only)",
+            "(#work OR)", "#work AND", "(#work", "()", "folder:",
+            "created:2026-02-30", "updated:2026-09-30..2026-09-01",
+            "property:status", "title:\"unclosed", "folder:../research",
+        ] {
+            assert!(run_search_advanced(&conn, SearchAdvancedRequest {
+                expression: Some(expression.into()),
+                ..Default::default()
+            }).is_err(), "{expression}");
+        }
+    }
+
+    #[test]
+    fn precise_scope_modifiers_do_not_escape_their_group() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        seed_note(&conn, "alpha.md", "Alpha", "2026-09-01");
+        seed_note(&conn, "beta.md", "Beta", "2026-09-01");
+        conn.execute(
+            "INSERT INTO notes_fts(id, title, body) VALUES ('beta.md', 'Beta', 'needle')",
+            [],
+        ).unwrap();
+        let results = run_search_advanced(&conn, SearchAdvancedRequest {
+            expression: Some("(title:only Alpha) OR needle".into()),
+            ..Default::default()
+        }).unwrap();
+        assert_eq!(results.len(), 2);
+    }
+
+    #[test]
+    fn structured_search_rejects_unknown_ipc_fields() {
+        assert!(serde_json::from_str::<SearchAdvancedRequest>(
+            r#"{"expression":"folder:research"}"#,
+        ).is_err());
+    }
+
 }

@@ -270,6 +270,7 @@ export function buildPaletteResults({
 			description: database.source.value,
 			category: t("commandPalette.groups.database"),
 			keywords: [database.source.kind, database.source.value],
+			defaultVisible: database.pinned && database.source.kind === "search",
 			rankBoost: database.pinned ? 20 : 0,
 			target: database.id,
 		});
