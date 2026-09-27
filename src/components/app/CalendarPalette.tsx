@@ -151,7 +151,6 @@ export function CalendarPalette({
 								? String(notesQuery.error)
 								: null
 					}
-					canOpenDatedNotes={Boolean(dailyNoteFolder)}
 					onOpenPeriodNote={handleOpenPeriodNote}
 					onOpenNote={handleOpenNote}
 				/>

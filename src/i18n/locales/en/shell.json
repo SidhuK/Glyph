@@ -188,6 +188,7 @@
 		"previousMonth": "Previous month",
 		"nextMonth": "Next month",
 		"openDailyNote": "Open daily note",
+		"openOrCreateWeeklyNote": "Open or create weekly note",
 		"openPeriodNote": {
 			"day": "Daily",
 			"week": "Week",

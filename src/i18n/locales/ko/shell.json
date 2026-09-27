@@ -160,6 +160,7 @@
 		"previousMonth": "이전 달",
 		"nextMonth": "다음 달",
 		"openDailyNote": "데일리 노트 열기",
+		"openOrCreateWeeklyNote": "주간 노트 열기 또는 만들기",
 		"loading": "불러오는 중…",
 		"noteCount_other": "노트 {{count}}개",
 		"noNotes": "이 날짜에 노트가 없습니다",

@@ -184,6 +184,7 @@
 		"previousMonth": "Poprzedni miesiąc",
 		"nextMonth": "Następny miesiąc",
 		"openDailyNote": "Otwórz notatkę dzienną",
+		"openOrCreateWeeklyNote": "Otwórz lub utwórz notatkę tygodniową",
 		"loading": "Ładowanie…",
 		"noteCount_one": "1 notatka",
 		"noteCount_few": "{{count}} notatki",
