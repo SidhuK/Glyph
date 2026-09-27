@@ -73,12 +73,12 @@ export function DayNotesPanel({
 	const { dailyNotesFolder, periodNotesEnabled } = useUILayoutContext();
 	const weeklyPeriod = periodIdFromDate("week", selectedDate);
 	let weeklyPath: string | null = null;
-	let panelError = errorMessage;
+	let weeklyError: string | null = null;
 	if (dailyNotesFolder && periodNotesEnabled.week) {
 		try {
 			weeklyPath = getPeriodNotePath(dailyNotesFolder, weeklyPeriod);
 		} catch (error) {
-			panelError = error instanceof Error ? error.message : String(error);
+			weeklyError = error instanceof Error ? error.message : String(error);
 		}
 	}
 	const dayNotes = weeklyPath ? notes.filter((note) => note.path !== weeklyPath) : notes;
@@ -98,7 +98,7 @@ export function DayNotesPanel({
 
 	const summary = isLoading
 		? t("calendar.loading")
-		: panelError
+		: errorMessage
 			? t("calendar.loadFailedShort")
 			: dayNotes.length > 0
 				? t("calendar.noteCount", { count: dayNotes.length })
@@ -139,9 +139,9 @@ export function DayNotesPanel({
 							<li key={row} className="calendarNoteSkeleton" />
 						))}
 					</ul>
-				) : panelError ? (
+				) : errorMessage ? (
 					<p className="calendarNotesMessage" role="alert">
-						{t("calendar.loadFailed", { message: panelError })}
+						{t("calendar.loadFailed", { message: errorMessage })}
 					</p>
 				) : dayNotes.length > 0 ? (
 					<ul className="calendarNotesList">
@@ -153,22 +153,28 @@ export function DayNotesPanel({
 					<p className="calendarNotesEmpty">{t("calendar.noNotes")}</p>
 				)}
 			</div>
-			{weeklyPath ? (
+			{weeklyPath || weeklyError ? (
 				<section className="calendarWeeklyNote" aria-label={t("sidebar.weeklyNote")}>
 					<h4 className="calendarNotesSummary">{t("sidebar.weeklyNote")}</h4>
-					<button
-						type="button"
-						className="calendarNoteRow"
-						onClick={() => onOpenPeriodNote("week")}
-					>
-						<span className="calendarNoteIcon">
-							<HugeiconsIcon icon={CalendarDaysIcon} size="var(--icon-md)" />
-						</span>
-						<span className="calendarNoteText">
-							<span className="calendarNoteTitle">{periodStem(weeklyPeriod)}</span>
-							<span className="calendarNoteFolder">{t("calendar.openOrCreateWeeklyNote")}</span>
-						</span>
-					</button>
+					{weeklyError ? (
+						<p className="calendarNotesMessage" role="alert">
+							{t("calendar.loadFailed", { message: weeklyError })}
+						</p>
+					) : (
+						<button
+							type="button"
+							className="calendarNoteRow"
+							onClick={() => onOpenPeriodNote("week")}
+						>
+							<span className="calendarNoteIcon">
+								<HugeiconsIcon icon={CalendarDaysIcon} size="var(--icon-md)" />
+							</span>
+							<span className="calendarNoteText">
+								<span className="calendarNoteTitle">{periodStem(weeklyPeriod)}</span>
+								<span className="calendarNoteFolder">{t("calendar.openOrCreateWeeklyNote")}</span>
+							</span>
+						</button>
+					)}
 				</section>
 			) : null}
 		</section>
