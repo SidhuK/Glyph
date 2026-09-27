@@ -2,25 +2,43 @@ import { syntaxTree } from "@codemirror/language";
 import type { Range, Text } from "@codemirror/state";
 import { Decoration, type EditorView } from "@codemirror/view";
 import { FOOTNOTE_PATTERN, footnoteKindAt } from "../markdown/footnote";
-import { parseWikiLink } from "../markdown/wikiLinkCodec";
+import { findWikiLinkSpans, parseWikiLink } from "../markdown/wikiLinkCodec";
 import { INLINE_TAG_PATTERN } from "../noteProperties/utils";
+import { concealSyntax, shouldConceal } from "./livePresentation";
+import { isPositionInMath } from "./markdownMathLanguage";
 
-const WIKI_LINK_PATTERN = /!?\[\[[^\]\n]+\]\]/g;
+const WIKI_ALIAS_PATTERN = /(?<!\\)\|/;
 const HIGHLIGHT_PATTERN = /==([^=\n]+)==/g;
 const COMMENT_PATTERN = /%%(?:[^%]|%(?!%))*%%/g;
 const BLOCK_ID_PATTERN = /(?:^|\s)(\^[A-Za-z0-9-]+)(?=\s*$)/;
 const FRONTMATTER_SCAN_LIMIT = 500;
 
-function isCodePosition(view: EditorView, position: number): boolean {
+function isLiteralPosition(view: EditorView, position: number): boolean {
+	if (isPositionInMath(view.state, position)) return true;
 	let node = syntaxTree(view.state).resolveInner(position, 1);
 	while (true) {
-		if (node.name === "FencedCode" || node.name === "CodeBlock" || node.name === "InlineCode") {
+		if (
+			node.name === "FencedCode" ||
+			node.name === "CodeBlock" ||
+			node.name === "InlineCode" ||
+			(node.name === "Image" &&
+				!parseWikiLink(view.state.doc.sliceString(node.from, node.to))?.embed) ||
+			node.name === "URL" ||
+			node.name === "LinkTitle"
+		) {
 			return true;
 		}
 		const parent = node.parent;
 		if (!parent) return false;
 		node = parent;
 	}
+}
+
+function isLiteralRange(view: EditorView, from: number, to: number): boolean {
+	for (let position = from; position < to; position += 1) {
+		if (isLiteralPosition(view, position)) return true;
+	}
+	return false;
 }
 
 function addPatternDecorations(
@@ -35,7 +53,7 @@ function addPatternDecorations(
 	for (const match of text.matchAll(pattern)) {
 		if (match.index === undefined) continue;
 		const from = lineFrom + match.index;
-		if (isCodePosition(view, from)) continue;
+		if (isLiteralPosition(view, from)) continue;
 		ranges.push(Decoration.mark({ class: className }).range(from, from + match[0].length));
 	}
 }
@@ -46,21 +64,34 @@ export function addGlyphInlineDecorations(
 	lineFrom: number,
 	text: string,
 ) {
-	WIKI_LINK_PATTERN.lastIndex = 0;
-	for (const match of text.matchAll(WIKI_LINK_PATTERN)) {
-		if (match.index === undefined) continue;
-		const from = lineFrom + match.index;
-		if (isCodePosition(view, from)) continue;
-		const parsed = parseWikiLink(match[0]);
+	const wikiLinkSpans = findWikiLinkSpans(text);
+	for (const span of wikiLinkSpans) {
+		const from = lineFrom + span.start;
+		if (isLiteralPosition(view, from)) continue;
+		const parsed = parseWikiLink(span.raw);
 		if (!parsed) continue;
+		const to = from + span.raw.length;
+		if (!parsed.embed && shouldConceal(view, from, to)) {
+			const alias = span.raw.search(WIKI_ALIAS_PATTERN);
+			const labelFrom = from + (alias >= 0 ? alias + 1 : 2);
+			if (
+				labelFrom < to - 2 &&
+				(alias < 0 || parsed.alias !== null) &&
+				!isLiteralRange(view, from, labelFrom) &&
+				!isLiteralRange(view, to - 2, to)
+			) {
+				concealSyntax(ranges, view, from, labelFrom);
+				concealSyntax(ranges, view, to - 2, to);
+			}
+		}
 		ranges.push(
 			Decoration.mark({
 				class: "cm-raw-wiki-link",
 				attributes: {
-					"data-raw-wiki-link": match[0],
+					"data-raw-wiki-link": span.raw,
 					"data-embed": String(parsed.embed),
 				},
-			}).range(from, from + match[0].length),
+			}).range(from, from + span.raw.length),
 		);
 	}
 
@@ -68,7 +99,7 @@ export function addGlyphInlineDecorations(
 	for (const match of text.matchAll(INLINE_TAG_PATTERN)) {
 		if (match.index === undefined || !match[2]) continue;
 		const from = lineFrom + match.index + (match[1]?.length ?? 0);
-		if (isCodePosition(view, from)) continue;
+		if (isLiteralPosition(view, from)) continue;
 		const raw = `#${match[2]}`;
 		ranges.push(
 			Decoration.mark({
@@ -82,8 +113,24 @@ export function addGlyphInlineDecorations(
 	for (const match of text.matchAll(HIGHLIGHT_PATTERN)) {
 		if (match.index === undefined || !match[1]) continue;
 		const from = lineFrom + match.index;
-		if (isCodePosition(view, from)) continue;
+		if (isLiteralPosition(view, from)) continue;
 		const contentFrom = from + 2;
+		const to = from + match[0].length;
+		const closingFrom = to - 2;
+		const insideWikiLink = wikiLinkSpans.some(
+			(span) =>
+				(span.start < match.index + 2 && span.end > match.index) ||
+				(span.start < to - lineFrom && span.end > closingFrom - lineFrom),
+		);
+		if (
+			!insideWikiLink &&
+			!isLiteralRange(view, from, contentFrom) &&
+			!isLiteralRange(view, closingFrom, to) &&
+			shouldConceal(view, from, to)
+		) {
+			concealSyntax(ranges, view, from, contentFrom);
+			concealSyntax(ranges, view, closingFrom, to);
+		}
 		ranges.push(
 			Decoration.mark({ class: "cm-raw-syntax" }).range(from, contentFrom),
 			Decoration.mark({ class: "cm-raw-highlight" }).range(
@@ -100,7 +147,7 @@ export function addGlyphInlineDecorations(
 	for (const match of text.matchAll(FOOTNOTE_PATTERN)) {
 		if (match.index === undefined || !match[1]) continue;
 		const from = lineFrom + match.index;
-		if (isCodePosition(view, from)) continue;
+		if (isLiteralPosition(view, from)) continue;
 		const kind = footnoteKindAt(text, match.index, match[0].length);
 		ranges.push(
 			Decoration.mark({
@@ -116,7 +163,7 @@ export function addGlyphInlineDecorations(
 	const blockIdMatch = text.match(BLOCK_ID_PATTERN);
 	if (blockIdMatch?.[1]) {
 		const from = lineFrom + text.lastIndexOf(blockIdMatch[1]);
-		if (!isCodePosition(view, from)) {
+		if (!isLiteralPosition(view, from)) {
 			ranges.push(
 				Decoration.mark({ class: "cm-raw-block-id" }).range(from, from + blockIdMatch[1].length),
 			);

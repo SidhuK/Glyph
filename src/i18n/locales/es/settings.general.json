@@ -110,6 +110,10 @@
 			"description": "Subrayar errores tipográficos al escribir. Haz clic derecho en una palabra para ver sugerencias.",
 			"ariaLabel": "Corrector ortográfico"
 		},
+		"rawLivePreview": {
+			"label": "Markdown en vivo en modo RAW",
+			"description": "Oculta la sintaxis Markdown fuera del elemento activo. Compatible con Vim. Haz clic para editar y Comando-clic para abrir enlaces."
+		},
 		"vimMode": {
 			"title": "Modo Vim",
 			"label": "Modo Vim",

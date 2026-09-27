@@ -1,14 +1,12 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type FocusMode, isFocusMode, loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
+import { invalidateSettingsCache } from "../../lib/settingsStore";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { SettingsInfoHint, SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
-import { useSettingsBoolean } from "./useSettingsBoolean";
-import { useSettingsValue } from "./useSettingsValue";
 
 const SETTINGS_QUERY_ROOT = "experimental-settings";
 
@@ -26,53 +24,24 @@ function VimModeInfo() {
 export function ExperimentalSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const queryClient = useQueryClient();
-	const [error, setError] = useState("");
 	const settingsQuery = useQuery({
 		queryKey: [SETTINGS_QUERY_ROOT],
 		queryFn: () => loadSettings(),
 	});
-	const noteSidePeek = useSettingsBoolean(false, DURABLE_SETTINGS.noteSidePeek.write, setError);
-	const formatBar = useSettingsBoolean(true, DURABLE_SETTINGS.editorShowFormatBar.write, setError);
-	const zenMode = useSettingsBoolean(false, DURABLE_SETTINGS.editorZenMode.write, setError);
-	const rawMarkdownVimMode = useSettingsBoolean(
-		false,
-		DURABLE_SETTINGS.editorRawMarkdownVimMode.write,
-		setError,
-	);
-	const focusMode = useSettingsValue<FocusMode>(
-		"off",
-		DURABLE_SETTINGS.editorFocusMode.write,
-		setError,
-	);
-
-	const setInitialNoteSidePeek = noteSidePeek.setInitialChecked;
-	const setInitialFormatBar = formatBar.setInitialChecked;
-	const setInitialZenMode = zenMode.setInitialChecked;
-	const setInitialRawMarkdownVimMode = rawMarkdownVimMode.setInitialChecked;
-	const setInitialFocusMode = focusMode.setInitialValue;
-
+	const saveSetting = useMutation({
+		mutationFn: (write: () => Promise<void>) => write(),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [SETTINGS_QUERY_ROOT] }),
+	});
 	const settings = settingsQuery.data;
-	useEffect(() => {
-		if (!settings) return;
-		setInitialNoteSidePeek(settings.ui.noteSidePeek);
-		setInitialFormatBar(settings.editor.showFormatBar);
-		setInitialZenMode(settings.editor.zenMode);
-		setInitialRawMarkdownVimMode(settings.editor.rawMarkdownVimMode);
-		setInitialFocusMode(settings.editor.focusMode);
-	}, [
-		settings,
-		setInitialFormatBar,
-		setInitialZenMode,
-		setInitialNoteSidePeek,
-		setInitialFocusMode,
-		setInitialRawMarkdownVimMode,
-	]);
+	const disabled = !settings || saveSetting.isPending;
 
 	useTauriEvent("settings:updated", () => {
+		invalidateSettingsCache();
 		void queryClient.invalidateQueries({ queryKey: [SETTINGS_QUERY_ROOT] });
 	});
 
-	const displayedError = settingsQuery.error ? extractErrorMessage(settingsQuery.error) : error;
+	const error = settingsQuery.error ?? saveSetting.error;
+	const displayedError = error ? extractErrorMessage(error) : "";
 
 	return (
 		<div className="settingsPane">
@@ -88,10 +57,12 @@ export function ExperimentalSettingsPane() {
 						searchId="appearance-layout-note-side-peek"
 					>
 						<SettingsToggle
-							checked={noteSidePeek.checked}
-							disabled={noteSidePeek.isSaving}
+							checked={settings?.ui.noteSidePeek ?? DURABLE_SETTINGS.noteSidePeek.defaultValue}
+							disabled={disabled}
 							ariaLabel={t("experimental.noteSidePeek.ariaLabel")}
-							onCheckedChange={noteSidePeek.onCheckedChange}
+							onCheckedChange={(checked) =>
+								saveSetting.mutate(() => DURABLE_SETTINGS.noteSidePeek.write(checked))
+							}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -106,10 +77,34 @@ export function ExperimentalSettingsPane() {
 						interactive={false}
 					>
 						<SettingsToggle
-							checked={rawMarkdownVimMode.checked}
-							disabled={rawMarkdownVimMode.isSaving}
+							checked={
+								settings?.editor.rawMarkdownVimMode ??
+								DURABLE_SETTINGS.editorRawMarkdownVimMode.defaultValue
+							}
+							disabled={disabled}
 							ariaLabel={t("editor.vimMode.ariaLabel")}
-							onCheckedChange={rawMarkdownVimMode.onCheckedChange}
+							onCheckedChange={(checked) =>
+								saveSetting.mutate(() => DURABLE_SETTINGS.editorRawMarkdownVimMode.write(checked))
+							}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.rawLivePreview.label")}
+						description={t("editor.rawLivePreview.description")}
+						searchId="general-editor-raw-live-preview"
+					>
+						<SettingsToggle
+							checked={
+								settings?.editor.rawMarkdownLivePreview ??
+								DURABLE_SETTINGS.editorRawMarkdownLivePreview.defaultValue
+							}
+							disabled={disabled}
+							ariaLabel={t("editor.rawLivePreview.label")}
+							onCheckedChange={(checked) =>
+								saveSetting.mutate(() =>
+									DURABLE_SETTINGS.editorRawMarkdownLivePreview.write(checked),
+								)
+							}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -118,10 +113,12 @@ export function ExperimentalSettingsPane() {
 						searchId="general-editor-zen-mode"
 					>
 						<SettingsToggle
-							checked={zenMode.checked}
-							disabled={zenMode.isSaving}
+							checked={settings?.editor.zenMode ?? DURABLE_SETTINGS.editorZenMode.defaultValue}
+							disabled={disabled}
 							ariaLabel={t("experimental.zenMode.ariaLabel")}
-							onCheckedChange={zenMode.onCheckedChange}
+							onCheckedChange={(checked) =>
+								saveSetting.mutate(() => DURABLE_SETTINGS.editorZenMode.write(checked))
+							}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -130,10 +127,14 @@ export function ExperimentalSettingsPane() {
 						searchId="general-editor-format-bar"
 					>
 						<SettingsToggle
-							checked={formatBar.checked}
-							disabled={formatBar.isSaving}
+							checked={
+								settings?.editor.showFormatBar ?? DURABLE_SETTINGS.editorShowFormatBar.defaultValue
+							}
+							disabled={disabled}
 							ariaLabel={t("editor.formatBar.ariaLabel")}
-							onCheckedChange={formatBar.onCheckedChange}
+							onCheckedChange={(checked) =>
+								saveSetting.mutate(() => DURABLE_SETTINGS.editorShowFormatBar.write(checked))
+							}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -144,12 +145,12 @@ export function ExperimentalSettingsPane() {
 					>
 						<SettingsSelect
 							aria-label={t("editor.focusMode.ariaLabel")}
-							value={focusMode.value}
-							disabled={focusMode.isSaving}
+							value={settings?.editor.focusMode ?? DURABLE_SETTINGS.editorFocusMode.defaultValue}
+							disabled={disabled}
 							onChange={(event) => {
 								const nextMode = event.currentTarget.value;
 								if (!isFocusMode(nextMode)) return;
-								focusMode.onChange(nextMode);
+								saveSetting.mutate(() => DURABLE_SETTINGS.editorFocusMode.write(nextMode));
 							}}
 						>
 							{FOCUS_MODE_VALUES.map((value) => (

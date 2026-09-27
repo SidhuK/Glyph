@@ -502,6 +502,11 @@
 			"section": "Editor",
 			"keywords": ["rechtschreibung", "tippfehler", "wörterbuch", "spelling", "typo", "dictionary"]
 		},
+		"general-editor-raw-live-preview": {
+			"title": "Live-Markdown im RAW-Modus",
+			"section": "Experimentell",
+			"keywords": ["raw", "markdown", "vim", "live", "preview"]
+		},
 		"general-editor-vim-mode": {
 			"title": "Vim-Modus",
 			"section": "Experimentell",

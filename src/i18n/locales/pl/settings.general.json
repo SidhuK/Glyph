@@ -120,6 +120,10 @@
 			"description": "Podkreślaj błędy ortograficzne podczas pisania. Kliknij słowo prawym przyciskiem myszy, aby wyświetlić sugerowane pisownie.",
 			"ariaLabel": "Sprawdzanie pisowni"
 		},
+		"rawLivePreview": {
+			"label": "Podgląd Markdown na żywo w trybie RAW",
+			"description": "Ukrywaj składnię Markdown poza aktywnym elementem. Działa z Vim. Kliknij, aby edytować; kliknij z klawiszem Command, aby otworzyć link."
+		},
 		"vimMode": {
 			"title": "Tryb Vim",
 			"label": "Tryb Vim",

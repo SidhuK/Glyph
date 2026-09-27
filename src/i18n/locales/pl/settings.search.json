@@ -518,6 +518,11 @@
 			"section": "Edytor",
 			"keywords": ["pisownia", "literówka", "słownik"]
 		},
+		"general-editor-raw-live-preview": {
+			"title": "Podgląd Markdown na żywo w trybie RAW",
+			"section": "Eksperymentalne",
+			"keywords": ["raw", "markdown", "vim", "live", "preview"]
+		},
 		"general-editor-vim-mode": {
 			"title": "Tryb Vim",
 			"section": "Eksperymentalne",

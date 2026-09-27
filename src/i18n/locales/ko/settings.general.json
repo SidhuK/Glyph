@@ -110,6 +110,10 @@
 			"description": "입력할 때 오타에 밑줄을 표시합니다. 단어를 마우스 오른쪽 버튼으로 클릭하면 맞춤법 제안이 표시됩니다.",
 			"ariaLabel": "맞춤법 검사"
 		},
+		"rawLivePreview": {
+			"label": "RAW 모드의 실시간 Markdown",
+			"description": "편집 중인 요소 외부의 Markdown 기호를 숨깁니다. Vim과 함께 사용할 수 있습니다. 클릭하여 편집하고 Command-클릭으로 링크를 엽니다."
+		},
 		"vimMode": {
 			"title": "Vim 모드",
 			"label": "Vim 모드",

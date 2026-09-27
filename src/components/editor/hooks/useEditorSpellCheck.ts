@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import { loadSettings } from "../../../lib/settings";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { type AppSettings, loadSettings } from "../../../lib/settings";
+import { DURABLE_SETTINGS } from "../../../lib/settings/definitions";
+import { invalidateSettingsCache } from "../../../lib/settingsStore";
 import { useTauriEvent } from "../../../lib/tauriEvents";
 
 export function applyDomSpellCheck(node: HTMLElement | null | undefined, enabled: boolean): void {
@@ -18,40 +20,37 @@ export function applyEditorSpellCheck(
 	}
 }
 
-function useEditorBooleanSetting(
-	key: "spellCheck" | "rawMarkdownVimMode",
-	defaultValue: boolean,
-): boolean {
-	const [enabled, setEnabled] = useState(defaultValue);
+const RAW_SETTINGS_QUERY_KEY = ["raw-markdown-settings"] as const;
+const DEFAULT_RAW_SETTINGS = {
+	spellCheck: DURABLE_SETTINGS.editorSpellCheck.defaultValue,
+	rawMarkdownVimMode: DURABLE_SETTINGS.editorRawMarkdownVimMode.defaultValue,
+	rawMarkdownLivePreview: DURABLE_SETTINGS.editorRawMarkdownLivePreview.defaultValue,
+};
 
-	useEffect(() => {
-		let cancelled = false;
-		void loadSettings()
-			.then((settings) => {
-				if (cancelled) return;
-				const value = settings.editor[key];
-				setEnabled(typeof value === "boolean" ? value : defaultValue);
-			})
-			.catch(() => {
-				if (!cancelled) setEnabled(defaultValue);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [defaultValue, key]);
+function selectRawSettings(settings: AppSettings) {
+	const { spellCheck, rawMarkdownVimMode, rawMarkdownLivePreview } = settings.editor;
+	return { spellCheck, rawMarkdownVimMode, rawMarkdownLivePreview };
+}
 
-	useTauriEvent("settings:updated", (payload) => {
-		const value = payload.editor?.[key];
-		if (typeof value === "boolean") setEnabled(value);
+export function useRawMarkdownSettings() {
+	const queryClient = useQueryClient();
+	const { data } = useQuery({
+		queryKey: RAW_SETTINGS_QUERY_KEY,
+		queryFn: () => loadSettings(),
+		select: selectRawSettings,
 	});
-
-	return enabled;
-}
-
-export function useEditorSpellCheck(): boolean {
-	return useEditorBooleanSetting("spellCheck", true);
-}
-
-export function useRawMarkdownVimMode(): boolean {
-	return useEditorBooleanSetting("rawMarkdownVimMode", false);
+	useTauriEvent("settings:updated", (payload) => {
+		const editor = payload.editor;
+		if (
+			typeof editor?.spellCheck !== "boolean" &&
+			typeof editor?.rawMarkdownVimMode !== "boolean" &&
+			typeof editor?.rawMarkdownLivePreview !== "boolean"
+		) {
+			return;
+		}
+		// Invalidate before refetching, independent of Tauri listener ordering.
+		invalidateSettingsCache();
+		void queryClient.invalidateQueries({ queryKey: RAW_SETTINGS_QUERY_KEY });
+	});
+	return data ?? DEFAULT_RAW_SETTINGS;
 }

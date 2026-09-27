@@ -694,6 +694,13 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.editor.rawMarkdownVimMode,
 		change: (value) => ({ editor: { rawMarkdownVimMode: value } }),
 	}),
+	editorRawMarkdownLivePreview: booleanSetting({
+		key: "editor.rawMarkdownLivePreview",
+		defaultValue: false,
+		discovery: searchable("general-editor-raw-live-preview"),
+		read: (settings) => settings.editor.rawMarkdownLivePreview,
+		change: (value) => ({ editor: { rawMarkdownLivePreview: value } }),
+	}),
 	editorSpellCheck: booleanSetting({
 		key: "editor.spellCheck",
 		defaultValue: true,

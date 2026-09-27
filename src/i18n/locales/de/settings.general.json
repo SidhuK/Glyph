@@ -110,6 +110,10 @@
 			"description": "Tippfehler beim Tippen unterstreichen. Rechtsklick auf ein Wort zeigt Vorschläge.",
 			"ariaLabel": "Rechtschreibprüfung"
 		},
+		"rawLivePreview": {
+			"label": "Live-Markdown im RAW-Modus",
+			"description": "Markdown-Syntax außerhalb des aktiven Elements ausblenden. Funktioniert mit Vim. Zum Bearbeiten klicken, mit Befehlstaste klicken, um Links zu öffnen."
+		},
 		"vimMode": {
 			"title": "Vim-Modus",
 			"label": "Vim-Modus",

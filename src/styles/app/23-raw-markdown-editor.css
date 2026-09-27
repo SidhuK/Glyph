@@ -665,3 +665,13 @@
 		padding-left: calc(var(--editor-readable-content-gutter-compact) + 12px);
 	}
 }
+
+.rfNodeNoteEditorRaw .cm-raw-live-bullet {
+	color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-live-rule {
+	background: linear-gradient(var(--border-default), var(--border-default)) center / 100% 1px
+		no-repeat;
+}

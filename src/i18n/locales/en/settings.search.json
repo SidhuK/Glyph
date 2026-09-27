@@ -543,6 +543,11 @@
 			"section": "Editor",
 			"keywords": ["rich", "preview", "raw", "markdown"]
 		},
+		"general-editor-raw-live-preview": {
+			"title": "Live Markdown in RAW mode",
+			"section": "Experimental",
+			"keywords": ["raw", "markdown", "vim", "live", "preview"]
+		},
 		"general-editor-vim-mode": {
 			"title": "Vim Mode",
 			"section": "Experimental",
