@@ -162,6 +162,7 @@
 		"previousMonth": "Mois précédent",
 		"nextMonth": "Mois suivant",
 		"openDailyNote": "Ouvrir la note du jour",
+		"openOrCreateWeeklyNote": "Ouvrir ou créer une note hebdomadaire",
 		"loading": "Chargement…",
 		"noteCount_one": "1 note",
 		"noteCount_other": "{{count}} notes",
