@@ -26,6 +26,8 @@ pub struct TextFileDoc {
 
 #[derive(Serialize)]
 pub struct TextFileWriteResult {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub formatted_text: Option<String>,
     pub etag: String,
     pub mtime_ms: u64,
 }

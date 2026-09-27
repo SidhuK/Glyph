@@ -23,6 +23,12 @@ import {
 	asHeadingPaletteId,
 	isHeadingPaletteId,
 } from "../headingPalettes";
+import {
+	DEFAULT_MARKDOWN_FORMATTER,
+	type MarkdownFormatterSettings,
+	isMarkdownFormatterSettings,
+	normalizeMarkdownFormatter,
+} from "../markdownFormatter";
 import { getSettingsStore, saveSettingsStore } from "../settingsStore";
 import { invoke } from "../tauri";
 import {
@@ -693,6 +699,15 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("general-editor-vim-mode"),
 		read: (settings) => settings.editor.rawMarkdownVimMode,
 		change: (value) => ({ editor: { rawMarkdownVimMode: value } }),
+	}),
+	editorMarkdownFormatter: defineApplicationSetting<MarkdownFormatterSettings>({
+		key: "editor.markdownFormatter",
+		defaultValue: DEFAULT_MARKDOWN_FORMATTER,
+		discovery: searchable("general-editor-markdown-formatter"),
+		normalize: normalizeMarkdownFormatter,
+		parse: (value) => (isMarkdownFormatterSettings(value) ? parsed(value) : INVALID_PARSE_RESULT),
+		read: (settings) => settings.editor.markdownFormatter,
+		change: (value) => ({ editor: { markdownFormatter: value } }),
 	}),
 	editorSpellCheck: booleanSetting({
 		key: "editor.spellCheck",

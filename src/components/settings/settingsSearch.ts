@@ -23,6 +23,7 @@ export interface SettingsSearchDef {
 const SETTINGS_SEARCH_TARGET_CLASS = "settingsSearchTarget";
 
 const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
+	{ id: "general-editor-markdown-formatter", tab: "editor" },
 	{ id: "general-license", tab: "general" },
 	{ id: "general-trial-status", tab: "general" },
 	{ id: "general-activated", tab: "general" },

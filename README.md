@@ -60,6 +60,22 @@ Glyph is an offline-first desktop note-taking application. It combines a Tauri 2
 - **Local search** — a derived SQLite index keeps navigation fast without sending notes anywhere.
 - **Focused desktop workspace** — a macOS-first Tauri app with a rich editor, spaces, tasks, databases, and optional AI tools.
 
+## Markdown formatters
+
+In Settings → Editor → Markdown formatter, enable **Format on save** and enter the absolute path to a formatter installed on your Mac. Glyph runs it before manual saves and autosaves. The executable must read Markdown from stdin and return formatted Markdown on stdout.
+
+For [mdformat](https://mdformat.readthedocs.io/en/stable/users/configuration_file.html):
+
+- Set the executable to your installed `mdformat` path.
+- Leave arguments as `["-"]` and the config filename as `.mdformat.toml`.
+- Add `.mdformat.toml` to your Space and save the formatter settings.
+
+Glyph searches from each note's folder up to the Space root. It runs from the folder containing the nearest matching config. Notes without a matching config save normally. These app settings apply to every Space, so enable formatting only for configs and formatter plugins you trust. Glyph does not load executable commands from the Space or bundle formatters.
+
+Other stdin/stdout formatters can use a JSON array of arguments. `{config}` expands to the detected config path, and `{filepath}` expands to the note path for options such as a stdin filename. Arguments are passed directly, without shell expansion. Do not configure in-place writes. Formatter-specific extensions, including wikilinks, require support from the formatter or its plugins.
+
+Formatting has a 10-second timeout and a 16 MiB output limit. A failed process, invalid UTF-8, or empty output for a nonempty note leaves the existing file untouched and reports a save error. Your edits remain in the editor. Successful output is written atomically and indexed. Newer edits typed during formatting are preserved and queued for another save; external file changes still use Glyph's conflict handling.
+
 ## Prerequisites
 
 | Dependency | Version                                            |

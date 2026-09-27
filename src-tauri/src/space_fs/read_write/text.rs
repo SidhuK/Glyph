@@ -41,6 +41,7 @@ fn write_text_under_root(
         )?;
         return Ok((
             TextFileWriteResult {
+                formatted_text: None,
                 etag: committed.etag,
                 mtime_ms: committed.mtime_ms,
             },
@@ -64,6 +65,7 @@ fn write_text_under_root(
     mark_recent_local_change(recent_local_changes, &rel_path);
     Ok((
         TextFileWriteResult {
+            formatted_text: None,
             etag: etag_for(bytes),
             mtime_ms: file_mtime_ms(&abs),
         },
@@ -156,20 +158,52 @@ pub async fn space_write_text(
     let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let note_mutation_mutex = state.note_mutation_mutex();
+    let formatter_app = app.clone();
+    let formatter_root = root.clone();
+    let formatter_path = path.clone();
+    let (formatter, observed_mtime) = tauri::async_runtime::spawn_blocking(move || {
+        let rel = PathBuf::from(formatter_path);
+        deny_hidden_rel_path(&rel)?;
+        let abs = paths::join_under(&formatter_root, &rel)?;
+        let observed = file_mtime_ms(&abs);
+        if base_mtime_ms.is_some_and(|expected| expected != observed || observed == 0) {
+            return Err("conflict: on-disk file changed since it was opened".to_string());
+        }
+        Ok((
+            super::formatter::resolve(&formatter_app, &formatter_root, &rel)?,
+            observed,
+        ))
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+    let (text, text_changed) = match formatter {
+        Some(formatter) => {
+            let formatted = formatter.format(&text).await?;
+            let changed = formatted != text;
+            (formatted, changed)
+        }
+        None => (text, false),
+    };
     let (result, change) = tauri::async_runtime::spawn_blocking(
         move || -> Result<(TextFileWriteResult, Option<SpaceChange>), String> {
             let _guard = note_mutation_mutex
                 .lock()
                 .map_err(|_| "note mutation mutex poisoned".to_string())?;
             let rel = PathBuf::from(&path);
-            write_text_under_root(
+            let abs = paths::join_under(&root, &rel)?;
+            if file_mtime_ms(&abs) != observed_mtime {
+                return Err("conflict: on-disk file changed since it was opened".to_string());
+            }
+            let (mut result, change) = write_text_under_root(
                 &root,
                 &recent_local_changes,
                 &space_path,
                 &rel,
                 &text,
                 base_mtime_ms,
-            )
+            )?;
+            result.formatted_text = text_changed.then_some(text);
+            Ok((result, change))
         },
     )
     .await

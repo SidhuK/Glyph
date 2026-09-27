@@ -70,6 +70,11 @@
 		}
 	},
 	"entries": {
+		"general-editor-markdown-formatter": {
+			"title": "Markdown formatter",
+			"description": "Configure a trusted formatter and detect its config file before saving.",
+			"keywords": ["mdformat", "prettier", "format on save", "autosave", "command"]
+		},
 		"appearance-app-icon": {
 			"title": "Dock icon",
 			"section": "Appearance",

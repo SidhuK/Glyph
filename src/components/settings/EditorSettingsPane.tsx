@@ -18,6 +18,7 @@ import {
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { HeadingPalettePicker } from "./HeadingPalettePicker";
+import { MarkdownFormatterSettings } from "./MarkdownFormatterSettings";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
@@ -191,6 +192,7 @@ export function EditorSettingsPane() {
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
+				<MarkdownFormatterSettings />
 				<SettingsSection
 					title={t("editor.sectionTitle")}
 					description={t("editor.sectionDescription")}
