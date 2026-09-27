@@ -53,12 +53,14 @@ function placeCaretAtEvent(view: EditorView, event: MouseEvent): boolean {
 
 export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 	return {
-		mousedown: (event: MouseEvent) => {
+		mousedown: (event: MouseEvent, view: EditorView) => {
 			const target = event.target instanceof Element ? event.target : null;
 			if (
-				target?.closest(
-					".cm-raw-task-checkbox, .cm-raw-wiki-link, .cm-raw-markdown-link, .cm-raw-tag, .cm-raw-footnote",
-				)
+				target?.closest(".cm-raw-task-checkbox") ||
+				((!view.state.facet(rawMarkdownLivePreview) || event.metaKey) &&
+					target?.closest(
+						".cm-raw-wiki-link, .cm-raw-markdown-link, .cm-raw-tag, .cm-raw-footnote",
+					))
 			) {
 				event.preventDefault();
 			}
@@ -69,12 +71,8 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			const task = target?.closest<HTMLElement>(".cm-raw-task-checkbox");
 			if (task) return toggleTask(view, task);
 
-			if (
-				view.state.facet(rawMarkdownLivePreview) &&
-				!event.metaKey &&
-				target?.closest(".cm-raw-wiki-link, .cm-raw-markdown-link, .cm-raw-tag, .cm-raw-footnote")
-			) {
-				return placeCaretAtEvent(view, event);
+			if (view.state.facet(rawMarkdownLivePreview) && !event.metaKey) {
+				return false;
 			}
 
 			const footnote = target?.closest<HTMLElement>(".cm-raw-footnote");
