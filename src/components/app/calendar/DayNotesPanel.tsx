@@ -72,10 +72,15 @@ export function DayNotesPanel({
 	const { t } = useTranslation("shell");
 	const { dailyNotesFolder, periodNotesEnabled } = useUILayoutContext();
 	const weeklyPeriod = periodIdFromDate("week", selectedDate);
-	const weeklyPath =
-		dailyNotesFolder && periodNotesEnabled.week
-			? getPeriodNotePath(dailyNotesFolder, weeklyPeriod)
-			: null;
+	let weeklyPath: string | null = null;
+	let panelError = errorMessage;
+	if (dailyNotesFolder && periodNotesEnabled.week) {
+		try {
+			weeklyPath = getPeriodNotePath(dailyNotesFolder, weeklyPeriod);
+		} catch (error) {
+			panelError = error instanceof Error ? error.message : String(error);
+		}
+	}
 	const dayNotes = weeklyPath ? notes.filter((note) => note.path !== weeklyPath) : notes;
 	const openablePeriodKinds = PERIOD_KINDS.filter((kind) =>
 		isPeriodNoteEnabled(kind, periodNotesEnabled),
@@ -93,7 +98,7 @@ export function DayNotesPanel({
 
 	const summary = isLoading
 		? t("calendar.loading")
-		: errorMessage
+		: panelError
 			? t("calendar.loadFailedShort")
 			: dayNotes.length > 0
 				? t("calendar.noteCount", { count: dayNotes.length })
@@ -134,9 +139,9 @@ export function DayNotesPanel({
 							<li key={row} className="calendarNoteSkeleton" />
 						))}
 					</ul>
-				) : errorMessage ? (
+				) : panelError ? (
 					<p className="calendarNotesMessage" role="alert">
-						{t("calendar.loadFailed", { message: errorMessage })}
+						{t("calendar.loadFailed", { message: panelError })}
 					</p>
 				) : dayNotes.length > 0 ? (
 					<ul className="calendarNotesList">
