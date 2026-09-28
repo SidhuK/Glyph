@@ -374,6 +374,7 @@ export interface CalendarDateNote {
 }
 
 export interface SearchAdvancedRequest {
+	include_archived?: boolean;
 	query?: string | null;
 	tags?: string[];
 	people?: string[];
@@ -965,7 +966,10 @@ interface TauriCommands {
 	>;
 	space_create_dir: CommandDef<{ path: string }, void>;
 	space_duplicate_path: CommandDef<{ path: string }, FsEntry>;
-	space_rename_path: CommandDef<{ from_path: string; to_path: string }, LinkRewriteResult>;
+	space_rename_path: CommandDef<
+		{ from_path: string; to_path: string; expected_space?: string },
+		LinkRewriteResult
+	>;
 	space_delete_path: CommandDef<{ path: string; recursive?: boolean | null }, void>;
 	space_resolve_abs_path: CommandDef<{ path: string }, string>;
 	space_reveal_path: CommandDef<{ path: string }, void>;
@@ -1056,8 +1060,16 @@ interface TauriCommands {
 	index_sync: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
 	search_advanced: CommandDef<{ request: SearchAdvancedRequest }, SearchResult[]>;
-	search_parse_and_run: CommandDef<{ raw_query: string; limit?: number | null }, SearchResult[]>;
+	search_parse_and_run: CommandDef<
+		{ raw_query: string; limit?: number | null; include_archived?: boolean },
+		SearchResult[]
+	>;
 	index_set_people_mentions_as_tags_enabled: CommandDef<{ enabled: boolean }, void>;
+	notes_archived_paths: CommandDef<Record<string, never>, string[]>;
+	notes_set_archived: CommandDef<
+		{ paths: string[]; archived: boolean; expected_space: string },
+		{ changed_paths: string[]; failures: { path: string; error: string }[] }
+	>;
 	all_docs_list: CommandDef<
 		{
 			limit?: number | null;
@@ -1068,10 +1080,11 @@ interface TauriCommands {
 			sort_mode?: FileTreeSortMode | null;
 			query?: string | null;
 			pinned_paths?: string[] | null;
+			archived?: boolean;
 		},
 		AllDocsItem[]
 	>;
-	all_docs_count: CommandDef<{ folder_prefix?: string | null }, number>;
+	all_docs_count: CommandDef<{ folder_prefix?: string | null; archived?: boolean }, number>;
 	index_calendar_activity: CommandDef<
 		{
 			from_date: string;

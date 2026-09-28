@@ -20,6 +20,7 @@ interface FileTreeFileMenuOptions {
 	onCreateFromTemplate: () => void;
 	onCreateFolder: () => void;
 	onDelete: () => void;
+	onArchive?: () => void;
 }
 
 export function fileTreeAppearanceNativeMenu(
@@ -49,6 +50,7 @@ export function buildFileTreeFileNativeMenu({
 	onCreateFromTemplate,
 	onCreateFolder,
 	onDelete,
+	onArchive,
 }: FileTreeFileMenuOptions): NativeContextMenuItem[] {
 	return [
 		{ label: i18n.t("shell:fileTree.open"), action: onOpen },
@@ -76,6 +78,9 @@ export function buildFileTreeFileNativeMenu({
 		{ label: i18n.t("shell:fileTree.createFromTemplate"), action: onCreateFromTemplate },
 		{ label: i18n.t("shell:fileTree.addFolder"), action: onCreateFolder },
 		{ type: "separator" },
+		...(isMarkdown && onArchive
+			? [{ label: i18n.t("shell:noteCollections.archive"), action: onArchive }]
+			: []),
 		{ label: i18n.t("shell:fileTree.deleteFile"), action: onDelete },
 	];
 }

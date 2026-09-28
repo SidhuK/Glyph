@@ -9,7 +9,7 @@ import {
 	useState,
 } from "react";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
-import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
+import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
@@ -141,7 +141,13 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			className="canvasPaneHost"
 			data-editor-pane-id={pane.id}
 			data-space-connections={viewerPath === SPACE_CONNECTIONS_TAB_ID ? "true" : undefined}
-			data-all-docs={viewerPath === ACTIVITY_TIMELINE_TAB_ID ? "true" : undefined}
+			data-all-docs={
+				viewerPath === ACTIVITY_TIMELINE_TAB_ID ||
+				viewerPath === INBOX_TAB_ID ||
+				viewerPath === ARCHIVE_TAB_ID
+					? "true"
+					: undefined
+			}
 			data-databases={viewerPath === DATABASES_TAB_ID ? "true" : undefined}
 		>
 			{!zenMode && pane.tabs.length > 0 ? (
@@ -221,10 +227,24 @@ function EditorPaneContent({
 		[setDirtyByPath, viewerPath],
 	);
 
-	if (viewerPath === ACTIVITY_TIMELINE_TAB_ID) {
+	if (
+		viewerPath === ACTIVITY_TIMELINE_TAB_ID ||
+		viewerPath === INBOX_TAB_ID ||
+		viewerPath === ARCHIVE_TAB_ID
+	) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-				<ActivityTimelinePane onOpenFile={onBrowseFile} />
+				<ActivityTimelinePane
+					key={viewerPath}
+					kind={
+						viewerPath === INBOX_TAB_ID
+							? "inbox"
+							: viewerPath === ARCHIVE_TAB_ID
+								? "archive"
+								: "all"
+					}
+					onOpenFile={onBrowseFile}
+				/>
 			</Suspense>
 		);
 	}

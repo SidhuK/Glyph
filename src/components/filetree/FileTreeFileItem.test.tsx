@@ -62,6 +62,11 @@ vi.mock("../../lib/externalMarkdown", () => ({
 	openMarkdownInExternalWindow: openMarkdownInExternalWindowMock,
 }));
 
+vi.mock("../../hooks/useNoteArchive", () => ({
+	useArchivedPaths: () => ({ data: new Set<string>() }),
+	useNoteArchive: () => ({ enabled: false, isPending: false, setArchived: vi.fn() }),
+}));
+
 vi.mock("../../contexts", () => ({
 	useSpace: () => ({ spacePath: "/space" }),
 	useEditorContext: () => ({

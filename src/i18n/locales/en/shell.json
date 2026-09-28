@@ -36,7 +36,9 @@
 		"sortNotes": "Sort notes",
 		"sort": "Sort",
 		"expandAllFolders": "Expand all folders",
-		"collapseAllFolders": "Collapse all folders"
+		"collapseAllFolders": "Collapse all folders",
+		"inbox": "Inbox",
+		"archive": "Archive"
 	},
 	"sort": {
 		"nameAsc": "Name A-Z",
@@ -286,5 +288,25 @@
 		"closeSpace": "Close space",
 		"chooseIcon": "Choose a space icon",
 		"menuFailed": "Could not open the space menu"
+	},
+	"noteCollections": {
+		"enableArchive": "Enable Archive in Space settings",
+		"configureInbox": "Set up Inbox",
+		"archive": "Archive",
+		"unarchive": "Unarchive",
+		"archived": "Archived",
+		"archivedTooltip": "Archived. Click to unarchive.",
+		"undo": "Undo",
+		"archivedCount_one": "Archived {{count}} note",
+		"archivedCount_other": "Archived {{count}} notes",
+		"restoredCount_one": "Unarchived {{count}} note",
+		"restoredCount_other": "Unarchived {{count}} notes",
+		"partialFailure": "Some notes could not be updated",
+		"actionFailed": "Could not update notes",
+		"unsaved": "Save your pending edits before continuing.",
+		"spaceChanged": "The open space changed. Try again.",
+		"retry": "Retry",
+		"inboxEmpty": "Your Inbox is clear.",
+		"archiveEmpty": "No archived notes."
 	}
 }

@@ -130,6 +130,24 @@ button.sidebarNewCanvasIconBtn:active {
 	color: var(--text-primary);
 }
 
+.sidebarNavBtn[data-kind="inbox"] > svg {
+	color: var(--color-blue-dark-400);
+}
+
+.sidebarNavBtn[data-kind="archive"] > svg {
+	color: #b5c879;
+}
+
+.sidebarNavBtn[data-kind="inbox"] > svg path:first-child,
+.sidebarNavBtn[data-kind="archive"] > svg path:first-child {
+	fill: currentcolor;
+}
+
+.sidebarNavBtn[data-kind="inbox"] > svg path:last-child,
+.sidebarNavBtn[data-kind="archive"] > svg path:last-child {
+	stroke: var(--bg-primary);
+}
+
 /* ── New note: filled accent icon ── */
 .sidebarNavBtn[data-kind="new-note"] > svg {
 	color: var(--interactive-accent);

@@ -764,6 +764,15 @@ export async function writeSidebarLayout({
 }
 
 export const SPACE_SETTINGS = {
+	archiveEnabled: booleanSpaceSetting({
+		legacyKey: "archive.enabled",
+		field: "archiveEnabled",
+		defaultValue: false,
+		discovery: searchable("space-archive-enabled"),
+		read: (settings) => settings.archive.enabled,
+		patch: (value) => ({ archiveEnabled: value }),
+		change: (value) => ({ archive: { enabled: value } }),
+	}),
 	dailyNotesFolder: defineSpaceSetting({
 		legacyKey: "dailyNotes.folder",
 		field: "dailyNotesFolder",

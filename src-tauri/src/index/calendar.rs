@@ -1,3 +1,4 @@
+use crate::notes::archive::ACTIVE_NOTES;
 use std::collections::HashMap;
 
 use chrono::{Days, NaiveDate};
@@ -136,7 +137,7 @@ fn collect_daily_note_events(
 ) -> Result<(), String> {
     let daily_glob = daily_note_glob(daily_folder);
     let mut stmt = conn
-        .prepare("SELECT path, title FROM notes WHERE path GLOB ?")
+        .prepare(&format!("SELECT path, title FROM notes n WHERE {ACTIVE_NOTES} AND path GLOB ?"))
         .map_err(|e| e.to_string())?;
     let mut rows = stmt.query([&daily_glob]).map_err(|e| e.to_string())?;
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -169,8 +170,8 @@ fn collect_timestamp_events(
     let timestamp_column = timestamp_column.sql_name();
     let sql = format!(
         "SELECT path, title, {timestamp_column}
-         FROM notes
-         WHERE substr({timestamp_column}, 1, 10) BETWEEN ?1 AND ?2"
+         FROM notes n
+         WHERE {ACTIVE_NOTES} AND substr({timestamp_column}, 1, 10) BETWEEN ?1 AND ?2"
     );
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let mut rows = stmt

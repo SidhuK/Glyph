@@ -34,7 +34,9 @@ const SIDEBAR_VISIBILITY_KEYS = [
 	"agent",
 	"newNote",
 	"newCanvas",
+	"inbox",
 	"allNotes",
+	"archive",
 	"databases",
 	"connections",
 	"calendar",
@@ -57,6 +59,7 @@ export const DEFAULT_SIDEBAR_ORDER: SidebarOrder = [
 	"agent",
 	"newNote",
 	"newCanvas",
+	"inbox",
 	"allNotes",
 	"databases",
 	"connections",
@@ -65,6 +68,7 @@ export const DEFAULT_SIDEBAR_ORDER: SidebarOrder = [
 	"quickNote",
 	"templates",
 	"gitSync",
+	"archive",
 	"periodNotes",
 ];
 
@@ -72,7 +76,9 @@ export const DEFAULT_SIDEBAR_VISIBILITY = {
 	agent: false,
 	newNote: true,
 	newCanvas: true,
+	inbox: false,
 	allNotes: true,
+	archive: false,
 	databases: true,
 	connections: true,
 	calendar: false,
@@ -97,7 +103,9 @@ export function normalizeSidebarVisibility(value: unknown): SidebarVisibility {
 		agent: read("agent"),
 		newNote: read("newNote"),
 		newCanvas: read("newCanvas"),
+		inbox: read("inbox"),
 		allNotes: read("allNotes"),
+		archive: read("archive"),
 		databases: read("databases"),
 		connections: read("connections"),
 		calendar: read("calendar"),
@@ -219,6 +227,7 @@ export interface AppSettings {
 		quarterlyNotes: boolean;
 	};
 	quickNotes: QuickNotesSettings;
+	archive: { enabled: boolean };
 	noteCreation: NoteCreationSettings;
 	templates: {
 		folder: string | null;
@@ -238,6 +247,7 @@ export interface SpaceScopedSettings {
 	dailyNotesMonthlyNotes?: boolean;
 	dailyNotesQuarterlyNotes?: boolean;
 	quickNotesFolder?: string;
+	archiveEnabled?: boolean;
 	noteCreationDefaultFolder?: string | null;
 	templatesFolder?: string | null;
 	templatesDailyNoteTemplate?: string | null;
@@ -256,6 +266,7 @@ interface SettingsChangeSections {
 	ui: AppSettings["ui"];
 	dailyNotes: AppSettings["dailyNotes"];
 	quickNotes: AppSettings["quickNotes"];
+	archive: AppSettings["archive"];
 	noteCreation: AppSettings["noteCreation"];
 	templates: AppSettings["templates"];
 	editor: AppSettings["editor"];

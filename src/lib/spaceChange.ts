@@ -77,6 +77,8 @@ function reloadDirs(relPath: string, current: SpaceChangeHost, includeSelf: bool
 }
 
 function invalidateDerived(path: string | null, removed: boolean): void {
+	void queryClient.invalidateQueries({ queryKey: ["navigation", "archived-paths"] });
+	void queryClient.invalidateQueries({ queryKey: ["navigation", "search"] });
 	if (path) {
 		invalidatePrefetchedNote(path);
 		for (const fn of previewInvalidators) fn(path, removed);

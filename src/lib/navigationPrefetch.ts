@@ -244,11 +244,13 @@ async function loadAllDocsPage(
 	folderPrefix?: string | null,
 	offset = 0,
 	limit = ALL_DOCS_PAGE_SIZE,
+	archived = false,
 ): Promise<AllDocsPage> {
 	const items = await invoke("all_docs_list", {
 		limit: limit + 1,
 		offset,
 		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
+		archived,
 	});
 	const pageItems = items.slice(0, limit);
 	return {
@@ -257,23 +259,27 @@ async function loadAllDocsPage(
 	};
 }
 
-export async function loadAllDocs(folderPrefix?: string | null) {
+export async function loadAllDocs(folderPrefix?: string | null, archived = false) {
 	return invoke("all_docs_list", {
 		limit: ALL_DOCS_LIST_LIMIT,
 		offset: 0,
 		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
+		archived,
 	});
 }
 
 export function allDocsPagesQueryOptions(
 	folderPrefix?: string | null,
 	pageSize = ACTIVITY_DOCS_PAGE_SIZE,
+	archived = false,
 ) {
 	return {
-		queryKey: navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
+		queryKey: archived
+			? [...navigationQueryKeys.allDocsPages(folderPrefix, pageSize), "archived"]
+			: navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
 		queryFn: ({ pageParam }: { pageParam: unknown }) => {
 			const offset = typeof pageParam === "number" ? pageParam : 0;
-			return loadAllDocsPage(folderPrefix, offset, pageSize);
+			return loadAllDocsPage(folderPrefix, offset, pageSize, archived);
 		},
 		initialPageParam: 0,
 		getNextPageParam: (lastPage: AllDocsPage) => lastPage.nextOffset ?? undefined,
@@ -281,10 +287,12 @@ export function allDocsPagesQueryOptions(
 	};
 }
 
-export function allDocsListQueryOptions(folderPrefix?: string | null) {
+export function allDocsListQueryOptions(folderPrefix?: string | null, archived = false) {
 	return {
-		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
-		queryFn: () => loadAllDocs(folderPrefix),
+		queryKey: archived
+			? [...navigationQueryKeys.allDocsList(folderPrefix), "archived"]
+			: navigationQueryKeys.allDocsList(folderPrefix),
+		queryFn: () => loadAllDocs(folderPrefix, archived),
 		staleTime: NAVIGATION_STALE_TIME_MS,
 	};
 }

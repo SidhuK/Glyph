@@ -278,9 +278,13 @@ pub async fn space_rename_path(
     state: State<'_, SpaceState>,
     from_path: String,
     to_path: String,
+    expected_space: Option<String>,
 ) -> Result<LinkRewriteResult, String> {
     let root = state.root_for_window(&window)?;
     let space_path = root.to_string_lossy().to_string();
+    if expected_space.as_deref().is_some_and(|expected| expected != space_path.as_str()) {
+        return Err("Space changed before moving the note".into());
+    }
     let window_label = window.label().to_string();
     let emit_from = from_path.clone();
     let emit_to = to_path.clone();

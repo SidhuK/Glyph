@@ -1,3 +1,4 @@
+import { INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { m } from "motion/react";
 import {
 	type CSSProperties,
@@ -470,7 +471,7 @@ export const MainContent = memo(function MainContent({
 		<>
 			<main className="mainArea" data-right-sidebar-open={rightSidebarOpen ? "true" : undefined}>
 				<div className="canvasWrapper">
-					{folioMode ? (
+					{folioMode && activeTabPath !== INBOX_TAB_ID && activeTabPath !== ARCHIVE_TAB_ID ? (
 						<FolioWorkspace
 							activeTabPath={activeTabPath}
 							onOpenFile={onOpenFolioFile}

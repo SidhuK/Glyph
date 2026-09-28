@@ -6,6 +6,8 @@ use tauri::{Emitter, State, WebviewWindow};
 
 use crate::space::SpaceState;
 
+use crate::notes::archive::{ACTIVE_NOTES, ARCHIVED_NOTES};
+
 use super::checklists::{
     query_note_checklist_summaries, summarize_tasks, NoteTaskSummary, NoteTaskSummaryItem,
 };
@@ -204,7 +206,7 @@ pub async fn search(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
-        let notes = hybrid_search(&conn, &query, &[], 50)?;
+        let notes = hybrid_search(&conn, &query, &[], false, 50)?;
         Ok(expand_text_matches(&root, notes, query.trim(), 200))
     })
     .await
@@ -226,16 +228,18 @@ pub async fn search_advanced(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn search_parse_and_run(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     raw_query: String,
     limit: Option<u32>,
+    include_archived: Option<bool>,
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
-        let req = parse_raw_search_query(&raw_query, limit);
+        let mut req = parse_raw_search_query(&raw_query, limit);
+        req.include_archived = include_archived.unwrap_or(false);
         let conn = open_db(&root)?;
         run_search_with_matches(&conn, &root, req)
     })
@@ -261,6 +265,7 @@ pub async fn all_docs_list(
     sort_mode: Option<String>,
     query: Option<String>,
     pinned_paths: Option<Vec<String>>,
+    archived: Option<bool>,
 ) -> Result<Vec<AllDocsItem>, String> {
     let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(2_000).clamp(1, 5_000) as i64;
@@ -309,7 +314,11 @@ pub async fn all_docs_list(
                  FROM notes n
                  LEFT JOIN pinned_paths pinned ON pinned.path = n.path ",
         );
-        let mut filters: Vec<&str> = Vec::new();
+        let mut filters = vec![if archived.unwrap_or(false) {
+            ARCHIVED_NOTES
+        } else {
+            ACTIVE_NOTES
+        }];
         if let Some(prefix) = folder_prefix.as_ref() {
             filters.push("n.path LIKE ? ESCAPE '\\'");
             params.push(rusqlite::types::Value::from(format!(
@@ -420,20 +429,22 @@ pub async fn all_docs_list(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn all_docs_count(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     folder_prefix: Option<String>,
+    archived: Option<bool>,
 ) -> Result<u32, String> {
     let root = state.root_for_window(&window)?;
     let folder_prefix = normalize_folder_prefix(folder_prefix);
     tauri::async_runtime::spawn_blocking(move || -> Result<u32, String> {
         let conn = open_db(&root)?;
-        let mut sql = String::from("SELECT COUNT(*) FROM notes n ");
+        let archive_filter = if archived.unwrap_or(false) { ARCHIVED_NOTES } else { ACTIVE_NOTES };
+        let mut sql = format!("SELECT COUNT(*) FROM notes n WHERE {archive_filter} ");
         let mut params: Vec<rusqlite::types::Value> = Vec::new();
         if let Some(prefix) = folder_prefix.as_ref() {
-            sql.push_str("WHERE n.path LIKE ? ESCAPE '\\' ");
+            sql.push_str("AND n.path LIKE ? ESCAPE '\\' ");
             params.push(rusqlite::types::Value::from(format!(
                 "{}/%",
                 escape_like(prefix)
@@ -484,7 +495,7 @@ fn list_tags(
                 COUNT(*) AS total_count,
                 MAX(is_explicit) AS is_explicit
          FROM tags
-         WHERE tag NOT LIKE 'people/%'",
+         WHERE tag NOT LIKE 'people/%' AND note_id NOT IN (SELECT note_id FROM note_properties WHERE key = 'archived' AND value_type = 'checkbox' AND value_text = 'true')",
     );
     let mut params: Vec<rusqlite::types::Value> = Vec::new();
     let mut order_by = String::from("tag ASC");
@@ -564,6 +575,7 @@ fn list_people(
             "SELECT tag, COUNT(*) AS total_count
              FROM tags
              WHERE tag LIKE ? AND is_explicit = 1
+               AND note_id NOT IN (SELECT note_id FROM note_properties WHERE key = 'archived' AND value_type = 'checkbox' AND value_text = 'true')
              GROUP BY tag
              ORDER BY tag ASC
              LIMIT ? OFFSET ?",

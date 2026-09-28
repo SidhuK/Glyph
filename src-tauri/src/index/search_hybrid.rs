@@ -74,6 +74,7 @@ fn keyword_search(
     conn: &Connection,
     query: &str,
     tags: &[String],
+    include_archived: bool,
     limit: i64,
 ) -> Result<Vec<SearchResult>, String> {
     let mut sql = String::from(
@@ -88,7 +89,11 @@ fn keyword_search(
             idx = i
         ));
     }
-    sql.push_str("WHERE notes_fts MATCH ? ORDER BY score LIMIT ?");
+    sql.push_str("WHERE notes_fts MATCH ? ");
+    if !include_archived {
+        sql.push_str(&format!("AND notes_fts.id NOT IN ({}) ", crate::notes::archive::ARCHIVED_NOTE_IDS));
+    }
+    sql.push_str("ORDER BY score LIMIT ?");
 
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let mut params: Vec<rusqlite::types::Value> = tags
@@ -120,6 +125,7 @@ fn semantic_candidates(
     conn: &Connection,
     terms: &[String],
     tags: &[String],
+    include_archived: bool,
 ) -> Result<Vec<(String, String, String)>, String> {
     let mut sql = String::from("SELECT n.id, n.title, n.preview FROM notes n ");
     for i in 0..tags.len() {
@@ -128,15 +134,19 @@ fn semantic_candidates(
             idx = i
         ));
     }
+    sql.push_str("WHERE 1=1 ");
+    if !include_archived {
+        sql.push_str(&format!("AND {} ", crate::notes::archive::ACTIVE_NOTES));
+    }
     if !terms.is_empty() {
-        sql.push_str("WHERE ");
+        sql.push_str("AND (");
         for (i, _) in terms.iter().enumerate() {
             if i > 0 {
                 sql.push_str(" OR ");
             }
             sql.push_str("lower(n.title) LIKE ? OR lower(n.preview) LIKE ?");
         }
-        sql.push(' ');
+        sql.push_str(") ");
     }
     sql.push_str("ORDER BY n.updated DESC LIMIT ?");
 
@@ -170,6 +180,7 @@ pub fn hybrid_search(
     conn: &Connection,
     query: &str,
     tags: &[String],
+    include_archived: bool,
     limit: i64,
 ) -> Result<Vec<SearchResult>, String> {
     let q = query.trim();
@@ -179,8 +190,8 @@ pub fn hybrid_search(
     let q_lc = q.to_lowercase();
     let terms = tokenize_query(&q_lc);
 
-    let keyword = keyword_search(conn, q, tags, limit.max(50)).unwrap_or_default();
-    let candidates = semantic_candidates(conn, &terms, tags)?;
+    let keyword = keyword_search(conn, q, tags, include_archived, limit.max(50)).unwrap_or_default();
+    let candidates = semantic_candidates(conn, &terms, tags, include_archived)?;
 
     let mut ranked: HashMap<String, SearchResult> = HashMap::new();
     let keyword_len = keyword.len().max(1) as f64;

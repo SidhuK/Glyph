@@ -1,3 +1,8 @@
+import { extractErrorMessage } from "../../lib/errorUtils";
+import { toast } from "../../lib/toast";
+import { useTranslation } from "react-i18next";
+import { useArchivedPaths, useNoteArchive } from "../../hooks/useNoteArchive";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { m } from "motion/react";
 import type { KeyboardEvent } from "react";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -161,6 +166,10 @@ export function AllDocsCard({
 	onPrefetch,
 	onOpen,
 }: AllDocsCardProps) {
+	const archive = useNoteArchive();
+	const archivedPaths = useArchivedPaths();
+	const archived = archivedPaths.data?.has(notePath) ?? false;
+	const { t } = useTranslation("shell");
 	const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
 		onPrefetch?.();
 	});
@@ -183,6 +192,19 @@ export function AllDocsCard({
 		<m.button
 			type="button"
 			className="allDocsCard"
+			onContextMenu={(event) => {
+				if (!archive.enabled) return;
+				void showNativeContextMenu(event, [
+					{
+						label: t(archived ? "noteCollections.unarchive" : "noteCollections.archive"),
+						action: () => archive.setArchived([notePath], !archived),
+					},
+				]).catch((error: unknown) =>
+					toast.error(t("noteCollections.actionFailed"), {
+						description: extractErrorMessage(error),
+					}),
+				);
+			}}
 			data-state={selected ? "selected" : undefined}
 			aria-label={`Select ${title}. Press Enter to open.`}
 			aria-pressed={selected}

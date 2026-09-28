@@ -1,3 +1,4 @@
+import { useArchivedPaths } from "./useNoteArchive";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import type { DirChildSummary } from "../lib/tauri";
@@ -24,6 +25,7 @@ export function useFolderFileCounts({
 	parentDirs,
 	treeRevision,
 }: FolderFileCountsArgs): Record<string, number> {
+	const archivedPaths = useArchivedPaths();
 	const dirs = useMemo(() => Array.from(new Set(parentDirs)).sort(), [parentDirs]);
 	const enabled = Boolean(spacePath) && dirs.length > 0 && Boolean(treeRevision);
 
@@ -42,8 +44,20 @@ export function useFolderFileCounts({
 		},
 	});
 
-	if (!enabled) {
-		return EMPTY_FOLDER_FILE_COUNTS;
-	}
-	return countsQuery.data ?? EMPTY_FOLDER_FILE_COUNTS;
+	const activeCounts = useMemo(() => {
+		if (!countsQuery.data || !archivedPaths.data?.size) {
+			return countsQuery.data ?? EMPTY_FOLDER_FILE_COUNTS;
+		}
+		return Object.fromEntries(
+			Object.entries(countsQuery.data).map(([dir, count]) => {
+				const prefix = dir ? `${dir}/` : "";
+				let archivedCount = 0;
+				for (const path of archivedPaths.data ?? []) {
+					if (path.startsWith(prefix)) archivedCount++;
+				}
+				return [dir, Math.max(0, count - archivedCount)];
+			}),
+		);
+	}, [countsQuery.data, archivedPaths.data]);
+	return enabled ? activeCounts : EMPTY_FOLDER_FILE_COUNTS;
 }

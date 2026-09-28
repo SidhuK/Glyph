@@ -228,6 +228,9 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 	if ("sidebarFolderTabs" in value) {
 		out.sidebarFolderTabs = SPACE_SETTINGS.sidebarFolderTabs.normalize(value.sidebarFolderTabs);
 	}
+	if ("archiveEnabled" in value) {
+		out.archiveEnabled = SPACE_SETTINGS.archiveEnabled.normalize(value.archiveEnabled);
+	}
 	if ("noteCreationDefaultFolder" in value) {
 		const folder = SPACE_SETTINGS.noteCreationDefaultFolder.normalize(
 			value.noteCreationDefaultFolder,
@@ -493,6 +496,12 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 		activeScopedSettings,
 		hasActiveSpace,
 	);
+	const archiveEnabled = loadSpaceSettingValue(
+		SPACE_SETTINGS.archiveEnabled,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
 	const noteCreationDefaultFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.noteCreationDefaultFolder,
 		entries,
@@ -619,6 +628,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 		quickNotes: {
 			folder: quickNotesFolder,
 		},
+		archive: { enabled: archiveEnabled },
 		noteCreation: {
 			defaultFolder: noteCreationDefaultFolder,
 		},

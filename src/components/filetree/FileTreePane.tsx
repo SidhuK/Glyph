@@ -1,3 +1,4 @@
+import { useArchivedPaths } from "../../hooks/useNoteArchive";
 import { type DragEndEvent, useDragDropMonitor, useDroppable } from "@dnd-kit/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -336,6 +337,7 @@ function TreeEntries({
 	onVisiblePreviewPathsChange,
 	sortMode,
 }: TreeEntriesProps) {
+	const archivedPaths = useArchivedPaths();
 	const virtualRows = useMemo(
 		() =>
 			flattenVisibleFileTreeRows({
@@ -344,8 +346,8 @@ function TreeEntries({
 				childrenByDir,
 				expandedDirs,
 				sortMode,
-			}),
-		[childrenByDir, entries, expandedDirs, parentDepth, sortMode],
+			}).filter((row) => !archivedPaths.data?.has(row.entry.rel_path)),
+		[childrenByDir, entries, expandedDirs, parentDepth, sortMode, archivedPaths.data],
 	);
 	const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
 	const scrollMarginRef = useRef(0);

@@ -11,6 +11,7 @@ import {
 	ExpandParagraphIcon,
 	Folder01Icon,
 	HistoryIcon,
+	InboxIcon,
 	LibraryIcon,
 	Link01Icon,
 	NoteIcon,
@@ -35,7 +36,12 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { useAISidebarContext, useFileTreeContext, useUILayoutContext } from "../../contexts";
+import {
+	useAISidebarContext,
+	useFileTreeContext,
+	useSpace,
+	useUILayoutContext,
+} from "../../contexts";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
@@ -88,10 +94,19 @@ export interface SidebarContentProps {
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	onOpenAllDocs: () => void;
+	onOpenInbox: () => void;
+	onOpenArchive: () => void;
 	onOpenConnections: () => void;
 	onOpenAgent: () => void;
 	spacePath: string | null;
-	activeTopSection: "agent" | "all-notes" | "connections" | "databases" | null;
+	activeTopSection:
+		| "agent"
+		| "all-notes"
+		| "inbox"
+		| "archive"
+		| "connections"
+		| "databases"
+		| null;
 	onOpenCalendar: () => void;
 	onOpenSearch: () => void;
 	onOpenPeriodNote: (kind: PeriodKind) => void;
@@ -140,6 +155,15 @@ function AllNotesCountBadge() {
 	return <span className="sidebarQuickActionCount">{label}</span>;
 }
 
+function InboxCountBadge() {
+	const { spacePath } = useSpace();
+	const { defaultNewNoteFolder, settingsSpacePath } = useUILayoutContext();
+	const enabled = Boolean(defaultNewNoteFolder && settingsSpacePath === spacePath);
+	const count = useQuery({ ...allDocsCountQueryOptions(defaultNewNoteFolder), enabled });
+	if (!enabled || !count.data) return null;
+	return <span className="sidebarQuickActionCount">{formatAllDocsCountLabel(count.data)}</span>;
+}
+
 function SidebarActionButton({
 	icon,
 	kind,
@@ -148,6 +172,7 @@ function SidebarActionButton({
 	disabled,
 	active,
 	"data-sidebar-key": sidebarKey,
+	badge,
 }: {
 	icon: ComponentProps<typeof HugeiconsIcon>["icon"];
 	kind: string;
@@ -156,6 +181,7 @@ function SidebarActionButton({
 	disabled?: boolean;
 	active?: boolean;
 	"data-sidebar-key"?: SidebarVisibilityKey;
+	badge?: ReactNode;
 }) {
 	return (
 		<button
@@ -173,6 +199,7 @@ function SidebarActionButton({
 		>
 			<HugeiconsIcon icon={icon} size="var(--icon-md)" />
 			<span className="sidebarQuickActionLabel">{label}</span>
+			{badge}
 		</button>
 	);
 }
@@ -216,6 +243,8 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	onOpenAllDocs,
+	onOpenInbox,
+	onOpenArchive,
 	onOpenConnections,
 	onOpenAgent,
 	spacePath,
@@ -250,8 +279,15 @@ export const SidebarContent = memo(function SidebarContent({
 		ensureTagsFresh,
 		setTagAppearance,
 	} = useFileTreeContext();
-	const { folioMode, periodNotesEnabled, sidebarOrder, setFolioScope, sidebarVisibility } =
-		useUILayoutContext();
+	const {
+		folioMode,
+		periodNotesEnabled,
+		sidebarOrder,
+		setFolioScope,
+		sidebarVisibility,
+		archiveEnabled,
+		settingsSpacePath,
+	} = useUILayoutContext();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(null);
 	const [sidebarView, setSidebarView] = useState<SidebarView>({
@@ -562,6 +598,29 @@ export const SidebarContent = memo(function SidebarContent({
 									) : null}
 								</div>
 							) : null}
+							{sidebarVisibility.inbox ? (
+								<SidebarActionButton
+									key="inbox"
+									data-sidebar-key="inbox"
+									kind="inbox"
+									badge={<InboxCountBadge />}
+									label={t("sidebar.inbox")}
+									icon={InboxIcon}
+									onClick={onOpenInbox}
+									active={activeTopSection === "inbox"}
+								/>
+							) : null}
+							{sidebarVisibility.archive && archiveEnabled && settingsSpacePath === spacePath ? (
+								<SidebarActionButton
+									key="archive"
+									data-sidebar-key="archive"
+									kind="archive"
+									label={t("sidebar.archive")}
+									icon={Archive04Icon}
+									onClick={onOpenArchive}
+									active={activeTopSection === "archive"}
+								/>
+							) : null}
 							{sidebarVisibility.allNotes ? (
 								<button
 									key="allNotes"
@@ -581,7 +640,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onFocus={onPrefetchAllDocs}
 									title={t("sidebar.allNotes")}
 								>
-									<HugeiconsIcon icon={Archive04Icon} size="var(--icon-md)" />
+									<HugeiconsIcon icon={NoteIcon} size="var(--icon-md)" />
 									<span className="sidebarQuickActionLabel">{t("sidebar.allNotes")}</span>
 									<AllNotesCountBadge />
 								</button>
