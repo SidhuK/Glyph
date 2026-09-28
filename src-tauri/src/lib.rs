@@ -1850,6 +1850,8 @@ pub fn run() {
             index::commands::search_advanced,
             index::commands::search_parse_and_run,
             index::commands::index_set_people_mentions_as_tags_enabled,
+            notes::archive::notes_archived_paths,
+            notes::archive::notes_set_archived,
             index::commands::all_docs_list,
             index::commands::all_docs_count,
             index::calendar::index_calendar_activity,

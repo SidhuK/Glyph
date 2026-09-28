@@ -60,6 +60,7 @@ interface UILayoutContextValue {
 	setActiveMarkdownTabPath: (path: string | null) => void;
 	dailyNotesFolder: string | null;
 	defaultNewNoteFolder: string | null;
+	archiveEnabled: boolean;
 	templateFolder: string | null;
 	periodNoteTemplates: PeriodNoteTemplatePaths;
 	periodNotesEnabled: PeriodNotesEnabled;
@@ -110,6 +111,7 @@ type UIState = {
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
 	defaultNewNoteFolder: string | null;
+	archiveEnabled: boolean;
 	templateFolder: string | null;
 	periodNoteTemplates: PeriodNoteTemplatePaths;
 	periodNotesEnabled: PeriodNotesEnabled;
@@ -137,6 +139,7 @@ type UIAction =
 	| { type: "setOpenMarkdownTabs"; value: SetStateAction<string[]> }
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
+	| { type: "setArchiveEnabled"; value: boolean }
 	| { type: "setDefaultNewNoteFolder"; value: string | null }
 	| { type: "setTemplateFolder"; value: string | null }
 	| {
@@ -172,6 +175,7 @@ type UIAction =
 			aiAssistantMode: AiAssistantMode;
 			dailyNotesFolder: string | null;
 			defaultNewNoteFolder: string | null;
+			archiveEnabled: boolean;
 			templateFolder: string | null;
 			periodNoteTemplates: PeriodNoteTemplatePaths;
 			periodNotesEnabled: PeriodNotesEnabled;
@@ -189,6 +193,7 @@ type UIAction =
 			spacePath: string;
 			dailyNotesFolder: string | null;
 			defaultNewNoteFolder: string | null;
+			archiveEnabled: boolean;
 			templateFolder: string | null;
 			periodNoteTemplates: PeriodNoteTemplatePaths;
 			periodNotesEnabled: PeriodNotesEnabled;
@@ -202,6 +207,7 @@ const initialUIState: UIState = {
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
 	defaultNewNoteFolder: null,
+	archiveEnabled: false,
 	templateFolder: null,
 	periodNoteTemplates: EMPTY_PERIOD_NOTE_TEMPLATES,
 	periodNotesEnabled: DEFAULT_PERIOD_NOTES_ENABLED,
@@ -240,6 +246,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, activeMarkdownTabPath: action.value };
 		case "setDailyNotesFolder":
 			return { ...state, dailyNotesFolder: action.value };
+		case "setArchiveEnabled":
+			return { ...state, archiveEnabled: action.value };
 		case "setDefaultNewNoteFolder":
 			return { ...state, defaultNewNoteFolder: action.value };
 		case "setTemplateFolder":
@@ -325,6 +333,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				settingsSpacePath: action.spacePath,
 				dailyNotesFolder: action.dailyNotesFolder,
 				defaultNewNoteFolder: action.defaultNewNoteFolder,
+				archiveEnabled: action.archiveEnabled,
 				templateFolder: action.templateFolder,
 				periodNoteTemplates: action.periodNoteTemplates,
 				periodNotesEnabled: action.periodNotesEnabled,
@@ -338,6 +347,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				aiAssistantMode: action.aiAssistantMode,
 				dailyNotesFolder: action.dailyNotesFolder,
 				defaultNewNoteFolder: action.defaultNewNoteFolder,
+				archiveEnabled: action.archiveEnabled,
 				templateFolder: action.templateFolder,
 				periodNoteTemplates: action.periodNoteTemplates,
 				periodNotesEnabled: action.periodNotesEnabled,
@@ -363,6 +373,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const sidebarVisibilityRevisionRef = useRef(0);
 	const sidebarOrderRef = useRef(initialUIState.sidebarOrder);
 	const sidebarOrderRevisionRef = useRef(0);
+	const archiveEnabledRef = useRef(initialUIState.archiveEnabled);
+	const archiveRevisionRef = useRef(0);
 	const zenModeRef = useRef(initialUIState.zenMode);
 	const zenModeRevisionRef = useRef(0);
 	const folioSortModeRef = useRef(initialUIState.folioSortMode);
@@ -377,6 +389,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		activeMarkdownTabPath,
 		dailyNotesFolder,
 		defaultNewNoteFolder,
+		archiveEnabled,
 		templateFolder,
 		periodNoteTemplates,
 		periodNotesEnabled,
@@ -468,6 +481,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				value: payload.dailyNotes.folder ?? null,
 			});
 		}
+		if (typeof payload.archive?.enabled === "boolean") {
+			archiveRevisionRef.current += 1;
+			archiveEnabledRef.current = payload.archive.enabled;
+			dispatch({ type: "setArchiveEnabled", value: payload.archive.enabled });
+		}
 		if (payload.noteCreation && "defaultFolder" in payload.noteCreation) {
 			dispatch({
 				type: "setDefaultNewNoteFolder",
@@ -541,6 +559,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				const zenModeRevision = zenModeRevisionRef.current;
 				const folioSortModeRevision = folioSortModeRevisionRef.current;
 				const folioNotesWidthRevision = folioNotesWidthRevisionRef.current;
+				const archiveRevision = archiveRevisionRef.current;
 				const s = await loadSettings({ spacePath: requestedSpacePath });
 				// Discard if unmounted or the active space changed mid-load so we
 				// never stamp the previous space's folders/template as the new one.
@@ -575,6 +594,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
 					defaultNewNoteFolder: s.noteCreation.defaultFolder,
+					archiveEnabled:
+						archiveRevision === archiveRevisionRef.current
+							? s.archive.enabled
+							: archiveEnabledRef.current,
 					templateFolder: s.templates?.folder ?? null,
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
@@ -620,6 +643,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			try {
 				await reloadFromDisk();
 				if (cancelled) return;
+				const archiveRevision = archiveRevisionRef.current;
 				const s = await loadSettings({ spacePath });
 				if (cancelled) return;
 				dispatch({
@@ -627,6 +651,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					spacePath,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
 					defaultNewNoteFolder: s.noteCreation.defaultFolder,
+					archiveEnabled:
+						archiveRevision === archiveRevisionRef.current
+							? s.archive.enabled
+							: archiveEnabledRef.current,
 					templateFolder: s.templates?.folder ?? null,
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
@@ -736,6 +764,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
 			defaultNewNoteFolder,
+			archiveEnabled,
 			templateFolder,
 			periodNoteTemplates,
 			periodNotesEnabled,
@@ -773,6 +802,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
 			defaultNewNoteFolder,
+			archiveEnabled,
 			templateFolder,
 			periodNoteTemplates,
 			periodNotesEnabled,

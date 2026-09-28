@@ -702,6 +702,36 @@
 			"commandPalette": true,
 			"menuId": "editor.mermaid_chart"
 		},
+		"send-note-to-inbox": {
+			"id": "send-note-to-inbox",
+			"label": "Send to Inbox",
+			"description": "Move the current note to Inbox.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"archive-note": {
+			"id": "archive-note",
+			"label": "Archive Note",
+			"description": "Archive the current note.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"unarchive-note": {
+			"id": "unarchive-note",
+			"label": "Unarchive Note",
+			"description": "Restore the current note from Archive.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
 		"move-active-file": {
 			"id": "move-active-file",
 			"label": "Move Active File",

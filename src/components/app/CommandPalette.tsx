@@ -124,7 +124,7 @@ export function CommandPalette({
 		parsedQuery.scope === "tags" || parsedQuery.scope === "people"
 			? parsedQuery.raw
 			: parsedQuery.text;
-	const { recentFiles, isSearching, titleMatches, contentMatches } = useCommandSearch(
+	const { recentFiles, isSearching, searchError, titleMatches, contentMatches } = useCommandSearch(
 		searchQuery,
 		spacePath,
 		open && searchEnabled,
@@ -502,6 +502,7 @@ export function CommandPalette({
 									spellCheck={false}
 								/>
 							</div>
+							{searchError ? <p role="alert">{String(searchError)}</p> : null}
 							{normalizedQuery && canSaveSearch ? (
 								<div className="commandSearchActions">
 									<button

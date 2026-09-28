@@ -87,6 +87,11 @@ vi.mock("motion/react", async () => {
 	};
 });
 
+vi.mock("../../hooks/useNoteArchive", () => ({
+	useArchivedPaths: () => ({ data: new Set<string>() }),
+	useNoteArchive: () => ({ enabled: false, isPending: false, setArchived: vi.fn() }),
+}));
+
 vi.mock("../../contexts", () => ({
 	useFileTreeContext: useFileTreeContextMock,
 	useSpace: useSpaceMock,

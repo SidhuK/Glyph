@@ -13,6 +13,8 @@ export interface EditorSaveState {
 	save: () => Promise<void>;
 	/** Function to get the current editor content as markdown */
 	getMarkdown?: () => string | null;
+	/** Flush buffered editor input and confirm that it was saved. */
+	prepareForExternalMutation?: () => Promise<boolean>;
 	/** Change the current editor's presentation mode. */
 	setMode?: (mode: EditorViewMode) => void;
 }
@@ -30,6 +32,7 @@ interface EditorContextValue {
 	saveCurrentEditor: () => Promise<boolean>;
 	/** Save all dirty editors */
 	saveAllEditors: () => Promise<boolean>;
+	prepareEditorsForExternalMutation: (paths: readonly string[]) => Promise<boolean>;
 	/** Check if current editor has unsaved changes */
 	hasUnsavedChanges: () => boolean;
 	/** Get the current editor content as markdown for a specific note */
@@ -83,6 +86,19 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 		return true;
 	}, []);
 
+	const prepareEditorsForExternalMutation = useCallback(async (paths: readonly string[]) => {
+		const selectedPaths = new Set(paths);
+		const editors = [...registeredEditorsRef.current].filter((editor) =>
+			selectedPaths.has(editor.relPath),
+		);
+		for (const editor of editors) {
+			if (!editor.prepareForExternalMutation || !(await editor.prepareForExternalMutation())) {
+				return false;
+			}
+		}
+		return true;
+	}, []);
+
 	const hasUnsavedChanges = useCallback(() => {
 		for (const editor of registeredEditorsRef.current) {
 			if (editor.isDirty) return true;
@@ -116,6 +132,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 				getEditorState,
 				saveCurrentEditor,
 				saveAllEditors,
+				prepareEditorsForExternalMutation,
 				hasUnsavedChanges,
 				getCurrentMarkdown,
 				setCurrentEditorMode,

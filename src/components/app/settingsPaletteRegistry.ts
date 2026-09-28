@@ -187,6 +187,10 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		],
 	},
 	{
+		...bindSpaceSetting(SPACE_SETTINGS.archiveEnabled),
+		control: "toggle",
+	},
+	{
 		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesFolder),
 		control: "path",
 	},

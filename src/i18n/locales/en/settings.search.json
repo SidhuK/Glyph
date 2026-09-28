@@ -198,6 +198,8 @@
 			"description": "Choose which navigation items appear in the sidebar and set their order.",
 			"keywords": [
 				"sidebar",
+				"inbox",
+				"archive",
 				"navigation",
 				"show",
 				"hide",
@@ -375,11 +377,17 @@
 			"description": "Choose where quick notes are saved.",
 			"keywords": ["capture", "inbox"]
 		},
+		"space-archive-enabled": {
+			"title": "Enable Archive",
+			"section": "Archive",
+			"description": "Enable archiving notes in this space.",
+			"keywords": ["archive", "archiving", "enable"]
+		},
 		"space-default-new-note-folder": {
-			"title": "Default folder",
-			"section": "New notes",
+			"title": "Inbox folder",
+			"section": "Inbox",
 			"description": "Choose where new notes are created.",
-			"keywords": ["new note", "create", "folder", "location"]
+			"keywords": ["inbox", "capture", "new note", "create", "folder", "location"]
 		},
 		"space-attachments-location": {
 			"title": "Location",

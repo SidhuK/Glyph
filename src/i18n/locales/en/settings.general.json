@@ -18,15 +18,18 @@
 			"twitter": "X / Twitter"
 		}
 	},
+	"archive": {
+		"sectionTitle": "Archive",
+		"enable": "Enable Archive"
+	},
 	"newNotes": {
-		"sectionTitle": "New notes",
-		"sectionDescription": "Choose where Glyph creates new notes in this space.",
+		"sectionTitle": "Inbox",
+		"sectionDescription": "New notes are created in this folder.",
 		"root": "Not configured",
 		"browse": "Browse",
-		"clear": "Clear default folder",
+		"clear": "Clear Inbox folder",
 		"defaultFolder": {
-			"label": "Default folder",
-			"description": "New Note and Cmd+N create notes here when a folder is set."
+			"label": "Folder"
 		}
 	},
 	"language": {

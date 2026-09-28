@@ -33,6 +33,11 @@ vi.mock("react-i18next", () => ({
 	}),
 }));
 
+vi.mock("../../hooks/useNoteArchive", () => ({
+	useArchivedPaths: () => ({ data: new Set<string>() }),
+	useNoteArchive: () => ({ enabled: false, isPending: false, setArchived: vi.fn() }),
+}));
+
 vi.mock("../../contexts", () => ({
 	useAISidebarContext: () => ({
 		aiEnabled: false,

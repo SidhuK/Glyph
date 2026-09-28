@@ -7,6 +7,7 @@ use crate::index::commands::parse_raw_search_query;
 use crate::index::open_db;
 use crate::index::search_advanced::run_search_advanced;
 use crate::paths;
+use crate::notes::archive::ACTIVE_NOTES;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::filter::row_matches_filters;
@@ -369,7 +370,7 @@ fn compare_rows(
 
 fn all_notes_source_ids(conn: &Connection, limit: usize) -> Result<Vec<String>, String> {
     let mut stmt = conn
-        .prepare("SELECT id FROM notes ORDER BY updated DESC LIMIT ?")
+        .prepare(&format!("SELECT n.id FROM notes n WHERE {ACTIVE_NOTES} ORDER BY n.updated DESC LIMIT ?"))
         .map_err(|e| e.to_string())?;
     let mut rows = stmt.query([limit as i64]).map_err(|e| e.to_string())?;
     let mut out = Vec::new();
@@ -408,7 +409,7 @@ fn folder_source_ids(
     } else {
         direct_folder_clause(dir)
     };
-    let sql = format!("SELECT id FROM notes WHERE {where_sql} ORDER BY updated DESC LIMIT ?");
+    let sql = format!("SELECT n.id FROM notes n WHERE ({where_sql}) AND {ACTIVE_NOTES} ORDER BY n.updated DESC LIMIT ?");
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let mut bind_params: Vec<rusqlite::types::Value> = bind_values
         .into_iter()
@@ -428,14 +429,14 @@ fn folder_source_ids(
 fn tag_source_ids(conn: &Connection, tag: &str, limit: usize) -> Result<Vec<String>, String> {
     let normalized = tag.trim().trim_start_matches('#').to_lowercase();
     let mut stmt = conn
-        .prepare(
+        .prepare(&format!(
             "SELECT n.id
              FROM tags t
              JOIN notes n ON n.id = t.note_id
-             WHERE t.tag = ?
+             WHERE t.tag = ? AND {ACTIVE_NOTES}
              ORDER BY n.updated DESC
              LIMIT ?",
-        )
+        ))
         .map_err(|e| e.to_string())?;
     let mut rows = stmt
         .query(params![normalized, limit as i64])

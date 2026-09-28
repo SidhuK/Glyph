@@ -30,7 +30,7 @@ import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { usePeriodNote } from "../../hooks/usePeriodNote";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
-import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
+import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { dispatchEditorMenuAction, dispatchFileTreeStartRename } from "../../lib/appEvents";
 import {
@@ -941,8 +941,10 @@ export function AppShell() {
 	useSpaceChangePropagation(spaceChangeHost);
 
 	const activeTopSection = useMemo<
-		"agent" | "all-notes" | "connections" | "databases" | null
+		"agent" | "all-notes" | "inbox" | "archive" | "connections" | "databases" | null
 	>(() => {
+		if (activeTabPath === INBOX_TAB_ID) return "inbox";
+		if (activeTabPath === ARCHIVE_TAB_ID) return "archive";
 		if (activeTabPath === AGENT_VIEW_TAB_ID) return "agent";
 		if (activeTabPath === ACTIVITY_TIMELINE_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
@@ -1369,6 +1371,8 @@ export function AppShell() {
 						sidebarCollapsed={sidebarCollapsed}
 						spacePath={spacePath}
 						onOpenAllDocs={openAllDocsTab}
+						onOpenInbox={() => openSpecialTab(INBOX_TAB_ID)}
+						onOpenArchive={() => openSpecialTab(ARCHIVE_TAB_ID)}
 						onOpenConnections={openConnectionsView}
 						onOpenAgent={openAgentView}
 						onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}

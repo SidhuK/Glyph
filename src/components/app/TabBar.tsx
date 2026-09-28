@@ -8,7 +8,7 @@ import type { MouseEvent, MutableRefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
-import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
+import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
@@ -56,6 +56,8 @@ const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
 
 function isPathSpecial(path: string): boolean {
 	return (
+		path === INBOX_TAB_ID ||
+		path === ARCHIVE_TAB_ID ||
 		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === AGENT_VIEW_TAB_ID ||
 		path === DATABASES_TAB_ID ||
@@ -116,6 +118,8 @@ export function TabBar({
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
 			if (tab.target === AGENT_VIEW_TAB_ID) return t("sidebar.agent");
+			if (tab.target === INBOX_TAB_ID) return t("sidebar.inbox");
+			if (tab.target === ARCHIVE_TAB_ID) return t("sidebar.archive");
 			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
 			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
 			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return t("sidebar.connections");

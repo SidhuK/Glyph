@@ -11,6 +11,7 @@ import {
 import { clearAiPanelCaches } from "../components/ai/cache";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { queryClient } from "../lib/queryClient";
 import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
 import {
 	loadRegisteredSpacePaths,
@@ -206,6 +207,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		setIsIndexing(true);
 		try {
 			await invoke("index_rebuild");
+			await queryClient.invalidateQueries({ queryKey: ["navigation"] });
 		} finally {
 			setIsIndexing(false);
 		}
@@ -220,7 +222,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 
 		setIsIndexing(true);
 		const promise = invoke("index_sync")
-			.then(() => undefined)
+			.then(() => queryClient.invalidateQueries({ queryKey: ["navigation"] }))
 			.catch(() => {
 				/* the index is derived and will retry on the next open */
 			})

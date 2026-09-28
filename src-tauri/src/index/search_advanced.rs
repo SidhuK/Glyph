@@ -19,6 +19,8 @@ pub struct SearchAdvancedRequest {
     #[serde(default)]
     pub title_only: bool,
     #[serde(default)]
+    pub include_archived: bool,
+    #[serde(default)]
     pub tag_only: bool,
     #[serde(default)]
     pub limit: Option<u32>,
@@ -67,6 +69,7 @@ pub fn run_search_advanced(
             conn,
             &query_text,
             &tags,
+            req.include_archived,
             (limit as i64 * 8).clamp(200, 5_000),
         )?
     } else {
@@ -75,6 +78,7 @@ pub fn run_search_advanced(
             &query_text,
             req.title_only,
             &tags,
+            req.include_archived,
             (limit as i64 * 8).clamp(200, 5_000),
         )?
         .into_iter()
@@ -97,6 +101,7 @@ fn select_candidates(
     text: &str,
     title_only: bool,
     tags: &[String],
+    include_archived: bool,
     limit: i64,
 ) -> Result<Vec<Candidate>, String> {
     let mut sql = String::from("SELECT n.id, n.title, n.preview FROM notes n ");
@@ -110,8 +115,12 @@ fn select_candidates(
         .iter()
         .map(|t| rusqlite::types::Value::from(t.clone()))
         .collect();
+    sql.push_str("WHERE 1=1 ");
+    if !include_archived {
+        sql.push_str(&format!("AND {} ", crate::notes::archive::ACTIVE_NOTES));
+    }
     if title_only && !text.is_empty() {
-        sql.push_str("WHERE lower(n.title) LIKE ? ");
+        sql.push_str("AND lower(n.title) LIKE ? ");
         params.push(rusqlite::types::Value::from(format!(
             "%{}%",
             text.to_lowercase()

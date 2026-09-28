@@ -53,6 +53,7 @@ import type { SettingsTab } from "../settings/settingsConfig";
 import type { Command } from "./CommandPalette";
 import { buildEditorCommands } from "./editorCommands";
 import { buildMovePickerCommands } from "./movePickerCommands";
+import { useNoteCollectionCommands } from "./useNoteCollectionCommands";
 
 interface GitSyncCommandActions {
 	syncNow: () => Promise<unknown>;
@@ -292,6 +293,10 @@ export function useAppCommands({
 }: UseAppCommandsDeps): Command[] {
 	const { i18n: i18nInstance } = useTranslation();
 	const language = i18nInstance.language;
+	const noteCollectionCommands = useNoteCollectionCommands(
+		activeMarkdownTabPath,
+		openWorkspaceFile,
+	);
 	return useMemo<Command[]>(() => {
 		const movePickerCommands = buildMovePickerCommands({
 			fileTree,
@@ -697,11 +702,12 @@ export function useAppCommands({
 			},
 		];
 		return resolveCommandShortcuts(
-			[...baseCommands, ...aiCommands, ...editorCommands],
+			[...baseCommands, ...aiCommands, ...editorCommands, ...noteCollectionCommands],
 			getBinding,
 			language,
 		);
 	}, [
+		noteCollectionCommands,
 		activeMarkdownTabPath,
 		activeFilePath,
 		activeTabCanPin,

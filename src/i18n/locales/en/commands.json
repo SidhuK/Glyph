@@ -246,6 +246,18 @@
 			"label": "Mermaid Chart",
 			"description": "Insert a Mermaid code block."
 		},
+		"send-note-to-inbox": {
+			"label": "Send to Inbox",
+			"description": "Move the current note to Inbox."
+		},
+		"archive-note": {
+			"label": "Archive Note",
+			"description": "Archive the current note."
+		},
+		"unarchive-note": {
+			"label": "Unarchive Note",
+			"description": "Restore the current note from Archive."
+		},
 		"move-active-file": {
 			"label": "Move Active File",
 			"description": "Move the current file to a different folder."

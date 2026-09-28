@@ -1,3 +1,4 @@
+import { useNoteArchive } from "../../hooks/useNoteArchive";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { useDraggable } from "@dnd-kit/react";
 import { PaintBoardIcon, PinIcon } from "@hugeicons/core-free-icons";
@@ -142,6 +143,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		}
 		await openMarkdownInExternalWindow(entry.rel_path);
 	}, [entry.rel_path, getEditorState, saveCurrentEditor]);
+	const archive = useNoteArchive();
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
 			void showNativeContextMenu(
@@ -162,12 +164,16 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					onCreateFromTemplate: () => void onCreateFromTemplateInDir(parentDirPath),
 					onCreateFolder: () => void onRequestCreateFolder(parentDirPath),
 					onDelete: () => onDeletePath(entry.rel_path, "file"),
+					onArchive: archive.enabled
+						? () => archive.setArchived([entry.rel_path], true)
+						: undefined,
 				}),
 			).catch((error: unknown) => {
 				console.error("Failed to show file context menu", error);
 			});
 		},
 		[
+			archive,
 			entry.is_markdown,
 			entry.rel_path,
 			handleRevealInFinder,

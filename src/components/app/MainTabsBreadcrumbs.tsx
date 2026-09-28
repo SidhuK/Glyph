@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { MouseEvent } from "react";
 import { useSpace } from "../../contexts";
-import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
+import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
@@ -69,6 +69,8 @@ function menuTitleForDir(path: string) {
 
 function isPathSpecial(path: string): boolean {
 	return (
+		path === INBOX_TAB_ID ||
+		path === ARCHIVE_TAB_ID ||
 		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === AGENT_VIEW_TAB_ID ||
 		path === DATABASES_TAB_ID ||

@@ -1,3 +1,4 @@
+import { useArchivedPaths } from "./useNoteArchive";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import {
@@ -14,13 +15,14 @@ interface UseRecentFilesReturn {
 
 export function useRecentFiles(currentSpacePath: string | null, limit = 7): UseRecentFilesReturn {
 	const queryClient = useQueryClient();
+	const archivedPaths = useArchivedPaths();
 	const queryKey = ["settings", "recent-files", currentSpacePath ?? "__all__", limit] as const;
 	const recentFilesQuery = useQuery({
 		queryKey,
 		queryFn: async () => {
 			const all = await getRecentFilesFromStore();
 			return currentSpacePath
-				? all.filter((f) => f.spacePath === currentSpacePath).slice(0, limit)
+				? all.filter((f) => f.spacePath === currentSpacePath)
 				: all.slice(0, limit);
 		},
 	});
@@ -46,7 +48,9 @@ export function useRecentFiles(currentSpacePath: string | null, limit = 7): UseR
 	);
 
 	return {
-		recentFiles: recentFilesQuery.data ?? [],
+		recentFiles: (recentFilesQuery.data ?? [])
+			.filter((file) => !currentSpacePath || !archivedPaths.data?.has(file.path))
+			.slice(0, limit),
 		addRecentFile,
 		refreshRecentFiles,
 	};

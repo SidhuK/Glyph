@@ -1,3 +1,4 @@
+import { NoteArchiveAction } from "./NoteArchiveAction";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { AiBrain04Icon, LayoutAlignRightIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/react";
@@ -418,10 +419,11 @@ export function MarkdownEditorPane({
 			relPath,
 			isDirty,
 			save: onSave,
+			prepareForExternalMutation: saveBeforeExternalMutation,
 			getMarkdown: () => textRef.current,
 			setMode: requestEditorMode,
 		}),
-		[isDirty, onSave, relPath, requestEditorMode, textRef],
+		[isDirty, onSave, relPath, requestEditorMode, saveBeforeExternalMutation, textRef],
 	);
 	useEditorRegistration(editorState, active);
 
@@ -525,6 +527,7 @@ export function MarkdownEditorPane({
 							onModeChange={requestEditorMode}
 						/>
 						<div className="markdownEditorToolbarActions">
+							<NoteArchiveAction path={relPath} />
 							{aiEnabled ? (
 								<button
 									type="button"

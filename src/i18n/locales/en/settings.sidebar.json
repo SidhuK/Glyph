@@ -38,6 +38,12 @@
 		},
 		"gitSync": {
 			"label": "Git Sync"
+		},
+		"inbox": {
+			"label": "Inbox"
+		},
+		"archive": {
+			"label": "Archive"
 		}
 	}
 }

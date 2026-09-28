@@ -1,3 +1,4 @@
+import { useNoteArchive } from "../../hooks/useNoteArchive";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useDraggable } from "@dnd-kit/react";
@@ -493,6 +494,7 @@ export const FolioNoteListItem = memo(
 			}
 			await openMarkdownInExternalWindow(note.note_path);
 		}, [getEditorState, note.note_path, saveCurrentEditor]);
+		const archive = useNoteArchive();
 		const handleContextMenu = useCallback(
 			(event: MouseEvent) => {
 				void showNativeContextMenu(
@@ -515,12 +517,16 @@ export const FolioNoteListItem = memo(
 						onCreateFromTemplate: () => void onCreateFromTemplateInDir(folder),
 						onCreateFolder: () => void onRequestCreateFolder(folder),
 						onDelete: () => onDelete(note.note_path),
+						onArchive: archive.enabled
+							? () => archive.setArchived([note.note_path], true)
+							: undefined,
 					}),
 				).catch((error: unknown) => {
 					console.error("Failed to show folio context menu", error);
 				});
 			},
 			[
+				archive,
 				folder,
 				handleOpenInSeparateWindow,
 				handleRevealInFinder,

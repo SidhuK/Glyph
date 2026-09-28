@@ -1,3 +1,4 @@
+import { useArchivedPaths } from "../../hooks/useNoteArchive";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
@@ -68,12 +69,15 @@ export const PinnedFilesPane = memo(function PinnedFilesPane({
 }) {
 	const { t } = useTranslation("shell");
 
-	if (pinnedFiles.length === 0) {
+	const archivedPaths = useArchivedPaths();
+	const visiblePaths = pinnedFiles.filter((path) => !archivedPaths.data?.has(path));
+
+	if (visiblePaths.length === 0) {
 		return <div className="tagsEmpty">{t("sidebar.noPinnedFiles")}</div>;
 	}
 
 	return (
-		<SidebarFileList paths={pinnedFiles} activeFilePath={activeFilePath} onOpenFile={onOpenFile} />
+		<SidebarFileList paths={visiblePaths} activeFilePath={activeFilePath} onOpenFile={onOpenFile} />
 	);
 });
 

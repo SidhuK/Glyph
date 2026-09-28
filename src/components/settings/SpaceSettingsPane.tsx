@@ -1,7 +1,8 @@
+import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useSpace } from "../../contexts";
+import { useSpace, useUILayoutContext } from "../../contexts";
 import {
 	ATTACHMENT_LOCATION_OPTIONS,
 	ATTACHMENT_MODE_UI,
@@ -78,6 +79,13 @@ export function SpaceSettingsPane() {
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] = useState(false);
 	const [isSavingPeopleMentions, setIsSavingPeopleMentions] = useState(false);
 	const { spacePath, startIndexRebuild } = useSpace();
+	const { archiveEnabled, settingsSpacePath } = useUILayoutContext();
+	const archiveSetting = useMutation({
+		mutationFn: (enabled: boolean) =>
+			writeSpaceSetting(SPACE_SETTINGS.archiveEnabled, enabled, {
+				spacePath: requireSpacePath(spacePath),
+			}),
+	});
 
 	const onRebuildIndex = useCallback(async () => {
 		if (!currentSpacePath) {
@@ -356,7 +364,6 @@ export function SpaceSettingsPane() {
 					<SettingsRow
 						searchId="space-default-new-note-folder"
 						label={t("newNotes.defaultFolder.label")}
-						description={t("newNotes.defaultFolder.description")}
 						stacked
 						interactive={false}
 					>
@@ -418,6 +425,22 @@ export function SpaceSettingsPane() {
 						<div className="settingsError dailyNotesError" role="alert">
 							{periodNotesError}
 						</div>
+					) : null}
+				</SettingsSection>
+
+				<SettingsSection title={t("archive.sectionTitle")}>
+					<SettingsRow searchId="space-archive-enabled" label={t("archive.enable")}>
+						<SettingsToggle
+							ariaLabel={t("archive.enable")}
+							checked={settingsSpacePath === spacePath && archiveEnabled}
+							disabled={!spacePath || settingsSpacePath !== spacePath || archiveSetting.isPending}
+							onCheckedChange={(checked) => archiveSetting.mutate(checked)}
+						/>
+					</SettingsRow>
+					{archiveSetting.error ? (
+						<p className="settingsError" role="alert">
+							{extractErrorMessage(archiveSetting.error)}
+						</p>
 					) : null}
 				</SettingsSection>
 

@@ -213,6 +213,10 @@
 	padding-bottom: 20px;
 }
 
+.activityCardsOnlyRow {
+	padding-bottom: 14px;
+}
+
 .activityDayRail {
 	grid-row: 1 / span 2;
 	position: relative;

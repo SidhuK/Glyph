@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import type React from "react";
 import { type Root, createRoot } from "react-dom/client";
@@ -38,9 +39,12 @@ const { invokeMock, loadSettingsMock, writeSpaceSettingMock } = vi.hoisted(() =>
 
 vi.mock("../../contexts", () => ({
 	useSpace: () => ({
+		spacePath: "/spaces/test",
 		startIndexRebuild: vi.fn(() => Promise.resolve()),
 	}),
 	useUILayoutContext: () => ({
+		archiveEnabled: false,
+		settingsSpacePath: "/spaces/test",
 		periodNotesEnabled: { week: false, month: false, quarter: false },
 	}),
 }));
@@ -61,6 +65,7 @@ vi.mock("../../lib/settings/definitions", () => ({
 		},
 	},
 	SPACE_SETTINGS: {
+		archiveEnabled: { field: "archiveEnabled" },
 		dailyNotesFolder: { field: "dailyNotesFolder" },
 		quickNotesFolder: { field: "quickNotesFolder" },
 		attachmentStorageMode: { field: "attachmentStorageMode" },
@@ -150,6 +155,7 @@ vi.mock("./SettingsScaffold", () => ({
 describe("SpaceSettingsPane", () => {
 	let container: HTMLDivElement;
 	let root: Root;
+	let queryClient: QueryClient;
 
 	function spaceSettingCalls(field: string) {
 		return writeSpaceSettingMock.mock.calls.filter((call) => call[0].field === field);
@@ -173,6 +179,9 @@ describe("SpaceSettingsPane", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+		});
 		invokeMock.mockResolvedValue("/spaces/test");
 
 		container = document.createElement("div");
@@ -185,11 +194,16 @@ describe("SpaceSettingsPane", () => {
 			root.unmount();
 		});
 		container.remove();
+		queryClient.clear();
 	});
 
 	it("renders the attachment location dropdown with all four options", async () => {
 		await act(async () => {
-			root.render(<SpaceSettingsPane />);
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<SpaceSettingsPane />
+				</QueryClientProvider>,
+			);
 			await Promise.resolve();
 		});
 
@@ -215,7 +229,11 @@ describe("SpaceSettingsPane", () => {
 
 	it("shows the folder picker only for specific-folder mode", async () => {
 		await act(async () => {
-			root.render(<SpaceSettingsPane />);
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<SpaceSettingsPane />
+				</QueryClientProvider>,
+			);
 			await Promise.resolve();
 		});
 
@@ -245,7 +263,11 @@ describe("SpaceSettingsPane", () => {
 
 	it("shows the subfolder text input for note-subfolder mode", async () => {
 		await act(async () => {
-			root.render(<SpaceSettingsPane />);
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<SpaceSettingsPane />
+				</QueryClientProvider>,
+			);
 			await Promise.resolve();
 		});
 
@@ -280,7 +302,11 @@ describe("SpaceSettingsPane", () => {
 		});
 
 		await act(async () => {
-			root.render(<SpaceSettingsPane />);
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<SpaceSettingsPane />
+				</QueryClientProvider>,
+			);
 			await Promise.resolve();
 		});
 
@@ -310,7 +336,11 @@ describe("SpaceSettingsPane", () => {
 		});
 
 		await act(async () => {
-			root.render(<SpaceSettingsPane />);
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<SpaceSettingsPane />
+				</QueryClientProvider>,
+			);
 			await Promise.resolve();
 		});
 
@@ -349,7 +379,11 @@ describe("SpaceSettingsPane", () => {
 		});
 
 		await act(async () => {
-			root.render(<SpaceSettingsPane />);
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<SpaceSettingsPane />
+				</QueryClientProvider>,
+			);
 			await Promise.resolve();
 		});
 
@@ -383,7 +417,11 @@ describe("SpaceSettingsPane", () => {
 		});
 
 		await act(async () => {
-			root.render(<SpaceSettingsPane />);
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<SpaceSettingsPane />
+				</QueryClientProvider>,
+			);
 			await Promise.resolve();
 		});
 
