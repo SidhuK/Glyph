@@ -348,11 +348,9 @@ pub async fn all_docs_list(
             params.push(rusqlite::types::Value::from(contains.clone()));
             params.push(rusqlite::types::Value::from(contains));
         }
-        if !filters.is_empty() {
-            sql.push_str("WHERE ");
-            sql.push_str(&filters.join(" AND "));
-            sql.push(' ');
-        }
+        sql.push_str("WHERE ");
+        sql.push_str(&filters.join(" AND "));
+        sql.push(' ');
         sql.push_str(&format!(
             "ORDER BY COALESCE(pinned.pin_rank, {}), ",
             pinned_paths_len
@@ -882,6 +880,7 @@ fn local_note_connections_for_conn(
     let seed_node_ids = nodes_by_id.keys().cloned().collect::<Vec<_>>();
     let (tags, tagged_nodes, tag_edges) = local_connections_tag_expansion_for_seed_nodes(
         conn,
+        note_id,
         &seed_node_ids,
         COMMON_TAG_LIMIT,
         TAGGED_NOTES_PER_TAG_LIMIT,
@@ -945,6 +944,7 @@ fn local_connections_tag_id(tag: &str) -> String {
 
 fn local_connections_tag_expansion_for_seed_nodes(
     conn: &rusqlite::Connection,
+    center_id: &str,
     seed_node_ids: &[String],
     tag_limit: usize,
     notes_per_tag_limit: usize,
@@ -997,7 +997,7 @@ fn local_connections_tag_expansion_for_seed_nodes(
         "SELECT n.id, n.title
          FROM tags t
          JOIN notes n ON n.id = t.note_id
-         WHERE t.is_explicit = 1 AND {ACTIVE_NOTES}
+         WHERE t.is_explicit = 1 AND ({ACTIVE_NOTES} OR n.id = ?)
            AND t.tag = ?
          ORDER BY CASE WHEN n.id IN ({seed_placeholders}) THEN 0 ELSE 1 END,
                   n.title COLLATE NOCASE ASC,
@@ -1014,6 +1014,7 @@ fn local_connections_tag_expansion_for_seed_nodes(
         }
 
         let mut edge_params = Vec::<rusqlite::types::Value>::new();
+        edge_params.push(center_id.to_string().into());
         edge_params.push(tag.clone().into());
         edge_params.extend(seed_node_ids.iter().cloned().map(Into::into));
         edge_params.push((notes_per_tag_limit as i64).into());
@@ -1278,6 +1279,18 @@ mod local_connections_tests {
         assert!(edges.contains(&("notes/center.md", "notes/mutual.md")));
         assert!(edges.contains(&("notes/mutual.md", "notes/center.md")));
         assert!(!edges.contains(&("notes/outgoing.md", "notes/neighbor-link.md")));
+
+        for id in ["notes/center.md", "notes/outgoing.md", "notes/mutual.md"] {
+            conn.execute("INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, 'shared', 1)", [id]).unwrap();
+        }
+        for id in ["notes/center.md", "notes/mutual.md"] {
+            conn.execute("INSERT INTO note_properties(note_id, key, value_type, value_text, value_json) VALUES(?, 'archived', 'checkbox', 'true', 'true')", [id]).unwrap();
+        }
+        let graph = local_note_connections_for_conn(&conn, "notes/center.md").unwrap();
+        assert!(graph.tag_edges.iter().any(|edge| edge.note_id == "notes/center.md"));
+        assert!(graph.tag_edges.iter().any(|edge| edge.note_id == "notes/outgoing.md"));
+        assert!(!graph.tag_edges.iter().any(|edge| edge.note_id == "notes/mutual.md"));
+        assert!(!graph.nodes.iter().any(|node| node.id == "notes/mutual.md"));
     }
 
     #[test]
@@ -1386,7 +1399,7 @@ mod local_connections_tests {
             "notes/neighbor.md".to_string(),
         ];
         let (tags, tagged_nodes, tag_edges) =
-            local_connections_tag_expansion_for_seed_nodes(&conn, &seed_node_ids, 12, 12, 5)
+            local_connections_tag_expansion_for_seed_nodes(&conn, &seed_node_ids[0], &seed_node_ids, 12, 12, 5)
                 .unwrap();
 
         assert_eq!(tagged_nodes.len(), 5);

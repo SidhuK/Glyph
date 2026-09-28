@@ -223,7 +223,7 @@ function useActivityTimelineData(
 		enabled,
 	});
 	const heatmapNotesQuery = useQuery({
-		...allDocsListQueryOptions(folder, archived),
+		...allDocsListQueryOptions(),
 		enabled: enabled && timeline,
 	});
 	const feedNotes = useMemo(
@@ -282,43 +282,20 @@ function useActivityRows(
 ): ActivityVirtualRow[] {
 	return useMemo<ActivityVirtualRow[]>(() => {
 		const rows: ActivityVirtualRow[] = [];
-		if (collectionNotes) {
-			for (
-				let startIndex = 0;
-				startIndex < collectionNotes.length;
-				startIndex += ACTIVITY_DOCS_PAGE_SIZE
-			) {
-				rows.push({
-					id: `cards:${startIndex}`,
-					kind: "cards",
-					timeline: false,
-					dayIndex: 0,
-					chunkIndex: startIndex / ACTIVITY_DOCS_PAGE_SIZE,
-					startIndex,
-					notes: collectionNotes
-						.slice(startIndex, startIndex + ACTIVITY_DOCS_PAGE_SIZE)
-						.map((note) => ({ note, isDaily: false })),
-				});
-			}
-			return rows;
-		}
-		for (const [dayIndex, day] of feedDays.entries()) {
-			rows.push({
-				id: `header:${day.dateKey}`,
-				kind: "header",
-				day,
-				dayIndex,
-			});
-			const notes = sortedDayNotes(day);
+		const groups = collectionNotes
+			? [{ day: null, notes: collectionNotes.map((note) => ({ note, isDaily: false })) }]
+			: feedDays.map((day) => ({ day, notes: sortedDayNotes(day) }));
+		for (const [dayIndex, { day, notes }] of groups.entries()) {
+			if (day) rows.push({ id: `header:${day.dateKey}`, kind: "header", day, dayIndex });
 			for (
 				let startIndex = 0, chunkIndex = 0;
 				startIndex < notes.length;
 				startIndex += ACTIVITY_DOCS_PAGE_SIZE, chunkIndex += 1
 			) {
 				rows.push({
-					id: `cards:${day.dateKey}:${chunkIndex}`,
+					id: day ? `cards:${day.dateKey}:${chunkIndex}` : `cards:${startIndex}`,
 					kind: "cards",
-					timeline: true,
+					timeline: day !== null,
 					dayIndex,
 					chunkIndex,
 					startIndex,

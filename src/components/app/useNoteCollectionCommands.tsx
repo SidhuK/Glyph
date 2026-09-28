@@ -31,6 +31,7 @@ export function useNoteCollectionCommands(
 			if (!(await prepareEditorsForExternalMutation([path]))) {
 				throw new Error(t("noteCollections.unsaved"));
 			}
+			let restoreArchiveOnFailure = false;
 			if (archived) {
 				const result = await archive
 					.mutateAsync({
@@ -40,14 +41,25 @@ export function useNoteCollectionCommands(
 					})
 					.catch(() => null); // The archive mutation already reports its error.
 				if (!result || result.failures.length) return;
+				restoreArchiveOnFailure = result.changed_paths.includes(path);
 			}
 			const target = `${inbox}/${basename(path)}`;
 			if (target !== path) {
-				await invoke("space_rename_path", {
-					from_path: path,
-					to_path: target,
-					expected_space: spacePath,
-				});
+				try {
+					await invoke("space_rename_path", {
+						from_path: path,
+						to_path: target,
+						expected_space: spacePath,
+					});
+				} catch (error) {
+					if (restoreArchiveOnFailure) {
+						// Restore only the archive state changed by this action. The hook reports rollback failures.
+						await archive
+							.mutateAsync({ paths: [path], archived: true, expectedSpace: spacePath })
+							.catch(() => null);
+					}
+					throw error;
+				}
 			}
 
 			if ((await invoke("space_get_current")) === spacePath) await openFile(target);
@@ -63,7 +75,7 @@ export function useNoteCollectionCommands(
 		!archivedPaths.error &&
 		!archive.isPending &&
 		!sendToInbox.isPending;
-	return [
+	const commands: Command[] = [
 		{
 			id: "send-note-to-inbox",
 			icon: <HugeiconsIcon icon={InboxIcon} size="var(--icon-lg)" />,
@@ -74,20 +86,19 @@ export function useNoteCollectionCommands(
 				(archived || !path.startsWith(`${inbox}/`)),
 			action: () => sendToInbox.mutate(),
 		},
-		...(archive.enabled
-			? [
-					{
-						id: archived ? "unarchive-note" : "archive-note",
-						icon: (
-							<HugeiconsIcon
-								icon={archived ? ArchiveArrowUpIcon : ArchiveArrowDownIcon}
-								size="var(--icon-lg)"
-							/>
-						),
-						enabled,
-						action: () => archive.setArchived([path], !archived),
-					},
-				]
-			: []),
 	];
+	if (archive.enabled) {
+		commands.push({
+			id: archived ? "unarchive-note" : "archive-note",
+			icon: (
+				<HugeiconsIcon
+					icon={archived ? ArchiveArrowUpIcon : ArchiveArrowDownIcon}
+					size="var(--icon-lg)"
+				/>
+			),
+			enabled,
+			action: () => archive.setArchived([path], !archived),
+		});
+	}
+	return commands;
 }

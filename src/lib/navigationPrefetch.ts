@@ -259,12 +259,11 @@ async function loadAllDocsPage(
 	};
 }
 
-export async function loadAllDocs(folderPrefix?: string | null, archived = false) {
+export async function loadAllDocs(folderPrefix?: string | null) {
 	return invoke("all_docs_list", {
 		limit: ALL_DOCS_LIST_LIMIT,
 		offset: 0,
 		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
-		archived,
 	});
 }
 
@@ -287,12 +286,10 @@ export function allDocsPagesQueryOptions(
 	};
 }
 
-export function allDocsListQueryOptions(folderPrefix?: string | null, archived = false) {
+export function allDocsListQueryOptions(folderPrefix?: string | null) {
 	return {
-		queryKey: archived
-			? [...navigationQueryKeys.allDocsList(folderPrefix), "archived"]
-			: navigationQueryKeys.allDocsList(folderPrefix),
-		queryFn: () => loadAllDocs(folderPrefix, archived),
+		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
+		queryFn: () => loadAllDocs(folderPrefix),
 		staleTime: NAVIGATION_STALE_TIME_MS,
 	};
 }

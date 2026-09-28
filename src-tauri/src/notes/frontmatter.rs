@@ -95,9 +95,6 @@ pub fn normalize_frontmatter_mapping(
 /// Change only the archive field; never reserialize unrelated YAML or the note body.
 pub fn set_archived(markdown: &str, archived: bool) -> Result<String, String> {
     let (yaml, _) = split_frontmatter(markdown);
-    if yaml.is_none() && (markdown.starts_with("---\n") || markdown.starts_with("---\r\n")) {
-        return Err("Note has an unclosed frontmatter block".into());
-    }
     let mut expected = parse_frontmatter_mapping(yaml)?;
     let key = Value::String("archived".into());
     if let Some(value) = expected.get(&key) {
@@ -135,14 +132,10 @@ pub fn set_archived(markdown: &str, archived: bool) -> Result<String, String> {
                             .find('#')
                             .map(|start| &content[start..])
                             .unwrap_or("");
-                        let replacement = if archived {
-                            if comment.is_empty() {
-                                "archived: true".to_string()
-                            } else {
-                                format!("archived: true {comment}")
-                            }
-                        } else {
-                            comment.to_string()
+                        let replacement = match (archived, comment.is_empty()) {
+                            (true, true) => "archived: true".to_string(),
+                            (true, false) => format!("archived: true {comment}"),
+                            (false, _) => comment.to_string(),
                         };
                         let mut candidate = yaml.to_string();
                         candidate.replace_range(offset..offset + content.len(), &replacement);
@@ -201,6 +194,16 @@ mod archive_tests {
         assert!(restored.contains("# keep"));
         assert_eq!(split_frontmatter(&restored).1, "---\nbody\n---\n");
         assert!(set_archived(&restored, true).is_ok());
+    }
+
+    #[test]
+    fn archives_leading_thematic_break_without_changing_body() {
+        for body in ["---\nA note\n", "---\r\nA note\r\n"] {
+            let archived = set_archived(body, true).unwrap();
+            assert_eq!(split_frontmatter(&archived).1, body);
+            let restored = set_archived(&archived, false).unwrap();
+            assert_eq!(split_frontmatter(&restored).1, body);
+        }
     }
 
     #[test]

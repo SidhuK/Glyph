@@ -148,20 +148,16 @@ function folioTreeRootEntries(
 	]);
 }
 
-function AllNotesCountBadge() {
-	const countQuery = useQuery(allDocsCountQueryOptions());
-	const label = formatAllDocsCountLabel(countQuery.data ?? 0);
-	if (!label) return null;
-	return <span className="sidebarQuickActionCount">{label}</span>;
-}
-
-function InboxCountBadge() {
+function AllNotesCountBadge({ inbox = false }: { inbox?: boolean }) {
 	const { spacePath } = useSpace();
 	const { defaultNewNoteFolder, settingsSpacePath } = useUILayoutContext();
-	const enabled = Boolean(defaultNewNoteFolder && settingsSpacePath === spacePath);
-	const count = useQuery({ ...allDocsCountQueryOptions(defaultNewNoteFolder), enabled });
-	if (!enabled || !count.data) return null;
-	return <span className="sidebarQuickActionCount">{formatAllDocsCountLabel(count.data)}</span>;
+	const enabled = !inbox || Boolean(defaultNewNoteFolder && settingsSpacePath === spacePath);
+	const count = useQuery({
+		...allDocsCountQueryOptions(inbox ? defaultNewNoteFolder : null),
+		enabled,
+	});
+	const label = formatAllDocsCountLabel(count.data ?? 0);
+	return enabled && label ? <span className="sidebarQuickActionCount">{label}</span> : null;
 }
 
 function SidebarActionButton({
@@ -603,7 +599,7 @@ export const SidebarContent = memo(function SidebarContent({
 									key="inbox"
 									data-sidebar-key="inbox"
 									kind="inbox"
-									badge={<InboxCountBadge />}
+									badge={<AllNotesCountBadge inbox />}
 									label={t("sidebar.inbox")}
 									icon={InboxIcon}
 									onClick={onOpenInbox}
