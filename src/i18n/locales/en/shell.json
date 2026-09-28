@@ -290,6 +290,8 @@
 		"menuFailed": "Could not open the space menu"
 	},
 	"noteCollections": {
+		"loading": "Loading notes…",
+		"noFiles": "No files found.",
 		"enableArchive": "Enable Archive in Space settings",
 		"configureInbox": "Set up Inbox",
 		"archive": "Archive",

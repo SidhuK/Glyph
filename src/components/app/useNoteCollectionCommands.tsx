@@ -31,6 +31,16 @@ export function useNoteCollectionCommands(
 			if (!(await prepareEditorsForExternalMutation([path]))) {
 				throw new Error(t("noteCollections.unsaved"));
 			}
+			if (archived) {
+				const result = await archive
+					.mutateAsync({
+						paths: [path],
+						archived: false,
+						expectedSpace: spacePath,
+					})
+					.catch(() => null); // The archive mutation already reports its error.
+				if (!result || result.failures.length) return;
+			}
 			const target = `${inbox}/${basename(path)}`;
 			if (target !== path) {
 				await invoke("space_rename_path", {
@@ -39,14 +49,7 @@ export function useNoteCollectionCommands(
 					expected_space: spacePath,
 				});
 			}
-			if (archived) {
-				const result = await archive.mutateAsync({
-					paths: [target],
-					archived: false,
-					expectedSpace: spacePath,
-				});
-				if (result.failures.length) return;
-			}
+
 			if ((await invoke("space_get_current")) === spacePath) await openFile(target);
 		},
 		onError: (error) =>

@@ -2,10 +2,9 @@ use std::collections::HashSet;
 use std::path::Path;
 
 use serde::Serialize;
-use serde_yaml::Value;
 use tauri::{Emitter, State, WebviewWindow};
 
-use super::frontmatter::{parse_frontmatter_mapping, render_frontmatter_mapping_yaml, split_frontmatter};
+use super::frontmatter::set_archived;
 use crate::note_mutation::{commit_markdown, CommitCtx, PersistMode, SpaceChange, CHANGED_EVENT};
 use crate::space_fs::helpers::{deny_hidden_rel_path, file_mtime_ms};
 use crate::{index, paths, space::SpaceState, utils};
@@ -80,25 +79,8 @@ pub async fn notes_set_archived(
                 let abs = paths::join_under(&root, rel)?;
                 let mtime = file_mtime_ms(&abs);
                 let text = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
-                let (yaml, body) = split_frontmatter(&text);
-                if yaml.is_none() && (text.starts_with("---\n") || text.starts_with("---\r\n")) {
-                    return Err("Note has an unclosed frontmatter block".into());
-                }
-                let mut mapping = parse_frontmatter_mapping(yaml)?;
-                let key = Value::String("archived".into());
-                if mapping.get(&key).and_then(Value::as_bool).unwrap_or(false) == archived {
-                    return Ok(());
-                }
-                if archived {
-                    mapping.insert(key, Value::Bool(true));
-                } else {
-                    mapping.remove(&key);
-                }
-                let next = if mapping.is_empty() {
-                    body.to_string()
-                } else {
-                    format!("---\n{}---\n{}", render_frontmatter_mapping_yaml(&mapping)?, body)
-                };
+                let next = set_archived(&text, archived)?;
+                if next == text { return Ok(()); }
                 let committed = commit_markdown(
                     &CommitCtx { root: &root, recent: &recent, space_path: &space_path },
                     &path,

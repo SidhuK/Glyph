@@ -338,6 +338,7 @@ function TreeEntries({
 	sortMode,
 }: TreeEntriesProps) {
 	const archivedPaths = useArchivedPaths();
+	const { t } = useTranslation("shell");
 	const virtualRows = useMemo(
 		() =>
 			flattenVisibleFileTreeRows({
@@ -430,7 +431,20 @@ function TreeEntries({
 		[onOpenFile, rowVirtualizer, virtualRows],
 	);
 
-	if (virtualRows.length === 0) return null;
+	if (archivedPaths.error) {
+		return (
+			<div className="fileTreeEmpty" role="alert">
+				{extractErrorMessage(archivedPaths.error)}
+				<button type="button" onClick={() => void archivedPaths.refetch()}>
+					{t("noteCollections.retry")}
+				</button>
+			</div>
+		);
+	}
+	if (!archivedPaths.data)
+		return <div className="fileTreeEmpty">{t("noteCollections.loading")}</div>;
+	if (virtualRows.length === 0)
+		return <div className="fileTreeEmpty">{t("noteCollections.noFiles")}</div>;
 
 	return (
 		<ul ref={listRef} className="fileTreeList" style={{ height: rowVirtualizer.getTotalSize() }}>

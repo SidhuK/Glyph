@@ -91,3 +91,126 @@ pub fn normalize_frontmatter_mapping(
 
     mapping
 }
+
+/// Change only the archive field; never reserialize unrelated YAML or the note body.
+pub fn set_archived(markdown: &str, archived: bool) -> Result<String, String> {
+    let (yaml, _) = split_frontmatter(markdown);
+    if yaml.is_none() && (markdown.starts_with("---\n") || markdown.starts_with("---\r\n")) {
+        return Err("Note has an unclosed frontmatter block".into());
+    }
+    let mut expected = parse_frontmatter_mapping(yaml)?;
+    let key = Value::String("archived".into());
+    if let Some(value) = expected.get(&key) {
+        if !value.is_bool() {
+            return Err("The archived property must be a boolean".into());
+        }
+    }
+    if expected.get(&key).and_then(Value::as_bool).unwrap_or(false) == archived {
+        return Ok(markdown.to_string());
+    }
+    let existed = expected.contains_key(&key);
+    if archived {
+        expected.insert(key.clone(), Value::Bool(true));
+    } else {
+        expected.remove(&key);
+    }
+    let Some(yaml) = yaml else {
+        return Ok(format!("---\narchived: true\n---\n{markdown}"));
+    };
+    let newline = if markdown.starts_with("---\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    let mut next_yaml = None;
+    if existed {
+        let mut offset = 0;
+        for line in yaml.split_inclusive('\n') {
+            let content = line.trim_end_matches(['\r', '\n']);
+            // A single top-level scalar can be edited without touching other properties.
+            if !content.starts_with(char::is_whitespace) {
+                if let Ok(field) = parse_frontmatter_mapping(Some(content)) {
+                    if field.len() == 1 && field.get(&key).and_then(Value::as_bool).is_some() {
+                        let comment = content
+                            .find('#')
+                            .map(|start| &content[start..])
+                            .unwrap_or("");
+                        let replacement = if archived {
+                            if comment.is_empty() {
+                                "archived: true".to_string()
+                            } else {
+                                format!("archived: true {comment}")
+                            }
+                        } else {
+                            comment.to_string()
+                        };
+                        let mut candidate = yaml.to_string();
+                        candidate.replace_range(offset..offset + content.len(), &replacement);
+                        if expected.is_empty() {
+                            candidate.push_str(&format!("{newline}{{}}"));
+                        }
+                        if parse_frontmatter_mapping(Some(&candidate)).ok().as_ref()
+                            == Some(&expected)
+                        {
+                            next_yaml = Some(candidate);
+                            break;
+                        }
+                    }
+                }
+            }
+            offset += line.len();
+        }
+    } else {
+        let candidate = if let Some(line) = yaml.lines().find(|line| line.trim() == "{}") {
+            yaml.replacen(line, "archived: true", 1)
+        } else {
+            format!("archived: true{newline}{yaml}")
+        };
+        if parse_frontmatter_mapping(Some(&candidate)).ok().as_ref() == Some(&expected) {
+            next_yaml = Some(candidate);
+        }
+    }
+    let next_yaml = next_yaml.ok_or("Cannot safely edit the archived field in this YAML layout")?;
+    let start = markdown.find('\n').ok_or("Missing frontmatter delimiter")? + 1;
+    let mut next = markdown.to_string();
+    // Keep the delimiters even when the mapping is empty, so body rules stay body text.
+    next.replace_range(start..start + yaml.len(), &next_yaml);
+    Ok(next)
+}
+
+#[cfg(test)]
+mod archive_tests {
+    use super::{set_archived, split_frontmatter};
+
+    #[test]
+    fn preserves_comments_scalars_and_body() {
+        let note = "---\ntitle: 'A note' # title\n# keep this\ndescription: |\n  several lines\n  of text\n---\nBody\n";
+        let archived = set_archived(note, true).unwrap();
+        assert_eq!(archived, note.replacen("---\n", "---\narchived: true\n", 1));
+        let restored = set_archived(&archived, false).unwrap();
+        assert!(restored.contains(
+            "title: 'A note' # title\n# keep this\ndescription: |\n  several lines\n  of text"
+        ));
+        assert_eq!(split_frontmatter(&restored).1, "Body\n");
+    }
+
+    #[test]
+    fn retains_empty_frontmatter_before_body_rule() {
+        let restored =
+            set_archived("---\narchived: true # keep\n---\n---\nbody\n---\n", false).unwrap();
+        assert!(restored.contains("# keep"));
+        assert_eq!(split_frontmatter(&restored).1, "---\nbody\n---\n");
+        assert!(set_archived(&restored, true).is_ok());
+    }
+
+    #[test]
+    fn preserves_crlf_and_rejects_unsafe_rewrites() {
+        let note = "---\r\ntitle: Test\r\narchived: false # keep\r\n---\r\nbody";
+        assert_eq!(
+            set_archived(note, true).unwrap(),
+            note.replace("archived: false", "archived: true")
+        );
+        assert!(set_archived("---\n{title: Test, archived: true}\n---\nbody", false).is_err());
+        assert!(set_archived("---\narchived: personal value\n---\nbody", true).is_err());
+    }
+}

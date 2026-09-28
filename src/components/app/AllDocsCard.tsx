@@ -193,7 +193,8 @@ export function AllDocsCard({
 			type="button"
 			className="allDocsCard"
 			onContextMenu={(event) => {
-				if (!archive.enabled) return;
+				if (!archive.enabled || !archivedPaths.data || archivedPaths.error || archive.isPending)
+					return;
 				void showNativeContextMenu(event, [
 					{
 						label: t(archived ? "noteCollections.unarchive" : "noteCollections.archive"),

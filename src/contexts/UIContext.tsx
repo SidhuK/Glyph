@@ -373,6 +373,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const sidebarVisibilityRevisionRef = useRef(0);
 	const sidebarOrderRef = useRef(initialUIState.sidebarOrder);
 	const sidebarOrderRevisionRef = useRef(0);
+	const archiveEnabledRef = useRef(initialUIState.archiveEnabled);
+	const archiveRevisionRef = useRef(0);
 	const zenModeRef = useRef(initialUIState.zenMode);
 	const zenModeRevisionRef = useRef(0);
 	const folioSortModeRef = useRef(initialUIState.folioSortMode);
@@ -480,6 +482,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			});
 		}
 		if (typeof payload.archive?.enabled === "boolean") {
+			archiveRevisionRef.current += 1;
+			archiveEnabledRef.current = payload.archive.enabled;
 			dispatch({ type: "setArchiveEnabled", value: payload.archive.enabled });
 		}
 		if (payload.noteCreation && "defaultFolder" in payload.noteCreation) {
@@ -555,6 +559,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				const zenModeRevision = zenModeRevisionRef.current;
 				const folioSortModeRevision = folioSortModeRevisionRef.current;
 				const folioNotesWidthRevision = folioNotesWidthRevisionRef.current;
+				const archiveRevision = archiveRevisionRef.current;
 				const s = await loadSettings({ spacePath: requestedSpacePath });
 				// Discard if unmounted or the active space changed mid-load so we
 				// never stamp the previous space's folders/template as the new one.
@@ -589,7 +594,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
 					defaultNewNoteFolder: s.noteCreation.defaultFolder,
-					archiveEnabled: s.archive.enabled,
+					archiveEnabled:
+						archiveRevision === archiveRevisionRef.current
+							? s.archive.enabled
+							: archiveEnabledRef.current,
 					templateFolder: s.templates?.folder ?? null,
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
@@ -635,6 +643,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			try {
 				await reloadFromDisk();
 				if (cancelled) return;
+				const archiveRevision = archiveRevisionRef.current;
 				const s = await loadSettings({ spacePath });
 				if (cancelled) return;
 				dispatch({
@@ -642,7 +651,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					spacePath,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
 					defaultNewNoteFolder: s.noteCreation.defaultFolder,
-					archiveEnabled: s.archive.enabled,
+					archiveEnabled:
+						archiveRevision === archiveRevisionRef.current
+							? s.archive.enabled
+							: archiveEnabledRef.current,
 					templateFolder: s.templates?.folder ?? null,
 					periodNoteTemplates: periodNoteTemplatesFromSettings(s.templates),
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),

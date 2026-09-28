@@ -471,7 +471,10 @@ export const MainContent = memo(function MainContent({
 		<>
 			<main className="mainArea" data-right-sidebar-open={rightSidebarOpen ? "true" : undefined}>
 				<div className="canvasWrapper">
-					{folioMode && activeTabPath !== INBOX_TAB_ID && activeTabPath !== ARCHIVE_TAB_ID ? (
+					{folioMode &&
+					!Object.values(panes).some(
+						(pane) => pane.activeTabPath === INBOX_TAB_ID || pane.activeTabPath === ARCHIVE_TAB_ID,
+					) ? (
 						<FolioWorkspace
 							activeTabPath={activeTabPath}
 							onOpenFile={onOpenFolioFile}

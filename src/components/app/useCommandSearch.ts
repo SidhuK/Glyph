@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useDeferredValue, useMemo } from "react";
+import { useMemo } from "react";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { invoke, type SearchResult } from "../../lib/tauri";
 import { isPreviewableNotePath } from "../../utils/path";
 import { parseSearchQueryWithPeople } from "./commandPaletteHelpers";
+
+const SEARCH_DEBOUNCE_MS = 200;
 
 export function useCommandSearch(
 	query: string,
@@ -11,41 +13,47 @@ export function useCommandSearch(
 	enabled: boolean,
 	peopleMentionsEnabled: boolean,
 ) {
-	const deferredQuery = useDeferredValue(query);
 	const { recentFiles } = useRecentFiles(spacePath, 8);
 	const recentPreviewableFiles = useMemo(
 		() => recentFiles.filter((file) => isPreviewableNotePath(file.path)),
 		[recentFiles],
 	);
 	const search = useQuery({
-		queryKey: [
-			"navigation",
-			"search",
-			spacePath,
-			deferredQuery.trim(),
-			peopleMentionsEnabled,
-			true,
-		],
-		enabled: enabled && Boolean(spacePath) && Boolean(deferredQuery.trim()),
-		queryFn: () =>
-			peopleMentionsEnabled
+		queryKey: ["navigation", "search", spacePath, query.trim(), peopleMentionsEnabled, true],
+		enabled: enabled && Boolean(spacePath) && Boolean(query.trim()),
+		retry: false,
+		queryFn: async ({ signal }) => {
+			// Cancel the delay when the query changes, before starting native database work.
+			await new Promise<void>((resolve, reject) => {
+				const abort = () => {
+					clearTimeout(timer);
+					reject(new DOMException("Aborted", "AbortError"));
+				};
+				const timer = setTimeout(() => {
+					signal.removeEventListener("abort", abort);
+					resolve();
+				}, SEARCH_DEBOUNCE_MS);
+				if (signal.aborted) abort();
+				else signal.addEventListener("abort", abort, { once: true });
+			});
+			return peopleMentionsEnabled
 				? invoke("search_parse_and_run", {
-						raw_query: deferredQuery.trim(),
+						raw_query: query.trim(),
 						limit: 1500,
 						include_archived: true,
 					})
 				: invoke("search_advanced", {
 						request: {
-							...parseSearchQueryWithPeople(deferredQuery.trim(), false).request,
+							...parseSearchQueryWithPeople(query.trim(), false).request,
 							limit: 1500,
 							include_archived: true,
 						},
-					}),
+					});
+		},
 	});
 	const searchResults = search.data;
 	const { titleMatches, contentMatches } = useMemo(() => {
-		if (!enabled || !query.trim() || query !== deferredQuery)
-			return { titleMatches: [], contentMatches: [] };
+		if (!enabled || !query.trim()) return { titleMatches: [], contentMatches: [] };
 		const parsed = parseSearchQueryWithPeople(query.trim(), peopleMentionsEnabled);
 		const q = parsed.text.toLowerCase();
 		if (parsed.request.tag_only) {
@@ -70,12 +78,12 @@ export function useCommandSearch(
 			}
 		}
 		return { titleMatches: title, contentMatches: content };
-	}, [searchResults, query, deferredQuery, enabled, peopleMentionsEnabled]);
+	}, [searchResults, query, enabled, peopleMentionsEnabled]);
 
 	return {
 		recentFiles: recentPreviewableFiles,
-		isSearching: search.isFetching || query !== deferredQuery,
-		searchError: search.error,
+		isSearching: search.isFetching,
+		searchError: enabled && spacePath && query.trim() ? search.error : null,
 		titleMatches,
 		contentMatches,
 	};

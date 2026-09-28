@@ -838,7 +838,7 @@ fn local_note_connections_for_conn(
     nodes_by_id.insert(center.id.clone(), LocalConnectionsNode { ..center.clone() });
 
     let mut neighbor_stmt = conn
-        .prepare(
+        .prepare(&format!(
             "SELECT DISTINCT n.id, n.title
              FROM notes n
              JOIN (
@@ -858,8 +858,8 @@ fn local_note_connections_for_conn(
                 FROM note_relationships r
                 WHERE r.to_id = ?
              ) related ON related.note_id = n.id
-             WHERE n.id <> ?",
-        )
+             WHERE n.id <> ? AND {ACTIVE_NOTES}",
+        ))
         .map_err(|e| e.to_string())?;
     let mut neighbor_rows = neighbor_stmt
         .query(rusqlite::params![
@@ -997,7 +997,7 @@ fn local_connections_tag_expansion_for_seed_nodes(
         "SELECT n.id, n.title
          FROM tags t
          JOIN notes n ON n.id = t.note_id
-         WHERE t.is_explicit = 1
+         WHERE t.is_explicit = 1 AND {ACTIVE_NOTES}
            AND t.tag = ?
          ORDER BY CASE WHEN n.id IN ({seed_placeholders}) THEN 0 ELSE 1 END,
                   n.title COLLATE NOCASE ASC,
@@ -1065,10 +1065,11 @@ fn local_connections_tag_expansion_for_seed_nodes(
 
 fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnections, String> {
     let people_tag_like = format!("{PEOPLE_TAG_NAMESPACE}%");
-    let node_query = "SELECT n.id, n.title
+    let node_query = format!("SELECT n.id, n.title
          FROM notes n
-         ORDER BY n.title COLLATE NOCASE ASC, n.id ASC";
-    let mut node_stmt = conn.prepare(node_query).map_err(|e| e.to_string())?;
+         WHERE {ACTIVE_NOTES}
+         ORDER BY n.title COLLATE NOCASE ASC, n.id ASC");
+    let mut node_stmt = conn.prepare(&node_query).map_err(|e| e.to_string())?;
     let mut node_rows = node_stmt.query([]).map_err(|e| e.to_string())?;
     let mut nodes = Vec::new();
     while let Some(row) = node_rows.next().map_err(|e| e.to_string())? {
@@ -1087,13 +1088,14 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         });
     }
 
-    let edge_query = "SELECT from_id, to_id, kind, SUM(weight) AS weight
+    let edge_query = format!("SELECT from_id, to_id, kind, SUM(weight) AS weight
          FROM (
             SELECT l.from_id, l.to_id, 'link' AS kind, COUNT(*) AS weight
             FROM links l
             JOIN notes source ON source.id = l.from_id
             JOIN notes target ON target.id = l.to_id
             WHERE l.to_id IS NOT NULL AND l.from_id <> l.to_id
+              AND source.id NOT IN ({archived}) AND target.id NOT IN ({archived})
             GROUP BY l.from_id, l.to_id
             UNION ALL
             SELECT r.from_id, r.to_id, 'relationship' AS kind, COUNT(*) AS weight
@@ -1101,11 +1103,12 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
             JOIN notes source ON source.id = r.from_id
             JOIN notes target ON target.id = r.to_id
             WHERE r.to_id IS NOT NULL AND r.from_id <> r.to_id
+              AND source.id NOT IN ({archived}) AND target.id NOT IN ({archived})
             GROUP BY r.from_id, r.to_id
          )
          GROUP BY from_id, to_id, kind
-         ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC";
-    let mut edge_stmt = conn.prepare(edge_query).map_err(|e| e.to_string())?;
+         ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC", archived = crate::notes::archive::ARCHIVED_NOTE_IDS);
+    let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
     let mut edge_rows = edge_stmt.query([]).map_err(|e| e.to_string())?;
     let mut edges = Vec::new();
     while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
@@ -1124,14 +1127,14 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         });
     }
 
-    let tag_query = "SELECT t.tag, COUNT(DISTINCT t.note_id) AS note_count
+    let tag_query = format!("SELECT t.tag, COUNT(DISTINCT t.note_id) AS note_count
          FROM tags t
          JOIN notes n ON n.id = t.note_id
-         WHERE t.is_explicit = 1
+         WHERE t.is_explicit = 1 AND {ACTIVE_NOTES}
            AND t.tag NOT LIKE ?1
          GROUP BY t.tag
-         ORDER BY t.tag COLLATE NOCASE ASC";
-    let mut tag_stmt = conn.prepare(tag_query).map_err(|e| e.to_string())?;
+         ORDER BY t.tag COLLATE NOCASE ASC");
+    let mut tag_stmt = conn.prepare(&tag_query).map_err(|e| e.to_string())?;
     let mut tag_rows = tag_stmt
         .query([&people_tag_like])
         .map_err(|e| e.to_string())?;
@@ -1145,13 +1148,13 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         });
     }
 
-    let tag_edge_query = "SELECT t.note_id, t.tag
+    let tag_edge_query = format!("SELECT t.note_id, t.tag
          FROM tags t
          JOIN notes n ON n.id = t.note_id
-         WHERE t.is_explicit = 1
+         WHERE t.is_explicit = 1 AND {ACTIVE_NOTES}
            AND t.tag NOT LIKE ?1
-         ORDER BY t.tag COLLATE NOCASE ASC, t.note_id COLLATE NOCASE ASC";
-    let mut tag_edge_stmt = conn.prepare(tag_edge_query).map_err(|e| e.to_string())?;
+         ORDER BY t.tag COLLATE NOCASE ASC, t.note_id COLLATE NOCASE ASC");
+    let mut tag_edge_stmt = conn.prepare(&tag_edge_query).map_err(|e| e.to_string())?;
     let mut tag_edge_rows = tag_edge_stmt
         .query([&people_tag_like])
         .map_err(|e| e.to_string())?;
@@ -1446,6 +1449,16 @@ mod space_connections_tests {
         assert_eq!(graph.edges[0].kind, SpaceConnectionKind::Link);
         assert_eq!(graph.tags.len(), 1);
         assert_eq!(graph.tag_edges.len(), 2);
+        conn.execute(
+            "INSERT INTO note_properties(note_id, key, value_type, value_text, value_json) VALUES('notes/alpha.md', 'archived', 'checkbox', 'true', 'true')",
+            [],
+        ).unwrap();
+        let active_graph = space_connections_for_conn(&conn).unwrap();
+        assert_eq!(active_graph.nodes.len(), 3);
+        assert!(active_graph.edges.is_empty());
+        assert_eq!(active_graph.tags[0].note_count, 1);
+        assert_eq!(active_graph.tag_edges.len(), 1);
+        assert!(active_graph.nodes.iter().all(|node| node.id != "notes/alpha.md"));
         assert!(
             graph
                 .nodes
