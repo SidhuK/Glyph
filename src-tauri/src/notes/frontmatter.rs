@@ -111,13 +111,13 @@ pub fn set_archived(markdown: &str, archived: bool) -> Result<String, String> {
     } else {
         expected.remove(&key);
     }
-    let Some(yaml) = yaml else {
-        return Ok(format!("---\narchived: true\n---\n{markdown}"));
-    };
-    let newline = if markdown.starts_with("---\r\n") {
+    let newline = if markdown.split_once('\n').is_some_and(|(line, _)| line.ends_with('\r')) {
         "\r\n"
     } else {
         "\n"
+    };
+    let Some(yaml) = yaml else {
+        return Ok(format!("---{newline}archived: true{newline}---{newline}{markdown}"));
     };
     let mut next_yaml = None;
     if existed {
@@ -198,8 +198,10 @@ mod archive_tests {
 
     #[test]
     fn archives_leading_thematic_break_without_changing_body() {
-        for body in ["---\nA note\n", "---\r\nA note\r\n"] {
+        for body in ["---\nA note\n", "---\r\nA note\r\n", "A note\r\nBody\r\n"] {
             let archived = set_archived(body, true).unwrap();
+            let newline = if body.contains("\r\n") { "\r\n" } else { "\n" };
+            assert_eq!(archived, format!("---{newline}archived: true{newline}---{newline}{body}"));
             assert_eq!(split_frontmatter(&archived).1, body);
             let restored = set_archived(&archived, false).unwrap();
             assert_eq!(split_frontmatter(&restored).1, body);

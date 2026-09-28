@@ -38,6 +38,7 @@ export function useNoteCollectionCommands(
 						paths: [path],
 						archived: false,
 						expectedSpace: spacePath,
+						showSuccess: false,
 					})
 					.catch(() => null); // The archive mutation already reports its error.
 				if (!result || result.failures.length) return;
@@ -55,7 +56,12 @@ export function useNoteCollectionCommands(
 					if (restoreArchiveOnFailure) {
 						// Restore only the archive state changed by this action. The hook reports rollback failures.
 						await archive
-							.mutateAsync({ paths: [path], archived: true, expectedSpace: spacePath })
+							.mutateAsync({
+								paths: [path],
+								archived: true,
+								expectedSpace: spacePath,
+								showSuccess: false,
+							})
 							.catch(() => null);
 					}
 					throw error;

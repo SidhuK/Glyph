@@ -18,6 +18,7 @@ interface ArchiveVariables {
 	paths: string[];
 	archived: boolean;
 	expectedSpace: string;
+	showSuccess?: boolean;
 }
 
 export function useNoteArchive() {
@@ -49,7 +50,7 @@ export function useNoteArchive() {
 					description: result.failures.map(({ path, error }) => `${path}: ${error}`).join("\n"),
 				});
 			}
-			if (result.changed_paths.length) {
+			if (result.changed_paths.length && variables.showSuccess !== false) {
 				toast.success(
 					t(
 						variables.archived ? "noteCollections.archivedCount" : "noteCollections.restoredCount",
