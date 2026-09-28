@@ -1,5 +1,8 @@
 import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
+import { queryClient } from "./queryClient";
+
+export const SETTINGS_QUERY_KEY = ["app-settings"] as const;
 
 let storeInstance: LazyStore | null = null;
 let storeInitPromise: Promise<void> | null = null;
@@ -34,6 +37,7 @@ function ensureSettingsInvalidationListener() {
 
 	const unlistenPromise = listen("settings:updated", () => {
 		invalidateSettingsCache();
+		void queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY });
 	});
 	settingsInvalidationUnlistenPromise = unlistenPromise;
 	void unlistenPromise

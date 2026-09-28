@@ -1,8 +1,11 @@
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
 import type { SpaceDefinition } from "../../lib/spaceRegistry";
+import { loadSettings } from "../../lib/settings";
+import { SETTINGS_QUERY_KEY } from "../../lib/settingsStore";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
 import { SidebarContent, type SidebarContentProps } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
@@ -30,6 +33,11 @@ export const Sidebar = memo(function Sidebar({
 	...contentProps
 }: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
+	const { data: colorfulSidebar = false } = useQuery({
+		queryKey: SETTINGS_QUERY_KEY,
+		queryFn: () => loadSettings(),
+		select: (settings) => settings.ui.colorfulSidebar,
+	});
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
 	const spaceSwitcher = (
@@ -45,6 +53,7 @@ export const Sidebar = memo(function Sidebar({
 
 	return (
 		<m.aside
+			data-colorful={colorfulSidebar ? "true" : undefined}
 			data-slot="sidebar"
 			data-sidebar="sidebar"
 			data-state={sidebarState}

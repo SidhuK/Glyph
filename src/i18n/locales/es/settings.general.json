@@ -44,6 +44,10 @@
 		}
 	},
 	"experimental": {
+		"colorfulSidebar": {
+			"label": "Barra lateral colorida",
+			"description": "Da a los iconos de la barra lateral colores propios y un sombreado suave."
+		},
 		"sectionTitle": "Experimental",
 		"sectionDescription": "Funciones experimentales que aún no están del todo definidas. Una versión posterior de Glyph puede cambiarlas o quitarlas.",
 		"noteSidePeek": {

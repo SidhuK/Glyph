@@ -58,6 +58,10 @@
 		}
 	},
 	"experimental": {
+		"colorfulSidebar": {
+			"label": "Colorful sidebar",
+			"description": "Give sidebar icons distinct colors and soft shading."
+		},
 		"sectionTitle": "Experimental",
 		"sectionDescription": "Experimental features that are not fully fleshed out. A later version of Glyph may change or remove them.",
 		"noteSidePeek": {

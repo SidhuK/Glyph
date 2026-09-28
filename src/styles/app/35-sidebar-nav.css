@@ -130,24 +130,6 @@ button.sidebarNewCanvasIconBtn:active {
 	color: var(--text-primary);
 }
 
-.sidebarNavBtn[data-kind="inbox"] > svg {
-	color: var(--color-blue-dark-400);
-}
-
-.sidebarNavBtn[data-kind="archive"] > svg {
-	color: #b5c879;
-}
-
-.sidebarNavBtn[data-kind="inbox"] > svg path:first-child,
-.sidebarNavBtn[data-kind="archive"] > svg path:first-child {
-	fill: currentcolor;
-}
-
-.sidebarNavBtn[data-kind="inbox"] > svg path:last-child,
-.sidebarNavBtn[data-kind="archive"] > svg path:last-child {
-	stroke: var(--bg-primary);
-}
-
 /* ── New note: filled accent icon ── */
 .sidebarNavBtn[data-kind="new-note"] > svg {
 	color: var(--interactive-accent);
@@ -237,4 +219,92 @@ button.sidebarNewCanvasIconBtn:active {
 	line-height: 1;
 	letter-spacing: 0.02em;
 	white-space: nowrap;
+}
+
+/* Color describes the action's role, never its current success/error state. */
+
+.sidebar[data-colorful="true"] :is([data-kind="inbox"], [data-kind="all-notes"]) {
+	--sidebar-icon-color: #69a9ed;
+}
+
+.sidebar[data-colorful="true"] [data-kind="quick-note"] {
+	--sidebar-icon-color: #efbe59;
+}
+
+.sidebar[data-colorful="true"] [data-kind="archive"] {
+	--sidebar-icon-color: #bc9973;
+}
+
+.sidebar[data-colorful="true"] :is([data-kind="databases"], [data-kind="connections"]) {
+	--sidebar-icon-color: #62b7a5;
+}
+
+.sidebar[data-colorful="true"] [data-kind="git-sync"] {
+	--sidebar-icon-color: #6bb880;
+}
+
+.sidebar[data-colorful="true"] [data-kind="templates"] {
+	--sidebar-icon-color: #8a9cdd;
+}
+
+.sidebar[data-colorful="true"] [data-kind="agent"] {
+	--sidebar-icon-color: #b08cdd;
+}
+
+.sidebar[data-colorful="true"]
+	:is(
+		[data-kind="calendar"],
+		[data-kind="daily-note"],
+		[data-kind="weekly-note"],
+		[data-kind="monthly-note"],
+		[data-kind="quarterly-note"]
+	) {
+	--sidebar-icon-color: #e58c87;
+}
+
+.sidebar[data-colorful="true"] .sidebarNewCanvasIconBtn {
+	--sidebar-icon-color: #d891b6;
+}
+
+.sidebar[data-colorful="true"] :is([data-kind="search"], .spaceSwitcherButton) {
+	--sidebar-icon-color: #98a6b6;
+}
+
+.sidebar[data-colorful="true"]
+	:is(
+		.sidebarNavBtn[data-kind]:not([data-kind="new-note"]),
+		.sidebarSearchBar,
+		.sidebarNewCanvasIconBtn,
+		.spaceSwitcherButton
+	)
+	> svg {
+	color: var(--sidebar-icon-color);
+	opacity: 1;
+}
+
+/* Solid color sits beneath darker, crisp details in both themes. */
+.sidebarIconFill,
+.sidebarIconBand {
+	display: none;
+}
+
+.sidebar[data-colorful="true"]
+	.sidebarTopNavigation
+	:is(.sidebarNavBtn:not([data-kind="new-note"]), .sidebarSearchBar, .sidebarNewCanvasIconBtn)
+	> svg
+	> :not(.sidebarIconFill):not(.sidebarIconBand) {
+	stroke: color-mix(in srgb, currentcolor 50%, #17202b);
+}
+
+.sidebar[data-colorful="true"] .sidebarTopNavigation .sidebarIconFill {
+	display: initial;
+	fill: currentcolor;
+	stroke: none;
+}
+
+.sidebar[data-colorful="true"] .sidebarTopNavigation .sidebarIconBand {
+	display: initial;
+	fill: none;
+	stroke: currentcolor;
+	stroke-width: 4;
 }

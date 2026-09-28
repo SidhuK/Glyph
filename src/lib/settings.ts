@@ -614,6 +614,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			folioMode,
 			folioSortMode,
 			folioNotesWidth,
+			colorfulSidebar: DURABLE_SETTINGS.colorfulSidebar.load(entries),
 			noteSidePeek,
 			resumeLastSession,
 			aiAssistantMode,
