@@ -266,7 +266,7 @@ button.sidebarNewCanvasIconBtn:active {
 	--sidebar-icon-color: #d891b6;
 }
 
-.sidebar[data-colorful="true"] :is([data-kind="search"], .spaceSwitcherButton) {
+.sidebar[data-colorful="true"] [data-kind="search"] {
 	--sidebar-icon-color: #98a6b6;
 }
 
@@ -274,8 +274,7 @@ button.sidebarNewCanvasIconBtn:active {
 	:is(
 		.sidebarNavBtn[data-kind]:not([data-kind="new-note"]),
 		.sidebarSearchBar,
-		.sidebarNewCanvasIconBtn,
-		.spaceSwitcherButton
+		.sidebarNewCanvasIconBtn
 	)
 	> svg {
 	color: var(--sidebar-icon-color);
@@ -293,7 +292,7 @@ button.sidebarNewCanvasIconBtn:active {
 	:is(.sidebarNavBtn:not([data-kind="new-note"]), .sidebarSearchBar, .sidebarNewCanvasIconBtn)
 	> svg
 	> :not(.sidebarIconFill):not(.sidebarIconBand) {
-	stroke: color-mix(in srgb, currentcolor 50%, #17202b);
+	stroke: color-mix(in srgb, currentcolor 50%, var(--text-primary));
 }
 
 .sidebar[data-colorful="true"] .sidebarTopNavigation .sidebarIconFill {

@@ -1,11 +1,17 @@
 // @vitest-environment jsdom
 
+import { QueryObserver } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import type { AppSettings } from "./settings/model";
+import type { AppSettings, SettingsUpdatedPayload } from "./settings/model";
 
 const { emitMock, listenMock, storeState } = vi.hoisted(() => ({
 	emitMock: vi.fn(() => Promise.resolve()),
-	listenMock: vi.fn(() => Promise.resolve(() => {})),
+	listenMock: vi.fn<
+		(
+			event: string,
+			handler: (event: { payload: SettingsUpdatedPayload }) => void,
+		) => Promise<() => void>
+	>(() => Promise.resolve(() => {})),
 	storeState: new Map<string, unknown>(),
 }));
 
@@ -52,6 +58,7 @@ vi.mock("@tauri-apps/plugin-store", () => ({
 function resetSettingsHarness() {
 	vi.resetModules();
 	emitMock.mockClear();
+	listenMock.mockClear();
 	storeState.clear();
 }
 
@@ -221,6 +228,59 @@ describe("durable settings", () => {
 				await setting.write(write.value);
 				expect(storeState.get(storeKey)).toBe(write.value);
 				expect(emitMock).toHaveBeenCalledWith("settings:updated", write.payload);
+			}
+		},
+	);
+});
+
+describe("settings query refresh", () => {
+	beforeEach(resetSettingsHarness);
+
+	it("refreshes an observed colorful sidebar setting after a disk reload", async () => {
+		const { loadSettings, reloadFromDisk } = await import("./settings");
+		const { queryClient } = await import("./queryClient");
+		const { SETTINGS_QUERY_KEY } = await import("./settingsStore");
+		const options = {
+			queryKey: SETTINGS_QUERY_KEY,
+			queryFn: () => loadSettings(),
+			staleTime: Infinity,
+		};
+		await queryClient.fetchQuery(options);
+		const observer = new QueryObserver(queryClient, options);
+		const unsubscribe = observer.subscribe(() => {});
+		try {
+			expect(observer.getCurrentResult().data?.ui.colorfulSidebar).toBe(false);
+			storeState.set("ui.colorfulSidebar", true);
+			await reloadFromDisk();
+			expect(observer.getCurrentResult().data?.ui.colorfulSidebar).toBe(true);
+		} finally {
+			unsubscribe();
+			queryClient.clear();
+		}
+	});
+
+	it.each([
+		{ payload: { ui: { colorfulSidebar: true } }, invalidated: true },
+		{ payload: { editor: { zenMode: true } }, invalidated: true },
+		{ payload: { shortcuts: { bindings: {} } }, invalidated: false },
+		{
+			payload: { spacePath: "/tmp/space", editor: { attachmentFolder: "Assets" } },
+			invalidated: false,
+		},
+	] satisfies { payload: SettingsUpdatedPayload; invalidated: boolean }[])(
+		"invalidates application queries only for relevant changes: $payload",
+		async ({ payload, invalidated }) => {
+			const { getSettingsStore, SETTINGS_QUERY_KEY } = await import("./settingsStore");
+			const { queryClient } = await import("./queryClient");
+			await getSettingsStore();
+			queryClient.setQueryData(SETTINGS_QUERY_KEY, {});
+			try {
+				const handler = listenMock.mock.calls.find(([event]) => event === "settings:updated")?.[1];
+				expect(handler).toBeDefined();
+				handler?.({ payload });
+				expect(queryClient.getQueryState(SETTINGS_QUERY_KEY)?.isInvalidated).toBe(invalidated);
+			} finally {
+				queryClient.clear();
 			}
 		},
 	);

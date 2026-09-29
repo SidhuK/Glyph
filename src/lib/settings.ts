@@ -18,7 +18,9 @@ import type {
 	SpaceScopedSettings,
 	SpaceScopedSettingsMap,
 } from "./settings/model";
+import { queryClient } from "./queryClient";
 import {
+	SETTINGS_QUERY_KEY,
 	getSettingsStore,
 	invalidateSettingsCache,
 	loadSettingsEntries,
@@ -367,6 +369,7 @@ export async function reloadFromDisk(): Promise<void> {
 	const store = await getSettingsStore();
 	await store.reload();
 	invalidateSettingsCache();
+	await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY });
 }
 
 function isRecentFileArray(value: unknown): value is RecentFile[] {
