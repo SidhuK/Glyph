@@ -44,6 +44,10 @@
 		}
 	},
 	"experimental": {
+		"colorfulSidebar": {
+			"label": "다채로운 사이드바",
+			"description": "사이드바 아이콘에 고유한 색상과 부드러운 음영을 적용합니다."
+		},
 		"sectionTitle": "실험적",
 		"sectionDescription": "아직 다듬어지지 않은 실험적 기능입니다. 이후 Glyph 버전에서 바뀌거나 제거될 수 있습니다.",
 		"noteSidePeek": {

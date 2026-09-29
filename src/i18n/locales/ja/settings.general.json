@@ -44,6 +44,10 @@
 		}
 	},
 	"experimental": {
+		"colorfulSidebar": {
+			"label": "カラフルなサイドバー",
+			"description": "サイドバーのアイコンに個別の色と柔らかな陰影を付けます。"
+		},
 		"sectionTitle": "実験的",
 		"sectionDescription": "まだ作り込みが足りない実験的な機能です。今後の Glyph のバージョンで変更または削除されることがあります。",
 		"noteSidePeek": {

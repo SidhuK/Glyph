@@ -3,12 +3,9 @@ import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type FocusMode, isFocusMode, loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
-import { invalidateSettingsCache } from "../../lib/settingsStore";
-import { useTauriEvent } from "../../lib/tauriEvents";
+import { SETTINGS_QUERY_KEY } from "../../lib/settingsStore";
 import { SettingsInfoHint, SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
-
-const SETTINGS_QUERY_ROOT = "experimental-settings";
 
 const FOCUS_MODE_VALUES = ["off", "paragraph", "sentence"] as const satisfies readonly FocusMode[];
 
@@ -25,20 +22,15 @@ export function ExperimentalSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const queryClient = useQueryClient();
 	const settingsQuery = useQuery({
-		queryKey: [SETTINGS_QUERY_ROOT],
+		queryKey: SETTINGS_QUERY_KEY,
 		queryFn: () => loadSettings(),
 	});
 	const saveSetting = useMutation({
 		mutationFn: (write: () => Promise<void>) => write(),
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: [SETTINGS_QUERY_ROOT] }),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY }),
 	});
 	const settings = settingsQuery.data;
 	const disabled = !settings || saveSetting.isPending;
-
-	useTauriEvent("settings:updated", () => {
-		invalidateSettingsCache();
-		void queryClient.invalidateQueries({ queryKey: [SETTINGS_QUERY_ROOT] });
-	});
 
 	const error = settingsQuery.error ?? saveSetting.error;
 	const displayedError = error ? extractErrorMessage(error) : "";
@@ -51,6 +43,22 @@ export function ExperimentalSettingsPane() {
 					title={t("experimental.sectionTitle")}
 					description={t("experimental.sectionDescription")}
 				>
+					<SettingsRow
+						label={t("experimental.colorfulSidebar.label")}
+						description={t("experimental.colorfulSidebar.description")}
+						searchId="experimental-colorful-sidebar"
+					>
+						<SettingsToggle
+							checked={
+								settings?.ui.colorfulSidebar ?? DURABLE_SETTINGS.colorfulSidebar.defaultValue
+							}
+							disabled={disabled}
+							ariaLabel={t("experimental.colorfulSidebar.label")}
+							onCheckedChange={(checked) =>
+								saveSetting.mutate(() => DURABLE_SETTINGS.colorfulSidebar.write(checked))
+							}
+						/>
+					</SettingsRow>
 					<SettingsRow
 						label={t("experimental.noteSidePeek.label")}
 						description={t("experimental.noteSidePeek.description")}

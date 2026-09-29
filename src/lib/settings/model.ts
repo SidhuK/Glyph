@@ -213,6 +213,7 @@ export interface AppSettings {
 		folioMode: boolean;
 		folioSortMode: FileTreeSortMode;
 		folioNotesWidth: number;
+		colorfulSidebar: boolean;
 		noteSidePeek: boolean;
 		resumeLastSession: boolean;
 		aiAssistantMode: AiAssistantMode;

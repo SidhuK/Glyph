@@ -55,6 +55,10 @@
 		}
 	},
 	"experimental": {
+		"colorfulSidebar": {
+			"label": "Barre latérale colorée",
+			"description": "Donnez aux icônes de la barre latérale des couleurs distinctes et un ombrage léger."
+		},
 		"sectionTitle": "Expérimental",
 		"sectionDescription": "Fonctionnalités expérimentales encore inachevées. Une version ultérieure de Glyph peut les modifier ou les retirer.",
 		"noteSidePeek": {

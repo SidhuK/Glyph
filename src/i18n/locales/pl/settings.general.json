@@ -44,6 +44,10 @@
 		}
 	},
 	"experimental": {
+		"colorfulSidebar": {
+			"label": "Kolorowy pasek boczny",
+			"description": "Nadaj ikonom paska bocznego odrębne kolory i delikatne cieniowanie."
+		},
 		"sectionTitle": "Eksperymentalne",
 		"sectionDescription": "Funkcje eksperymentalne, które nie są jeszcze dopracowane. Późniejsza wersja Glyph może je zmienić lub usunąć.",
 		"noteSidePeek": {

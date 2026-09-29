@@ -522,6 +522,11 @@
 				"markdown"
 			]
 		},
+		"experimental-colorful-sidebar": {
+			"title": "カラフルなサイドバー",
+			"section": "実験的",
+			"keywords": ["sidebar", "colorful", "icons", "palette", "カラフルなサイドバー"]
+		},
 		"general-editor-format-bar": {
 			"title": "書式バー",
 			"section": "実験的",

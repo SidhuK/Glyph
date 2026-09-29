@@ -561,6 +561,11 @@
 			"section": "Experimental",
 			"keywords": ["vim", "raw", "markdown", "keybindings", "keyboard"]
 		},
+		"experimental-colorful-sidebar": {
+			"title": "Colorful sidebar",
+			"section": "Experimental",
+			"keywords": ["sidebar", "colorful", "icons", "palette", "Colorful sidebar"]
+		},
 		"general-editor-format-bar": {
 			"title": "Formatting bar",
 			"section": "Experimental",
