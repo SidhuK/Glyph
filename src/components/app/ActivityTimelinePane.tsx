@@ -72,11 +72,10 @@ function dateKey(date: Date): string {
 	return format(date, "yyyy-MM-dd");
 }
 
-function buildRecentDayShell(): ActivityDay[] {
-	const today = startOfDay(new Date());
+function buildRecentDayShell(today: number): ActivityDay[] {
 	const start = subDays(today, HEATMAP_DAYS - 1);
 	const days: ActivityDay[] = [];
-	for (let cursor = start; cursor <= today; cursor = addDays(cursor, 1)) {
+	for (let cursor = start; cursor.getTime() <= today; cursor = addDays(cursor, 1)) {
 		const key = dateKey(cursor);
 		days.push({
 			dateKey: key,
@@ -91,9 +90,13 @@ function isDailyNote(notePath: string, date: string, dailyNotesFolder: string | 
 	return Boolean(dailyNotesFolder && notePath === getDailyNotePath(dailyNotesFolder, date));
 }
 
-function buildActivityDays(notes: AllDocsItem[], dailyNotesFolder: string | null): ActivityDay[] {
+function buildActivityDays(
+	notes: AllDocsItem[],
+	dailyNotesFolder: string | null,
+	today: number,
+): ActivityDay[] {
 	const byDate = new Map<string, ActivityDay>();
-	for (const day of buildRecentDayShell()) {
+	for (const day of buildRecentDayShell(today)) {
 		byDate.set(day.dateKey, day);
 	}
 
@@ -194,6 +197,18 @@ function useActivityTimelineData(
 	enabled: boolean,
 	timeline: boolean,
 ) {
+	const { data: today } = useQuery({
+		queryKey: ["activity-current-day"],
+		queryFn: () => startOfDay(new Date()).getTime(),
+		initialData: () => startOfDay(new Date()).getTime(),
+		enabled: enabled && timeline,
+		staleTime: 0,
+		// Schedule the next local midnight, including days shortened or lengthened by DST.
+		refetchInterval: () => {
+			const now = new Date();
+			return addDays(startOfDay(now), 1).getTime() - now.getTime();
+		},
+	});
 	const notesQuery = useInfiniteQuery({
 		...allDocsPagesQueryOptions(folder, ACTIVITY_DOCS_PAGE_SIZE, archived),
 		enabled,
@@ -210,14 +225,14 @@ function useActivityTimelineData(
 	const taskSummariesByPath = useTaskSummariesForPaths(feedNotePaths, true);
 	const heatmapNotes = heatmapNotesQuery.data ?? feedNotes;
 	const activityDays = useMemo(
-		() => (timeline ? buildActivityDays(heatmapNotes, dailyNotesFolder) : []),
-		[heatmapNotes, dailyNotesFolder, timeline],
+		() => (timeline ? buildActivityDays(heatmapNotes, dailyNotesFolder, today) : []),
+		[heatmapNotes, dailyNotesFolder, timeline, today],
 	);
 	const feedActivityDays = useMemo(
-		() => (timeline ? buildActivityDays(feedNotes, dailyNotesFolder) : []),
-		[feedNotes, dailyNotesFolder, timeline],
+		() => (timeline ? buildActivityDays(feedNotes, dailyNotesFolder, today) : []),
+		[feedNotes, dailyNotesFolder, timeline, today],
 	);
-	const recentStart = useMemo(() => subDays(startOfDay(new Date()), HEATMAP_DAYS - 1), []);
+	const recentStart = useMemo(() => subDays(today, HEATMAP_DAYS - 1), [today]);
 	const recentActivityDays = useMemo(
 		() => activityDays.filter((day) => day.date.getTime() >= recentStart.getTime()),
 		[activityDays, recentStart],
@@ -331,7 +346,11 @@ interface ActivityHeatmapProps {
 	maxCount: number;
 }
 
-function ActivityHeatmap({ columns, visibleMonthCounts, maxCount }: ActivityHeatmapProps) {
+const ActivityHeatmap = memo(function ActivityHeatmap({
+	columns,
+	visibleMonthCounts,
+	maxCount,
+}: ActivityHeatmapProps) {
 	const { t, i18n } = useTranslation("shell");
 	const dateDisplayFormat = useDateDisplayFormat();
 	const monthFormatter = new Intl.DateTimeFormat(i18n.language, { month: "short" });
@@ -382,7 +401,7 @@ function ActivityHeatmap({ columns, visibleMonthCounts, maxCount }: ActivityHeat
 			</div>
 		</div>
 	);
-}
+});
 
 interface ActivityFeedProps {
 	virtualRows: ActivityVirtualRow[];
@@ -453,7 +472,7 @@ function ActivityFeed({
 	);
 }
 
-function ActivityDayHeaderRow({ day }: { day: ActivityDay }) {
+const ActivityDayHeaderRow = memo(function ActivityDayHeaderRow({ day }: { day: ActivityDay }) {
 	const { t, i18n } = useTranslation("shell");
 	const dateDisplayFormat = useDateDisplayFormat();
 	const today = startOfDay(new Date());
@@ -493,7 +512,7 @@ function ActivityDayHeaderRow({ day }: { day: ActivityDay }) {
 			</header>
 		</section>
 	);
-}
+});
 
 interface ActivityCardsRowProps {
 	row: Extract<ActivityVirtualRow, { kind: "cards" }>;
