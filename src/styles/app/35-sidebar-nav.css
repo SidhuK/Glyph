@@ -123,7 +123,24 @@ button.sidebarNewCanvasIconBtn:active {
 }
 
 .sidebarNavBtn[data-active="true"] {
+	position: relative;
 	background: var(--bg-active);
+}
+
+.sidebarNavBtn[data-active="true"]::before,
+.sidebar .fileTreeItem.active > .fileTreeRowShell::before {
+	content: "";
+	position: absolute;
+	inset-block: 5px;
+	inset-inline-start: -8px;
+	width: 3px;
+	border-radius: 0 3px 3px 0;
+	background: var(--sidebar-icon-color, var(--interactive-accent));
+	pointer-events: none;
+}
+
+.sidebarNavBtn[data-active="true"]::before {
+	inset-inline-start: -9px;
 }
 
 .sidebarNavBtn[data-active="true"] > svg {
