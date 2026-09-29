@@ -289,6 +289,21 @@
 		"chooseIcon": "Choose a space icon",
 		"menuFailed": "Could not open the space menu"
 	},
+	"activity": {
+		"recentActivity": "Recent note activity",
+		"daySummary_one": "{{count}} note on {{date}}",
+		"daySummary_other": "{{count}} notes on {{date}}",
+		"today": "Today",
+		"yesterday": "Yesterday",
+		"noteCount_one": "{{count}} note",
+		"noteCount_other": "{{count}} notes",
+		"summaryHint": "Includes note creation dates and latest edit dates.",
+		"noRecentNotes": "No notes worked on in the last year",
+		"recentNotes_one": "{{count}} note created or edited in the last year",
+		"recentNotes_other": "{{count}} notes created or edited in the last year",
+		"less": "Less",
+		"more": "More"
+	},
 	"noteCollections": {
 		"loading": "Loading notes…",
 		"noFiles": "No files found.",
