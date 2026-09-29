@@ -124,6 +124,10 @@ button.sidebarNewCanvasIconBtn:active {
 	font-variant-numeric: tabular-nums;
 }
 
+.sidebar[data-colorful="true"] .sidebarNavBtn[data-kind="inbox"] .sidebarQuickActionCount {
+	color: var(--color-gray-900);
+}
+
 .sidebarNavBtn {
 	color: var(--text-primary);
 }
