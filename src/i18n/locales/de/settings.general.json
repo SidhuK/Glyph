@@ -44,10 +44,6 @@
 		}
 	},
 	"experimental": {
-		"colorfulSidebar": {
-			"label": "Bunte Seitenleiste",
-			"description": "Symbole in der Seitenleiste mit eigenen Farben und sanften Schattierungen anzeigen."
-		},
 		"sectionTitle": "Experimentell",
 		"sectionDescription": "Experimentelle Funktionen, die noch nicht ausgereift sind. Eine spätere Glyph-Version kann sie ändern oder entfernen.",
 		"noteSidePeek": {

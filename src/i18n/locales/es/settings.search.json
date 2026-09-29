@@ -531,11 +531,6 @@
 				"markdown"
 			]
 		},
-		"experimental-colorful-sidebar": {
-			"title": "Barra lateral colorida",
-			"section": "Experimental",
-			"keywords": ["sidebar", "colorful", "icons", "palette", "Barra lateral colorida"]
-		},
 		"general-editor-format-bar": {
 			"title": "Barra de formato",
 			"section": "Experimental",

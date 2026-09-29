@@ -521,11 +521,6 @@
 				"markdown"
 			]
 		},
-		"experimental-colorful-sidebar": {
-			"title": "Bunte Seitenleiste",
-			"section": "Experimentell",
-			"keywords": ["sidebar", "colorful", "icons", "palette", "Bunte Seitenleiste"]
-		},
 		"general-editor-format-bar": {
 			"title": "Formatierungsleiste",
 			"section": "Experimentell",

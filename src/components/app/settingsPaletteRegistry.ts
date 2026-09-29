@@ -349,10 +349,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		options: fileTreeSortOptions,
 	},
 	{
-		...bindApplicationSetting(DURABLE_SETTINGS.colorfulSidebar),
-		control: "toggle",
-	},
-	{
 		...bindApplicationSetting(DURABLE_SETTINGS.noteSidePeek),
 		control: "toggle",
 	},
