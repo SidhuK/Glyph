@@ -2,9 +2,9 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Archive04Icon, InboxIcon, NoteIcon } from "@hugeicons/core-free-icons";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { type VirtualItem, type Virtualizer, useVirtualizer } from "@tanstack/react-virtual";
-import { addDays, format, isSameDay, isSameYear, parseISO, startOfDay, subDays } from "date-fns";
+import { addDays, format, isSameDay, parseISO, startOfDay, subDays } from "date-fns";
 import { useReducedMotion } from "motion/react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	useDateDisplayFormat,
@@ -15,7 +15,7 @@ import {
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { getDailyNotePath } from "../../lib/dailyNotes";
-import { type DateDisplayFormat, formatDisplayDate } from "../../lib/dateDisplayFormat";
+import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import {
 	ACTIVITY_DOCS_PAGE_SIZE,
 	allDocsListQueryOptions,
@@ -49,14 +49,12 @@ type ActivityVirtualRow =
 			id: string;
 			kind: "header";
 			day: ActivityDay;
-			dayIndex: number;
 	  }
 	| {
 			id: string;
 			kind: "cards";
 			timeline: boolean;
 			dayIndex: number;
-			chunkIndex: number;
 			startIndex: number;
 			notes: ActivityNote[];
 	  };
@@ -72,22 +70,6 @@ function parseNoteDate(value: string): Date | null {
 
 function dateKey(date: Date): string {
 	return format(date, "yyyy-MM-dd");
-}
-
-function dayLabel(date: Date, dateFormat: DateDisplayFormat): string {
-	const today = startOfDay(new Date());
-	const yesterday = subDays(today, 1);
-	if (isSameDay(date, today)) return "Today";
-	if (isSameDay(date, yesterday)) return "Yesterday";
-	// Same-year headings omit the year (compact); only complete dates use the preference.
-	if (isSameYear(date, today)) {
-		return format(date, "EEEE, MMM d");
-	}
-	return formatDisplayDate(date, dateFormat);
-}
-
-function monthLabel(date: Date): string {
-	return format(date, "MMM");
 }
 
 function buildRecentDayShell(): ActivityDay[] {
@@ -186,12 +168,6 @@ function sortedDayNotes(day: ActivityDay): ActivityNote[] {
 	});
 }
 
-function heatmapTooltip(day: ActivityDay): string {
-	const noteCount = day.notes.size;
-	const countLabel = noteCount === 1 ? "1 note" : `${noteCount} notes`;
-	return `${countLabel} on ${format(day.date, "MMM d")}`;
-}
-
 function monthVisibilityCounts(days: ActivityDay[]): Map<string, number> {
 	const counts = new Map<string, number>();
 	for (const day of days) {
@@ -286,7 +262,7 @@ function useActivityRows(
 			? [{ day: null, notes: collectionNotes.map((note) => ({ note, isDaily: false })) }]
 			: feedDays.map((day) => ({ day, notes: sortedDayNotes(day) }));
 		for (const [dayIndex, { day, notes }] of groups.entries()) {
-			if (day) rows.push({ id: `header:${day.dateKey}`, kind: "header", day, dayIndex });
+			if (day) rows.push({ id: `header:${day.dateKey}`, kind: "header", day });
 			for (
 				let startIndex = 0, chunkIndex = 0;
 				startIndex < notes.length;
@@ -297,7 +273,6 @@ function useActivityRows(
 					kind: "cards",
 					timeline: day !== null,
 					dayIndex,
-					chunkIndex,
 					startIndex,
 					notes: notes.slice(startIndex, startIndex + ACTIVITY_DOCS_PAGE_SIZE),
 				});
@@ -312,19 +287,14 @@ function useActivityVirtualization(
 	virtualRows: ActivityVirtualRow[],
 ) {
 	const [paneWidth, setPaneWidth] = useState(0);
-	const columnCount = useMemo(() => {
-		const contentWidth = paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, 860);
-		const minCardWidth = contentWidth <= 640 ? 144 : contentWidth <= 900 ? 160 : 184;
-		const gap = 14;
-		return Math.max(1, Math.floor((contentWidth + gap) / (minCardWidth + gap)));
-	}, [paneWidth]);
-	const cardEstimate = useMemo(() => {
-		const contentWidth = paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, 860);
-		const gap = 14;
-		const width = (contentWidth - gap * (columnCount - 1)) / columnCount;
-		const minHeight = contentWidth <= 640 ? 176 : 184;
-		return Math.max(minHeight, width) + gap;
-	}, [columnCount, paneWidth]);
+	const contentWidth =
+		paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, ACTIVITY_CONTENT_MAX_WIDTH);
+	const minCardWidth = contentWidth <= 640 ? 144 : 160;
+	const gap = 14;
+	const columnCount = Math.max(1, Math.floor((contentWidth + gap) / (minCardWidth + gap)));
+	const width = (contentWidth - gap * (columnCount - 1)) / columnCount;
+	const minHeight = contentWidth <= 640 ? 176 : 184;
+	const cardEstimate = Math.max(minHeight, width) + gap;
 	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLDivElement>({
 		count: virtualRows.length,
 		estimateSize: (index) => {
@@ -362,8 +332,13 @@ interface ActivityHeatmapProps {
 }
 
 function ActivityHeatmap({ columns, visibleMonthCounts, maxCount }: ActivityHeatmapProps) {
+	const { t, i18n } = useTranslation("shell");
+	const dateDisplayFormat = useDateDisplayFormat();
+	const monthFormatter = new Intl.DateTimeFormat(i18n.language, { month: "short" });
+	const dateFormatter = new Intl.DateTimeFormat(i18n.language, { dateStyle: "full" });
+	const today = new Date();
 	return (
-		<div className="activityHeatmapBlock" aria-label="Recent note activity">
+		<div className="activityHeatmapBlock" aria-label={t("activity.recentActivity")}>
 			<div className="activityHeatmapMonths" aria-hidden="true">
 				{columns.map((column, index) => {
 					const first = column[0];
@@ -374,7 +349,9 @@ function ActivityHeatmap({ columns, visibleMonthCounts, maxCount }: ActivityHeat
 						(!previous || first.date.getMonth() !== previous.date.getMonth()) &&
 						(visibleMonthCounts.get(monthKey) ?? 0) >= 15;
 					return (
-						<span key={first?.dateKey ?? index}>{show && first ? monthLabel(first.date) : ""}</span>
+						<span key={first?.dateKey ?? index}>
+							{show && first ? monthFormatter.format(first.date) : ""}
+						</span>
 					);
 				})}
 			</div>
@@ -383,12 +360,17 @@ function ActivityHeatmap({ columns, visibleMonthCounts, maxCount }: ActivityHeat
 					<div key={column[0]?.dateKey} className="activityHeatmapColumn">
 						{column.map((day) => {
 							const level = intensity(day, maxCount);
-							const tooltip = heatmapTooltip(day);
+							const date =
+								dateDisplayFormat === "friendly"
+									? dateFormatter.format(day.date)
+									: formatDisplayDate(day.date, dateDisplayFormat);
+							const tooltip = t("activity.daySummary", { count: day.notes.size, date });
 							return (
 								<span
 									key={day.dateKey}
 									className="activityHeatmapCell"
 									data-level={level}
+									data-today={isSameDay(day.date, today) || undefined}
 									data-tooltip={tooltip}
 									aria-label={tooltip}
 									role="img"
@@ -472,19 +454,42 @@ function ActivityFeed({
 }
 
 function ActivityDayHeaderRow({ day }: { day: ActivityDay }) {
+	const { t, i18n } = useTranslation("shell");
 	const dateDisplayFormat = useDateDisplayFormat();
+	const today = startOfDay(new Date());
+	const isToday = isSameDay(day.date, today);
+	const label = isToday
+		? t("activity.today")
+		: isSameDay(day.date, subDays(today, 1))
+			? t("activity.yesterday")
+			: new Intl.DateTimeFormat(i18n.language, { weekday: "long" }).format(day.date);
+	const fullDate =
+		dateDisplayFormat === "friendly"
+			? new Intl.DateTimeFormat(i18n.language, { dateStyle: "long" }).format(day.date)
+			: formatDisplayDate(day.date, dateDisplayFormat);
 	return (
-		<section className="activityDayGroup activityDayHeaderRow">
+		<section className="activityDayGroup activityDayHeaderRow" data-today={isToday || undefined}>
 			<div className="activityDayRail" aria-hidden="true" />
 			<header className="activityDayHeader">
-				<div>
-					<h2>{dayLabel(day.date, dateDisplayFormat)}</h2>
+				<div className="activityDayHeading">
+					<div className="activityDateBadge" aria-hidden="true">
+						<span>
+							{new Intl.DateTimeFormat(i18n.language, { month: "short" }).format(day.date)}
+						</span>
+						<strong>
+							{new Intl.DateTimeFormat(i18n.language, { day: "numeric" }).format(day.date)}
+						</strong>
+					</div>
+					<div>
+						<h2>{label}</h2>
+						<time className="activityDayDate" dateTime={day.dateKey}>
+							{fullDate}
+						</time>
+					</div>
 				</div>
-				<div className="activityDayCounts">
-					<span>
-						{day.notes.size} {day.notes.size === 1 ? "note" : "notes"}
-					</span>
-				</div>
+				<span className="activityDayCounts">
+					{t("activity.noteCount", { count: day.notes.size })}
+				</span>
 			</header>
 		</section>
 	);
@@ -563,9 +568,6 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const [paneElement, setPaneElement] = useState<HTMLElement | null>(null);
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
-	const paneRef = useCallback((node: HTMLElement | null) => {
-		setPaneElement(node);
-	}, []);
 	const {
 		feedNotes,
 		notesQuery,
@@ -624,7 +626,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	}
 
 	return (
-		<section ref={paneRef} className="activityTimelinePane">
+		<section ref={setPaneElement} className="activityTimelinePane">
 			<header className="activityTimelineHeader">
 				<div>
 					<h1 className="activityTimelineTitle">
@@ -636,20 +638,17 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 					</h1>
 					{kind === "all" ? (
 						<>
-							<p
-								className="activityTimelineSummary"
-								title="Includes note creation dates and latest edit dates."
-							>
+							<p className="activityTimelineSummary" title={t("activity.summaryHint")}>
 								{recentNotesCount === 0
-									? "No notes worked on in the last year"
-									: `${recentNotesCount} notes created or edited in the last year`}
+									? t("activity.noRecentNotes")
+									: t("activity.recentNotes", { count: recentNotesCount })}
 							</p>
 							<div className="activityHeatmapLegend" aria-hidden="true">
-								<span>Less</span>
+								<span>{t("activity.less")}</span>
 								{[0, 1, 2, 3, 4].map((level) => (
 									<span key={level} className="activityHeatmapLegendCell" data-level={level} />
 								))}
-								<span>More</span>
+								<span>{t("activity.more")}</span>
 							</div>
 						</>
 					) : null}
