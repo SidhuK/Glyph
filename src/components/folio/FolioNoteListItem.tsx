@@ -2,7 +2,7 @@ import { useNoteArchive } from "../../hooks/useNoteArchive";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useDraggable } from "@dnd-kit/react";
-import { PinIcon } from "@hugeicons/core-free-icons";
+import { Link01Icon, PinIcon } from "@hugeicons/core-free-icons";
 import {
 	type CSSProperties,
 	type MouseEvent,
@@ -28,6 +28,7 @@ import { InlineRenameInput } from "../InlineRenameInput";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
+import { tagHueFromName } from "../editor/noteProperties/utils";
 import { buildFileTreeFileNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import {
 	FILE_TREE_ENTRY_SENSORS,
@@ -567,7 +568,7 @@ export const FolioNoteListItem = memo(
 					{firstUrl ? (
 						<a
 							href={firstUrl}
-							className="databaseCellPill folioNoteTag folioNoteUrl"
+							className="folioNoteTag folioNoteUrl"
 							title={firstUrl}
 							onClick={(event) => {
 								event.preventDefault();
@@ -575,6 +576,7 @@ export const FolioNoteListItem = memo(
 								void openUrl(firstUrl);
 							}}
 						>
+							<HugeiconsIcon icon={Link01Icon} size="var(--icon-xs)" aria-hidden="true" />
 							{firstUrlLabel}
 						</a>
 					) : null}
@@ -582,7 +584,11 @@ export const FolioNoteListItem = memo(
 						visibleTags.map((tag) => (
 							<span
 								key={tag}
-								className="databaseCellPill folioNoteTag"
+								className="folioNoteTag"
+								style={{
+									color: "var(--text-primary)",
+									background: `color-mix(in srgb, hsl(${tagHueFromName(tag)} 55% 50%) 18%, transparent)`,
+								}}
 								title={formatDatabaseTagLabel(tag)}
 							>
 								{formatDatabaseTagLabel(tag)}
@@ -591,11 +597,7 @@ export const FolioNoteListItem = memo(
 					) : firstUrl ? null : (
 						<span className="folioNoteFolder">{folder || t("folio.noFolder")}</span>
 					)}
-					{hiddenTagCount > 0 ? (
-						<span className="databaseCellPill databaseCellPillMore folioNoteTag">
-							+{hiddenTagCount}
-						</span>
-					) : null}
+					{hiddenTagCount > 0 ? <span className="folioNoteTag">+{hiddenTagCount}</span> : null}
 				</span>
 				<span className="folioNotePreview">{preview}</span>
 				{thumbnailSrc ? (

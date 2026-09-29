@@ -110,6 +110,20 @@ button.sidebarNewCanvasIconBtn:active {
 	line-height: 1;
 }
 
+.sidebarNavBtn[data-kind="inbox"] .sidebarQuickActionCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding-inline: 5px;
+	border-radius: 999px;
+	background: var(--sidebar-icon-color, var(--interactive-accent));
+	color: var(--text-inverse);
+	font-weight: var(--font-semibold);
+	font-variant-numeric: tabular-nums;
+}
+
 .sidebarNavBtn {
 	color: var(--text-primary);
 }

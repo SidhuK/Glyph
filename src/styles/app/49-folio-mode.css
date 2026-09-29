@@ -347,13 +347,17 @@
 }
 
 .folioNoteTag {
+	display: block;
+	flex: 0 0 auto;
 	max-width: 98px;
-	min-height: 16px;
-	padding: 1px 6px;
+	min-height: 18px;
+	padding: 0 6px;
+	border-radius: 4px;
 	background: color-mix(in srgb, var(--bg-hover) 68%, transparent);
 	color: color-mix(in srgb, var(--text-secondary) 76%, var(--text-tertiary));
 	font-size: calc(var(--text-base) * 0.8);
-	line-height: 1.2;
+	font-weight: var(--font-medium);
+	line-height: 18px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -363,6 +367,12 @@
 	cursor: pointer;
 	color: var(--link-color);
 	text-decoration: none;
+}
+
+.folioNoteUrl > svg {
+	display: inline-block;
+	margin-inline-end: 4px;
+	vertical-align: -2px;
 }
 
 .folioNoteUrl:hover,
