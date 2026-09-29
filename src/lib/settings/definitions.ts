@@ -596,13 +596,6 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.folioNotesWidth,
 		change: (value) => ({ ui: { folioNotesWidth: value } }),
 	}),
-	colorfulSidebar: booleanSetting({
-		key: "ui.colorfulSidebar",
-		defaultValue: false,
-		discovery: searchable("experimental-colorful-sidebar"),
-		read: (settings) => settings.ui.colorfulSidebar,
-		change: (value) => ({ ui: { colorfulSidebar: value } }),
-	}),
 	noteSidePeek: booleanSetting({
 		key: "ui.noteSidePeek",
 		defaultValue: false,

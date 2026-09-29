@@ -1,12 +1,25 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
+	AiBrain04Icon as AgentIcon,
+	Archive03Icon as ArchiveIcon,
 	ArrowShrinkIcon,
+	Calendar03Icon as CalendarIcon,
+	CalendarAdd01Icon as PeriodNoteIcon,
+	ChartRelationshipIcon as ConnectionsIcon,
 	CursorAddSelection02Icon,
 	ExpandParagraphIcon,
 	Folder01Icon,
 	HistoryIcon,
+	InboxIcon,
+	Layout01Icon as TemplatesIcon,
+	LibraryIcon as CollectionsIcon,
+	NoteIcon as AllNotesIcon,
+	PaintBoardIcon as CanvasIcon,
 	PinIcon,
+	Refresh04Icon as SyncIcon,
+	SearchIcon,
 	Sorting01Icon,
+	StickyNote03Icon as QuickNoteIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -51,21 +64,6 @@ import { TagsPane } from "../TagsPane";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { FileTreePane } from "../filetree";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
-import {
-	AgentIcon,
-	ArchiveIcon,
-	CalendarIcon,
-	PeriodNoteIcon,
-	ConnectionsIcon,
-	TemplatesIcon,
-	InboxIcon,
-	CollectionsIcon,
-	SyncIcon,
-	AllNotesIcon,
-	QuickNoteIcon,
-	CanvasIcon,
-	SearchIcon,
-} from "./sidebarIcons";
 
 export interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -165,7 +163,6 @@ function AllNotesCountBadge({ inbox = false }: { inbox?: boolean }) {
 
 function SidebarActionButton({
 	icon,
-	kind,
 	label,
 	onClick,
 	disabled,
@@ -174,7 +171,6 @@ function SidebarActionButton({
 	badge,
 }: {
 	icon: ComponentProps<typeof HugeiconsIcon>["icon"];
-	kind: string;
 	label: string;
 	onClick: () => void;
 	disabled?: boolean;
@@ -187,7 +183,6 @@ function SidebarActionButton({
 			type="button"
 			className="sidebarQuickActionBtn sidebarNavBtn"
 			data-sidebar-key={sidebarKey}
-			data-kind={kind}
 			data-active={active ? "true" : undefined}
 			aria-label={label}
 			aria-pressed={active}
@@ -547,7 +542,6 @@ export const SidebarContent = memo(function SidebarContent({
 								<SidebarActionButton
 									key="agent"
 									data-sidebar-key="agent"
-									kind="agent"
 									label={t("sidebar.agent")}
 									icon={AgentIcon}
 									active={activeTopSection === "agent"}
@@ -597,7 +591,6 @@ export const SidebarContent = memo(function SidebarContent({
 								<SidebarActionButton
 									key="inbox"
 									data-sidebar-key="inbox"
-									kind="inbox"
 									badge={<AllNotesCountBadge inbox />}
 									label={t("sidebar.inbox")}
 									icon={InboxIcon}
@@ -609,7 +602,6 @@ export const SidebarContent = memo(function SidebarContent({
 								<SidebarActionButton
 									key="archive"
 									data-sidebar-key="archive"
-									kind="archive"
 									label={t("sidebar.archive")}
 									icon={ArchiveIcon}
 									onClick={onOpenArchive}
@@ -622,7 +614,6 @@ export const SidebarContent = memo(function SidebarContent({
 									type="button"
 									className="sidebarQuickActionBtn sidebarNavBtn"
 									data-sidebar-key="allNotes"
-									data-kind="all-notes"
 									data-active={activeTopSection === "all-notes" ? "true" : "false"}
 									aria-label={t("sidebar.allNotes")}
 									aria-pressed={activeTopSection === "all-notes"}
@@ -646,7 +637,6 @@ export const SidebarContent = memo(function SidebarContent({
 									type="button"
 									className="sidebarQuickActionBtn sidebarNavBtn"
 									data-sidebar-key="databases"
-									data-kind="databases"
 									data-active={activeTopSection === "databases" ? "true" : "false"}
 									aria-label={t("sidebar.collections")}
 									aria-pressed={activeTopSection === "databases"}
@@ -669,7 +659,6 @@ export const SidebarContent = memo(function SidebarContent({
 									type="button"
 									className="sidebarQuickActionBtn sidebarNavBtn"
 									data-sidebar-key="connections"
-									data-kind="connections"
 									data-active={activeTopSection === "connections" ? "true" : "false"}
 									aria-label={t("sidebar.connections")}
 									aria-pressed={activeTopSection === "connections"}
@@ -685,7 +674,6 @@ export const SidebarContent = memo(function SidebarContent({
 								<SidebarActionButton
 									key="calendar"
 									data-sidebar-key="calendar"
-									kind="calendar"
 									label={t("sidebar.calendar")}
 									icon={CalendarIcon}
 									onClick={onOpenCalendar}
@@ -697,7 +685,6 @@ export const SidebarContent = memo(function SidebarContent({
 									type="button"
 									className="sidebarSearchBar"
 									data-sidebar-key="search"
-									data-kind="search"
 									aria-label={t("sidebar.search")}
 									title={
 										searchShortcutLabel
@@ -724,7 +711,6 @@ export const SidebarContent = memo(function SidebarContent({
 								<SidebarActionButton
 									key="quickNote"
 									data-sidebar-key="quickNote"
-									kind="quick-note"
 									label={t("sidebar.quickNote")}
 									icon={QuickNoteIcon}
 									onClick={onOpenQuickNote}
@@ -734,7 +720,6 @@ export const SidebarContent = memo(function SidebarContent({
 								<SidebarActionButton
 									key="templates"
 									data-sidebar-key="templates"
-									kind="templates"
 									label={t("sidebar.templates")}
 									icon={TemplatesIcon}
 									onClick={onCreateFromTemplate}
@@ -744,7 +729,6 @@ export const SidebarContent = memo(function SidebarContent({
 								<SidebarActionButton
 									key="gitSync"
 									data-sidebar-key="gitSync"
-									kind="git-sync"
 									label={t("sidebar.gitSync")}
 									icon={SyncIcon}
 									onClick={onGitSyncNow}
@@ -758,14 +742,12 @@ export const SidebarContent = memo(function SidebarContent({
 									data-section="period-notes"
 								>
 									<SidebarActionButton
-										kind="daily-note"
 										label={t("sidebar.dailyNote")}
 										icon={PeriodNoteIcon}
 										onClick={() => onOpenPeriodNote("day")}
 									/>
 									{isPeriodNoteEnabled("week", periodNotesEnabled) ? (
 										<SidebarActionButton
-											kind="weekly-note"
 											label={t("sidebar.weeklyNote")}
 											icon={PeriodNoteIcon}
 											onClick={() => onOpenPeriodNote("week")}
@@ -773,7 +755,6 @@ export const SidebarContent = memo(function SidebarContent({
 									) : null}
 									{isPeriodNoteEnabled("month", periodNotesEnabled) ? (
 										<SidebarActionButton
-											kind="monthly-note"
 											label={t("sidebar.monthlyNote")}
 											icon={PeriodNoteIcon}
 											onClick={() => onOpenPeriodNote("month")}
@@ -781,7 +762,6 @@ export const SidebarContent = memo(function SidebarContent({
 									) : null}
 									{isPeriodNoteEnabled("quarter", periodNotesEnabled) ? (
 										<SidebarActionButton
-											kind="quarterly-note"
 											label={t("sidebar.quarterlyNote")}
 											icon={PeriodNoteIcon}
 											onClick={() => onOpenPeriodNote("quarter")}

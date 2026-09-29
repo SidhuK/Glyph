@@ -236,7 +236,7 @@ describe("durable settings", () => {
 describe("settings query refresh", () => {
 	beforeEach(resetSettingsHarness);
 
-	it("refreshes an observed colorful sidebar setting after a disk reload", async () => {
+	it("refreshes an observed note peek setting after a disk reload", async () => {
 		const { loadSettings, reloadFromDisk } = await import("./settings");
 		const { queryClient } = await import("./queryClient");
 		const { SETTINGS_QUERY_KEY } = await import("./settingsStore");
@@ -249,10 +249,10 @@ describe("settings query refresh", () => {
 		const observer = new QueryObserver(queryClient, options);
 		const unsubscribe = observer.subscribe(() => {});
 		try {
-			expect(observer.getCurrentResult().data?.ui.colorfulSidebar).toBe(false);
-			storeState.set("ui.colorfulSidebar", true);
+			expect(observer.getCurrentResult().data?.ui.noteSidePeek).toBe(false);
+			storeState.set("ui.noteSidePeek", true);
 			await reloadFromDisk();
-			expect(observer.getCurrentResult().data?.ui.colorfulSidebar).toBe(true);
+			expect(observer.getCurrentResult().data?.ui.noteSidePeek).toBe(true);
 		} finally {
 			unsubscribe();
 			queryClient.clear();
@@ -260,7 +260,7 @@ describe("settings query refresh", () => {
 	});
 
 	it.each([
-		{ payload: { ui: { colorfulSidebar: true } }, invalidated: true },
+		{ payload: { ui: { noteSidePeek: true } }, invalidated: true },
 		{ payload: { editor: { zenMode: true } }, invalidated: true },
 		{ payload: { shortcuts: { bindings: {} } }, invalidated: false },
 		{

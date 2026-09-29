@@ -528,11 +528,6 @@
 				"markdown"
 			]
 		},
-		"experimental-colorful-sidebar": {
-			"title": "Barre latérale colorée",
-			"section": "Expérimental",
-			"keywords": ["sidebar", "colorful", "icons", "palette", "Barre latérale colorée"]
-		},
 		"general-editor-format-bar": {
 			"title": "Barre de formatage",
 			"section": "Expérimental",

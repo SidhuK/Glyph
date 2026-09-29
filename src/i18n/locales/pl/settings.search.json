@@ -528,11 +528,6 @@
 			"section": "Eksperymentalne",
 			"keywords": ["vim", "surowy", "markdown", "powiązania klawiszy", "klawiatura"]
 		},
-		"experimental-colorful-sidebar": {
-			"title": "Kolorowy pasek boczny",
-			"section": "Eksperymentalne",
-			"keywords": ["sidebar", "colorful", "icons", "palette", "Kolorowy pasek boczny"]
-		},
 		"general-editor-format-bar": {
 			"title": "Pasek formatowania",
 			"section": "Eksperymentalne",

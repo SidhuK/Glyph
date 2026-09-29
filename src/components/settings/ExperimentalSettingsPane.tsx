@@ -44,22 +44,6 @@ export function ExperimentalSettingsPane() {
 					description={t("experimental.sectionDescription")}
 				>
 					<SettingsRow
-						label={t("experimental.colorfulSidebar.label")}
-						description={t("experimental.colorfulSidebar.description")}
-						searchId="experimental-colorful-sidebar"
-					>
-						<SettingsToggle
-							checked={
-								settings?.ui.colorfulSidebar ?? DURABLE_SETTINGS.colorfulSidebar.defaultValue
-							}
-							disabled={disabled}
-							ariaLabel={t("experimental.colorfulSidebar.label")}
-							onCheckedChange={(checked) =>
-								saveSetting.mutate(() => DURABLE_SETTINGS.colorfulSidebar.write(checked))
-							}
-						/>
-					</SettingsRow>
-					<SettingsRow
 						label={t("experimental.noteSidePeek.label")}
 						description={t("experimental.noteSidePeek.description")}
 						searchId="appearance-layout-note-side-peek"
