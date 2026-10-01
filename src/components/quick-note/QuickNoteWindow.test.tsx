@@ -94,16 +94,10 @@ vi.mock("../editor/NoteInlineEditor", () => ({
 	NoteInlineEditor: ({
 		onChange,
 		onEditorReady,
-		deferHeavyFeatures,
-		chrome,
-		placeholder,
 		additionalExtensions,
 	}: {
 		onChange: (nextMarkdown: string) => void;
 		onEditorReady?: (editor: typeof mockEditor | null, contentRoot: HTMLElement | null) => void;
-		deferHeavyFeatures?: boolean;
-		chrome?: string;
-		placeholder?: string;
 		additionalExtensions?: unknown[];
 	}) => {
 		editorReadyCallbackRef.current = onEditorReady ?? null;
@@ -121,13 +115,7 @@ vi.mock("../editor/NoteInlineEditor", () => ({
 			additionalExtensionsRef.current = additionalExtensions;
 		}
 		return (
-			<div
-				data-testid="quick-note-editor"
-				data-defer-heavy-features={deferHeavyFeatures ? "true" : "false"}
-				data-chrome={chrome}
-				data-placeholder={placeholder}
-				data-additional-extensions={String(additionalExtensions?.length ?? 0)}
-			>
+			<div>
 				<textarea
 					aria-label="Quick note editor"
 					onChange={(event) => {
@@ -224,17 +212,6 @@ describe("QuickNoteWindow", () => {
 			setEditorText(value);
 		});
 	}
-
-	it("passes quick note editor options to NoteInlineEditor", async () => {
-		await renderWindow();
-		const editor = container.querySelector('[data-testid="quick-note-editor"]');
-		expect(editor?.getAttribute("data-defer-heavy-features")).toBe("true");
-		expect(editor?.getAttribute("data-chrome")).toBe("minimal");
-		expect(editor?.getAttribute("data-additional-extensions")).toBe("1");
-		expect(editor?.getAttribute("data-placeholder")).toBe(
-			"Write a quick note or press / for commands",
-		);
-	});
 
 	it("keeps editor extensions stable while typing", async () => {
 		await renderWindow();

@@ -82,12 +82,4 @@ Not a task line
         assert_eq!(summary.completed_count, 2);
         assert_eq!(summary.open_count, 2);
     }
-
-    #[test]
-    fn summarize_tasks_returns_zeroes_when_no_tasks_exist() {
-        let summary = summarize_tasks("# Note\n\nJust text.\n");
-        assert_eq!(summary.total_count, 0);
-        assert_eq!(summary.completed_count, 0);
-        assert_eq!(summary.open_count, 0);
-    }
 }

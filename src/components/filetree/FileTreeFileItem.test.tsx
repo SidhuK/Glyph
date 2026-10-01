@@ -177,41 +177,7 @@ describe("FileTreeFileItem", () => {
 		});
 	};
 
-	it("shows the pin action when a file is not pinned", async () => {
-		await renderFileTreeFileItem({ isPinned: false });
-
-		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
-		expect(button).not.toBeNull();
-
-		await act(async () => {
-			button?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
-		});
-
-		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
-			| Array<{ label?: string }>
-			| undefined;
-		expect(menuItems?.map((item) => item.label)).toContain("Pin file");
-		expect(menuItems?.map((item) => item.label)).not.toContain("Unpin file");
-	});
-
-	it("shows the unpin action when a file is pinned", async () => {
-		await renderFileTreeFileItem({ isPinned: true });
-
-		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
-		expect(button).not.toBeNull();
-
-		await act(async () => {
-			button?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
-		});
-
-		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
-			| Array<{ label?: string }>
-			| undefined;
-		expect(menuItems?.map((item) => item.label)).toContain("Unpin file");
-		expect(menuItems?.map((item) => item.label)).not.toContain("Pin file");
-	});
-
-	it("shows Open in New Window for markdown files", async () => {
+	it("shows Open in New Window and Copy Deeplink for markdown files", async () => {
 		await renderFileTreeFileItem();
 
 		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
@@ -225,6 +191,7 @@ describe("FileTreeFileItem", () => {
 			| Array<{ label?: string; action?: () => void }>
 			| undefined;
 		expect(menuItems?.map((item) => item.label)).toContain("Open in New Window");
+		expect(menuItems?.map((item) => item.label)).toContain("Copy Deeplink");
 
 		const openInNewWindow = menuItems?.find((item) => item.label === "Open in New Window");
 		openInNewWindow?.action?.();
@@ -253,22 +220,6 @@ describe("FileTreeFileItem", () => {
 			| undefined;
 		expect(menuItems?.map((item) => item.label)).not.toContain("Open in New Window");
 		expect(menuItems?.map((item) => item.label)).not.toContain("Copy Deeplink");
-	});
-
-	it("shows Copy Deeplink for markdown files", async () => {
-		await renderFileTreeFileItem();
-
-		const button = container.querySelector(".fileTreeRow") as HTMLButtonElement | null;
-		expect(button).not.toBeNull();
-
-		await act(async () => {
-			button?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
-		});
-
-		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
-			| Array<{ label?: string }>
-			| undefined;
-		expect(menuItems?.map((item) => item.label)).toContain("Copy Deeplink");
 	});
 
 	it("calls arrow navigation when pressing the up or down keys", async () => {

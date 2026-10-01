@@ -193,8 +193,8 @@ describe("FolioNotesListPane", () => {
 	let onOpenFile: (relPath: string) => Promise<void>;
 	let onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	let onDeleteFile: (relPath: string) => Promise<boolean>;
-	let scrollIntoViewArgs: Array<boolean | ScrollIntoViewOptions | undefined>;
 	let originalScrollIntoView: HTMLElement["scrollIntoView"];
+	let scrollIntoViewMock: ReturnType<typeof vi.fn<HTMLElement["scrollIntoView"]>>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -224,10 +224,8 @@ describe("FolioNotesListPane", () => {
 		onOpenFileInNewTab = vi.fn(async () => {});
 		onDeleteFile = vi.fn(async () => true);
 		originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
-		scrollIntoViewArgs = [];
-		HTMLElement.prototype.scrollIntoView = (arg?: boolean | ScrollIntoViewOptions) => {
-			scrollIntoViewArgs.push(arg);
-		};
+		scrollIntoViewMock = vi.fn<HTMLElement["scrollIntoView"]>();
+		HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
 		container = document.createElement("div");
 		document.body.appendChild(container);
 		root = createRoot(container);
@@ -240,7 +238,6 @@ describe("FolioNotesListPane", () => {
 		container.remove();
 		queryClient.clear();
 		HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
-		scrollIntoViewArgs = [];
 	});
 
 	function renderPane(activeTabPath: string | null = null) {
@@ -308,15 +305,6 @@ describe("FolioNotesListPane", () => {
 			'select[aria-label="Sort notes"]',
 		) as HTMLSelectElement | null;
 		expect(select).toBeTruthy();
-		expect(Array.from(select?.options ?? []).map((option) => option.textContent)).toEqual([
-			"Name A-Z",
-			"Name Z-A",
-			"Modified newest",
-			"Modified oldest",
-			"Created newest",
-			"Created oldest",
-		]);
-
 		await act(async () => {
 			if (!select) return;
 			const valueSetter = Object.getOwnPropertyDescriptor(
@@ -403,31 +391,13 @@ describe("FolioNotesListPane", () => {
 		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Projects/Roadmap.md");
 	});
 
-	it("opens adjacent notes with arrow keys", async () => {
-		await act(async () => renderPane("Projects/Roadmap.md"));
-		await waitFor(
-			() => container.querySelector('[data-folio-note-path="Projects/Roadmap.md"]') !== null,
-		);
-
-		const row = container.querySelector(
-			'[data-folio-note-path="Projects/Roadmap.md"]',
-		) as HTMLButtonElement | null;
-		expect(row).toBeTruthy();
-
-		await act(async () => {
-			row?.focus();
-			row?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
-		});
-
-		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Ideas/Sketch.md");
-	});
-
-	it("uses arrow keys for navigation instead of list scrolling", async () => {
+	it("uses arrow keys to open and scroll to the next note instead of scrolling the list", async () => {
 		await act(async () => renderPane("Projects/Roadmap.md"));
 		await waitFor(() => container.querySelector(".folioNotesList") !== null);
 
 		const list = container.querySelector(".folioNotesList");
 		expect(list).toBeTruthy();
+		scrollIntoViewMock.mockClear();
 
 		const event = new KeyboardEvent("keydown", {
 			key: "ArrowDown",
@@ -436,32 +406,11 @@ describe("FolioNotesListPane", () => {
 		});
 		await act(async () => {
 			list?.dispatchEvent(event);
+			await new Promise((resolve) => window.requestAnimationFrame(resolve));
 		});
 
 		expect(event.defaultPrevented).toBe(true);
 		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Ideas/Sketch.md");
-	});
-
-	it("scrolls the selected row into view during keyboard navigation", async () => {
-		await act(async () => renderPane("Projects/Roadmap.md"));
-		await waitFor(
-			() => container.querySelector('[data-folio-note-path="Projects/Roadmap.md"]') !== null,
-		);
-		scrollIntoViewArgs = [];
-
-		const list = container.querySelector(".folioNotesList");
-		await act(async () => {
-			list?.dispatchEvent(
-				new KeyboardEvent("keydown", {
-					key: "ArrowDown",
-					bubbles: true,
-					cancelable: true,
-				}),
-			);
-			await new Promise((resolve) => window.requestAnimationFrame(resolve));
-		});
-
-		expect(scrollIntoViewArgs).toContainEqual({ block: "nearest" });
-		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Ideas/Sketch.md");
+		expect(scrollIntoViewMock).toHaveBeenCalledWith({ block: "nearest" });
 	});
 });

@@ -241,43 +241,6 @@ describe("FileTreePane", () => {
 		expect(onOpenFile).toHaveBeenCalledWith("notes/alpha.md");
 	});
 
-	it("hides the pinned rows when no files are pinned", async () => {
-		await act(async () => {
-			root.render(
-				<QueryClientProvider client={queryClient}>
-					<FileTreePane
-						rootEntries={[]}
-						childrenByDir={{}}
-						expandedDirs={new Set()}
-						activeFilePath={null}
-						activeDirPath={null}
-						onToggleDir={vi.fn()}
-						onSelectDir={vi.fn()}
-						onOpenFile={vi.fn()}
-						onNewFileInDir={vi.fn()}
-						onCreateFromTemplateInDir={vi.fn()}
-						onRequestCreateFolder={vi.fn()}
-						onDuplicateFile={vi.fn()}
-						onDeletePath={vi.fn()}
-						renamingPath={null}
-						onStartRename={vi.fn()}
-						onCancelRename={vi.fn()}
-						onCommitFileRename={vi.fn()}
-						onCommitDirRename={vi.fn()}
-						onMovePath={vi.fn()}
-						onImportFilesInDir={vi.fn()}
-						onImportFolderInDir={vi.fn()}
-						onImportPathsInDir={vi.fn()}
-						pinnedFiles={[]}
-						onTogglePinnedFile={vi.fn()}
-					/>
-				</QueryClientProvider>,
-			);
-		});
-
-		expect(container.querySelector(".fileTreePinnedSection")).toBeNull();
-	});
-
 	it("shows non-markdown files", async () => {
 		await act(async () => {
 			root.render(

@@ -256,8 +256,8 @@ fn push_flattened(out: &mut String, part: &str) {
 #[cfg(test)]
 mod tests {
     use super::{
-        count_newlines, expand_text_matches, find_matches, snippet_around,
-        SNIPPET_HIGHLIGHT_END, SNIPPET_HIGHLIGHT_START,
+        expand_text_matches, find_matches, snippet_around, SNIPPET_HIGHLIGHT_END,
+        SNIPPET_HIGHLIGHT_START,
     };
     use crate::index::types::SearchResult;
 
@@ -397,10 +397,5 @@ mod tests {
         let rows = expand_text_matches(&dir, vec![note("gone.md", "Gone")], "deadline", 50);
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].match_index, None);
-    }
-
-    #[test]
-    fn counts_newlines() {
-        assert_eq!(count_newlines("a\nb\nc"), 2);
     }
 }

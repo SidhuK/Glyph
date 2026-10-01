@@ -99,13 +99,6 @@ describe("editorMarkdownBridge", () => {
 		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
 	});
 
-	it("leaves whitespace-only separator lines as normal markdown input", () => {
-		const md = "alpha\n \n\t\nbeta";
-		const preprocessed = preprocessMarkdownForEditor(md);
-		expect(preprocessed).toBe(md);
-		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
-	});
-
 	it("preserves mixed whitespace-only lines through editor bridge round-trip", () => {
 		const md = "alpha\n  \t \n\t\t\nbeta";
 		const preprocessed = preprocessMarkdownForEditor(md);

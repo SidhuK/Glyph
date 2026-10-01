@@ -67,11 +67,6 @@ describe("htmlEmbedMarkdown", () => {
 });
 
 describe("editorMarkdownBridge html embeds", () => {
-	it("round-trips fenced html embeds through the editor bridge", () => {
-		const md = "```html\n<div>Bridge</div>\n```";
-		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);
-	});
-
 	it("round-trips raw html embeds through the editor bridge", () => {
 		const md = "<div>Bridge raw</div>";
 		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);

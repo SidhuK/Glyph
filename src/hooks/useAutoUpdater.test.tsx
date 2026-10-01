@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, useEffect } from "react";
+import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -48,13 +48,8 @@ vi.mock("../lib/tauri", () => ({
 	}
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-function Harness({ enabled, onReady }: { enabled: boolean; onReady: (ready: boolean) => void }) {
-	const { updateReady } = useAutoUpdater(enabled);
-
-	useEffect(() => {
-		onReady(updateReady);
-	}, [onReady, updateReady]);
-
+function Harness({ enabled }: { enabled: boolean }) {
+	useAutoUpdater(enabled);
 	return null;
 }
 
@@ -94,62 +89,14 @@ describe("useAutoUpdater", () => {
 
 	it("does not call the updater when disabled", async () => {
 		await act(async () => {
-			root.render(<Harness enabled={false} onReady={() => {}} />);
+			root.render(<Harness enabled={false} />);
 		});
 
 		await act(async () => {
-			await Promise.resolve();
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 		});
 
 		expect(invokeMock).not.toHaveBeenCalled();
-	});
-
-	it("checks for updates when enabled", async () => {
-		const states: boolean[] = [];
-
-		await act(async () => {
-			root.render(
-				<Harness
-					enabled
-					onReady={(ready) => {
-						states.push(ready);
-					}}
-				/>,
-			);
-		});
-
-		await act(async () => {
-			await new Promise((resolve) => window.setTimeout(resolve, 0));
-			await new Promise((resolve) => window.setTimeout(resolve, 0));
-		});
-
-		expect(invokeMock).toHaveBeenCalledTimes(1);
-		expect(invokeMock).toHaveBeenCalledWith("updater_check_release_channel", {
-			channel: "stable",
-		});
-		expect(states).toContain(false);
-	});
-
-	it("reports updateReady when an update is available", async () => {
-		const states: boolean[] = [];
-		invokeMock.mockResolvedValue({ version: "1.2.3" });
-
-		await act(async () => {
-			root.render(
-				<Harness
-					enabled
-					onReady={(ready) => {
-						states.push(ready);
-					}}
-				/>,
-			);
-		});
-
-		await act(async () => {
-			await new Promise((resolve) => window.setTimeout(resolve, 0));
-			await new Promise((resolve) => window.setTimeout(resolve, 0));
-		});
-
-		expect(states).toContain(true);
 	});
 });

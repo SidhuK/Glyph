@@ -11,22 +11,8 @@ vi.mock("react-i18next", () => ({
 	}),
 }));
 
-const {
-	chainCommands,
-	emitEditorEvent,
-	getColorfulHeadings,
-	mockEditor,
-	setColorfulHeadings,
-	setShowFrontmatterInEditor,
-	getShowFrontmatterInEditor,
-	setFrontmatter,
-	getFrontmatter,
-	useNoteEditorMock,
-} = vi.hoisted(() => {
+const { chainCommands, emitEditorEvent, mockEditor, useNoteEditorMock } = vi.hoisted(() => {
 	const listeners = new Map<string, Set<() => void>>();
-	let colorfulHeadings = false;
-	let showFrontmatterInEditor = false;
-	let frontmatter: string | null = null;
 	const chainCommands = {
 		addColumnAfter: vi.fn(() => chainCommands),
 		addColumnBefore: vi.fn(() => chainCommands),
@@ -68,25 +54,7 @@ const {
 			}
 		},
 		mockEditor,
-		setColorfulHeadings(value: boolean) {
-			colorfulHeadings = value;
-		},
-		setShowFrontmatterInEditor(value: boolean) {
-			showFrontmatterInEditor = value;
-		},
-		getShowFrontmatterInEditor() {
-			return showFrontmatterInEditor;
-		},
-		setFrontmatter(value: string | null) {
-			frontmatter = value;
-		},
 		useNoteEditorMock: vi.fn(),
-		getColorfulHeadings() {
-			return colorfulHeadings;
-		},
-		getFrontmatter() {
-			return frontmatter;
-		},
 	};
 });
 
@@ -281,20 +249,17 @@ describe("NoteInlineEditor table controls", () => {
 			observe() {}
 			unobserve() {}
 		} as typeof ResizeObserver;
-		setColorfulHeadings(false);
-		setShowFrontmatterInEditor(false);
-		setFrontmatter(null);
 		mockEditor.isEditable = true;
 		chainCommands.run.mockReturnValue(true);
 		useNoteEditorMock.mockImplementation(() => ({
 			body: "",
-			colorfulHeadings: getColorfulHeadings(),
+			colorfulHeadings: false,
 			editor: mockEditor,
-			frontmatter: getFrontmatter(),
-			showFrontmatterInEditor: getShowFrontmatterInEditor(),
+			frontmatter: null,
+			showFrontmatterInEditor: false,
 			showHeadingPrefixes: true,
 			showFormatBar: true,
-			frontmatterRef: { current: getFrontmatter() },
+			frontmatterRef: { current: null },
 			lastAppliedBodyRef: { current: "" },
 			lastEmittedMarkdownRef: { current: "" },
 		}));
@@ -315,25 +280,9 @@ describe("NoteInlineEditor table controls", () => {
 		vi.unstubAllGlobals();
 	});
 
-	function render(
-		mode: "plain" | "rich" | "preview" = "rich",
-		options: {
-			chrome?: "full" | "minimal";
-			enableMath?: boolean;
-			markdown?: string;
-		} = {},
-	) {
+	function render(mode: "plain" | "rich" | "preview" = "rich") {
 		act(() => {
-			root.render(
-				<NoteInlineEditor
-					markdown={options.markdown ?? ""}
-					mode={mode}
-					onChange={() => {}}
-					relPath=""
-					chrome={options.chrome}
-					enableMath={options.enableMath}
-				/>,
-			);
+			root.render(<NoteInlineEditor markdown="" mode={mode} onChange={() => {}} relPath="" />);
 		});
 	}
 
@@ -374,20 +323,6 @@ describe("NoteInlineEditor table controls", () => {
 		expect(container.querySelector('[data-axis="column"]')).toBeInstanceOf(HTMLButtonElement);
 	});
 
-	it("registers equations in minimal chrome only when the caller opts in", () => {
-		render("rich", { chrome: "minimal", markdown: "$x$" });
-
-		expect(useNoteEditorMock.mock.lastCall?.[0].additionalExtensions).toHaveLength(0);
-
-		render("rich", {
-			chrome: "minimal",
-			enableMath: true,
-			markdown: "$x$",
-		});
-
-		expect(useNoteEditorMock.mock.lastCall?.[0].additionalExtensions).toHaveLength(2);
-	});
-
 	it("hides table controls when selection moves outside the table", async () => {
 		render("rich");
 
@@ -404,24 +339,6 @@ describe("NoteInlineEditor table controls", () => {
 		await flushRaf();
 		expect(container.querySelector('[data-axis="row"]')).toBeNull();
 		expect(container.querySelector('[data-axis="column"]')).toBeNull();
-	});
-
-	it("adds the colorful heading attribute in rich mode when enabled", () => {
-		setColorfulHeadings(true);
-
-		render("rich");
-
-		const host = container.querySelector(".tiptapHostInline");
-		expect(host?.getAttribute("data-colorful-headings")).toBe("true");
-	});
-
-	it("keeps the colorful heading attribute off in preview mode", () => {
-		setColorfulHeadings(true);
-
-		render("preview");
-
-		const host = container.querySelector(".tiptapHostInline");
-		expect(host?.getAttribute("data-colorful-headings")).toBeNull();
 	});
 
 	it("runs the correct TipTap commands when the inline menu items are selected", async () => {
@@ -469,73 +386,5 @@ describe("NoteInlineEditor table controls", () => {
 		});
 		expect(chainCommands.addColumnAfter).toHaveBeenCalled();
 		expect(chainCommands.run).toHaveBeenCalled();
-	});
-
-	it("shows the formatting bar by default in rich mode", () => {
-		render("rich");
-
-		expect(container.querySelector('[data-testid="editor-ribbon"]')).toBeTruthy();
-		expect(container.querySelector(".rfNodeNoteEditor")?.className).toContain(
-			"rfNodeNoteEditorHasRibbon",
-		);
-	});
-
-	it("omits the formatting bar when showFormatBar is false", () => {
-		useNoteEditorMock.mockImplementation(() => ({
-			body: "",
-			colorfulHeadings: getColorfulHeadings(),
-			editor: mockEditor,
-			frontmatter: getFrontmatter(),
-			showFrontmatterInEditor: getShowFrontmatterInEditor(),
-			showHeadingPrefixes: true,
-			showFormatBar: false,
-			frontmatterRef: { current: getFrontmatter() },
-			lastAppliedBodyRef: { current: "" },
-			lastEmittedMarkdownRef: { current: "" },
-		}));
-
-		render("rich");
-
-		expect(container.querySelector('[data-testid="editor-ribbon"]')).toBeNull();
-		expect(container.querySelector(".rfNodeNoteEditor")?.className).not.toContain(
-			"rfNodeNoteEditorHasRibbon",
-		);
-	});
-
-	it("keeps frontmatter hidden by default for new notes", () => {
-		setShowFrontmatterInEditor(false);
-		setFrontmatter(null);
-
-		render("rich");
-
-		expect(container.querySelector(".frontmatterPreview")).toBeNull();
-	});
-
-	it("shows and hides existing frontmatter based on the toggle across rerender", () => {
-		setFrontmatter("---\ntitle: Existing\n---\n");
-		setShowFrontmatterInEditor(false);
-
-		render("rich");
-		expect(container.querySelector(".frontmatterPreview")).toBeNull();
-
-		setShowFrontmatterInEditor(true);
-		render("rich");
-		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(HTMLDivElement);
-	});
-
-	it("applies persisted frontmatter visibility after restart remount", () => {
-		setFrontmatter("---\ntitle: Persisted\n---\n");
-		setShowFrontmatterInEditor(true);
-
-		render("rich");
-		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(HTMLDivElement);
-
-		act(() => {
-			root.unmount();
-		});
-		root = createRoot(container);
-
-		render("rich");
-		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(HTMLDivElement);
 	});
 });

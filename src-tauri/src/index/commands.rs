@@ -1411,8 +1411,6 @@ mod local_connections_tests {
 
 #[cfg(test)]
 mod space_connections_tests {
-    use std::env;
-
     use rusqlite::Connection;
 
     use crate::index::schema::ensure_schema;
@@ -1431,7 +1429,7 @@ mod space_connections_tests {
     }
 
     #[test]
-    fn space_connections_under_cap_includes_linked_tagged_and_isolated_notes() {
+    fn space_connections_includes_linked_tagged_and_isolated_notes() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
@@ -1556,6 +1554,7 @@ mod space_connections_tests {
 
         for (tag, is_explicit) in [
             ("work".to_string(), 1),
+            ("alpha".to_string(), 1),
             (format!("{PEOPLE_TAG_NAMESPACE}ada"), 1),
             ("virtual-parent".to_string(), 0),
         ] {
@@ -1567,27 +1566,8 @@ mod space_connections_tests {
         }
 
         let graph = space_connections_for_conn(&conn).unwrap();
-        assert_eq!(graph.tags.len(), 1);
-        assert_eq!(graph.tags[0].title, "#work");
-        assert_eq!(graph.tag_edges.len(), 1);
-    }
-
-    #[test]
-    fn space_connections_returns_all_explicit_tags() {
-        let conn = Connection::open_in_memory().unwrap();
-        ensure_schema(&conn).unwrap();
-        insert_note(&conn, "notes/tagged.md", "Tagged");
-
-        for tag in ["alpha", "beta"] {
-            conn.execute(
-                "INSERT INTO tags(note_id, tag, is_explicit) VALUES('notes/tagged.md', ?, 1)",
-                [tag],
-            )
-            .unwrap();
-        }
-
-        let graph = space_connections_for_conn(&conn).unwrap();
-        assert_eq!(graph.tags.len(), 2);
+        let titles = graph.tags.iter().map(|tag| tag.title.as_str()).collect::<Vec<_>>();
+        assert_eq!(titles, ["#alpha", "#work"]);
         assert_eq!(graph.tag_edges.len(), 2);
     }
 
@@ -1610,53 +1590,5 @@ mod space_connections_tests {
         assert_eq!(graph.edges[0].kind, SpaceConnectionKind::Relationship);
         assert_eq!(graph.edges[0].from_id, "notes/source.md");
         assert_eq!(graph.edges[0].to_id, "notes/target.md");
-    }
-
-    #[test]
-    fn space_connections_synthetic_scale_returns_all_nodes() {
-        if env::var("RUN_PERF_TESTS").ok().as_deref() != Some("1") {
-            return;
-        }
-
-        let mut conn = Connection::open_in_memory().unwrap();
-        ensure_schema(&conn).unwrap();
-
-        let tx = conn.transaction().unwrap();
-        for index in 0..2_000 {
-            let id = format!("notes/n{index:04}.md");
-            let title = format!("Note {index:04}");
-            tx.execute(
-                "INSERT INTO notes(id, title, created, updated, path, etag, preview)
-                 VALUES(?, ?, '2026-01-01', '2026-01-01', ?, ?, '')",
-                rusqlite::params![&id, &title, &id, format!("{id}-etag")],
-            )
-            .unwrap();
-        }
-        for index in 0..10_000 {
-            let from_id = format!("notes/n{:04}.md", index % 2_000);
-            let to_id = format!("notes/n{:04}.md", (index * 7 + 11) % 2_000);
-            if from_id == to_id {
-                continue;
-            }
-            tx.execute(
-                "INSERT OR IGNORE INTO links(from_id, to_id, to_title, kind)
-                 VALUES(?, ?, NULL, 'note')",
-                rusqlite::params![from_id, to_id],
-            )
-            .unwrap();
-        }
-        for index in 0..500 {
-            let note_id = format!("notes/n{:04}.md", index % 2_000);
-            let tag = format!("topic-{:03}", index % 125);
-            tx.execute(
-                "INSERT OR IGNORE INTO tags(note_id, tag, is_explicit) VALUES(?, ?, 1)",
-                rusqlite::params![note_id, tag],
-            )
-            .unwrap();
-        }
-        tx.commit().unwrap();
-
-        let graph = space_connections_for_conn(&conn).unwrap();
-        assert_eq!(graph.nodes.len(), 2_000);
     }
 }

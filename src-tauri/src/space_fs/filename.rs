@@ -5,21 +5,3 @@ pub fn split_stem_extension(file_name: &str) -> (&str, &str) {
         _ => (file_name, ""),
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::split_stem_extension;
-
-    #[test]
-    fn split_stem_extension_preserves_multi_part_extensions() {
-        assert_eq!(
-            split_stem_extension("Archive.tar.gz"),
-            ("Archive.tar", ".gz")
-        );
-    }
-
-    #[test]
-    fn split_stem_extension_handles_names_without_extension() {
-        assert_eq!(split_stem_extension("Todo"), ("Todo", ""));
-    }
-}

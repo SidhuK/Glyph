@@ -702,7 +702,7 @@ describe("useNoteEditor", () => {
 		});
 	});
 
-	it("tracks colorful headings from settings and live updates", async () => {
+	it("tracks display settings from live updates", async () => {
 		const onChange = vi.fn();
 		const onState = vi.fn();
 
@@ -718,39 +718,12 @@ describe("useNoteEditor", () => {
 
 		await act(async () => {
 			emitSettingsUpdated({
-				editor: { colorfulHeadings: true },
+				editor: { colorfulHeadings: true, showFrontmatterInEditor: true },
 			});
 		});
 
 		expect(onState).toHaveBeenLastCalledWith({
 			colorfulHeadings: true,
-			showFrontmatterInEditor: false,
-			showFormatBar: true,
-		});
-	});
-
-	it("tracks frontmatter visibility from settings and live updates", async () => {
-		const onChange = vi.fn();
-		const onState = vi.fn();
-
-		await act(async () => {
-			root.render(<Harness onChange={onChange} onState={onState} />);
-		});
-
-		expect(onState).toHaveBeenLastCalledWith({
-			colorfulHeadings: false,
-			showFrontmatterInEditor: false,
-			showFormatBar: true,
-		});
-
-		await act(async () => {
-			emitSettingsUpdated({
-				editor: { showFrontmatterInEditor: true },
-			});
-		});
-
-		expect(onState).toHaveBeenLastCalledWith({
-			colorfulHeadings: false,
 			showFrontmatterInEditor: true,
 			showFormatBar: true,
 		});

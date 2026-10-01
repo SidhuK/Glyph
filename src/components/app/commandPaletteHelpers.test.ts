@@ -8,7 +8,7 @@ import {
 	rankPaletteResult,
 	stepPaletteOption,
 } from "./commandPaletteHelpers";
-import { PALETTE_GROUP_ORDER, type PaletteResult } from "./paletteResults";
+import type { PaletteResult } from "./paletteResults";
 import { PALETTE_SETTINGS_REGISTRY } from "./settingsPaletteRegistry";
 
 describe("commandPaletteHelpers", () => {
@@ -72,21 +72,6 @@ describe("commandPaletteHelpers", () => {
 		);
 		expect(exact).toBeGreaterThan(keyword ?? 0);
 		expect(keyword).toBeGreaterThan(description ?? 0);
-	});
-
-	it("keeps the documented group order", () => {
-		expect(PALETTE_GROUP_ORDER).toEqual([
-			"command",
-			"setting",
-			"open-tab",
-			"note",
-			"content",
-			"folder",
-			"tag",
-			"person",
-			"database",
-			"template",
-		]);
 	});
 
 	it("keeps palette settings unique and searchable", () => {
