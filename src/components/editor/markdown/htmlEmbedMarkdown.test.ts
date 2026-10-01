@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { postprocessHtmlEmbeds, preprocessHtmlEmbeds } from "./htmlEmbedMarkdown";
+import { postprocessMarkdownFromEditor, preprocessMarkdownForEditor } from "./editorMarkdownBridge";
 
 describe("htmlEmbedMarkdown", () => {
 	it("keeps fenced html blocks unchanged through preprocess", () => {
@@ -62,5 +63,12 @@ describe("htmlEmbedMarkdown", () => {
 		expect(preprocessed).toContain("```svg");
 		expect(preprocessed).toContain("<!--glyph-raw-html-embed-->");
 		expect(postprocessHtmlEmbeds(preprocessed)).toBe(md);
+	});
+});
+
+describe("editorMarkdownBridge html embeds", () => {
+	it("round-trips raw html embeds through the editor bridge", () => {
+		const md = "<div>Bridge raw</div>";
+		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);
 	});
 });

@@ -1554,6 +1554,7 @@ mod space_connections_tests {
 
         for (tag, is_explicit) in [
             ("work".to_string(), 1),
+            ("alpha".to_string(), 1),
             (format!("{PEOPLE_TAG_NAMESPACE}ada"), 1),
             ("virtual-parent".to_string(), 0),
         ] {
@@ -1565,9 +1566,9 @@ mod space_connections_tests {
         }
 
         let graph = space_connections_for_conn(&conn).unwrap();
-        assert_eq!(graph.tags.len(), 1);
-        assert_eq!(graph.tags[0].title, "#work");
-        assert_eq!(graph.tag_edges.len(), 1);
+        let titles = graph.tags.iter().map(|tag| tag.title.as_str()).collect::<Vec<_>>();
+        assert_eq!(titles, ["#alpha", "#work"]);
+        assert_eq!(graph.tag_edges.len(), 2);
     }
 
     #[test]

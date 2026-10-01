@@ -194,6 +194,7 @@ describe("FolioNotesListPane", () => {
 	let onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	let onDeleteFile: (relPath: string) => Promise<boolean>;
 	let originalScrollIntoView: HTMLElement["scrollIntoView"];
+	let scrollIntoViewMock: ReturnType<typeof vi.fn<HTMLElement["scrollIntoView"]>>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -223,7 +224,8 @@ describe("FolioNotesListPane", () => {
 		onOpenFileInNewTab = vi.fn(async () => {});
 		onDeleteFile = vi.fn(async () => true);
 		originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
-		HTMLElement.prototype.scrollIntoView = () => {};
+		scrollIntoViewMock = vi.fn<HTMLElement["scrollIntoView"]>();
+		HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
 		container = document.createElement("div");
 		document.body.appendChild(container);
 		root = createRoot(container);
@@ -389,12 +391,13 @@ describe("FolioNotesListPane", () => {
 		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Projects/Roadmap.md");
 	});
 
-	it("uses arrow keys for navigation instead of list scrolling", async () => {
+	it("uses arrow keys to open and scroll to the next note instead of scrolling the list", async () => {
 		await act(async () => renderPane("Projects/Roadmap.md"));
 		await waitFor(() => container.querySelector(".folioNotesList") !== null);
 
 		const list = container.querySelector(".folioNotesList");
 		expect(list).toBeTruthy();
+		scrollIntoViewMock.mockClear();
 
 		const event = new KeyboardEvent("keydown", {
 			key: "ArrowDown",
@@ -403,9 +406,11 @@ describe("FolioNotesListPane", () => {
 		});
 		await act(async () => {
 			list?.dispatchEvent(event);
+			await new Promise((resolve) => window.requestAnimationFrame(resolve));
 		});
 
 		expect(event.defaultPrevented).toBe(true);
 		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Ideas/Sketch.md");
+		expect(scrollIntoViewMock).toHaveBeenCalledWith({ block: "nearest" });
 	});
 });
