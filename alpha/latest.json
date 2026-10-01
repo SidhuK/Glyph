@@ -1,15 +1,15 @@
 {
-  "version": "0.9.1-alpha.1",
-  "notes": "## What's Changed\n* Show weekly notes in the Calendar date panel by @SidhuK in https://github.com/SidhuK/Glyph/pull/597\n* Add optional live Markdown presentation in RAW mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/604\n* Add Inbox and opt-in Archive for notes by @SidhuK in https://github.com/SidhuK/Glyph/pull/606\n* Add colorful sidebar icons, selection rails, and folio tag styling (#607)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/607\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.0...v0.9.1-alpha.1",
-  "pub_date": "2026-09-29T05:14:19.106Z",
+  "version": "0.9.1-alpha.2",
+  "notes": "## What's Changed\n* Improve All Notes calendar dates and visual hierarchy by @SidhuK in https://github.com/SidhuK/Glyph/pull/608\n* Remove experimental colorful sidebar by @SidhuK in https://github.com/SidhuK/Glyph/pull/609\n* Add community colors and ring layout to Connections by @SidhuK in https://github.com/SidhuK/Glyph/pull/614\n* Refine Collections table visuals by @SidhuK in https://github.com/SidhuK/Glyph/pull/615\n* Prune low-value tests and dead recent-space id parsing by @SidhuK in https://github.com/SidhuK/Glyph/pull/616\n* Redesign appearance picker and add emoji icons (#617)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/617\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.1-alpha.1...v0.9.1-alpha.2",
+  "pub_date": "2026-10-01T12:13:54.154Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHoralZmTzJzdWViOHNqVTd1TEdZVnVGMTMrMjlPS01RcGNmNGZSUHRiSGNQamx1b0QyOTNLRno0T0Z2Q05LajJ1VUtpeEFENE9zYXhEZUQ0b0JRV0E0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwNjU4ODUzCWZpbGU6R2x5cGguYXBwLnRhci5negpDZUtzdjcwU0Q2Q0RZVkFaVjlDbjFBckN3WnlmVVVsZGNZU2RyRjl2N1Q2WENLb2JRbzFvNyt4VXMwRE5kQWhFK3ZibGZnL0dpUGx2dEhuUXYrOGNEUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.1-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDJadjhvVUg1MkxlOWdFZGZ6dE9TTjRadkpYZVZ3WnhnMXNXdGkxdk1KNzd4Vk84cHVLYTFZU2RXTGhIS1NyU1BoSVEzY0lYVFl3UWJvbElWQmVFdmdZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwODU2ODI4CWZpbGU6R2x5cGguYXBwLnRhci5negpuZVI4YlNlR1VTQ1JCSUFkTTN3aGNVNU9XMWdnVUgzY21JS1dPVmttdFJKNW1sdWZNb1hRWTBxTGYyMnZZdHRiY1hmY3ovYTY0Y0pkS0FmTFRXMUFEUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.1-alpha.2/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHoralZmTzJzdWViOHNqVTd1TEdZVnVGMTMrMjlPS01RcGNmNGZSUHRiSGNQamx1b0QyOTNLRno0T0Z2Q05LajJ1VUtpeEFENE9zYXhEZUQ0b0JRV0E0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwNjU4ODUzCWZpbGU6R2x5cGguYXBwLnRhci5negpDZUtzdjcwU0Q2Q0RZVkFaVjlDbjFBckN3WnlmVVVsZGNZU2RyRjl2N1Q2WENLb2JRbzFvNyt4VXMwRE5kQWhFK3ZibGZnL0dpUGx2dEhuUXYrOGNEUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.1-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDJadjhvVUg1MkxlOWdFZGZ6dE9TTjRadkpYZVZ3WnhnMXNXdGkxdk1KNzd4Vk84cHVLYTFZU2RXTGhIS1NyU1BoSVEzY0lYVFl3UWJvbElWQmVFdmdZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkwODU2ODI4CWZpbGU6R2x5cGguYXBwLnRhci5negpuZVI4YlNlR1VTQ1JCSUFkTTN3aGNVNU9XMWdnVUgzY21JS1dPVmttdFJKNW1sdWZNb1hRWTBxTGYyMnZZdHRiY1hmY3ovYTY0Y0pkS0FmTFRXMUFEUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.1-alpha.2/Glyph_aarch64.app.tar.gz"
     }
   }
 }
