@@ -23,7 +23,7 @@ export function AppearancePickerColors({
 	return (
 		<div
 			className="appearancePickerColors"
-			role="radiogroup"
+			role="group"
 			aria-label={t("appearancePicker.color")}
 			onMouseLeave={() => onHover(undefined)}
 			onBlur={() => onHover(undefined)}
@@ -35,8 +35,7 @@ export function AppearancePickerColors({
 					<button
 						key={id ?? "default"}
 						type="button"
-						role="radio"
-						aria-checked={value === id}
+						aria-pressed={value === id}
 						title={label}
 						aria-label={label}
 						className={

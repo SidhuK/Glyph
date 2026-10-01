@@ -967,6 +967,7 @@ export const FileTreePane = memo(function FileTreePane({
 						color,
 					});
 				}}
+				onReset={() => updatePickerAppearance({ icon: null, color: null })}
 			/>
 			{focusedDirPath ? (
 				<FileTreeRootDrop

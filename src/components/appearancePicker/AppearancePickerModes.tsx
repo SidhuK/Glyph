@@ -13,15 +13,14 @@ export function AppearancePickerModes({ value, onChange }: AppearancePickerModes
 	return (
 		<div
 			className="appearancePickerModes"
-			role="radiogroup"
+			role="group"
 			aria-label={t("appearancePicker.modeLabel")}
 		>
 			{PICKER_MODES.map((mode) => (
 				<button
 					key={mode}
 					type="button"
-					role="radio"
-					aria-checked={value === mode}
+					aria-pressed={value === mode}
 					className="appearancePickerMode"
 					onClick={() => onChange(mode)}
 				>

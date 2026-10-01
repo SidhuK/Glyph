@@ -31,7 +31,12 @@ export function AppearancePickerGrid({
 	const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
 	const resolvedActiveGroupId = activeGroupId ?? groups[0]?.id ?? null;
 
-	function syncActiveGroup(scrollTop: number) {
+	function syncActiveGroup({ scrollTop, clientHeight, scrollHeight }: HTMLDivElement) {
+		// A short final section never reaches the top, so the scroll end selects it.
+		if (scrollTop + clientHeight >= scrollHeight - 1) {
+			setActiveGroupId(groups[groups.length - 1]?.id ?? null);
+			return;
+		}
 		let current = groups[0]?.id ?? null;
 		for (const group of groups) {
 			const section = sectionRefs.current.get(group.id);
@@ -53,7 +58,7 @@ export function AppearancePickerGrid({
 				ref={scrollRef}
 				className="appearancePickerScroll"
 				style={iconStyle}
-				onScroll={(event) => syncActiveGroup(event.currentTarget.scrollTop)}
+				onScroll={(event) => syncActiveGroup(event.currentTarget)}
 				onMouseLeave={() => onHover(null)}
 				onKeyDown={onGridKeyDown}
 			>

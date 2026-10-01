@@ -115,7 +115,7 @@
 		color: var(--text-secondary);
 	}
 
-	&[aria-checked="true"] {
+	&[aria-pressed="true"] {
 		background: var(--bg-primary);
 		color: var(--text-primary);
 		box-shadow: 0 1px 2px color-mix(in srgb, black 12%, transparent);
@@ -166,7 +166,7 @@
 		transform: scale(1.1);
 	}
 
-	&[aria-checked="true"] {
+	&[aria-pressed="true"] {
 		box-shadow:
 			0 0 0 2px var(--bg-primary),
 			0 0 0 3.5px currentcolor;
@@ -205,9 +205,6 @@
 
 .appearancePickerSection {
 	padding-top: 6px;
-	/* The emoji set is ~1,800 glyphs; skip painting sections scrolled out of view. */
-	content-visibility: auto;
-	contain-intrinsic-size: auto 240px;
 }
 
 .appearancePickerCategoryLabel {

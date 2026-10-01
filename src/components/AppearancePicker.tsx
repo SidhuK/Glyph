@@ -46,6 +46,8 @@ interface AppearancePickerProps {
 	colorOptions?: readonly EditorTextColorOption[];
 	onColorChange?: (color: EditorTextColor | null) => void;
 	showColors?: boolean;
+	/** Clears icon and color in one write; color pickers must pass it so Reset can't race. */
+	onReset?: () => void;
 }
 
 export function AppearancePicker({
@@ -64,6 +66,7 @@ export function AppearancePicker({
 	colorOptions = EDITOR_TEXT_COLORS,
 	onColorChange,
 	showColors = false,
+	onReset,
 }: AppearancePickerProps) {
 	const { t } = useTranslation("shell");
 	const [internalOpen, setInternalOpen] = useState(false);
@@ -128,8 +131,8 @@ export function AppearancePicker({
 	}
 
 	function reset() {
-		if (canResetIcon) onIconChange(null, null);
-		if (canResetColor) onColorChange?.(null);
+		if (onReset) onReset();
+		else onIconChange(null, null);
 		setOpen(false);
 	}
 
@@ -211,7 +214,7 @@ export function AppearancePicker({
 					</div>
 					<div className="commandPaletteBody appearancePickerBody">
 						<AppearancePickerGrid
-							key={mode}
+							key={`${mode}:${normalizedQuery ? "search" : "browse"}`}
 							groups={picker.groups}
 							emptyLabel={emptyLabel}
 							selectedIconName={selectedIconName}

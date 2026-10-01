@@ -499,6 +499,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 						color,
 					});
 				}}
+				onReset={() => updatePickerAppearance({ icon: null, color: null })}
 			/>
 			<FolioScopeHeader
 				searchQuery={searchQuery}
