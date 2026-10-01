@@ -17,8 +17,8 @@ const FULL_CIRCLE = Math.PI * 2;
 const BOTTOM_ANGLE = -Math.PI / 2;
 export const CONNECTIONS_RING_RADIUS = 1_000;
 const BUNDLE_RING_RADIUS = 360;
-/** Smallest cluster that earns its own hue and arc; smaller ones share a neutral run. */
-const MIN_HUED_COMMUNITY_SIZE = 3;
+/** Fewest notes a cluster needs to earn its own hue and arc; smaller ones share a neutral run. */
+const MIN_HUED_COMMUNITY_NOTES = 3;
 const MAX_GAP_ANGLE = FULL_CIRCLE * 0.012;
 const MAX_TOTAL_GAP_SHARE = 0.15;
 
@@ -54,7 +54,7 @@ function ringSegments(communities: readonly ConnectionsCommunity[]) {
 			continue;
 		}
 		let tone = NEUTRAL_COMMUNITY_TONE;
-		if (community.members.length >= MIN_HUED_COMMUNITY_SIZE && isConnectionsCommunityHue(nextHue)) {
+		if (community.noteCount >= MIN_HUED_COMMUNITY_NOTES && isConnectionsCommunityHue(nextHue)) {
 			tone = { kind: "hue", hue: nextHue };
 			nextHue += 1;
 		}

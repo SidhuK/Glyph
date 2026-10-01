@@ -191,7 +191,8 @@ export function SpaceConnectionsView() {
 		graph,
 		containerRef,
 		variant: "space",
-		enabled: Boolean(graph && !loading && !visibleError),
+		// Option changes after mount only repaint through the overlay API, so mount once settings load.
+		enabled: Boolean(graph && !loading && !visibleError && !settingsQuery.isPending),
 		display,
 		labelZoomThreshold: options.labelZoomThreshold,
 		searchMatchIds: graph ? searchMatchIds(graph, searchQuery) : null,

@@ -61,7 +61,13 @@ export interface ConnectionsLayoutGraph {
 }
 
 export type ConnectionsCommunity =
-	| { readonly kind: "cluster"; readonly members: readonly string[]; readonly hubId: string }
+	| {
+			readonly kind: "cluster";
+			readonly members: readonly string[];
+			readonly hubId: string;
+			/** Members that are notes; tags join communities but don't count toward hue eligibility. */
+			readonly noteCount: number;
+	  }
 	| { readonly kind: "isolated"; readonly nodeId: string };
 
 export interface ConnectionsCommunityModel {
@@ -172,13 +178,21 @@ export function detectConnectionsCommunities(
 				})
 			: Object.fromEntries(graph.nodes().map((id, index) => [id, index]));
 	const { components, isolated } = splitDisconnectedCommunities(assignments, graph);
-	components.sort((left, right) => {
-		if (left.length !== right.length) return right.length - left.length;
-		return hashString(left[0] ?? "") - hashString(right[0] ?? "");
+	const tagIds = new Set(layoutGraph.tags.map((tag) => tag.id));
+	const ranked = components.map((members) => ({
+		members,
+		noteCount: members.filter((id) => !tagIds.has(id)).length,
+	}));
+	ranked.sort((left, right) => {
+		if (left.noteCount !== right.noteCount) return right.noteCount - left.noteCount;
+		if (left.members.length !== right.members.length) {
+			return right.members.length - left.members.length;
+		}
+		return hashString(left.members[0] ?? "") - hashString(right.members[0] ?? "");
 	});
 
 	const communities: ConnectionsCommunity[] = [];
-	for (const members of components) {
+	for (const { members, noteCount } of ranked) {
 		const memberSet = new Set(members);
 		members.sort((left, right) => {
 			const degreeDifference =
@@ -187,7 +201,7 @@ export function detectConnectionsCommunities(
 			return degreeDifference || hashString(left) - hashString(right);
 		});
 		const [hubId] = members;
-		if (hubId !== undefined) communities.push({ kind: "cluster", members, hubId });
+		if (hubId !== undefined) communities.push({ kind: "cluster", members, hubId, noteCount });
 	}
 	for (const nodeId of isolated) communities.push({ kind: "isolated", nodeId });
 
