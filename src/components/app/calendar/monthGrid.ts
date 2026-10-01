@@ -4,7 +4,7 @@ const WEEKS_IN_GRID = 6;
 const DAYS_IN_WEEK = 7;
 
 export function weekStartsOnForLocale(locale: string): Day {
-	return locale === "de" || locale === "es" || locale === "fr" ? 1 : 0;
+	return locale === "de" || locale === "es" || locale === "fr" || locale === "pl" ? 1 : 0;
 }
 
 /** Six fixed weeks so the grid height never shifts between months. */

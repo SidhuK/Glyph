@@ -74,6 +74,8 @@ export function useActivityVirtualization(
 			const cardRows = Math.max(1, Math.ceil(noteCount / columnCount));
 			return cardRows * cardEstimate + 24;
 		},
+		// Selecting a heatmap day swaps the rows, so key measurements by row rather than index.
+		getItemKey: (index) => virtualRows[index]?.id ?? index,
 		getScrollElement: () => paneElement,
 		overscan: 3,
 	});

@@ -24,10 +24,12 @@ export const ActivityHeatmap = memo(function ActivityHeatmap({
 	onSelectDay,
 }: ActivityHeatmapProps) {
 	const { t, i18n } = useTranslation("shell");
-	const [period, setPeriod] = useState<HeatmapPeriod>(null);
+	const [requestedPeriod, setPeriod] = useState<HeatmapPeriod>(null);
 	const formatDate = useActivityDateLabel("full");
 	const weekStartsOn = weekStartsOnForLocale(i18n.language);
 	const periods = useMemo(() => heatmapPeriods(days, today), [days, today]);
+	// A year from another space's history falls back to the trailing year.
+	const period = periods.includes(requestedPeriod) ? requestedPeriod : null;
 	const heatmap = useMemo(
 		() => buildHeatmap({ days, period, today, weekStartsOn }),
 		[days, period, today, weekStartsOn],
