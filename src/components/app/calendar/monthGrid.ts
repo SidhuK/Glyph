@@ -3,6 +3,10 @@ import { type Day, addDays, addMonths, endOfWeek, startOfMonth, startOfWeek } fr
 const WEEKS_IN_GRID = 6;
 const DAYS_IN_WEEK = 7;
 
+export function weekStartsOnForLocale(locale: string): Day {
+	return locale === "de" || locale === "es" || locale === "fr" ? 1 : 0;
+}
+
 /** Six fixed weeks so the grid height never shifts between months. */
 export function buildMonthWeeks(month: Date, weekStartsOn: Day): Date[][] {
 	const firstCell = startOfWeek(startOfMonth(month), { weekStartsOn });

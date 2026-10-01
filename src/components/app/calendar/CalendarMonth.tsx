@@ -1,20 +1,17 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import {
-	type Day,
-	addMonths,
-	format,
-	isSameDay,
-	isSameMonth,
-	parseISO,
-	startOfMonth,
-} from "date-fns";
+import { addMonths, format, isSameDay, isSameMonth, parseISO, startOfMonth } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { activityTone } from "../../../lib/calendarActivity";
 import type { CalendarDayActivity } from "../../../lib/tauri";
 import { CalendarDayCell } from "./CalendarDayCell";
-import { buildMonthWeeks, dateForNavigationKey, weekdayLabels } from "./monthGrid";
+import {
+	buildMonthWeeks,
+	dateForNavigationKey,
+	weekStartsOnForLocale,
+	weekdayLabels,
+} from "./monthGrid";
 
 interface CalendarMonthProps {
 	month: Date;
@@ -39,7 +36,7 @@ export function CalendarMonth({
 }: CalendarMonthProps) {
 	const { t } = useTranslation("shell");
 	const [focusedKey, setFocusedKey] = useState<string | null>(null);
-	const weekStartsOn: Day = locale === "de" || locale === "es" || locale === "fr" ? 1 : 0;
+	const weekStartsOn = weekStartsOnForLocale(locale);
 
 	const weeks = useMemo(() => buildMonthWeeks(month, weekStartsOn), [month, weekStartsOn]);
 	const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn]);
