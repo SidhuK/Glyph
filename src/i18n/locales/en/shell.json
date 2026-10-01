@@ -68,6 +68,7 @@
 		}
 	},
 	"collections": {
+		"open": "Open",
 		"addView": "Add view",
 		"clearSearch": "Clear search",
 		"delete": "Delete collection",

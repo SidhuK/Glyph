@@ -219,6 +219,7 @@ export function DatabaseTable({
 	onLoadMoreRows,
 }: DatabaseTableProps) {
 	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
+	const [isScrolled, setIsScrolled] = useState(false);
 	const [moveError, setMoveError] = useState("");
 	const [optimisticCardOrder, setOptimisticCardOrder] = useState<Record<string, string[]> | null>(
 		null,
@@ -282,7 +283,6 @@ export function DatabaseTable({
 					<DatabaseCell
 						row={row.original}
 						column={column}
-						isRowSelected={row.original.note_path === selectedRowPath}
 						laneColors={safeLaneColors}
 						statusColors={statusColors}
 						onOpenNote={onOpenRow}
@@ -305,7 +305,6 @@ export function DatabaseTable({
 			onSaveCell,
 			onSelectRow,
 			onToggleSort,
-			selectedRowPath,
 			safeLaneColors,
 			statusColors,
 			onStatusColorChange,
@@ -641,7 +640,8 @@ export function DatabaseTable({
 	return (
 		<div
 			ref={tableContainerRef}
-			className={`databaseTableShell${activeResizingColumnId ? " is-resizing" : ""}`}
+			className={`databaseTableShell${activeResizingColumnId ? " is-resizing" : ""}${isScrolled ? " is-scrolled" : ""}`}
+			onScroll={(event) => setIsScrolled(event.currentTarget.scrollTop > 0)}
 		>
 			{moveError ? <div className="databaseBoardError">{moveError}</div> : null}
 			{hasGroups && !activeSort ? (

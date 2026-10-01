@@ -57,6 +57,7 @@
 		}
 	},
 	"collections": {
+		"open": "Abrir",
 		"addView": "Adicionar visualização",
 		"clearSearch": "Limpar pesquisa",
 		"delete": "Excluir coleção",

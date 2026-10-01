@@ -57,6 +57,7 @@
 		}
 	},
 	"collections": {
+		"open": "열기",
 		"addView": "보기 추가",
 		"clearSearch": "검색 지우기",
 		"delete": "컬렉션 삭제",
