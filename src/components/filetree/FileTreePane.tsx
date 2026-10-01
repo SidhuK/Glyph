@@ -945,6 +945,7 @@ export const FileTreePane = memo(function FileTreePane({
 		>
 			<AppearancePicker
 				title={t("fileTree.appearance.title")}
+				previewLabel={appearancePickerEntry?.name}
 				open={appearancePickerTarget !== null}
 				onOpenChange={(open) => {
 					if (!open) setAppearancePickerTarget(null);
@@ -952,6 +953,7 @@ export const FileTreePane = memo(function FileTreePane({
 				iconValue={appearancePickerIcon}
 				defaultIconName={appearancePickerDefaultIcon}
 				showDefaultIcon
+				allowEmoji
 				onIconChange={(icon) => {
 					updatePickerAppearance({
 						icon,
@@ -965,6 +967,7 @@ export const FileTreePane = memo(function FileTreePane({
 						color,
 					});
 				}}
+				onReset={() => updatePickerAppearance({ icon: null, color: null })}
 			/>
 			{focusedDirPath ? (
 				<FileTreeRootDrop

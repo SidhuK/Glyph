@@ -233,5 +233,49 @@
 		"closeSpace": "スペースを閉じる",
 		"chooseIcon": "スペースのアイコンを選択",
 		"menuFailed": "スペースメニューを開けませんでした"
+	},
+	"appearancePicker": {
+		"searchPlaceholder": "アイコンを検索",
+		"searchEmojiPlaceholder": "絵文字を検索",
+		"color": "カラー",
+		"defaultColor": "デフォルトのカラー",
+		"defaultIcon": "デフォルトのアイコン",
+		"reset": "リセット",
+		"shuffle": "ランダムなアイコン",
+		"recent": "最近使用",
+		"noResults": "アイコンが見つかりません。",
+		"loadingEmoji": "絵文字を読み込み中…",
+		"emojiLoadFailed": "絵文字を読み込めませんでした。",
+		"modeLabel": "アイコンの種類",
+		"modes": {
+			"icons": "アイコン",
+			"emoji": "絵文字"
+		},
+		"useIcon": "{{label}}アイコンを使用",
+		"categoriesLabel": "アイコンのカテゴリ",
+		"categories": {
+			"write": "書く",
+			"media": "メディア",
+			"food": "食べ物",
+			"weather": "天気",
+			"sort": "整理",
+			"find": "探す",
+			"talk": "話す",
+			"time": "時間",
+			"do": "やること",
+			"fun": "楽しみ",
+			"science": "科学"
+		},
+		"emojiGroups": {
+			"smileys_emotion": "スマイリーと感情",
+			"people_body": "人と体",
+			"animals_nature": "動物と自然",
+			"food_drink": "食べ物と飲み物",
+			"travel_places": "旅行と場所",
+			"activities": "アクティビティ",
+			"objects": "モノ",
+			"symbols": "記号",
+			"flags": "旗"
+		}
 	}
 }

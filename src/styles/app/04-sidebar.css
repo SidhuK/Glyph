@@ -274,8 +274,22 @@
 	transform: scale(1.08);
 }
 
-.spaceSwitcherButton[data-switching="true"] svg {
+.spaceSwitcherButton[data-switching="true"] :is(svg, .appearanceEmoji) {
 	animation: spaceSwitcherPulse 650ms ease-in-out infinite alternate;
+}
+
+/* Emoji have no stroke weight, so inactive spaces are dimmed instead. */
+.spaceSwitcherButton:not([data-active="true"]) .appearanceEmoji {
+	opacity: 0.55;
+	filter: grayscale(0.5);
+	transition:
+		opacity 120ms ease,
+		filter 120ms ease;
+}
+
+.spaceSwitcherButton:hover:not(:disabled) .appearanceEmoji {
+	opacity: 1;
+	filter: none;
 }
 
 .spaceSwitcherButton:active:not(:disabled) {
@@ -305,7 +319,7 @@
 		transition: none;
 	}
 
-	.spaceSwitcherButton[data-switching="true"] svg {
+	.spaceSwitcherButton[data-switching="true"] :is(svg, .appearanceEmoji) {
 		animation: none;
 	}
 }

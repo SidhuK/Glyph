@@ -1,13 +1,24 @@
 import type { ReactNode } from "react";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { isAppearanceEmoji } from "../lib/appearanceEmoji";
+import { rememberRecentIconId } from "../lib/appearancePickerRecents";
 import {
 	DATABASE_COLUMN_ICON_OPTIONS,
 	type DatabaseColumnIconOption,
-	ICON_CATEGORY_LABELS,
-	type IconCategory,
 	getDatabaseColumnIconOption,
 } from "../lib/database/columnIcons";
 import { Search } from "./Icons";
+import { AppearancePickerColors } from "./appearancePicker/AppearancePickerColors";
+import { AppearancePickerGrid } from "./appearancePicker/AppearancePickerGrid";
+import { AppearancePickerModes } from "./appearancePicker/AppearancePickerModes";
+import { AppearancePickerSummary } from "./appearancePicker/AppearancePickerSummary";
+import {
+	type AppearancePickerMode,
+	type AppearancePickerOption,
+	useAppearancePickerGroups,
+} from "./appearancePicker/useAppearancePickerGroups";
+import { useIconGridNavigation } from "./appearancePicker/useIconGridNavigation";
 import { DatabaseColumnIcon } from "./database/DatabaseColumnIcon";
 import {
 	EDITOR_TEXT_COLORS,
@@ -17,26 +28,31 @@ import {
 import { Button } from "./ui/shadcn/button";
 import { Dialog, DialogContent, DialogTitle } from "./ui/shadcn/dialog";
 import { Input } from "./ui/shadcn/input";
-import { ScrollArea } from "./ui/shadcn/scroll-area";
 
 interface AppearancePickerProps {
 	title: string;
+	previewLabel?: string;
 	trigger?: (openPicker: () => void) => ReactNode;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	iconValue?: string | null;
 	defaultIconName?: string;
 	iconOptions?: readonly DatabaseColumnIconOption[];
-	onIconChange?: (iconName: string | null, option: DatabaseColumnIconOption | null) => void;
+	/** Emoji selections call `onIconChange` with the emoji and a `null` option. */
+	onIconChange: (iconName: string | null, option: DatabaseColumnIconOption | null) => void;
 	showDefaultIcon?: boolean;
+	allowEmoji?: boolean;
 	colorValue?: EditorTextColor | null;
 	colorOptions?: readonly EditorTextColorOption[];
 	onColorChange?: (color: EditorTextColor | null) => void;
 	showColors?: boolean;
+	/** Clears icon and color in one write; color pickers must pass it so Reset can't race. */
+	onReset?: () => void;
 }
 
 export function AppearancePicker({
 	title,
+	previewLabel,
 	trigger,
 	open,
 	onOpenChange,
@@ -45,62 +61,79 @@ export function AppearancePicker({
 	iconOptions = DATABASE_COLUMN_ICON_OPTIONS,
 	onIconChange,
 	showDefaultIcon = false,
+	allowEmoji = false,
 	colorValue = null,
 	colorOptions = EDITOR_TEXT_COLORS,
 	onColorChange,
 	showColors = false,
+	onReset,
 }: AppearancePickerProps) {
+	const { t } = useTranslation("shell");
 	const [internalOpen, setInternalOpen] = useState(false);
 	const [query, setQuery] = useState("");
-	const hasQuery = query.trim().length > 0;
+	const [modeChoice, setModeChoice] = useState<AppearancePickerMode | null>(null);
+	const [hoveredOption, setHoveredOption] = useState<AppearancePickerOption | null>(null);
+	const [hoveredColor, setHoveredColor] = useState<EditorTextColor | null | undefined>(undefined);
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const navigation = useIconGridNavigation(() => inputRef.current?.focus());
 	const resolvedOpen = open ?? internalOpen;
-	const selectedIconName = getDatabaseColumnIconOption(iconValue) ? iconValue : defaultIconName;
+	const normalizedQuery = query.trim().toLowerCase();
+	const valueIsEmoji = isAppearanceEmoji(iconValue);
+	const mode: AppearancePickerMode = allowEmoji
+		? (modeChoice ?? (valueIsEmoji ? "emoji" : "icons"))
+		: "icons";
+	const picker = useAppearancePickerGroups({
+		mode,
+		open: resolvedOpen,
+		query: normalizedQuery,
+		iconOptions,
+	});
+	const selectedIconName =
+		iconValue && (valueIsEmoji || getDatabaseColumnIconOption(iconValue)) ? iconValue : null;
+	const previewIconName = hoveredOption?.id ?? selectedIconName ?? defaultIconName;
+	const previewColorId = hoveredColor === undefined ? colorValue : hoveredColor;
+	const previewColor = colorOptions.find((option) => option.id === previewColorId) ?? null;
+	const colorStyle = previewColor ? { color: `var(${previewColor.cssVar})` } : undefined;
+	const canResetIcon = showDefaultIcon && Boolean(iconValue);
+	const canResetColor = showColors && colorValue !== null;
 
-	const filteredOptions = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
-		if (!normalizedQuery) return iconOptions;
-		return iconOptions.filter(
-			(option) =>
-				option.id.includes(normalizedQuery) || option.label.toLowerCase().includes(normalizedQuery),
-		);
-	}, [iconOptions, query]);
-
-	const groupedByCategory = useMemo(() => {
-		const categoryOrder: IconCategory[] = [
-			"write",
-			"media",
-			"food",
-			"weather",
-			"sort",
-			"find",
-			"talk",
-			"time",
-			"do",
-			"fun",
-			"science",
-		];
-		const groups = new Map<IconCategory, DatabaseColumnIconOption[]>();
-		for (const cat of categoryOrder) {
-			groups.set(cat, []);
-		}
-		for (const option of filteredOptions) {
-			const cat = option.category;
-			if (groups.has(cat)) {
-				groups.get(cat)?.push(option);
-			}
-		}
-		return groups;
-	}, [filteredOptions]);
+	let emptyLabel: string | null = null;
+	if (picker.loading) emptyLabel = t("appearancePicker.loadingEmoji");
+	else if (picker.error) emptyLabel = t("appearancePicker.emojiLoadFailed");
+	else if (normalizedQuery && picker.results.length === 0) {
+		emptyLabel = t("appearancePicker.noResults");
+	}
 
 	function setOpen(nextOpen: boolean) {
 		if (open === undefined) setInternalOpen(nextOpen);
 		onOpenChange?.(nextOpen);
-		if (!nextOpen) {
-			setQuery("");
-			return;
-		}
-		window.requestAnimationFrame(() => inputRef.current?.focus());
+		if (nextOpen) return;
+		setQuery("");
+		setModeChoice(null);
+		setHoveredOption(null);
+		setHoveredColor(undefined);
+	}
+
+	function applyIcon(option: AppearancePickerOption) {
+		onIconChange(option.id, getDatabaseColumnIconOption(option.id));
+	}
+
+	function selectIcon(option: AppearancePickerOption) {
+		rememberRecentIconId(option.id);
+		applyIcon(option);
+		setOpen(false);
+	}
+
+	function shuffleIcon() {
+		const candidates = picker.results.filter((option) => option.id !== selectedIconName);
+		const option = candidates[Math.floor(Math.random() * candidates.length)];
+		if (option) applyIcon(option);
+	}
+
+	function reset() {
+		if (onReset) onReset();
+		else onIconChange(null, null);
+		setOpen(false);
 	}
 
 	return (
@@ -108,143 +141,89 @@ export function AppearancePicker({
 			{trigger?.(() => setOpen(true))}
 			<Dialog open={resolvedOpen} onOpenChange={setOpen}>
 				<DialogContent
-					className="commandPalette appearancePickerDialog top-[46%] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[420px]"
+					className="commandPalette appearancePickerDialog top-[46%] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[440px]"
 					showCloseButton={false}
+					onOpenAutoFocus={(event) => {
+						event.preventDefault();
+						inputRef.current?.focus();
+					}}
 				>
 					<DialogTitle className="sr-only">{title}</DialogTitle>
-					<div className="commandPaletteHeader">
-						<div className="commandPaletteInputWrapper">
-							<Search
-								size="var(--icon-sm)"
-								className="commandPaletteSearchIcon"
-								aria-hidden="true"
-							/>
-							<Input
-								ref={inputRef}
-								value={query}
-								placeholder="Search icons"
-								className="commandPaletteInput"
-								onChange={(event) => setQuery(event.target.value)}
-							/>
+					<div className="appearancePickerHeader">
+						<AppearancePickerSummary
+							iconName={previewIconName}
+							title={previewLabel ?? title}
+							subtitle={
+								hoveredOption?.label ??
+								picker.labelFor(selectedIconName) ??
+								t("appearancePicker.defaultIcon")
+							}
+							colorStyle={colorStyle}
+							onShuffle={shuffleIcon}
+							onReset={canResetIcon || canResetColor ? reset : undefined}
+						/>
+						<div className="appearancePickerSearchRow">
+							<div className="commandPaletteInputWrapper">
+								<Search
+									size="var(--icon-sm)"
+									className="commandPaletteSearchIcon"
+									aria-hidden="true"
+								/>
+								<Input
+									ref={inputRef}
+									value={query}
+									placeholder={t(
+										mode === "emoji"
+											? "appearancePicker.searchEmojiPlaceholder"
+											: "appearancePicker.searchPlaceholder",
+									)}
+									className="commandPaletteInput"
+									onChange={(event) => setQuery(event.target.value)}
+									onKeyDown={(event) => {
+										if (event.key === "ArrowDown") {
+											event.preventDefault();
+											navigation.focusFirstOption();
+											return;
+										}
+										const firstOption = picker.results[0];
+										if (event.key !== "Enter" || !normalizedQuery || !firstOption) return;
+										event.preventDefault();
+										selectIcon(firstOption);
+									}}
+								/>
+							</div>
+							{allowEmoji ? (
+								<AppearancePickerModes
+									value={mode}
+									onChange={(nextMode) => {
+										setModeChoice(nextMode);
+										setHoveredOption(null);
+										inputRef.current?.focus();
+									}}
+								/>
+							) : null}
 						</div>
 						{showColors ? (
-							<div className="appearancePickerColors" aria-label="Colors">
-								<button
-									type="button"
-									className="appearancePickerColor"
-									data-active={colorValue === null ? "true" : undefined}
-									onClick={() => {
-										onColorChange?.(null);
-										setOpen(false);
-									}}
-								>
-									<span className="appearancePickerDefaultColor" />
-									<span>Default</span>
-								</button>
-								{colorOptions.map((color) => (
-									<button
-										key={color.id}
-										type="button"
-										className="appearancePickerColor"
-										data-active={colorValue === color.id ? "true" : undefined}
-										onClick={() => {
-											onColorChange?.(color.id);
-											setOpen(false);
-										}}
-									>
-										<span
-											className="appearancePickerSwatch"
-											style={{ color: `var(${color.cssVar})` }}
-										/>
-										<span>{color.label}</span>
-									</button>
-								))}
-							</div>
+							<AppearancePickerColors
+								value={colorValue}
+								options={colorOptions}
+								onChange={(color) => onColorChange?.(color)}
+								onHover={setHoveredColor}
+							/>
 						) : null}
 					</div>
-					<div className="commandPaletteBody">
-						<ScrollArea className="appearancePickerScroll">
-							{showDefaultIcon ? (
-								<div className="appearancePickerGrid appearancePickerDefaultSection">
-									<Button
-										type="button"
-										variant={iconValue ? "ghost" : "secondary"}
-										size="icon-sm"
-										title="Default icon"
-										aria-label="Use default icon"
-										className="appearancePickerOption"
-										onClick={() => {
-											onIconChange?.(null, null);
-											setOpen(false);
-										}}
-									>
-										<DatabaseColumnIcon iconName={defaultIconName} size="var(--icon-lg)" />
-									</Button>
-								</div>
-							) : null}
-							{hasQuery ? (
-								<div className="appearancePickerGrid">
-									{filteredOptions.map((option) => {
-										const active = option.id === selectedIconName && Boolean(iconValue);
-										return (
-											<Button
-												key={option.id}
-												type="button"
-												variant={active ? "secondary" : "ghost"}
-												size="icon-sm"
-												title={option.label}
-												aria-label={`Use ${option.label} icon`}
-												aria-pressed={active}
-												className="appearancePickerOption"
-												onClick={() => {
-													onIconChange?.(option.id, option);
-													setOpen(false);
-												}}
-											>
-												<DatabaseColumnIcon iconName={option.id} size="var(--icon-lg)" />
-											</Button>
-										);
-									})}
-									{filteredOptions.length === 0 ? (
-										<div className="appearancePickerEmpty">No icons found.</div>
-									) : null}
-								</div>
-							) : (
-								Array.from(groupedByCategory.entries()).map(([category, options]) => {
-									if (options.length === 0) return null;
-									return (
-										<div key={category} className="appearancePickerSection">
-											<div className="appearancePickerCategoryLabel">
-												{ICON_CATEGORY_LABELS[category]}
-											</div>
-											<div className="appearancePickerGrid">
-												{options.map((option) => {
-													const active = option.id === selectedIconName && Boolean(iconValue);
-													return (
-														<Button
-															key={option.id}
-															type="button"
-															variant={active ? "secondary" : "ghost"}
-															size="icon-sm"
-															title={option.label}
-															aria-label={`Use ${option.label} icon`}
-															aria-pressed={active}
-															className="appearancePickerOption"
-															onClick={() => {
-																onIconChange?.(option.id, option);
-																setOpen(false);
-															}}
-														>
-															<DatabaseColumnIcon iconName={option.id} size="var(--icon-lg)" />
-														</Button>
-													);
-												})}
-											</div>
-										</div>
-									);
-								})
-							)}
-						</ScrollArea>
+					<div className="commandPaletteBody appearancePickerBody">
+						<AppearancePickerGrid
+							key={`${mode}:${normalizedQuery ? "search" : "browse"}`}
+							groups={picker.groups}
+							emptyLabel={emptyLabel}
+							selectedIconName={selectedIconName}
+							iconStyle={colorStyle}
+							registerOption={navigation.registerOption}
+							onGridKeyDown={navigation.handleGridKeyDown}
+							onHover={setHoveredOption}
+							onSelect={selectIcon}
+						/>
 					</div>
 				</DialogContent>
 			</Dialog>

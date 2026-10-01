@@ -5,7 +5,7 @@ import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { defaultSpaceIconName, type SpaceDefinition } from "../../lib/spaceRegistry";
 import { toast } from "../../lib/toast";
 import { AppearancePicker } from "../AppearancePicker";
-import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
+import { AppearanceIcon } from "../AppearanceIcon";
 
 interface SpaceSwitcherProps {
 	spaces: SpaceDefinition[];
@@ -106,7 +106,7 @@ function SpaceSwitcherContent({
 								onClick={() => void switchSpace(space.path)}
 								onContextMenu={(event) => openSpaceMenu(event, space)}
 							>
-								<DatabaseColumnIcon
+								<AppearanceIcon
 									iconName={space.iconName}
 									size="var(--icon-md)"
 									strokeWidth={active ? 2.5 : 1.5}
@@ -126,6 +126,7 @@ function SpaceSwitcherContent({
 				iconValue={iconPickerSpace?.iconOverride ?? null}
 				defaultIconName={iconPickerSpace ? defaultSpaceIconName(iconPickerSpace.path) : "folder"}
 				showDefaultIcon
+				allowEmoji
 				onIconChange={(iconName) => {
 					if (!iconPickerSpace) return;
 					void onSetSpaceIcon(iconPickerSpace.path, iconName);

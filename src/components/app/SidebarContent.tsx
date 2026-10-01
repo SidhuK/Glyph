@@ -61,7 +61,7 @@ import type { FsEntry } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
-import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
+import { AppearanceIcon } from "../AppearanceIcon";
 import { FileTreePane } from "../filetree";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
 
@@ -860,7 +860,7 @@ export const SidebarContent = memo(function SidebarContent({
 										onContextMenu={(event) => handleFolderTabContextMenu(event, folderPath)}
 									>
 										{appearance?.icon ? (
-											<DatabaseColumnIcon
+											<AppearanceIcon
 												iconName={appearance.icon}
 												size="var(--icon-md)"
 												className="sidebarViewTabIcon sidebarViewTabIconFilled"

@@ -485,6 +485,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				iconValue={pickerIcon}
 				defaultIconName="document"
 				showDefaultIcon
+				allowEmoji
 				onIconChange={(icon) => {
 					updatePickerAppearance({
 						icon,
@@ -498,6 +499,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 						color,
 					});
 				}}
+				onReset={() => updatePickerAppearance({ icon: null, color: null })}
 			/>
 			<FolioScopeHeader
 				searchQuery={searchQuery}

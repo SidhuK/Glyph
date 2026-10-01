@@ -234,5 +234,49 @@
 		"closeSpace": "Fechar espaço",
 		"chooseIcon": "Escolher ícone do espaço",
 		"menuFailed": "Não foi possível abrir o menu de espaços"
+	},
+	"appearancePicker": {
+		"searchPlaceholder": "Buscar ícones",
+		"searchEmojiPlaceholder": "Buscar emoji",
+		"color": "Cor",
+		"defaultColor": "Cor padrão",
+		"defaultIcon": "Ícone padrão",
+		"reset": "Redefinir",
+		"shuffle": "Ícone aleatório",
+		"recent": "Recentes",
+		"noResults": "Nenhum ícone encontrado.",
+		"loadingEmoji": "Carregando emoji…",
+		"emojiLoadFailed": "Não foi possível carregar os emoji.",
+		"modeLabel": "Tipo de ícone",
+		"modes": {
+			"icons": "Ícones",
+			"emoji": "Emoji"
+		},
+		"useIcon": "Usar ícone {{label}}",
+		"categoriesLabel": "Categorias de ícones",
+		"categories": {
+			"write": "Escrever",
+			"media": "Mídia",
+			"food": "Comida",
+			"weather": "Clima",
+			"sort": "Organizar",
+			"find": "Encontrar",
+			"talk": "Conversar",
+			"time": "Tempo",
+			"do": "Fazer",
+			"fun": "Diversão",
+			"science": "Ciência"
+		},
+		"emojiGroups": {
+			"smileys_emotion": "Carinhas e emoções",
+			"people_body": "Pessoas e corpo",
+			"animals_nature": "Animais e natureza",
+			"food_drink": "Comida e bebida",
+			"travel_places": "Viagens e lugares",
+			"activities": "Atividades",
+			"objects": "Objetos",
+			"symbols": "Símbolos",
+			"flags": "Bandeiras"
+		}
 	}
 }

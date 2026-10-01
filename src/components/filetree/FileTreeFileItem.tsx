@@ -14,7 +14,7 @@ import type { FileTreeAppearance, FsEntry, NoteTaskSummary } from "../../lib/tau
 import { basename, splitEditableFileName } from "../../utils/path";
 import { InlineRenameInput } from "../InlineRenameInput";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
-import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
+import { AppearanceIcon } from "../AppearanceIcon";
 import { isEditorTextColor } from "../editor/textColors";
 import { FILE_TREE_ENTRY_SENSORS, FILE_TREE_ENTRY_TYPE, fileTreeEntryDragId } from "./fileTreeDnd";
 import { buildRowStyle, rowVariants, springTransition } from "./fileTreeItemHelpers";
@@ -254,7 +254,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						data-file-tree-path={entry.rel_path}
 					>
 						{appearance?.icon ? (
-							<DatabaseColumnIcon
+							<AppearanceIcon
 								iconName={appearance.icon}
 								size="var(--icon-md)"
 								className="fileTreeIcon"

@@ -234,5 +234,49 @@
 		"closeSpace": "Space schließen",
 		"chooseIcon": "Space-Symbol auswählen",
 		"menuFailed": "Das Space-Menü konnte nicht geöffnet werden"
+	},
+	"appearancePicker": {
+		"searchPlaceholder": "Symbole suchen",
+		"searchEmojiPlaceholder": "Emoji suchen",
+		"color": "Farbe",
+		"defaultColor": "Standardfarbe",
+		"defaultIcon": "Standardsymbol",
+		"reset": "Zurücksetzen",
+		"shuffle": "Zufälliges Symbol",
+		"recent": "Zuletzt verwendet",
+		"noResults": "Keine Symbole gefunden.",
+		"loadingEmoji": "Emoji werden geladen…",
+		"emojiLoadFailed": "Emoji konnten nicht geladen werden.",
+		"modeLabel": "Symboltyp",
+		"modes": {
+			"icons": "Symbole",
+			"emoji": "Emoji"
+		},
+		"useIcon": "Symbol {{label}} verwenden",
+		"categoriesLabel": "Symbolkategorien",
+		"categories": {
+			"write": "Schreiben",
+			"media": "Medien",
+			"food": "Essen",
+			"weather": "Wetter",
+			"sort": "Ordnen",
+			"find": "Finden",
+			"talk": "Sprechen",
+			"time": "Zeit",
+			"do": "Tun",
+			"fun": "Spaß",
+			"science": "Wissenschaft"
+		},
+		"emojiGroups": {
+			"smileys_emotion": "Smileys & Emotionen",
+			"people_body": "Menschen & Körper",
+			"animals_nature": "Tiere & Natur",
+			"food_drink": "Essen & Trinken",
+			"travel_places": "Reisen & Orte",
+			"activities": "Aktivitäten",
+			"objects": "Objekte",
+			"symbols": "Symbole",
+			"flags": "Flaggen"
+		}
 	}
 }

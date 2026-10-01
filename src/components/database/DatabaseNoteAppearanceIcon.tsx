@@ -4,7 +4,7 @@ import type { FileTreeAppearance } from "../../lib/tauri";
 import { isMarkdownPath } from "../../utils/path";
 import { isEditorTextColor } from "../editor/textColors";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import { AppearanceIcon } from "../AppearanceIcon";
 
 export function databaseNoteAppearanceStyle(
 	notePath: string,
@@ -32,7 +32,7 @@ export function DatabaseNoteAppearanceIcon({
 	const { Icon, color } = getFileTypeInfo(notePath, isMarkdownPath(notePath));
 
 	if (appearance?.icon) {
-		return <DatabaseColumnIcon iconName={appearance.icon} size={size} className={className} />;
+		return <AppearanceIcon iconName={appearance.icon} size={size} className={className} />;
 	}
 
 	return (
