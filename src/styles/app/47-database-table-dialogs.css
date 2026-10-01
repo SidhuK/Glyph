@@ -28,14 +28,23 @@
 	padding-top: 0;
 	padding-bottom: 0;
 	padding-right: 10px;
-	border-bottom: 1px solid var(--border-light);
-	border-right: 1px solid color-mix(in srgb, var(--border-light) 62%, transparent);
-	font-size: calc(var(--text-base) * 0.9);
-	color: var(--text-secondary);
+	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-right: 1px solid transparent;
+	font-size: calc(var(--text-base) * 0.84);
+	letter-spacing: 0.02em;
+	color: var(--text-tertiary);
+	transition:
+		border-color 160ms ease,
+		box-shadow 200ms ease;
 }
 
-.databaseTable .databaseHeadCell:last-child {
-	border-right: 0;
+.databaseHeaderRow:hover .databaseHeadCell:not(:last-child) {
+	border-right-color: color-mix(in srgb, var(--border-light) 62%, transparent);
+}
+
+.databaseTableShell.is-scrolled .databaseTable .databaseHeadCell {
+	border-bottom-color: var(--border-light);
+	box-shadow: 0 6px 12px -10px color-mix(in srgb, black 28%, transparent);
 }
 
 .databaseHeadCell:first-child {
@@ -109,7 +118,7 @@
 }
 
 .databaseHeaderButton {
-	font-weight: var(--font-semibold);
+	font-weight: var(--font-medium);
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
@@ -134,7 +143,7 @@
 }
 
 .databaseHeaderButton:hover {
-	color: var(--text-primary);
+	color: var(--text-secondary);
 }
 
 .databaseHeaderLabel {
@@ -149,6 +158,14 @@
 	width: var(--icon-md);
 	height: var(--icon-md);
 	color: var(--text-tertiary);
+	opacity: 0.6;
+	transition:
+		opacity 140ms ease,
+		color 140ms ease;
+}
+
+.databaseHeadCell:hover .databaseHeaderIconPicker {
+	opacity: 1;
 }
 
 .databaseHeaderIconPicker:hover,
@@ -174,12 +191,8 @@
 	padding-top: 0;
 	padding-bottom: 0;
 	padding-right: 14px;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 46%, transparent);
-	border-right: 1px solid color-mix(in srgb, var(--border-light) 30%, transparent);
-}
-
-.databaseBodyCell:last-child {
-	border-right: 0;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 36%, transparent);
+	color: var(--text-secondary);
 }
 
 .databaseBodyCell:has(.databaseTagSuggestions),
@@ -408,12 +421,19 @@
 }
 
 .databaseCellButton.is-title {
+	font-size: calc(var(--text-base) * 0.95);
 	font-weight: var(--font-semibold);
+	letter-spacing: -0.005em;
 }
 
 .databaseTitleCellMain.is-title {
 	gap: 6px;
-	color: var(--database-note-appearance-color, inherit);
+	color: var(--database-note-appearance-color, var(--text-primary));
+	mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+}
+
+.databaseTitleCellMain.is-title .databaseCellText {
+	text-overflow: clip;
 }
 
 .databaseTitleCellIcon {
@@ -424,9 +444,10 @@
 }
 
 .databaseTitleCell {
+	position: relative;
 	display: flex;
+	flex: 1 1 auto;
 	align-items: center;
-	gap: 8px;
 	min-width: 0;
 }
 
@@ -436,27 +457,48 @@
 }
 
 .databaseCellOpenButton {
-	flex: 0 0 auto;
-	height: 24px;
-	padding: 0 9px;
+	position: absolute;
+	top: 50%;
+	right: 0;
+	gap: 4px;
+	height: 22px;
+	padding: 0 8px 0 6px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 70%, transparent);
 	border-radius: var(--database-radius-md);
-	border: 1px solid color-mix(in srgb, var(--interactive-accent) 18%, var(--border-light));
-	background: color-mix(in srgb, var(--interactive-accent) 7%, var(--bg-primary));
+	background: var(--bg-primary);
+	box-shadow: 0 1px 2px color-mix(in srgb, black 8%, transparent);
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.8);
-	line-height: 1;
-	font-weight: var(--font-semibold);
+	font-size: calc(var(--text-base) * 0.76);
+	letter-spacing: 0.01em;
+	opacity: 0;
+	pointer-events: none;
+	transform: translate(4px, -50%);
 	transition:
-		border-color 120ms ease,
-		color 120ms ease,
-		background-color 120ms ease;
+		opacity 140ms ease,
+		transform 140ms ease,
+		color 140ms ease,
+		border-color 140ms ease;
+}
+
+.databaseRow:hover .databaseCellOpenButton,
+.databaseRow[data-state="selected"] .databaseCellOpenButton,
+.databaseCellOpenButton:focus-visible {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translate(0, -50%);
 }
 
 .databaseCellOpenButton:hover,
 .databaseCellOpenButton:focus-visible {
-	border-color: color-mix(in srgb, var(--interactive-accent) 36%, transparent);
+	border-color: var(--border-strong);
+	background: var(--bg-primary);
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-primary));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.databaseCellOpenButton {
+		transform: translate(0, -50%);
+	}
 }
 
 .databaseCellText {
@@ -470,12 +512,18 @@
 	position: relative;
 	z-index: 0;
 	cursor: default;
-	transition:
-		background-color 140ms ease,
-		box-shadow 140ms ease;
 	user-select: none;
 	-webkit-user-select: none;
-	background: color-mix(in srgb, var(--bg-primary) 97%, var(--bg-secondary));
+}
+
+.databaseRow::before {
+	content: "";
+	position: absolute;
+	inset: 3px 6px;
+	z-index: -1;
+	border-radius: var(--database-radius-lg);
+	pointer-events: none;
+	transition: background-color 140ms ease;
 }
 
 .databaseRow:has(.databaseTagSuggestions),
@@ -483,24 +531,28 @@
 	z-index: 4;
 }
 
-.databaseRow:hover {
-	background: color-mix(in srgb, var(--bg-hover) 72%, var(--bg-primary));
-	box-shadow: inset 3px 0 0 color-mix(in srgb, var(--text-tertiary) 28%, transparent);
+.databaseRow:hover::before {
+	background: color-mix(in srgb, var(--bg-hover) 70%, transparent);
 }
 
-.databaseRow[data-state="selected"] {
-	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-primary));
-	box-shadow: inset 3px 0 0 color-mix(in srgb, var(--interactive-accent) 72%, transparent);
-}
-
-.databaseRow[data-state="selected"]:hover {
+.databaseRow[data-state="selected"]::before {
 	background: color-mix(in srgb, var(--interactive-accent) 11%, var(--bg-primary));
-	box-shadow: inset 3px 0 0 var(--interactive-accent);
+}
+
+.databaseRow[data-state="selected"]:hover::before {
+	background: color-mix(in srgb, var(--interactive-accent) 14%, var(--bg-primary));
+}
+
+.databaseRow[data-state="selected"] .databaseBodyCell,
+.databaseRow[data-state="selected"] + .databaseRow .databaseBodyCell {
+	border-top-color: transparent;
 }
 
 .databaseRow:focus-visible {
 	outline: none;
-	background: color-mix(in srgb, var(--interactive-accent) 7%, var(--bg-primary));
+}
+
+.databaseRow:focus-visible::before {
 	box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 38%, transparent);
 }
 
@@ -614,10 +666,6 @@
 	line-height: 1;
 	color: var(--text-tertiary);
 	text-align: right;
-}
-
-.databaseTable .databaseBodyCell {
-	border-top-color: color-mix(in srgb, var(--border-light) 42%, transparent);
 }
 
 .databaseLoadingState,

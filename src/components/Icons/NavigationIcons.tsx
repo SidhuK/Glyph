@@ -4,6 +4,7 @@ import {
 	ArrowDown,
 	ArrowRight,
 	ArrowUp,
+	ArrowUpRight01Icon,
 	Calendar03Icon,
 	CommandIcon,
 	LayoutAlignLeftIcon,
@@ -23,6 +24,9 @@ export const Search = (props: IconProps) => (
 );
 export const Command = (props: IconProps) => (
 	<HugeiconsIcon icon={CommandIcon} {...withDefaultIconSize(props)} />
+);
+export const ArrowUpRight = (props: IconProps) => (
+	<HugeiconsIcon icon={ArrowUpRight01Icon} {...withDefaultIconSize(props)} />
 );
 export const ChevronRight = (props: IconProps) => (
 	<HugeiconsIcon icon={ArrowRight} {...withDefaultIconSize(props)} />

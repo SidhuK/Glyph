@@ -57,6 +57,7 @@
 		}
 	},
 	"collections": {
+		"open": "開く",
 		"addView": "ビューを追加",
 		"clearSearch": "検索をクリア",
 		"delete": "コレクションを削除",

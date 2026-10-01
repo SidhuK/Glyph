@@ -59,6 +59,7 @@
 		}
 	},
 	"collections": {
+		"open": "Ouvrir",
 		"addView": "Ajouter une vue",
 		"clearSearch": "Effacer la recherche",
 		"delete": "Supprimer la collection",

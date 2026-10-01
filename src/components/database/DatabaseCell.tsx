@@ -1,4 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
 	databaseCellValueFromRow,
@@ -14,7 +15,7 @@ import {
 	resolveTagIconName,
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
-import { X } from "../Icons";
+import { ArrowUpRight, X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
 import {
 	WikiLinkSuggestionList,
@@ -40,7 +41,6 @@ const DATABASE_CELL_TAG_SUGGESTION_LIMIT = 8;
 interface DatabaseCellProps {
 	row: DatabaseRow;
 	column: DatabaseColumn;
-	isRowSelected?: boolean;
 	laneColors?: Record<string, EditorTextColor>;
 	statusColors?: Record<string, EditorTextColor>;
 	onOpenNote?: (notePath: string) => void;
@@ -871,7 +871,6 @@ function DatabaseCellEditor({
 export function DatabaseCell({
 	row,
 	column,
-	isRowSelected = false,
 	laneColors = EMPTY_LANE_COLORS,
 	statusColors = EMPTY_STATUS_COLORS,
 	onOpenNote,
@@ -881,6 +880,7 @@ export function DatabaseCell({
 	onRenameTitle,
 	onSave,
 }: DatabaseCellProps) {
+	const { t } = useTranslation("shell");
 	const dateDisplayFormat = useDateDisplayFormat();
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
@@ -1110,27 +1110,25 @@ export function DatabaseCell({
 						/>
 						{displayText.trim() ? <span className="databaseCellText">{displayText}</span> : null}
 					</button>
-					{isRowSelected ? (
-						<button
-							type="button"
-							className="databaseCellOpenButton"
-							onClick={(event) => {
-								handleSelectRow();
-								event.stopPropagation();
-								onOpenNote?.(row.note_path);
-							}}
-							title="Open note"
-						>
-							Open
-						</button>
-					) : null}
+					<button
+						type="button"
+						className="databaseCellOpenButton"
+						onClick={(event) => {
+							handleSelectRow();
+							event.stopPropagation();
+							onOpenNote?.(row.note_path);
+						}}
+					>
+						<ArrowUpRight size="var(--icon-xs)" aria-hidden="true" />
+						<span>{t("collections.open")}</span>
+					</button>
 				</div>
 			);
 		}
 		return (
 			<button
 				type="button"
-				className={["databaseCellButton", !editable ? "is-readonly" : ""].filter(Boolean).join(" ")}
+				className="databaseCellButton"
 				onDoubleClick={() => {
 					if (editable) setEditing(true);
 				}}
