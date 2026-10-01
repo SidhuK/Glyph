@@ -1,4 +1,5 @@
 import { emit } from "@tauri-apps/api/event";
+import { isAppearanceEmoji } from "./appearanceEmoji";
 import {
 	DEFAULT_TAG_ICON_NAME,
 	type TagIconName,
@@ -24,13 +25,18 @@ const FALLBACK_SPACE_ICONS = [
 	"note",
 ] as const satisfies readonly TagIconName[];
 
-export type SpaceIconOverrides = Readonly<Record<string, TagIconName>>;
+/** Built-in icon ids or a literal emoji. */
+export type SpaceIconOverrides = Readonly<Record<string, string>>;
 
 export interface SpaceDefinition {
 	path: string;
 	name: string;
-	iconName: TagIconName;
-	iconOverride: TagIconName | null;
+	iconName: string;
+	iconOverride: string | null;
+}
+
+function isSpaceIconName(iconName: string): boolean {
+	return isTagIconName(iconName) || isAppearanceEmoji(iconName);
 }
 
 export type SpaceRegistryUpdatedPayload = { kind: "icons" } | { kind: "paths" };
@@ -41,9 +47,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function normalizeSpaceIconOverrides(value: unknown): SpaceIconOverrides {
 	if (!isRecord(value)) return {};
-	const overrides: Record<string, TagIconName> = {};
+	const overrides: Record<string, string> = {};
 	for (const [path, iconName] of Object.entries(value)) {
-		if (!path || typeof iconName !== "string" || !isTagIconName(iconName)) continue;
+		if (!path || typeof iconName !== "string" || !isSpaceIconName(iconName)) continue;
 		overrides[path] = iconName;
 	}
 	return overrides;
@@ -104,14 +110,14 @@ export async function emitSpacePathsUpdated(): Promise<void> {
 
 export async function writeSpaceIconOverride(path: string, iconName: string | null): Promise<void> {
 	if (!path) throw new Error("A space path is required");
-	if (iconName !== null && !isTagIconName(iconName)) {
+	if (iconName !== null && !isSpaceIconName(iconName)) {
 		throw new Error("The selected space icon is invalid");
 	}
 
 	await withSettingsStoreWriteLock(async () => {
 		const store = await getSettingsStore();
 		const current = normalizeSpaceIconOverrides(await store.get<unknown>(SPACE_ICON_OVERRIDES_KEY));
-		const updated: Record<string, TagIconName> = { ...current };
+		const updated: Record<string, string> = { ...current };
 		if (iconName === null) {
 			delete updated[path];
 		} else {

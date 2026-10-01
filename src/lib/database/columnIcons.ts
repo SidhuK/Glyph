@@ -1,31 +1,20 @@
 import type { DatabaseColumn } from "./types";
 
-export type IconCategory =
-	| "write"
-	| "media"
-	| "food"
-	| "weather"
-	| "sort"
-	| "find"
-	| "talk"
-	| "time"
-	| "do"
-	| "fun"
-	| "science";
+export const ICON_CATEGORIES = [
+	"write",
+	"media",
+	"food",
+	"weather",
+	"sort",
+	"find",
+	"talk",
+	"time",
+	"do",
+	"fun",
+	"science",
+] as const;
 
-export const ICON_CATEGORY_LABELS: Record<IconCategory, string> = {
-	write: "Write",
-	media: "Media",
-	food: "Food",
-	weather: "Weather",
-	sort: "Sort",
-	find: "Find",
-	talk: "Talk",
-	time: "Time",
-	do: "Do",
-	fun: "Fun",
-	science: "Science",
-};
+export type IconCategory = (typeof ICON_CATEGORIES)[number];
 
 export interface DatabaseColumnIconOption {
 	id: string;

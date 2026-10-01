@@ -12,7 +12,7 @@ import { invoke } from "../../lib/tauri";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { Plus } from "../Icons";
 import { InlineRenameInput } from "../InlineRenameInput";
-import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
+import { AppearanceIcon } from "../AppearanceIcon";
 import { isEditorTextColor } from "../editor/textColors";
 import {
 	FILE_TREE_ENTRY_SENSORS,
@@ -244,7 +244,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							data-file-tree-path={entry.rel_path}
 						>
 							{appearance?.icon ? (
-								<DatabaseColumnIcon
+								<AppearanceIcon
 									iconName={appearance.icon}
 									size="var(--icon-md)"
 									className="fileTreeChevron fileTreeFolderIcon"

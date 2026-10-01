@@ -233,5 +233,49 @@
 		"closeSpace": "스페이스 닫기",
 		"chooseIcon": "스페이스 아이콘 선택",
 		"menuFailed": "스페이스 메뉴를 열 수 없습니다"
+	},
+	"appearancePicker": {
+		"searchPlaceholder": "아이콘 검색",
+		"searchEmojiPlaceholder": "이모지 검색",
+		"color": "색상",
+		"defaultColor": "기본 색상",
+		"defaultIcon": "기본 아이콘",
+		"reset": "재설정",
+		"shuffle": "무작위 아이콘",
+		"recent": "최근 사용",
+		"noResults": "아이콘을 찾을 수 없습니다.",
+		"loadingEmoji": "이모지 불러오는 중…",
+		"emojiLoadFailed": "이모지를 불러올 수 없습니다.",
+		"modeLabel": "아이콘 유형",
+		"modes": {
+			"icons": "아이콘",
+			"emoji": "이모지"
+		},
+		"useIcon": "{{label}} 아이콘 사용",
+		"categoriesLabel": "아이콘 카테고리",
+		"categories": {
+			"write": "쓰기",
+			"media": "미디어",
+			"food": "음식",
+			"weather": "날씨",
+			"sort": "정리",
+			"find": "찾기",
+			"talk": "대화",
+			"time": "시간",
+			"do": "할 일",
+			"fun": "재미",
+			"science": "과학"
+		},
+		"emojiGroups": {
+			"smileys_emotion": "스마일리 및 감정",
+			"people_body": "사람 및 신체",
+			"animals_nature": "동물 및 자연",
+			"food_drink": "음식 및 음료",
+			"travel_places": "여행 및 장소",
+			"activities": "활동",
+			"objects": "사물",
+			"symbols": "기호",
+			"flags": "깃발"
+		}
 	}
 }

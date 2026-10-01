@@ -327,5 +327,49 @@
 		"retry": "Retry",
 		"inboxEmpty": "Your Inbox is clear.",
 		"archiveEmpty": "No archived notes."
+	},
+	"appearancePicker": {
+		"searchPlaceholder": "Search icons",
+		"searchEmojiPlaceholder": "Search emoji",
+		"color": "Color",
+		"defaultColor": "Default color",
+		"defaultIcon": "Default icon",
+		"reset": "Reset",
+		"shuffle": "Shuffle icon",
+		"recent": "Recent",
+		"noResults": "No icons found.",
+		"loadingEmoji": "Loading emoji…",
+		"emojiLoadFailed": "Could not load emoji.",
+		"modeLabel": "Icon type",
+		"modes": {
+			"icons": "Icons",
+			"emoji": "Emoji"
+		},
+		"useIcon": "Use {{label}} icon",
+		"categoriesLabel": "Icon categories",
+		"categories": {
+			"write": "Write",
+			"media": "Media",
+			"food": "Food",
+			"weather": "Weather",
+			"sort": "Sort",
+			"find": "Find",
+			"talk": "Talk",
+			"time": "Time",
+			"do": "Do",
+			"fun": "Fun",
+			"science": "Science"
+		},
+		"emojiGroups": {
+			"smileys_emotion": "Smileys & Emotion",
+			"people_body": "People & Body",
+			"animals_nature": "Animals & Nature",
+			"food_drink": "Food & Drink",
+			"travel_places": "Travel & Places",
+			"activities": "Activities",
+			"objects": "Objects",
+			"symbols": "Symbols",
+			"flags": "Flags"
+		}
 	}
 }
