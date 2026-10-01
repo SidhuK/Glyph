@@ -68,6 +68,7 @@ export function LocalNoteConnectionsDialog({
 			nodeSizeScale: 1,
 			linkOpacity: 1,
 			linkThicknessScale: 1,
+			edgeBundling: 1,
 		},
 		labelZoomThreshold: 0,
 		onNoteOpen: openNode,

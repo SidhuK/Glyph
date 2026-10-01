@@ -210,6 +210,7 @@
 		"nodeSize": "노트 크기",
 		"linkOpacity": "선 투명도",
 		"linkThickness": "선 두께",
+		"edgeBundling": "선 묶기",
 		"labelZoomThreshold": "제목 표시",
 		"filters": "필터",
 		"hideOrphans": "연결 없는 노트 숨기기",

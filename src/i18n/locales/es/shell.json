@@ -211,6 +211,7 @@
 		"nodeSize": "Tamaño de nota",
 		"linkOpacity": "Opacidad de línea",
 		"linkThickness": "Grosor de línea",
+		"edgeBundling": "Agrupación de líneas",
 		"labelZoomThreshold": "Visibilidad de títulos",
 		"filters": "Filtros",
 		"hideOrphans": "Ocultar notas sin conexión",

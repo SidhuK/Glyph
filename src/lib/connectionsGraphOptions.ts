@@ -7,6 +7,7 @@ export interface ConnectionsGraphOptions {
 	readonly linkOpacity: number;
 	readonly linkThickness: number;
 	readonly labelZoomThreshold: number;
+	readonly edgeBundling: number;
 	readonly hideOrphanNodes: boolean;
 	readonly minConnections: number;
 }
@@ -16,6 +17,7 @@ export const DEFAULT_CONNECTIONS_GRAPH_OPTIONS: ConnectionsGraphOptions = {
 	linkOpacity: 72,
 	linkThickness: 40,
 	labelZoomThreshold: 20,
+	edgeBundling: 80,
 	hideOrphanNodes: false,
 	minConnections: 0,
 };
@@ -56,6 +58,12 @@ export function normalizeConnectionsGraphOptions(value: unknown): ConnectionsGra
 			CONNECTIONS_GRAPH_SLIDER_MIN,
 			CONNECTIONS_GRAPH_SLIDER_MAX,
 		),
+		edgeBundling: clampNumber(
+			source.edgeBundling,
+			DEFAULT_CONNECTIONS_GRAPH_OPTIONS.edgeBundling,
+			CONNECTIONS_GRAPH_SLIDER_MIN,
+			CONNECTIONS_GRAPH_SLIDER_MAX,
+		),
 		hideOrphanNodes:
 			typeof source.hideOrphanNodes === "boolean"
 				? source.hideOrphanNodes
@@ -84,6 +92,10 @@ export function connectionsLinkOpacity(value: number) {
 
 export function connectionsLinkThicknessScale(value: number) {
 	return unitScale(value, 0.5, 1.8);
+}
+
+export function connectionsEdgeBundling(value: number) {
+	return unitScale(value, 0, 1);
 }
 
 export function connectionsLabelVisibility(value: number) {

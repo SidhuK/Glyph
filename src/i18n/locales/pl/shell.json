@@ -245,6 +245,7 @@
 		"nodeSize": "Rozmiar notatek",
 		"linkOpacity": "Krycie linii",
 		"linkThickness": "Grubość linii",
+		"edgeBundling": "Grupowanie linii",
 		"labelZoomThreshold": "Widoczność tytułów",
 		"filters": "Filtry",
 		"hideOrphans": "Ukryj niepołączone notatki",

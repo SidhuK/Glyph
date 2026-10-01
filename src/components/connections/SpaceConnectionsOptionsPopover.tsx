@@ -123,6 +123,12 @@ export function SpaceConnectionsOptionsPopover({
 						onChange={(linkThickness) => patch({ linkThickness })}
 					/>
 					<GraphOptionSlider
+						id="connections-edge-bundling"
+						label={t("connections.edgeBundling")}
+						value={options.edgeBundling}
+						onChange={(edgeBundling) => patch({ edgeBundling })}
+					/>
+					<GraphOptionSlider
 						id="connections-label-zoom"
 						label={t("connections.labelZoomThreshold")}
 						value={options.labelZoomThreshold}

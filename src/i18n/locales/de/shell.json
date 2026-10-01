@@ -211,6 +211,7 @@
 		"nodeSize": "Notizgröße",
 		"linkOpacity": "Liniendeckkraft",
 		"linkThickness": "Linienstärke",
+		"edgeBundling": "Linienbündelung",
 		"labelZoomThreshold": "Titel sichtbar",
 		"filters": "Filter",
 		"hideOrphans": "Unverbundene Notizen ausblenden",

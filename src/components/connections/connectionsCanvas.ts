@@ -1,4 +1,3 @@
-import type Sigma from "sigma";
 import type { NodeHoverDrawingFunction, NodeLabelDrawingFunction } from "sigma/rendering";
 import type { Coordinates, EdgeDisplayData } from "sigma/types";
 import type {
@@ -6,7 +5,9 @@ import type {
 	ConnectionsGraph,
 	ConnectionsGraphVariant,
 	ConnectionsNodeAttributes,
+	ConnectionsSigma,
 } from "./connectionsGraph";
+import type { ConnectionsRingGeometry } from "./connectionsRing";
 import type { ConnectionsPalette } from "./connectionsTheme";
 
 type NodeLabelData = Parameters<
@@ -20,12 +21,15 @@ type NodeHoverData = Parameters<
 >[1];
 
 const TRANSPARENT = "rgba(0, 0, 0, 0)";
+/** Edges inside one community bow inward only slightly, hugging the ring. */
+const INTRA_COMMUNITY_PULL = 0.8;
 
 interface BundledEdgesDrawingOptions {
 	readonly canvas: HTMLCanvasElement;
 	readonly context: CanvasRenderingContext2D;
-	readonly renderer: Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>;
+	readonly renderer: ConnectionsSigma;
 	readonly graph: ConnectionsGraph;
+	readonly bundling: number;
 	readonly resolveStyle: (
 		edge: string,
 		data: ConnectionsEdgeAttributes,
@@ -36,7 +40,45 @@ interface BundledEdgesDrawingOptions {
 
 interface BundledNodePoints {
 	readonly node: Coordinates;
-	readonly bundle: Coordinates;
+	/** Control point for edges leaving this node's community. */
+	readonly outer: Coordinates;
+	/** Control point for edges staying inside this node's community. */
+	readonly inner: Coordinates;
+	readonly community: number | null;
+}
+
+interface ResolvedEdge {
+	readonly style: Partial<EdgeDisplayData>;
+	readonly fallbackColor: string;
+	readonly fallbackSize: number;
+	readonly source: BundledNodePoints;
+	readonly target: BundledNodePoints;
+}
+
+function lerpPoint(from: Coordinates, to: Coordinates, amount: number): Coordinates {
+	return { x: from.x + (to.x - from.x) * amount, y: from.y + (to.y - from.y) * amount };
+}
+
+function strokeBundledEdge(
+	context: CanvasRenderingContext2D,
+	{ style, fallbackColor, fallbackSize, source, target }: ResolvedEdge,
+) {
+	const sameCommunity = source.community !== null && source.community === target.community;
+	const sourceControl = sameCommunity ? source.inner : source.outer;
+	const targetControl = sameCommunity ? target.inner : target.outer;
+	context.strokeStyle = style.color ?? fallbackColor;
+	context.lineWidth = Math.max(0.35, style.size ?? fallbackSize);
+	context.beginPath();
+	context.moveTo(source.node.x, source.node.y);
+	context.bezierCurveTo(
+		sourceControl.x,
+		sourceControl.y,
+		targetControl.x,
+		targetControl.y,
+		target.node.x,
+		target.node.y,
+	);
+	context.stroke();
 }
 
 export function drawBundledConnectionsEdges({
@@ -44,6 +86,7 @@ export function drawBundledConnectionsEdges({
 	context,
 	renderer,
 	graph,
+	bundling,
 	resolveStyle,
 }: BundledEdgesDrawingOptions) {
 	const { width, height } = renderer.getDimensions();
@@ -74,15 +117,22 @@ export function drawBundledConnectionsEdges({
 	context.lineJoin = "round";
 	const pointsByNode = new Map<string, BundledNodePoints>();
 	graph.forEachNode((node, data) => {
+		const point = renderer.graphToViewport(data);
+		const bundle = renderer.graphToViewport({ x: data.bundleX, y: data.bundleY });
+		const inward = renderer.graphToViewport({
+			x: data.x * INTRA_COMMUNITY_PULL,
+			y: data.y * INTRA_COMMUNITY_PULL,
+		});
 		pointsByNode.set(node, {
-			node: renderer.graphToViewport(data),
-			bundle: renderer.graphToViewport({
-				x: data.bundleX,
-				y: data.bundleY,
-			}),
+			node: point,
+			outer: lerpPoint(point, bundle, bundling),
+			inner: lerpPoint(point, inward, bundling),
+			community: data.community.kind === "member" ? data.community.index : null,
 		});
 	});
 
+	// Highlighted edges are drawn in a second pass so faded edges never bury them.
+	const raised: ResolvedEdge[] = [];
 	graph.forEachEdge((edge, data, source, target) => {
 		const style = resolveStyle(edge, data, source, target);
 		if (style.hidden) return;
@@ -91,20 +141,17 @@ export function drawBundledConnectionsEdges({
 		const targetPoints = pointsByNode.get(target);
 		if (!sourcePoints || !targetPoints) return;
 
-		context.strokeStyle = style.color ?? data.color;
-		context.lineWidth = Math.max(0.35, style.size ?? data.size);
-		context.beginPath();
-		context.moveTo(sourcePoints.node.x, sourcePoints.node.y);
-		context.bezierCurveTo(
-			sourcePoints.bundle.x,
-			sourcePoints.bundle.y,
-			targetPoints.bundle.x,
-			targetPoints.bundle.y,
-			targetPoints.node.x,
-			targetPoints.node.y,
-		);
-		context.stroke();
+		const resolved: ResolvedEdge = {
+			style,
+			fallbackColor: data.color,
+			fallbackSize: data.size,
+			source: sourcePoints,
+			target: targetPoints,
+		};
+		if ((style.zIndex ?? 0) > 0) raised.push(resolved);
+		else strokeBundledEdge(context, resolved);
 	});
+	for (const resolved of raised) strokeBundledEdge(context, resolved);
 }
 
 function roundedRectPath(
@@ -180,7 +227,7 @@ export function drawConnectionsNodeLabel(
 	settings: NodeLabelSettings,
 	palette: ConnectionsPalette,
 	variant: ConnectionsGraphVariant,
-	graphCenter?: Coordinates,
+	ring: ConnectionsRingGeometry | null,
 ) {
 	const label = data.label;
 	if (!label) return;
@@ -195,11 +242,13 @@ export function drawConnectionsNodeLabel(
 	context.textBaseline = "alphabetic";
 
 	if (variant === "space" && !emphasized) {
-		const centerX = graphCenter?.x ?? context.canvas.clientWidth / 2;
-		const centerY = graphCenter?.y ?? context.canvas.clientHeight / 2;
+		const centerX = ring?.center.x ?? context.canvas.clientWidth / 2;
+		const centerY = ring?.center.y ?? context.canvas.clientHeight / 2;
 		const angle = Math.atan2(data.y - centerY, data.x - centerX);
 		const onLeft = Math.cos(angle) < 0;
-		const labelOffset = size + 6;
+		// Start every radial label just past the community arcs so labels line up.
+		const distance = Math.hypot(data.x - centerX, data.y - centerY);
+		const labelOffset = Math.max(size + 6, (ring?.labelRadius ?? 0) - distance);
 		context.translate(data.x, data.y);
 		context.rotate(onLeft ? angle + Math.PI : angle);
 		context.textAlign = onLeft ? "right" : "left";

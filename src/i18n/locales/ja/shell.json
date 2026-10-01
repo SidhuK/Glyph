@@ -210,6 +210,7 @@
 		"nodeSize": "ノートの大きさ",
 		"linkOpacity": "線の不透明度",
 		"linkThickness": "線の太さ",
+		"edgeBundling": "線の束ね",
 		"labelZoomThreshold": "タイトルの見え方",
 		"filters": "フィルター",
 		"hideOrphans": "つながりのないノートを隠す",

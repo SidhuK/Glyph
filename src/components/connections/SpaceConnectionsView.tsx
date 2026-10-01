@@ -8,6 +8,7 @@ import { i18n } from "../../i18n";
 import {
 	type ConnectionsGraphOptions,
 	DEFAULT_CONNECTIONS_GRAPH_OPTIONS,
+	connectionsEdgeBundling,
 	connectionsLinkOpacity,
 	connectionsLinkThicknessScale,
 	connectionsNodeSizeScale,
@@ -86,7 +87,7 @@ function SpaceConnectionsLegend() {
 	return (
 		<div className="localNoteConnectionsLegend" aria-label={t("connections.legendAria")}>
 			<span className="localNoteConnectionsLegendItem">
-				<span className="localNoteConnectionsLegendNode is-note" aria-hidden="true" />
+				<span className="localNoteConnectionsLegendNode is-community" aria-hidden="true" />
 				{t("connections.legendNote")}
 			</span>
 			<span className="localNoteConnectionsLegendItem">
@@ -181,8 +182,9 @@ export function SpaceConnectionsView() {
 			nodeSizeScale: connectionsNodeSizeScale(options.nodeSize),
 			linkOpacity: connectionsLinkOpacity(options.linkOpacity),
 			linkThicknessScale: connectionsLinkThicknessScale(options.linkThickness),
+			edgeBundling: connectionsEdgeBundling(options.edgeBundling),
 		}),
-		[options.linkOpacity, options.linkThickness, options.nodeSize],
+		[options.edgeBundling, options.linkOpacity, options.linkThickness, options.nodeSize],
 	);
 
 	const overlay = useSigmaConnections({
@@ -240,6 +242,7 @@ export function SpaceConnectionsView() {
 						nodeSizeScale: connectionsNodeSizeScale(next.nodeSize),
 						linkOpacity: connectionsLinkOpacity(next.linkOpacity),
 						linkThicknessScale: connectionsLinkThicknessScale(next.linkThickness),
+						edgeBundling: connectionsEdgeBundling(next.edgeBundling),
 					});
 					overlay.current.setLabelZoomThreshold(next.labelZoomThreshold);
 				}}
