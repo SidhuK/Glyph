@@ -7,11 +7,15 @@ import {
 import type { SpaceConnections } from "../../lib/tauri";
 import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 import { type ConnectionsGraph, buildSpaceConnectionsGraph } from "./connectionsGraph";
-import type { ConnectionsLayoutResponse, GraphPosition } from "./connectionsLayout";
+import {
+	type ConnectionsLayout,
+	type ConnectionsLayoutResponse,
+	deserializeConnectionsLayout,
+} from "./connectionsLayout";
 import { hashString } from "./connectionsRandom";
 
 function layoutSpaceConnections(payload: SpaceConnections, signal: AbortSignal) {
-	return new Promise<ReadonlyMap<string, GraphPosition>>((resolve, reject) => {
+	return new Promise<ConnectionsLayout>((resolve, reject) => {
 		const worker = new Worker(new URL("./connectionsLayout.worker.ts", import.meta.url), {
 			type: "module",
 		});
@@ -46,18 +50,18 @@ function layoutSpaceConnections(payload: SpaceConnections, signal: AbortSignal) 
 			signal.removeEventListener("abort", abort);
 			worker.terminate();
 			const response = event.data;
-			if ("error" in response) {
-				reject(new Error(response.error));
-				return;
+			switch (response.kind) {
+				case "ready":
+					resolve(deserializeConnectionsLayout(response.layout));
+					return;
+				case "error":
+					reject(new Error(response.error));
+					return;
+				default: {
+					const _exhaustive: never = response;
+					return _exhaustive;
+				}
 			}
-			resolve(
-				new Map(
-					response.positions.map(([id, x, y, bundleX, bundleY]) => [
-						id,
-						{ x, y, bundleX, bundleY },
-					]),
-				),
-			);
 		};
 		worker.onerror = (event) => {
 			signal.removeEventListener("abort", abort);

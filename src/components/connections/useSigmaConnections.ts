@@ -11,12 +11,14 @@ import type {
 	ConnectionsEdgeAttributes,
 	ConnectionsGraph,
 	ConnectionsGraphVariant,
-	ConnectionsNodeAttributes,
+	ConnectionsSigma,
 } from "./connectionsGraph";
+import { connectionsRingGeometry, drawConnectionsCommunityArcs } from "./connectionsRing";
 import {
 	type ConnectionsDisplayState,
 	type ConnectionsFocusState,
 	type ConnectionsPalette,
+	SPACE_FOCUS_NODE_SCALE,
 	buildEdgeReducer,
 	buildNodeReducer,
 	resolveConnectionsPalette,
@@ -52,7 +54,15 @@ function isEdgeConnectedToFocus(focusId: string | null, source: string, target: 
 	return source === focusId || target === focusId;
 }
 
-function fitGraphToViewport(renderer: Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>) {
+function maxBaseNodeSize(graph: ConnectionsGraph) {
+	let maximum = 0;
+	graph.forEachNode((_node, data) => {
+		maximum = Math.max(maximum, data.size);
+	});
+	return maximum;
+}
+
+function fitGraphToViewport(renderer: ConnectionsSigma) {
 	const { width, height } = renderer.getDimensions();
 	if (width <= 0 || height <= 0) return;
 
@@ -106,7 +116,7 @@ export function useSigmaConnections({
 		if (!container) return;
 
 		let disposed = false;
-		let renderer: Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes> | null = null;
+		let renderer: ConnectionsSigma | null = null;
 		let resizeObserver: ResizeObserver | null = null;
 		let themeObserver: MutationObserver | null = null;
 		let fitFrame = 0;
@@ -141,9 +151,7 @@ export function useSigmaConnections({
 			let draggedNode: string | null = null;
 			let didDrag = false;
 
-			const scheduleRefresh = (
-				activeRenderer: Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>,
-			) => {
+			const scheduleRefresh = (activeRenderer: ConnectionsSigma) => {
 				if (refreshScheduledRef.current) return;
 				refreshScheduledRef.current = true;
 				window.requestAnimationFrame(() => {
@@ -153,10 +161,7 @@ export function useSigmaConnections({
 				});
 			};
 
-			const setFocus = (
-				activeRenderer: Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>,
-				next: Partial<ConnectionsFocusState>,
-			) => {
+			const setFocus = (activeRenderer: ConnectionsSigma, next: Partial<ConnectionsFocusState>) => {
 				if (next.hoveredNode !== undefined) {
 					focusState.hoveredNode = next.hoveredNode;
 				}
@@ -197,41 +202,44 @@ export function useSigmaConnections({
 				target: string,
 			) => edgeReducer(edge, data, source, target);
 
-			const activeRenderer = new Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>(
-				graph,
-				container,
-				{
-					...sigmaSettings,
-					...(variant === "space" ? connectionsLabelVisibility(labelZoomRef.current) : {}),
-					labelColor: { color: palette.text },
-					labelFont,
-					labelSize: variant === "local" ? 11.5 : 10.5,
-					labelWeight: "500",
-					defaultDrawNodeLabel: (context, data, labelSettings) =>
-						drawConnectionsNodeLabel(
-							context,
-							data,
-							labelSettings,
-							paletteRef.current ?? palette,
-							variant,
-							renderer?.graphToViewport({ x: 0, y: 0 }),
-						),
-					defaultDrawNodeHover: (context, data) =>
-						drawConnectionsNodeHover(context, data, paletteRef.current ?? palette, variant),
-					nodeReducer: (node, data) =>
-						nodeReducer(node, {
-							...data,
-							x: graph.getNodeAttribute(node, "x"),
-							y: graph.getNodeAttribute(node, "y"),
-						}),
-					edgeReducer: (edge, data) => {
-						if (variant === "space") return { hidden: true };
-						const source = graph.source(edge);
-						const target = graph.target(edge);
-						return resolveEdgeStyle(edge, data, source, target);
-					},
+			const baseNodeSize = maxBaseNodeSize(graph);
+			const ringGeometry = (target: ConnectionsSigma) =>
+				connectionsRingGeometry(
+					target,
+					baseNodeSize * displayRef.current.nodeSizeScale * SPACE_FOCUS_NODE_SCALE,
+				);
+
+			const activeRenderer: ConnectionsSigma = new Sigma(graph, container, {
+				...sigmaSettings,
+				...(variant === "space" ? connectionsLabelVisibility(labelZoomRef.current) : {}),
+				labelColor: { color: palette.text },
+				labelFont,
+				labelSize: variant === "local" ? 11.5 : 10.5,
+				labelWeight: "500",
+				defaultDrawNodeLabel: (context, data, labelSettings) =>
+					drawConnectionsNodeLabel(
+						context,
+						data,
+						labelSettings,
+						paletteRef.current ?? palette,
+						variant,
+						variant === "space" && renderer ? ringGeometry(renderer) : null,
+					),
+				defaultDrawNodeHover: (context, data) =>
+					drawConnectionsNodeHover(context, data, paletteRef.current ?? palette, variant),
+				nodeReducer: (node, data) =>
+					nodeReducer(node, {
+						...data,
+						x: graph.getNodeAttribute(node, "x"),
+						y: graph.getNodeAttribute(node, "y"),
+					}),
+				edgeReducer: (edge, data) => {
+					if (variant === "space") return { hidden: true };
+					const source = graph.source(edge);
+					const target = graph.target(edge);
+					return resolveEdgeStyle(edge, data, source, target);
 				},
-			);
+			});
 			renderer = activeRenderer;
 
 			if (variant === "space") {
@@ -251,8 +259,16 @@ export function useSigmaConnections({
 							context: bundledEdgesContext,
 							renderer: activeRenderer,
 							graph,
+							bundling: displayRef.current.edgeBundling,
 							resolveStyle: resolveEdgeStyle,
 						});
+						drawConnectionsCommunityArcs(
+							bundledEdgesContext,
+							activeRenderer,
+							graph,
+							paletteRef.current ?? palette,
+							ringGeometry(activeRenderer),
+						);
 					});
 				}
 			}

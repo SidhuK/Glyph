@@ -8,6 +8,36 @@ const TAG_WEIGHT_SCALE = 1.8;
 const TAG_FREQUENCY_DISCOUNT = 0.72;
 const LOUVAIN_RESOLUTION = 1.15;
 
+/** CSS custom properties for community hues; the largest communities claim them in order. */
+export const CONNECTIONS_COMMUNITY_HUE_VARIABLES = [
+	"--connections-community-1",
+	"--connections-community-2",
+	"--connections-community-3",
+	"--connections-community-4",
+	"--connections-community-5",
+	"--connections-community-6",
+	"--connections-community-7",
+	"--connections-community-8",
+] as const;
+
+type TupleIndex<T extends readonly unknown[]> = {
+	[K in keyof T]: K extends `${infer Index extends number}` ? Index : never;
+}[number];
+
+export type ConnectionsCommunityHue = TupleIndex<typeof CONNECTIONS_COMMUNITY_HUE_VARIABLES>;
+
+export type ConnectionsCommunityTone =
+	| { readonly kind: "hue"; readonly hue: ConnectionsCommunityHue }
+	| { readonly kind: "neutral" };
+
+export const NEUTRAL_COMMUNITY_TONE: ConnectionsCommunityTone = { kind: "neutral" };
+
+export function isConnectionsCommunityHue(value: number): value is ConnectionsCommunityHue {
+	return (
+		Number.isInteger(value) && value >= 0 && value < CONNECTIONS_COMMUNITY_HUE_VARIABLES.length
+	);
+}
+
 interface CommunityGraphEdgeAttributes {
 	weight: number;
 }
@@ -30,10 +60,15 @@ export interface ConnectionsLayoutGraph {
 	}[];
 }
 
-export interface ConnectionsCommunity {
-	readonly members: readonly string[];
-	readonly hubId: string;
-}
+export type ConnectionsCommunity =
+	| {
+			readonly kind: "cluster";
+			readonly members: readonly string[];
+			readonly hubId: string;
+			/** Members that are notes; tags join communities but don't count toward hue eligibility. */
+			readonly noteCount: number;
+	  }
+	| { readonly kind: "isolated"; readonly nodeId: string };
 
 export interface ConnectionsCommunityModel {
 	readonly communities: readonly ConnectionsCommunity[];
@@ -114,8 +149,7 @@ function splitDisconnectedCommunities(
 		}
 	}
 
-	for (const nodeId of isolated) components.push([nodeId]);
-	return components;
+	return { components, isolated };
 }
 
 function internalWeightedDegree(
@@ -143,13 +177,22 @@ export function detectConnectionsCommunities(
 					rng: seededRandom(hashString("glyph-connections-communities")),
 				})
 			: Object.fromEntries(graph.nodes().map((id, index) => [id, index]));
-	const components = splitDisconnectedCommunities(assignments, graph);
-	components.sort((left, right) => {
-		if (left.length !== right.length) return right.length - left.length;
-		return hashString(left[0] ?? "") - hashString(right[0] ?? "");
+	const { components, isolated } = splitDisconnectedCommunities(assignments, graph);
+	const tagIds = new Set(layoutGraph.tags.map((tag) => tag.id));
+	const ranked = components.map((members) => ({
+		members,
+		noteCount: members.filter((id) => !tagIds.has(id)).length,
+	}));
+	ranked.sort((left, right) => {
+		if (left.noteCount !== right.noteCount) return right.noteCount - left.noteCount;
+		if (left.members.length !== right.members.length) {
+			return right.members.length - left.members.length;
+		}
+		return hashString(left.members[0] ?? "") - hashString(right.members[0] ?? "");
 	});
 
-	const communities = components.map((members) => {
+	const communities: ConnectionsCommunity[] = [];
+	for (const { members, noteCount } of ranked) {
 		const memberSet = new Set(members);
 		members.sort((left, right) => {
 			const degreeDifference =
@@ -157,11 +200,10 @@ export function detectConnectionsCommunities(
 				internalWeightedDegree(left, memberSet, graph);
 			return degreeDifference || hashString(left) - hashString(right);
 		});
-		return {
-			members,
-			hubId: members[0] ?? "",
-		};
-	});
+		const [hubId] = members;
+		if (hubId !== undefined) communities.push({ kind: "cluster", members, hubId, noteCount });
+	}
+	for (const nodeId of isolated) communities.push({ kind: "isolated", nodeId });
 
 	return { communities };
 }

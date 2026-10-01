@@ -1,11 +1,28 @@
 import Graph from "graphology";
+import type Sigma from "sigma";
 import type { LocalNoteConnections, SpaceConnections } from "../../lib/tauri";
+import type { ConnectionsCommunityTone } from "./connectionsCommunities";
 import { LOCAL_CENTER_NODE_SIZE, spaceConnectionsDensityProfile } from "./connectionsDensity";
-import type { GraphPosition } from "./connectionsLayout";
+import type { ConnectionsCommunityLayout, ConnectionsLayout } from "./connectionsLayout";
 import { hashString, randomUnit } from "./connectionsRandom";
 
 export type ConnectionsNodeKind = "note" | "tag";
-export type ConnectionsEdgeColorRole = "default" | "accent" | "internal";
+
+export type ConnectionsEdgeTone =
+	| { readonly kind: "default" }
+	| { readonly kind: "accent" }
+	| { readonly kind: "internal" }
+	| { readonly kind: "community"; readonly tone: ConnectionsCommunityTone };
+
+/** Local graphs have no communities; space graph nodes always belong to one ring segment. */
+export type ConnectionsNodeCommunity =
+	| { readonly kind: "none" }
+	| {
+			readonly kind: "member";
+			readonly index: number;
+			readonly tone: ConnectionsCommunityTone;
+			readonly isHub: boolean;
+	  };
 
 export type ConnectionsGraphVariant = "space" | "local";
 
@@ -19,15 +36,33 @@ export interface ConnectionsNodeAttributes {
 	color: string;
 	kind: ConnectionsNodeKind;
 	isCenter: boolean;
+	community: ConnectionsNodeCommunity;
 }
 
 export interface ConnectionsEdgeAttributes {
-	colorRole: ConnectionsEdgeColorRole;
+	tone: ConnectionsEdgeTone;
 	color: string;
 	size: number;
 }
 
-export type ConnectionsGraph = Graph<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>;
+export interface ConnectionsGraphAttributes {
+	communities: readonly ConnectionsCommunityLayout[];
+}
+
+export type ConnectionsGraph = Graph<
+	ConnectionsNodeAttributes,
+	ConnectionsEdgeAttributes,
+	ConnectionsGraphAttributes
+>;
+
+export type ConnectionsSigma = Sigma<
+	ConnectionsNodeAttributes,
+	ConnectionsEdgeAttributes,
+	ConnectionsGraphAttributes
+>;
+
+const NO_COMMUNITY: ConnectionsNodeCommunity = { kind: "none" };
+const DEFAULT_EDGE_TONE: ConnectionsEdgeTone = { kind: "default" };
 
 const MIN_TAG_NODE_SIZE = 6;
 const MAX_TAG_NODE_SIZE = 13;
@@ -122,18 +157,42 @@ function seedLocalPositions(graph: LocalNoteConnections) {
 	return positions;
 }
 
-function createGraph() {
-	return new Graph<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>({
-		multi: true,
-		type: "mixed",
-	});
+function createGraph(communities: readonly ConnectionsCommunityLayout[]): ConnectionsGraph {
+	const graph: ConnectionsGraph = new Graph({ multi: true, type: "mixed" });
+	graph.replaceAttributes({ communities });
+	return graph;
+}
+
+function nodeCommunity(
+	nodeId: string,
+	communityIndex: number | undefined,
+	communities: readonly ConnectionsCommunityLayout[],
+): ConnectionsNodeCommunity {
+	if (communityIndex === undefined) return NO_COMMUNITY;
+	const community = communities[communityIndex];
+	if (!community) return NO_COMMUNITY;
+	if (community.kind === "isolated") {
+		return { kind: "member", index: communityIndex, tone: { kind: "neutral" }, isHub: false };
+	}
+	return {
+		kind: "member",
+		index: communityIndex,
+		tone: community.tone,
+		isHub: community.hubId === nodeId,
+	};
+}
+
+function communityEdgeTone(graph: ConnectionsGraph, sourceId: string): ConnectionsEdgeTone {
+	const community = graph.getNodeAttribute(sourceId, "community");
+	if (community.kind === "none") return DEFAULT_EDGE_TONE;
+	return { kind: "community", tone: community.tone };
 }
 
 export function buildSpaceConnectionsGraph(
 	payload: SpaceConnections,
-	positions: ReadonlyMap<string, GraphPosition>,
+	{ positions, communities }: ConnectionsLayout,
 ): ConnectionsGraph {
-	const graph = createGraph();
+	const graph = createGraph(communities);
 	const nodeCount = payload.nodes.length + payload.tags.length;
 	const edgeCount = payload.edges.length + payload.tag_edges.length;
 	const density = spaceConnectionsDensityProfile(nodeCount, edgeCount);
@@ -141,12 +200,7 @@ export function buildSpaceConnectionsGraph(
 	const maxConnections = maxConnectionCount(connectionCounts);
 
 	for (const node of payload.nodes) {
-		const position = positions.get(node.id) ?? {
-			x: 1,
-			y: 1,
-			bundleX: 0,
-			bundleY: 0,
-		};
+		const position = positions.get(node.id) ?? { x: 1, y: 1, bundleX: 0, bundleY: 0 };
 		const connectionCount = connectionCounts.get(node.id) ?? 0;
 		graph.addNode(node.id, {
 			x: position.x,
@@ -163,16 +217,12 @@ export function buildSpaceConnectionsGraph(
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "note",
 			isCenter: false,
+			community: nodeCommunity(node.id, positions.get(node.id)?.community, communities),
 		});
 	}
 
 	for (const tag of payload.tags) {
-		const position = positions.get(tag.id) ?? {
-			x: -1,
-			y: 1,
-			bundleX: 0,
-			bundleY: 0,
-		};
+		const position = positions.get(tag.id) ?? { x: -1, y: 1, bundleX: 0, bundleY: 0 };
 		const connectionCount = connectionCounts.get(tag.id) ?? 0;
 		graph.addNode(tag.id, {
 			x: position.x,
@@ -189,6 +239,7 @@ export function buildSpaceConnectionsGraph(
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
 			isCenter: false,
+			community: nodeCommunity(tag.id, positions.get(tag.id)?.community, communities),
 		});
 	}
 
@@ -199,7 +250,7 @@ export function buildSpaceConnectionsGraph(
 		const edgeId = `${edge.kind}:${edge.from_id}->${edge.to_id}:${index}`;
 		const weightScale = 1 + Math.log1p(edge.weight) * 0.2;
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
-			colorRole: "default",
+			tone: communityEdgeTone(graph, edge.from_id),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			size: 0.95 * edgeScale * weightScale,
 		});
@@ -209,7 +260,7 @@ export function buildSpaceConnectionsGraph(
 		if (!graph.hasNode(edge.tag_id) || !graph.hasNode(edge.note_id)) continue;
 		const edgeId = `tag:${edge.tag_id}->${edge.note_id}:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
-			colorRole: "default",
+			tone: communityEdgeTone(graph, edge.tag_id),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			size: 0.78 * edgeScale,
 		});
@@ -219,7 +270,7 @@ export function buildSpaceConnectionsGraph(
 }
 
 export function buildLocalConnectionsGraph(payload: LocalNoteConnections): ConnectionsGraph {
-	const graph = createGraph();
+	const graph = createGraph([]);
 	const positions = seedLocalPositions(payload);
 	const connectionCounts = localConnectionCounts(payload);
 	const maxConnections = maxConnectionCount(connectionCounts);
@@ -238,6 +289,7 @@ export function buildLocalConnectionsGraph(payload: LocalNoteConnections): Conne
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "note",
 			isCenter: node.is_center,
+			community: NO_COMMUNITY,
 		});
 	}
 
@@ -254,6 +306,7 @@ export function buildLocalConnectionsGraph(payload: LocalNoteConnections): Conne
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
 			isCenter: false,
+			community: NO_COMMUNITY,
 		});
 	}
 
@@ -262,20 +315,19 @@ export function buildLocalConnectionsGraph(payload: LocalNoteConnections): Conne
 		const isFromCenter = edge.source === payload.center.id;
 		const isToCenter = edge.target === payload.center.id;
 		const isInternal = !isFromCenter && !isToCenter;
-		let colorRole: ConnectionsEdgeColorRole = "default";
+		let tone = DEFAULT_EDGE_TONE;
 		let size = 0.95;
 		if (isFromCenter) {
-			colorRole = "accent";
+			tone = { kind: "accent" };
 			size = 1.35;
 		} else if (isToCenter) {
-			colorRole = "default";
 			size = 1.1;
 		} else if (isInternal) {
-			colorRole = "internal";
+			tone = { kind: "internal" };
 		}
 
 		graph.addEdgeWithKey(edgeId, edge.source, edge.target, {
-			colorRole,
+			tone,
 			color: REDUCER_COLOR_PLACEHOLDER,
 			size,
 		});
@@ -284,7 +336,7 @@ export function buildLocalConnectionsGraph(payload: LocalNoteConnections): Conne
 	for (const [index, edge] of payload.tag_edges.entries()) {
 		const edgeId = `${edge.tag_id}->${edge.note_id}:tag:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
-			colorRole: "default",
+			tone: DEFAULT_EDGE_TONE,
 			color: REDUCER_COLOR_PLACEHOLDER,
 			size: 0.85,
 		});

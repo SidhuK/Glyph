@@ -213,6 +213,7 @@
 		"nodeSize": "Taille des notes",
 		"linkOpacity": "Opacité des traits",
 		"linkThickness": "Épaisseur des traits",
+		"edgeBundling": "Regroupement des traits",
 		"labelZoomThreshold": "Visibilité des titres",
 		"filters": "Filtres",
 		"hideOrphans": "Masquer les notes isolées",

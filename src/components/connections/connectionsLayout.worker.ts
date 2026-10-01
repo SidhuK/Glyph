@@ -13,10 +13,12 @@ workerScope.onmessage = (event) => {
 
 	try {
 		response = {
-			positions: computeSpaceConnectionsLayout(event.data),
+			kind: "ready",
+			layout: computeSpaceConnectionsLayout(event.data),
 		};
 	} catch (cause) {
 		response = {
+			kind: "error",
 			error: cause instanceof Error ? cause.message : String(cause),
 		};
 	}

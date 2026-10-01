@@ -267,6 +267,7 @@
 		"nodeSize": "Note size",
 		"linkOpacity": "Line opacity",
 		"linkThickness": "Line thickness",
+		"edgeBundling": "Edge bundling",
 		"labelZoomThreshold": "Title visibility",
 		"filters": "Filters",
 		"hideOrphans": "Hide unconnected notes",

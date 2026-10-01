@@ -1,4 +1,5 @@
 import {
+	type ConnectionsCommunityTone,
 	type ConnectionsLayoutGraph,
 	detectConnectionsCommunities,
 } from "./connectionsCommunities";
@@ -9,6 +10,8 @@ export interface GraphPosition {
 	readonly y: number;
 	readonly bundleX: number;
 	readonly bundleY: number;
+	/** Index into `ConnectionsLayout.communities`. */
+	readonly community: number;
 }
 
 export type SerializedGraphPosition = readonly [
@@ -17,17 +20,49 @@ export type SerializedGraphPosition = readonly [
 	y: number,
 	bundleX: number,
 	bundleY: number,
+	community: number,
 ];
 
-export type ConnectionsLayoutResponse =
-	| {
-			readonly positions: readonly SerializedGraphPosition[];
-	  }
-	| {
-			readonly error: string;
-	  };
+/** A contiguous arc of the ring owned by one community, in graph-space radians. */
+export type ConnectionsCommunityLayout = {
+	readonly startAngle: number;
+	readonly endAngle: number;
+} & (
+	| { readonly kind: "cluster"; readonly hubId: string; readonly tone: ConnectionsCommunityTone }
+	| { readonly kind: "isolated" }
+);
 
-export function computeSpaceConnectionsLayout(graph: ConnectionsLayoutGraph) {
-	if (graph.nodeIds.length + graph.tags.length === 0) return [];
+export interface SerializedConnectionsLayout {
+	readonly positions: readonly SerializedGraphPosition[];
+	readonly communities: readonly ConnectionsCommunityLayout[];
+}
+
+export interface ConnectionsLayout {
+	readonly positions: ReadonlyMap<string, GraphPosition>;
+	readonly communities: readonly ConnectionsCommunityLayout[];
+}
+
+export type ConnectionsLayoutResponse =
+	| { readonly kind: "ready"; readonly layout: SerializedConnectionsLayout }
+	| { readonly kind: "error"; readonly error: string };
+
+export function computeSpaceConnectionsLayout(
+	graph: ConnectionsLayoutGraph,
+): SerializedConnectionsLayout {
+	if (graph.nodeIds.length + graph.tags.length === 0) return { positions: [], communities: [] };
 	return placeConnectionsCommunities(detectConnectionsCommunities(graph));
+}
+
+export function deserializeConnectionsLayout(
+	layout: SerializedConnectionsLayout,
+): ConnectionsLayout {
+	return {
+		positions: new Map(
+			layout.positions.map(([id, x, y, bundleX, bundleY, community]) => [
+				id,
+				{ x, y, bundleX, bundleY, community },
+			]),
+		),
+		communities: layout.communities,
+	};
 }

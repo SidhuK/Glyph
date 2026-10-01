@@ -1,119 +1,138 @@
-import type { ConnectionsCommunity, ConnectionsCommunityModel } from "./connectionsCommunities";
-import type { SerializedGraphPosition } from "./connectionsLayout";
+import {
+	type ConnectionsCommunity,
+	type ConnectionsCommunityModel,
+	type ConnectionsCommunityTone,
+	NEUTRAL_COMMUNITY_TONE,
+	isConnectionsCommunityHue,
+} from "./connectionsCommunities";
+import type {
+	ConnectionsCommunityLayout,
+	SerializedConnectionsLayout,
+	SerializedGraphPosition,
+} from "./connectionsLayout";
 import { hashString } from "./connectionsRandom";
 
 const FULL_CIRCLE = Math.PI * 2;
-const START_ANGLE = -Math.PI / 2;
-const NODE_RING_RADIUS = 1_000;
+/** Graph space is y-up, so -π/2 is the bottom of the ring. */
+const BOTTOM_ANGLE = -Math.PI / 2;
+export const CONNECTIONS_RING_RADIUS = 1_000;
 const BUNDLE_RING_RADIUS = 360;
+/** Fewest notes a cluster needs to earn its own hue and arc; smaller ones share a neutral run. */
+const MIN_HUED_COMMUNITY_NOTES = 3;
+const MAX_GAP_ANGLE = FULL_CIRCLE * 0.012;
+const MAX_TOTAL_GAP_SHARE = 0.15;
 
-interface RadialMember {
-	readonly id: string;
-	readonly communityId: string;
+type ClusterCommunity = Extract<ConnectionsCommunity, { kind: "cluster" }>;
+
+type RingSegment =
+	| {
+			readonly kind: "cluster";
+			readonly hubId: string;
+			readonly members: readonly string[];
+			readonly tone: ConnectionsCommunityTone;
+	  }
+	| { readonly kind: "isolated"; readonly members: readonly string[] };
+
+function byHash(left: string, right: string) {
+	return hashString(left) - hashString(right);
 }
 
-interface CommunityDirection {
-	x: number;
-	y: number;
+/** Centers the hub so its forced label sits over the middle of the community arc. */
+function orderedMembers({ members, hubId }: ClusterCommunity) {
+	const rest = members.filter((id) => id !== hubId).sort(byHash);
+	const middle = Math.floor(rest.length / 2);
+	return [...rest.slice(0, middle), hubId, ...rest.slice(middle)];
 }
 
-function orderedMembers(community: ConnectionsCommunity) {
-	return [...community.members].sort((left, right) => {
-		if (left === community.hubId) return -1;
-		if (right === community.hubId) return 1;
-		return hashString(left) - hashString(right);
-	});
-}
-
-function partitionMembers(communities: readonly ConnectionsCommunity[]) {
-	const connected: RadialMember[] = [];
-	const disconnected: RadialMember[] = [];
+function ringSegments(communities: readonly ConnectionsCommunity[]) {
+	const segments: RingSegment[] = [];
+	const isolated: string[] = [];
+	let nextHue = 0;
 	for (const community of communities) {
-		const members = community.members.length > 1 ? connected : disconnected;
-		for (const id of orderedMembers(community)) {
-			members.push({ id, communityId: community.hubId });
+		if (community.kind === "isolated") {
+			isolated.push(community.nodeId);
+			continue;
 		}
-	}
-	return { connected, disconnected };
-}
-
-function distributeAroundRing(
-	connected: readonly RadialMember[],
-	disconnected: readonly RadialMember[],
-) {
-	const nodeCount = connected.length + disconnected.length;
-	const slots: Array<RadialMember | undefined> = Array.from({ length: nodeCount });
-
-	if (connected.length > 0) {
-		connected.forEach((member, index) => {
-			const slot = Math.floor(((index + 0.5) * nodeCount) / connected.length);
-			slots[slot] = member;
+		let tone = NEUTRAL_COMMUNITY_TONE;
+		if (community.noteCount >= MIN_HUED_COMMUNITY_NOTES && isConnectionsCommunityHue(nextHue)) {
+			tone = { kind: "hue", hue: nextHue };
+			nextHue += 1;
+		}
+		segments.push({
+			kind: "cluster",
+			hubId: community.hubId,
+			members: orderedMembers(community),
+			tone,
 		});
 	}
-
-	const remaining = [...disconnected].sort(
-		(left, right) => hashString(left.id) - hashString(right.id),
-	);
-	let remainingIndex = 0;
-	for (let slot = 0; slot < slots.length; slot += 1) {
-		if (slots[slot]) continue;
-		const member = remaining[remainingIndex];
-		if (!member) continue;
-		slots[slot] = member;
-		remainingIndex += 1;
-	}
-
-	return slots;
+	// Isolated notes share one block so they never dilute the clusters.
+	if (isolated.length > 0) segments.push({ kind: "isolated", members: isolated.sort(byHash) });
+	return segments;
 }
 
-function communityBundlePoints(slots: readonly (RadialMember | undefined)[]) {
-	const directions = new Map<string, CommunityDirection>();
-	slots.forEach((member, slot) => {
-		if (!member) return;
-		const angle = START_ANGLE + ((slot + 0.5) * FULL_CIRCLE) / slots.length;
-		const direction = directions.get(member.communityId) ?? { x: 0, y: 0 };
-		direction.x += Math.cos(angle);
-		direction.y += Math.sin(angle);
-		directions.set(member.communityId, direction);
-	});
+function isNeutralCluster(segment: RingSegment) {
+	return segment.kind === "cluster" && segment.tone.kind === "neutral";
+}
 
-	const bundlePoints = new Map<string, CommunityDirection>();
-	for (const [communityId, direction] of directions) {
-		const magnitude = Math.hypot(direction.x, direction.y);
-		bundlePoints.set(
-			communityId,
-			magnitude < 0.001
-				? { x: 0, y: 0 }
-				: {
-						x: (direction.x / magnitude) * BUNDLE_RING_RADIUS,
-						y: (direction.y / magnitude) * BUNDLE_RING_RADIUS,
-					},
-		);
-	}
-	return bundlePoints;
+/** Small neutral clusters run together; every other boundary gets breathing room. */
+function hasGapAfter(segments: readonly RingSegment[], index: number) {
+	if (segments.length < 2) return false;
+	const current = segments[index];
+	const next = segments[(index + 1) % segments.length];
+	if (!current || !next) return false;
+	return !(isNeutralCluster(current) && isNeutralCluster(next));
+}
+
+function toLayoutCommunity(
+	segment: RingSegment,
+	startAngle: number,
+	endAngle: number,
+): ConnectionsCommunityLayout {
+	if (segment.kind === "isolated") return { kind: "isolated", startAngle, endAngle };
+	return { kind: "cluster", hubId: segment.hubId, tone: segment.tone, startAngle, endAngle };
 }
 
 export function placeConnectionsCommunities(
 	model: ConnectionsCommunityModel,
-): SerializedGraphPosition[] {
-	const { connected, disconnected } = partitionMembers(model.communities);
-	const slots = distributeAroundRing(connected, disconnected);
-	if (slots.length === 0) return [];
+): SerializedConnectionsLayout {
+	const segments = ringSegments(model.communities);
+	const nodeCount = segments.reduce((total, segment) => total + segment.members.length, 0);
+	if (nodeCount === 0) return { positions: [], communities: [] };
 
-	const bundlePoints = communityBundlePoints(slots);
+	const gaps = segments.map((_segment, index) => hasGapAfter(segments, index));
+	const gapCount = gaps.filter(Boolean).length;
+	const gapAngle =
+		gapCount > 0 ? Math.min(MAX_GAP_ANGLE, (FULL_CIRCLE * MAX_TOTAL_GAP_SHARE) / gapCount) : 0;
+	const nodeAngle = (FULL_CIRCLE - gapAngle * gapCount) / nodeCount;
+
+	// Center the last segment (the isolated block when present) at the bottom.
+	const lastIndex = segments.length - 1;
+	const lastSpan = (segments[lastIndex]?.members.length ?? 0) * nodeAngle;
+	const lastGap = gaps[lastIndex] ? gapAngle : 0;
+	let cursor = BOTTOM_ANGLE + lastGap + lastSpan / 2;
+
 	const positions: SerializedGraphPosition[] = [];
-	slots.forEach((member, slot) => {
-		if (!member) return;
-		const angle = START_ANGLE + ((slot + 0.5) * FULL_CIRCLE) / slots.length;
-		const bundlePoint = bundlePoints.get(member.communityId) ?? { x: 0, y: 0 };
-		positions.push([
-			member.id,
-			Math.cos(angle) * NODE_RING_RADIUS,
-			Math.sin(angle) * NODE_RING_RADIUS,
-			bundlePoint.x,
-			bundlePoint.y,
-		]);
+	const communities: ConnectionsCommunityLayout[] = [];
+	segments.forEach((segment, communityIndex) => {
+		const startAngle = cursor;
+		const endAngle = startAngle + segment.members.length * nodeAngle;
+		const midAngle = (startAngle + endAngle) / 2;
+		const bundleX = Math.cos(midAngle) * BUNDLE_RING_RADIUS;
+		const bundleY = Math.sin(midAngle) * BUNDLE_RING_RADIUS;
+		segment.members.forEach((id, index) => {
+			const angle = startAngle + (index + 0.5) * nodeAngle;
+			positions.push([
+				id,
+				Math.cos(angle) * CONNECTIONS_RING_RADIUS,
+				Math.sin(angle) * CONNECTIONS_RING_RADIUS,
+				bundleX,
+				bundleY,
+				communityIndex,
+			]);
+		});
+		communities.push(toLayoutCommunity(segment, startAngle, endAngle));
+		cursor = endAngle + (gaps[communityIndex] ? gapAngle : 0);
 	});
 
-	return positions;
+	return { positions, communities };
 }

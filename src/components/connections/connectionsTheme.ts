@@ -1,16 +1,30 @@
 import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
+import {
+	CONNECTIONS_COMMUNITY_HUE_VARIABLES,
+	type ConnectionsCommunityTone,
+} from "./connectionsCommunities";
 import { LOCAL_FOCUS_NODE_SIZE } from "./connectionsDensity";
 import type {
 	ConnectionsEdgeAttributes,
+	ConnectionsEdgeTone,
 	ConnectionsGraphVariant,
 	ConnectionsNodeAttributes,
 } from "./connectionsGraph";
+
+/** Unfocused edges drop to this share of the link opacity while a node is focused. */
+const FADED_EDGE_ALPHA_SCALE = 0.2;
+const HIGHLIGHTED_EDGE_Z_INDEX = 1;
+/** Space-graph nodes grow by this factor while focused. */
+export const SPACE_FOCUS_NODE_SCALE = 1.15;
 
 export interface ConnectionsPalette {
 	accent: string;
 	text: string;
 	note: string;
 	tag: string;
+	/** Indexed by `ConnectionsCommunityHue`. */
+	communities: readonly string[];
+	communityNeutral: string;
 	edgeDefault: string;
 	edgeInternal: string;
 	faded: string;
@@ -31,6 +45,8 @@ export interface ConnectionsDisplayState {
 	nodeSizeScale: number;
 	linkOpacity: number;
 	linkThicknessScale: number;
+	/** 0 draws straight chords, 1 routes edges fully through community bundle points. */
+	edgeBundling: number;
 }
 
 const sigmaColorContext = document.createElement("canvas").getContext("2d");
@@ -73,6 +89,10 @@ export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPa
 	const text = cssColor(container, "--text-primary", "#1f2328");
 	const note = cssColor(container, "--local-connections-note-bg", "#4269d0");
 	const tag = cssColor(container, "--local-connections-tag-node", "#a463f2");
+	const communities = CONNECTIONS_COMMUNITY_HUE_VARIABLES.map((variable) =>
+		cssColor(container, variable, note),
+	);
+	const communityNeutral = cssColor(container, "--connections-community-neutral", "#9498a0");
 	const edgeDefault = cssColor(container, "--local-connections-edge", "#6e737b");
 	const edgeMuted = cssColor(container, "--local-connections-edge-muted", "#9aa0a8");
 	const faded = cssColor(container, "--local-connections-node-faded", "#d4d6da");
@@ -92,6 +112,8 @@ export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPa
 		text,
 		note,
 		tag,
+		communities,
+		communityNeutral,
 		edgeDefault,
 		edgeInternal: edgeMuted,
 		faded,
@@ -102,10 +124,28 @@ export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPa
 	};
 }
 
+function communityToneColor(tone: ConnectionsCommunityTone, palette: ConnectionsPalette) {
+	switch (tone.kind) {
+		case "hue":
+			return palette.communities[tone.hue];
+		case "neutral":
+			return palette.communityNeutral;
+		default: {
+			const _exhaustive: never = tone;
+			return _exhaustive;
+		}
+	}
+}
+
 function nodeColorForAttributes(attrs: ConnectionsNodeAttributes, palette: ConnectionsPalette) {
 	if (attrs.isCenter) return palette.accent;
 	if (attrs.kind === "tag") return palette.tag;
+	if (attrs.community.kind === "member") return communityToneColor(attrs.community.tone, palette);
 	return palette.note;
+}
+
+function isLabeledHub({ community }: ConnectionsNodeAttributes) {
+	return community.kind === "member" && community.isHub && community.tone.kind === "hue";
 }
 
 export function buildNodeReducer(
@@ -138,14 +178,17 @@ export function buildNodeReducer(
 			zIndex = 0;
 		} else if (isFocus) {
 			forceLabel = true;
-			size = Math.max(size, variant === "local" ? LOCAL_FOCUS_NODE_SIZE : size * 1.15);
+			size = Math.max(
+				size,
+				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : size * SPACE_FOCUS_NODE_SCALE,
+			);
 			zIndex = 30;
 		} else if (isSearchMatch) {
 			forceLabel = true;
 			zIndex = 20;
 		} else if (activeFocusId && isNeighbor) {
 			forceLabel = true;
-		} else if (data.isCenter) {
+		} else if (data.isCenter || isLabeledHub(data)) {
 			forceLabel = true;
 		}
 
@@ -162,13 +205,23 @@ export function buildNodeReducer(
 	};
 }
 
-function edgeColorForRole(
-	role: ConnectionsEdgeAttributes["colorRole"],
-	palette: ConnectionsPalette,
-) {
-	if (role === "internal") return palette.edgeInternal;
-	if (role === "accent") return palette.accent;
-	return palette.edgeDefault;
+function edgeColorForTone(tone: ConnectionsEdgeTone, palette: ConnectionsPalette) {
+	switch (tone.kind) {
+		case "default":
+			return palette.edgeDefault;
+		case "accent":
+			return palette.accent;
+		case "internal":
+			return palette.edgeInternal;
+		case "community":
+			return tone.tone.kind === "hue"
+				? communityToneColor(tone.tone, palette)
+				: palette.edgeDefault;
+		default: {
+			const _exhaustive: never = tone;
+			return _exhaustive;
+		}
+	}
 }
 
 export function buildEdgeReducer(
@@ -190,24 +243,27 @@ export function buildEdgeReducer(
 		const matchEdge = searchMatchIds?.has(source) && searchMatchIds.has(target);
 		const isHighlighted = searchMatchIds === null && isEdgeInFocus(source, target);
 		const isFaded = searchMatchIds !== null ? !matchEdge : Boolean(activeFocusId) && !isHighlighted;
-		const baseColor = edgeColorForRole(data.colorRole, palette);
+		const baseColor = edgeColorForTone(data.tone, palette);
 
 		let color = withAlpha(baseColor, display.linkOpacity);
 		let size = data.size * display.linkThicknessScale;
+		let zIndex = 0;
 
 		if (isHighlighted) {
 			color = palette.accent;
 			size = Math.max(size, 1.5);
+			zIndex = HIGHLIGHTED_EDGE_Z_INDEX;
 		}
 
 		if (isFaded) {
-			color = withAlpha(palette.edgeInternal, display.linkOpacity * 0.7);
+			color = withAlpha(palette.edgeInternal, display.linkOpacity * FADED_EDGE_ALPHA_SCALE);
 			size = Math.max(0.45, size * 0.7);
 		}
 
 		return {
 			color,
 			size,
+			zIndex,
 		};
 	};
 }

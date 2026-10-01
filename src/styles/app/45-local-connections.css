@@ -79,6 +79,15 @@
 .localNoteConnectionsLegend {
 	--local-connections-note-bg: #4269d0;
 	--local-connections-tag-node: #a463f2;
+	--connections-community-1: #4269d0;
+	--connections-community-2: #efb118;
+	--connections-community-3: #ff725c;
+	--connections-community-4: #6cc5b0;
+	--connections-community-5: #3ca951;
+	--connections-community-6: #ff8ab7;
+	--connections-community-7: #97bbf5;
+	--connections-community-8: #9c6b4e;
+	--connections-community-neutral: color-mix(in srgb, var(--text-primary) 34%, var(--bg-primary));
 }
 
 .localNoteConnectionsViewport {
@@ -245,6 +254,16 @@
 .localNoteConnectionsLegendNode.is-note {
 	border-color: var(--local-connections-note-bg);
 	background: var(--local-connections-note-bg);
+}
+
+.localNoteConnectionsLegendNode.is-community {
+	border-color: transparent;
+	background: conic-gradient(
+		var(--connections-community-1) 0 25%,
+		var(--connections-community-2) 0 50%,
+		var(--connections-community-3) 0 75%,
+		var(--connections-community-4) 0
+	);
 }
 
 .localNoteConnectionsLegendNode.is-tag {
