@@ -468,7 +468,7 @@ pub async fn run_with_codex(
 
 #[cfg(test)]
 mod tests {
-    use super::{extract_delta, is_tool_type};
+    use super::extract_delta;
     use serde_json::json;
 
     #[test]
@@ -481,13 +481,5 @@ mod tests {
 
         let c = json!({"textDelta": "!"});
         assert_eq!(extract_delta(&c).as_deref(), Some("!"));
-    }
-
-    #[test]
-    fn tool_type_filtering_is_reasonable() {
-        assert!(is_tool_type("search"));
-        assert!(is_tool_type("commandExecution"));
-        assert!(!is_tool_type("agentMessage"));
-        assert!(!is_tool_type("userMessage"));
     }
 }

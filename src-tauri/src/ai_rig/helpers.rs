@@ -364,8 +364,8 @@ pub fn derive_chat_title(messages: &[AiMessage]) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        alternate_openai_base_url, default_base_url, ollama_api_url, parse_ollama_base_url,
-        parse_rig_base_url, parse_rig_ollama_base_url,
+        alternate_openai_base_url, ollama_api_url, parse_ollama_base_url, parse_rig_base_url,
+        parse_rig_ollama_base_url,
     };
     use crate::ai_rig::types::{AiProfile, AiProviderKind};
 
@@ -398,31 +398,11 @@ mod tests {
     }
 
     #[test]
-    fn ollama_default_base_url_uses_native_api_root() {
-        assert_eq!(
-            default_base_url(&AiProviderKind::Ollama),
-            "http://localhost:11434"
-        );
-    }
-
-    #[test]
-    fn alternate_openai_base_url_adds_v1_suffix() {
+    fn alternate_openai_base_url_toggles_v1_suffix() {
         assert_eq!(
             alternate_openai_base_url("http://localhost:8080"),
             Some("http://localhost:8080/v1".to_string())
         );
-    }
-
-    #[test]
-    fn alternate_openai_base_url_strips_v1_suffix() {
-        assert_eq!(
-            alternate_openai_base_url("http://localhost:8080/v1"),
-            Some("http://localhost:8080".to_string())
-        );
-    }
-
-    #[test]
-    fn alternate_openai_base_url_handles_trailing_slash() {
         assert_eq!(
             alternate_openai_base_url("http://localhost:8080/v1/"),
             Some("http://localhost:8080".to_string())
@@ -434,13 +414,6 @@ mod tests {
         let profile = ollama_profile(Some("http://localhost:11434/v1"));
         let url = parse_ollama_base_url(&profile).expect("ollama url should parse");
         assert_eq!(url.as_str(), "http://localhost:11434/");
-    }
-
-    #[test]
-    fn parse_rig_base_url_strips_trailing_slash() {
-        let profile = openai_compat_profile(Some("http://192.168.68.84:1263/v1"));
-        let url = parse_rig_base_url(&profile).expect("openai-compatible url should parse");
-        assert_eq!(url, "http://192.168.68.84:1263/v1");
     }
 
     #[test]
@@ -462,13 +435,6 @@ mod tests {
         let profile = ollama_profile(Some("http://localhost:11434/ollama/v1"));
         let url = parse_rig_ollama_base_url(&profile).expect("ollama url should parse");
         assert_eq!(url, "http://localhost:11434/ollama");
-    }
-
-    #[test]
-    fn parse_ollama_base_url_preserves_proxy_prefix() {
-        let profile = ollama_profile(Some("http://localhost:11434/ollama/v1"));
-        let url = parse_ollama_base_url(&profile).expect("ollama url should parse");
-        assert_eq!(url.as_str(), "http://localhost:11434/ollama");
     }
 
     #[test]

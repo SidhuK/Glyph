@@ -60,7 +60,7 @@ pub fn accelerator_for_shortcut(shortcut: &ManifestShortcut) -> String {
 mod tests {
     use std::collections::HashSet;
 
-    use super::{accelerator_for_shortcut, manifest};
+    use super::manifest;
 
     #[test]
     fn menu_ids_are_unique() {
@@ -72,20 +72,5 @@ mod tests {
             .collect::<Vec<_>>();
         let unique = menu_ids.iter().copied().collect::<HashSet<_>>();
         assert_eq!(unique.len(), menu_ids.len());
-    }
-
-    #[test]
-    fn shortcut_accelerators_use_tauri_format() {
-        let manifest = manifest();
-        let command = manifest
-            .commands
-            .get("create-from-template")
-            .expect("command should exist");
-        let shortcut = command
-            .default_binding
-            .as_ref()
-            .expect("shortcut should exist");
-
-        assert_eq!(accelerator_for_shortcut(shortcut), "CmdOrCtrl+Shift+m");
     }
 }

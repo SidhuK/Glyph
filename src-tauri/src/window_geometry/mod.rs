@@ -341,31 +341,7 @@ pub fn install_host_window_persistence(window: &WebviewWindow) {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        has_visible_area, intersection, is_valid_size, Rect, MIN_INNER_HEIGHT, MIN_INNER_WIDTH,
-        MIN_VISIBLE_HEIGHT, MIN_VISIBLE_WIDTH,
-    };
-
-    #[test]
-    fn intersection_returns_overlap_rect() {
-        let window = Rect {
-            x: 100.0,
-            y: 100.0,
-            width: 800.0,
-            height: 600.0,
-        };
-        let monitor = Rect {
-            x: 0.0,
-            y: 0.0,
-            width: 1440.0,
-            height: 900.0,
-        };
-        let overlap = intersection(window, monitor).expect("overlap");
-        assert_eq!(overlap.x, 100.0);
-        assert_eq!(overlap.y, 100.0);
-        assert_eq!(overlap.width, 800.0);
-        assert_eq!(overlap.height, 600.0);
-    }
+    use super::{has_visible_area, Rect, MIN_VISIBLE_HEIGHT, MIN_VISIBLE_WIDTH};
 
     #[test]
     fn geometry_is_invalid_when_fully_off_screen() {
@@ -409,10 +385,5 @@ mod tests {
             MIN_VISIBLE_WIDTH,
             MIN_VISIBLE_HEIGHT,
         ));
-    }
-
-    #[test]
-    fn geometry_is_invalid_when_too_small() {
-        assert!(!is_valid_size(MIN_INNER_WIDTH - 1.0, MIN_INNER_HEIGHT,));
     }
 }

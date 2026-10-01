@@ -292,23 +292,13 @@ fn recent_space_none_item_id(revision: u64) -> String {
 }
 
 fn parse_recent_space_index(id: &str) -> Option<usize> {
-    let suffix = id.strip_prefix("space.recent.")?;
-    if let Ok(index) = suffix.parse::<usize>() {
-        return Some(index);
-    }
-    suffix
-        .rsplit_once('.')
-        .and_then(|(_, index)| index.parse::<usize>().ok())
+    let (_, index) = id.strip_prefix("space.recent.")?.rsplit_once('.')?;
+    index.parse::<usize>().ok()
 }
 
 #[cfg(test)]
 mod tests {
     use super::parse_recent_space_index;
-
-    #[test]
-    fn parse_recent_space_index_supports_legacy_ids() {
-        assert_eq!(parse_recent_space_index("space.recent.3"), Some(3));
-    }
 
     #[test]
     fn parse_recent_space_index_supports_revisioned_ids() {

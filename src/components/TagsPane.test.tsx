@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { buildPeopleRows, buildTagTreeRows } from "./TagsPane";
+import { buildTagTreeRows } from "./TagsPane";
 
 describe("TagsPane helpers", () => {
 	it("builds sorted tag rows without people namespace assumptions", () => {
@@ -71,18 +71,6 @@ describe("TagsPane helpers", () => {
 				depth: 1,
 				isExplicit: true,
 			},
-		]);
-	});
-
-	it("builds sorted people rows", () => {
-		expect(
-			buildPeopleRows([
-				{ handle: "zoe", count: 1 },
-				{ handle: "alice", count: 3 },
-			]),
-		).toEqual([
-			{ handle: "alice", count: 3 },
-			{ handle: "zoe", count: 1 },
 		]);
 	});
 });

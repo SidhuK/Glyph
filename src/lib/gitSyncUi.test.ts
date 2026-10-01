@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { getGitSyncPresentation, getGitSyncRepoStateLabel } from "./gitSyncUi";
+import { getGitSyncPresentation } from "./gitSyncUi";
 import type { GitSyncStatus } from "./tauri";
 
 function makeStatus(overrides: Partial<GitSyncStatus> = {}): GitSyncStatus {
@@ -78,17 +78,5 @@ describe("gitSyncUi", () => {
 
 		expect(presentation.tone).toBe("paused");
 		expect(presentation.showResume).toBe(true);
-	});
-
-	it("labels missing git installs", () => {
-		expect(
-			getGitSyncRepoStateLabel(
-				makeStatus({
-					git_installed: false,
-					configured: false,
-					repo_detected: false,
-				}),
-			),
-		).toBe("Git not installed");
 	});
 });

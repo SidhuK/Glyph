@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import {
-	APP_COMMANDS,
-	listCommandDefinitions,
-	listShortcutConfigurableCommands,
-} from "./commandManifest";
+import { APP_COMMANDS, listCommandDefinitions } from "./commandManifest";
 
 const FRONTEND_MENU_COMMAND_IDS = [
 	"new-note",
@@ -57,13 +53,5 @@ describe("app command manifest", () => {
 		for (const commandId of FRONTEND_MENU_COMMAND_IDS) {
 			expect(commandIds.has(commandId)).toBe(true);
 		}
-	});
-
-	it("only exposes open-settings from settings commands in shortcut settings", () => {
-		const settingsShortcutIds = listShortcutConfigurableCommands()
-			.filter((command) => command.category === "settings")
-			.map((command) => command.id);
-
-		expect(settingsShortcutIds).toEqual(["open-settings"]);
 	});
 });

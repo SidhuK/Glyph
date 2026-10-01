@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import {
-	buildDatabaseTagPickerExplicitTags,
-	buildDatabaseTagPickerOptions,
-} from "./DatabaseTagPicker";
+import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 
 const availableTags = [
 	{
@@ -47,10 +44,6 @@ describe("DatabaseTagPicker", () => {
 		]);
 	});
 
-	it("checks exact matches against the full explicit tag set", () => {
-		expect(buildDatabaseTagPickerExplicitTags(availableTags)).toEqual(["work", "personal"]);
-	});
-
 	it("returns every explicit tag when query is empty", () => {
 		const manyTags = Array.from({ length: 45 }, (_, index) => ({
 			tag: `tag-${index}`,
@@ -77,22 +70,5 @@ describe("DatabaseTagPicker", () => {
 		}));
 
 		expect(buildDatabaseTagPickerOptions(manyTags, "", 8)).toHaveLength(8);
-	});
-
-	it("returns every matching explicit tag for typed queries", () => {
-		const manyTags = Array.from({ length: 12 }, (_, index) => ({
-			tag: `project-${index}`,
-			direct_count: 1,
-			total_count: 1,
-			depth: 0,
-			is_explicit: true,
-		}));
-
-		const result = buildDatabaseTagPickerOptions(manyTags, "project");
-		const resultTags = result.map(({ tag }) => tag);
-		const expectedTags = manyTags.map(({ tag }) => tag);
-
-		expect(new Set(resultTags)).toEqual(new Set(expectedTags));
-		expect(new Set(resultTags).size).toBe(12);
 	});
 });

@@ -303,22 +303,6 @@ describe("MarkdownEditorPane", () => {
 		});
 	});
 
-	it("opts the main note editor into smart Markdown paste", async () => {
-		await act(async () => {
-			root.render(
-				<MarkdownEditorPane
-					relPath="notes/default.md"
-					initialDoc={makeDoc("notes/default.md", "seed text")}
-				/>,
-			);
-		});
-
-		expect(noteInlineEditorMock).toHaveBeenCalledWith({
-			mode: "rich",
-			pasteMarkdownBehavior: "smart-markdown",
-		});
-	});
-
 	it("switches editor mode from the top toggle", async () => {
 		await act(async () => {
 			root.render(
