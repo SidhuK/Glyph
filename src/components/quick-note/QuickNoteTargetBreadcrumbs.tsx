@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type FsEntry, invoke } from "../../lib/tauri";
+import { displayNameFromPath } from "../../utils/path";
 import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
 import { ChevronDown, ChevronRight } from "../Icons";
 import {
@@ -32,17 +33,6 @@ interface QuickNoteTargetBreadcrumbsProps {
 
 const ROOT_PATH_KEY = "__root__";
 
-function stripFileExtension(name: string) {
-	if (!name || name.startsWith(".")) return name;
-	const withoutExt = name.replace(/\.[^./]+$/, "");
-	return withoutExt || name;
-}
-
-function savedLabel(path: string) {
-	const name = path.split("/").filter(Boolean).pop() ?? path;
-	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
-}
-
 function sortTargetEntries(entries: FsEntry[]) {
 	return [...entries]
 		.filter((entry) => entry.kind === "dir" || entry.is_markdown)
@@ -71,7 +61,7 @@ function breadcrumbPartsForTarget(
 			.map((segment, index, segments): BreadcrumbPart => {
 				const segmentPath = segments.slice(0, index + 1).join("/");
 				const isFile = index === segments.length - 1;
-				let label = isFile ? stripFileExtension(segment) : segment;
+				let label = isFile ? displayNameFromPath(segment) : segment;
 				if (isFile && targetValue === QUICK_NOTE_TARGET_VALUE && path === todayQuickNotePath) {
 					label = "Today's quick note";
 				}
@@ -84,7 +74,7 @@ function fileTarget(path: string): QuickNoteTarget {
 	return {
 		value: path,
 		path,
-		label: savedLabel(path),
+		label: displayNameFromPath(path),
 	};
 }
 

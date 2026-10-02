@@ -14,6 +14,7 @@
 	--shadow-lg: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0px 0 rgba(0, 0, 0, 0.25);
 	--shadow-xl: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0px 0 rgba(0, 0, 0, 0.25);
 	--shadow-float: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0px 0 rgba(0, 0, 0, 0.25);
+	--shadow-overlay: 0 12px 32px rgb(0 0 0 / 36%);
 }
 
 :where(:root, .appearanceThemePreview).dark:not([data-dark-theme]),

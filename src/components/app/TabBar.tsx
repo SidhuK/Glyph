@@ -14,10 +14,10 @@ import { DATABASES_TAB_ID } from "../../lib/databases";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry } from "../../lib/tauri";
-import { isMarkdownPath } from "../../utils/path";
+import { displayNameFromPath, isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ActiveFileTitle } from "./ActiveFileTitle";
-import { MainTabsBreadcrumbs } from "./MainTabsBreadcrumbs";
+import { isPathSpecial, MainTabsBreadcrumbs } from "./MainTabsBreadcrumbs";
 import { MAIN_TAB_DND_TYPE } from "./splitEditorDnd";
 import type { WorkspaceTab } from "./useTabManager";
 
@@ -53,17 +53,6 @@ const MAIN_TAB_SENSORS = [
 	}),
 ];
 const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
-
-function isPathSpecial(path: string): boolean {
-	return (
-		path === INBOX_TAB_ID ||
-		path === ARCHIVE_TAB_ID ||
-		path === ACTIVITY_TIMELINE_TAB_ID ||
-		path === AGENT_VIEW_TAB_ID ||
-		path === DATABASES_TAB_ID ||
-		path === SPACE_CONNECTIONS_TAB_ID
-	);
-}
 
 export function TabBar({
 	paneId,
@@ -102,12 +91,6 @@ export function TabBar({
 			}
 		};
 	}, []);
-	const stripFileExtension = useCallback((name: string) => {
-		if (!name || name.startsWith(".")) return name;
-		const withoutExt = name.replace(/\.[^./]+$/, "");
-		return withoutExt || name;
-	}, []);
-
 	const compactLabel = useCallback((value: string) => {
 		const text = value.trim();
 		if (text.length <= 20) return text;
@@ -116,18 +99,16 @@ export function TabBar({
 
 	const tabLabel = useCallback(
 		(tab: WorkspaceTab) => {
-			if (tab.kind === "blank") return "New Tab";
+			if (tab.kind === "blank") return t("tabs.newTab");
 			if (tab.target === AGENT_VIEW_TAB_ID) return t("sidebar.agent");
 			if (tab.target === INBOX_TAB_ID) return t("sidebar.inbox");
 			if (tab.target === ARCHIVE_TAB_ID) return t("sidebar.archive");
 			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
 			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
 			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return t("sidebar.connections");
-			const parts = (tab.target ?? "").split("/").filter(Boolean);
-			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
-			return compactLabel(stripFileExtension(rawName));
+			return compactLabel(tab.target ? displayNameFromPath(tab.target) : t("tabs.untitled"));
 		},
-		[compactLabel, stripFileExtension, t],
+		[compactLabel, t],
 	);
 	const measureTabsRef = useCallback((node: HTMLDivElement | null) => {
 		if (!node) return;
@@ -243,10 +224,10 @@ export function TabBar({
 							type="button"
 							className="mainTabAdd"
 							onClick={onOpenBlankTab}
-							title={`Open blank tab${
+							title={`${t("tabs.openBlankTab")}${
 								newTabShortcut ? ` (${formatShortcutForPlatform(newTabShortcut)})` : ""
 							}`}
-							aria-label="Open blank tab"
+							aria-label={t("tabs.openBlankTab")}
 						>
 							+
 						</button>
@@ -270,13 +251,13 @@ export function TabBar({
 									className="mainTabOverflowSelect"
 									value={activeTabId ?? tabs[0]?.id}
 									onChange={(event) => onSelectTab(event.currentTarget.value)}
-									title="Show all tabs"
-									aria-label="Show all tabs"
+									title={t("tabs.showAllTabs")}
+									aria-label={t("tabs.showAllTabs")}
 								>
 									{tabs.map((tab) => (
 										<option key={tab.id} value={tab.id}>
 											{tab.target && !isPathSpecial(tab.target)
-												? stripFileExtension(tab.target)
+												? tab.target.replace(/([^/])\.[^./]+$/, "$1")
 												: tabLabel(tab)}
 										</option>
 									))}

@@ -1,15 +1,18 @@
 import { useCallback, useState } from "react";
 import type { MouseEvent } from "react";
-import { useSpace } from "../../contexts";
+import { useTranslation } from "react-i18next";
+import { useFileTreeContext, useSpace } from "../../contexts";
 import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { spaceDisplayName } from "../../lib/spaceRegistry";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
-import { parentDir } from "../../utils/path";
+import { displayNameFromPath, parentDir } from "../../utils/path";
+import { AppearanceIcon } from "../AppearanceIcon";
 import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
 import { ChevronRight } from "../Icons";
 import {
@@ -48,12 +51,6 @@ type BreadcrumbDisplayItem =
 
 const ROOT_PATH_KEY = "__root__";
 
-function stripFileExtension(name: string) {
-	if (!name || name.startsWith(".")) return name;
-	const withoutExt = name.replace(/\.[^./]+$/, "");
-	return withoutExt || name;
-}
-
 function sortBreadcrumbEntries(entries: FsEntry[]) {
 	return [...entries].sort((a, b) => {
 		if (a.kind !== b.kind) return a.kind === "dir" ? -1 : 1;
@@ -61,13 +58,7 @@ function sortBreadcrumbEntries(entries: FsEntry[]) {
 	});
 }
 
-function menuTitleForDir(path: string) {
-	if (!path) return "Space";
-	const parts = path.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? "Space";
-}
-
-function isPathSpecial(path: string): boolean {
+export function isPathSpecial(path: string): boolean {
 	return (
 		path === INBOX_TAB_ID ||
 		path === ARCHIVE_TAB_ID ||
@@ -99,22 +90,17 @@ function breadcrumbDisplayItems(parts: BreadcrumbPart[]): BreadcrumbDisplayItem[
 	];
 }
 
-function breadcrumbTooltip(part: BreadcrumbPart) {
-	if (!part.path) return "Space";
-	return part.path;
-}
-
-function breadcrumbPartsForPath(path: string | null): BreadcrumbPart[] {
+function breadcrumbPartsForPath(path: string | null, rootLabel: string): BreadcrumbPart[] {
 	if (!path || isPathSpecial(path)) return [];
 	return [
-		{ label: "Space", path: "", kind: "folder" },
+		{ label: rootLabel, path: "", kind: "folder" },
 		...path
 			.split("/")
 			.filter(Boolean)
 			.map((segment, index, segments): BreadcrumbPart => {
 				const isFile = index === segments.length - 1;
 				return {
-					label: isFile ? stripFileExtension(segment) : segment,
+					label: isFile ? displayNameFromPath(segment) : segment,
 					path: segments.slice(0, index + 1).join("/"),
 					kind: isFile ? "file" : "folder",
 				};
@@ -130,54 +116,41 @@ export function MainTabsBreadcrumbs({
 	onLoadBreadcrumbDir,
 	onOpenBreadcrumbFile,
 }: MainTabsBreadcrumbsProps) {
-	const [menuOpen, setMenuOpen] = useState(false);
+	const { t } = useTranslation("shell");
 	const [openBreadcrumbMenuKey, setOpenBreadcrumbMenuKey] = useState<string | null>(null);
 	const { spacePath } = useSpace();
-	const breadcrumbParts = breadcrumbPartsForPath(activeTabPath);
+	const { itemAppearance } = useFileTreeContext();
+	const rootLabel = spacePath ? spaceDisplayName(spacePath) : t("breadcrumbs.space");
+	const breadcrumbParts = breadcrumbPartsForPath(activeTabPath, rootLabel);
 	const breadcrumbDisplay = breadcrumbDisplayItems(breadcrumbParts);
-	const handleRevealBreadcrumbPart = useCallback(
+	const handleRevealInFinder = useCallback(
 		async (part: BreadcrumbPart) => {
-			if (part.kind === "folder") {
-				onNavigateBreadcrumbPath(part.path);
-				return;
+			try {
+				await invoke("space_reveal_path", { path: part.path });
+			} catch (error) {
+				toast.error(t("breadcrumbs.showInFinderFailed"), {
+					description: error instanceof Error ? error.message : undefined,
+				});
 			}
-			onNavigateBreadcrumbPath(parentDir(part.path));
-			await onOpenBreadcrumbFile(part.path);
 		},
-		[onNavigateBreadcrumbPath, onOpenBreadcrumbFile],
+		[t],
 	);
-	const handleOpenBreadcrumbContainer = useCallback(
-		(part: BreadcrumbPart) => {
-			onNavigateBreadcrumbPath(part.kind === "folder" ? part.path : parentDir(part.path));
-		},
-		[onNavigateBreadcrumbPath],
-	);
-	const handleRevealInFinder = useCallback(async (part: BreadcrumbPart) => {
-		if (part.kind !== "file") return;
-		try {
-			await invoke("space_reveal_path", { path: part.path });
-		} catch (error) {
-			const message = error instanceof Error ? error.message : "Could not show file in Finder.";
-			toast.error("Could not show file in Finder", { description: message });
-		}
-	}, []);
 	const handleBreadcrumbContextMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>, part: BreadcrumbPart) => {
 			void showNativeContextMenu(event, [
 				...buildPathCopyMenuItems(spacePath, part.path),
 				{
-					label: "Reveal in File Tree",
-					action: () => void handleRevealBreadcrumbPart(part),
-				},
-				{
-					label: part.kind === "folder" ? "Open Folder" : "Open Containing Folder",
-					action: () => handleOpenBreadcrumbContainer(part),
+					label: t("breadcrumbs.revealInFileTree"),
+					action: () => {
+						onNavigateBreadcrumbPath(part.kind === "folder" ? part.path : parentDir(part.path));
+						if (part.kind === "file") void onOpenBreadcrumbFile(part.path);
+					},
 				},
 				...(part.kind === "file"
 					? [
 							{ type: "separator" as const },
 							{
-								label: "Show in Finder",
+								label: t("fileTree.showInFinder"),
 								action: () => void handleRevealInFinder(part),
 							},
 						]
@@ -186,17 +159,13 @@ export function MainTabsBreadcrumbs({
 				console.error("Failed to show breadcrumb context menu", error);
 			});
 		},
-		[handleOpenBreadcrumbContainer, handleRevealBreadcrumbPart, handleRevealInFinder, spacePath],
+		[handleRevealInFinder, onNavigateBreadcrumbPath, onOpenBreadcrumbFile, spacePath, t],
 	);
 
 	if (breadcrumbParts.length === 0) return null;
 
 	return (
-		<nav
-			className="mainTabsBreadcrumb"
-			data-open={menuOpen ? "true" : undefined}
-			aria-label="Current file path"
-		>
+		<nav className="mainTabsBreadcrumb" aria-label={t("breadcrumbs.label")}>
 			{breadcrumbDisplay.map((item, displayIndex) => {
 				if (item.type === "overflow") {
 					return (
@@ -212,7 +181,6 @@ export function MainTabsBreadcrumbs({
 								hiddenParts={item.hiddenParts}
 								onNavigateDir={onNavigateBreadcrumbPath}
 								onOpenFile={onOpenBreadcrumbFile}
-								onMenuOpenChange={setMenuOpen}
 							/>
 						</span>
 					);
@@ -224,23 +192,18 @@ export function MainTabsBreadcrumbs({
 				const menuEntries = menuDirPath === "" ? rootEntries : childrenByDir[menuDirPath];
 				const menuItems = sortBreadcrumbEntries(menuEntries ?? []);
 				const menuKey = `${originalIndex}:${menuDirPath || ROOT_PATH_KEY}`;
+				const appearanceIcon = itemAppearance[part.path]?.icon;
 
 				return (
-					<span
-						key={part.path || ROOT_PATH_KEY}
-						className="mainTabsBreadcrumbItem"
-						data-current={isCurrent ? "true" : undefined}
-					>
+					<span key={part.path || ROOT_PATH_KEY} className="mainTabsBreadcrumbItem">
 						{displayIndex > 0 ? (
 							<BreadcrumbEntryMenu
 								open={openBreadcrumbMenuKey === menuKey}
+								dirLabel={breadcrumbParts[originalIndex - 1]?.label ?? rootLabel}
 								dirPath={menuDirPath}
 								entries={menuItems}
 								loading={menuEntries === undefined}
-								onOpenChange={(open) => {
-									setOpenBreadcrumbMenuKey(open ? menuKey : null);
-									setMenuOpen(open);
-								}}
+								onOpenChange={(open) => setOpenBreadcrumbMenuKey(open ? menuKey : null)}
 								onLoadDir={onLoadBreadcrumbDir}
 								onOpenFile={onOpenBreadcrumbFile}
 								childrenByDir={childrenByDir}
@@ -251,14 +214,15 @@ export function MainTabsBreadcrumbs({
 							className="mainTabsBreadcrumbButton"
 							aria-current={isCurrent ? "page" : undefined}
 							aria-disabled={isCurrent}
-							title={breadcrumbTooltip(part)}
+							title={part.path || rootLabel}
 							onClick={() => {
-								if (!isCurrent && part.kind === "file") {
-									void onOpenBreadcrumbFile(part.path);
-								}
+								if (part.kind === "folder") onNavigateBreadcrumbPath(part.path);
 							}}
 							onContextMenu={(event) => handleBreadcrumbContextMenu(event, part)}
 						>
+							{appearanceIcon ? (
+								<AppearanceIcon iconName={appearanceIcon} size="var(--icon-sm)" />
+							) : null}
 							<span className="mainTabsBreadcrumbLabel">{part.label}</span>
 						</button>
 					</span>
@@ -272,48 +236,41 @@ function BreadcrumbOverflowMenu({
 	hiddenParts,
 	onNavigateDir,
 	onOpenFile,
-	onMenuOpenChange,
 }: {
 	hiddenParts: BreadcrumbPart[];
 	onNavigateDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => Promise<void>;
-	onMenuOpenChange: (open: boolean) => void;
 }) {
+	const { t } = useTranslation("shell");
 	return (
-		<DropdownMenu
-			onOpenChange={(nextOpen) => {
-				onMenuOpenChange(nextOpen);
-			}}
-		>
+		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<button
 					type="button"
 					className="mainTabsBreadcrumbOverflowButton"
-					title={`${hiddenParts.length} hidden path ${hiddenParts.length === 1 ? "item" : "items"}`}
-					aria-label="Show hidden path items"
+					title={t("breadcrumbs.hiddenItems", { count: hiddenParts.length })}
+					aria-label={t("breadcrumbs.showHidden")}
 				>
-					...
+					…
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start" side="bottom" className="mainTabsBreadcrumbMenu">
-				{hiddenParts.map((part) => {
-					return (
-						<DropdownMenuItem
-							key={part.path || ROOT_PATH_KEY}
-							className="mainTabsBreadcrumbMenuItem"
-							title={breadcrumbTooltip(part)}
-							onSelect={() => {
-								if (part.kind === "folder") {
-									onNavigateDir(part.path);
-									return;
-								}
-								void onOpenFile(part.path);
-							}}
-						>
-							<span className="mainTabsBreadcrumbMenuItemLabel">{part.label}</span>
-						</DropdownMenuItem>
-					);
-				})}
+				{hiddenParts.map((part) => (
+					<DropdownMenuItem
+						key={part.path || ROOT_PATH_KEY}
+						className="mainTabsBreadcrumbMenuItem"
+						title={part.path}
+						onSelect={() => {
+							if (part.kind === "folder") {
+								onNavigateDir(part.path);
+								return;
+							}
+							void onOpenFile(part.path);
+						}}
+					>
+						<span className="mainTabsBreadcrumbMenuItemLabel">{part.label}</span>
+					</DropdownMenuItem>
+				))}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
@@ -321,6 +278,7 @@ function BreadcrumbOverflowMenu({
 
 function BreadcrumbEntryMenu({
 	open,
+	dirLabel,
 	dirPath,
 	entries,
 	loading,
@@ -330,6 +288,7 @@ function BreadcrumbEntryMenu({
 	childrenByDir,
 }: {
 	open: boolean;
+	dirLabel: string;
 	dirPath: string;
 	entries: FsEntry[];
 	loading: boolean;
@@ -338,6 +297,7 @@ function BreadcrumbEntryMenu({
 	onOpenFile: (relPath: string) => Promise<void>;
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 }) {
+	const { t } = useTranslation("shell");
 	return (
 		<DropdownMenu
 			open={open}
@@ -350,7 +310,7 @@ function BreadcrumbEntryMenu({
 				<button
 					type="button"
 					className="mainTabsBreadcrumbSepButton"
-					aria-label={`Browse ${menuTitleForDir(dirPath)}`}
+					aria-label={t("breadcrumbs.browse", { name: dirLabel })}
 				>
 					<ChevronRight
 						size="var(--icon-xs)"
@@ -360,27 +320,25 @@ function BreadcrumbEntryMenu({
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start" side="bottom" className="mainTabsBreadcrumbMenu">
-				<DropdownMenuLabel className="mainTabsBreadcrumbMenuLabel">
-					{menuTitleForDir(dirPath)}
-				</DropdownMenuLabel>
-				{loading ? null : entries.length === 0 ? (
-					<div className="mainTabsBreadcrumbMenuState">Empty folder</div>
+				<DropdownMenuLabel className="mainTabsBreadcrumbMenuLabel">{dirLabel}</DropdownMenuLabel>
+				{loading ? (
+					<div className="mainTabsBreadcrumbMenuState">{t("breadcrumbs.loading")}</div>
+				) : entries.length === 0 ? (
+					<div className="mainTabsBreadcrumbMenuState">{t("breadcrumbs.emptyFolder")}</div>
 				) : (
-					<>
-						{entries.map((entry) => (
-							<DirectoryBreadcrumbMenuItem
-								key={entry.rel_path || ROOT_PATH_KEY}
-								entry={entry}
-								childrenByDir={childrenByDir}
-								onLoadDir={onLoadDir}
-								onSelectFile={(relPath) => void onOpenFile(relPath)}
-								itemClassName="mainTabsBreadcrumbMenuItem"
-								labelClassName="mainTabsBreadcrumbMenuItemLabel"
-								menuClassName="mainTabsBreadcrumbMenu"
-								stateClassName="mainTabsBreadcrumbMenuState"
-							/>
-						))}
-					</>
+					entries.map((entry) => (
+						<DirectoryBreadcrumbMenuItem
+							key={entry.rel_path || ROOT_PATH_KEY}
+							entry={entry}
+							childrenByDir={childrenByDir}
+							onLoadDir={onLoadDir}
+							onSelectFile={(relPath) => void onOpenFile(relPath)}
+							itemClassName="mainTabsBreadcrumbMenuItem"
+							labelClassName="mainTabsBreadcrumbMenuItemLabel"
+							menuClassName="mainTabsBreadcrumbMenu"
+							stateClassName="mainTabsBreadcrumbMenuState"
+						/>
+					))
 				)}
 			</DropdownMenuContent>
 		</DropdownMenu>

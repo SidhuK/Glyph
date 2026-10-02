@@ -177,8 +177,7 @@
 }
 
 .notePropertyKeyInput,
-.notePropertyFieldInput,
-.notePropertyValue input {
+.notePropertyFieldInput {
 	height: 30px;
 	width: 100%;
 	border-color: transparent;
@@ -233,34 +232,29 @@
 	font-size: calc(var(--text-base) * 0.85);
 }
 
-.notePropertyFieldInput,
-.notePropertyValue input {
+.notePropertyFieldInput {
 	font-weight: var(--font-normal);
 	color: var(--text-primary);
 	background-color: transparent;
 }
 
-input.notePropertyFieldInput,
-input.notePropertyValue {
+input.notePropertyFieldInput {
 	color: var(--text-primary) !important;
 	background-color: transparent !important;
 }
 
 .notePropertyKeyInput::placeholder,
-.notePropertyFieldInput::placeholder,
-.notePropertyValue input::placeholder {
+.notePropertyFieldInput::placeholder {
 	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
 }
 
 .notePropertyKeyInput:hover,
-.notePropertyFieldInput:hover,
-.notePropertyValue input:hover {
+.notePropertyFieldInput:hover {
 	background: transparent;
 }
 
 .notePropertyKeyInput:focus-visible,
-.notePropertyFieldInput:focus-visible,
-.notePropertyValue input:focus-visible {
+.notePropertyFieldInput:focus-visible {
 	background: transparent;
 	border-color: transparent;
 	box-shadow: none;
@@ -280,13 +274,6 @@ input.notePropertyValue {
 	overflow-wrap: break-word;
 	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.35;
-}
-
-.notePropertyValue {
-	display: flex;
-	flex-direction: column;
-	gap: 3px;
-	min-width: 0;
 }
 
 .notePropertyTextEditor {

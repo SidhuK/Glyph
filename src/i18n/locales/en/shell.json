@@ -210,7 +210,24 @@
 		"collections": "Collections",
 		"pinTab": "Pin Active Tab",
 		"unpinTab": "Unpin Active Tab",
-		"unpinNamed": "Unpin {{label}}"
+		"unpinNamed": "Unpin {{label}}",
+		"newTab": "New Tab",
+		"untitled": "Untitled",
+		"openBlankTab": "Open blank tab",
+		"showAllTabs": "Show all tabs"
+	},
+	"breadcrumbs": {
+		"label": "Current file path",
+		"space": "Space",
+		"browse": "Browse {{name}}",
+		"emptyFolder": "Empty folder",
+		"loading": "Loading…",
+		"moreItems": "+{{count}} more",
+		"showHidden": "Show hidden path items",
+		"hiddenItems_one": "1 hidden path item",
+		"hiddenItems_other": "{{count}} hidden path items",
+		"revealInFileTree": "Reveal in File Tree",
+		"showInFinderFailed": "Could not show file in Finder"
 	},
 	"workspace": {
 		"openSpace": "Open space",
