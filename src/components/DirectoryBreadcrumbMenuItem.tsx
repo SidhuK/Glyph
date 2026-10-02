@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import type { FsEntry } from "../lib/tauri";
+import { displayNameFromPath } from "../utils/path";
 import {
 	DropdownMenuItem,
 	DropdownMenuSub,
@@ -8,12 +10,6 @@ import {
 
 const DIRECTORY_BREADCRUMB_CHILD_LIMIT = 40;
 const ROOT_PATH_KEY = "__root__";
-
-export function directoryEntryLabel(entry: FsEntry) {
-	if (!entry.is_markdown || entry.name.startsWith(".")) return entry.name;
-	const withoutExtension = entry.name.replace(/\.[^./]+$/, "");
-	return withoutExtension || entry.name;
-}
 
 export function DirectoryBreadcrumbMenuItem({
 	entry,
@@ -34,6 +30,7 @@ export function DirectoryBreadcrumbMenuItem({
 	menuClassName: string;
 	stateClassName: string;
 }) {
+	const { t } = useTranslation("shell");
 	const childEntries = childrenByDir[entry.rel_path];
 	const loading = childEntries === undefined;
 	const isDir = entry.kind === "dir";
@@ -46,7 +43,9 @@ export function DirectoryBreadcrumbMenuItem({
 				title={entry.rel_path || entry.name}
 				onSelect={() => onSelectFile(entry.rel_path)}
 			>
-				<span className={labelClassName}>{directoryEntryLabel(entry)}</span>
+				<span className={labelClassName}>
+					{entry.is_markdown ? displayNameFromPath(entry.name) : entry.name}
+				</span>
 			</DropdownMenuItem>
 		);
 	}
@@ -61,8 +60,10 @@ export function DirectoryBreadcrumbMenuItem({
 				<span className={labelClassName}>{entry.name}</span>
 			</DropdownMenuSubTrigger>
 			<DropdownMenuSubContent className={menuClassName} sideOffset={4}>
-				{loading ? null : childEntries.length === 0 ? (
-					<div className={stateClassName}>Empty folder</div>
+				{loading ? (
+					<div className={stateClassName}>{t("breadcrumbs.loading")}</div>
+				) : childEntries.length === 0 ? (
+					<div className={stateClassName}>{t("breadcrumbs.emptyFolder")}</div>
 				) : (
 					<>
 						{childEntries.slice(0, DIRECTORY_BREADCRUMB_CHILD_LIMIT).map((child) => (
@@ -80,7 +81,9 @@ export function DirectoryBreadcrumbMenuItem({
 						))}
 						{childEntries.length > DIRECTORY_BREADCRUMB_CHILD_LIMIT ? (
 							<div className={stateClassName}>
-								+{childEntries.length - DIRECTORY_BREADCRUMB_CHILD_LIMIT} more
+								{t("breadcrumbs.moreItems", {
+									count: childEntries.length - DIRECTORY_BREADCRUMB_CHILD_LIMIT,
+								})}
 							</div>
 						) : null}
 					</>

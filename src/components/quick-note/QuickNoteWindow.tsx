@@ -10,7 +10,7 @@ import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords } from "../../lib/textStats";
-import { basename } from "../../utils/path";
+import { displayNameFromPath } from "../../utils/path";
 import { FileText, Save } from "../Icons";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { createEditorShortcutsExtension } from "../editor/extensions/editorShortcuts";
@@ -63,11 +63,6 @@ async function appendQuickNoteToPath(path: string, text: string): Promise<string
 		});
 		return path;
 	}
-}
-
-function savedLabel(path: string) {
-	const name = basename(path);
-	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
 }
 
 function quickNoteTarget(folder: string): QuickNoteTarget {
@@ -127,7 +122,7 @@ export function QuickNoteWindow() {
 		return {
 			value: targetValue,
 			path: targetValue,
-			label: savedLabel(targetValue),
+			label: displayNameFromPath(targetValue),
 		};
 	}, [folder, targetValue]);
 	const isMac =
@@ -199,7 +194,7 @@ export function QuickNoteWindow() {
 			clearDraft(editorRef.current);
 			setDraft("");
 			setHasText(false);
-			setConfirmation(savedLabel(path));
+			setConfirmation(displayNameFromPath(path));
 			void emitTo("main", "app:open_note", { path }).catch(() => {});
 			void queryClient.invalidateQueries({
 				queryKey: [QUICK_NOTE_TARGET_SUMMARY_KEY],

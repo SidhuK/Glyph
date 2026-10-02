@@ -66,8 +66,7 @@
 .rfNodeNoteEditorRibbonBottom {
 	transform-origin: center bottom;
 	box-shadow:
-		0 14px 34px rgba(0, 0, 0, 0.14),
-		0 2px 4px rgba(0, 0, 0, 0.08),
+		var(--shadow-overlay),
 		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 84%, transparent);
 }
 
@@ -157,7 +156,7 @@
 	border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
-	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+	box-shadow: var(--shadow-overlay);
 }
 
 .noteFindIcon {

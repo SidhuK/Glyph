@@ -319,7 +319,7 @@
 		-19px -11px;
 	background-blend-mode: normal, soft-light;
 	box-shadow:
-		0 14px 34px rgba(0, 0, 0, 0.13),
+		var(--shadow-overlay),
 		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 82%, transparent);
 }
 
@@ -535,7 +535,7 @@
 		-23px -7px;
 	background-blend-mode: normal, soft-light;
 	box-shadow:
-		0 14px 34px rgba(0, 0, 0, 0.13),
+		var(--shadow-overlay),
 		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 82%, transparent);
 }
 

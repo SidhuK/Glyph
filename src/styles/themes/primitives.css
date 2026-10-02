@@ -96,6 +96,7 @@
 	--shadow-lg: none;
 	--shadow-xl: none;
 	--shadow-float: none;
+	--shadow-overlay: 0 12px 32px rgb(0 0 0 / 13%);
 
 	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
 	--transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);

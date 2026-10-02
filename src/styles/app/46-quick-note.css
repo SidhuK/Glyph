@@ -188,7 +188,7 @@
 	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
-	box-shadow: 0 12px 32px color-mix(in srgb, var(--shadow-color, #000) 16%, transparent);
+	box-shadow: var(--shadow-float);
 }
 
 .quickNoteTargetMenuLabel {

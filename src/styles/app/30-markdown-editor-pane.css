@@ -294,21 +294,21 @@
 }
 
 .gitDiffLine[data-kind="add"] {
-	background: color-mix(in srgb, #22c55e 10%, transparent);
-	color: color-mix(in srgb, #15803d 78%, var(--text-primary));
+	background: var(--status-success-bg);
+	color: color-mix(in srgb, var(--status-success-fg) 78%, var(--text-primary));
 }
 
 .gitDiffLine[data-kind="add"] .gitDiffMarker {
-	color: color-mix(in srgb, #15803d 82%, var(--text-primary));
+	color: color-mix(in srgb, var(--status-success-fg) 82%, var(--text-primary));
 }
 
 .gitDiffLine[data-kind="delete"] {
-	background: color-mix(in srgb, #ef4444 10%, transparent);
-	color: color-mix(in srgb, #b91c1c 78%, var(--text-primary));
+	background: var(--status-danger-bg);
+	color: color-mix(in srgb, var(--status-danger-fg) 78%, var(--text-primary));
 }
 
 .gitDiffLine[data-kind="delete"] .gitDiffMarker {
-	color: color-mix(in srgb, #b91c1c 82%, var(--text-primary));
+	color: color-mix(in srgb, var(--status-danger-fg) 82%, var(--text-primary));
 }
 
 .gitDiffLine[data-kind="hunk"] {
@@ -578,11 +578,11 @@
 }
 
 .gitHistoryStatAdd {
-	color: color-mix(in srgb, #059669 82%, var(--text-primary));
+	color: color-mix(in srgb, var(--status-success-fg) 82%, var(--text-primary));
 }
 
 .gitHistoryStatDelete {
-	color: color-mix(in srgb, #dc2626 84%, var(--text-primary));
+	color: color-mix(in srgb, var(--status-danger-fg) 84%, var(--text-primary));
 }
 
 .gitHistoryMeta {

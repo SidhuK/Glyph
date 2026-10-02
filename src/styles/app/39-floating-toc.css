@@ -89,7 +89,7 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	border-radius: calc(var(--radius-md) + 4px);
 	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
-	box-shadow: 0 10px 28px color-mix(in srgb, var(--shadow-color, #000) 11%, transparent);
+	box-shadow: var(--shadow-overlay);
 	pointer-events: auto;
 	transform: translateY(-50%);
 }
@@ -159,7 +159,7 @@
 	border-radius: calc(var(--radius-md) + 4px);
 	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
 	color: var(--text-primary);
-	box-shadow: 0 10px 28px color-mix(in srgb, var(--shadow-color, #000) 11%, transparent);
+	box-shadow: var(--shadow-overlay);
 	pointer-events: auto;
 	transform: translateY(-50%);
 }
