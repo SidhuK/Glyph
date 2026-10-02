@@ -199,7 +199,6 @@
 			"quarter": "Quarter"
 		},
 		"loading": "Loading…",
-		"moreItems": "+{{count}} more",
 		"noteCount_one": "1 note",
 		"noteCount_other": "{{count}} notes",
 		"noNotes": "No notes on this day",
@@ -223,6 +222,7 @@
 		"browse": "Browse {{name}}",
 		"emptyFolder": "Empty folder",
 		"loading": "Loading…",
+		"moreItems": "+{{count}} more",
 		"showHidden": "Show hidden path items",
 		"hiddenItems_one": "1 hidden path item",
 		"hiddenItems_other": "{{count}} hidden path items",

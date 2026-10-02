@@ -257,7 +257,7 @@ export function TabBar({
 									{tabs.map((tab) => (
 										<option key={tab.id} value={tab.id}>
 											{tab.target && !isPathSpecial(tab.target)
-												? tab.target.replace(/\.[^./]+$/, "")
+												? tab.target.replace(/([^/])\.[^./]+$/, "$1")
 												: tabLabel(tab)}
 										</option>
 									))}

@@ -141,8 +141,10 @@ export function MainTabsBreadcrumbs({
 				...buildPathCopyMenuItems(spacePath, part.path),
 				{
 					label: t("breadcrumbs.revealInFileTree"),
-					action: () =>
-						onNavigateBreadcrumbPath(part.kind === "folder" ? part.path : parentDir(part.path)),
+					action: () => {
+						onNavigateBreadcrumbPath(part.kind === "folder" ? part.path : parentDir(part.path));
+						if (part.kind === "file") void onOpenBreadcrumbFile(part.path);
+					},
 				},
 				...(part.kind === "file"
 					? [
@@ -157,7 +159,7 @@ export function MainTabsBreadcrumbs({
 				console.error("Failed to show breadcrumb context menu", error);
 			});
 		},
-		[handleRevealInFinder, onNavigateBreadcrumbPath, spacePath, t],
+		[handleRevealInFinder, onNavigateBreadcrumbPath, onOpenBreadcrumbFile, spacePath, t],
 	);
 
 	if (breadcrumbParts.length === 0) return null;
