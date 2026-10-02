@@ -43,7 +43,7 @@ mod window_geometry;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::{
-    atomic::{AtomicU64, Ordering},
+    atomic::{AtomicBool, AtomicU64, Ordering},
     Mutex,
 };
 use std::time::Duration;
@@ -1081,22 +1081,29 @@ fn main_window(app: &tauri::AppHandle) -> Result<(tauri::WebviewWindow, bool), S
 /// frontend's first paint before it is shown anyway.
 const MAIN_WINDOW_FIRST_PAINT_TIMEOUT: Duration = Duration::from_millis(1500);
 
+/// Whether the current main window has been revealed since it was created, so
+/// the first-paint fallback never re-shows a window the user has since closed.
+static MAIN_WINDOW_REVEALED: AtomicBool = AtomicBool::new(false);
+
 pub(crate) fn show_main_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
     let (window, created) = main_window(app)?;
     if created {
+        MAIN_WINDOW_REVEALED.store(false, Ordering::SeqCst);
         // The frontend calls `show_main_window` after its first paint so the
         // traffic lights and content appear together; this is the fallback.
         std::thread::spawn(move || {
             std::thread::sleep(MAIN_WINDOW_FIRST_PAINT_TIMEOUT);
-            if !window.is_visible().unwrap_or(true) {
-                warn!("Main window did not report first paint; showing anyway");
-                if let Err(error) = window.show().and_then(|()| window.set_focus()) {
-                    warn!("Failed to show main window: {error}");
-                }
+            if MAIN_WINDOW_REVEALED.swap(true, Ordering::SeqCst) {
+                return;
+            }
+            warn!("Main window did not report first paint; showing anyway");
+            if let Err(error) = window.show().and_then(|()| window.set_focus()) {
+                warn!("Failed to show main window: {error}");
             }
         });
         return Ok(());
     }
+    MAIN_WINDOW_REVEALED.store(true, Ordering::SeqCst);
     window.show().map_err(|error| error.to_string())?;
     window.unminimize().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())
