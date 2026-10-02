@@ -4,6 +4,7 @@ export type DeeplinkAction =
 	| { kind: "open_note"; space: string; path: string }
 	| { kind: "open_space"; space: string }
 	| { kind: "search"; space: string; q: string }
+	| { kind: "create_note"; space: string; text: string }
 	| { kind: "open_daily_note"; space: string };
 
 /**

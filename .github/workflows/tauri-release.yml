@@ -273,6 +273,16 @@ jobs:
           prerelease: ${{ steps.version.outputs.is_prerelease }}
           includeUpdaterJson: true
 
+      - name: Publish PopClip extension
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+        working-directory: integrations/popclip
+        run: |
+          set -euo pipefail
+          zip -r Glyph.popclipextz Glyph.popclipext
+          gh release upload "${NEXT_TAG}" Glyph.popclipextz --clobber
+
       - name: Publish updater manifest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

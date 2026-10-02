@@ -40,6 +40,10 @@ export default defineConfig(async () => ({
 		},
 		overrides: [
 			{
+				files: ["integrations/popclip/**/*.js"],
+				globals: { popclip: "readonly" as const },
+			},
+			{
 				files: ["**/*.test.ts", "**/*.test.tsx"],
 				rules: {
 					"typescript/restrict-template-expressions": "off" as const,

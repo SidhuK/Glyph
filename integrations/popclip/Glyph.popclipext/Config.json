@@ -1,0 +1,32 @@
+{
+	"identifier": "com.karatsidhu.glyph.popclip",
+	"name": "Glyph",
+	"description": {
+		"en": "Save selected text as a new note in Glyph."
+	},
+	"popclipVersion": 4151,
+	"icon": "square filled G",
+	"app": {
+		"name": "Glyph",
+		"link": "https://github.com/SidhuK/Glyph/releases",
+		"checkInstalled": true,
+		"bundleIdentifiers": ["com.karatsidhu.glyph"]
+	},
+	"options": [
+		{
+			"identifier": "space",
+			"type": "string",
+			"label": { "en": "Space folder" },
+			"description": {
+				"en": "The full path to your Glyph space, for example /Users/you/Documents/Notes. In Finder, select the folder and press Option-Command-C to copy its path."
+			},
+			"defaultValue": ""
+		}
+	],
+	"action": {
+		"title": { "en": "Save to Glyph" },
+		"requirements": ["text"],
+		"regex": "\\A[\\s\\S]{1,16384}\\z",
+		"javaScriptFile": "Capture.js"
+	}
+}
