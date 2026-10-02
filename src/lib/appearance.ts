@@ -98,9 +98,9 @@ export function applyUiTypography({
 	root.style.fontSize = `${Math.round(rootRemPx * 100) / 100}px`;
 	root.style.setProperty(
 		"--font-sans",
-		`"${safeFamily}", "Inter", -apple-system, BlinkMacSystemFont, sans-serif`,
+		`"${safeFamily}", -apple-system, BlinkMacSystemFont, sans-serif`,
 	);
-	const editorFontStack = `"${safeEditorFamily}", "${safeFamily}", "Inter", -apple-system, BlinkMacSystemFont, sans-serif`;
+	const editorFontStack = `"${safeEditorFamily}", "${safeFamily}", -apple-system, BlinkMacSystemFont, sans-serif`;
 	root.style.setProperty("--font-editor", editorFontStack);
 	root.style.setProperty(
 		"--font-heading",

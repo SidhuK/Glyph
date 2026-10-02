@@ -1,8 +1,15 @@
+import "@fontsource/geist/400.css";
+import "@fontsource/geist/500.css";
+import "@fontsource/geist/600.css";
+import "@fontsource/geist/700.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ThemeProvider } from "next-themes";
 import { useTheme } from "next-themes";
 import React from "react";
+import { flushSync } from "react-dom";
 import ReactDOM from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
 import App from "./App";
@@ -295,10 +302,19 @@ const windowLabel = currentWindowLabel();
 const isQuickNoteWindow = windowLabel === QUICK_NOTE_WINDOW_LABEL;
 const isExternalMarkdownWindow = windowLabel.startsWith(EXTERNAL_MARKDOWN_WINDOW_PREFIX);
 
-void initI18n()
-	.then(() => syncNativeMenuLabels().catch(() => {}))
-	.finally(() => {
-		ReactDOM.createRoot(rootEl).render(
+// The main window starts hidden; reveal it once the first commit and its fonts
+// are ready so the native chrome and the content appear together. Hidden
+// WKWebViews pause requestAnimationFrame, so this must not wait on a frame.
+function showMainWindowWhenReady() {
+	if (windowLabel !== MAIN_WINDOW_LABEL) return;
+	void document.fonts.ready.then(() => invoke("show_main_window")).catch(() => {});
+}
+
+void initI18n().finally(() => {
+	void syncNativeMenuLabels().catch(() => {});
+	const root = ReactDOM.createRoot(rootEl);
+	flushSync(() =>
+		root.render(
 			<React.StrictMode>
 				<I18nextProvider i18n={i18n}>
 					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -317,5 +333,7 @@ void initI18n()
 					</ThemeProvider>
 				</I18nextProvider>
 			</React.StrictMode>,
-		);
-	});
+		),
+	);
+	showMainWindowWhenReady();
+});
