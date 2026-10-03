@@ -43,9 +43,10 @@ mod window_geometry;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::{
-    atomic::{AtomicU64, Ordering},
+    atomic::{AtomicBool, AtomicU64, Ordering},
     Mutex,
 };
+use std::time::Duration;
 use tauri::menu::{
     Menu, MenuItem, MenuItemKind, PredefinedMenuItem, Submenu, SubmenuBuilder, HELP_SUBMENU_ID,
     WINDOW_SUBMENU_ID,
@@ -1038,13 +1039,14 @@ fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> 
     window.set_focus().map_err(|error| error.to_string())
 }
 
-fn main_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
+/// Returns the main window and whether it was created by this call.
+fn main_window(app: &tauri::AppHandle) -> Result<(tauri::WebviewWindow, bool), String> {
     let _guard = MAIN_WINDOW_LOCK
         .lock()
         .map_err(|_| "failed to lock main window state".to_string())?;
 
     if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
-        return Ok(window);
+        return Ok((window, false));
     }
 
     if let Some(state) = app.try_state::<MenuState>() {
@@ -1072,12 +1074,37 @@ fn main_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
         warn!("Failed to apply vibrancy to main window: {error}");
     }
 
-    Ok(window)
+    Ok((window, true))
 }
 
+/// How long a freshly created main window may stay hidden waiting for the
+/// frontend's first paint before it is shown anyway.
+const MAIN_WINDOW_FIRST_PAINT_TIMEOUT: Duration = Duration::from_millis(1500);
+
+/// Whether the current main window has been revealed since it was created, so
+/// the first-paint fallback never re-shows a window the user has since closed.
+static MAIN_WINDOW_REVEALED: AtomicBool = AtomicBool::new(false);
+
 pub(crate) fn show_main_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
-    let window = main_window(app)?;
+    let (window, created) = main_window(app)?;
+    if created {
+        MAIN_WINDOW_REVEALED.store(false, Ordering::SeqCst);
+        // The frontend calls `show_main_window` after its first paint so the
+        // traffic lights and content appear together; this is the fallback.
+        std::thread::spawn(move || {
+            std::thread::sleep(MAIN_WINDOW_FIRST_PAINT_TIMEOUT);
+            if MAIN_WINDOW_REVEALED.swap(true, Ordering::SeqCst) {
+                return;
+            }
+            warn!("Main window did not report first paint; showing anyway");
+            if let Err(error) = window.show().and_then(|()| window.set_focus()) {
+                warn!("Failed to show main window: {error}");
+            }
+        });
+        return Ok(());
+    }
     window.show().map_err(|error| error.to_string())?;
+    MAIN_WINDOW_REVEALED.store(true, Ordering::SeqCst);
     window.unminimize().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())
 }
