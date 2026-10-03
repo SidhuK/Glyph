@@ -1103,8 +1103,8 @@ pub(crate) fn show_main_window_for_app(app: &tauri::AppHandle) -> Result<(), Str
         });
         return Ok(());
     }
-    MAIN_WINDOW_REVEALED.store(true, Ordering::SeqCst);
     window.show().map_err(|error| error.to_string())?;
+    MAIN_WINDOW_REVEALED.store(true, Ordering::SeqCst);
     window.unminimize().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())
 }
