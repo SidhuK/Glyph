@@ -9,6 +9,7 @@ import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import type { EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
+import { CollectionEmbed } from "../collection/collectionEmbed";
 import { SlashCommand, type TemplateInsertRequest } from "../slashCommands";
 import { AsteriskDividerBloom } from "./asteriskDividerBloom";
 import {
@@ -654,6 +655,7 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		HtmlEmbedPreview,
 		MermaidPreview,
 		InlineTableOfContents,
+		CollectionEmbed,
 		headingCollapse,
 		Markdown.configure({
 			markedOptions: {

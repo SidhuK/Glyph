@@ -230,3 +230,68 @@ button.databasesCollectionSwitcher:hover {
 		max-width: 38vw;
 	}
 }
+
+.collectionEmbed {
+	margin: 16px 0;
+	padding: 16px;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	background: var(--bg-primary);
+}
+
+.collectionEmbedHeader,
+.collectionEmbedSelectors,
+.collectionEmbedPagination {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.collectionEmbedHeader {
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.collectionEmbedSelectors label {
+	display: flex;
+	flex: 1;
+	min-width: 140px;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.collectionEmbed select {
+	width: 100%;
+	padding: 6px;
+	color: inherit;
+	background: var(--bg-primary);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+}
+
+.collectionEmbed .collectionEmbedRows {
+	list-style: none;
+	padding: 0;
+	margin: 12px 0;
+}
+
+.collectionEmbedRows button {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 8px;
+	text-align: left;
+	border-bottom: 1px solid var(--border);
+}
+
+.collectionEmbedRows small,
+.collectionEmbed p {
+	color: var(--text-secondary);
+	font-size: 12px;
+}
+
+.collectionEmbedRows small {
+	overflow-wrap: anywhere;
+}

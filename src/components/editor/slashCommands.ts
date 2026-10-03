@@ -276,6 +276,18 @@ const SLASH_COMMANDS: SlashCommandDef[] = [
 		action: "table",
 	}),
 	{
+		id: "collection",
+		icon: "▦",
+		keywords: ["collection", "database", "embed", "view", "filter"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent([{ type: "collectionEmbed" }, { type: "paragraph" }])
+				.run(),
+	},
+	{
 		id: "tableOfContents",
 		icon: "☰",
 		keywords: ["toc", "outline", "contents", "headings", "navigation"],
