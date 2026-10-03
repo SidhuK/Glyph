@@ -76,6 +76,7 @@ function asAiMessages(messages: UIMessage[]): AiMessage[] {
 }
 
 export function useRigChat() {
+	const [immediateEdits, setImmediateEdits] = useState(false);
 	const [messages, setMessages] = useState<UIMessage[]>([]);
 	const [status, setStatus] = useState<RigChatStatus>("ready");
 	const [error, setError] = useState<Error | null>(null);
@@ -325,6 +326,7 @@ export function useRigChat() {
 						messages: requestMessages,
 						thread_id: threadId || undefined,
 						mode: options?.body?.mode ?? "create",
+						immediate_edits: immediateEdits,
 						context: options?.body?.context || undefined,
 						context_manifest: options?.body?.context_manifest,
 						audit: options?.body?.audit ?? true,
@@ -339,6 +341,7 @@ export function useRigChat() {
 				if (!activeThreadIdRef.current) {
 					activeThreadIdRef.current = jobId;
 				}
+				setActiveAiHistoryJobId(activeThreadIdRef.current);
 				awaitingStartRef.current = false;
 				for (const payload of pendingChunks) {
 					handleChunk(payload);
@@ -360,7 +363,7 @@ export function useRigChat() {
 				setStatus("error");
 			}
 		},
-		[cleanupListeners, clearDoneTimer, completeActiveJob, stop, updateMessages],
+		[cleanupListeners, clearDoneTimer, completeActiveJob, stop, updateMessages, immediateEdits],
 	);
 
 	useEffect(
@@ -372,6 +375,8 @@ export function useRigChat() {
 	);
 
 	return {
+		immediateEdits,
+		setImmediateEdits,
 		messages,
 		status,
 		error,

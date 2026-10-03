@@ -14,6 +14,13 @@ impl AiState {
         token
     }
 
+    pub fn is_running(&self, job_id: &str) -> bool {
+        self.cancels
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .contains_key(job_id)
+    }
+
     pub fn cancel(&self, job_id: &str) {
         let map = self.cancels.lock().unwrap_or_else(|p| p.into_inner());
         if let Some(token) = map.get(job_id) {

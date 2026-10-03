@@ -75,3 +75,57 @@
 	border-color: var(--border-default);
 	background: color-mix(in srgb, var(--bg-hover) 60%, transparent);
 }
+
+.aiEditReview {
+	padding: 12px;
+	font-size: 12px;
+	border-bottom: 1px solid var(--border-light);
+}
+.aiEditMode,
+.aiEditActions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.aiEditOperation,
+.aiEditNote {
+	margin-top: 10px;
+}
+.aiEditNoteToggle {
+	cursor: pointer;
+	overflow-wrap: anywhere;
+}
+.aiEditVersions {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px;
+}
+.aiEditVersions pre {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	max-height: 320px;
+	overflow: auto;
+	padding: 8px;
+	background: var(--bg-secondary);
+}
+.aiEditOperations {
+	max-height: 480px;
+	height: 50vh;
+	overflow: auto;
+}
+.aiEditOperationsContent {
+	position: relative;
+	width: 100%;
+}
+.aiEditOperationRow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+}
+.aiEditNoteToggle {
+	width: 100%;
+	text-align: left;
+	padding: 6px 0;
+	color: var(--text-primary);
+}

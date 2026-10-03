@@ -303,5 +303,40 @@
 		"close": "Close peek",
 		"loading": "Loading note…",
 		"empty": "This note is empty."
+	},
+	"aiEdits": {
+		"title": "Review agent edits",
+		"immediate": "Apply edits immediately",
+		"external": "This provider manages its own edits. Glyph review and operation undo are available with built-in providers.",
+		"proposals": "Changes wait for your review. Review each note after the agent finishes.",
+		"operation": "Agent operation {{number}}",
+		"running": "The agent is still preparing changes.",
+		"resume": "Resume interrupted changes",
+		"pending": "Proposed",
+		"accepted": "Accepted",
+		"rejected": "Rejected",
+		"undone": "Undone",
+		"before": "Before",
+		"after": "After",
+		"absent": "File does not exist",
+		"accept": "Accept note",
+		"reject": "Reject note",
+		"undo": "Undo entire operation",
+		"interrupted": "This operation was interrupted. Resume to finish applying its changes.",
+		"errors": {
+			"conflict": "The note {{path}} changed after this operation. Review its current contents before trying again.",
+			"busy": "Wait for the agent to finish before reviewing its changes.",
+			"recovery_required": "Resume the interrupted operation before reviewing other changes.",
+			"invalid_operation": "This edit operation is not available. Reload the conversation and try again.",
+			"already_reviewed": "This note has already been reviewed. Refresh the review to see its status.",
+			"invalid_path": "This file path cannot be edited. Use a note inside the current space.",
+			"unsupported_file": "Review supports individual text files up to 512 KiB.",
+			"file_exists": "The destination file already exists. Choose an unused path.",
+			"file_not_found": "The note no longer exists.",
+			"patch_mismatch": "The text to replace was not found in this note.",
+			"cancelled": "The agent operation was cancelled.",
+			"failed": "Could not complete the edit operation. {{detail}}",
+			"invalid_response": "The app received an invalid edit review response."
+		}
 	}
 }

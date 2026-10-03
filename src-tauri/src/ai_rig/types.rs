@@ -139,6 +139,8 @@ pub struct AiModel {
 
 #[derive(Deserialize, Clone)]
 pub struct AiChatRequest {
+    #[serde(default)]
+    pub immediate_edits: bool,
     pub profile_id: String,
     pub messages: Vec<AiMessage>,
     #[serde(default)]
