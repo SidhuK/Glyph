@@ -1,4 +1,11 @@
 {
+	"embed": {
+		"openSource": "Open source",
+		"loading": "Loading source…",
+		"unavailable": "Source could not be loaded.",
+		"passageMissing": "Heading or block not found.",
+		"empty": "Empty note"
+	},
 	"mode": {
 		"label": "Editor mode",
 		"raw": "Raw",

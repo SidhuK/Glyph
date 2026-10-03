@@ -1,5 +1,6 @@
 import { Node, mergeAttributes, nodeInputRule, nodePasteRule } from "@tiptap/core";
 import type { MarkdownToken } from "@tiptap/core";
+import { DOMSerializer } from "@tiptap/pm/model";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
 import { type EditorLinkSuggestion, isImageTarget } from "../../../lib/linkSuggestions";
@@ -12,6 +13,7 @@ import {
 import { suggestWikiLinkItems } from "../markdown/wikiLinkHeadingSuggest";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
+import { createWikiEmbedView } from "./wikiEmbedView";
 
 const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
 const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
@@ -177,7 +179,22 @@ export const WikiLink = Node.create({
 	},
 	parseHTML() {
 		return [
-			{ tag: 'span[data-wikilink="true"]' },
+			{
+				tag: 'span[data-wikilink="true"]',
+				getAttrs: (element) => {
+					if (!(element instanceof HTMLElement)) return false;
+					const kind = element.getAttribute("data-anchor-kind");
+					return {
+						raw: element.getAttribute("data-raw") ?? "",
+						target: element.getAttribute("data-target") ?? "",
+						alias: element.getAttribute("data-alias") || null,
+						embed: element.getAttribute("data-wikilink-embed") === "true",
+						anchorKind: kind === "heading" || kind === "block" ? kind : "none",
+						anchor: element.getAttribute("data-anchor") || null,
+						unresolved: element.getAttribute("data-unresolved") === "true",
+					};
+				},
+			},
 			{
 				tag: 'img[data-wikilink-embed="true"]',
 				getAttrs: (element) => {
@@ -194,6 +211,20 @@ export const WikiLink = Node.create({
 				},
 			},
 		];
+	},
+	addNodeView() {
+		const serializer = DOMSerializer.fromSchema(this.editor.schema);
+		return ({ node }) => {
+			const attrs = parseWikiLink(wikiLinkAttrsToMarkdown(node.attrs));
+			if (attrs?.embed && !isImageTarget(attrs.target)) {
+				return createWikiEmbedView(attrs);
+			}
+			const dom = serializer.serializeNode(node);
+			if (!(dom instanceof HTMLElement)) {
+				throw new Error("Wiki link renderer must return an HTML element.");
+			}
+			return { dom };
+		};
 	},
 	renderHTML({ node, HTMLAttributes }) {
 		const alias = typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";

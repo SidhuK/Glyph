@@ -1071,3 +1071,43 @@
 	margin: 0;
 	display: block;
 }
+
+.wikiNoteEmbed {
+	display: inline-block;
+	width: 100%;
+	margin: 0.5em 0;
+	border: 1px solid var(--border-default);
+	border-radius: 8px;
+	padding: 12px;
+	box-sizing: border-box;
+	vertical-align: top;
+	white-space: normal;
+}
+
+.wikiNoteEmbedHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 0.85em;
+}
+
+.wikiNoteEmbedHeader > span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wikiNoteEmbedHeader button {
+	flex-shrink: 0;
+	font: inherit;
+	cursor: pointer;
+}
+
+.wikiNoteEmbedContent {
+	display: block;
+	max-height: 32rem;
+	overflow: auto;
+	overflow-wrap: anywhere;
+	margin-top: 8px;
+}
