@@ -1,8 +1,12 @@
 use serde::Serialize;
 
-#[derive(Clone)]
-pub struct ParsedChecklistItem {
+pub struct ParsedChecklistItem<'a> {
     pub checked: bool,
+    pub start: usize,
+    pub end: usize,
+    pub checkbox: usize,
+    pub line: usize,
+    pub text: &'a str,
 }
 
 #[derive(Clone, Copy, Serialize)]

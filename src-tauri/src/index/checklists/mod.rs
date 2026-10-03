@@ -2,7 +2,7 @@ mod parse;
 mod store;
 mod types;
 
-pub use parse::summarize_tasks;
+pub use parse::{parse_checklist_items, summarize_tasks};
 pub use store::query_note_checklist_summaries;
 pub use types::{NoteTaskSummary, NoteTaskSummaryItem};
 

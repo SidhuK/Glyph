@@ -84,6 +84,7 @@ function invalidateDerived(path: string | null, removed: boolean): void {
 		for (const fn of previewInvalidators) fn(path, removed);
 	}
 	invalidateTaskSummariesPrefetch();
+	void queryClient.invalidateQueries({ queryKey: ["task-inbox"] });
 	invalidateCalendarPrefetch();
 	invalidateAllDocsPrefetch();
 	invalidateDatabasePrefetch();
