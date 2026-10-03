@@ -124,6 +124,9 @@ pub fn index_written_markdown(
     rel_path: &str,
     markdown: &str,
 ) {
+    if let Err(error) = crate::recovery::capture(root, rel_path, markdown) {
+        tracing::warn!(note_id = %rel_path, %error, "saved note could not be snapshotted");
+    }
     match index::index_note(root, rel_path, markdown) {
         Ok(()) => mark_recent_local_change(recent, rel_path),
         Err(error) => {
@@ -146,6 +149,14 @@ pub fn commit_markdown(
     let rel_path = rel.to_string_lossy().into_owned();
     let abs = paths::join_under(ctx.root, &rel)?;
     let existed = abs.exists();
+    if let Some(parent) = abs.parent() {
+        std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+    if let PersistMode::Replace { .. } = mode {
+        if let Some(previous) = crate::recovery::current_text(ctx.root, &rel_path)? {
+            crate::recovery::capture(ctx.root, &rel_path, &previous)?;
+        }
+    }
     if let PersistMode::Replace {
         expected_mtime_ms: Some(expected),
     } = mode
@@ -154,9 +165,6 @@ pub fn commit_markdown(
         if actual == 0 || actual != expected {
             return Err("conflict: on-disk file changed since it was opened".to_string());
         }
-    }
-    if let Some(parent) = abs.parent() {
-        std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     }
     let bytes = text.as_bytes();
     let created = match mode {
@@ -256,6 +264,11 @@ pub fn reindex_after_rename(
     is_dir: bool,
     recent: &RecentLocalChanges,
 ) {
+    if let Err(error) = crate::recovery::rename(root, from_path, to_path)
+        .and_then(|()| crate::recovery::capture_tree(root, Path::new(to_path)))
+    {
+        tracing::warn!(%error, "could not update recovery history after rename");
+    }
     if is_dir {
         let prefix = dir_prefix(from_path);
         let new_prefix = dir_prefix(to_path);

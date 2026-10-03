@@ -303,5 +303,30 @@
 		"close": "Close peek",
 		"loading": "Loading note…",
 		"empty": "This note is empty."
+	},
+	"recovery": {
+		"title": "Automatic recovery",
+		"description": "Glyph keeps the latest 100 distinct saved versions of each note on this Mac. Review a version before restoring it. Your current saved version is kept too.",
+		"allNotes": "All notes",
+		"deletedOnly": "Deleted notes only",
+		"refresh": "Refresh",
+		"search": "Find a note by path",
+		"loading": "Loading saved versions…",
+		"empty": "No saved versions found.",
+		"versions": "Saved versions",
+		"selectVersion": "Choose a note, then select a saved version to preview it.",
+		"deleted": "Deleted",
+		"current": "Current saved note",
+		"saved": "Saved version",
+		"missing": "This note has been deleted.",
+		"restore": "Restore this version",
+		"restoring": "Restoring…",
+		"restored": "Note restored",
+		"conflict": "This note changed after the preview loaded. Refresh and review it again before restoring.",
+		"spaceChanged": "The open space changed. Close recovery and reopen it.",
+		"saveFailed": "Save or close your open notes, then refresh this preview before restoring.",
+		"failed": "Recovery failed: {{message}}",
+		"invalidResponse": "Recovery returned invalid data. Close recovery and try again.",
+		"indexFailed": "The note was restored, but the search index could not be updated."
 	}
 }

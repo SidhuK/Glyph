@@ -31,6 +31,7 @@ import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { NotePropertiesPanel } from "../editor/NotePropertiesPanel";
 import type { TOCHeading } from "../editor/hooks/useTableOfContents";
 import { dispatchMarkdownLinkClick, dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
+import { RecoveryButton } from "../recovery/RecoveryButton";
 import { GitHistorySidebar } from "./GitHistorySidebar";
 
 type InfoSidebarTab = "info" | "history";
@@ -317,6 +318,9 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 				</button>
 			</div>
 			<div className="markdownEditorInfoBody">
+				<section className="markdownEditorInfoSection">
+					<RecoveryButton key={relPath} path={relPath} />
+				</section>
 				{activeTab === "info" ? (
 					<>
 						<section className="markdownEditorInfoSection markdownEditorInfoSectionFrontmatter">
