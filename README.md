@@ -1,147 +1,90 @@
-# Glyph
-
 <p align="center">
-  <img src="logo_g.PNG" alt="Glyph logo" width="140" />
+  <img src=".github/assets/logo.png" alt="Glyph logo" width="140" />
 </p>
 
-<p align="center">
-  <img alt="GitHub downloads" src="https://img.shields.io/github/downloads/SidhuK/Glyph/total" />
-</p>
+<h1 align="center">Glyph</h1>
 
 <p align="center">
   <strong>Offline-first notes for macOS</strong><br />
-  Keep your Markdown files close, search them quickly, and work without a server.
+  Your notes are plain Markdown files on your Mac. Glyph makes them fast to write, search, and organize — no account, no server.
 </p>
 
 <p align="center">
-  <a href="https://github.com/SidhuK/Glyph/actions/workflows/pr-checks.yml">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/ci/SidhuK/Glyph.svg?workflow=PR%20Checks&amp;branch=main&amp;variant=secondary&amp;theme=slate&amp;mode=dark" />
-      <img alt="CI status" src="https://shieldcn.dev/github/ci/SidhuK/Glyph.svg?workflow=PR%20Checks&amp;branch=main&amp;variant=secondary&amp;theme=slate&amp;mode=light" />
-    </picture>
-  </a>
-  <a href="https://github.com/SidhuK/Glyph/releases">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/release/SidhuK/Glyph.svg?variant=secondary&amp;theme=slate&amp;mode=dark" />
-      <img alt="Latest release" src="https://shieldcn.dev/github/release/SidhuK/Glyph.svg?variant=secondary&amp;theme=slate&amp;mode=light" />
-    </picture>
-  </a>
-  <a href="https://github.com/SidhuK/Glyph/blob/main/LICENSE">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/license/SidhuK/Glyph.svg?variant=secondary&amp;theme=slate&amp;mode=dark" />
-      <img alt="License" src="https://shieldcn.dev/github/license/SidhuK/Glyph.svg?variant=secondary&amp;theme=slate&amp;mode=light" />
-    </picture>
-  </a>
-  <a href="https://github.com/SidhuK/Glyph/stargazers">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/stars/SidhuK/Glyph.svg?variant=secondary&amp;theme=slate&amp;mode=dark" />
-      <img alt="GitHub stars" src="https://shieldcn.dev/github/stars/SidhuK/Glyph.svg?variant=secondary&amp;theme=slate&amp;mode=light" />
-    </picture>
-  </a>
-  <a href="https://github.com/SidhuK/Glyph/commits/main">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/last-commit/SidhuK/Glyph.svg?variant=secondary&amp;theme=slate&amp;mode=dark" />
-      <img alt="Last commit" src="https://shieldcn.dev/github/last-commit/SidhuK/Glyph.svg?variant=secondary&amp;theme=slate&amp;mode=light" />
-    </picture>
-  </a>
+  <a href="https://github.com/SidhuK/Glyph/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/SidhuK/Glyph?style=flat-square" /></a>
+  <a href="https://github.com/SidhuK/Glyph/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/SidhuK/Glyph/total?style=flat-square" /></a>
+  <a href="https://github.com/SidhuK/Glyph/actions/workflows/pr-checks.yml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/SidhuK/Glyph/pr-checks.yml?branch=main&style=flat-square&label=CI" /></a>
+  <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/github/license/SidhuK/Glyph?style=flat-square" /></a>
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/cNqrBfFx7D"><strong>Join the Glyph community →</strong></a>
+  <a href="https://github.com/SidhuK/Glyph/releases/latest"><strong>Download</strong></a> ·
+  <a href="https://karatsidhu.gumroad.com/l/sqxfay"><strong>Buy a license</strong></a> ·
+  <a href="https://discord.gg/cNqrBfFx7D"><strong>Discord</strong></a>
 </p>
 
-Glyph is an offline-first desktop note-taking application. It combines a Tauri 2 shell with a React 19 / TypeScript / Vite 8 frontend and a Rust backend. Notes live on disk as Markdown files with per-space metadata in a `.glyph/` directory; a derived SQLite search index lives in app support and rebuilds from the notes. No cloud sync. No server.
+![Glyph with the file tree, a note open in the editor, and the AI chat panel](.github/assets/screenshot.png)
 
-![Glyph](imageforWebsite.png)
+## Install
 
-## Highlights
+Glyph runs on Apple Silicon Macs.
 
-- **Markdown files first** — your notes remain readable, portable files on disk.
-- **Local search** — a derived SQLite index keeps navigation fast without sending notes anywhere.
-- **Focused desktop workspace** — a macOS-first Tauri app with a rich editor, spaces, tasks, databases, and optional AI tools.
-
-## Prerequisites
-
-| Dependency | Version                                            |
-| ---------- | -------------------------------------------------- |
-| Node.js    | 24.21.0                                            |
-| Vite+      | 0.3.1 (`curl -fsSL https://vite.plus \| bash`)     |
-| pnpm       | ≥ 10 (managed by Vite+)                            |
-| Rust       | stable (latest)                                    |
-| Xcode CLT  | required for macOS native compilation              |
-| macOS      | primary target — full Tauri app dev requires macOS |
-
-## Build & Run
+**Homebrew**
 
 ```bash
-# Install frontend dependencies
+brew install --cask sidhuk/glyph/glyph
+```
+
+**Manual:** download the latest `.dmg` from [GitHub Releases](https://github.com/SidhuK/Glyph/releases/latest) and drag Glyph into Applications. The app updates itself.
+
+Official builds include a **7-day free trial**, after which a one-time license from [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay) is required. The source code is AGPL-3.0, so you are also free to [build it yourself](#build-from-source).
+
+## Features
+
+- **Plain Markdown on disk** — every note is a `.md` file in a folder you choose. Open it in any other editor, back it up however you like, leave whenever you want.
+- **Rich editor or raw source** — a WYSIWYG editor with tables, task lists, callouts, math (KaTeX), Mermaid diagrams, and code highlighting, plus a CodeMirror source mode with optional Vim keybindings.
+- **Fast local search** — a SQLite index keeps search and navigation instant without your notes leaving your Mac.
+- **Spaces** — keep separate folders of notes, each in its own window.
+- **Tasks** — checklists across all your notes, collected in one place.
+- **Databases** — table views over your notes and their properties.
+- **Connections** — a graph of how your notes link together.
+- **Daily notes & Quick Note** — capture first, organize later.
+- **Excalidraw drawings** — sketch diagrams right next to your notes.
+- **Export** — print or export any note to PDF or Word.
+- **Git sync** — optionally sync a space through your own Git remote.
+- **Optional AI** — chat with your notes using OpenAI, Anthropic, Gemini, OpenRouter, Ollama, or any OpenAI-compatible endpoint, or drive coding agents such as Claude Code and Codex from inside Glyph.
+- **Localized** — English, German, Spanish, French, Japanese, Korean, Polish, and Brazilian Portuguese.
+
+## Your data
+
+- **Notes** are ordinary Markdown files in the folder you opened as a space.
+- **Space metadata** (settings, AI history and API keys, caches) lives in a `.glyph/` folder inside that space.
+- **The search index** lives in Glyph's Application Support folder. It is derived entirely from your notes and is safe to delete — Glyph rebuilds it.
+
+Glyph has no cloud service and no account. Nothing leaves your Mac unless you turn on a feature that needs the network: AI requests go directly to the provider you configure, Git sync talks only to your own remote, and the app checks GitHub for updates and Gumroad for license activation.
+
+## Build from source
+
+Requires macOS on Apple Silicon, Node.js 24, [Vite+](https://vite.plus), Rust stable, and the Xcode Command Line Tools.
+
+```bash
 vp install
-
-# Development — frontend only (Vite+ on :1420)
-vp dev
-
-# Development — full Tauri app (compiles Rust backend + launches Vite+)
-vp run tauri dev
-# Equivalent: pnpm tauri dev
-
-# Production frontend build
-vp build
-
-# Production macOS app build
-vp run tauri build
-# Equivalent: pnpm tauri build
-
-# Format, lint, and type-check
-vp check            # check only
-vp check --fix      # auto-fix
-vp fmt              # format only
-
-# Tests
-vp test                                      # all tests
-vp test src/lib/diff.test.ts                 # single file
-vp test -t "test name"                       # single test by name
-
-# Rust checks
-cd src-tauri && cargo check            # typecheck
-cd src-tauri && cargo clippy           # lint
-
+vp run tauri dev     # run the app in development
+vp run tauri build   # build Glyph.app
 ```
 
-### Pre-push checklist
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full setup, checks, and pull request guidelines.
 
-```bash
-vp check && vp test && vp build && cd src-tauri && cargo check
-```
+Built with [Tauri 2](https://tauri.app), Rust, React 19, TypeScript, TipTap, and CodeMirror.
 
-## Built with
+## Contributing & support
 
-- **Frontend:** React 19, TipTap 3, TypeScript, Vite+, Tailwind 4, Radix UI (via shadcn/ui), Motion 12, TanStack Table, cmdk, Zod 4, date-fns, Mermaid 11, highlight.js/lowlight, react-resizable-panels, Sonner, react-hook-form
+- **Bugs and feature requests:** [open an issue](https://github.com/SidhuK/Glyph/issues/new/choose).
+- **Questions and discussion:** [Discord](https://discord.gg/cNqrBfFx7D).
+- **Security model:** see [`SECURITY.md`](SECURITY.md).
+- **Release notes:** [GitHub Releases](https://github.com/SidhuK/Glyph/releases).
 
-- **Backend:** Tauri 2 (`macos-private-api`), Rust, rig-core 0.24, rusqlite 0.31 (bundled), notify 6, reqwest 0.12 (rustls), tokio, serde/serde_json/serde_yaml, chrono, uuid, sha2, window-vibrancy, core-text (macOS)
+Glyph is macOS only. Windows and Linux are not supported.
 
-- **Tooling:** Vite+, Oxlint, Oxfmt, Vitest 4, Tauri CLI 2, pnpm 10
+## License
 
-## Conventions
-
-- TypeScript strict mode. No `any` — use `unknown` + narrowing.
-- Functional React components only. State via Context, not prop drilling.
-- All Tauri IPC through `invoke()` from `src/lib/tauri.ts`.
-- Rust: atomic writes via `io_atomic`, safe paths via `paths::join_under()`, SSRF checks via `net.rs`.
-- Hard cutover migrations — no backward-compatibility shims.
-- Never log secrets, keys, or sensitive user data.
-- ~200 LOC per file guideline; refactor into submodules when exceeded.
-
-## Licensing
-
-Glyph's source is available under the [GNU Affero General Public License v3.0](LICENSE). Official release binaries include a 7-day trial with Gumroad license activation.
-
-- Releases: [GitHub Releases](https://github.com/SidhuK/Glyph/releases)
-- Purchase: [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay)
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development setup, project conventions, and pull request guidance.
-
-## Platform support
-
-macOS only. Windows and Linux are not actively supported. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Glyph's source code is licensed under the [GNU Affero General Public License v3.0](LICENSE). Official release binaries are commercially licensed with a 7-day trial.

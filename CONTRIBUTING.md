@@ -26,7 +26,10 @@ Glyph is an offline-first desktop notes app built with React, TypeScript, Tauri,
 - Vite+ 0.3.1
 - `pnpm` 10+ (managed by Vite+)
 - Rust stable
-- macOS for full Tauri app development and verification
+- Xcode Command Line Tools
+- macOS on Apple Silicon for full Tauri app development and verification
+
+Install Vite+ with `curl -fsSL https://vite.plus | bash`, then install dependencies with `vp install`.
 
 ### Useful commands
 
@@ -36,9 +39,12 @@ vp run tauri dev # full Tauri app; equivalent to `pnpm tauri dev`
 vp build
 vp run tauri build # full macOS app; equivalent to `pnpm tauri build`
 vp check
+vp check --fix # auto-fix formatting and lint issues
 vp fmt
 vp lint
 vp test
+vp test src/components/app/commandPaletteHelpers.test.ts # single file
+vp test -t "test name" # single test by name
 cd src-tauri && cargo check
 cd src-tauri && cargo clippy
 ```
@@ -64,6 +70,8 @@ cd src-tauri && cargo check
 - TypeScript runs in strict mode. Avoid `any`; prefer `unknown` and explicit narrowing.
 - Use functional React components and hooks.
 - Use `invoke()` from `src/lib/tauri.ts` for frontend Tauri commands.
+- Use `net.rs` SSRF checks for user-supplied URLs.
+- Aim for roughly 200 lines per file; split into submodules when a file outgrows that.
 - Keep CSS simple and lean on the existing component system instead of over-engineering styles.
 - In Rust code, prefer the existing safe helpers such as `paths::join_under()` for space paths and atomic writes where appropriate.
 - Do not log secrets, license keys, or other sensitive user data.
