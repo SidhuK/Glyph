@@ -1,4 +1,11 @@
 {
+	"embed": {
+		"loading": "Loading…",
+		"unavailable": "This note could not be loaded.",
+		"noteMissing": "Note not found.",
+		"passageMissing": "Heading or block not found.",
+		"empty": "Empty note"
+	},
 	"mode": {
 		"label": "Editor mode",
 		"raw": "Raw",

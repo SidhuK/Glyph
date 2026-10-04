@@ -109,6 +109,22 @@ export function applySpaceChange(change: SpaceChange): void {
 		for (const child of change.changes) applySpaceChange(child);
 		return;
 	}
+	// Embeds resolve targets by name, so any structural change can retarget them.
+	void queryClient.invalidateQueries({
+		queryKey: ["navigation", "wiki-embed"],
+		predicate: (query) => {
+			if (change.kind !== "content") return true;
+			// The source path is unknown until a read finishes, so in-flight and failed reads retry too.
+			if (query.state.fetchStatus === "fetching" || query.state.status === "error") return true;
+			const data: unknown = query.state.data;
+			return (
+				typeof data === "object" &&
+				data !== null &&
+				"path" in data &&
+				data.path === normalizeRelPath(change.rel_path)
+			);
+		},
+	});
 	if (change.kind === "rename") {
 		const from = normalizeRelPath(change.from_path);
 		const to = normalizeRelPath(change.to_path);

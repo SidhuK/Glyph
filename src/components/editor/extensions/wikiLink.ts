@@ -1,5 +1,6 @@
 import { Node, mergeAttributes, nodeInputRule, nodePasteRule } from "@tiptap/core";
 import type { MarkdownToken } from "@tiptap/core";
+import { DOMSerializer } from "@tiptap/pm/model";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
 import { type EditorLinkSuggestion, isImageTarget } from "../../../lib/linkSuggestions";
@@ -12,6 +13,7 @@ import {
 import { suggestWikiLinkItems } from "../markdown/wikiLinkHeadingSuggest";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
+import { createWikiEmbedView } from "./wikiEmbedView";
 
 const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
 const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
@@ -177,7 +179,13 @@ export const WikiLink = Node.create({
 	},
 	parseHTML() {
 		return [
-			{ tag: 'span[data-wikilink="true"]' },
+			{
+				tag: 'span[data-wikilink="true"]',
+				getAttrs: (element) =>
+					(element instanceof HTMLElement &&
+						parseWikiLink(element.getAttribute("data-raw") ?? "")) ||
+					false,
+			},
 			{
 				tag: 'img[data-wikilink-embed="true"]',
 				getAttrs: (element) => {
@@ -195,6 +203,19 @@ export const WikiLink = Node.create({
 			},
 		];
 	},
+	addNodeView() {
+		const serializer = DOMSerializer.fromSchema(this.editor.schema);
+		return ({ node }) => {
+			const dom = serializer.serializeNode(node);
+			if (!(dom instanceof HTMLElement)) {
+				throw new Error("Wiki link renderer must return an HTML element.");
+			}
+			const attrs = parseWikiLink(wikiLinkAttrsToMarkdown(node.attrs));
+			return attrs?.embed && !isImageTarget(attrs.target)
+				? createWikiEmbedView(attrs, dom)
+				: { dom };
+		};
+	},
 	renderHTML({ node, HTMLAttributes }) {
 		const alias = typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";
 		const target = typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
@@ -210,7 +231,7 @@ export const WikiLink = Node.create({
 					"data-wikilink": "true",
 					"data-target": node.attrs.target,
 					"data-alias": node.attrs.alias ?? "",
-					"data-raw": node.attrs.raw ?? "",
+					"data-raw": wikiLinkAttrsToMarkdown(node.attrs),
 					"data-wikilink-embed": "true",
 					class: "markdownImage wikiLinkEmbedImage",
 				}),
@@ -232,7 +253,7 @@ export const WikiLink = Node.create({
 				"data-anchor-kind": node.attrs.anchorKind,
 				"data-anchor": node.attrs.anchor ?? "",
 				"data-alias": node.attrs.alias ?? "",
-				"data-raw": node.attrs.raw ?? "",
+				"data-raw": wikiLinkAttrsToMarkdown(node.attrs),
 				"data-unresolved": String(Boolean(node.attrs.unresolved)),
 				class: "wikiLink",
 			}),

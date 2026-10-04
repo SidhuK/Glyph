@@ -1,4 +1,4 @@
-import { isImagePath } from "../utils/path";
+import { isImagePath, isMarkdownPath } from "../utils/path";
 import { invoke } from "./tauri";
 
 export type EditorLinkSuggestion =
@@ -64,13 +64,13 @@ export async function suggestWikiLinks({
 			markdown_only: true,
 			include_pdf: !embedOnly && includeAttachments,
 			include_images: embedOnly || includeAttachments,
-			strip_markdown_ext: !embedOnly,
+			strip_markdown_ext: true,
 			relative_to_source: false,
 			limit: requestLimit,
 		},
 	});
 	return results
-		.filter((item) => !embedOnly || isImageTarget(item.path))
+		.filter((item) => !embedOnly || isImageTarget(item.path) || isMarkdownPath(item.path))
 		.slice(0, limit)
 		.map(toEditorSuggestion);
 }

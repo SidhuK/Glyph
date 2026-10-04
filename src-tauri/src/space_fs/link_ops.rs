@@ -322,6 +322,63 @@ fn resolve_standard_wikilink_target(entries: &[FileEntry], target: &str) -> Opti
     None
 }
 
+#[derive(Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum WikiEmbedDocument {
+    Ready {
+        target: String,
+        path: String,
+        text: String,
+    },
+    Missing {
+        target: String,
+    },
+    Error {
+        target: String,
+        message: String,
+    },
+}
+
+fn read_embed_text(root: &Path, path: &str) -> Result<String, String> {
+    let rel = Path::new(path);
+    super::helpers::deny_hidden_rel_path(rel)?;
+    std::fs::read_to_string(paths::join_under(root, rel)?).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub async fn space_read_wiki_embeds_batch(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    targets: Vec<String>,
+) -> Result<Vec<WikiEmbedDocument>, String> {
+    let root = state.root_for_window(&window)?;
+    let read_root = root.clone();
+    let documents = tauri::async_runtime::spawn_blocking(move || {
+        let entries = list_files(&read_root, false, 80_000)?;
+        let documents = targets
+            .into_iter()
+            .map(|target| {
+                let Some(path) = resolve_standard_wikilink_target(&entries, &target)
+                    .filter(|path| utils::is_markdown_path(Path::new(path)))
+                else {
+                    return WikiEmbedDocument::Missing { target };
+                };
+                match read_embed_text(&read_root, &path) {
+                    Ok(text) => WikiEmbedDocument::Ready { target, path, text },
+                    Err(message) => WikiEmbedDocument::Error { target, message },
+                }
+            })
+            .collect::<Vec<_>>();
+        Ok::<_, String>(documents)
+    })
+    .await
+    .map_err(|error| error.to_string())??;
+    if state.root_for_window(&window)? != root {
+        return Err("The active space changed while loading embeds.".to_string());
+    }
+    Ok(documents)
+}
+
 #[tauri::command]
 pub async fn space_resolve_wikilink(
     window: WebviewWindow,
