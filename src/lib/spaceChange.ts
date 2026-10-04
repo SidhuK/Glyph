@@ -114,6 +114,8 @@ export function applySpaceChange(change: SpaceChange): void {
 		queryKey: ["navigation", "wiki-embed"],
 		predicate: (query) => {
 			if (change.kind !== "content") return true;
+			// The source path is unknown until a read finishes, so in-flight and failed reads retry too.
+			if (query.state.fetchStatus === "fetching" || query.state.status === "error") return true;
 			const data: unknown = query.state.data;
 			return (
 				typeof data === "object" &&
