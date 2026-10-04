@@ -330,10 +330,19 @@ pub enum WikiEmbedDocument {
         path: String,
         text: String,
     },
+    Missing {
+        target: String,
+    },
     Error {
         target: String,
         message: String,
     },
+}
+
+fn read_embed_text(root: &Path, path: &str) -> Result<String, String> {
+    let rel = Path::new(path);
+    super::helpers::deny_hidden_rel_path(rel)?;
+    std::fs::read_to_string(paths::join_under(root, rel)?).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -346,29 +355,20 @@ pub async fn space_read_wiki_embeds_batch(
     let read_root = root.clone();
     let documents = tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&read_root, false, 80_000)?;
-        let mut texts = std::collections::HashMap::new();
-        let mut documents = Vec::with_capacity(targets.len());
-        for target in targets {
-            let result = (|| -> Result<(String, String), String> {
-                let path = resolve_standard_wikilink_target(&entries, &target)
+        let documents = targets
+            .into_iter()
+            .map(|target| {
+                let Some(path) = resolve_standard_wikilink_target(&entries, &target)
                     .filter(|path| utils::is_markdown_path(Path::new(path)))
-                    .ok_or_else(|| "Note not found".to_string())?;
-                let text = texts
-                    .entry(path.clone())
-                    .or_insert_with(|| {
-                        let rel = Path::new(&path);
-                        super::helpers::deny_hidden_rel_path(rel)?;
-                        let abs = paths::join_under(&read_root, rel)?;
-                        std::fs::read_to_string(abs).map_err(|error| error.to_string())
-                    })
-                    .clone()?;
-                Ok((path, text))
-            })();
-            documents.push(match result {
-                Ok((path, text)) => WikiEmbedDocument::Ready { target, path, text },
-                Err(message) => WikiEmbedDocument::Error { target, message },
-            });
-        }
+                else {
+                    return WikiEmbedDocument::Missing { target };
+                };
+                match read_embed_text(&read_root, &path) {
+                    Ok(text) => WikiEmbedDocument::Ready { target, path, text },
+                    Err(message) => WikiEmbedDocument::Error { target, message },
+                }
+            })
+            .collect::<Vec<_>>();
         Ok::<_, String>(documents)
     })
     .await

@@ -1074,40 +1074,61 @@
 
 .wikiNoteEmbed {
 	display: inline-block;
-	width: 100%;
-	margin: 0.5em 0;
-	border: 1px solid var(--border-default);
-	border-radius: 8px;
-	padding: 12px;
 	box-sizing: border-box;
+	width: 100%;
+	margin: var(--space-2) 0;
+	padding: 10px 16px 12px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
 	vertical-align: top;
 	white-space: normal;
+	transition: border-color 120ms ease;
 }
 
-.wikiNoteEmbedHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
+.wikiNoteEmbed:hover {
+	border-color: var(--border-default);
+}
+
+.wikiNoteEmbed.ProseMirror-selectednode {
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 36%, transparent);
+}
+
+.wikiNoteEmbed > .wikiLink {
+	max-width: 100%;
 	font-size: 0.85em;
+	font-weight: var(--font-medium);
 }
 
-.wikiNoteEmbedHeader > span {
+.wikiNoteEmbed > .wikiLink .wikiLinkLabel {
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.wikiNoteEmbedHeader button {
-	flex-shrink: 0;
-	font: inherit;
-	cursor: pointer;
 }
 
 .wikiNoteEmbedContent {
 	display: block;
 	max-height: 32rem;
+	margin-top: 6px;
 	overflow: auto;
 	overflow-wrap: anywhere;
-	margin-top: 8px;
+}
+
+.wikiNoteEmbedContent > :first-child {
+	margin-top: 0;
+}
+
+.wikiNoteEmbedContent > :last-child {
+	margin-bottom: 0;
+}
+
+.wikiNoteEmbedContent[data-status] {
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+}
+
+/* The heading level rail lives outside the card, so embedded headings skip their prefixes. */
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.wikiNoteEmbedContent
+	:is(h1, h2, h3, h4, h5, h6)::before {
+	content: none;
 }

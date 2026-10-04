@@ -978,6 +978,7 @@ interface TauriCommands {
 		{ targets: string[] },
 		(
 			| { kind: "ready"; target: string; path: string; text: string }
+			| { kind: "missing"; target: string }
 			| { kind: "error"; target: string; message: string }
 		)[]
 	>;

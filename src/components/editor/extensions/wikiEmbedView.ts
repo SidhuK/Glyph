@@ -3,134 +3,77 @@ import type { NodeView } from "@tiptap/pm/view";
 import { i18n } from "../../../i18n";
 import { queryClient } from "../../../lib/queryClient";
 import { invoke } from "../../../lib/tauri";
-import { dispatchWikiLinkClick } from "../markdown/editorEvents";
 import { wikiEmbedContent } from "../markdown/wikiEmbedContent";
-import { wikiLinkDisplayName } from "../markdown/wikiLinkCodec";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
 
-type EmbedDocument = Extract<
-	Awaited<ReturnType<typeof invoke<"space_read_wiki_embeds_batch">>>[number],
-	{ kind: "ready" }
->;
-interface PendingRead {
-	target: string;
-	signal: AbortSignal;
-	resolve: (document: EmbedDocument) => void;
-	reject: (error: unknown) => void;
-}
-let pending: PendingRead[] = [];
+type EmbedDocument = Awaited<ReturnType<typeof invoke<"space_read_wiki_embeds_batch">>>[number];
+type LoadedEmbed = Exclude<EmbedDocument, { kind: "error" }>;
+type EmbedView =
+	| Extract<LoadedEmbed, { kind: "missing" }>
+	| (Extract<LoadedEmbed, { kind: "ready" }> & { html: string | null });
 
-// Coalesce mounted embeds into one IPC call; Rust resolves and reads under one space root.
-function readEmbed({
-	target,
-	signal,
-}: Pick<PendingRead, "target" | "signal">): Promise<EmbedDocument> {
-	return new Promise((resolve, reject) => {
-		signal.throwIfAborted();
-		const abort = () => reject(signal.reason);
-		signal.addEventListener("abort", abort, { once: true });
-		pending.push({
-			target,
-			signal,
-			resolve: (document) => {
-				signal.removeEventListener("abort", abort);
-				resolve(document);
-			},
-			reject: (error) => {
-				signal.removeEventListener("abort", abort);
-				reject(error);
-			},
+let queued: { targets: Set<string>; documents: Promise<Map<string, EmbedDocument>> } | null = null;
+
+// Coalesce embeds mounted in the same tick into one IPC call under the window's space root.
+function readEmbed(target: string): Promise<LoadedEmbed> {
+	if (!queued) {
+		const targets = new Set<string>();
+		const documents = Promise.resolve().then(async () => {
+			queued = null;
+			const results = await invoke("space_read_wiki_embeds_batch", { targets: [...targets] });
+			return new Map(results.map((doc) => [doc.target, doc]));
 		});
-		if (pending.length !== 1) return;
-		queueMicrotask(() => {
-			const requests = pending.filter((request) => !request.signal.aborted);
-			pending = [];
-			if (!requests.length) return;
-			void invoke("space_read_wiki_embeds_batch", {
-				targets: [...new Set(requests.map((request) => request.target))],
-			})
-				.then((documents) => {
-					const byTarget = new Map(documents.map((doc) => [doc.target, doc]));
-					for (const request of requests) {
-						const doc = byTarget.get(request.target);
-						if (request.signal.aborted) {
-							request.reject(request.signal.reason);
-						} else if (doc?.kind === "ready") {
-							request.resolve(doc);
-						} else {
-							request.reject(new Error(doc?.message ?? "Source unavailable"));
-						}
-					}
-				})
-				.catch((error: unknown) => {
-					for (const request of requests) request.reject(error);
-				});
-		});
+		queued = { targets, documents };
+	}
+	queued.targets.add(target);
+	return queued.documents.then((documents) => {
+		const doc = documents.get(target);
+		if (!doc || doc.kind === "error") {
+			throw new Error(doc?.message ?? `No embed result for ${target}`);
+		}
+		return doc;
 	});
 }
 
-// ProseMirror owns this DOM; the source body is rendered only through the sanitizer.
-export function createWikiEmbedView(attrs: WikiLinkAttrs): NodeView {
+function statusText(isError: boolean, data: EmbedView | undefined): string {
+	if (isError) return i18n.t("editor:embed.unavailable");
+	if (!data) return i18n.t("editor:embed.loading");
+	if (data.kind === "missing") return i18n.t("editor:embed.noteMissing");
+	return i18n.t(data.html === null ? "editor:embed.passageMissing" : "editor:embed.empty");
+}
+
+// ProseMirror owns this DOM. The header is the regular wiki link markup, so the editor's
+// click handler opens the source; the body is rendered only through the sanitizer.
+export function createWikiEmbedView(attrs: WikiLinkAttrs, link: HTMLElement): NodeView {
 	const dom = document.createElement("span");
 	dom.className = "wikiNoteEmbed";
 	dom.contentEditable = "false";
-	const header = document.createElement("span");
-	header.className = "wikiNoteEmbedHeader";
-	const title = document.createElement("span");
-	title.textContent = wikiLinkDisplayName(attrs);
-	const open = document.createElement("button");
-	open.type = "button";
 	const content = document.createElement("span");
 	content.className = "wikiNoteEmbedContent";
-	header.append(title, open);
-	dom.append(header, content);
+	dom.append(link, content);
 	const observer = new QueryObserver(queryClient, {
 		queryKey: ["navigation", "wiki-embed", attrs.target],
-		queryFn: ({ signal }) => readEmbed({ target: attrs.target, signal }),
-		select: (document) => ({
-			...document,
-			html: wikiEmbedContent(document.text, attrs),
-		}),
-		notifyOnChangeProps: ["data", "error", "status"],
+		queryFn: () => readEmbed(attrs.target),
+		select: (doc): EmbedView =>
+			doc.kind === "ready" ? { ...doc, html: wikiEmbedContent(doc.text, attrs) } : doc,
 		retry: false,
-		staleTime: 0,
-		gcTime: 60_000,
 	});
 	const render = () => {
-		open.textContent = i18n.t("editor:embed.openSource");
-		const result = observer.getCurrentResult();
-		open.disabled = !result.data || result.isError;
-		if (result.isError || !result.data) {
-			content.textContent = i18n.t(
-				result.isError ? "editor:embed.unavailable" : "editor:embed.loading",
-			);
+		const { data, isError } = observer.getCurrentResult();
+		link.dataset.unresolved = String(data?.kind === "missing");
+		if (data?.kind === "ready" && data.html?.trim()) {
+			delete content.dataset.status;
+			if (content.innerHTML !== data.html) content.innerHTML = data.html;
 			return;
 		}
-		const { html } = result.data;
-		if (html === null || !html.trim()) {
-			content.textContent = i18n.t(
-				html === null ? "editor:embed.passageMissing" : "editor:embed.empty",
-			);
-		} else if (content.innerHTML !== html) {
-			content.innerHTML = html;
-		}
+		content.dataset.status = "";
+		content.textContent = statusText(isError, data);
 	};
-	open.onclick = (event) => {
-		event.preventDefault();
-		event.stopPropagation();
-		const source = observer.getCurrentResult().data;
-		if (source) dispatchWikiLinkClick({ ...attrs, target: source.path, embed: false });
-	};
-	// Embedded Markdown is a read-only snapshot; navigation uses the explicit source action.
-	content.onclick = (event) => event.preventDefault();
 	const unsubscribe = observer.subscribe(render);
 	i18n.on("languageChanged", render);
 	render();
 	return {
 		dom,
-		stopEvent: (event) =>
-			event.type === "click" ||
-			(event.target instanceof globalThis.Node && open.contains(event.target)),
 		ignoreMutation: () => true,
 		destroy() {
 			unsubscribe();

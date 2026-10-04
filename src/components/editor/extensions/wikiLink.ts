@@ -181,19 +181,10 @@ export const WikiLink = Node.create({
 		return [
 			{
 				tag: 'span[data-wikilink="true"]',
-				getAttrs: (element) => {
-					if (!(element instanceof HTMLElement)) return false;
-					const kind = element.getAttribute("data-anchor-kind");
-					return {
-						raw: element.getAttribute("data-raw") ?? "",
-						target: element.getAttribute("data-target") ?? "",
-						alias: element.getAttribute("data-alias") || null,
-						embed: element.getAttribute("data-wikilink-embed") === "true",
-						anchorKind: kind === "heading" || kind === "block" ? kind : "none",
-						anchor: element.getAttribute("data-anchor") || null,
-						unresolved: element.getAttribute("data-unresolved") === "true",
-					};
-				},
+				getAttrs: (element) =>
+					(element instanceof HTMLElement &&
+						parseWikiLink(element.getAttribute("data-raw") ?? "")) ||
+					false,
 			},
 			{
 				tag: 'img[data-wikilink-embed="true"]',
@@ -215,15 +206,14 @@ export const WikiLink = Node.create({
 	addNodeView() {
 		const serializer = DOMSerializer.fromSchema(this.editor.schema);
 		return ({ node }) => {
-			const attrs = parseWikiLink(wikiLinkAttrsToMarkdown(node.attrs));
-			if (attrs?.embed && !isImageTarget(attrs.target)) {
-				return createWikiEmbedView(attrs);
-			}
 			const dom = serializer.serializeNode(node);
 			if (!(dom instanceof HTMLElement)) {
 				throw new Error("Wiki link renderer must return an HTML element.");
 			}
-			return { dom };
+			const attrs = parseWikiLink(wikiLinkAttrsToMarkdown(node.attrs));
+			return attrs?.embed && !isImageTarget(attrs.target)
+				? createWikiEmbedView(attrs, dom)
+				: { dom };
 		};
 	},
 	renderHTML({ node, HTMLAttributes }) {
