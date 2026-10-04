@@ -64,7 +64,7 @@ export async function suggestWikiLinks({
 			markdown_only: true,
 			include_pdf: !embedOnly && includeAttachments,
 			include_images: embedOnly || includeAttachments,
-			strip_markdown_ext: !embedOnly,
+			strip_markdown_ext: true,
 			relative_to_source: false,
 			limit: requestLimit,
 		},
