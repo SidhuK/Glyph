@@ -14,12 +14,13 @@ import {
 	scrollToSettingsSearchEntry,
 	searchSettingsEntries,
 } from "../settings/settingsSearch";
-import { useDeveloperMode } from "../settings/useDeveloperMode";
+import { useActiveSettingsTab, useDeveloperMode } from "../settings/useDeveloperMode";
 import { Button } from "../ui/shadcn/button";
 
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 	const { t: tGeneral, i18n } = useTranslation("settings.general");
-	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
+	const { setSettingsTab, closeSettings } = useUILayoutContext();
+	const settingsTab = useActiveSettingsTab();
 	const { status: licenseStatus } = useLicenseStatus(false);
 	const { enabled: developerModeEnabled } = useDeveloperMode();
 	const [settingsSearchQuery, setSettingsSearchQuery] = useState("");

@@ -45,6 +45,7 @@ import { SidebarSettingsPane } from "../settings/SidebarSettingsPane";
 import { TypographySettingsPane } from "../settings/TypographySettingsPane";
 import type { SettingsTab } from "../settings/settingsConfig";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
+import { useActiveSettingsTab } from "../settings/useDeveloperMode";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
 import { SplitEditorLayout } from "./SplitEditorLayout";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -240,7 +241,8 @@ export const MainContent = memo(function MainContent({
 	onOpenPeekedNote,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
-	const { folioMode, settingsMode, settingsTab, zenMode } = useUILayoutContext();
+	const { folioMode, settingsMode, zenMode } = useUILayoutContext();
+	const settingsTab = useActiveSettingsTab();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { keepMounted: aiPanelKeepMounted } = useAiPanelSession();
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);

@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useUILayoutContext } from "../../contexts";
 import { loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { SETTINGS_QUERY_KEY } from "../../lib/settingsStore";
+import type { SettingsTab } from "./settingsConfig";
 
 export function useDeveloperMode() {
 	const queryClient = useQueryClient();
@@ -18,4 +20,11 @@ export function useDeveloperMode() {
 		loaded: settingsQuery.data !== undefined,
 		save,
 	};
+}
+
+/** The selected settings tab, falling back to About when the Developer tab is hidden. */
+export function useActiveSettingsTab(): SettingsTab {
+	const { settingsTab } = useUILayoutContext();
+	const { enabled } = useDeveloperMode();
+	return settingsTab === "developer" && !enabled ? "about" : settingsTab;
 }
