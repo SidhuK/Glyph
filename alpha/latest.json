@@ -1,15 +1,15 @@
 {
-  "version": "0.9.1-alpha.5",
-  "notes": "## What's Changed\n* Add live note and passage embeds (#596) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/596\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.1-alpha.4...v0.9.1-alpha.5",
-  "pub_date": "2026-10-04T06:43:33.841Z",
+  "version": "0.9.1",
+  "notes": "## What's Changed\n* Show weekly notes in the Calendar date panel by @SidhuK in https://github.com/SidhuK/Glyph/pull/597\n* Add optional live Markdown presentation in RAW mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/604\n* Add Inbox and opt-in Archive for notes by @SidhuK in https://github.com/SidhuK/Glyph/pull/606\n* Add colorful sidebar icons, selection rails, and folio tag styling (#607)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/607\n* Improve All Notes calendar dates and visual hierarchy by @SidhuK in https://github.com/SidhuK/Glyph/pull/608\n* Remove experimental colorful sidebar by @SidhuK in https://github.com/SidhuK/Glyph/pull/609\n* Add community colors and ring layout to Connections by @SidhuK in https://github.com/SidhuK/Glyph/pull/614\n* Refine Collections table visuals by @SidhuK in https://github.com/SidhuK/Glyph/pull/615\n* Prune low-value tests and dead recent-space id parsing by @SidhuK in https://github.com/SidhuK/Glyph/pull/616\n* Redesign appearance picker and add emoji icons (#617)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/617\n* Overhaul All Notes activity heatmap by @SidhuK in https://github.com/SidhuK/Glyph/pull/618\n* Polish editor breadcrumbs and tokenize editor chrome colors [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/619\n* Show main window only after first paint and bundle fonts (#620)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/620\n* Add live note and passage embeds (#596) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/596\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.0...v0.9.1",
+  "pub_date": "2026-10-05T04:08:44.999Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHp0Z1Z5NSt5ckF1Rkl3TzZBbENsVFhIVnpWaUNQVTgxVzY0c1VqN21vMnoyOXBpY2g1dEVvbjU4ZGxKajQzVHR6UFc0Vzg4MTE0TGUyN3plcDVJb2djPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMDk2MjA3CWZpbGU6R2x5cGguYXBwLnRhci5negoxTWN0Y2hFUWZiaU83dDFNakJ6UUY5eExzb29xVWhpUHdKc0pjMnorZ0xvYlpDci82dHlLWmUxYkxISmh2STU3K2YwZ0RiVjFaWWZMM21ZQWdSanhBQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.1-alpha.5/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDNiVTJUVjVEL0IwNE0rbWp1YkJ6N1FJR1NhSzNqN09OdWVud2hkMVQvdUZqQzZRU0NqTThTbUErM1RLT2RWUCtkUzYrUDJMMndPK3FkN1lVV2hRcmdBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMTczMzE5CWZpbGU6R2x5cGguYXBwLnRhci5negpqZHY1V0dxUi9HaWgzM0pGZDFhZzhuK3I3bG5WaXNTS2xJdFpCQkRWM01QaUgvT3dKNWtVTG9sQ09rbmRtVmwyaDNxS0dZcFNUR2FGOWVzUWlQcmVCdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.1/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHp0Z1Z5NSt5ckF1Rkl3TzZBbENsVFhIVnpWaUNQVTgxVzY0c1VqN21vMnoyOXBpY2g1dEVvbjU4ZGxKajQzVHR6UFc0Vzg4MTE0TGUyN3plcDVJb2djPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMDk2MjA3CWZpbGU6R2x5cGguYXBwLnRhci5negoxTWN0Y2hFUWZiaU83dDFNakJ6UUY5eExzb29xVWhpUHdKc0pjMnorZ0xvYlpDci82dHlLWmUxYkxISmh2STU3K2YwZ0RiVjFaWWZMM21ZQWdSanhBQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.1-alpha.5/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDNiVTJUVjVEL0IwNE0rbWp1YkJ6N1FJR1NhSzNqN09OdWVud2hkMVQvdUZqQzZRU0NqTThTbUErM1RLT2RWUCtkUzYrUDJMMndPK3FkN1lVV2hRcmdBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMTczMzE5CWZpbGU6R2x5cGguYXBwLnRhci5negpqZHY1V0dxUi9HaWgzM0pGZDFhZzhuK3I3bG5WaXNTS2xJdFpCQkRWM01QaUgvT3dKNWtVTG9sQ09rbmRtVmwyaDNxS0dZcFNUR2FGOWVzUWlQcmVCdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.1/Glyph_aarch64.app.tar.gz"
     }
   }
 }
