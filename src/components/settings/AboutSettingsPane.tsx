@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import karatPortrait from "../../assets/karat-sidhu-blueprint.webp";
 import { useUpdaterContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { useLicenseStatus } from "../../lib/license";
 import { type ReleaseChannel, loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
@@ -19,11 +20,13 @@ import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
+import { useDeveloperMode } from "./useDeveloperMode";
 
 export function AboutSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const { status: licenseStatus, loading: licenseLoading } = useLicenseStatus(false);
 	const autoUpdater = useUpdaterContext();
+	const developerMode = useDeveloperMode();
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [releaseChannelState, setReleaseChannelState] = useState<ReleaseChannel>("stable");
 	const releaseChannelTouchedRef = useRef(false);
@@ -309,6 +312,27 @@ export function AboutSettingsPane() {
 								View Changelog
 							</Button>
 						</div>
+					</SettingsRow>
+				</SettingsSection>
+
+				<SettingsSection
+					title={t("about.developerMode.sectionTitle")}
+					description={t("about.developerMode.sectionDescription")}
+				>
+					{developerMode.save.error ? (
+						<div className="settingsError">{extractErrorMessage(developerMode.save.error)}</div>
+					) : null}
+					<SettingsRow
+						label={t("about.developerMode.label")}
+						description={t("about.developerMode.description")}
+						searchId="about-developer-mode"
+					>
+						<SettingsToggle
+							checked={developerMode.enabled}
+							disabled={!developerMode.loaded || developerMode.save.isPending}
+							ariaLabel={t("about.developerMode.ariaLabel")}
+							onCheckedChange={(checked) => developerMode.save.mutate(checked)}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

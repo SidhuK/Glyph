@@ -603,6 +603,13 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.noteSidePeek,
 		change: (value) => ({ ui: { noteSidePeek: value } }),
 	}),
+	developerMode: booleanSetting({
+		key: "ui.developerMode",
+		defaultValue: false,
+		discovery: searchable("about-developer-mode"),
+		read: (settings) => settings.ui.developerMode,
+		change: (value) => ({ ui: { developerMode: value } }),
+	}),
 	resumeLastSession: booleanSetting({
 		key: "ui.resumeLastSession",
 		defaultValue: false,

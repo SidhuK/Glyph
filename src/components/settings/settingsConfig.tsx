@@ -7,6 +7,7 @@ import {
 	PencilEdit02Icon,
 	Settings01Icon,
 	SidebarLeftIcon,
+	SourceCodeIcon,
 	Sun03Icon,
 	TestTubeIcon,
 	TextFontIcon,
@@ -25,6 +26,7 @@ export type SettingsTab =
 	| "space"
 	| "git"
 	| "about"
+	| "developer"
 	| "experimental";
 
 export interface SettingsTabMeta {
@@ -70,6 +72,10 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 			{
 				id: "about",
 				renderIcon: () => <HugeiconsIcon icon={Archive02Icon} size="var(--icon-md)" />,
+			},
+			{
+				id: "developer",
+				renderIcon: () => <HugeiconsIcon icon={SourceCodeIcon} size="var(--icon-md)" />,
 			},
 		],
 	},

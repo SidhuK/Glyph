@@ -35,6 +35,7 @@ import { NoteSidePeek } from "../preview/NoteSidePeek";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
 import { AiSettingsPane } from "../settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "../settings/AppearanceSettingsPane";
+import { DeveloperSettingsPane } from "../settings/DeveloperSettingsPane";
 import { EditorSettingsPane } from "../settings/EditorSettingsPane";
 import { ExperimentalSettingsPane } from "../settings/ExperimentalSettingsPane";
 import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
@@ -137,6 +138,8 @@ function SettingsTabContent({ tab }: { tab: SettingsTab }) {
 			return <GitSettingsPane />;
 		case "about":
 			return <AboutSettingsPane />;
+		case "developer":
+			return <DeveloperSettingsPane />;
 		case "experimental":
 			return <ExperimentalSettingsPane />;
 		default: {

@@ -14,17 +14,22 @@ import {
 	scrollToSettingsSearchEntry,
 	searchSettingsEntries,
 } from "../settings/settingsSearch";
+import { useDeveloperMode } from "../settings/useDeveloperMode";
 import { Button } from "../ui/shadcn/button";
 
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 	const { t: tGeneral, i18n } = useTranslation("settings.general");
 	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
 	const { status: licenseStatus } = useLicenseStatus(false);
+	const { enabled: developerModeEnabled } = useDeveloperMode();
 	const [settingsSearchQuery, setSettingsSearchQuery] = useState("");
 	const [settingsSearchActive, setSettingsSearchActive] = useState(false);
 	const settingsSearchResults = useMemo(
-		() => searchSettingsEntries(settingsSearchQuery, 8, i18n.language),
-		[settingsSearchQuery, i18n.language],
+		() =>
+			searchSettingsEntries(settingsSearchQuery, undefined, i18n.language)
+				.filter((result) => result.tab !== "developer" || developerModeEnabled)
+				.slice(0, 8),
+		[settingsSearchQuery, i18n.language, developerModeEnabled],
 	);
 	const hasSearchQuery = settingsSearchActive && settingsSearchQuery.trim().length > 0;
 
@@ -131,27 +136,29 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 								>
 									{tGeneral(group.headingKey)}
 								</h3>
-								{group.tabs.map((tab) => (
-									<button
-										key={tab.id}
-										type="button"
-										data-tab={tab.id}
-										className={cn(
-											"sidebarQuickActionBtn settingsTabButton",
-											settingsTab === tab.id && "settingsTabButtonActive",
-										)}
-										onClick={() => setSettingsTab(tab.id)}
-										aria-pressed={settingsTab === tab.id}
-										aria-current={settingsTab === tab.id ? "page" : undefined}
-									>
-										<span className="settingsTabIcon" aria-hidden="true">
-											{tab.renderIcon()}
-										</span>
-										<span className="sidebarQuickActionLabel settingsTabLabel">
-											{localizedSettingsTabLabel(tab.id, i18n.language)}
-										</span>
-									</button>
-								))}
+								{group.tabs
+									.filter((tab) => tab.id !== "developer" || developerModeEnabled)
+									.map((tab) => (
+										<button
+											key={tab.id}
+											type="button"
+											data-tab={tab.id}
+											className={cn(
+												"sidebarQuickActionBtn settingsTabButton",
+												settingsTab === tab.id && "settingsTabButtonActive",
+											)}
+											onClick={() => setSettingsTab(tab.id)}
+											aria-pressed={settingsTab === tab.id}
+											aria-current={settingsTab === tab.id ? "page" : undefined}
+										>
+											<span className="settingsTabIcon" aria-hidden="true">
+												{tab.renderIcon()}
+											</span>
+											<span className="sidebarQuickActionLabel settingsTabLabel">
+												{localizedSettingsTabLabel(tab.id, i18n.language)}
+											</span>
+										</button>
+									))}
 							</section>
 						))}
 					</div>
