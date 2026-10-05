@@ -29,3 +29,4 @@ dist-ssr
 .pi/
 .sc/
 plans/
+.vitest/

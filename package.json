@@ -98,8 +98,7 @@
 		"tailwindcss": "^4.3.2",
 		"typescript": "~7.0.2",
 		"vite": "catalog:",
-		"vite-plus": "catalog:",
-		"vitest": "catalog:"
+		"vite-plus": "catalog:"
 	},
 	"packageManager": "pnpm@10.28.2"
 }

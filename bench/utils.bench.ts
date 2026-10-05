@@ -1,4 +1,4 @@
-import { bench, describe } from "vite-plus/test";
+import { test, describe } from "vite-plus/test";
 import { normalizeInlineMarkdown } from "../src/lib/markdownUtils";
 import {
 	joinYamlFrontmatter,
@@ -49,53 +49,73 @@ const paths = Array.from(
 );
 
 describe("textStats", () => {
-	bench("countWords on a large document", () => {
-		countWords(plainText);
+	test("countWords on a large document", async ({ bench }) => {
+		await bench("countWords on a large document", () => {
+			countWords(plainText);
+		}).run();
 	});
 });
 
 describe("markdownUtils", () => {
-	bench("normalizeInlineMarkdown on rich markdown", () => {
-		normalizeInlineMarkdown(noteBody);
+	test("normalizeInlineMarkdown on rich markdown", async ({ bench }) => {
+		await bench("normalizeInlineMarkdown on rich markdown", () => {
+			normalizeInlineMarkdown(noteBody);
+		}).run();
 	});
 });
 
 describe("notePreview", () => {
-	bench("parseNotePreview with frontmatter", () => {
-		parseNotePreview("notes/my-detailed-note.md", noteWithFrontmatter);
+	test("parseNotePreview with frontmatter", async ({ bench }) => {
+		await bench("parseNotePreview with frontmatter", () => {
+			parseNotePreview("notes/my-detailed-note.md", noteWithFrontmatter);
+		}).run();
 	});
 
-	bench("splitYamlFrontmatter", () => {
-		splitYamlFrontmatter(noteWithFrontmatter);
+	test("splitYamlFrontmatter", async ({ bench }) => {
+		await bench("splitYamlFrontmatter", () => {
+			splitYamlFrontmatter(noteWithFrontmatter);
+		}).run();
 	});
 
-	bench("joinYamlFrontmatter", () => {
-		const { frontmatter, body } = splitYamlFrontmatter(noteWithFrontmatter);
-		joinYamlFrontmatter(frontmatter, body);
+	test("joinYamlFrontmatter", async ({ bench }) => {
+		await bench("joinYamlFrontmatter", () => {
+			const { frontmatter, body } = splitYamlFrontmatter(noteWithFrontmatter);
+			joinYamlFrontmatter(frontmatter, body);
+		}).run();
 	});
 });
 
 describe("relationships", () => {
-	bench("groupRelationshipsByField on 500 relationships", () => {
-		const grouped: RelationshipGroup[] = groupRelationshipsByField(relationships);
-		void grouped;
+	test("groupRelationshipsByField on 500 relationships", async ({ bench }) => {
+		await bench("groupRelationshipsByField on 500 relationships", () => {
+			const grouped: RelationshipGroup[] = groupRelationshipsByField(relationships);
+			void grouped;
+		}).run();
 	});
 });
 
 describe("path utils", () => {
-	bench("normalizeRelPath over many paths", () => {
-		for (const p of paths) normalizeRelPath(`\\${p}\\`);
+	test("normalizeRelPath over many paths", async ({ bench }) => {
+		await bench("normalizeRelPath over many paths", () => {
+			for (const p of paths) normalizeRelPath(`\\${p}\\`);
+		}).run();
 	});
 
-	bench("fileExtension over many paths", () => {
-		for (const p of paths) fileExtension(p);
+	test("fileExtension over many paths", async ({ bench }) => {
+		await bench("fileExtension over many paths", () => {
+			for (const p of paths) fileExtension(p);
+		}).run();
 	});
 
-	bench("isPreviewableNotePath over many paths", () => {
-		for (const p of paths) isPreviewableNotePath(p);
+	test("isPreviewableNotePath over many paths", async ({ bench }) => {
+		await bench("isPreviewableNotePath over many paths", () => {
+			for (const p of paths) isPreviewableNotePath(p);
+		}).run();
 	});
 
-	bench("displayFolderFromPath over many paths", () => {
-		for (const p of paths) displayFolderFromPath(p);
+	test("displayFolderFromPath over many paths", async ({ bench }) => {
+		await bench("displayFolderFromPath over many paths", () => {
+			for (const p of paths) displayFolderFromPath(p);
+		}).run();
 	});
 });
