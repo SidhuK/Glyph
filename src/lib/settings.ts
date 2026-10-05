@@ -462,6 +462,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 	const folioSortMode = DURABLE_SETTINGS.folioSortMode.load(entries);
 	const folioNotesWidth = DURABLE_SETTINGS.folioNotesWidth.load(entries);
 	const noteSidePeek = DURABLE_SETTINGS.noteSidePeek.load(entries);
+	const developerMode = DURABLE_SETTINGS.developerMode.load(entries);
 	const resumeLastSession = DURABLE_SETTINGS.resumeLastSession.load(entries);
 	const dailyNotesFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.dailyNotesFolder,
@@ -618,6 +619,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			folioSortMode,
 			folioNotesWidth,
 			noteSidePeek,
+			developerMode,
 			resumeLastSession,
 			aiAssistantMode,
 			dateDisplayFormat,

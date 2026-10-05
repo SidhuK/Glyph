@@ -10,7 +10,8 @@
 		"ai": "AI",
 		"space": "Space",
 		"git": "Git Sync",
-		"about": "About"
+		"about": "About",
+		"developer": "Developer"
 	},
 	"tabEntry": {
 		"general": {
@@ -67,6 +68,11 @@
 			"title": "About settings",
 			"description": "Open About settings.",
 			"keywords": ["About"]
+		},
+		"developer": {
+			"title": "Developer settings",
+			"description": "Advanced controls for power users.",
+			"keywords": ["Developer", "advanced", "debug"]
 		}
 	},
 	"entries": {
@@ -664,6 +670,12 @@
 			"section": "Updates",
 			"description": "Open the published Glyph changelog.",
 			"keywords": ["release notes", "version", "updates"]
+		},
+		"about-developer-mode": {
+			"title": "Developer mode",
+			"section": "Developer",
+			"description": "Show the Developer settings tab with advanced controls.",
+			"keywords": ["developer", "advanced", "debug", "power user"]
 		}
 	},
 	"categoryPrefix": "Settings > {{tab}}"

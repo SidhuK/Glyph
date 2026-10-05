@@ -16,7 +16,19 @@
 			"bio": "By day, Karat is a biomedical and research scientist. His research has taken him to places like Texas A&M University and the University of Vermont. He writes software for the fun of solving his own problems, and Glyph is one of those tools.",
 			"github": "GitHub",
 			"twitter": "X / Twitter"
+		},
+		"developerMode": {
+			"sectionTitle": "Developer",
+			"sectionDescription": "Advanced controls for people who want more say over how Glyph behaves.",
+			"label": "Developer mode",
+			"description": "Adds a Developer tab under Application with settings most people won't need.",
+			"ariaLabel": "Developer mode"
 		}
+	},
+	"developer": {
+		"sectionTitle": "Developer",
+		"sectionDescription": "Advanced controls for power users. Turn off Developer mode in About to hide this tab.",
+		"empty": "No developer settings yet."
 	},
 	"archive": {
 		"sectionTitle": "Archive",

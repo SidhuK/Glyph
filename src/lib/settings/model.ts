@@ -214,6 +214,7 @@ export interface AppSettings {
 		folioSortMode: FileTreeSortMode;
 		folioNotesWidth: number;
 		noteSidePeek: boolean;
+		developerMode: boolean;
 		resumeLastSession: boolean;
 		aiAssistantMode: AiAssistantMode;
 		dateDisplayFormat: DateDisplayFormat;
