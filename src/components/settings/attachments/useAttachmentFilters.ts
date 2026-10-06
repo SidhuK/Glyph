@@ -22,7 +22,7 @@ export function isUnused(entry: AttachmentEntry): boolean {
 
 export function useAttachmentFilters(attachments: readonly AttachmentEntry[]) {
 	const [usage, setUsage] = useState<AttachmentUsageFilter>("unused");
-	const [kind, setKind] = useState<AttachmentKindFilter>("any");
+	const [kindChoice, setKind] = useState<AttachmentKindFilter>("any");
 	const [sort, setSort] = useState<AttachmentSort>("size");
 	const [query, setQuery] = useState("");
 	const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
@@ -34,6 +34,9 @@ export function useAttachmentFilters(attachments: readonly AttachmentEntry[]) {
 		for (const entry of attachments) present.add(entry.kind);
 		return [...present];
 	}, [attachments]);
+	// A rescan can remove the chosen type (and hide its selector), so fall back
+	// to all types rather than leave an empty list with no way out.
+	const kind = kindChoice === "any" || kinds.includes(kindChoice) ? kindChoice : "any";
 
 	const visible = useMemo(() => {
 		const needle = query.trim().toLowerCase();
@@ -44,7 +47,9 @@ export function useAttachmentFilters(attachments: readonly AttachmentEntry[]) {
 		);
 		return sort === "size"
 			? filtered.sort((a, b) => b.size - a.size)
-			: filtered.sort((a, b) => a.rel_path.localeCompare(b.rel_path));
+			: filtered.sort(
+					(a, b) => a.name.localeCompare(b.name) || a.rel_path.localeCompare(b.rel_path),
+				);
 	}, [attachments, unused, usage, kind, sort, query]);
 
 	// Only unused files that are still on screen can be trashed, so a rescan or a

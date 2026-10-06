@@ -10,13 +10,6 @@ use crate::utils;
 /// Longest filename macOS allows; bounds the backwards walk from an extension.
 const MAX_NAME_BYTES: usize = 255;
 
-/// Characters that can never sit inside a referenced filename, so they end a
-/// candidate when walking backwards from its extension.
-const NAME_DELIMITERS: &[char] = &[
-    '/', '(', ')', '[', ']', '"', '\'', '<', '>', '|', '`', '=', ':', '\n', '\r', '\t', '*', '?',
-    '{', '}',
-];
-
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AttachmentKind {
@@ -89,9 +82,8 @@ fn percent_decode(raw: &str) -> String {
 /// suffix that starts after a non-alphanumeric character is tried, so prose
 /// like "see my photo.png" still matches a file named "my photo.png".
 fn collect_chunk_matches(chunk: &str, names: &HashSet<String>, out: &mut HashSet<String>) {
-    let decoded = percent_decode(chunk);
-    let unescaped = decoded.replace('\\', "");
-    for variant in [chunk, decoded.as_str(), unescaped.as_str()] {
+    let unescaped = chunk.replace('\\', "");
+    for variant in [chunk, unescaped.as_str()] {
         let starts = variant
             .char_indices()
             .filter(|(_, c)| !c.is_alphanumeric())
@@ -109,48 +101,66 @@ fn collect_chunk_matches(chunk: &str, names: &HashSet<String>, out: &mut HashSet
 /// links, HTML tags, frontmatter values, or plain text. Matching is by file
 /// name, so a reference never goes unnoticed because of how its path was
 /// written; the cost is that same-named files in different folders count as
-/// referenced together.
+/// referenced together. The percent-decoded text is scanned too, so encoded
+/// names (`my%20photo.png`, `photo%2Epng`) are found.
 pub fn referenced_names(markdown: &str, names: &HashSet<String>) -> HashSet<String> {
-    let text = markdown.to_lowercase();
+    let raw = markdown.to_lowercase();
+    let decoded = percent_decode(&raw);
     let mut out = HashSet::new();
-    for (dot, _) in text.match_indices('.') {
-        let ext_end = text[dot + 1..]
-            .find(|c: char| !c.is_ascii_alphanumeric())
-            .map_or(text.len(), |offset| dot + 1 + offset);
-        if attachment_kind(&text[dot + 1..ext_end]).is_none() {
-            continue;
+    let texts = std::iter::once(raw.as_str()).chain((decoded != raw).then_some(decoded.as_str()));
+    for text in texts {
+        for (dot, _) in text.match_indices('.') {
+            let ext_end = text[dot + 1..]
+                .find(|c: char| !c.is_ascii_alphanumeric())
+                .map_or(text.len(), |offset| dot + 1 + offset);
+            if attachment_kind(&text[dot + 1..ext_end]).is_none() {
+                continue;
+            }
+            // Filenames can hold any punctuation (`photo (1).png`), so only a
+            // line break or the name-length limit bounds the candidate.
+            let line_start = text[..dot].rfind(['\n', '\r']).map_or(0, |i| i + 1);
+            let mut start = line_start.max(dot.saturating_sub(MAX_NAME_BYTES));
+            while !text.is_char_boundary(start) {
+                start += 1;
+            }
+            collect_chunk_matches(&text[start..ext_end], names, &mut out);
         }
-        let floor = dot.saturating_sub(MAX_NAME_BYTES);
-        let start = text[..dot]
-            .char_indices()
-            .rev()
-            .take_while(|(i, c)| *i >= floor && !NAME_DELIMITERS.contains(c))
-            .last()
-            .map_or(dot, |(i, _)| i);
-        collect_chunk_matches(&text[start..ext_end], names, &mut out);
     }
     out
 }
 
+/// Notes as (relative path, absolute path), plus the attachments found.
+type SpaceFiles = (Vec<(String, PathBuf)>, Vec<AttachmentEntry>);
+
+fn read_error(path: &Path, error: std::io::Error) -> String {
+    format!("could not read {}: {error}", path.display())
+}
+
 /// Walks the space once, splitting visible files into notes and attachments.
-fn collect_space_files(root: &Path) -> (Vec<(String, PathBuf)>, Vec<AttachmentEntry>) {
+/// Any unreadable folder fails the scan: skipping it could hide references and
+/// let a used attachment look unused. Symlinks are followed to find notes, but
+/// files reached through one are never listed, since trashing them could touch
+/// files outside the space.
+fn collect_space_files(root: &Path) -> Result<SpaceFiles, String> {
     let mut notes = Vec::new();
     let mut attachments = Vec::new();
-    let mut stack = vec![root.to_path_buf()];
-    while let Some(dir) = stack.pop() {
-        let Ok(entries) = std::fs::read_dir(&dir) else {
-            continue;
-        };
-        for entry in entries.flatten() {
+    let mut stack = vec![(root.to_path_buf(), false)];
+    while let Some((dir, dir_via_link)) = stack.pop() {
+        let entries = std::fs::read_dir(&dir).map_err(|e| read_error(&dir, e))?;
+        for entry in entries {
+            let entry = entry.map_err(|e| read_error(&dir, e))?;
             if utils::should_hide(&entry.file_name().to_string_lossy()) {
                 continue;
             }
             let path = entry.path();
-            let Ok(meta) = entry.metadata() else {
-                continue;
-            };
+            let via_link = dir_via_link
+                || entry
+                    .file_type()
+                    .map_err(|e| read_error(&path, e))?
+                    .is_symlink();
+            let meta = entry.metadata().map_err(|e| read_error(&path, e))?;
             if meta.is_dir() {
-                stack.push(path);
+                stack.push((path, via_link));
                 continue;
             }
             let Ok(rel) = path.strip_prefix(root) else {
@@ -159,6 +169,9 @@ fn collect_space_files(root: &Path) -> (Vec<(String, PathBuf)>, Vec<AttachmentEn
             let rel_path = utils::to_slash(rel);
             if utils::is_markdown_path(&path) {
                 notes.push((rel_path, path));
+                continue;
+            }
+            if via_link {
                 continue;
             }
             let Some(kind) =
@@ -175,21 +188,18 @@ fn collect_space_files(root: &Path) -> (Vec<(String, PathBuf)>, Vec<AttachmentEn
             });
         }
     }
-    (notes, attachments)
+    Ok((notes, attachments))
 }
 
-pub fn scan_attachments(root: &Path) -> AttachmentScan {
-    let (mut notes, mut attachments) = collect_space_files(root);
+pub fn scan_attachments(root: &Path) -> Result<AttachmentScan, String> {
+    let (mut notes, mut attachments) = collect_space_files(root)?;
     // Sorted up front so each attachment's referencing notes come out in order.
     notes.sort_unstable();
     let names: HashSet<String> = attachments.iter().map(|a| a.name.to_lowercase()).collect();
     let mut referenced: HashMap<String, Vec<String>> = HashMap::new();
     for (rel_path, abs) in &notes {
-        let Ok(markdown) = std::fs::read_to_string(abs) else {
-            tracing::warn!(%rel_path, "skipping unreadable note during attachment scan");
-            continue;
-        };
-        for name in referenced_names(&markdown, &names) {
+        let bytes = std::fs::read(abs).map_err(|e| read_error(abs, e))?;
+        for name in referenced_names(&String::from_utf8_lossy(&bytes), &names) {
             referenced.entry(name).or_default().push(rel_path.clone());
         }
     }
@@ -199,8 +209,8 @@ pub fn scan_attachments(root: &Path) -> AttachmentScan {
             attachment.referenced_by.clone_from(notes);
         }
     }
-    AttachmentScan {
+    Ok(AttachmentScan {
         attachments,
         note_count: notes.len(),
-    }
+    })
 }

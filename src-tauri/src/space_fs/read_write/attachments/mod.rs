@@ -43,11 +43,12 @@ pub async fn space_scan_attachments(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || scan::scan_attachments(&root))
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?
 }
 
 /// Moves unreferenced attachments to the macOS Trash. The space is rescanned
-/// first so a file that gained a reference since the user's review is kept.
+/// first so a file that gained a reference since the user's review is kept,
+/// and in-app note saves are held off until the batch finishes.
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_trash_unused_attachments(
     app: tauri::AppHandle,
@@ -59,8 +60,12 @@ pub async fn space_trash_unused_attachments(
     let space_path = root.to_string_lossy().to_string();
     let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
-    let result = tauri::async_runtime::spawn_blocking(move || {
-        let current: HashMap<String, AttachmentEntry> = scan::scan_attachments(&root)
+    let note_mutation_mutex = state.note_mutation_mutex();
+    let result = tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
+        let _guard = note_mutation_mutex
+            .lock()
+            .map_err(|_| "note mutation mutex poisoned".to_string())?;
+        let current: HashMap<String, AttachmentEntry> = scan::scan_attachments(&root)?
             .attachments
             .into_iter()
             .map(|entry| (entry.rel_path.clone(), entry))
@@ -97,10 +102,10 @@ pub async fn space_trash_unused_attachments(
                 }
             }
         }
-        result
+        Ok(result)
     })
     .await
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| e.to_string())??;
     if !result.trashed.is_empty() {
         let changes = result
             .trashed
