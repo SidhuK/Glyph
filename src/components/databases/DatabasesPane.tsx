@@ -3,6 +3,7 @@ import { CursorAddSelection02Icon, LibraryIcon } from "@hugeicons/core-free-icon
 import { useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { useDatabasesPane } from "../../hooks/database/useDatabasesPane";
+import { DATABASE_SEARCH_SOURCE_LIMIT } from "../../lib/database/collection";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import {
 	EMPTY_BOARD_CARD_FIELDS,
@@ -103,6 +104,13 @@ function DatabasesPaneContent({
 						/>
 					</div>
 					{ui.error ? <div className="databaseNotice databaseNoticeError">{ui.error}</div> : null}
+					{rows.sourceTruncated ? (
+						<div className="databaseNotice">
+							{t("collections.sourceTruncated", {
+								limit: DATABASE_SEARCH_SOURCE_LIMIT.toLocaleString(),
+							})}
+						</div>
+					) : null}
 					{activeCollection.config.view.layout === "board" && views.boardHandlers ? (
 						<DatabaseBoard
 							rows={rows.rows}
@@ -128,6 +136,16 @@ function DatabasesPaneContent({
 							onCardOrderChange={views.boardHandlers.onCardOrderChange}
 							onLaneColorChange={views.boardHandlers.onLaneColorChange}
 							onStatusColorChange={display.setStatusColor}
+							laneRenameTarget={{
+								databaseId: activeCollection.document.database.id,
+								viewId: activeCollection.view.id,
+								revision: activeCollection.document.database.updated_at,
+							}}
+							membershipComplete={
+								rows.allRowsLoaded &&
+								activeCollection.view.filters.length === 0 &&
+								!activeCollection.view.search?.trim()
+							}
 							hasMoreRows={rows.hasMoreRows}
 							isLoadingMoreRows={rows.isLoadingMoreRows}
 							onLoadMoreRows={rows.loadMoreRows}

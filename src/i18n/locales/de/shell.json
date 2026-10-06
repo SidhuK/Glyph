@@ -66,7 +66,15 @@
 		"searchView": "Sammlung durchsuchen",
 		"unpin": "Sammlung lösen",
 		"unpinNamed": "{{name}} lösen",
-		"unpinFailed": "Sammlung konnte nicht gelöst werden"
+		"unpinFailed": "Sammlung konnte nicht gelöst werden",
+		"laneRenameTitle": "Spalte umbenennen",
+		"laneRenameScope_one": "Aktualisiert 1 Karte in dieser Ansicht, auch noch nicht geladene Karten. Durch Filter oder Suche ausgeblendete Karten behalten ihren Wert.",
+		"laneRenameScope_other": "Aktualisiert {{count}} Karten in dieser Ansicht, auch noch nicht geladene Karten. Durch Filter oder Suche ausgeblendete Karten behalten ihren Wert.",
+		"laneRenameExists": "„{{name}}“ existiert bereits.",
+		"laneRenamePartial": "{{changed}} von {{total}} Karten aktualisiert. {{failed}} konnten nicht aktualisiert werden: {{error}}",
+		"laneRenameConfirm": "Umbenennen",
+		"laneRenameCancel": "Abbrechen",
+		"sourceTruncated": "Diese Suchsammlung zeigt nur die ersten {{limit}} Treffer."
 	},
 	"tags": {
 		"header": "Tags",

@@ -17,6 +17,8 @@ interface UseDatabaseBoardParams {
 	initialGroupColumnId?: string | null;
 	initialLaneOrderByGroup?: Record<string, string[]>;
 	initialCardOrderByGroup?: Record<string, Record<string, string[]>>;
+	/** True only when `rows` is every row of the collection (all pages, no filter or search). */
+	membershipComplete: boolean;
 	onLaneOrderChange?: (groupColumnId: string, laneOrder: string[]) => void | Promise<void>;
 	onCardOrderChange?: (
 		groupColumnId: string,
@@ -99,14 +101,21 @@ function laneRowsById(lanes: DatabaseBoardLane[]): Record<string, string[]> {
 function mergeCardOrder(
 	currentCardOrder: Record<string, string[]>,
 	displayedCardOrder: Record<string, string[]>,
+	membershipComplete: boolean,
 ): Record<string, string[]> {
-	const nextEntries = Object.entries(displayedCardOrder)
-		.map(([laneId, displayedOrder]) => {
+	const loadedPaths = new Set(Object.values(displayedCardOrder).flat());
+	const laneIds = new Set([...Object.keys(currentCardOrder), ...Object.keys(displayedCardOrder)]);
+	const nextEntries = [...laneIds]
+		.map((laneId) => {
+			const displayedOrder = displayedCardOrder[laneId] ?? [];
 			const displayedSet = new Set(displayedOrder);
 			const currentOrder = currentCardOrder[laneId] ?? [];
 			const currentSet = new Set(currentOrder);
 			const nextOrder = [
-				...currentOrder.filter((notePath) => displayedSet.has(notePath)),
+				...currentOrder.filter(
+					(notePath) =>
+						displayedSet.has(notePath) || (!membershipComplete && !loadedPaths.has(notePath)),
+				),
 				...displayedOrder.filter((notePath) => !currentSet.has(notePath)),
 			];
 			return [laneId, nextOrder] as const;
@@ -121,6 +130,7 @@ export function useDatabaseBoard({
 	initialGroupColumnId = null,
 	initialLaneOrderByGroup = {},
 	initialCardOrderByGroup = {},
+	membershipComplete,
 	onLaneOrderChange,
 	onCardOrderChange,
 }: UseDatabaseBoardParams) {
@@ -216,7 +226,7 @@ export function useDatabaseBoard({
 		const displayedCardOrder = laneRowsById(lanes);
 		const currentCardOrder =
 			cardOrderByGroup[groupColumn.id] ?? displayedCardIdsRef.current[groupColumn.id] ?? {};
-		const nextCardOrder = mergeCardOrder(currentCardOrder, displayedCardOrder);
+		const nextCardOrder = mergeCardOrder(currentCardOrder, displayedCardOrder, membershipComplete);
 		if (cardOrdersEqual(currentCardOrder, nextCardOrder)) return;
 
 		const activeGroupIds = new Set(groupColumns.map((column) => column.id));
@@ -238,7 +248,7 @@ export function useDatabaseBoard({
 			return cardOrderRecordsEqual(current, nextCardOrderByGroup) ? current : nextCardOrderByGroup;
 		});
 		void onCardOrderChangeRef.current?.(groupColumn.id, nextCardOrder);
-	}, [cardOrderByGroup, groupColumn, groupColumns, lanes]);
+	}, [cardOrderByGroup, groupColumn, groupColumns, lanes, membershipComplete]);
 
 	const moveLaneToIndex = useCallback(
 		(sourceLaneId: string, targetIndex: number) => {

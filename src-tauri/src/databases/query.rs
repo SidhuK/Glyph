@@ -1,23 +1,46 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
-use rusqlite::{params, Connection};
+use rusqlite::Connection;
 
-use crate::index::commands::parse_raw_search_query;
 use crate::index::open_db;
-use crate::index::search_advanced::run_search_advanced;
 use crate::paths;
-use crate::notes::archive::ACTIVE_NOTES;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::filter::row_matches_filters;
+use super::source::{source_ids, SourceIds};
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseDefinition, DatabaseDocument,
     DatabasePropertyOption, DatabaseQueryResult, DatabaseRow, DatabaseViewDefinition,
 };
 
-const SOURCE_SCAN_LIMIT: usize = 2_000;
 const SQLITE_BATCH_SIZE: usize = 500;
+const EVALUATION_BATCH_SIZE: usize = 2_000;
+
+#[derive(Default)]
+pub(super) enum PropertyFields {
+    #[default]
+    None,
+    Keys(Vec<String>),
+    All,
+}
+
+#[derive(Default)]
+pub(super) struct RowFields {
+    pub tags: bool,
+    pub links: bool,
+    pub properties: PropertyFields,
+}
+
+impl RowFields {
+    pub(super) fn all() -> Self {
+        Self {
+            tags: true,
+            links: true,
+            properties: PropertyFields::All,
+        }
+    }
+}
 
 pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
     vec![
@@ -368,113 +391,6 @@ fn compare_rows(
     }
 }
 
-fn all_notes_source_ids(conn: &Connection, limit: usize) -> Result<Vec<String>, String> {
-    let mut stmt = conn
-        .prepare(&format!("SELECT n.id FROM notes n WHERE {ACTIVE_NOTES} ORDER BY n.updated DESC LIMIT ?"))
-        .map_err(|e| e.to_string())?;
-    let mut rows = stmt.query([limit as i64]).map_err(|e| e.to_string())?;
-    let mut out = Vec::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        out.push(row.get::<_, String>(0).map_err(|e| e.to_string())?);
-    }
-    Ok(out)
-}
-
-fn direct_folder_clause(dir: &str) -> (String, Vec<String>) {
-    if dir.is_empty() {
-        return ("instr(id, '/') = 0".to_string(), Vec::new());
-    }
-    let char_len = dir.chars().count();
-    (
-        "id LIKE ? AND instr(substr(id, ?), '/') = 0".to_string(),
-        vec![format!("{dir}/%"), (char_len + 2).to_string()],
-    )
-}
-
-fn recursive_folder_clause(dir: &str) -> (String, Vec<String>) {
-    if dir.is_empty() {
-        return ("1 = 1".to_string(), Vec::new());
-    }
-    ("id LIKE ?".to_string(), vec![format!("{dir}/%")])
-}
-
-fn folder_source_ids(
-    conn: &Connection,
-    dir: &str,
-    recursive: bool,
-    limit: usize,
-) -> Result<Vec<String>, String> {
-    let (where_sql, bind_values) = if recursive {
-        recursive_folder_clause(dir)
-    } else {
-        direct_folder_clause(dir)
-    };
-    let sql = format!("SELECT n.id FROM notes n WHERE ({where_sql}) AND {ACTIVE_NOTES} ORDER BY n.updated DESC LIMIT ?");
-    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-    let mut bind_params: Vec<rusqlite::types::Value> = bind_values
-        .into_iter()
-        .map(rusqlite::types::Value::from)
-        .collect();
-    bind_params.push(rusqlite::types::Value::from(limit as i64));
-    let mut rows = stmt
-        .query(rusqlite::params_from_iter(bind_params.iter()))
-        .map_err(|e| e.to_string())?;
-    let mut out = Vec::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        out.push(row.get::<_, String>(0).map_err(|e| e.to_string())?);
-    }
-    Ok(out)
-}
-
-fn tag_source_ids(conn: &Connection, tag: &str, limit: usize) -> Result<Vec<String>, String> {
-    let normalized = tag.trim().trim_start_matches('#').to_lowercase();
-    let mut stmt = conn
-        .prepare(&format!(
-            "SELECT n.id
-             FROM tags t
-             JOIN notes n ON n.id = t.note_id
-             WHERE t.tag = ? AND {ACTIVE_NOTES}
-             ORDER BY n.updated DESC
-             LIMIT ?",
-        ))
-        .map_err(|e| e.to_string())?;
-    let mut rows = stmt
-        .query(params![normalized, limit as i64])
-        .map_err(|e| e.to_string())?;
-    let mut out = Vec::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        out.push(row.get::<_, String>(0).map_err(|e| e.to_string())?);
-    }
-    Ok(out)
-}
-
-fn search_source_ids(conn: &Connection, query: &str, limit: usize) -> Result<Vec<String>, String> {
-    let request = parse_raw_search_query(query, Some(limit as u32));
-    Ok(run_search_advanced(conn, request)?
-        .into_iter()
-        .map(|result| result.id)
-        .collect())
-}
-
-fn source_ids(
-    conn: &Connection,
-    database: &DatabaseDefinition,
-    limit: usize,
-) -> Result<Vec<String>, String> {
-    match database.source.kind.as_str() {
-        "all_notes" => all_notes_source_ids(conn, limit),
-        "folder" => folder_source_ids(
-            conn,
-            database.source.value.trim_matches('/'),
-            database.source.recursive,
-            limit,
-        ),
-        "tag" => tag_source_ids(conn, &database.source.value, limit),
-        "search" => search_source_ids(conn, &database.source.value, limit),
-        other => Err(format!("unsupported database source kind '{other}'")),
-    }
-}
-
 fn property_value_from_index(
     value_type: &str,
     value_text: String,
@@ -502,9 +418,10 @@ fn property_value_from_index(
     }
 }
 
-fn hydrate_rows_by_paths(
+pub(super) fn hydrate_rows(
     conn: &Connection,
     note_paths: &[String],
+    fields: &RowFields,
 ) -> Result<Vec<DatabaseRow>, String> {
     if note_paths.is_empty() {
         return Ok(Vec::new());
@@ -540,64 +457,86 @@ fn hydrate_rows_by_paths(
             );
         }
 
-        let mut tag_stmt = conn
-            .prepare(&format!(
-                "SELECT note_id, tag
+        if fields.tags {
+            let mut tag_stmt = conn
+                .prepare(&format!(
+                    "SELECT note_id, tag
                  FROM tags
                  WHERE note_id IN ({placeholders}) AND is_explicit = 1
                  ORDER BY tag ASC"
-            ))
-            .map_err(|e| e.to_string())?;
-        let mut tag_rows = tag_stmt
-            .query(rusqlite::params_from_iter(chunk.iter()))
-            .map_err(|e| e.to_string())?;
-        while let Some(row) = tag_rows.next().map_err(|e| e.to_string())? {
-            let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-            let tag = row.get::<_, String>(1).map_err(|e| e.to_string())?;
-            if let Some(entry) = row_map.get_mut(&note_id) {
-                entry.tags.push(tag);
+                ))
+                .map_err(|e| e.to_string())?;
+            let mut tag_rows = tag_stmt
+                .query(rusqlite::params_from_iter(chunk.iter()))
+                .map_err(|e| e.to_string())?;
+            while let Some(row) = tag_rows.next().map_err(|e| e.to_string())? {
+                let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+                let tag = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+                if let Some(entry) = row_map.get_mut(&note_id) {
+                    entry.tags.push(tag);
+                }
             }
         }
 
-        let mut link_stmt = conn
-            .prepare(&format!(
-                "SELECT from_id, to_id, to_title FROM links
+        if fields.links {
+            let mut link_stmt = conn
+                .prepare(&format!(
+                    "SELECT from_id, to_id, to_title FROM links
                  WHERE from_id IN ({placeholders}) AND (to_id IS NOT NULL OR to_title IS NOT NULL)"
-            ))
-            .map_err(|e| e.to_string())?;
-        let mut link_rows = link_stmt
-            .query(rusqlite::params_from_iter(chunk.iter()))
-            .map_err(|e| e.to_string())?;
-        while let Some(row) = link_rows.next().map_err(|e| e.to_string())? {
-            let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-            let to_id = row
-                .get::<_, Option<String>>(1)
-                .map_err(|e| e.to_string())?
-                .map(|value| value.trim().to_string())
-                .filter(|value| !value.is_empty());
-            let to_title = row
-                .get::<_, Option<String>>(2)
-                .map_err(|e| e.to_string())?
-                .map(|value| value.trim().to_string())
-                .filter(|value| !value.is_empty());
-            let Some(target) = to_id.or(to_title) else {
-                continue;
-            };
-            if let Some(entry) = row_map.get_mut(&note_id) {
-                entry.linked_notes.push(target);
+                ))
+                .map_err(|e| e.to_string())?;
+            let mut link_rows = link_stmt
+                .query(rusqlite::params_from_iter(chunk.iter()))
+                .map_err(|e| e.to_string())?;
+            while let Some(row) = link_rows.next().map_err(|e| e.to_string())? {
+                let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+                let to_id = row
+                    .get::<_, Option<String>>(1)
+                    .map_err(|e| e.to_string())?
+                    .map(|value| value.trim().to_string())
+                    .filter(|value| !value.is_empty());
+                let to_title = row
+                    .get::<_, Option<String>>(2)
+                    .map_err(|e| e.to_string())?
+                    .map(|value| value.trim().to_string())
+                    .filter(|value| !value.is_empty());
+                let Some(target) = to_id.or(to_title) else {
+                    continue;
+                };
+                if let Some(entry) = row_map.get_mut(&note_id) {
+                    entry.linked_notes.push(target);
+                }
             }
         }
 
+        let key_filter: &[String] = match &fields.properties {
+            PropertyFields::None => continue,
+            PropertyFields::All => &[],
+            PropertyFields::Keys(keys) if keys.is_empty() => continue,
+            PropertyFields::Keys(keys) => keys,
+        };
+        let key_clause = if key_filter.is_empty() {
+            String::new()
+        } else {
+            format!(
+                " AND key IN ({})",
+                std::iter::repeat_n("?", key_filter.len())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
         let mut prop_stmt = conn
             .prepare(&format!(
                 "SELECT note_id, key, value_type, value_text, value_json
                  FROM note_properties
-                 WHERE note_id IN ({placeholders})
+                 WHERE note_id IN ({placeholders}){key_clause}
                  ORDER BY ordinal ASC"
             ))
             .map_err(|e| e.to_string())?;
         let mut prop_rows = prop_stmt
-            .query(rusqlite::params_from_iter(chunk.iter()))
+            .query(rusqlite::params_from_iter(
+                chunk.iter().chain(key_filter.iter()),
+            ))
             .map_err(|e| e.to_string())?;
         while let Some(row) = prop_rows.next().map_err(|e| e.to_string())? {
             let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
@@ -621,26 +560,138 @@ fn hydrate_rows_by_paths(
         .collect::<Vec<_>>())
 }
 
-fn collect_available_properties(rows: &[DatabaseRow]) -> Vec<DatabasePropertyOption> {
-    let mut counts = BTreeMap::<String, (String, u32)>::new();
-    for row in rows {
-        for (key, value) in &row.properties {
-            if matches!(
-                key.as_str(),
-                "title" | "created" | "updated" | "tags" | "glyph"
-            ) {
-                continue;
+fn evaluation_fields(
+    catalog: &[DatabaseColumn],
+    view: &DatabaseViewDefinition,
+) -> Option<RowFields> {
+    if !view.search.trim().is_empty() {
+        return Some(RowFields::all());
+    }
+    if view.filters.is_empty() && view.sorts.is_empty() {
+        return None;
+    }
+    let mut fields = RowFields::default();
+    let mut property_keys = Vec::new();
+    let referenced = view
+        .filters
+        .iter()
+        .map(|filter| &filter.column_id)
+        .chain(view.sorts.iter().map(|sort| &sort.column_id));
+    for column_id in referenced {
+        let Some(column) = catalog.iter().find(|entry| &entry.id == column_id) else {
+            continue;
+        };
+        match column.column_type.as_str() {
+            "tags" => fields.tags = true,
+            "linked_notes" => fields.links = true,
+            "property" => {
+                if let Some(key) = &column.property_key {
+                    if !property_keys.contains(key) {
+                        property_keys.push(key.clone());
+                    }
+                }
             }
-            let entry = counts
-                .entry(key.clone())
-                .or_insert_with(|| (value.kind.clone(), 0));
-            entry.1 += 1;
+            _ => {}
         }
     }
-    counts
+    fields.properties = PropertyFields::Keys(property_keys);
+    Some(fields)
+}
+
+/// Filters, searches, and sorts the complete source set while loading only the
+/// columns the view references, so pagination never sees a partial candidate set.
+fn matching_ids(
+    conn: &Connection,
+    source: Vec<String>,
+    catalog: &[DatabaseColumn],
+    view: &DatabaseViewDefinition,
+) -> Result<Vec<String>, String> {
+    let Some(fields) = evaluation_fields(catalog, view) else {
+        return Ok(source);
+    };
+    let mut rows = Vec::new();
+    for chunk in source.chunks(EVALUATION_BATCH_SIZE) {
+        let mut batch = hydrate_rows(conn, chunk, &fields)?;
+        batch.retain(|row| {
+            row_matches_filters(row, catalog, &view.filters)
+                && row_matches_search(row, &view.search)
+        });
+        rows.append(&mut batch);
+    }
+    if !view.sorts.is_empty() {
+        rows.sort_by(|left, right| left.note_path.cmp(&right.note_path));
+        for sort in view.sorts.iter().rev() {
+            if let Some(column) = catalog.iter().find(|entry| entry.id == sort.column_id) {
+                rows.sort_by(|left, right| {
+                    compare_rows(left, right, column, sort.direction == "desc")
+                });
+            }
+        }
+    }
+    Ok(rows.into_iter().map(|row| row.note_path).collect())
+}
+
+pub(super) fn view_matching_ids(
+    conn: &Connection,
+    database: &DatabaseDefinition,
+    view: &DatabaseViewDefinition,
+) -> Result<SourceIds, String> {
+    let mut source = source_ids(conn, database)?;
+    let catalog = field_catalog(database, view);
+    source.ids = matching_ids(conn, std::mem::take(&mut source.ids), &catalog, view)?;
+    Ok(source)
+}
+
+fn is_hidden_property_key(key: &str) -> bool {
+    matches!(key, "title" | "created" | "updated" | "tags" | "glyph")
+}
+
+fn available_properties(
+    conn: &Connection,
+    note_ids: &[String],
+) -> Result<Vec<DatabasePropertyOption>, String> {
+    let mut counts = BTreeMap::<String, BTreeMap<String, u32>>::new();
+    for chunk in note_ids.chunks(SQLITE_BATCH_SIZE) {
+        let placeholders = std::iter::repeat_n("?", chunk.len())
+            .collect::<Vec<_>>()
+            .join(", ");
+        let mut stmt = conn
+            .prepare(&format!(
+                "SELECT key, value_type, COUNT(*)
+                 FROM note_properties
+                 WHERE note_id IN ({placeholders})
+                 GROUP BY key, value_type"
+            ))
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt
+            .query(rusqlite::params_from_iter(chunk.iter()))
+            .map_err(|e| e.to_string())?;
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let key = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+            if is_hidden_property_key(&key) {
+                continue;
+            }
+            let kind = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+            let count = row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32;
+            *counts.entry(key).or_default().entry(kind).or_default() += count;
+        }
+    }
+    Ok(counts
         .into_iter()
-        .map(|(key, (kind, count))| DatabasePropertyOption { key, kind, count })
-        .collect()
+        .map(|(key, kinds)| {
+            let count = kinds.values().sum();
+            // Keys indexed with mixed kinds report the most common one; ties
+            // resolve to the alphabetically first kind so the result is stable.
+            let kind = kinds
+                .iter()
+                .max_by(|(left_kind, left), (right_kind, right)| {
+                    left.cmp(right).then_with(|| right_kind.cmp(left_kind))
+                })
+                .map(|(kind, _)| kind.clone())
+                .unwrap_or_default();
+            DatabasePropertyOption { key, kind, count }
+        })
+        .collect())
 }
 
 pub fn load_database_document(
@@ -648,11 +699,11 @@ pub fn load_database_document(
     database: &DatabaseDefinition,
 ) -> Result<DatabaseDocument, String> {
     let conn = open_db(root)?;
-    let ids = source_ids(&conn, database, SOURCE_SCAN_LIMIT)?;
-    let rows = hydrate_rows_by_paths(&conn, &ids)?;
+    let snapshot = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+    let source = source_ids(&snapshot, database)?;
     Ok(DatabaseDocument {
         database: database.clone(),
-        available_properties: collect_available_properties(&rows),
+        available_properties: available_properties(&snapshot, &source.ids)?,
     })
 }
 
@@ -664,45 +715,25 @@ pub fn query_database_rows(
     limit: usize,
 ) -> Result<DatabaseQueryResult, String> {
     let conn = open_db(root)?;
-    let ids = source_ids(&conn, database, SOURCE_SCAN_LIMIT)?;
-    let mut rows = hydrate_rows_by_paths(&conn, &ids)?;
-    let catalog = field_catalog(database, view);
-    rows.retain(|row| row_matches_filters(row, &catalog, &view.filters));
-    rows.retain(|row| row_matches_search(row, &view.search));
-    if !view.sorts.is_empty() {
-        rows.sort_by(|left, right| left.note_path.cmp(&right.note_path));
-        for sort in view.sorts.iter().rev() {
-            if let Some(column) = catalog.iter().find(|entry| entry.id == sort.column_id) {
-                rows.sort_by(|left, right| {
-                    compare_rows(left, right, column, sort.direction == "desc")
-                });
-            }
-        }
-    }
-    let total_count = rows.len() as u32;
-    let sliced = rows
-        .iter()
-        .skip(offset)
-        .take(limit)
-        .cloned()
-        .collect::<Vec<_>>();
-    let next_offset = if offset + sliced.len() < rows.len() {
-        Some((offset + sliced.len()) as u32)
-    } else {
-        None
-    };
+    // A read transaction keeps count, page, and properties on one index snapshot.
+    let snapshot = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+    let matches = view_matching_ids(&snapshot, database, view)?;
+    let total = matches.ids.len();
+    let start = offset.min(total);
+    let end = offset.saturating_add(limit).min(total);
+    let rows = hydrate_rows(&snapshot, &matches.ids[start..end], &RowFields::all())?;
     Ok(DatabaseQueryResult {
-        available_properties: collect_available_properties(&rows),
-        total_count,
-        next_offset,
-        truncated: ids.len() >= SOURCE_SCAN_LIMIT,
-        rows: sliced,
+        available_properties: available_properties(&snapshot, &matches.ids)?,
+        total_count: total as u32,
+        next_offset: (end < total).then_some(end as u32),
+        truncated: matches.truncated,
+        rows,
     })
 }
 
 pub fn row_by_path(root: &Path, note_path: &str) -> Result<DatabaseRow, String> {
     let conn = open_db(root)?;
-    let mut rows = hydrate_rows_by_paths(&conn, &[note_path.to_string()])?;
+    let mut rows = hydrate_rows(&conn, &[note_path.to_string()], &RowFields::all())?;
     rows.pop()
         .ok_or_else(|| "note row not found after update".to_string())
 }
@@ -718,12 +749,8 @@ pub fn read_note_markdown(root: &Path, path: &str) -> Result<String, String> {
 mod tests {
     use std::collections::BTreeMap;
 
-    use rusqlite::Connection;
-
-    use crate::index::schema::ensure_schema;
-
     use super::super::types::{DatabaseCellValue, DatabaseRow};
-    use super::{row_matches_search, tag_source_ids};
+    use super::row_matches_search;
 
     fn sample_row(tags: Vec<&str>) -> DatabaseRow {
         DatabaseRow {
@@ -777,44 +804,5 @@ mod tests {
         );
 
         assert!(row_matches_search(&row, "review product"));
-    }
-
-    #[test]
-    fn database_tag_sources_include_descendants() {
-        let conn = Connection::open_in_memory().unwrap();
-        ensure_schema(&conn).unwrap();
-
-        for (id, title, updated) in [
-            ("notes/root.md", "Root", "2026-03-24T10:00:00Z"),
-            ("notes/child.md", "Child", "2026-03-24T11:00:00Z"),
-        ] {
-            conn.execute(
-                "INSERT INTO notes(id, title, created, updated, path, etag, preview)
-                 VALUES(?, ?, ?, ?, ?, 'etag', '')",
-                rusqlite::params![id, title, updated, updated, id],
-            )
-            .unwrap();
-        }
-
-        for (note_id, tag, is_explicit) in [
-            ("notes/root.md", "work", 1),
-            ("notes/child.md", "work", 0),
-            ("notes/child.md", "work/today", 1),
-        ] {
-            conn.execute(
-                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
-                rusqlite::params![note_id, tag, is_explicit],
-            )
-            .unwrap();
-        }
-
-        assert_eq!(
-            tag_source_ids(&conn, "#work", 10).unwrap(),
-            vec!["notes/child.md".to_string(), "notes/root.md".to_string()]
-        );
-        assert_eq!(
-            tag_source_ids(&conn, "#work/today", 10).unwrap(),
-            vec!["notes/child.md".to_string()]
-        );
     }
 }

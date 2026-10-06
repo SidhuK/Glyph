@@ -66,7 +66,17 @@
 		"searchView": "Przeszukaj kolekcję",
 		"unpin": "Odepnij",
 		"unpinNamed": "Odepnij {{name}}",
-		"unpinFailed": "Nie można odpiąć kolekcji"
+		"unpinFailed": "Nie można odpiąć kolekcji",
+		"laneRenameTitle": "Zmień nazwę kolumny",
+		"laneRenameScope_one": "Aktualizuje 1 kartę w tym widoku, w tym karty jeszcze niewczytane. Karty ukryte przez filtry lub wyszukiwanie zachowują swoją wartość.",
+		"laneRenameScope_few": "Aktualizuje {{count}} karty w tym widoku, w tym karty jeszcze niewczytane. Karty ukryte przez filtry lub wyszukiwanie zachowują swoją wartość.",
+		"laneRenameScope_many": "Aktualizuje {{count}} kart w tym widoku, w tym karty jeszcze niewczytane. Karty ukryte przez filtry lub wyszukiwanie zachowują swoją wartość.",
+		"laneRenameScope_other": "Aktualizuje {{count}} kart w tym widoku, w tym karty jeszcze niewczytane. Karty ukryte przez filtry lub wyszukiwanie zachowują swoją wartość.",
+		"laneRenameExists": "„{{name}}” już istnieje.",
+		"laneRenamePartial": "Zaktualizowano {{changed}} z {{total}} kart. Nie udało się zaktualizować {{failed}}: {{error}}",
+		"laneRenameConfirm": "Zmień nazwę",
+		"laneRenameCancel": "Anuluj",
+		"sourceTruncated": "Ta kolekcja wyszukiwania pokazuje tylko pierwsze {{limit}} wyników."
 	},
 	"tags": {
 		"header": "Tagi",

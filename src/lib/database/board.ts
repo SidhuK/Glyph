@@ -182,30 +182,30 @@ export function boardLaneIdFromLabel(column: DatabaseColumn, label: string): str
 	return trimmed;
 }
 
+export function boardLaneIdForValue(column: DatabaseColumn, rawValue: string): string | null {
+	const value = rawValue.trim();
+	if (!value) return null;
+	if (column.type === "tags" || column.property_kind === "tags") {
+		return normalizeBoardTagValue(value) ?? value;
+	}
+	if (column.property_kind === "status") return statusOptionFromValue(value)?.label ?? value;
+	if (column.property_kind === "priority") return priorityOptionFromValue(value)?.label ?? value;
+	return value;
+}
+
 function rawLaneValues(row: DatabaseRow, column: DatabaseColumn): string[] {
 	const cell = databaseCellValueFromRow(row, column);
 	if (isMultiValueBoardColumn(column)) {
-		if (column.type === "tags" || column.property_kind === "tags") {
-			return uniqueLaneValues(
-				cell.value_list.map((value) => normalizeBoardTagValue(value) ?? value.trim()),
-			);
-		}
-		return uniqueLaneValues(cell.value_list);
+		return uniqueLaneValues(
+			cell.value_list.map((value) => boardLaneIdForValue(column, value) ?? ""),
+		);
 	}
 	if (cell.kind === "checkbox") {
 		if (typeof cell.value_bool !== "boolean") return [];
 		return [cell.value_bool ? "true" : "false"];
 	}
-	const value = cell.value_text?.trim() ?? "";
-	if (column.property_kind === "status") {
-		const option = statusOptionFromValue(value);
-		return option ? [option.label] : value ? [value] : [];
-	}
-	if (column.property_kind === "priority") {
-		const option = priorityOptionFromValue(value);
-		return option ? [option.label] : value ? [value] : [];
-	}
-	return value ? [value] : [];
+	const laneId = boardLaneIdForValue(column, cell.value_text ?? "");
+	return laneId ? [laneId] : [];
 }
 
 export function boardLaneIdsForRow(row: DatabaseRow, column: DatabaseColumn): string[] {
@@ -386,6 +386,10 @@ export function orderBoardLaneRows(
 	});
 }
 
+/**
+ * Saved IDs that are not loaded (unfetched page, hidden by a filter) keep their
+ * position; only loaded rows prove which lane a card belongs to.
+ */
 export function moveBoardCardToLane(
 	cardOrderByLane: Record<string, string[]>,
 	laneRowsById: Record<string, string[]>,
@@ -410,6 +414,7 @@ export function moveBoardCardToLane(
 						.map(([laneId]) => laneId),
 	);
 
+	const loadedPaths = new Set(Object.values(laneRowsById).flat());
 	for (const laneId of laneIds) {
 		const knownRows = laneRowsById[laneId] ?? [];
 		const knownRowSet = new Set(knownRows);
@@ -418,7 +423,9 @@ export function moveBoardCardToLane(
 		const shouldRemoveFromLane = sourceLaneIds.has(laneId);
 		nextOrder[laneId] = [
 			...previousOrder.filter(
-				(path) => (!shouldRemoveFromLane || path !== notePath) && knownRowSet.has(path),
+				(path) =>
+					(!shouldRemoveFromLane || path !== notePath) &&
+					(knownRowSet.has(path) || !loadedPaths.has(path)),
 			),
 			...knownRows.filter(
 				(path) => (!shouldRemoveFromLane || path !== notePath) && !previousOrderSet.has(path),

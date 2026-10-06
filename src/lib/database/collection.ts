@@ -1,5 +1,8 @@
 import type { WorkspaceDatabaseSummary } from "../tauri";
 
+/** Mirrors `SEARCH_SOURCE_LIMIT` in src-tauri/src/databases/source.rs. */
+export const DATABASE_SEARCH_SOURCE_LIMIT = 2_000;
+
 export interface CollectionFolderBreadcrumbPart {
 	label: string;
 	path: string;
