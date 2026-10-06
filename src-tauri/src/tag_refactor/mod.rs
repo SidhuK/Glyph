@@ -50,7 +50,7 @@ impl TagRefactor {
         if [Some(&from), target.as_ref()]
             .into_iter()
             .flatten()
-            .any(|tag| tag.starts_with(PEOPLE_TAG_NAMESPACE))
+            .any(|tag| tag_matches_hierarchy(PEOPLE_TAG_NAMESPACE.trim_end_matches('/'), tag))
         {
             return Err("people tags cannot be refactored".to_string());
         }

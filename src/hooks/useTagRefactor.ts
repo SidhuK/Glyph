@@ -116,6 +116,7 @@ export function useTagRefactor() {
 				if (
 					!normalized ||
 					normalized !== written.toLowerCase() ||
+					normalized === "people" ||
 					normalized.startsWith("people/")
 				) {
 					return t("tags.refactor.invalid", { name: written });
