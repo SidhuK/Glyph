@@ -68,7 +68,15 @@
 		"searchView": "Rechercher dans la collection",
 		"unpin": "Désépingler la collection",
 		"unpinNamed": "Désépingler {{name}}",
-		"unpinFailed": "Impossible de désépingler la collection"
+		"unpinFailed": "Impossible de désépingler la collection",
+		"laneRenameTitle": "Renommer la colonne",
+		"laneRenameScope_one": "Met à jour 1 carte dans cette vue, y compris les cartes pas encore chargées. Les cartes masquées par les filtres ou la recherche gardent leur valeur.",
+		"laneRenameScope_other": "Met à jour {{count}} cartes dans cette vue, y compris les cartes pas encore chargées. Les cartes masquées par les filtres ou la recherche gardent leur valeur.",
+		"laneRenameExists": "« {{name}} » existe déjà.",
+		"laneRenamePartial": "{{changed}} cartes sur {{total}} mises à jour. {{failed}} n’ont pas pu être mises à jour : {{error}}",
+		"laneRenameConfirm": "Renommer",
+		"laneRenameCancel": "Annuler",
+		"sourceTruncated": "Cette collection de recherche n’affiche que ses {{limit}} premiers résultats."
 	},
 	"tags": {
 		"header": "Étiquettes",

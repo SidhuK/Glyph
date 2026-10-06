@@ -33,15 +33,15 @@ pub async fn notes_archived_paths(
 }
 
 #[derive(Serialize)]
-pub struct ArchiveFailure {
-    path: String,
-    error: String,
+pub struct NoteBatchFailure {
+    pub path: String,
+    pub error: String,
 }
 
 #[derive(Serialize)]
-pub struct ArchiveResult {
-    changed_paths: Vec<String>,
-    failures: Vec<ArchiveFailure>,
+pub struct NoteBatchResult {
+    pub changed_paths: Vec<String>,
+    pub failures: Vec<NoteBatchFailure>,
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -52,7 +52,7 @@ pub async fn notes_set_archived(
     paths: Vec<String>,
     archived: bool,
     expected_space: String,
-) -> Result<ArchiveResult, String> {
+) -> Result<NoteBatchResult, String> {
     let root = state.root_for_window(&window)?;
     let space_path = root.to_string_lossy().to_string();
     if space_path != expected_space {
@@ -63,7 +63,7 @@ pub async fn notes_set_archived(
     let mutex = state.note_mutation_mutex();
     let (result, changes) = tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         let _guard = mutex.lock().map_err(|_| "note mutation mutex poisoned".to_string())?;
-        let mut result = ArchiveResult { changed_paths: Vec::new(), failures: Vec::new() };
+        let mut result = NoteBatchResult { changed_paths: Vec::new(), failures: Vec::new() };
         let mut changes = Vec::new();
         let mut seen = HashSet::new();
         for path in paths {
@@ -92,7 +92,7 @@ pub async fn notes_set_archived(
                 Ok(())
             })();
             if let Err(error) = update {
-                result.failures.push(ArchiveFailure { path, error });
+                result.failures.push(NoteBatchFailure { path, error });
             }
         }
         Ok((result, changes))

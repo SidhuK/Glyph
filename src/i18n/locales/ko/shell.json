@@ -66,7 +66,15 @@
 		"searchView": "컬렉션 검색",
 		"unpin": "컬렉션 고정 해제",
 		"unpinNamed": "{{name}} 고정 해제",
-		"unpinFailed": "컬렉션 고정을 해제할 수 없습니다"
+		"unpinFailed": "컬렉션 고정을 해제할 수 없습니다",
+		"laneRenameTitle": "레인 이름 바꾸기",
+		"laneRenameScope_one": "아직 불러오지 않은 카드를 포함해 이 보기의 카드 1개를 업데이트합니다. 필터나 검색으로 숨겨진 카드는 값을 유지합니다.",
+		"laneRenameScope_other": "아직 불러오지 않은 카드를 포함해 이 보기의 카드 {{count}}개를 업데이트합니다. 필터나 검색으로 숨겨진 카드는 값을 유지합니다.",
+		"laneRenameExists": "\"{{name}}\"이(가) 이미 있습니다.",
+		"laneRenamePartial": "카드 {{total}}개 중 {{changed}}개를 업데이트했습니다. {{failed}}개는 업데이트하지 못했습니다: {{error}}",
+		"laneRenameConfirm": "이름 바꾸기",
+		"laneRenameCancel": "취소",
+		"sourceTruncated": "이 검색 컬렉션은 처음 {{limit}}개 결과만 표시합니다."
 	},
 	"tags": {
 		"header": "태그",

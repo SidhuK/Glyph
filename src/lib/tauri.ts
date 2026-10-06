@@ -332,10 +332,14 @@ export interface WorkspaceDatabaseDocument {
 
 export interface WorkspaceDatabaseQueryResult {
 	rows: DatabaseRow[];
-	available_properties: DatabasePropertyOption[];
 	total_count: number;
 	next_offset?: number | null;
 	truncated: boolean;
+}
+
+export interface NoteBatchResult {
+	changed_paths: string[];
+	failures: { path: string; error: string }[];
 }
 
 export interface WorkspaceDatabasePreviewContext {
@@ -1066,6 +1070,36 @@ interface TauriCommands {
 		},
 		WorkspaceDatabaseQueryResult
 	>;
+	databases_lane_values: CommandDef<
+		{ database_id: string; view_id: string; column: DatabaseColumn },
+		Record<string, number>
+	>;
+	databases_rename_lane: CommandDef<
+		{
+			request: {
+				database_id: string;
+				view_id: string;
+				column: DatabaseColumn;
+				from_values: string[];
+				to_value: string;
+				expected_space: string;
+				expected_updated_at: string;
+			};
+		},
+		NoteBatchResult
+	>;
+	databases_lane_name_prompt: CommandDef<
+		{
+			request: {
+				title: string;
+				description: string;
+				initial_value: string;
+				confirm_label: string;
+				cancel_label: string;
+			};
+		},
+		string | null
+	>;
 	databases_update_cell: CommandDef<
 		{
 			note_path: string;
@@ -1103,7 +1137,7 @@ interface TauriCommands {
 	notes_archived_paths: CommandDef<Record<string, never>, string[]>;
 	notes_set_archived: CommandDef<
 		{ paths: string[]; archived: boolean; expected_space: string },
-		{ changed_paths: string[]; failures: { path: string; error: string }[] }
+		NoteBatchResult
 	>;
 	all_docs_list: CommandDef<
 		{

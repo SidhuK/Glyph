@@ -66,7 +66,15 @@
 		"searchView": "コレクションを検索",
 		"unpin": "コレクションのピン留めを解除",
 		"unpinNamed": "{{name}}のピン留めを解除",
-		"unpinFailed": "コレクションのピン留めを解除できませんでした"
+		"unpinFailed": "コレクションのピン留めを解除できませんでした",
+		"laneRenameTitle": "レーン名を変更",
+		"laneRenameScope_one": "このビューの1枚のカードを更新します（未読み込みのカードを含む）。フィルターや検索で非表示のカードは値を保持します。",
+		"laneRenameScope_other": "このビューの{{count}}枚のカードを更新します（未読み込みのカードを含む）。フィルターや検索で非表示のカードは値を保持します。",
+		"laneRenameExists": "「{{name}}」は既に存在します。",
+		"laneRenamePartial": "{{total}}枚中{{changed}}枚を更新しました。{{failed}}枚は更新できませんでした: {{error}}",
+		"laneRenameConfirm": "名前を変更",
+		"laneRenameCancel": "キャンセル",
+		"sourceTruncated": "この検索コレクションは最初の{{limit}}件のみを表示しています。"
 	},
 	"tags": {
 		"header": "タグ",

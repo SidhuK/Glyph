@@ -19,7 +19,9 @@ use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::query::{load_database_document, query_database_rows, read_note_markdown, row_by_path};
-use super::store::{default_field_value, default_view, list_summaries, load_store, save_store};
+use super::store::{
+    default_field_value, default_view, find_database_view, list_summaries, load_store, save_store,
+};
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition,
     DatabaseDocument, DatabasePreviewContext, DatabaseRow, DatabaseSchemaField, DatabaseSummary,
@@ -145,7 +147,11 @@ fn database_name_exists(
     })
 }
 
-fn render_note_markdown(path: &str, markdown: &str, mapping: Mapping) -> Result<String, String> {
+pub(super) fn render_note_markdown(
+    path: &str,
+    markdown: &str,
+    mapping: Mapping,
+) -> Result<String, String> {
     let (_yaml, body) = split_frontmatter(markdown);
     let normalized = normalize_frontmatter_mapping(mapping, path, None);
     let rendered_yaml = render_frontmatter_mapping_yaml(&normalized)?;
@@ -756,19 +762,7 @@ pub async fn databases_query_rows(
 ) -> Result<super::types::DatabaseQueryResult, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
-        let store = load_store(&root)?;
-        let database = store
-            .databases
-            .iter()
-            .find(|entry| entry.id == database_id)
-            .cloned()
-            .ok_or_else(|| "database not found".to_string())?;
-        let view = database
-            .views
-            .iter()
-            .find(|entry| entry.id == view_id)
-            .cloned()
-            .ok_or_else(|| "database view not found".to_string())?;
+        let (database, view) = find_database_view(&root, &database_id, &view_id)?;
         query_database_rows(
             &root,
             &database,

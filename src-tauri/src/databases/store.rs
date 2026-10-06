@@ -7,7 +7,8 @@ use crate::glyph_paths::ensure_glyph_dir;
 use crate::io_atomic;
 
 use super::types::{
-    DatabaseCellValue, DatabaseStore, DatabaseSummary, DatabaseViewDefinition, DatabaseViewGrouping,
+    DatabaseCellValue, DatabaseDefinition, DatabaseStore, DatabaseSummary, DatabaseViewDefinition,
+    DatabaseViewGrouping,
 };
 
 const DATABASES_STORE_FILE: &str = "databases.json";
@@ -209,6 +210,25 @@ pub fn load_store(space_root: &Path) -> Result<DatabaseStore, String> {
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(default_store()),
         Err(err) => Err(err.to_string()),
     }
+}
+
+pub fn find_database_view(
+    space_root: &Path,
+    database_id: &str,
+    view_id: &str,
+) -> Result<(DatabaseDefinition, DatabaseViewDefinition), String> {
+    let database = load_store(space_root)?
+        .databases
+        .into_iter()
+        .find(|entry| entry.id == database_id)
+        .ok_or_else(|| "database not found".to_string())?;
+    let view = database
+        .views
+        .iter()
+        .find(|entry| entry.id == view_id)
+        .cloned()
+        .ok_or_else(|| "database view not found".to_string())?;
+    Ok((database, view))
 }
 
 pub fn save_store(space_root: &Path, store: &DatabaseStore) -> Result<(), String> {

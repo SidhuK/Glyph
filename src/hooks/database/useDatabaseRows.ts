@@ -32,9 +32,8 @@ function rebuildRowsPages(
 	rows: DatabaseRow[],
 	pageSize: number,
 ): DatabaseRowsPagesData {
-	const fallbackPage = current?.pages.find((page) => page.available_properties.length > 0);
-	const availableProperties = fallbackPage?.available_properties ?? [];
 	const hadMore = current?.pages[current.pages.length - 1]?.next_offset != null;
+	const sourceTruncated = current?.pages[0]?.truncated ?? false;
 	const totalCount = hadMore
 		? Math.max(current?.pages[0]?.total_count ?? 0, rows.length)
 		: rows.length;
@@ -44,9 +43,8 @@ function rebuildRowsPages(
 		const hasLocalNext = offset + pageSize < rows.length;
 		pages.push({
 			rows: pageRows,
-			available_properties: availableProperties,
 			total_count: totalCount,
-			truncated: hasLocalNext || hadMore,
+			truncated: sourceTruncated,
 			next_offset: hasLocalNext || hadMore ? offset + pageRows.length : null,
 		});
 	}
@@ -55,9 +53,8 @@ function rebuildRowsPages(
 			pages: [
 				{
 					rows: [],
-					available_properties: availableProperties,
 					total_count: totalCount,
-					truncated: hadMore,
+					truncated: sourceTruncated,
 					next_offset: hadMore ? 0 : null,
 				},
 			],
@@ -153,9 +150,15 @@ export function useDatabaseRows({
 		}
 	}, [rowsQuery.error, setError]);
 
+	const sourceTruncated = rowsQuery.data?.pages[0]?.truncated ?? false;
+
 	return {
 		rows,
 		setRows,
+		sourceTruncated,
+		// A refetch after a filter or search change still holds the previous view's rows.
+		allRowsLoaded:
+			rowsQuery.isSuccess && !rowsQuery.isFetching && !rowsQuery.hasNextPage && !sourceTruncated,
 		hasMoreRows: rowsQuery.hasNextPage,
 		isLoadingMoreRows: rowsQuery.isFetchingNextPage,
 		loadMoreRows: rowsQuery.fetchNextPage,

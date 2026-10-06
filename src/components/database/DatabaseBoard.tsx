@@ -2,6 +2,10 @@ import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
+import {
+	type BoardLaneRenameTarget,
+	useBoardLaneRename,
+} from "../../hooks/database/useBoardLaneRename";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { useSentinelLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -10,12 +14,10 @@ import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
 	boardDropValue,
-	boardLaneIdFromLabel,
-	boardLaneValue,
 	boardRowHasLane,
 	canManageBoardLanes,
 } from "../../lib/database/board";
-import { databaseCellValueFromRow, formatDatabaseDateTime } from "../../lib/database/config";
+import { formatDatabaseDateTime } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import type { DateDisplayFormat } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -32,15 +34,6 @@ import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
 import { StatusPropertyPill } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../ui/shadcn/dialog";
-import { Input } from "../ui/shadcn/input";
 import { DatabaseBoardCardView, DatabaseBoardLaneView } from "./DatabaseBoardViews";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import {
@@ -72,6 +65,8 @@ interface DatabaseBoardProps {
 	onLaneColorChange?: ((laneId: string, color: EditorTextColor | null) => void) | null;
 	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
 	boardCardFields?: string[];
+	laneRenameTarget: BoardLaneRenameTarget;
+	membershipComplete: boolean;
 	hasMoreRows?: boolean;
 	isLoadingMoreRows?: boolean;
 	onLoadMoreRows?: () => undefined | Promise<unknown>;
@@ -85,11 +80,6 @@ interface DatabaseBoardProps {
 			value_list: string[];
 		},
 	) => Promise<void>;
-}
-
-interface LaneRenameState {
-	lane: DatabaseBoardLane;
-	value: string;
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
@@ -168,6 +158,8 @@ export function DatabaseBoard({
 	onLaneColorChange,
 	onStatusColorChange,
 	boardCardFields,
+	laneRenameTarget,
+	membershipComplete,
 	hasMoreRows = false,
 	isLoadingMoreRows = false,
 	onLoadMoreRows,
@@ -190,11 +182,15 @@ export function DatabaseBoard({
 			initialGroupColumnId: persistedGroupColumnId,
 			initialLaneOrderByGroup: laneOrderByGroup,
 			initialCardOrderByGroup: cardOrderByGroup,
+			membershipComplete,
 			onLaneOrderChange,
 			onCardOrderChange,
 		});
+	const promptLaneRename = useBoardLaneRename({
+		target: laneRenameTarget,
+		onRenamed: renameLane,
+	});
 	const [moveError, setMoveError] = useState("");
-	const [laneRename, setLaneRename] = useState<LaneRenameState | null>(null);
 	const boardScrollRef = useRef<HTMLDivElement | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const suppressClickRef = useRef(false);
@@ -245,47 +241,14 @@ export function DatabaseBoard({
 		(lane: DatabaseBoardLane) => {
 			if (!groupColumn || !canManageLanes) return;
 			setMoveError("");
-			setLaneRename({ lane, value: lane.label });
+			promptLaneRename(
+				groupColumn,
+				lane,
+				lanes.map((entry) => entry.id),
+			).catch((error: unknown) => setMoveError(extractErrorMessage(error)));
 		},
-		[canManageLanes, groupColumn],
+		[canManageLanes, groupColumn, lanes, promptLaneRename],
 	);
-
-	const commitLaneRename = useCallback(async () => {
-		if (!laneRename || !groupColumn || !canManageLanes) return;
-		const laneId = boardLaneIdFromLabel(groupColumn, laneRename.value);
-		if (!laneId) return;
-		if (lanes.some((lane) => lane.id === laneId && lane.id !== laneRename.lane.id)) {
-			setMoveError(`"${laneId}" already exists.`);
-			return;
-		}
-		setMoveError("");
-		const lane = laneRename.lane;
-		if (laneId === lane.id) {
-			setLaneRename(null);
-			return;
-		}
-		try {
-			await Promise.all(
-				lane.rows.map((row) => {
-					const cell = databaseCellValueFromRow(row, groupColumn);
-					const value =
-						groupColumn.property_kind === "multi_select"
-							? {
-									kind: cell.kind,
-									value_list: Array.from(
-										new Set([...cell.value_list.filter((value) => value !== lane.id), laneId]),
-									),
-								}
-							: boardLaneValue(groupColumn, laneId);
-					return onSaveCell(row.note_path, groupColumn, value);
-				}),
-			);
-			renameLane(lane.id, laneId);
-			setLaneRename(null);
-		} catch (error) {
-			setMoveError(extractErrorMessage(error));
-		}
-	}, [canManageLanes, groupColumn, laneRename, lanes, onSaveCell, renameLane]);
 
 	const handleLaneDrop = useCallback(
 		async (
@@ -366,47 +329,6 @@ export function DatabaseBoard({
 
 	return (
 		<div className="databaseBoardShell">
-			<Dialog
-				open={laneRename != null}
-				onOpenChange={(open) => {
-					if (!open) setLaneRename(null);
-				}}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Rename lane</DialogTitle>
-						<DialogDescription>
-							{groupColumn
-								? `Rename this ${groupColumn.label.toLowerCase()} lane. Cards here keep that value.`
-								: "Rename this board lane."}
-						</DialogDescription>
-					</DialogHeader>
-					<form
-						className="grid gap-4"
-						onSubmit={(event) => {
-							event.preventDefault();
-							void commitLaneRename();
-						}}
-					>
-						<Input
-							autoFocus
-							value={laneRename?.value ?? ""}
-							aria-label="Lane name"
-							onChange={(event) =>
-								setLaneRename((current) =>
-									current ? { ...current, value: event.target.value } : current,
-								)
-							}
-						/>
-						<DialogFooter>
-							<Button type="button" variant="outline" onClick={() => setLaneRename(null)}>
-								Cancel
-							</Button>
-							<Button type="submit">Rename</Button>
-						</DialogFooter>
-					</form>
-				</DialogContent>
-			</Dialog>
 			{moveError ? (
 				<m.div
 					className="databaseBoardError"
