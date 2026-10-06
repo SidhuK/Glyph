@@ -715,7 +715,7 @@ pub fn query_database_rows(
     limit: usize,
 ) -> Result<DatabaseQueryResult, String> {
     let conn = open_db(root)?;
-    // A read transaction keeps count, page, and properties on one index snapshot.
+    // A read transaction keeps the count and the page on one index snapshot.
     let snapshot = conn.unchecked_transaction().map_err(|e| e.to_string())?;
     let matches = view_matching_ids(&snapshot, database, view)?;
     let total = matches.ids.len();
@@ -723,7 +723,6 @@ pub fn query_database_rows(
     let end = offset.saturating_add(limit).min(total);
     let rows = hydrate_rows(&snapshot, &matches.ids[start..end], &RowFields::all())?;
     Ok(DatabaseQueryResult {
-        available_properties: available_properties(&snapshot, &matches.ids)?,
         total_count: total as u32,
         next_offset: (end < total).then_some(end as u32),
         truncated: matches.truncated,

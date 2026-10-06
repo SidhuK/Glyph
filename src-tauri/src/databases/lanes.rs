@@ -86,6 +86,7 @@ fn yaml_text(value: &Value) -> Option<String> {
     match value {
         Value::String(text) => Some(text.clone()),
         Value::Number(number) => Some(number.to_string()),
+        Value::Bool(value) => Some(value.to_string()),
         _ => None,
     }
 }

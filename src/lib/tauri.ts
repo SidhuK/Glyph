@@ -332,7 +332,6 @@ export interface WorkspaceDatabaseDocument {
 
 export interface WorkspaceDatabaseQueryResult {
 	rows: DatabaseRow[];
-	available_properties: DatabasePropertyOption[];
 	total_count: number;
 	next_offset?: number | null;
 	truncated: boolean;

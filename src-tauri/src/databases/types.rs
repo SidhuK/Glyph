@@ -233,8 +233,6 @@ pub struct DatabaseDocument {
 #[serde(rename_all = "snake_case")]
 pub struct DatabaseQueryResult {
     pub rows: Vec<DatabaseRow>,
-    #[serde(default)]
-    pub available_properties: Vec<DatabasePropertyOption>,
     pub total_count: u32,
     pub next_offset: Option<u32>,
     pub truncated: bool,
