@@ -76,7 +76,55 @@
 		"laneRenamePartial": "Zaktualizowano {{changed}} z {{total}} kart. Nie udało się zaktualizować {{failed}}: {{error}}",
 		"laneRenameConfirm": "Zmień nazwę",
 		"laneRenameCancel": "Anuluj",
-		"sourceTruncated": "Ta kolekcja wyszukiwania pokazuje tylko pierwsze {{limit}} wyników."
+		"sourceTruncated": "Ta kolekcja wyszukiwania pokazuje tylko pierwsze {{limit}} wyników.",
+		"loadMore": "Wczytaj więcej",
+		"openViewSettings": "Otwórz ustawienia widoku",
+		"layout": {
+			"heading": "Układ",
+			"table": "Tabela",
+			"board": "Tablica",
+			"calendar": "Kalendarz",
+			"gallery": "Galeria"
+		},
+		"card": {
+			"openHint": "Kliknij dwukrotnie lub naciśnij Enter, aby otworzyć",
+			"openNote": "Otwórz notatkę"
+		},
+		"calendar": {
+			"settings": "Kalendarz",
+			"dateColumn": "Pole daty",
+			"endDateColumn": "Pole daty końcowej",
+			"chooseDate": "Wybierz pole daty",
+			"noEndDate": "Bez daty końcowej",
+			"emptyTitle": "Wybierz pole daty dla kalendarza",
+			"emptyText": "Widok kalendarza umieszcza notatki w dniach z pola daty. Dodaj właściwość daty do notatek, a następnie wybierz ją w ustawieniach widoku.",
+			"month": "Miesiąc",
+			"week": "Tydzień",
+			"previous_month": "Poprzedni miesiąc",
+			"next_month": "Następny miesiąc",
+			"previous_week": "Poprzedni tydzień",
+			"next_week": "Następny tydzień",
+			"newOnDay": "Nowa notatka {{date}}",
+			"moveToToday": "Przenieś na dziś",
+			"unscheduled": "Bez daty",
+			"unscheduledEmpty": "Każda notatka ma datę.",
+			"truncated": "Wyświetlono pierwsze {{count}} notatek z tego okresu."
+		},
+		"gallery": {
+			"settings": "Galeria",
+			"cover": "Okładka karty",
+			"coverFirstImage": "Pierwszy obraz w notatce",
+			"coverNone": "Bez okładki",
+			"coverProperty": "Pole: {{field}}",
+			"cardSize": "Rozmiar karty",
+			"size": {
+				"small": "Mały",
+				"medium": "Średni",
+				"large": "Duży"
+			},
+			"empty": "Żadna notatka nie pasuje do tego widoku.",
+			"noValue": "Brak wartości"
+		}
 	},
 	"tags": {
 		"header": "Tagi",

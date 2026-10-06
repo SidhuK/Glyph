@@ -7,6 +7,7 @@ import { parseNotePreview } from "./notePreview";
 import { queryClient } from "./queryClient";
 import type {
 	AllDocsItem,
+	DatabaseDateRange,
 	TextFileDoc,
 	WorkspaceDatabaseDocument,
 	WorkspaceDatabaseSummary,
@@ -56,13 +57,28 @@ export const navigationQueryKeys = {
 	databaseSummaries: () => [...navigationQueryKeys.databases(), "summaries"] as const,
 	databaseDocument: (databaseId: string) =>
 		[...navigationQueryKeys.databases(), "document", databaseId.trim()] as const,
-	databaseRowsPages: (databaseId: string, viewId: string, pageSize: number) =>
+	databaseRowsPages: (
+		databaseId: string,
+		viewId: string,
+		pageSize: number,
+		dateRange?: DatabaseDateRange | null,
+	) =>
 		[
 			...navigationQueryKeys.databases(),
 			"rows-pages",
 			databaseId.trim(),
 			viewId.trim(),
 			pageSize,
+			dateRange ?? "all",
+		] as const,
+	databaseRowCovers: (databaseId: string, viewId: string, cover: string, notePaths: string[]) =>
+		[
+			...navigationQueryKeys.databases(),
+			"covers",
+			databaseId.trim(),
+			viewId.trim(),
+			cover,
+			notePaths,
 		] as const,
 	allDocs: () => [...navigationQueryKeys.all, "all-docs"] as const,
 	allDocsList: (folderPrefix?: string | null) =>

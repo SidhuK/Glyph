@@ -1,7 +1,6 @@
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
 	type BoardLaneRenameTarget,
 	useBoardLaneRename,
@@ -17,30 +16,15 @@ import {
 	boardRowHasLane,
 	canManageBoardLanes,
 } from "../../lib/database/board";
-import { formatDatabaseDateTime } from "../../lib/database/config";
+import { databaseRowFileTitle } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
-import type { DateDisplayFormat } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
-import {
-	DEFAULT_TAG_ICON_NAME,
-	resolveTagIconName,
-	tagIconOverridesFromAppearance,
-} from "../../lib/tagIcons";
-import type { NoteTaskSummary } from "../../lib/tauri";
-import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import type { EditorTextColor } from "../editor/textColors";
-import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
-import { StatusPropertyPill } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import { DatabaseBoardCardView, DatabaseBoardLaneView } from "./DatabaseBoardViews";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
-import {
-	DatabaseNoteAppearanceIcon,
-	databaseNoteAppearanceStyle,
-} from "./DatabaseNoteAppearanceIcon";
-import { formatDatabaseTagLabel } from "./databaseTagLabel";
+import { DatabaseCardBody, EMPTY_TASK_SUMMARY, useCardTagIconName } from "./DatabaseCardBody";
 
 interface DatabaseBoardProps {
 	rows: DatabaseRow[];
@@ -83,11 +67,6 @@ interface DatabaseBoardProps {
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
-const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
-	total_count: 0,
-	completed_count: 0,
-	open_count: 0,
-};
 
 function isStatusBoardColumn(column: DatabaseColumn | null): boolean {
 	return column?.property_kind === "status";
@@ -101,14 +80,9 @@ function isTagBoardColumn(column: DatabaseColumn | null): boolean {
 	return column?.type === "tags" || column?.property_kind === "tags";
 }
 
-function fileTitleFromPath(notePath: string): string {
-	const base = notePath.split("/").pop() ?? notePath;
-	return base.replace(/\.md$/i, "");
-}
-
 function boardCardTitle(row: DatabaseRow, activeLaneLabel: string): string {
 	const indexedTitle = row.title.trim();
-	const fallbackTitle = fileTitleFromPath(row.note_path).trim();
+	const fallbackTitle = databaseRowFileTitle(row.note_path).trim();
 	if (!indexedTitle) return fallbackTitle;
 	if (
 		indexedTitle.toLowerCase() === activeLaneLabel.toLowerCase() &&
@@ -118,26 +92,6 @@ function boardCardTitle(row: DatabaseRow, activeLaneLabel: string): string {
 		return fallbackTitle;
 	}
 	return indexedTitle;
-}
-
-function boardCardTextPropertyValues(row: DatabaseRow, kind: "status" | "priority"): string[] {
-	const values: string[] = [];
-	for (const property of Object.values(row.properties)) {
-		if (property.kind !== kind) continue;
-		const value = property.value_text?.trim();
-		if (value) values.push(value);
-	}
-	return values;
-}
-
-function formatCompactBoardDateTime(value: string, dateFormat: DateDisplayFormat): string {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) {
-		return formatDatabaseDateTime(value, dateFormat);
-	}
-	const month = date.toLocaleString("en-US", { month: "short" });
-	const day = date.getDate();
-	return `${month} ${day}`;
 }
 
 export function DatabaseBoard({
@@ -165,15 +119,6 @@ export function DatabaseBoard({
 	onLoadMoreRows,
 	onSaveCell,
 }: DatabaseBoardProps) {
-	const isCardFieldVisible = useCallback(
-		(fieldId: string) => {
-			if (!boardCardFields || boardCardFields.length === 0) return true;
-			return boardCardFields.includes(fieldId);
-		},
-		[boardCardFields],
-	);
-	const dateDisplayFormat = useDateDisplayFormat();
-	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion();
 	const { groupColumn, groupColumns, lanes, moveLaneToIndex, renameLane, moveCardToLane } =
 		useDatabaseBoard({
@@ -195,17 +140,7 @@ export function DatabaseBoard({
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const suppressClickRef = useRef(false);
 
-	const tagIconOverrides = useMemo(
-		() => tagIconOverridesFromAppearance(tagAppearance),
-		[tagAppearance],
-	);
-	const iconNameForTag = useCallback(
-		(tag: string) =>
-			beautifulTags
-				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
-				: DEFAULT_TAG_ICON_NAME,
-		[beautifulTags, tagIconOverrides],
-	);
+	const iconNameForTag = useCardTagIconName();
 	const taskSummaryPaths = useMemo(
 		() => Array.from(new Set(rows.map((row) => row.note_path).filter(Boolean))),
 		[rows],
@@ -380,39 +315,6 @@ export function DatabaseBoard({
 								>
 									{lane.rows.length > 0 ? (
 										lane.rows.map((row) => {
-											const title = boardCardTitle(row, lane.label);
-											const visibleTags = row.tags.slice(0, 1);
-											const extraTagCount = Math.max(row.tags.length - 1, 0);
-											const statusValues = boardCardTextPropertyValues(row, "status");
-											const maxVisibleStatuses = 2;
-											const visibleStatuses = statusValues.slice(0, maxVisibleStatuses);
-											const extraStatusCount = Math.max(
-												statusValues.length - maxVisibleStatuses,
-												0,
-											);
-											const priorityValues = boardCardTextPropertyValues(row, "priority");
-											const maxVisiblePriorities = 2;
-											const visiblePriorities = priorityValues.slice(0, maxVisiblePriorities);
-											const extraPriorityCount = Math.max(
-												priorityValues.length - maxVisiblePriorities,
-												0,
-											);
-											const updatedLabel = formatDatabaseDateTime(row.updated, dateDisplayFormat);
-											const compactUpdatedLabel = formatCompactBoardDateTime(
-												row.updated,
-												dateDisplayFormat,
-											);
-											const taskSummary =
-												taskSummariesByPath?.[row.note_path] ?? EMPTY_TASK_SUMMARY;
-											const noteAppearance = itemAppearance[row.note_path] ?? null;
-											const noteAppearanceStyle = databaseNoteAppearanceStyle(
-												row.note_path,
-												noteAppearance,
-											);
-											const hasStatusOrPriority =
-												(isCardFieldVisible("status") && visibleStatuses.length > 0) ||
-												(isCardFieldVisible("priority") && visiblePriorities.length > 0);
-											const hasTags = isCardFieldVisible("tags") && visibleTags.length > 0;
 											const otherLanes = lanes.filter(
 												(l) =>
 													l.id !== lane.id &&
@@ -450,99 +352,14 @@ export function DatabaseBoard({
 														});
 													}}
 												>
-													<div className="databaseBoardCardMain">
-														<div className="databaseBoardCardHeaderRow">
-															<span className="databaseBoardCardTitle" style={noteAppearanceStyle}>
-																<DatabaseNoteAppearanceIcon
-																	notePath={row.note_path}
-																	appearance={noteAppearance}
-																	className="databaseBoardCardTitleIcon"
-																	size="var(--icon-md)"
-																/>
-																{title}
-															</span>
-															{isCardFieldVisible("task_progress") &&
-															taskSummary.total_count > 0 ? (
-																<TaskProgressIndicator
-																	summary={taskSummary}
-																	className="databaseBoardCardTaskProgress"
-																/>
-															) : null}
-														</div>
-														{isCardFieldVisible("date") ? (
-															<div className="databaseBoardCardSubline">
-																<span
-																	className="databaseBoardCardTimestamp"
-																	title={`Updated ${updatedLabel}`}
-																>
-																	{compactUpdatedLabel}
-																</span>
-															</div>
-														) : null}
-													</div>
-													{hasStatusOrPriority || hasTags ? (
-														<div className="databaseBoardCardFooter">
-															{hasStatusOrPriority ? (
-																<div className="databaseBoardCardMetaRow">
-																	<div className="databaseBoardCardMetaGroup">
-																		{isCardFieldVisible("status") &&
-																			visibleStatuses.map((status, statusIndex) => (
-																				<StatusPropertyPill
-																					key={`${row.note_path}:status:${statusIndex}:${status}`}
-																					value={status}
-																					colors={statusColors}
-																					className="databaseBoardCardStatus"
-																				/>
-																			))}
-																		{isCardFieldVisible("status") && extraStatusCount > 0 ? (
-																			<span className="databaseBoardTag is-muted">
-																				+{extraStatusCount}
-																			</span>
-																		) : null}
-																	</div>
-																	<div className="databaseBoardCardMetaGroup">
-																		{isCardFieldVisible("priority") &&
-																			visiblePriorities.map((priority, priorityIndex) => (
-																				<PriorityPropertyPill
-																					key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
-																					value={priority}
-																					className="databaseBoardCardStatus"
-																				/>
-																			))}
-																		{isCardFieldVisible("priority") && extraPriorityCount > 0 ? (
-																			<span className="databaseBoardTag is-muted">
-																				+{extraPriorityCount}
-																			</span>
-																		) : null}
-																	</div>
-																</div>
-															) : null}
-															{hasTags ? (
-																<div className="databaseBoardCardTags">
-																	{visibleTags.map((tag) => (
-																		<span
-																			key={`${row.note_path}:${tag}`}
-																			className="databaseBoardTag"
-																			data-beautiful-tags={beautifulTags ? "true" : undefined}
-																			title={formatDatabaseTagLabel(tag)}
-																		>
-																			<DatabaseColumnIcon
-																				iconName={iconNameForTag(tag)}
-																				className="databaseTagPillIcon"
-																				size="var(--icon-xs)"
-																			/>
-																			{formatDatabaseTagLabel(tag)}
-																		</span>
-																	))}
-																	{extraTagCount > 0 ? (
-																		<span className="databaseBoardTag is-muted">
-																			+{extraTagCount}
-																		</span>
-																	) : null}
-																</div>
-															) : null}
-														</div>
-													) : null}
+													<DatabaseCardBody
+														row={row}
+														title={boardCardTitle(row, lane.label)}
+														cardFields={boardCardFields}
+														statusColors={statusColors}
+														taskSummary={taskSummariesByPath?.[row.note_path] ?? EMPTY_TASK_SUMMARY}
+														iconNameForTag={iconNameForTag}
+													/>
 												</DatabaseBoardCardView>
 											);
 										})

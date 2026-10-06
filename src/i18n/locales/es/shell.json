@@ -74,7 +74,55 @@
 		"laneRenamePartial": "Se actualizaron {{changed}} de {{total}} tarjetas. {{failed}} no se pudieron actualizar: {{error}}",
 		"laneRenameConfirm": "Cambiar nombre",
 		"laneRenameCancel": "Cancelar",
-		"sourceTruncated": "Esta colección de búsqueda solo muestra sus primeros {{limit}} resultados."
+		"sourceTruncated": "Esta colección de búsqueda solo muestra sus primeros {{limit}} resultados.",
+		"loadMore": "Cargar más",
+		"openViewSettings": "Abrir ajustes de la vista",
+		"layout": {
+			"heading": "Diseño",
+			"table": "Tabla",
+			"board": "Tablero",
+			"calendar": "Calendario",
+			"gallery": "Galería"
+		},
+		"card": {
+			"openHint": "Haz doble clic o pulsa Intro para abrir",
+			"openNote": "Abrir nota"
+		},
+		"calendar": {
+			"settings": "Calendario",
+			"dateColumn": "Campo de fecha",
+			"endDateColumn": "Campo de fecha de fin",
+			"chooseDate": "Elige un campo de fecha",
+			"noEndDate": "Sin fecha de fin",
+			"emptyTitle": "Elige un campo de fecha para el calendario",
+			"emptyText": "La vista de calendario coloca las notas en los días de un campo de fecha. Añade una propiedad de fecha a tus notas y elígela en los ajustes de la vista.",
+			"month": "Mes",
+			"week": "Semana",
+			"previous_month": "Mes anterior",
+			"next_month": "Mes siguiente",
+			"previous_week": "Semana anterior",
+			"next_week": "Semana siguiente",
+			"newOnDay": "Nueva nota el {{date}}",
+			"moveToToday": "Mover a hoy",
+			"unscheduled": "Sin programar",
+			"unscheduledEmpty": "Todas las notas tienen fecha.",
+			"truncated": "Se muestran las primeras {{count}} notas de este intervalo."
+		},
+		"gallery": {
+			"settings": "Galería",
+			"cover": "Portada de la tarjeta",
+			"coverFirstImage": "Primera imagen de la nota",
+			"coverNone": "Sin portada",
+			"coverProperty": "Campo: {{field}}",
+			"cardSize": "Tamaño de tarjeta",
+			"size": {
+				"small": "Pequeño",
+				"medium": "Mediano",
+				"large": "Grande"
+			},
+			"empty": "Ninguna nota coincide con esta vista.",
+			"noValue": "Sin valor"
+		}
 	},
 	"tags": {
 		"header": "Etiquetas",

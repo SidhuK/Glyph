@@ -14,6 +14,10 @@ fn default_database_layout() -> String {
     "board".to_string()
 }
 
+pub(super) fn default_gallery_card_size() -> String {
+    "medium".to_string()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct DatabaseSource {
@@ -107,6 +111,17 @@ pub struct DatabaseViewDefinition {
     pub board_card_order: BTreeMap<String, BTreeMap<String, Vec<String>>>,
     #[serde(default)]
     pub board_card_fields: Vec<String>,
+    #[serde(default)]
+    pub calendar_date_column: Option<String>,
+    #[serde(default)]
+    pub calendar_end_date_column: Option<String>,
+    /// `None` means the first image embedded in the note body.
+    #[serde(default)]
+    pub gallery_cover: Option<String>,
+    #[serde(default)]
+    pub gallery_card_fields: Vec<String>,
+    #[serde(default = "default_gallery_card_size")]
+    pub gallery_card_size: String,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -236,6 +251,15 @@ pub struct DatabaseQueryResult {
     pub total_count: u32,
     pub next_offset: Option<u32>,
     pub truncated: bool,
+}
+
+/// Restricts a calendar query to rows scheduled in an inclusive `YYYY-MM-DD`
+/// window, or to rows with no parseable date on the view's date column.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum DatabaseDateRange {
+    Range { start: String, end: String },
+    Undated,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

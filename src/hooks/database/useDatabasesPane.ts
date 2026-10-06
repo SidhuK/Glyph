@@ -3,6 +3,7 @@ import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesReque
 import type { WorkspaceDatabaseDocument } from "../../lib/tauri";
 import { useStatusPropertyColors } from "../useStatusPropertyColors";
 import type { ActiveCollection } from "./types";
+import { useCalendarWindow } from "./useCalendarWindow";
 import { useCollectionWorkspace } from "./useCollectionWorkspace";
 import { useDatabaseRowActions } from "./useDatabaseRowActions";
 import { useDatabaseRows } from "./useDatabaseRows";
@@ -10,6 +11,8 @@ import { useDatabaseViewActions } from "./useDatabaseViewActions";
 
 const DATABASE_TABLE_ROW_PAGE_SIZE = 200;
 const DATABASE_BOARD_ROW_PAGE_SIZE = 48;
+// The backend caps a page at 500; a six-week window rarely holds more.
+const DATABASE_CALENDAR_ROW_PAGE_SIZE = 500;
 
 interface UseDatabasesPaneOptions {
 	onRenameNotePath?: (notePath: string, nextName: string) => Promise<string | null>;
@@ -40,8 +43,12 @@ export function useDatabasesPane({
 		saveDatabase: workspace.saveDatabase,
 	});
 
-	const rowPageSize =
-		views.activeConfig?.view.layout === "board"
+	const calendar = useCalendarWindow();
+	const layout = views.activeConfig?.view.layout;
+	const isCalendar = layout === "calendar";
+	const rowPageSize = isCalendar
+		? DATABASE_CALENDAR_ROW_PAGE_SIZE
+		: layout === "board"
 			? DATABASE_BOARD_ROW_PAGE_SIZE
 			: DATABASE_TABLE_ROW_PAGE_SIZE;
 	const rows = useDatabaseRows({
@@ -49,6 +56,8 @@ export function useDatabasesPane({
 		selectedViewId: workspace.selectedViewId,
 		document: workspace.document,
 		pageSize: rowPageSize,
+		dateRange: isCalendar ? calendar.dateRange : undefined,
+		enabled: !isCalendar || Boolean(views.activeConfig?.view.calendar_date_column),
 		setError,
 		clearError,
 	});
@@ -94,6 +103,7 @@ export function useDatabasesPane({
 			selectCollection: workspace.selectCollection,
 		},
 		rows,
+		calendar,
 		display: { statusColors, setStatusColor },
 		views,
 		viewSelection: {

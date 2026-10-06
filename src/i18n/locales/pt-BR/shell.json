@@ -74,7 +74,55 @@
 		"laneRenamePartial": "{{changed}} de {{total}} cartões atualizados. {{failed}} não puderam ser atualizados: {{error}}",
 		"laneRenameConfirm": "Renomear",
 		"laneRenameCancel": "Cancelar",
-		"sourceTruncated": "Esta coleção de pesquisa mostra apenas os primeiros {{limit}} resultados."
+		"sourceTruncated": "Esta coleção de pesquisa mostra apenas os primeiros {{limit}} resultados.",
+		"loadMore": "Carregar mais",
+		"openViewSettings": "Abrir configurações da visualização",
+		"layout": {
+			"heading": "Layout",
+			"table": "Tabela",
+			"board": "Quadro",
+			"calendar": "Calendário",
+			"gallery": "Galeria"
+		},
+		"card": {
+			"openHint": "Clique duas vezes ou pressione Enter para abrir",
+			"openNote": "Abrir nota"
+		},
+		"calendar": {
+			"settings": "Calendário",
+			"dateColumn": "Campo de data",
+			"endDateColumn": "Campo de data final",
+			"chooseDate": "Escolha um campo de data",
+			"noEndDate": "Sem data final",
+			"emptyTitle": "Escolha um campo de data para o calendário",
+			"emptyText": "A visualização de calendário coloca as notas nos dias de um campo de data. Adicione uma propriedade de data às suas notas e escolha-a nas configurações da visualização.",
+			"month": "Mês",
+			"week": "Semana",
+			"previous_month": "Mês anterior",
+			"next_month": "Próximo mês",
+			"previous_week": "Semana anterior",
+			"next_week": "Próxima semana",
+			"newOnDay": "Nova nota em {{date}}",
+			"moveToToday": "Mover para hoje",
+			"unscheduled": "Sem data",
+			"unscheduledEmpty": "Todas as notas têm data.",
+			"truncated": "Mostrando as primeiras {{count}} notas deste período."
+		},
+		"gallery": {
+			"settings": "Galeria",
+			"cover": "Capa do cartão",
+			"coverFirstImage": "Primeira imagem da nota",
+			"coverNone": "Sem capa",
+			"coverProperty": "Campo: {{field}}",
+			"cardSize": "Tamanho do cartão",
+			"size": {
+				"small": "Pequeno",
+				"medium": "Médio",
+				"large": "Grande"
+			},
+			"empty": "Nenhuma nota corresponde a esta visualização.",
+			"noValue": "Sem valor"
+		}
 	},
 	"tags": {
 		"header": "Tags",

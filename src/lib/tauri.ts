@@ -185,8 +185,23 @@ interface WorkspaceDatabaseGrouping {
 	ascending: boolean;
 }
 
-interface DatabaseViewState {
-	layout: "table" | "board";
+export type DatabaseViewLayout = "table" | "board" | "calendar" | "gallery";
+
+/** `null` uses the first image or Excalidraw drawing embedded in the note body. */
+export type DatabaseGalleryCover = "none" | `property:${string}` | null;
+
+export type DatabaseGalleryCardSize = "small" | "medium" | "large";
+
+interface DatabaseLayoutSettings {
+	calendar_date_column?: string | null;
+	calendar_end_date_column?: string | null;
+	gallery_cover?: DatabaseGalleryCover;
+	gallery_card_fields?: string[];
+	gallery_card_size?: DatabaseGalleryCardSize;
+}
+
+interface DatabaseViewState extends DatabaseLayoutSettings {
+	layout: DatabaseViewLayout;
 	search?: string;
 	board_group_by?: string | null;
 	board_grouping?: WorkspaceDatabaseGrouping | null;
@@ -195,6 +210,8 @@ interface DatabaseViewState {
 	board_card_order?: Record<string, Record<string, string[]>>;
 	board_card_fields?: string[];
 }
+
+export type DatabaseDateRange = { kind: "range"; start: string; end: string } | { kind: "undated" };
 
 export interface DatabaseColumn {
 	id: string;
@@ -269,10 +286,10 @@ export interface DatabaseRow {
 	properties: Record<string, DatabaseCellValue>;
 }
 
-interface WorkspaceDatabaseView {
+interface WorkspaceDatabaseView extends DatabaseLayoutSettings {
 	id: string;
 	name: string;
-	layout: "table" | "board";
+	layout: DatabaseViewLayout;
 	search?: string;
 	icon?: string | null;
 	color?: string | null;
@@ -1105,8 +1122,13 @@ interface TauriCommands {
 			view_id: string;
 			offset?: number | null;
 			limit?: number | null;
+			date_range?: DatabaseDateRange | null;
 		},
 		WorkspaceDatabaseQueryResult
+	>;
+	databases_row_covers: CommandDef<
+		{ database_id: string; view_id: string; note_paths: string[] },
+		Array<string | null>
 	>;
 	databases_lane_values: CommandDef<
 		{ database_id: string; view_id: string; column: DatabaseColumn },

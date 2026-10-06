@@ -23,9 +23,11 @@ use super::store::{
     default_field_value, default_view, find_database_view, list_summaries, load_store, save_store,
 };
 use super::types::{
-    DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition,
-    DatabaseDocument, DatabasePreviewContext, DatabaseRow, DatabaseSchemaField, DatabaseSummary,
+    DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDateRange,
+    DatabaseDefinition, DatabaseDocument, DatabasePreviewContext, DatabaseRow,
+    DatabaseSchemaField, DatabaseSummary,
 };
+use super::view_settings::normalize_database_views;
 
 fn key(name: &str) -> Value {
     Value::String(name.to_string())
@@ -125,15 +127,6 @@ fn validate_status_color(color: &str) -> Result<(), String> {
         Ok(())
     } else {
         Err("unsupported status color".to_string())
-    }
-}
-
-fn prune_unsupported_database_view_layouts(database: &mut DatabaseDefinition) {
-    database
-        .views
-        .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
-    if database.views.is_empty() {
-        database.views.push(default_view("View 1"));
     }
 }
 
@@ -693,7 +686,7 @@ pub async fn databases_update(
         } else {
             normalize_new_note_folder(&root, &next.new_note.folder)?
         };
-        prune_unsupported_database_view_layouts(&mut next);
+        normalize_database_views(&mut next);
         next.updated_at = chrono::Utc::now().to_rfc3339();
         store.databases[index] = next.clone();
         save_store(&root, &store)?;
@@ -759,6 +752,7 @@ pub async fn databases_query_rows(
     view_id: String,
     offset: Option<u32>,
     limit: Option<u32>,
+    date_range: Option<DatabaseDateRange>,
 ) -> Result<super::types::DatabaseQueryResult, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
@@ -769,6 +763,7 @@ pub async fn databases_query_rows(
             &view,
             offset.unwrap_or(0) as usize,
             limit.unwrap_or(200).min(500) as usize,
+            date_range.as_ref(),
         )
     })
     .await

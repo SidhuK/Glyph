@@ -172,6 +172,13 @@ export function useDatabaseViewTabs({
 		() =>
 			buildViewMenuItems(activeView.layout, viewCount, {
 				onSelectLayout: handleSelectViewLayout,
+				layoutHeading: t("collections.layout.heading"),
+				layoutLabels: {
+					table: t("collections.layout.table"),
+					board: t("collections.layout.board"),
+					calendar: t("collections.layout.calendar"),
+					gallery: t("collections.layout.gallery"),
+				},
 				createLabel: t("collections.addView"),
 				onCreate: () => {
 					void handleCreateView().catch(() => undefined);

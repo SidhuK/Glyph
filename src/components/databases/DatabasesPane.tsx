@@ -16,6 +16,8 @@ import { CanvasPaneAwait } from "../app/CanvasPaneAwait";
 import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
+import { DatabaseCalendar } from "../database/calendar/DatabaseCalendar";
+import { DatabaseGallery } from "../database/gallery/DatabaseGallery";
 import { Button } from "../ui/shadcn/button";
 import { CollectionTopBar } from "./CollectionTopBar";
 import { CreateCollectionDialog } from "./CreateCollectionDialog";
@@ -40,6 +42,7 @@ function DatabasesPaneContent({
 		selection,
 		document: doc,
 		rows,
+		calendar,
 		display,
 		views,
 		viewSelection,
@@ -111,7 +114,48 @@ function DatabasesPaneContent({
 							})}
 						</div>
 					) : null}
-					{activeCollection.config.view.layout === "board" && views.boardHandlers ? (
+					{activeCollection.config.view.layout === "calendar" && rows.hasMoreRows ? (
+						<div className="databaseNotice">
+							{t("collections.calendar.truncated", { count: rows.rows.length })}
+						</div>
+					) : null}
+					{activeCollection.config.view.layout === "calendar" ? (
+						<DatabaseCalendar
+							databaseId={activeCollection.document.database.id}
+							viewId={activeCollection.view.id}
+							rows={rows.rows}
+							columns={views.resolvedColumns}
+							dateColumnId={activeCollection.config.view.calendar_date_column ?? null}
+							endDateColumnId={activeCollection.config.view.calendar_end_date_column ?? null}
+							groupColumn={views.activeGroupColumn}
+							calendar={calendar}
+							selectedRowPath={rows.selectedRowPath}
+							onSelectRow={rows.setSelectedRowPath}
+							onOpenRow={(notePath) => void onOpenFile(notePath)}
+							onCreateRow={actions.createRowWithValues}
+							onSaveCell={actions.handleUpdateCell}
+							onOpenSettings={() => views.setViewOptionsOpen(true)}
+						/>
+					) : activeCollection.config.view.layout === "gallery" ? (
+						<DatabaseGallery
+							databaseId={activeCollection.document.database.id}
+							viewId={activeCollection.view.id}
+							rows={rows.rows}
+							groupColumn={views.activeGroupColumn}
+							cover={activeCollection.config.view.gallery_cover ?? null}
+							cardSize={activeCollection.config.view.gallery_card_size ?? "medium"}
+							cardFields={
+								activeCollection.config.view.gallery_card_fields ?? EMPTY_BOARD_CARD_FIELDS
+							}
+							statusColors={display.statusColors}
+							selectedRowPath={rows.selectedRowPath}
+							onSelectRow={rows.setSelectedRowPath}
+							onOpenRow={(notePath) => void onOpenFile(notePath)}
+							hasMoreRows={rows.hasMoreRows}
+							isLoadingMoreRows={rows.isLoadingMoreRows}
+							onLoadMoreRows={rows.loadMoreRows}
+						/>
+					) : activeCollection.config.view.layout === "board" && views.boardHandlers ? (
 						<DatabaseBoard
 							rows={rows.rows}
 							columns={views.resolvedColumns ?? activeCollection.config.columns}

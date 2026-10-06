@@ -27,7 +27,7 @@ import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
 
-const DATABASE_BOARD_CARD_SENSORS = [
+export const DATABASE_BOARD_CARD_SENSORS = [
 	PointerSensor.configure({
 		activationConstraints: [new PointerActivationConstraints.Distance({ value: 5 })],
 	}),

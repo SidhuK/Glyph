@@ -9,13 +9,16 @@ fn normalize_tag_text(value: &str) -> Option<String> {
     normalize_tag(value)
 }
 
+pub(super) fn parse_cell_date(value: &str) -> Option<chrono::NaiveDate> {
+    match chrono::DateTime::parse_from_rfc3339(value) {
+        Ok(parsed) => Some(parsed.with_timezone(&chrono::Local).date_naive()),
+        Err(_) => chrono::NaiveDate::parse_from_str(value.trim(), "%Y-%m-%d").ok(),
+    }
+}
+
 fn date_matches_shortcut(value: &str, shortcut: &str) -> bool {
-    let date = match chrono::DateTime::parse_from_rfc3339(value) {
-        Ok(parsed) => parsed.with_timezone(&chrono::Local).date_naive(),
-        Err(_) => match chrono::NaiveDate::parse_from_str(value.trim(), "%Y-%m-%d") {
-            Ok(parsed) => parsed,
-            Err(_) => return false,
-        },
+    let Some(date) = parse_cell_date(value) else {
+        return false;
     };
     let today = chrono::Local::now().date_naive();
     match normalize_text(shortcut).as_str() {

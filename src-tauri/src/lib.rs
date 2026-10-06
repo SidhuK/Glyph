@@ -1844,6 +1844,7 @@ pub fn run() {
             databases::commands::databases_set_pinned,
             databases::commands::databases_delete,
             databases::commands::databases_query_rows,
+            databases::covers::databases_row_covers,
             databases::lanes::databases_lane_values,
             databases::lanes::databases_rename_lane,
             native_prompt::native_text_prompt,

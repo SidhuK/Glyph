@@ -13,6 +13,7 @@ import {
 	File as FileIcon,
 	FileImage as FileImageIcon,
 	Film as FilmIcon,
+	GridViewIcon,
 	Hash as HashIcon,
 	HtmlFile01Icon,
 	KanbanIcon,
@@ -87,6 +88,9 @@ export const Table = (props: IconProps) => (
 );
 export const Kanban = (props: IconProps) => (
 	<HugeiconsIcon icon={KanbanIcon} {...withDefaultIconSize(props)} />
+);
+export const Gallery = (props: IconProps) => (
+	<HugeiconsIcon icon={GridViewIcon} {...withDefaultIconSize(props)} />
 );
 export const Cpu = (props: IconProps) => (
 	<HugeiconsIcon icon={CpuIcon} {...withDefaultIconSize(props)} />

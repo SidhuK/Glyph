@@ -1,10 +1,17 @@
-import type { WorkspaceDatabaseSummary } from "../tauri";
+import type { DatabaseViewLayout, WorkspaceDatabaseSummary } from "../tauri";
 import type { ActionMenuItem } from "./actionMenuItems";
 
-type DatabaseViewLayout = "table" | "board";
+const DATABASE_VIEW_LAYOUTS = [
+	"table",
+	"board",
+	"calendar",
+	"gallery",
+] as const satisfies readonly DatabaseViewLayout[];
 
 interface ViewMenuActions {
 	onSelectLayout: (layout: DatabaseViewLayout) => void;
+	layoutHeading: string;
+	layoutLabels: Record<DatabaseViewLayout, string>;
 	createLabel: string;
 	onCreate: () => void;
 	onRename: () => void;
@@ -17,21 +24,15 @@ export function buildViewMenuItems(
 	actions: ViewMenuActions,
 ): ActionMenuItem[] {
 	return [
-		{ type: "label", label: "View type" },
-		{
+		{ type: "label", label: actions.layoutHeading },
+		...DATABASE_VIEW_LAYOUTS.map((layout): ActionMenuItem => ({
 			type: "item",
-			label: "Table",
-			checked: activeLayout === "table",
-			iconKey: "table",
-			onSelect: () => actions.onSelectLayout("table"),
-		},
-		{
-			type: "item",
-			label: "Board",
-			checked: activeLayout === "board",
-			iconKey: "board",
-			onSelect: () => actions.onSelectLayout("board"),
-		},
+			key: `layout-${layout}`,
+			label: actions.layoutLabels[layout],
+			checked: activeLayout === layout,
+			iconKey: layout,
+			onSelect: () => actions.onSelectLayout(layout),
+		})),
 		{ type: "separator" },
 		{
 			type: "item",

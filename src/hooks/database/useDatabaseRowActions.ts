@@ -110,15 +110,9 @@ export function useDatabaseRowActions({
 		[activeColumns, handleUpdateCell, onRenameNotePath, setError, setRows, setSelectedRowPath],
 	);
 
-	const handleCreateRow = useCallback(
-		async (initialValue?: { column: DatabaseColumn; laneId: string } | null) => {
+	const createRowWithValues = useCallback(
+		async (initialValues: DatabaseCreateRowInitialValue[]) => {
 			if (!document) return;
-			const createdValue =
-				initialValue != null ? boardCreateValue(initialValue.column, initialValue.laneId) : null;
-			const initialValues: DatabaseCreateRowInitialValue[] =
-				initialValue != null && createdValue != null
-					? [{ column: initialValue.column, value: createdValue }]
-					: [];
 			try {
 				const created = await invoke("databases_create_row", {
 					database_id: document.database.id,
@@ -139,9 +133,23 @@ export function useDatabaseRowActions({
 		[clearError, document, setError, setRows, setSelectedRowPath],
 	);
 
+	const handleCreateRow = useCallback(
+		(initialValue?: { column: DatabaseColumn; laneId: string } | null) => {
+			const createdValue =
+				initialValue != null ? boardCreateValue(initialValue.column, initialValue.laneId) : null;
+			return createRowWithValues(
+				initialValue != null && createdValue != null
+					? [{ column: initialValue.column, value: createdValue }]
+					: [],
+			);
+		},
+		[createRowWithValues],
+	);
+
 	return {
 		handleUpdateCell,
 		handleRenameRowTitle,
 		handleCreateRow,
+		createRowWithValues,
 	};
 }

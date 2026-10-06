@@ -11,6 +11,7 @@ import {
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { navigationQueryKeys } from "../../lib/navigationPrefetch";
 import type {
+	DatabaseDateRange,
 	DatabaseRow,
 	WorkspaceDatabaseDocument,
 	WorkspaceDatabaseQueryResult,
@@ -23,6 +24,9 @@ interface UseDatabaseRowsOptions extends PaneErrorHandlers {
 	selectedViewId: string | null;
 	document: WorkspaceDatabaseDocument | null;
 	pageSize?: number;
+	/** Bounds the query to a calendar window; `undefined` pages through every row. */
+	dateRange?: DatabaseDateRange;
+	enabled?: boolean;
 }
 
 type DatabaseRowsPagesData = InfiniteData<WorkspaceDatabaseQueryResult, number>;
@@ -72,6 +76,8 @@ export function useDatabaseRows({
 	selectedViewId,
 	document,
 	pageSize = 200,
+	dateRange,
+	enabled = true,
 	setError,
 }: UseDatabaseRowsOptions) {
 	const queryClient = useQueryClient();
@@ -83,6 +89,7 @@ export function useDatabaseRows({
 	} | null>(null);
 
 	const canLoadRows =
+		enabled &&
 		selectedDatabaseId != null &&
 		selectedViewId != null &&
 		document != null &&
@@ -91,9 +98,14 @@ export function useDatabaseRows({
 	const rowsQueryKey = useMemo(
 		() =>
 			selectedDatabaseId && selectedViewId
-				? navigationQueryKeys.databaseRowsPages(selectedDatabaseId, selectedViewId, pageSize)
+				? navigationQueryKeys.databaseRowsPages(
+						selectedDatabaseId,
+						selectedViewId,
+						pageSize,
+						dateRange,
+					)
 				: [...navigationQueryKeys.databases(), "rows-pages", "__inactive__"],
-		[pageSize, selectedDatabaseId, selectedViewId],
+		[dateRange, pageSize, selectedDatabaseId, selectedViewId],
 	);
 	const rowsQuery = useInfiniteQuery<WorkspaceDatabaseQueryResult, Error>({
 		queryKey: rowsQueryKey,
@@ -104,6 +116,7 @@ export function useDatabaseRows({
 				view_id: selectedViewId ?? "",
 				offset,
 				limit: pageSize,
+				date_range: dateRange ?? null,
 			});
 		},
 		initialPageParam: 0,

@@ -60,7 +60,7 @@ fn view_lane_rows(
     let key = lane_property_key(column)?;
     let conn = open_db(root)?;
     let snapshot = conn.unchecked_transaction().map_err(|e| e.to_string())?;
-    let matches = view_matching_ids(&snapshot, database, view)?;
+    let matches = view_matching_ids(&snapshot, database, view, None)?;
     let fields = RowFields {
         properties: PropertyFields::Keys(vec![key]),
         ..RowFields::default()

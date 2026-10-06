@@ -76,7 +76,55 @@
 		"laneRenamePartial": "{{changed}} cartes sur {{total}} mises à jour. {{failed}} n’ont pas pu être mises à jour : {{error}}",
 		"laneRenameConfirm": "Renommer",
 		"laneRenameCancel": "Annuler",
-		"sourceTruncated": "Cette collection de recherche n’affiche que ses {{limit}} premiers résultats."
+		"sourceTruncated": "Cette collection de recherche n’affiche que ses {{limit}} premiers résultats.",
+		"loadMore": "Charger plus",
+		"openViewSettings": "Ouvrir les réglages de la vue",
+		"layout": {
+			"heading": "Disposition",
+			"table": "Tableau",
+			"board": "Tableau Kanban",
+			"calendar": "Calendrier",
+			"gallery": "Galerie"
+		},
+		"card": {
+			"openHint": "Double-cliquez ou appuyez sur Entrée pour ouvrir",
+			"openNote": "Ouvrir la note"
+		},
+		"calendar": {
+			"settings": "Calendrier",
+			"dateColumn": "Champ de date",
+			"endDateColumn": "Champ de date de fin",
+			"chooseDate": "Choisir un champ de date",
+			"noEndDate": "Pas de date de fin",
+			"emptyTitle": "Choisissez un champ de date pour le calendrier",
+			"emptyText": "La vue calendrier place les notes sur les jours d’un champ de date. Ajoutez une propriété de date à vos notes, puis choisissez-la dans les réglages de la vue.",
+			"month": "Mois",
+			"week": "Semaine",
+			"previous_month": "Mois précédent",
+			"next_month": "Mois suivant",
+			"previous_week": "Semaine précédente",
+			"next_week": "Semaine suivante",
+			"newOnDay": "Nouvelle note le {{date}}",
+			"moveToToday": "Déplacer à aujourd’hui",
+			"unscheduled": "Non planifiées",
+			"unscheduledEmpty": "Toutes les notes ont une date.",
+			"truncated": "Affichage des {{count}} premières notes de cette période."
+		},
+		"gallery": {
+			"settings": "Galerie",
+			"cover": "Couverture de la carte",
+			"coverFirstImage": "Première image de la note",
+			"coverNone": "Pas de couverture",
+			"coverProperty": "Champ : {{field}}",
+			"cardSize": "Taille des cartes",
+			"size": {
+				"small": "Petite",
+				"medium": "Moyenne",
+				"large": "Grande"
+			},
+			"empty": "Aucune note ne correspond à cette vue.",
+			"noValue": "Aucune valeur"
+		}
 	},
 	"tags": {
 		"header": "Étiquettes",

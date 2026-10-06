@@ -1,6 +1,7 @@
 import type { NativeContextMenuItem } from "../nativeContextMenu";
+import type { DatabaseViewLayout } from "../tauri";
 
-export type ActionMenuIconKey = "table" | "board" | "edit" | "trash" | "library" | "plus";
+export type ActionMenuIconKey = DatabaseViewLayout | "edit" | "trash" | "library" | "plus";
 
 export type ActionMenuItem =
 	| { type: "separator" }

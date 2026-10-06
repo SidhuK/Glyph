@@ -85,7 +85,55 @@
 		"laneRenamePartial": "Updated {{changed}} of {{total}} cards. {{failed}} could not be updated: {{error}}",
 		"laneRenameConfirm": "Rename",
 		"laneRenameCancel": "Cancel",
-		"sourceTruncated": "This search collection shows only its first {{limit}} matches."
+		"sourceTruncated": "This search collection shows only its first {{limit}} matches.",
+		"loadMore": "Load more",
+		"openViewSettings": "Open view settings",
+		"layout": {
+			"heading": "Layout",
+			"table": "Table",
+			"board": "Board",
+			"calendar": "Calendar",
+			"gallery": "Gallery"
+		},
+		"card": {
+			"openHint": "Double-click or press Enter to open",
+			"openNote": "Open note"
+		},
+		"calendar": {
+			"settings": "Calendar",
+			"dateColumn": "Date field",
+			"endDateColumn": "End date field",
+			"chooseDate": "Choose a date field",
+			"noEndDate": "No end date",
+			"emptyTitle": "Pick a date field for the calendar",
+			"emptyText": "Calendar view places notes on the days in a date field. Add a date property to your notes, then choose it in view settings.",
+			"month": "Month",
+			"week": "Week",
+			"previous_month": "Previous month",
+			"next_month": "Next month",
+			"previous_week": "Previous week",
+			"next_week": "Next week",
+			"newOnDay": "New note on {{date}}",
+			"moveToToday": "Move to today",
+			"unscheduled": "Unscheduled",
+			"unscheduledEmpty": "Every note has a date.",
+			"truncated": "Showing the first {{count}} notes in this range."
+		},
+		"gallery": {
+			"settings": "Gallery",
+			"cover": "Card cover",
+			"coverFirstImage": "First image in note",
+			"coverNone": "No cover",
+			"coverProperty": "Field: {{field}}",
+			"cardSize": "Card size",
+			"size": {
+				"small": "Small",
+				"medium": "Medium",
+				"large": "Large"
+			},
+			"empty": "No notes match this view.",
+			"noValue": "No value"
+		}
 	},
 	"tags": {
 		"header": "Tags",

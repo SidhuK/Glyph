@@ -5,9 +5,9 @@ import { useCallback, useRef } from "react";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import { isNativeContextMenuAvailable } from "../../lib/nativeContextMenu";
 import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
-import { Kanban, Table } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { ActionMenuTrigger } from "./ActionMenuTrigger";
+import { DatabaseLayoutIcon } from "./DatabaseLayoutIcon";
 import { useDatabaseViewTabs } from "./useDatabaseViewTabs";
 
 interface DatabaseViewTabsProps {
@@ -130,11 +130,12 @@ export function DatabaseViewTabs({
 									/>
 								)
 							) : null}
-							{view.layout === "board" ? (
-								<Kanban size="var(--icon-sm)" className="databasesViewTabIcon" aria-hidden />
-							) : (
-								<Table size="var(--icon-sm)" className="databasesViewTabIcon" aria-hidden />
-							)}
+							<DatabaseLayoutIcon
+								layout={view.layout}
+								size="var(--icon-sm)"
+								className="databasesViewTabIcon"
+								aria-hidden
+							/>
 							<span className="databasesViewTabLabel">{view.name}</span>
 						</m.button>
 					);

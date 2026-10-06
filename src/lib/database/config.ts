@@ -100,6 +100,15 @@ export function databaseCellValueFromRow(
 	}
 }
 
+export function databaseRowFileTitle(notePath: string): string {
+	const base = notePath.split("/").pop() ?? notePath;
+	return base.replace(/\.md$/i, "");
+}
+
+export function databaseRowTitle(row: DatabaseRow): string {
+	return row.title.trim() || databaseRowFileTitle(row.note_path).trim();
+}
+
 export function formatDatabaseDateTime(
 	value: string | null | undefined,
 	format: DateDisplayFormat = DEFAULT_DATE_DISPLAY_FORMAT,

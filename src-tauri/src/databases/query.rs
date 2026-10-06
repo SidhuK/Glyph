@@ -7,10 +7,11 @@ use crate::index::open_db;
 use crate::paths;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
+use super::date_range::DateRangeFilter;
 use super::filter::row_matches_filters;
 use super::source::{source_ids, SourceIds};
 use super::types::{
-    DatabaseCellValue, DatabaseColumn, DatabaseDefinition, DatabaseDocument,
+    DatabaseCellValue, DatabaseColumn, DatabaseDateRange, DatabaseDefinition, DatabaseDocument,
     DatabasePropertyOption, DatabaseQueryResult, DatabaseRow, DatabaseViewDefinition,
 };
 
@@ -117,7 +118,7 @@ pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
     ]
 }
 
-fn field_catalog(
+pub(super) fn field_catalog(
     database: &DatabaseDefinition,
     view: &DatabaseViewDefinition,
 ) -> Vec<DatabaseColumn> {
@@ -563,11 +564,12 @@ pub(super) fn hydrate_rows(
 fn evaluation_fields(
     catalog: &[DatabaseColumn],
     view: &DatabaseViewDefinition,
+    date_range: Option<&DateRangeFilter>,
 ) -> Option<RowFields> {
     if !view.search.trim().is_empty() {
         return Some(RowFields::all());
     }
-    if view.filters.is_empty() && view.sorts.is_empty() {
+    if view.filters.is_empty() && view.sorts.is_empty() && date_range.is_none() {
         return None;
     }
     let mut fields = RowFields::default();
@@ -576,7 +578,8 @@ fn evaluation_fields(
         .filters
         .iter()
         .map(|filter| &filter.column_id)
-        .chain(view.sorts.iter().map(|sort| &sort.column_id));
+        .chain(view.sorts.iter().map(|sort| &sort.column_id))
+        .chain(date_range.into_iter().flat_map(DateRangeFilter::column_ids));
     for column_id in referenced {
         let Some(column) = catalog.iter().find(|entry| &entry.id == column_id) else {
             continue;
@@ -605,15 +608,17 @@ fn matching_ids(
     source: Vec<String>,
     catalog: &[DatabaseColumn],
     view: &DatabaseViewDefinition,
+    date_range: Option<&DateRangeFilter>,
 ) -> Result<Vec<String>, String> {
-    let Some(fields) = evaluation_fields(catalog, view) else {
+    let Some(fields) = evaluation_fields(catalog, view, date_range) else {
         return Ok(source);
     };
     let mut rows = Vec::new();
     for chunk in source.chunks(EVALUATION_BATCH_SIZE) {
         let mut batch = hydrate_rows(conn, chunk, &fields)?;
         batch.retain(|row| {
-            row_matches_filters(row, catalog, &view.filters)
+            date_range.is_none_or(|range| range.matches(row))
+                && row_matches_filters(row, catalog, &view.filters)
                 && row_matches_search(row, &view.search)
         });
         rows.append(&mut batch);
@@ -635,10 +640,20 @@ pub(super) fn view_matching_ids(
     conn: &Connection,
     database: &DatabaseDefinition,
     view: &DatabaseViewDefinition,
+    date_range: Option<&DatabaseDateRange>,
 ) -> Result<SourceIds, String> {
-    let mut source = source_ids(conn, database)?;
     let catalog = field_catalog(database, view);
-    source.ids = matching_ids(conn, std::mem::take(&mut source.ids), &catalog, view)?;
+    let date_range = date_range
+        .map(|range| DateRangeFilter::resolve(&catalog, view, range))
+        .transpose()?;
+    let mut source = source_ids(conn, database)?;
+    source.ids = matching_ids(
+        conn,
+        std::mem::take(&mut source.ids),
+        &catalog,
+        view,
+        date_range.as_ref(),
+    )?;
     Ok(source)
 }
 
@@ -713,11 +728,12 @@ pub fn query_database_rows(
     view: &DatabaseViewDefinition,
     offset: usize,
     limit: usize,
+    date_range: Option<&DatabaseDateRange>,
 ) -> Result<DatabaseQueryResult, String> {
     let conn = open_db(root)?;
     // A read transaction keeps the count and the page on one index snapshot.
     let snapshot = conn.unchecked_transaction().map_err(|e| e.to_string())?;
-    let matches = view_matching_ids(&snapshot, database, view)?;
+    let matches = view_matching_ids(&snapshot, database, view, date_range)?;
     let total = matches.ids.len();
     let start = offset.min(total);
     let end = offset.saturating_add(limit).min(total);

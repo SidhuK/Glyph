@@ -74,7 +74,55 @@
 		"laneRenamePartial": "{{total}}枚中{{changed}}枚を更新しました。{{failed}}枚は更新できませんでした: {{error}}",
 		"laneRenameConfirm": "名前を変更",
 		"laneRenameCancel": "キャンセル",
-		"sourceTruncated": "この検索コレクションは最初の{{limit}}件のみを表示しています。"
+		"sourceTruncated": "この検索コレクションは最初の{{limit}}件のみを表示しています。",
+		"loadMore": "さらに読み込む",
+		"openViewSettings": "ビュー設定を開く",
+		"layout": {
+			"heading": "レイアウト",
+			"table": "テーブル",
+			"board": "ボード",
+			"calendar": "カレンダー",
+			"gallery": "ギャラリー"
+		},
+		"card": {
+			"openHint": "ダブルクリックまたは Enter で開く",
+			"openNote": "ノートを開く"
+		},
+		"calendar": {
+			"settings": "カレンダー",
+			"dateColumn": "日付フィールド",
+			"endDateColumn": "終了日フィールド",
+			"chooseDate": "日付フィールドを選択",
+			"noEndDate": "終了日なし",
+			"emptyTitle": "カレンダーの日付フィールドを選択してください",
+			"emptyText": "カレンダービューは日付フィールドの日にノートを配置します。ノートに日付プロパティを追加し、ビュー設定で選択してください。",
+			"month": "月",
+			"week": "週",
+			"previous_month": "前の月",
+			"next_month": "次の月",
+			"previous_week": "前の週",
+			"next_week": "次の週",
+			"newOnDay": "{{date}} に新規ノート",
+			"moveToToday": "今日に移動",
+			"unscheduled": "日付なし",
+			"unscheduledEmpty": "すべてのノートに日付があります。",
+			"truncated": "この期間の最初の {{count}} 件のノートを表示しています。"
+		},
+		"gallery": {
+			"settings": "ギャラリー",
+			"cover": "カードのカバー",
+			"coverFirstImage": "ノート内の最初の画像",
+			"coverNone": "カバーなし",
+			"coverProperty": "フィールド: {{field}}",
+			"cardSize": "カードサイズ",
+			"size": {
+				"small": "小",
+				"medium": "中",
+				"large": "大"
+			},
+			"empty": "このビューに一致するノートはありません。",
+			"noValue": "値なし"
+		}
 	},
 	"tags": {
 		"header": "タグ",

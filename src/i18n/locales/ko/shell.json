@@ -74,7 +74,55 @@
 		"laneRenamePartial": "카드 {{total}}개 중 {{changed}}개를 업데이트했습니다. {{failed}}개는 업데이트하지 못했습니다: {{error}}",
 		"laneRenameConfirm": "이름 바꾸기",
 		"laneRenameCancel": "취소",
-		"sourceTruncated": "이 검색 컬렉션은 처음 {{limit}}개 결과만 표시합니다."
+		"sourceTruncated": "이 검색 컬렉션은 처음 {{limit}}개 결과만 표시합니다.",
+		"loadMore": "더 불러오기",
+		"openViewSettings": "보기 설정 열기",
+		"layout": {
+			"heading": "레이아웃",
+			"table": "표",
+			"board": "보드",
+			"calendar": "캘린더",
+			"gallery": "갤러리"
+		},
+		"card": {
+			"openHint": "두 번 클릭하거나 Enter를 눌러 열기",
+			"openNote": "노트 열기"
+		},
+		"calendar": {
+			"settings": "캘린더",
+			"dateColumn": "날짜 필드",
+			"endDateColumn": "종료 날짜 필드",
+			"chooseDate": "날짜 필드 선택",
+			"noEndDate": "종료 날짜 없음",
+			"emptyTitle": "캘린더에 사용할 날짜 필드를 선택하세요",
+			"emptyText": "캘린더 보기는 날짜 필드의 날짜에 노트를 배치합니다. 노트에 날짜 속성을 추가한 다음 보기 설정에서 선택하세요.",
+			"month": "월",
+			"week": "주",
+			"previous_month": "이전 달",
+			"next_month": "다음 달",
+			"previous_week": "이전 주",
+			"next_week": "다음 주",
+			"newOnDay": "{{date}}에 새 노트",
+			"moveToToday": "오늘로 이동",
+			"unscheduled": "날짜 없음",
+			"unscheduledEmpty": "모든 노트에 날짜가 있습니다.",
+			"truncated": "이 기간의 처음 {{count}}개 노트를 표시합니다."
+		},
+		"gallery": {
+			"settings": "갤러리",
+			"cover": "카드 표지",
+			"coverFirstImage": "노트의 첫 번째 이미지",
+			"coverNone": "표지 없음",
+			"coverProperty": "필드: {{field}}",
+			"cardSize": "카드 크기",
+			"size": {
+				"small": "작게",
+				"medium": "보통",
+				"large": "크게"
+			},
+			"empty": "이 보기에 맞는 노트가 없습니다.",
+			"noValue": "값 없음"
+		}
 	},
 	"tags": {
 		"header": "태그",

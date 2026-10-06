@@ -5,12 +5,13 @@ import type {
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
+import type { DatabaseViewLayout } from "../../lib/tauri";
 import { Search, X } from "../Icons";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseViewOptionsPopover } from "./DatabaseViewOptionsPopover";
 
 interface DatabaseToolbarProps {
-	databaseView: "table" | "board";
+	databaseView: DatabaseViewLayout;
 	groupColumns: DatabaseColumn[];
 	groupColumnId: string | null;
 	config: DatabaseConfig;

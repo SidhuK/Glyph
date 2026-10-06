@@ -74,7 +74,55 @@
 		"laneRenamePartial": "{{changed}} von {{total}} Karten aktualisiert. {{failed}} konnten nicht aktualisiert werden: {{error}}",
 		"laneRenameConfirm": "Umbenennen",
 		"laneRenameCancel": "Abbrechen",
-		"sourceTruncated": "Diese Suchsammlung zeigt nur die ersten {{limit}} Treffer."
+		"sourceTruncated": "Diese Suchsammlung zeigt nur die ersten {{limit}} Treffer.",
+		"loadMore": "Mehr laden",
+		"openViewSettings": "Ansichtseinstellungen öffnen",
+		"layout": {
+			"heading": "Layout",
+			"table": "Tabelle",
+			"board": "Board",
+			"calendar": "Kalender",
+			"gallery": "Galerie"
+		},
+		"card": {
+			"openHint": "Zum Öffnen doppelklicken oder Eingabetaste drücken",
+			"openNote": "Notiz öffnen"
+		},
+		"calendar": {
+			"settings": "Kalender",
+			"dateColumn": "Datumsfeld",
+			"endDateColumn": "Enddatumsfeld",
+			"chooseDate": "Datumsfeld wählen",
+			"noEndDate": "Kein Enddatum",
+			"emptyTitle": "Wähle ein Datumsfeld für den Kalender",
+			"emptyText": "Die Kalenderansicht ordnet Notizen den Tagen eines Datumsfelds zu. Füge deinen Notizen eine Datumseigenschaft hinzu und wähle sie in den Ansichtseinstellungen.",
+			"month": "Monat",
+			"week": "Woche",
+			"previous_month": "Vorheriger Monat",
+			"next_month": "Nächster Monat",
+			"previous_week": "Vorherige Woche",
+			"next_week": "Nächste Woche",
+			"newOnDay": "Neue Notiz am {{date}}",
+			"moveToToday": "Auf heute verschieben",
+			"unscheduled": "Ohne Datum",
+			"unscheduledEmpty": "Jede Notiz hat ein Datum.",
+			"truncated": "Die ersten {{count}} Notizen in diesem Zeitraum werden angezeigt."
+		},
+		"gallery": {
+			"settings": "Galerie",
+			"cover": "Kartencover",
+			"coverFirstImage": "Erstes Bild der Notiz",
+			"coverNone": "Kein Cover",
+			"coverProperty": "Feld: {{field}}",
+			"cardSize": "Kartengröße",
+			"size": {
+				"small": "Klein",
+				"medium": "Mittel",
+				"large": "Groß"
+			},
+			"empty": "Keine Notizen entsprechen dieser Ansicht.",
+			"noValue": "Kein Wert"
+		}
 	},
 	"tags": {
 		"header": "Tags",

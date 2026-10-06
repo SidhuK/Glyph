@@ -7,9 +7,10 @@ use crate::glyph_paths::ensure_glyph_dir;
 use crate::io_atomic;
 
 use super::types::{
-    DatabaseCellValue, DatabaseDefinition, DatabaseStore, DatabaseSummary, DatabaseViewDefinition,
-    DatabaseViewGrouping,
+    default_gallery_card_size, DatabaseCellValue, DatabaseDefinition, DatabaseStore,
+    DatabaseSummary, DatabaseViewDefinition, DatabaseViewGrouping,
 };
+use super::view_settings::normalize_database_views;
 
 const DATABASES_STORE_FILE: &str = "databases.json";
 
@@ -45,6 +46,11 @@ pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
         board_lane_order: Default::default(),
         board_card_order: Default::default(),
         board_card_fields: Default::default(),
+        calendar_date_column: None,
+        calendar_end_date_column: None,
+        gallery_cover: None,
+        gallery_card_fields: Default::default(),
+        gallery_card_size: default_gallery_card_size(),
         created_at: now.clone(),
         updated_at: now,
     }
@@ -157,17 +163,6 @@ fn normalize_store_property_kinds(store: &mut DatabaseStore) {
     }
 }
 
-fn prune_unsupported_view_layouts(store: &mut DatabaseStore) {
-    for database in &mut store.databases {
-        database
-            .views
-            .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
-        if database.views.is_empty() {
-            database.views.push(default_view("View 1"));
-        }
-    }
-}
-
 fn is_valid_status_color(color: &str) -> bool {
     matches!(
         color,
@@ -186,7 +181,7 @@ fn normalize_store_on_load(mut store: DatabaseStore) -> DatabaseStore {
         store.version = 1;
     }
     normalize_store_property_kinds(&mut store);
-    prune_unsupported_view_layouts(&mut store);
+    store.databases.iter_mut().for_each(normalize_database_views);
     normalize_status_colors(&mut store);
     normalize_schema_field_defaults(&mut store);
     store

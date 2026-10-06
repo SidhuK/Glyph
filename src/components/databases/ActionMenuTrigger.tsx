@@ -7,7 +7,8 @@ import {
 	toNativeContextMenuItems,
 } from "../../lib/database/actionMenuItems";
 import { showNativePopupMenu } from "../../lib/nativeContextMenu";
-import { Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
+import { Edit, Plus, Trash2 } from "../Icons";
+import { DatabaseLayoutIcon } from "./DatabaseLayoutIcon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -20,9 +21,10 @@ import {
 function renderMenuIcon(iconKey: ActionMenuIconKey): ReactNode {
 	switch (iconKey) {
 		case "table":
-			return <Table size="var(--icon-sm)" />;
 		case "board":
-			return <Kanban size="var(--icon-sm)" />;
+		case "calendar":
+		case "gallery":
+			return <DatabaseLayoutIcon layout={iconKey} size="var(--icon-sm)" />;
 		case "edit":
 			return <Edit size="var(--icon-sm)" />;
 		case "trash":

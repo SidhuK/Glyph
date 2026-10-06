@@ -473,6 +473,63 @@ fn resolve_markdown_link_target(
     None
 }
 
+pub(crate) struct CoverSource {
+    pub source_path: String,
+    pub href: String,
+    pub wiki_embed: bool,
+}
+
+fn is_excalidraw_rel_path(path: &str) -> bool {
+    utils::path_extension_lower(path).as_deref() == Some("excalidraw")
+}
+
+fn resolve_excalidraw_wikilink_target(entries: &[FileEntry], target: &str) -> Option<String> {
+    let raw = target.split(['#', '|']).next().unwrap_or("").trim();
+    let normalized = normalize_segments(raw.trim_start_matches("./"))?;
+    if !is_excalidraw_rel_path(&normalized) {
+        return None;
+    }
+    let drawings = entries
+        .iter()
+        .filter(|entry| is_excalidraw_rel_path(&entry.rel_path));
+    if normalized.contains('/') {
+        return drawings
+            .into_iter()
+            .find(|entry| normalize_path(&entry.rel_path).eq_ignore_ascii_case(&normalized))
+            .map(|entry| entry.rel_path.clone());
+    }
+    choose_unambiguous_match(
+        drawings
+            .filter(|entry| basename(&entry.rel_path).eq_ignore_ascii_case(&normalized))
+            .map(|entry| entry.rel_path.clone())
+            .collect(),
+    )
+}
+
+/// Resolves embedded images or Excalidraw drawings for many notes with a
+/// single space walk; anything that is not a local image or drawing is `None`.
+pub(crate) fn resolve_cover_sources(
+    root: &Path,
+    sources: &[CoverSource],
+) -> Result<Vec<Option<String>>, String> {
+    if sources.is_empty() {
+        return Ok(Vec::new());
+    }
+    let entries = list_files(root, false, 80_000)?;
+    Ok(sources
+        .iter()
+        .map(|source| {
+            if source.wiki_embed {
+                resolve_image_wikilink_target(&entries, &source.href)
+                    .or_else(|| resolve_excalidraw_wikilink_target(&entries, &source.href))
+            } else {
+                resolve_markdown_link_target(&entries, &source.source_path, &source.href)
+                    .filter(|path| is_image_rel_path(path) || is_excalidraw_rel_path(path))
+            }
+        })
+        .collect())
+}
+
 #[tauri::command]
 pub async fn space_resolve_image_sources_batch(
     window: WebviewWindow,

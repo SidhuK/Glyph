@@ -8,6 +8,7 @@ import {
 	TextFontIcon,
 } from "@hugeicons/core-free-icons";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import {
 	ensureDatabaseColumn,
@@ -26,7 +27,13 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { ChevronRight, RefreshCw, Search } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { DatabaseLayoutIcon } from "../databases/DatabaseLayoutIcon";
 import { CardFieldsPanel, visibleCardFieldCount } from "./DatabaseViewOptionsCardFieldsPanel";
+import {
+	CalendarSettingsPanel,
+	GallerySettingsPanel,
+	layoutSettingsLabel,
+} from "./DatabaseViewOptionsLayoutPanel";
 import { type ColumnMenuEntry, ColumnsPanel } from "./DatabaseViewOptionsColumnsPanel";
 import { FiltersPanel, nextFilterForColumn } from "./DatabaseViewOptionsFiltersPanel";
 import { SortPanel } from "./DatabaseViewOptionsSortPanel";
@@ -37,7 +44,7 @@ import {
 	ensurePresetColumn,
 } from "./databaseViewPresets";
 
-type OptionsPanel = "source" | "columns" | "filters" | "sort" | "card_fields";
+type OptionsPanel = "source" | "columns" | "filters" | "sort" | "card_fields" | "layout";
 
 function cardFieldsLabel(fields: string[] | undefined): string {
 	const fieldCount = visibleCardFieldCount(fields);
@@ -211,8 +218,12 @@ export function DatabaseViewOptionsPopover({
 	const filterKeyCounterRef = useRef(0);
 	const previousFilterKeyEntriesRef = useRef<FilterKeyEntry[]>([]);
 	const filtersRef = useRef(config.filters);
+	const { t } = useTranslation("shell");
 	const visibleCount = config.columns.filter((column) => column.visible).length;
-	const isTableView = config.view.layout === "table";
+	const layout = config.view.layout;
+	const isTableView = layout === "table";
+	const cardFieldsKey =
+		layout === "gallery" ? "gallery_card_fields" : layout === "board" ? "board_card_fields" : null;
 	filtersRef.current = config.filters;
 	const resolvedColumns = useMemo(
 		() => resolveDatabaseColumns(config.columns, availableProperties),
@@ -418,6 +429,7 @@ export function DatabaseViewOptionsPopover({
 				search: "",
 				board_group_by: null,
 				board_card_fields: undefined,
+				gallery_card_fields: undefined,
 			},
 			columns: RESTORE_DEFAULT_COLUMNS,
 			sorts: [],
@@ -499,18 +511,32 @@ export function DatabaseViewOptionsPopover({
 						updateConfig={updateConfig}
 					/>
 				) : null}
-				{activePanel === "card_fields" ? (
+				{cardFieldsKey && activePanel === "card_fields" ? (
 					<CardFieldsPanel
-						fields={config.view.board_card_fields}
+						fields={config.view[cardFieldsKey]}
 						onChange={(fields) =>
 							void onChangeConfig({
 								...config,
 								view: {
 									...config.view,
-									board_card_fields: fields,
+									[cardFieldsKey]: fields,
 								},
 							})
 						}
+					/>
+				) : null}
+				{layout === "calendar" && activePanel === "layout" ? (
+					<CalendarSettingsPanel
+						config={config}
+						columns={resolvedColumns}
+						updateConfig={updateConfig}
+					/>
+				) : null}
+				{layout === "gallery" && activePanel === "layout" ? (
+					<GallerySettingsPanel
+						config={config}
+						columns={resolvedColumns}
+						updateConfig={updateConfig}
 					/>
 				) : null}
 				<section className="databaseViewOptionsMenu" aria-label="View settings">
@@ -545,13 +571,22 @@ export function DatabaseViewOptionsPopover({
 						active={activePanel === "sort"}
 						onClick={() => togglePanel("sort")}
 					/>
-					{config.view.layout === "board" ? (
+					{cardFieldsKey ? (
 						<OptionMenuRow
 							icon={<HugeiconsIcon icon={Cards01Icon} size="var(--icon-lg)" />}
 							label="Card fields"
-							value={cardFieldsLabel(config.view.board_card_fields)}
+							value={cardFieldsLabel(config.view[cardFieldsKey])}
 							active={activePanel === "card_fields"}
 							onClick={() => togglePanel("card_fields")}
+						/>
+					) : null}
+					{layout === "calendar" || layout === "gallery" ? (
+						<OptionMenuRow
+							icon={<DatabaseLayoutIcon layout={layout} size="var(--icon-lg)" />}
+							label={t(`collections.${layout}.settings`)}
+							value={layoutSettingsLabel(t, config, resolvedColumns)}
+							active={activePanel === "layout"}
+							onClick={() => togglePanel("layout")}
 						/>
 					) : null}
 					<button type="button" className="databaseViewRestoreButton" onClick={resetViewOptions}>
