@@ -46,6 +46,7 @@ import {
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { useTagRefactor } from "../../hooks/useTagRefactor";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
@@ -273,6 +274,7 @@ export const SidebarContent = memo(function SidebarContent({
 		ensureTagsFresh,
 		setTagAppearance,
 	} = useFileTreeContext();
+	const { openTagMenu } = useTagRefactor();
 	const {
 		folioMode,
 		periodNotesEnabled,
@@ -1045,6 +1047,7 @@ export const SidebarContent = memo(function SidebarContent({
 									tagAppearance={tagAppearance}
 									tagsError={tagsError}
 									onChangeTagIcon={handleChangeTagIcon}
+									onTagContextMenu={openTagMenu}
 								/>
 							</section>
 						</Activity>

@@ -250,6 +250,18 @@
 			"label": "Przenieś aktywny plik",
 			"description": "Przenieś bieżący plik do innego folderu."
 		},
+		"rename-tag": {
+			"label": "Zmień nazwę tagu",
+			"description": "Zmień nazwę tagu we wszystkich notatkach."
+		},
+		"merge-tag": {
+			"label": "Scal tag",
+			"description": "Scal tag z innym tagiem we wszystkich notatkach."
+		},
+		"delete-tag": {
+			"label": "Usuń tag",
+			"description": "Usuń tag ze wszystkich notatek."
+		},
 		"new-database": {
 			"label": "Nowa kolekcja",
 			"description": "Utwórz nową kolekcję."

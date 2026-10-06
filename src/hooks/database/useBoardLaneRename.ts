@@ -86,7 +86,7 @@ export function useBoardLaneRename({ target, onRenamed }: UseBoardLaneRenameOpti
 		let value = lane.label;
 		let laneId: string | null = null;
 		while (laneId === null) {
-			const input = await invoke("databases_lane_name_prompt", {
+			const input = await invoke("native_text_prompt", {
 				request: {
 					title,
 					description: t("collections.laneRenameScope", { count }),

@@ -242,6 +242,18 @@
 			"label": "Mover archivo activo",
 			"description": "Mover el archivo actual a otra carpeta."
 		},
+		"rename-tag": {
+			"label": "Cambiar nombre de etiqueta",
+			"description": "Cambia el nombre de una etiqueta en todas las notas."
+		},
+		"merge-tag": {
+			"label": "Combinar etiqueta",
+			"description": "Combina una etiqueta con otra en todas las notas."
+		},
+		"delete-tag": {
+			"label": "Eliminar etiqueta",
+			"description": "Quita una etiqueta de todas las notas."
+		},
 		"new-database": {
 			"label": "Nueva colección",
 			"description": "Crear una colección nueva."

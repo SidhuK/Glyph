@@ -242,6 +242,18 @@
 			"label": "アクティブなファイルを移動",
 			"description": "現在のファイルを別のフォルダに移動します。"
 		},
+		"rename-tag": {
+			"label": "タグ名を変更",
+			"description": "すべてのノートでタグの名前を変更します。"
+		},
+		"merge-tag": {
+			"label": "タグを統合",
+			"description": "すべてのノートでタグを別のタグに統合します。"
+		},
+		"delete-tag": {
+			"label": "タグを削除",
+			"description": "すべてのノートからタグを削除します。"
+		},
 		"new-database": {
 			"label": "新規コレクション",
 			"description": "新しいコレクションを作成します。"

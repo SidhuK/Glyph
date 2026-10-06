@@ -242,6 +242,18 @@
 			"label": "활성 파일 이동",
 			"description": "현재 파일을 다른 폴더로 이동합니다."
 		},
+		"rename-tag": {
+			"label": "태그 이름 변경",
+			"description": "모든 노트에서 태그 이름을 변경합니다."
+		},
+		"merge-tag": {
+			"label": "태그 병합",
+			"description": "모든 노트에서 태그를 다른 태그로 병합합니다."
+		},
+		"delete-tag": {
+			"label": "태그 삭제",
+			"description": "모든 노트에서 태그를 제거합니다."
+		},
 		"new-database": {
 			"label": "새 컬렉션",
 			"description": "새 컬렉션을 만듭니다."

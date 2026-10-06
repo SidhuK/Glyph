@@ -262,6 +262,18 @@
 			"label": "Move Active File",
 			"description": "Move the current file to a different folder."
 		},
+		"rename-tag": {
+			"label": "Rename Tag",
+			"description": "Rename a tag in every note."
+		},
+		"merge-tag": {
+			"label": "Merge Tag",
+			"description": "Merge a tag into another tag in every note."
+		},
+		"delete-tag": {
+			"label": "Delete Tag",
+			"description": "Remove a tag from every note."
+		},
 		"new-database": {
 			"label": "New Collection",
 			"description": "Create a new collection."
