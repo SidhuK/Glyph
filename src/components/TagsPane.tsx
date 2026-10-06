@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
-import { type CSSProperties, memo, useCallback, useMemo } from "react";
+import { type CSSProperties, type MouseEvent, memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { type TagIconOverrides, tagIconOverridesFromAppearance } from "../lib/tagIcons";
 import type { PersonCount, TagAppearance, TagCount } from "../lib/tauri";
@@ -16,6 +16,7 @@ interface TagsPaneProps {
 	beautifulTags?: boolean;
 	tagAppearance?: Record<string, TagAppearance>;
 	onChangeTagIcon?: (tag: string, iconName: string | null) => Promise<void>;
+	onTagContextMenu: (event: MouseEvent<HTMLElement>, tag: string) => void;
 	tagsError?: string;
 }
 
@@ -74,6 +75,7 @@ export const TagsPane = memo(function TagsPane({
 	beautifulTags = false,
 	tagAppearance = {},
 	onChangeTagIcon,
+	onTagContextMenu,
 	tagsError = "",
 }: TagsPaneProps) {
 	const { t } = useTranslation("shell");
@@ -152,6 +154,7 @@ export const TagsPane = memo(function TagsPane({
 										}
 										title={`#${tag.tag} · ${tag.totalCount} note${tag.totalCount === 1 ? "" : "s"}`}
 										transition={springTransition}
+										onContextMenu={(event) => onTagContextMenu(event, tag.tag)}
 									>
 										<TagRowIcon
 											tag={tag.tag}

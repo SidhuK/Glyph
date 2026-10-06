@@ -47,6 +47,7 @@ import type { PeriodKind, PeriodNotesEnabled } from "../../lib/periodNotes";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import { type ShortcutActionId, isShortcutActionId } from "../../lib/shortcuts/registry";
 import type { SplitDropEdge } from "../../lib/splitEditor";
+import type { TagRefactorAction } from "../../hooks/useTagRefactor";
 import { toast } from "../../lib/toast";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import type { SettingsTab } from "../settings/settingsConfig";
@@ -54,6 +55,7 @@ import type { Command } from "./CommandPalette";
 import { buildEditorCommands } from "./editorCommands";
 import { buildMovePickerCommands } from "./movePickerCommands";
 import { useNoteCollectionCommands } from "./useNoteCollectionCommands";
+import { useTagRefactorCommands } from "./useTagRefactorCommands";
 
 interface GitSyncCommandActions {
 	syncNow: () => Promise<unknown>;
@@ -120,12 +122,14 @@ interface UseAppCommandsDeps {
 	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
 	setMovePickerSourcePath: (path: string | null) => void;
+	setTagPickerAction: (action: TagRefactorAction | null) => void;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	showCollapsibleHeadings: boolean;
 	showCollapsibleLists: boolean;
 	sidebarCollapsed: boolean;
 	spacePath: string | null;
 	tabsLength: number;
+	tagPickerAction: TagRefactorAction | null;
 	unpinnedTabsLength: number;
 	toggleActiveTabPinned: () => void;
 	togglePinnedFile: (path: string) => Promise<void>;
@@ -280,12 +284,14 @@ export function useAppCommands({
 	setCurrentEditorMode,
 	setAiPanelOpen,
 	setMovePickerSourcePath,
+	setTagPickerAction,
 	setSidebarCollapsed,
 	showCollapsibleHeadings,
 	showCollapsibleLists,
 	sidebarCollapsed,
 	spacePath,
 	tabsLength,
+	tagPickerAction,
 	unpinnedTabsLength,
 	toggleActiveTabPinned,
 	togglePinnedFile,
@@ -297,6 +303,11 @@ export function useAppCommands({
 		activeMarkdownTabPath,
 		openWorkspaceFile,
 	);
+	const tagRefactorCommands = useTagRefactorCommands(
+		tagPickerAction,
+		setTagPickerAction,
+		openPalette,
+	);
 	return useMemo<Command[]>(() => {
 		const movePickerCommands = buildMovePickerCommands({
 			fileTree,
@@ -305,6 +316,7 @@ export function useAppCommands({
 			openWorkspaceFile,
 		});
 		if (movePickerCommands) return movePickerCommands;
+		if (tagRefactorCommands.picker) return tagRefactorCommands.picker;
 		const aiCommands = buildAiCommands({
 			activeMarkdownTabPath,
 			aiEnabled,
@@ -702,12 +714,19 @@ export function useAppCommands({
 			},
 		];
 		return resolveCommandShortcuts(
-			[...baseCommands, ...aiCommands, ...editorCommands, ...noteCollectionCommands],
+			[
+				...baseCommands,
+				...aiCommands,
+				...editorCommands,
+				...noteCollectionCommands,
+				...tagRefactorCommands.commands,
+			],
 			getBinding,
 			language,
 		);
 	}, [
 		noteCollectionCommands,
+		tagRefactorCommands,
 		activeMarkdownTabPath,
 		activeFilePath,
 		activeTabCanPin,

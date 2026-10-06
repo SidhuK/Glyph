@@ -242,6 +242,18 @@
 			"label": "Mover arquivo ativo",
 			"description": "Mover o arquivo atual para outra pasta."
 		},
+		"rename-tag": {
+			"label": "Renomear tag",
+			"description": "Renomeia uma tag em todas as notas."
+		},
+		"merge-tag": {
+			"label": "Mesclar tag",
+			"description": "Mescla uma tag com outra em todas as notas."
+		},
+		"delete-tag": {
+			"label": "Excluir tag",
+			"description": "Remove uma tag de todas as notas."
+		},
 		"new-database": {
 			"label": "Nova coleção",
 			"description": "Criar uma nova coleção."

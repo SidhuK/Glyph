@@ -742,6 +742,36 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
+		"rename-tag": {
+			"id": "rename-tag",
+			"label": "Rename Tag",
+			"description": "Rename a tag in every note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"merge-tag": {
+			"id": "merge-tag",
+			"label": "Merge Tag",
+			"description": "Merge a tag into another tag in every note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"delete-tag": {
+			"id": "delete-tag",
+			"label": "Delete Tag",
+			"description": "Remove a tag from every note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
 		"new-database": {
 			"id": "new-database",
 			"label": "New Collection",

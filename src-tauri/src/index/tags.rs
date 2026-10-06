@@ -1,6 +1,7 @@
 use super::frontmatter::split_frontmatter;
 use regex::Regex;
 use std::collections::BTreeMap;
+use std::ops::Range;
 use std::sync::OnceLock;
 
 pub const PEOPLE_TAG_NAMESPACE: &str = "people/";
@@ -286,13 +287,28 @@ fn html_tag_end(markdown: &str, start: usize) -> Option<usize> {
     }
 }
 
-fn skip_line(markdown: &str, start: usize, out: &mut String) -> usize {
+/// Scan output; `offsets[i]` is the source byte of `text` byte `i` when tracked.
+struct ScanText<'a> {
+    text: String,
+    offsets: Option<&'a mut Vec<usize>>,
+}
+
+impl ScanText<'_> {
+    fn push(&mut self, ch: char, source: usize) {
+        self.text.push(ch);
+        if let Some(offsets) = &mut self.offsets {
+            offsets.extend(source..source + ch.len_utf8());
+        }
+    }
+}
+
+fn skip_line(markdown: &str, start: usize, out: &mut ScanText<'_>) -> usize {
     let bytes = markdown.as_bytes();
     let Some(offset) = bytes[start..].iter().position(|byte| *byte == b'\n') else {
-        out.push(' ');
+        out.push(' ', start);
         return bytes.len();
     };
-    out.push('\n');
+    out.push('\n', start + offset);
     start + offset + 1
 }
 
@@ -304,9 +320,25 @@ fn count_backticks(bytes: &[u8], mut index: usize) -> usize {
     index - start
 }
 
+/// End of `needle` searched from `start` without crossing a line break.
+fn find_on_line(bytes: &[u8], start: usize, needle: &[u8]) -> Option<usize> {
+    let line_end = bytes[start..]
+        .iter()
+        .position(|byte| *byte == b'\n')
+        .map_or(bytes.len(), |offset| start + offset);
+    find_bytes(&bytes[..line_end], start, needle).map(|index| index + needle.len())
+}
+
 fn metadata_scan_text(markdown: &str) -> String {
+    scan_metadata(markdown, None)
+}
+
+fn scan_metadata(markdown: &str, offsets: Option<&mut Vec<usize>>) -> String {
     let bytes = markdown.as_bytes();
-    let mut cleaned = String::with_capacity(markdown.len());
+    let mut cleaned = ScanText {
+        text: String::with_capacity(markdown.len()),
+        offsets,
+    };
     let mut i = 0;
     let mut line_start = true;
     let mut in_fence = false;
@@ -339,7 +371,7 @@ fn metadata_scan_text(markdown: &str) -> String {
         }
 
         if bytes[i] == b'\n' {
-            cleaned.push('\n');
+            cleaned.push('\n', i);
             i += 1;
             line_start = true;
             code_backticks = 0;
@@ -364,7 +396,23 @@ fn metadata_scan_text(markdown: &str) -> String {
         }
         if bytes[i] == b'<' {
             if let Some(end) = html_tag_end(markdown, i) {
-                cleaned.push(' ');
+                cleaned.push(' ', i);
+                i = end;
+                continue;
+            }
+        }
+        // Link destinations and wikilink targets hold `#heading` anchors, not tags.
+        if bytes[i..].starts_with(b"](") {
+            if let Some(end) = find_on_line(bytes, i + 2, b")") {
+                cleaned.push(']', i);
+                cleaned.push(' ', i + 1);
+                i = end;
+                continue;
+            }
+        }
+        if bytes[i..].starts_with(b"[[") {
+            if let Some(end) = find_on_line(bytes, i + 2, b"]]") {
+                cleaned.push(' ', i);
                 i = end;
                 continue;
             }
@@ -373,11 +421,11 @@ fn metadata_scan_text(markdown: &str) -> String {
         let Some(ch) = markdown[i..].chars().next() else {
             break;
         };
-        cleaned.push(ch);
+        cleaned.push(ch, i);
         i += ch.len_utf8();
     }
 
-    cleaned
+    cleaned.text
 }
 
 fn is_css_color_property(property: &str) -> bool {
@@ -441,28 +489,39 @@ fn is_css_hex_color_literal(text: &str, hash_index: usize, candidate: &str) -> b
         && is_css_color_property(property)
 }
 
+/// Inline tags in scan text as (byte range of `#candidate`, normalized tag).
+fn inline_tag_matches(text: &str) -> impl Iterator<Item = (Range<usize>, String)> + '_ {
+    inline_tag_pattern().captures_iter(text).filter_map(|caps| {
+        let full = caps.get(0)?;
+        let candidate = caps.get(2)?;
+        let hash_index = full.start() + caps.get(1).map_or(0, |m| m.len());
+        if is_css_hex_color_literal(text, hash_index, candidate.as_str()) {
+            return None;
+        }
+        normalize_tag(candidate.as_str()).map(|tag| (hash_index..candidate.end(), tag))
+    })
+}
+
 pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
-    let mut out: Vec<String> = Vec::new();
     let cleaned = metadata_scan_text(markdown);
-    for caps in inline_tag_pattern().captures_iter(&cleaned) {
-        let Some(full) = caps.get(0) else {
-            continue;
-        };
-        let leading_len = caps.get(1).map_or(0, |m| m.len());
-        let Some(candidate) = caps.get(2).map(|m| m.as_str()) else {
-            continue;
-        };
-        let hash_index = full.start() + leading_len;
-        if is_css_hex_color_literal(&cleaned, hash_index, candidate) {
-            continue;
-        }
-        if let Some(t) = normalize_tag(candidate) {
-            out.push(t);
-        }
-    }
+    let mut out: Vec<String> = inline_tag_matches(&cleaned).map(|(_, tag)| tag).collect();
     out.sort();
     out.dedup();
     out
+}
+
+/// Source byte ranges of inline `#tag` tokens, using the same skip rules as
+/// `parse_inline_tags`. Tokens split by skipped text (such as inline code) are left out.
+pub fn inline_tag_spans(markdown: &str) -> Vec<Range<usize>> {
+    let mut offsets = Vec::with_capacity(markdown.len());
+    let text = scan_metadata(markdown, Some(&mut offsets));
+    inline_tag_matches(&text)
+        .filter_map(|(range, _)| {
+            let start = offsets[range.start];
+            let last = offsets[range.end - 1];
+            (last - start == range.end - 1 - range.start).then_some(start..last + 1)
+        })
+        .collect()
 }
 
 pub fn parse_inline_people(markdown: &str) -> Vec<String> {

@@ -3,7 +3,7 @@ use tauri::AppHandle;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub struct DatabaseLaneNamePromptRequest {
+pub struct NativeTextPromptRequest {
     pub title: String,
     pub description: String,
     pub initial_value: String,
@@ -12,12 +12,12 @@ pub struct DatabaseLaneNamePromptRequest {
 }
 
 #[cfg(target_os = "macos")]
-fn prompt_lane_name(request: DatabaseLaneNamePromptRequest) -> Result<Option<String>, String> {
+fn prompt_text(request: NativeTextPromptRequest) -> Result<Option<String>, String> {
     use objc2_app_kit::{NSAlert, NSAlertFirstButtonReturn, NSTextField};
     use objc2_foundation::{MainThreadMarker, NSPoint, NSRect, NSSize, NSString};
 
     let Some(mtm) = MainThreadMarker::new() else {
-        return Err("lane name prompt must run on the macOS main thread".to_string());
+        return Err("text prompt must run on the macOS main thread".to_string());
     };
 
     let alert = NSAlert::new(mtm);
@@ -42,30 +42,30 @@ fn prompt_lane_name(request: DatabaseLaneNamePromptRequest) -> Result<Option<Str
 }
 
 #[tauri::command]
-pub async fn databases_lane_name_prompt(
+pub async fn native_text_prompt(
     app: AppHandle,
-    request: DatabaseLaneNamePromptRequest,
+    request: NativeTextPromptRequest,
 ) -> Result<Option<String>, String> {
     #[cfg(target_os = "macos")]
     {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1);
         app.run_on_main_thread(move || {
-            let _ = sender.send(prompt_lane_name(request));
+            let _ = sender.send(prompt_text(request));
         })
-        .map_err(|error| format!("failed to open lane name prompt: {error}"))?;
+        .map_err(|error| format!("failed to open text prompt: {error}"))?;
 
         tauri::async_runtime::spawn_blocking(move || {
             receiver
                 .recv()
-                .map_err(|error| format!("lane name prompt failed: {error}"))?
+                .map_err(|error| format!("text prompt failed: {error}"))?
         })
         .await
-        .map_err(|error| format!("lane name prompt failed: {error}"))?
+        .map_err(|error| format!("text prompt failed: {error}"))?
     }
 
     #[cfg(not(target_os = "macos"))]
     {
         let _ = (app, request);
-        Err("lane name prompts are only available on macOS".to_string())
+        Err("text prompts are only available on macOS".to_string())
     }
 }

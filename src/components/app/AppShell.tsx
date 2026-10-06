@@ -30,6 +30,7 @@ import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { usePeriodNote } from "../../hooks/usePeriodNote";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import type { TagRefactorAction } from "../../hooks/useTagRefactor";
 import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { dispatchEditorMenuAction, dispatchFileTreeStartRename } from "../../lib/appEvents";
@@ -176,6 +177,7 @@ export function AppShell() {
 	const [databasesOpenRequest, setDatabasesOpenRequest] = useState(INITIAL_DATABASES_OPEN_REQUEST);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] = useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<string | null>(null);
+	const [tagPickerAction, setTagPickerAction] = useState<TagRefactorAction | null>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
 	const [calendarOpen, setCalendarOpen] = useState(false);
@@ -290,6 +292,7 @@ export function AppShell() {
 				}
 				if (payload.editor?.zenMode) {
 					setPaletteOpen(false);
+					setTagPickerAction(null);
 					setCalendarOpen(false);
 				}
 				if (typeof payload.ui?.noteSidePeek === "boolean") {
@@ -773,6 +776,7 @@ export function AppShell() {
 		moveTargetDirsRequestIdRef.current += 1;
 		setPaletteOpen(false);
 		setMovePickerSourcePath(null);
+		setTagPickerAction(null);
 		setMoveTargetDirs([]);
 	}, [setPaletteOpen]);
 	const refreshMoveTargetDirs = useCallback(async (sourcePath: string) => {
@@ -1213,12 +1217,14 @@ export function AppShell() {
 		setCurrentEditorMode,
 		setAiPanelOpen,
 		setMovePickerSourcePath,
+		setTagPickerAction,
 		setSidebarCollapsed,
 		showCollapsibleHeadings,
 		showCollapsibleLists,
 		sidebarCollapsed,
 		spacePath,
 		tabsLength: tabs.length,
+		tagPickerAction,
 		unpinnedTabsLength: tabs.filter((tab) => !tab.isPinned).length,
 		toggleActiveTabPinned,
 		togglePinnedFile,

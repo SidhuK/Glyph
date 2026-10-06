@@ -25,6 +25,7 @@ mod macos_clipboard;
 #[cfg(target_os = "macos")]
 mod macos_webkit_defaults;
 mod menu_manifest;
+mod native_prompt;
 mod net;
 mod note_mutation;
 mod notes;
@@ -37,6 +38,7 @@ mod space_asset_protocol;
 mod space_fs;
 mod system_fonts;
 mod tag_appearance;
+mod tag_refactor;
 pub(crate) mod utils;
 mod window_geometry;
 
@@ -1844,7 +1846,7 @@ pub fn run() {
             databases::commands::databases_query_rows,
             databases::lanes::databases_lane_values,
             databases::lanes::databases_rename_lane,
-            databases::prompt::databases_lane_name_prompt,
+            native_prompt::native_text_prompt,
             databases::commands::databases_update_cell,
             databases::commands::databases_create_row,
             databases::commands::databases_preview_context,
@@ -1860,6 +1862,8 @@ pub fn run() {
             list_collapse_state::list_collapse_state_set,
             tag_appearance::commands::tag_appearance_list,
             tag_appearance::commands::tag_appearance_set,
+            tag_refactor::commands::tag_refactor_plan,
+            tag_refactor::commands::tag_refactor_apply,
             pinned_files::commands::pinned_files_list,
             pinned_files::commands::pinned_files_toggle,
             pinned_files::commands::pinned_files_rename_path,

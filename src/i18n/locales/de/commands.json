@@ -242,6 +242,18 @@
 			"label": "Aktive Datei verschieben",
 			"description": "Die aktuelle Datei in einen anderen Ordner verschieben."
 		},
+		"rename-tag": {
+			"label": "Tag umbenennen",
+			"description": "Einen Tag in allen Notizen umbenennen."
+		},
+		"merge-tag": {
+			"label": "Tag zusammenführen",
+			"description": "Einen Tag in allen Notizen mit einem anderen Tag zusammenführen."
+		},
+		"delete-tag": {
+			"label": "Tag löschen",
+			"description": "Einen Tag aus allen Notizen entfernen."
+		},
 		"new-database": {
 			"label": "Neue Sammlung",
 			"description": "Eine neue Sammlung erstellen."

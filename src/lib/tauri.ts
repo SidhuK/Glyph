@@ -512,6 +512,32 @@ export interface TagCount {
 	is_explicit: boolean;
 }
 
+export interface TagRefactorFailure {
+	path: string;
+	reason:
+		| "unsafe_frontmatter"
+		| "tag_outside_editable_text"
+		| "changed_since_preview"
+		| "not_in_preview"
+		| "io";
+	/** Underlying error text, only for `io`. */
+	detail: string | null;
+}
+
+export interface TagRefactorPlan {
+	notes: { path: string; mtime_ms: number; inline_count: number; frontmatter_count: number }[];
+	descendant_tags: string[];
+	/** Target tags that already exist, so applying merges into them. */
+	conflicts: string[];
+	failures: TagRefactorFailure[];
+}
+
+export interface TagRefactorResult {
+	changed_paths: string[];
+	failures: TagRefactorFailure[];
+	icon_error: string | null;
+}
+
 export interface PersonCount {
 	handle: string;
 	count: number;
@@ -923,6 +949,18 @@ interface TauriCommands {
 	list_collapse_state_set: CommandDef<{ path: string; branches: string[] }, void>;
 	tag_appearance_list: CommandDef<void, Record<string, TagAppearance>>;
 	tag_appearance_set: CommandDef<{ tag: string; icon?: string | null }, TagAppearance | null>;
+	/** `to: null` deletes the tag; renaming onto an existing tag merges. */
+	tag_refactor_plan: CommandDef<{ from: string; to: string | null }, TagRefactorPlan>;
+	tag_refactor_apply: CommandDef<
+		{
+			from: string;
+			to: string | null;
+			/** The previewed notes; any that changed on disk since are skipped. */
+			notes: { path: string; mtime_ms: number }[];
+			expected_space: string;
+		},
+		TagRefactorResult
+	>;
 	pinned_files_list: CommandDef<void, PinnedFiles>;
 	pinned_files_toggle: CommandDef<{ path: string }, PinnedFiles>;
 	pinned_files_rename_path: CommandDef<{ from_path: string; to_path: string }, PinnedFiles>;
@@ -1088,7 +1126,7 @@ interface TauriCommands {
 		},
 		NoteBatchResult
 	>;
-	databases_lane_name_prompt: CommandDef<
+	native_text_prompt: CommandDef<
 		{
 			request: {
 				title: string;
