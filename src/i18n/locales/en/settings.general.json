@@ -18,17 +18,88 @@
 			"twitter": "X / Twitter"
 		},
 		"developerMode": {
-			"sectionTitle": "Developer",
-			"sectionDescription": "Advanced controls for people who want more say over how Glyph behaves.",
-			"label": "Developer mode",
-			"description": "Adds a Developer tab under Application with settings most people won't need.",
-			"ariaLabel": "Developer mode"
+			"sectionTitle": "Advanced",
+			"sectionDescription": "Tools for people who want more control over their space.",
+			"label": "Advanced settings",
+			"description": "Adds a Developer tab under Application with tools like the attachment browser. Off by default.",
+			"ariaLabel": "Advanced settings"
 		}
 	},
 	"developer": {
-		"sectionTitle": "Developer",
-		"sectionDescription": "Advanced controls for power users. Turn off Developer mode in About to hide this tab.",
-		"empty": "No developer settings yet."
+		"attachments": {
+			"title": "Attachment browser",
+			"description": "Find attachments no note links to and move them to the Trash. Turn off Advanced settings in About to hide this tab.",
+			"rescan": "Rescan",
+			"scanning": "Scanning…",
+			"noSpace": "Open a space to browse its attachments.",
+			"summary": {
+				"reclaimable": "can be freed",
+				"facts": "{{unused}} of {{total}} attachments aren't linked from any note · {{size}} total · {{notes}} notes checked",
+				"clear": "Every attachment is in use",
+				"clearFacts": "{{total}} attachments, all linked from at least one of {{notes}} notes."
+			},
+			"usageFilter": "Show attachments",
+			"usage": {
+				"unused": "Unused",
+				"all": "All"
+			},
+			"kindFilter": "File type",
+			"kind": {
+				"any": "All types",
+				"image": "Images",
+				"pdf": "PDFs",
+				"audio": "Audio",
+				"video": "Video",
+				"document": "Documents",
+				"archive": "Archives"
+			},
+			"searchPlaceholder": "Filter by name or folder",
+			"sortLabel": "Sort attachments",
+			"sort": {
+				"size": "Largest first",
+				"name": "By name"
+			},
+			"selectAllUnused": "Select all unused",
+			"columns": {
+				"name": "Attachment",
+				"size": "Size"
+			},
+			"clearSelection": "Clear",
+			"selectedSummary_one": "1 selected · {{size}}",
+			"selectedSummary_other": "{{count}} selected · {{size}}",
+			"moveToTrash": "Move to Trash",
+			"selectFile": "Select {{name}}",
+			"spaceRoot": "Top of space",
+			"unusedBadge": "Unused",
+			"usedIn_one": "In 1 note",
+			"usedIn_other": "In {{count}} notes",
+			"referencedBy": "Referenced by",
+			"open": "Open",
+			"openFile": "Open {{name}}",
+			"reveal": "Show in Finder",
+			"revealFile": "Show {{name}} in Finder",
+			"emptyUnused": "No unused attachments. Every file is linked from at least one note.",
+			"emptyFiltered": "No attachments match these filters.",
+			"footnote": "A file counts as used when any note mentions its file name, in a link, an embed, HTML, or frontmatter. Files go to the macOS Trash, so you can put them back.",
+			"confirm": {
+				"title_one": "Move 1 attachment to the Trash?",
+				"title_other": "Move {{count}} attachments to the Trash?",
+				"description": "This frees {{size}}. Glyph checks again first and keeps any file a note links to now. You can put files back from the Trash in Finder.",
+				"more_one": "and 1 more",
+				"more_other": "and {{count}} more",
+				"cancel": "Cancel",
+				"action": "Move to Trash"
+			},
+			"result": {
+				"trashed_one": "Moved 1 attachment to the Trash.",
+				"trashed_other": "Moved {{count}} attachments to the Trash.",
+				"skipped_one": "Kept 1 file:",
+				"skipped_other": "Kept {{count}} files:",
+				"skippedItem": "{{path}} · {{reason}}",
+				"missing": "no longer in this space",
+				"referenced": "now linked from a note"
+			}
+		}
 	},
 	"archive": {
 		"sectionTitle": "Archive",

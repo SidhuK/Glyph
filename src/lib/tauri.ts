@@ -36,6 +36,31 @@ export interface FsEntryList {
 	truncated: boolean;
 }
 
+export type AttachmentKind = "image" | "pdf" | "audio" | "video" | "document" | "archive";
+
+export interface AttachmentEntry {
+	rel_path: string;
+	name: string;
+	kind: AttachmentKind;
+	size: number;
+	referenced_by: string[];
+}
+
+export interface AttachmentScan {
+	attachments: AttachmentEntry[];
+	note_count: number;
+}
+
+export type AttachmentTrashSkip =
+	| { kind: "missing"; path: string }
+	| { kind: "referenced"; path: string }
+	| { kind: "failed"; path: string; message: string };
+
+export interface AttachmentTrashResult {
+	trashed: string[];
+	skipped: AttachmentTrashSkip[];
+}
+
 export interface LinkRewriteResult {
 	changed_files: string[];
 	changed_links: number;
@@ -973,6 +998,8 @@ interface TauriCommands {
 	space_delete_path: CommandDef<{ path: string; recursive?: boolean | null }, void>;
 	space_resolve_abs_path: CommandDef<{ path: string }, string>;
 	space_reveal_path: CommandDef<{ path: string }, void>;
+	space_scan_attachments: CommandDef<void, AttachmentScan>;
+	space_trash_unused_attachments: CommandDef<{ rel_paths: string[] }, AttachmentTrashResult>;
 	space_relativize_path: CommandDef<{ abs_path: string }, string>;
 	space_read_wiki_embeds_batch: CommandDef<
 		{ targets: string[] },

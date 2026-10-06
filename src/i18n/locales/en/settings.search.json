@@ -71,8 +71,8 @@
 		},
 		"developer": {
 			"title": "Developer settings",
-			"description": "Advanced controls for power users.",
-			"keywords": ["Developer", "advanced", "debug"]
+			"description": "Advanced tools like the attachment browser.",
+			"keywords": ["Developer", "advanced", "attachments"]
 		}
 	},
 	"entries": {
@@ -672,10 +672,16 @@
 			"keywords": ["release notes", "version", "updates"]
 		},
 		"about-developer-mode": {
-			"title": "Developer mode",
-			"section": "Developer",
-			"description": "Show the Developer settings tab with advanced controls.",
-			"keywords": ["developer", "advanced", "debug", "power user"]
+			"title": "Advanced settings",
+			"section": "Advanced",
+			"description": "Show the Developer tab with advanced tools.",
+			"keywords": ["advanced", "developer", "power user"]
+		},
+		"developer-attachment-browser": {
+			"title": "Attachment browser",
+			"section": "Attachment browser",
+			"description": "Find unused attachments and move them to the Trash.",
+			"keywords": ["attachments", "unused", "orphaned", "clean up", "images", "trash"]
 		}
 	},
 	"categoryPrefix": "Settings > {{tab}}"
