@@ -507,10 +507,6 @@
 	padding-left: 16px;
 }
 
-.attachmentOutcomePath {
-	font-family: var(--font-mono);
-}
-
 .attachmentSpin {
 	animation: attachmentSpin 900ms linear infinite;
 }

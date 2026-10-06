@@ -170,19 +170,13 @@ fn read_error(path: &Path, error: std::io::Error) -> String {
 
 /// Walks the space once, splitting visible files into notes and attachments.
 /// Any unreadable folder fails the scan: skipping it could hide references and
-/// let a used attachment look unused. Symlinks are followed to find notes, but
-/// files reached through one are never listed, since trashing them could touch
-/// files outside the space. Each real directory is walked once, so a link
-/// cycle such as `loop -> .` can't recurse forever.
+/// let a used attachment look unused. Symlinks are skipped, as the note index
+/// skips them, so nothing outside the space is listed or trashed.
 fn collect_space_files(root: &Path) -> Result<SpaceFiles, String> {
     let mut notes = Vec::new();
     let mut attachments = Vec::new();
-    let mut visited = HashSet::new();
-    let mut stack = vec![(root.to_path_buf(), false)];
-    while let Some((dir, dir_via_link)) = stack.pop() {
-        if !visited.insert(dir.canonicalize().map_err(|e| read_error(&dir, e))?) {
-            continue;
-        }
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(dir) = stack.pop() {
         let entries = std::fs::read_dir(&dir).map_err(|e| read_error(&dir, e))?;
         for entry in entries {
             let entry = entry.map_err(|e| read_error(&dir, e))?;
@@ -190,14 +184,13 @@ fn collect_space_files(root: &Path) -> Result<SpaceFiles, String> {
                 continue;
             }
             let path = entry.path();
-            let via_link = dir_via_link
-                || entry
-                    .file_type()
-                    .map_err(|e| read_error(&path, e))?
-                    .is_symlink();
+            // `DirEntry::metadata` does not follow symlinks.
             let meta = entry.metadata().map_err(|e| read_error(&path, e))?;
             if meta.is_dir() {
-                stack.push((path, via_link));
+                stack.push(path);
+                continue;
+            }
+            if !meta.is_file() {
                 continue;
             }
             let Ok(rel) = path.strip_prefix(root) else {
@@ -206,9 +199,6 @@ fn collect_space_files(root: &Path) -> Result<SpaceFiles, String> {
             let rel_path = utils::to_slash(rel);
             if utils::is_markdown_path(&path) {
                 notes.push((rel_path, path));
-                continue;
-            }
-            if via_link {
                 continue;
             }
             let Some(kind) =

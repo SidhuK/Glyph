@@ -31,8 +31,10 @@ export function AttachmentTrashOutcome({ result }: { result: AttachmentTrashResu
 					<ul className="attachmentOutcomeList">
 						{result.skipped.map((skip) => (
 							<li key={skip.path}>
-								<span className="attachmentOutcomePath">{skip.path}</span>
-								<span> · {skipReason(skip)}</span>
+								{t("developer.attachments.result.skippedItem", {
+									path: skip.path,
+									reason: skipReason(skip),
+								})}
 							</li>
 						))}
 					</ul>

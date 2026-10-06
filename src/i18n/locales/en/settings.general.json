@@ -95,6 +95,7 @@
 				"trashed_other": "Moved {{count}} attachments to the Trash.",
 				"skipped_one": "Kept 1 file:",
 				"skipped_other": "Kept {{count}} files:",
+				"skippedItem": "{{path}} · {{reason}}",
 				"missing": "no longer in this space",
 				"referenced": "now linked from a note"
 			}
