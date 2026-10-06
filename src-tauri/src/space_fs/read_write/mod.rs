@@ -1,3 +1,4 @@
+pub mod attachments;
 pub mod binary;
 pub mod import;
 pub mod pasted_image;

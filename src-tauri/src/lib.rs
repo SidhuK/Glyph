@@ -1902,6 +1902,8 @@ pub fn run() {
             space_fs::read_write::text::space_write_text,
             space_fs::read_write::text::space_link_unlinked_mentions,
             space_fs::read_write::text::space_open_or_create_text,
+            space_fs::read_write::attachments::space_scan_attachments,
+            space_fs::read_write::attachments::space_trash_unused_attachments,
             space_fs::read_write::paths::space_create_dir,
             space_fs::read_write::paths::space_duplicate_path,
             space_fs::read_write::paths::space_rename_path,

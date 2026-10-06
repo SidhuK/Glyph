@@ -1,0 +1,530 @@
+/* The settings card is the only frame; everything inside is a flat band. */
+.attachmentBrowser {
+	--attachment-rule: color-mix(in srgb, var(--border-default) 62%, transparent);
+	--attachment-gutter: 18px;
+	--attachment-size-col: 76px;
+	--attachment-actions-col: 60px;
+	display: flex;
+	flex-direction: column;
+}
+
+.attachmentBand {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 18px var(--attachment-gutter);
+}
+
+.attachmentBandToolbar {
+	padding-block: 12px;
+	border-top: 1px solid var(--attachment-rule);
+}
+
+/* Summary */
+
+.attachmentSummary {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.attachmentSummaryHeadline {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+}
+
+.attachmentSummaryFigure {
+	font-size: calc(var(--text-base) * 2);
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	color: var(--text-primary);
+}
+
+.attachmentSummaryTitle {
+	font-size: calc(var(--text-base) * 0.95);
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
+}
+
+.attachmentSummary[data-state="clear"] .attachmentSummaryHeadline {
+	align-items: center;
+	color: var(--status-success-fg);
+}
+
+.attachmentSummary[data-state="clear"] .attachmentSummaryTitle {
+	font-size: calc(var(--text-base) * 1.05);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.attachmentSummaryMeter {
+	position: relative;
+	height: 6px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.attachmentSummaryMeter span {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: inherit;
+	background: var(--color-yellow-500);
+	transition: width 320ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.attachmentSummaryFacts {
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.45;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-secondary);
+}
+
+/* Toolbar */
+
+.attachmentToolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.attachmentTabs {
+	display: inline-flex;
+	flex-shrink: 0;
+	gap: 2px;
+	padding: 2px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+/* Base button rules already supply flex layout, border, cursor and color. */
+.attachmentTab {
+	gap: 6px;
+	height: 26px;
+	padding: 0 10px;
+	border-radius: calc(var(--radius-md) - 2px);
+	font-size: calc(var(--text-base) * 0.82);
+}
+
+.attachmentTab.is-active {
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	box-shadow:
+		0 1px 2px color-mix(in srgb, black 10%, transparent),
+		0 0 0 1px color-mix(in srgb, var(--border-default) 50%, transparent);
+}
+
+.attachmentTabCount {
+	font-size: calc(var(--text-base) * 0.74);
+	font-variant-numeric: tabular-nums;
+	color: var(--text-tertiary);
+}
+
+.attachmentTab.is-active .attachmentTabCount {
+	color: var(--text-secondary);
+}
+
+.attachmentSearch {
+	flex: 1;
+	min-width: 120px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	height: 30px;
+	padding: 0 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--attachment-rule);
+	background: var(--bg-primary);
+	color: var(--text-tertiary);
+	transition:
+		border-color var(--transition-base),
+		box-shadow var(--transition-base);
+}
+
+.attachmentSearch:focus-within {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+}
+
+.attachmentSearch input {
+	flex: 1;
+	min-width: 0;
+	border: 0;
+	outline: none;
+	background: transparent;
+	font-size: calc(var(--text-base) * 0.85);
+	color: var(--text-primary);
+}
+
+/* The wrapper draws the focus ring; drop the global input chrome so it isn't doubled. */
+.attachmentSearch input,
+.attachmentSearch input:hover,
+.attachmentSearch input:focus,
+.attachmentSearch input:focus-visible {
+	height: 100%;
+	padding: 0;
+	border: 0;
+	outline: none;
+	box-shadow: none;
+}
+
+.attachmentSearch input::placeholder {
+	color: var(--text-tertiary);
+}
+
+.attachmentSelect {
+	flex-shrink: 0;
+	height: 30px;
+	padding: 0 8px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--attachment-rule);
+	background: var(--bg-primary);
+	font-size: calc(var(--text-base) * 0.82);
+	color: var(--text-primary);
+	cursor: pointer;
+}
+
+/* List header doubles as the selection action bar. */
+
+.attachmentListHeader {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 40px;
+	padding: 0 var(--attachment-gutter);
+	border-block: 1px solid var(--attachment-rule);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	font-size: calc(var(--text-base) * 0.74);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+	transition:
+		background var(--transition-base),
+		color var(--transition-base);
+}
+
+.attachmentListHeader[data-active] {
+	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-primary));
+	font-size: calc(var(--text-base) * 0.84);
+	letter-spacing: 0;
+	text-transform: none;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-primary);
+}
+
+.attachmentListHeaderMain {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	cursor: pointer;
+}
+
+.attachmentListHeaderActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding-block: 4px;
+}
+
+.attachmentListHeader > .attachmentColumnSize {
+	margin-right: var(--attachment-actions-col);
+}
+
+.attachmentColumnIcon {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-tertiary);
+}
+
+.attachmentColumnSize.attachmentColumnIcon {
+	justify-content: flex-end;
+}
+
+.attachmentColumnSize {
+	flex-shrink: 0;
+	width: var(--attachment-size-col);
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Rows */
+
+.attachmentList {
+	max-height: 480px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.attachmentListInner {
+	position: relative;
+	width: 100%;
+}
+
+.attachmentListItem {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+}
+
+.attachmentRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	height: 100%;
+	padding: 0 var(--attachment-gutter);
+	border-bottom: 1px solid color-mix(in srgb, var(--border-default) 32%, transparent);
+	transition: background var(--transition-fast, 120ms);
+}
+
+.attachmentRow:hover {
+	background: color-mix(in srgb, var(--bg-hover) 60%, transparent);
+}
+
+.attachmentRow[data-selected] {
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	box-shadow: inset 2px 0 0 var(--interactive-accent);
+}
+
+.attachmentRowMain {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	height: 100%;
+}
+
+.attachmentRowMain[data-selectable] {
+	cursor: pointer;
+}
+
+.attachmentRowCheckSpacer {
+	flex-shrink: 0;
+	width: 13px;
+}
+
+.attachmentThumb {
+	flex-shrink: 0;
+	width: 38px;
+	height: 38px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 8%, transparent);
+	color: var(--text-secondary);
+}
+
+.attachmentThumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.attachmentRowCopy {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.attachmentRowName {
+	display: flex;
+	min-width: 0;
+	white-space: nowrap;
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+}
+
+.attachmentRowStem {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.attachmentRowPath {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	font-size: calc(var(--text-base) * 0.76);
+	color: var(--text-tertiary);
+}
+
+.attachmentRowFolder {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.attachmentUnusedMark,
+.attachmentUsedTrigger {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: inherit;
+	font-weight: var(--font-medium);
+}
+
+.attachmentUnusedMark {
+	color: color-mix(in srgb, var(--color-yellow-500) 88%, var(--text-primary));
+}
+
+.attachmentUnusedMark::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--color-yellow-500);
+}
+
+/* Reset the global button chrome (fixed height, grey hover box) so the trigger
+   sits inline with the folder text as a compact pill. */
+.attachmentUsedTrigger {
+	height: auto;
+	margin: -2px 0;
+	padding: 2px 6px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+	line-height: inherit;
+}
+
+.attachmentUsedTrigger:hover,
+.attachmentUsedTrigger[data-state="open"] {
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+	color: var(--text-primary);
+}
+
+.attachmentUsedTrigger:active {
+	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+.attachmentUsedTrigger:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 1px;
+}
+
+.attachmentRow > .attachmentColumnSize {
+	font-size: calc(var(--text-base) * 0.8);
+	color: var(--text-secondary);
+}
+
+.attachmentRowActions {
+	flex-shrink: 0;
+	display: inline-flex;
+	justify-content: flex-end;
+	gap: 2px;
+	width: var(--attachment-actions-col);
+	opacity: 0;
+	transition: opacity var(--transition-base);
+}
+
+.attachmentRow:hover .attachmentRowActions,
+.attachmentRowActions:focus-within {
+	opacity: 1;
+}
+
+.attachmentUsedPopover {
+	width: 300px;
+	padding: 10px 12px;
+}
+
+.attachmentUsedTitle {
+	margin-bottom: 8px;
+	font-size: calc(var(--text-base) * 0.72);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.attachmentUsedList {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	max-height: 200px;
+	overflow-y: auto;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.attachmentUsedList li {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: calc(var(--text-base) * 0.84);
+	color: var(--text-primary);
+}
+
+/* Empty, footnote, outcome */
+
+.attachmentEmpty {
+	padding: 36px var(--attachment-gutter, 18px);
+	text-align: center;
+}
+
+.attachmentFootnote {
+	margin: 0;
+	padding: 12px var(--attachment-gutter);
+	border-top: 1px solid var(--attachment-rule);
+	font-size: calc(var(--text-base) * 0.76);
+	line-height: 1.45;
+	color: var(--text-tertiary);
+}
+
+.attachmentList + .attachmentFootnote {
+	border-top: 0;
+}
+
+.attachmentOutcome {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.attachmentOutcomeSuccess {
+	margin-top: 0;
+	text-align: left;
+}
+
+.attachmentOutcomeList {
+	margin: 6px 0 0;
+	padding-left: 16px;
+}
+
+.attachmentOutcomePath {
+	font-family: var(--font-mono);
+}
+
+.attachmentSpin {
+	animation: attachmentSpin 900ms linear infinite;
+}
+
+@keyframes attachmentSpin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.attachmentSpin,
+	.attachmentSummaryMeter span {
+		animation: none;
+		transition: none;
+	}
+}
