@@ -43,6 +43,7 @@ reqwest = { version = "0.12", default-features = false, features = [
 ] }
 rusqlite = { version = "0.31", features = ["bundled"] }
 url = "2"
+icu_normalizer = { version = "2.1", default-features = false, features = ["compiled_data"] }
 futures-util = "0.3"
 tokio-util = "0.7"
 tokio = { version = "1", features = ["io-util", "macros", "process", "rt", "time"] }

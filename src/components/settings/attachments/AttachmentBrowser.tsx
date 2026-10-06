@@ -95,7 +95,9 @@ export function AttachmentBrowser() {
 							/>
 						) : (
 							<div className="attachmentSummary">
-								<span className="attachmentSummaryTitle">{t("developer.attachments.scanning")}</span>
+								<span className="attachmentSummaryTitle">
+									{t("developer.attachments.scanning")}
+								</span>
 							</div>
 						)}
 						{error ? <div className="settingsError">{extractErrorMessage(error)}</div> : null}

@@ -3,12 +3,30 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use icu_normalizer::ComposingNormalizerBorrowed;
 use serde::Serialize;
 
 use crate::utils;
 
-/// Longest filename macOS allows; bounds the backwards walk from an extension.
-const MAX_NAME_BYTES: usize = 255;
+/// Folded attachment names, plus their byte lengths so most candidate
+/// suffixes are rejected without hashing.
+struct AttachmentNames {
+    names: HashSet<String>,
+    lengths: HashSet<usize>,
+    longest: usize,
+}
+
+impl AttachmentNames {
+    fn new(names: HashSet<String>) -> Self {
+        let lengths: HashSet<usize> = names.iter().map(String::len).collect();
+        let longest = lengths.iter().copied().max().unwrap_or(0);
+        Self {
+            names,
+            lengths,
+            longest,
+        }
+    }
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -78,10 +96,19 @@ fn percent_decode(raw: &str) -> String {
     String::from_utf8_lossy(&out).into_owned()
 }
 
+/// Lowercased NFC form used on both sides of a match. macOS often stores file
+/// names decomposed (NFD) while typed note text is composed (NFC), so `café.png`
+/// must compare equal either way.
+fn fold(text: &str) -> String {
+    ComposingNormalizerBorrowed::new_nfc()
+        .normalize(&text.to_lowercase())
+        .into_owned()
+}
+
 /// Records every known attachment name that `chunk` could be naming. Each
 /// suffix that starts after a non-alphanumeric character is tried, so prose
 /// like "see my photo.png" still matches a file named "my photo.png".
-fn collect_chunk_matches(chunk: &str, names: &HashSet<String>, out: &mut HashSet<String>) {
+fn collect_chunk_matches(chunk: &str, names: &AttachmentNames, out: &mut HashSet<String>) {
     let unescaped = chunk.replace('\\', "");
     for variant in [chunk, unescaped.as_str()] {
         let starts = variant
@@ -90,7 +117,7 @@ fn collect_chunk_matches(chunk: &str, names: &HashSet<String>, out: &mut HashSet
             .map(|(i, c)| i + c.len_utf8());
         for start in std::iter::once(0).chain(starts) {
             let candidate = variant[start..].trim();
-            if names.contains(candidate) {
+            if names.lengths.contains(&candidate.len()) && names.names.contains(candidate) {
                 out.insert(candidate.to_string());
             }
         }
@@ -103,9 +130,9 @@ fn collect_chunk_matches(chunk: &str, names: &HashSet<String>, out: &mut HashSet
 /// written; the cost is that same-named files in different folders count as
 /// referenced together. The percent-decoded text is scanned too, so encoded
 /// names (`my%20photo.png`, `photo%2Epng`) are found.
-pub fn referenced_names(markdown: &str, names: &HashSet<String>) -> HashSet<String> {
-    let raw = markdown.to_lowercase();
-    let decoded = percent_decode(&raw);
+fn referenced_names(markdown: &str, names: &AttachmentNames) -> HashSet<String> {
+    let raw = fold(markdown);
+    let decoded = fold(&percent_decode(&raw));
     let mut out = HashSet::new();
     let texts = std::iter::once(raw.as_str()).chain((decoded != raw).then_some(decoded.as_str()));
     for text in texts {
@@ -118,11 +145,16 @@ pub fn referenced_names(markdown: &str, names: &HashSet<String>) -> HashSet<Stri
             }
             // Filenames can hold any punctuation (`photo (1).png`), so only a
             // line break or the name-length limit bounds the candidate.
-            let line_start = text[..dot].rfind(['\n', '\r']).map_or(0, |i| i + 1);
-            let mut start = line_start.max(dot.saturating_sub(MAX_NAME_BYTES));
-            while !text.is_char_boundary(start) {
-                start += 1;
+            // Only the window that can hold a name is searched, keeping long
+            // single-line notes linear; doubled to leave room for markdown
+            // backslash escapes.
+            let mut floor = dot.saturating_sub(names.longest * 2);
+            while !text.is_char_boundary(floor) {
+                floor += 1;
             }
+            let start = text[floor..dot]
+                .rfind(['\n', '\r'])
+                .map_or(floor, |i| floor + i + 1);
             collect_chunk_matches(&text[start..ext_end], names, &mut out);
         }
     }
@@ -140,12 +172,17 @@ fn read_error(path: &Path, error: std::io::Error) -> String {
 /// Any unreadable folder fails the scan: skipping it could hide references and
 /// let a used attachment look unused. Symlinks are followed to find notes, but
 /// files reached through one are never listed, since trashing them could touch
-/// files outside the space.
+/// files outside the space. Each real directory is walked once, so a link
+/// cycle such as `loop -> .` can't recurse forever.
 fn collect_space_files(root: &Path) -> Result<SpaceFiles, String> {
     let mut notes = Vec::new();
     let mut attachments = Vec::new();
+    let mut visited = HashSet::new();
     let mut stack = vec![(root.to_path_buf(), false)];
     while let Some((dir, dir_via_link)) = stack.pop() {
+        if !visited.insert(dir.canonicalize().map_err(|e| read_error(&dir, e))?) {
+            continue;
+        }
         let entries = std::fs::read_dir(&dir).map_err(|e| read_error(&dir, e))?;
         for entry in entries {
             let entry = entry.map_err(|e| read_error(&dir, e))?;
@@ -195,7 +232,7 @@ pub fn scan_attachments(root: &Path) -> Result<AttachmentScan, String> {
     let (mut notes, mut attachments) = collect_space_files(root)?;
     // Sorted up front so each attachment's referencing notes come out in order.
     notes.sort_unstable();
-    let names: HashSet<String> = attachments.iter().map(|a| a.name.to_lowercase()).collect();
+    let names = AttachmentNames::new(attachments.iter().map(|a| fold(&a.name)).collect());
     let mut referenced: HashMap<String, Vec<String>> = HashMap::new();
     for (rel_path, abs) in &notes {
         let bytes = std::fs::read(abs).map_err(|e| read_error(abs, e))?;
@@ -205,7 +242,7 @@ pub fn scan_attachments(root: &Path) -> Result<AttachmentScan, String> {
     }
     for attachment in &mut attachments {
         // Same-named files share one entry, so clone rather than take it.
-        if let Some(notes) = referenced.get(&attachment.name.to_lowercase()) {
+        if let Some(notes) = referenced.get(&fold(&attachment.name)) {
             attachment.referenced_by.clone_from(notes);
         }
     }

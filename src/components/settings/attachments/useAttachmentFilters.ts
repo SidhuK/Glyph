@@ -58,10 +58,7 @@ export function useAttachmentFilters(attachments: readonly AttachmentEntry[]) {
 		() => visible.filter((entry) => isUnused(entry) && selection.has(entry.rel_path)),
 		[visible, selection],
 	);
-	const selectedPaths = useMemo(
-		() => new Set(selected.map((entry) => entry.rel_path)),
-		[selected],
-	);
+	const selectedPaths = useMemo(() => new Set(selected.map((entry) => entry.rel_path)), [selected]);
 	const selectable = useMemo(() => visible.filter(isUnused), [visible]);
 
 	// Stable so memoized rows skip re-rendering when another row is toggled.
