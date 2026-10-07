@@ -16,20 +16,23 @@ export function QuickSearchWindow() {
 	const queryClient = useQueryClient();
 	const [session, setSession] = useState(0);
 	const space = useQuery({
-		queryKey: ["quick-search", "space"],
-		queryFn: () => invoke("space_get_current"),
+		queryKey: ["quick-search", "space", session],
+		queryFn: async () => {
+			// The main window may have switched spaces or written settings while
+			// this window was hidden; a failed store reload still loads the space.
+			await reloadFromDisk().catch(() => {});
+			return invoke("space_get_current");
+		},
 	});
 	const hideWindow = useMutation({
 		mutationFn: () => invoke("hide_quick_search_window"),
 	});
 
 	useTauriEvent("quick-search:shown", () => {
+		// Results cached for a previous space must never stay selectable, so the
+		// panel waits for a fresh space and refetches everything from scratch.
+		queryClient.clear();
 		setSession((current) => current + 1);
-		// The main window may have switched spaces or written notes and recents
-		// while this window was hidden; a failed store reload still refetches.
-		void reloadFromDisk()
-			.catch(() => {})
-			.then(() => queryClient.invalidateQueries());
 	});
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -47,10 +50,14 @@ export function QuickSearchWindow() {
 		>
 			{space.data ? (
 				<QuickSearchPanel key={session} spacePath={space.data} />
-			) : space.isPending ? null : (
+			) : (
 				// Focusable so Esc still reaches the root when there is no input.
 				<div key={session} ref={focusNode} className="quickSearchEmpty" tabIndex={-1} role="status">
-					{space.error ? extractErrorMessage(space.error) : t("quickSearch.noSpace")}
+					{space.isPending
+						? null
+						: space.error
+							? extractErrorMessage(space.error)
+							: t("quickSearch.noSpace")}
 				</div>
 			)}
 			{hideWindow.error ? (

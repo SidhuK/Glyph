@@ -60,11 +60,11 @@ pub(crate) async fn quick_search_open_in_main(
     app: tauri::AppHandle,
     target: QuickSearchTarget,
 ) -> Result<(), String> {
+    let space = app
+        .state::<crate::space::SpaceState>()
+        .root_for_window_label(MAIN_WINDOW_LABEL)?;
     match target {
         QuickSearchTarget::Note { path } => {
-            let space = app
-                .state::<crate::space::SpaceState>()
-                .root_for_window_label(MAIN_WINDOW_LABEL)?;
             let action = tauri::async_runtime::spawn_blocking(move || {
                 crate::deeplink::validated_open_note(&space, &path)
             })
@@ -74,6 +74,16 @@ pub(crate) async fn quick_search_open_in_main(
             hide_floating_window(&app, FloatingWindow::QuickSearch)
         }
         QuickSearchTarget::Collection { id } => {
+            let lookup_id = id.clone();
+            let exists = tauri::async_runtime::spawn_blocking(move || {
+                crate::databases::load_store(&space)
+                    .map(|store| store.databases.iter().any(|entry| entry.id == lookup_id))
+            })
+            .await
+            .map_err(|error| error.to_string())??;
+            if !exists {
+                return Err("collection not found".to_string());
+            }
             dispatch_open_collection(&app, id)?;
             hide_floating_window(&app, FloatingWindow::QuickSearch)
         }
