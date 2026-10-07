@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import {
 	extractFirstImageRef,
 	noteLinkedImageQueryOptions,
-	noteScanTextQueryOptions,
+	noteScanQueryOptions,
 } from "../lib/noteThumbnail";
 
 interface NoteThumbnailProps {
@@ -14,14 +14,11 @@ interface NoteThumbnailProps {
 
 export function NoteThumbnail({ notePath, preview, className }: NoteThumbnailProps) {
 	const previewImageRef = useMemo(() => extractFirstImageRef(preview), [preview]);
-	const { data: scanText } = useQuery({
-		...noteScanTextQueryOptions(notePath),
+	const { data: scan } = useQuery({
+		...noteScanQueryOptions(notePath),
 		enabled: previewImageRef === null,
 	});
-	const imageRef = useMemo(
-		() => previewImageRef ?? (scanText === undefined ? null : extractFirstImageRef(scanText)),
-		[previewImageRef, scanText],
-	);
+	const imageRef = previewImageRef ?? scan?.imageRef ?? null;
 	const linkedImageRef = imageRef?.kind === "direct" ? null : imageRef;
 	const { data: linkedSrc } = useQuery(noteLinkedImageQueryOptions(notePath, linkedImageRef));
 	const src = imageRef?.kind === "direct" ? imageRef.src : linkedSrc;

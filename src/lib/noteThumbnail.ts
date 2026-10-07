@@ -16,16 +16,26 @@ interface NoteImageCandidate {
 const NOTE_THUMBNAIL_MAX_BYTES = 4 * 1024 * 1024;
 const NOTE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
 const NOTE_READ_CONCURRENCY = 4;
+// Data URLs are several MB each, so drop them soon after their card unmounts.
+const NOTE_IMAGE_GC_TIME_MS = 30 * 1000;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
+const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
 let activeNoteReads = 0;
 const queuedNoteReads: Array<() => void> = [];
 
+function drainNoteReads(): void {
+	while (activeNoteReads < NOTE_READ_CONCURRENCY) {
+		const next = queuedNoteReads.shift();
+		if (!next) return;
+		next();
+	}
+}
+
 function runLimitedNoteRead<T>(read: () => Promise<T>, signal: AbortSignal): Promise<T> {
 	return new Promise<T>((resolve, reject) => {
-		const run = () => {
+		queuedNoteReads.push(() => {
 			if (signal.aborted) {
 				reject(signal.reason);
-				queuedNoteReads.shift()?.();
 				return;
 			}
 			activeNoteReads += 1;
@@ -33,15 +43,16 @@ function runLimitedNoteRead<T>(read: () => Promise<T>, signal: AbortSignal): Pro
 				.then(resolve, reject)
 				.finally(() => {
 					activeNoteReads -= 1;
-					queuedNoteReads.shift()?.();
+					drainNoteReads();
 				});
-		};
-		if (activeNoteReads < NOTE_READ_CONCURRENCY) {
-			run();
-			return;
-		}
-		queuedNoteReads.push(run);
+		});
+		drainNoteReads();
 	});
+}
+
+export function extractFirstUrl(text: string): string {
+	const match = text.match(URL_RE);
+	return match?.[0] ? match[0].replace(/[.,;:!?)]+$/g, "") : "";
 }
 
 function isImageHref(href: string): boolean {
@@ -49,7 +60,9 @@ function isImageHref(href: string): boolean {
 }
 
 function markdownImageHref(rawHref: string): string {
-	const href = rawHref.trim().replace(/^<|>$/g, "");
+	const href = rawHref.trim();
+	const bracketed = href.match(/^<([^>\n]*)>/);
+	if (bracketed) return (bracketed[1] ?? "").trim();
 	const titleMatch = href.match(/^(.+?)(?:\s+["'][^"'\n]*["'])$/);
 	return (titleMatch?.[1] ?? href).trim();
 }
@@ -63,7 +76,7 @@ function imageRefFromHref(href: string): NoteImageRef | null {
 
 function referenceImageDefinitions(markdown: string): Map<string, string> {
 	const definitions = new Map<string, string>();
-	for (const match of markdown.matchAll(/^\s*\[([^\]\n]+)\]:\s*(\S+)/gm)) {
+	for (const match of markdown.matchAll(/^\s*\[([^\]\n]+)\]:\s*(<[^>\n]+>|\S+)/gm)) {
 		const label = (match[1] ?? "").trim().toLowerCase();
 		const href = markdownImageHref(match[2] ?? "");
 		if (label && href) definitions.set(label, href);
@@ -103,7 +116,7 @@ export function extractFirstImageRef(markdown: string): NoteImageRef | null {
 	return candidates[0]?.ref ?? null;
 }
 
-export function noteScanTextQueryOptions(notePath: string) {
+export function noteScanQueryOptions(notePath: string) {
 	return queryOptions({
 		queryKey: navigationQueryKeys.noteScan(notePath),
 		queryFn: async ({ signal }) => {
@@ -115,7 +128,7 @@ export function noteScanTextQueryOptions(notePath: string) {
 					}),
 				signal,
 			);
-			return doc.text;
+			return { imageRef: extractFirstImageRef(doc.text), firstUrl: extractFirstUrl(doc.text) };
 		},
 		staleTime: NAVIGATION_STALE_TIME_MS,
 		retry: false,
@@ -127,23 +140,21 @@ async function loadLinkedImage(
 	imageRef: Exclude<NoteImageRef, { kind: "direct" }>,
 	signal: AbortSignal,
 ): Promise<string> {
-	const relPath =
-		imageRef.kind === "wiki-image-link"
-			? await invoke("space_resolve_image_wikilink", { target: imageRef.href })
-			: await invoke("space_resolve_markdown_link", {
-					href: imageRef.href,
-					sourcePath: notePath,
-				});
-	if (!relPath) return "";
-	const image = await runLimitedNoteRead(
-		() =>
-			invoke("space_read_binary_preview", {
-				path: relPath,
-				max_bytes: NOTE_THUMBNAIL_MAX_BYTES,
-			}),
-		signal,
-	);
-	return image.truncated ? "" : image.data_url;
+	return runLimitedNoteRead(async () => {
+		const relPath =
+			imageRef.kind === "wiki-image-link"
+				? await invoke("space_resolve_image_wikilink", { target: imageRef.href })
+				: await invoke("space_resolve_markdown_link", {
+						href: imageRef.href,
+						sourcePath: notePath,
+					});
+		if (!relPath) return "";
+		const image = await invoke("space_read_binary_preview", {
+			path: relPath,
+			max_bytes: NOTE_THUMBNAIL_MAX_BYTES,
+		});
+		return image.truncated ? "" : image.data_url;
+	}, signal);
 }
 
 export function noteLinkedImageQueryOptions(
@@ -154,6 +165,7 @@ export function noteLinkedImageQueryOptions(
 		queryKey: [...navigationQueryKeys.noteScan(notePath), "image", imageRef?.kind, imageRef?.href],
 		queryFn: imageRef ? ({ signal }) => loadLinkedImage(notePath, imageRef, signal) : skipToken,
 		staleTime: NAVIGATION_STALE_TIME_MS,
+		gcTime: NOTE_IMAGE_GC_TIME_MS,
 		retry: false,
 	});
 }

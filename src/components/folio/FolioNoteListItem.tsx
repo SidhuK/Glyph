@@ -21,7 +21,7 @@ import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
-import { noteScanTextQueryOptions } from "../../lib/noteThumbnail";
+import { extractFirstUrl, noteScanQueryOptions } from "../../lib/noteThumbnail";
 import { invoke } from "../../lib/tauri";
 import { basename, displayNameFromPath, parentDir, splitEditableFileName } from "../../utils/path";
 import { InlineRenameInput } from "../InlineRenameInput";
@@ -73,7 +73,6 @@ const DAY_MS = 24 * HOUR_MS;
 const WEEK_MS = 7 * DAY_MS;
 const MONTH_MS = 30 * DAY_MS;
 const CALENDAR_DATE_THRESHOLD_MS = 3 * MONTH_MS;
-const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
 const compactRelativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();
 
 function compactRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
@@ -154,15 +153,6 @@ function previewText(preview: string, title: string, emptyLabel: string): string
 	return previewLines.join(" ") || emptyLabel;
 }
 
-function cleanUrl(rawUrl: string): string {
-	return rawUrl.replace(/[.,;:!?)]+$/g, "");
-}
-
-function extractFirstUrl(text: string): string {
-	const match = text.match(URL_RE);
-	return match?.[0] ? cleanUrl(match[0]) : "";
-}
-
 function urlLabel(url: string): string {
 	try {
 		const parsed = new URL(url);
@@ -174,11 +164,11 @@ function urlLabel(url: string): string {
 
 function useFolioFirstUrl(note: FolioItem): string {
 	const previewUrl = useMemo(() => extractFirstUrl(note.preview), [note.preview]);
-	const { data: scanText } = useQuery({
-		...noteScanTextQueryOptions(note.note_path),
+	const { data: scan } = useQuery({
+		...noteScanQueryOptions(note.note_path),
 		enabled: note.is_markdown,
 	});
-	return scanText === undefined ? previewUrl : extractFirstUrl(scanText);
+	return scan === undefined ? previewUrl : scan.firstUrl;
 }
 
 export const FolioNoteListItem = memo(
