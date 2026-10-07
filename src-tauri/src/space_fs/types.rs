@@ -73,14 +73,3 @@ pub struct TextFilePreviewDocBatch {
     pub total_bytes: Option<u64>,
     pub error: Option<String>,
 }
-
-#[derive(Serialize)]
-pub struct BinaryFilePreviewDoc {
-    pub rel_path: String,
-    pub mime: String,
-    pub data_url: String,
-    pub truncated: bool,
-    pub bytes_read: u64,
-    pub total_bytes: u64,
-    pub mtime_ms: u64,
-}

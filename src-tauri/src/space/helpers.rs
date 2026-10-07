@@ -99,10 +99,6 @@ fn cleanup_tmp_files(root: &Path) -> Result<(), String> {
                 Err(_) => continue,
             };
             if meta.is_dir() {
-                // Glyph never writes temp files into these, and they can hold tens of thousands of entries.
-                if matches!(entry.file_name().to_str(), Some(".git" | "node_modules")) {
-                    continue;
-                }
                 let _ = recurse(&path);
                 continue;
             }

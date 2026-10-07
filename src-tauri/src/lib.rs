@@ -1801,7 +1801,6 @@ pub fn run() {
             space_fs::read_write::text::space_read_texts_batch,
             space_fs::read_write::preview::space_read_text_preview,
             space_fs::read_write::preview::space_read_text_previews_batch,
-            space_fs::read_write::preview::space_read_binary_preview,
             space_fs::read_write::binary::space_save_pasted_image,
             space_fs::read_write::import::space_import_paths,
             space_fs::read_write::text::space_write_text,

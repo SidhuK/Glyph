@@ -40,10 +40,14 @@ export async function initI18n(): Promise<typeof i18n> {
 	return i18n;
 }
 
+let requestedLanguage: AppLanguage | null = null;
+
 export async function changeAppLanguage(language: string): Promise<void> {
 	const next = normalizeAppLanguage(language);
-	if (i18n.language !== next) {
-		await ensureLanguageLoaded(next);
+	requestedLanguage = next;
+	await ensureLanguageLoaded(next);
+	// A newer request may have arrived while this bundle loaded; only the latest one applies.
+	if (requestedLanguage === next && i18n.language !== next) {
 		await i18n.changeLanguage(next);
 	}
 }
