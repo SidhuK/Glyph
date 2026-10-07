@@ -152,7 +152,6 @@
 	left: 6px;
 	right: 6px;
 	width: auto;
-	will-change: transform;
 }
 
 .folioNoteListItem {

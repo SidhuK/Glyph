@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/core";
+import { isInTable } from "@tiptap/pm/tables";
 import { useEditorState } from "@tiptap/react";
 import {
 	type MouseEvent as ReactMouseEvent,
@@ -52,6 +53,7 @@ export function useTableInlineControls({
 			if (!instance || instance.isDestroyed || mode !== "rich" || !canEdit) {
 				return null;
 			}
+			if (!isInTable(instance.state)) return null;
 			return tableEditorSnapshot(instance.state, {
 				column: instance.can().deleteColumn(),
 				row: instance.can().deleteRow(),

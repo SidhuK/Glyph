@@ -1,4 +1,3 @@
-import { renderMermaidSVG } from "beautiful-mermaid";
 import DOMPurify from "dompurify";
 import { extractMermaidErrorMessage } from "../../../../lib/mermaid";
 
@@ -51,7 +50,7 @@ function sanitizeMermaidSvg(svg: string): MermaidRenderResult {
 	return { ok: true, svgHtml: sanitizedSvg.trim() };
 }
 
-export function renderMermaidCanvasSvg(source: string): MermaidRenderResult {
+export async function renderMermaidCanvasSvg(source: string): Promise<MermaidRenderResult> {
 	const trimmedSource = source.trim();
 	const cachedResult = renderCache.get(trimmedSource);
 	if (cachedResult) {
@@ -68,6 +67,8 @@ export function renderMermaidCanvasSvg(source: string): MermaidRenderResult {
 	}
 
 	try {
+		// beautiful-mermaid bundles elkjs (~1.5 MB); keep it out of the startup chunk.
+		const { renderMermaidSVG } = await import("beautiful-mermaid");
 		const svg = renderMermaidSVG(trimmedSource, MERMAID_CANVAS_RENDER_OPTIONS);
 		return rememberRenderResult(trimmedSource, sanitizeMermaidSvg(svg));
 	} catch (error) {

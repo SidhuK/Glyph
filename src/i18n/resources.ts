@@ -1,5 +1,5 @@
-import type { Resource } from "i18next";
-import { SUPPORTED_LANGUAGE_IDS } from "./locales";
+import type { Resource, ResourceLanguage } from "i18next";
+import type { AppLanguage } from "./locales";
 
 export const defaultNS = "shell";
 
@@ -16,26 +16,42 @@ export const namespaces = [
 	"menu",
 ] as const;
 
-const localeModules = import.meta.glob("./locales/*/*.json", {
+type LocaleModule = Record<string, unknown>;
+
+const englishModules = import.meta.glob<LocaleModule>("./locales/en/*.json", {
 	eager: true,
 	import: "default",
-}) as Record<string, Record<string, unknown>>;
+});
 
-function buildResources(): Resource {
-	const resources: Resource = {};
-	for (const language of SUPPORTED_LANGUAGE_IDS) {
-		const bundle: Record<string, Record<string, unknown>> = {};
-		for (const ns of namespaces) {
-			const path = `./locales/${language}/${ns}.json`;
-			const module = localeModules[path];
-			if (!module) {
-				throw new Error(`Missing i18n resource: ${path}`);
-			}
-			bundle[ns] = module;
-		}
-		resources[language] = bundle;
-	}
-	return resources;
+// Only the active language is ever needed beside the English fallback, so the rest load on demand.
+const localeLoaders = import.meta.glob<LocaleModule>(
+	["./locales/*/*.json", "!./locales/en/*.json"],
+	{ import: "default" },
+);
+
+function missingResource(path: string): never {
+	throw new Error(`Missing i18n resource: ${path}`);
 }
 
-export const resources = buildResources() satisfies Resource;
+function buildEnglishBundle(): ResourceLanguage {
+	const bundle: ResourceLanguage = {};
+	for (const ns of namespaces) {
+		const path = `./locales/en/${ns}.json`;
+		bundle[ns] = englishModules[path] ?? missingResource(path);
+	}
+	return bundle;
+}
+
+export const resources = { en: buildEnglishBundle() } satisfies Resource;
+
+export async function loadLanguageBundle(language: AppLanguage): Promise<ResourceLanguage> {
+	if (language === "en") return resources.en;
+	const entries = await Promise.all(
+		namespaces.map(async (ns) => {
+			const path = `./locales/${language}/${ns}.json`;
+			const load = localeLoaders[path] ?? missingResource(path);
+			return [ns, await load()] as const;
+		}),
+	);
+	return Object.fromEntries(entries);
+}

@@ -1,4 +1,3 @@
-import "./App.css";
 import { DragDropProvider } from "@dnd-kit/react";
 import { LazyMotion, domAnimation } from "motion/react";
 import { AIConversationProvider } from "./components/ai/hooks/useRigChat";

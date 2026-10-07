@@ -1,4 +1,4 @@
-use tauri::{AppHandle, State, WebviewWindow};
+use tauri::{AppHandle, Manager, State, WebviewWindow};
 
 use crate::space::state::SpaceState;
 
@@ -10,12 +10,16 @@ use super::types::{
 use super::GitSyncState;
 
 #[tauri::command]
-pub fn git_sync_status_read(
+pub async fn git_sync_status_read(
+    app: AppHandle,
     window: WebviewWindow,
-    git_state: State<'_, GitSyncState>,
-    space_state: State<'_, SpaceState>,
 ) -> Result<GitSyncStatus, String> {
-    service::read_status(git_state, space_state, window.label())
+    let label = window.label().to_string();
+    tauri::async_runtime::spawn_blocking(move || {
+        service::read_status(app.state::<GitSyncState>(), app.state::<SpaceState>(), &label)
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]
@@ -79,37 +83,45 @@ pub async fn git_sync_commit_message_prompt(
 }
 
 #[tauri::command]
-pub fn git_history_list(
+pub async fn git_history_list(
     window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     path: String,
     limit: Option<u32>,
 ) -> Result<Vec<GitHistoryCommit>, String> {
     let space_root = space_state.root_for_window(&window)?;
-    let rel_path = validate_space_rel_path(&space_root, &path)?;
-    ensure_repo_at_space_root(&space_root)?;
-    let raw = super::git::file_history(&space_root, &rel_path, limit.unwrap_or(30))?;
-    Ok(parse_history_commits(&raw))
+    tauri::async_runtime::spawn_blocking(move || {
+        let rel_path = validate_space_rel_path(&space_root, &path)?;
+        ensure_repo_at_space_root(&space_root)?;
+        let raw = super::git::file_history(&space_root, &rel_path, limit.unwrap_or(30))?;
+        Ok(parse_history_commits(&raw))
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]
-pub fn git_history_diff(
+pub async fn git_history_diff(
     window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     path: String,
     commit: GitHistoryCommit,
 ) -> Result<GitCommitDiff, String> {
     let space_root = space_state.root_for_window(&window)?;
-    let rel_path = validate_space_rel_path(&space_root, &path)?;
-    ensure_repo_at_space_root(&space_root)?;
-    validate_commit_hash(&commit.hash)?;
-    let diff_path = if commit.rel_path.is_empty() {
-        rel_path
-    } else {
-        validate_space_rel_path(&space_root, &commit.rel_path)?
-    };
-    let diff = super::git::commit_file_diff(&space_root, &commit.hash, &diff_path)?;
-    Ok(GitCommitDiff { commit, diff })
+    tauri::async_runtime::spawn_blocking(move || {
+        let rel_path = validate_space_rel_path(&space_root, &path)?;
+        ensure_repo_at_space_root(&space_root)?;
+        validate_commit_hash(&commit.hash)?;
+        let diff_path = if commit.rel_path.is_empty() {
+            rel_path
+        } else {
+            validate_space_rel_path(&space_root, &commit.rel_path)?
+        };
+        let diff = super::git::commit_file_diff(&space_root, &commit.hash, &diff_path)?;
+        Ok(GitCommitDiff { commit, diff })
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 fn ensure_repo_at_space_root(space_root: &std::path::Path) -> Result<(), String> {

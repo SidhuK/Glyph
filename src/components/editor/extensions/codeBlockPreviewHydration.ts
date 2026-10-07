@@ -1,5 +1,7 @@
 const CODE_BLOCK_PREVIEW_ROOT_MARGIN = "640px 0px";
 
+type HydratedPreview = { element: HTMLElement; destroy?: () => void };
+
 const hydrationCallbacks = new WeakMap<Element, () => void>();
 const lazyWidgetDestroyCallbacks = new WeakMap<HTMLElement, () => void>();
 let hydrationObserver: IntersectionObserver | null = null;
@@ -48,7 +50,7 @@ export function createLazyCodeBlockPreviewWidget({
 }: {
 	placeholderClassName: string;
 	frameClassName: string;
-	hydrate: () => { element: HTMLElement; destroy?: () => void };
+	hydrate: () => HydratedPreview | Promise<HydratedPreview>;
 }): HTMLElement {
 	const placeholder = document.createElement("div");
 	placeholder.className = placeholderClassName;
@@ -68,13 +70,21 @@ export function createLazyCodeBlockPreviewWidget({
 		hydrated = true;
 		unobserveCodeBlockPreviewHydration(placeholder);
 
+		const apply = (rendered: HydratedPreview) => {
+			if (destroyed) {
+				rendered.destroy?.();
+				return;
+			}
+			destroyHydrated = rendered.destroy ?? null;
+			for (const attribute of Array.from(rendered.element.attributes)) {
+				placeholder.setAttribute(attribute.name, attribute.value);
+			}
+			placeholder.removeAttribute("aria-busy");
+			placeholder.replaceChildren(...Array.from(rendered.element.childNodes));
+		};
 		const rendered = hydrate();
-		destroyHydrated = rendered.destroy ?? null;
-		for (const attribute of Array.from(rendered.element.attributes)) {
-			placeholder.setAttribute(attribute.name, attribute.value);
-		}
-		placeholder.removeAttribute("aria-busy");
-		placeholder.replaceChildren(...Array.from(rendered.element.childNodes));
+		if (rendered instanceof Promise) void rendered.then(apply);
+		else apply(rendered);
 	};
 
 	if (!observeCodeBlockPreviewHydration(placeholder, runHydrate)) {

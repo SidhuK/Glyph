@@ -80,6 +80,20 @@ interface FileTreeContextValue {
 
 const FileTreeContext = createContext<FileTreeContextValue | null>(null);
 
+// Keeping the previous array when nothing changed stops every fs event from re-rendering all consumers.
+function sameRecordLists<T extends object>(prev: readonly T[], next: readonly T[]): boolean {
+	if (prev.length !== next.length) return false;
+	return prev.every((item, index) => {
+		const other = next[index];
+		if (!other) return false;
+		const keys = Object.keys(item);
+		return (
+			keys.length === Object.keys(other).length &&
+			keys.every((key) => Reflect.get(item, key) === Reflect.get(other, key))
+		);
+	});
+}
+
 // Tags and people share a page size so metadata lists do not silently truncate.
 const TAG_METADATA_PAGE_SIZE = 500;
 
@@ -178,8 +192,8 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				if (requestId !== tagsRequestIdRef.current || originSpace !== currentSpacePathRef.current) {
 					return;
 				}
-				setTags(nextTags);
-				setPeople(nextPeople);
+				setTags((prev) => (sameRecordLists(prev, nextTags) ? prev : nextTags));
+				setPeople((prev) => (sameRecordLists(prev, nextPeople) ? prev : nextPeople));
 				tagsAppliedRef.current = { space: originSpace, generation };
 			} catch (e) {
 				if (requestId !== tagsRequestIdRef.current || originSpace !== currentSpacePathRef.current) {

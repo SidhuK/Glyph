@@ -14,7 +14,7 @@ const mermaidPreviewPluginKey = new PluginKey("mermaid-preview");
 
 type MermaidPreviewMeta = { type: "refresh" };
 
-function buildMermaidCanvasWidget({
+async function buildMermaidCanvasWidget({
 	editable,
 	source,
 	selectSource,
@@ -25,7 +25,7 @@ function buildMermaidCanvasWidget({
 	selectSource: () => void;
 	openFocusedPreview: () => void;
 }) {
-	const result = renderMermaidCanvasSvg(source);
+	const result = await renderMermaidCanvasSvg(source);
 	if (!result.ok) {
 		const element = createMermaidErrorCanvas(result.message);
 		if (!editable) return { element, destroy: () => {} };

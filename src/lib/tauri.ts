@@ -149,16 +149,6 @@ interface TextFilePreviewDocBatch {
 	error: string | null;
 }
 
-interface BinaryFilePreviewDoc {
-	rel_path: string;
-	mime: string;
-	data_url: string;
-	truncated: boolean;
-	bytes_read: number;
-	total_bytes: number;
-	mtime_ms: number;
-}
-
 interface SavedPastedImage {
 	asset_rel_path: string;
 	href: string;
@@ -1003,10 +993,6 @@ interface TauriCommands {
 	space_read_text_previews_batch: CommandDef<
 		{ paths: string[]; max_bytes?: number | null },
 		TextFilePreviewDocBatch[]
-	>;
-	space_read_binary_preview: CommandDef<
-		{ path: string; max_bytes?: number | null },
-		BinaryFilePreviewDoc
 	>;
 	space_save_pasted_image: CommandDef<
 		{
