@@ -9,7 +9,7 @@ export type ActionMenuItem =
 			type: "item";
 			label: string;
 			key?: string;
-			onSelect: () => void;
+			onClick: () => void;
 			checked?: boolean;
 			enabled?: boolean;
 			destructive?: boolean;
@@ -32,7 +32,7 @@ export function toNativeContextMenuItems(items: ActionMenuItem[]): NativeContext
 					label: item.label,
 					checked: item.checked,
 					enabled: item.enabled,
-					action: item.onSelect,
+					action: item.onClick,
 				});
 				break;
 		}

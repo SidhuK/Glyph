@@ -7,7 +7,6 @@ import {
 	PopoverDescription,
 	PopoverHeader,
 	PopoverTitle,
-	PopoverTrigger,
 } from "../../ui/shadcn/popover";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
 import { GLYPH_KATEX_OPTIONS } from "../extensions/math/mathOptions";
@@ -31,15 +30,15 @@ export function MathNodeEditor({
 	const [draft, setDraft] = useState(request.latex);
 	const previewRef = useRef<HTMLDivElement | null>(null);
 	const [renderError, setRenderError] = useState("");
-	const anchorStyle = useMemo(
-		() => ({
-			left: anchorRect?.left ?? window.innerWidth / 2,
-			top: anchorRect?.top ?? window.innerHeight / 2,
-			width: Math.max(anchorRect?.width ?? 1, 1),
-			height: Math.max(anchorRect?.height ?? 1, 1),
-		}),
-		[anchorRect],
-	);
+	const anchor = useMemo(() => {
+		const rect = new DOMRect(
+			anchorRect?.left ?? window.innerWidth / 2,
+			anchorRect?.top ?? window.innerHeight / 2,
+			Math.max(anchorRect?.width ?? 1, 1),
+			Math.max(anchorRect?.height ?? 1, 1),
+		);
+		return { getBoundingClientRect: () => rect };
+	}, [anchorRect]);
 
 	useEffect(() => {
 		const preview = previewRef.current;
@@ -62,13 +61,11 @@ export function MathNodeEditor({
 
 	return (
 		<Popover open onOpenChange={(open) => !open && onCancel()}>
-			<PopoverTrigger asChild>
-				<span className="mathNodeEditorAnchor" style={anchorStyle} aria-hidden />
-			</PopoverTrigger>
 			<PopoverContent
+				anchor={anchor}
 				align="start"
 				className="mathNodeEditorPopover"
-				onOpenAutoFocus={(event) => event.preventDefault()}
+				initialFocus={false}
 			>
 				<PopoverHeader>
 					<PopoverTitle>

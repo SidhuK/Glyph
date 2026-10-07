@@ -183,14 +183,14 @@ vi.mock("../ui/shadcn/input", () => ({
 vi.mock("../ui/shadcn/popover", () => ({
 	Popover: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 	PopoverContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-	PopoverTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	PopoverTrigger: ({ render }: { render: React.ReactElement }) => render,
 }));
 
 vi.mock("../ui/shadcn/dropdown-menu", () => ({
 	DropdownMenu: ({ children }: { children: React.ReactNode }) => (
 		<div data-testid="dropdown-menu">{children}</div>
 	),
-	DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	DropdownMenuTrigger: ({ render }: { render: React.ReactElement }) => render,
 	DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
 		<div role="menu" data-slot="dropdown-menu-content">
 			{children}
@@ -198,11 +198,11 @@ vi.mock("../ui/shadcn/dropdown-menu", () => ({
 	),
 	DropdownMenuItem: ({
 		children,
-		onSelect,
+		onClick,
 		disabled,
 	}: {
 		children: React.ReactNode;
-		onSelect?: () => void;
+		onClick?: () => void;
 		disabled?: boolean;
 	}) => (
 		<button
@@ -211,7 +211,7 @@ vi.mock("../ui/shadcn/dropdown-menu", () => ({
 			data-slot="dropdown-menu-item"
 			disabled={disabled}
 			onClick={() => {
-				if (!disabled) onSelect?.();
+				if (!disabled) onClick?.();
 			}}
 		>
 			{children}

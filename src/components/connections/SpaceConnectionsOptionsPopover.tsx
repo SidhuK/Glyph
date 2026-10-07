@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ColorsIcon, FilterIcon, ReloadIcon } from "@hugeicons/core-free-icons";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	CONNECTIONS_GRAPH_MIN_CONNECTIONS_MAX,
@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 interface SpaceConnectionsOptionsPopoverProps {
 	options: ConnectionsGraphOptions;
 	onOptionsChange: (options: ConnectionsGraphOptions) => void;
-	trigger: ReactNode;
+	trigger: ReactElement;
 }
 
 const NATIVE_RANGE_STYLE = {
@@ -92,12 +92,12 @@ export function SpaceConnectionsOptionsPopover({
 
 	return (
 		<Popover>
-			<PopoverTrigger asChild>{trigger}</PopoverTrigger>
+			<PopoverTrigger render={trigger} />
 			<PopoverContent
 				align="end"
 				sideOffset={8}
 				className="databaseViewOptionsPopover"
-				onOpenAutoFocus={(event) => event.preventDefault()}
+				initialFocus={false}
 			>
 				<div className="databaseViewOptionsMenu spaceConnectionsOptionsMenu">
 					<h3 className="spaceConnectionsOptionsHeading">

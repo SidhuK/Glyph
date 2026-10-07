@@ -127,26 +127,24 @@ function TargetBreadcrumbEntryMenu({
 				onOpenChange(nextOpen);
 			}}
 		>
-			<DropdownMenuTrigger asChild>
-				<button
-					type="button"
-					className="quickNoteTargetButton"
-					aria-label={`Change destination — browse ${menuTitleForDir(dirPath)}`}
-					aria-current={isCurrent ? "page" : undefined}
-					data-current={isCurrent ? "true" : undefined}
-				>
-					{showSeparator ? (
-						<ChevronRight size="var(--icon-xs)" className="quickNoteTargetSep" aria-hidden="true" />
-					) : null}
-					<span className="quickNoteTargetLabel">{label}</span>
-					{isCurrent ? (
-						<ChevronDown
-							size="var(--icon-xs)"
-							className="quickNoteTargetCaret"
-							aria-hidden="true"
-						/>
-					) : null}
-				</button>
+			<DropdownMenuTrigger
+				render={
+					<button
+						type="button"
+						className="quickNoteTargetButton"
+						aria-label={`Change destination — browse ${menuTitleForDir(dirPath)}`}
+						aria-current={isCurrent ? "page" : undefined}
+						data-current={isCurrent ? "true" : undefined}
+					/>
+				}
+			>
+				{showSeparator ? (
+					<ChevronRight size="var(--icon-xs)" className="quickNoteTargetSep" aria-hidden="true" />
+				) : null}
+				<span className="quickNoteTargetLabel">{label}</span>
+				{isCurrent ? (
+					<ChevronDown size="var(--icon-xs)" className="quickNoteTargetCaret" aria-hidden="true" />
+				) : null}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start" side="bottom" className="quickNoteTargetMenu">
 				<DropdownMenuLabel className="quickNoteTargetMenuLabel">
@@ -157,7 +155,7 @@ function TargetBreadcrumbEntryMenu({
 						className="quickNoteTargetMenuItem"
 						title={todayQuickNotePath}
 						data-selected={selectedTargetValue === QUICK_NOTE_TARGET_VALUE ? "true" : undefined}
-						onSelect={() => onSelectTarget(todayQuickNoteTarget(todayQuickNotePath))}
+						onClick={() => onSelectTarget(todayQuickNoteTarget(todayQuickNotePath))}
 					>
 						<span className="quickNoteTargetMenuItemLabel">Today&apos;s quick note</span>
 					</DropdownMenuItem>

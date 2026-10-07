@@ -143,10 +143,7 @@ export function AppearancePicker({
 				<DialogContent
 					className="commandPalette appearancePickerDialog top-[46%] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[440px]"
 					showCloseButton={false}
-					onOpenAutoFocus={(event) => {
-						event.preventDefault();
-						inputRef.current?.focus();
-					}}
+					initialFocus={inputRef}
 				>
 					<DialogTitle className="sr-only">{title}</DialogTitle>
 					<div className="appearancePickerHeader">

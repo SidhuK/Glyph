@@ -178,7 +178,7 @@
 
 .mainTabsBreadcrumb:hover,
 .mainTabsBreadcrumb:focus-within,
-.mainTabsBreadcrumb:has([data-state="open"]) {
+.mainTabsBreadcrumb:has([data-popup-open]) {
 	opacity: 1;
 	pointer-events: auto;
 }
@@ -226,7 +226,7 @@
 
 .mainTabsBreadcrumbSepButton:hover,
 .mainTabsBreadcrumbSepButton:focus-visible,
-.mainTabsBreadcrumbSepButton[data-state="open"] {
+.mainTabsBreadcrumbSepButton[data-popup-open] {
 	background: transparent;
 	color: var(--text-primary);
 	outline: none;
@@ -234,7 +234,7 @@
 
 .mainTabsBreadcrumbSepButton:hover .mainTabsBreadcrumbSep,
 .mainTabsBreadcrumbSepButton:focus-visible .mainTabsBreadcrumbSep,
-.mainTabsBreadcrumbSepButton[data-state="open"] .mainTabsBreadcrumbSep {
+.mainTabsBreadcrumbSepButton[data-popup-open] .mainTabsBreadcrumbSep {
 	color: currentcolor;
 	opacity: 1;
 	transform: translateX(1px);
@@ -260,7 +260,7 @@
 
 .mainTabsBreadcrumbOverflowButton:hover,
 .mainTabsBreadcrumbOverflowButton:focus-visible,
-.mainTabsBreadcrumbOverflowButton[data-state="open"] {
+.mainTabsBreadcrumbOverflowButton[data-popup-open] {
 	color: var(--text-primary);
 	outline: none;
 }
@@ -306,7 +306,7 @@
 
 .mainTabsBreadcrumbMenu {
 	width: min(280px, calc(100vw - 28px));
-	max-height: min(340px, var(--radix-dropdown-menu-content-available-height));
+	max-height: min(340px, var(--available-height));
 	padding: 6px;
 	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
 	border-radius: var(--radius-lg);

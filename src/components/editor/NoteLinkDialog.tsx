@@ -56,12 +56,12 @@ export function NoteLinkDialog({ editor, canEdit, state, onStateChange }: NoteLi
 		>
 			<DialogContent
 				className="editorLinkDialog"
-				onOpenAutoFocus={(event) => {
+				initialFocus={() => {
 					const input = inputRef.current;
-					if (!input) return;
-					event.preventDefault();
+					if (!input) return true;
 					input.focus();
 					input.select();
+					return false;
 				}}
 			>
 				<DialogHeader>

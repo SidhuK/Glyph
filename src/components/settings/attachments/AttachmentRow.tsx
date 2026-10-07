@@ -22,11 +22,9 @@ function UsedInPopover({ notes }: { notes: readonly string[] }) {
 	const { t } = useTranslation("settings.general");
 	return (
 		<Popover>
-			<PopoverTrigger asChild>
-				<button type="button" className="attachmentUsedTrigger">
-					<HugeiconsIcon icon={Note01Icon} size="var(--icon-xs)" aria-hidden="true" />
-					{t("developer.attachments.usedIn", { count: notes.length })}
-				</button>
+			<PopoverTrigger render={<button type="button" className="attachmentUsedTrigger" />}>
+				<HugeiconsIcon icon={Note01Icon} size="var(--icon-xs)" aria-hidden="true" />
+				{t("developer.attachments.usedIn", { count: notes.length })}
 			</PopoverTrigger>
 			<PopoverContent align="start" className="attachmentUsedPopover">
 				<div className="attachmentUsedTitle">{t("developer.attachments.referencedBy")}</div>

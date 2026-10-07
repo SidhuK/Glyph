@@ -37,12 +37,12 @@ export function ExtractToNoteDialog({
 		>
 			<DialogContent
 				className="extractToNoteDialog databaseDialogCompact"
-				onOpenAutoFocus={(event) => {
+				initialFocus={() => {
 					const input = titleInputRef.current;
-					if (!input) return;
-					event.preventDefault();
+					if (!input) return true;
 					input.focus();
 					input.select();
+					return false;
 				}}
 			>
 				<DialogHeader className="extractToNoteHeader">

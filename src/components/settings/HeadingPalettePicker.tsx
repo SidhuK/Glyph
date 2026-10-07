@@ -38,26 +38,27 @@ export function HeadingPalettePicker({
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
-			<PopoverTrigger asChild>
-				<button
-					type="button"
-					className={cn(
-						"appearanceThemeDropdownTrigger",
-						"headingPaletteTrigger",
-						open && "is-open",
-					)}
-					disabled={disabled}
-					aria-label={t("editor.colorfulHeadings.palette.label")}
-					aria-expanded={open}
-				>
-					<HeadingPalettePreview colors={isDark ? selected.dark : selected.light} />
-					<span className="appearanceThemeDropdownTitle">
-						{t(`editor.colorfulHeadings.palette.options.${selected.id}`)}
-					</span>
-					<span className={cn("appearanceThemeDropdownChevron", open && "is-open")}>
-						<ChevronDown size="var(--icon-md)" />
-					</span>
-				</button>
+			<PopoverTrigger
+				disabled={disabled}
+				render={
+					<button
+						type="button"
+						className={cn(
+							"appearanceThemeDropdownTrigger",
+							"headingPaletteTrigger",
+							open && "is-open",
+						)}
+						aria-label={t("editor.colorfulHeadings.palette.label")}
+					/>
+				}
+			>
+				<HeadingPalettePreview colors={isDark ? selected.dark : selected.light} />
+				<span className="appearanceThemeDropdownTitle">
+					{t(`editor.colorfulHeadings.palette.options.${selected.id}`)}
+				</span>
+				<span className={cn("appearanceThemeDropdownChevron", open && "is-open")}>
+					<ChevronDown size="var(--icon-md)" />
+				</span>
 			</PopoverTrigger>
 			<PopoverContent
 				align="end"

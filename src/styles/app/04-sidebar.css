@@ -188,11 +188,6 @@
 	-webkit-app-region: no-drag;
 }
 
-.sidebarSectionContent [data-slot="scroll-area-viewport"] > div {
-	display: block !important;
-	min-width: 0 !important;
-}
-
 .sidebarSectionContent button:focus-visible {
 	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;

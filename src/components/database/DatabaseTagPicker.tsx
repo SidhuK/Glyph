@@ -85,19 +85,19 @@ export function DatabaseTagPicker({
 	const selectedLabel = selectedTag ? formatTagLabel(selectedTag) : placeholder;
 
 	return (
-		<Popover open={open} onOpenChange={setOpen} modal={false}>
-			<PopoverTrigger asChild>
-				<Button type="button" variant="outline" className="databasePickerTrigger">
-					<span className="databasePickerTriggerIcon">
-						<Hash size="var(--icon-sm)" />
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger
+				render={<Button type="button" variant="outline" className="databasePickerTrigger" />}
+			>
+				<span className="databasePickerTriggerIcon">
+					<Hash size="var(--icon-sm)" />
+				</span>
+				<span className="databasePickerTriggerText">
+					<span className="databasePickerTriggerLabel">{selectedLabel}</span>
+					<span className="databasePickerTriggerMeta">
+						{selectedTag ? "Selected tag" : "Open tag picker"}
 					</span>
-					<span className="databasePickerTriggerText">
-						<span className="databasePickerTriggerLabel">{selectedLabel}</span>
-						<span className="databasePickerTriggerMeta">
-							{selectedTag ? "Selected tag" : "Open tag picker"}
-						</span>
-					</span>
-				</Button>
+				</span>
 			</PopoverTrigger>
 			<PopoverContent className="databasePickerPopover" align="start">
 				<PopoverHeader className="databasePickerHeader">

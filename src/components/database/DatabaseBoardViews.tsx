@@ -25,7 +25,7 @@ import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../
 import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
 import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 
 const DATABASE_BOARD_CARD_SENSORS = [
 	PointerSensor.configure({
@@ -169,18 +169,20 @@ export function DatabaseBoardLaneView({
 			<div className="databaseBoardLaneHeader">
 				<div className="databaseBoardLaneTitleSection">
 					{onLaneColorChange ? (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<button
-									type="button"
-									className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
-									aria-label={`Set color for ${lane.label}`}
-									title={`Set color for ${lane.label}`}
-								>
-									{laneTitleContent}
-								</button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="start" className="databaseBoardColorMenu">
+						<Popover>
+							<PopoverTrigger
+								render={
+									<button
+										type="button"
+										className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
+										aria-label={`Set color for ${lane.label}`}
+										title={`Set color for ${lane.label}`}
+									/>
+								}
+							>
+								{laneTitleContent}
+							</PopoverTrigger>
+							<PopoverContent align="start" className="databaseBoardColorMenu w-auto">
 								<div className="databaseBoardColorRibbon">
 									{EDITOR_TEXT_COLORS.map((color) => (
 										<button
@@ -203,8 +205,8 @@ export function DatabaseBoardLaneView({
 										<span />
 									</button>
 								</div>
-							</DropdownMenuContent>
-						</DropdownMenu>
+							</PopoverContent>
+						</Popover>
 					) : (
 						<div className="databaseBoardLaneTitleGroup">{laneTitleContent}</div>
 					)}

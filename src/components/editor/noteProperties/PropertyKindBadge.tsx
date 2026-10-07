@@ -29,16 +29,18 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 	if (interactive) {
 		return (
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button
-						type="button"
-						size="xs"
-						variant="ghost"
-						className="notePropertyKindBadge notePropertyKindTrigger"
-						title={`Property type: ${label}`}
-					>
-						<HugeiconsIcon icon={icon} size="var(--icon-sm)" />
-					</Button>
+				<DropdownMenuTrigger
+					render={
+						<Button
+							type="button"
+							size="xs"
+							variant="ghost"
+							className="notePropertyKindBadge notePropertyKindTrigger"
+							title={`Property type: ${label}`}
+						/>
+					}
+				>
+					<HugeiconsIcon icon={icon} size="var(--icon-sm)" />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align="start"
@@ -47,12 +49,15 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 				>
 					<DropdownMenuRadioGroup
 						value={resolvedKind}
-						onValueChange={(value) => onSelect?.(value as PropertyKind)}
+						onValueChange={(value) => {
+							if (typeof value === "string" && isPropertyKind(value)) onSelect?.(value);
+						}}
 					>
 						{PROPERTY_KINDS.map((menuKind) => (
 							<DropdownMenuRadioItem
 								key={menuKind}
 								value={menuKind}
+								closeOnClick
 								className="notePropertyKindOption"
 							>
 								<span className="notePropertyKindOptionIcon">

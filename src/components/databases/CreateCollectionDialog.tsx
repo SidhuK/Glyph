@@ -111,12 +111,7 @@ export function CreateCollectionDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent
-				className="createCollectionDialog databaseDialogCompact"
-				onOpenAutoFocus={(event) => {
-					event.preventDefault();
-				}}
-			>
+			<DialogContent className="createCollectionDialog databaseDialogCompact" initialFocus={false}>
 				<div className="createCollectionHero">
 					<div className="createCollectionIcon" aria-hidden="true">
 						<HugeiconsIcon icon={LibraryIcon} size="var(--icon-xl)" />

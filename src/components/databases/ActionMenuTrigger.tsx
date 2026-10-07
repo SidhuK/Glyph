@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LibraryIcon } from "@hugeicons/core-free-icons";
-import { type MouseEvent, type ReactNode, useCallback } from "react";
+import { type ComponentProps, type MouseEvent, type ReactNode, useCallback } from "react";
 import {
 	type ActionMenuIconKey,
 	type ActionMenuItem,
@@ -45,7 +45,7 @@ interface ActionMenuTriggerProps {
 	itemClassName?: string;
 	separatorClassName?: string;
 	labelClassName?: string;
-	onCloseAutoFocus?: (event: Event) => void;
+	finalFocus?: ComponentProps<typeof DropdownMenuContent>["finalFocus"];
 }
 
 export function ActionMenuTrigger({
@@ -59,7 +59,7 @@ export function ActionMenuTrigger({
 	itemClassName,
 	separatorClassName,
 	labelClassName,
-	onCloseAutoFocus,
+	finalFocus,
 }: ActionMenuTriggerProps) {
 	const handleNativeMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
@@ -86,21 +86,19 @@ export function ActionMenuTrigger({
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<button
-					type="button"
-					className={triggerClassName}
-					title={triggerTitle}
-					aria-label={triggerAriaLabel}
-				>
-					{children}
-				</button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				align="start"
-				className={contentClassName}
-				onCloseAutoFocus={onCloseAutoFocus}
+			<DropdownMenuTrigger
+				render={
+					<button
+						type="button"
+						className={triggerClassName}
+						title={triggerTitle}
+						aria-label={triggerAriaLabel}
+					/>
+				}
 			>
+				{children}
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="start" className={contentClassName} finalFocus={finalFocus}>
 				{(() => {
 					let separatorCount = 0;
 
@@ -139,7 +137,7 @@ export function ActionMenuTrigger({
 							<DropdownMenuItem
 								key={`item-${item.key ?? `${item.label}-${index}`}`}
 								disabled={item.enabled === false}
-								onSelect={item.onSelect}
+								onClick={item.onClick}
 								className={classes}
 							>
 								{item.iconKey ? renderMenuIcon(item.iconKey) : null}

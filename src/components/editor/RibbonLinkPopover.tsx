@@ -64,27 +64,23 @@ export function RibbonLinkPopover({
 
 	return (
 		<Popover open={linkOpen} onOpenChange={handleOpenChange}>
-			<PopoverTrigger asChild>
-				<m.button
-					type="button"
-					className={`ribbonBtn ${editor.isActive("link") ? "active" : ""}`}
-					title="Link"
-					aria-label="Link"
-					disabled={!canEdit}
-					onMouseDown={preventMouseDown}
-					onClick={() => canEdit && setLinkOpen(true)}
-					whileTap={canEdit ? { scale: 0.97 } : undefined}
-					transition={springPresets.snappy}
-				>
-					<Link2 size="var(--icon-md)" />
-				</m.button>
-			</PopoverTrigger>
-			<PopoverContent
-				className="editorLinkPopover"
-				align="start"
-				side="top"
-				onOpenAutoFocus={(event) => event.preventDefault()}
+			<PopoverTrigger
+				disabled={!canEdit}
+				render={
+					<m.button
+						type="button"
+						className={`ribbonBtn ${editor.isActive("link") ? "active" : ""}`}
+						title="Link"
+						aria-label="Link"
+						onMouseDown={preventMouseDown}
+						whileTap={canEdit ? { scale: 0.97 } : undefined}
+						transition={springPresets.snappy}
+					/>
+				}
 			>
+				<Link2 size="var(--icon-md)" />
+			</PopoverTrigger>
+			<PopoverContent className="editorLinkPopover" align="start" side="top" initialFocus={false}>
 				<div className="editorLinkPopoverRow">
 					<Input
 						value={linkHref}

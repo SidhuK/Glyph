@@ -41,7 +41,7 @@ export function DirectoryBreadcrumbMenuItem({
 				key={entry.rel_path || ROOT_PATH_KEY}
 				className={itemClassName}
 				title={entry.rel_path || entry.name}
-				onSelect={() => onSelectFile(entry.rel_path)}
+				onClick={() => onSelectFile(entry.rel_path)}
 			>
 				<span className={labelClassName}>
 					{entry.is_markdown ? displayNameFromPath(entry.name) : entry.name}

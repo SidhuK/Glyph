@@ -399,7 +399,7 @@ input.notePropertyFieldInput {
 	outline: none;
 }
 
-.notePropertyKindOption[data-state="checked"] {
+.notePropertyKindOption[data-checked] {
 	background: color-mix(in srgb, var(--interactive-accent) 9%, transparent);
 	color: var(--text-primary);
 }

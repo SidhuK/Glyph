@@ -141,10 +141,10 @@ export function SettingsInfoHint({
 }) {
 	return (
 		<Popover>
-			<PopoverTrigger asChild>
-				<button type="button" className="settingsInfoButton" aria-label={ariaLabel}>
-					<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-md)" />
-				</button>
+			<PopoverTrigger
+				render={<button type="button" className="settingsInfoButton" aria-label={ariaLabel} />}
+			>
+				<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-md)" />
 			</PopoverTrigger>
 			<PopoverContent align="start" side="right" sideOffset={8} className="settingsInfoPopover">
 				{children}
