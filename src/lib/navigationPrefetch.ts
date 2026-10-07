@@ -14,7 +14,7 @@ import type {
 import { invoke } from "./tauri";
 
 const NOTE_PREFETCH_GC_TIME_MS = 60 * 1000;
-const NAVIGATION_STALE_TIME_MS = 5 * 60 * 1000;
+export const NAVIGATION_STALE_TIME_MS = 5 * 60 * 1000;
 const ALL_DOCS_LIST_LIMIT = 2000;
 const ALL_DOCS_PAGE_SIZE = 48;
 export const ACTIVITY_DOCS_PAGE_SIZE = 40;
@@ -77,6 +77,7 @@ export const navigationQueryKeys = {
 	allDocsCount: (folderPrefix?: string | null) =>
 		[...navigationQueryKeys.allDocs(), "count", normalizeAllDocsFolder(folderPrefix)] as const,
 	taskSummaries: () => [...navigationQueryKeys.all, "task-summaries"] as const,
+	noteScan: (path: string) => [...navigationQueryKeys.all, "note-scan", path.trim()] as const,
 };
 
 async function fetchNote(path: string): Promise<TextFileDoc> {

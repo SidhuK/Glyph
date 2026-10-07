@@ -28,6 +28,7 @@ import {
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
 import type { NoteTaskSummary } from "../../lib/tauri";
+import { NoteThumbnail } from "../NoteThumbnail";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import type { EditorTextColor } from "../editor/textColors";
 import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
@@ -450,6 +451,11 @@ export function DatabaseBoard({
 														});
 													}}
 												>
+													<NoteThumbnail
+														notePath={row.note_path}
+														preview={row.preview ?? ""}
+														className="databaseBoardCardThumbnail"
+													/>
 													<div className="databaseBoardCardMain">
 														<div className="databaseBoardCardHeaderRow">
 															<span className="databaseBoardCardTitle" style={noteAppearanceStyle}>

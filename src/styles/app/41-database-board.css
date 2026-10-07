@@ -396,6 +396,22 @@
 	vertical-align: -2px;
 }
 
+.databaseBoardCardThumbnail {
+	display: block;
+	height: 132px;
+	overflow: hidden;
+	border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+	border-bottom: 1px solid color-mix(in srgb, var(--border-default) 62%, transparent);
+	background: var(--bg-secondary);
+}
+
+.databaseBoardCardThumbnail img {
+	width: 100%;
+	height: 100%;
+	display: block;
+	object-fit: cover;
+}
+
 .databaseBoardCardMain {
 	display: flex;
 	flex-direction: column;

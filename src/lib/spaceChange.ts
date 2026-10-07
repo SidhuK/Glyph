@@ -6,6 +6,7 @@ import {
 	invalidateDatabasePrefetch,
 	invalidatePrefetchedNote,
 	invalidateTaskSummariesPrefetch,
+	navigationQueryKeys,
 } from "./navigationPrefetch";
 import { queryClient } from "./queryClient";
 import { updateRecentFilesForPathChange } from "./settings";
@@ -81,6 +82,7 @@ function invalidateDerived(path: string | null, removed: boolean): void {
 	void queryClient.invalidateQueries({ queryKey: ["navigation", "search"] });
 	if (path) {
 		invalidatePrefetchedNote(path);
+		void queryClient.invalidateQueries({ queryKey: navigationQueryKeys.noteScan(path) });
 		for (const fn of previewInvalidators) fn(path, removed);
 	}
 	invalidateTaskSummariesPrefetch();
@@ -88,9 +90,6 @@ function invalidateDerived(path: string | null, removed: boolean): void {
 	invalidateAllDocsPrefetch();
 	invalidateDatabasePrefetch();
 	void queryClient.invalidateQueries({ queryKey: ["unlinked-mentions"] });
-	void queryClient.invalidateQueries({
-		queryKey: ["navigation", "folio-files"],
-	});
 }
 
 async function syncRecentFilesForPathChange(
