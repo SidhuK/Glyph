@@ -16,7 +16,7 @@ pub fn handle<R: Runtime>(
     let app = ctx.app_handle().clone();
     let webview_label = ctx.webview_label().to_string();
     let uri = request.uri().clone();
-    std::thread::spawn(move || {
+    tauri::async_runtime::spawn_blocking(move || {
         responder.respond(response_for_request(&app, &webview_label, &uri));
     });
 }
@@ -59,20 +59,40 @@ fn load_image<R: Runtime>(
     }
 
     let rel = decode_rel_path(uri.path()).ok_or(StatusCode::NOT_FOUND)?;
+    let max_bytes = max_bytes_from_query(uri.query());
     let space_state = app.try_state::<SpaceState>().ok_or(StatusCode::NOT_FOUND)?;
     let root = space_state
         .root_for_webview_label(webview_label)
         .map_err(|_| StatusCode::NOT_FOUND)?;
-    read_space_image(&root, &rel).ok_or(StatusCode::NOT_FOUND)
+    read_space_image_limited(&root, &rel, max_bytes).ok_or(StatusCode::NOT_FOUND)
+}
+
+fn max_bytes_from_query(query: Option<&str>) -> Option<u64> {
+    query?
+        .split('&')
+        .find_map(|pair| pair.strip_prefix("max_bytes="))
+        .and_then(|value| value.parse().ok())
 }
 
 pub(crate) fn read_space_image(root: &Path, rel: &Path) -> Option<(&'static str, Vec<u8>)> {
+    read_space_image_limited(root, rel, None)
+}
+
+fn read_space_image_limited(
+    root: &Path,
+    rel: &Path,
+    max_bytes: Option<u64>,
+) -> Option<(&'static str, Vec<u8>)> {
     deny_hidden_rel_path(rel).ok()?;
     let ext = rel.extension()?.to_str()?.to_ascii_lowercase();
     let mime = mime_for_image_ext(&ext)?;
     let abs = paths::join_under(root, rel).ok()?;
     let canonical_path = abs.canonicalize().ok()?;
-    if !canonical_path.starts_with(root) || !canonical_path.is_file() {
+    if !canonical_path.starts_with(root) {
+        return None;
+    }
+    let metadata = std::fs::metadata(&canonical_path).ok()?;
+    if !metadata.is_file() || max_bytes.is_some_and(|max| metadata.len() > max) {
         return None;
     }
     Some((mime, std::fs::read(canonical_path).ok()?))

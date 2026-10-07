@@ -1,7 +1,7 @@
 import { queryOptions, skipToken } from "@tanstack/react-query";
 import { isImagePath } from "../utils/path";
 import { NAVIGATION_STALE_TIME_MS, navigationQueryKeys } from "./navigationPrefetch";
-import { invoke } from "./tauri";
+import { invoke, spaceAssetUrl } from "./tauri";
 
 type NoteImageRef =
 	| { kind: "markdown-link"; href: string }
@@ -16,8 +16,6 @@ interface NoteImageCandidate {
 const NOTE_THUMBNAIL_MAX_BYTES = 4 * 1024 * 1024;
 const NOTE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
 const NOTE_READ_CONCURRENCY = 4;
-// Data URLs are several MB each, so drop them soon after their card unmounts.
-const NOTE_IMAGE_GC_TIME_MS = 30 * 1000;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
 const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
 let activeNoteReads = 0;
@@ -149,11 +147,7 @@ async function loadLinkedImage(
 						sourcePath: notePath,
 					});
 		if (!relPath) return "";
-		const image = await invoke("space_read_binary_preview", {
-			path: relPath,
-			max_bytes: NOTE_THUMBNAIL_MAX_BYTES,
-		});
-		return image.truncated ? "" : image.data_url;
+		return `${spaceAssetUrl(relPath)}?max_bytes=${NOTE_THUMBNAIL_MAX_BYTES}`;
 	}, signal);
 }
 
@@ -165,7 +159,6 @@ export function noteLinkedImageQueryOptions(
 		queryKey: [...navigationQueryKeys.noteScan(notePath), "image", imageRef?.kind, imageRef?.href],
 		queryFn: imageRef ? ({ signal }) => loadLinkedImage(notePath, imageRef, signal) : skipToken,
 		staleTime: NAVIGATION_STALE_TIME_MS,
-		gcTime: NOTE_IMAGE_GC_TIME_MS,
 		retry: false,
 	});
 }

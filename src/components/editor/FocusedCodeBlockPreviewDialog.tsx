@@ -25,19 +25,25 @@ function FocusedMermaidPreview({ source }: { source: string }) {
 	useEffect(() => {
 		const mount = mountRef.current;
 		if (!mount) return;
-		const result = renderMermaidCanvasSvg(source);
-		const canvas = result.ok
-			? createMermaidCanvas({
-					svgHtml: result.svgHtml,
-					editMode: false,
-				})
-			: {
-					element: createMermaidErrorCanvas(result.message),
-					destroy: () => {},
-				};
-		mount.replaceChildren(canvas.element);
+		let cancelled = false;
+		let destroyCanvas: (() => void) | null = null;
+		void renderMermaidCanvasSvg(source).then((result) => {
+			if (cancelled) return;
+			const canvas = result.ok
+				? createMermaidCanvas({
+						svgHtml: result.svgHtml,
+						editMode: false,
+					})
+				: {
+						element: createMermaidErrorCanvas(result.message),
+						destroy: () => {},
+					};
+			destroyCanvas = canvas.destroy;
+			mount.replaceChildren(canvas.element);
+		});
 		return () => {
-			canvas.destroy();
+			cancelled = true;
+			destroyCanvas?.();
 			mount.replaceChildren();
 		};
 	}, [source]);

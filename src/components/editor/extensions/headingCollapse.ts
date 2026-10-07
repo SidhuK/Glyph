@@ -477,6 +477,9 @@ export const HeadingCollapse = Extension.create<{
 						) {
 							return previous;
 						}
+						// Positions and decorations only move with the document; selection-only
+						// transactions would otherwise re-walk the whole doc on every cursor move.
+						if (!transaction.docChanged && !meta) return previous;
 
 						const headings = extractHeadingRanges(nextState.doc);
 						const branches = extractListBranches(nextState.doc);

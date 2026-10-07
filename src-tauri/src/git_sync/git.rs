@@ -62,6 +62,8 @@ fn run_command(mut command: Command) -> Result<(bool, String, String), String> {
     });
 
     let deadline = Instant::now() + GIT_COMMAND_TIMEOUT;
+    // Most git calls exit in a few ms; back off from 1ms so each one doesn't pay a fixed 50ms poll.
+    let mut poll_interval = Duration::from_millis(1);
     let status = loop {
         match child.try_wait().map_err(|error| error.to_string())? {
             Some(status) => break status,
@@ -72,7 +74,10 @@ fn run_command(mut command: Command) -> Result<(bool, String, String), String> {
                 let _ = stderr_handle.join();
                 return Err("git command timed out".to_string());
             }
-            None => thread::sleep(Duration::from_millis(50)),
+            None => {
+                thread::sleep(poll_interval);
+                poll_interval = (poll_interval * 2).min(Duration::from_millis(50));
+            }
         }
     };
 

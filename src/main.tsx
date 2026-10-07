@@ -4,6 +4,7 @@ import "@fontsource/geist/600.css";
 import "@fontsource/geist/700.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
+import "./App.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ThemeProvider } from "next-themes";
@@ -12,10 +13,6 @@ import React from "react";
 import { flushSync } from "react-dom";
 import ReactDOM from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
-import App from "./App";
-import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
-import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
-import { QuickSearchWindow } from "./components/quick-search/QuickSearchWindow";
 import { Toaster } from "./components/ui/notifications";
 import { changeAppLanguage, i18n, initI18n } from "./i18n";
 import { isAppLanguage } from "./i18n/locales";
@@ -313,7 +310,34 @@ function showMainWindowWhenReady() {
 	void document.fonts.ready.then(() => invoke("show_main_window")).catch(() => {});
 }
 
-void initI18n().finally(() => {
+// Each window imports only its own root so floating windows skip the main app shell and editor.
+async function loadWindowRoot(): Promise<React.ReactNode> {
+	if (isQuickNoteWindow) {
+		const { QuickNoteWindow } = await import("./components/quick-note/QuickNoteWindow");
+		return (
+			<QueryClientProvider client={queryClient}>
+				<QuickNoteWindow />
+			</QueryClientProvider>
+		);
+	}
+	if (isQuickSearchWindow) {
+		const { QuickSearchWindow } = await import("./components/quick-search/QuickSearchWindow");
+		return (
+			<QueryClientProvider client={queryClient}>
+				<QuickSearchWindow />
+			</QueryClientProvider>
+		);
+	}
+	if (isExternalMarkdownWindow) {
+		const { ExternalMarkdownWindow } =
+			await import("./components/external-markdown/ExternalMarkdownWindow");
+		return <ExternalMarkdownWindow />;
+	}
+	const { default: App } = await import("./App");
+	return <App />;
+}
+
+void Promise.all([initI18n().catch(() => undefined), loadWindowRoot()]).then(([, windowRoot]) => {
 	void syncNativeMenuLabels().catch(() => {});
 	const root = ReactDOM.createRoot(rootEl);
 	flushSync(() =>
@@ -323,19 +347,7 @@ void initI18n().finally(() => {
 					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 						<LanguageBridge />
 						<ThemeAndTypographyBridge />
-						{isQuickNoteWindow ? (
-							<QueryClientProvider client={queryClient}>
-								<QuickNoteWindow />
-							</QueryClientProvider>
-						) : isQuickSearchWindow ? (
-							<QueryClientProvider client={queryClient}>
-								<QuickSearchWindow />
-							</QueryClientProvider>
-						) : isExternalMarkdownWindow ? (
-							<ExternalMarkdownWindow />
-						) : (
-							<App />
-						)}
+						{windowRoot}
 						<Toaster />
 					</ThemeProvider>
 				</I18nextProvider>

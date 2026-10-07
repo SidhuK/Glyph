@@ -77,7 +77,8 @@ export function useActivityVirtualization(
 		// Selecting a heatmap day swaps the rows, so key measurements by row rather than index.
 		getItemKey: (index) => virtualRows[index]?.id ?? index,
 		getScrollElement: () => paneElement,
-		overscan: 3,
+		// Card rows hold up to a page of cards (~1,500px), so one row of overscan already covers fast scrolls.
+		overscan: 1,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 

@@ -1,12 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useRef } from "react";
+import { Suspense, lazy, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { dispatchTagClick, dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
-import { type ConnectionsGraph, buildLocalConnectionsGraph } from "./connectionsGraph";
-import { useSigmaConnections } from "./useSigmaConnections";
+
+const LocalNoteConnectionsViewport = lazy(() =>
+	import("./LocalNoteConnectionsViewport").then((module) => ({
+		default: module.LocalNoteConnectionsViewport,
+	})),
+);
 
 interface LocalNoteConnectionsDialogProps {
 	open: boolean;
@@ -22,7 +26,6 @@ export function LocalNoteConnectionsDialog({
 	connectionsRefreshKey = 0,
 }: LocalNoteConnectionsDialogProps) {
 	const { t } = useTranslation("shell");
-	const containerRef = useRef<HTMLDivElement | null>(null);
 
 	const connectionsQuery = useQuery({
 		queryKey: ["note-local-connections", noteId, connectionsRefreshKey],
@@ -54,27 +57,6 @@ export function LocalNoteConnectionsDialog({
 		[onOpenChange],
 	);
 
-	const graph = useMemo<ConnectionsGraph | null>(() => {
-		if (!payload) return null;
-		return buildLocalConnectionsGraph(payload);
-	}, [payload]);
-
-	useSigmaConnections({
-		graph,
-		containerRef,
-		variant: "local",
-		enabled: Boolean(open && graph && !error),
-		display: {
-			nodeSizeScale: 1,
-			linkOpacity: 1,
-			linkThicknessScale: 1,
-			edgeBundling: 1,
-		},
-		labelZoomThreshold: 0,
-		onNoteOpen: openNode,
-		onTagActivate: openTagSearch,
-	});
-
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="localNoteConnectionsDialog" showCloseButton={false}>
@@ -93,11 +75,15 @@ export function LocalNoteConnectionsDialog({
 						</div>
 					) : (
 						<div className="localNoteConnectionsStage">
-							<div
-								ref={containerRef}
-								className="localNoteConnectionsViewport"
-								aria-label={t("connections.localGraphAria")}
-							/>
+							<Suspense fallback={<div className="localNoteConnectionsViewport" />}>
+								<LocalNoteConnectionsViewport
+									payload={payload}
+									enabled={open}
+									ariaLabel={t("connections.localGraphAria")}
+									onNoteOpen={openNode}
+									onTagActivate={openTagSearch}
+								/>
+							</Suspense>
 							<div className="localNoteConnectionsLegend" aria-label={t("connections.legendAria")}>
 								<span className="localNoteConnectionsLegendItem">
 									<span className="localNoteConnectionsLegendNode is-current" aria-hidden="true" />

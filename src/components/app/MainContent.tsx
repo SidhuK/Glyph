@@ -32,18 +32,6 @@ import { useAiPanelSession } from "../ai/aiPanelSession";
 import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
 import { NoteSidePeek } from "../preview/NoteSidePeek";
-import { AboutSettingsPane } from "../settings/AboutSettingsPane";
-import { AiSettingsPane } from "../settings/AiSettingsPane";
-import { AppearanceSettingsPane } from "../settings/AppearanceSettingsPane";
-import { DeveloperSettingsPane } from "../settings/DeveloperSettingsPane";
-import { EditorSettingsPane } from "../settings/EditorSettingsPane";
-import { ExperimentalSettingsPane } from "../settings/ExperimentalSettingsPane";
-import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
-import { GitSettingsPane } from "../settings/GitSettingsPane";
-import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
-import { SidebarSettingsPane } from "../settings/SidebarSettingsPane";
-import { TypographySettingsPane } from "../settings/TypographySettingsPane";
-import type { SettingsTab } from "../settings/settingsConfig";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { useActiveSettingsTab } from "../settings/useDeveloperMode";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
@@ -53,9 +41,9 @@ import type { SplitEditorDragSource, SplitEditorDropTarget } from "./splitEditor
 import type { WorkspaceEditorPane } from "./useTabManager";
 
 const DAILY_NOTES_SETUP_TOAST_ID = "daily-notes-setup";
-const ShortcutsSettingsPane = lazy(() =>
-	import("../settings/ShortcutsSettingsPane").then((module) => ({
-		default: module.ShortcutsSettingsPane,
+const SettingsTabContent = lazy(() =>
+	import("../settings/SettingsTabContent").then((module) => ({
+		default: module.SettingsTabContent,
 	})),
 );
 
@@ -111,43 +99,6 @@ function EmptyStateCommandPaletteHint({
 			<div className="mainEmptyTagline">{APP_TAGLINE}</div>
 		</div>
 	);
-}
-
-function SettingsTabContent({ tab }: { tab: SettingsTab }) {
-	switch (tab) {
-		case "general":
-			return <GeneralSettingsPane />;
-		case "appearance":
-			return <AppearanceSettingsPane />;
-		case "typography":
-			return <TypographySettingsPane />;
-		case "sidebar":
-			return <SidebarSettingsPane />;
-		case "editor":
-			return <EditorSettingsPane />;
-		case "shortcuts":
-			return (
-				<Suspense fallback={null}>
-					<ShortcutsSettingsPane />
-				</Suspense>
-			);
-		case "ai":
-			return <AiSettingsPane />;
-		case "space":
-			return <SpaceSettingsPane />;
-		case "git":
-			return <GitSettingsPane />;
-		case "about":
-			return <AboutSettingsPane />;
-		case "developer":
-			return <DeveloperSettingsPane />;
-		case "experimental":
-			return <ExperimentalSettingsPane />;
-		default: {
-			const _exhaustive: never = tab;
-			return _exhaustive;
-		}
-	}
 }
 
 interface MainContentProps {
@@ -445,7 +396,9 @@ export const MainContent = memo(function MainContent({
 								<h2 className="settingsPanelTitle">{settingsPanelTitle}</h2>
 							</div>
 						</header>
-						<SettingsTabContent key={spacePath ?? "no-space"} tab={settingsTab} />
+						<Suspense fallback={null}>
+							<SettingsTabContent key={spacePath ?? "no-space"} tab={settingsTab} />
+						</Suspense>
 					</div>
 				</main>
 				{aiPanelKeepMounted ? rightSidebarSurface : null}

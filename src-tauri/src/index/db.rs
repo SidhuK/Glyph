@@ -194,6 +194,9 @@ fn configure_wal(conn: &rusqlite::Connection) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     conn.pragma_update(None, "journal_size_limit", WAL_SIZE_LIMIT_BYTES)
         .map_err(|e| e.to_string())?;
+    // The index is derived and rebuildable; in WAL mode NORMAL stays consistent and skips an fsync per commit.
+    conn.pragma_update(None, "synchronous", "NORMAL")
+        .map_err(|e| e.to_string())?;
 
     let db_name = CString::new("main").map_err(|e| e.to_string())?;
     let mut persist_wal = 1i32;
