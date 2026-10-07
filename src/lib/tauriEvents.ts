@@ -7,6 +7,8 @@ type TauriEventMap = {
 	"menu:app_command": { command_id: string };
 	"menu:open_recent_space": { path: string };
 	"app:open_note": { path: string };
+	"app:open_collection": { id: string };
+	"quick-search:shown": undefined;
 	"deeplink:action": DeeplinkEvent;
 	"deeplink:error": DeeplinkErrorPayload;
 	"external-markdown:close_requested": undefined;

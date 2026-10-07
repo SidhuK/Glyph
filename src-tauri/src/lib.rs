@@ -14,6 +14,7 @@ mod daily_note_rollover;
 mod deeplink;
 mod external_markdown;
 mod file_tree_appearance;
+mod floating_window;
 mod git_sync;
 mod glyph_paths;
 mod index;
@@ -32,6 +33,7 @@ mod notes;
 mod paths;
 mod pinned_files;
 mod print;
+mod quick_search;
 mod release_channels;
 mod space;
 mod space_asset_protocol;
@@ -54,18 +56,19 @@ use tauri::menu::{
     WINDOW_SUBMENU_ID,
 };
 use tauri::{Emitter, Manager, RunEvent, State, Theme, WindowEvent};
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tracing::{error, warn};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
-use tauri::{TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
+use floating_window::{
+    apply_floating_window_vibrancy, is_floating_window_label, QUICK_NOTE_WINDOW_LABEL,
+    QUICK_SEARCH_WINDOW_LABEL,
+};
+use tauri::WebviewWindowBuilder;
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
-static QUICK_NOTE_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 static MAIN_WINDOW_LOCK: Mutex<()> = Mutex::new(());
-const QUICK_NOTE_WINDOW_LABEL: &str = "quick-note";
 const SPACE_MENU_ID: &str = "space.menu";
 const RECENT_SPACES_MENU_ID: &str = "space.recent.menu";
 
@@ -191,6 +194,8 @@ struct AppCommandPayload {
 #[derive(Default)]
 struct PendingMenuCommands {
     commands: Vec<AppCommandPayload>,
+    /// Collection ids from Quick Search, replayed as `app:open_collection`.
+    collections: Vec<String>,
     shell_ready: bool,
 }
 
@@ -207,11 +212,6 @@ struct MenuState {
     weekly_notes: Mutex<bool>,
     monthly_notes: Mutex<bool>,
     quarterly_notes: Mutex<bool>,
-}
-
-#[derive(Default)]
-struct QuickNoteShortcutState {
-    current_accelerator: Mutex<Option<String>>,
 }
 
 fn default_menu_label(id: &str) -> String {
@@ -960,66 +960,6 @@ fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
     system_fonts::list_monospace_font_families()
 }
 
-fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
-    let _guard = QUICK_NOTE_WINDOW_LOCK
-        .lock()
-        .map_err(|_| "failed to lock quick note window state".to_string())?;
-
-    if let Some(window) = app.get_webview_window(QUICK_NOTE_WINDOW_LABEL) {
-        return Ok(window);
-    }
-
-    let window = WebviewWindowBuilder::new(
-        app,
-        QUICK_NOTE_WINDOW_LABEL,
-        WebviewUrl::App(format!("index.html?window={QUICK_NOTE_WINDOW_LABEL}").into()),
-    )
-    .title("Quick Note")
-    // Starts compact; the webview grows the window to fit what is typed.
-    .inner_size(680.0, 240.0)
-    .min_inner_size(420.0, 180.0)
-    .resizable(true)
-    .decorations(true)
-    .title_bar_style(TitleBarStyle::Overlay)
-    .hidden_title(true)
-    .transparent(true)
-    .always_on_top(true)
-    .visible_on_all_workspaces(true)
-    .skip_taskbar(true)
-    .shadow(true)
-    .visible(false)
-    .center()
-    .build()
-    .map_err(|error| error.to_string())?;
-
-    // Match the floating card's CSS radius so vibrancy doesn't leave square
-    // frosted corners with desktop leaking through the rounded clip.
-    #[cfg(target_os = "macos")]
-    apply_quick_note_vibrancy(&window)?;
-
-    Ok(window)
-}
-
-/// Corner radius for the Quick Note floating card (CSS + macOS vibrancy).
-const QUICK_NOTE_CORNER_RADIUS: f64 = 20.0;
-
-#[cfg(target_os = "macos")]
-fn apply_quick_note_vibrancy(window: &tauri::WebviewWindow) -> Result<(), String> {
-    clear_main_window_vibrancy(window)?;
-    apply_vibrancy(
-        window,
-        NSVisualEffectMaterial::HudWindow,
-        None,
-        Some(QUICK_NOTE_CORNER_RADIUS),
-    )
-    .map_err(|error| error.to_string())
-}
-
-#[cfg(not(target_os = "macos"))]
-fn apply_quick_note_vibrancy(_window: &tauri::WebviewWindow) -> Result<(), String> {
-    Ok(())
-}
-
 fn is_main_window_label(label: &str) -> bool {
     label == window_geometry::MAIN_WINDOW_LABEL
 }
@@ -1031,14 +971,6 @@ fn focused_editor_window(app: &tauri::AppHandle) -> Option<(String, tauri::Webvi
             || external_markdown::is_external_markdown_window(label))
             && window.is_focused().unwrap_or(false)
     })
-}
-
-fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
-    // Deliberately not re-centered: the panel stays where the user parked it.
-    let window = quick_note_window(app)?;
-    window.show().map_err(|error| error.to_string())?;
-    window.unminimize().map_err(|error| error.to_string())?;
-    window.set_focus().map_err(|error| error.to_string())
 }
 
 /// Returns the main window and whether it was created by this call.
@@ -1109,19 +1041,6 @@ pub(crate) fn show_main_window_for_app(app: &tauri::AppHandle) -> Result<(), Str
     MAIN_WINDOW_REVEALED.store(true, Ordering::SeqCst);
     window.unminimize().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())
-}
-
-#[tauri::command]
-fn show_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
-    show_quick_note_window_for_app(&app)
-}
-
-#[tauri::command]
-fn hide_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window(QUICK_NOTE_WINDOW_LABEL) {
-        window.hide().map_err(|error| error.to_string())?;
-    }
-    Ok(())
 }
 
 #[tauri::command]
@@ -1218,53 +1137,6 @@ fn dispatch_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
     emit_menu_command_to_main(app, command_id);
 }
 
-#[tauri::command(rename_all = "snake_case")]
-fn set_quick_note_global_shortcut(
-    app: tauri::AppHandle,
-    state: State<'_, QuickNoteShortcutState>,
-    accelerator: Option<String>,
-) -> Result<(), String> {
-    let next = accelerator
-        .map(|value| value.trim().to_string())
-        .filter(|value| !value.is_empty());
-    let mut current = state
-        .current_accelerator
-        .lock()
-        .map_err(|_| "failed to lock quick note shortcut state".to_string())?;
-
-    if current.as_ref() == next.as_ref() {
-        return Ok(());
-    }
-
-    if let Some(next_accelerator) = next {
-        app.global_shortcut()
-            .on_shortcut(next_accelerator.as_str(), |app, _shortcut, event| {
-                if event.state == ShortcutState::Pressed {
-                    if let Err(error) = show_quick_note_window_for_app(app) {
-                        warn!("Failed to show quick note window: {error}");
-                    }
-                }
-            })
-            .map_err(|error| error.to_string())?;
-
-        if let Some(previous) = current.take() {
-            if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
-                warn!("Failed to unregister previous quick note shortcut: {error}");
-            }
-        }
-        *current = Some(next_accelerator);
-        return Ok(());
-    }
-
-    if let Some(previous) = current.take() {
-        if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
-            warn!("Failed to unregister previous quick note shortcut: {error}");
-        }
-    }
-
-    Ok(())
-}
-
 #[tauri::command]
 fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(), String> {
     let menu_state = app
@@ -1332,16 +1204,29 @@ fn set_period_note_menu_enabled(
 
 /// Drain menu commands queued before the main shell registered its listener,
 /// then allow future commands to be emitted directly.
+///
+/// Queued Quick Search collection opens are emitted here as well; the shell
+/// registers its `app:open_collection` listener before the menu listener.
 #[tauri::command]
-fn menu_take_pending_commands(state: State<'_, MenuState>) -> Vec<AppCommandPayload> {
-    state
+fn menu_take_pending_commands(
+    app: tauri::AppHandle,
+    state: State<'_, MenuState>,
+) -> Vec<AppCommandPayload> {
+    let (commands, collections) = state
         .pending_commands
         .lock()
         .map(|mut pending| {
             pending.shell_ready = true;
-            std::mem::take(&mut pending.commands)
+            (
+                std::mem::take(&mut pending.commands),
+                std::mem::take(&mut pending.collections),
+            )
         })
-        .unwrap_or_default()
+        .unwrap_or_default();
+    for id in collections {
+        quick_search::emit_open_collection(&app, id);
+    }
+    commands
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -1542,11 +1427,11 @@ fn clear_main_window_vibrancy(_window: &tauri::WebviewWindow) -> Result<(), Stri
 #[tauri::command(rename_all = "snake_case")]
 fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Result<(), String> {
     let normalized = theme.trim().to_ascii_lowercase();
-    let is_quick_note = window.label() == QUICK_NOTE_WINDOW_LABEL;
+    let is_floating = is_floating_window_label(window.label());
     let apply = |theme: Option<&str>| -> Result<(), String> {
-        if is_quick_note {
+        if is_floating {
             // Keep the floating card's larger corner radius when theme re-applies.
-            apply_quick_note_vibrancy(&window)
+            apply_floating_window_vibrancy(&window)
         } else {
             apply_main_window_vibrancy(&window, theme)
         }
@@ -1574,10 +1459,10 @@ fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Res
         }
         "none" | "" => {
             window.set_theme(None).map_err(|error| error.to_string())?;
-            if is_quick_note {
-                // Quick Note is always a frosted floating card, even when the
-                // main window turns vibrancy off.
-                apply_quick_note_vibrancy(&window)
+            if is_floating {
+                // Floating panels are always frosted cards, even when the main
+                // window turns vibrancy off.
+                apply_floating_window_vibrancy(&window)
             } else {
                 clear_main_window_vibrancy(&window)
             }
@@ -1727,10 +1612,19 @@ pub fn run() {
                 }
             }
 
-            if window.label() == QUICK_NOTE_WINDOW_LABEL {
-                if let WindowEvent::CloseRequested { api, .. } = event {
-                    api.prevent_close();
-                    let _ = window.hide();
+            if is_floating_window_label(window.label()) {
+                match event {
+                    WindowEvent::CloseRequested { api, .. } => {
+                        api.prevent_close();
+                        let _ = window.hide();
+                    }
+                    // Spotlight-style: Quick Search dismisses itself once focus leaves.
+                    WindowEvent::Focused(false) if window.label() == QUICK_SEARCH_WINDOW_LABEL => {
+                        if let Err(error) = window.hide() {
+                            warn!("Failed to hide quick search on blur: {error}");
+                        }
+                    }
+                    _ => {}
                 }
             }
 
@@ -1780,7 +1674,7 @@ pub fn run() {
         .manage(external_markdown::ExternalMarkdownState::default())
         .manage(deeplink::DeeplinkState::default())
         .manage(MenuState::default())
-        .manage(QuickNoteShortcutState::default())
+        .manage(floating_window::FloatingShortcutState::default())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
@@ -1795,11 +1689,15 @@ pub fn run() {
             release_channels::updater_check_release_channel,
             system_fonts_list,
             system_monospace_fonts_list,
-            show_quick_note_window,
-            hide_quick_note_window,
+            floating_window::show_quick_note_window,
+            floating_window::hide_quick_note_window,
+            floating_window::show_quick_search_window,
+            floating_window::hide_quick_search_window,
+            quick_search::quick_search_open_in_main,
             show_main_window,
             read_clipboard_plain_text,
-            set_quick_note_global_shortcut,
+            floating_window::set_quick_note_global_shortcut,
+            floating_window::set_quick_search_global_shortcut,
             set_markdown_menu_visible,
             set_period_note_menu_enabled,
             set_recent_spaces_menu,

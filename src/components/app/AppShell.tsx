@@ -91,6 +91,12 @@ const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
 const SIDEBAR_AUTO_COLLAPSE_WIDTH = 760;
 const GIT_SYNC_ERROR_TOAST_ID = "glyph-git-sync-error";
+// Registered with the OS so they fire while other apps are focused; handling them
+// locally too would trigger the action twice when Glyph is focused.
+const GLOBAL_SHORTCUT_COMMANDS = {
+	"open-quick-note": "set_quick_note_global_shortcut",
+	"open-quick-search": "set_quick_search_global_shortcut",
+} as const;
 
 function showGitSyncErrorToast(message: string) {
 	toast.error("Git Sync failed", {
@@ -579,12 +585,23 @@ export function AppShell() {
 		[openBlankTab, openFolioWorkspaceFile, tabs],
 	);
 
-	const openQuickNoteWindow = useCallback(() => {
-		void invoke("show_quick_note_window").catch((cause) => {
-			const message = cause instanceof Error ? cause.message : String(cause);
-			setError(message);
-		});
-	}, [setError]);
+	const showFloatingWindow = useCallback(
+		(command: "show_quick_note_window" | "show_quick_search_window") => {
+			void invoke(command).catch((cause) => {
+				const message = cause instanceof Error ? cause.message : String(cause);
+				setError(message);
+			});
+		},
+		[setError],
+	);
+	const openQuickNoteWindow = useCallback(
+		() => showFloatingWindow("show_quick_note_window"),
+		[showFloatingWindow],
+	);
+	const openQuickSearchWindow = useCallback(
+		() => showFloatingWindow("show_quick_search_window"),
+		[showFloatingWindow],
+	);
 
 	useTauriEvent("app:open_note", (payload) => {
 		void openWorkspaceFile(payload.path).catch((cause) => {
@@ -985,6 +1002,9 @@ export function AppShell() {
 		},
 		[focusedPaneId, openSpecialTab],
 	);
+	useTauriEvent("app:open_collection", (payload) => {
+		openDatabasesTab(payload.id);
+	});
 	const openConnectionsView = useCallback(() => {
 		openSpecialTab(SPACE_CONNECTIONS_TAB_ID);
 	}, [openSpecialTab]);
@@ -1206,6 +1226,7 @@ export function AppShell() {
 		openMarkdownTabsLength: openMarkdownTabs.length,
 		openPalette,
 		openQuickNoteWindow,
+		openQuickSearchWindow,
 		openSearchPalette,
 		openSettings,
 		openWorkspaceFile,
@@ -1274,7 +1295,7 @@ export function AppShell() {
 				},
 			})),
 			...commands
-				.filter((command) => command.id !== "open-quick-note")
+				.filter((command) => !(command.id in GLOBAL_SHORTCUT_COMMANDS))
 				.map((command) => ({
 					id: command.id,
 					shortcut: command.shortcut,
@@ -1311,11 +1332,13 @@ export function AppShell() {
 	}, [actionsWithBindings]);
 
 	useEffect(() => {
-		void invoke("set_quick_note_global_shortcut", {
-			accelerator: toTauriAccelerator(getBinding("open-quick-note")),
-		}).catch((cause) => {
-			console.warn("Failed to register quick note shortcut", cause);
-		});
+		for (const [commandId, registerCommand] of Object.entries(GLOBAL_SHORTCUT_COMMANDS)) {
+			void invoke(registerCommand, {
+				accelerator: toTauriAccelerator(getBinding(commandId)),
+			}).catch((cause) => {
+				console.warn(`Failed to register global shortcut for ${commandId}`, cause);
+			});
+		}
 	}, [getBinding]);
 
 	return (

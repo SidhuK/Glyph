@@ -16,6 +16,8 @@ export interface ReleaseChannelUpdate {
 	rawJson: Record<string, unknown>;
 }
 
+export type QuickSearchTarget = { kind: "note"; path: string } | { kind: "collection"; id: string };
+
 interface SpaceInfo {
 	root: string;
 	schema_version: number;
@@ -877,9 +879,13 @@ interface TauriCommands {
 	>;
 	show_quick_note_window: CommandDef<void, void>;
 	hide_quick_note_window: CommandDef<void, void>;
+	show_quick_search_window: CommandDef<void, void>;
+	hide_quick_search_window: CommandDef<void, void>;
+	quick_search_open_in_main: CommandDef<{ target: QuickSearchTarget }, void>;
 	show_main_window: CommandDef<void, void>;
 	read_clipboard_plain_text: CommandDef<void, string | null>;
 	set_quick_note_global_shortcut: CommandDef<{ accelerator?: string | null }, void>;
+	set_quick_search_global_shortcut: CommandDef<{ accelerator?: string | null }, void>;
 	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
 	set_menu_shortcuts: CommandDef<
 		{

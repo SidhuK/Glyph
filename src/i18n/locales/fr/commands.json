@@ -338,6 +338,10 @@
 			"label": "Ouvrir la note rapide",
 			"description": "Ouvrir le bloc-notes flottant de note rapide."
 		},
+		"open-quick-search": {
+			"label": "Ouvrir la recherche rapide",
+			"description": "Ouvrir la fenêtre flottante de recherche rapide pour trouver des notes, des tags et des collections."
+		},
 		"open-search-palette": {
 			"label": "Ouvrir la palette de recherche",
 			"description": "Ouvrir la recherche dans la palette de commandes."

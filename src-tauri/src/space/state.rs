@@ -197,6 +197,6 @@ pub(crate) fn is_no_space_session_error(error: &str) -> bool {
 
 /// Windows that edit notes against the main space without a private session.
 fn shares_main_space_session(window_label: &str) -> bool {
-    matches!(window_label, "quick-note" | "quick-task")
+    matches!(window_label, "quick-note" | "quick-search" | "quick-task")
         || window_label.starts_with("external-markdown-")
 }

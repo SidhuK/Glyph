@@ -346,6 +346,10 @@
 			"label": "Otwórz szybką notatkę",
 			"description": "Otwórz pływający notes na szybkie notatki."
 		},
+		"open-quick-search": {
+			"label": "Otwórz szybkie wyszukiwanie",
+			"description": "Otwórz pływające okno szybkiego wyszukiwania, aby znaleźć notatki, tagi i kolekcje."
+		},
 		"open-search-palette": {
 			"label": "Otwórz paletę wyszukiwania",
 			"description": "Otwórz wyszukiwanie w palecie poleceń."

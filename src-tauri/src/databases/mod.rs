@@ -5,3 +5,5 @@ mod query;
 mod source;
 mod store;
 mod types;
+
+pub(crate) use store::load_store;

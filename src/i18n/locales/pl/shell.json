@@ -379,5 +379,12 @@
 			"symbols": "Symbole",
 			"flags": "Flagi"
 		}
+	},
+	"quickSearch": {
+		"title": "Szybkie wyszukiwanie",
+		"placeholder": "Szukaj notatek, tagów i kolekcji…",
+		"noSpace": "Otwórz przestrzeń w Glyph, aby ją przeszukać.",
+		"openFailed": "Nie udało się otworzyć w Glyph: {{message}}",
+		"hideFailed": "Nie udało się zamknąć szybkiego wyszukiwania: {{message}}"
 	}
 }

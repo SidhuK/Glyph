@@ -1,4 +1,4 @@
-import { useArchivedPaths } from "./useNoteArchive";
+import { useArchivedPathsForSpace } from "./useNoteArchive";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import {
@@ -15,7 +15,7 @@ interface UseRecentFilesReturn {
 
 export function useRecentFiles(currentSpacePath: string | null, limit = 7): UseRecentFilesReturn {
 	const queryClient = useQueryClient();
-	const archivedPaths = useArchivedPaths();
+	const archivedPaths = useArchivedPathsForSpace(currentSpacePath);
 	const queryKey = ["settings", "recent-files", currentSpacePath ?? "__all__", limit] as const;
 	const recentFilesQuery = useQuery({
 		queryKey,

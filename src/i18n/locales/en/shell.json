@@ -461,5 +461,12 @@
 			"symbols": "Symbols",
 			"flags": "Flags"
 		}
+	},
+	"quickSearch": {
+		"title": "Quick Search",
+		"placeholder": "Search notes, tags, and collections…",
+		"noSpace": "Open a space in Glyph to search it.",
+		"openFailed": "Could not open in Glyph: {{message}}",
+		"hideFailed": "Could not close Quick Search: {{message}}"
 	}
 }

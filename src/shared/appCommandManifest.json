@@ -1018,6 +1018,22 @@
 			"allowInEditable": true,
 			"commandPalette": true
 		},
+		"open-quick-search": {
+			"id": "open-quick-search",
+			"label": "Open Quick Search",
+			"description": "Open the floating quick search window to find notes, tags, and collections.",
+			"category": "search",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"ctrl": true,
+				"alt": true,
+				"shift": true,
+				"key": "g"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
 		"open-search-palette": {
 			"id": "open-search-palette",
 			"label": "Open Search Palette",
