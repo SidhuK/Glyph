@@ -134,22 +134,23 @@ export function AiConnectionPicker({ provider, onProviderChange }: AiConnectionP
 				interactive={false}
 			>
 				<Popover open={providerMenuOpen} onOpenChange={setProviderMenuOpen}>
-					<PopoverTrigger asChild>
-						<button
-							type="button"
-							className={cn("appearanceThemeDropdownTrigger", providerMenuOpen && "is-open")}
-							aria-expanded={providerMenuOpen}
+					<PopoverTrigger
+						render={
+							<button
+								type="button"
+								className={cn("appearanceThemeDropdownTrigger", providerMenuOpen && "is-open")}
+							/>
+						}
+					>
+						<span className="appearanceThemeDropdownLeading">
+							<ProviderIdentity option={selectedProvider} />
+						</span>
+						<span
+							className={cn("appearanceThemeDropdownChevron", providerMenuOpen && "is-open")}
+							aria-hidden="true"
 						>
-							<span className="appearanceThemeDropdownLeading">
-								<ProviderIdentity option={selectedProvider} />
-							</span>
-							<span
-								className={cn("appearanceThemeDropdownChevron", providerMenuOpen && "is-open")}
-								aria-hidden="true"
-							>
-								<ChevronDown size="var(--icon-md)" />
-							</span>
-						</button>
+							<ChevronDown size="var(--icon-md)" />
+						</span>
 					</PopoverTrigger>
 					<PopoverContent
 						align="center"

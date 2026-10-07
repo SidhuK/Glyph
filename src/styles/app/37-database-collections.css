@@ -193,14 +193,14 @@ button.databasesCollectionSwitcher:hover {
 	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-hover));
 }
 
-.databasesDropdownItemDanger:not([disabled]):hover,
-.databasesDropdownItemDanger:not([disabled]):focus {
+.databasesDropdownItemDanger:not([data-disabled]):hover,
+.databasesDropdownItemDanger:not([data-disabled]):focus {
 	color: var(--text-error);
 }
 
-.databasesDropdownItemDanger:not([disabled]):hover svg,
-.databasesDropdownItemDanger:not([disabled]):focus svg,
-.databasesDropdownItemDanger:not([disabled])[data-highlighted] svg {
+.databasesDropdownItemDanger:not([data-disabled]):hover svg,
+.databasesDropdownItemDanger:not([data-disabled]):focus svg,
+.databasesDropdownItemDanger:not([data-disabled])[data-highlighted] svg {
 	color: var(--text-error);
 	opacity: 1;
 }

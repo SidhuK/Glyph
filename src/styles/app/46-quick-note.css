@@ -161,14 +161,14 @@
 
 .quickNoteTargetButton:hover,
 .quickNoteTargetButton:focus-visible,
-.quickNoteTargetButton[data-state="open"] {
+.quickNoteTargetButton[data-popup-open] {
 	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
 	color: var(--text-primary);
 	outline: none;
 }
 
 .quickNoteTargetButton:hover .quickNoteTargetCaret,
-.quickNoteTargetButton[data-state="open"] .quickNoteTargetCaret {
+.quickNoteTargetButton[data-popup-open] .quickNoteTargetCaret {
 	color: currentcolor;
 	opacity: 1;
 }
@@ -183,7 +183,7 @@
 
 .quickNoteTargetMenu {
 	width: min(280px, calc(100vw - 28px));
-	max-height: min(340px, var(--radix-dropdown-menu-content-available-height));
+	max-height: min(340px, var(--available-height));
 	padding: 6px;
 	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
 	border-radius: var(--radius-lg);

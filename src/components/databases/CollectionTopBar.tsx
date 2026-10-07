@@ -59,7 +59,7 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 				label: t("collections.delete"),
 				destructive: true,
 				iconKey: "trash",
-				onSelect: () => void doc.handleDeleteDatabase(),
+				onClick: () => void doc.handleDeleteDatabase(),
 			},
 		],
 		[doc.handleDeleteDatabase, t],

@@ -81,14 +81,11 @@ export function LocalNoteConnectionsDialog({
 				<DialogTitle className="sr-only">{t("connections.localTitle")}</DialogTitle>
 
 				<div className="localNoteConnectionsBody">
-					<DialogClose asChild>
-						<button
-							type="button"
-							className="localNoteConnectionsClose"
-							aria-label={t("connections.closeAria")}
-						>
-							×
-						</button>
+					<DialogClose
+						className="localNoteConnectionsClose"
+						aria-label={t("connections.closeAria")}
+					>
+						×
 					</DialogClose>
 					{error ? (
 						<div className="localNoteConnectionsState">

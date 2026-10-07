@@ -185,7 +185,7 @@ const TableAxisControl = memo(function TableAxisControl({
 
 	return (
 		<DropdownMenu onOpenChange={handleOpenChange}>
-			<DropdownMenuTrigger asChild>{triggerButton}</DropdownMenuTrigger>
+			<DropdownMenuTrigger render={triggerButton} />
 			<DropdownMenuContent className="tableInlineControlsMenu" align="start">
 				{menuItems.map((item) => {
 					if (item.type === "separator") {
@@ -196,7 +196,7 @@ const TableAxisControl = memo(function TableAxisControl({
 							key={item.command}
 							disabled={!item.enabled}
 							variant={item.destructive ? "destructive" : "default"}
-							onSelect={() => runCapturedCommand(item.command)}
+							onClick={() => runCapturedCommand(item.command)}
 						>
 							{item.label}
 						</DropdownMenuItem>

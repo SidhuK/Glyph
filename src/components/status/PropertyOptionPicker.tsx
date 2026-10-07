@@ -64,23 +64,25 @@ export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<button
-					type="button"
-					className={props.triggerClassName}
-					title={props.triggerTitle}
-					aria-label={props.triggerAriaLabel}
-					onFocus={props.onTriggerFocus}
-					onClick={(event) =>
-						handleTriggerClick(event, props.onTriggerClick, props.stopTriggerClickPropagation)
-					}
-				>
-					{isStatus ? (
-						<StatusPropertyPill value={props.value || "not_started"} colors={props.colors} />
-					) : (
-						<PriorityPropertyPill value={props.value || "no"} />
-					)}
-				</button>
+			<DropdownMenuTrigger
+				render={
+					<button
+						type="button"
+						className={props.triggerClassName}
+						title={props.triggerTitle}
+						aria-label={props.triggerAriaLabel}
+						onFocus={props.onTriggerFocus}
+						onClick={(event) =>
+							handleTriggerClick(event, props.onTriggerClick, props.stopTriggerClickPropagation)
+						}
+					/>
+				}
+			>
+				{isStatus ? (
+					<StatusPropertyPill value={props.value || "not_started"} colors={props.colors} />
+				) : (
+					<PriorityPropertyPill value={props.value || "no"} />
+				)}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="start"

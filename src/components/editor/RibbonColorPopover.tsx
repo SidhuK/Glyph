@@ -5,7 +5,7 @@ import { m } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { X } from "../Icons";
 import { springPresets } from "../ui/animations";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { getTextColorButton, getTextHighlightButton } from "./ribbonButtonConfigs";
 
 interface RibbonSwatchPopoverProps {
@@ -32,27 +32,29 @@ function RibbonSwatchPopover({
 	preventMouseDown: (e: React.MouseEvent) => void;
 }) {
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<m.button
-					type="button"
-					className={`ribbonBtn ${button.isActive?.() ? "active" : ""}`}
-					title={button.title}
-					aria-label={button.title}
-					disabled={!canEdit}
-					onMouseDown={preventMouseDown}
-					whileTap={canEdit ? { scale: 0.97 } : undefined}
-					transition={springPresets.snappy}
-				>
-					<HugeiconsIcon icon={icon} size="var(--icon-md)" />
-				</m.button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent
+		<Popover>
+			<PopoverTrigger
+				disabled={!canEdit}
+				render={
+					<m.button
+						type="button"
+						className={`ribbonBtn ${button.isActive?.() ? "active" : ""}`}
+						title={button.title}
+						aria-label={button.title}
+						onMouseDown={preventMouseDown}
+						whileTap={canEdit ? { scale: 0.97 } : undefined}
+						transition={springPresets.snappy}
+					/>
+				}
+			>
+				<HugeiconsIcon icon={icon} size="var(--icon-md)" />
+			</PopoverTrigger>
+			<PopoverContent
 				align="start"
 				side="top"
 				sideOffset={6}
-				className="editorColorDropdown"
-				onCloseAutoFocus={(event) => event.preventDefault()}
+				className="editorColorDropdown w-auto"
+				finalFocus={false}
 			>
 				<div className="editorColorGrid" role="menu" aria-label={menuLabel}>
 					{button.options.map((option) => (
@@ -85,8 +87,8 @@ function RibbonSwatchPopover({
 						<X size="var(--icon-sm)" />
 					</button>
 				</div>
-			</DropdownMenuContent>
-		</DropdownMenu>
+			</PopoverContent>
+		</Popover>
 	);
 }
 

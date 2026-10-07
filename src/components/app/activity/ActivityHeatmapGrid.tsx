@@ -1,7 +1,7 @@
 import type { Day } from "date-fns";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Popover, PopoverAnchor, PopoverContent } from "../../ui/shadcn/popover";
+import { Popover, PopoverContent } from "../../ui/shadcn/popover";
 import { dateForNavigationKey, weekdayLabels } from "../calendar/monthGrid";
 import { ActivityHeatmapDayPreview } from "./ActivityHeatmapDayPreview";
 import { type ActivityDay, activityDateKey } from "./activityDays";
@@ -19,7 +19,6 @@ const HEATMAP_TO_CALENDAR_KEY: Record<string, string> = {
 const LABELED_WEEKDAYS = new Set([1, 3, 5]);
 
 const focusElement = (node: HTMLElement | null) => node?.focus();
-const preventDefault = (event: Event) => event.preventDefault();
 
 interface ActivityHeatmapGridProps {
 	weeks: HeatmapWeek[];
@@ -106,11 +105,15 @@ export function ActivityHeatmapGrid({
 	return (
 		<Popover
 			open={preview !== null}
-			onOpenChange={(open) => {
-				if (!open) setPreview(null);
+			// The grid owns open state; outside-press and focus-out dismissal would race arrow-key moves.
+			onOpenChange={(open, details) => {
+				if (open || details.reason !== "escape-key") {
+					details.cancel();
+					return;
+				}
+				setPreview(null);
 			}}
 		>
-			{preview ? <PopoverAnchor virtualRef={{ current: preview.anchor }} /> : null}
 			<div
 				role="grid"
 				aria-label={t("activity.recentActivity")}
@@ -170,14 +173,13 @@ export function ActivityHeatmapGrid({
 			</div>
 			{preview ? (
 				<PopoverContent
+					anchor={preview.anchor}
 					side="top"
 					sideOffset={6}
 					collisionPadding={12}
 					className="activityHeatmapPreview"
-					onOpenAutoFocus={preventDefault}
-					onCloseAutoFocus={preventDefault}
-					// The grid owns open state; Radix's outside-focus dismissal would race arrow-key moves.
-					onInteractOutside={preventDefault}
+					initialFocus={false}
+					finalFocus={false}
 				>
 					<ActivityHeatmapDayPreview
 						day={days.get(preview.cell.dateKey)}

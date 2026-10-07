@@ -404,7 +404,7 @@
 }
 
 .attachmentUsedTrigger:hover,
-.attachmentUsedTrigger[data-state="open"] {
+.attachmentUsedTrigger[data-popup-open] {
 	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 	color: var(--text-primary);
 }

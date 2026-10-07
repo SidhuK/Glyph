@@ -41,5 +41,5 @@
 }
 
 .aiProviderDropdownContent {
-	width: min(320px, calc(100vw - 24px), var(--radix-popover-trigger-width));
+	width: min(320px, calc(100vw - 24px), var(--anchor-width));
 }

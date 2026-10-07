@@ -23,27 +23,27 @@ export function buildViewMenuItems(
 			label: "Table",
 			checked: activeLayout === "table",
 			iconKey: "table",
-			onSelect: () => actions.onSelectLayout("table"),
+			onClick: () => actions.onSelectLayout("table"),
 		},
 		{
 			type: "item",
 			label: "Board",
 			checked: activeLayout === "board",
 			iconKey: "board",
-			onSelect: () => actions.onSelectLayout("board"),
+			onClick: () => actions.onSelectLayout("board"),
 		},
 		{ type: "separator" },
 		{
 			type: "item",
 			label: "Rename",
 			iconKey: "edit",
-			onSelect: actions.onRename,
+			onClick: actions.onRename,
 		},
 		{
 			type: "item",
 			label: actions.createLabel,
 			iconKey: "plus",
-			onSelect: actions.onCreate,
+			onClick: actions.onCreate,
 		},
 		{ type: "separator" },
 		{
@@ -52,7 +52,7 @@ export function buildViewMenuItems(
 			enabled: viewCount > 1,
 			destructive: true,
 			iconKey: "trash",
-			onSelect: actions.onDelete,
+			onClick: actions.onDelete,
 		},
 	];
 }
@@ -69,7 +69,7 @@ export function buildCollectionMenuItems(
 		key: `collection-${summary.id}`,
 		checked: summary.id === selectedDatabaseId,
 		iconKey: "library",
-		onSelect: () => setSelectedDatabaseId(summary.id),
+		onClick: () => setSelectedDatabaseId(summary.id),
 	}));
 
 	if (summaries.length > 0) {
@@ -81,7 +81,7 @@ export function buildCollectionMenuItems(
 		label: "New collection",
 		key: "new-collection",
 		iconKey: "plus",
-		onSelect: openCreateCollectionDialog,
+		onClick: openCreateCollectionDialog,
 	});
 
 	return items;

@@ -437,23 +437,25 @@ export function DatabaseViewOptionsPopover({
 				onOpenChange?.(nextOpen);
 			}}
 		>
-			<PopoverTrigger asChild>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					className="databaseToolbarChip databaseViewOptionsTrigger"
-					title="View settings"
-					aria-label="View settings"
-				>
-					<HugeiconsIcon icon={SlidersVerticalIcon} size="var(--icon-md)" />
-				</Button>
+			<PopoverTrigger
+				render={
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="databaseToolbarChip databaseViewOptionsTrigger"
+						title="View settings"
+						aria-label="View settings"
+					/>
+				}
+			>
+				<HugeiconsIcon icon={SlidersVerticalIcon} size="var(--icon-md)" />
 			</PopoverTrigger>
 			<PopoverContent
 				align="end"
 				sideOffset={8}
 				className="databaseViewOptionsPopover"
-				onOpenAutoFocus={(event) => event.preventDefault()}
+				initialFocus={false}
 				onKeyDown={(event) => event.stopPropagation()}
 			>
 				{activePanel === "source" ? (

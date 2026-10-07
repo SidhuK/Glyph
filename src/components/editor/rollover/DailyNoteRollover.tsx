@@ -258,10 +258,12 @@ export function DailyNoteRollover({
 			{noteDate === today && overdue.length > 0 ? (
 				<Popover open={summaryOpen} onOpenChange={setSummaryOpen}>
 					<div className="rolloverReviewTrigger">
-						<PopoverTrigger asChild>
-							<Button variant="outline" size="icon-sm" aria-label={t("rollover.bannerLabel")}>
-								<HugeiconsIcon icon={Audit02Icon} />
-							</Button>
+						<PopoverTrigger
+							render={
+								<Button variant="outline" size="icon-sm" aria-label={t("rollover.bannerLabel")} />
+							}
+						>
+							<HugeiconsIcon icon={Audit02Icon} />
 						</PopoverTrigger>
 					</div>
 					<PopoverContent

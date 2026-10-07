@@ -244,15 +244,17 @@ function BreadcrumbOverflowMenu({
 	const { t } = useTranslation("shell");
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<button
-					type="button"
-					className="mainTabsBreadcrumbOverflowButton"
-					title={t("breadcrumbs.hiddenItems", { count: hiddenParts.length })}
-					aria-label={t("breadcrumbs.showHidden")}
-				>
-					…
-				</button>
+			<DropdownMenuTrigger
+				render={
+					<button
+						type="button"
+						className="mainTabsBreadcrumbOverflowButton"
+						title={t("breadcrumbs.hiddenItems", { count: hiddenParts.length })}
+						aria-label={t("breadcrumbs.showHidden")}
+					/>
+				}
+			>
+				…
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start" side="bottom" className="mainTabsBreadcrumbMenu">
 				{hiddenParts.map((part) => (
@@ -260,7 +262,7 @@ function BreadcrumbOverflowMenu({
 						key={part.path || ROOT_PATH_KEY}
 						className="mainTabsBreadcrumbMenuItem"
 						title={part.path}
-						onSelect={() => {
+						onClick={() => {
 							if (part.kind === "folder") {
 								onNavigateDir(part.path);
 								return;
@@ -306,18 +308,16 @@ function BreadcrumbEntryMenu({
 				onOpenChange(nextOpen);
 			}}
 		>
-			<DropdownMenuTrigger asChild>
-				<button
-					type="button"
-					className="mainTabsBreadcrumbSepButton"
-					aria-label={t("breadcrumbs.browse", { name: dirLabel })}
-				>
-					<ChevronRight
-						size="var(--icon-xs)"
-						className="mainTabsBreadcrumbSep"
-						aria-hidden="true"
+			<DropdownMenuTrigger
+				render={
+					<button
+						type="button"
+						className="mainTabsBreadcrumbSepButton"
+						aria-label={t("breadcrumbs.browse", { name: dirLabel })}
 					/>
-				</button>
+				}
+			>
+				<ChevronRight size="var(--icon-xs)" className="mainTabsBreadcrumbSep" aria-hidden="true" />
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start" side="bottom" className="mainTabsBreadcrumbMenu">
 				<DropdownMenuLabel className="mainTabsBreadcrumbMenuLabel">{dirLabel}</DropdownMenuLabel>

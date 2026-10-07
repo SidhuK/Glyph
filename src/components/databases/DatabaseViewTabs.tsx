@@ -151,11 +151,10 @@ export function DatabaseViewTabs({
 					itemClassName="databasesDropdownItem databasesViewTabMenuItem"
 					separatorClassName="databasesViewTabMenuSeparator"
 					labelClassName="databasesViewTabMenuLabel"
-					onCloseAutoFocus={(event) => {
-						if (skipNextViewMenuAutoFocusRef.current) {
-							event.preventDefault();
-							skipNextViewMenuAutoFocusRef.current = false;
-						}
+					finalFocus={() => {
+						if (!skipNextViewMenuAutoFocusRef.current) return true;
+						skipNextViewMenuAutoFocusRef.current = false;
+						return false;
 					}}
 				>
 					<HugeiconsIcon

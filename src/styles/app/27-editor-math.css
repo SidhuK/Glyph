@@ -58,11 +58,6 @@
 	color: var(--status-danger-fg) !important;
 }
 
-.mathNodeEditorAnchor {
-	position: fixed;
-	pointer-events: none;
-}
-
 .mathNodeEditorPopover {
 	width: min(520px, calc(100vw - 24px));
 	padding: var(--space-4);

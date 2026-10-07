@@ -54,26 +54,27 @@ function ThemeSelector<T extends string>({
 	return (
 		<SettingsRow label={label} interactive={false}>
 			<Popover open={open} onOpenChange={setOpen}>
-				<PopoverTrigger asChild>
-					<button
-						type="button"
-						className={cn("appearanceThemeDropdownTrigger", open && "is-open")}
-						aria-expanded={open}
-					>
-						<span className="appearanceThemeDropdownLeading">
-							<ThemeBadge mode={mode} themeId={selected.id} />
-							<span className="appearanceThemeDropdownTitle">{selected.label}</span>
-						</span>
-						<span className={cn("appearanceThemeDropdownChevron", open && "is-open")}>
-							<ChevronDown size="var(--icon-md)" />
-						</span>
-					</button>
+				<PopoverTrigger
+					render={
+						<button
+							type="button"
+							className={cn("appearanceThemeDropdownTrigger", open && "is-open")}
+						/>
+					}
+				>
+					<span className="appearanceThemeDropdownLeading">
+						<ThemeBadge mode={mode} themeId={selected.id} />
+						<span className="appearanceThemeDropdownTitle">{selected.label}</span>
+					</span>
+					<span className={cn("appearanceThemeDropdownChevron", open && "is-open")}>
+						<ChevronDown size="var(--icon-md)" />
+					</span>
 				</PopoverTrigger>
 				<PopoverContent
 					align="end"
 					side="bottom"
 					sideOffset={8}
-					avoidCollisions={false}
+					collisionAvoidance={{ side: "none", align: "none", fallbackAxisSide: "none" }}
 					collisionPadding={16}
 					className="appearanceThemeDropdownContent"
 				>
