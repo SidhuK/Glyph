@@ -175,6 +175,23 @@ fn validate_action(action: DeeplinkAction) -> Result<DeeplinkAction, DeeplinkErr
     Ok(action)
 }
 
+/// Builds an `OpenNote` action for an in-app request, applying the same path
+/// normalization and filesystem checks as a `glyph://open/note` link.
+pub(crate) fn validated_open_note(space: &Path, path: &str) -> Result<DeeplinkAction, String> {
+    let path = parse::normalize_note_rel_path(path).map_err(|error| error.to_string())?;
+    validate_action(DeeplinkAction::OpenNote {
+        space: space.to_string_lossy().into_owned(),
+        path,
+    })
+    .map_err(|error| error.to_string())
+}
+
+/// Queues and emits an already validated action so it reaches the shell even
+/// while the main window is being created or reloaded.
+pub(crate) fn dispatch_in_app(app: &AppHandle, action: DeeplinkAction) {
+    dispatch_action(app, &app.state::<DeeplinkState>(), action);
+}
+
 fn dispatch_action(app: &AppHandle, state: &DeeplinkState, action: DeeplinkAction) {
     let event = DeeplinkEvent {
         id: state.next_id(),

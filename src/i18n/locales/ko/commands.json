@@ -338,6 +338,10 @@
 			"label": "빠른 노트 열기",
 			"description": "떠 있는 빠른 노트 스크래치패드를 엽니다."
 		},
+		"open-quick-search": {
+			"label": "빠른 검색 열기",
+			"description": "노트, 태그, 컬렉션을 찾을 수 있는 떠 있는 빠른 검색 창을 엽니다."
+		},
 		"open-search-palette": {
 			"label": "검색 팔레트 열기",
 			"description": "명령 팔레트에서 검색을 엽니다."

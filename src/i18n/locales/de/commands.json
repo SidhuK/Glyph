@@ -338,6 +338,10 @@
 			"label": "Schnellnotiz öffnen",
 			"description": "Den schwebenden Schnellnotiz-Scratchpad öffnen."
 		},
+		"open-quick-search": {
+			"label": "Schnellsuche öffnen",
+			"description": "Das schwebende Schnellsuchfenster öffnen, um Notizen, Tags und Sammlungen zu finden."
+		},
 		"open-search-palette": {
 			"label": "Suchpalette öffnen",
 			"description": "Die Suche in der Befehlspalette öffnen."

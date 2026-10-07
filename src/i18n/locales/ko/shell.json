@@ -332,5 +332,12 @@
 			"symbols": "기호",
 			"flags": "깃발"
 		}
+	},
+	"quickSearch": {
+		"title": "빠른 검색",
+		"placeholder": "노트, 태그, 컬렉션 검색…",
+		"noSpace": "검색하려면 Glyph에서 스페이스를 여세요.",
+		"openFailed": "Glyph에서 열 수 없습니다: {{message}}",
+		"hideFailed": "빠른 검색을 닫을 수 없습니다: {{message}}"
 	}
 }

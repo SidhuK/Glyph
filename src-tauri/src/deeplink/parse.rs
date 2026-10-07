@@ -240,7 +240,7 @@ pub fn normalize_space_path(raw: &str) -> Result<PathBuf, String> {
     Ok(path)
 }
 
-fn normalize_note_rel_path(raw: &str) -> Result<String, DeeplinkError> {
+pub(super) fn normalize_note_rel_path(raw: &str) -> Result<String, DeeplinkError> {
     let trimmed = raw.trim();
     if trimmed.is_empty() {
         return Err(DeeplinkError::EmptyParam("path"));

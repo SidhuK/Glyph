@@ -15,6 +15,7 @@ import { I18nextProvider } from "react-i18next";
 import App from "./App";
 import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
 import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
+import { QuickSearchWindow } from "./components/quick-search/QuickSearchWindow";
 import { Toaster } from "./components/ui/notifications";
 import { changeAppLanguage, i18n, initI18n } from "./i18n";
 import { isAppLanguage } from "./i18n/locales";
@@ -39,6 +40,7 @@ import {
 	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
 	MAIN_WINDOW_LABEL,
 	QUICK_NOTE_WINDOW_LABEL,
+	QUICK_SEARCH_WINDOW_LABEL,
 } from "./lib/windowLabels";
 
 function LanguageBridge() {
@@ -300,6 +302,7 @@ function currentWindowLabel(): string {
 
 const windowLabel = currentWindowLabel();
 const isQuickNoteWindow = windowLabel === QUICK_NOTE_WINDOW_LABEL;
+const isQuickSearchWindow = windowLabel === QUICK_SEARCH_WINDOW_LABEL;
 const isExternalMarkdownWindow = windowLabel.startsWith(EXTERNAL_MARKDOWN_WINDOW_PREFIX);
 
 // The main window starts hidden; reveal it once the first commit and its fonts
@@ -323,6 +326,10 @@ void initI18n().finally(() => {
 						{isQuickNoteWindow ? (
 							<QueryClientProvider client={queryClient}>
 								<QuickNoteWindow />
+							</QueryClientProvider>
+						) : isQuickSearchWindow ? (
+							<QueryClientProvider client={queryClient}>
+								<QuickSearchWindow />
 							</QueryClientProvider>
 						) : isExternalMarkdownWindow ? (
 							<ExternalMarkdownWindow />

@@ -332,5 +332,12 @@
 			"symbols": "記号",
 			"flags": "旗"
 		}
+	},
+	"quickSearch": {
+		"title": "クイック検索",
+		"placeholder": "ノート、タグ、コレクションを検索…",
+		"noSpace": "検索するには Glyph でスペースを開いてください。",
+		"openFailed": "Glyph で開けませんでした: {{message}}",
+		"hideFailed": "クイック検索を閉じられませんでした: {{message}}"
 	}
 }

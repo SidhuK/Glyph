@@ -55,6 +55,7 @@
 @import "./styles/app/39-floating-toc.css";
 @import "./styles/app/45-local-connections.css";
 @import "./styles/app/46-quick-note.css";
+@import "./styles/app/47-quick-search.css";
 @import "./styles/app/47-external-markdown.css";
 
 /* Shadow reset: Intentionally disables Tailwind's default shadows.

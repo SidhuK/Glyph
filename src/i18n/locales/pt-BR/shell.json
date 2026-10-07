@@ -333,5 +333,12 @@
 			"symbols": "Símbolos",
 			"flags": "Bandeiras"
 		}
+	},
+	"quickSearch": {
+		"title": "Busca rápida",
+		"placeholder": "Pesquise notas, tags e coleções…",
+		"noSpace": "Abra um espaço no Glyph para pesquisá-lo.",
+		"openFailed": "Não foi possível abrir no Glyph: {{message}}",
+		"hideFailed": "Não foi possível fechar a busca rápida: {{message}}"
 	}
 }

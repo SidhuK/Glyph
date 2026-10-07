@@ -27,6 +27,7 @@ import {
 	NoteIcon,
 	PinIcon,
 	PinOffIcon,
+	Search02Icon,
 	SearchIcon,
 	Settings01Icon,
 	SidebarLeftIcon,
@@ -110,6 +111,7 @@ interface UseAppCommandsDeps {
 	openConnectionsView: () => void;
 	openPalette: (tab: "commands" | "search", query?: string) => void;
 	openQuickNoteWindow: () => void;
+	openQuickSearchWindow: () => void;
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
@@ -272,6 +274,7 @@ export function useAppCommands({
 	openConnectionsView,
 	openPalette,
 	openQuickNoteWindow,
+	openQuickSearchWindow,
 	openSearchPalette,
 	openSettings,
 	openWorkspaceFile,
@@ -354,6 +357,13 @@ export function useAppCommands({
 				enabled: true,
 				allowInEditable: true,
 				action: openQuickNoteWindow,
+			},
+			{
+				id: "open-quick-search",
+				icon: <HugeiconsIcon icon={Search02Icon} size="var(--icon-lg)" />,
+				enabled: true,
+				allowInEditable: true,
+				action: openQuickSearchWindow,
 			},
 			{
 				id: "create-from-template",
@@ -780,6 +790,7 @@ export function useAppCommands({
 		openBlankTab,
 		splitPaneWithBlank,
 		openQuickNoteWindow,
+		openQuickSearchWindow,
 		openWorkspaceFile,
 		gitSync,
 		getBinding,

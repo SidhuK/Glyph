@@ -6,7 +6,10 @@ import { invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
 
 export function useArchivedPaths() {
-	const { spacePath } = useSpace();
+	return useArchivedPathsForSpace(useSpace().spacePath);
+}
+
+export function useArchivedPathsForSpace(spacePath: string | null) {
 	return useQuery({
 		queryKey: ["navigation", "archived-paths", spacePath],
 		queryFn: async () => new Set(await invoke("notes_archived_paths", {})),
