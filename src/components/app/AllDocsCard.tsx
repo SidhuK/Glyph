@@ -15,6 +15,7 @@ import {
 	databaseNoteAppearanceStyle,
 } from "../database/DatabaseNoteAppearanceIcon";
 import type { springPresets } from "../ui/animations";
+import { NoteThumbnail } from "../NoteThumbnail";
 
 export function titleFromPath(notePath: string): string {
 	const fileName = notePath.split("/").pop() ?? notePath;
@@ -98,6 +99,7 @@ export interface AllDocsCardProps {
 	noteAppearance?: FileTreeAppearance | null;
 	title: string;
 	preview: PreviewLine[];
+	rawPreview: string;
 	taskSummary: NoteTaskSummary | undefined;
 	taskCount: number;
 	selected: boolean;
@@ -140,6 +142,7 @@ export function prepareAllDocsCardProps({
 		notePath: note.note_path,
 		title: noteTitle,
 		preview: previewLines(note.preview, noteTitle),
+		rawPreview: note.preview,
 		taskSummary,
 		taskCount: taskSummary?.total_count ?? 0,
 		selected: selectedNotePath === note.note_path,
@@ -155,6 +158,7 @@ export function AllDocsCard({
 	noteAppearance = null,
 	title,
 	preview,
+	rawPreview,
 	taskSummary,
 	taskCount,
 	selected,
@@ -249,6 +253,7 @@ export function AllDocsCard({
 						</span>
 					) : null}
 				</div>
+				<NoteThumbnail notePath={notePath} preview={rawPreview} className="allDocsCardThumbnail" />
 				{preview.length > 0 ? (
 					<div className="allDocsCardPreview">
 						{preview.map((line) => (

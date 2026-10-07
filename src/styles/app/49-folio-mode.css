@@ -325,7 +325,7 @@
 	height: 52px;
 	overflow: hidden;
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-radius: var(--radius-4);
+	border-radius: var(--radius-8);
 	background: var(--bg-secondary);
 }
 

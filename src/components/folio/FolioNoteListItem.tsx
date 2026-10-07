@@ -9,11 +9,10 @@ import {
 	forwardRef,
 	memo,
 	useCallback,
-	useEffect,
 	useMemo,
 	useRef,
-	useState,
 } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat, useEditorContext, useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -22,9 +21,11 @@ import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
+import { extractFirstUrl, noteScanQueryOptions } from "../../lib/noteThumbnail";
 import { invoke } from "../../lib/tauri";
 import { basename, displayNameFromPath, parentDir, splitEditableFileName } from "../../utils/path";
 import { InlineRenameInput } from "../InlineRenameInput";
+import { NoteThumbnail } from "../NoteThumbnail";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
@@ -65,15 +66,6 @@ interface FolioNoteListItemProps {
 	virtualIndex?: number;
 }
 
-type FolioImageRef =
-	| { kind: "markdown-link"; href: string }
-	| { kind: "wiki-image-link"; href: string }
-	| { kind: "direct"; src: string };
-
-const FOLIO_THUMBNAIL_MAX_BYTES = 4 * 1024 * 1024;
-const FOLIO_NOTE_IMAGE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
-const FOLIO_NOTE_URL_SCAN_MAX_BYTES = 256 * 1024;
-const FOLIO_NOTE_URL_READ_CONCURRENCY = 4;
 const FOLIO_DRAG_CLICK_DISTANCE_PX = 5;
 const MINUTE_MS = 60 * 1_000;
 const HOUR_MS = 60 * MINUTE_MS;
@@ -81,17 +73,7 @@ const DAY_MS = 24 * HOUR_MS;
 const WEEK_MS = 7 * DAY_MS;
 const MONTH_MS = 30 * DAY_MS;
 const CALENDAR_DATE_THRESHOLD_MS = 3 * MONTH_MS;
-const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
-const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
-const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
-let activeFolioUrlReads = 0;
-const queuedFolioUrlReads: Array<() => void> = [];
 const compactRelativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();
-
-interface FolioImageCandidate {
-	index: number;
-	ref: FolioImageRef;
-}
 
 function compactRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
 	const existing = compactRelativeTimeFormatters.get(locale);
@@ -171,36 +153,6 @@ function previewText(preview: string, title: string, emptyLabel: string): string
 	return previewLines.join(" ") || emptyLabel;
 }
 
-function cleanUrl(rawUrl: string): string {
-	return rawUrl.replace(/[.,;:!?)]+$/g, "");
-}
-
-function extractFirstUrl(text: string): string {
-	const match = text.match(URL_RE);
-	return match?.[0] ? cleanUrl(match[0]) : "";
-}
-
-function runLimitedFolioUrlRead<T>(read: () => Promise<T>): Promise<T> {
-	return new Promise<T>((resolve, reject) => {
-		const run = () => {
-			activeFolioUrlReads += 1;
-			read()
-				.then(resolve, reject)
-				.finally(() => {
-					activeFolioUrlReads = Math.max(0, activeFolioUrlReads - 1);
-					queuedFolioUrlReads.shift()?.();
-				});
-		};
-
-		if (activeFolioUrlReads < FOLIO_NOTE_URL_READ_CONCURRENCY) {
-			run();
-			return;
-		}
-
-		queuedFolioUrlReads.push(run);
-	});
-}
-
 function urlLabel(url: string): string {
 	try {
 		const parsed = new URL(url);
@@ -210,174 +162,13 @@ function urlLabel(url: string): string {
 	}
 }
 
-function markdownImageHref(rawHref: string): string {
-	const href = rawHref.trim().replace(/^<|>$/g, "");
-	const titleMatch = href.match(/^(.+?)(?:\s+["'][^"'\n]*["'])$/);
-	return (titleMatch?.[1] ?? href).trim();
-}
-
-function imageRefFromHref(href: string): FolioImageRef | null {
-	if (!href) return null;
-	if (DIRECT_IMAGE_SRC_RE.test(href)) return { kind: "direct", src: href };
-	if (IMAGE_EXT_RE.test(href)) return { kind: "markdown-link", href };
-	return null;
-}
-
-function referenceImageDefinitions(markdown: string): Map<string, string> {
-	const definitions = new Map<string, string>();
-	for (const match of markdown.matchAll(/^\s*\[([^\]\n]+)\]:\s*(\S+)/gm)) {
-		const label = (match[1] ?? "").trim().toLowerCase();
-		const href = markdownImageHref(match[2] ?? "");
-		if (label && href) definitions.set(label, href);
-	}
-	return definitions;
-}
-
-function extractFirstImageRef(markdown: string): FolioImageRef | null {
-	const candidates: FolioImageCandidate[] = [];
-
-	for (const match of markdown.matchAll(/!\[\[([^\]\n]+)\]\]/g)) {
-		const target = (match[1] ?? "").split("|")[0]?.split("#")[0]?.trim() ?? "";
-		if (target && IMAGE_EXT_RE.test(target)) {
-			candidates.push({
-				index: match.index ?? Number.MAX_SAFE_INTEGER,
-				ref: { kind: "wiki-image-link", href: target },
-			});
-		}
-	}
-
-	for (const match of markdown.matchAll(/!\[[^\]\n]*\]\(([^)\n]+)\)/g)) {
-		const href = markdownImageHref(match[1] ?? "");
-		const ref = imageRefFromHref(href);
-		if (ref) {
-			candidates.push({
-				index: match.index ?? Number.MAX_SAFE_INTEGER,
-				ref,
-			});
-		}
-	}
-
-	for (const match of markdown.matchAll(/<img\b[^>]*\bsrc=(["'])(.*?)\1[^>]*>/gi)) {
-		const ref = imageRefFromHref((match[2] ?? "").trim());
-		if (ref) {
-			candidates.push({
-				index: match.index ?? Number.MAX_SAFE_INTEGER,
-				ref,
-			});
-		}
-	}
-
-	const definitions = referenceImageDefinitions(markdown);
-	for (const match of markdown.matchAll(/!\[[^\]\n]*\]\[([^\]\n]+)\]/g)) {
-		const label = (match[1] ?? "").trim().toLowerCase();
-		const href = definitions.get(label);
-		const ref = href ? imageRefFromHref(href) : null;
-		if (ref) {
-			candidates.push({
-				index: match.index ?? Number.MAX_SAFE_INTEGER,
-				ref,
-			});
-		}
-	}
-
-	for (const match of markdown.matchAll(/https?:\/\/[^\s<>)"]+/gi)) {
-		const href = (match[0] ?? "").trim();
-		if (!IMAGE_EXT_RE.test(href)) continue;
-		candidates.push({
-			index: match.index ?? Number.MAX_SAFE_INTEGER,
-			ref: { kind: "direct", src: href },
-		});
-	}
-
-	candidates.sort((left, right) => left.index - right.index);
-	return candidates[0]?.ref ?? null;
-}
-
-function useFolioThumbnail(note: FolioItem): string {
-	const previewImageRef = useMemo(
-		() => (note.is_markdown ? extractFirstImageRef(note.preview) : null),
-		[note.is_markdown, note.preview],
-	);
-	const [src, setSrc] = useState("");
-
-	useEffect(() => {
-		let cancelled = false;
-		setSrc("");
-		if (!note.is_markdown) return;
-		void (async () => {
-			try {
-				let imageRef = previewImageRef;
-				if (!imageRef) {
-					const doc = await invoke("space_read_text_preview", {
-						path: note.note_path,
-						max_bytes: FOLIO_NOTE_IMAGE_SCAN_MAX_BYTES,
-					});
-					if (cancelled) return;
-					imageRef = extractFirstImageRef(doc.text);
-				}
-				if (!imageRef) return;
-				if (imageRef.kind === "direct") {
-					setSrc(imageRef.src);
-					return;
-				}
-				const relPath =
-					imageRef.kind === "wiki-image-link"
-						? await invoke("space_resolve_image_wikilink", {
-								target: imageRef.href,
-							})
-						: await invoke("space_resolve_markdown_link", {
-								href: imageRef.href,
-								sourcePath: note.note_path,
-							});
-				if (!relPath || cancelled) return;
-				const preview = await invoke("space_read_binary_preview", {
-					path: relPath,
-					max_bytes: FOLIO_THUMBNAIL_MAX_BYTES,
-				});
-				if (!cancelled && !preview.truncated) {
-					setSrc(preview.data_url);
-				}
-			} catch {
-				if (!cancelled) setSrc("");
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [note.is_markdown, note.note_path, previewImageRef]);
-
-	return src;
-}
-
 function useFolioFirstUrl(note: FolioItem): string {
 	const previewUrl = useMemo(() => extractFirstUrl(note.preview), [note.preview]);
-	const [url, setUrl] = useState(previewUrl);
-
-	useEffect(() => {
-		let cancelled = false;
-		setUrl(previewUrl);
-		if (!note.is_markdown) return;
-		void (async () => {
-			try {
-				const doc = await runLimitedFolioUrlRead(async () => {
-					if (cancelled) return null;
-					return await invoke("space_read_text_preview", {
-						path: note.note_path,
-						max_bytes: FOLIO_NOTE_URL_SCAN_MAX_BYTES,
-					});
-				});
-				if (cancelled || !doc) return;
-				setUrl(extractFirstUrl(doc.text));
-			} catch {
-				if (!cancelled) setUrl(previewUrl);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [note.is_markdown, note.note_path, previewUrl]);
-
-	return url;
+	const { data: scan } = useQuery({
+		...noteScanQueryOptions(note.note_path),
+		enabled: note.is_markdown,
+	});
+	return scan === undefined ? previewUrl : scan.firstUrl;
 }
 
 export const FolioNoteListItem = memo(
@@ -449,7 +240,6 @@ export const FolioNoteListItem = memo(
 		const visibleTags = note.tags.slice(0, 2);
 		const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);
 		const folder = parentDir(note.note_path);
-		const thumbnailSrc = useFolioThumbnail(note);
 		const firstUrl = useFolioFirstUrl(note);
 		const firstUrlLabel = firstUrl ? urlLabel(firstUrl) : "";
 		const taskProgress =
@@ -600,11 +390,11 @@ export const FolioNoteListItem = memo(
 					{hiddenTagCount > 0 ? <span className="folioNoteTag">+{hiddenTagCount}</span> : null}
 				</span>
 				<span className="folioNotePreview">{preview}</span>
-				{thumbnailSrc ? (
-					<span className="folioNoteThumbnail" aria-hidden="true">
-						<img src={thumbnailSrc} alt="" />
-					</span>
-				) : null}
+				<NoteThumbnail
+					notePath={note.note_path}
+					preview={note.preview}
+					className="folioNoteThumbnail"
+				/>
 			</div>
 		);
 		const fileDetails = (
