@@ -69,7 +69,8 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 
 ## Sub-agents
 
-- Never spawn sub-agents by default. Before spawning any sub-agent, including when you are ready to spawn one or think delegation would help, ask the user which agents to spawn and which base model each should use. Spawn them only after the user explicitly provides that direction.
+- Never spawn sub-agents by default. Before spawning or changing any sub-agent, including when you are ready to spawn one or think delegation would help, ask the user which agents to spawn and which base model each should use. Spawn them only after the user explicitly provides that direction.
+- When asking, list the models currently available for sub-agents, taken from the Agent tool's `model` options and the current model list in the session environment at that time. Do not rely on a hardcoded list, since available models change.
 
 ## Development Platform
 
