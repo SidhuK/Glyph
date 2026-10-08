@@ -10,10 +10,7 @@ use crate::index::open_db;
 use crate::note_mutation::{
     commit_markdown, emit_changed, CommitCtx, PersistMode,
 };
-use crate::notes::frontmatter::{
-    normalize_frontmatter_mapping, parse_frontmatter_mapping, render_frontmatter_mapping_yaml,
-    split_frontmatter,
-};
+use crate::notes::frontmatter::{render_frontmatter_mapping_yaml, set_frontmatter_key};
 use crate::paths;
 use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
@@ -147,20 +144,6 @@ fn database_name_exists(
     })
 }
 
-pub(super) fn render_note_markdown(
-    path: &str,
-    markdown: &str,
-    mapping: Mapping,
-) -> Result<String, String> {
-    let (_yaml, body) = split_frontmatter(markdown);
-    let normalized = normalize_frontmatter_mapping(mapping, path, None);
-    let rendered_yaml = render_frontmatter_mapping_yaml(&normalized)?;
-    Ok(format!(
-        "---\n{rendered_yaml}---\n\n{}",
-        body.trim_start_matches('\n')
-    ))
-}
-
 fn yaml_value_from_cell(
     column: &DatabaseColumn,
     value: &DatabaseCellValue,
@@ -230,36 +213,22 @@ fn linked_note_wikilink_value(raw: &str) -> Option<String> {
 }
 
 fn apply_cell_update_to_markdown(
-    note_path: &str,
     markdown: &str,
     column: &DatabaseColumn,
     value: &DatabaseCellValue,
 ) -> Result<String, String> {
-    let (yaml, _body) = split_frontmatter(markdown);
-    let mut mapping = parse_frontmatter_mapping(yaml)?;
-    match column.column_type.as_str() {
-        "title" => {
-            mapping.insert(key("title"), yaml_value_from_cell(column, value)?);
-        }
-        "tags" => {
-            mapping.insert(key("tags"), yaml_value_from_cell(column, value)?);
-        }
-        "linked_notes" => {
-            mapping.insert(key("linked_notes"), yaml_value_from_cell(column, value)?);
-        }
-        "property" => {
-            let property_key = column
-                .property_key
-                .clone()
-                .ok_or_else(|| "property column is missing property_key".to_string())?;
-            mapping.insert(key(&property_key), yaml_value_from_cell(column, value)?);
-        }
-        "path" | "folder" | "created" | "updated" => {
-            return Err(format!("{} columns are read-only", column.column_type))
-        }
-        other => return Err(format!("unsupported column type '{other}'")),
-    }
-    render_note_markdown(note_path, markdown, mapping)
+    let next = yaml_value_from_cell(column, value)?;
+    let property_key = match column.column_type.as_str() {
+        "property" => column
+            .property_key
+            .as_deref()
+            .ok_or_else(|| "property column is missing property_key".to_string())?,
+        other => other,
+    };
+    // Without a title the note falls back to its file name.
+    let cleared_title =
+        column.column_type == "title" && next.as_str().is_some_and(|text| text.trim().is_empty());
+    set_frontmatter_key(markdown, property_key, (!cleared_title).then_some(&next))
 }
 
 fn row_folder(note_path: &str) -> String {
@@ -497,7 +466,6 @@ fn yaml_value_from_field_default(default: &NewRowFieldDefault) -> Value {
 
 fn create_new_row_markdown(
     database: &DatabaseDefinition,
-    note_path: &str,
     title: &str,
     initial_values: &[DatabaseCreateRowInitialValue],
 ) -> Result<String, String> {
@@ -510,10 +478,10 @@ fn create_new_row_markdown(
     for initial in initial_values {
         match initial.column.column_type.as_str() {
             "title" => {
-                mapping.insert(
-                    key("title"),
-                    yaml_value_from_cell(&initial.column, &initial.value)?,
-                );
+                let title = yaml_value_from_cell(&initial.column, &initial.value)?;
+                if title.as_str().is_some_and(|text| !text.trim().is_empty()) {
+                    mapping.insert(key("title"), title);
+                }
             }
             "tags" => {
                 mapping.insert(
@@ -544,7 +512,10 @@ fn create_new_row_markdown(
             other => return Err(format!("unsupported column type '{other}'")),
         }
     }
-    render_note_markdown(note_path, "", mapping)
+    Ok(format!(
+        "---\n{}---\n\n",
+        render_frontmatter_mapping_yaml(&mapping)?
+    ))
 }
 
 fn word_count(markdown: &str) -> u32 {
@@ -799,7 +770,7 @@ pub async fn databases_update_cell(
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
         let markdown = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
-        let next = apply_cell_update_to_markdown(&note_path, &markdown, &column, &value)?;
+        let next = apply_cell_update_to_markdown(&markdown, &column, &value)?;
         let change = write_markdown_note(
             &root,
             &recent_local_changes,
@@ -856,7 +827,7 @@ pub async fn databases_create_row(
         };
         let mut index = 2;
         loop {
-            let next = create_new_row_markdown(&database, &candidate, &title, &initial_values)?;
+            let next = create_new_row_markdown(&database, &title, &initial_values)?;
             if let Some(change) =
                 write_new_markdown_note(&root, &recent_local_changes, &space_path, &candidate, &next)?
             {

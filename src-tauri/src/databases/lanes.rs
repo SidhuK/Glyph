@@ -8,12 +8,13 @@ use tauri::{Emitter, State, WebviewWindow};
 use crate::index::open_db;
 use crate::note_mutation::{commit_markdown, CommitCtx, PersistMode, SpaceChange, CHANGED_EVENT};
 use crate::notes::archive::{NoteBatchFailure, NoteBatchResult};
-use crate::notes::frontmatter::{parse_frontmatter_mapping, split_frontmatter};
+use crate::notes::frontmatter::{
+    parse_frontmatter_mapping, set_frontmatter_key, split_frontmatter,
+};
 use crate::paths;
 use crate::space::SpaceState;
 use crate::space_fs::helpers::{deny_hidden_rel_path, file_mtime_ms};
 
-use super::commands::render_note_markdown;
 use super::query::{
     cell_value_from_row, hydrate_rows, view_matching_ids, PropertyFields, RowFields,
 };
@@ -131,16 +132,13 @@ fn rename_note_lane(
     let mtime = file_mtime_ms(&abs);
     let markdown = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
     let (yaml, _body) = split_frontmatter(&markdown);
-    let mut mapping = parse_frontmatter_mapping(yaml)?;
-    let property = Value::String(key.to_string());
-    let Some(next) = mapping
-        .get(&property)
+    let Some(next) = parse_frontmatter_mapping(yaml)?
+        .get(key)
         .and_then(|current| renamed_value(current, from, to))
     else {
         return Ok(None);
     };
-    mapping.insert(property, next);
-    let rendered = render_note_markdown(note_path, &markdown, mapping)?;
+    let rendered = set_frontmatter_key(&markdown, key, Some(&next))?;
     if rendered == markdown {
         return Ok(None);
     }

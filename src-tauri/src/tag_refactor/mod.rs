@@ -7,7 +7,7 @@ use serde::Serialize;
 use crate::index::tags::{
     normalize_tag, parse_all_tags, tag_matches_hierarchy, PEOPLE_TAG_NAMESPACE,
 };
-use crate::notes::frontmatter::split_frontmatter;
+use crate::notes::frontmatter::{line_ending, split_frontmatter};
 
 /// Why a note was left unchanged; the frontend maps each reason to translated text.
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -101,7 +101,9 @@ pub(crate) fn rewrite_note(
     let mut head = text[..body_start].to_string();
     let mut frontmatter_count = 0;
     if let Some(yaml) = yaml {
-        if let Some((next, count)) = frontmatter::rewrite_frontmatter_tags(yaml, refactor)? {
+        if let Some((next, count)) =
+            frontmatter::rewrite_frontmatter_tags(yaml, refactor, line_ending(text))?
+        {
             // `split_frontmatter` only matches YAML that starts right after the first line.
             let yaml_start = text.find('\n').map_or(0, |index| index + 1);
             head.replace_range(yaml_start..yaml_start + yaml.len(), &next);
