@@ -1556,11 +1556,11 @@ pub fn run() {
             }
         })
         .setup(|app| {
-            if let Err(error) = app_icon::restore(app.handle()) {
-                warn!("Failed to restore app icon: {error}");
-            }
             if let Err(error) = diagnostics::init(app.handle()) {
                 warn!("Failed to initialize diagnostic logging: {error}");
+            }
+            if let Err(error) = app_icon::restore(app.handle()) {
+                warn!("Failed to restore app icon: {error}");
             }
             if let Err(error) = index::paths::init_index_root(app.handle()) {
                 error!("Failed to initialize app-support index root: {error}");

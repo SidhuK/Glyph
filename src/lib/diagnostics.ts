@@ -4,12 +4,14 @@ import { type FrontendLogEntry, invoke } from "./tauri";
 
 /** Coalesces bursts of errors (render loops, repeated warnings) into one IPC call. */
 const FLUSH_DELAY_MS = 500;
-const MAX_QUEUED_ENTRIES = 200;
+/** Matches the native per-batch limit so a full flush is never truncated. */
+const MAX_QUEUED_ENTRIES = 100;
 const MAX_MESSAGE_LENGTH = 4000;
 
 let forwarding = false;
 let queue: FrontendLogEntry[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
+let latestRefresh = 0;
 
 function describe(value: unknown): string {
 	if (value instanceof Error) {
@@ -41,9 +43,11 @@ function record(level: FrontendLogEntry["level"], values: readonly unknown[]) {
 }
 
 function refreshForwarding() {
+	const refresh = ++latestRefresh;
 	void invoke("diagnostics_sync_logging")
 		.then((enabled) => {
-			forwarding = enabled;
+			// IPC replies can arrive out of order; only the newest one is current.
+			if (refresh === latestRefresh) forwarding = enabled;
 		})
 		.catch(() => {});
 }

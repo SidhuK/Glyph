@@ -3,7 +3,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
 
-use super::{log_dir, log_file_paths, logging_enabled, redact};
+use super::{copy_logs_into, logging_enabled, redact};
+use crate::io_atomic;
 
 const BUNDLE_FOLDER_NAME: &str = "Glyph Diagnostics";
 const MAX_CRASH_REPORTS: usize = 10;
@@ -39,13 +40,7 @@ fn write_bundle_in(
     let bundle_dir = staging_root.join(BUNDLE_FOLDER_NAME);
     fs::create_dir_all(&bundle_dir).map_err(|error| error.to_string())?;
 
-    for path in log_file_paths(log_dir()?) {
-        if let Some(name) = path.file_name() {
-            if path.is_file() {
-                fs::copy(&path, bundle_dir.join(name)).map_err(|error| error.to_string())?;
-            }
-        }
-    }
+    copy_logs_into(&bundle_dir)?;
 
     let crash_reports = recent_crash_reports();
     if !crash_reports.is_empty() {
@@ -75,7 +70,7 @@ fn write_bundle_in(
     if !status.success() {
         return Err("Could not compress the diagnostic logs.".to_string());
     }
-    fs::copy(&zip_path, destination).map_err(|error| error.to_string())?;
+    io_atomic::copy_atomic(&zip_path, destination).map_err(|error| error.to_string())?;
     Ok(())
 }
 
@@ -94,7 +89,9 @@ fn recent_crash_reports() -> Vec<PathBuf> {
         .filter_map(Result::ok)
         .filter_map(|entry| {
             let name = entry.file_name().to_string_lossy().to_lowercase();
-            let is_glyph_report = (name.starts_with("glyph-") || name.starts_with("glyph."))
+            let is_glyph_report = (name.starts_with("glyph-")
+                || name.starts_with("glyph.")
+                || name.starts_with("glyph_"))
                 && (name.ends_with(".ips") || name.ends_with(".crash"));
             if !is_glyph_report {
                 return None;

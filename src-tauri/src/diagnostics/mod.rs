@@ -26,6 +26,9 @@ static ENABLED: AtomicBool = AtomicBool::new(false);
 static LOG_DIR: OnceLock<PathBuf> = OnceLock::new();
 static HOME_DIR: OnceLock<Option<String>> = OnceLock::new();
 static LOG_FILE: Mutex<Option<OpenLogFile>> = Mutex::new(None);
+/// Serializes the preference read with the state change, so a stale "on"
+/// read can never land after a newer "off".
+static SYNC_LOCK: Mutex<()> = Mutex::new(());
 
 struct OpenLogFile {
     file: File,
@@ -109,9 +112,16 @@ fn saved_logging_enabled(app: &tauri::AppHandle) -> Result<bool, String> {
 }
 
 pub(crate) fn sync_logging(app: &tauri::AppHandle) -> Result<bool, String> {
+    let _sync = SYNC_LOCK
+        .lock()
+        .map_err(|_| "Diagnostic log is unavailable.".to_string())?;
     let enabled = saved_logging_enabled(app)?;
     let was_enabled = ENABLED.load(Ordering::Acquire);
     if enabled && !was_enabled {
+        let file = open_log_file(log_dir()?).map_err(|error| error.to_string())?;
+        if let Ok(mut guard) = LOG_FILE.lock() {
+            *guard = Some(file);
+        }
         ENABLED.store(true, Ordering::Release);
         tracing::info!(
             "Diagnostic logging started (Glyph {}, {})",
@@ -193,6 +203,26 @@ fn append_to_log(buf: &[u8]) {
 /// Oldest first, so the exported files read in chronological order.
 fn log_file_paths(dir: &Path) -> [PathBuf; 2] {
     [dir.join(ROTATED_LOG_FILE_NAME), dir.join(LOG_FILE_NAME)]
+}
+
+/// Copies both logs while holding the writer's lock, so rotation or clearing
+/// can't change the files halfway through an export.
+fn copy_logs_into(dest_dir: &Path) -> Result<(), String> {
+    let dir = log_dir()?;
+    let _guard = LOG_FILE
+        .lock()
+        .map_err(|_| "Diagnostic log is unavailable.".to_string())?;
+    for path in log_file_paths(dir) {
+        let Some(name) = path.file_name() else {
+            continue;
+        };
+        match fs::copy(&path, dest_dir.join(name)) {
+            Ok(_) => {}
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.to_string()),
+        }
+    }
+    Ok(())
 }
 
 fn clear_logs() -> Result<(), String> {
