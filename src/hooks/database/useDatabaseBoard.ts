@@ -277,7 +277,7 @@ export function useDatabaseBoard({
 	);
 
 	const renameLane = useCallback(
-		(sourceLaneId: string, nextLaneId: string) => {
+		(sourceLaneId: string, nextLaneId: string, movedPaths: string[], keepSourceLane: boolean) => {
 			if (
 				!groupColumn ||
 				sourceLaneId === DATABASE_BOARD_EMPTY_LANE_ID ||
@@ -287,21 +287,31 @@ export function useDatabaseBoard({
 				return;
 			}
 
-			const currentLaneOrder =
+			// Only renamed cards move; entries for failed or filtered-out notes stay under the source
+			// lane. When cards stayed behind the source lane keeps its slot and the new lane goes right
+			// after it; otherwise the new lane takes the source lane's slot.
+			const movedSet = new Set(movedPaths);
+			const currentLaneOrder = (
 				laneOrderByGroup[groupColumn.id] ??
 				displayedLaneIdsRef.current[groupColumn.id] ??
-				displayLaneOrder(lanes);
-			const nextLaneOrder = currentLaneOrder.map((laneId) =>
-				laneId === sourceLaneId ? nextLaneId : laneId,
-			);
+				displayLaneOrder(lanes)
+			).filter((laneId) => laneId !== nextLaneId);
+			const nextLaneOrder = currentLaneOrder.flatMap((laneId) => {
+				if (laneId !== sourceLaneId) return [laneId];
+				return keepSourceLane ? [sourceLaneId, nextLaneId] : [nextLaneId];
+			});
 			const currentCardOrder =
 				cardOrderByGroup[groupColumn.id] ?? displayedCardIdsRef.current[groupColumn.id] ?? {};
+			const sourceOrder = currentCardOrder[sourceLaneId] ?? [];
 			const nextCardOrder = Object.fromEntries(
-				Object.entries(currentCardOrder).map(([laneId, order]) => [
-					laneId === sourceLaneId ? nextLaneId : laneId,
-					order,
-				]),
+				Object.entries(currentCardOrder).filter(
+					([laneId]) => laneId !== sourceLaneId && laneId !== nextLaneId,
+				),
 			);
+			const movedOrder = sourceOrder.filter((notePath) => movedSet.has(notePath));
+			const keptOrder = sourceOrder.filter((notePath) => !movedSet.has(notePath));
+			if (movedOrder.length > 0) nextCardOrder[nextLaneId] = movedOrder;
+			if (keptOrder.length > 0) nextCardOrder[sourceLaneId] = keptOrder;
 
 			displayedLaneIdsRef.current = {
 				...displayedLaneIdsRef.current,

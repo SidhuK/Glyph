@@ -20,7 +20,13 @@ export interface BoardLaneRenameTarget {
 
 interface UseBoardLaneRenameOptions {
 	target: BoardLaneRenameTarget;
-	onRenamed: (fromLaneId: string, toLaneId: string) => void;
+	/** `movedPaths` take the new lane; `keepSourceLane` is true when some cards stayed behind. */
+	onRenamed: (
+		fromLaneId: string,
+		toLaneId: string,
+		movedPaths: string[],
+		keepSourceLane: boolean,
+	) => void;
 }
 
 interface LaneRenameVariables {
@@ -110,25 +116,31 @@ export function useBoardLaneRename({ target, onRenamed }: UseBoardLaneRenameOpti
 			});
 		}
 
-		if (fromValues.length > 0) {
-			const result = await renameMutation.mutateAsync({
-				column,
-				fromValues,
-				laneId,
-				expectedSpace: spacePath,
-			});
-			const [firstFailure] = result.failures;
-			if (firstFailure) {
-				throw new Error(
-					t("collections.laneRenamePartial", {
-						changed: result.changed_paths.length,
-						total: result.changed_paths.length + result.failures.length,
-						failed: result.failures.length,
-						error: `${firstFailure.path}: ${firstFailure.error}`,
-					}),
-				);
-			}
+		if (fromValues.length === 0) {
+			onRenamed(lane.id, laneId, [], false);
+			return;
 		}
-		onRenamed(lane.id, laneId);
+		const result = await renameMutation.mutateAsync({
+			column,
+			fromValues,
+			laneId,
+			expectedSpace: spacePath,
+		});
+		const [firstFailure] = result.failures;
+		// Migrate the saved order even when some cards failed so the moved cards keep their layout,
+		// but leave the board alone when nothing moved so a failed rename adds no empty lane.
+		if (result.changed_paths.length > 0 || !firstFailure) {
+			onRenamed(lane.id, laneId, result.changed_paths, firstFailure != null);
+		}
+		if (firstFailure) {
+			throw new Error(
+				t("collections.laneRenamePartial", {
+					changed: result.changed_paths.length,
+					total: result.changed_paths.length + result.failures.length,
+					failed: result.failures.length,
+					error: `${firstFailure.path}: ${firstFailure.error}`,
+				}),
+			);
+		}
 	};
 }
