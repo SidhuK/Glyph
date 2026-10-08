@@ -1,22 +1,33 @@
 # Contributing to Glyph
 
-Thanks for your interest in contributing to Glyph.
+Thanks for your interest in Glyph.
 
 Glyph is an offline-first desktop notes app built with React, TypeScript, Tauri, and Rust. The project is currently maintained with a strong macOS focus.
+
+## ⚠️ Pull requests are not accepted at this time
+
+Glyph is maintained by one person and I am not reviewing or merging external pull requests right now. Unsolicited PRs will be closed without review, even if the change is good.
+
+That said, I do want to hear about problems. If you have found something crucial, like a data-loss bug, a security issue, or a broken core workflow:
+
+- **Open an issue** with a clear repro: https://github.com/SidhuK/Glyph/issues/new/choose
+- **Message me on Discord** if it is urgent or you would rather talk it through: https://discord.gg/cNqrBfFx7D
+
+For security issues, please reach out on Discord first rather than filing a public issue.
+
+The rest of this document is for people building Glyph from source for their own use. It is not an invitation to send patches.
 
 ## Scope and support
 
 - Glyph is currently supported on macOS.
-- Windows-specific issues, support requests, and compatibility PRs are not being accepted right now.
-- Linux support is also not an active focus unless explicitly requested by the maintainer.
-- If you want to work on something cross-platform, please open an issue first so we can make sure it fits the roadmap.
+- Windows-specific issues and support requests are not being accepted right now.
+- Linux support is also not an active focus.
 
 ## Before you start
 
 - Check existing issues before opening a new one.
 - For bugs, use the bug report form and include whether you are using an official GitHub release build, a trial/licensed build, or a self-built community build.
 - Use the licensing/support issue form for trial, activation, or Gumroad questions.
-- For larger features or architectural changes, open an issue before sending a PR.
 
 ## Development setup
 
@@ -49,9 +60,9 @@ cd src-tauri && cargo check
 cd src-tauri && cargo clippy
 ```
 
-### Pre-push checks
+### Checks
 
-Run these before you open or update a PR:
+Run these before building a release of your own:
 
 ```bash
 vp check
@@ -78,25 +89,13 @@ cd src-tauri && cargo check
 - Follow the existing architecture instead of introducing parallel abstractions.
 - Use a hard cutover approach. Do not add backward-compatibility layers for old behavior.
 
-## Pull request guidelines
+## If you fork Glyph
 
-- Keep PRs focused. Avoid bundling unrelated cleanup with feature or bug-fix work.
-- Include a clear summary, linked issue, and testing notes.
-- Add screenshots or recordings for UI changes.
-- Add or update tests when the change affects behavior that can be covered.
-- If a change touches licensing behavior, be explicit about whether it applies to official builds, self-built community builds, or both.
-- PRs that primarily add Windows-specific support, Windows-only fixes, or Windows workflow changes will be closed.
+Glyph is AGPL-3.0, so you are free to fork and modify it. Keep in mind:
 
-## Good first contributions
-
-Good contributions usually look like:
-
-- focused bug fixes with a clear repro
-- polish to existing macOS workflows
-- small editor, tasks, database, AI, or settings improvements
-- docs updates that reflect current behavior
-- tests for existing behavior
+- Self-built community builds are not supported. Please say which build you are on when reporting a bug.
+- Licensing and update code paths behave differently in official builds versus self-built builds.
 
 ## If you are unsure
 
-Open an issue first. A quick alignment pass is the best way to avoid wasted work, especially for bigger features, platform-related changes, or anything that touches release/licensing behavior.
+Open an issue or ask on Discord. Do not send a PR.

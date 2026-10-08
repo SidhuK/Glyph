@@ -1,1 +1,5 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Discord
+    url: https://discord.gg/cNqrBfFx7D
+    about: Questions, discussion, or anything urgent. Pull requests are not accepted right now, so this is the place to reach the maintainer.

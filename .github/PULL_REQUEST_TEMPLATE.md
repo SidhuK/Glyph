@@ -1,27 +1,6 @@
-## Summary
+⚠️ **Glyph is not accepting pull requests at this time.** This PR will be closed.
 
-Describe the change and why it exists.
+If you found something crucial, please open an issue instead:
+https://github.com/SidhuK/Glyph/issues/new/choose
 
-## Related Issues
-
-Closes #
-
-## Testing
-
-- [ ] `pnpm check`
-- [ ] `pnpm build`
-- [ ] `cd src-tauri && cargo check`
-- [ ] Relevant manual testing completed on macOS
-
-## Screenshots or Recordings
-
-If the change affects the UI, add screenshots or a short video.
-
-## Contributor Checklist
-
-- [ ] This PR is focused and avoids unrelated refactors
-- [ ] I updated docs, copy, or templates if behavior changed
-- [ ] I added or updated tests where it made sense
-- [ ] I used `src/lib/tauri.ts` for frontend Tauri invokes when applicable
-- [ ] This change does not add or require Windows-specific support
-- [ ] I am not introducing backward-compatibility code for deprecated behavior
+Or reach out on Discord: https://discord.gg/cNqrBfFx7D
