@@ -118,10 +118,12 @@ pub(crate) fn sync_logging(app: &tauri::AppHandle) -> Result<bool, String> {
     let enabled = saved_logging_enabled(app)?;
     let was_enabled = ENABLED.load(Ordering::Acquire);
     if enabled && !was_enabled {
-        let file = open_log_file(log_dir()?).map_err(|error| error.to_string())?;
-        if let Ok(mut guard) = LOG_FILE.lock() {
-            *guard = Some(file);
-        }
+        let mut guard = LOG_FILE
+            .lock()
+            .map_err(|_| "Diagnostic log is unavailable.".to_string())?;
+        *guard = Some(open_log_file(log_dir()?).map_err(|error| error.to_string())?);
+        // The "started" line below goes through the writer, which takes this lock.
+        drop(guard);
         ENABLED.store(true, Ordering::Release);
         tracing::info!(
             "Diagnostic logging started (Glyph {}, {})",
