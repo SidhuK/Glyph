@@ -138,6 +138,11 @@ function parsed<Value>(value: Value): SettingParseResult<Value> {
 	return { ok: true, value };
 }
 
+/** Native code owns the log file, so it re-reads both gating settings itself. */
+async function syncDiagnosticLogging(): Promise<void> {
+	await invoke("diagnostics_sync_logging");
+}
+
 export async function emitSettingsUpdated(payload: SettingsUpdatedPayload): Promise<void> {
 	try {
 		if (payload.spacePath) {
@@ -609,6 +614,15 @@ export const DURABLE_SETTINGS = {
 		discovery: searchable("about-developer-mode"),
 		read: (settings) => settings.ui.developerMode,
 		change: (value) => ({ ui: { developerMode: value } }),
+		afterSave: syncDiagnosticLogging,
+	}),
+	diagnosticLogging: booleanSetting({
+		key: "ui.diagnosticLogging",
+		defaultValue: false,
+		discovery: searchable("developer-diagnostic-logging"),
+		read: (settings) => settings.ui.diagnosticLogging,
+		change: (value) => ({ ui: { diagnosticLogging: value } }),
+		afterSave: syncDiagnosticLogging,
 	}),
 	resumeLastSession: booleanSetting({
 		key: "ui.resumeLastSession",

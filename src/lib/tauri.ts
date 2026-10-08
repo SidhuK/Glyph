@@ -7,6 +7,11 @@ export interface AppInfo {
 	identifier: string;
 }
 
+export interface FrontendLogEntry {
+	level: "error" | "warn";
+	message: string;
+}
+
 export interface ReleaseChannelUpdate {
 	rid: number;
 	currentVersion: string;
@@ -885,6 +890,10 @@ interface TauriCommands {
 	>;
 	set_menu_labels: CommandDef<{ labels: Record<string, string> }, void>;
 	app_set_icon: CommandDef<{ icon: AppSettings["ui"]["appIcon"] }, void>;
+	diagnostics_sync_logging: CommandDef<void, boolean>;
+	diagnostics_log_frontend: CommandDef<{ entries: FrontendLogEntry[] }, void>;
+	diagnostics_clear_logs: CommandDef<void, void>;
+	diagnostics_export_logs: CommandDef<{ dialog_title: string }, boolean>;
 	menu_take_pending_commands: CommandDef<void, { command_id: string }[]>;
 	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
 	open_external_markdown_path: CommandDef<{ path: string }, void>;

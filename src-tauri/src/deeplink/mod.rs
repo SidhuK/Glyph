@@ -149,7 +149,7 @@ pub fn handle_url(app: &AppHandle, raw: &str, source: DeeplinkSource) {
     match parse_deeplink_url(raw).and_then(validate_action) {
         Ok(action) => dispatch_action(app, &state, action),
         Err(error) => {
-            warn!("Rejected deeplink {raw}: {error}");
+            warn!("Rejected deeplink: {error}");
             dispatch_error(app, &state, &error);
         }
     }

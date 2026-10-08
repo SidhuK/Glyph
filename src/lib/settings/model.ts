@@ -215,6 +215,7 @@ export interface AppSettings {
 		folioNotesWidth: number;
 		noteSidePeek: boolean;
 		developerMode: boolean;
+		diagnosticLogging: boolean;
 		resumeLastSession: boolean;
 		aiAssistantMode: AiAssistantMode;
 		dateDisplayFormat: DateDisplayFormat;

@@ -25,6 +25,7 @@ import {
 	applyUiTypography,
 } from "./lib/appearance";
 import { type CustomTheme, applyCustomThemes, normalizeCustomThemes } from "./lib/customThemes";
+import { installDiagnosticsForwarding } from "./lib/diagnostics";
 import { isEditorViewMode, setCachedDefaultEditorViewMode } from "./lib/editorMode";
 import { applyEditorHeadingPalette, isHeadingPaletteId } from "./lib/headingPalettes";
 import { queryClient } from "./lib/queryClient";
@@ -264,6 +265,8 @@ function ThemeAndTypographyBridge() {
 
 	return null;
 }
+
+installDiagnosticsForwarding();
 
 if (import.meta.env.PROD) {
 	document.addEventListener("contextmenu", (e) => {
