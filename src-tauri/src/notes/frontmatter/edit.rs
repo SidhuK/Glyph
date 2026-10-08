@@ -2,7 +2,7 @@ use serde_yaml::Value;
 
 use super::{parse_frontmatter_mapping, split_frontmatter};
 
-pub fn line_ending(text: &str) -> &'static str {
+fn line_ending(text: &str) -> &'static str {
     match text.split_once('\n') {
         Some((line, _)) if line.ends_with('\r') => "\r\n",
         _ => "\n",
@@ -205,7 +205,8 @@ pub fn set_yaml_key(
             };
             let key_text = serde_yaml::to_string(&target).map_err(|e| e.to_string())?;
             let entry = render_entry(key_text.trim_end(), value, Some(""), None, newline)?;
-            if let Some(line) = yaml.lines().find(|line| line.trim() == "{}") {
+            let placeholder = yaml.lines().find(|line| line.trim() == "{}");
+            if let Some(line) = placeholder.filter(|_| mapping.is_empty()) {
                 vec![yaml.replacen(line, &entry, 1)]
             } else if yaml.trim().is_empty() {
                 vec![entry]
@@ -240,9 +241,6 @@ pub fn set_frontmatter_key(
     key: &str,
     value: Option<&Value>,
 ) -> Result<String, String> {
-    if let Some(rest) = markdown.strip_prefix('\u{feff}') {
-        return set_frontmatter_key(rest, key, value).map(|next| format!("\u{feff}{next}"));
-    }
     let newline = line_ending(markdown);
     let (yaml, _) = split_frontmatter(markdown);
     let Some(yaml) = yaml else {
@@ -262,11 +260,6 @@ pub fn set_frontmatter_key(
     let start = markdown.find('\n').ok_or("Missing frontmatter delimiter")? + 1;
     let mut next = markdown.to_string();
     next.replace_range(start..start + yaml.len(), &next_yaml);
-    if split_frontmatter(&next).0 != Some(next_yaml.as_str()) {
-        return Err(format!(
-            "Cannot safely edit the '{key}' property in this frontmatter"
-        ));
-    }
     Ok(next)
 }
 

@@ -2,7 +2,7 @@ use serde_yaml::{Mapping, Value};
 
 mod edit;
 
-pub use edit::{line_ending, set_frontmatter_key, set_yaml_key};
+pub use edit::{set_frontmatter_key, set_yaml_key};
 
 pub fn split_frontmatter(markdown: &str) -> (Option<&str>, &str) {
     if let Some(rest) = markdown.strip_prefix("---\n") {
@@ -50,7 +50,7 @@ pub fn render_frontmatter_mapping_yaml(mapping: &Mapping) -> Result<String, Stri
 
 /// Change only the archive field; never reserialize unrelated YAML or the note body.
 pub fn set_archived(markdown: &str, archived: bool) -> Result<String, String> {
-    let (yaml, _) = split_frontmatter(markdown.strip_prefix('\u{feff}').unwrap_or(markdown));
+    let (yaml, _) = split_frontmatter(markdown);
     let current = parse_frontmatter_mapping(yaml)?.get("archived").cloned();
     if current.as_ref().is_some_and(|value| !value.is_bool()) {
         return Err("The archived property must be a boolean".into());

@@ -87,7 +87,6 @@ fn rewrite_value(value: &Value, refactor: &TagRefactor, count: &mut usize) -> Op
 pub(super) fn rewrite_frontmatter_tags(
     yaml: &str,
     refactor: &TagRefactor,
-    newline: &str,
 ) -> Result<Option<(String, usize)>, SkipReason> {
     // Unparseable YAML contributes no tags to the index, so there is nothing to rewrite.
     let Ok(mapping) = parse_frontmatter_mapping(Some(yaml)) else {
@@ -106,6 +105,7 @@ pub(super) fn rewrite_frontmatter_tags(
     if count == 0 {
         return Ok(None);
     }
+    let newline = if yaml.contains("\r\n") { "\r\n" } else { "\n" };
     let next_yaml = set_yaml_key(yaml, key_text, next.as_ref(), newline).map_err(|_| UNSAFE)?;
     Ok(Some((next_yaml, count)))
 }

@@ -225,10 +225,7 @@ fn apply_cell_update_to_markdown(
             .ok_or_else(|| "property column is missing property_key".to_string())?,
         other => other,
     };
-    // Without a title the note falls back to its file name.
-    let cleared_title =
-        column.column_type == "title" && next.as_str().is_some_and(|text| text.trim().is_empty());
-    set_frontmatter_key(markdown, property_key, (!cleared_title).then_some(&next))
+    set_frontmatter_key(markdown, property_key, Some(&next))
 }
 
 fn row_folder(note_path: &str) -> String {
@@ -478,10 +475,10 @@ fn create_new_row_markdown(
     for initial in initial_values {
         match initial.column.column_type.as_str() {
             "title" => {
-                let title = yaml_value_from_cell(&initial.column, &initial.value)?;
-                if title.as_str().is_some_and(|text| !text.trim().is_empty()) {
-                    mapping.insert(key("title"), title);
-                }
+                mapping.insert(
+                    key("title"),
+                    yaml_value_from_cell(&initial.column, &initial.value)?,
+                );
             }
             "tags" => {
                 mapping.insert(
