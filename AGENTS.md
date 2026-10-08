@@ -1,11 +1,10 @@
-# [AGENTS.md](http://AGENTS.md)
+# AGENTS.md
 
 ## Commands
 
-**Reference only — do not run these unless specifically stated by the user:**
+**Run freely after making changes (no need to ask):**
 
 ```bash
-vp build            # Vite+ production build
 vp check            # Oxfmt, Oxlint, and TypeScript checks
 vp fmt              # Auto-format with Oxfmt
 vp test             # Run all tests with Vite+
@@ -13,7 +12,13 @@ cd src-tauri && cargo check    # Typecheck Rust backend
 cd src-tauri && cargo clippy   # Lint Rust
 ```
 
-**Reference only — do not run dev servers:**
+**Run only when asked or as part of pre-push:**
+
+```bash
+vp build            # Vite+ production build
+```
+
+**Never run (the user handles dev):**
 
 ```bash
 vp dev              # Vite+ dev server (frontend only)
@@ -69,7 +74,8 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 
 ## Sub-agents
 
-- Never spawn sub-agents by default. Before spawning any sub-agent, including when you are ready to spawn one or think delegation would help, ask the user which agents to spawn and which base model each should use. Spawn them only after the user explicitly provides that direction.
+- Never spawn sub-agents by default. Before spawning or changing any sub-agent, including when you are ready to spawn one or think delegation would help, ask the user which agents to spawn and which base model each should use. Spawn them only after the user explicitly provides that direction.
+- When asking, list the models currently available for sub-agents, taken from the Agent tool's `model` options and the current model list in the session environment at that time. Do not rely on a hardcoded list, since available models change.
 
 ## Development Platform
 
