@@ -221,10 +221,22 @@ fn should_skip_source_entry(path: &Path) -> bool {
 }
 
 /// Move an existing destination aside so a replacement can be written. Caller
-/// must `commit` (delete backup) or `rollback` (restore) afterward.
-fn move_destination_aside(root: &Path, destination_rel: &Path) -> Result<PathBuf, String> {
+/// must `commit` (delete backup) or `rollback` (restore) afterward. Also returns
+/// the destination's on-disk spelling, which can differ in case from the
+/// requested one on a case-insensitive volume and is what the index rows use.
+fn move_destination_aside(
+    root: &Path,
+    canonical_root: &Path,
+    destination_rel: &Path,
+) -> Result<(PathBuf, PathBuf), String> {
     let destination_abs = paths::join_under(root, destination_rel)?;
     reject_symlink(&destination_abs, "import destination")?;
+    let on_disk_rel = destination_abs
+        .canonicalize()
+        .map_err(|error| error.to_string())?
+        .strip_prefix(canonical_root)
+        .map_err(|error| error.to_string())?
+        .to_path_buf();
     let parent = destination_abs
         .parent()
         .ok_or_else(|| "import destination has no parent directory".to_string())?;
@@ -242,7 +254,7 @@ fn move_destination_aside(root: &Path, destination_rel: &Path) -> Result<PathBuf
         now_ms
     ));
     std::fs::rename(&destination_abs, &backup_abs).map_err(|error| error.to_string())?;
-    Ok(backup_abs)
+    Ok((backup_abs, on_disk_rel))
 }
 
 fn remove_path_best_effort(path: &Path) {
@@ -256,32 +268,45 @@ fn remove_path_best_effort(path: &Path) {
     }
 }
 
-/// Drop index rows under `destination_rel` whose files no longer exist on disk.
+/// Drop index rows under each of `destination_rels` whose files no longer exist on disk
+/// under exactly that spelling. On a case-insensitive volume `exists()` would also
+/// accept a differently cased file, leaving stale rows the byte-exact queries can't reach.
 fn purge_missing_indexed_notes(
     root: &Path,
-    destination_rel: &Path,
+    destination_rels: &[&Path],
     recent_local_changes: &RecentLocalChanges,
 ) {
-    let rel_path = utils::to_slash(destination_rel);
+    let Ok(canonical_root) = root.canonicalize() else {
+        return;
+    };
     let Ok(conn) = index::open_db(root) else {
         return;
     };
-    let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id = ? OR id LIKE ?") else {
+    let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id = ? OR (id >= ? AND id < ?)")
+    else {
         return;
     };
-    let pattern = format!("{rel_path}/%");
-    let Ok(rows) = stmt.query_map([rel_path.as_str(), pattern.as_str()], |row| {
-        row.get::<_, String>(0)
-    }) else {
-        return;
-    };
-    for note_id in rows.filter_map(|row| row.ok()) {
-        let abs = root.join(&note_id);
-        if abs.exists() {
+    for destination_rel in destination_rels {
+        let rel_path = utils::to_slash(destination_rel);
+        let lower = format!("{rel_path}/");
+        let upper = format!("{rel_path}0");
+        let Ok(rows) = stmt.query_map([rel_path.as_str(), lower.as_str(), upper.as_str()], |row| {
+            row.get::<_, String>(0)
+        }) else {
             continue;
+        };
+        for note_id in rows.filter_map(|row| row.ok()) {
+            let on_disk_rel = root
+                .join(&note_id)
+                .canonicalize()
+                .ok()
+                .and_then(|abs| abs.strip_prefix(&canonical_root).ok().map(utils::to_slash));
+            if on_disk_rel.as_deref() == Some(note_id.as_str()) {
+                continue;
+            }
+            mark_recent_local_change(recent_local_changes, &note_id);
+            let _ = index::remove_note(root, &note_id);
         }
-        mark_recent_local_change(recent_local_changes, &note_id);
-        let _ = index::remove_note(root, &note_id);
     }
 }
 
@@ -326,15 +351,17 @@ fn reindex_markdown_tree(
 fn finalize_replace_backup(
     root: &Path,
     destination_rel: &Path,
+    replaced_rel: &Path,
     destination_abs: &Path,
     backup_abs: PathBuf,
     recent_local_changes: &RecentLocalChanges,
     copy_result: Result<(), String>,
 ) -> Result<(), String> {
+    let purge_rels = [destination_rel, replaced_rel];
     match copy_result {
         Ok(()) => {
             remove_path_best_effort(&backup_abs);
-            purge_missing_indexed_notes(root, destination_rel, recent_local_changes);
+            purge_missing_indexed_notes(root, &purge_rels, recent_local_changes);
             Ok(())
         }
         Err(error) => {
@@ -347,7 +374,7 @@ fn finalize_replace_backup(
                 ));
             }
             // Partial copy may have reindexed paths; restore on-disk content to the index.
-            purge_missing_indexed_notes(root, destination_rel, recent_local_changes);
+            purge_missing_indexed_notes(root, &purge_rels, recent_local_changes);
             reindex_markdown_tree(root, destination_rel, recent_local_changes);
             Err(error)
         }
@@ -512,6 +539,7 @@ pub async fn space_import_paths(
                 if dest_meta.is_dir() || source_meta.is_dir() {
                     Some(move_destination_aside(
                         &root_for_import,
+                        &canonical_root,
                         &destination_rel,
                     )?)
                 } else {
@@ -532,10 +560,11 @@ pub async fn space_import_paths(
                 &mut imported_count,
                 &mut markdown_paths,
             );
-            if let Some(backup_abs) = replace_backup {
+            if let Some((backup_abs, replaced_rel)) = replace_backup {
                 finalize_replace_backup(
                     &root_for_import,
                     &destination_rel,
+                    &replaced_rel,
                     &destination_abs,
                     backup_abs,
                     &recent_local_changes,

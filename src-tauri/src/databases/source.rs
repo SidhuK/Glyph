@@ -38,14 +38,23 @@ fn all_notes_source_ids(conn: &Connection) -> Result<Vec<String>, String> {
     )
 }
 
+// Byte-exact prefix match on `{dir}/`. A half-open range on the BINARY-collated
+// primary key avoids LIKE's ASCII case folding and `_`/`%` wildcards, and lets
+// SQLite use the index. '0' is the byte after '/'.
+fn folder_prefix_bounds(dir: &str) -> Vec<String> {
+    vec![format!("{dir}/"), format!("{dir}0")]
+}
+
 fn direct_folder_clause(dir: &str) -> (String, Vec<String>) {
     if dir.is_empty() {
         return ("instr(id, '/') = 0".to_string(), Vec::new());
     }
     let char_len = dir.chars().count();
+    let mut bind_values = folder_prefix_bounds(dir);
+    bind_values.push((char_len + 2).to_string());
     (
-        "id LIKE ? AND instr(substr(id, ?), '/') = 0".to_string(),
-        vec![format!("{dir}/%"), (char_len + 2).to_string()],
+        "id >= ? AND id < ? AND instr(substr(id, ?), '/') = 0".to_string(),
+        bind_values,
     )
 }
 
@@ -53,7 +62,7 @@ fn recursive_folder_clause(dir: &str) -> (String, Vec<String>) {
     if dir.is_empty() {
         return ("1 = 1".to_string(), Vec::new());
     }
-    ("id LIKE ?".to_string(), vec![format!("{dir}/%")])
+    ("id >= ? AND id < ?".to_string(), folder_prefix_bounds(dir))
 }
 
 fn folder_source_ids(conn: &Connection, dir: &str, recursive: bool) -> Result<Vec<String>, String> {
