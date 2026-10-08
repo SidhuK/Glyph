@@ -268,12 +268,17 @@ fn remove_path_best_effort(path: &Path) {
     }
 }
 
-/// Drop index rows under each of `destination_rels` whose files no longer exist on disk.
+/// Drop index rows under each of `destination_rels` whose files no longer exist on disk
+/// under exactly that spelling. On a case-insensitive volume `exists()` would also
+/// accept a differently cased file, leaving stale rows the byte-exact queries can't reach.
 fn purge_missing_indexed_notes(
     root: &Path,
     destination_rels: &[&Path],
     recent_local_changes: &RecentLocalChanges,
 ) {
+    let Ok(canonical_root) = root.canonicalize() else {
+        return;
+    };
     let Ok(conn) = index::open_db(root) else {
         return;
     };
@@ -291,8 +296,12 @@ fn purge_missing_indexed_notes(
             continue;
         };
         for note_id in rows.filter_map(|row| row.ok()) {
-            let abs = root.join(&note_id);
-            if abs.exists() {
+            let on_disk_rel = root
+                .join(&note_id)
+                .canonicalize()
+                .ok()
+                .and_then(|abs| abs.strip_prefix(&canonical_root).ok().map(utils::to_slash));
+            if on_disk_rel.as_deref() == Some(note_id.as_str()) {
                 continue;
             }
             mark_recent_local_change(recent_local_changes, &note_id);
