@@ -1,4 +1,4 @@
-use serde_yaml::Value;
+use serde_yaml::{Mapping, Value};
 
 use super::{parse_frontmatter_mapping, split_frontmatter};
 
@@ -42,12 +42,17 @@ fn trailing_comment(content: &str) -> Option<String> {
     })
 }
 
+/// A `#` line is a comment, not scalar text, only if deleting it leaves the parsed YAML unchanged.
+fn is_comment_line(yaml: &str, start: usize, line: &str, mapping: &Mapping) -> bool {
+    let without = format!("{}{}", &yaml[..start], &yaml[start + line.len()..]);
+    parse_frontmatter_mapping(Some(&without)).ok().as_ref() == Some(mapping)
+}
+
 /// The top-level `key:` line plus its indented or `- ` continuation lines.
-fn find_block(yaml: &str, target: &Value) -> Option<KeyBlock> {
+fn find_block(yaml: &str, mapping: &Mapping, target: &Value) -> Option<KeyBlock> {
     let mut offset = 0;
     let mut block: Option<KeyBlock> = None;
     let mut inline_value = false;
-    let mut block_scalar = false;
     let mut pending_comments = Vec::new();
     for line in yaml.split_inclusive('\n') {
         let content = line.trim_end_matches(['\r', '\n']);
@@ -57,7 +62,6 @@ fn find_block(yaml: &str, target: &Value) -> Option<KeyBlock> {
                 if let Some((key_text, rest)) = split_key(content, target) {
                     let value = rest.trim();
                     inline_value = !value.is_empty() && !value.starts_with('#');
-                    block_scalar = value.starts_with(['|', '>']);
                     block = Some(KeyBlock {
                         start: offset,
                         end: offset + line.len(),
@@ -71,9 +75,7 @@ fn find_block(yaml: &str, target: &Value) -> Option<KeyBlock> {
             Some(found) => {
                 if trimmed.is_empty() {
                     // Blank lines only belong to the block when more members follow.
-                } else if trimmed.starts_with('#')
-                    && !(block_scalar && content.starts_with(char::is_whitespace))
-                {
+                } else if trimmed.starts_with('#') && is_comment_line(yaml, offset, line, mapping) {
                     // Comments after the last member stay outside the block.
                     pending_comments.push(content);
                 } else if content.starts_with(char::is_whitespace)
@@ -177,7 +179,7 @@ pub fn set_yaml_key(
         return Ok(yaml.to_string());
     }
     let unsafe_edit = || format!("Cannot safely edit the '{key}' property in this frontmatter");
-    let candidates = match find_block(yaml, &target) {
+    let candidates = match find_block(yaml, &mapping, &target) {
         Some(block) => {
             let ends_with_newline = yaml[..block.end].ends_with('\n');
             let mut candidate = yaml[..block.start].to_string();
@@ -190,11 +192,18 @@ pub fn set_yaml_key(
                         block.comment.as_deref(),
                         newline,
                     )?;
-                    let (first, rest) = entry.split_once(newline).unzip();
-                    let lines = std::iter::once(first.unwrap_or(&entry))
-                        .chain(block.comment_lines.iter().map(String::as_str))
-                        .chain(rest);
-                    Some(lines.collect::<Vec<_>>().join(newline))
+                    let comments = block.comment_lines.iter().map(String::as_str);
+                    // Outside a block list, indented comments could land inside a `|` scalar.
+                    let lines: Vec<_> = match (value, entry.split_once(newline)) {
+                        (Value::Sequence(_), Some((first, rest))) => std::iter::once(first)
+                            .chain(comments)
+                            .chain([rest])
+                            .collect(),
+                        _ => std::iter::once(entry.as_str())
+                            .chain(comments.map(str::trim_start))
+                            .collect(),
+                    };
+                    Some(lines.join(newline))
                 }
                 None => {
                     let kept: Vec<_> = block
