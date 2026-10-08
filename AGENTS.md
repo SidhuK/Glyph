@@ -1,11 +1,10 @@
-# [AGENTS.md](http://AGENTS.md)
+# AGENTS.md
 
 ## Commands
 
-**Reference only — do not run these unless specifically stated by the user:**
+**Run freely after making changes (no need to ask):**
 
 ```bash
-vp build            # Vite+ production build
 vp check            # Oxfmt, Oxlint, and TypeScript checks
 vp fmt              # Auto-format with Oxfmt
 vp test             # Run all tests with Vite+
@@ -13,7 +12,13 @@ cd src-tauri && cargo check    # Typecheck Rust backend
 cd src-tauri && cargo clippy   # Lint Rust
 ```
 
-**Reference only — do not run dev servers:**
+**Run only when asked or as part of pre-push:**
+
+```bash
+vp build            # Vite+ production build
+```
+
+**Never run (the user handles dev):**
 
 ```bash
 vp dev              # Vite+ dev server (frontend only)
