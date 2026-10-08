@@ -72,11 +72,16 @@ vp run tauri dev     # run the app in development
 vp run tauri build   # build Glyph.app
 ```
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full setup, checks, and pull request guidelines.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full setup and checks.
 
 Built with [Tauri 2](https://tauri.app), Rust, React 19, TypeScript, TipTap, and CodeMirror.
 
 ## Contributing & support
+
+> ⚠️ **Pull requests are not being accepted right now.**
+> Glyph is developed by a single maintainer and unsolicited PRs will be closed.
+> If you've found something crucial, [open an issue](https://github.com/SidhuK/Glyph/issues/new/choose)
+> or reach out on [Discord](https://discord.gg/cNqrBfFx7D).
 
 - **Bugs and feature requests:** [open an issue](https://github.com/SidhuK/Glyph/issues/new/choose).
 - **Questions and discussion:** [Discord](https://discord.gg/cNqrBfFx7D).
