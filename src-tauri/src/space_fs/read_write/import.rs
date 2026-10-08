@@ -266,11 +266,13 @@ fn purge_missing_indexed_notes(
     let Ok(conn) = index::open_db(root) else {
         return;
     };
-    let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id = ? OR id LIKE ?") else {
+    let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id = ? OR (id >= ? AND id < ?)")
+    else {
         return;
     };
-    let pattern = format!("{rel_path}/%");
-    let Ok(rows) = stmt.query_map([rel_path.as_str(), pattern.as_str()], |row| {
+    let lower = format!("{rel_path}/");
+    let upper = format!("{rel_path}0");
+    let Ok(rows) = stmt.query_map([rel_path.as_str(), lower.as_str(), upper.as_str()], |row| {
         row.get::<_, String>(0)
     }) else {
         return;
