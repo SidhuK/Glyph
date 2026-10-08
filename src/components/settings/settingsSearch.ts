@@ -129,6 +129,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "about-changelog", tab: "about" },
 	{ id: "about-developer-mode", tab: "about" },
 	{ id: "developer-attachment-browser", tab: "developer" },
+	{ id: "developer-diagnostic-logging", tab: "developer" },
 ];
 
 const SETTINGS_TAB_DEFS: readonly SettingsSearchDef[] = SETTINGS_TABS.map((tab) => ({

@@ -21,7 +21,7 @@
 			"sectionTitle": "Advanced",
 			"sectionDescription": "Tools for people who want more control over their space.",
 			"label": "Advanced settings",
-			"description": "Adds a Developer tab under Application with tools like the attachment browser. Off by default.",
+			"description": "Adds a Developer tab under Application with tools like the attachment browser and diagnostic logging. Off by default.",
 			"ariaLabel": "Advanced settings"
 		}
 	},
@@ -98,6 +98,28 @@
 				"skippedItem": "{{path}} · {{reason}}",
 				"missing": "no longer in this space",
 				"referenced": "now linked from a note"
+			}
+		},
+		"diagnostics": {
+			"title": "Diagnostics",
+			"description": "Record what Glyph is doing so you can send the logs along with a bug report. Logs stay on this Mac. Glyph never sends them anywhere.",
+			"logging": {
+				"label": "Diagnostic logging",
+				"description": "Records app events, errors, and crashes while you reproduce a problem. Glyph keeps about 10 MB and deletes the oldest lines first. Turn it off when you're done.",
+				"ariaLabel": "Diagnostic logging"
+			},
+			"export": {
+				"label": "Export logs",
+				"description": "Saves a zip with the logs, recent Glyph crash reports from macOS, and your Glyph and macOS versions. Logs can include file and folder names from your space, so look them over before you send them. Your home folder appears as ~.",
+				"action": "Export Logs…",
+				"exporting": "Exporting…",
+				"dialogTitle": "Export Diagnostic Logs"
+			},
+			"clear": {
+				"label": "Clear logs",
+				"description": "Deletes the diagnostic logs saved on this Mac.",
+				"action": "Clear Logs",
+				"done": "Diagnostic logs cleared."
 			}
 		}
 	},

@@ -71,8 +71,8 @@
 		},
 		"developer": {
 			"title": "Developer settings",
-			"description": "Advanced tools like the attachment browser.",
-			"keywords": ["Developer", "advanced", "attachments"]
+			"description": "Advanced tools like the attachment browser and diagnostic logging.",
+			"keywords": ["Developer", "advanced", "attachments", "logs", "diagnostics"]
 		}
 	},
 	"entries": {
@@ -682,6 +682,12 @@
 			"section": "Attachment browser",
 			"description": "Find unused attachments and move them to the Trash.",
 			"keywords": ["attachments", "unused", "orphaned", "clean up", "images", "trash"]
+		},
+		"developer-diagnostic-logging": {
+			"title": "Diagnostic logging",
+			"section": "Diagnostics",
+			"description": "Record logs on this Mac and export them for a bug report.",
+			"keywords": ["logs", "logging", "diagnostics", "crash", "bug report", "debug", "export"]
 		}
 	},
 	"categoryPrefix": "Settings > {{tab}}"

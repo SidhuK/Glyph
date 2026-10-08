@@ -12,6 +12,7 @@ mod custom_theme;
 mod databases;
 mod daily_note_rollover;
 mod deeplink;
+mod diagnostics;
 mod external_markdown;
 mod file_tree_appearance;
 mod floating_window;
@@ -71,16 +72,6 @@ static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
 static MAIN_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 const SPACE_MENU_ID: &str = "space.menu";
 const RECENT_SPACES_MENU_ID: &str = "space.recent.menu";
-
-fn init_tracing() {
-    let filter = tracing_subscriber::EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info,tauri=info,glyph_lib=info"));
-
-    let _ = tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .with_target(false)
-        .try_init();
-}
 
 fn space_is_open(state: &space::SpaceState) -> bool {
     state
@@ -1473,7 +1464,7 @@ fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Res
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    init_tracing();
+    diagnostics::init_tracing();
 
     #[cfg(target_os = "macos")]
     macos_webkit_defaults::configure_continuous_spell_checking();
@@ -1565,6 +1556,9 @@ pub fn run() {
             }
         })
         .setup(|app| {
+            if let Err(error) = diagnostics::init(app.handle()) {
+                warn!("Failed to initialize diagnostic logging: {error}");
+            }
             if let Err(error) = app_icon::restore(app.handle()) {
                 warn!("Failed to restore app icon: {error}");
             }
@@ -1704,6 +1698,10 @@ pub fn run() {
             set_menu_shortcuts,
             set_menu_labels,
             app_icon::app_set_icon,
+            diagnostics::commands::diagnostics_sync_logging,
+            diagnostics::commands::diagnostics_log_frontend,
+            diagnostics::commands::diagnostics_clear_logs,
+            diagnostics::commands::diagnostics_export_logs,
             menu_take_pending_commands,
             set_window_vibrancy_theme,
             external_markdown::open_external_markdown_path,
