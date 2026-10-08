@@ -277,7 +277,7 @@ export function useDatabaseBoard({
 	);
 
 	const renameLane = useCallback(
-		(sourceLaneId: string, nextLaneId: string, failedPaths: string[]) => {
+		(sourceLaneId: string, nextLaneId: string, movedPaths: string[], keepSourceLane: boolean) => {
 			if (
 				!groupColumn ||
 				sourceLaneId === DATABASE_BOARD_EMPTY_LANE_ID ||
@@ -287,9 +287,10 @@ export function useDatabaseBoard({
 				return;
 			}
 
-			// Cards that failed to rename stay in the source lane, so it keeps its slot and the
-			// new lane goes right after it; otherwise the new lane takes the source lane's slot.
-			const failedSet = new Set(failedPaths);
+			// Only renamed cards move; entries for failed or filtered-out notes stay under the source
+			// lane. When cards stayed behind the source lane keeps its slot and the new lane goes right
+			// after it; otherwise the new lane takes the source lane's slot.
+			const movedSet = new Set(movedPaths);
 			const currentLaneOrder = (
 				laneOrderByGroup[groupColumn.id] ??
 				displayedLaneIdsRef.current[groupColumn.id] ??
@@ -297,7 +298,7 @@ export function useDatabaseBoard({
 			).filter((laneId) => laneId !== nextLaneId);
 			const nextLaneOrder = currentLaneOrder.flatMap((laneId) => {
 				if (laneId !== sourceLaneId) return [laneId];
-				return failedSet.size > 0 ? [sourceLaneId, nextLaneId] : [nextLaneId];
+				return keepSourceLane ? [sourceLaneId, nextLaneId] : [nextLaneId];
 			});
 			const currentCardOrder =
 				cardOrderByGroup[groupColumn.id] ?? displayedCardIdsRef.current[groupColumn.id] ?? {};
@@ -307,8 +308,8 @@ export function useDatabaseBoard({
 					([laneId]) => laneId !== sourceLaneId && laneId !== nextLaneId,
 				),
 			);
-			const movedOrder = sourceOrder.filter((notePath) => !failedSet.has(notePath));
-			const keptOrder = sourceOrder.filter((notePath) => failedSet.has(notePath));
+			const movedOrder = sourceOrder.filter((notePath) => movedSet.has(notePath));
+			const keptOrder = sourceOrder.filter((notePath) => !movedSet.has(notePath));
 			if (movedOrder.length > 0) nextCardOrder[nextLaneId] = movedOrder;
 			if (keptOrder.length > 0) nextCardOrder[sourceLaneId] = keptOrder;
 

@@ -20,8 +20,13 @@ export interface BoardLaneRenameTarget {
 
 interface UseBoardLaneRenameOptions {
 	target: BoardLaneRenameTarget;
-	/** `failedPaths` stay in the source lane; every other card moves to the new lane. */
-	onRenamed: (fromLaneId: string, toLaneId: string, failedPaths: string[]) => void;
+	/** `movedPaths` take the new lane; `keepSourceLane` is true when some cards stayed behind. */
+	onRenamed: (
+		fromLaneId: string,
+		toLaneId: string,
+		movedPaths: string[],
+		keepSourceLane: boolean,
+	) => void;
 }
 
 interface LaneRenameVariables {
@@ -112,7 +117,7 @@ export function useBoardLaneRename({ target, onRenamed }: UseBoardLaneRenameOpti
 		}
 
 		if (fromValues.length === 0) {
-			onRenamed(lane.id, laneId, []);
+			onRenamed(lane.id, laneId, [], false);
 			return;
 		}
 		const result = await renameMutation.mutateAsync({
@@ -121,13 +126,12 @@ export function useBoardLaneRename({ target, onRenamed }: UseBoardLaneRenameOpti
 			laneId,
 			expectedSpace: spacePath,
 		});
-		// Migrate the saved order even when some cards failed so the moved cards keep their layout.
-		onRenamed(
-			lane.id,
-			laneId,
-			result.failures.map((failure) => failure.path),
-		);
 		const [firstFailure] = result.failures;
+		// Migrate the saved order even when some cards failed so the moved cards keep their layout,
+		// but leave the board alone when nothing moved so a failed rename adds no empty lane.
+		if (result.changed_paths.length > 0 || !firstFailure) {
+			onRenamed(lane.id, laneId, result.changed_paths, firstFailure != null);
+		}
 		if (firstFailure) {
 			throw new Error(
 				t("collections.laneRenamePartial", {
