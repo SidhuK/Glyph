@@ -1,4 +1,4 @@
-import type { MarkdownToken } from "@tiptap/core";
+import { type MarkdownToken, ResizableNodeView } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 
 function imageDimension(value: unknown): number | null {
@@ -27,6 +27,13 @@ function escapeHtmlAttribute(value: string): string {
 
 export function hasMarkdownImageDisplaySize(attributes: Record<string, unknown>): boolean {
 	return imageDimension(attributes.width) !== null || imageDimension(attributes.height) !== null;
+}
+
+function syncImageDisplaySize(element: HTMLElement, attributes: Record<string, unknown>): void {
+	const width = imageDimension(attributes.width);
+	const height = imageDimension(attributes.height);
+	element.style.width = width === null ? "" : `${width}px`;
+	element.style.height = height === null ? "" : `${height}px`;
 }
 
 function getTokenField(
@@ -90,6 +97,25 @@ export const MarkdownImage = Image.extend({
 					return uploadId ? { "data-glyph-upload-id": uploadId } : {};
 				},
 			},
+		};
+	},
+
+	addNodeView() {
+		const parent = this.parent?.();
+		if (!parent) return null;
+		return (props) => {
+			const nodeView = parent(props);
+			if (!(nodeView instanceof ResizableNodeView)) return nodeView;
+			const update = nodeView.update.bind(nodeView);
+			nodeView.update = (node, decorations, innerDecorations) => {
+				const updated = update(node, decorations, innerDecorations);
+				// ResizableNodeView applies width/height only in its constructor, and the
+				// image extension skips them on update, so a reused <img> would keep the
+				// previous node's inline size after setContent or undo.
+				if (updated) syncImageDisplaySize(nodeView.element, node.attrs);
+				return updated;
+			};
+			return nodeView;
 		};
 	},
 
