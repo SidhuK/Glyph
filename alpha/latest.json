@@ -1,15 +1,15 @@
 {
-  "version": "0.9.2-alpha.2",
-  "notes": "## What's Changed\n* Trim startup bundle, thumbnail memory, and idle work by @SidhuK in https://github.com/SidhuK/Glyph/pull/636\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.2-alpha.1...v0.9.2-alpha.2",
-  "pub_date": "2026-10-07T16:27:30.748Z",
+  "version": "0.9.2-alpha.3",
+  "notes": "## What's Changed\n* Fix stale image src and size after switching notes in rich mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/637\n* Document that pull requests are not accepted by @SidhuK in https://github.com/SidhuK/Glyph/pull/638\n* Add opt-in diagnostic logging with local log export by @SidhuK in https://github.com/SidhuK/Glyph/pull/639\n* Edit collection cells and lane renames in place without rewriting frontmatter by @SidhuK in https://github.com/SidhuK/Glyph/pull/640\n* Match folder collections by byte-exact prefix instead of LIKE by @SidhuK in https://github.com/SidhuK/Glyph/pull/641\n* Keep board card and lane order when a lane rename partly fails (#642)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/642\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.2-alpha.2...v0.9.2-alpha.3",
+  "pub_date": "2026-10-08T12:13:56.488Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdzQjVNR0xickgvZ3BtSEF2cmhUL0pTR1hHTFhyelpYblByQkVndkxiS2orb2dLVEd6bSt6RWNxQURPMXdoMjBaQldQOUFYVnRkSTJTdnVNaDhuWndBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzkwNDQxCWZpbGU6R2x5cGguYXBwLnRhci5nego4cjdSbnBxbFFVVEJUb0UvY01MSlczMjdrWW5qWkIvdWNKQU8zMVdDWmdzcFB0YVlVc3JGRmg4cHBLSDc4WTlzdXZPSk10ekN5UXFFU3RYbmQ0KzVCUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.2-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDFRcGl3K2libTJYNEJncnlESmNiVjlOT1lGaElINUJTVjQvZjkvaU9Sc2R3YkI2aVl5VFZZOUxzWUJKVUJYdCtFZEt0WnE2RnBESWoxTVVUMGFiMWdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxNDYxNjI5CWZpbGU6R2x5cGguYXBwLnRhci5negpwMEtMUU8rMk9qS2pEYk5zOWpvbFVkcSs3M0hROWtVN084OXdzdEpKTUo0WmJWMWMvT3FiQ1FNcnBRdzZoc2YxOVhxcldOZEo2U29EdWJNNGhYcTFEUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.2-alpha.3/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdzQjVNR0xickgvZ3BtSEF2cmhUL0pTR1hHTFhyelpYblByQkVndkxiS2orb2dLVEd6bSt6RWNxQURPMXdoMjBaQldQOUFYVnRkSTJTdnVNaDhuWndBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzkwNDQxCWZpbGU6R2x5cGguYXBwLnRhci5nego4cjdSbnBxbFFVVEJUb0UvY01MSlczMjdrWW5qWkIvdWNKQU8zMVdDWmdzcFB0YVlVc3JGRmg4cHBLSDc4WTlzdXZPSk10ekN5UXFFU3RYbmQ0KzVCUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.2-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDFRcGl3K2libTJYNEJncnlESmNiVjlOT1lGaElINUJTVjQvZjkvaU9Sc2R3YkI2aVl5VFZZOUxzWUJKVUJYdCtFZEt0WnE2RnBESWoxTVVUMGFiMWdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxNDYxNjI5CWZpbGU6R2x5cGguYXBwLnRhci5negpwMEtMUU8rMk9qS2pEYk5zOWpvbFVkcSs3M0hROWtVN084OXdzdEpKTUo0WmJWMWMvT3FiQ1FNcnBRdzZoc2YxOVhxcldOZEo2U29EdWJNNGhYcTFEUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.2-alpha.3/Glyph_aarch64.app.tar.gz"
     }
   }
 }
