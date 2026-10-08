@@ -15,13 +15,15 @@ struct KeyBlock {
     /// The key as written in the file, including any quotes.
     key_text: String,
     comment: Option<String>,
+    /// Standalone comment lines between the block's members.
+    comment_lines: Vec<String>,
     /// Indent before `- ` when the value is a block sequence.
     item_indent: Option<String>,
 }
 
 /// Splits a top-level `key: value` line when its key is `target`.
 fn split_key<'a>(content: &'a str, target: &Value) -> Option<(&'a str, &'a str)> {
-    if content.starts_with(char::is_whitespace) || content.starts_with(['#', '-']) {
+    if content.starts_with(char::is_whitespace) {
         return None;
     }
     content.match_indices(':').find_map(|(index, _)| {
@@ -34,9 +36,9 @@ fn split_key<'a>(content: &'a str, target: &Value) -> Option<(&'a str, &'a str)>
 /// The `# comment` ending a line, found where cutting it leaves the parsed line unchanged.
 fn trailing_comment(content: &str) -> Option<String> {
     let full = parse_frontmatter_mapping(Some(content)).ok()?;
-    content.match_indices(" #").find_map(|(index, _)| {
-        (parse_frontmatter_mapping(Some(&content[..index])).ok()? == full)
-            .then(|| content[index + 1..].to_string())
+    content.match_indices('#').find_map(|(index, _)| {
+        let value = content[..index].strip_suffix([' ', '\t'])?;
+        (parse_frontmatter_mapping(Some(value)).ok()? == full).then(|| content[index..].to_string())
     })
 }
 
@@ -45,6 +47,8 @@ fn find_block(yaml: &str, target: &Value) -> Option<KeyBlock> {
     let mut offset = 0;
     let mut block: Option<KeyBlock> = None;
     let mut inline_value = false;
+    let mut block_scalar = false;
+    let mut pending_comments = Vec::new();
     for line in yaml.split_inclusive('\n') {
         let content = line.trim_end_matches(['\r', '\n']);
         let trimmed = content.trim_start();
@@ -53,11 +57,13 @@ fn find_block(yaml: &str, target: &Value) -> Option<KeyBlock> {
                 if let Some((key_text, rest)) = split_key(content, target) {
                     let value = rest.trim();
                     inline_value = !value.is_empty() && !value.starts_with('#');
+                    block_scalar = value.starts_with(['|', '>']);
                     block = Some(KeyBlock {
                         start: offset,
                         end: offset + line.len(),
                         key_text: key_text.to_string(),
                         comment: trailing_comment(content),
+                        comment_lines: Vec::new(),
                         item_indent: None,
                     });
                 }
@@ -65,11 +71,19 @@ fn find_block(yaml: &str, target: &Value) -> Option<KeyBlock> {
             Some(found) => {
                 if trimmed.is_empty() {
                     // Blank lines only belong to the block when more members follow.
+                } else if trimmed.starts_with('#')
+                    && !(block_scalar && content.starts_with(char::is_whitespace))
+                {
+                    // Comments after the last member stay outside the block.
+                    pending_comments.push(content);
                 } else if content.starts_with(char::is_whitespace)
                     || content == "-"
                     || content.starts_with("- ")
                 {
                     found.end = offset + line.len();
+                    found
+                        .comment_lines
+                        .extend(pending_comments.drain(..).map(str::to_string));
                     if !inline_value
                         && found.item_indent.is_none()
                         && (trimmed == "-" || trimmed.starts_with("- "))
@@ -168,14 +182,28 @@ pub fn set_yaml_key(
             let ends_with_newline = yaml[..block.end].ends_with('\n');
             let mut candidate = yaml[..block.start].to_string();
             let replacement = match value {
-                Some(value) => Some(render_entry(
-                    &block.key_text,
-                    value,
-                    block.item_indent.as_deref(),
-                    block.comment.as_deref(),
-                    newline,
-                )?),
-                None => block.comment,
+                Some(value) => {
+                    let entry = render_entry(
+                        &block.key_text,
+                        value,
+                        block.item_indent.as_deref(),
+                        block.comment.as_deref(),
+                        newline,
+                    )?;
+                    let (first, rest) = entry.split_once(newline).unzip();
+                    let lines = std::iter::once(first.unwrap_or(&entry))
+                        .chain(block.comment_lines.iter().map(String::as_str))
+                        .chain(rest);
+                    Some(lines.collect::<Vec<_>>().join(newline))
+                }
+                None => {
+                    let kept: Vec<_> = block
+                        .comment
+                        .into_iter()
+                        .chain(block.comment_lines)
+                        .collect();
+                    (!kept.is_empty()).then(|| kept.join(newline))
+                }
             };
             match replacement {
                 Some(text) => {
@@ -205,9 +233,17 @@ pub fn set_yaml_key(
             };
             let key_text = serde_yaml::to_string(&target).map_err(|e| e.to_string())?;
             let entry = render_entry(key_text.trim_end(), value, Some(""), None, newline)?;
-            let placeholder = yaml.lines().find(|line| line.trim() == "{}");
-            if let Some(line) = placeholder.filter(|_| mapping.is_empty()) {
-                vec![yaml.replacen(line, &entry, 1)]
+            let mut offset = 0;
+            let placeholder = yaml.split_inclusive('\n').find_map(|line| {
+                let start = offset;
+                offset += line.len();
+                let content = line.trim_end_matches(['\r', '\n']);
+                (content.trim() == "{}").then(|| start..start + content.len())
+            });
+            if let Some(range) = placeholder.filter(|_| mapping.is_empty()) {
+                let mut candidate = yaml.to_string();
+                candidate.replace_range(range, &entry);
+                vec![candidate]
             } else if yaml.trim().is_empty() {
                 vec![entry]
             } else {
