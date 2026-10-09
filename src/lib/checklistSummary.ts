@@ -1,8 +1,8 @@
 import type { NoteTaskSummary } from "./tauri";
 
 const CHECKLIST_LINE = /^[ \t]*[-*+] \[([ xX])\] /;
-// A run of 3+ backticks or tildes at any indentation.
-const FENCE_LINE = /^[ \t]*(`{3,}|~{3,})/;
+// A run of 3+ backticks or tildes after any leading whitespace (Rust trim_start).
+const FENCE_LINE = /^\s*(`{3,}|~{3,})/;
 
 // Mirrors the Rust checklist scanner: skips frontmatter, fenced code, and HTML
 // comment regions opened by a line that starts with an unclosed `<!--`.

@@ -1,6 +1,7 @@
 .tasksPane {
 	/* Mirrors the editor checkbox size, 25-node-note-content.css:856. */
-	--task-checkbox-size: calc(var(--editor-font-size) - 2px);
+	/* Capped so a large editor font can't outgrow the row or the 24px hit target. */
+	--task-checkbox-size: min(calc(var(--editor-font-size) - 2px), 16px);
 	/* Pads the checkbox label out to a 24px pointer target. */
 	--task-hit-pad: calc((24px - var(--task-checkbox-size)) / 2);
 	--tasks-chevron-gutter: 26px;

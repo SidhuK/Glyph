@@ -31,7 +31,7 @@ pub(crate) fn toggle_checklist_item(
     let mut changed = false;
     for item in affected {
         let checkbox = item.checkbox..item.checkbox + 1;
-        if (&markdown[checkbox.clone()] == " ") == checked {
+        if !item.moved && (&markdown[checkbox.clone()] == " ") == checked {
             next.replace_range(checkbox, status);
             changed = true;
         }

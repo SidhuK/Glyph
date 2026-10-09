@@ -69,7 +69,7 @@ function renderRow(row: TaskRow, context: TaskRowContext) {
 		case "note":
 			return <TaskNoteRow row={row} context={context} />;
 		case "heading":
-			return <TaskHeadingRow text={row.text} />;
+			return <TaskHeadingRow text={row.text} needle={context.needle} />;
 		case "task":
 			return <TaskItemRow row={row} context={context} />;
 		default: {

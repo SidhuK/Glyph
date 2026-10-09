@@ -5,14 +5,14 @@ use crate::index::{paths, TempSpace};
 use crate::note_mutation::CommitCtx;
 use crate::space_fs::helpers::etag_for;
 
-const NOTE: &str = "- [ ] Parent\n  - [ ] Child\n    - [ ] Grandchild\n\n  Detail\n- [ ] Sibling\n";
+const NOTE: &str = "- [ ] Parent\n  - [ ] Child\n    - [ ] Grandchild\n  - [ ] Moved ***Moved to*** [[2026-01-02]]\n\n  Detail\n- [ ] Sibling\n";
 
 #[test]
 fn checking_a_parent_checks_its_children() {
     let next = toggle_checklist_item(NOTE, 0, true).unwrap().unwrap();
     assert_eq!(
         next,
-        "- [x] Parent\n  - [x] Child\n    - [x] Grandchild\n\n  Detail\n- [ ] Sibling\n"
+        "- [x] Parent\n  - [x] Child\n    - [x] Grandchild\n  - [ ] Moved ***Moved to*** [[2026-01-02]]\n\n  Detail\n- [ ] Sibling\n"
     );
 }
 

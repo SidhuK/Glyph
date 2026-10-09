@@ -23,7 +23,7 @@ export function useTasksView(spacePath: string | null, scope: TaskScope, needle:
 	// Only an unfiltered list knows every note, so only then may stale overrides be pruned.
 	const groupState = useTaskGroupState(
 		spacePath,
-		scope.kind === "all" && query.data ? serverGroups : null,
+		scope.kind === "all" && query.data && !query.isPlaceholderData ? serverGroups : null,
 	);
 	const expansion = groupState.state;
 	const completion = useTaskCompletion(spacePath, scope, serverGroups);

@@ -1,5 +1,11 @@
 import type { TaskItem, TaskNoteGroup } from "../../lib/tauri";
+import { displayNameFromPath } from "../../utils/path";
 import { taskKey } from "./taskModel";
+
+/** The title a note row shows (and search matches): file name when the note has none. */
+export function noteTitle(group: TaskNoteGroup): string {
+	return group.title || displayNameFromPath(group.note_path);
+}
 
 /** Deepest visual nesting level; deeper tasks render at this level. */
 const MAX_TASK_DEPTH = 4;
@@ -99,7 +105,7 @@ export function buildTaskRows(
 	let fractionWidth = 0;
 	for (const group of groups) {
 		const depths = taskDepths(group.items);
-		const titleMatches = group.title.toLowerCase().includes(query);
+		const titleMatches = noteTitle(group).toLowerCase().includes(query);
 		const visible = group.items
 			.map((item, index) => ({ item, depth: Math.min(MAX_TASK_DEPTH, depths[index]) }))
 			.filter(({ item }) => titleMatches || taskDisplay(item).haystack.includes(query));

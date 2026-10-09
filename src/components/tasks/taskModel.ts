@@ -60,17 +60,6 @@ export function insertTasks(
 	return result;
 }
 
-export function withoutTasks(
-	groups: readonly TaskNoteGroup[],
-	keys: ReadonlySet<string>,
-): TaskNoteGroup[] {
-	return groups.flatMap((group) => {
-		const items = group.items.filter((item) => !keys.has(taskKey(group.note_path, item.start)));
-		if (items.length === group.items.length) return [group];
-		return items.length === 0 ? [] : [{ ...group, items }];
-	});
-}
-
 /** Displayed groups: server data plus held tasks, in the order the burst started with. */
 export function withCompleting(
 	groups: readonly TaskNoteGroup[],
@@ -88,7 +77,7 @@ type CompletionAction =
 	/** Release every held task checked by `origin` (undo, or a failed write). */
 	| { type: "drop"; origin: string }
 	| { type: "saved"; notePath: string; etag: string }
-	| { type: "flush"; keys: ReadonlySet<string> };
+	| { type: "flush" };
 
 function withEntries(state: CompletingState, entries: Map<string, CompletingTask>) {
 	return { entries, order: entries.size === 0 ? [] : state.order };
@@ -115,7 +104,6 @@ export function completionReducer(
 			}
 			return withEntries(state, entries);
 		case "flush":
-			for (const key of action.keys) entries.delete(key);
-			return withEntries(state, entries);
+			return EMPTY_COMPLETING;
 	}
 }

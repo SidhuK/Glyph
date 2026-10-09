@@ -8,7 +8,6 @@ import {
 	insertTasks,
 	taskKey,
 	taskSubtree,
-	withoutTasks,
 } from "./taskModel";
 import { TOGGLE_TASK_MUTATION_KEY, useToggleTask } from "./useToggleTask";
 
@@ -28,7 +27,7 @@ export function useTaskCompletion(
 	const queryKey = navigationQueryKeys.tasks(scope);
 	const [completing, dispatch] = useReducer(completionReducer, EMPTY_COMPLETING);
 	const timerRef = useRef<number | null>(null);
-	const toggleTask = useToggleTask(spacePath, scope, {
+	const toggleTask = useToggleTask(scope, {
 		onSaved: ({ group }, etag) => dispatch({ type: "saved", notePath: group.note_path, etag }),
 		onFailed: ({ group, item, checked }) => {
 			if (checked) dispatch({ type: "drop", origin: taskKey(group.note_path, item.start) });
@@ -40,61 +39,59 @@ export function useTaskCompletion(
 		timerRef.current = null;
 	}, []);
 
-	/** Drop held tasks from the list. Their checks are already written (or in flight). */
-	const flush = async (keys: ReadonlySet<string>) => {
+	/**
+	 * End the hold. While a toggle write is still running the hold restarts; once every
+	 * write has landed, disk is the truth, so refetch and release every held task.
+	 */
+	const flush = async () => {
+		if (queryClient.isMutating({ mutationKey: TOGGLE_TASK_MUTATION_KEY }) > 0) {
+			scheduleFlush();
+			return;
+		}
 		timerRef.current = null;
 		await queryClient.cancelQueries({ queryKey });
-		if (queryClient.isMutating({ mutationKey: TOGGLE_TASK_MUTATION_KEY }) === 0) {
-			// Every write has landed, so disk is the source of truth (and restores failures).
-			await queryClient.refetchQueries({ queryKey });
-		} else {
-			queryClient.setQueryData<TaskNoteGroup[]>(queryKey, (current) =>
-				current ? withoutTasks(current, keys) : current,
-			);
-		}
-		dispatch({ type: "flush", keys });
+		await queryClient.refetchQueries({ queryKey });
+		dispatch({ type: "flush" });
 	};
 
 	/** (Re)start the single hold timer; each new check restarts it so a burst resolves together. */
-	const scheduleFlush = (keys: ReadonlySet<string>) => {
+	const scheduleFlush = () => {
 		clearTimer();
-		if (keys.size === 0) return;
-		timerRef.current = window.setTimeout(() => void flush(keys), COMPLETE_HOLD_MS);
+		timerRef.current = window.setTimeout(() => void flush(), COMPLETE_HOLD_MS);
 	};
 
 	const complete = (group: TaskNoteGroup, item: TaskItem) => {
+		if (!spacePath) return;
 		const origin = taskKey(group.note_path, item.start);
 		const tasks = taskSubtree(group, item.start).map((child) => ({ group, item: child, origin }));
-		const keys = new Set(completing.entries.keys());
-		for (const task of tasks) keys.add(taskKey(group.note_path, task.item.start));
 		dispatch({ type: "complete", tasks, order: serverGroups.map((entry) => entry.note_path) });
-		scheduleFlush(keys);
-		toggleTask({ group, item, checked: true });
+		scheduleFlush();
+		toggleTask({ spacePath, group, item, checked: true });
 	};
 
 	/** Undo during the hold: restore the checked task and the children it checked. */
 	const cancel = (group: TaskNoteGroup, item: TaskItem) => {
 		const origin = completing.entries.get(taskKey(group.note_path, item.start))?.origin;
-		if (!origin) return;
+		if (!origin || !spacePath) return;
 		const restored = [...completing.entries.values()].filter((entry) => entry.origin === origin);
 		dispatch({ type: "drop", origin });
-		const remaining = new Set<string>();
-		for (const [key, entry] of completing.entries) if (entry.origin !== origin) remaining.add(key);
-		scheduleFlush(remaining);
+		if (restored.length === completing.entries.size) clearTimer();
+		else scheduleFlush();
 		void queryClient.cancelQueries({ queryKey });
 		queryClient.setQueryData<TaskNoteGroup[]>(queryKey, (current) =>
 			current ? insertTasks(current, restored) : current,
 		);
 		for (const entry of restored) {
-			toggleTask({ group: entry.group, item: entry.item, checked: false });
+			toggleTask({ spacePath, group: entry.group, item: entry.item, checked: false });
 		}
 	};
 
-	/** Scope changes drop held tasks right away so they never show in another list. */
+	/** Scope changes release held tasks synchronously so they never merge into another list. */
 	const flushNow = () => {
 		if (completing.entries.size === 0) return;
 		clearTimer();
-		void flush(new Set(completing.entries.keys()));
+		dispatch({ type: "flush" });
+		void queryClient.invalidateQueries({ queryKey });
 	};
 
 	return { completing, complete, cancel, flushNow, clearTimer };

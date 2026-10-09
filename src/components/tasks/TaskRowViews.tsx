@@ -3,8 +3,7 @@ import { ArrowRight01Icon, ArrowRight02Icon } from "@hugeicons/core-free-icons";
 import { useTranslation } from "react-i18next";
 import type { TaskItem, TaskNoteGroup } from "../../lib/tauri";
 import type { CssVars } from "../../lib/utils";
-import { displayNameFromPath } from "../../utils/path";
-import type { TaskRow } from "./buildTaskRows";
+import { noteTitle, type TaskRow } from "./buildTaskRows";
 import { TaskNoteBreadcrumb } from "./TaskNoteBreadcrumb";
 import { TaskNoteProgress } from "./TaskNoteProgress";
 
@@ -29,10 +28,6 @@ function Highlight({ text, needle }: { text: string; needle: string }) {
 			{text.slice(index + needle.length)}
 		</>
 	);
-}
-
-function noteTitle(group: TaskNoteGroup) {
-	return group.title || displayNameFromPath(group.note_path);
 }
 
 export function TaskNoteRow({
@@ -78,8 +73,12 @@ export function TaskNoteRow({
 	);
 }
 
-export function TaskHeadingRow({ text }: { text: string }) {
-	return <div className="tasksHeadingRow">{text}</div>;
+export function TaskHeadingRow({ text, needle }: { text: string; needle: string }) {
+	return (
+		<div className="tasksHeadingRow">
+			<Highlight text={text} needle={needle} />
+		</div>
+	);
 }
 
 export function TaskItemRow({

@@ -10,6 +10,8 @@ export const TOGGLE_TASK_MUTATION_KEY = ["tasks", "toggle"] as const;
 const TOGGLE_ERROR_TOAST_ID = "tasks-toggle-error";
 
 interface ToggleTaskVariables {
+	/** Snapshot at click time, so a write never lands in a space switched to meanwhile. */
+	spacePath: string;
 	group: TaskNoteGroup;
 	item: TaskItem;
 	checked: boolean;
@@ -30,11 +32,7 @@ function toggleErrorKey(message: string) {
  * Writes one checkbox per call. All toggles share one mutation scope, so they run one
  * after another and each reads the etag the previous write left in the cache.
  */
-export function useToggleTask(
-	spacePath: string | null,
-	scope: TaskScope,
-	{ onSaved, onFailed }: ToggleTaskCallbacks,
-) {
+export function useToggleTask(scope: TaskScope, { onSaved, onFailed }: ToggleTaskCallbacks) {
 	const { t } = useTranslation("shell");
 	const queryClient = useQueryClient();
 	const queryKey = navigationQueryKeys.tasks(scope);
@@ -48,10 +46,9 @@ export function useToggleTask(
 		mutationKey: TOGGLE_TASK_MUTATION_KEY,
 		scope: { id: "tasks-toggle" },
 		mutationFn: (variables: ToggleTaskVariables) => {
-			if (!spacePath) throw new Error(t("tasks.toggleFailed"));
 			return invoke("tasks_toggle", {
 				request: {
-					space_path: spacePath,
+					space_path: variables.spacePath,
 					note_path: variables.group.note_path,
 					etag: currentEtag(variables),
 					start: variables.item.start,

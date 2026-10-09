@@ -35,6 +35,8 @@ export function useTaskGroupState(
 	});
 
 	const update = (next: TaskGroupState) => {
+		// Before the stored state loads, a write would replace it with the default.
+		if (!query.isSuccess) return;
 		const pruned = knownGroups ? withKnownOverrides(next, knownGroups) : next;
 		queryClient.setQueryData(queryKey, pruned);
 		save.mutate(pruned);

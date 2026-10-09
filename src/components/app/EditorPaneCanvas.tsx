@@ -8,7 +8,7 @@ import {
 	useCallback,
 	useState,
 } from "react";
-import { useAISidebarContext, useUILayoutContext } from "../../contexts";
+import { useAISidebarContext, useSpace, useUILayoutContext } from "../../contexts";
 import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
@@ -223,6 +223,7 @@ function EditorPaneContent({
 	databasesOpenRequest,
 }: EditorPaneContentProps) {
 	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
+	const { spacePath } = useSpace();
 	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
 	const handleDirtyChange = useCallback(
 		(dirty: boolean) =>
@@ -256,7 +257,7 @@ function EditorPaneContent({
 	if (viewerPath === TASKS_TAB_ID) {
 		return (
 			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-				<TasksPane onOpenFile={onBrowseFile} />
+				<TasksPane key={spacePath ?? ""} onOpenFile={onBrowseFile} />
 			</Suspense>
 		);
 	}
