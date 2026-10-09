@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import type { TaskScope } from "../../lib/tauri";
 import { CanvasPaneAwait } from "../app/CanvasPaneAwait";
+import { dispatchInternalAnchorClick } from "../editor/markdown/editorEvents";
 import { requestHeadingNavigation, slugifyHeading } from "../editor/markdown/headingAnchor";
 import { Button } from "../ui/shadcn/button";
 import { TasksList } from "./TasksList";
@@ -48,10 +49,17 @@ export const TasksPane = memo(function TasksPane({ onOpenFile }: TasksPaneProps)
 	};
 
 	const openTask = (notePath: string, heading: string | null) => {
-		if (heading) {
-			requestHeadingNavigation({ path: notePath, anchor: slugifyHeading(heading) || heading });
+		if (!heading) {
+			void onOpenFile(notePath);
+			return;
 		}
-		void onOpenFile(notePath);
+		const anchor = slugifyHeading(heading) || heading;
+		// Covers an editor that mounts (or remounts) for this note.
+		requestHeadingNavigation({ path: notePath, anchor });
+		// Covers an editor already showing the note (e.g. in another split), which won't remount.
+		void onOpenFile(notePath).then(() =>
+			dispatchInternalAnchorClick({ anchor: `#${anchor}`, sourcePath: notePath }),
+		);
 	};
 	const showAllNotes = () =>
 		changeScope(() => {
