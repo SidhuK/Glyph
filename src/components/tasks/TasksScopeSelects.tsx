@@ -72,7 +72,7 @@ export function TasksScopeSelects({
 				<option value="folder">{t("tasks.scopeFolder")}</option>
 				<option value="tag">{t("tasks.scopeTag")}</option>
 			</select>
-			{scopeKind === "folder" && foldersQuery.isError ? (
+			{scopeKind === "folder" && foldersQuery.isError && !foldersQuery.data ? (
 				<span className="tasksScopeError" role="alert">
 					{t("tasks.foldersLoadFailed", { message: foldersQuery.error.message })}
 					<Button

@@ -54,12 +54,12 @@ export const TasksPane = memo(function TasksPane({ onOpenFile }: TasksPaneProps)
 			return;
 		}
 		const anchor = slugifyHeading(heading) || heading;
-		// Covers an editor that mounts (or remounts) for this note.
+		// Order matters: the event scrolls an editor already showing the note (and clears any
+		// pending jump), so it goes first; the pending jump then serves a viewer that mounts
+		// on open, such as the side peek.
+		dispatchInternalAnchorClick({ anchor: `#${anchor}`, sourcePath: notePath });
 		requestHeadingNavigation({ path: notePath, anchor });
-		// Covers an editor already showing the note (e.g. in another split), which won't remount.
-		void onOpenFile(notePath).then(() =>
-			dispatchInternalAnchorClick({ anchor: `#${anchor}`, sourcePath: notePath }),
-		);
+		void onOpenFile(notePath);
 	};
 	const showAllNotes = () =>
 		changeScope(() => {
