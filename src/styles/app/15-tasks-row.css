@@ -1,0 +1,163 @@
+/* Task rows of the Tasks pane; custom properties are set on .tasksPane in 15-tasks.css. */
+
+/* Task row */
+.tasksTaskRow {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.55em;
+	margin-inline: calc(var(--space-2) * -1);
+	padding-block: var(--space-1);
+	padding-inline: calc(var(--space-2) + var(--task-depth, 0) * var(--task-indent-step))
+		var(--space-2);
+	border-radius: var(--radius-md);
+	font-size: var(--text-sm);
+	line-height: var(--tasks-line);
+	transition: background-color var(--transition-base);
+}
+
+.tasksTaskRow:hover,
+.tasksTaskRow:focus-within {
+	background: var(--tasks-row-hover);
+}
+
+.tasksTaskRow[data-nested="true"]::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: calc(
+		var(--space-2) + (var(--task-depth) - 1) * var(--task-indent-step) + var(--task-checkbox-size) /
+			2
+	);
+	width: 1px;
+	background: color-mix(in srgb, var(--border-light) 70%, transparent);
+	pointer-events: none;
+}
+
+.tasksCheckboxWrap {
+	position: relative;
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	box-sizing: content-box;
+	width: var(--task-checkbox-size);
+	height: var(--task-checkbox-size);
+	padding: var(--task-hit-pad);
+	margin: calc((var(--tasks-line) * 1em - var(--task-checkbox-size)) / 2 - var(--task-hit-pad))
+		calc(var(--task-hit-pad) * -1) calc(var(--task-hit-pad) * -1);
+	cursor: pointer;
+	user-select: none;
+}
+
+/* Checkbox and tick mirror the editor task list, 25-node-note-content.css:894-938. */
+.tasksCheckbox {
+	flex: 0 0 auto;
+	width: var(--task-checkbox-size);
+	height: var(--task-checkbox-size);
+	margin: 0;
+	padding: 0;
+	accent-color: var(--interactive-accent);
+	cursor: pointer;
+	transition:
+		opacity 180ms ease,
+		transform 180ms ease;
+}
+
+.tasksCheckbox:checked {
+	opacity: 0;
+	transform: scale(0.85);
+}
+
+.tasksCheckboxWrap::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 4px;
+	height: 8px;
+	margin-top: -5px;
+	margin-left: -3px;
+	border-right: 2px solid var(--interactive-accent);
+	border-bottom: 2px solid var(--interactive-accent);
+	pointer-events: none;
+	opacity: 0;
+	transform: rotate(45deg) scale(0.75);
+}
+
+.tasksCheckboxWrap:has(.tasksCheckbox:checked)::after {
+	opacity: 1;
+	transform: rotate(45deg) scale(1);
+	animation: task-check-in 180ms ease;
+}
+
+.tasksTaskText {
+	display: block;
+	flex: 1 1 auto;
+	min-width: 0;
+	height: auto;
+	overflow: hidden;
+	color: var(--text-primary);
+	font: inherit;
+	text-align: left;
+	user-select: text;
+}
+
+/* One line per task; the full text is in the button's title tooltip. */
+.tasksTaskTextClamp {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Strike-through mirrors checked editor tasks, 25-node-note-content.css:939-953. */
+.tasksTaskRow[data-completing="true"] .tasksTaskText {
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--bg-primary));
+	text-decoration-line: line-through;
+	text-decoration-style: dashed;
+	text-decoration-thickness: 1px;
+	text-decoration-color: color-mix(in srgb, var(--interactive-accent) 26%, var(--text-secondary));
+	text-decoration-skip-ink: none;
+}
+
+.tasksOpenButton {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: var(--icon-xl);
+	height: calc(var(--tasks-line) * 1em);
+	color: var(--tasks-meta);
+	opacity: 0;
+	transition: opacity var(--transition-base);
+}
+
+.tasksTaskRow:hover .tasksOpenButton,
+.tasksTaskRow:focus-within .tasksOpenButton {
+	opacity: 1;
+}
+
+.tasksOpenButton:hover {
+	color: var(--text-primary);
+}
+
+.tasksMatch {
+	border-radius: var(--radius-2xs);
+	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	color: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tasksCheckbox,
+	.tasksOpenButton,
+	.tasksTaskRow {
+		transition: none;
+	}
+
+	.tasksCheckboxWrap:has(.tasksCheckbox:checked)::after {
+		animation: none;
+	}
+}

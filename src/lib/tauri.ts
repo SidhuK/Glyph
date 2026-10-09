@@ -550,6 +550,38 @@ interface NoteTaskSummaryItem extends NoteTaskSummary {
 	note_path: string;
 }
 
+export type TaskScope =
+	| { kind: "all" }
+	| { kind: "folder"; folder_prefix: string }
+	| { kind: "tag"; tag: string };
+
+export interface TaskItem {
+	start: number;
+	indent: number;
+	text: string;
+	heading: string | null;
+}
+
+export interface TaskNoteGroup {
+	note_path: string;
+	title: string;
+	etag: string;
+	total_count: number;
+	items: TaskItem[];
+}
+
+export interface TaskToggleRequest {
+	space_path: string;
+	note_path: string;
+	etag: string;
+	start: number;
+	checked: boolean;
+}
+
+export type TaskToggleOutcome =
+	| { kind: "saved"; etag: string }
+	| { kind: "index_failed"; etag: string };
+
 export interface DirChildSummary {
 	dir_rel_path: string;
 	name: string;
@@ -1215,6 +1247,8 @@ interface TauriCommands {
 	people_list: CommandDef<{ limit?: number | null; offset?: number | null }, PersonCount[]>;
 	task_summary: CommandDef<{ markdown: string }, NoteTaskSummary>;
 	task_summaries_for_paths: CommandDef<{ note_paths: string[] }, NoteTaskSummaryItem[]>;
+	tasks_list: CommandDef<{ space_path: string; scope: TaskScope }, TaskNoteGroup[]>;
+	tasks_toggle: CommandDef<{ request: TaskToggleRequest }, TaskToggleOutcome>;
 	backlinks: CommandDef<{ note_id: string; space_path?: string | null }, BacklinkItem[]>;
 	unlinked_mentions: CommandDef<{ note_id: string }, UnlinkedMentionsResult>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;

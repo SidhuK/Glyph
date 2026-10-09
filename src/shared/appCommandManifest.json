@@ -896,6 +896,16 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
+		"open-tasks": {
+			"id": "open-tasks",
+			"label": "Open Tasks",
+			"description": "Open the tasks view.",
+			"category": "navigation",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
 		"open-command-palette": {
 			"id": "open-command-palette",
 			"label": "Open Command Palette",

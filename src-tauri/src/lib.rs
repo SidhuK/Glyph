@@ -1780,6 +1780,8 @@ pub fn run() {
             index::commands::people_list,
             index::commands::task_summary,
             index::commands::task_summaries_for_paths,
+            index::checklists::commands::tasks_list,
+            index::checklists::commands::tasks_toggle,
             index::commands::backlinks,
             index::commands::unlinked_mentions,
             index::commands::note_relationships,

@@ -9,6 +9,8 @@
 @import "./styles/app/14-welcome.css";
 @import "./styles/app/15-all-docs.css";
 @import "./styles/app/15-activity-timeline.css";
+@import "./styles/app/15-tasks.css";
+@import "./styles/app/15-tasks-row.css";
 @import "./styles/app/16-main-workspace-layout.css";
 @import "./styles/app/17-main-tabs.css";
 @import "./styles/app/17a-split-editors.css";

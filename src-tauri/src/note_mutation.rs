@@ -116,18 +116,25 @@ pub struct CommitResult {
     pub mtime_ms: u64,
     pub change: SpaceChange,
     pub created: bool,
+    /// The note was written but could not be reindexed, so the index is stale.
+    pub index_failed: bool,
 }
 
+/// Reindexes a written note; returns false (and logs) when indexing failed.
 pub fn index_written_markdown(
     root: &Path,
     recent: &RecentLocalChanges,
     rel_path: &str,
     markdown: &str,
-) {
+) -> bool {
     match index::index_note(root, rel_path, markdown) {
-        Ok(()) => mark_recent_local_change(recent, rel_path),
+        Ok(()) => {
+            mark_recent_local_change(recent, rel_path);
+            true
+        }
         Err(error) => {
-            tracing::warn!(note_id = %rel_path, %error, "saved note could not be indexed")
+            tracing::warn!(note_id = %rel_path, %error, "saved note could not be indexed");
+            false
         }
     }
 }
@@ -173,12 +180,13 @@ pub fn commit_markdown(
                     mtime_ms: file_mtime_ms(&abs),
                     change: SpaceChange::content(ctx.space_path, rel_path),
                     created: false,
+                    index_failed: false,
                 });
             }
             true
         }
     };
-    index_written_markdown(ctx.root, ctx.recent, &rel_path, text);
+    let index_failed = !index_written_markdown(ctx.root, ctx.recent, &rel_path, text);
     Ok(CommitResult {
         etag: etag_for(bytes),
         mtime_ms: file_mtime_ms(&abs),
@@ -188,6 +196,7 @@ pub fn commit_markdown(
             SpaceChange::content(ctx.space_path, rel_path)
         },
         created,
+        index_failed,
     })
 }
 

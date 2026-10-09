@@ -318,6 +318,10 @@
 			"label": "Open All Notes",
 			"description": "Open the all notes view."
 		},
+		"open-tasks": {
+			"label": "Open Tasks",
+			"description": "Open the tasks view."
+		},
 		"open-command-palette": {
 			"label": "Open Command Palette",
 			"description": "Open the command palette."

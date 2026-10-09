@@ -9,6 +9,7 @@ import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { spaceDisplayName } from "../../lib/spaceRegistry";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { displayNameFromPath, parentDir } from "../../utils/path";
@@ -65,7 +66,8 @@ export function isPathSpecial(path: string): boolean {
 		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === AGENT_VIEW_TAB_ID ||
 		path === DATABASES_TAB_ID ||
-		path === SPACE_CONNECTIONS_TAB_ID
+		path === SPACE_CONNECTIONS_TAB_ID ||
+		path === TASKS_TAB_ID
 	);
 }
 

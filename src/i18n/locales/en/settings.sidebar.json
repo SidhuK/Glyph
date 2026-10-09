@@ -18,6 +18,9 @@
 		"databases": {
 			"label": "Collections / Databases"
 		},
+		"tasks": {
+			"label": "Tasks"
+		},
 		"connections": {
 			"label": "Connections"
 		},

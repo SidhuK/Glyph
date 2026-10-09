@@ -71,7 +71,7 @@ fn escape_like(value: &str) -> String {
         .replace('_', "\\_")
 }
 
-fn normalize_folder_prefix(value: Option<String>) -> Option<String> {
+pub(crate) fn normalize_folder_prefix(value: Option<String>) -> Option<String> {
     value
         .map(|folder| folder.trim().trim_matches('/').replace('\\', "/"))
         .filter(|folder| !folder.is_empty())

@@ -7,6 +7,7 @@ import {
 	Calendar03Icon,
 	CalendarAdd01Icon,
 	ChartRelationshipIcon,
+	CheckListIcon,
 	ColorsIcon,
 	CursorAddSelection02Icon,
 	CursorInWindowIcon,
@@ -104,6 +105,7 @@ interface UseAppCommandsDeps {
 	onOpenSpace: () => void;
 	openAgentView: () => void;
 	openAllDocsTab: () => void;
+	openTasksTab: () => void;
 	openBlankTab: () => void;
 	splitPaneWithBlank: (edge: SplitDropEdge) => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
@@ -267,6 +269,7 @@ export function useAppCommands({
 	onOpenSpace,
 	openAgentView,
 	openAllDocsTab,
+	openTasksTab,
 	openBlankTab,
 	splitPaneWithBlank,
 	openDatabasesTab,
@@ -617,6 +620,12 @@ export function useAppCommands({
 				action: openAllDocsTab,
 			},
 			{
+				id: "open-tasks",
+				icon: <HugeiconsIcon icon={CheckListIcon} size="var(--icon-lg)" />,
+				enabled: Boolean(spacePath),
+				action: openTasksTab,
+			},
+			{
 				id: "open-connections",
 				label: "Open Connections",
 				icon: <HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-lg)" />,
@@ -783,6 +792,7 @@ export function useAppCommands({
 		showCollapsibleLists,
 		spacePath,
 		openAllDocsTab,
+		openTasksTab,
 		openSearchPalette,
 		openDatabasesTab,
 		openCalendar,

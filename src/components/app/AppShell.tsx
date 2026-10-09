@@ -56,6 +56,7 @@ import { loadSettings } from "../../lib/settings";
 import { toTauriAccelerator } from "../../lib/shortcuts";
 import { useSpaceChangePropagation } from "../../lib/spaceChange";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate, selectTemplateFile } from "../../lib/templates";
@@ -962,7 +963,7 @@ export function AppShell() {
 	useSpaceChangePropagation(spaceChangeHost);
 
 	const activeTopSection = useMemo<
-		"agent" | "all-notes" | "inbox" | "archive" | "connections" | "databases" | null
+		"agent" | "all-notes" | "inbox" | "archive" | "connections" | "databases" | "tasks" | null
 	>(() => {
 		if (activeTabPath === INBOX_TAB_ID) return "inbox";
 		if (activeTabPath === ARCHIVE_TAB_ID) return "archive";
@@ -970,6 +971,7 @@ export function AppShell() {
 		if (activeTabPath === ACTIVITY_TIMELINE_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
+		if (activeTabPath === TASKS_TAB_ID) return "tasks";
 		return null;
 	}, [activeTabPath]);
 	const openCommandPalette = useCallback(() => {
@@ -984,6 +986,9 @@ export function AppShell() {
 	}, [openCommandPalette, openPalette, spacePath]);
 	const openAllDocsTab = useCallback(() => {
 		openSpecialTab(ACTIVITY_TIMELINE_TAB_ID);
+	}, [openSpecialTab]);
+	const openTasksTab = useCallback(() => {
+		openSpecialTab(TASKS_TAB_ID);
 	}, [openSpecialTab]);
 	const openAgentView = useCallback(() => {
 		setAiPanelOpen(false);
@@ -1217,6 +1222,7 @@ export function AppShell() {
 		onCreateSpace: handleCreateSpace,
 		onOpenSpace: handleOpenSpace,
 		openAllDocsTab,
+		openTasksTab,
 		openAgentView,
 		openBlankTab,
 		splitPaneWithBlank,
@@ -1400,6 +1406,7 @@ export function AppShell() {
 						sidebarCollapsed={sidebarCollapsed}
 						spacePath={spacePath}
 						onOpenAllDocs={openAllDocsTab}
+						onOpenTasks={openTasksTab}
 						onOpenInbox={() => openSpecialTab(INBOX_TAB_ID)}
 						onOpenArchive={() => openSpecialTab(ARCHIVE_TAB_ID)}
 						onOpenConnections={openConnectionsView}

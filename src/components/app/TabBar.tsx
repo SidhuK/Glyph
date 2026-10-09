@@ -13,6 +13,7 @@ import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
 import { displayNameFromPath, isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -106,6 +107,7 @@ export function TabBar({
 			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
 			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
 			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return t("sidebar.connections");
+			if (tab.target === TASKS_TAB_ID) return t("sidebar.tasks");
 			return compactLabel(tab.target ? displayNameFromPath(tab.target) : t("tabs.untitled"));
 		},
 		[compactLabel, t],
