@@ -5,6 +5,7 @@ import {
 	ArrowShrinkIcon,
 	Calendar03Icon as CalendarIcon,
 	CalendarAdd01Icon as PeriodNoteIcon,
+	CheckListIcon as TasksIcon,
 	ChartRelationshipIcon as ConnectionsIcon,
 	CursorAddSelection02Icon,
 	ExpandParagraphIcon,
@@ -96,6 +97,7 @@ export interface SidebarContentProps {
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	onOpenAllDocs: () => void;
+	onOpenTasks: () => void;
 	onOpenInbox: () => void;
 	onOpenArchive: () => void;
 	onOpenConnections: () => void;
@@ -108,6 +110,7 @@ export interface SidebarContentProps {
 		| "archive"
 		| "connections"
 		| "databases"
+		| "tasks"
 		| null;
 	onOpenCalendar: () => void;
 	onOpenSearch: () => void;
@@ -238,6 +241,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	onOpenAllDocs,
+	onOpenTasks,
 	onOpenInbox,
 	onOpenArchive,
 	onOpenConnections,
@@ -654,6 +658,16 @@ export const SidebarContent = memo(function SidebarContent({
 									<HugeiconsIcon icon={CollectionsIcon} size="var(--icon-md)" />
 									<span className="sidebarQuickActionLabel">{t("sidebar.collections")}</span>
 								</button>
+							) : null}
+							{sidebarVisibility.tasks ? (
+								<SidebarActionButton
+									key="tasks"
+									data-sidebar-key="tasks"
+									label={t("sidebar.tasks")}
+									icon={TasksIcon}
+									onClick={onOpenTasks}
+									active={activeTopSection === "tasks"}
+								/>
 							) : null}
 							{sidebarVisibility.connections ? (
 								<button

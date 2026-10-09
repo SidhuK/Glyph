@@ -71,6 +71,15 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
   tokenize = 'porter'
 );
 
+CREATE TABLE IF NOT EXISTS checklist_items (
+  note_id TEXT NOT NULL,
+  start INTEGER NOT NULL,
+  indent INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  heading TEXT,
+  PRIMARY KEY (note_id, start)
+);
+
 CREATE TABLE IF NOT EXISTS indexed_files (
   path TEXT PRIMARY KEY,
   modified_ns INTEGER NOT NULL,

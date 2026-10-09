@@ -20,6 +20,8 @@ pub(crate) mod unlinked_mentions;
 pub use db::open_db;
 #[cfg(test)]
 pub(crate) use indexer::people_mentions_as_tags_test_lock;
+#[cfg(test)]
+pub(crate) use indexer::TempSpace;
 pub use indexer::{
     index_note, people_mentions_as_tags_enabled, remove_note, set_people_mentions_as_tags_enabled,
 };

@@ -5,10 +5,9 @@ use std::ffi::CString;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
-use super::checklists::checklist_counts;
 use super::schema::ensure_schema;
 
-const INDEX_DB_VERSION: i32 = 7;
+const INDEX_DB_VERSION: i32 = 9;
 const WAL_SIZE_LIMIT_BYTES: i64 = 1_048_576;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
@@ -16,7 +15,7 @@ fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
     CACHE.get_or_init(|| Mutex::new(HashSet::new()))
 }
 
-fn migrate_if_needed(conn: &rusqlite::Connection, space_root: &Path) -> Result<(), String> {
+fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
     let current_version: i32 = conn
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .map_err(|e| e.to_string())?;
@@ -42,7 +41,11 @@ fn migrate_if_needed(conn: &rusqlite::Connection, space_root: &Path) -> Result<(
     }
 
     if current_version < 7 {
-        migrate_checklist_summary_columns(conn, space_root)?;
+        migrate_checklist_summary_columns(conn)?;
+    }
+
+    if current_version < 9 {
+        migrate_checklist_items(conn)?;
     }
 
     conn.pragma_update(None, "user_version", INDEX_DB_VERSION)
@@ -114,10 +117,7 @@ fn migrate_status_property_kinds(conn: &rusqlite::Connection) -> Result<(), Stri
     Ok(())
 }
 
-fn migrate_checklist_summary_columns(
-    conn: &rusqlite::Connection,
-    space_root: &Path,
-) -> Result<(), String> {
+fn migrate_checklist_summary_columns(conn: &rusqlite::Connection) -> Result<(), String> {
     if !table_has_column(conn, "notes", "checklist_total")? {
         conn.execute(
             "ALTER TABLE notes ADD COLUMN checklist_total INTEGER NOT NULL DEFAULT 0",
@@ -133,39 +133,25 @@ fn migrate_checklist_summary_columns(
         .map_err(|e| e.to_string())?;
     }
 
-    let mut stmt = conn
-        .prepare("SELECT path FROM notes")
-        .map_err(|e| e.to_string())?;
-    let paths = stmt
-        .query_map([], |row| row.get::<_, String>(0))
-        .map_err(|e| e.to_string())?
-        .filter_map(Result::ok)
-        .collect::<Vec<_>>();
+    conn.execute_batch("DROP TABLE IF EXISTS tasks; DROP TABLE IF EXISTS tasks_fts;")
+        .map_err(|e| e.to_string())
+}
 
-    let mut updates = Vec::new();
-    for path in paths {
-        let abs = crate::paths::join_under(space_root, Path::new(&path))?;
-        let markdown = std::fs::read_to_string(&abs).map_err(|e| {
-            format!("Failed to read note during checklist summary migration ({path}): {e}")
-        })?;
-        let (checklist_total, checklist_completed) = checklist_counts(&markdown);
-        updates.push((path, checklist_total, checklist_completed));
-    }
-
-    let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
-    for (path, checklist_total, checklist_completed) in updates {
-        tx.execute(
-            "UPDATE notes SET checklist_total = ?, checklist_completed = ? WHERE path = ?",
-            rusqlite::params![checklist_total, checklist_completed, path],
-        )
+// Recreates `checklist_items` in its current shape (dev builds at version 8
+// had an older one), then clears the fingerprints so the next sync falls back
+// to a full rebuild, which fills it and recomputes checklist counts.
+fn migrate_checklist_items(conn: &rusqlite::Connection) -> Result<(), String> {
+    conn.execute("DROP TABLE IF EXISTS checklist_items", [])
         .map_err(|e| e.to_string())?;
-    }
-    tx.execute("DROP TABLE IF EXISTS tasks", [])
+    ensure_schema(conn)?;
+    conn.execute("DELETE FROM indexed_files", [])
         .map_err(|e| e.to_string())?;
-    tx.execute("DROP TABLE IF EXISTS tasks_fts", [])
+    // A note indexed before the rebuild runs would switch sync to the
+    // incremental path; a blank etag defeats the unchanged-content early
+    // return so every note is fully reindexed either way.
+    conn.execute("UPDATE notes SET etag = ''", [])
         .map_err(|e| e.to_string())?;
-    tx.commit().map_err(|e| e.to_string())?;
-
+    tracing::info!("Cleared indexed file fingerprints; next sync rebuilds checklist items");
     Ok(())
 }
 
@@ -227,7 +213,7 @@ pub fn open_db(space_root: &Path) -> Result<rusqlite::Connection, String> {
     let mut cache = schema_cache().lock().unwrap_or_else(|p| p.into_inner());
     if !cache.contains(&path) {
         ensure_schema(&conn)?;
-        migrate_if_needed(&conn, space_root)?;
+        migrate_if_needed(&conn)?;
         cache.insert(path);
     }
 

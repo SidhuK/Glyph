@@ -58,11 +58,11 @@ fn direct_folder_clause(dir: &str) -> (String, Vec<String>) {
     )
 }
 
-fn recursive_folder_clause(dir: &str) -> (String, Vec<String>) {
+pub(crate) fn recursive_folder_clause(dir: &str) -> (String, Vec<String>) {
     if dir.is_empty() {
         return ("1 = 1".to_string(), Vec::new());
     }
-    ("id >= ? AND id < ?".to_string(), folder_prefix_bounds(dir))
+    ("n.id >= ? AND n.id < ?".to_string(), folder_prefix_bounds(dir))
 }
 
 fn folder_source_ids(conn: &Connection, dir: &str, recursive: bool) -> Result<Vec<String>, String> {

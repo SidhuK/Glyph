@@ -147,7 +147,7 @@ fn duplicate_file_under_root(
         if is_markdown {
             match std::fs::read_to_string(&duplicate_abs) {
                 Ok(markdown) => {
-                    index_written_markdown(root, recent_local_changes, &duplicate_rel_string, &markdown)
+                    index_written_markdown(root, recent_local_changes, &duplicate_rel_string, &markdown);
                 }
                 Err(error) => {
                     tracing::warn!(

@@ -1,0 +1,279 @@
+.tasksPane {
+	/* Mirrors the editor checkbox size, 25-node-note-content.css:856. */
+	/* Capped so a large editor font can't outgrow the row or the 24px hit target. */
+	--task-checkbox-size: min(calc(var(--editor-font-size) - 2px), 16px);
+	/* Pads the checkbox label out to a 24px pointer target. */
+	--task-hit-pad: calc((24px - var(--task-checkbox-size)) / 2);
+	--tasks-chevron-gutter: 26px;
+	--task-indent-step: 1.1em;
+	--tasks-row-hover: color-mix(in srgb, var(--bg-hover) 76%, transparent);
+	--tasks-meta: color-mix(in srgb, var(--text-secondary) 76%, var(--text-tertiary));
+	/* Task text line height, shared by the row, checkbox alignment and open button. */
+	--tasks-line: 1.45;
+}
+
+.activityTimelinePane.tasksPane {
+	padding-inline: max(clamp(18px, 4vw, 56px), calc(var(--tasks-chevron-gutter) + var(--space-1)));
+}
+
+.dark .tasksPane {
+	--tasks-row-hover: color-mix(in srgb, var(--bg-hover) 76%, var(--bg-secondary));
+}
+
+/* Toolbar */
+.tasksToolbar {
+	display: flex;
+	width: var(--activity-content-width);
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.tasksToolbar .tasksSearch {
+	flex: 1 1 220px;
+	height: 28px;
+}
+
+.tasksToolbar .tasksScopeSelect {
+	width: auto;
+	max-width: 260px;
+	min-height: 28px;
+	height: 28px;
+	flex: 0 1 auto;
+	/* .databaseNativeSelect centers its arrow for 32px; re-center it for 28px. */
+	background-position:
+		calc(100% - 14px) 11px,
+		calc(100% - 9px) 11px;
+}
+
+.tasksScopeError {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+}
+
+.tasksToolbarEnd {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	margin-inline-start: auto;
+}
+
+/* Type and colour come from .activityDayCounts. */
+.tasksStat {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	white-space: nowrap;
+}
+
+/* States */
+.tasksPane .tasksState {
+	display: flex;
+	width: var(--activity-content-width);
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--space-3);
+	margin: var(--space-2) 0 0;
+	color: color-mix(in srgb, var(--text-secondary) 82%, transparent);
+	font-size: var(--text-sm);
+}
+
+/* List (layout from .activityFeed.is-virtualized / .activityVirtualRow) */
+.tasksList {
+	/* Absorb the first note header's top padding, whatever row filtering leaves first. */
+	margin-top: calc(var(--space-5) * -1);
+}
+
+/* Shared: undo the global button rule (fixed height, nowrap, padding, hover fill). */
+.tasksPane :is(.tasksNoteTitle, .tasksTaskText, .tasksChevron, .tasksOpenButton) {
+	padding: 0;
+	border-radius: var(--radius-sm);
+	background: none;
+}
+
+.tasksPane :is(.tasksNoteTitle, .tasksTaskText, .tasksChevron, .tasksOpenButton):focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: -2px;
+}
+
+/* Note header */
+.tasksNoteRow {
+	container: tasksNote / inline-size;
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-5) 0 var(--space-2);
+	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 44%, transparent);
+}
+
+.tasksChevron {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: var(--icon-xl);
+	height: var(--icon-xl);
+	margin-inline-start: calc(var(--tasks-chevron-gutter) * -1);
+	margin-inline-end: calc(var(--tasks-chevron-gutter) - var(--icon-xl) - var(--space-2));
+	color: var(--tasks-meta);
+	opacity: 0;
+	transition: opacity var(--transition-base);
+}
+
+.tasksChevron svg {
+	transform: rotate(90deg);
+	transition: transform var(--transition-base);
+}
+
+.tasksNoteRow[data-collapsed="true"] .tasksChevron svg {
+	transform: none;
+}
+
+.tasksNoteRow:hover .tasksChevron,
+.tasksNoteRow[data-collapsed="true"] .tasksChevron,
+.tasksChevron:focus-visible {
+	opacity: 1;
+}
+
+.tasksNoteTitleHeading {
+	min-width: 0;
+	margin: 0;
+	flex: 0 1 auto;
+	font: inherit;
+}
+
+.tasksNoteTitle {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	text-align: left;
+	overflow: hidden;
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.95);
+	font-weight: var(--font-semibold);
+	line-height: 1.32;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tasksNoteTitle:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.tasksNoteBreadcrumb {
+	display: inline-flex;
+	min-width: 0;
+	max-width: 40%;
+	flex: 0 1 auto;
+	align-items: center;
+	gap: var(--space-1);
+	overflow: hidden;
+	color: var(--tasks-meta);
+	font-size: var(--text-xs);
+	line-height: var(--leading-snug);
+	white-space: nowrap;
+}
+
+.tasksNoteBreadcrumb svg {
+	flex: 0 0 auto;
+}
+
+.tasksNoteBreadcrumbSeparator {
+	opacity: 0.7;
+}
+
+.tasksNoteBreadcrumbSegment {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Progress bar + done/total fraction */
+.tasksProgress {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: var(--space-2);
+	margin-inline-start: auto;
+}
+
+.tasksProgressTrack {
+	display: block;
+	width: 48px;
+	height: 4px;
+	overflow: hidden;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--text-tertiary) 22%, transparent);
+}
+
+.tasksProgressFill {
+	display: block;
+	width: 100%;
+	height: 100%;
+	background: var(--tasks-progress-color);
+	transform: scaleX(var(--tasks-progress));
+	transform-origin: left;
+	transition:
+		transform 240ms cubic-bezier(0.2, 0, 0, 1),
+		background-color 240ms ease;
+}
+
+.tasksProgressLabel {
+	/* Shared width (widest fraction in the list) keeps every bar at the same offset. */
+	width: var(--tasks-fraction-width, 3ch);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	line-height: var(--leading-snug);
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+}
+
+.tasksProgress[data-complete="true"] .tasksProgressLabel {
+	color: var(--text-secondary);
+}
+
+@container tasksNote (width < 220px) {
+	.tasksProgressTrack {
+		display: none;
+	}
+}
+
+@container tasksNote (width < 140px) {
+	.tasksProgressLabel {
+		display: none;
+	}
+}
+
+@media (forced-colors: active) {
+	.tasksProgressTrack {
+		outline: 1px solid CanvasText;
+	}
+
+	.tasksProgressFill {
+		background: CanvasText;
+	}
+}
+
+/* Heading sub-label */
+.tasksHeadingRow {
+	overflow: hidden;
+	padding: var(--space-3) var(--space-2) var(--space-1);
+	color: var(--tasks-meta);
+	font-size: calc(var(--text-base) * 0.8);
+	font-weight: var(--font-medium);
+	line-height: var(--leading-snug);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tasksChevron,
+	.tasksChevron svg,
+	.tasksProgressFill {
+		transition: none;
+	}
+}

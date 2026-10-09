@@ -8,7 +8,7 @@ import {
 	useCallback,
 	useState,
 } from "react";
-import { useAISidebarContext, useUILayoutContext } from "../../contexts";
+import { useAISidebarContext, useSpace, useUILayoutContext } from "../../contexts";
 import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
@@ -21,6 +21,7 @@ import {
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
 import { isExcalidrawPath, isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -28,11 +29,12 @@ import type { CreateMarkdownFileOptions, ExtractToNoteActions } from "../editor/
 import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { TabBar } from "./TabBar";
-import { loadActivityTimelinePane, loadDatabasesPane } from "./prefetchablePanes";
+import { loadActivityTimelinePane, loadDatabasesPane, loadTasksPane } from "./prefetchablePanes";
 import type { WorkspaceEditorPane } from "./useTabManager";
 
 const DatabasesPane = lazy(loadDatabasesPane);
 const ActivityTimelinePane = lazy(loadActivityTimelinePane);
+const TasksPane = lazy(loadTasksPane);
 const AIPanel = lazy(() =>
 	import("../ai/AIPanel").then((module) => ({
 		default: module.AIPanel,
@@ -114,6 +116,8 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			} else if (target === DATABASES_TAB_ID) {
 				void loadDatabasesPane();
 				void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
+			} else if (target === TASKS_TAB_ID) {
+				void loadTasksPane();
 			}
 		},
 		[databasesOpenRequest.databaseId],
@@ -144,7 +148,8 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			data-all-docs={
 				viewerPath === ACTIVITY_TIMELINE_TAB_ID ||
 				viewerPath === INBOX_TAB_ID ||
-				viewerPath === ARCHIVE_TAB_ID
+				viewerPath === ARCHIVE_TAB_ID ||
+				viewerPath === TASKS_TAB_ID
 					? "true"
 					: undefined
 			}
@@ -218,6 +223,7 @@ function EditorPaneContent({
 	databasesOpenRequest,
 }: EditorPaneContentProps) {
 	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
+	const { spacePath } = useSpace();
 	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
 	const handleDirtyChange = useCallback(
 		(dirty: boolean) =>
@@ -245,6 +251,13 @@ function EditorPaneContent({
 					}
 					onOpenFile={onBrowseFile}
 				/>
+			</Suspense>
+		);
+	}
+	if (viewerPath === TASKS_TAB_ID) {
+		return (
+			<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
+				<TasksPane key={spacePath ?? ""} onOpenFile={onBrowseFile} />
 			</Suspense>
 		);
 	}
