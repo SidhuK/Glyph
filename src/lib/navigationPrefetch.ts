@@ -78,8 +78,8 @@ export const navigationQueryKeys = {
 	allDocsCount: (folderPrefix?: string | null) =>
 		[...navigationQueryKeys.allDocs(), "count", normalizeAllDocsFolder(folderPrefix)] as const,
 	taskSummaries: () => [...navigationQueryKeys.all, "task-summaries"] as const,
-	// No space path: switching spaces removes the whole navigation cache.
-	tasks: (scope: TaskScope) => [...navigationQueryKeys.taskSummaries(), "list", scope] as const,
+	tasks: (spacePath: string | null, scope: TaskScope) =>
+		[...navigationQueryKeys.taskSummaries(), "list", spacePath, scope] as const,
 	noteScans: () => [...navigationQueryKeys.all, "note-scan"] as const,
 	noteScan: (path: string) => [...navigationQueryKeys.noteScans(), path] as const,
 };

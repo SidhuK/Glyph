@@ -5,6 +5,7 @@ import { useFileTreeContext } from "../../contexts";
 import { navigationQueryKeys } from "../../lib/navigationPrefetch";
 import { invoke, type TaskScope } from "../../lib/tauri";
 import { formatTagLabel } from "../editor/noteProperties/utils";
+import { Button } from "../ui/shadcn/button";
 
 /** The folder list only changes on folder create/move/delete, so skip refetching on note saves. */
 const FOLDER_LIST_STALE_TIME_MS = 60_000;
@@ -71,7 +72,19 @@ export function TasksScopeSelects({
 				<option value="folder">{t("tasks.scopeFolder")}</option>
 				<option value="tag">{t("tasks.scopeTag")}</option>
 			</select>
-			{scopeKind === "folder" ? (
+			{scopeKind === "folder" && foldersQuery.isError ? (
+				<span className="tasksScopeError" role="alert">
+					{t("tasks.foldersLoadFailed", { message: foldersQuery.error.message })}
+					<Button
+						type="button"
+						variant="ghost"
+						size="xs"
+						onClick={() => void foldersQuery.refetch()}
+					>
+						{t("tasks.retry")}
+					</Button>
+				</span>
+			) : scopeKind === "folder" ? (
 				<select
 					className="databaseNativeSelect tasksScopeSelect"
 					aria-label={t("tasks.folder")}

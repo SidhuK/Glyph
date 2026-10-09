@@ -9,7 +9,7 @@ use crate::space::SpaceState;
 use crate::space_fs::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
 
 use super::store::query_open_tasks;
-use super::toggle::{toggle_checklist_item, NOTE_CHANGED};
+use super::toggle::{toggle_checklist_items, NOTE_CHANGED};
 use super::types::{TaskNoteGroup, TaskScope, TaskToggleOutcome, TaskToggleRequest};
 
 fn root_for_space(
@@ -88,7 +88,7 @@ pub(super) fn toggle_on_disk(
         return Err(NOTE_CHANGED.to_string());
     }
     let markdown = String::from_utf8(bytes).map_err(|e| e.to_string())?;
-    let Some(next) = toggle_checklist_item(&markdown, request.start, request.checked)? else {
+    let Some(next) = toggle_checklist_items(&markdown, &request.items, request.checked)? else {
         let etag = request.etag.clone();
         return Ok((TaskToggleOutcome::Saved { etag }, None));
     };

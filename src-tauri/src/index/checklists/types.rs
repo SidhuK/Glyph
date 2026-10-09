@@ -63,8 +63,15 @@ pub struct TaskToggleRequest {
     pub space_path: String,
     pub note_path: String,
     pub etag: String,
-    pub start: usize,
     pub checked: bool,
+    pub items: Vec<TaskToggleTarget>,
+}
+
+/// A task to toggle, identified by its line offset and parsed text.
+#[derive(Debug, Deserialize)]
+pub struct TaskToggleTarget {
+    pub start: usize,
+    pub text: String,
 }
 
 #[derive(Debug, PartialEq, Serialize)]

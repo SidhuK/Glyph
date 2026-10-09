@@ -35,7 +35,8 @@ fn fixture() -> Connection {
     )
     .unwrap();
     conn.execute(
-        "INSERT INTO tags(note_id, tag, is_explicit) VALUES('Work/a.md', 'project', 0), ('Work2/c.md', 'project/x', 1)",
+        "INSERT INTO tags(note_id, tag, is_explicit)
+         VALUES('Work/a.md', 'project', 1), ('Work2/c.md', 'project', 0), ('Work2/c.md', 'project/x', 1)",
         [],
     )
     .unwrap();
@@ -80,7 +81,7 @@ fn tag_scope_normalizes_and_includes_descendants() {
         tag: "#Project".to_string(),
     };
     let groups = query_open_tasks(&fixture(), &scope).unwrap();
-    assert_eq!(paths(&groups), vec!["Work/a.md"]);
+    assert_eq!(paths(&groups), vec!["Work2/c.md", "Work/a.md"]);
 }
 
 #[test]

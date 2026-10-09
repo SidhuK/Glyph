@@ -24,13 +24,13 @@ export function useTaskCompletion(
 	serverGroups: readonly TaskNoteGroup[],
 ) {
 	const queryClient = useQueryClient();
-	const queryKey = navigationQueryKeys.tasks(scope);
+	const queryKey = navigationQueryKeys.tasks(spacePath, scope);
 	const [completing, dispatch] = useReducer(completionReducer, EMPTY_COMPLETING);
 	const timerRef = useRef<number | null>(null);
 	const toggleTask = useToggleTask(scope, {
 		onSaved: ({ group }, etag) => dispatch({ type: "saved", notePath: group.note_path, etag }),
-		onFailed: ({ group, item, checked }) => {
-			if (checked) dispatch({ type: "drop", origin: taskKey(group.note_path, item.start) });
+		onFailed: ({ group, items, checked }) => {
+			if (checked) dispatch({ type: "drop", origin: taskKey(group.note_path, items[0].start) });
 		},
 	});
 
@@ -66,7 +66,8 @@ export function useTaskCompletion(
 		const tasks = taskSubtree(group, item.start).map((child) => ({ group, item: child, origin }));
 		dispatch({ type: "complete", tasks, order: serverGroups.map((entry) => entry.note_path) });
 		scheduleFlush();
-		toggleTask({ spacePath, group, item, checked: true });
+		// One target: Rust checks the nested children itself.
+		toggleTask({ spacePath, group, items: [item], checked: true });
 	};
 
 	/** Undo during the hold: restore the checked task and the children it checked. */
@@ -81,9 +82,13 @@ export function useTaskCompletion(
 		queryClient.setQueryData<TaskNoteGroup[]>(queryKey, (current) =>
 			current ? insertTasks(current, restored) : current,
 		);
-		for (const entry of restored) {
-			toggleTask({ spacePath, group: entry.group, item: entry.item, checked: false });
-		}
+		// One write reopens the task and every child that click checked.
+		toggleTask({
+			spacePath,
+			group: restored[0].group,
+			items: restored.map((entry) => entry.item),
+			checked: false,
+		});
 	};
 
 	/** Scope changes release held tasks synchronously so they never merge into another list. */

@@ -372,6 +372,8 @@
 		"scopeTag": "Tag",
 		"folder": "Folder",
 		"allFolders": "All folders",
+		"foldersLoadFailed": "Could not load folders: {{message}}",
+		"retry": "Retry",
 		"tag": "Tag",
 		"allTags": "All tags",
 		"empty": "No open tasks. Checklist items you write in notes show up here.",

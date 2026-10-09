@@ -146,6 +146,11 @@ fn migrate_checklist_items(conn: &rusqlite::Connection) -> Result<(), String> {
     ensure_schema(conn)?;
     conn.execute("DELETE FROM indexed_files", [])
         .map_err(|e| e.to_string())?;
+    // A note indexed before the rebuild runs would switch sync to the
+    // incremental path; a blank etag defeats the unchanged-content early
+    // return so every note is fully reindexed either way.
+    conn.execute("UPDATE notes SET etag = ''", [])
+        .map_err(|e| e.to_string())?;
     tracing::info!("Cleared indexed file fingerprints; next sync rebuilds checklist items");
     Ok(())
 }

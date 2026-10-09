@@ -13,7 +13,8 @@ interface ToggleTaskVariables {
 	/** Snapshot at click time, so a write never lands in a space switched to meanwhile. */
 	spacePath: string;
 	group: TaskNoteGroup;
-	item: TaskItem;
+	/** All in `group`'s note; written in one request. */
+	items: TaskItem[];
 	checked: boolean;
 }
 
@@ -29,18 +30,22 @@ function toggleErrorKey(message: string) {
 }
 
 /**
- * Writes one checkbox per call. All toggles share one mutation scope, so they run one
- * after another and each reads the etag the previous write left in the cache.
+ * One request per call. All toggles share one mutation scope, so they run one after
+ * another and each sends the etag the previous write left in the cache; Rust also
+ * verifies each target's text, so a stale offset can't flip a different task.
  */
 export function useToggleTask(scope: TaskScope, { onSaved, onFailed }: ToggleTaskCallbacks) {
 	const { t } = useTranslation("shell");
 	const queryClient = useQueryClient();
-	const queryKey = navigationQueryKeys.tasks(scope);
+	// Keyed by the space captured at click time, so a late result lands in that space's list.
+	const listKey = ({ spacePath }: ToggleTaskVariables) =>
+		navigationQueryKeys.tasks(spacePath, scope);
 
-	const currentEtag = ({ group }: ToggleTaskVariables) =>
+	const currentEtag = (variables: ToggleTaskVariables) =>
 		queryClient
-			.getQueryData<TaskNoteGroup[]>(queryKey)
-			?.find((entry) => entry.note_path === group.note_path)?.etag ?? group.etag;
+			.getQueryData<TaskNoteGroup[]>(listKey(variables))
+			?.find((entry) => entry.note_path === variables.group.note_path)?.etag ??
+		variables.group.etag;
 
 	const mutation = useMutation({
 		mutationKey: TOGGLE_TASK_MUTATION_KEY,
@@ -51,14 +56,14 @@ export function useToggleTask(scope: TaskScope, { onSaved, onFailed }: ToggleTas
 					space_path: variables.spacePath,
 					note_path: variables.group.note_path,
 					etag: currentEtag(variables),
-					start: variables.item.start,
 					checked: variables.checked,
+					items: variables.items.map(({ start, text }) => ({ start, text })),
 				},
 			});
 		},
 		onSuccess: (outcome, variables) => {
 			if (outcome.kind === "index_failed") toast.warning(t("tasks.indexFailed"));
-			queryClient.setQueryData<TaskNoteGroup[]>(queryKey, (current) =>
+			queryClient.setQueryData<TaskNoteGroup[]>(listKey(variables), (current) =>
 				current?.map((entry) =>
 					entry.note_path === variables.group.note_path ? { ...entry, etag: outcome.etag } : entry,
 				),
@@ -72,11 +77,11 @@ export function useToggleTask(scope: TaskScope, { onSaved, onFailed }: ToggleTas
 			const description = conflictKey || error.message === title ? undefined : error.message;
 			toast.error(title, { id: TOGGLE_ERROR_TOAST_ID, ...(description ? { description } : {}) });
 		},
-		onSettled: () => {
+		onSettled: (_outcome, _error, variables) => {
 			// Refetch only after the last in-flight toggle, so an earlier refetch cannot
 			// bring back a row whose write is still pending.
 			if (queryClient.isMutating({ mutationKey: TOGGLE_TASK_MUTATION_KEY }) !== 1) return;
-			void queryClient.invalidateQueries({ queryKey });
+			void queryClient.invalidateQueries({ queryKey: listKey(variables) });
 		},
 	});
 	return mutation.mutate;

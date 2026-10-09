@@ -46,6 +46,14 @@
 		calc(100% - 9px) 11px;
 }
 
+.tasksScopeError {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+}
+
 .tasksToolbarEnd {
 	display: flex;
 	align-items: center;

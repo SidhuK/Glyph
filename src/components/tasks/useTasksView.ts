@@ -15,7 +15,7 @@ const EMPTY_GROUPS: readonly TaskNoteGroup[] = [];
 export function useTasksView(spacePath: string | null, scope: TaskScope, needle: string) {
 	const { t } = useTranslation("shell");
 	const query = useQuery({
-		queryKey: navigationQueryKeys.tasks(scope),
+		queryKey: navigationQueryKeys.tasks(spacePath, scope),
 		queryFn: spacePath ? () => invoke("tasks_list", { space_path: spacePath, scope }) : skipToken,
 		placeholderData: keepPreviousData,
 	});

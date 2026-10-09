@@ -90,8 +90,11 @@ export function completionReducer(
 	const entries = new Map(state.entries);
 	switch (action.type) {
 		case "complete":
+			// A child already held keeps its own origin, so undoing this click
+			// reopens only what this click changed.
 			for (const task of action.tasks) {
-				entries.set(taskKey(task.group.note_path, task.item.start), task);
+				const key = taskKey(task.group.note_path, task.item.start);
+				if (!entries.has(key)) entries.set(key, task);
 			}
 			return { entries, order: state.entries.size === 0 ? action.order : state.order };
 		case "drop":

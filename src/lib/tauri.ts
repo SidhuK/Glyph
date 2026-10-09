@@ -574,8 +574,9 @@ export interface TaskToggleRequest {
 	space_path: string;
 	note_path: string;
 	etag: string;
-	start: number;
 	checked: boolean;
+	/** Targets by offset plus raw text from `tasks_list`; Rust verifies both. */
+	items: { start: number; text: string }[];
 }
 
 export type TaskToggleOutcome =
