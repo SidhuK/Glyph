@@ -57,11 +57,19 @@ describe("HighlightedText markdown integration", () => {
 
 	it("leaves == inside inline code untouched", () => {
 		const manager = createMarkdownManager();
-		const input = "Compare `a ==b== c` here";
+		for (const input of [
+			"Compare `a ==b== c` here",
+			"==before `a==b` after",
+			"==use `a==b` here== now",
+		]) {
+			const json = manager.parse(preprocessMarkdownForEditor(input));
+			const output = postprocessMarkdownFromEditor(manager.serialize(json));
+			expect(output).toBe(input);
+		}
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
-		const output = postprocessMarkdownFromEditor(manager.serialize(json));
-		expect(output).toBe(input);
+		const highlighted = manager.parse(preprocessMarkdownForEditor("==use `a==b` here== now"));
+		const codeNode = highlighted.content?.[0]?.content?.find((node) => node.text === "a==b");
+		expect(codeNode?.marks?.map((mark) => mark.type).sort()).toEqual(["code", "highlightedText"]);
 	});
 
 	it("does not treat space-padded == as a highlight", () => {

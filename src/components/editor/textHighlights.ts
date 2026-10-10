@@ -83,8 +83,12 @@ export const EDITOR_TEXT_HIGHLIGHT_BRIDGE_CLOSE_TOKEN = "{{/glyph-highlight}}";
 // `==text==` carries no color, so it always means yellow.
 export const EQUALS_HIGHLIGHT_COLOR: EditorTextHighlight = "yellow";
 // Content must not start or end with whitespace: saving moves edge spaces outside the mark,
-// which would rewrite prose like `a == b == c`.
-const EQUALS_HIGHLIGHT_BODY = "[^\\s=](?:[^=\\n]*[^\\s=])?";
+// which would rewrite prose like `a == b == c`. Code spans are matched whole because they
+// outrank other inline syntax, so a `==` inside one never closes the highlight.
+const EQUALS_HIGHLIGHT_CODE_SPAN = "`[^`\\n]+`";
+const EQUALS_HIGHLIGHT_EDGE = `(?:[^\\s=\`]|${EQUALS_HIGHLIGHT_CODE_SPAN})`;
+const EQUALS_HIGHLIGHT_INNER = `(?:[^=\\n\`]|${EQUALS_HIGHLIGHT_CODE_SPAN})`;
+const EQUALS_HIGHLIGHT_BODY = `${EQUALS_HIGHLIGHT_EDGE}(?:${EQUALS_HIGHLIGHT_INNER}*${EQUALS_HIGHLIGHT_EDGE})?`;
 export const EQUALS_HIGHLIGHT_RE = new RegExp(`^==(${EQUALS_HIGHLIGHT_BODY})==`);
 export const EQUALS_HIGHLIGHT_INPUT_RE = new RegExp(`(==(${EQUALS_HIGHLIGHT_BODY})==)$`);
 export const EQUALS_HIGHLIGHT_PASTE_RE = new RegExp(`(==(${EQUALS_HIGHLIGHT_BODY})==)`, "g");
