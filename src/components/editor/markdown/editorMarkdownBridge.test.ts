@@ -75,10 +75,15 @@ describe("editorMarkdownBridge", () => {
 
 	it("bridges supported highlighted marks to internal editor tokens and back", () => {
 		const md =
-			'Use <mark data-glyph-highlight="yellow" style="background-color: var(--glyph-inline-highlight-yellow, rgba(240, 180, 41, 0.26))">**focus**</mark> here';
+			'Use <mark data-glyph-highlight="blue" style="background-color: var(--glyph-inline-highlight-blue, rgba(59, 155, 220, 0.22))">**focus**</mark> here';
 		const preprocessed = preprocessMarkdownForEditor(md);
-		expect(preprocessed).toBe("Use {{glyph-highlight:yellow}}**focus**{{/glyph-highlight}} here");
+		expect(preprocessed).toBe("Use {{glyph-highlight:blue}}**focus**{{/glyph-highlight}} here");
 		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
+		expect(
+			postprocessMarkdownFromEditor(
+				"Use {{glyph-highlight:yellow}}**focus**{{/glyph-highlight}} here",
+			),
+		).toBe("Use ==**focus**== here");
 	});
 
 	it("preserves malformed wikilink-like text", () => {

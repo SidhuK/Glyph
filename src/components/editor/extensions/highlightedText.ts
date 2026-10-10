@@ -1,7 +1,11 @@
-import { Mark as MarkExtension, mergeAttributes } from "@tiptap/core";
+import { Mark as MarkExtension, markInputRule, markPasteRule, mergeAttributes } from "@tiptap/core";
 import {
 	EDITOR_TEXT_HIGHLIGHT_BRIDGE_CLOSE_TOKEN,
 	type EditorTextHighlight,
+	EQUALS_HIGHLIGHT_COLOR,
+	EQUALS_HIGHLIGHT_INPUT_RE,
+	EQUALS_HIGHLIGHT_PASTE_RE,
+	EQUALS_HIGHLIGHT_RE,
 	getEditorTextHighlightBridgeOpenToken,
 	getEditorTextHighlightStyle,
 	isEditorTextHighlight,
@@ -20,14 +24,26 @@ declare module "@tiptap/core" {
 }
 
 function parseGlyphHighlightMark(src: string) {
+	const equalsMatch = src.match(EQUALS_HIGHLIGHT_RE);
+	if (equalsMatch) {
+		return { raw: equalsMatch[0], color: EQUALS_HIGHLIGHT_COLOR, text: equalsMatch[1] ?? "" };
+	}
 	const match = src.match(GLYPH_HIGHLIGHT_BRIDGE_RE);
 	if (!match) return null;
 	const color = (match[1] ?? "").trim().toLowerCase();
 	if (!isEditorTextHighlight(color)) return null;
 	return {
+		raw: match[0],
 		color,
 		text: match[2] ?? "",
 	};
+}
+
+function nextHighlightStart(src: string): number {
+	const starts = [src.indexOf("{{glyph-highlight:"), src.indexOf("==")].filter(
+		(index) => index >= 0,
+	);
+	return starts.length > 0 ? Math.min(...starts) : -1;
 }
 
 export const HighlightedText = MarkExtension.create({
@@ -90,23 +106,35 @@ export const HighlightedText = MarkExtension.create({
 	markdownTokenizer: {
 		name: "highlightedText",
 		level: "inline",
-		start(src: string) {
-			return src.indexOf("{{glyph-highlight:");
-		},
+		start: nextHighlightStart,
 		tokenize(src, _tokens, helper) {
-			const match = src.match(GLYPH_HIGHLIGHT_BRIDGE_RE);
-			if (!match) return undefined;
-			const color = (match[1] ?? "").trim().toLowerCase();
-			if (!isEditorTextHighlight(color)) return undefined;
-			const raw = match[0];
-			const text = match[2] ?? "";
+			const parsed = parseGlyphHighlightMark(src);
+			if (!parsed) return undefined;
 			return {
 				type: "highlightedText",
-				raw,
-				text,
-				tokens: helper.inlineTokens(text),
+				raw: parsed.raw,
+				text: parsed.text,
+				tokens: helper.inlineTokens(parsed.text),
 			};
 		},
+	},
+	addInputRules() {
+		return [
+			markInputRule({
+				find: EQUALS_HIGHLIGHT_INPUT_RE,
+				type: this.type,
+				getAttributes: { color: EQUALS_HIGHLIGHT_COLOR },
+			}),
+		];
+	},
+	addPasteRules() {
+		return [
+			markPasteRule({
+				find: EQUALS_HIGHLIGHT_PASTE_RE,
+				type: this.type,
+				getAttributes: { color: EQUALS_HIGHLIGHT_COLOR },
+			}),
+		];
 	},
 	addCommands() {
 		return {

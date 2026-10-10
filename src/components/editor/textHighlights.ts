@@ -1,3 +1,4 @@
+import type { TokenizerAndRendererExtension } from "marked";
 import { i18n } from "../../i18n";
 
 export type EditorTextHighlight = "yellow" | "blue" | "green" | "red";
@@ -78,3 +79,40 @@ export function getEditorTextHighlightBridgeOpenToken(highlight: EditorTextHighl
 }
 
 export const EDITOR_TEXT_HIGHLIGHT_BRIDGE_CLOSE_TOKEN = "{{/glyph-highlight}}";
+
+// `==text==` carries no color, so it always means yellow.
+export const EQUALS_HIGHLIGHT_COLOR: EditorTextHighlight = "yellow";
+// Content must not start or end with whitespace: saving moves edge spaces outside the mark,
+// which would rewrite prose like `a == b == c`.
+const EQUALS_HIGHLIGHT_BODY = "[^\\s=](?:[^=\\n]*[^\\s=])?";
+export const EQUALS_HIGHLIGHT_RE = new RegExp(`^==(${EQUALS_HIGHLIGHT_BODY})==`);
+export const EQUALS_HIGHLIGHT_INPUT_RE = new RegExp(`(==(${EQUALS_HIGHLIGHT_BODY})==)$`);
+export const EQUALS_HIGHLIGHT_PASTE_RE = new RegExp(`(==(${EQUALS_HIGHLIGHT_BODY})==)`, "g");
+export const EQUALS_HIGHLIGHT_SCAN_RE = new RegExp(`==(${EQUALS_HIGHLIGHT_BODY})==`, "g");
+const EQUALS_HIGHLIGHT_CONTENT_RE = new RegExp(`^${EQUALS_HIGHLIGHT_BODY}$`);
+
+export function canWriteEqualsHighlight(text: string): boolean {
+	return EQUALS_HIGHLIGHT_CONTENT_RE.test(text);
+}
+
+export const equalsHighlightMarkedExtension: TokenizerAndRendererExtension = {
+	name: "equalsHighlight",
+	level: "inline",
+	start(src) {
+		const index = src.indexOf("==");
+		return index >= 0 ? index : undefined;
+	},
+	tokenizer(src) {
+		const match = EQUALS_HIGHLIGHT_RE.exec(src);
+		if (!match) return undefined;
+		return {
+			type: "equalsHighlight",
+			raw: match[0],
+			tokens: this.lexer.inlineTokens(match[1] ?? ""),
+		};
+	},
+	renderer(token) {
+		const inner = this.parser.parseInline(token.tokens ?? []);
+		return `${getEditorTextHighlightMarkdownOpenTag(EQUALS_HIGHLIGHT_COLOR)}${inner}</mark>`;
+	},
+};

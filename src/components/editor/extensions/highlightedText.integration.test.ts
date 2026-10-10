@@ -24,7 +24,7 @@ function createMarkdownManager() {
 }
 
 describe("HighlightedText markdown integration", () => {
-	it("round-trips highlighted marks through markdown parse and serialize", () => {
+	it("reads yellow HTML highlights and writes them back as ==text==", () => {
 		const manager = createMarkdownManager();
 		const input =
 			'Hello <mark data-glyph-highlight="yellow" style="background-color: var(--glyph-inline-highlight-yellow, rgba(240, 180, 41, 0.26))">world</mark>';
@@ -39,7 +39,93 @@ describe("HighlightedText markdown integration", () => {
 		expect(highlightedText?.marks?.[0]?.attrs?.color).toBe("yellow");
 
 		const output = postprocessMarkdownFromEditor(manager.serialize(json));
+		expect(output).toBe("Hello ==world==");
+	});
+
+	it("round-trips ==text== as a yellow highlight with nested formatting", () => {
+		const manager = createMarkdownManager();
+		const input = "Use ==**focus** here== now";
+
+		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const marks = json.content?.[0]?.content?.[1]?.marks ?? [];
+		expect(marks.map((mark) => mark.type)).toContain("highlightedText");
+		expect(marks.find((mark) => mark.type === "highlightedText")?.attrs?.color).toBe("yellow");
+
+		const output = postprocessMarkdownFromEditor(manager.serialize(json));
 		expect(output).toBe(input);
+	});
+
+	it("leaves == inside inline code untouched", () => {
+		const manager = createMarkdownManager();
+		const input = "Compare `a ==b== c` here";
+
+		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const output = postprocessMarkdownFromEditor(manager.serialize(json));
+		expect(output).toBe(input);
+	});
+
+	it("does not treat space-padded == as a highlight", () => {
+		const manager = createMarkdownManager();
+		for (const input of ["a == b == c", "Prefer === over ==, since == coerces"]) {
+			const json = manager.parse(preprocessMarkdownForEditor(input));
+			expect(json.content?.[0]?.content?.some((node) => node.marks?.length)).toBeFalsy();
+			expect(postprocessMarkdownFromEditor(manager.serialize(json))).toBe(input);
+		}
+	});
+
+	it("keeps the HTML form for yellow highlights that contain =", () => {
+		const editor = new Editor({
+			extensions: createEditorExtensions({
+				enableSlashCommand: false,
+				enableWikiLinks: false,
+				enableMarkdownLinkAutocomplete: false,
+			}),
+			content: "",
+			contentType: "markdown",
+			element: document.createElement("div"),
+		});
+
+		editor.chain().focus().setTextHighlight("yellow").insertContent("a=b").run();
+		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe(
+			'<mark data-glyph-highlight="yellow" style="background-color: var(--glyph-inline-highlight-yellow, rgba(240, 180, 41, 0.26))">a=b</mark>',
+		);
+
+		editor.destroy();
+	});
+
+	it.each([
+		["note ==done=", "note ==done==", 1],
+		["(==note=", "(==note==", 1],
+		["x == y =", "x == y ==", null],
+	])("typing the closing = after %s", (content, expected, highlightedIndex) => {
+		const editor = new Editor({
+			extensions: createEditorExtensions({
+				enableSlashCommand: false,
+				enableWikiLinks: false,
+				enableMarkdownLinkAutocomplete: false,
+			}),
+			content,
+			contentType: "markdown",
+			element: document.createElement("div"),
+		});
+
+		editor.commands.focus("end");
+		const { from, to } = editor.state.selection;
+		const insertClosing = () => editor.state.tr.insertText("=", from, to);
+		const handled = editor.view.someProp("handleTextInput", (handler) =>
+			handler(editor.view, from, to, "=", insertClosing),
+		);
+		if (!handled) editor.view.dispatch(insertClosing());
+
+		const nodes = editor.getJSON().content?.[0]?.content ?? [];
+		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe(expected);
+		if (highlightedIndex === null) {
+			expect(nodes.some((node) => node.marks?.length)).toBe(false);
+		} else {
+			expect(nodes[highlightedIndex]?.marks?.[0]?.attrs?.color).toBe("yellow");
+		}
+
+		editor.destroy();
 	});
 
 	it("supports nested text color inside a highlighted mark", () => {
