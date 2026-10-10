@@ -1,6 +1,7 @@
 import DOMPurify from "dompurify";
 import { Marked } from "marked";
 import { preprocessHtmlEmbeds } from "../components/editor/markdown/htmlEmbedMarkdown";
+import { equalsHighlightMarkedExtension } from "../components/editor/textHighlights";
 import {
 	findWikiLinkSpans,
 	parseWikiLink,
@@ -127,7 +128,7 @@ th {
 }
 `;
 
-const printMarked = new Marked();
+const printMarked = new Marked({ extensions: [equalsHighlightMarkedExtension] });
 
 function sanitizeHtmlEmbedForPrint(source: string, kind: HtmlEmbedKind): string {
 	const cleaned = stripHtmlEmbedRawSentinel(source).trim();

@@ -9,7 +9,9 @@ import {
 	isEditorTextColor,
 } from "../textColors";
 import {
+	canWriteEqualsHighlight,
 	EDITOR_TEXT_HIGHLIGHT_BRIDGE_CLOSE_TOKEN,
+	EQUALS_HIGHLIGHT_COLOR,
 	getEditorTextHighlightBridgeOpenToken,
 	getEditorTextHighlightMarkdownOpenTag,
 	isEditorTextHighlight,
@@ -114,6 +116,8 @@ function postprocessColoredText(input: string): string {
 function postprocessHighlightedText(input: string): string {
 	return input.replace(GLYPH_HIGHLIGHT_BRIDGE_RE, (_match, rawColor: string, text: string) => {
 		if (!isEditorTextHighlight(rawColor)) return text;
+		// Text containing `=` or line breaks would not parse back as `==…==`, so it keeps the HTML form.
+		if (rawColor === EQUALS_HIGHLIGHT_COLOR && canWriteEqualsHighlight(text)) return `==${text}==`;
 		return `${getEditorTextHighlightMarkdownOpenTag(rawColor)}${text}</mark>`;
 	});
 }

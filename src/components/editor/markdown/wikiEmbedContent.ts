@@ -2,6 +2,7 @@ import DOMPurify from "dompurify";
 import { Marked, type Token, type Tokens } from "marked";
 import { splitYamlFrontmatter } from "../../../lib/notePreview";
 import { analyzeNoteInfo } from "../../preview/noteInfoAnalysis";
+import { equalsHighlightMarkedExtension } from "../textHighlights";
 import { resolveAnchorHeading } from "./headingAnchor";
 import type { WikiLinkAttrs } from "./wikiLinkTypes";
 
@@ -18,6 +19,7 @@ const markdown = new Marked({
 			},
 			renderer: () => "",
 		},
+		equalsHighlightMarkedExtension,
 	],
 });
 

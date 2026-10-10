@@ -4,11 +4,11 @@ import { Decoration, type EditorView } from "@codemirror/view";
 import { FOOTNOTE_PATTERN, footnoteKindAt } from "../markdown/footnote";
 import { findWikiLinkSpans, parseWikiLink } from "../markdown/wikiLinkCodec";
 import { INLINE_TAG_PATTERN } from "../noteProperties/utils";
+import { EQUALS_HIGHLIGHT_SCAN_RE } from "../textHighlights";
 import { concealSyntax, shouldConceal } from "./livePresentation";
 import { isPositionInMath } from "./markdownMathLanguage";
 
 const WIKI_ALIAS_PATTERN = /(?<!\\)\|/;
-const HIGHLIGHT_PATTERN = /==([^=\n]+)==/g;
 const COMMENT_PATTERN = /%%(?:[^%]|%(?!%))*%%/g;
 const BLOCK_ID_PATTERN = /(?:^|\s)(\^[A-Za-z0-9-]+)(?=\s*$)/;
 const FRONTMATTER_SCAN_LIMIT = 500;
@@ -109,8 +109,7 @@ export function addGlyphInlineDecorations(
 		);
 	}
 
-	HIGHLIGHT_PATTERN.lastIndex = 0;
-	for (const match of text.matchAll(HIGHLIGHT_PATTERN)) {
+	for (const match of text.matchAll(EQUALS_HIGHLIGHT_SCAN_RE)) {
 		if (match.index === undefined || !match[1]) continue;
 		const from = lineFrom + match.index;
 		if (isLiteralPosition(view, from)) continue;
