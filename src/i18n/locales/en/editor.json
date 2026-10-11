@@ -50,6 +50,38 @@
 		"link": "Link",
 		"linkAll": "Link all"
 	},
+	"infoSidebar": {
+		"tabsLabel": "Note info sections",
+		"tabs": {
+			"stats": "Stats",
+			"contents": "Contents",
+			"backlinks": "Backlinks"
+		},
+		"stats": {
+			"words": "Words",
+			"characters": "Characters",
+			"lines": "Lines",
+			"readingTime": "Read time",
+			"tasks": "Tasks",
+			"tasksDone": "{{completed}} of {{total}} done",
+			"file": "File",
+			"modified": "Modified",
+			"created": "Created",
+			"path": "Path",
+			"size": "Size",
+			"saveStatus": "Save status"
+		},
+		"contents": {
+			"empty": "No headings in this note yet."
+		},
+		"backlinks": {
+			"heading": "Backlinks",
+			"empty": "No notes link here yet.",
+			"relationships": "Relationships",
+			"linkedNotes": "Linked notes",
+			"noLinkedNotes": "No linked notes."
+		}
+	},
 	"ribbon": {
 		"bold": "Bold",
 		"italic": "Italic",

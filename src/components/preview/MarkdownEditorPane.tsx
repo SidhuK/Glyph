@@ -40,7 +40,7 @@ import type { ExtractToNoteActions, NoteInlineEditorMode } from "../editor/types
 import { GitDiffView } from "./GitDiffView";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { MarkdownFloatingToc } from "./MarkdownFloatingToc";
-import { NotesInfoSidebar } from "./NotesInfoSidebar";
+import { NotesInfoSidebar } from "./infoSidebar/NotesInfoSidebar";
 import { initialEditorMode, requiresPlainEditorMode } from "./editorModeSelection";
 import { peekCachedMarkdownDoc } from "./markdownCache";
 import { analyzeNoteInfo } from "./noteInfoAnalysis";
