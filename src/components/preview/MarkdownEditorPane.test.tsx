@@ -111,7 +111,7 @@ vi.mock("../connections/LocalNoteConnectionsDialog", () => ({
 	},
 }));
 
-vi.mock("./NotesInfoSidebar", () => ({
+vi.mock("./infoSidebar/NotesInfoSidebar", () => ({
 	NotesInfoSidebar: ({ open, saveLabel }: { open: boolean; saveLabel: string }) =>
 		open ? <div data-testid="notes-info-sidebar">Save status {saveLabel}</div> : null,
 }));

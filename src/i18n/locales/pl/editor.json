@@ -66,6 +66,38 @@
 		"link": "Połącz",
 		"linkAll": "Połącz wszystkie"
 	},
+	"infoSidebar": {
+		"tabsLabel": "Sekcje informacji o notatce",
+		"tabs": {
+			"stats": "Statystyki",
+			"contents": "Spis treści",
+			"backlinks": "Odnośniki"
+		},
+		"stats": {
+			"words": "Słowa",
+			"characters": "Znaki",
+			"lines": "Wiersze",
+			"readingTime": "Czas czytania",
+			"tasks": "Zadania",
+			"tasksDone": "Ukończono {{completed}} z {{total}}",
+			"file": "Plik",
+			"modified": "Zmodyfikowano",
+			"created": "Utworzono",
+			"path": "Ścieżka",
+			"size": "Rozmiar",
+			"saveStatus": "Stan zapisu"
+		},
+		"contents": {
+			"empty": "Ta notatka nie ma jeszcze nagłówków."
+		},
+		"backlinks": {
+			"heading": "Odnośniki zwrotne",
+			"empty": "Żadna notatka jeszcze tu nie linkuje.",
+			"relationships": "Relacje",
+			"linkedNotes": "Połączone notatki",
+			"noLinkedNotes": "Brak połączonych notatek."
+		}
+	},
 	"ribbon": {
 		"bold": "Pogrubienie",
 		"italic": "Kursywa",
