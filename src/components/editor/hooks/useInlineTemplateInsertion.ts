@@ -4,7 +4,7 @@ import { useSpace, useUILayoutContext } from "../../../contexts";
 import { invoke } from "../../../lib/tauri";
 import { renderTemplate, selectTemplateFile } from "../../../lib/templates";
 import { toast } from "../../../lib/toast";
-import type { TemplateInsertRequest } from "../slashCommands";
+import type { TemplateInsertRequest } from "../slash/slashMenuItems";
 
 export function useInlineTemplateInsertion(relPath: string) {
 	const { t } = useTranslation("editor");

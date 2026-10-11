@@ -7,6 +7,18 @@ import {
 } from "@tiptap/suggestion";
 import { lockEditorScrollDuringSuggestion } from "../suggestionScroll";
 import { clampSuggestionIndex, nextSuggestionIndex } from "./suggestionEngine";
+import {
+	type SuggestionMenuBand,
+	createSuggestionSubmenu,
+	highlightSuggestionItem,
+	onPointerHover,
+} from "./suggestionSubmenu";
+
+const MENU_PAD = 8;
+const MENU_GAP = 6;
+// When a submenu is open, hovering another row waits this long before switching so a
+// diagonal pointer path toward the submenu can cross neighbouring rows without closing it.
+const SUBMENU_HOVER_SWITCH_DELAY_MS = 200;
 
 interface RenderTipTapSuggestionItemOptions<T> {
 	item: T;
@@ -24,6 +36,8 @@ interface TipTapSuggestionMenuOptions<T> {
 	onEscape?: (view: EditorView) => void;
 	onTab?: (item: T, props: SuggestionProps<T>) => void;
 	onEmptyEnter?: (props: SuggestionProps<T>) => boolean;
+	/** Items returned here open in a flyout submenu instead of running the command. */
+	getSubmenuItems?: (item: T) => T[] | undefined;
 }
 
 interface TipTapTextSuggestionMenuOptions<T> extends Omit<
@@ -68,19 +82,25 @@ function renderTextSuggestionItem<T>({
 	return button;
 }
 
-function placeMenu(menu: HTMLElement, rect: DOMRect): void {
-	const pad = 8;
-	const gap = 6;
+/**
+ * Places the menu below the typed text, or above it when there is more room there,
+ * shrinking it to fit so it never covers the line being typed.
+ */
+function placeMenu(menu: HTMLElement, rect: DOMRect): SuggestionMenuBand {
+	menu.style.maxHeight = "";
 	const menuRect = menu.getBoundingClientRect();
-	const placeBelowTop = rect.bottom + gap;
-	const placeAboveTop = rect.top - menuRect.height - gap;
-	const maxLeft = window.innerWidth - menuRect.width - pad;
-	const maxTop = window.innerHeight - menuRect.height - pad;
-	const nextLeft = Math.max(pad, Math.min(rect.left, maxLeft));
-	const nextTop =
-		placeBelowTop <= maxTop ? placeBelowTop : Math.max(pad, Math.min(placeAboveTop, maxTop));
-	menu.style.left = `${nextLeft}px`;
-	menu.style.top = `${nextTop}px`;
+	const below = { top: rect.bottom + MENU_GAP, bottom: window.innerHeight - MENU_PAD };
+	const above = { top: MENU_PAD, bottom: rect.top - MENU_GAP };
+	const roomBelow = below.bottom - below.top;
+	const roomAbove = above.bottom - above.top;
+	const placeBelow = menuRect.height <= roomBelow || roomBelow >= roomAbove;
+	const band = placeBelow ? below : above;
+	const height = Math.min(menuRect.height, Math.max(0, band.bottom - band.top));
+	if (height < menuRect.height) menu.style.maxHeight = `${height}px`;
+	const maxLeft = window.innerWidth - menuRect.width - MENU_PAD;
+	menu.style.left = `${Math.max(MENU_PAD, Math.min(rect.left, maxLeft))}px`;
+	menu.style.top = `${placeBelow ? band.top : band.bottom - height}px`;
+	return band;
 }
 
 export function createTipTapSuggestionMenu<T>({
@@ -92,55 +112,110 @@ export function createTipTapSuggestionMenu<T>({
 	onEscape,
 	onTab,
 	onEmptyEnter,
+	getSubmenuItems,
 }: TipTapSuggestionMenuOptions<T>) {
 	let menu: HTMLDivElement | null = null;
 	let selectedIndex = 0;
 	let activeProps: SuggestionProps<T> | null = null;
 	let unlockEditorScroll: (() => void) | null = null;
+	let menuBand: SuggestionMenuBand | null = null;
+	let submenuIndex: number | null = null;
+	let hoveredIndex: number | null = null;
+	let hoverSwitchTimer: number | null = null;
+
+	const cancelHoverSwitch = () => {
+		if (hoverSwitchTimer !== null) window.clearTimeout(hoverSwitchTimer);
+		hoverSwitchTimer = null;
+	};
+
+	const submenu = createSuggestionSubmenu<T>({
+		className: menuClassName,
+		itemActiveClassName,
+		renderItem,
+		onSelect: (item) => activeProps?.command(item),
+		onPointerEnter: () => {
+			cancelHoverSwitch();
+			hoveredIndex = null;
+			if (submenuIndex === null) return;
+			selectedIndex = submenuIndex;
+			updateSelection(activeProps?.items ?? []);
+		},
+	});
 
 	const updateSelection = (items: T[]) => {
 		if (!menu) return;
 		selectedIndex = clampSuggestionIndex(selectedIndex, items.length);
-		const children = Array.from(menu.children);
-		children.forEach((child, index) => {
-			child.classList.toggle(itemActiveClassName, index === selectedIndex);
-		});
-		const activeItem = children[selectedIndex];
-		if (activeItem instanceof HTMLElement) {
-			const menuRect = menu.getBoundingClientRect();
-			const itemRect = activeItem.getBoundingClientRect();
-			if (itemRect.top < menuRect.top) {
-				menu.scrollTop -= menuRect.top - itemRect.top;
-			} else if (itemRect.bottom > menuRect.bottom) {
-				menu.scrollTop += itemRect.bottom - menuRect.bottom;
-			}
+		highlightSuggestionItem(menu, selectedIndex, itemActiveClassName);
+	};
+
+	const openSubmenu = (index: number, focus: boolean): boolean => {
+		const item = activeProps?.items[index];
+		const children = item === undefined ? undefined : getSubmenuItems?.(item);
+		const row = menu?.children[index];
+		if (!menu || !menuBand || !children?.length || !(row instanceof HTMLElement)) return false;
+		cancelHoverSwitch();
+		selectedIndex = index;
+		updateSelection(activeProps?.items ?? []);
+		if (submenu.isOpen() && submenuIndex === index) {
+			if (focus) submenu.focus();
+			return true;
 		}
+		submenuIndex = index;
+		submenu.open(children, menu, row, menuBand, focus);
+		return true;
+	};
+
+	const closeSubmenu = () => {
+		cancelHoverSwitch();
+		submenu.close();
+	};
+
+	const hoverRow = (index: number) => {
+		if (hoveredIndex === index) return;
+		hoveredIndex = index;
+		cancelHoverSwitch();
+		selectedIndex = index;
+		updateSelection(activeProps?.items ?? []);
+		if (!submenu.isOpen()) {
+			openSubmenu(index, false);
+			return;
+		}
+		if (submenuIndex === index) return;
+		hoverSwitchTimer = window.setTimeout(() => {
+			hoverSwitchTimer = null;
+			if (hoveredIndex !== index) return;
+			submenu.close();
+			openSubmenu(index, false);
+		}, SUBMENU_HOVER_SWITCH_DELAY_MS);
 	};
 
 	const updateMenu = (props: SuggestionProps<T>) => {
 		if (!menu) return;
 		activeProps = props;
+		closeSubmenu();
+		hoveredIndex = null;
 		selectedIndex = clampSuggestionIndex(selectedIndex, props.items.length);
 		menu.replaceChildren();
 		menu.style.display = props.items.length ? "" : "none";
 		for (const [index, item] of props.items.entries()) {
-			menu.append(
-				renderItem({
-					item,
-					index,
-					isActive: index === selectedIndex,
-					select: (nextItem) => {
-						if (onTab) {
-							onTab(nextItem, props);
-							return;
-						}
-						props.command(nextItem);
-					},
-				}),
-			);
+			const element = renderItem({
+				item,
+				index,
+				isActive: index === selectedIndex,
+				select: (nextItem) => {
+					if (openSubmenu(index, true)) return;
+					if (onTab) {
+						onTab(nextItem, props);
+						return;
+					}
+					props.command(nextItem);
+				},
+			});
+			if (getSubmenuItems) onPointerHover(element, () => hoverRow(index));
+			menu.append(element);
 		}
 		const rect = props.clientRect?.();
-		if (rect && props.items.length) placeMenu(menu, rect);
+		if (rect && props.items.length) menuBand = placeMenu(menu, rect);
 	};
 
 	const createMenu = (props: SuggestionProps<T>) => {
@@ -168,11 +243,14 @@ export function createTipTapSuggestionMenu<T>({
 			updateMenu(props);
 		},
 		onKeyDown: ({ event, view }: SuggestionKeyDownProps) => {
+			if (submenu.onKeyDown(event)) return true;
 			const current = activeProps;
 			const items = current?.items ?? [];
 			if (event.key === "Escape") {
 				event.preventDefault();
-				if (onEscape) {
+				if (submenu.isOpen()) {
+					closeSubmenu();
+				} else if (onEscape) {
 					onEscape(view);
 				} else {
 					exitSuggestion(view);
@@ -187,6 +265,7 @@ export function createTipTapSuggestionMenu<T>({
 				return true;
 			}
 			if (!items.length) return false;
+			if (event.key === "ArrowDown" || event.key === "ArrowUp") closeSubmenu();
 			if (event.key === "ArrowDown") {
 				event.preventDefault();
 				selectedIndex = nextSuggestionIndex(selectedIndex, items.length, 1);
@@ -197,6 +276,13 @@ export function createTipTapSuggestionMenu<T>({
 				event.preventDefault();
 				selectedIndex = nextSuggestionIndex(selectedIndex, items.length, -1);
 				updateSelection(items);
+				return true;
+			}
+			if (
+				(event.key === "Enter" || event.key === "Tab" || event.key === "ArrowRight") &&
+				openSubmenu(selectedIndex, true)
+			) {
+				event.preventDefault();
 				return true;
 			}
 			if (event.key === "Enter") {
@@ -219,6 +305,7 @@ export function createTipTapSuggestionMenu<T>({
 			return false;
 		},
 		onExit: () => {
+			closeSubmenu();
 			unlockEditorScroll?.();
 			unlockEditorScroll = null;
 			menu?.remove();

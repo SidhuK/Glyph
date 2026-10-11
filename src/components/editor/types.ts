@@ -1,7 +1,7 @@
 import type { AnyExtension, Editor } from "@tiptap/core";
 import type { EditorViewMode } from "../../lib/editorMode";
 import type { RawMarkdownEditorHandle } from "./raw/types";
-import type { TemplateInsertRequest } from "./slashCommands";
+import type { TemplateInsertRequest } from "./slash/slashMenuItems";
 
 export type NoteInlineEditorMode = EditorViewMode;
 export type NoteInlineEditorChrome = "full" | "minimal";

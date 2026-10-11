@@ -166,21 +166,27 @@
 		"saveFailed": "Could not save list collapse state"
 	},
 	"slash": {
+		"groups": {
+			"headings": "Headings",
+			"lists": "Lists",
+			"blocks": "Blocks",
+			"callouts": "Callouts",
+			"math": "Math",
+			"embeds": "Diagrams & embeds",
+			"textColor": "Text color",
+			"highlight": "Highlight"
+		},
 		"heading1": {
-			"title": "Heading 1",
-			"description": "Big section heading"
+			"title": "Heading 1"
 		},
 		"heading2": {
-			"title": "Heading 2",
-			"description": "Section heading"
+			"title": "Heading 2"
 		},
 		"heading3": {
-			"title": "Heading 3",
-			"description": "Subheading"
+			"title": "Heading 3"
 		},
 		"insertTemplate": {
 			"title": "Insert template",
-			"description": "Insert a template with date and title tokens",
 			"settingsLoading": "Template settings are still loading.",
 			"folderRequired": "Set a template folder in Space settings first.",
 			"noTemplates": "No Markdown templates were found in the template folder.",
@@ -189,136 +195,103 @@
 			"insertFailed": "Could not insert the template"
 		},
 		"bulletList": {
-			"title": "Bullet list",
-			"description": "Start a bullet list"
+			"title": "Bullet list"
 		},
 		"numberedList": {
-			"title": "Numbered list",
-			"description": "Start a numbered list"
+			"title": "Numbered list"
 		},
 		"todoList": {
-			"title": "To-do list",
-			"description": "Start a task list"
+			"title": "To-do list"
 		},
 		"quote": {
-			"title": "Quote",
-			"description": "Insert a blockquote"
+			"title": "Quote"
 		},
 		"codeBlock": {
-			"title": "Code block",
-			"description": "Insert a code block"
+			"title": "Code block"
 		},
 		"divider": {
-			"title": "Divider",
-			"description": "Insert a horizontal rule"
+			"title": "Divider"
 		},
 		"table": {
-			"title": "Table",
-			"description": "Insert a markdown table"
+			"title": "Table"
 		},
 		"tableOfContents": {
-			"title": "Table of contents",
-			"description": "Insert a live outline for this note"
+			"title": "Table of contents"
 		},
 		"mermaidChart": {
-			"title": "Mermaid chart",
-			"description": "Insert a Mermaid diagram block"
+			"title": "Mermaid chart"
 		},
 		"htmlEmbed": {
-			"title": "HTML embed",
-			"description": "Insert a sandboxed HTML preview block"
+			"title": "HTML embed"
 		},
 		"svgEmbed": {
-			"title": "SVG embed",
-			"description": "Insert a sandboxed SVG preview block"
+			"title": "SVG embed"
 		},
 		"detailsBlock": {
-			"title": "Details block",
-			"description": "Insert a collapsible toggle section"
+			"title": "Details block"
 		},
 		"calloutInfo": {
-			"title": "Info callout",
-			"description": "Insert an info callout"
+			"title": "Info callout"
 		},
 		"calloutTip": {
-			"title": "Tip callout",
-			"description": "Insert a tip callout"
+			"title": "Tip callout"
 		},
 		"calloutSuccess": {
-			"title": "Success callout",
-			"description": "Insert a success callout"
+			"title": "Success callout"
 		},
 		"calloutWarning": {
-			"title": "Warning callout",
-			"description": "Insert a warning callout"
+			"title": "Warning callout"
 		},
 		"calloutError": {
-			"title": "Error callout",
-			"description": "Insert an error callout"
+			"title": "Error callout"
 		},
 		"mathInline": {
-			"title": "Inline equation",
-			"description": "Insert LaTeX within a line"
+			"title": "Inline equation"
 		},
 		"mathDisplay": {
-			"title": "Display equation",
-			"description": "Insert a centered LaTeX block"
+			"title": "Display equation"
 		},
 		"colorGray": {
-			"title": "Color: Gray",
-			"description": "Apply gray text color"
+			"title": "Gray"
 		},
 		"colorBrown": {
-			"title": "Color: Brown",
-			"description": "Apply brown text color"
+			"title": "Brown"
 		},
 		"colorOrange": {
-			"title": "Color: Orange",
-			"description": "Apply orange text color"
+			"title": "Orange"
 		},
 		"colorYellow": {
-			"title": "Color: Yellow",
-			"description": "Apply yellow text color"
+			"title": "Yellow"
 		},
 		"colorGreen": {
-			"title": "Color: Green",
-			"description": "Apply green text color"
+			"title": "Green"
 		},
 		"colorBlue": {
-			"title": "Color: Blue",
-			"description": "Apply blue text color"
+			"title": "Blue"
 		},
 		"colorPurple": {
-			"title": "Color: Purple",
-			"description": "Apply purple text color"
+			"title": "Purple"
 		},
 		"colorRed": {
-			"title": "Color: Red",
-			"description": "Apply red text color"
+			"title": "Red"
 		},
 		"colorClear": {
-			"title": "Color: Clear",
-			"description": "Remove text color"
+			"title": "Clear color"
 		},
 		"highlightYellow": {
-			"title": "Highlight: Yellow",
-			"description": "Apply yellow text highlight"
+			"title": "Yellow"
 		},
 		"highlightBlue": {
-			"title": "Highlight: Blue",
-			"description": "Apply blue text highlight"
+			"title": "Blue"
 		},
 		"highlightGreen": {
-			"title": "Highlight: Green",
-			"description": "Apply green text highlight"
+			"title": "Green"
 		},
 		"highlightRed": {
-			"title": "Highlight: Red",
-			"description": "Apply red text highlight"
+			"title": "Red"
 		},
 		"highlightClear": {
-			"title": "Highlight: Clear",
-			"description": "Remove text highlight"
+			"title": "Clear highlight"
 		}
 	},
 	"tableControls": {

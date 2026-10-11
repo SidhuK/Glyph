@@ -93,21 +93,27 @@
 		"saveFailed": "Impossible d’enregistrer l’état des listes réduites"
 	},
 	"slash": {
+		"groups": {
+			"headings": "Titres",
+			"lists": "Listes",
+			"blocks": "Blocs",
+			"callouts": "Encadrés",
+			"math": "Mathématiques",
+			"embeds": "Diagrammes et intégrations",
+			"textColor": "Couleur du texte",
+			"highlight": "Surlignage"
+		},
 		"heading1": {
-			"title": "Titre 1",
-			"description": "Grand titre de section"
+			"title": "Titre 1"
 		},
 		"heading2": {
-			"title": "Titre 2",
-			"description": "Titre de section"
+			"title": "Titre 2"
 		},
 		"heading3": {
-			"title": "Titre 3",
-			"description": "Sous-titre"
+			"title": "Titre 3"
 		},
 		"insertTemplate": {
 			"title": "Insérer un modèle",
-			"description": "Insérer un modèle avec des variables de date et de titre",
 			"settingsLoading": "Les réglages des modèles sont encore en cours de chargement.",
 			"folderRequired": "Définissez d'abord un dossier de modèles dans les réglages de l'espace.",
 			"noTemplates": "Aucun modèle Markdown n'a été trouvé dans le dossier des modèles.",
@@ -116,136 +122,103 @@
 			"insertFailed": "Impossible d'insérer le modèle"
 		},
 		"bulletList": {
-			"title": "Liste à puces",
-			"description": "Commencer une liste à puces"
+			"title": "Liste à puces"
 		},
 		"numberedList": {
-			"title": "Liste numérotée",
-			"description": "Commencer une liste numérotée"
+			"title": "Liste numérotée"
 		},
 		"todoList": {
-			"title": "Liste de tâches",
-			"description": "Commencer une liste de tâches"
+			"title": "Liste de tâches"
 		},
 		"quote": {
-			"title": "Citation",
-			"description": "Insérer une citation en bloc"
+			"title": "Citation"
 		},
 		"codeBlock": {
-			"title": "Bloc de code",
-			"description": "Insérer un bloc de code"
+			"title": "Bloc de code"
 		},
 		"divider": {
-			"title": "Séparateur",
-			"description": "Insérer une règle horizontale"
+			"title": "Séparateur"
 		},
 		"table": {
-			"title": "Tableau",
-			"description": "Insérer un tableau Markdown"
+			"title": "Tableau"
 		},
 		"tableOfContents": {
-			"title": "Table des matières",
-			"description": "Insérer un plan dynamique pour cette note"
+			"title": "Table des matières"
 		},
 		"mermaidChart": {
-			"title": "Diagramme Mermaid",
-			"description": "Insérer un bloc de diagramme Mermaid"
+			"title": "Diagramme Mermaid"
 		},
 		"htmlEmbed": {
-			"title": "Intégration HTML",
-			"description": "Insérer un bloc d’aperçu HTML isolé"
+			"title": "Intégration HTML"
 		},
 		"svgEmbed": {
-			"title": "Intégration SVG",
-			"description": "Insérer un bloc d’aperçu SVG isolé"
+			"title": "Intégration SVG"
 		},
 		"detailsBlock": {
-			"title": "Bloc de détails",
-			"description": "Insérer une section repliable"
+			"title": "Bloc de détails"
 		},
 		"calloutInfo": {
-			"title": "Encadré d’info",
-			"description": "Insérer un encadré d’info"
+			"title": "Encadré d’info"
 		},
 		"calloutTip": {
-			"title": "Encadré de conseil",
-			"description": "Insérer un encadré de conseil"
+			"title": "Encadré de conseil"
 		},
 		"calloutSuccess": {
-			"title": "Encadré de succès",
-			"description": "Insérer un encadré de succès"
+			"title": "Encadré de succès"
 		},
 		"calloutWarning": {
-			"title": "Encadré d’avertissement",
-			"description": "Insérer un encadré d’avertissement"
+			"title": "Encadré d’avertissement"
 		},
 		"calloutError": {
-			"title": "Encadré d’erreur",
-			"description": "Insérer un encadré d’erreur"
+			"title": "Encadré d’erreur"
 		},
 		"mathInline": {
-			"title": "Équation en ligne",
-			"description": "Insérer du LaTeX dans une ligne"
+			"title": "Équation en ligne"
 		},
 		"mathDisplay": {
-			"title": "Équation affichée",
-			"description": "Insérer un bloc LaTeX centré"
+			"title": "Équation affichée"
 		},
 		"colorGray": {
-			"title": "Couleur : Gris",
-			"description": "Appliquer la couleur de texte grise"
+			"title": "Gris"
 		},
 		"colorBrown": {
-			"title": "Couleur : Brun",
-			"description": "Appliquer la couleur de texte brune"
+			"title": "Brun"
 		},
 		"colorOrange": {
-			"title": "Couleur : Orange",
-			"description": "Appliquer la couleur de texte orange"
+			"title": "Orange"
 		},
 		"colorYellow": {
-			"title": "Couleur : Jaune",
-			"description": "Appliquer la couleur de texte jaune"
+			"title": "Jaune"
 		},
 		"colorGreen": {
-			"title": "Couleur : Vert",
-			"description": "Appliquer la couleur de texte verte"
+			"title": "Vert"
 		},
 		"colorBlue": {
-			"title": "Couleur : Bleu",
-			"description": "Appliquer la couleur de texte bleue"
+			"title": "Bleu"
 		},
 		"colorPurple": {
-			"title": "Couleur : Violet",
-			"description": "Appliquer la couleur de texte violette"
+			"title": "Violet"
 		},
 		"colorRed": {
-			"title": "Couleur : Rouge",
-			"description": "Appliquer la couleur de texte rouge"
+			"title": "Rouge"
 		},
 		"colorClear": {
-			"title": "Couleur : Effacer",
-			"description": "Supprimer la couleur du texte"
+			"title": "Effacer la couleur"
 		},
 		"highlightYellow": {
-			"title": "Surlignage : Jaune",
-			"description": "Appliquer un surlignage de texte jaune"
+			"title": "Jaune"
 		},
 		"highlightBlue": {
-			"title": "Surlignage : Bleu",
-			"description": "Appliquer un surlignage de texte bleu"
+			"title": "Bleu"
 		},
 		"highlightGreen": {
-			"title": "Surlignage : Vert",
-			"description": "Appliquer un surlignage de texte vert"
+			"title": "Vert"
 		},
 		"highlightRed": {
-			"title": "Surlignage : Rouge",
-			"description": "Appliquer un surlignage de texte rouge"
+			"title": "Rouge"
 		},
 		"highlightClear": {
-			"title": "Surlignage : Effacer",
-			"description": "Supprimer le surlignage du texte"
+			"title": "Effacer le surlignage"
 		}
 	},
 	"sidePeek": {

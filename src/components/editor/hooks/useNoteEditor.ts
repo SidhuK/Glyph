@@ -16,7 +16,7 @@ import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
 } from "../markdown/editorMarkdownBridge";
-import type { TemplateInsertRequest } from "../slashCommands";
+import type { TemplateInsertRequest } from "../slash/slashMenuItems";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { applyEditorSpellCheck } from "./useEditorSpellCheck";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";

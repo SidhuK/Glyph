@@ -93,21 +93,27 @@
 		"saveFailed": "No se pudo guardar el estado de las listas contraídas"
 	},
 	"slash": {
+		"groups": {
+			"headings": "Encabezados",
+			"lists": "Listas",
+			"blocks": "Bloques",
+			"callouts": "Avisos",
+			"math": "Matemáticas",
+			"embeds": "Diagramas e incrustaciones",
+			"textColor": "Color del texto",
+			"highlight": "Resaltado"
+		},
 		"heading1": {
-			"title": "Encabezado 1",
-			"description": "Encabezado de sección grande"
+			"title": "Encabezado 1"
 		},
 		"heading2": {
-			"title": "Encabezado 2",
-			"description": "Encabezado de sección"
+			"title": "Encabezado 2"
 		},
 		"heading3": {
-			"title": "Encabezado 3",
-			"description": "Subencabezado"
+			"title": "Encabezado 3"
 		},
 		"insertTemplate": {
 			"title": "Insertar plantilla",
-			"description": "Inserta una plantilla con variables de fecha y título",
 			"settingsLoading": "Los ajustes de plantillas todavía se están cargando.",
 			"folderRequired": "Primero configura una carpeta de plantillas en los ajustes del espacio.",
 			"noTemplates": "No se encontraron plantillas Markdown en la carpeta de plantillas.",
@@ -116,136 +122,103 @@
 			"insertFailed": "No se pudo insertar la plantilla"
 		},
 		"bulletList": {
-			"title": "Lista con viñetas",
-			"description": "Iniciar una lista con viñetas"
+			"title": "Lista con viñetas"
 		},
 		"numberedList": {
-			"title": "Lista numerada",
-			"description": "Iniciar una lista numerada"
+			"title": "Lista numerada"
 		},
 		"todoList": {
-			"title": "Lista de tareas",
-			"description": "Iniciar una lista de tareas"
+			"title": "Lista de tareas"
 		},
 		"quote": {
-			"title": "Cita",
-			"description": "Insertar una cita en bloque"
+			"title": "Cita"
 		},
 		"codeBlock": {
-			"title": "Bloque de código",
-			"description": "Insertar un bloque de código"
+			"title": "Bloque de código"
 		},
 		"divider": {
-			"title": "Separador",
-			"description": "Insertar una regla horizontal"
+			"title": "Separador"
 		},
 		"table": {
-			"title": "Tabla",
-			"description": "Insertar una tabla Markdown"
+			"title": "Tabla"
 		},
 		"tableOfContents": {
-			"title": "Tabla de contenidos",
-			"description": "Insertar un índice en vivo de esta nota"
+			"title": "Tabla de contenidos"
 		},
 		"mermaidChart": {
-			"title": "Diagrama Mermaid",
-			"description": "Insertar un bloque de diagrama Mermaid"
+			"title": "Diagrama Mermaid"
 		},
 		"htmlEmbed": {
-			"title": "Incrustación HTML",
-			"description": "Insertar un bloque de vista previa HTML aislado"
+			"title": "Incrustación HTML"
 		},
 		"svgEmbed": {
-			"title": "Incrustación SVG",
-			"description": "Insertar un bloque de vista previa SVG aislado"
+			"title": "Incrustación SVG"
 		},
 		"detailsBlock": {
-			"title": "Bloque de detalles",
-			"description": "Insertar una sección plegable"
+			"title": "Bloque de detalles"
 		},
 		"calloutInfo": {
-			"title": "Aviso informativo",
-			"description": "Insertar un aviso informativo"
+			"title": "Aviso informativo"
 		},
 		"calloutTip": {
-			"title": "Aviso de consejo",
-			"description": "Insertar un aviso de consejo"
+			"title": "Aviso de consejo"
 		},
 		"calloutSuccess": {
-			"title": "Aviso de éxito",
-			"description": "Insertar un aviso de éxito"
+			"title": "Aviso de éxito"
 		},
 		"calloutWarning": {
-			"title": "Aviso de advertencia",
-			"description": "Insertar un aviso de advertencia"
+			"title": "Aviso de advertencia"
 		},
 		"calloutError": {
-			"title": "Aviso de error",
-			"description": "Insertar un aviso de error"
+			"title": "Aviso de error"
 		},
 		"mathInline": {
-			"title": "Ecuación en línea",
-			"description": "Insertar LaTeX dentro de una línea"
+			"title": "Ecuación en línea"
 		},
 		"mathDisplay": {
-			"title": "Ecuación en bloque",
-			"description": "Insertar un bloque LaTeX centrado"
+			"title": "Ecuación en bloque"
 		},
 		"colorGray": {
-			"title": "Color: Gris",
-			"description": "Aplicar color de texto gris"
+			"title": "Gris"
 		},
 		"colorBrown": {
-			"title": "Color: Marrón",
-			"description": "Aplicar color de texto marrón"
+			"title": "Marrón"
 		},
 		"colorOrange": {
-			"title": "Color: Naranja",
-			"description": "Aplicar color de texto naranja"
+			"title": "Naranja"
 		},
 		"colorYellow": {
-			"title": "Color: Amarillo",
-			"description": "Aplicar color de texto amarillo"
+			"title": "Amarillo"
 		},
 		"colorGreen": {
-			"title": "Color: Verde",
-			"description": "Aplicar color de texto verde"
+			"title": "Verde"
 		},
 		"colorBlue": {
-			"title": "Color: Azul",
-			"description": "Aplicar color de texto azul"
+			"title": "Azul"
 		},
 		"colorPurple": {
-			"title": "Color: Morado",
-			"description": "Aplicar color de texto morado"
+			"title": "Morado"
 		},
 		"colorRed": {
-			"title": "Color: Rojo",
-			"description": "Aplicar color de texto rojo"
+			"title": "Rojo"
 		},
 		"colorClear": {
-			"title": "Color: Quitar",
-			"description": "Quitar el color del texto"
+			"title": "Quitar color"
 		},
 		"highlightYellow": {
-			"title": "Resaltado: Amarillo",
-			"description": "Aplicar resaltado de texto amarillo"
+			"title": "Amarillo"
 		},
 		"highlightBlue": {
-			"title": "Resaltado: Azul",
-			"description": "Aplicar resaltado de texto azul"
+			"title": "Azul"
 		},
 		"highlightGreen": {
-			"title": "Resaltado: Verde",
-			"description": "Aplicar resaltado de texto verde"
+			"title": "Verde"
 		},
 		"highlightRed": {
-			"title": "Resaltado: Rojo",
-			"description": "Aplicar resaltado de texto rojo"
+			"title": "Rojo"
 		},
 		"highlightClear": {
-			"title": "Resaltado: Quitar",
-			"description": "Quitar el resaltado del texto"
+			"title": "Quitar resaltado"
 		}
 	},
 	"sidePeek": {

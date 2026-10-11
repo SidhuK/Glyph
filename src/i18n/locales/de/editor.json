@@ -93,21 +93,27 @@
 		"saveFailed": "Listenklappzustand konnte nicht gespeichert werden"
 	},
 	"slash": {
+		"groups": {
+			"headings": "Überschriften",
+			"lists": "Listen",
+			"blocks": "Blöcke",
+			"callouts": "Hinweise",
+			"math": "Mathematik",
+			"embeds": "Diagramme & Einbettungen",
+			"textColor": "Textfarbe",
+			"highlight": "Hervorhebung"
+		},
 		"heading1": {
-			"title": "Überschrift 1",
-			"description": "Große Abschnittsüberschrift"
+			"title": "Überschrift 1"
 		},
 		"heading2": {
-			"title": "Überschrift 2",
-			"description": "Abschnittsüberschrift"
+			"title": "Überschrift 2"
 		},
 		"heading3": {
-			"title": "Überschrift 3",
-			"description": "Unterüberschrift"
+			"title": "Überschrift 3"
 		},
 		"insertTemplate": {
 			"title": "Vorlage einfügen",
-			"description": "Vorlage mit Datums- und Titelvariablen einfügen",
 			"settingsLoading": "Die Vorlageneinstellungen werden noch geladen.",
 			"folderRequired": "Lege zuerst in den Bereichseinstellungen einen Vorlagenordner fest.",
 			"noTemplates": "Im Vorlagenordner wurden keine Markdown-Vorlagen gefunden.",
@@ -116,136 +122,103 @@
 			"insertFailed": "Vorlage konnte nicht eingefügt werden"
 		},
 		"bulletList": {
-			"title": "Aufzählungsliste",
-			"description": "Eine Aufzählungsliste starten"
+			"title": "Aufzählungsliste"
 		},
 		"numberedList": {
-			"title": "Nummerierte Liste",
-			"description": "Eine nummerierte Liste starten"
+			"title": "Nummerierte Liste"
 		},
 		"todoList": {
-			"title": "Aufgabenliste",
-			"description": "Eine Aufgabenliste starten"
+			"title": "Aufgabenliste"
 		},
 		"quote": {
-			"title": "Zitat",
-			"description": "Ein Blockzitat einfügen"
+			"title": "Zitat"
 		},
 		"codeBlock": {
-			"title": "Codeblock",
-			"description": "Einen Codeblock einfügen"
+			"title": "Codeblock"
 		},
 		"divider": {
-			"title": "Trennlinie",
-			"description": "Eine horizontale Linie einfügen"
+			"title": "Trennlinie"
 		},
 		"table": {
-			"title": "Tabelle",
-			"description": "Eine Markdown-Tabelle einfügen"
+			"title": "Tabelle"
 		},
 		"tableOfContents": {
-			"title": "Inhaltsverzeichnis",
-			"description": "Eine Live-Gliederung für diese Notiz einfügen"
+			"title": "Inhaltsverzeichnis"
 		},
 		"mermaidChart": {
-			"title": "Mermaid-Diagramm",
-			"description": "Einen Mermaid-Diagrammblock einfügen"
+			"title": "Mermaid-Diagramm"
 		},
 		"htmlEmbed": {
-			"title": "HTML-Einbettung",
-			"description": "Einen sandboxed HTML-Vorschaublock einfügen"
+			"title": "HTML-Einbettung"
 		},
 		"svgEmbed": {
-			"title": "SVG-Einbettung",
-			"description": "Einen sandboxed SVG-Vorschaublock einfügen"
+			"title": "SVG-Einbettung"
 		},
 		"detailsBlock": {
-			"title": "Details-Block",
-			"description": "Einen einklappbaren Abschnitt einfügen"
+			"title": "Details-Block"
 		},
 		"calloutInfo": {
-			"title": "Info-Callout",
-			"description": "Einen Info-Callout einfügen"
+			"title": "Info-Callout"
 		},
 		"calloutTip": {
-			"title": "Tipp-Callout",
-			"description": "Einen Tipp-Callout einfügen"
+			"title": "Tipp-Callout"
 		},
 		"calloutSuccess": {
-			"title": "Erfolgs-Callout",
-			"description": "Einen Erfolgs-Callout einfügen"
+			"title": "Erfolgs-Callout"
 		},
 		"calloutWarning": {
-			"title": "Warn-Callout",
-			"description": "Einen Warn-Callout einfügen"
+			"title": "Warn-Callout"
 		},
 		"calloutError": {
-			"title": "Fehler-Callout",
-			"description": "Einen Fehler-Callout einfügen"
+			"title": "Fehler-Callout"
 		},
 		"mathInline": {
-			"title": "Inline-Gleichung",
-			"description": "LaTeX innerhalb einer Zeile einfügen"
+			"title": "Inline-Gleichung"
 		},
 		"mathDisplay": {
-			"title": "Anzeige-Gleichung",
-			"description": "Einen zentrierten LaTeX-Block einfügen"
+			"title": "Anzeige-Gleichung"
 		},
 		"colorGray": {
-			"title": "Farbe: Grau",
-			"description": "Graue Textfarbe anwenden"
+			"title": "Grau"
 		},
 		"colorBrown": {
-			"title": "Farbe: Braun",
-			"description": "Braune Textfarbe anwenden"
+			"title": "Braun"
 		},
 		"colorOrange": {
-			"title": "Farbe: Orange",
-			"description": "Orange Textfarbe anwenden"
+			"title": "Orange"
 		},
 		"colorYellow": {
-			"title": "Farbe: Gelb",
-			"description": "Gelbe Textfarbe anwenden"
+			"title": "Gelb"
 		},
 		"colorGreen": {
-			"title": "Farbe: Grün",
-			"description": "Grüne Textfarbe anwenden"
+			"title": "Grün"
 		},
 		"colorBlue": {
-			"title": "Farbe: Blau",
-			"description": "Blaue Textfarbe anwenden"
+			"title": "Blau"
 		},
 		"colorPurple": {
-			"title": "Farbe: Lila",
-			"description": "Lilane Textfarbe anwenden"
+			"title": "Lila"
 		},
 		"colorRed": {
-			"title": "Farbe: Rot",
-			"description": "Rote Textfarbe anwenden"
+			"title": "Rot"
 		},
 		"colorClear": {
-			"title": "Farbe: Entfernen",
-			"description": "Textfarbe entfernen"
+			"title": "Farbe entfernen"
 		},
 		"highlightYellow": {
-			"title": "Hervorhebung: Gelb",
-			"description": "Gelbe Texthervorhebung anwenden"
+			"title": "Gelb"
 		},
 		"highlightBlue": {
-			"title": "Hervorhebung: Blau",
-			"description": "Blaue Texthervorhebung anwenden"
+			"title": "Blau"
 		},
 		"highlightGreen": {
-			"title": "Hervorhebung: Grün",
-			"description": "Grüne Texthervorhebung anwenden"
+			"title": "Grün"
 		},
 		"highlightRed": {
-			"title": "Hervorhebung: Rot",
-			"description": "Rote Texthervorhebung anwenden"
+			"title": "Rot"
 		},
 		"highlightClear": {
-			"title": "Hervorhebung: Entfernen",
-			"description": "Texthervorhebung entfernen"
+			"title": "Hervorhebung entfernen"
 		}
 	},
 	"sidePeek": {
