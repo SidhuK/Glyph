@@ -182,21 +182,27 @@
 		"saveFailed": "Nie udało się zapisać stanu listy"
 	},
 	"slash": {
+		"groups": {
+			"headings": "Nagłówki",
+			"lists": "Listy",
+			"blocks": "Bloki",
+			"callouts": "Objaśnienia",
+			"math": "Matematyka",
+			"embeds": "Diagramy i osadzenia",
+			"textColor": "Kolor tekstu",
+			"highlight": "Wyróżnienie"
+		},
 		"heading1": {
-			"title": "Nagłówek 1",
-			"description": "Nagłówek 1"
+			"title": "Nagłówek 1"
 		},
 		"heading2": {
-			"title": "Nagłówek 2",
-			"description": "Nagłówek 2"
+			"title": "Nagłówek 2"
 		},
 		"heading3": {
-			"title": "Nagłówek 3",
-			"description": "Nagłówek 3"
+			"title": "Nagłówek 3"
 		},
 		"insertTemplate": {
 			"title": "Wstaw szablon",
-			"description": "Wstaw szablon ze zmiennymi daty i tytułu",
 			"settingsLoading": "Ustawienia szablonów są jeszcze wczytywane.",
 			"folderRequired": "Najpierw ustaw folder szablonów w ustawieniach przestrzeni.",
 			"noTemplates": "W folderze szablonów nie znaleziono szablonów Markdown.",
@@ -205,136 +211,103 @@
 			"insertFailed": "Nie udało się wstawić szablonu"
 		},
 		"bulletList": {
-			"title": "Lista wypunktowana",
-			"description": "Rozpocznij listę wypunktowaną"
+			"title": "Lista wypunktowana"
 		},
 		"numberedList": {
-			"title": "Lista numerowana",
-			"description": "Rozpocznij listę numerowaną"
+			"title": "Lista numerowana"
 		},
 		"todoList": {
-			"title": "Lista zadań",
-			"description": "Rozpocznij listę zadań"
+			"title": "Lista zadań"
 		},
 		"quote": {
-			"title": "Cytat",
-			"description": "Wstaw blok cytatu"
+			"title": "Cytat"
 		},
 		"codeBlock": {
-			"title": "Blok kodu",
-			"description": "Wstaw blok kodu"
+			"title": "Blok kodu"
 		},
 		"divider": {
-			"title": "Separator",
-			"description": "Wstaw linię poziomą"
+			"title": "Separator"
 		},
 		"table": {
-			"title": "Tabela",
-			"description": "Wstaw tabelę Markdown"
+			"title": "Tabela"
 		},
 		"tableOfContents": {
-			"title": "Spis treści",
-			"description": "Wstaw dynamiczny spis treści"
+			"title": "Spis treści"
 		},
 		"mermaidChart": {
-			"title": "Wykres Mermaid",
-			"description": "Wstaw blok diagramu Mermaid"
+			"title": "Wykres Mermaid"
 		},
 		"htmlEmbed": {
-			"title": "Wstaw HTML",
-			"description": "Wstaw blok podglądu HTML"
+			"title": "Wstaw HTML"
 		},
 		"svgEmbed": {
-			"title": "Wstaw SVG",
-			"description": "Wstaw blok podglądu SVG"
+			"title": "Wstaw SVG"
 		},
 		"detailsBlock": {
-			"title": "Blok szczegółów",
-			"description": "Wstaw zwijaną szczegółową sekcję"
+			"title": "Blok szczegółów"
 		},
 		"calloutInfo": {
-			"title": "Wyróżnienie: Informacja",
-			"description": "Wstaw wyróżnienie z informacją"
+			"title": "Objaśnienie: Informacja"
 		},
 		"calloutTip": {
-			"title": "Wyróżnienie: Wskazówka",
-			"description": "Wstaw wyróżnienie ze wskazówką"
+			"title": "Objaśnienie: Wskazówka"
 		},
 		"calloutSuccess": {
-			"title": "Wyróżnienie: Sukces",
-			"description": "Wstaw wyróżnienie z sukcesem"
+			"title": "Objaśnienie: Sukces"
 		},
 		"calloutWarning": {
-			"title": "Wyróżnienie: Ostrzeżenie",
-			"description": "Wstaw wyróżnienie z ostrzeżeniem"
+			"title": "Objaśnienie: Ostrzeżenie"
 		},
 		"calloutError": {
-			"title": "Wyróżnienie: Błąd",
-			"description": "Wstaw wyróżnienie z błędem"
+			"title": "Objaśnienie: Błąd"
 		},
 		"mathInline": {
-			"title": "Równanie w tekście",
-			"description": "Wstaw wyrażenie LaTeX w linii"
+			"title": "Równanie w tekście"
 		},
 		"mathDisplay": {
-			"title": "Równanie wyśrodkowane",
-			"description": "Wstaw wyśrodkowany blok LaTeX"
+			"title": "Równanie wyśrodkowane"
 		},
 		"colorGray": {
-			"title": "Kolor: Szary",
-			"description": "Zastosuj szary kolor tekstu"
+			"title": "Szary"
 		},
 		"colorBrown": {
-			"title": "Kolor: Brązowy",
-			"description": "Zastosuj brązowy kolor tekstu"
+			"title": "Brązowy"
 		},
 		"colorOrange": {
-			"title": "Kolor: Pomarańczowy",
-			"description": "Zastosuj pomarańczowy kolor tekstu"
+			"title": "Pomarańczowy"
 		},
 		"colorYellow": {
-			"title": "Kolor: Żółty",
-			"description": "Zastosuj żółty kolor tekstu"
+			"title": "Żółty"
 		},
 		"colorGreen": {
-			"title": "Kolor: Zielony",
-			"description": "Zastosuj zielony kolor tekstu"
+			"title": "Zielony"
 		},
 		"colorBlue": {
-			"title": "Kolor: Niebieski",
-			"description": "Zastosuj niebieski kolor tekstu"
+			"title": "Niebieski"
 		},
 		"colorPurple": {
-			"title": "Kolor: Fioletowy",
-			"description": "Zastosuj fioletowy kolor tekstu"
+			"title": "Fioletowy"
 		},
 		"colorRed": {
-			"title": "Kolor: Czerwony",
-			"description": "Zastosuj czerwony kolor tekstu"
+			"title": "Czerwony"
 		},
 		"colorClear": {
-			"title": "Kolor: Brak",
-			"description": "Usuń kolor tekstu"
+			"title": "Wyczyść kolor"
 		},
 		"highlightYellow": {
-			"title": "Wyróżnienie: Żółte",
-			"description": "Zastosuj żółte wyróżnienie tekstu"
+			"title": "Żółte"
 		},
 		"highlightBlue": {
-			"title": "Wyróżnienie: Niebieskie",
-			"description": "Zastosuj niebieskie wyróżnienie tekstu"
+			"title": "Niebieskie"
 		},
 		"highlightGreen": {
-			"title": "Wyróżnienie: Zielone",
-			"description": "Zastosuj zielone wyróżnienie tekstu"
+			"title": "Zielone"
 		},
 		"highlightRed": {
-			"title": "Wyróżnienie: Czerwone",
-			"description": "Zastosuj czerwone wyróżnienie tekstu"
+			"title": "Czerwone"
 		},
 		"highlightClear": {
-			"title": "Wyróżnienie: Brak",
-			"description": "Usuń wyróżnienie tekstu"
+			"title": "Wyczyść wyróżnienie"
 		}
 	},
 	"sidePeek": {

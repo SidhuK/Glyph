@@ -93,21 +93,27 @@
 		"saveFailed": "リストの折りたたみ状態を保存できませんでした"
 	},
 	"slash": {
+		"groups": {
+			"headings": "見出し",
+			"lists": "リスト",
+			"blocks": "ブロック",
+			"callouts": "コールアウト",
+			"math": "数式",
+			"embeds": "図と埋め込み",
+			"textColor": "文字色",
+			"highlight": "ハイライト"
+		},
 		"heading1": {
-			"title": "見出し 1",
-			"description": "大きなセクション見出し"
+			"title": "見出し 1"
 		},
 		"heading2": {
-			"title": "見出し 2",
-			"description": "セクション見出し"
+			"title": "見出し 2"
 		},
 		"heading3": {
-			"title": "見出し 3",
-			"description": "小見出し"
+			"title": "見出し 3"
 		},
 		"insertTemplate": {
 			"title": "テンプレートを挿入",
-			"description": "日付とタイトルの変数を展開してテンプレートを挿入",
 			"settingsLoading": "テンプレート設定を読み込み中です。",
 			"folderRequired": "先にスペース設定でテンプレートフォルダを設定してください。",
 			"noTemplates": "テンプレートフォルダに Markdown テンプレートが見つかりませんでした。",
@@ -116,136 +122,103 @@
 			"insertFailed": "テンプレートを挿入できませんでした"
 		},
 		"bulletList": {
-			"title": "箇条書きリスト",
-			"description": "箇条書きリストを開始"
+			"title": "箇条書きリスト"
 		},
 		"numberedList": {
-			"title": "番号付きリスト",
-			"description": "番号付きリストを開始"
+			"title": "番号付きリスト"
 		},
 		"todoList": {
-			"title": "To-do リスト",
-			"description": "タスクリストを開始"
+			"title": "To-do リスト"
 		},
 		"quote": {
-			"title": "引用",
-			"description": "引用ブロックを挿入"
+			"title": "引用"
 		},
 		"codeBlock": {
-			"title": "コードブロック",
-			"description": "コードブロックを挿入"
+			"title": "コードブロック"
 		},
 		"divider": {
-			"title": "区切り線",
-			"description": "水平線を挿入"
+			"title": "区切り線"
 		},
 		"table": {
-			"title": "表",
-			"description": "Markdown の表を挿入"
+			"title": "表"
 		},
 		"tableOfContents": {
-			"title": "目次",
-			"description": "このノートのライブアウトラインを挿入"
+			"title": "目次"
 		},
 		"mermaidChart": {
-			"title": "Mermaid チャート",
-			"description": "Mermaid 図ブロックを挿入"
+			"title": "Mermaid チャート"
 		},
 		"htmlEmbed": {
-			"title": "HTML 埋め込み",
-			"description": "サンドボックス化された HTML プレビューブロックを挿入"
+			"title": "HTML 埋め込み"
 		},
 		"svgEmbed": {
-			"title": "SVG 埋め込み",
-			"description": "サンドボックス化された SVG プレビューブロックを挿入"
+			"title": "SVG 埋め込み"
 		},
 		"detailsBlock": {
-			"title": "詳細ブロック",
-			"description": "折りたたみ可能なトグルセクションを挿入"
+			"title": "詳細ブロック"
 		},
 		"calloutInfo": {
-			"title": "情報コールアウト",
-			"description": "情報コールアウトを挿入"
+			"title": "情報コールアウト"
 		},
 		"calloutTip": {
-			"title": "ヒントコールアウト",
-			"description": "ヒントコールアウトを挿入"
+			"title": "ヒントコールアウト"
 		},
 		"calloutSuccess": {
-			"title": "成功コールアウト",
-			"description": "成功コールアウトを挿入"
+			"title": "成功コールアウト"
 		},
 		"calloutWarning": {
-			"title": "警告コールアウト",
-			"description": "警告コールアウトを挿入"
+			"title": "警告コールアウト"
 		},
 		"calloutError": {
-			"title": "エラーコールアウト",
-			"description": "エラーコールアウトを挿入"
+			"title": "エラーコールアウト"
 		},
 		"mathInline": {
-			"title": "インライン数式",
-			"description": "行内に LaTeX を挿入"
+			"title": "インライン数式"
 		},
 		"mathDisplay": {
-			"title": "ディスプレイ数式",
-			"description": "中央揃えの LaTeX ブロックを挿入"
+			"title": "ディスプレイ数式"
 		},
 		"colorGray": {
-			"title": "色: グレー",
-			"description": "グレーの文字色を適用"
+			"title": "グレー"
 		},
 		"colorBrown": {
-			"title": "色: 茶",
-			"description": "茶色の文字色を適用"
+			"title": "茶"
 		},
 		"colorOrange": {
-			"title": "色: オレンジ",
-			"description": "オレンジの文字色を適用"
+			"title": "オレンジ"
 		},
 		"colorYellow": {
-			"title": "色: 黄",
-			"description": "黄色い文字色を適用"
+			"title": "黄"
 		},
 		"colorGreen": {
-			"title": "色: 緑",
-			"description": "緑の文字色を適用"
+			"title": "緑"
 		},
 		"colorBlue": {
-			"title": "色: 青",
-			"description": "青い文字色を適用"
+			"title": "青"
 		},
 		"colorPurple": {
-			"title": "色: 紫",
-			"description": "紫の文字色を適用"
+			"title": "紫"
 		},
 		"colorRed": {
-			"title": "色: 赤",
-			"description": "赤い文字色を適用"
+			"title": "赤"
 		},
 		"colorClear": {
-			"title": "色: クリア",
-			"description": "文字色を削除"
+			"title": "色をクリア"
 		},
 		"highlightYellow": {
-			"title": "ハイライト: 黄",
-			"description": "黄色いテキストハイライトを適用"
+			"title": "黄"
 		},
 		"highlightBlue": {
-			"title": "ハイライト: 青",
-			"description": "青いテキストハイライトを適用"
+			"title": "青"
 		},
 		"highlightGreen": {
-			"title": "ハイライト: 緑",
-			"description": "緑のテキストハイライトを適用"
+			"title": "緑"
 		},
 		"highlightRed": {
-			"title": "ハイライト: 赤",
-			"description": "赤いテキストハイライトを適用"
+			"title": "赤"
 		},
 		"highlightClear": {
-			"title": "ハイライト: クリア",
-			"description": "テキストハイライトを削除"
+			"title": "ハイライトをクリア"
 		}
 	},
 	"sidePeek": {

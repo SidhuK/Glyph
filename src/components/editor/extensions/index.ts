@@ -9,7 +9,8 @@ import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import type { EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
-import { SlashCommand, type TemplateInsertRequest } from "../slashCommands";
+import type { TemplateInsertRequest } from "../slash/slashMenuItems";
+import { SlashCommand } from "../slashCommands";
 import { AsteriskDividerBloom } from "./asteriskDividerBloom";
 import {
 	type ChangedRange,

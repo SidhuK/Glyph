@@ -93,21 +93,27 @@
 		"saveFailed": "접힌 목록 상태를 저장하지 못했습니다"
 	},
 	"slash": {
+		"groups": {
+			"headings": "제목",
+			"lists": "목록",
+			"blocks": "블록",
+			"callouts": "콜아웃",
+			"math": "수식",
+			"embeds": "다이어그램 및 임베드",
+			"textColor": "텍스트 색상",
+			"highlight": "강조 표시"
+		},
 		"heading1": {
-			"title": "제목 1",
-			"description": "큰 섹션 제목"
+			"title": "제목 1"
 		},
 		"heading2": {
-			"title": "제목 2",
-			"description": "섹션 제목"
+			"title": "제목 2"
 		},
 		"heading3": {
-			"title": "제목 3",
-			"description": "소제목"
+			"title": "제목 3"
 		},
 		"insertTemplate": {
 			"title": "템플릿 삽입",
-			"description": "날짜와 제목 변수를 적용해 템플릿 삽입",
 			"settingsLoading": "템플릿 설정을 불러오는 중입니다.",
 			"folderRequired": "먼저 스페이스 설정에서 템플릿 폴더를 지정하세요.",
 			"noTemplates": "템플릿 폴더에서 Markdown 템플릿을 찾지 못했습니다.",
@@ -116,136 +122,103 @@
 			"insertFailed": "템플릿을 삽입하지 못했습니다"
 		},
 		"bulletList": {
-			"title": "글머리 기호 목록",
-			"description": "글머리 기호 목록 시작"
+			"title": "글머리 기호 목록"
 		},
 		"numberedList": {
-			"title": "번호 매기기 목록",
-			"description": "번호 매기기 목록 시작"
+			"title": "번호 매기기 목록"
 		},
 		"todoList": {
-			"title": "할 일 목록",
-			"description": "작업 목록 시작"
+			"title": "할 일 목록"
 		},
 		"quote": {
-			"title": "인용",
-			"description": "인용 블록 삽입"
+			"title": "인용"
 		},
 		"codeBlock": {
-			"title": "코드 블록",
-			"description": "코드 블록 삽입"
+			"title": "코드 블록"
 		},
 		"divider": {
-			"title": "구분선",
-			"description": "가로줄 삽입"
+			"title": "구분선"
 		},
 		"table": {
-			"title": "표",
-			"description": "Markdown 표 삽입"
+			"title": "표"
 		},
 		"tableOfContents": {
-			"title": "목차",
-			"description": "이 노트의 실시간 개요 삽입"
+			"title": "목차"
 		},
 		"mermaidChart": {
-			"title": "Mermaid 차트",
-			"description": "Mermaid 다이어그램 블록 삽입"
+			"title": "Mermaid 차트"
 		},
 		"htmlEmbed": {
-			"title": "HTML 임베드",
-			"description": "샌드박스 HTML 미리보기 블록 삽입"
+			"title": "HTML 임베드"
 		},
 		"svgEmbed": {
-			"title": "SVG 임베드",
-			"description": "샌드박스 SVG 미리보기 블록 삽입"
+			"title": "SVG 임베드"
 		},
 		"detailsBlock": {
-			"title": "세부 정보 블록",
-			"description": "접을 수 있는 토글 섹션 삽입"
+			"title": "세부 정보 블록"
 		},
 		"calloutInfo": {
-			"title": "정보 콜아웃",
-			"description": "정보 콜아웃 삽입"
+			"title": "정보 콜아웃"
 		},
 		"calloutTip": {
-			"title": "팁 콜아웃",
-			"description": "팁 콜아웃 삽입"
+			"title": "팁 콜아웃"
 		},
 		"calloutSuccess": {
-			"title": "성공 콜아웃",
-			"description": "성공 콜아웃 삽입"
+			"title": "성공 콜아웃"
 		},
 		"calloutWarning": {
-			"title": "경고 콜아웃",
-			"description": "경고 콜아웃 삽입"
+			"title": "경고 콜아웃"
 		},
 		"calloutError": {
-			"title": "오류 콜아웃",
-			"description": "오류 콜아웃 삽입"
+			"title": "오류 콜아웃"
 		},
 		"mathInline": {
-			"title": "인라인 수식",
-			"description": "줄 안에 LaTeX 삽입"
+			"title": "인라인 수식"
 		},
 		"mathDisplay": {
-			"title": "디스플레이 수식",
-			"description": "가운데 정렬 LaTeX 블록 삽입"
+			"title": "디스플레이 수식"
 		},
 		"colorGray": {
-			"title": "색상: 회색",
-			"description": "회색 텍스트 색상 적용"
+			"title": "회색"
 		},
 		"colorBrown": {
-			"title": "색상: 갈색",
-			"description": "갈색 텍스트 색상 적용"
+			"title": "갈색"
 		},
 		"colorOrange": {
-			"title": "색상: 주황",
-			"description": "주황색 텍스트 색상 적용"
+			"title": "주황"
 		},
 		"colorYellow": {
-			"title": "색상: 노랑",
-			"description": "노란색 텍스트 색상 적용"
+			"title": "노랑"
 		},
 		"colorGreen": {
-			"title": "색상: 초록",
-			"description": "초록색 텍스트 색상 적용"
+			"title": "초록"
 		},
 		"colorBlue": {
-			"title": "색상: 파랑",
-			"description": "파란색 텍스트 색상 적용"
+			"title": "파랑"
 		},
 		"colorPurple": {
-			"title": "색상: 보라",
-			"description": "보라색 텍스트 색상 적용"
+			"title": "보라"
 		},
 		"colorRed": {
-			"title": "색상: 빨강",
-			"description": "빨간색 텍스트 색상 적용"
+			"title": "빨강"
 		},
 		"colorClear": {
-			"title": "색상: 지우기",
-			"description": "텍스트 색상 제거"
+			"title": "색상 지우기"
 		},
 		"highlightYellow": {
-			"title": "강조: 노랑",
-			"description": "노란색 텍스트 강조 적용"
+			"title": "노랑"
 		},
 		"highlightBlue": {
-			"title": "강조: 파랑",
-			"description": "파란색 텍스트 강조 적용"
+			"title": "파랑"
 		},
 		"highlightGreen": {
-			"title": "강조: 초록",
-			"description": "초록색 텍스트 강조 적용"
+			"title": "초록"
 		},
 		"highlightRed": {
-			"title": "강조: 빨강",
-			"description": "빨간색 텍스트 강조 적용"
+			"title": "빨강"
 		},
 		"highlightClear": {
-			"title": "강조: 지우기",
-			"description": "텍스트 강조 제거"
+			"title": "강조 지우기"
 		}
 	},
 	"sidePeek": {
