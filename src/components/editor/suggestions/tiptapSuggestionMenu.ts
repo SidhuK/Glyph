@@ -174,6 +174,7 @@ export function createTipTapSuggestionMenu<T>({
 		if (hoveredIndex === index) return;
 		hoveredIndex = index;
 		cancelHoverSwitch();
+		submenu.blur();
 		selectedIndex = index;
 		updateSelection(activeProps?.items ?? []);
 		if (!submenu.isOpen()) {
@@ -243,6 +244,8 @@ export function createTipTapSuggestionMenu<T>({
 			updateMenu(props);
 		},
 		onKeyDown: ({ event, view }: SuggestionKeyDownProps) => {
+			// Keyboard input can move the selection or close the flyout, so the next pointer move re-applies hover.
+			hoveredIndex = null;
 			if (submenu.onKeyDown(event)) return true;
 			const current = activeProps;
 			const items = current?.items ?? [];

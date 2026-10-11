@@ -66,10 +66,13 @@ function placeSubmenu(
 	const rowTop =
 		row.getBoundingClientRect().top - Number.parseFloat(getComputedStyle(submenu).paddingTop);
 	const rightLeft = parentRect.right + SUBMENU_GAP;
-	const fitsRight = rightLeft + rect.width <= window.innerWidth - VIEWPORT_PAD;
-	const left = fitsRight
-		? rightLeft
-		: Math.max(VIEWPORT_PAD, parentRect.left - SUBMENU_GAP - rect.width);
+	const roomRight = window.innerWidth - VIEWPORT_PAD - rightLeft;
+	const roomLeft = parentRect.left - SUBMENU_GAP - VIEWPORT_PAD;
+	// In a window too narrow for either side, take the roomier side so the overlap stays small.
+	const left =
+		rect.width <= roomRight || roomRight >= roomLeft
+			? Math.min(rightLeft, window.innerWidth - VIEWPORT_PAD - rect.width)
+			: Math.max(VIEWPORT_PAD, parentRect.left - SUBMENU_GAP - rect.width);
 	submenu.style.left = `${left}px`;
 	submenu.style.top = `${Math.max(band.top, Math.min(rowTop, band.bottom - height))}px`;
 }
@@ -101,6 +104,12 @@ export function createSuggestionSubmenu<T>({
 		if (!submenu || focused) return;
 		focused = true;
 		highlight(0);
+	};
+
+	const blur = () => {
+		if (!submenu || !focused) return;
+		focused = false;
+		highlightSuggestionItem(submenu, -1, itemActiveClassName);
 	};
 
 	const close = () => {
@@ -170,5 +179,5 @@ export function createSuggestionSubmenu<T>({
 		return true;
 	};
 
-	return { open, close, focus, onKeyDown, isOpen: () => submenu !== null };
+	return { open, close, focus, blur, onKeyDown, isOpen: () => submenu !== null };
 }

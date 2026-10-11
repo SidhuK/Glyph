@@ -247,19 +247,19 @@
 			"title": "Blok szczegółów"
 		},
 		"calloutInfo": {
-			"title": "Wyróżnienie: Informacja"
+			"title": "Objaśnienie: Informacja"
 		},
 		"calloutTip": {
-			"title": "Wyróżnienie: Wskazówka"
+			"title": "Objaśnienie: Wskazówka"
 		},
 		"calloutSuccess": {
-			"title": "Wyróżnienie: Sukces"
+			"title": "Objaśnienie: Sukces"
 		},
 		"calloutWarning": {
-			"title": "Wyróżnienie: Ostrzeżenie"
+			"title": "Objaśnienie: Ostrzeżenie"
 		},
 		"calloutError": {
-			"title": "Wyróżnienie: Błąd"
+			"title": "Objaśnienie: Błąd"
 		},
 		"mathInline": {
 			"title": "Równanie w tekście"
