@@ -1,42 +1,37 @@
 {
-  "fill-specializations" : [
-    {
-      "value" : {
-        "linear-gradient" : [
-          "extended-gray:1.00000,1.00000",
-          "extended-gray:0.75000,1.00000"
-        ],
-        "orientation" : {
-          "start" : {
-            "x" : 0.5,
-            "y" : 0
-          },
-          "stop" : {
-            "x" : 0.5,
-            "y" : 0.7
-          }
-        }
-      }
-    },
-    {
-      "appearance" : "dark",
-      "value" : {
-        "linear-gradient" : [
-          "extended-gray:0.25000,1.00000",
-          "srgb:0.00000,0.00000,0.00000,1.00000"
-        ]
+  "fill" : {
+    "linear-gradient" : [
+      "display-p3:0.26852,0.47592,0.96644,1.00000",
+      "display-p3:0.10752,0.27375,0.75508,1.00000"
+    ],
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 1
       }
     }
-  ],
+  },
   "groups" : [
     {
       "layers" : [
         {
-          "glass" : false,
-          "image-name" : "05-indigo-pocket.png",
-          "name" : "05-indigo-pocket",
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "extended-gray:1.00000,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "image-name" : "5-asterisks-small.svg",
+          "name" : "5-asterisks-small",
           "position" : {
-            "scale" : 2.9696,
+            "scale" : 1,
             "translation-in-points" : [
               0,
               0
@@ -44,61 +39,118 @@
           }
         },
         {
-          "glass" : false,
-          "image-name" : "04-ivory-asterisk.png",
-          "name" : "04-ivory-asterisk",
+          "blend-mode-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "extended-gray:1.00000,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "image-name" : "4-wordmark.svg",
+          "name" : "4-wordmark",
           "position" : {
-            "scale" : 2.9696,
+            "scale" : 1,
             "translation-in-points" : [
               0,
               0
-            ]
-          }
-        },
-        {
-          "glass" : false,
-          "image-name" : "03-violet-page.png",
-          "name" : "03-violet-page",
-          "position" : {
-            "scale" : 2.9696,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "glass" : false,
-          "image-name" : "02-coral-page.png",
-          "name" : "02-coral-page",
-          "position" : {
-            "scale" : 2.9696,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "glass" : false,
-          "image-name" : "01-blue-page.png",
-          "name" : "01-blue-page",
-          "position" : {
-            "scale" : 2.9696,
-            "translation-in-points" : [
-              17.4,
-              2.32
             ]
           }
         }
       ],
+      "lighting" : "combined",
+      "name" : "Wordmark",
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "extended-gray:1.00000,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "image-name" : "3-asterisk.svg",
+          "name" : "3-asterisk",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              -493,
+              31.37365728581733
+            ]
+          }
+        }
+      ],
+      "name" : "Asterisk",
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.35
+        "opacity" : 0.5
       },
+      "specular" : true,
       "translucency" : {
         "enabled" : true,
-        "value" : 0.5
+        "value" : 0.3
+      }
+    },
+    {
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name" : "2-folder.svg",
+          "name" : "2-folder",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "display-p3:0.58043,0.68620,0.95032,1.00000"
+          },
+          "glass" : true,
+          "image-name" : "2-folder.svg",
+          "name" : "2-folder-back-sheet",
+          "opacity" : 0.6,
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              -24,
+              -28
+            ]
+          }
+        }
+      ],
+      "name" : "Folder",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.6
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
       }
     }
   ],
