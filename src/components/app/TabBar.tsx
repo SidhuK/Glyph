@@ -202,7 +202,7 @@ export function TabBar({
 					</button>
 				</div>
 				<ActiveFileTitle path={activeMarkdownPath} onRenameFile={onRenameFile} />
-				{tabs.length > 0 ? (
+				{tabs.length > 1 || tabs[0]?.isPinned ? (
 					<div className="mainTabsStrip">
 						<div className="mainTabsStripTabs" ref={measureTabsRef}>
 							{tabs.map((tab, index) => (
