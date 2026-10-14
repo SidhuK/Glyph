@@ -351,10 +351,12 @@ pub async fn all_docs_list(
         sql.push_str("WHERE ");
         sql.push_str(&filters.join(" AND "));
         sql.push(' ');
-        sql.push_str(&format!(
-            "ORDER BY COALESCE(pinned.pin_rank, {}), ",
-            pinned_paths_len
-        ));
+        sql.push_str("ORDER BY ");
+        // The pin rank is constant when nothing is pinned, and leaving it out lets
+        // SQLite walk an index and stop at the page limit instead of sorting every note.
+        if pinned_paths_len > 0 {
+            sql.push_str(&format!("COALESCE(pinned.pin_rank, {}), ", pinned_paths_len));
+        }
         sql.push_str(&notes_order);
         sql.push_str(
             " LIMIT ? OFFSET ?
@@ -388,10 +390,9 @@ pub async fn all_docs_list(
              LEFT JOIN people_blob ON people_blob.note_id = vn.id
              ORDER BY ",
         );
-        sql.push_str(&format!(
-            "COALESCE(vn.pin_rank, {}), ",
-            pinned_paths_len
-        ));
+        if pinned_paths_len > 0 {
+            sql.push_str(&format!("COALESCE(vn.pin_rank, {}), ", pinned_paths_len));
+        }
         sql.push_str(&visible_order);
         params.push(rusqlite::types::Value::from(limit));
         params.push(rusqlite::types::Value::from(offset));

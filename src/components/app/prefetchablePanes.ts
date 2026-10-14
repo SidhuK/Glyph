@@ -1,3 +1,8 @@
+export const loadMarkdownEditorPane = () =>
+	import("../preview/MarkdownEditorPane").then((module) => ({
+		default: module.MarkdownEditorPane,
+	}));
+
 export const loadDatabasesPane = () =>
 	import("../databases/DatabasesPane").then((module) => ({
 		default: module.DatabasesPane,

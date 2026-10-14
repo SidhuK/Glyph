@@ -348,46 +348,28 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		const originSpace = spacePath;
 		let cancelled = false;
 		const indexSync = startIndexSync();
-		void (async () => {
-			try {
-				const entries = await invoke("space_list_dir", {});
-				if (!cancelled) {
-					setRootEntries(entries);
-				}
-			} catch {
-				/* ignore initial load errors */
+		// Initial load errors are ignored; each list keeps its empty default.
+		const ignoreLoadError = () => {};
+		void invoke("space_list_dir", {}).then((entries) => {
+			if (!cancelled) setRootEntries(entries);
+		}, ignoreLoadError);
+		void invoke("file_tree_appearance_list").then((appearance) => {
+			if (!cancelled) setItemAppearanceState(appearance);
+		}, ignoreLoadError);
+		const tagAppearanceRequestId = tagAppearanceRequestIdRef.current + 1;
+		tagAppearanceRequestIdRef.current = tagAppearanceRequestId;
+		void invoke("tag_appearance_list").then((appearance) => {
+			if (
+				!cancelled &&
+				tagAppearanceRequestId === tagAppearanceRequestIdRef.current &&
+				originSpace === currentSpacePathRef.current
+			) {
+				setTagAppearanceState(appearance);
 			}
-			try {
-				const appearance = await invoke("file_tree_appearance_list");
-				if (!cancelled) {
-					setItemAppearanceState(appearance);
-				}
-			} catch {
-				/* ignore appearance load errors */
-			}
-			try {
-				const requestId = tagAppearanceRequestIdRef.current + 1;
-				tagAppearanceRequestIdRef.current = requestId;
-				const appearance = await invoke("tag_appearance_list");
-				if (
-					!cancelled &&
-					requestId === tagAppearanceRequestIdRef.current &&
-					originSpace === currentSpacePathRef.current
-				) {
-					setTagAppearanceState(appearance);
-				}
-			} catch {
-				/* ignore tag appearance load errors */
-			}
-			try {
-				const files = await invoke("pinned_files_list");
-				if (!cancelled) {
-					setPinnedFiles(files);
-				}
-			} catch {
-				/* ignore pinned file load errors */
-			}
-		})();
+		}, ignoreLoadError);
+		void invoke("pinned_files_list").then((files) => {
+			if (!cancelled) setPinnedFiles(files);
+		}, ignoreLoadError);
 		void indexSync.then(() => {
 			if (!cancelled) void refreshTags();
 		});

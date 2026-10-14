@@ -3,7 +3,7 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { useDraggable } from "@dnd-kit/react";
 import { PaintBoardIcon, PinIcon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
-import type { CSSProperties, KeyboardEvent, MouseEvent, MutableRefObject, Ref } from "react";
+import type { KeyboardEvent, MouseEvent, MutableRefObject, Ref } from "react";
 import { memo, useCallback } from "react";
 import { useEditorContext, useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -17,7 +17,12 @@ import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { AppearanceIcon } from "../AppearanceIcon";
 import { isEditorTextColor } from "../editor/textColors";
 import { FILE_TREE_ENTRY_SENSORS, FILE_TREE_ENTRY_TYPE, fileTreeEntryDragId } from "./fileTreeDnd";
-import { buildRowStyle, rowVariants, springTransition } from "./fileTreeItemHelpers";
+import {
+	buildRowStyle,
+	rowVariants,
+	springTransition,
+	virtualRowStyle,
+} from "./fileTreeItemHelpers";
 import { buildFileTreeFileNativeMenu } from "./fileTreeNativeContextMenu";
 import { getFileTypeInfo } from "./fileTypeUtils";
 
@@ -36,13 +41,13 @@ interface FileTreeFileItemProps {
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
 	onRequestCreateFolder: (dirPath: string) => unknown;
 	onDuplicateFile: (path: string) => unknown;
-	onStartRename: () => void;
+	onStartRename: (path: string) => void;
 	onCommitRename: (path: string, nextName: string) => Promise<boolean>;
 	onCancelRename: () => void;
 	parentDirPath: string;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	appearance?: FileTreeAppearance | null;
-	onOpenAppearancePicker?: () => void;
+	onOpenAppearancePicker?: (entry: FsEntry) => void;
 	isPinned: boolean;
 	onTogglePinned: (path: string) => Promise<void> | void;
 	onMoveClickSuppressRef?: MutableRefObject<boolean>;
@@ -50,7 +55,7 @@ interface FileTreeFileItemProps {
 	taskSummary?: NoteTaskSummary | null;
 	previewText?: string | null;
 	virtualRowRef?: Ref<HTMLLIElement>;
-	virtualRowStyle?: CSSProperties;
+	virtualStart?: number;
 	virtualRowIndex?: number;
 }
 
@@ -79,7 +84,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	taskSummary = null,
 	previewText = null,
 	virtualRowRef,
-	virtualRowStyle,
+	virtualStart,
 	virtualRowIndex,
 }: FileTreeFileItemProps) {
 	const { spacePath } = useSpace();
@@ -156,10 +161,10 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					onOpen: () => onOpenFile(entry.rel_path),
 					onOpenInNewWindow: () => void handleOpenInSeparateWindow(),
 					onRevealInFinder: () => void handleRevealInFinder(),
-					onRename: onStartRename,
+					onRename: () => onStartRename(entry.rel_path),
 					onDuplicate: () => void onDuplicateFile(entry.rel_path),
 					onTogglePinned: () => void onTogglePinned(entry.rel_path),
-					onOpenAppearancePicker: onOpenAppearancePicker ?? (() => undefined),
+					onOpenAppearancePicker: () => onOpenAppearancePicker?.(entry),
 					onNewFile: () => void onNewFileInDir(parentDirPath),
 					onCreateFromTemplate: () => void onCreateFromTemplateInDir(parentDirPath),
 					onCreateFolder: () => void onRequestCreateFolder(parentDirPath),
@@ -174,8 +179,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		},
 		[
 			archive,
-			entry.is_markdown,
-			entry.rel_path,
+			entry,
 			handleRevealInFinder,
 			isPinned,
 			onOpenAppearancePicker,
@@ -197,7 +201,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		<li
 			ref={virtualRowRef}
 			className={isActive ? "fileTreeItem active" : "fileTreeItem"}
-			style={virtualRowStyle}
+			style={virtualRowStyle(virtualStart)}
 			data-index={virtualRowIndex}
 		>
 			<div className="fileTreeRowShell">

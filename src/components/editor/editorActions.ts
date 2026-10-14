@@ -1,5 +1,4 @@
 import type { Editor, JSONContent } from "@tiptap/core";
-import { createDetailsBlockContent } from "./extensions/detailsBlock";
 import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "./textColors";
 import {
 	EDITOR_TEXT_HIGHLIGHTS,
@@ -78,6 +77,23 @@ export function createCalloutContent(type: string): JSONContent {
 				content: [{ type: "text", text: `[!${normalizeCalloutType(type)}]` }],
 			},
 			{ type: "paragraph" },
+		],
+	};
+}
+
+export function createDetailsBlockContent(summary = "Toggle title") {
+	return {
+		type: "details",
+		attrs: { open: true },
+		content: [
+			{
+				type: "detailsSummary",
+				content: summary ? [{ type: "text", text: summary }] : undefined,
+			},
+			{
+				type: "detailsContent",
+				content: [{ type: "paragraph" }],
+			},
 		],
 	};
 }

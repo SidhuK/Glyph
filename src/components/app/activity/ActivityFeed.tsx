@@ -54,7 +54,7 @@ export function ActivityFeed({
 					<div
 						key={row.id}
 						data-index={virtualRow.index}
-						ref={(node) => rowVirtualizer.measureElement(node)}
+						ref={rowVirtualizer.measureElement}
 						className="activityVirtualRow"
 						style={{ transform: `translateY(${virtualRow.start}px)` }}
 					>
@@ -126,7 +126,7 @@ interface ActivityCardsRowProps {
 	onOpenFile: (relPath: string) => Promise<void>;
 }
 
-function ActivityCardsRow({
+const ActivityCardsRow = memo(function ActivityCardsRow({
 	row,
 	itemAppearance,
 	selectedNotePath,
@@ -166,4 +166,4 @@ function ActivityCardsRow({
 			</div>
 		</section>
 	);
-}
+});

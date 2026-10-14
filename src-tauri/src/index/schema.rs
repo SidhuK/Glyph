@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS notes (
 
 CREATE INDEX IF NOT EXISTS notes_title_idx ON notes(title);
 CREATE INDEX IF NOT EXISTS notes_title_nocase_idx ON notes(title COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS notes_updated_idx ON notes(updated);
 
 CREATE TABLE IF NOT EXISTS links (
   from_id TEXT NOT NULL,
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS links (
 );
 
 CREATE INDEX IF NOT EXISTS links_to_id_idx ON links(to_id);
+CREATE INDEX IF NOT EXISTS links_to_title_idx ON links(to_title);
 
 CREATE TABLE IF NOT EXISTS note_relationships (
   from_id TEXT NOT NULL,
@@ -41,6 +43,7 @@ CREATE TABLE IF NOT EXISTS note_relationships (
 CREATE INDEX IF NOT EXISTS note_relationships_from_idx ON note_relationships(from_id);
 CREATE INDEX IF NOT EXISTS note_relationships_to_id_idx ON note_relationships(to_id);
 CREATE INDEX IF NOT EXISTS note_relationships_to_title_idx ON note_relationships(to_title);
+CREATE INDEX IF NOT EXISTS note_relationships_target_title_idx ON note_relationships(target_title);
 
 CREATE TABLE IF NOT EXISTS tags (
   note_id TEXT NOT NULL,

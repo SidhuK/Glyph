@@ -9,10 +9,15 @@ export function useArchivedPaths() {
 	return useArchivedPathsForSpace(useSpace().spacePath);
 }
 
+// Structural sharing keeps the fetched array stable when unchanged, and a module-level
+// select memoizes on it, so consumers keep the same Set across refetches.
+const toPathSet = (paths: string[]) => new Set(paths);
+
 export function useArchivedPathsForSpace(spacePath: string | null) {
 	return useQuery({
 		queryKey: ["navigation", "archived-paths", spacePath],
-		queryFn: async () => new Set(await invoke("notes_archived_paths", {})),
+		queryFn: () => invoke("notes_archived_paths", {}),
+		select: toPathSet,
 		enabled: Boolean(spacePath),
 	});
 }

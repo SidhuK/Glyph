@@ -21,20 +21,3 @@ export const GlyphDetailsContent = DetailsContent.configure({
 });
 
 export const glyphDetailsExtensions = [GlyphDetails, GlyphDetailsSummary, GlyphDetailsContent];
-
-export function createDetailsBlockContent(summary = "Toggle title") {
-	return {
-		type: "details",
-		attrs: { open: true },
-		content: [
-			{
-				type: "detailsSummary",
-				content: summary ? [{ type: "text", text: summary }] : undefined,
-			},
-			{
-				type: "detailsContent",
-				content: [{ type: "paragraph" }],
-			},
-		],
-	};
-}

@@ -15,6 +15,17 @@ export const rowVariants = {
 	tap: { x: 0 },
 };
 
+export function virtualRowStyle(start: number | undefined): CSSProperties | undefined {
+	if (start === undefined) return undefined;
+	return {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		width: "100%",
+		transform: `translateY(${start}px)`,
+	};
+}
+
 export function buildRowStyle(
 	depth: number,
 	toneSeed?: string,

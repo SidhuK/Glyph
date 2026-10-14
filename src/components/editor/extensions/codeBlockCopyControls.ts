@@ -1,12 +1,10 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, type EditorView } from "@tiptap/pm/view";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { i18n } from "../../../i18n";
+import { hugeiconMarkup } from "../hugeiconMarkup";
 
 const FEEDBACK_MS = 1500;
 
@@ -18,12 +16,7 @@ interface CodeBlockCopyPluginState {
 }
 
 function iconMarkup(copied: boolean): string {
-	return renderToStaticMarkup(
-		createElement(HugeiconsIcon, {
-			icon: copied ? Tick02Icon : Copy01Icon,
-			size: "var(--icon-sm)",
-		}),
-	);
+	return hugeiconMarkup(copied ? Tick02Icon : Copy01Icon, "var(--icon-sm)");
 }
 
 function codeBlockTextAtWidget(view: EditorView, getPos: () => number | undefined): string {

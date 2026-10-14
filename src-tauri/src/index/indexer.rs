@@ -411,8 +411,6 @@ where
         )
         .map_err(|e| e.to_string())?;
 
-        tx.execute("DELETE FROM notes_fts WHERE id = ?", [rel])
-            .map_err(|e| e.to_string())?;
         let body = fts_body_with_frontmatter(&markdown);
         tx.execute(
             "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",

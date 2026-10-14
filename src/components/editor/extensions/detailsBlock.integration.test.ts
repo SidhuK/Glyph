@@ -8,7 +8,7 @@ import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
 } from "../markdown/editorMarkdownBridge";
-import { createDetailsBlockContent } from "./detailsBlock";
+import { createDetailsBlockContent } from "../editorActions";
 import { createEditorExtensions } from "./index";
 
 function createMarkdownManager() {
