@@ -1,6 +1,8 @@
+import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import { describe, expect, it } from "vite-plus/test";
+import { GlyphMarkdown } from "../extensions/glyphMarkdown";
 import { HtmlCommentBlock, HtmlCommentInline } from "../extensions/htmlComment";
 import { postprocessMarkdownFromEditor, preprocessMarkdownForEditor } from "./editorMarkdownBridge";
 
@@ -12,6 +14,23 @@ function roundTripThroughEditor(markdown: string): string {
 	return postprocessMarkdownFromEditor(
 		manager.serialize(manager.parse(preprocessMarkdownForEditor(markdown))),
 	);
+}
+
+function createGlyphMarkdownEditor(markdown: string): Editor {
+	return new Editor({
+		extensions: [
+			StarterKit,
+			HtmlCommentBlock,
+			HtmlCommentInline,
+			GlyphMarkdown.configure({ markedOptions: { gfm: true, breaks: false } }),
+		],
+		content: preprocessMarkdownForEditor(markdown),
+		contentType: "markdown",
+	});
+}
+
+function saveThroughGlyphMarkdown(markdown: string): string {
+	return postprocessMarkdownFromEditor(createGlyphMarkdownEditor(markdown).getMarkdown());
 }
 
 describe("editorMarkdownBridge", () => {
@@ -123,5 +142,31 @@ describe("editorMarkdownBridge", () => {
 	it("preserves literal placeholder sentinels through editor bridge round-trip", () => {
 		const md = "Marker \uE000 and escape \uE001 here";
 		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(md);
+	});
+
+	it("saves typed plain-text <, > and & literally unless they would change meaning", () => {
+		const editor = createGlyphMarkdownEditor("placeholder");
+		const text = "a -> b & c <d> AT&T &copy; 1 < 2";
+		editor.commands.setContent({
+			type: "doc",
+			content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+		});
+		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe(
+			"a -> b & c &lt;d> AT&T &amp;copy; 1 < 2",
+		);
+	});
+
+	it.each([
+		["a -&gt; b &amp; c &lt;d&gt;", "a -> b & c &lt;d>"],
+		["1 < 2 && 3 > 2 <= 4 <3", "1 < 2 && 3 > 2 <= 4 <3"],
+		["typed &amp;amp; and &amp;lt;", "typed &amp;amp; and &amp;lt;"],
+		["x &lt;b&gt;bold&lt;/b&gt; &lt;!-- c --&gt;", "x &lt;b>bold&lt;/b> &lt;!-- c -->"],
+		["&gt; not a quote", "&gt; not a quote"],
+		["**a** -> b", "**a** -> b"],
+		["`a < b && <c>`", "`a < b && <c>`"],
+		["```\n<div>&amp;</div>\n```", "```\n<div>&amp;</div>\n```"],
+	])("round-trips plain-text entities in %j", (markdown, saved) => {
+		expect(saveThroughGlyphMarkdown(markdown)).toBe(saved);
+		expect(saveThroughGlyphMarkdown(saved)).toBe(saved);
 	});
 });
