@@ -942,13 +942,17 @@ fn app_info(app: tauri::AppHandle) -> AppInfo {
 }
 
 #[tauri::command]
-fn system_fonts_list() -> Result<Vec<String>, String> {
-    system_fonts::list_system_font_families()
+async fn system_fonts_list() -> Result<Vec<String>, String> {
+    tauri::async_runtime::spawn_blocking(system_fonts::list_system_font_families)
+        .await
+        .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]
-fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
-    system_fonts::list_monospace_font_families()
+async fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
+    tauri::async_runtime::spawn_blocking(system_fonts::list_monospace_font_families)
+        .await
+        .map_err(|error| error.to_string())?
 }
 
 fn is_main_window_label(label: &str) -> bool {

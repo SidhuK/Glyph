@@ -5,7 +5,6 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { m } from "motion/react";
 import {
-	type CSSProperties,
 	type KeyboardEvent,
 	type MouseEvent,
 	type MutableRefObject,
@@ -452,13 +451,7 @@ function TreeEntries({
 				const row = virtualRows[virtualItem.index];
 				if (!row) return null;
 				const { entry, depth } = row;
-				const virtualRowStyle: CSSProperties = {
-					position: "absolute",
-					top: 0,
-					left: 0,
-					width: "100%",
-					transform: `translateY(${virtualItem.start - rowVirtualizer.options.scrollMargin}px)`,
-				};
+				const virtualStart = virtualItem.start - rowVirtualizer.options.scrollMargin;
 
 				if (entry.kind === "dir") {
 					const isExpanded = expandedDirs.has(entry.rel_path);
@@ -467,7 +460,7 @@ function TreeEntries({
 						<FileTreeDirItem
 							key={virtualItem.key}
 							virtualRowRef={rowVirtualizer.measureElement}
-							virtualRowStyle={virtualRowStyle}
+							virtualStart={virtualStart}
 							virtualRowIndex={virtualItem.index}
 							entry={entry}
 							depth={depth}
@@ -486,11 +479,11 @@ function TreeEntries({
 							appearance={itemAppearance[entry.rel_path] ?? null}
 							fileCount={folderFileCounts[entry.rel_path] ?? null}
 							isExternalDropTarget={externalDropTargetPath === entry.rel_path}
-							onOpenAppearancePicker={() => onOpenAppearancePicker(entry)}
+							onOpenAppearancePicker={onOpenAppearancePicker}
 							isSidebarFolderTab={sidebarFolderTabs.includes(entry.rel_path)}
 							canAddSidebarFolderTab={sidebarFolderTabs.length < MAX_SIDEBAR_FOLDER_TABS}
 							onToggleSidebarFolderTab={onToggleSidebarFolderTab}
-							onStartRename={() => onStartRename(entry.rel_path)}
+							onStartRename={onStartRename}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
 							onMoveClickSuppressRef={onMoveClickSuppressRef}
@@ -502,7 +495,7 @@ function TreeEntries({
 					<FileTreeFileItem
 						key={virtualItem.key}
 						virtualRowRef={rowVirtualizer.measureElement}
-						virtualRowStyle={virtualRowStyle}
+						virtualStart={virtualStart}
 						virtualRowIndex={virtualItem.index}
 						entry={entry}
 						depth={depth}
@@ -514,13 +507,13 @@ function TreeEntries({
 						onRequestCreateFolder={onRequestCreateFolder}
 						onDuplicateFile={onDuplicateFile}
 						isRenaming={renamingPath === entry.rel_path}
-						onStartRename={() => onStartRename(entry.rel_path)}
+						onStartRename={onStartRename}
 						onCommitRename={onCommitFileRename}
 						onCancelRename={onCancelRename}
 						parentDirPath={parentDir(entry.rel_path)}
 						onDeletePath={onDeletePath}
 						appearance={itemAppearance[entry.rel_path] ?? null}
-						onOpenAppearancePicker={() => onOpenAppearancePicker(entry)}
+						onOpenAppearancePicker={onOpenAppearancePicker}
 						isPinned={pinnedFiles.includes(entry.rel_path)}
 						onTogglePinned={onTogglePinnedFile}
 						onMoveClickSuppressRef={onMoveClickSuppressRef}

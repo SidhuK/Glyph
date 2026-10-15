@@ -74,7 +74,11 @@ import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
-import { loadActivityTimelinePane, loadDatabasesPane } from "./prefetchablePanes";
+import {
+	loadActivityTimelinePane,
+	loadDatabasesPane,
+	loadMarkdownEditorPane,
+} from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
 import { useDocumentExport } from "./useDocumentExport";
 import { useTabManager } from "./useTabManager";
@@ -251,6 +255,7 @@ export function AppShell() {
 				if (!cancelled) setCommandPaletteMounted(true);
 			});
 			preloadCalendarPalette();
+			void loadMarkdownEditorPane();
 		}, 500);
 		return () => {
 			cancelled = true;

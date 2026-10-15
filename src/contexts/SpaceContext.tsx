@@ -222,7 +222,9 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 
 		setIsIndexing(true);
 		const promise = invoke("index_sync")
-			.then(() => queryClient.invalidateQueries({ queryKey: ["navigation"] }))
+			.then(({ indexed }) =>
+				indexed > 0 ? queryClient.invalidateQueries({ queryKey: ["navigation"] }) : undefined,
+			)
 			.catch(() => {
 				/* the index is derived and will retry on the next open */
 			})

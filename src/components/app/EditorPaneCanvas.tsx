@@ -26,12 +26,17 @@ import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
 import { isExcalidrawPath, isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CreateMarkdownFileOptions, ExtractToNoteActions } from "../editor/types";
-import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { TabBar } from "./TabBar";
-import { loadActivityTimelinePane, loadDatabasesPane, loadTasksPane } from "./prefetchablePanes";
+import {
+	loadActivityTimelinePane,
+	loadDatabasesPane,
+	loadMarkdownEditorPane,
+	loadTasksPane,
+} from "./prefetchablePanes";
 import type { WorkspaceEditorPane } from "./useTabManager";
 
+const MarkdownEditorPane = lazy(loadMarkdownEditorPane);
 const DatabasesPane = lazy(loadDatabasesPane);
 const ActivityTimelinePane = lazy(loadActivityTimelinePane);
 const TasksPane = lazy(loadTasksPane);
@@ -109,6 +114,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 		(target: string | null) => {
 			if (!target) return;
 			if (isMarkdownPath(target)) {
+				void loadMarkdownEditorPane();
 				prefetchNote(target);
 			} else if (target === ACTIVITY_TIMELINE_TAB_ID) {
 				void loadActivityTimelinePane();
@@ -314,15 +320,17 @@ function EditorPaneContent({
 	} satisfies ExtractToNoteActions;
 
 	return (
-		<MarkdownEditorPane
-			relPath={viewerPath}
-			initialDoc={getPrefetchedNote(viewerPath)}
-			extractToNoteActions={extractToNoteActions}
-			active={focused}
-			onInfoSidebarOpenChange={focused ? onInfoSidebarOpenChange : undefined}
-			gitDiff={gitDiff}
-			onGitDiffChange={setGitDiff}
-			onDirtyChange={handleDirtyChange}
-		/>
+		<Suspense fallback={<div className="canvasPaneAwait" aria-busy="true" />}>
+			<MarkdownEditorPane
+				relPath={viewerPath}
+				initialDoc={getPrefetchedNote(viewerPath)}
+				extractToNoteActions={extractToNoteActions}
+				active={focused}
+				onInfoSidebarOpenChange={focused ? onInfoSidebarOpenChange : undefined}
+				gitDiff={gitDiff}
+				onGitDiffChange={setGitDiff}
+				onDirtyChange={handleDirtyChange}
+			/>
+		</Suspense>
 	);
 }

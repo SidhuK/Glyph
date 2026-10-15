@@ -71,25 +71,35 @@ export function subscribeOpenNoteContent(fn: (path: string) => void): () => void
 	};
 }
 
-function reloadDirs(relPath: string, current: SpaceChangeHost, includeSelf: boolean): void {
-	const dirs = new Set(["", parentDir(relPath)]);
+function addReloadDirs(
+	dirs: Set<string>,
+	relPath: string,
+	current: SpaceChangeHost,
+	includeSelf: boolean,
+): void {
+	dirs.add("");
+	dirs.add(parentDir(relPath));
 	if (includeSelf && current.expandedDirs.has(relPath)) dirs.add(relPath);
-	for (const dir of dirs) void current.loadDir(dir, true);
 }
 
-function invalidateDerived(path: string | null, removed: boolean): void {
+function invalidatePath(path: string, removed: boolean): void {
+	invalidatePrefetchedNote(path);
+	void queryClient.invalidateQueries({
+		queryKey: navigationQueryKeys.noteScans(),
+		predicate: ({ queryKey }) =>
+			typeof queryKey[2] === "string" &&
+			(queryKey[2] === path || queryKey[2].startsWith(`${path}/`)),
+	});
+	for (const fn of previewInvalidators) fn(path, removed);
+}
+
+// Space-wide lists are refetched once per batch; per-change calls would cancel and
+// restart every mounted list (and all its loaded pages) once for each changed note.
+function invalidateSpaceWide(current: SpaceChangeHost, dirs: ReadonlySet<string>): void {
+	for (const dir of dirs) void current.loadDir(dir, true);
+	void current.refreshTags();
 	void queryClient.invalidateQueries({ queryKey: ["navigation", "archived-paths"] });
 	void queryClient.invalidateQueries({ queryKey: ["navigation", "search"] });
-	if (path) {
-		invalidatePrefetchedNote(path);
-		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.noteScans(),
-			predicate: ({ queryKey }) =>
-				typeof queryKey[2] === "string" &&
-				(queryKey[2] === path || queryKey[2].startsWith(`${path}/`)),
-		});
-		for (const fn of previewInvalidators) fn(path, removed);
-	}
 	invalidateTaskSummariesPrefetch();
 	invalidateCalendarPrefetch();
 	invalidateAllDocsPrefetch();
@@ -108,10 +118,17 @@ async function syncRecentFilesForPathChange(
 
 export function applySpaceChange(change: SpaceChange): void {
 	const current = host;
-	if (!current?.spacePath || change.space_path !== current.spacePath) return;
+	if (!current) return;
+	const dirs = new Set<string>();
+	if (applyChange(change, current, dirs)) invalidateSpaceWide(current, dirs);
+}
+
+function applyChange(change: SpaceChange, current: SpaceChangeHost, dirs: Set<string>): boolean {
+	if (!current.spacePath || change.space_path !== current.spacePath) return false;
 	if (change.kind === "batch") {
-		for (const child of change.changes) applySpaceChange(child);
-		return;
+		let applied = false;
+		for (const child of change.changes) applied = applyChange(child, current, dirs) || applied;
+		return applied;
 	}
 	// Embeds resolve targets by name, so any structural change can retarget them.
 	void queryClient.invalidateQueries({
@@ -132,8 +149,8 @@ export function applySpaceChange(change: SpaceChange): void {
 	if (change.kind === "rename") {
 		const from = normalizeRelPath(change.from_path);
 		const to = normalizeRelPath(change.to_path);
-		reloadDirs(from, current, false);
-		reloadDirs(to, current, true);
+		addReloadDirs(dirs, from, current, false);
+		addReloadDirs(dirs, to, current, true);
 		current.renameTabsForPath(from, to, change.recursive);
 		void current.renamePinnedPath(from, to);
 		void current.renameSidebarFolderPath(from, to, change.recursive);
@@ -144,15 +161,13 @@ export function applySpaceChange(change: SpaceChange): void {
 			toPath: to,
 			recursive: change.recursive,
 		});
-		void current.refreshTags();
-		invalidateDerived(from, true);
-		invalidateDerived(to, false);
+		invalidatePath(from, true);
+		invalidatePath(to, false);
 		for (const fn of openNoteListeners) fn(to);
-		return;
+		return true;
 	}
 	const path = normalizeRelPath(change.rel_path);
-	reloadDirs(path, current, change.kind !== "remove");
-	void current.refreshTags();
+	addReloadDirs(dirs, path, current, change.kind !== "remove");
 	if (change.kind === "remove") {
 		current.closeTabsForPathRemoval(path, change.recursive);
 		void current.deletePinnedPath(path);
@@ -163,13 +178,14 @@ export function applySpaceChange(change: SpaceChange): void {
 			path,
 			recursive: change.recursive,
 		});
-		invalidateDerived(path, true);
-		return;
+		invalidatePath(path, true);
+		return true;
 	}
-	invalidateDerived(path, false);
+	invalidatePath(path, false);
 	if (change.kind === "content") {
 		for (const fn of openNoteListeners) fn(path);
 	}
+	return true;
 }
 
 export function useSpaceChangePropagation(nextHost: SpaceChangeHost): void {
@@ -195,9 +211,14 @@ export function useSpaceChangePropagation(nextHost: SpaceChangeHost): void {
 
 	const flush = useCallback(() => {
 		timerRef.current = null;
+		const current = host;
 		const queued = [...queueRef.current.values()];
 		queueRef.current.clear();
-		for (const change of queued) applySpaceChange(change);
+		if (!current) return;
+		const dirs = new Set<string>();
+		let applied = false;
+		for (const change of queued) applied = applyChange(change, current, dirs) || applied;
+		if (applied) invalidateSpaceWide(current, dirs);
 	}, []);
 
 	const enqueue = useCallback(

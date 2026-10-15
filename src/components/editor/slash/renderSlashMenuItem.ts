@@ -1,7 +1,5 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { hugeiconMarkup } from "../hugeiconMarkup";
 import type { SlashIcon, SlashMenuItem } from "./slashMenuItems";
 
 const iconMarkupCache = new Map<SlashIcon, string>();
@@ -10,7 +8,7 @@ const iconMarkupCache = new Map<SlashIcon, string>();
 function iconMarkup(icon: SlashIcon): string {
 	const cached = iconMarkupCache.get(icon);
 	if (cached) return cached;
-	const markup = renderToStaticMarkup(createElement(HugeiconsIcon, { icon, size: "1em" }));
+	const markup = hugeiconMarkup(icon, "1em");
 	iconMarkupCache.set(icon, markup);
 	return markup;
 }

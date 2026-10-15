@@ -62,7 +62,7 @@ interface FolioNoteListItemProps {
 	appearance?: FileTreeAppearance | null;
 	onOpenAppearancePicker: (path: string) => void;
 	className?: string;
-	style?: CSSProperties;
+	virtualStart?: number;
 	virtualIndex?: number;
 }
 
@@ -197,7 +197,7 @@ export const FolioNoteListItem = memo(
 			appearance = null,
 			onOpenAppearancePicker,
 			className,
-			style,
+			virtualStart,
 			virtualIndex,
 		},
 		ref,
@@ -409,7 +409,9 @@ export const FolioNoteListItem = memo(
 			<li
 				ref={ref}
 				className={`folioNoteListItem${className ? ` ${className}` : ""}`}
-				style={style}
+				style={
+					virtualStart === undefined ? undefined : { transform: `translateY(${virtualStart}px)` }
+				}
 				data-index={virtualIndex}
 			>
 				{isRenaming ? (

@@ -398,16 +398,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 					{virtualItems.map((virtualRow) => {
 						const note = sortedNotes[virtualRow.index];
 						if (!note) return null;
-						const virtualStyle = {
-							transform: `translateY(${virtualRow.start}px)`,
-						};
 						return (
 							<FolioNoteListItem
 								key={virtualRow.key}
 								virtualIndex={virtualRow.index}
-								ref={(node) => rowVirtualizer.measureElement(node)}
+								ref={rowVirtualizer.measureElement}
 								className="folioNotesVirtualRow"
-								style={virtualStyle}
+								virtualStart={virtualRow.start}
 								note={note}
 								selected={activeTabPath === note.note_path}
 								onOpen={openNote}

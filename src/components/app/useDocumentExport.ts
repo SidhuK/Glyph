@@ -1,7 +1,6 @@
 import { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { openNativePrintDialog } from "../../lib/nativePrint";
-import { buildPrintHtml, resolveDocumentImages } from "../../lib/printHtml";
 import { invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { displayNameFromPath } from "../../utils/path";
@@ -19,6 +18,11 @@ async function readNoteMarkdown(
 	const currentMarkdown = getCurrentMarkdown(path);
 	if (currentMarkdown !== null) return currentMarkdown;
 	return (await invoke("space_read_text", { path })).text;
+}
+
+async function buildExportHtml(markdown: string, notePath: string, spacePath: string) {
+	const { buildPrintHtml, resolveDocumentImages } = await import("../../lib/printHtml");
+	return resolveDocumentImages(buildPrintHtml({ markdown, notePath }), notePath, spacePath);
 }
 
 export function useDocumentExport({
@@ -42,11 +46,7 @@ export function useDocumentExport({
 		try {
 			const markdown = await readNoteMarkdown(activeNotePath, getCurrentMarkdown);
 			ensureSpaceUnchanged(exportSpacePath);
-			const html = await resolveDocumentImages(
-				buildPrintHtml({ markdown, notePath: activeNotePath }),
-				activeNotePath,
-				exportSpacePath,
-			);
+			const html = await buildExportHtml(markdown, activeNotePath, exportSpacePath);
 			ensureSpaceUnchanged(exportSpacePath);
 			await openNativePrintDialog(html);
 		} catch (error) {
@@ -64,11 +64,7 @@ export function useDocumentExport({
 			const fileName = displayNameFromPath(activeNotePath).trim() || t("documentExport.untitled");
 			const markdown = await readNoteMarkdown(activeNotePath, getCurrentMarkdown);
 			ensureSpaceUnchanged(exportSpacePath);
-			const html = await resolveDocumentImages(
-				buildPrintHtml({ markdown, notePath: activeNotePath }),
-				activeNotePath,
-				exportSpacePath,
-			);
+			const html = await buildExportHtml(markdown, activeNotePath, exportSpacePath);
 			ensureSpaceUnchanged(exportSpacePath);
 			const { buildDocxBytes } = await import("../../lib/docxExport");
 			const bytes = await buildDocxBytes(html, activeNotePath, exportSpacePath);

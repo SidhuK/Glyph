@@ -95,14 +95,23 @@ fn run_command(mut command: Command) -> Result<(bool, String, String), String> {
 }
 
 pub fn git_is_installed() -> bool {
-    match run_command({
+    // Only a positive probe is cached so installing git while Glyph runs is still detected.
+    static INSTALLED: std::sync::OnceLock<()> = std::sync::OnceLock::new();
+    if INSTALLED.get().is_some() {
+        return true;
+    }
+    let installed = match run_command({
         let mut command = Command::new("git");
         command.arg("--version");
         command
     }) {
         Ok((success, _, _)) => success,
         Err(_) => false,
+    };
+    if installed {
+        let _ = INSTALLED.set(());
     }
+    installed
 }
 
 fn run_git(space_root: &Path, args: &[&str]) -> Result<String, String> {

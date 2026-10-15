@@ -31,7 +31,6 @@ import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { useAiPanelSession } from "../ai/aiPanelSession";
 import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
-import { NoteSidePeek } from "../preview/NoteSidePeek";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { useActiveSettingsTab } from "../settings/useDeveloperMode";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
@@ -44,6 +43,11 @@ const DAILY_NOTES_SETUP_TOAST_ID = "daily-notes-setup";
 const SettingsTabContent = lazy(() =>
 	import("../settings/SettingsTabContent").then((module) => ({
 		default: module.SettingsTabContent,
+	})),
+);
+const NoteSidePeek = lazy(() =>
+	import("../preview/NoteSidePeek").then((module) => ({
+		default: module.NoteSidePeek,
 	})),
 );
 
@@ -451,11 +455,13 @@ export const MainContent = memo(function MainContent({
 						editorCanvas
 					)}
 					{!zenMode && peekNotePath ? (
-						<NoteSidePeek
-							relPath={peekNotePath}
-							onClose={onCloseNotePeek}
-							onOpen={onOpenPeekedNote}
-						/>
+						<Suspense fallback={null}>
+							<NoteSidePeek
+								relPath={peekNotePath}
+								onClose={onCloseNotePeek}
+								onOpen={onOpenPeekedNote}
+							/>
+						</Suspense>
 					) : null}
 				</div>
 			</main>

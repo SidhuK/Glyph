@@ -2,7 +2,7 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { useDraggable } from "@dnd-kit/react";
 import { ArrowRight02Icon, Folder01Icon, Folder03Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
-import type { CSSProperties, KeyboardEvent, MouseEvent, MutableRefObject, Ref } from "react";
+import type { KeyboardEvent, MouseEvent, MutableRefObject, Ref } from "react";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
@@ -20,7 +20,12 @@ import {
 	fileTreeEntryDragId,
 	useFileTreeDirDropTargets,
 } from "./fileTreeDnd";
-import { buildRowStyle, rowVariants, springTransition } from "./fileTreeItemHelpers";
+import {
+	buildRowStyle,
+	rowVariants,
+	springTransition,
+	virtualRowStyle,
+} from "./fileTreeItemHelpers";
 import { fileTreeAppearanceNativeMenu } from "./fileTreeNativeContextMenu";
 
 interface FileTreeDirItemProps {
@@ -31,7 +36,7 @@ interface FileTreeDirItemProps {
 	isRenaming: boolean;
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
-	onStartRename: () => void;
+	onStartRename: (dirPath: string) => void;
 	onCommitRename: (dirPath: string, nextName: string) => Promise<boolean>;
 	onCancelRename: () => void;
 	onNewFileInDir: (dirPath: string) => unknown;
@@ -45,12 +50,12 @@ interface FileTreeDirItemProps {
 	onToggleSidebarFolderTab: (dirPath: string) => unknown;
 	onEnterDir?: (dirPath: string) => void;
 	appearance?: FileTreeAppearance | null;
-	onOpenAppearancePicker: () => void;
+	onOpenAppearancePicker: (entry: FsEntry) => void;
 	fileCount?: number | null;
 	isExternalDropTarget: boolean;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
 	virtualRowRef?: Ref<HTMLLIElement>;
-	virtualRowStyle?: CSSProperties;
+	virtualStart?: number;
 	virtualRowIndex?: number;
 }
 
@@ -81,7 +86,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	isExternalDropTarget,
 	onMoveClickSuppressRef,
 	virtualRowRef,
-	virtualRowStyle,
+	virtualStart,
 	virtualRowIndex,
 }: FileTreeDirItemProps) {
 	const { t } = useTranslation("shell");
@@ -158,9 +163,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				},
 				{
 					label: t("fileTree.rename"),
-					action: onStartRename,
+					action: () => onStartRename(entry.rel_path),
 				},
-				fileTreeAppearanceNativeMenu(onOpenAppearancePicker),
+				fileTreeAppearanceNativeMenu(() => onOpenAppearancePicker(entry)),
 				{ type: "separator" },
 				{
 					label: t("fileTree.deleteFolder"),
@@ -171,7 +176,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			});
 		},
 		[
-			entry.rel_path,
+			entry,
 			canAddSidebarFolderTab,
 			handleRevealInFinder,
 			isSidebarFolderTab,
@@ -193,7 +198,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		<li
 			ref={virtualRowRef}
 			className={isActive ? "fileTreeItem active" : "fileTreeItem"}
-			style={virtualRowStyle}
+			style={virtualRowStyle(virtualStart)}
 			data-index={virtualRowIndex}
 		>
 			<div className="fileTreeRowShell">

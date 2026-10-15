@@ -49,7 +49,7 @@ export function TasksList({ rows, fractionWidth, paneElement, context }: TasksLi
 						key={row.id}
 						role="listitem"
 						data-index={virtualRow.index}
-						ref={(node) => virtualizer.measureElement(node)}
+						ref={virtualizer.measureElement}
 						className="activityVirtualRow"
 						data-kind={row.kind}
 						style={{

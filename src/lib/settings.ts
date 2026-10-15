@@ -365,11 +365,19 @@ export function findShortcutConflict(
 	return null;
 }
 
-export async function reloadFromDisk(): Promise<void> {
-	const store = await getSettingsStore();
-	await store.reload();
-	invalidateSettingsCache();
-	await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY });
+let reloadFromDiskInFlight: Promise<void> | null = null;
+
+// Several window-focus listeners reload at once; they share one disk read and one query refresh.
+export function reloadFromDisk(): Promise<void> {
+	reloadFromDiskInFlight ??= (async () => {
+		const store = await getSettingsStore();
+		await store.reload();
+		invalidateSettingsCache();
+		await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY });
+	})().finally(() => {
+		reloadFromDiskInFlight = null;
+	});
+	return reloadFromDiskInFlight;
 }
 
 function isRecentFileArray(value: unknown): value is RecentFile[] {
