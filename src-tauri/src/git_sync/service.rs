@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 use crate::space::state::{is_no_space_session_error, SpaceState};
 
@@ -75,8 +75,21 @@ fn now_ms() -> i64 {
         .unwrap_or(0)
 }
 
-fn emit_status(app: &AppHandle, window_label: &str, status: &GitSyncStatus) {
-    let _ = app.emit_to(window_label, "git_sync:status", status.clone());
+fn emit_status(app: &AppHandle, space_root: &Path, window_label: &str, status: &GitSyncStatus) {
+    // A sync can outlive the window's space; drop statuses for a space it no longer shows.
+    // Hold the sessions lock through the emit so a space switch can't land in between.
+    let Some(space_state) = app.try_state::<SpaceState>() else {
+        return;
+    };
+    let Ok(sessions) = space_state.sessions.lock() else {
+        return;
+    };
+    if sessions
+        .get(window_label)
+        .is_some_and(|session| session.root == space_root)
+    {
+        let _ = app.emit_to(window_label, "git_sync:status", status.clone());
+    }
 }
 
 fn set_runtime(
@@ -100,7 +113,7 @@ fn set_runtime(
         runtime.message = message;
     }
     let status = read_status_for_root(git_state, Some(space_root))?;
-    emit_status(app, window_label, &status);
+    emit_status(app, space_root, window_label, &status);
     Ok(())
 }
 
@@ -365,7 +378,7 @@ pub fn update_git_sync_config(
     }
     save_store(&space_root, &config)?;
     let status = read_status_for_root(git_state, Some(&space_root))?;
-    emit_status(&app, window_label, &status);
+    emit_status(&app, &space_root, window_label, &status);
     Ok(config)
 }
 
@@ -398,7 +411,7 @@ pub fn run_git_sync(
         runtime.message = Some("Fetching remote changes".to_string());
     }
     let initial = read_status_for_root(git_state, Some(&space_root))?;
-    emit_status(&app, window_label, &initial);
+    emit_status(&app, &space_root, window_label, &initial);
 
     let git_state = git_state.clone();
     let window_label = window_label.to_string();
@@ -542,7 +555,7 @@ fn run_git_sync_background(
                 Some("Sync complete".to_string()),
             );
             let status = read_status_for_root(&git_state, Some(&space_root))?;
-            emit_status(&app, &window_label, &status);
+            emit_status(&app, &space_root, &window_label, &status);
             Ok(())
         }
         Err(error) => {
