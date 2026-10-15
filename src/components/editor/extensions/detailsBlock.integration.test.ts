@@ -73,6 +73,12 @@ describe("details markdown round-trip", () => {
 		);
 	});
 
+	it("does not close a fence on a line with an info string", () => {
+		const code = (fence: string) => `${fence}md\n\`\`\`js\n</details>\n${fence}`;
+		const input = `${details(code("```"))}\n\nTail.`;
+		expect(roundTrip(input)).toBe(`${details(code("````"))}\n\nTail.`);
+	});
+
 	it("reads a code fence without blank lines around it", () => {
 		const { json } = parse(
 			"<details>\n<summary>Title</summary>\n```js\nconst a = 1;\n```\n</details>\nAfter.",

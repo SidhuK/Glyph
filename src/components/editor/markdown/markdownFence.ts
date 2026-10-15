@@ -25,7 +25,8 @@ export function updateMarkdownFenceTracker(line: string, tracker: MarkdownFenceT
 		return true;
 	}
 
-	if (isClosingFenceFor(tracker.activeFence, fence)) {
+	// A closing fence cannot carry an info string, so "```js" inside a block is code.
+	if (isClosingFenceFor(tracker.activeFence, fence) && line.trim() === fence) {
 		tracker.activeFence = null;
 		return true;
 	}

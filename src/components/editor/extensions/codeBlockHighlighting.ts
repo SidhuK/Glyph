@@ -176,8 +176,11 @@ export function normalizeCodeBlockLanguage(
 
 /** One backtick longer than any fence inside the code, so nested fences survive a save. */
 function codeFenceFor(code: string): string {
-	const runs = Array.from(code.matchAll(/^[ \t]*(`{3,})/gm), (match) => match[1]?.length ?? 0);
-	return "`".repeat(Math.max(2, ...runs) + 1);
+	let longest = 2;
+	for (const match of code.matchAll(/^[ \t]*(`{3,})/gm)) {
+		longest = Math.max(longest, match[1]?.length ?? 0);
+	}
+	return "`".repeat(longest + 1);
 }
 
 export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.extend({
