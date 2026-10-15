@@ -146,13 +146,13 @@ describe("editorMarkdownBridge", () => {
 
 	it("saves typed plain-text <, > and & literally unless they would change meaning", () => {
 		const editor = createGlyphMarkdownEditor("placeholder");
-		const text = "a -> b & c <d> AT&T &copy; 1 < 2";
+		const text = "  >a -> b & c <d> AT&T &copy; 1 < 2 <3@example.com>";
 		editor.commands.setContent({
 			type: "doc",
 			content: [{ type: "paragraph", content: [{ type: "text", text }] }],
 		});
 		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe(
-			"a -> b & c &lt;d> AT&T &amp;copy; 1 < 2",
+			"  &gt;a -> b & c &lt;d> AT&T &amp;copy; 1 < 2 &lt;3@example.com>",
 		);
 	});
 
@@ -162,6 +162,7 @@ describe("editorMarkdownBridge", () => {
 		["typed &amp;amp; and &amp;lt;", "typed &amp;amp; and &amp;lt;"],
 		["x &lt;b&gt;bold&lt;/b&gt; &lt;!-- c --&gt;", "x &lt;b>bold&lt;/b> &lt;!-- c -->"],
 		["&gt; not a quote", "&gt; not a quote"],
+		["a\n&gt; not a quote", "a\n&gt; not a quote"],
 		["**a** -> b", "**a** -> b"],
 		["`a < b && <c>`", "`a < b && <c>`"],
 		["```\n<div>&amp;</div>\n```", "```\n<div>&amp;</div>\n```"],

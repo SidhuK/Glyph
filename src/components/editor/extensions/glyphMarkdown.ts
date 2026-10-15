@@ -4,8 +4,8 @@ import { Markdown } from "@tiptap/markdown";
 // re-encode only the spots that would change meaning when the markdown is parsed again.
 const TIPTAP_TEXT_ENTITY_RE = /&(amp|lt|gt);/g;
 const ENTITY_LIKE_AMPERSAND_RE = /&(?=#?[A-Za-z0-9]+;)/g;
-const TAG_LIKE_LESS_THAN_RE = /<(?=[A-Za-z/!?])/g;
-const BLOCKQUOTE_LIKE_GREATER_THAN_RE = /^>/;
+const TAG_LIKE_LESS_THAN_RE = /<(?=[A-Za-z/!?]|[^\s<>]*@)/g;
+const BLOCKQUOTE_LIKE_GREATER_THAN_RE = /^([ \t]*)>/gm;
 
 function decodeTipTapTextEntity(_match: string, name: string): string {
 	if (name === "amp") return "&";
@@ -18,7 +18,7 @@ export function narrowMarkdownTextEncoding(encoded: string): string {
 		.replace(TIPTAP_TEXT_ENTITY_RE, decodeTipTapTextEntity)
 		.replace(ENTITY_LIKE_AMPERSAND_RE, "&amp;")
 		.replace(TAG_LIKE_LESS_THAN_RE, "&lt;")
-		.replace(BLOCKQUOTE_LIKE_GREATER_THAN_RE, "&gt;");
+		.replace(BLOCKQUOTE_LIKE_GREATER_THAN_RE, "$1&gt;");
 }
 
 export const GlyphMarkdown = Markdown.extend({
