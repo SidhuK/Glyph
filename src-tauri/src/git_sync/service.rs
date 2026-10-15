@@ -77,11 +77,17 @@ fn now_ms() -> i64 {
 
 fn emit_status(app: &AppHandle, space_root: &Path, window_label: &str, status: &GitSyncStatus) {
     // A sync can outlive the window's space; drop statuses for a space it no longer shows.
-    let window_shows_space = app
-        .try_state::<SpaceState>()
-        .and_then(|space_state| space_state.root_for_window_label(window_label).ok())
-        .is_some_and(|root| root == space_root);
-    if window_shows_space {
+    // Hold the sessions lock through the emit so a space switch can't land in between.
+    let Some(space_state) = app.try_state::<SpaceState>() else {
+        return;
+    };
+    let Ok(sessions) = space_state.sessions.lock() else {
+        return;
+    };
+    if sessions
+        .get(window_label)
+        .is_some_and(|session| session.root == space_root)
+    {
         let _ = app.emit_to(window_label, "git_sync:status", status.clone());
     }
 }
