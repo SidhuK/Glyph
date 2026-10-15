@@ -34,13 +34,14 @@ pub fn git_sync_config_read(
 pub async fn git_sync_config_update(
     app: AppHandle,
     window: WebviewWindow,
+    space_state: State<'_, SpaceState>,
     patch: GitSyncConfigPatch,
 ) -> Result<GitSyncConfig, String> {
+    let space_root = space_state.root_for_window(&window)?;
     let label = window.label().to_string();
     tauri::async_runtime::spawn_blocking(move || {
         let git_state = app.state::<GitSyncState>();
-        let space_state = app.state::<SpaceState>();
-        service::update_git_sync_config(app.clone(), &git_state, &space_state, &label, patch)
+        service::update_git_sync_config(app.clone(), &git_state, space_root, &label, patch)
     })
     .await
     .map_err(|error| error.to_string())?
@@ -50,13 +51,14 @@ pub async fn git_sync_config_update(
 pub async fn git_sync_run(
     app: AppHandle,
     window: WebviewWindow,
+    space_state: State<'_, SpaceState>,
     request: GitSyncRunRequest,
 ) -> Result<GitSyncStatus, String> {
+    let space_root = space_state.root_for_window(&window)?;
     let label = window.label().to_string();
     tauri::async_runtime::spawn_blocking(move || {
         let git_state = app.state::<GitSyncState>();
-        let space_state = app.state::<SpaceState>();
-        service::run_git_sync(app.clone(), &git_state, &space_state, &label, request)
+        service::run_git_sync(app.clone(), &git_state, space_root, &label, request)
     })
     .await
     .map_err(|error| error.to_string())?

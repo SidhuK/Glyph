@@ -334,11 +334,10 @@ fn load_config(space_root: &Path) -> Result<GitSyncConfig, String> {
 pub fn update_git_sync_config(
     app: AppHandle,
     git_state: &GitSyncState,
-    space_state: &SpaceState,
+    space_root: PathBuf,
     window_label: &str,
     patch: GitSyncConfigPatch,
 ) -> Result<GitSyncConfig, String> {
-    let space_root = space_state.root_for_window_label(window_label)?;
     let mut config = load_config(&space_root)?;
     if let Some(enabled) = patch.enabled {
         config.enabled = enabled;
@@ -365,7 +364,7 @@ pub fn update_git_sync_config(
         config.auto_sync_prompted = true;
     }
     save_store(&space_root, &config)?;
-    let status = read_status_internal(git_state, space_state, window_label)?;
+    let status = read_status_for_root(git_state, Some(&space_root))?;
     emit_status(&app, window_label, &status);
     Ok(config)
 }
@@ -373,17 +372,16 @@ pub fn update_git_sync_config(
 pub fn run_git_sync(
     app: AppHandle,
     git_state: &GitSyncState,
-    space_state: &SpaceState,
+    space_root: PathBuf,
     window_label: &str,
     request: GitSyncRunRequest,
 ) -> Result<GitSyncStatus, String> {
-    let space_root = space_state.root_for_window_label(window_label)?;
     if !git_is_installed() {
         return Err("Git is not installed on this system.".to_string());
     }
     let config = load_config(&space_root)?;
     if request.mode == GitSyncRunMode::Auto && (!config.enabled || config.paused) {
-        return read_status_internal(git_state, space_state, window_label);
+        return read_status_for_root(git_state, Some(&space_root));
     }
 
     {
