@@ -3,7 +3,6 @@ import Link from "@tiptap/extension-link";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
-import { Markdown } from "@tiptap/markdown";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import type { EditorState } from "@tiptap/pm/state";
@@ -24,6 +23,7 @@ import { ColoredText } from "./coloredText";
 import { glyphDetailsExtensions } from "./detailsBlock";
 import { FocusModeDecorations } from "./focusModeDecorations";
 import { FootnoteDecorations } from "./footnoteDecorations";
+import { GlyphMarkdown } from "./glyphMarkdown";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
 import { HtmlCommentBlock, HtmlCommentInline } from "./htmlComment";
@@ -656,7 +656,7 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		MermaidPreview,
 		InlineTableOfContents,
 		headingCollapse,
-		Markdown.configure({
+		GlyphMarkdown.configure({
 			markedOptions: {
 				gfm: true,
 				breaks: false,
