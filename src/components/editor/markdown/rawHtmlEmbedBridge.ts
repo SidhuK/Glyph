@@ -250,6 +250,7 @@ function findRawHtmlEmbedRuns(input: string) {
 		}
 
 		const runStart = cursor;
+		let runEnd = cursor;
 		const parts: string[] = [];
 		let firstTag: HtmlEmbedBlockTagName | null = null;
 
@@ -267,6 +268,7 @@ function findRawHtmlEmbedRuns(input: string) {
 			}
 			if (!firstTag) firstTag = block.tagName;
 			parts.push(block.content);
+			runEnd = block.end;
 			cursor = skipOptionalBlankLines(input, block.end);
 		}
 
@@ -275,7 +277,8 @@ function findRawHtmlEmbedRuns(input: string) {
 			firstTag === "svg" && parts.every((part) => /^<svg\b/i.test(part.trim())) ? "svg" : "html";
 		runs.push({
 			start: runStart,
-			end: cursor,
+			// Blank lines after the last block stay outside the run.
+			end: runEnd,
 			kind,
 			content: parts.join("\n"),
 		});
@@ -291,8 +294,11 @@ function preprocessRawHtmlEmbedChunk(input: string): string {
 	let result = input;
 	for (let index = runs.length - 1; index >= 0; index -= 1) {
 		const run = runs[index];
-		const replacement = rawHtmlToFencedBlock(run.kind, run.content);
-		result = result.slice(0, run.start) + replacement + result.slice(run.end);
+		const after = result.slice(run.end);
+		// The closing fence must sit alone on its line.
+		const replacement =
+			rawHtmlToFencedBlock(run.kind, run.content) + (/^[^\n]/.test(after) ? "\n" : "");
+		result = result.slice(0, run.start) + replacement + after;
 	}
 	return result;
 }
