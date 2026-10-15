@@ -51,27 +51,44 @@ export function findInlineCodeClose(line: string, openStart: number, tickCount: 
 	return -1;
 }
 
-function transformLineOutsideInlineCode(line: string, transform: (text: string) => string) {
+function mapInlineCode(
+	line: string,
+	transformText: (text: string) => string,
+	transformCode: (code: string) => string,
+) {
 	let output = "";
 	let cursor = 0;
 	while (cursor < line.length) {
 		const tickStart = line.indexOf("`", cursor);
 		if (tickStart === -1) {
-			output += transform(line.slice(cursor));
+			output += transformText(line.slice(cursor));
 			break;
 		}
-		output += transform(line.slice(cursor, tickStart));
+		output += transformText(line.slice(cursor, tickStart));
 		const tickMatch = line.slice(tickStart).match(/^`+/);
 		const ticks = tickMatch?.[0] ?? "`";
 		const close = findInlineCodeClose(line, tickStart, ticks.length);
 		if (close === -1) {
-			output += line.slice(tickStart);
+			output += transformCode(line.slice(tickStart));
 			break;
 		}
-		output += line.slice(tickStart, close + ticks.length);
+		output += transformCode(line.slice(tickStart, close + ticks.length));
 		cursor = close + ticks.length;
 	}
 	return output;
+}
+
+function transformLineOutsideInlineCode(line: string, transform: (text: string) => string) {
+	return mapInlineCode(line, transform, (code) => code);
+}
+
+/** Replaces inline code spans with spaces, keeping every other character in place. */
+export function maskInlineCode(line: string): string {
+	return mapInlineCode(
+		line,
+		(text) => text,
+		(code) => " ".repeat(code.length),
+	);
 }
 
 /** Transform line-oriented markdown outside fenced/indented code (keeps inline code intact). */

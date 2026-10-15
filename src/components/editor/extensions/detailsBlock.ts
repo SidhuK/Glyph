@@ -1,9 +1,16 @@
+import type { MarkdownTokenizer } from "@tiptap/core";
 import { Details, DetailsContent, DetailsSummary } from "@tiptap/extension-details";
 import {
 	detailsMarkdownTokenizer,
 	parseDetailsMarkdown,
+	renderDetailsContentMarkdown,
 	renderDetailsMarkdown,
 } from "../markdown/detailsMarkdown";
+
+/** Turns off TipTap's `:::detailsSummary` / `:::detailsContent` syntax, which made stray nodes. */
+function inertTokenizer(name: string): MarkdownTokenizer {
+	return { name, level: "block", start: () => -1, tokenize: () => undefined };
+}
 
 // Reads and writes `<details>` HTML directly instead of TipTap's `:::details` syntax.
 export const GlyphDetails = Details.extend({
@@ -18,13 +25,18 @@ export const GlyphDetails = Details.extend({
 	},
 });
 
-export const GlyphDetailsSummary = DetailsSummary.configure({
+export const GlyphDetailsSummary = DetailsSummary.extend({
+	markdownTokenizer: inertTokenizer("detailsSummary"),
+}).configure({
 	HTMLAttributes: {
 		class: "detailsSummary",
 	},
 });
 
-export const GlyphDetailsContent = DetailsContent.configure({
+export const GlyphDetailsContent = DetailsContent.extend({
+	markdownTokenizer: inertTokenizer("detailsContent"),
+	renderMarkdown: renderDetailsContentMarkdown,
+}).configure({
 	HTMLAttributes: {
 		class: "detailsContent",
 	},

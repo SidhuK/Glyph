@@ -176,16 +176,16 @@ export function normalizeCodeBlockLanguage(
 
 /** One backtick longer than any fence inside the code, so nested fences survive a save. */
 function codeFenceFor(code: string): string {
-	const runs = Array.from(code.matchAll(/^\s*(`{3,})/gm), (match) => match[1]?.length ?? 0);
+	const runs = Array.from(code.matchAll(/^[ \t]*(`{3,})/gm), (match) => match[1]?.length ?? 0);
 	return "`".repeat(Math.max(2, ...runs) + 1);
 }
 
 export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.extend({
 	renderMarkdown(node: JSONContent, h) {
 		const language = node.attrs?.language || "";
-		const code = node.content ? h.renderChildren(node.content) : "";
+		const code = h.renderChildren(node.content ?? []);
 		const fence = codeFenceFor(code);
-		return [`${fence}${language}`, node.content ? code : "", fence].join("\n");
+		return [`${fence}${language}`, code, fence].join("\n");
 	},
 	onCreate() {
 		loadGrammarsForDoc(this.editor);
