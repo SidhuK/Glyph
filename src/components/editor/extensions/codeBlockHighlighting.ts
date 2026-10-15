@@ -1,4 +1,4 @@
-import { type Editor, findChildren } from "@tiptap/core";
+import { type Editor, findChildren, type JSONContent } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import type { Transaction } from "@tiptap/pm/state";
 import { createLowlight } from "lowlight";
@@ -174,7 +174,22 @@ export function normalizeCodeBlockLanguage(
 	return NORMALIZED_LANGUAGE_BY_ALIAS.get(language.toLowerCase()) ?? null;
 }
 
+/** One backtick longer than any fence inside the code, so nested fences survive a save. */
+function codeFenceFor(code: string): string {
+	let longest = 2;
+	for (const match of code.matchAll(/^[ \t]*(`{3,})/gm)) {
+		longest = Math.max(longest, match[1]?.length ?? 0);
+	}
+	return "`".repeat(longest + 1);
+}
+
 export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.extend({
+	renderMarkdown(node: JSONContent, h) {
+		const language = node.attrs?.language || "";
+		const code = h.renderChildren(node.content ?? []);
+		const fence = codeFenceFor(code);
+		return [`${fence}${language}`, code, fence].join("\n");
+	},
 	onCreate() {
 		loadGrammarsForDoc(this.editor);
 	},

@@ -48,4 +48,21 @@ describe("Code block highlighting markdown integration", () => {
 		expect(output).toContain("```\nplain text block\n```");
 		expect(output).not.toContain("```plaintext");
 	});
+
+	it("writes a longer fence around code that contains a fence", () => {
+		const manager = new MarkdownManager({
+			extensions: createEditorExtensions({
+				enableSlashCommand: false,
+				enableWikiLinks: false,
+			}),
+			markedOptions: {
+				gfm: true,
+				breaks: false,
+			},
+		});
+
+		const input = ["````md", "```js", "const a = 1;", "```", "````"].join("\n");
+
+		expect(manager.serialize(manager.parse(input))).toBe(input);
+	});
 });
