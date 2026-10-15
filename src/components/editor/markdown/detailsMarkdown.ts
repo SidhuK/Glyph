@@ -1,13 +1,22 @@
+import type {
+	JSONContent,
+	MarkdownParseHelpers,
+	MarkdownRendererHelpers,
+	MarkdownToken,
+	MarkdownTokenizer,
+} from "@tiptap/core";
 import {
 	createMarkdownFenceTracker,
+	findInlineCodeClose,
 	isInsideMarkdownCodeFence,
 	updateMarkdownFenceTracker,
 } from "./markdownFence";
 
-const DETAILS_BLOCK_END_RE = /^:::\s*$/;
-const DETAILS_SUMMARY_START_RE = /^:::detailsSummary\s*$/;
-const DETAILS_CONTENT_START_RE = /^:::detailsContent\s*$/;
+const DETAILS_OPEN_TAG_RE = /^ {0,3}<details\b[^>]*>/i;
+const DETAILS_START_RE = /^ {0,3}<details\b/im;
 const DETAILS_TAG_RE = /<\/?details\b[^>]*>/gi;
+const DETAILS_OPEN_ATTR_RE = /\sopen(?=[\s=/>])/i;
+const SUMMARY_RE = /^\s*<summary\b[^>]*>([\s\S]*?)<\/summary>/i;
 
 function escapeHtmlText(text: string): string {
 	return text
@@ -23,252 +32,87 @@ function htmlFragmentToPlainText(html: string): string {
 	return doc.body.textContent?.trim() ?? html.trim();
 }
 
-function nextNonBlankLine(lines: string[], startIndex: number): string | null {
-	let index = startIndex;
-	while (index < lines.length) {
-		const line = lines[index] ?? "";
-		if (line.trim() !== "") return line;
-		index += 1;
+/** Blank out inline code spans so tags inside them are not counted. */
+function maskInlineCode(line: string): string {
+	let masked = "";
+	let cursor = 0;
+	while (cursor < line.length) {
+		const tickStart = line.indexOf("`", cursor);
+		if (tickStart === -1) break;
+		const ticks = /^`+/.exec(line.slice(tickStart))?.[0].length ?? 1;
+		const close = findInlineCodeClose(line, tickStart, ticks);
+		const end = close === -1 ? tickStart + ticks : close + ticks;
+		masked += line.slice(cursor, tickStart);
+		masked += close === -1 ? line.slice(tickStart, end) : " ".repeat(end - tickStart);
+		cursor = end;
 	}
-	return null;
+	return masked + line.slice(cursor);
 }
 
-function stripStructuralBlankLines(lines: string[]) {
-	const out = [...lines];
-	if (out[0]?.trim() === "") out.shift();
-	if (out[out.length - 1]?.trim() === "") out.pop();
-	return out.join("\n");
-}
-
-function stripOuterBlankLines(text: string) {
-	const lines = text.split("\n");
-	while (lines[0]?.trim() === "") lines.shift();
-	while (lines[lines.length - 1]?.trim() === "") lines.pop();
-	return lines.join("\n");
-}
-
-function isDetailsSectionEnd(
-	lines: string[],
-	index: number,
-	section: "summary" | "content",
-): boolean {
-	if (!DETAILS_BLOCK_END_RE.test(lines[index] ?? "")) return false;
-	const next = nextNonBlankLine(lines, index + 1);
-	if (section === "summary") {
-		return next === null || DETAILS_CONTENT_START_RE.test(next);
-	}
-	return (
-		next === null || DETAILS_BLOCK_END_RE.test(next) || /^:::details(?:\s+\{open\})?\s*$/.test(next)
-	);
-}
-
-function readFencedSection(
-	lines: string[],
-	startIndex: number,
-	section: "summary" | "content",
-): { content: string; endIndex: number } {
-	const contentLines: string[] = [];
-	let index = startIndex + 1;
-
-	while (index < lines.length) {
-		if (isDetailsSectionEnd(lines, index, section)) {
-			return {
-				content: stripStructuralBlankLines(contentLines),
-				endIndex: index,
-			};
-		}
-		contentLines.push(lines[index] ?? "");
-		index += 1;
-	}
-
-	return { content: stripStructuralBlankLines(contentLines), endIndex: index };
-}
-
-function detailsFencesToHtml(isOpen: boolean, summary: string, content: string) {
-	const openAttr = isOpen ? " open" : "";
-	const blocks = [`<details${openAttr}>`, `<summary>${escapeHtmlText(summary)}</summary>`];
-	if (content) blocks.push("", content);
-	blocks.push("", "</details>");
-	return blocks.join("\n");
-}
-
-function detailsInnerHtmlToFences(isOpen: boolean, inner: string): string {
-	const summaryMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
-	// Strip tags so postprocess → escapeHtmlText does not double-escape markup.
-	const summary = htmlFragmentToPlainText(summaryMatch?.[1] ?? "");
-	const content = stripOuterBlankLines(inner.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, ""));
-	const openLine = isOpen ? ":::details {open}" : ":::details";
-	return [
-		openLine,
-		"",
-		":::detailsSummary",
-		"",
-		summary,
-		"",
-		":::",
-		"",
-		":::detailsContent",
-		"",
-		content,
-		"",
-		":::",
-		"",
-		":::",
-	].join("\n");
-}
-
-function findTopLevelDetailsBlocks(input: string) {
-	const blocks: Array<{
-		start: number;
-		end: number;
-		isOpen: boolean;
-		inner: string;
-	}> = [];
+/** Finds the `</details>` that closes the block opening `src`, skipping tags in code. */
+function findDetailsClose(src: string): { start: number; end: number } | null {
+	const fence = createMarkdownFenceTracker();
 	let depth = 0;
-	let openStart = -1;
-	let openHasOpenAttr = false;
-	DETAILS_TAG_RE.lastIndex = 0;
-	let match = DETAILS_TAG_RE.exec(input);
-	while (match !== null) {
-		const isClose = match[0].startsWith("</");
-		if (!isClose) {
-			if (depth === 0) {
-				openStart = match.index;
-				openHasOpenAttr = /\bopen\b/i.test(match[0]);
-			}
-			depth += 1;
-			match = DETAILS_TAG_RE.exec(input);
-			continue;
-		}
-
-		depth -= 1;
-		if (depth !== 0 || openStart === -1) {
-			match = DETAILS_TAG_RE.exec(input);
-			continue;
-		}
-
-		const openTagEnd = input.indexOf(">", openStart);
-		if (openTagEnd === -1) {
-			match = DETAILS_TAG_RE.exec(input);
-			continue;
-		}
-
-		blocks.push({
-			start: openStart,
-			end: match.index + match[0].length,
-			isOpen: openHasOpenAttr,
-			inner: input.slice(openTagEnd + 1, match.index),
-		});
-		openStart = -1;
-		match = DETAILS_TAG_RE.exec(input);
-	}
-
-	return blocks;
-}
-
-function postprocessDetailsFences(input: string): string {
-	const lines = input.split("\n");
-	const output: string[] = [];
-	let index = 0;
-	const fenceTracker = createMarkdownFenceTracker();
-
-	while (index < lines.length) {
-		const line = lines[index] ?? "";
-		if (updateMarkdownFenceTracker(line, fenceTracker)) {
-			output.push(line);
-			index += 1;
-			continue;
-		}
-
-		if (isInsideMarkdownCodeFence(fenceTracker) || !/^:::details(?:\s+\{open\})?\s*$/.test(line)) {
-			output.push(line);
-			index += 1;
-			continue;
-		}
-
-		const isOpen = /\{open\}/.test(line);
-		let summary = "";
-		let content = "";
-		index += 1;
-
-		while (index < lines.length) {
-			const sectionLine = lines[index] ?? "";
-			if (DETAILS_BLOCK_END_RE.test(sectionLine)) {
-				const next = nextNonBlankLine(lines, index + 1);
-				if (
-					next === null ||
-					DETAILS_BLOCK_END_RE.test(next) ||
-					/^:::details(?:\s+\{open\})?\s*$/.test(next)
-				) {
-					index += 1;
-					break;
+	let lineStart = 0;
+	for (;;) {
+		const newline = src.indexOf("\n", lineStart);
+		const line = src.slice(lineStart, newline === -1 ? src.length : newline);
+		if (!updateMarkdownFenceTracker(line, fence) && !isInsideMarkdownCodeFence(fence)) {
+			for (const tag of maskInlineCode(line).matchAll(DETAILS_TAG_RE)) {
+				depth += tag[0].startsWith("</") ? -1 : 1;
+				if (depth === 0) {
+					const start = lineStart + tag.index;
+					return { start, end: start + tag[0].length };
 				}
 			}
-			if (DETAILS_SUMMARY_START_RE.test(sectionLine)) {
-				const section = readFencedSection(lines, index, "summary");
-				summary = section.content;
-				index = section.endIndex + 1;
-				continue;
-			}
-			if (DETAILS_CONTENT_START_RE.test(sectionLine)) {
-				const section = readFencedSection(lines, index, "content");
-				content = section.content;
-				index = section.endIndex + 1;
-				continue;
-			}
-			index += 1;
 		}
-
-		output.push(detailsFencesToHtml(isOpen, summary, content));
+		if (newline === -1) return null;
+		lineStart = newline + 1;
 	}
-
-	return output.join("\n");
 }
 
-function preprocessHtmlDetails(input: string): string {
-	if (!/<details\b/i.test(input)) return input;
+export const detailsMarkdownTokenizer: MarkdownTokenizer = {
+	name: "details",
+	level: "block",
+	start(src) {
+		return DETAILS_START_RE.exec(src)?.index ?? -1;
+	},
+	tokenize(src, _tokens, lexer) {
+		const openTag = DETAILS_OPEN_TAG_RE.exec(src);
+		if (!openTag) return undefined;
+		const close = findDetailsClose(src);
+		if (!close) return undefined;
+		const inner = src.slice(openTag[0].length, close.start);
+		const summary = SUMMARY_RE.exec(inner);
+		return {
+			type: "details",
+			raw: src.slice(0, close.end),
+			open: DETAILS_OPEN_ATTR_RE.test(openTag[0]),
+			summary: htmlFragmentToPlainText(summary?.[1] ?? ""),
+			tokens: lexer.blockTokens(summary ? inner.slice(summary[0].length) : inner),
+		};
+	},
+};
 
-	const lines = input.split("\n");
-	const output: string[] = [];
-	let chunk: string[] = [];
-	const fenceTracker = createMarkdownFenceTracker();
-
-	for (const line of lines) {
-		if (updateMarkdownFenceTracker(line, fenceTracker)) {
-			if (chunk.length) {
-				output.push(preprocessHtmlDetailsChunk(chunk.join("\n")));
-				chunk = [];
-			}
-			output.push(line);
-			continue;
-		}
-		if (isInsideMarkdownCodeFence(fenceTracker)) {
-			output.push(line);
-			continue;
-		}
-		chunk.push(line);
-	}
-	if (chunk.length) output.push(preprocessHtmlDetailsChunk(chunk.join("\n")));
-	return output.join("\n");
+export function parseDetailsMarkdown(token: MarkdownToken, h: MarkdownParseHelpers): JSONContent {
+	const summary = typeof token.summary === "string" ? token.summary : "";
+	const content = h.parseChildren(token.tokens ?? []);
+	return h.createNode("details", { open: token.open === true }, [
+		h.createNode("detailsSummary", {}, summary ? [h.createTextNode(summary)] : []),
+		h.createNode("detailsContent", {}, content.length ? content : [h.createNode("paragraph")]),
+	]);
 }
 
-function preprocessHtmlDetailsChunk(input: string): string {
-	const blocks = findTopLevelDetailsBlocks(input);
-	let result = input;
-	for (let index = blocks.length - 1; index >= 0; index -= 1) {
-		const block = blocks[index];
-		result =
-			result.slice(0, block.start) +
-			detailsInnerHtmlToFences(block.isOpen, block.inner) +
-			result.slice(block.end);
-	}
-	return result;
-}
-
-export function preprocessDetailsMarkdown(markdown: string): string {
-	return preprocessHtmlDetails(markdown);
-}
-
-export function postprocessDetailsMarkdown(markdown: string): string {
-	return postprocessDetailsFences(markdown);
+export function renderDetailsMarkdown(node: JSONContent, h: MarkdownRendererHelpers): string {
+	const summary = node.content?.find((child) => child.type === "detailsSummary");
+	const content = node.content?.find((child) => child.type === "detailsContent");
+	const summaryText = summary?.content?.map((child) => child.text ?? "").join("") ?? "";
+	const body = h.renderChildren(content?.content ?? [], "\n\n").replace(/^\n+|\n+$/g, "");
+	const blocks = [
+		`<details${node.attrs?.open ? " open" : ""}>`,
+		`<summary>${escapeHtmlText(summaryText)}</summary>`,
+	];
+	if (body.trim()) blocks.push("", body);
+	blocks.push("", "</details>");
+	return blocks.join("\n");
 }

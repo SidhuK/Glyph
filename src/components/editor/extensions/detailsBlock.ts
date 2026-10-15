@@ -1,6 +1,16 @@
 import { Details, DetailsContent, DetailsSummary } from "@tiptap/extension-details";
+import {
+	detailsMarkdownTokenizer,
+	parseDetailsMarkdown,
+	renderDetailsMarkdown,
+} from "../markdown/detailsMarkdown";
 
-export const GlyphDetails = Details.configure({
+// Reads and writes `<details>` HTML directly instead of TipTap's `:::details` syntax.
+export const GlyphDetails = Details.extend({
+	markdownTokenizer: detailsMarkdownTokenizer,
+	parseMarkdown: parseDetailsMarkdown,
+	renderMarkdown: renderDetailsMarkdown,
+}).configure({
 	persist: true,
 	openClassName: "is-open",
 	HTMLAttributes: {

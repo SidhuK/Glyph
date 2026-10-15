@@ -16,7 +16,6 @@ import {
 	getEditorTextHighlightMarkdownOpenTag,
 	isEditorTextHighlight,
 } from "../textHighlights";
-import { postprocessDetailsMarkdown, preprocessDetailsMarkdown } from "./detailsMarkdown";
 import { protectFootnotes, restoreEscapedFootnotes } from "./footnote";
 import { postprocessHtmlEmbeds, preprocessHtmlEmbeds } from "./htmlEmbedMarkdown";
 import { postprocessInlineTocMarkers, preprocessInlineTocMarkers } from "./inlineTocMarkdown";
@@ -160,9 +159,7 @@ export function preprocessMarkdownForEditor(markdown: string): string {
 			preprocessHighlightedText(
 				encodeMarkdownImageDestinations(
 					canonicalizeWikiLinks(
-						preprocessDetailsMarkdown(
-							protectFootnotes(preprocessHtmlEmbeds(preprocessInlineTocMarkers(markdown))),
-						),
+						protectFootnotes(preprocessHtmlEmbeds(preprocessInlineTocMarkers(markdown))),
 					),
 				),
 			),
@@ -176,12 +173,8 @@ export function postprocessMarkdownFromEditor(markdown: string): string {
 			postprocessWhitespaceLines(
 				postprocessHighlightedText(
 					postprocessColoredText(
-						postprocessDetailsMarkdown(
-							postprocessHtmlEmbeds(
-								canonicalizeWikiLinks(
-									restoreEscapedBracketSyntax(restoreEscapedFootnotes(markdown)),
-								),
-							),
+						postprocessHtmlEmbeds(
+							canonicalizeWikiLinks(restoreEscapedBracketSyntax(restoreEscapedFootnotes(markdown))),
 						),
 					),
 				),
