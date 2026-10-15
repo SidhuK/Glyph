@@ -273,12 +273,17 @@ function findRawHtmlEmbedRuns(input: string) {
 		}
 
 		if (!parts.length || firstTag === null) continue;
+		// An HTML block runs to the end of its line, so text after the last tag stays in it.
+		const lineEnd = input.indexOf("\n", runEnd);
+		const tailEnd = lineEnd === -1 ? input.length : lineEnd;
+		parts[parts.length - 1] += input.slice(runEnd, tailEnd);
+		cursor = Math.max(cursor, tailEnd);
 		const kind =
 			firstTag === "svg" && parts.every((part) => /^<svg\b/i.test(part.trim())) ? "svg" : "html";
 		runs.push({
 			start: runStart,
 			// Blank lines after the last block stay outside the run.
-			end: runEnd,
+			end: tailEnd,
 			kind,
 			content: parts.join("\n"),
 		});
@@ -294,11 +299,8 @@ function preprocessRawHtmlEmbedChunk(input: string): string {
 	let result = input;
 	for (let index = runs.length - 1; index >= 0; index -= 1) {
 		const run = runs[index];
-		const after = result.slice(run.end);
-		// The closing fence must sit alone on its line.
-		const replacement =
-			rawHtmlToFencedBlock(run.kind, run.content) + (/^[^\n]/.test(after) ? "\n" : "");
-		result = result.slice(0, run.start) + replacement + after;
+		const replacement = rawHtmlToFencedBlock(run.kind, run.content);
+		result = result.slice(0, run.start) + replacement + result.slice(run.end);
 	}
 	return result;
 }

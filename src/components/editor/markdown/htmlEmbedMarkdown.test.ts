@@ -62,14 +62,11 @@ describe("htmlEmbedMarkdown", () => {
 		["a paragraph after two divs", "<div>a</div>\n<div>b</div>\n\nAfter."],
 		["a heading after an svg", "<svg><rect/></svg>\n\n## Heading"],
 		["a paragraph on the line after a div", "<div>hi</div>\nAfter."],
+		["text after a closing tag on the same line", "<div>hi</div> tail\n\nAfter."],
 	])("keeps %s", (_name, md) => {
 		const preprocessed = preprocessHtmlEmbeds(md);
 		expect(preprocessed).toMatch(/\n```\n/);
 		expect(postprocessHtmlEmbeds(preprocessed)).toBe(md);
-	});
-
-	it("moves text after a closing tag onto its own line", () => {
-		expect(preprocessHtmlEmbeds("<div>hi</div> tail")).toMatch(/\n```\n tail$/);
 	});
 
 	it("does not hang on a self-closing svg tag", () => {
