@@ -82,7 +82,7 @@ export const DEFAULT_SIDEBAR_VISIBILITY = {
 	allNotes: true,
 	archive: false,
 	databases: true,
-	tasks: true,
+	tasks: false,
 	connections: true,
 	calendar: false,
 	search: false,
