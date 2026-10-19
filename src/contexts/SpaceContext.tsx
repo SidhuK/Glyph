@@ -46,7 +46,6 @@ interface SpaceContextValue {
 	onOpenSpaceAtPath: (path: string) => Promise<boolean>;
 	onCreateSpace: () => Promise<void>;
 	setSpaceIcon: (path: string, iconName: string | null) => Promise<void>;
-	removeSpaceFromSwitcher: (path: string) => Promise<void>;
 	closeSpace: () => Promise<void>;
 }
 
@@ -290,18 +289,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		[refreshSpaceRegistry],
 	);
 
-	const removeSpaceFromSwitcher = useCallback(
-		async (path: string) => {
-			try {
-				await removeRegisteredSpacePath({ path });
-				await refreshSpaceRegistry();
-			} catch (err) {
-				setError(extractErrorMessage(err));
-			}
-		},
-		[refreshSpaceRegistry],
-	);
-
 	const closeSpace = useCallback(async () => {
 		const closingSpacePath = currentSpacePathRef.current;
 		try {
@@ -360,7 +347,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			onOpenSpaceAtPath,
 			onCreateSpace,
 			setSpaceIcon,
-			removeSpaceFromSwitcher,
 			closeSpace,
 		}),
 		[
@@ -377,7 +363,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			onOpenSpaceAtPath,
 			onCreateSpace,
 			setSpaceIcon,
-			removeSpaceFromSwitcher,
 			closeSpace,
 		],
 	);

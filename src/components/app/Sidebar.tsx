@@ -2,46 +2,28 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
-import type { SpaceDefinition } from "../../lib/spaceRegistry";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
 import { SidebarContent, type SidebarContentProps } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSettingsContent } from "./SidebarSettingsContent";
-import { SpaceSwitcher } from "./SpaceSwitcher";
+import { SpaceMenuButton, type SpaceMenuActions } from "./SpaceMenuButton";
 
-interface SidebarProps extends SidebarContentProps {
+interface SidebarProps extends SidebarContentProps, SpaceMenuActions {
 	sidebarCollapsed: boolean;
-	spaces: SpaceDefinition[];
-	activeSpacePath: string | null;
-	switchingSpacePath: string | null;
-	onSelectSpace: (path: string) => Promise<boolean>;
-	onSetSpaceIcon: (path: string, iconName: string | null) => Promise<void>;
-	onCloseSpace: (path: string) => Promise<void>;
 }
 
 export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
-	spaces,
-	activeSpacePath,
-	switchingSpacePath,
 	onSelectSpace,
-	onSetSpaceIcon,
+	onOpenSpace,
+	onCreateSpace,
 	onCloseSpace,
 	...contentProps
 }: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
-	const spaceSwitcher = (
-		<SpaceSwitcher
-			spaces={spaces}
-			activeSpacePath={activeSpacePath}
-			switchingSpacePath={switchingSpacePath}
-			onSelectSpace={onSelectSpace}
-			onSetSpaceIcon={onSetSpaceIcon}
-			onCloseSpace={onCloseSpace}
-		/>
-	);
+	const spaceKey = contentProps.spacePath ?? "no-space";
 
 	return (
 		<m.aside
@@ -77,12 +59,17 @@ export const Sidebar = memo(function Sidebar({
 							</>
 						) : (
 							<>
-								<SidebarHeader />
-								<SidebarContent key={activeSpacePath ?? "no-space"} {...contentProps} />
-								<div className="sidebarBottomLayer">
-									{spaceSwitcher}
-									<LicenseStatusFooter />
-								</div>
+								<SidebarHeader>
+									<SpaceMenuButton
+										key={spaceKey}
+										onSelectSpace={onSelectSpace}
+										onOpenSpace={onOpenSpace}
+										onCreateSpace={onCreateSpace}
+										onCloseSpace={onCloseSpace}
+									/>
+								</SidebarHeader>
+								<SidebarContent key={spaceKey} {...contentProps} />
+								<LicenseStatusFooter />
 							</>
 						)}
 					</m.div>

@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 import { useUpdaterContext } from "../../contexts";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 
-export function SidebarHeader() {
+export function SidebarHeader({ children }: { children?: ReactNode }) {
 	const autoUpdater = useUpdaterContext();
 
 	return (
@@ -14,12 +15,13 @@ export function SidebarHeader() {
 				onMouseDown={onWindowDragMouseDown}
 			/>
 			<div className="sidebarHeader" data-tauri-drag-region>
-				<div className="sidebarActions">
+				<div className="sidebarActions" data-tauri-drag-region>
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}
 						updateVersion={autoUpdater.updateVersion}
 						onInstallUpdate={autoUpdater.installAndRelaunch}
 					/>
+					{children}
 				</div>
 			</div>
 		</>

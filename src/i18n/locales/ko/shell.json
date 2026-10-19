@@ -285,12 +285,14 @@
 		"saveError": "캔버스를 저장할 수 없습니다: {{message}}"
 	},
 	"spaceSwitcher": {
-		"label": "스페이스",
-		"switchTo": "{{name}}(으)로 전환",
+		"label": "현재 스페이스: {{name}}",
+		"openSpace": "스페이스 열기…",
+		"createSpace": "스페이스 만들기…",
 		"changeIcon": "아이콘 변경…",
 		"closeSpace": "스페이스 닫기",
 		"chooseIcon": "스페이스 아이콘 선택",
-		"menuFailed": "스페이스 메뉴를 열 수 없습니다"
+		"menuFailed": "스페이스 메뉴를 열 수 없습니다",
+		"actionFailed": "스페이스 작업을 완료할 수 없습니다"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "아이콘 검색",
