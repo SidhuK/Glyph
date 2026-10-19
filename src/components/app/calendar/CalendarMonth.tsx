@@ -78,14 +78,18 @@ export function CalendarMonth({
 		() => new Intl.DateTimeFormat(locale, { dateStyle: "full" }),
 		[locale],
 	);
-	const title = (
-		<>
-			{new Intl.DateTimeFormat(locale, { month: "long" }).format(month)}{" "}
-			<span className="calendarMonthTitleYear">
-				{new Intl.DateTimeFormat(locale, { year: "numeric" }).format(month)}
-			</span>
-		</>
-	);
+	// Locale order and separators (e.g. "2026年10月"), with only the year muted.
+	const title = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" })
+		.formatToParts(month)
+		.map((part, index) =>
+			part.type === "year" ? (
+				<span key={index} className="calendarMonthTitleYear">
+					{part.value}
+				</span>
+			) : (
+				part.value
+			),
+		);
 
 	const tabStopKey = useMemo(() => {
 		const inView = (date: Date) => isDateInView(date, month, weekStartsOn, layout);

@@ -30,7 +30,7 @@ export function useCalendarView({
 	onShowMonth,
 }: UseCalendarViewOptions) {
 	const { t, i18n } = useTranslation("shell");
-	const { dailyNotesFolder, periodNotesEnabled } = useUILayoutContext();
+	const { periodNotesEnabled } = useUILayoutContext();
 	const [anchor, setAnchor] = useState(() => new Date());
 	const [selectedKey, setSelectedKey] = useState(() => getTodayDateString());
 	const selectedDate = useMemo(() => parseISO(selectedKey), [selectedKey]);
@@ -56,7 +56,7 @@ export function useCalendarView({
 		setSelectedKey(dateKey);
 		// Keeps the week strip on the selected day when the layout switches.
 		setAnchor(date);
-		if (!dailyNotesFolder) return;
+		// Without a daily notes folder, opening shows the app's daily-note setup notice.
 		if (dayClick === "open" || wasSelected) openPeriodNote("day", dateKey);
 	};
 
