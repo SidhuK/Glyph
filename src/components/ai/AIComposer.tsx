@@ -51,7 +51,6 @@ interface AIComposerProps {
 	onSend: () => void;
 	onStop: () => void;
 	composerInputRef: RefObject<HTMLDivElement | null>;
-	scheduleComposerInputResize: () => void;
 	profiles: ReturnType<typeof useAiProfiles>;
 	context: ReturnType<typeof useAiContext>;
 	activeFilePath: string | null;
@@ -234,7 +233,6 @@ export function AIComposer({
 	onSend,
 	onStop,
 	composerInputRef,
-	scheduleComposerInputResize,
 	profiles,
 	context,
 	activeFilePath,
@@ -262,9 +260,8 @@ export function AIComposer({
 			if (!el) return;
 			el.focus();
 			setCaretOffset(el, CANVAS_COMMAND_INSERTION.length);
-			scheduleComposerInputResize();
 		});
-	}, [composerInputRef, scheduleComposerInputResize, setInput]);
+	}, [composerInputRef, setInput]);
 
 	const handleInsertMentionTrigger = useCallback(() => {
 		if (isAwaitingResponse) return;
@@ -274,9 +271,8 @@ export function AIComposer({
 			if (/(?:^|\s)@[\w\-./ ]*$/.test(prev)) return prev;
 			return /\s$/.test(prev) ? `${prev}@` : `${prev} @`;
 		});
-		scheduleComposerInputResize();
 		window.requestAnimationFrame(() => composerInputRef.current?.focus());
-	}, [isAwaitingResponse, setInput, scheduleComposerInputResize, composerInputRef]);
+	}, [isAwaitingResponse, setInput, composerInputRef]);
 
 	const suggestedFilePath = activeFilePath ? normalizeRelPath(activeFilePath) : "";
 	const showActiveFileSuggestion =
@@ -366,8 +362,7 @@ export function AIComposer({
 			}
 		}
 		if (caret !== null) setCaretOffset(el, caret);
-		scheduleComposerInputResize();
-	}, [input, renderSegments, composerInputRef, scheduleComposerInputResize]);
+	}, [input, renderSegments, composerInputRef]);
 
 	const handleInput = useCallback(() => {
 		const el = composerInputRef.current;
@@ -375,8 +370,7 @@ export function AIComposer({
 		isUserInputRef.current = true;
 		const next = domToInput(el);
 		if (next !== input) setInput(next);
-		scheduleComposerInputResize();
-	}, [composerInputRef, input, setInput, scheduleComposerInputResize]);
+	}, [composerInputRef, input, setInput]);
 
 	const handlePaste = useCallback(
 		(event: ReactClipboardEvent<HTMLDivElement>) => {
@@ -389,9 +383,8 @@ export function AIComposer({
 			isUserInputRef.current = true;
 			const next = domToInput(el);
 			if (next !== input) setInput(next);
-			scheduleComposerInputResize();
 		},
-		[composerInputRef, input, setInput, scheduleComposerInputResize],
+		[composerInputRef, input, setInput],
 	);
 
 	const handleClick = useCallback(
