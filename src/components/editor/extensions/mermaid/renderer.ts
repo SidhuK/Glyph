@@ -13,6 +13,9 @@ interface MermaidDiagramFonts {
 const renderCache = new Map<string, MermaidRenderResult>();
 
 function rememberRenderResult(key: string, result: MermaidRenderResult): MermaidRenderResult {
+	// Failures hold localized text and may be transient (a chunk that failed to load), so they
+	// are rebuilt on the next render instead of cached.
+	if (!result.ok) return result;
 	if (renderCache.has(key)) {
 		renderCache.delete(key);
 	}
@@ -82,8 +85,11 @@ function sanitizeMermaidSvg(svg: string): MermaidRenderResult {
 	return { ok: true, svgHtml: sanitizedSvg.trim() };
 }
 
-function errorMessage(error: unknown, PeleError: typeof import("pele/lazy").PeleError): string {
-	if (error instanceof PeleError) {
+function errorMessage(
+	error: unknown,
+	PeleError: typeof import("pele/lazy").PeleError | undefined,
+): string {
+	if (PeleError && error instanceof PeleError) {
 		const message = error.message.trim() || renderFailedMessage();
 		if (error.line <= 0 || message.includes(`line ${error.line}`)) return message;
 		const location = i18n.t("editor:codeBlock.mermaidErrorLocation", {
@@ -114,9 +120,12 @@ export async function renderMermaidCanvasSvg(source: string): Promise<MermaidRen
 		});
 	}
 
-	// pele/lazy keeps Pele out of the startup chunk and loads each diagram type on first use.
-	const { PeleError, renderAsync } = await import("pele/lazy");
+	let PeleError: typeof import("pele/lazy").PeleError | undefined;
 	try {
+		// pele/lazy keeps Pele out of the startup chunk and loads each diagram type on first use.
+		const pele = await import("pele/lazy");
+		PeleError = pele.PeleError;
+		const { renderAsync } = pele;
 		await loadDiagramFonts(fonts);
 		const { svg } = await renderAsync(trimmedSource, {
 			fontFamily: fonts.fontFamily,
