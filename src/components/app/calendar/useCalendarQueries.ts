@@ -60,7 +60,9 @@ export function useCalendarActivity(
 	weekStartsOn: Day,
 ) {
 	const { spacePath } = useSpace();
-	const { dailyNotesFolder } = useUILayoutContext();
+	const { dailyNotesFolder, settingsSpacePath } = useUILayoutContext();
+	// Until the new space's settings load, the daily notes folder still belongs to the old space.
+	const canQuery = spacePath !== null && settingsSpacePath === spacePath;
 	const isWeek = layout === "week";
 	const first = isWeek ? startOfWeek(anchor, { weekStartsOn }) : anchor;
 	const last = isWeek ? endOfWeek(anchor, { weekStartsOn }) : anchor;
@@ -71,7 +73,7 @@ export function useCalendarActivity(
 			return {
 				queryKey: calendarQueryKeys.activity(spacePath ?? "", fromDate, toDate, dailyNotesFolder),
 				queryFn: () => loadCalendarActivity(month, dailyNotesFolder),
-				enabled: spacePath !== null,
+				enabled: canQuery,
 				staleTime: ACTIVITY_STALE_TIME_MS,
 			};
 		}),
@@ -82,8 +84,8 @@ export function useCalendarActivity(
 /** Notes tied to `date` (yyyy-MM-dd), deduplicated with the daily note first. */
 export function useCalendarDayNotes(date: string) {
 	const { spacePath } = useSpace();
-	const { dailyNotesFolder } = useUILayoutContext();
-	const canQuery = spacePath !== null;
+	const { dailyNotesFolder, settingsSpacePath } = useUILayoutContext();
+	const canQuery = spacePath !== null && settingsSpacePath === spacePath;
 	const query = useQuery({
 		queryKey: calendarQueryKeys.notesForDate(spacePath ?? "", date, dailyNotesFolder),
 		queryFn: () => loadCalendarNotesForDate(date, dailyNotesFolder),
