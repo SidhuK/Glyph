@@ -39,5 +39,24 @@
 		"gitSync": {
 			"label": "Git 同期"
 		}
+	},
+	"calendarOptions": {
+		"layout": {
+			"label": "レイアウト",
+			"description": "月全体、またはスペースを節約できる 1 週間の帯を表示します。",
+			"month": "月",
+			"week": "週"
+		},
+		"daySummary": {
+			"label": "日の概要",
+			"description": "選択した日のデイリーノートと、その日のほかのノートを表示します。"
+		},
+		"dayClick": {
+			"label": "日をクリックしたとき",
+			"description": "選択中の日をもう一度クリックすると、常にそのデイリーノートを開きます。",
+			"open": "デイリーノートを開く",
+			"select": "日を選択"
+		},
+		"updateFailed": "カレンダーの設定を更新できませんでした。"
 	}
 }

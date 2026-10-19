@@ -1,0 +1,390 @@
+/* Calendar card shared by the sidebar section and the Calendar pop-up. */
+
+.calendarCard {
+	margin-inline: 8px;
+	padding: 6px 4px 4px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-xl);
+	background: color-mix(in srgb, var(--text-primary) 2.5%, transparent);
+	user-select: none;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* ── Pop-up surface ── */
+
+.calendarPalette {
+	width: min(320px, calc(100vw - 48px));
+	padding: 12px 10px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
+	border-radius: 20px;
+	background: var(--bg-primary);
+	box-shadow:
+		0 24px 70px color-mix(in srgb, black 30%, transparent),
+		0 4px 18px color-mix(in srgb, black 18%, transparent),
+		inset 0 1px color-mix(in srgb, white 5%, transparent);
+}
+
+/* The dialog already is the card. */
+.calendarPalette .calendarCard {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+}
+
+/* ── Month row ── */
+
+.calendarMonthHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 2px;
+	padding: 0 2px 4px 6px;
+}
+
+.calendarMonthTitle {
+	display: block;
+	min-width: 0;
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-primary);
+	font-size: 12.5px;
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.01em;
+}
+
+.calendarMonthTitleYear {
+	color: var(--text-tertiary);
+	font-weight: var(--font-medium);
+}
+
+button.calendarMonthTitleButton {
+	align-items: baseline;
+	gap: 4px;
+	height: auto;
+	margin-left: -4px;
+	padding: 1px 4px;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	letter-spacing: inherit;
+	cursor: pointer;
+	transition: background var(--transition-fast);
+}
+
+button.calendarMonthTitleButton:hover {
+	background: var(--bg-hover);
+}
+
+.calendarMonthControls {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.calendarTodayButton {
+	height: 20px;
+	padding: 0 7px;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 10.5px;
+	font-weight: var(--font-medium);
+	cursor: pointer;
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
+}
+
+.calendarNavButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
+}
+
+.calendarTodayButton:hover,
+.calendarNavButton:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.calendarMonthTitleButton:focus-visible,
+.calendarTodayButton:focus-visible,
+.calendarNavButton:focus-visible,
+.calendarDay:focus-visible,
+.calendarRow:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+/* ── Grid ── */
+
+/* Separate borders so the current-week band can round its ends. */
+.calendarGrid {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	table-layout: fixed;
+}
+
+.calendarWeekday {
+	padding: 0 0 2px;
+	color: var(--text-tertiary);
+	font-size: 9px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.calendarWeekday abbr {
+	text-decoration: none;
+	cursor: default;
+}
+
+.calendarDayCell {
+	padding: 0;
+	text-align: center;
+}
+
+.calendarDay {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/* Fixed square so the global button height can't stretch it into an oval. */
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: transparent;
+	color: var(--text-primary);
+	font-size: 10.5px;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	cursor: pointer;
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
+}
+
+.calendarDay:hover:not([data-selected="true"]) {
+	background: var(--bg-hover);
+}
+
+.calendarDay[data-weekend="true"]:not(
+		[data-outside="true"],
+		[data-selected="true"],
+		[data-today="true"]
+	) {
+	color: var(--text-secondary);
+}
+
+.calendarDay[data-outside="true"] {
+	color: color-mix(in srgb, var(--text-tertiary) 75%, transparent);
+}
+
+.calendarDay[data-today="true"]:not([data-selected="true"]) {
+	color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+}
+
+.calendarDay[data-selected="true"] {
+	background: var(--interactive-accent);
+	color: var(--bg-primary);
+	font-weight: var(--font-semibold);
+}
+
+.calendarDayMarker {
+	position: absolute;
+	bottom: 1px;
+	left: 50%;
+	width: 3px;
+	height: 3px;
+	transform: translateX(-50%);
+	border-radius: var(--radius-full);
+	background: transparent;
+}
+
+.calendarDayMarker[data-tone="daily"] {
+	background: var(--interactive-accent);
+}
+
+.calendarDayMarker[data-tone="note"] {
+	background: color-mix(in srgb, var(--text-tertiary) 70%, transparent);
+}
+
+.calendarDay[data-selected="true"] .calendarDayMarker:not([data-tone="none"]) {
+	background: color-mix(in srgb, var(--bg-primary) 75%, transparent);
+}
+
+tr[data-current-week="true"] .calendarDayCell {
+	background: color-mix(in srgb, var(--text-primary) 3.5%, transparent);
+}
+
+tr[data-current-week="true"] .calendarDayCell:first-child {
+	border-radius: var(--radius-full) 0 0 var(--radius-full);
+}
+
+tr[data-current-week="true"] .calendarDayCell:last-child {
+	border-radius: 0 var(--radius-full) var(--radius-full) 0;
+}
+
+/* ── Day summary ── */
+
+/* One row for the daily note and exactly two for the day's other notes; more
+   notes scroll, so the card height never changes while moving between days. */
+.calendarSummary {
+	--calendar-summary-row: 22px;
+	margin-top: 4px;
+	padding-top: 4px;
+	border-top: 1px solid var(--border-light);
+}
+
+.calendarSummaryDate {
+	padding: 1px 6px 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-secondary);
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+}
+
+.calendarSummarySlot {
+	height: var(--calendar-summary-row);
+	padding-block: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: var(--calendar-summary-row);
+}
+
+.calendarSummaryNotes {
+	height: calc(var(--calendar-summary-row) * 2);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 36%, transparent) transparent;
+}
+
+.calendarSummaryList {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+button.calendarRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	min-width: 0;
+	justify-content: flex-start;
+	height: var(--calendar-summary-row);
+	min-height: 0;
+	padding: 2px 6px;
+	border: 0;
+	border-radius: var(--radius-7);
+	background: transparent;
+	color: var(--text-primary);
+	font-size: 12px;
+	font-weight: var(--font-normal);
+	line-height: 1.3;
+	text-align: left;
+	cursor: pointer;
+	transition: background var(--transition-fast);
+}
+
+button.calendarRow:hover {
+	background: var(--bg-hover);
+}
+
+button.calendarRow[data-kind="create"] {
+	color: var(--text-secondary);
+}
+
+.calendarRowIcon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	border-radius: var(--radius-sm);
+	color: var(--text-secondary);
+}
+
+.calendarRow[data-kind="daily"] .calendarRowIcon {
+	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+	color: var(--interactive-accent);
+}
+
+.calendarRow[data-kind="create"] .calendarRowIcon {
+	border: 1px dashed color-mix(in srgb, var(--text-tertiary) 70%, transparent);
+}
+
+.calendarRowText {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.calendarMessage {
+	margin: 0;
+	padding: 3px 6px;
+	color: var(--text-tertiary);
+	font-size: 11.5px;
+	line-height: 1.35;
+}
+
+/* ── Sidebar placement ── */
+
+.sidebarCalendar {
+	flex: 0 0 auto;
+	min-width: 0;
+	padding-block: 6px 4px;
+}
+
+/* The floating space switcher overlaps the bottom of the sidebar, so the
+   calendar (not the file tree above it) takes the clearance. */
+.sidebarContentRoot:has(.spaceSwitcher) .sidebarCalendar {
+	padding-bottom: 44px;
+}
+
+.sidebarContentRoot:has(.spaceSwitcher):has(.sidebarCalendar)
+	.sidebarViewContent
+	> .sidebarViewPanel {
+	padding-bottom: 0;
+}
+
+.calendarCollapseButton svg {
+	transition: transform var(--transition-fast);
+}
+
+.calendarMonth[data-collapsed="true"] .calendarCollapseButton svg {
+	transform: rotate(-90deg);
+}
+
+.calendarMonth[data-collapsed="true"] .calendarMonthHeader {
+	padding-bottom: 0;
+}

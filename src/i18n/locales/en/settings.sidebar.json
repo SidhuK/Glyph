@@ -48,5 +48,24 @@
 		"archive": {
 			"label": "Archive"
 		}
+	},
+	"calendarOptions": {
+		"layout": {
+			"label": "Layout",
+			"description": "Full month, or a single-week strip that saves space.",
+			"month": "Month",
+			"week": "Week"
+		},
+		"daySummary": {
+			"label": "Day summary",
+			"description": "Show the selected day's daily note and the other notes from that day."
+		},
+		"dayClick": {
+			"label": "Clicking a day",
+			"description": "Clicking the selected day again always opens its daily note.",
+			"open": "Open daily note",
+			"select": "Select day"
+		},
+		"updateFailed": "Could not update calendar settings."
 	}
 }

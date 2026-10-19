@@ -251,21 +251,21 @@
 		"today": "Dziś",
 		"previousMonth": "Poprzedni miesiąc",
 		"nextMonth": "Następny miesiąc",
-		"openDailyNote": "Otwórz notatkę dzienną",
-		"openOrCreateWeeklyNote": "Otwórz lub utwórz notatkę tygodniową",
 		"loading": "Ładowanie…",
-		"noteCount_one": "1 notatka",
-		"noteCount_few": "{{count}} notatki",
-		"noteCount_many": "{{count}} notatek",
-		"noteCount_other": "{{count}} notatki",
-		"noNotes": "Brak notatek",
 		"loadFailed": "Nie udało się wczytać notatek: {{message}}",
-		"loadFailedShort": "Nie udało się wczytać notatek",
-		"openPeriodNote": {
-			"day": "Dzień",
-			"week": "Tydzień",
-			"month": "Miesiąc",
-			"quarter": "Kwartał"
+		"previousWeek": "Poprzedni tydzień",
+		"nextWeek": "Następny tydzień",
+		"openMonthlyNote": "Otwórz notatkę miesięczną",
+		"openQuarterlyNote": "Otwórz notatkę kwartalną",
+		"todayDate": "Dziś · {{date}}",
+		"createDailyNote": "Utwórz notatkę dzienną",
+		"noOtherNotes": "Brak innych notatek tego dnia",
+		"dailyNotesNotConfigured": "Ustaw folder notatek dziennych w Ustawieniach, aby otwierać notatki z kalendarza",
+		"openFailed": "Nie udało się otworzyć notatki",
+		"menu": {
+			"openDailyNote": "Otwórz notatkę dzienną",
+			"createDailyNote": "Utwórz notatkę dzienną",
+			"openWeeklyNote": "Otwórz notatkę tygodniową"
 		}
 	},
 	"tabs": {
@@ -386,5 +386,15 @@
 		"noSpace": "Otwórz przestrzeń w Glyph, aby ją przeszukać.",
 		"openFailed": "Nie udało się otworzyć w Glyph: {{message}}",
 		"hideFailed": "Nie udało się zamknąć szybkiego wyszukiwania: {{message}}"
+	},
+	"sidebarCalendar": {
+		"menu": {
+			"showWeekStrip": "Pokaż pasek tygodnia",
+			"showMonth": "Pokaż cały miesiąc",
+			"hide": "Ukryj kalendarz na pasku bocznym"
+		},
+		"updateFailed": "Nie udało się zaktualizować ustawień kalendarza",
+		"collapse": "Zwiń kalendarz",
+		"expand": "Rozwiń kalendarz"
 	}
 }

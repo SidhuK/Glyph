@@ -164,6 +164,12 @@
 				"sincronización git"
 			]
 		},
+		"sidebar-calendar": {
+			"title": "Calendario de la barra lateral",
+			"section": "Barra lateral",
+			"description": "Elige el diseño del calendario, el resumen del día y qué pasa al hacer clic en un día.",
+			"keywords": ["calendario", "semana", "mes", "nota diaria", "resumen del día", "barra lateral"]
+		},
 		"appearance-theme-mode": {
 			"title": "Seleccionar tema",
 			"section": "Temas",

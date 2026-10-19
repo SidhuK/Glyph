@@ -1,5 +1,5 @@
 import { Suspense, lazy, useState } from "react";
-import type { PeriodKind } from "../../lib/periodNotes";
+import type { OpenPeriodNoteAtDate } from "./calendar/useCalendarView";
 
 const loadCalendarPalette = () =>
 	import("./CalendarPalette").then((module) => ({
@@ -11,10 +11,8 @@ const LazyCalendarPalette = lazy(loadCalendarPalette);
 interface CalendarPaletteControllerProps {
 	open: boolean;
 	onClose: () => void;
-	spacePath: string | null;
-	dailyNoteFolder: string | null;
 	onOpenNote: (path: string) => void;
-	onOpenPeriodNoteAtDate: (kind: PeriodKind, date: string) => void;
+	onOpenPeriodNoteAtDate: OpenPeriodNoteAtDate;
 }
 
 export function preloadCalendarPalette(): void {
@@ -24,8 +22,6 @@ export function preloadCalendarPalette(): void {
 export function CalendarPaletteController({
 	open,
 	onClose,
-	spacePath,
-	dailyNoteFolder,
 	onOpenNote,
 	onOpenPeriodNoteAtDate,
 }: CalendarPaletteControllerProps) {
@@ -40,8 +36,6 @@ export function CalendarPaletteController({
 			<LazyCalendarPalette
 				open={open}
 				onClose={onClose}
-				spacePath={spacePath}
-				dailyNoteFolder={dailyNoteFolder}
 				onOpenNote={onOpenNote}
 				onOpenPeriodNoteAtDate={onOpenPeriodNoteAtDate}
 			/>

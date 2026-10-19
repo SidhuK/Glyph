@@ -39,5 +39,24 @@
 		"gitSync": {
 			"label": "Synchronisation Git"
 		}
+	},
+	"calendarOptions": {
+		"layout": {
+			"label": "Disposition",
+			"description": "Le mois entier, ou une bande d’une semaine qui fait gagner de la place.",
+			"month": "Mois",
+			"week": "Semaine"
+		},
+		"daySummary": {
+			"label": "Résumé du jour",
+			"description": "Affiche la note du jour sélectionné et les autres notes de cette journée."
+		},
+		"dayClick": {
+			"label": "Clic sur un jour",
+			"description": "Cliquer à nouveau sur le jour sélectionné ouvre toujours sa note du jour.",
+			"open": "Ouvrir la note du jour",
+			"select": "Sélectionner le jour"
+		},
+		"updateFailed": "Impossible de mettre à jour les réglages du calendrier."
 	}
 }

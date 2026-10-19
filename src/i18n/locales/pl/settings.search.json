@@ -162,6 +162,19 @@
 				"synchronizacja git"
 			]
 		},
+		"sidebar-calendar": {
+			"title": "Kalendarz na pasku bocznym",
+			"section": "Pasek boczny",
+			"description": "Wybierz układ kalendarza, podsumowanie dnia i działanie kliknięcia dnia.",
+			"keywords": [
+				"kalendarz",
+				"tydzień",
+				"miesiąc",
+				"notatka dzienna",
+				"podsumowanie dnia",
+				"pasek boczny"
+			]
+		},
 		"appearance-theme-mode": {
 			"title": "Wybierz motyw",
 			"section": "Motyw",

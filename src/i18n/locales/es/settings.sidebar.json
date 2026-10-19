@@ -39,5 +39,24 @@
 		"gitSync": {
 			"label": "Sincronización con Git"
 		}
+	},
+	"calendarOptions": {
+		"layout": {
+			"label": "Diseño",
+			"description": "El mes completo o una franja de una semana que ahorra espacio.",
+			"month": "Mes",
+			"week": "Semana"
+		},
+		"daySummary": {
+			"label": "Resumen del día",
+			"description": "Muestra la nota diaria del día seleccionado y las demás notas de ese día."
+		},
+		"dayClick": {
+			"label": "Al hacer clic en un día",
+			"description": "Volver a hacer clic en el día seleccionado siempre abre su nota diaria.",
+			"open": "Abrir nota diaria",
+			"select": "Seleccionar día"
+		},
+		"updateFailed": "No se pudieron actualizar los ajustes del calendario."
 	}
 }

@@ -215,18 +215,21 @@
 		"today": "今日",
 		"previousMonth": "前の月",
 		"nextMonth": "次の月",
-		"openDailyNote": "デイリーノートを開く",
-		"openOrCreateWeeklyNote": "ウィークリーノートを開く、または作成",
 		"loading": "読み込み中…",
-		"noteCount_other": "ノート {{count}} 件",
-		"noNotes": "この日のノートはありません",
 		"loadFailed": "ノートを読み込めませんでした: {{message}}",
-		"loadFailedShort": "ノートを読み込めませんでした",
-		"openPeriodNote": {
-			"day": "日",
-			"week": "週",
-			"month": "月",
-			"quarter": "四半期"
+		"previousWeek": "前の週",
+		"nextWeek": "次の週",
+		"openMonthlyNote": "マンスリーノートを開く",
+		"openQuarterlyNote": "四半期ノートを開く",
+		"todayDate": "今日 · {{date}}",
+		"createDailyNote": "デイリーノートを作成",
+		"noOtherNotes": "この日のほかのノートはありません",
+		"dailyNotesNotConfigured": "カレンダーからノートを開くには、設定でデイリーノートのフォルダを指定してください",
+		"openFailed": "ノートを開けませんでした",
+		"menu": {
+			"openDailyNote": "デイリーノートを開く",
+			"createDailyNote": "デイリーノートを作成",
+			"openWeeklyNote": "ウィークリーノートを開く"
 		}
 	},
 	"tabs": {
@@ -339,5 +342,15 @@
 		"noSpace": "検索するには Glyph でスペースを開いてください。",
 		"openFailed": "Glyph で開けませんでした: {{message}}",
 		"hideFailed": "クイック検索を閉じられませんでした: {{message}}"
+	},
+	"sidebarCalendar": {
+		"menu": {
+			"showWeekStrip": "週の帯を表示",
+			"showMonth": "月全体を表示",
+			"hide": "サイドバーからカレンダーを非表示"
+		},
+		"updateFailed": "カレンダーの設定を更新できませんでした",
+		"collapse": "カレンダーを折りたたむ",
+		"expand": "カレンダーを展開"
 	}
 }

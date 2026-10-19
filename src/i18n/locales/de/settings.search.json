@@ -154,6 +154,12 @@
 				"Git-Synchronisierung"
 			]
 		},
+		"sidebar-calendar": {
+			"title": "Kalender in der Seitenleiste",
+			"section": "Seitenleiste",
+			"description": "Lege Layout, Tagesübersicht und das Verhalten beim Klick auf einen Tag fest.",
+			"keywords": ["kalender", "woche", "monat", "tagesnotiz", "tagesübersicht", "seitenleiste"]
+		},
 		"appearance-theme-mode": {
 			"title": "Design auswählen",
 			"section": "Designs",

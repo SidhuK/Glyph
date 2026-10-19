@@ -1417,9 +1417,9 @@ export function AppShell() {
 						onOpenConnections={openConnectionsView}
 						onOpenAgent={openAgentView}
 						onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
-						onOpenCalendar={openCalendar}
 						onOpenSearch={openSearchPalette}
 						onOpenPeriodNote={requestOpenPeriodNote}
+						onOpenPeriodNoteAtDate={handleOpenPeriodNoteAtDate}
 						onOpenQuickNote={openQuickNoteWindow}
 						onCreateFromTemplate={handleCreateFromTemplateFromMenu}
 						onGitSyncNow={handleGitSyncNow}
@@ -1525,10 +1525,8 @@ export function AppShell() {
 					<CalendarPaletteController
 						open={calendarOpen}
 						onClose={closeCalendar}
-						spacePath={spacePath}
-						dailyNoteFolder={dailyNotesFolder}
 						onOpenNote={(path) => void openWorkspaceFile(path)}
-						onOpenPeriodNoteAtDate={(kind, date) => void handleOpenPeriodNoteAtDate(kind, date)}
+						onOpenPeriodNoteAtDate={handleOpenPeriodNoteAtDate}
 					/>
 				</>
 			) : null}

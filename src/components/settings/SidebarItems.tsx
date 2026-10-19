@@ -4,7 +4,7 @@ import { OptimisticSortingPlugin } from "@dnd-kit/dom/sortable";
 import { type DragEndEvent, PointerSensor, useDragDropMonitor } from "@dnd-kit/react";
 import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import { DragDropVerticalIcon } from "@hugeicons/core-free-icons";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type {
 	SidebarOrder,
@@ -12,6 +12,7 @@ import type {
 	SidebarVisibilityKey,
 } from "../../lib/settings/model";
 import { SettingsRow, SettingsToggle } from "./SettingsScaffold";
+import { SidebarCalendarOptions } from "./SidebarCalendarOptions";
 
 const SIDEBAR_ITEM_DND_TYPE = "settings-sidebar-item";
 const SIDEBAR_ITEM_DND_GROUP = "settings-sidebar-order";
@@ -45,8 +46,9 @@ function moveSidebarItem(
 	return next;
 }
 
+/** Calendar is pinned below the file tree, so it is not part of the reorderable list. */
 function visibleSidebarOrder(order: SidebarOrder): SidebarOrder {
-	return order.filter((key) => key !== "newCanvas");
+	return order.filter((key) => key !== "newCanvas" && key !== "calendar");
 }
 
 function restoreCombinedSidebarOrder(order: SidebarOrder): SidebarOrder {
@@ -68,6 +70,7 @@ export function SidebarItems({
 	onReorder: (next: SidebarOrder) => void;
 	onVisibilityChange: (key: SidebarVisibilityKey, visible: boolean) => void;
 }) {
+	const { t } = useTranslation("settings.sidebar");
 	const visibleOrder = useMemo(() => visibleSidebarOrder(order), [order]);
 	const dragDropHandlers = useMemo(
 		() => ({
@@ -101,6 +104,16 @@ export function SidebarItems({
 					onVisibilityChange={onVisibilityChange}
 				/>
 			))}
+			<SidebarItemRow
+				itemKey="calendar"
+				label={t("items.calendar.label")}
+				searchId="sidebar-calendar"
+				visible={visibility.calendar}
+				disabled={disabled}
+				onVisibilityChange={onVisibilityChange}
+			>
+				{visibility.calendar ? <SidebarCalendarOptions disabled={disabled} /> : null}
+			</SidebarItemRow>
 		</>
 	);
 }
@@ -136,27 +149,69 @@ function SidebarItem({
 	const reorderLabel = t("reorder", { label });
 
 	return (
+		<SidebarItemRow
+			rowRef={ref}
+			isDragging={isDragging}
+			itemKey={itemKey}
+			label={label}
+			visible={visible}
+			disabled={disabled}
+			onVisibilityChange={onVisibilityChange}
+			handle={
+				<button
+					ref={handleRef}
+					type="button"
+					className="settingsSidebarDragHandle"
+					tabIndex={-1}
+					disabled={disabled}
+					aria-label={reorderLabel}
+					title={reorderLabel}
+				>
+					<HugeiconsIcon icon={DragDropVerticalIcon} size="var(--icon-md)" />
+				</button>
+			}
+		/>
+	);
+}
+
+function SidebarItemRow({
+	rowRef,
+	isDragging = false,
+	itemKey,
+	label,
+	visible,
+	disabled,
+	onVisibilityChange,
+	handle,
+	searchId,
+	children,
+}: {
+	rowRef?: (element: Element | null) => void;
+	isDragging?: boolean;
+	itemKey: SidebarVisibilityKey;
+	label: string;
+	visible: boolean;
+	disabled: boolean;
+	onVisibilityChange: (key: SidebarVisibilityKey, visible: boolean) => void;
+	handle?: ReactNode;
+	searchId?: string;
+	children?: ReactNode;
+}) {
+	const { t } = useTranslation("settings.sidebar");
+
+	return (
 		<div
-			ref={ref}
+			ref={rowRef}
 			className="settingsSidebarItemRow"
 			data-dragging={isDragging ? "true" : undefined}
 		>
 			<SettingsRow
 				className="settingsSidebarItemField"
 				title={label}
+				searchId={searchId}
 				label={
 					<span className="settingsSidebarItemLabel">
-						<button
-							ref={handleRef}
-							type="button"
-							className="settingsSidebarDragHandle"
-							tabIndex={-1}
-							disabled={disabled}
-							aria-label={reorderLabel}
-							title={reorderLabel}
-						>
-							<HugeiconsIcon icon={DragDropVerticalIcon} size="var(--icon-md)" />
-						</button>
+						{handle ?? <span className="settingsSidebarDragSpacer" aria-hidden="true" />}
 						{label}
 					</span>
 				}
@@ -171,6 +226,7 @@ function SidebarItem({
 					/>
 				</div>
 			</SettingsRow>
+			{children}
 		</div>
 	);
 }

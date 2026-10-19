@@ -39,5 +39,24 @@
 		"gitSync": {
 			"label": "Synchronizacja Git"
 		}
+	},
+	"calendarOptions": {
+		"layout": {
+			"label": "Układ",
+			"description": "Cały miesiąc albo oszczędzający miejsce pasek jednego tygodnia.",
+			"month": "Miesiąc",
+			"week": "Tydzień"
+		},
+		"daySummary": {
+			"label": "Podsumowanie dnia",
+			"description": "Pokazuje notatkę dzienną wybranego dnia i pozostałe notatki z tego dnia."
+		},
+		"dayClick": {
+			"label": "Kliknięcie dnia",
+			"description": "Ponowne kliknięcie wybranego dnia zawsze otwiera jego notatkę dzienną.",
+			"open": "Otwórz notatkę dzienną",
+			"select": "Wybierz dzień"
+		},
+		"updateFailed": "Nie udało się zaktualizować ustawień kalendarza."
 	}
 }

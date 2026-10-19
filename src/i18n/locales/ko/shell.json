@@ -215,18 +215,21 @@
 		"today": "오늘",
 		"previousMonth": "이전 달",
 		"nextMonth": "다음 달",
-		"openDailyNote": "데일리 노트 열기",
-		"openOrCreateWeeklyNote": "주간 노트 열기 또는 만들기",
 		"loading": "불러오는 중…",
-		"noteCount_other": "노트 {{count}}개",
-		"noNotes": "이 날짜에 노트가 없습니다",
 		"loadFailed": "노트를 불러오지 못했습니다: {{message}}",
-		"loadFailedShort": "노트를 불러오지 못했습니다",
-		"openPeriodNote": {
-			"day": "일",
-			"week": "주",
-			"month": "월",
-			"quarter": "분기"
+		"previousWeek": "이전 주",
+		"nextWeek": "다음 주",
+		"openMonthlyNote": "월간 노트 열기",
+		"openQuarterlyNote": "분기 노트 열기",
+		"todayDate": "오늘 · {{date}}",
+		"createDailyNote": "데일리 노트 만들기",
+		"noOtherNotes": "이 날짜에 다른 노트가 없습니다",
+		"dailyNotesNotConfigured": "캘린더에서 노트를 열려면 설정에서 데일리 노트 폴더를 지정하세요",
+		"openFailed": "노트를 열지 못했습니다",
+		"menu": {
+			"openDailyNote": "데일리 노트 열기",
+			"createDailyNote": "데일리 노트 만들기",
+			"openWeeklyNote": "주간 노트 열기"
 		}
 	},
 	"tabs": {
@@ -339,5 +342,15 @@
 		"noSpace": "검색하려면 Glyph에서 스페이스를 여세요.",
 		"openFailed": "Glyph에서 열 수 없습니다: {{message}}",
 		"hideFailed": "빠른 검색을 닫을 수 없습니다: {{message}}"
+	},
+	"sidebarCalendar": {
+		"menu": {
+			"showWeekStrip": "주간 스트립 보기",
+			"showMonth": "한 달 전체 보기",
+			"hide": "사이드바에서 캘린더 숨기기"
+		},
+		"updateFailed": "캘린더 설정을 업데이트하지 못했습니다",
+		"collapse": "캘린더 접기",
+		"expand": "캘린더 펼치기"
 	}
 }

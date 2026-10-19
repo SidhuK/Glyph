@@ -215,19 +215,21 @@
 		"today": "Heute",
 		"previousMonth": "Vorheriger Monat",
 		"nextMonth": "Nächster Monat",
-		"openDailyNote": "Tagesnotiz öffnen",
-		"openOrCreateWeeklyNote": "Wochennotiz öffnen oder erstellen",
 		"loading": "Wird geladen…",
-		"noteCount_one": "1 Notiz",
-		"noteCount_other": "{{count}} Notizen",
-		"noNotes": "Keine Notizen an diesem Tag",
 		"loadFailed": "Notizen konnten nicht geladen werden: {{message}}",
-		"loadFailedShort": "Notizen konnten nicht geladen werden",
-		"openPeriodNote": {
-			"day": "Tag",
-			"week": "Woche",
-			"month": "Monat",
-			"quarter": "Quartal"
+		"previousWeek": "Vorherige Woche",
+		"nextWeek": "Nächste Woche",
+		"openMonthlyNote": "Monatsnotiz öffnen",
+		"openQuarterlyNote": "Quartalsnotiz öffnen",
+		"todayDate": "Heute · {{date}}",
+		"createDailyNote": "Tagesnotiz erstellen",
+		"noOtherNotes": "Keine weiteren Notizen an diesem Tag",
+		"dailyNotesNotConfigured": "Lege in den Einstellungen einen Ordner für Tagesnotizen fest, um Notizen aus dem Kalender zu öffnen",
+		"openFailed": "Notiz konnte nicht geöffnet werden",
+		"menu": {
+			"openDailyNote": "Tagesnotiz öffnen",
+			"createDailyNote": "Tagesnotiz erstellen",
+			"openWeeklyNote": "Wochennotiz öffnen"
 		}
 	},
 	"tabs": {
@@ -340,5 +342,15 @@
 		"noSpace": "Öffne einen Bereich in Glyph, um ihn zu durchsuchen.",
 		"openFailed": "Konnte nicht in Glyph geöffnet werden: {{message}}",
 		"hideFailed": "Schnellsuche konnte nicht geschlossen werden: {{message}}"
+	},
+	"sidebarCalendar": {
+		"menu": {
+			"showWeekStrip": "Wochenleiste anzeigen",
+			"showMonth": "Ganzen Monat anzeigen",
+			"hide": "Kalender in der Seitenleiste ausblenden"
+		},
+		"updateFailed": "Kalendereinstellungen konnten nicht aktualisiert werden",
+		"collapse": "Kalender einklappen",
+		"expand": "Kalender ausklappen"
 	}
 }
