@@ -158,6 +158,30 @@
 }
 
 .mermaidCanvasStage {
+	/* Pele draws no background; this colors slice gaps and knocked-out shapes, so match the frame. */
+	--pele-bg: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
+	--pele-fg: var(--text-primary);
+	--pele-muted: var(--text-secondary);
+	--pele-line: color-mix(in srgb, var(--text-primary) 70%, var(--bg-primary));
+	--pele-surface: color-mix(in srgb, var(--text-primary) 6%, var(--bg-primary));
+	--pele-surface-alt: color-mix(in srgb, var(--text-primary) 10%, var(--bg-primary));
+	--pele-border: var(--border-default);
+	--pele-accent: var(--interactive-accent);
+	--pele-critical: var(--status-danger-fg);
+	--pele-error: var(--status-danger-fg);
+	/* Must match the fonts renderer.ts passes to Pele for label measurement. */
+	--pele-font: var(--font-sans);
+	--pele-font-mono: var(--font-mono);
+	--pele-radius: var(--radius-sm);
+	--pele-series-1: var(--glyph-inline-color-blue);
+	--pele-series-2: var(--glyph-inline-color-orange);
+	--pele-series-3: var(--glyph-inline-color-green);
+	--pele-series-4: var(--glyph-inline-color-red);
+	--pele-series-5: var(--glyph-inline-color-purple);
+	--pele-series-6: var(--glyph-inline-color-yellow);
+	--pele-series-7: var(--glyph-inline-color-brown);
+	--pele-series-8: var(--glyph-inline-color-gray);
+
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -237,6 +261,13 @@
 
 .htmlEmbedError {
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+}
+
+.mermaidCanvasError {
+	/* Pele syntax errors mark the column with a caret on its own line. */
+	white-space: pre-wrap;
+	text-align: start;
+	font-family: var(--font-mono);
 }
 
 .htmlEmbedCodeBlockHiddenInPreview {

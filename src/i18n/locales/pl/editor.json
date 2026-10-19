@@ -154,6 +154,9 @@
 		"copyFailed": "Nie udało się skopiować kodu",
 		"editCode": "Edytuj kod",
 		"editMermaid": "Edytuj kod Mermaid",
+		"mermaidRenderFailed": "Nie można wyrenderować diagramu Mermaid.",
+		"mermaidEmpty": "Dodaj kod Mermaid, aby wyświetlić podgląd diagramu.",
+		"mermaidErrorLocation": "Wiersz {{line}}, kolumna {{column}}",
 		"editHtml": "Edytuj kod HTML",
 		"editSvg": "Edytuj kod SVG",
 		"focusedViewer": {
