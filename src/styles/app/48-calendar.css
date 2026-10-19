@@ -365,18 +365,6 @@ button.calendarRow[data-kind="create"] {
 	padding-block: 6px 4px;
 }
 
-/* The floating space switcher overlaps the bottom of the sidebar, so the
-   calendar (not the file tree above it) takes the clearance. */
-.sidebarContentRoot:has(.spaceSwitcher) .sidebarCalendar {
-	padding-bottom: 44px;
-}
-
-.sidebarContentRoot:has(.spaceSwitcher):has(.sidebarCalendar)
-	.sidebarViewContent
-	> .sidebarViewPanel {
-	padding-bottom: 0;
-}
-
 .calendarCollapseButton svg {
 	transition: transform var(--transition-fast);
 }

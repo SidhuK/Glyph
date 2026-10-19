@@ -66,6 +66,8 @@
 	-webkit-app-region: drag;
 }
 
+/* One row from the traffic lights to the right edge: the update pill stays on
+   the left, the space menu button is pushed right and truncates first. */
 .sidebarActions {
 	display: flex;
 	align-items: center;
@@ -73,8 +75,92 @@
 	position: absolute;
 	top: var(--window-control-toggle-top);
 	left: var(--window-control-toggle-offset);
+	right: 10px;
 	transform: translateY(-50%);
 	z-index: 30;
+}
+
+/* Inherits the global button reset, hover and pressed fills from 01-controls.css. */
+.spaceMenuButton {
+	gap: 6px;
+	min-width: 0;
+	height: 24px;
+	margin-left: auto;
+	padding: 0 6px 0 5px;
+	border-radius: var(--radius-8);
+	color: var(--text-primary);
+	transition:
+		background var(--transition-fast),
+		transform var(--transition-fast);
+	-webkit-app-region: no-drag;
+}
+
+.spaceMenuButton[aria-disabled="true"] {
+	background: transparent;
+	cursor: default;
+}
+
+.spaceMenuButton:active:not([aria-disabled="true"]) {
+	transform: scale(0.98);
+}
+
+.spaceMenuButton:focus-visible {
+	outline-offset: 1px;
+}
+
+.spaceMenuButtonIcon,
+.spaceMenuButtonChevron {
+	flex: 0 0 auto;
+}
+
+/* Built-in icons are tinted; emoji keep their own colour. */
+.spaceMenuButtonIcon {
+	color: var(--text-secondary);
+}
+
+.spaceMenuButtonName {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 1.25;
+}
+
+.spaceMenuButtonChevron {
+	margin-left: -1px;
+	color: var(--text-tertiary);
+	transition: opacity var(--transition-fast);
+}
+
+.spaceMenuButton[aria-disabled="true"] .spaceMenuButtonChevron {
+	opacity: 0.4;
+}
+
+.spaceMenuButton[aria-disabled="true"] .spaceMenuButtonIcon {
+	animation: spaceMenuButtonPulse 650ms ease-in-out infinite alternate;
+}
+
+@keyframes spaceMenuButtonPulse {
+	from {
+		opacity: 0.45;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.spaceMenuButton,
+	.spaceMenuButtonChevron {
+		transition: none;
+	}
+
+	.spaceMenuButton:active:not([aria-disabled="true"]) {
+		transform: none;
+	}
+
+	.spaceMenuButton[aria-disabled="true"] .spaceMenuButtonIcon {
+		animation: none;
+	}
 }
 
 .windowChromeUpdateButton {
@@ -180,10 +266,6 @@
 	flex-direction: column;
 }
 
-.sidebarContentRoot:has(.spaceSwitcher) .sidebarViewContent > .sidebarViewPanel {
-	padding-bottom: 44px;
-}
-
 .sidebarSectionContent * {
 	-webkit-app-region: no-drag;
 }
@@ -191,132 +273,6 @@
 .sidebarSectionContent button:focus-visible {
 	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
-}
-
-.sidebarBottomLayer {
-	display: flex;
-	flex: 0 0 auto;
-	flex-direction: column;
-	min-width: 0;
-	position: relative;
-}
-
-.spaceSwitcher {
-	display: flex;
-	align-items: center;
-	width: max-content;
-	max-width: calc(100% - 16px);
-	min-width: 0;
-	margin: 0;
-	padding: 3px 5px;
-	position: absolute;
-	left: 50%;
-	bottom: calc(100% + 10px);
-	transform: translateX(-50%);
-	z-index: 10;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-secondary) 84%, transparent);
-	backdrop-filter: blur(16px) saturate(135%);
-	-webkit-backdrop-filter: blur(16px) saturate(135%);
-	-webkit-app-region: no-drag;
-}
-
-:root[data-translucent-sidebar="false"] .spaceSwitcher {
-	background: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
-}
-
-.spaceSwitcherList {
-	display: flex;
-	align-items: center;
-	justify-content: safe center;
-	gap: 3px;
-	min-width: 0;
-	flex: 0 1 auto;
-	overflow-x: auto;
-	scrollbar-width: none;
-}
-
-.spaceSwitcherList::-webkit-scrollbar {
-	display: none;
-}
-
-.spaceSwitcherButton {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
-	padding: 0;
-	border: 0;
-	border-radius: var(--radius-8);
-	background: transparent;
-	color: var(--text-tertiary);
-	flex: 0 0 auto;
-	cursor: pointer;
-	transition:
-		color 120ms ease,
-		transform 120ms ease;
-}
-
-.spaceSwitcherButton:hover:not(:disabled),
-.spaceSwitcherButton:focus-visible {
-	background: transparent;
-	color: var(--text-primary);
-}
-
-.spaceSwitcherButton:focus-visible {
-	outline: none;
-	transform: scale(1.08);
-}
-
-.spaceSwitcherButton[data-switching="true"] :is(svg, .appearanceEmoji) {
-	animation: spaceSwitcherPulse 650ms ease-in-out infinite alternate;
-}
-
-/* Emoji have no stroke weight, so inactive spaces are dimmed instead. */
-.spaceSwitcherButton:not([data-active="true"]) .appearanceEmoji {
-	opacity: 0.55;
-	filter: grayscale(0.5);
-	transition:
-		opacity 120ms ease,
-		filter 120ms ease;
-}
-
-.spaceSwitcherButton:hover:not(:disabled) .appearanceEmoji {
-	opacity: 1;
-	filter: none;
-}
-
-.spaceSwitcherButton:active:not(:disabled) {
-	background: transparent;
-	transform: scale(0.92);
-}
-
-.spaceSwitcherButton:disabled {
-	cursor: default;
-}
-
-.spaceSwitcherButton:disabled:not([data-active="true"]) {
-	opacity: 0.48;
-}
-
-@keyframes spaceSwitcherPulse {
-	from {
-		opacity: 0.45;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.spaceSwitcherButton {
-		transition: none;
-	}
-
-	.spaceSwitcherButton[data-switching="true"] :is(svg, .appearanceEmoji) {
-		animation: none;
-	}
 }
 
 .sidebarViewTabs {

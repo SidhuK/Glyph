@@ -285,12 +285,14 @@
 		"saveError": "Não foi possível salvar a tela: {{message}}"
 	},
 	"spaceSwitcher": {
-		"label": "Espaços",
-		"switchTo": "Mudar para {{name}}",
+		"label": "Espaço atual: {{name}}",
+		"openSpace": "Abrir espaço…",
+		"createSpace": "Criar espaço…",
 		"changeIcon": "Alterar ícone…",
 		"closeSpace": "Fechar espaço",
 		"chooseIcon": "Escolher ícone do espaço",
-		"menuFailed": "Não foi possível abrir o menu de espaços"
+		"menuFailed": "Não foi possível abrir o menu de espaços",
+		"actionFailed": "Não foi possível concluir a ação do espaço"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Buscar ícones",

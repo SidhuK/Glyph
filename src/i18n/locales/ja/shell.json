@@ -285,12 +285,14 @@
 		"saveError": "キャンバスを保存できませんでした: {{message}}"
 	},
 	"spaceSwitcher": {
-		"label": "スペース",
-		"switchTo": "{{name}} に切り替える",
+		"label": "現在のスペース: {{name}}",
+		"openSpace": "スペースを開く…",
+		"createSpace": "スペースを作成…",
 		"changeIcon": "アイコンを変更…",
 		"closeSpace": "スペースを閉じる",
 		"chooseIcon": "スペースのアイコンを選択",
-		"menuFailed": "スペースメニューを開けませんでした"
+		"menuFailed": "スペースメニューを開けませんでした",
+		"actionFailed": "スペースの操作を完了できませんでした"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "アイコンを検索",

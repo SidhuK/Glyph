@@ -329,12 +329,14 @@
 		"saveError": "Nie można zapisać płótna: {{message}}"
 	},
 	"spaceSwitcher": {
-		"label": "Przestrzenie",
-		"switchTo": "Przełącz na {{name}}",
+		"label": "Bieżąca przestrzeń: {{name}}",
+		"openSpace": "Otwórz przestrzeń…",
+		"createSpace": "Utwórz przestrzeń…",
 		"changeIcon": "Zmień ikonę…",
 		"closeSpace": "Zamknij przestrzeń",
 		"chooseIcon": "Wybierz ikonę przestrzeni",
-		"menuFailed": "Nie udało się otworzyć menu przestrzeni"
+		"menuFailed": "Nie udało się otworzyć menu przestrzeni",
+		"actionFailed": "Nie udało się wykonać działania na przestrzeni"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Szukaj ikon",

@@ -359,12 +359,14 @@
 		"saveError": "Could not save canvas: {{message}}"
 	},
 	"spaceSwitcher": {
-		"label": "Spaces",
-		"switchTo": "Switch to {{name}}",
-		"changeIcon": "Change icon…",
-		"closeSpace": "Close space",
+		"label": "Current space: {{name}}",
+		"openSpace": "Open Space…",
+		"createSpace": "Create Space…",
+		"changeIcon": "Change Icon…",
+		"closeSpace": "Close Space",
 		"chooseIcon": "Choose a space icon",
-		"menuFailed": "Could not open the space menu"
+		"menuFailed": "Could not open the space menu",
+		"actionFailed": "Could not complete the space action"
 	},
 	"tasks": {
 		"searchPlaceholder": "Filter tasks",

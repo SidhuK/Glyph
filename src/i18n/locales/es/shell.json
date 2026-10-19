@@ -285,12 +285,14 @@
 		"saveError": "No se pudo guardar el lienzo: {{message}}"
 	},
 	"spaceSwitcher": {
-		"label": "Espacios",
-		"switchTo": "Cambiar a {{name}}",
+		"label": "Espacio actual: {{name}}",
+		"openSpace": "Abrir espacio…",
+		"createSpace": "Crear espacio…",
 		"changeIcon": "Cambiar icono…",
 		"closeSpace": "Cerrar espacio",
 		"chooseIcon": "Elegir icono del espacio",
-		"menuFailed": "No se pudo abrir el menú de espacios"
+		"menuFailed": "No se pudo abrir el menú de espacios",
+		"actionFailed": "No se pudo completar la acción del espacio"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Buscar iconos",

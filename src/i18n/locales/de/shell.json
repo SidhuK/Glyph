@@ -285,12 +285,14 @@
 		"saveError": "Zeichenfläche konnte nicht gespeichert werden: {{message}}"
 	},
 	"spaceSwitcher": {
-		"label": "Spaces",
-		"switchTo": "Zu {{name}} wechseln",
+		"label": "Aktueller Space: {{name}}",
+		"openSpace": "Space öffnen…",
+		"createSpace": "Space erstellen…",
 		"changeIcon": "Symbol ändern…",
 		"closeSpace": "Space schließen",
 		"chooseIcon": "Space-Symbol auswählen",
-		"menuFailed": "Das Space-Menü konnte nicht geöffnet werden"
+		"menuFailed": "Das Space-Menü konnte nicht geöffnet werden",
+		"actionFailed": "Die Space-Aktion konnte nicht abgeschlossen werden"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Symbole suchen",
