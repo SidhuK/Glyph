@@ -37,8 +37,9 @@ export function SpaceMenuButton({
 			toast.error(t("spaceSwitcher.actionFailed"), { description: extractErrorMessage(error) });
 		},
 	});
-	const activeSpace = spaces.find((space) => space.path === spacePath);
-	if (!activeSpace) return null;
+	const activeSpace = spaces.find((space) => space.path === spacePath) ?? null;
+	if (!activeSpace && spaces.length === 0) return null;
+	const buttonLabel = activeSpace?.name ?? t("workspace.openSpace");
 	const busy = spaceAction.isPending || switchingSpacePath !== null;
 
 	const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
@@ -54,10 +55,14 @@ export function SpaceMenuButton({
 			{ type: "separator" },
 			{ label: t("spaceSwitcher.openSpace"), action: () => spaceAction.mutate(onOpenSpace) },
 			{ label: t("spaceSwitcher.createSpace"), action: () => spaceAction.mutate(onCreateSpace) },
-			{ type: "separator" },
-			{ label: t("spaceSwitcher.changeIcon"), action: () => setIconPickerOpen(true) },
-			{ label: t("spaceSwitcher.closeSpace"), action: () => spaceAction.mutate(onCloseSpace) },
 		];
+		if (activeSpace) {
+			items.push(
+				{ type: "separator" },
+				{ label: t("spaceSwitcher.changeIcon"), action: () => setIconPickerOpen(true) },
+				{ label: t("spaceSwitcher.closeSpace"), action: () => spaceAction.mutate(onCloseSpace) },
+			);
+		}
 		void showNativePopupMenu(event, items).catch((error: unknown) => {
 			toast.error(t("spaceSwitcher.menuFailed"), { description: extractErrorMessage(error) });
 		});
@@ -70,16 +75,18 @@ export function SpaceMenuButton({
 				className="spaceMenuButton"
 				aria-disabled={busy}
 				aria-haspopup="menu"
-				aria-label={t("spaceSwitcher.label", { name: activeSpace.name })}
-				title={activeSpace.path}
+				aria-label={
+					activeSpace ? t("spaceSwitcher.label", { name: activeSpace.name }) : buttonLabel
+				}
+				title={activeSpace?.path}
 				onClick={openMenu}
 			>
 				<AppearanceIcon
-					iconName={activeSpace.iconName}
+					iconName={activeSpace?.iconName ?? "folder"}
 					size="var(--icon-sm)"
 					className="spaceMenuButtonIcon"
 				/>
-				<span className="spaceMenuButtonName">{activeSpace.name}</span>
+				<span className="spaceMenuButtonName">{buttonLabel}</span>
 				<ChevronsUpDown
 					size="var(--icon-xs)"
 					strokeWidth={2}
@@ -88,16 +95,18 @@ export function SpaceMenuButton({
 				/>
 			</button>
 
-			<AppearancePicker
-				title={t("spaceSwitcher.chooseIcon")}
-				open={iconPickerOpen}
-				onOpenChange={setIconPickerOpen}
-				iconValue={activeSpace.iconOverride}
-				defaultIconName={defaultSpaceIconName(activeSpace.path)}
-				showDefaultIcon
-				allowEmoji
-				onIconChange={(iconName) => void setSpaceIcon(activeSpace.path, iconName)}
-			/>
+			{activeSpace ? (
+				<AppearancePicker
+					title={t("spaceSwitcher.chooseIcon")}
+					open={iconPickerOpen}
+					onOpenChange={setIconPickerOpen}
+					iconValue={activeSpace.iconOverride}
+					defaultIconName={defaultSpaceIconName(activeSpace.path)}
+					showDefaultIcon
+					allowEmoji
+					onIconChange={(iconName) => void setSpaceIcon(activeSpace.path, iconName)}
+				/>
+			) : null}
 		</>
 	);
 }
