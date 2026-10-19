@@ -91,16 +91,6 @@ export function AIPanel(props: AIPanelProps) {
 	}
 
 	const composerInputRef = useRef<HTMLDivElement | null>(null);
-	const scheduleResize = useCallback(() => {
-		window.requestAnimationFrame(() => {
-			const el = composerInputRef.current;
-			if (!el) return;
-			el.style.height = "0px";
-			const next = Math.max(40, Math.min(el.scrollHeight, 180));
-			el.style.height = `${next.toString()}px`;
-			el.style.overflowY = el.scrollHeight > 180 ? "auto" : "hidden";
-		});
-	}, []);
 
 	useEffect(() => {
 		const attachSelection = (selection: AiSelectionContext) => {
@@ -194,7 +184,6 @@ export function AIPanel(props: AIPanelProps) {
 		toolEvents.setResponsePhase("submitted");
 		toolEvents.resetToolState();
 		setInput("");
-		scheduleResize();
 		let built: Awaited<ReturnType<typeof context.ensurePayload>>;
 		try {
 			built = await context.ensurePayload(selectionContext ?? undefined);
@@ -202,7 +191,6 @@ export function AIPanel(props: AIPanelProps) {
 			toolEvents.setResponsePhase("idle");
 			actions.setAssistantActionError(extractErrorMessage(error));
 			setInput(text);
-			scheduleResize();
 			return;
 		}
 		void chat.sendMessage(
@@ -227,7 +215,6 @@ export function AIPanel(props: AIPanelProps) {
 		input,
 		profiles.activeProfileId,
 		activeProvider,
-		scheduleResize,
 		selectionContext,
 		toolEvents,
 	]);
@@ -309,7 +296,6 @@ export function AIPanel(props: AIPanelProps) {
 		toolEvents.resetToolState();
 		toolEvents.setResponsePhase("idle");
 		setInput("");
-		scheduleResize();
 		actions.setAssistantActionError("");
 		chat.setThreadId(null);
 		chat.setMessages([]);
@@ -317,7 +303,7 @@ export function AIPanel(props: AIPanelProps) {
 		setSelectionMessageBaseline(0);
 		setHydratedJobId(null);
 		setActiveAiHistoryJobId(null);
-	}, [actions, chat, scheduleResize, toolEvents]);
+	}, [actions, chat, toolEvents]);
 
 	const latestSelectionAssistantText = useMemo(() => {
 		for (let index = chat.messages.length - 1; index >= selectionMessageBaseline; index -= 1) {
@@ -555,7 +541,6 @@ export function AIPanel(props: AIPanelProps) {
 					onSend={() => void handleSend()}
 					onStop={() => chat.stop()}
 					composerInputRef={composerInputRef}
-					scheduleComposerInputResize={scheduleResize}
 					profiles={profiles}
 					context={context}
 					activeFilePath={activeMarkdownTabPath}

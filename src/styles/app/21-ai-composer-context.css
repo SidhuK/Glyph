@@ -119,33 +119,30 @@
 }
 
 .aiComposerInputShell {
-	padding: 0;
-	background: transparent;
+	display: flex;
+	flex-direction: column;
+	background: var(--bg-tertiary);
+	border: 1px solid color-mix(in srgb, var(--border-default) 35%, transparent);
+	transition: border-color var(--transition-fast);
+}
+
+.aiComposerInputShell:focus-within {
+	border-color: color-mix(in srgb, var(--border-default) 60%, transparent);
 }
 
 .aiComposerInput {
-	width: 100%;
-	min-height: 88px;
-	max-height: 180px;
-	overflow-x: visible;
+	min-height: 48px;
+	max-height: 140px;
 	overflow-y: auto;
-	padding: 10px 12px 44px;
+	padding: 10px 12px;
 	font-size: var(--text-sm);
 	color: var(--text-primary);
 	line-height: var(--leading-relaxed);
-	background: var(--bg-tertiary);
-	border-radius: var(--radius-lg);
-	border: 1px solid color-mix(in srgb, var(--border-default) 35%, transparent);
-	transition: border-color var(--transition-fast);
 	white-space: pre-wrap;
 	word-break: normal;
 	overflow-wrap: anywhere;
 	caret-color: var(--text-primary);
 	outline: none;
-}
-
-.aiComposerInput:focus {
-	border-color: color-mix(in srgb, var(--border-default) 60%, transparent);
 }
 
 .aiComposerInput:empty::before {
@@ -300,11 +297,7 @@
 }
 
 .aiComposerBar {
-	position: absolute;
-	left: 8px;
-	right: 8px;
-	bottom: 8px;
-	z-index: 2;
+	padding: 0 8px 8px;
 	display: flex;
 	align-items: center;
 	gap: 8px;
