@@ -155,6 +155,12 @@
 				"Git 同期"
 			]
 		},
+		"sidebar-calendar": {
+			"title": "サイドバーのカレンダー",
+			"section": "サイドバー",
+			"description": "カレンダーのレイアウト、日の概要、日をクリックしたときの動作を選びます。",
+			"keywords": ["カレンダー", "週", "月", "デイリーノート", "日の概要", "サイドバー"]
+		},
 		"appearance-theme-mode": {
 			"title": "テーマを選択",
 			"section": "テーマ",

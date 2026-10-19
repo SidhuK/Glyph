@@ -223,6 +223,12 @@
 				"git sync"
 			]
 		},
+		"sidebar-calendar": {
+			"title": "Sidebar calendar",
+			"section": "Sidebar",
+			"description": "Choose the calendar layout, day summary and what clicking a day does.",
+			"keywords": ["calendar", "week", "month", "daily note", "day summary", "sidebar"]
+		},
 		"typography-interface-font": {
 			"title": "Interface font",
 			"section": "Typography",

@@ -36,11 +36,14 @@ import {
 	normalizeFolioNotesWidth,
 } from "../lib/settings/definitions";
 import {
+	DEFAULT_SIDEBAR_CALENDAR,
 	DEFAULT_SIDEBAR_ORDER,
 	DEFAULT_SIDEBAR_VISIBILITY,
 	type FileTreeSortMode,
+	type SidebarCalendarSettings,
 	type SidebarOrder,
 	type SidebarVisibility,
+	normalizeSidebarCalendar,
 	normalizeSidebarOrder,
 	normalizeSidebarVisibility,
 } from "../lib/settings/model";
@@ -66,6 +69,9 @@ interface UILayoutContextValue {
 	periodNotesEnabled: PeriodNotesEnabled;
 	sidebarVisibility: SidebarVisibility;
 	sidebarOrder: SidebarOrder;
+	sidebarCalendar: SidebarCalendarSettings;
+	/** Merges `patch` into the current value and persists it; rejects when the write fails. */
+	setSidebarCalendar: (patch: Partial<SidebarCalendarSettings>) => Promise<void>;
 	/**
 	 * The space whose folder and template settings
 	 * period note templates currently describe. Hydration is async, so after a
@@ -117,6 +123,7 @@ type UIState = {
 	periodNotesEnabled: PeriodNotesEnabled;
 	sidebarVisibility: SidebarVisibility;
 	sidebarOrder: SidebarOrder;
+	sidebarCalendar: SidebarCalendarSettings;
 	settingsSpacePath: string | null;
 	showToc: boolean;
 	zenMode: boolean;
@@ -164,6 +171,7 @@ type UIAction =
 	| { type: "setDateDisplayFormat"; value: DateDisplayFormat }
 	| { type: "setSidebarVisibility"; value: SidebarVisibility }
 	| { type: "setSidebarOrder"; value: SidebarOrder }
+	| { type: "setSidebarCalendar"; value: SidebarCalendarSettings }
 	| { type: "openSettings"; tab?: SettingsTab }
 	| { type: "closeSettings" }
 	| { type: "setSettingsTab"; value: SettingsTab }
@@ -181,6 +189,7 @@ type UIAction =
 			periodNotesEnabled: PeriodNotesEnabled;
 			sidebarVisibility: SidebarVisibility;
 			sidebarOrder: SidebarOrder;
+			sidebarCalendar: SidebarCalendarSettings;
 			showToc: boolean;
 			zenMode: boolean;
 			folioMode: boolean;
@@ -213,6 +222,7 @@ const initialUIState: UIState = {
 	periodNotesEnabled: DEFAULT_PERIOD_NOTES_ENABLED,
 	sidebarVisibility: DEFAULT_SIDEBAR_VISIBILITY,
 	sidebarOrder: DEFAULT_SIDEBAR_ORDER,
+	sidebarCalendar: DEFAULT_SIDEBAR_CALENDAR,
 	settingsSpacePath: null,
 	showToc: true,
 	zenMode: false,
@@ -305,6 +315,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, sidebarVisibility: action.value };
 		case "setSidebarOrder":
 			return { ...state, sidebarOrder: action.value };
+		case "setSidebarCalendar":
+			return { ...state, sidebarCalendar: action.value };
 		case "openSettings":
 			return {
 				...state,
@@ -353,6 +365,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				periodNotesEnabled: action.periodNotesEnabled,
 				sidebarVisibility: action.sidebarVisibility,
 				sidebarOrder: action.sidebarOrder,
+				sidebarCalendar: action.sidebarCalendar,
 				showToc: action.showToc,
 				zenMode: action.zenMode,
 				folioMode: action.folioMode,
@@ -373,6 +386,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const sidebarVisibilityRevisionRef = useRef(0);
 	const sidebarOrderRef = useRef(initialUIState.sidebarOrder);
 	const sidebarOrderRevisionRef = useRef(0);
+	const sidebarCalendarRef = useRef(initialUIState.sidebarCalendar);
+	const sidebarCalendarRevisionRef = useRef(0);
 	const archiveEnabledRef = useRef(initialUIState.archiveEnabled);
 	const archiveRevisionRef = useRef(0);
 	const zenModeRef = useRef(initialUIState.zenMode);
@@ -395,6 +410,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		periodNotesEnabled,
 		sidebarVisibility,
 		sidebarOrder,
+		sidebarCalendar,
 		settingsSpacePath,
 		showToc,
 		zenMode,
@@ -438,6 +454,12 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				type: "setSidebarOrder",
 				value: nextSidebarOrder,
 			});
+		}
+		if (payload.ui?.sidebarCalendar) {
+			const nextSidebarCalendar = normalizeSidebarCalendar(payload.ui.sidebarCalendar);
+			sidebarCalendarRevisionRef.current += 1;
+			sidebarCalendarRef.current = nextSidebarCalendar;
+			dispatch({ type: "setSidebarCalendar", value: nextSidebarCalendar });
 		}
 		const nextMode = payload.ui?.aiAssistantMode;
 		if (nextMode === "chat" || nextMode === "create") {
@@ -556,6 +578,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				const requestedSpacePath = spacePathRef.current;
 				const sidebarVisibilityRevision = sidebarVisibilityRevisionRef.current;
 				const sidebarOrderRevision = sidebarOrderRevisionRef.current;
+				const sidebarCalendarRevision = sidebarCalendarRevisionRef.current;
 				const zenModeRevision = zenModeRevisionRef.current;
 				const folioSortModeRevision = folioSortModeRevisionRef.current;
 				const folioNotesWidthRevision = folioNotesWidthRevisionRef.current;
@@ -575,6 +598,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					sidebarOrderRevision === sidebarOrderRevisionRef.current
 						? s.ui.sidebarOrder
 						: sidebarOrderRef.current;
+				const nextSidebarCalendar =
+					sidebarCalendarRevision === sidebarCalendarRevisionRef.current
+						? s.ui.sidebarCalendar
+						: sidebarCalendarRef.current;
 				const nextFolioSortMode =
 					folioSortModeRevision === folioSortModeRevisionRef.current
 						? s.ui.folioSortMode
@@ -585,6 +612,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 						: folioNotesWidthRef.current;
 				sidebarVisibilityRef.current = nextSidebarVisibility;
 				sidebarOrderRef.current = nextSidebarOrder;
+				sidebarCalendarRef.current = nextSidebarCalendar;
 				folioSortModeRef.current = nextFolioSortMode;
 				folioNotesWidthRef.current = nextFolioNotesWidth;
 				dispatch({
@@ -603,6 +631,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					periodNotesEnabled: periodNotesEnabledFromSettings(s.dailyNotes),
 					sidebarVisibility: nextSidebarVisibility,
 					sidebarOrder: nextSidebarOrder,
+					sidebarCalendar: nextSidebarCalendar,
 					showToc: s.ui.showToc,
 					zenMode: nextZenMode,
 					folioMode: s.ui.folioMode,
@@ -681,6 +710,23 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const setFolioMode = useCallback((enabled: boolean) => {
 		dispatch({ type: "setFolioMode", value: enabled });
 		void DURABLE_SETTINGS.folioMode.write(enabled);
+	}, []);
+
+	const setSidebarCalendar = useCallback(async (patch: Partial<SidebarCalendarSettings>) => {
+		const previous = sidebarCalendarRef.current;
+		const next = normalizeSidebarCalendar({ ...previous, ...patch });
+		sidebarCalendarRevisionRef.current += 1;
+		sidebarCalendarRef.current = next;
+		dispatch({ type: "setSidebarCalendar", value: next });
+		try {
+			await DURABLE_SETTINGS.sidebarCalendar.write(next);
+		} catch (error) {
+			if (sidebarCalendarRef.current === next) {
+				sidebarCalendarRef.current = previous;
+				dispatch({ type: "setSidebarCalendar", value: previous });
+			}
+			throw error;
+		}
 	}, []);
 
 	const setFolioScope = useCallback(
@@ -770,6 +816,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			periodNotesEnabled,
 			sidebarVisibility,
 			sidebarOrder,
+			sidebarCalendar,
+			setSidebarCalendar,
 			settingsSpacePath,
 			showToc,
 			setShowToc,
@@ -808,6 +856,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			periodNotesEnabled,
 			sidebarVisibility,
 			sidebarOrder,
+			sidebarCalendar,
+			setSidebarCalendar,
 			settingsSpacePath,
 			showToc,
 			setShowToc,

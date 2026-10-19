@@ -464,6 +464,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 	const showToc = DURABLE_SETTINGS.showToc.load(entries);
 	const sidebarVisibility = DURABLE_SETTINGS.sidebarVisibility.load(entries);
 	const sidebarOrder = DURABLE_SETTINGS.sidebarOrder.load(entries);
+	const sidebarCalendar = DURABLE_SETTINGS.sidebarCalendar.load(entries);
 	const showFileTreeFolderCounts = DURABLE_SETTINGS.showFileTreeFolderCounts.load(entries);
 	const fileTreeSortMode = DURABLE_SETTINGS.fileTreeSortMode.load(entries);
 	const folioMode = DURABLE_SETTINGS.folioMode.load(entries);
@@ -621,6 +622,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			showToc,
 			sidebarVisibility,
 			sidebarOrder,
+			sidebarCalendar,
 			showFileTreeFolderCounts,
 			fileTreeSortMode,
 			sidebarFolderTabs,

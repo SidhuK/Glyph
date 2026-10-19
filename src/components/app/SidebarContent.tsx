@@ -3,7 +3,6 @@ import {
 	AiBrain04Icon as AgentIcon,
 	Archive03Icon as ArchiveIcon,
 	ArrowShrinkIcon,
-	Calendar03Icon as CalendarIcon,
 	CalendarAdd01Icon as PeriodNoteIcon,
 	CheckListIcon as TasksIcon,
 	ChartRelationshipIcon as ConnectionsIcon,
@@ -66,6 +65,8 @@ import { TagsPane } from "../TagsPane";
 import { AppearanceIcon } from "../AppearanceIcon";
 import { FileTreePane } from "../filetree";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
+import { SidebarCalendar } from "./calendar/SidebarCalendar";
+import type { OpenPeriodNoteAtDate } from "./calendar/useCalendarView";
 
 export interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -112,9 +113,9 @@ export interface SidebarContentProps {
 		| "databases"
 		| "tasks"
 		| null;
-	onOpenCalendar: () => void;
 	onOpenSearch: () => void;
 	onOpenPeriodNote: (kind: PeriodKind) => void;
+	onOpenPeriodNoteAtDate: OpenPeriodNoteAtDate;
 	onOpenQuickNote: () => void;
 	onCreateFromTemplate: () => void;
 	onGitSyncNow: () => void;
@@ -248,9 +249,9 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenAgent,
 	spacePath,
 	activeTopSection,
-	onOpenCalendar,
 	onOpenSearch,
 	onOpenPeriodNote,
+	onOpenPeriodNoteAtDate,
 	onOpenQuickNote,
 	onCreateFromTemplate,
 	onGitSyncNow,
@@ -686,15 +687,6 @@ export const SidebarContent = memo(function SidebarContent({
 									<span className="sidebarQuickActionLabel">{t("sidebar.connections")}</span>
 								</button>
 							) : null}
-							{sidebarVisibility.calendar ? (
-								<SidebarActionButton
-									key="calendar"
-									data-sidebar-key="calendar"
-									label={t("sidebar.calendar")}
-									icon={CalendarIcon}
-									onClick={onOpenCalendar}
-								/>
-							) : null}
 							{sidebarVisibility.search ? (
 								<button
 									key="search"
@@ -1066,6 +1058,12 @@ export const SidebarContent = memo(function SidebarContent({
 							</section>
 						</Activity>
 					</div>
+					{sidebarVisibility.calendar ? (
+						<SidebarCalendar
+							onOpenPeriodNoteAtDate={onOpenPeriodNoteAtDate}
+							onOpenFile={onOpenFile}
+						/>
+					) : null}
 				</div>
 			</div>
 		</>

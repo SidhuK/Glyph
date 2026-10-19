@@ -39,5 +39,24 @@
 		"gitSync": {
 			"label": "Git-Synchronisierung"
 		}
+	},
+	"calendarOptions": {
+		"layout": {
+			"label": "Layout",
+			"description": "Ganzer Monat oder eine platzsparende Wochenleiste.",
+			"month": "Monat",
+			"week": "Woche"
+		},
+		"daySummary": {
+			"label": "Tagesübersicht",
+			"description": "Zeigt die Tagesnotiz des ausgewählten Tages und die anderen Notizen dieses Tages."
+		},
+		"dayClick": {
+			"label": "Klick auf einen Tag",
+			"description": "Ein erneuter Klick auf den ausgewählten Tag öffnet immer seine Tagesnotiz.",
+			"open": "Tagesnotiz öffnen",
+			"select": "Tag auswählen"
+		},
+		"updateFailed": "Kalendereinstellungen konnten nicht aktualisiert werden."
 	}
 }

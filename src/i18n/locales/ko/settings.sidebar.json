@@ -39,5 +39,24 @@
 		"gitSync": {
 			"label": "Git 동기화"
 		}
+	},
+	"calendarOptions": {
+		"layout": {
+			"label": "레이아웃",
+			"description": "한 달 전체 또는 공간을 아끼는 한 주 스트립을 표시합니다.",
+			"month": "월",
+			"week": "주"
+		},
+		"daySummary": {
+			"label": "하루 요약",
+			"description": "선택한 날짜의 데일리 노트와 그날의 다른 노트를 표시합니다."
+		},
+		"dayClick": {
+			"label": "날짜를 클릭하면",
+			"description": "선택한 날짜를 다시 클릭하면 항상 해당 데일리 노트가 열립니다.",
+			"open": "데일리 노트 열기",
+			"select": "날짜 선택"
+		},
+		"updateFailed": "캘린더 설정을 업데이트하지 못했습니다."
 	}
 }

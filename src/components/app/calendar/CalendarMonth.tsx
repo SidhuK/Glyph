@@ -1,19 +1,29 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { addMonths, format, isSameDay, isSameMonth, parseISO, startOfMonth } from "date-fns";
-import { useCallback, useMemo, useState } from "react";
+import { ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { format, isSameDay, isSameMonth, isSameWeek, parseISO } from "date-fns";
+import { type MouseEvent, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { activityTone } from "../../../lib/calendarActivity";
+import type { SidebarCalendarLayout } from "../../../lib/settings/model";
 import type { CalendarDayActivity } from "../../../lib/tauri";
 import { CalendarDayCell } from "./CalendarDayCell";
 import {
-	buildMonthWeeks,
+	buildVisibleWeeks,
 	dateForNavigationKey,
+	isDateInView,
+	stepVisibleRange,
 	weekStartsOnForLocale,
 	weekdayLabels,
 } from "./monthGrid";
 
+/** Makes the month title a button; without one the title is plain text. */
+export interface CalendarTitleAction {
+	label: string;
+	onClick: (event: MouseEvent<HTMLButtonElement>) => void;
+}
+
 interface CalendarMonthProps {
+	/** Any date in the visible month, or in the visible week for the week layout. */
 	month: Date;
 	selected: Date;
 	today: Date;
@@ -22,6 +32,11 @@ interface CalendarMonthProps {
 	onMonthChange: (month: Date) => void;
 	onSelect: (date: Date) => void;
 	onGoToToday: () => void;
+	layout: SidebarCalendarLayout;
+	titleAction: CalendarTitleAction | null;
+	onDayContextMenu: (event: MouseEvent<HTMLButtonElement>, date: Date) => void;
+	/** Sidebar only: folds the calendar down to its month row. */
+	collapse?: { collapsed: boolean; onToggle: () => void };
 }
 
 export function CalendarMonth({
@@ -33,12 +48,22 @@ export function CalendarMonth({
 	onMonthChange,
 	onSelect,
 	onGoToToday,
+	layout,
+	titleAction,
+	onDayContextMenu,
+	collapse,
 }: CalendarMonthProps) {
 	const { t } = useTranslation("shell");
 	const [focusedKey, setFocusedKey] = useState<string | null>(null);
 	const weekStartsOn = weekStartsOnForLocale(locale);
+	const isWeek = layout === "week";
+	const collapsed = collapse?.collapsed === true;
+	const collapseLabel = collapsed ? t("sidebarCalendar.expand") : t("sidebarCalendar.collapse");
 
-	const weeks = useMemo(() => buildMonthWeeks(month, weekStartsOn), [month, weekStartsOn]);
+	const weeks = useMemo(
+		() => buildVisibleWeeks(month, weekStartsOn, layout),
+		[layout, month, weekStartsOn],
+	);
 	const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn]);
 
 	const monthYearLabel = useMemo(
@@ -53,12 +78,22 @@ export function CalendarMonth({
 		() => new Intl.DateTimeFormat(locale, { dateStyle: "full" }),
 		[locale],
 	);
+	const title = (
+		<>
+			{new Intl.DateTimeFormat(locale, { month: "long" }).format(month)}{" "}
+			<span className="calendarMonthTitleYear">
+				{new Intl.DateTimeFormat(locale, { year: "numeric" }).format(month)}
+			</span>
+		</>
+	);
 
 	const tabStopKey = useMemo(() => {
-		if (focusedKey) return focusedKey;
-		if (isSameMonth(selected, month)) return format(selected, "yyyy-MM-dd");
-		return format(startOfMonth(month), "yyyy-MM-dd");
-	}, [focusedKey, month, selected]);
+		const inView = (date: Date) => isDateInView(date, month, weekStartsOn, layout);
+		if (focusedKey && inView(parseISO(focusedKey))) return focusedKey;
+		if (inView(selected)) return format(selected, "yyyy-MM-dd");
+		const firstInView = weeks.flat().find(inView) ?? weeks[0][0];
+		return format(firstInView, "yyyy-MM-dd");
+	}, [focusedKey, layout, month, selected, weekStartsOn, weeks]);
 
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLTableElement>) => {
@@ -69,97 +104,132 @@ export function CalendarMonth({
 			if (!next) return;
 			event.preventDefault();
 			setFocusedKey(format(next, "yyyy-MM-dd"));
-			if (!isSameMonth(next, month)) onMonthChange(next);
+			if (!isDateInView(next, month, weekStartsOn, layout)) onMonthChange(next);
 		},
-		[month, onMonthChange, weekStartsOn],
+		[layout, month, onMonthChange, weekStartsOn],
 	);
 
 	const goToMonth = useCallback(
 		(delta: number) => {
 			setFocusedKey(null);
-			onMonthChange(addMonths(month, delta));
+			onMonthChange(stepVisibleRange(month, delta, layout));
 		},
-		[month, onMonthChange],
+		[layout, month, onMonthChange],
 	);
 
 	const handleSelect = useCallback(
 		(date: Date) => {
 			setFocusedKey(format(date, "yyyy-MM-dd"));
-			if (!isSameMonth(date, month)) onMonthChange(date);
+			if (!isDateInView(date, month, weekStartsOn, layout)) onMonthChange(date);
 			onSelect(date);
 		},
-		[month, onMonthChange, onSelect],
+		[layout, month, onMonthChange, onSelect, weekStartsOn],
 	);
 
 	return (
-		<div className="calendarMonth">
+		<div className="calendarMonth" data-collapsed={collapsed}>
 			<header className="calendarMonthHeader">
-				<h2 className="calendarMonthTitle">{monthYearLabel}</h2>
+				<h2 className="calendarMonthTitle">
+					{titleAction ? (
+						<button
+							type="button"
+							className="calendarMonthTitleButton"
+							title={titleAction.label}
+							onClick={titleAction.onClick}
+						>
+							{title}
+						</button>
+					) : (
+						title
+					)}
+				</h2>
 				<div className="calendarMonthControls">
-					<button
-						type="button"
-						className="calendarTodayButton"
-						onClick={() => {
-							setFocusedKey(null);
-							onGoToToday();
-						}}
-					>
-						{t("calendar.today")}
-					</button>
-					<button
-						type="button"
-						className="calendarNavButton"
-						aria-label={t("calendar.previousMonth")}
-						onClick={() => goToMonth(-1)}
-					>
-						<HugeiconsIcon icon={ArrowLeft01Icon} size="var(--icon-lg)" />
-					</button>
-					<button
-						type="button"
-						className="calendarNavButton"
-						aria-label={t("calendar.nextMonth")}
-						onClick={() => goToMonth(1)}
-					>
-						<HugeiconsIcon icon={ArrowRight01Icon} size="var(--icon-lg)" />
-					</button>
+					{collapsed ? null : (
+						<>
+							<button
+								type="button"
+								className="calendarTodayButton"
+								onClick={() => {
+									setFocusedKey(null);
+									onGoToToday();
+								}}
+							>
+								{t("calendar.today")}
+							</button>
+							<button
+								type="button"
+								className="calendarNavButton"
+								aria-label={isWeek ? t("calendar.previousWeek") : t("calendar.previousMonth")}
+								onClick={() => goToMonth(-1)}
+							>
+								<HugeiconsIcon icon={ArrowLeft01Icon} size="var(--icon-sm)" />
+							</button>
+							<button
+								type="button"
+								className="calendarNavButton"
+								aria-label={isWeek ? t("calendar.nextWeek") : t("calendar.nextMonth")}
+								onClick={() => goToMonth(1)}
+							>
+								<HugeiconsIcon icon={ArrowRight01Icon} size="var(--icon-sm)" />
+							</button>
+						</>
+					)}
+					{collapse ? (
+						<button
+							type="button"
+							className="calendarNavButton calendarCollapseButton"
+							aria-expanded={!collapse.collapsed}
+							aria-label={collapseLabel}
+							title={collapseLabel}
+							onClick={collapse.onToggle}
+						>
+							<HugeiconsIcon icon={ArrowDown01Icon} size="var(--icon-sm)" />
+						</button>
+					) : null}
 				</div>
 			</header>
 
-			<table className="calendarGrid" aria-label={monthYearLabel} onKeyDown={handleKeyDown}>
-				<thead>
-					<tr>
-						{weekdays.map((weekday) => (
-							<th key={weekday.long} scope="col" className="calendarWeekday">
-								<abbr title={weekday.long}>{weekday.short}</abbr>
-							</th>
-						))}
-					</tr>
-				</thead>
-				<tbody>
-					{weeks.map((week) => (
-						<tr key={format(week[0], "yyyy-MM-dd")}>
-							{week.map((date) => {
-								const dateKey = format(date, "yyyy-MM-dd");
-								return (
-									<CalendarDayCell
-										key={dateKey}
-										date={date}
-										dateKey={dateKey}
-										label={dayLabelFormat.format(date)}
-										tone={activityTone(activityByDate.get(dateKey))}
-										isSelected={isSameDay(date, selected)}
-										isToday={isSameDay(date, today)}
-										isOutside={!isSameMonth(date, month)}
-										isTabStop={dateKey === tabStopKey}
-										shouldFocus={dateKey === focusedKey}
-										onSelect={handleSelect}
-									/>
-								);
-							})}
+			{collapsed ? null : (
+				<table className="calendarGrid" aria-label={monthYearLabel} onKeyDown={handleKeyDown}>
+					<thead>
+						<tr>
+							{weekdays.map((weekday) => (
+								<th key={weekday.long} scope="col" className="calendarWeekday">
+									<abbr title={weekday.long}>{weekday.narrow}</abbr>
+								</th>
+							))}
 						</tr>
-					))}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{weeks.map((week) => (
+							<tr
+								key={format(week[0], "yyyy-MM-dd")}
+								data-current-week={isSameWeek(week[0], today, { weekStartsOn })}
+							>
+								{week.map((date) => {
+									const dateKey = format(date, "yyyy-MM-dd");
+									return (
+										<CalendarDayCell
+											key={dateKey}
+											date={date}
+											dateKey={dateKey}
+											label={dayLabelFormat.format(date)}
+											tone={activityTone(activityByDate.get(dateKey))}
+											isSelected={isSameDay(date, selected)}
+											isToday={isSameDay(date, today)}
+											isOutside={!isWeek && !isSameMonth(date, month)}
+											isTabStop={dateKey === tabStopKey}
+											shouldFocus={dateKey === focusedKey}
+											onSelect={handleSelect}
+											onContextMenu={onDayContextMenu}
+										/>
+									);
+								})}
+							</tr>
+						))}
+					</tbody>
+				</table>
+			)}
 		</div>
 	);
 }

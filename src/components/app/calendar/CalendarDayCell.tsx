@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { type MouseEvent, useEffect, useRef } from "react";
 import type { CalendarDayTone } from "../../../lib/calendarActivity";
 
 interface CalendarDayCellProps {
@@ -13,6 +13,7 @@ interface CalendarDayCellProps {
 	isTabStop: boolean;
 	shouldFocus: boolean;
 	onSelect: (date: Date) => void;
+	onContextMenu: (event: MouseEvent<HTMLButtonElement>, date: Date) => void;
 }
 
 export function CalendarDayCell({
@@ -26,6 +27,7 @@ export function CalendarDayCell({
 	isTabStop,
 	shouldFocus,
 	onSelect,
+	onContextMenu,
 }: CalendarDayCellProps) {
 	const ref = useRef<HTMLButtonElement>(null);
 
@@ -43,11 +45,13 @@ export function CalendarDayCell({
 				data-selected={isSelected}
 				data-today={isToday}
 				data-outside={isOutside}
+				data-weekend={date.getDay() === 0 || date.getDay() === 6}
 				tabIndex={isTabStop ? 0 : -1}
 				aria-pressed={isSelected}
 				aria-current={isToday ? "date" : undefined}
 				aria-label={label}
 				onClick={() => onSelect(date)}
+				onContextMenu={(event) => onContextMenu(event, date)}
 			>
 				{date.getDate()}
 				<span className="calendarDayMarker" data-tone={tone ?? "none"} />

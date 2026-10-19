@@ -199,6 +199,36 @@
 	display: none;
 }
 
+.settingsSidebarItemRow:has(> .settingsSidebarCalendarOptions) {
+	flex-direction: column;
+	align-items: stretch;
+}
+
+.settingsSidebarCalendarOptions {
+	display: flex;
+	flex-direction: column;
+	margin: -6px 0 6px 28px;
+}
+
+.settingsSidebarCalendarOptions .settingsField {
+	align-items: center;
+	min-height: 0;
+	padding: 10px 18px;
+}
+
+.settingsSidebarCalendarOptions .settingsField::after {
+	display: none;
+}
+
+.settingsSidebarCalendarOptions .settingsSegmentedTrack {
+	padding: 2px;
+}
+
+.settingsSidebarCalendarOptions .settingsSegmentedOption {
+	min-width: 0;
+	padding: 4px 10px;
+}
+
 .settingsSidebarItemLabel {
 	display: inline-flex;
 	align-items: center;
@@ -221,6 +251,13 @@
 	color: var(--text-tertiary);
 	line-height: 0;
 	cursor: grab;
+}
+
+/* Keeps fixed rows (Calendar) aligned with the draggable ones. */
+.settingsSidebarDragSpacer {
+	flex: 0 0 auto;
+	width: 20px;
+	height: 20px;
 }
 
 .settingsSidebarDragHandle:hover,

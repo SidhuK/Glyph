@@ -215,19 +215,21 @@
 		"today": "Hoy",
 		"previousMonth": "Mes anterior",
 		"nextMonth": "Mes siguiente",
-		"openDailyNote": "Abrir nota diaria",
-		"openOrCreateWeeklyNote": "Abrir o crear nota semanal",
 		"loading": "Cargando…",
-		"noteCount_one": "1 nota",
-		"noteCount_other": "{{count}} notas",
-		"noNotes": "No hay notas en este día",
 		"loadFailed": "No se pudieron cargar las notas: {{message}}",
-		"loadFailedShort": "No se pudieron cargar las notas",
-		"openPeriodNote": {
-			"day": "Día",
-			"week": "Semana",
-			"month": "Mes",
-			"quarter": "Trimestre"
+		"previousWeek": "Semana anterior",
+		"nextWeek": "Semana siguiente",
+		"openMonthlyNote": "Abrir nota mensual",
+		"openQuarterlyNote": "Abrir nota trimestral",
+		"todayDate": "Hoy · {{date}}",
+		"createDailyNote": "Crear nota diaria",
+		"noOtherNotes": "No hay más notas este día",
+		"dailyNotesNotConfigured": "Define una carpeta de notas diarias en Ajustes para abrir notas desde el calendario",
+		"openFailed": "No se pudo abrir la nota",
+		"menu": {
+			"openDailyNote": "Abrir nota diaria",
+			"createDailyNote": "Crear nota diaria",
+			"openWeeklyNote": "Abrir nota semanal"
 		}
 	},
 	"tabs": {
@@ -340,5 +342,15 @@
 		"noSpace": "Abre un espacio en Glyph para buscar en él.",
 		"openFailed": "No se pudo abrir en Glyph: {{message}}",
 		"hideFailed": "No se pudo cerrar la búsqueda rápida: {{message}}"
+	},
+	"sidebarCalendar": {
+		"menu": {
+			"showWeekStrip": "Mostrar franja semanal",
+			"showMonth": "Mostrar mes completo",
+			"hide": "Ocultar calendario de la barra lateral"
+		},
+		"updateFailed": "No se pudieron actualizar los ajustes del calendario",
+		"collapse": "Contraer calendario",
+		"expand": "Expandir calendario"
 	}
 }

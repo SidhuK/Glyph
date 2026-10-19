@@ -51,8 +51,10 @@ import type {
 	UiFontSize,
 } from "./model";
 import {
+	DEFAULT_SIDEBAR_CALENDAR,
 	DEFAULT_SIDEBAR_ORDER,
 	DEFAULT_SIDEBAR_VISIBILITY,
+	normalizeSidebarCalendar,
 	normalizeSidebarOrder,
 	normalizeSidebarVisibility,
 } from "./model";
@@ -556,6 +558,18 @@ export const DURABLE_SETTINGS = {
 			Array.isArray(value) ? parsed(normalizeSidebarOrder(value)) : INVALID_PARSE_RESULT,
 		read: (settings) => settings.ui.sidebarOrder,
 		change: (value) => ({ ui: { sidebarOrder: value } }),
+	}),
+	sidebarCalendar: defineApplicationSetting({
+		key: "ui.sidebarCalendar",
+		defaultValue: DEFAULT_SIDEBAR_CALENDAR,
+		discovery: searchable("sidebar-calendar"),
+		normalize: normalizeSidebarCalendar,
+		parse: (value) =>
+			value !== null && typeof value === "object" && !Array.isArray(value)
+				? parsed(normalizeSidebarCalendar(value))
+				: INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.sidebarCalendar,
+		change: (value) => ({ ui: { sidebarCalendar: value } }),
 	}),
 	showFileTreeFolderCounts: booleanSetting({
 		key: "ui.fileTree.showFolderFileCounts",

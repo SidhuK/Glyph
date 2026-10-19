@@ -145,6 +145,12 @@
 				"Git 동기화"
 			]
 		},
+		"sidebar-calendar": {
+			"title": "사이드바 캘린더",
+			"section": "사이드바",
+			"description": "캘린더 레이아웃, 하루 요약, 날짜를 클릭할 때의 동작을 선택하세요.",
+			"keywords": ["캘린더", "주", "월", "데일리 노트", "하루 요약", "사이드바"]
+		},
 		"appearance-theme-mode": {
 			"title": "테마 선택",
 			"section": "테마",

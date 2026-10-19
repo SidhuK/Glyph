@@ -246,20 +246,22 @@
 		"today": "Today",
 		"previousMonth": "Previous month",
 		"nextMonth": "Next month",
-		"openDailyNote": "Open daily note",
-		"openOrCreateWeeklyNote": "Open or create weekly note",
-		"openPeriodNote": {
-			"day": "Daily",
-			"week": "Week",
-			"month": "Month",
-			"quarter": "Quarter"
-		},
 		"loading": "Loading…",
-		"noteCount_one": "1 note",
-		"noteCount_other": "{{count}} notes",
-		"noNotes": "No notes on this day",
 		"loadFailed": "Could not load notes: {{message}}",
-		"loadFailedShort": "Could not load notes"
+		"previousWeek": "Previous week",
+		"nextWeek": "Next week",
+		"openMonthlyNote": "Open monthly note",
+		"openQuarterlyNote": "Open quarterly note",
+		"todayDate": "Today · {{date}}",
+		"createDailyNote": "Create daily note",
+		"noOtherNotes": "No other notes this day",
+		"dailyNotesNotConfigured": "Set a daily notes folder in Settings to open notes from the calendar",
+		"openFailed": "Could not open note",
+		"menu": {
+			"openDailyNote": "Open Daily Note",
+			"createDailyNote": "Create Daily Note",
+			"openWeeklyNote": "Open Weekly Note"
+		}
 	},
 	"tabs": {
 		"allNotes": "All Notes",
@@ -506,5 +508,15 @@
 		"noSpace": "Open a space in Glyph to search it.",
 		"openFailed": "Could not open in Glyph: {{message}}",
 		"hideFailed": "Could not close Quick Search: {{message}}"
+	},
+	"sidebarCalendar": {
+		"menu": {
+			"showWeekStrip": "Show Week Strip",
+			"showMonth": "Show Full Month",
+			"hide": "Hide Calendar from Sidebar"
+		},
+		"updateFailed": "Could not update calendar settings",
+		"collapse": "Collapse calendar",
+		"expand": "Expand calendar"
 	}
 }

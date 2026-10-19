@@ -144,6 +144,39 @@ export function normalizeSidebarOrder(value: unknown): SidebarOrder {
 	return order;
 }
 
+export type SidebarCalendarLayout = "month" | "week";
+export type SidebarCalendarDayClick = "open" | "select";
+
+export interface SidebarCalendarSettings {
+	layout: SidebarCalendarLayout;
+	showDaySummary: boolean;
+	dayClick: SidebarCalendarDayClick;
+	collapsed: boolean;
+}
+
+export const DEFAULT_SIDEBAR_CALENDAR: SidebarCalendarSettings = {
+	layout: "month",
+	showDaySummary: true,
+	dayClick: "open",
+	collapsed: false,
+};
+
+/** Invalid or missing fields fall back to their defaults one by one. */
+export function normalizeSidebarCalendar(value: unknown): SidebarCalendarSettings {
+	const record = isRecord(value) ? value : {};
+	const { layout, showDaySummary, dayClick, collapsed } = record;
+	return {
+		layout: layout === "month" || layout === "week" ? layout : DEFAULT_SIDEBAR_CALENDAR.layout,
+		showDaySummary:
+			typeof showDaySummary === "boolean"
+				? showDaySummary
+				: DEFAULT_SIDEBAR_CALENDAR.showDaySummary,
+		dayClick:
+			dayClick === "open" || dayClick === "select" ? dayClick : DEFAULT_SIDEBAR_CALENDAR.dayClick,
+		collapsed: typeof collapsed === "boolean" ? collapsed : DEFAULT_SIDEBAR_CALENDAR.collapsed,
+	};
+}
+
 export interface QuickNotesSettings {
 	folder: string;
 }
@@ -225,6 +258,7 @@ export interface AppSettings {
 		dateDisplayFormat: DateDisplayFormat;
 		sidebarVisibility: SidebarVisibility;
 		sidebarOrder: SidebarOrder;
+		sidebarCalendar: SidebarCalendarSettings;
 	};
 	dailyNotes: {
 		folder: string | null;

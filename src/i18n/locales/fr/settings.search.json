@@ -155,6 +155,19 @@
 				"synchronisation git"
 			]
 		},
+		"sidebar-calendar": {
+			"title": "Calendrier de la barre latérale",
+			"section": "Barre latérale",
+			"description": "Choisissez la disposition du calendrier, le résumé du jour et l’effet d’un clic sur un jour.",
+			"keywords": [
+				"calendrier",
+				"semaine",
+				"mois",
+				"note du jour",
+				"résumé du jour",
+				"barre latérale"
+			]
+		},
 		"appearance-theme-mode": {
 			"title": "Sélectionner le thème",
 			"section": "Thèmes",
