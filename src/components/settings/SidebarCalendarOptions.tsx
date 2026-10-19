@@ -40,7 +40,6 @@ export function SidebarCalendarOptions({ disabled }: { disabled: boolean }) {
 				label={t("calendarOptions.layout.label")}
 				description={t("calendarOptions.layout.description")}
 				interactive={false}
-				searchId="sidebar-calendar"
 			>
 				<SettingsSegmentedPicker
 					name="settings-sidebar-calendar-layout"

@@ -29,7 +29,10 @@ export function CalendarDaySummary({
 	const { t } = useTranslation("shell");
 	const { dailyNotesFolder } = useUILayoutContext();
 	const { notes, isPending, errorMessage } = useCalendarDayNotes(selectedKey);
-	const dailyNote = notes.find((note) => note.kinds.includes("daily"));
+	// Without a daily notes folder there is no daily row, so a dated note stays in the list.
+	const dailyNote = dailyNotesFolder
+		? notes.find((note) => note.kinds.includes("daily"))
+		: undefined;
 	const otherNotes = notes.filter((note) => note !== dailyNote);
 	const hasDailyNote = dailyNote !== undefined || hasDailyNoteActivity;
 	const dateLabel = new Intl.DateTimeFormat(locale, {

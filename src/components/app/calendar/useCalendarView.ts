@@ -36,6 +36,7 @@ export function useCalendarView({
 	const selectedDate = useMemo(() => parseISO(selectedKey), [selectedKey]);
 	// Recomputed each render so the today highlight survives a midnight rollover.
 	const today = parseISO(getTodayDateString());
+	const monthlyNotesEnabled = isPeriodNoteEnabled("month", periodNotesEnabled);
 	const quarterlyNotesEnabled = isPeriodNoteEnabled("quarter", periodNotesEnabled);
 	const { activityByDate, errorMessage: activityError } = useCalendarActivity(
 		anchor,
@@ -68,14 +69,19 @@ export function useCalendarView({
 	let titleAction: CalendarTitleAction | null = null;
 	if (layout === "week" && onShowMonth) {
 		titleAction = { label: t("sidebarCalendar.menu.showMonth"), onClick: onShowMonth };
-	} else if (layout === "month" && isPeriodNoteEnabled("month", periodNotesEnabled)) {
+	} else if (layout === "month" && (monthlyNotesEnabled || quarterlyNotesEnabled)) {
+		// Monthly and quarterly notes are enabled independently; ⌥ picks quarterly when both are.
+		const monthlyLabel = t("calendar.openMonthlyNote");
+		const quarterlyLabel = t("calendar.openQuarterlyNote");
 		titleAction = {
-			label: quarterlyNotesEnabled
-				? `${t("calendar.openMonthlyNote")}\n⌥ ${t("calendar.openQuarterlyNote")}`
-				: t("calendar.openMonthlyNote"),
+			label: !monthlyNotesEnabled
+				? quarterlyLabel
+				: quarterlyNotesEnabled
+					? `${monthlyLabel}\n⌥ ${quarterlyLabel}`
+					: monthlyLabel,
 			onClick: (event) =>
 				openPeriodNote(
-					event.altKey && quarterlyNotesEnabled ? "quarter" : "month",
+					quarterlyNotesEnabled && (event.altKey || !monthlyNotesEnabled) ? "quarter" : "month",
 					format(anchor, "yyyy-MM-dd"),
 				),
 		};

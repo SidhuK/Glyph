@@ -107,6 +107,7 @@ export function SidebarItems({
 			<SidebarItemRow
 				itemKey="calendar"
 				label={t("items.calendar.label")}
+				searchId="sidebar-calendar"
 				visible={visibility.calendar}
 				disabled={disabled}
 				onVisibilityChange={onVisibilityChange}
@@ -182,6 +183,7 @@ function SidebarItemRow({
 	disabled,
 	onVisibilityChange,
 	handle,
+	searchId,
 	children,
 }: {
 	rowRef?: (element: Element | null) => void;
@@ -192,6 +194,7 @@ function SidebarItemRow({
 	disabled: boolean;
 	onVisibilityChange: (key: SidebarVisibilityKey, visible: boolean) => void;
 	handle?: ReactNode;
+	searchId?: string;
 	children?: ReactNode;
 }) {
 	const { t } = useTranslation("settings.sidebar");
@@ -205,6 +208,7 @@ function SidebarItemRow({
 			<SettingsRow
 				className="settingsSidebarItemField"
 				title={label}
+				searchId={searchId}
 				label={
 					<span className="settingsSidebarItemLabel">
 						{handle ?? <span className="settingsSidebarDragSpacer" aria-hidden="true" />}
