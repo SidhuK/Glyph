@@ -65,6 +65,9 @@
 		"copyFailed": "No se pudo copiar el código",
 		"editCode": "Editar código",
 		"editMermaid": "Editar código Mermaid",
+		"mermaidRenderFailed": "No se puede renderizar el diagrama Mermaid.",
+		"mermaidEmpty": "Añade código Mermaid para previsualizar este diagrama.",
+		"mermaidErrorLocation": "Línea {{line}}, columna {{column}}",
 		"editHtml": "Editar código HTML",
 		"editSvg": "Editar código SVG",
 		"focusedViewer": {

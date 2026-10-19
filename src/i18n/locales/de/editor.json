@@ -65,6 +65,9 @@
 		"copyFailed": "Code konnte nicht kopiert werden",
 		"editCode": "Code bearbeiten",
 		"editMermaid": "Mermaid-Code bearbeiten",
+		"mermaidRenderFailed": "Mermaid-Diagramm konnte nicht gerendert werden.",
+		"mermaidEmpty": "Füge Mermaid-Code hinzu, um eine Vorschau dieses Diagramms zu sehen.",
+		"mermaidErrorLocation": "Zeile {{line}}, Spalte {{column}}",
 		"editHtml": "HTML-Code bearbeiten",
 		"editSvg": "SVG-Code bearbeiten",
 		"focusedViewer": {

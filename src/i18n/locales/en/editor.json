@@ -138,6 +138,9 @@
 		"copyFailed": "Failed to copy code",
 		"editCode": "Edit code",
 		"editMermaid": "Edit Mermaid code",
+		"mermaidRenderFailed": "Unable to render Mermaid diagram.",
+		"mermaidEmpty": "Add Mermaid source to preview this diagram.",
+		"mermaidErrorLocation": "Line {{line}}, column {{column}}",
 		"editHtml": "Edit HTML code",
 		"editSvg": "Edit SVG code",
 		"focusedViewer": {

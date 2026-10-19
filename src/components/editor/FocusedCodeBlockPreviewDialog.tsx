@@ -104,10 +104,7 @@ export function FocusedCodeBlockPreviewDialog({
 				<DialogTitle className="sr-only">{t("codeBlock.runPreview")}</DialogTitle>
 				<div className="h-full">
 					{preview && kind === "mermaid" ? (
-						<FocusedMermaidPreview
-							key={`${preview.source}-${themeVersion}`}
-							source={preview.source}
-						/>
+						<FocusedMermaidPreview key={preview.source} source={preview.source} />
 					) : null}
 					{preview && (kind === "html" || kind === "svg") ? (
 						<FocusedHtmlPreview

@@ -44,6 +44,7 @@ import {
 	enableCodeBlockPreviewAt,
 } from "./extensions/codeBlockPreviewPlugin";
 import { createGlyphMathExtensions } from "./extensions/math/markdownMath";
+import { mermaidDiagramFontKey } from "./extensions/mermaid/renderer";
 import { getMountedEditorContentRoot, getOffsetWithinAncestor } from "./hooks/editorDomUtils";
 import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
 import { useMathNodeEditor } from "./hooks/useMathNodeEditor";
@@ -696,16 +697,19 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	useEffect(() => {
 		if (!editor || editor.isDestroyed) return;
-		const root = document.documentElement;
-		const refresh = () => {
-			if (!editor.isDestroyed && mode === "preview") {
-				editor.commands.refreshMermaidPreviews();
-			}
-		};
-		const observer = new MutationObserver(refresh);
-		observer.observe(root, {
+		if (mode !== "rich" && mode !== "preview") return;
+		// Theme colors apply through CSS variables, but Pele measures labels in the
+		// UI font, so diagrams only need a re-render when the font settings change.
+		let fontKey = mermaidDiagramFontKey();
+		const observer = new MutationObserver(() => {
+			const nextFontKey = mermaidDiagramFontKey();
+			if (nextFontKey === fontKey || editor.isDestroyed) return;
+			fontKey = nextFontKey;
+			editor.commands.refreshMermaidPreviews();
+		});
+		observer.observe(document.documentElement, {
 			attributes: true,
-			attributeFilter: ["class", "data-theme"],
+			attributeFilter: ["style"],
 		});
 		return () => observer.disconnect();
 	}, [editor, mode]);

@@ -123,7 +123,7 @@ export function createMermaidCanvas(options: MermaidCanvasOptions): MermaidCanva
 	const svg = importSvg(options.svgHtml);
 	if (!svg) {
 		return {
-			element: createMermaidErrorCanvas("Unable to render Mermaid diagram."),
+			element: createMermaidErrorCanvas(i18n.t("editor:codeBlock.mermaidRenderFailed")),
 			destroy: () => {},
 		};
 	}

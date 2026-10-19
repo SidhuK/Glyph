@@ -65,6 +65,9 @@
 		"copyFailed": "コードのコピーに失敗しました",
 		"editCode": "コードを編集",
 		"editMermaid": "Mermaid コードを編集",
+		"mermaidRenderFailed": "Mermaid 図を表示できません。",
+		"mermaidEmpty": "この図をプレビューするには Mermaid コードを追加してください。",
+		"mermaidErrorLocation": "{{line}} 行 {{column}} 列",
 		"editHtml": "HTML コードを編集",
 		"editSvg": "SVG コードを編集",
 		"focusedViewer": {

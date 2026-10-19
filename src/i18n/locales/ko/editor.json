@@ -65,6 +65,9 @@
 		"copyFailed": "코드 복사 실패",
 		"editCode": "코드 편집",
 		"editMermaid": "Mermaid 코드 편집",
+		"mermaidRenderFailed": "Mermaid 다이어그램을 렌더링할 수 없습니다.",
+		"mermaidEmpty": "이 다이어그램을 미리 보려면 Mermaid 코드를 추가하세요.",
+		"mermaidErrorLocation": "{{line}}행 {{column}}열",
 		"editHtml": "HTML 코드 편집",
 		"editSvg": "SVG 코드 편집",
 		"focusedViewer": {
