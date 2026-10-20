@@ -373,56 +373,6 @@ input.notePropertyFieldInput {
 	outline-offset: 1px;
 }
 
-.notePropertyKindMenu {
-	min-width: 156px;
-	max-height: min(320px, calc(100vh - 24px));
-	overflow-y: auto;
-}
-
-.notePropertyKindOption {
-	min-height: 32px;
-	gap: 8px;
-	padding: 0 10px 0 12px;
-	border-radius: var(--database-control-radius, var(--radius-md));
-	font-size: calc(var(--text-base) * 0.9);
-	color: var(--text-secondary);
-	position: relative;
-	transition:
-		background-color 140ms ease,
-		color 140ms ease;
-}
-
-.notePropertyKindOption[data-highlighted],
-.notePropertyKindOption:focus-visible {
-	background: var(--database-dropdown-hover, var(--bg-hover));
-	color: var(--text-primary);
-	outline: none;
-}
-
-.notePropertyKindOption[data-checked] {
-	background: color-mix(in srgb, var(--interactive-accent) 9%, transparent);
-	color: var(--text-primary);
-}
-
-.notePropertyKindOption[data-slot="dropdown-menu-radio-item"] > .absolute {
-	display: none;
-}
-
-.notePropertyKindOptionIcon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: var(--icon-lg);
-	height: var(--icon-lg);
-	color: var(--text-tertiary);
-	flex: 0 0 15px;
-}
-
-.notePropertyKindOptionLabel {
-	font-weight: var(--font-medium);
-	letter-spacing: 0;
-}
-
 .notePropertyPills {
 	display: flex;
 	flex-wrap: wrap;
@@ -536,13 +486,6 @@ input.notePropertyFieldInput {
 	border-radius: var(--radius-4);
 }
 
-.notePropertyStatusMenu {
-	min-width: 188px;
-	max-height: min(344px, calc(100vh - 24px));
-	overflow-y: auto;
-	padding: 5px;
-}
-
 .notePropertyStatusOptions {
 	display: flex;
 	flex-direction: column;
@@ -550,42 +493,11 @@ input.notePropertyFieldInput {
 }
 
 .notePropertyStatusOption {
-	position: relative;
-	justify-content: flex-start;
-	min-height: 30px;
-	width: 100%;
-	gap: 6px;
-	padding: 3px 24px 3px 5px;
-	border-radius: var(--radius-4);
-	text-align: left;
-	color: var(--text-secondary);
+	padding-left: 4px;
 }
 
 .notePropertyStatusOption .propertyValueText {
 	height: 24px;
-}
-
-.notePropertyStatusOption[data-highlighted],
-.notePropertyStatusOption:focus-visible {
-	background: var(--database-dropdown-hover, var(--bg-hover));
-	outline: none;
-}
-
-.notePropertyStatusOption[data-selected="true"] {
-	background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
-	color: var(--text-primary);
-}
-
-.notePropertyStatusOption[data-selected="true"]::after {
-	content: "";
-	position: absolute;
-	right: 9px;
-	top: 50%;
-	width: 6px;
-	height: 6px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-primary));
-	transform: translateY(-50%);
 }
 
 .notePropertyStatusColorRibbon {

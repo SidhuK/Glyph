@@ -1,7 +1,9 @@
+import { Tick02Icon } from "@hugeicons/core-free-icons";
 import type { MouseEvent } from "react";
 import { priorityColorKey, priorityOptionsWithCustomValues } from "../../lib/priorityProperties";
 import { statusColorKey, statusOptionsWithCustomValues } from "../../lib/statusProperties";
 import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../editor/textColors";
+import { HugeiconsIcon } from "../HugeiconsIcon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -84,22 +86,12 @@ export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 					<PriorityPropertyPill value={props.value || "no"} />
 				)}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				align="start"
-				sideOffset={6}
-				className="databasePickerMenu notePropertyStatusMenu"
-			>
+			<DropdownMenuContent align="start" sideOffset={6}>
 				<div className="notePropertyStatusOptions">
 					{options.map((option) => (
 						<DropdownMenuItem
 							key={option.id}
 							className="notePropertyStatusOption"
-							data-selected={
-								(isStatus ? statusColorKey(option.label) : priorityColorKey(option.label)) ===
-								selectedId
-									? "true"
-									: "false"
-							}
 							onClick={() => void selectValue(option.label)}
 						>
 							{isStatus ? (
@@ -107,12 +99,21 @@ export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 							) : (
 								<PriorityPropertyPill value={option.label} />
 							)}
+							{(isStatus ? statusColorKey(option.label) : priorityColorKey(option.label)) ===
+							selectedId ? (
+								<HugeiconsIcon
+									icon={Tick02Icon}
+									size="var(--icon-sm)"
+									strokeWidth={2.25}
+									className="glyphMenuItemCheck"
+								/>
+							) : null}
 						</DropdownMenuItem>
 					))}
 				</div>
 				{isStatus && selectedId && props.onColorChange ? (
 					<>
-						<DropdownMenuSeparator className="databaseBoardContextMenuSeparator" />
+						<DropdownMenuSeparator />
 						<div className="notePropertyStatusColorRibbon">
 							{EDITOR_TEXT_COLORS.map((color) => (
 								<button

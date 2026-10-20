@@ -1,7 +1,9 @@
+import { Tick02Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { displayNameFromPath } from "../../utils/path";
 import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
+import { HugeiconsIcon } from "../HugeiconsIcon";
 import { ChevronDown, ChevronRight } from "../Icons";
 import {
 	DropdownMenu,
@@ -146,22 +148,26 @@ function TargetBreadcrumbEntryMenu({
 					<ChevronDown size="var(--icon-xs)" className="quickNoteTargetCaret" aria-hidden="true" />
 				) : null}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="start" side="bottom" className="quickNoteTargetMenu">
-				<DropdownMenuLabel className="quickNoteTargetMenuLabel">
-					{menuTitleForDir(dirPath)}
-				</DropdownMenuLabel>
+			<DropdownMenuContent align="start" side="bottom" className="breadcrumbMenu">
+				<DropdownMenuLabel>{menuTitleForDir(dirPath)}</DropdownMenuLabel>
 				{showTodayQuickNote ? (
 					<DropdownMenuItem
-						className="quickNoteTargetMenuItem"
 						title={todayQuickNotePath}
-						data-selected={selectedTargetValue === QUICK_NOTE_TARGET_VALUE ? "true" : undefined}
 						onClick={() => onSelectTarget(todayQuickNoteTarget(todayQuickNotePath))}
 					>
-						<span className="quickNoteTargetMenuItemLabel">Today&apos;s quick note</span>
+						<span className="glyphMenuItemLabel">Today&apos;s quick note</span>
+						{selectedTargetValue === QUICK_NOTE_TARGET_VALUE ? (
+							<HugeiconsIcon
+								icon={Tick02Icon}
+								size="var(--icon-sm)"
+								strokeWidth={2.25}
+								className="glyphMenuItemCheck"
+							/>
+						) : null}
 					</DropdownMenuItem>
 				) : null}
 				{loading ? null : entries.length === 0 ? (
-					<div className="quickNoteTargetMenuState">Empty folder</div>
+					<div className="breadcrumbMenuState">Empty folder</div>
 				) : (
 					entries.map((entry) => (
 						<DirectoryBreadcrumbMenuItem
@@ -170,10 +176,6 @@ function TargetBreadcrumbEntryMenu({
 							childrenByDir={childrenByDir}
 							onLoadDir={onLoadDir}
 							onSelectFile={(relPath) => onSelectTarget(fileTarget(relPath))}
-							itemClassName="quickNoteTargetMenuItem"
-							labelClassName="quickNoteTargetMenuItemLabel"
-							menuClassName="quickNoteTargetMenu"
-							stateClassName="quickNoteTargetMenuState"
 						/>
 					))
 				)}

@@ -89,6 +89,11 @@
 	background: var(--border-light);
 }
 
+.glyphMenuItem[data-inset],
+.glyphMenuLabel[data-inset] {
+	padding-left: 30px;
+}
+
 /* Space switcher specifics. */
 .spaceMenuPopup {
 	min-width: 236px;

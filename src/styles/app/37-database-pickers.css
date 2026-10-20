@@ -1,12 +1,14 @@
 .databasePickerTrigger {
+	display: inline-flex;
+	align-items: center;
 	width: min(100%, 320px);
 	max-width: 320px;
 	min-height: 40px;
 	justify-content: flex-start;
 	padding: 7px 10px;
 	gap: 9px;
+	border: 1px solid var(--database-control-border);
 	border-radius: var(--database-control-radius);
-	border-color: var(--database-control-border);
 	background: var(--database-control-background);
 	align-self: flex-start;
 	box-shadow: none;
@@ -279,103 +281,4 @@
 
 .databasePickerEmpty {
 	padding: 8px 4px 2px;
-}
-
-/* Compact picker overrides inside database dropdown menus */
-[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTrigger {
-	min-height: 30px;
-	padding: 4px 8px;
-	gap: 6px;
-	border-radius: var(--database-control-radius);
-	font-size: calc(var(--text-base) * 0.9);
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerIcon {
-	width: var(--icon-xl);
-	height: var(--icon-xl);
-	background: transparent;
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerLabel {
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-medium);
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerMeta {
-	display: none;
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu .databaseNativeSelect {
-	min-height: 30px;
-	padding: 0 28px 0 8px;
-	font-size: calc(var(--text-base) * 0.9);
-	border-radius: var(--database-control-radius);
-	background-position:
-		calc(100% - 11px) 11px,
-		calc(100% - 6px) 11px;
-	background-size:
-		5px 5px,
-		5px 5px;
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="input"] {
-	min-height: 30px;
-	border-radius: var(--database-control-radius);
-	border-color: var(--database-control-border);
-	background: var(--database-control-background);
-	padding-inline: 10px;
-	font-size: calc(var(--text-base) * 0.9);
-	box-shadow: none;
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="input"]:hover {
-	border-color: var(--border-default);
-	background: var(--database-dropdown-hover);
-}
-
-/* Lighter icons inside dropdown menu items */
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] svg,
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-label"] svg {
-	opacity: 0.45;
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	[data-slot="dropdown-menu-item"]:is(:hover, [data-highlighted])
-	svg {
-	opacity: 0.7;
-}
-
-/* More breathing room between dropdown items */
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] {
-	padding-block: 6px;
-}
-
-/* Subtler section headings */
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-label"] {
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: 500;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: var(--text-tertiary);
-	padding-block: 4px;
-	padding-inline: 8px;
-}
-
-/* Subtler dividers */
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-separator"] {
-	opacity: 0.4;
-}
-
-/* Proper padding inside dropdown menus */
-[data-slot="dropdown-menu-content"].databasePickerMenu {
-	padding: var(--database-dropdown-padding);
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] {
-	width: 100%;
-	padding-inline: 10px;
-}
-
-[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-shortcut"] {
-	margin-left: auto;
 }
