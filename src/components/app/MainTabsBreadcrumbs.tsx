@@ -1,4 +1,3 @@
-import { Folder01Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useState } from "react";
 import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,19 +12,15 @@ import { spaceDisplayName } from "../../lib/spaceRegistry";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
-import { displayNameFromPath, isMarkdownPath, parentDir } from "../../utils/path";
+import { displayNameFromPath, parentDir } from "../../utils/path";
 import { AppearanceIcon } from "../AppearanceIcon";
-import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
-import { getFileTypeInfo } from "../filetree/fileTypeUtils";
-import { HugeiconsIcon } from "../HugeiconsIcon";
 import { ChevronRight } from "../Icons";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
+	BreadcrumbEntryMenu,
+	BreadcrumbOverflowMenu,
+	type BreadcrumbPart,
+	ROOT_PATH_KEY,
+} from "./MainTabsBreadcrumbMenus";
 
 interface MainTabsBreadcrumbsProps {
 	activeTabPath: string | null;
@@ -34,12 +29,6 @@ interface MainTabsBreadcrumbsProps {
 	onNavigateBreadcrumbPath: (dirPath: string) => void;
 	onLoadBreadcrumbDir: (dirPath: string) => Promise<void>;
 	onOpenBreadcrumbFile: (relPath: string) => Promise<void>;
-}
-
-interface BreadcrumbPart {
-	label: string;
-	path: string;
-	kind: "folder" | "file";
 }
 
 type BreadcrumbDisplayItem =
@@ -52,8 +41,6 @@ type BreadcrumbDisplayItem =
 			type: "overflow";
 			hiddenParts: BreadcrumbPart[];
 	  };
-
-const ROOT_PATH_KEY = "__root__";
 
 function sortBreadcrumbEntries(entries: FsEntry[]) {
 	return [...entries].sort((a, b) => {
@@ -234,129 +221,5 @@ export function MainTabsBreadcrumbs({
 				);
 			})}
 		</nav>
-	);
-}
-
-function BreadcrumbPartIcon({ part }: { part: BreadcrumbPart }) {
-	if (part.kind === "folder") {
-		return (
-			<HugeiconsIcon
-				icon={Folder01Icon}
-				size="var(--icon-sm)"
-				className="glyphMenuItemIcon"
-				aria-hidden="true"
-			/>
-		);
-	}
-	const { Icon } = getFileTypeInfo(part.path, isMarkdownPath(part.path));
-	return <Icon size="var(--icon-sm)" className="glyphMenuItemIcon" aria-hidden="true" />;
-}
-
-function BreadcrumbOverflowMenu({
-	hiddenParts,
-	onNavigateDir,
-	onOpenFile,
-}: {
-	hiddenParts: BreadcrumbPart[];
-	onNavigateDir: (dirPath: string) => void;
-	onOpenFile: (relPath: string) => Promise<void>;
-}) {
-	const { t } = useTranslation("shell");
-	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger
-				render={
-					<button
-						type="button"
-						className="mainTabsBreadcrumbOverflowButton"
-						title={t("breadcrumbs.hiddenItems", { count: hiddenParts.length })}
-						aria-label={t("breadcrumbs.showHidden")}
-					/>
-				}
-			>
-				…
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="start" side="bottom" className="breadcrumbMenu">
-				{hiddenParts.map((part) => (
-					<DropdownMenuItem
-						key={part.path || ROOT_PATH_KEY}
-						title={part.path}
-						onClick={() => {
-							if (part.kind === "folder") {
-								onNavigateDir(part.path);
-								return;
-							}
-							void onOpenFile(part.path);
-						}}
-					>
-						<BreadcrumbPartIcon part={part} />
-						<span className="glyphMenuItemLabel">{part.label}</span>
-					</DropdownMenuItem>
-				))}
-			</DropdownMenuContent>
-		</DropdownMenu>
-	);
-}
-
-function BreadcrumbEntryMenu({
-	open,
-	dirLabel,
-	dirPath,
-	entries,
-	loading,
-	onOpenChange,
-	onLoadDir,
-	onOpenFile,
-	childrenByDir,
-}: {
-	open: boolean;
-	dirLabel: string;
-	dirPath: string;
-	entries: FsEntry[];
-	loading: boolean;
-	onOpenChange: (open: boolean) => void;
-	onLoadDir: (dirPath: string) => Promise<void>;
-	onOpenFile: (relPath: string) => Promise<void>;
-	childrenByDir: Record<string, FsEntry[] | undefined>;
-}) {
-	const { t } = useTranslation("shell");
-	return (
-		<DropdownMenu
-			open={open}
-			onOpenChange={(nextOpen) => {
-				if (nextOpen && loading) void onLoadDir(dirPath);
-				onOpenChange(nextOpen);
-			}}
-		>
-			<DropdownMenuTrigger
-				render={
-					<button
-						type="button"
-						className="mainTabsBreadcrumbSepButton"
-						aria-label={t("breadcrumbs.browse", { name: dirLabel })}
-					/>
-				}
-			>
-				<ChevronRight size="var(--icon-xs)" className="mainTabsBreadcrumbSep" aria-hidden="true" />
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="start" side="bottom" className="breadcrumbMenu">
-				<DropdownMenuLabel>{dirLabel}</DropdownMenuLabel>
-				{loading ? (
-					<div className="breadcrumbMenuState">{t("breadcrumbs.loading")}</div>
-				) : entries.length === 0 ? (
-					<div className="breadcrumbMenuState">{t("breadcrumbs.emptyFolder")}</div>
-				) : (
-					entries.map((entry) => (
-						<DirectoryBreadcrumbMenuItem
-							key={entry.rel_path || ROOT_PATH_KEY}
-							entry={entry}
-							childrenByDir={childrenByDir}
-							onLoadDir={onLoadDir}
-							onSelectFile={(relPath) => void onOpenFile(relPath)}
-						/>
-					))
-				)}
-			</DropdownMenuContent>
-		</DropdownMenu>
 	);
 }
