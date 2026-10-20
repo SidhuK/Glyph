@@ -63,6 +63,7 @@ import { TagsPane } from "../TagsPane";
 import { AppearanceIcon } from "../AppearanceIcon";
 import { FileTreePane } from "../filetree";
 import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
+import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
 import { SidebarCalendar } from "./calendar/SidebarCalendar";
 import type { OpenPeriodNoteAtDate } from "./calendar/useCalendarView";
@@ -126,6 +127,13 @@ type SidebarView =
 	| { kind: "recents" }
 	| { kind: "tags" }
 	| { kind: "folder"; path: string };
+
+const SIDEBAR_VIEW_TABS = [
+	{ kind: "files", icon: Folder01Icon, labelKey: "sidebar.files" },
+	{ kind: "pinned", icon: PinIcon, labelKey: "sidebar.pinned" },
+	{ kind: "tags", icon: Tag01Icon, labelKey: "tags.header" },
+	{ kind: "recents", icon: HistoryIcon, labelKey: "sidebar.recents" },
+] as const;
 
 function isSpaceContainerEntry(entry: FsEntry, spaceLabel: string): boolean {
 	const normalizedSpaceLabel = spaceLabel.trim().toLocaleLowerCase();
@@ -431,6 +439,8 @@ export const SidebarContent = memo(function SidebarContent({
 			? { kind: "files" }
 			: sidebarView;
 	const activeFolderPath = activeSidebarView.kind === "folder" ? activeSidebarView.path : null;
+	const activeSidebarTabValue =
+		activeFolderPath === null ? activeSidebarView.kind : `folder:${activeFolderPath}`;
 	const handleSelectFolioFolder = useCallback(
 		(dirPath: string) => {
 			onSelectDir(dirPath);
@@ -778,112 +788,73 @@ export const SidebarContent = memo(function SidebarContent({
 							) : null}
 						</OrderedSidebarItems>
 						<div className="sidebarViewTabs" role="tablist" aria-label={sidebarViewTabsLabel}>
-							<button
-								type="button"
-								className="sidebarViewTab"
-								id="sidebar-files-tab"
-								role="tab"
-								aria-selected={activeSidebarView.kind === "files"}
-								aria-controls="sidebar-files-panel"
-								onClick={() => handleSidebarViewChange("files")}
-							>
-								<HugeiconsIcon
-									icon={Folder01Icon}
-									size="var(--icon-md)"
-									className="sidebarViewTabIcon sidebarViewTabIconFilled"
-									aria-hidden="true"
-								/>
-								<span className="sidebarViewTabLabel">{t("sidebar.files")}</span>
-							</button>
-							<button
-								type="button"
-								className="sidebarViewTab"
-								id="sidebar-pinned-tab"
-								role="tab"
-								aria-selected={activeSidebarView.kind === "pinned"}
-								aria-controls="sidebar-pinned-panel"
-								onClick={() => handleSidebarViewChange("pinned")}
-							>
-								<HugeiconsIcon
-									icon={PinIcon}
-									size="var(--icon-md)"
-									className="sidebarViewTabIcon sidebarViewTabIconFilled"
-									aria-hidden="true"
-								/>
-								<span className="sidebarViewTabLabel">{t("sidebar.pinned")}</span>
-							</button>
-							<button
-								type="button"
-								className="sidebarViewTab"
-								id="sidebar-tags-tab"
-								role="tab"
-								aria-selected={activeSidebarView.kind === "tags"}
-								aria-controls="sidebar-tags-panel"
-								onClick={() => handleSidebarViewChange("tags")}
-							>
-								<HugeiconsIcon
-									icon={Tag01Icon}
-									size="var(--icon-md)"
-									className="sidebarViewTabIcon sidebarViewTabIconFilled"
-									aria-hidden="true"
-								/>
-								<span className="sidebarViewTabLabel">{t("tags.header")}</span>
-							</button>
-							<button
-								type="button"
-								className="sidebarViewTab"
-								id="sidebar-recents-tab"
-								role="tab"
-								aria-selected={activeSidebarView.kind === "recents"}
-								aria-controls="sidebar-recents-panel"
-								onClick={() => handleSidebarViewChange("recents")}
-							>
-								<HugeiconsIcon
-									icon={HistoryIcon}
-									size="var(--icon-md)"
-									className="sidebarViewTabIcon sidebarViewTabIconFilled"
-									aria-hidden="true"
-								/>
-								<span className="sidebarViewTabLabel">{t("sidebar.recents")}</span>
-							</button>
-							{sidebarFolderTabs.map((folderPath, index) => {
-								const appearance = itemAppearance[folderPath];
-								return (
-									<button
-										key={folderPath}
-										type="button"
-										className="sidebarViewTab"
-										id={`sidebar-folder-tab-${index + 1}`}
-										role="tab"
-										aria-label={t("sidebar.openFolderTab", {
-											folder: folderPath,
-										})}
-										aria-selected={
-											activeSidebarView.kind === "folder" && activeSidebarView.path === folderPath
-										}
-										aria-controls="sidebar-files-panel"
-										title={folderPath}
-										onClick={() => handleSelectSidebarFolder(folderPath)}
-										onContextMenu={(event) => handleFolderTabContextMenu(event, folderPath)}
-									>
-										{appearance?.icon ? (
-											<AppearanceIcon
-												iconName={appearance.icon}
-												size="var(--icon-md)"
-												className="sidebarViewTabIcon sidebarViewTabIconFilled"
-											/>
-										) : (
+							<Highlight value={activeSidebarTabValue} className="sidebarViewTabsHighlight">
+								{SIDEBAR_VIEW_TABS.map((tab) => (
+									<HighlightItem key={tab.kind} value={tab.kind} className="sidebarViewTabSlot">
+										<button
+											type="button"
+											className="sidebarViewTab"
+											id={`sidebar-${tab.kind}-tab`}
+											role="tab"
+											aria-selected={activeSidebarView.kind === tab.kind}
+											aria-controls={`sidebar-${tab.kind}-panel`}
+											onClick={() => handleSidebarViewChange(tab.kind)}
+										>
 											<HugeiconsIcon
-												icon={Folder01Icon}
+												icon={tab.icon}
 												size="var(--icon-md)"
 												className="sidebarViewTabIcon sidebarViewTabIconFilled"
 												aria-hidden="true"
 											/>
-										)}
-										<span className="sidebarViewTabLabel">{basename(folderPath)}</span>
-									</button>
-								);
-							})}
+											<span className="sidebarViewTabLabel">{t(tab.labelKey)}</span>
+										</button>
+									</HighlightItem>
+								))}
+								{sidebarFolderTabs.map((folderPath, index) => {
+									const appearance = itemAppearance[folderPath];
+									return (
+										<HighlightItem
+											key={folderPath}
+											value={`folder:${folderPath}`}
+											className="sidebarViewTabSlot"
+										>
+											<button
+												type="button"
+												className="sidebarViewTab"
+												id={`sidebar-folder-tab-${index + 1}`}
+												role="tab"
+												aria-label={t("sidebar.openFolderTab", {
+													folder: folderPath,
+												})}
+												aria-selected={
+													activeSidebarView.kind === "folder" &&
+													activeSidebarView.path === folderPath
+												}
+												aria-controls="sidebar-files-panel"
+												title={folderPath}
+												onClick={() => handleSelectSidebarFolder(folderPath)}
+												onContextMenu={(event) => handleFolderTabContextMenu(event, folderPath)}
+											>
+												{appearance?.icon ? (
+													<AppearanceIcon
+														iconName={appearance.icon}
+														size="var(--icon-md)"
+														className="sidebarViewTabIcon sidebarViewTabIconFilled"
+													/>
+												) : (
+													<HugeiconsIcon
+														icon={Folder01Icon}
+														size="var(--icon-md)"
+														className="sidebarViewTabIcon sidebarViewTabIconFilled"
+														aria-hidden="true"
+													/>
+												)}
+												<span className="sidebarViewTabLabel">{basename(folderPath)}</span>
+											</button>
+										</HighlightItem>
+									);
+								})}
+							</Highlight>
 						</div>
 					</div>
 					<div className="sidebarViewContent">
