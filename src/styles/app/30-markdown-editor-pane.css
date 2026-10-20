@@ -1038,9 +1038,14 @@
 	color: var(--text-primary);
 }
 
-.linkedNotePreviewSheet {
-	position: fixed;
+/* Wiki-link hover card (LinkedNotePreviewSheet). Animate UI's preview card positions and
+   animates it; these rules only paint. */
+.linkedNotePreviewPositioner {
 	z-index: 2200;
+}
+
+.linkedNotePreviewSheet {
+	position: relative;
 	width: min(360px, calc(100vw - 24px));
 	max-height: min(420px, calc(100vh - 24px));
 	display: flex;
@@ -1050,8 +1055,10 @@
 	background: var(--bg-secondary);
 	box-shadow: var(--shadow-lg);
 	color: var(--text-primary);
+	outline: none;
 }
 
+/* Hover bridge across the gap to the link, so crossing it keeps the card open. */
 .linkedNotePreviewSheet::before {
 	content: "";
 	position: absolute;

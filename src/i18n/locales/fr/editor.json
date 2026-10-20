@@ -231,6 +231,9 @@
 		"loading": "Chargement de la note…",
 		"empty": "Cette note est vide."
 	},
+	"linkPreview": {
+		"label": "Aperçu de la note liée"
+	},
 	"propertyKind": {
 		"title": "Type de propriété : {{label}}",
 		"kinds": {
