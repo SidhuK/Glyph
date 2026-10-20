@@ -1,5 +1,4 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { Button } from "../../ui/shadcn/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -31,10 +30,8 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 			<DropdownMenu>
 				<DropdownMenuTrigger
 					render={
-						<Button
+						<button
 							type="button"
-							size="xs"
-							variant="ghost"
 							className="notePropertyKindBadge notePropertyKindTrigger"
 							title={`Property type: ${label}`}
 						/>
@@ -42,11 +39,7 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 				>
 					<HugeiconsIcon icon={icon} size="var(--icon-sm)" />
 				</DropdownMenuTrigger>
-				<DropdownMenuContent
-					align="start"
-					sideOffset={6}
-					className="databasePickerMenu notePropertyKindMenu"
-				>
+				<DropdownMenuContent align="start" sideOffset={6}>
 					<DropdownMenuRadioGroup
 						value={resolvedKind}
 						onValueChange={(value) => {
@@ -54,18 +47,13 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 						}}
 					>
 						{PROPERTY_KINDS.map((menuKind) => (
-							<DropdownMenuRadioItem
-								key={menuKind}
-								value={menuKind}
-								closeOnClick
-								className="notePropertyKindOption"
-							>
-								<span className="notePropertyKindOptionIcon">
-									<HugeiconsIcon icon={PROPERTY_KIND_ICONS[menuKind]} size="var(--icon-sm)" />
-								</span>
-								<span className="notePropertyKindOptionLabel">
-									{PROPERTY_KIND_LABELS[menuKind]}
-								</span>
+							<DropdownMenuRadioItem key={menuKind} value={menuKind} closeOnClick>
+								<HugeiconsIcon
+									icon={PROPERTY_KIND_ICONS[menuKind]}
+									size="var(--icon-sm)"
+									className="glyphMenuItemIcon"
+								/>
+								<span className="glyphMenuItemLabel">{PROPERTY_KIND_LABELS[menuKind]}</span>
 							</DropdownMenuRadioItem>
 						))}
 					</DropdownMenuRadioGroup>

@@ -16,19 +16,11 @@ export function DirectoryBreadcrumbMenuItem({
 	childrenByDir,
 	onLoadDir,
 	onSelectFile,
-	itemClassName,
-	labelClassName,
-	menuClassName,
-	stateClassName,
 }: {
 	entry: FsEntry;
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	onLoadDir: (dirPath: string) => Promise<void>;
 	onSelectFile: (relPath: string) => void;
-	itemClassName: string;
-	labelClassName: string;
-	menuClassName: string;
-	stateClassName: string;
 }) {
 	const { t } = useTranslation("shell");
 	const childEntries = childrenByDir[entry.rel_path];
@@ -39,11 +31,10 @@ export function DirectoryBreadcrumbMenuItem({
 		return (
 			<DropdownMenuItem
 				key={entry.rel_path || ROOT_PATH_KEY}
-				className={itemClassName}
 				title={entry.rel_path || entry.name}
 				onClick={() => onSelectFile(entry.rel_path)}
 			>
-				<span className={labelClassName}>
+				<span className="glyphMenuItemLabel">
 					{entry.is_markdown ? displayNameFromPath(entry.name) : entry.name}
 				</span>
 			</DropdownMenuItem>
@@ -56,14 +47,14 @@ export function DirectoryBreadcrumbMenuItem({
 				if (open && loading) void onLoadDir(entry.rel_path);
 			}}
 		>
-			<DropdownMenuSubTrigger className={itemClassName}>
-				<span className={labelClassName}>{entry.name}</span>
+			<DropdownMenuSubTrigger>
+				<span className="glyphMenuItemLabel">{entry.name}</span>
 			</DropdownMenuSubTrigger>
-			<DropdownMenuSubContent className={menuClassName} sideOffset={4}>
+			<DropdownMenuSubContent className="breadcrumbMenu" sideOffset={4}>
 				{loading ? (
-					<div className={stateClassName}>{t("breadcrumbs.loading")}</div>
+					<div className="breadcrumbMenuState">{t("breadcrumbs.loading")}</div>
 				) : childEntries.length === 0 ? (
-					<div className={stateClassName}>{t("breadcrumbs.emptyFolder")}</div>
+					<div className="breadcrumbMenuState">{t("breadcrumbs.emptyFolder")}</div>
 				) : (
 					<>
 						{childEntries.slice(0, DIRECTORY_BREADCRUMB_CHILD_LIMIT).map((child) => (
@@ -73,14 +64,10 @@ export function DirectoryBreadcrumbMenuItem({
 								childrenByDir={childrenByDir}
 								onLoadDir={onLoadDir}
 								onSelectFile={onSelectFile}
-								itemClassName={itemClassName}
-								labelClassName={labelClassName}
-								menuClassName={menuClassName}
-								stateClassName={stateClassName}
 							/>
 						))}
 						{childEntries.length > DIRECTORY_BREADCRUMB_CHILD_LIMIT ? (
-							<div className={stateClassName}>
+							<div className="breadcrumbMenuState">
 								{t("breadcrumbs.moreItems", {
 									count: childEntries.length - DIRECTORY_BREADCRUMB_CHILD_LIMIT,
 								})}

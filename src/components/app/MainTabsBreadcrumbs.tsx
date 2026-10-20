@@ -258,11 +258,10 @@ function BreadcrumbOverflowMenu({
 			>
 				…
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="start" side="bottom" className="mainTabsBreadcrumbMenu">
+			<DropdownMenuContent align="start" side="bottom" className="breadcrumbMenu">
 				{hiddenParts.map((part) => (
 					<DropdownMenuItem
 						key={part.path || ROOT_PATH_KEY}
-						className="mainTabsBreadcrumbMenuItem"
 						title={part.path}
 						onClick={() => {
 							if (part.kind === "folder") {
@@ -272,7 +271,7 @@ function BreadcrumbOverflowMenu({
 							void onOpenFile(part.path);
 						}}
 					>
-						<span className="mainTabsBreadcrumbMenuItemLabel">{part.label}</span>
+						<span className="glyphMenuItemLabel">{part.label}</span>
 					</DropdownMenuItem>
 				))}
 			</DropdownMenuContent>
@@ -321,12 +320,12 @@ function BreadcrumbEntryMenu({
 			>
 				<ChevronRight size="var(--icon-xs)" className="mainTabsBreadcrumbSep" aria-hidden="true" />
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="start" side="bottom" className="mainTabsBreadcrumbMenu">
-				<DropdownMenuLabel className="mainTabsBreadcrumbMenuLabel">{dirLabel}</DropdownMenuLabel>
+			<DropdownMenuContent align="start" side="bottom" className="breadcrumbMenu">
+				<DropdownMenuLabel>{dirLabel}</DropdownMenuLabel>
 				{loading ? (
-					<div className="mainTabsBreadcrumbMenuState">{t("breadcrumbs.loading")}</div>
+					<div className="breadcrumbMenuState">{t("breadcrumbs.loading")}</div>
 				) : entries.length === 0 ? (
-					<div className="mainTabsBreadcrumbMenuState">{t("breadcrumbs.emptyFolder")}</div>
+					<div className="breadcrumbMenuState">{t("breadcrumbs.emptyFolder")}</div>
 				) : (
 					entries.map((entry) => (
 						<DirectoryBreadcrumbMenuItem
@@ -335,10 +334,6 @@ function BreadcrumbEntryMenu({
 							childrenByDir={childrenByDir}
 							onLoadDir={onLoadDir}
 							onSelectFile={(relPath) => void onOpenFile(relPath)}
-							itemClassName="mainTabsBreadcrumbMenuItem"
-							labelClassName="mainTabsBreadcrumbMenuItemLabel"
-							menuClassName="mainTabsBreadcrumbMenu"
-							stateClassName="mainTabsBreadcrumbMenuState"
 						/>
 					))
 				)}

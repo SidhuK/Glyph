@@ -7,7 +7,6 @@ import {
 	normalizeTagDraftPrefix,
 	normalizeTagToken,
 } from "../editor/noteProperties/utils";
-import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import {
 	Popover,
@@ -86,9 +85,7 @@ export function DatabaseTagPicker({
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
-			<PopoverTrigger
-				render={<Button type="button" variant="outline" className="databasePickerTrigger" />}
-			>
+			<PopoverTrigger render={<button type="button" className="databasePickerTrigger" />}>
 				<span className="databasePickerTriggerIcon">
 					<Hash size="var(--icon-sm)" />
 				</span>

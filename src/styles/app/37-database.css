@@ -29,7 +29,6 @@
 	padding-top: var(--header-height);
 }
 
-.databasePickerMenu,
 .databaseBoardColorMenu,
 .databasePickerPopover {
 	border-radius: var(--database-dropdown-radius);
@@ -38,40 +37,8 @@
 	box-shadow: var(--database-dropdown-shadow);
 }
 
-.databasePickerMenu,
 .databaseBoardColorMenu {
 	padding: var(--database-dropdown-padding);
-}
-
-.databasePickerMenu [data-slot="dropdown-menu-item"] {
-	min-height: 32px;
-	gap: 8px;
-	border-radius: var(--database-control-radius);
-	padding: 0 10px;
-	font-size: calc(var(--text-base) * 0.9);
-	color: var(--text-secondary);
-	transition:
-		background-color 140ms ease,
-		color 140ms ease;
-}
-
-.databasePickerMenu [data-slot="dropdown-menu-item"]:is(:hover, [data-highlighted]) {
-	background: var(--database-dropdown-hover);
-	color: var(--text-primary);
-}
-
-.databasePickerMenu [data-slot="dropdown-menu-label"] {
-	padding: 4px 10px 6px;
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: 600;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
-.databasePickerMenu [data-slot="dropdown-menu-separator"] {
-	margin: 6px 4px;
-	background: color-mix(in srgb, var(--border-light) 72%, transparent);
 }
 
 .databaseToolbar {
