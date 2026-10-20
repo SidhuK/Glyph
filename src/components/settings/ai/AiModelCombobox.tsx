@@ -59,16 +59,13 @@ export function AiModelCombobox({
 				<SettingsSelect
 					id="aiModel"
 					value={value}
-					onChange={(e) => onChange(e.target.value)}
+					options={[
+						{ value: "", label: "Select a model..." },
+						...(models ?? []).map((m) => ({ value: m.id, label: m.name })),
+					]}
+					onValueChange={onChange}
 					disabled={loading || !models || !canFetchModels}
-				>
-					<option value="">Select a model...</option>
-					{models?.map((m) => (
-						<option key={m.id} value={m.id}>
-							{m.name}
-						</option>
-					))}
-				</SettingsSelect>
+				/>
 				{statusLabel ? (
 					<span className={`modelComboboxBadge ${loading ? "modelComboboxBadgeLoading" : ""}`}>
 						{statusLabel}

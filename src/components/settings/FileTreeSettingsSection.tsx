@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
-import { isFileTreeSortMode } from "../../lib/settings";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import type { SettingsBoolean } from "./useSettingsBoolean";
@@ -40,17 +39,12 @@ export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSett
 					aria-label={t("fileTree.sort.ariaLabel")}
 					value={fileTreeSort.sortMode}
 					disabled={fileTreeSort.isSaving}
-					onChange={(event) => {
-						const mode = event.currentTarget.value;
-						if (isFileTreeSortMode(mode)) void fileTreeSort.setSortMode(mode);
-					}}
-				>
-					{FILE_TREE_SORT_MODES.map((mode) => (
-						<option key={mode} value={mode}>
-							{fileTreeSortLabel(mode)}
-						</option>
-					))}
-				</SettingsSelect>
+					options={FILE_TREE_SORT_MODES.map((mode) => ({
+						value: mode,
+						label: fileTreeSortLabel(mode),
+					}))}
+					onValueChange={(mode) => void fileTreeSort.setSortMode(mode)}
+				/>
 			</SettingsRow>
 		</SettingsSection>
 	);

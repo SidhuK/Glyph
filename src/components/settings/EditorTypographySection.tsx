@@ -50,14 +50,9 @@ export function EditorTypographySection({
 				<SettingsSelect
 					id="settingsEditorFontFamily"
 					value={editorFontFamily}
-					onChange={(event) => onEditorFontFamilyChange(event.target.value)}
-				>
-					{availableFonts.map((font) => (
-						<option key={font} value={font}>
-							{font}
-						</option>
-					))}
-				</SettingsSelect>
+					options={availableFonts.map((font) => ({ value: font, label: font }))}
+					onValueChange={onEditorFontFamilyChange}
+				/>
 			</SettingsRow>
 			<SettingsRow
 				label={t("headingFontEnabled.label")}
@@ -84,14 +79,9 @@ export function EditorTypographySection({
 						id="settingsHeadingFontFamily"
 						value={headingFontFamily}
 						disabled={headingFontFamilyDisabled}
-						onChange={(event) => onHeadingFontFamilyChange(event.target.value)}
-					>
-						{availableFonts.map((font) => (
-							<option key={font} value={font}>
-								{font}
-							</option>
-						))}
-					</SettingsSelect>
+						options={availableFonts.map((font) => ({ value: font, label: font }))}
+						onValueChange={onHeadingFontFamilyChange}
+					/>
 				</SettingsRow>
 			) : null}
 			<FontSizeControl

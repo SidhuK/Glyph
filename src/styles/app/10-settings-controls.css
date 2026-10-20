@@ -307,10 +307,10 @@
 }
 
 .settingsFieldControl > input,
-.settingsFieldControl > .settingsSelectWrap,
+.settingsFieldControl > .settingsSelectTrigger,
 .settingsFieldControl > textarea,
 .settingsFieldControl .settingsInline > input,
-.settingsFieldControl .settingsInline > .settingsSelectWrap,
+.settingsFieldControl .settingsInline > .settingsSelectTrigger,
 .settingsFieldControl .settingsInline > textarea {
 	flex: 1 1 220px;
 	min-width: 0;
@@ -334,44 +334,23 @@
 	outline-offset: 2px;
 }
 
-.settingsSelectWrap {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
+.settingsSelectTrigger {
 	width: 100%;
 	max-width: 360px;
-	min-width: 0;
-}
-
-.settingsSelectNative {
-	-webkit-appearance: none;
-	appearance: none;
-	width: 100%;
-	background-color: var(--bg-tertiary);
+	height: 34px;
+	padding: 0 10px;
 	border: 0;
 	border-radius: var(--radius-md);
-	color: var(--text-primary);
-	padding: 0 32px 0 10px;
-	height: 32px;
-	min-height: 34px;
+	background-color: var(--bg-tertiary);
+	font-size: var(--text-sm);
 }
 
-:root.dark .settingsSelectNative {
+:root.dark .settingsSelectTrigger {
 	background-color: color-mix(in srgb, var(--bg-tertiary) 88%, #ffffff);
 }
 
-.settingsSelectChevron {
-	position: absolute;
-	right: 10px;
-	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
-	pointer-events: none;
-	transition: color var(--transition-base);
-}
-
-.settingsSelectWrap:has(.settingsSelectNative:focus) .settingsSelectChevron,
-.settingsSelectWrap:has(.settingsSelectNative:focus-visible) .settingsSelectChevron,
-.settingsSelectWrap:has(.settingsSelectNative:active) .settingsSelectChevron {
-	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+.settingsSelectTrigger[data-popup-open] {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 }
 
 .settingsPane input,
@@ -389,10 +368,7 @@
 .settingsPane input:focus,
 .settingsPane input:focus-visible,
 .settingsPane textarea:focus,
-.settingsPane textarea:focus-visible,
-.settingsSelectNative:focus,
-.settingsSelectNative:focus-visible,
-.settingsSelectNative:active {
+.settingsPane textarea:focus-visible {
 	outline: none;
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 }

@@ -5,6 +5,8 @@ import { act } from "react";
 import type React from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { ATTACHMENT_LOCATION_OPTIONS } from "../../lib/attachmentStorage";
+import type { AttachmentStorageMode } from "../../lib/settings";
 import { SpaceSettingsPane } from "./SpaceSettingsPane";
 
 const { invokeMock, loadSettingsMock, writeSpaceSettingMock } = vi.hoisted(() => ({
@@ -167,6 +169,25 @@ describe("SpaceSettingsPane", () => {
 		});
 	}
 
+	async function chooseAttachmentLocation(mode: AttachmentStorageMode) {
+		const trigger = container.querySelector('[aria-label="Attachment location"]');
+		if (!(trigger instanceof HTMLElement)) throw new Error("Attachment location select not found");
+		await act(async () => {
+			trigger.click();
+			await Promise.resolve();
+		});
+		const label = ATTACHMENT_LOCATION_OPTIONS.find((option) => option.value === mode)?.label;
+		const option = Array.from(document.querySelectorAll('[role="option"]')).find(
+			(node) => node.textContent === label,
+		);
+		if (!(option instanceof HTMLElement)) throw new Error(`Option for ${mode} not found`);
+		await act(async () => {
+			option.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
+			option.click();
+			await Promise.resolve();
+		});
+	}
+
 	function getAttachmentsSection(): HTMLElement {
 		const heading = Array.from(container.querySelectorAll("h2")).find(
 			(node) => node.textContent === "Attachments",
@@ -207,15 +228,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		const select = container.querySelector(
-			'select[aria-label="Attachment location"]',
-		) as HTMLSelectElement;
-
-		await act(async () => {
-			select.value = "note-subfolder";
-			select.dispatchEvent(new Event("change", { bubbles: true }));
-			await Promise.resolve();
-		});
+		await chooseAttachmentLocation("note-subfolder");
 
 		expectSpaceSetting("attachmentStorageMode", "note-subfolder");
 		expect(container.querySelector('input[aria-label="Attachment subfolder name"]')).not.toBeNull();
@@ -246,15 +259,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		const select = container.querySelector(
-			'select[aria-label="Attachment location"]',
-		) as HTMLSelectElement;
-
-		await act(async () => {
-			select.value = "note-subfolder";
-			select.dispatchEvent(new Event("change", { bubbles: true }));
-			await Promise.resolve();
-		});
+		await chooseAttachmentLocation("note-subfolder");
 
 		expectSpaceSetting("attachmentFolder", "assets");
 	});
@@ -280,23 +285,11 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		const select = container.querySelector(
-			'select[aria-label="Attachment location"]',
-		) as HTMLSelectElement;
-
-		await act(async () => {
-			select.value = "note-folder";
-			select.dispatchEvent(new Event("change", { bubbles: true }));
-			await Promise.resolve();
-		});
+		await chooseAttachmentLocation("note-folder");
 
 		writeSpaceSettingMock.mockClear();
 
-		await act(async () => {
-			select.value = "specific-folder";
-			select.dispatchEvent(new Event("change", { bubbles: true }));
-			await Promise.resolve();
-		});
+		await chooseAttachmentLocation("specific-folder");
 
 		expect(spaceSettingCalls("attachmentFolder")).toHaveLength(0);
 		expect(getAttachmentsSection().textContent).toContain("Projects/Media");
@@ -323,15 +316,7 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		const select = container.querySelector(
-			'select[aria-label="Attachment location"]',
-		) as HTMLSelectElement;
-
-		await act(async () => {
-			select.value = "note-subfolder";
-			select.dispatchEvent(new Event("change", { bubbles: true }));
-			await Promise.resolve();
-		});
+		await chooseAttachmentLocation("note-subfolder");
 
 		expect(spaceSettingCalls("attachmentFolder")).toHaveLength(0);
 		const input = container.querySelector(

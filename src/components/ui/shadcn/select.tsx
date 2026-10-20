@@ -1,0 +1,98 @@
+import { ChevronDown } from "@/components/Icons";
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
+import { cn } from "@/lib/utils";
+import { Select as SelectPrimitive } from "@animate-ui/react/primitives/base-ui/select";
+import { Tick02Icon } from "@hugeicons/core-free-icons";
+import type { ReactNode } from "react";
+
+const ROW_ICON_SIZE = "var(--icon-sm)";
+
+export interface SelectOption<Value> {
+	value: Value;
+	label: string;
+	disabled?: boolean;
+	icon?: ReactNode;
+}
+
+export interface SelectProps<Value> {
+	value: Value;
+	options: readonly SelectOption<Value>[];
+	onValueChange: (value: Value) => void;
+	disabled?: boolean;
+	id?: string;
+	title?: string;
+	placeholder?: string;
+	"aria-label"?: string;
+	/** Classes for the trigger button. */
+	className?: string;
+	popupClassName?: string;
+}
+
+/**
+ * Animated single-value select. The popup reuses the shared `glyphMenu*` surface, and the
+ * selected row shows a trailing tick. Values keep their type end to end, so call sites
+ * don't need to parse or narrow strings.
+ */
+export function Select<Value>({
+	value,
+	options,
+	onValueChange,
+	disabled,
+	id,
+	title,
+	placeholder,
+	"aria-label": ariaLabel,
+	className,
+	popupClassName,
+}: SelectProps<Value>) {
+	return (
+		<SelectPrimitive.Root
+			value={value}
+			items={options}
+			disabled={disabled}
+			onValueChange={(next) => {
+				if (next !== null) onValueChange(next);
+			}}
+		>
+			<SelectPrimitive.Trigger
+				id={id}
+				title={title}
+				aria-label={ariaLabel}
+				className={cn("glyphSelectTrigger", className)}
+			>
+				<SelectPrimitive.Value className="glyphSelectValue" placeholder={placeholder} />
+				<SelectPrimitive.Icon className="glyphSelectChevron">
+					<ChevronDown size={ROW_ICON_SIZE} aria-hidden="true" />
+				</SelectPrimitive.Icon>
+			</SelectPrimitive.Trigger>
+			<SelectPrimitive.Portal>
+				<SelectPrimitive.Positioner
+					className="glyphMenuPositioner"
+					align="start"
+					sideOffset={6}
+					alignItemWithTrigger={false}
+				>
+					<SelectPrimitive.Popup className={cn("glyphMenuPopup glyphSelectPopup", popupClassName)}>
+						{options.map((option) => (
+							<SelectPrimitive.Item
+								key={String(option.value)}
+								value={option.value}
+								label={option.label}
+								disabled={option.disabled}
+								className="glyphMenuItem"
+							>
+								{option.icon ? <span className="glyphMenuItemIcon">{option.icon}</span> : null}
+								<SelectPrimitive.ItemText className="glyphMenuItemLabel">
+									{option.label}
+								</SelectPrimitive.ItemText>
+								<SelectPrimitive.ItemIndicator className="glyphMenuItemCheck">
+									<HugeiconsIcon icon={Tick02Icon} size={ROW_ICON_SIZE} strokeWidth={2.25} />
+								</SelectPrimitive.ItemIndicator>
+							</SelectPrimitive.Item>
+						))}
+					</SelectPrimitive.Popup>
+				</SelectPrimitive.Positioner>
+			</SelectPrimitive.Portal>
+		</SelectPrimitive.Root>
+	);
+}

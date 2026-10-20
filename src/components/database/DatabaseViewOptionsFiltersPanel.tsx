@@ -8,6 +8,7 @@ import type {
 } from "../../lib/database/types";
 import { ChevronDown, Plus, Trash2 } from "../Icons";
 import { Input } from "../ui/shadcn/input";
+import { Select, type SelectOption } from "../ui/shadcn/select";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { DatabaseTagPicker } from "./DatabaseTagPicker";
 import { type DatabaseFilterPreset, databaseFilterPresets } from "./databaseViewPresets";
@@ -120,8 +121,8 @@ function operatorLabel(operator: string): string {
 
 function operatorOptions(
 	column: DatabaseColumn | null,
-	currentOperator: string,
-): Array<{ value: string; label: string; disabled?: boolean }> {
+	currentOperator: DatabaseFilter["operator"],
+): SelectOption<DatabaseFilter["operator"]>[] {
 	const options: DatabaseFilter["operator"][] = isBooleanColumn(column)
 		? ["is_true", "is_false", "is_empty", "is_not_empty"]
 		: isDateColumn(column)
@@ -298,36 +299,31 @@ export function FiltersPanel({
 								<FilterJoiner index={index} />
 								<span className="databaseViewFilterColumn">
 									<DatabaseColumnIcon column={selectedColumn ?? undefined} size="var(--icon-lg)" />
-									<select
-										className="databaseViewInlineSelect"
+									<Select
 										value={filter.column_id}
 										aria-label={`Filter ${index + 1} field`}
-										onChange={(event) => {
-											const nextColumn =
-												columns.find((column) => column.id === event.target.value) ?? null;
-											onChangeFilterColumn(index, nextColumn);
-										}}
-									>
-										{columns.map((column) => (
-											<option key={column.id} value={column.id}>
-												{column.label}
-											</option>
-										))}
-									</select>
+										options={columns.map((column) => ({ value: column.id, label: column.label }))}
+										onValueChange={(columnId) =>
+											onChangeFilterColumn(
+												index,
+												columns.find((column) => column.id === columnId) ?? null,
+											)
+										}
+									/>
 								</span>
-								<select
-									className="databaseViewInlineSelect"
+								<Select
 									value={filter.operator}
 									aria-label={`Filter ${index + 1} operator`}
-									onChange={(event) =>
+									options={availableOperators}
+									onValueChange={(operator) =>
 										void updateFilters((filters) =>
 											filters.map((entry, i) =>
 												i === index
 													? {
 															...entry,
-															operator: event.target.value as DatabaseFilter["operator"],
+															operator,
 															value_text:
-																event.target.value === "within_last_7_days"
+																operator === "within_last_7_days"
 																	? "Last 7 Days"
 																	: entry.value_text,
 														}
@@ -335,38 +331,23 @@ export function FiltersPanel({
 											),
 										)
 									}
-								>
-									{availableOperators.map((option) => (
-										<option key={option.value} value={option.value} disabled={option.disabled}>
-											{option.label}
-										</option>
-									))}
-								</select>
+								/>
 								{filter.operator === "within_last_7_days" ? (
-									<select
-										className="databaseViewInlineSelect"
+									<Select
 										value={filter.value_text ?? "Last 7 Days"}
 										aria-label={`Filter ${index + 1} date range`}
-										onChange={(event) =>
+										options={DATE_SHORTCUT_OPTIONS.map((option) => ({
+											value: option,
+											label: option,
+										}))}
+										onValueChange={(valueText) =>
 											void updateFilters((filters) =>
 												filters.map((entry, i) =>
-													i === index
-														? {
-																...entry,
-																value_text: event.target.value,
-																value_list: [],
-															}
-														: entry,
+													i === index ? { ...entry, value_text: valueText, value_list: [] } : entry,
 												),
 											)
 										}
-									>
-										{DATE_SHORTCUT_OPTIONS.map((option) => (
-											<option key={option} value={option}>
-												{option}
-											</option>
-										))}
-									</select>
+									/>
 								) : showsValue ? (
 									usesTagPicker ? (
 										<DatabaseTagPicker

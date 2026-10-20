@@ -1,7 +1,15 @@
 import type { DatabaseConfig } from "../../lib/database/types";
 import { Input } from "../ui/shadcn/input";
+import { Select, type SelectOption } from "../ui/shadcn/select";
 import { DatabaseFolderPicker } from "./DatabaseFolderPicker";
 import { DatabaseTagPicker } from "./DatabaseTagPicker";
+
+const SOURCE_KIND_OPTIONS: SelectOption<DatabaseConfig["source"]["kind"]>[] = [
+	{ value: "all_notes", label: "All notes" },
+	{ value: "folder", label: "A folder" },
+	{ value: "tag", label: "A tag" },
+	{ value: "search", label: "A search query" },
+];
 
 interface SourcePanelProps {
 	config: DatabaseConfig;
@@ -20,24 +28,13 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 			<div className="databaseViewPanelStack">
 				<label className="databaseViewField">
 					<span>Show notes from</span>
-					<select
-						className="databaseNativeSelect"
+					<Select
 						value={config.source.kind}
-						onChange={(event) =>
-							void updateConfig({
-								...config,
-								source: {
-									...config.source,
-									kind: event.target.value as DatabaseConfig["source"]["kind"],
-								},
-							})
+						options={SOURCE_KIND_OPTIONS}
+						onValueChange={(kind) =>
+							void updateConfig({ ...config, source: { ...config.source, kind } })
 						}
-					>
-						<option value="all_notes">All notes</option>
-						<option value="folder">A folder</option>
-						<option value="tag">A tag</option>
-						<option value="search">A search query</option>
-					</select>
+					/>
 				</label>
 				{config.source.kind === "folder" ? (
 					<>

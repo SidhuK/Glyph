@@ -566,9 +566,16 @@ button.databaseToolbarChip.databasesNewNoteButton > svg path {
 	flex: 0 1 190px;
 }
 
-.databaseViewSortRow > .databaseViewInlineSelect {
+/* Row-level selects read as chips beside the joiner and column chips. */
+.databaseViewFilterRow > .glyphSelectTrigger,
+.databaseViewSortRow > .glyphSelectTrigger {
+	max-width: 190px;
+	border-color: transparent;
+	background: color-mix(in srgb, var(--bg-primary) 72%, var(--bg-secondary));
+}
+
+.databaseViewSortRow > .glyphSelectTrigger {
 	flex: 0 0 164px;
-	max-width: 164px;
 }
 
 .databaseViewOptionJoiner,
@@ -592,22 +599,12 @@ button.databaseToolbarChip.databasesNewNoteButton > svg path {
 	padding: 0 8px;
 }
 
-.databaseViewInlineSelect {
+/* The column chip already draws the surface, so its select is bare text. */
+.databaseViewFilterColumn > .glyphSelectTrigger {
 	max-width: 190px;
-	min-width: 0;
-	height: 30px;
+	padding: 0 2px;
 	border: 0;
 	background: transparent;
-	color: var(--text-primary);
-	font-size: calc(var(--text-base) * 0.9);
-	outline: none;
-	cursor: pointer;
-}
-
-.databaseViewInlineSelect:focus-visible {
-	outline: 2px solid var(--accent);
-	outline-offset: 2px;
-	border-radius: var(--radius-sm);
 }
 
 .databaseViewFilterValue {
