@@ -61,7 +61,7 @@ export function DirectoryBreadcrumbMenuItem({
 				/>
 				<span className="glyphMenuItemLabel">{entry.name}</span>
 			</DropdownMenuSubTrigger>
-			<DropdownMenuSubContent className="breadcrumbMenu" sideOffset={4}>
+			<DropdownMenuSubContent className="breadcrumbMenu">
 				{loading ? (
 					<div className="breadcrumbMenuState">{t("breadcrumbs.loading")}</div>
 				) : childEntries.length === 0 ? (
