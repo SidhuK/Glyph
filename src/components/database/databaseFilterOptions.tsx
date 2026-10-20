@@ -24,6 +24,7 @@ import type { TFunction } from "i18next";
 import { isBooleanColumn, isDateColumn, isNumberColumn } from "../../lib/database/columns";
 import type { DatabaseColumn, DatabaseFilter } from "../../lib/database/types";
 import { SelectIcon, type SelectOption } from "../ui/shadcn/select";
+import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 
 type FilterOperator = DatabaseFilter["operator"];
 
@@ -144,5 +145,13 @@ export function dateRangeOptions(t: TFunction<"shell">): SelectOption<string>[] 
 		value: range.value,
 		label: t(`collections.filter.dateRanges.${range.key}`),
 		icon: <SelectIcon icon={range.icon} />,
+	}));
+}
+
+export function columnSelectOptions(columns: readonly DatabaseColumn[]): SelectOption<string>[] {
+	return columns.map((column) => ({
+		value: column.id,
+		label: column.label,
+		icon: <DatabaseColumnIcon column={column} size="var(--icon-sm)" />,
 	}));
 }

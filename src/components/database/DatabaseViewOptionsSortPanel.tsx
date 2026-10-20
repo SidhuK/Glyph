@@ -9,7 +9,7 @@ import type {
 } from "../../lib/database/types";
 import { Plus } from "../Icons";
 import { Select, SelectIcon } from "../ui/shadcn/select";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import { columnSelectOptions } from "./databaseFilterOptions";
 import { type DatabaseSortPreset, databaseSortPresets } from "./databaseViewPresets";
 import { SORT_DIRECTION_ICONS } from "./sortDirectionIcons";
 
@@ -98,18 +98,12 @@ export function SortPanel({
 			</div>
 			{activeSort ? (
 				<div className="databaseViewSortRow">
-					<span className="databaseViewFilterColumn">
-						<Select
-							value={activeSort.column_id}
-							aria-label={t("collections.sort.field")}
-							options={columns.map((column) => ({
-								value: column.id,
-								label: column.label,
-								icon: <DatabaseColumnIcon column={column} size="var(--icon-sm)" />,
-							}))}
-							onValueChange={(columnId) => setSort({ column_id: columnId })}
-						/>
-					</span>
+					<Select
+						value={activeSort.column_id}
+						aria-label={t("collections.sort.field")}
+						options={columnSelectOptions(columns)}
+						onValueChange={(columnId) => setSort({ column_id: columnId })}
+					/>
 					<Select
 						value={sortDirection}
 						aria-label={t("collections.sort.direction")}
