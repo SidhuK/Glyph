@@ -1,11 +1,4 @@
 /* ─── Note Nodes: Inline Editor ─── */
-@media (prefers-color-scheme: dark) {
-	.rfNodeNote {
-		background: color-mix(in srgb, var(--bg-tertiary) 70%, transparent);
-		border-color: color-mix(in srgb, var(--border-default) 65%, transparent);
-	}
-}
-
 .rfNodeNoteEditor {
 	flex: 1;
 	min-height: 0;

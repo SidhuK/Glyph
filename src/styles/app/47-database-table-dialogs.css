@@ -658,11 +658,6 @@
 	}
 }
 
-.databaseBoardContextMenuSeparator {
-	margin: 6px 4px;
-	background: color-mix(in srgb, var(--border-light) 72%, transparent);
-}
-
 .databaseBoardColorMenu {
 	min-width: 0;
 	padding: var(--database-dropdown-padding);
