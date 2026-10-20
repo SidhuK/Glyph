@@ -7,17 +7,7 @@ import { cn } from "@/lib/utils";
 
 const MENU_ICON_SIZE = "var(--icon-sm)";
 
-type MenuPositioningProps = Pick<
-	MenuPrimitive.Positioner.Props,
-	| "side"
-	| "align"
-	| "sideOffset"
-	| "alignOffset"
-	| "collisionPadding"
-	| "collisionAvoidance"
-	| "sticky"
-	| "anchor"
->;
+type MenuPositioningProps = Pick<MenuPrimitive.Positioner.Props, "side" | "align" | "sideOffset">;
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
 	return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
@@ -33,11 +23,6 @@ function MenuSurface({
 	side,
 	align,
 	sideOffset,
-	alignOffset,
-	collisionPadding,
-	collisionAvoidance,
-	sticky,
-	anchor,
 	...props
 }: MenuPrimitive.Popup.Props & MenuPositioningProps & { slot: string }) {
 	return (
@@ -47,11 +32,6 @@ function MenuSurface({
 				side={side}
 				align={align}
 				sideOffset={sideOffset}
-				alignOffset={alignOffset}
-				collisionPadding={collisionPadding}
-				collisionAvoidance={collisionAvoidance}
-				sticky={sticky}
-				anchor={anchor}
 			>
 				<MenuPrimitive.Popup
 					data-slot={slot}
@@ -72,17 +52,14 @@ function DropdownMenuContent({
 
 function DropdownMenuItem({
 	className,
-	inset,
 	variant = "default",
 	...props
 }: MenuPrimitive.Item.Props & {
-	inset?: boolean;
 	variant?: "default" | "destructive";
 }) {
 	return (
 		<MenuPrimitive.Item
 			data-slot="dropdown-menu-item"
-			data-inset={inset || undefined}
 			data-variant={variant}
 			className={cn("glyphMenuItem", className)}
 			{...props}
@@ -110,20 +87,9 @@ function DropdownMenuRadioItem({ className, children, ...props }: MenuPrimitive.
 }
 
 // A plain element rather than Menu.GroupLabel, which throws when rendered outside a Menu.Group.
-function DropdownMenuLabel({
-	className,
-	inset,
-	...props
-}: React.ComponentProps<"div"> & {
-	inset?: boolean;
-}) {
+function DropdownMenuLabel({ className, ...props }: React.ComponentProps<"div">) {
 	return (
-		<div
-			data-slot="dropdown-menu-label"
-			data-inset={inset || undefined}
-			className={cn("glyphMenuLabel", className)}
-			{...props}
-		/>
+		<div data-slot="dropdown-menu-label" className={cn("glyphMenuLabel", className)} {...props} />
 	);
 }
 
@@ -143,16 +109,12 @@ function DropdownMenuSub({ ...props }: MenuPrimitive.SubmenuRoot.Props) {
 
 function DropdownMenuSubTrigger({
 	className,
-	inset,
 	children,
 	...props
-}: MenuPrimitive.SubmenuTrigger.Props & {
-	inset?: boolean;
-}) {
+}: MenuPrimitive.SubmenuTrigger.Props) {
 	return (
 		<MenuPrimitive.SubmenuTrigger
 			data-slot="dropdown-menu-sub-trigger"
-			data-inset={inset || undefined}
 			className={cn("glyphMenuItem", className)}
 			{...props}
 		>
