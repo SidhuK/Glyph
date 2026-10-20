@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuItemIcon,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
@@ -64,12 +65,7 @@ export function FileTreeSortMenu({
 								if (mode !== sortMode) onSortModeChange(mode);
 							}}
 						>
-							<HugeiconsIcon
-								icon={FILE_TREE_SORT_ICONS[mode]}
-								size="var(--icon-sm)"
-								className="glyphMenuItemIcon"
-								aria-hidden="true"
-							/>
+							<DropdownMenuItemIcon icon={FILE_TREE_SORT_ICONS[mode]} />
 							<span className="glyphMenuItemLabel">{fileTreeSortLabel(mode)}</span>
 						</DropdownMenuRadioItem>
 					))}

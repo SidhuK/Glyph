@@ -1,4 +1,3 @@
-import { Menu } from "@animate-ui/react/primitives/base-ui/menu";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +8,7 @@ import { toast } from "../../lib/toast";
 import { AppearanceIcon } from "../AppearanceIcon";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronsUpDown } from "../Icons";
+import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
 import { SpaceMenuPopup } from "./SpaceMenuPopup";
 
 /** AppShell handlers that save open editors before the space changes. */
@@ -45,15 +45,14 @@ export function SpaceMenuButton({
 
 	return (
 		<>
-			<Menu.Root
+			<DropdownMenu
 				onOpenChange={(open, details) => {
 					if (open && busy) details.cancel();
 				}}
 			>
-				<Menu.Trigger
+				<DropdownMenuTrigger
 					className="spaceMenuButton"
 					aria-disabled={busy}
-					aria-haspopup="menu"
 					aria-label={
 						activeSpace ? t("spaceSwitcher.label", { name: activeSpace.name }) : buttonLabel
 					}
@@ -71,7 +70,7 @@ export function SpaceMenuButton({
 						className="spaceMenuButtonChevron"
 						aria-hidden="true"
 					/>
-				</Menu.Trigger>
+				</DropdownMenuTrigger>
 				<SpaceMenuPopup
 					spaces={spaces}
 					activeSpacePath={activeSpace?.path ?? null}
@@ -81,7 +80,7 @@ export function SpaceMenuButton({
 					onChangeIcon={() => setIconPickerOpen(true)}
 					onCloseSpace={() => spaceAction.mutate(onCloseSpace)}
 				/>
-			</Menu.Root>
+			</DropdownMenu>
 
 			{activeSpace ? (
 				<AppearancePicker

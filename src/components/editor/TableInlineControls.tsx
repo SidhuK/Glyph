@@ -18,6 +18,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuItemIcon,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
@@ -182,12 +183,7 @@ const TableAxisControl = memo(function TableAxisControl({
 							variant={item.destructive ? "destructive" : "default"}
 							onClick={() => runCapturedCommand(item.command)}
 						>
-							<HugeiconsIcon
-								icon={item.icon}
-								size="var(--icon-sm)"
-								className="glyphMenuItemIcon"
-								aria-hidden="true"
-							/>
+							<DropdownMenuItemIcon icon={item.icon} />
 							<span className="glyphMenuItemLabel">{item.label}</span>
 						</DropdownMenuItem>
 					);

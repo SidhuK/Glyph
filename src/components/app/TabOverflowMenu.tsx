@@ -3,6 +3,8 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuItemCheck,
+	DropdownMenuItemIcon,
 	DropdownMenuTrigger,
 } from "@/components/ui/shadcn/dropdown-menu";
 import {
@@ -15,7 +17,6 @@ import {
 	LibraryIcon,
 	NoteIcon,
 	PlusSignSquareIcon,
-	Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import { useTranslation } from "react-i18next";
@@ -64,27 +65,10 @@ function TabRowIcon({
 	tab: WorkspaceTab;
 	appearance: FileTreeAppearance | undefined;
 }) {
-	if (tab.kind === "blank" || !tab.target) {
-		return (
-			<HugeiconsIcon
-				icon={PlusSignSquareIcon}
-				size={ROW_ICON_SIZE}
-				className="glyphMenuItemIcon"
-				aria-hidden="true"
-			/>
-		);
-	}
+	if (tab.kind === "blank" || !tab.target)
+		return <DropdownMenuItemIcon icon={PlusSignSquareIcon} />;
 	const specialIcon = SPECIAL_TAB_ICONS.get(tab.target);
-	if (specialIcon) {
-		return (
-			<HugeiconsIcon
-				icon={specialIcon}
-				size={ROW_ICON_SIZE}
-				className="glyphMenuItemIcon"
-				aria-hidden="true"
-			/>
-		);
-	}
+	if (specialIcon) return <DropdownMenuItemIcon icon={specialIcon} />;
 	if (appearance?.icon) {
 		return (
 			<AppearanceIcon
@@ -138,14 +122,7 @@ export function TabOverflowMenu({
 								appearance={tab.target ? itemAppearance[tab.target] : undefined}
 							/>
 							<span className="glyphMenuItemLabel">{label}</span>
-							{active ? (
-								<HugeiconsIcon
-									icon={Tick02Icon}
-									size={ROW_ICON_SIZE}
-									strokeWidth={2.25}
-									className="glyphMenuItemCheck"
-								/>
-							) : null}
+							{active ? <DropdownMenuItemCheck /> : null}
 						</DropdownMenuItem>
 					);
 				})}

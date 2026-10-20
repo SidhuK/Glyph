@@ -92,7 +92,11 @@ export function Select<Value>({
 								disabled={option.disabled}
 								className="glyphMenuItem"
 							>
-								{option.icon ? <span className="glyphMenuItemIcon">{option.icon}</span> : null}
+								{option.icon ? (
+									<span className="glyphMenuItemIcon" aria-hidden="true">
+										{option.icon}
+									</span>
+								) : null}
 								<SelectPrimitive.ItemText className="glyphMenuItemLabel">
 									{option.label}
 								</SelectPrimitive.ItemText>

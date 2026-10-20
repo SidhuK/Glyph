@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowRight01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { Menu as MenuPrimitive } from "@animate-ui/react/primitives/base-ui/menu";
+import type { IconSvgElement } from "@hugeicons/react";
 import type * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -63,6 +64,31 @@ function DropdownMenuItem({
 			data-variant={variant}
 			className={cn("glyphMenuItem", className)}
 			{...props}
+		/>
+	);
+}
+
+/** Leading icon for a menu row. */
+function DropdownMenuItemIcon({ icon }: { icon: IconSvgElement }) {
+	return (
+		<HugeiconsIcon
+			icon={icon}
+			size={MENU_ICON_SIZE}
+			className="glyphMenuItemIcon"
+			aria-hidden="true"
+		/>
+	);
+}
+
+/** Trailing tick marking the current row in a non-radio menu. */
+function DropdownMenuItemCheck() {
+	return (
+		<HugeiconsIcon
+			icon={Tick02Icon}
+			size={MENU_ICON_SIZE}
+			strokeWidth={2.25}
+			className="glyphMenuItemCheck"
+			aria-hidden="true"
 		/>
 	);
 }
@@ -152,6 +178,8 @@ export {
 	DropdownMenuContent,
 	DropdownMenuLabel,
 	DropdownMenuItem,
+	DropdownMenuItemCheck,
+	DropdownMenuItemIcon,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
 	DropdownMenuSeparator,
