@@ -75,7 +75,7 @@ export function ModelSelector({ profileId, value, onChange, provider }: ModelSel
 				</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				{modelsQuery.isPending ? (
+				{modelsQuery.isPending || (modelsQuery.isFetching && !models?.length) ? (
 					<DropdownMenuItem disabled>
 						<DropdownMenuItemIcon icon={Loading03Icon} />
 						<span className="glyphMenuItemLabel">{t("ai.modelSelector.loading")}</span>
