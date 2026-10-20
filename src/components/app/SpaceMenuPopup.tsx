@@ -37,14 +37,14 @@ export function SpaceMenuPopup({
 
 	return (
 		<Menu.Portal>
-			<Menu.Positioner className="spaceMenuPositioner" align="start" sideOffset={6}>
-				<Menu.Popup className="spaceMenuPopup">
+			<Menu.Positioner className="glyphMenuPositioner" align="start" sideOffset={6}>
+				<Menu.Popup className="glyphMenuPopup spaceMenuPopup">
 					{spaces.map((space) => {
 						const active = space.path === activeSpacePath;
 						return (
 							<Menu.Item
 								key={space.path}
-								className="spaceMenuItem"
+								className="glyphMenuItem"
 								onClick={() => {
 									if (!active) onSelectSpace(space.path);
 								}}
@@ -52,55 +52,55 @@ export function SpaceMenuPopup({
 								<AppearanceIcon
 									iconName={space.iconName}
 									size={ROW_ICON_SIZE}
-									className="spaceMenuItemIcon"
+									className="glyphMenuItemIcon"
 								/>
-								<span className="spaceMenuItemLabel">{space.name}</span>
+								<span className="glyphMenuItemLabel">{space.name}</span>
 								{active ? (
 									<HugeiconsIcon
 										icon={Tick02Icon}
 										size={ROW_ICON_SIZE}
 										strokeWidth={2.25}
-										className="spaceMenuItemCheck"
+										className="glyphMenuItemCheck"
 									/>
 								) : null}
 							</Menu.Item>
 						);
 					})}
-					<Menu.Separator className="spaceMenuSeparator" />
-					<Menu.Item className="spaceMenuItem" onClick={onOpenSpace}>
+					<Menu.Separator className="glyphMenuSeparator" />
+					<Menu.Item className="glyphMenuItem" onClick={onOpenSpace}>
 						<HugeiconsIcon
 							icon={FolderOpenIcon}
 							size={ROW_ICON_SIZE}
-							className="spaceMenuItemIcon"
+							className="glyphMenuItemIcon"
 						/>
-						<span className="spaceMenuItemLabel">{t("spaceSwitcher.openSpace")}</span>
+						<span className="glyphMenuItemLabel">{t("spaceSwitcher.openSpace")}</span>
 					</Menu.Item>
-					<Menu.Item className="spaceMenuItem" onClick={onCreateSpace}>
-						<HugeiconsIcon icon={PlusSignIcon} size={ROW_ICON_SIZE} className="spaceMenuItemIcon" />
-						<span className="spaceMenuItemLabel">{t("spaceSwitcher.createSpace")}</span>
+					<Menu.Item className="glyphMenuItem" onClick={onCreateSpace}>
+						<HugeiconsIcon icon={PlusSignIcon} size={ROW_ICON_SIZE} className="glyphMenuItemIcon" />
+						<span className="glyphMenuItemLabel">{t("spaceSwitcher.createSpace")}</span>
 					</Menu.Item>
 					{activeSpacePath ? (
 						<>
-							<Menu.Separator className="spaceMenuSeparator" />
-							<Menu.Item className="spaceMenuItem" onClick={onChangeIcon}>
+							<Menu.Separator className="glyphMenuSeparator" />
+							<Menu.Item className="glyphMenuItem" onClick={onChangeIcon}>
 								<HugeiconsIcon
 									icon={SmileIcon}
 									size={ROW_ICON_SIZE}
-									className="spaceMenuItemIcon"
+									className="glyphMenuItemIcon"
 								/>
-								<span className="spaceMenuItemLabel">{t("spaceSwitcher.changeIcon")}</span>
+								<span className="glyphMenuItemLabel">{t("spaceSwitcher.changeIcon")}</span>
 							</Menu.Item>
 							<Menu.Item
-								className="spaceMenuItem"
+								className="glyphMenuItem"
 								data-variant="destructive"
 								onClick={onCloseSpace}
 							>
 								<HugeiconsIcon
 									icon={Logout05Icon}
 									size={ROW_ICON_SIZE}
-									className="spaceMenuItemIcon"
+									className="glyphMenuItemIcon"
 								/>
-								<span className="spaceMenuItemLabel">{t("spaceSwitcher.closeSpace")}</span>
+								<span className="glyphMenuItemLabel">{t("spaceSwitcher.closeSpace")}</span>
 							</Menu.Item>
 						</>
 					) : null}
