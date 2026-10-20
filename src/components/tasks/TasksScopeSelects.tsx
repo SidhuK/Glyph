@@ -1,10 +1,4 @@
-import {
-	Folder01Icon,
-	FoldersIcon,
-	InboxIcon,
-	Tag01Icon,
-	TagsIcon,
-} from "@hugeicons/core-free-icons";
+import { Folder01Icon, InboxIcon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -96,12 +90,8 @@ export function TasksScopeSelects({
 					aria-label={t("tasks.folder")}
 					value={folder}
 					options={[
-						{ value: "", label: t("tasks.allFolders"), icon: <SelectIcon icon={FoldersIcon} /> },
-						...folders.map((path) => ({
-							value: path,
-							label: path,
-							icon: <SelectIcon icon={Folder01Icon} />,
-						})),
+						{ value: "", label: t("tasks.allFolders") },
+						...folders.map((path) => ({ value: path, label: path })),
 					]}
 					onValueChange={onFolderChange}
 				/>
@@ -112,12 +102,8 @@ export function TasksScopeSelects({
 					aria-label={t("tasks.tag")}
 					value={tag}
 					options={[
-						{ value: "", label: t("tasks.allTags"), icon: <SelectIcon icon={TagsIcon} /> },
-						...tagNames.map((name) => ({
-							value: name,
-							label: formatTagLabel(name),
-							icon: <SelectIcon icon={Tag01Icon} />,
-						})),
+						{ value: "", label: t("tasks.allTags") },
+						...tagNames.map((name) => ({ value: name, label: formatTagLabel(name) })),
 					]}
 					onValueChange={onTagChange}
 				/>
