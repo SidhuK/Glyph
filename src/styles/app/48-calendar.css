@@ -91,7 +91,7 @@ button.calendarMonthTitleButton:hover {
 	transition: opacity var(--transition-fast);
 }
 
-.calendarMonth[data-collapsed="true"] .calendarMonthNav {
+.calendarMonth[data-closed] .calendarMonthNav {
 	opacity: 0;
 }
 
@@ -144,8 +144,7 @@ button.calendarMonthTitleButton:hover {
 
 /* ── Grid ── */
 
-/* The folding panel clips its content, so it reaches into the card's padding to leave
-   room for focus rings. The negative margins keep the layout unchanged. */
+/* Bleeds into the card's padding so the clipping panel leaves room for focus rings. */
 .calendarMonthBody {
 	margin: 0 -4px -4px;
 	padding: 0 4px 4px;
@@ -386,6 +385,6 @@ button.calendarRow[data-kind="create"] {
 	transition: transform var(--transition-fast);
 }
 
-.calendarMonth[data-collapsed="true"] .calendarCollapseButton svg {
+.calendarMonth[data-closed] .calendarCollapseButton svg {
 	transform: rotate(-90deg);
 }
