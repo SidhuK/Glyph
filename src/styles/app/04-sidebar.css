@@ -95,6 +95,11 @@
 	-webkit-app-region: no-drag;
 }
 
+.spaceMenuButton[data-popup-open] {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
 .spaceMenuButton[aria-disabled="true"] {
 	background: transparent;
 	cursor: default;

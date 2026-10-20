@@ -291,7 +291,6 @@
 		"changeIcon": "Cambiar icono…",
 		"closeSpace": "Cerrar espacio",
 		"chooseIcon": "Elegir icono del espacio",
-		"menuFailed": "No se pudo abrir el menú de espacios",
 		"actionFailed": "No se pudo completar la acción del espacio"
 	},
 	"appearancePicker": {

@@ -1,14 +1,15 @@
+import { Menu } from "@animate-ui/react/primitives/base-ui/menu";
 import { useMutation } from "@tanstack/react-query";
-import { useState, type MouseEvent } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { showNativePopupMenu, type NativeContextMenuItem } from "../../lib/nativeContextMenu";
 import { defaultSpaceIconName } from "../../lib/spaceRegistry";
 import { toast } from "../../lib/toast";
 import { AppearanceIcon } from "../AppearanceIcon";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronsUpDown } from "../Icons";
+import { SpaceMenuPopup } from "./SpaceMenuPopup";
 
 /** AppShell handlers that save open editors before the space changes. */
 export interface SpaceMenuActions {
@@ -19,7 +20,7 @@ export interface SpaceMenuActions {
 }
 
 /**
- * Sidebar header button naming the active space; opens a native menu of space actions.
+ * Sidebar header button naming the active space; opens an animated menu of space actions.
  * Key it by space path so the icon picker never outlives the space it was opened for.
  */
 export function SpaceMenuButton({
@@ -42,58 +43,45 @@ export function SpaceMenuButton({
 	const buttonLabel = activeSpace?.name ?? t("workspace.openSpace");
 	const busy = spaceAction.isPending || switchingSpacePath !== null;
 
-	const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
-		if (busy) return;
-		const items: NativeContextMenuItem[] = [
-			...spaces.map((space): NativeContextMenuItem => ({
-				label: space.name,
-				checked: space === activeSpace,
-				action: () => {
-					if (space !== activeSpace) spaceAction.mutate(() => onSelectSpace(space.path));
-				},
-			})),
-			{ type: "separator" },
-			{ label: t("spaceSwitcher.openSpace"), action: () => spaceAction.mutate(onOpenSpace) },
-			{ label: t("spaceSwitcher.createSpace"), action: () => spaceAction.mutate(onCreateSpace) },
-		];
-		if (activeSpace) {
-			items.push(
-				{ type: "separator" },
-				{ label: t("spaceSwitcher.changeIcon"), action: () => setIconPickerOpen(true) },
-				{ label: t("spaceSwitcher.closeSpace"), action: () => spaceAction.mutate(onCloseSpace) },
-			);
-		}
-		void showNativePopupMenu(event, items).catch((error: unknown) => {
-			toast.error(t("spaceSwitcher.menuFailed"), { description: extractErrorMessage(error) });
-		});
-	};
-
 	return (
 		<>
-			<button
-				type="button"
-				className="spaceMenuButton"
-				aria-disabled={busy}
-				aria-haspopup="menu"
-				aria-label={
-					activeSpace ? t("spaceSwitcher.label", { name: activeSpace.name }) : buttonLabel
-				}
-				title={activeSpace?.path}
-				onClick={openMenu}
+			<Menu.Root
+				onOpenChange={(open, details) => {
+					if (open && busy) details.cancel();
+				}}
 			>
-				<AppearanceIcon
-					iconName={activeSpace?.iconName ?? "folder"}
-					size="var(--icon-sm)"
-					className="spaceMenuButtonIcon"
+				<Menu.Trigger
+					className="spaceMenuButton"
+					aria-disabled={busy}
+					aria-haspopup="menu"
+					aria-label={
+						activeSpace ? t("spaceSwitcher.label", { name: activeSpace.name }) : buttonLabel
+					}
+					title={activeSpace?.path}
+				>
+					<AppearanceIcon
+						iconName={activeSpace?.iconName ?? "folder"}
+						size="var(--icon-sm)"
+						className="spaceMenuButtonIcon"
+					/>
+					<span className="spaceMenuButtonName">{buttonLabel}</span>
+					<ChevronsUpDown
+						size="var(--icon-xs)"
+						strokeWidth={2}
+						className="spaceMenuButtonChevron"
+						aria-hidden="true"
+					/>
+				</Menu.Trigger>
+				<SpaceMenuPopup
+					spaces={spaces}
+					activeSpacePath={activeSpace?.path ?? null}
+					onSelectSpace={(path) => spaceAction.mutate(() => onSelectSpace(path))}
+					onOpenSpace={() => spaceAction.mutate(onOpenSpace)}
+					onCreateSpace={() => spaceAction.mutate(onCreateSpace)}
+					onChangeIcon={() => setIconPickerOpen(true)}
+					onCloseSpace={() => spaceAction.mutate(onCloseSpace)}
 				/>
-				<span className="spaceMenuButtonName">{buttonLabel}</span>
-				<ChevronsUpDown
-					size="var(--icon-xs)"
-					strokeWidth={2}
-					className="spaceMenuButtonChevron"
-					aria-hidden="true"
-				/>
-			</button>
+			</Menu.Root>
 
 			{activeSpace ? (
 				<AppearancePicker

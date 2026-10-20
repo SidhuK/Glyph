@@ -293,7 +293,6 @@
 		"changeIcon": "Changer l'icône…",
 		"closeSpace": "Fermer l'espace",
 		"chooseIcon": "Choisir une icône d'espace",
-		"menuFailed": "Impossible d'ouvrir le menu des espaces",
 		"actionFailed": "Impossible de terminer l'action sur l'espace"
 	},
 	"appearancePicker": {

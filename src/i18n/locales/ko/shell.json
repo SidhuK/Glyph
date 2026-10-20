@@ -291,7 +291,6 @@
 		"changeIcon": "아이콘 변경…",
 		"closeSpace": "스페이스 닫기",
 		"chooseIcon": "스페이스 아이콘 선택",
-		"menuFailed": "스페이스 메뉴를 열 수 없습니다",
 		"actionFailed": "스페이스 작업을 완료할 수 없습니다"
 	},
 	"appearancePicker": {

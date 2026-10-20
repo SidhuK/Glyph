@@ -365,7 +365,6 @@
 		"changeIcon": "Change Icon…",
 		"closeSpace": "Close Space",
 		"chooseIcon": "Choose a space icon",
-		"menuFailed": "Could not open the space menu",
 		"actionFailed": "Could not complete the space action"
 	},
 	"tasks": {

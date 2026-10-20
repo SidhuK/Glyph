@@ -291,7 +291,6 @@
 		"changeIcon": "アイコンを変更…",
 		"closeSpace": "スペースを閉じる",
 		"chooseIcon": "スペースのアイコンを選択",
-		"menuFailed": "スペースメニューを開けませんでした",
 		"actionFailed": "スペースの操作を完了できませんでした"
 	},
 	"appearancePicker": {

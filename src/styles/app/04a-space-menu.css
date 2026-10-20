@@ -1,0 +1,71 @@
+/* Space switcher dropdown. Motion (scale/fade, gliding highlight, reduced motion)
+   comes from Animate UI's Base UI menu; these rules only paint the surfaces. */
+.spaceMenuPositioner {
+	z-index: 50;
+	outline: none;
+}
+
+.spaceMenuPopup {
+	min-width: 236px;
+	max-width: 320px;
+	max-height: var(--available-height);
+	overflow-y: auto;
+	padding: 5px;
+	border: 0.5px solid var(--border-default);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--popover) 82%, transparent);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	box-shadow:
+		0 2px 6px rgb(0 0 0 / 6%),
+		var(--shadow-overlay);
+	backdrop-filter: blur(28px) saturate(180%);
+	-webkit-backdrop-filter: blur(28px) saturate(180%);
+	outline: none;
+	user-select: none;
+}
+
+.spaceMenuItem {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	height: 28px;
+	padding: 0 8px;
+	border-radius: 7px;
+	outline: none;
+	cursor: default;
+}
+
+/* The highlight surface reads this fill and glides it between rows. */
+.spaceMenuItem[data-highlighted] {
+	background: var(--bg-hover);
+}
+
+.spaceMenuItemIcon {
+	flex: 0 0 auto;
+	color: var(--text-secondary);
+}
+
+.spaceMenuItemLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.spaceMenuItemCheck {
+	flex: 0 0 auto;
+	margin-left: auto;
+	color: var(--interactive-accent);
+}
+
+.spaceMenuItem[data-variant="destructive"][data-highlighted],
+.spaceMenuItem[data-variant="destructive"][data-highlighted] .spaceMenuItemIcon {
+	color: var(--text-error);
+}
+
+.spaceMenuSeparator {
+	height: 1px;
+	margin: 5px 8px;
+	background: var(--border-light);
+}
