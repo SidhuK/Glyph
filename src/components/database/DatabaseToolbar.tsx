@@ -7,6 +7,7 @@ import type {
 } from "../../lib/database/types";
 import { Search, X } from "../Icons";
 import { Input } from "../ui/shadcn/input";
+import { Select } from "../ui/shadcn/select";
 import { DatabaseViewOptionsPopover } from "./DatabaseViewOptionsPopover";
 
 interface DatabaseToolbarProps {
@@ -117,10 +118,9 @@ export function DatabaseToolbar({
 					) : null}
 				</label>
 				{groupColumns.length > 0 ? (
-					<label className="databaseToolbarGroupBy">
+					<div className="databaseToolbarGroupBy">
 						<span className="databaseToolbarGroupByLabel">{groupByLabel}</span>
-						<select
-							className="databaseToolbarGroupBySelect"
+						<Select
 							value={selectedGroupColumnId}
 							title={
 								selectedGroupColumn
@@ -128,16 +128,16 @@ export function DatabaseToolbar({
 									: "Choose a field to group by"
 							}
 							aria-label={groupByLabel}
-							onChange={(event) => onGroupColumnIdChange(event.target.value || null)}
-						>
-							{databaseView === "board" ? null : <option value="">No grouping</option>}
-							{groupColumns.map((column) => (
-								<option key={column.id} value={column.id}>
-									{groupColumnOptionLabel(column)}
-								</option>
-							))}
-						</select>
-					</label>
+							options={[
+								...(databaseView === "board" ? [] : [{ value: "", label: "No grouping" }]),
+								...groupColumns.map((column) => ({
+									value: column.id,
+									label: groupColumnOptionLabel(column),
+								})),
+							]}
+							onValueChange={(columnId) => onGroupColumnIdChange(columnId || null)}
+						/>
+					</div>
 				) : databaseView === "board" ? (
 					<span className="databaseToolbarGroupByHint">
 						Add a status, tag, or checkbox field to create lanes

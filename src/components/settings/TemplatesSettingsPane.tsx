@@ -364,16 +364,10 @@ export function TemplateSettingsSections() {
 					<SettingsRow key={row.kind} label={t(row.labelKey)}>
 						<SettingsSelect
 							value={periodTemplates[row.kind] ?? ""}
-							onChange={(event) => void handlePeriodTemplateChange(row.kind, event.target.value)}
+							options={[{ value: "", label: "None" }, ...templates]}
+							onValueChange={(value) => void handlePeriodTemplateChange(row.kind, value)}
 							disabled={templatesFolder === null || !templates.length}
-						>
-							<option value="">None</option>
-							{templates.map((template) => (
-								<option key={template.value} value={template.value}>
-									{template.label}
-								</option>
-							))}
-						</SettingsSelect>
+						/>
 					</SettingsRow>
 				))}
 			</SettingsSection>

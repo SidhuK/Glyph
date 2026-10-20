@@ -35,15 +35,9 @@
 }
 
 .tasksToolbar .tasksScopeSelect {
-	width: auto;
 	max-width: 260px;
-	min-height: 28px;
 	height: 28px;
 	flex: 0 1 auto;
-	/* .databaseNativeSelect centers its arrow for 32px; re-center it for 28px. */
-	background-position:
-		calc(100% - 14px) 11px,
-		calc(100% - 9px) 11px;
 }
 
 .tasksScopeError {

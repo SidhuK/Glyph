@@ -20,7 +20,6 @@ import {
 import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
-	isAttachmentStorageMode,
 	loadSettings,
 	writeSpaceSetting,
 } from "../../lib/settings";
@@ -460,18 +459,9 @@ export function SpaceSettingsPane() {
 							<SettingsSelect
 								aria-label="Attachment location"
 								value={attachmentStorageMode}
-								onChange={(event) => {
-									const nextMode = event.target.value;
-									if (!isAttachmentStorageMode(nextMode)) return;
-									void handleAttachmentModeChange(nextMode);
-								}}
-							>
-								{ATTACHMENT_LOCATION_OPTIONS.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</SettingsSelect>
+								options={ATTACHMENT_LOCATION_OPTIONS}
+								onValueChange={(nextMode) => void handleAttachmentModeChange(nextMode)}
+							/>
 							<div className="settingsHelp">{ATTACHMENT_MODE_UI[attachmentStorageMode].help}</div>
 							{attachmentFolderEditor === "browse" ? (
 								<div className="dailyNotesFolderRow">

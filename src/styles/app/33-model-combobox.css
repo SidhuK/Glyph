@@ -16,14 +16,13 @@
 	padding-right: 70px;
 }
 
-.modelComboboxInputWrap .settingsSelectWrap {
-	width: 100%;
+.modelComboboxInputWrap .settingsSelectTrigger {
 	max-width: none;
 }
 
-.modelComboboxInputWrap .settingsSelectNative {
-	width: 100%;
-	padding-right: 92px;
+/* Keep the value clear of the model-count badge: text ends 92px from the trigger's edge. */
+.modelComboboxInputWrap .glyphSelectValue {
+	padding-right: 64px;
 }
 
 .modelComboboxBadge {

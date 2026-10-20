@@ -6,6 +6,7 @@ import type {
 	DatabaseSort,
 } from "../../lib/database/types";
 import { Plus } from "../Icons";
+import { Select } from "../ui/shadcn/select";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { type DatabaseSortPreset, databaseSortPresets } from "./databaseViewPresets";
 
@@ -20,6 +21,8 @@ interface SortPanelProps {
 	onApplySortPreset: (preset: DatabaseSortPreset) => void;
 	updateConfig: (config: DatabaseConfig) => Promise<boolean>;
 }
+
+const SORT_DIRECTIONS = ["asc", "desc"] as const;
 
 function directionLabel(column: DatabaseColumn | null, direction: "asc" | "desc") {
 	if (isDateColumn(column)) {
@@ -93,28 +96,22 @@ export function SortPanel({
 				<div className="databaseViewSortRow">
 					<span className="databaseViewFilterColumn">
 						<DatabaseColumnIcon column={sortColumn ?? undefined} size="var(--icon-lg)" />
-						<select
-							className="databaseViewInlineSelect"
+						<Select
 							value={activeSort.column_id}
 							aria-label="Sort field"
-							onChange={(event) => setSort({ column_id: event.target.value })}
-						>
-							{columns.map((column) => (
-								<option key={column.id} value={column.id}>
-									{column.label}
-								</option>
-							))}
-						</select>
+							options={columns.map((column) => ({ value: column.id, label: column.label }))}
+							onValueChange={(columnId) => setSort({ column_id: columnId })}
+						/>
 					</span>
-					<select
-						className="databaseViewInlineSelect"
+					<Select
 						value={sortDirection}
 						aria-label="Sort direction"
-						onChange={(event) => setSort({ direction: event.target.value as "asc" | "desc" })}
-					>
-						<option value="asc">{directionLabel(sortColumn, "asc")}</option>
-						<option value="desc">{directionLabel(sortColumn, "desc")}</option>
-					</select>
+						options={SORT_DIRECTIONS.map((direction) => ({
+							value: direction,
+							label: directionLabel(sortColumn, direction),
+						}))}
+						onValueChange={(direction) => setSort({ direction })}
+					/>
 				</div>
 			) : (
 				<button

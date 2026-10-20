@@ -305,19 +305,6 @@
 	display: none;
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu .databaseNativeSelect {
-	min-height: 30px;
-	padding: 0 28px 0 8px;
-	font-size: calc(var(--text-base) * 0.9);
-	border-radius: var(--database-control-radius);
-	background-position:
-		calc(100% - 11px) 11px,
-		calc(100% - 6px) 11px;
-	background-size:
-		5px 5px,
-		5px 5px;
-}
-
 [data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="input"] {
 	min-height: 30px;
 	border-radius: var(--database-control-radius);

@@ -33,6 +33,14 @@ export function AiProviderSection({
 	const selectedModel = availableModels?.find((model) => model.id === profileDraft.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
 	const shouldShowReasoningSelect = usesReasoningControl(profileDraft.provider);
+	const chatNamingModel = profileDraft.chat_naming_model;
+	const chatNamingOptions = [
+		{ value: "", label: t("chatNaming.sameModel") },
+		...(chatNamingModel && !availableModels?.some((model) => model.id === chatNamingModel)
+			? [{ value: chatNamingModel, label: chatNamingModel }]
+			: []),
+		...(availableModels ?? []).map((model) => ({ value: model.id, label: model.name })),
+	];
 	const baseUrlPlaceholder =
 		profileDraft.provider === "llama_cpp"
 			? "http://localhost:8080/v1"
@@ -85,27 +93,12 @@ export function AiProviderSection({
 				>
 					<SettingsSelect
 						id="aiChatNamingModel"
-						value={profileDraft.chat_naming_model ?? ""}
-						onChange={(event) =>
-							void onPersistDraft({
-								...profileDraft,
-								chat_naming_model: event.target.value || null,
-							})
+						value={chatNamingModel ?? ""}
+						options={chatNamingOptions}
+						onValueChange={(model) =>
+							void onPersistDraft({ ...profileDraft, chat_naming_model: model || null })
 						}
-					>
-						<option value="">{t("chatNaming.sameModel")}</option>
-						{profileDraft.chat_naming_model &&
-						!availableModels?.some((model) => model.id === profileDraft.chat_naming_model) ? (
-							<option value={profileDraft.chat_naming_model}>
-								{profileDraft.chat_naming_model}
-							</option>
-						) : null}
-						{availableModels?.map((model) => (
-							<option key={model.id} value={model.id}>
-								{model.name}
-							</option>
-						))}
-					</SettingsSelect>
+					/>
 				</SettingsRow>
 			) : null}
 
@@ -124,19 +117,16 @@ export function AiProviderSection({
 								reasoningOptions?.[0]?.effort ??
 								""
 							}
-							onChange={(event) =>
-								void onPersistDraft({
-									...profileDraft,
-									reasoning_effort: event.target.value || null,
-								})
+							options={(reasoningOptions ?? []).map((option) => ({
+								value: option.effort,
+								label: option.description
+									? `${option.effort} - ${option.description}`
+									: option.effort,
+							}))}
+							onValueChange={(effort) =>
+								void onPersistDraft({ ...profileDraft, reasoning_effort: effort || null })
 							}
-						>
-							{reasoningOptions?.map((option) => (
-								<option key={option.effort} value={option.effort}>
-									{option.description ? `${option.effort} - ${option.description}` : option.effort}
-								</option>
-							))}
-						</SettingsSelect>
+						/>
 					) : (
 						<div>
 							<Input

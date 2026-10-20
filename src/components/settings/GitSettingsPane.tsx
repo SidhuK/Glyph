@@ -40,10 +40,10 @@ const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 };
 
 const GIT_SYNC_INTERVAL_OPTIONS = [
-	{ label: "5 min", value: "5" },
-	{ label: "10 min", value: "10" },
-	{ label: "30 min", value: "30" },
-	{ label: "60 min", value: "60" },
+	{ label: "5 min", value: 5 },
+	{ label: "10 min", value: 10 },
+	{ label: "30 min", value: 30 },
+	{ label: "60 min", value: 60 },
 ] as const;
 
 const CONFLICT_POLICY_OPTIONS = [
@@ -240,20 +240,13 @@ export function GitSettingsPane() {
 					<SettingsRow label="Interval" description="How often Glyph should run scheduled syncs.">
 						<SettingsSelect
 							aria-label="Git sync interval"
-							value={String(config?.interval_minutes ?? 10)}
+							value={config?.interval_minutes ?? 10}
 							disabled={!gitEnabledForSpace || busy}
-							onChange={(event) => {
-								void updatePatch({
-									interval_minutes: Number(event.currentTarget.value),
-								});
+							options={GIT_SYNC_INTERVAL_OPTIONS}
+							onValueChange={(minutes) => {
+								void updatePatch({ interval_minutes: minutes });
 							}}
-						>
-							{GIT_SYNC_INTERVAL_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
-								</option>
-							))}
-						</SettingsSelect>
+						/>
 					</SettingsRow>
 					<SettingsRow
 						label="Actions"
@@ -301,18 +294,11 @@ export function GitSettingsPane() {
 							aria-label="Conflict policy"
 							value={config?.conflict_policy ?? "local_wins"}
 							disabled={!gitEnabledForSpace || busy}
-							onChange={(event) => {
-								void updatePatch({
-									conflict_policy: event.currentTarget.value as GitSyncConflictPolicy,
-								});
+							options={CONFLICT_POLICY_OPTIONS}
+							onValueChange={(policy) => {
+								void updatePatch({ conflict_policy: policy });
 							}}
-						>
-							{CONFLICT_POLICY_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
-								</option>
-							))}
-						</SettingsSelect>
+						/>
 					</SettingsRow>
 				</SettingsSection>
 

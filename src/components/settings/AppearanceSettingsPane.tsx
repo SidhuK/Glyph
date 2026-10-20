@@ -9,11 +9,7 @@ import {
 	type UiLightThemeId,
 	loadSettings,
 } from "../../lib/settings";
-import {
-	DEFAULT_FILE_TREE_SORT_MODE,
-	DURABLE_SETTINGS,
-	isFileTreeSortMode,
-} from "../../lib/settings/definitions";
+import { DEFAULT_FILE_TREE_SORT_MODE, DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import type { FileTreeSortMode } from "../../lib/settings/model";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -285,17 +281,12 @@ export function AppearanceSettingsPane() {
 							aria-label={t("layout.folioSort.ariaLabel")}
 							value={folioSortMode.value}
 							disabled={folioSortMode.isSaving}
-							onChange={(event) => {
-								const nextSortMode = event.currentTarget.value;
-								if (isFileTreeSortMode(nextSortMode)) folioSortMode.onChange(nextSortMode);
-							}}
-						>
-							{FILE_TREE_SORT_MODES.map((mode) => (
-								<option key={mode} value={mode}>
-									{fileTreeSortLabel(mode)}
-								</option>
-							))}
-						</SettingsSelect>
+							options={FILE_TREE_SORT_MODES.map((mode) => ({
+								value: mode,
+								label: fileTreeSortLabel(mode),
+							}))}
+							onValueChange={folioSortMode.onChange}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

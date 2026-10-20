@@ -93,14 +93,9 @@ export function InterfaceTypographySection({
 				<SettingsSelect
 					id="settingsFontFamily"
 					value={fontFamily}
-					onChange={(event) => onFontFamilyChange(event.target.value)}
-				>
-					{availableFonts.map((font) => (
-						<option key={font} value={font}>
-							{font}
-						</option>
-					))}
-				</SettingsSelect>
+					options={availableFonts.map((font) => ({ value: font, label: font }))}
+					onValueChange={onFontFamilyChange}
+				/>
 			</SettingsRow>
 
 			<SettingsRow
@@ -112,14 +107,9 @@ export function InterfaceTypographySection({
 				<SettingsSelect
 					id="settingsMonoFontFamily"
 					value={monoFontFamily}
-					onChange={(event) => onMonoFontFamilyChange(event.target.value)}
-				>
-					{availableMonospaceFonts.map((font) => (
-						<option key={font} value={font}>
-							{font}
-						</option>
-					))}
-				</SettingsSelect>
+					options={availableMonospaceFonts.map((font) => ({ value: font, label: font }))}
+					onValueChange={onMonoFontFamilyChange}
+				/>
 			</SettingsRow>
 
 			<FontSizeControl

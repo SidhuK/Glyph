@@ -93,3 +93,68 @@
 .spaceMenuPopup {
 	min-width: 236px;
 }
+
+/* Select (components/ui/shadcn/select.tsx). The trigger defaults to the compact bordered
+   control; call sites resize or restyle it. The popup is the shared menu surface. */
+.glyphSelectTrigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 6px;
+	min-width: 0;
+	max-width: 100%;
+	height: var(--database-control-height);
+	padding: 0 8px 0 10px;
+	border: 1px solid var(--database-control-border);
+	border-radius: var(--database-control-radius);
+	background: var(--database-control-background);
+	color: var(--text-primary);
+	font: inherit;
+	font-size: calc(var(--text-base) * 0.9);
+	text-align: start;
+	cursor: default;
+	outline: none;
+	transition:
+		border-color 140ms ease,
+		box-shadow 140ms ease;
+}
+
+.glyphSelectTrigger:not([data-disabled]):hover,
+.glyphSelectTrigger[data-popup-open] {
+	border-color: var(--border-default);
+}
+
+.glyphSelectTrigger:focus-visible {
+	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
+.glyphSelectTrigger[data-disabled] {
+	opacity: 0.5;
+}
+
+.glyphSelectValue {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.glyphSelectChevron {
+	display: inline-flex;
+	flex: 0 0 auto;
+	margin-left: auto;
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	transition: color var(--transition-base);
+}
+
+.glyphSelectTrigger[data-popup-open] .glyphSelectChevron,
+.glyphSelectTrigger:focus-visible .glyphSelectChevron {
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+}
+
+.glyphSelectPopup {
+	min-width: max(160px, var(--anchor-width));
+	max-width: max(320px, var(--anchor-width));
+}
