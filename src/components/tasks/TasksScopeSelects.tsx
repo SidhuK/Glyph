@@ -1,3 +1,4 @@
+import { Folder01Icon, InboxIcon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,15 +7,12 @@ import { navigationQueryKeys } from "../../lib/navigationPrefetch";
 import { invoke, type TaskScope } from "../../lib/tauri";
 import { formatTagLabel } from "../editor/noteProperties/utils";
 import { Button } from "../ui/shadcn/button";
+import { Select, SelectIcon } from "../ui/shadcn/select";
 
 /** The folder list only changes on folder create/move/delete, so skip refetching on note saves. */
 const FOLDER_LIST_STALE_TIME_MS = 60_000;
 
 export type TaskScopeKind = TaskScope["kind"];
-
-function isTaskScopeKind(value: string): value is TaskScopeKind {
-	return value === "all" || value === "folder" || value === "tag";
-}
 
 export interface TasksScopeSelectsProps {
 	spacePath: string | null;
@@ -59,19 +57,21 @@ export function TasksScopeSelects({
 
 	return (
 		<>
-			<select
-				className="databaseNativeSelect tasksScopeSelect"
+			<Select
+				className="tasksScopeSelect"
 				aria-label={t("tasks.scope")}
 				value={scopeKind}
-				onChange={(event) => {
-					const next = event.currentTarget.value;
-					if (isTaskScopeKind(next)) onScopeKindChange(next);
-				}}
-			>
-				<option value="all">{t("tasks.scopeAll")}</option>
-				<option value="folder">{t("tasks.scopeFolder")}</option>
-				<option value="tag">{t("tasks.scopeTag")}</option>
-			</select>
+				options={[
+					{ value: "all", label: t("tasks.scopeAll"), icon: <SelectIcon icon={InboxIcon} /> },
+					{
+						value: "folder",
+						label: t("tasks.scopeFolder"),
+						icon: <SelectIcon icon={Folder01Icon} />,
+					},
+					{ value: "tag", label: t("tasks.scopeTag"), icon: <SelectIcon icon={Tag01Icon} /> },
+				]}
+				onValueChange={onScopeKindChange}
+			/>
 			{scopeKind === "folder" && foldersQuery.isError && !foldersQuery.data ? (
 				<span className="tasksScopeError" role="alert">
 					{t("tasks.foldersLoadFailed", { message: foldersQuery.error.message })}
@@ -85,34 +85,28 @@ export function TasksScopeSelects({
 					</Button>
 				</span>
 			) : scopeKind === "folder" ? (
-				<select
-					className="databaseNativeSelect tasksScopeSelect"
+				<Select
+					className="tasksScopeSelect"
 					aria-label={t("tasks.folder")}
 					value={folder}
-					onChange={(event) => onFolderChange(event.currentTarget.value)}
-				>
-					<option value="">{t("tasks.allFolders")}</option>
-					{folders.map((path) => (
-						<option key={path} value={path}>
-							{path}
-						</option>
-					))}
-				</select>
+					options={[
+						{ value: "", label: t("tasks.allFolders") },
+						...folders.map((path) => ({ value: path, label: path })),
+					]}
+					onValueChange={onFolderChange}
+				/>
 			) : null}
 			{scopeKind === "tag" ? (
-				<select
-					className="databaseNativeSelect tasksScopeSelect"
+				<Select
+					className="tasksScopeSelect"
 					aria-label={t("tasks.tag")}
 					value={tag}
-					onChange={(event) => onTagChange(event.currentTarget.value)}
-				>
-					<option value="">{t("tasks.allTags")}</option>
-					{tagNames.map((name) => (
-						<option key={name} value={name}>
-							{formatTagLabel(name)}
-						</option>
-					))}
-				</select>
+					options={[
+						{ value: "", label: t("tasks.allTags") },
+						...tagNames.map((name) => ({ value: name, label: formatTagLabel(name) })),
+					]}
+					onValueChange={onTagChange}
+				/>
 			) : null}
 		</>
 	);

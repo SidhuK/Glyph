@@ -1,8 +1,9 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { Button } from "../../ui/shadcn/button";
+import { useTranslation } from "react-i18next";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuItemIcon,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
@@ -10,7 +11,6 @@ import {
 import {
 	PROPERTY_KINDS,
 	PROPERTY_KIND_ICONS,
-	PROPERTY_KIND_LABELS,
 	type PropertyKind,
 	isPropertyKind,
 } from "./constants";
@@ -24,29 +24,23 @@ interface PropertyKindBadgeProps {
 export function PropertyKindBadge({ kind, interactive = false, onSelect }: PropertyKindBadgeProps) {
 	const resolvedKind = isPropertyKind(kind) ? kind : "text";
 	const icon = PROPERTY_KIND_ICONS[resolvedKind];
-	const label = PROPERTY_KIND_LABELS[resolvedKind];
+	const { t } = useTranslation("editor");
 
 	if (interactive) {
 		return (
 			<DropdownMenu>
 				<DropdownMenuTrigger
 					render={
-						<Button
+						<button
 							type="button"
-							size="xs"
-							variant="ghost"
 							className="notePropertyKindBadge notePropertyKindTrigger"
-							title={`Property type: ${label}`}
+							title={t("propertyKind.title", { label: t(`propertyKind.kinds.${resolvedKind}`) })}
 						/>
 					}
 				>
 					<HugeiconsIcon icon={icon} size="var(--icon-sm)" />
 				</DropdownMenuTrigger>
-				<DropdownMenuContent
-					align="start"
-					sideOffset={6}
-					className="databasePickerMenu notePropertyKindMenu"
-				>
+				<DropdownMenuContent align="start" sideOffset={6}>
 					<DropdownMenuRadioGroup
 						value={resolvedKind}
 						onValueChange={(value) => {
@@ -54,18 +48,9 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 						}}
 					>
 						{PROPERTY_KINDS.map((menuKind) => (
-							<DropdownMenuRadioItem
-								key={menuKind}
-								value={menuKind}
-								closeOnClick
-								className="notePropertyKindOption"
-							>
-								<span className="notePropertyKindOptionIcon">
-									<HugeiconsIcon icon={PROPERTY_KIND_ICONS[menuKind]} size="var(--icon-sm)" />
-								</span>
-								<span className="notePropertyKindOptionLabel">
-									{PROPERTY_KIND_LABELS[menuKind]}
-								</span>
+							<DropdownMenuRadioItem key={menuKind} value={menuKind} closeOnClick>
+								<DropdownMenuItemIcon icon={PROPERTY_KIND_ICONS[menuKind]} />
+								<span className="glyphMenuItemLabel">{t(`propertyKind.kinds.${menuKind}`)}</span>
 							</DropdownMenuRadioItem>
 						))}
 					</DropdownMenuRadioGroup>

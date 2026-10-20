@@ -184,5 +184,17 @@
 				"wide": "넓음"
 			}
 		}
+	},
+	"templates": {
+		"sectionTitle": "템플릿",
+		"none": "없음",
+		"folder": {
+			"label": "템플릿 폴더",
+			"description": "현재 스페이스에서 Markdown 템플릿이 들어 있는 폴더를 선택하세요.",
+			"notConfigured": "설정되지 않음",
+			"browse": "찾아보기",
+			"clear": "템플릿 폴더 해제",
+			"found_other": "템플릿 {{count}}개 찾음"
+		}
 	}
 }

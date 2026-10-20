@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { isBooleanColumn, isDateColumn, isNumberColumn } from "../../lib/database/columns";
 import type {
 	DatabaseColumn,
@@ -6,8 +8,10 @@ import type {
 	DatabaseSort,
 } from "../../lib/database/types";
 import { Plus } from "../Icons";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import { Select, SelectIcon } from "../ui/shadcn/select";
+import { columnSelectOptions } from "./databaseFilterOptions";
 import { type DatabaseSortPreset, databaseSortPresets } from "./databaseViewPresets";
+import { SORT_DIRECTION_ICONS } from "./sortDirectionIcons";
 
 interface SortPanelProps {
 	config: DatabaseConfig;
@@ -21,17 +25,17 @@ interface SortPanelProps {
 	updateConfig: (config: DatabaseConfig) => Promise<boolean>;
 }
 
-function directionLabel(column: DatabaseColumn | null, direction: "asc" | "desc") {
-	if (isDateColumn(column)) {
-		return direction === "asc" ? "Oldest - Newest" : "Newest - Oldest";
-	}
-	if (isNumberColumn(column)) {
-		return direction === "asc" ? "Lowest - Highest" : "Highest - Lowest";
-	}
-	if (isBooleanColumn(column)) {
-		return direction === "asc" ? "Unchecked first" : "Checked first";
-	}
-	return direction === "asc" ? "A - Z" : "Z - A";
+const SORT_DIRECTIONS = ["asc", "desc"] as const;
+
+function directionLabel(
+	t: TFunction<"shell">,
+	column: DatabaseColumn | null,
+	direction: "asc" | "desc",
+) {
+	if (isDateColumn(column)) return t(`collections.sort.directions.date.${direction}`);
+	if (isNumberColumn(column)) return t(`collections.sort.directions.number.${direction}`);
+	if (isBooleanColumn(column)) return t(`collections.sort.directions.boolean.${direction}`);
+	return t(`collections.sort.directions.text.${direction}`);
 }
 
 export function SortPanel({
@@ -45,23 +49,24 @@ export function SortPanel({
 	onApplySortPreset,
 	updateConfig,
 }: SortPanelProps) {
+	const { t } = useTranslation("shell");
 	const presets = databaseSortPresets(config, availableProperties);
 	return (
-		<section className="databaseViewOptionsPanel is-sort" aria-label="Sort by">
+		<section className="databaseViewOptionsPanel is-sort" aria-label={t("collections.sort.title")}>
 			<div className="databaseViewPanelHeader">
-				<span>Sort by</span>
+				<span>{t("collections.sort.title")}</span>
 				{activeSort ? (
 					<button
 						type="button"
 						className="databaseViewPanelReset"
 						onClick={() => void updateConfig({ ...config, sorts: [] })}
 					>
-						Reset
+						{t("collections.viewOptions.reset")}
 					</button>
 				) : null}
 			</div>
-			<div className="databaseViewPresetGroup" aria-label="Sort presets">
-				<span className="databaseViewPresetLabel">Presets</span>
+			<div className="databaseViewPresetGroup" aria-label={t("collections.sort.presets")}>
+				<span className="databaseViewPresetLabel">{t("collections.viewOptions.presets")}</span>
 				<div className="databaseViewPresetChips">
 					{presets.map((preset) => {
 						const presetSort = preset.sort;
@@ -79,7 +84,9 @@ export function SortPanel({
 								data-active={applied ? "true" : "false"}
 								title={
 									preset.disabledReason ??
-									(activeSort ? `Replace current sort with ${preset.label}` : preset.label)
+									(activeSort
+										? t("collections.sort.replaceWithPreset", { name: preset.label })
+										: preset.label)
 								}
 								onClick={() => onApplySortPreset(preset)}
 							>
@@ -91,30 +98,22 @@ export function SortPanel({
 			</div>
 			{activeSort ? (
 				<div className="databaseViewSortRow">
-					<span className="databaseViewFilterColumn">
-						<DatabaseColumnIcon column={sortColumn ?? undefined} size="var(--icon-lg)" />
-						<select
-							className="databaseViewInlineSelect"
-							value={activeSort.column_id}
-							aria-label="Sort field"
-							onChange={(event) => setSort({ column_id: event.target.value })}
-						>
-							{columns.map((column) => (
-								<option key={column.id} value={column.id}>
-									{column.label}
-								</option>
-							))}
-						</select>
-					</span>
-					<select
-						className="databaseViewInlineSelect"
+					<Select
+						value={activeSort.column_id}
+						aria-label={t("collections.sort.field")}
+						options={columnSelectOptions(columns)}
+						onValueChange={(columnId) => setSort({ column_id: columnId })}
+					/>
+					<Select
 						value={sortDirection}
-						aria-label="Sort direction"
-						onChange={(event) => setSort({ direction: event.target.value as "asc" | "desc" })}
-					>
-						<option value="asc">{directionLabel(sortColumn, "asc")}</option>
-						<option value="desc">{directionLabel(sortColumn, "desc")}</option>
-					</select>
+						aria-label={t("collections.sort.direction")}
+						options={SORT_DIRECTIONS.map((direction) => ({
+							value: direction,
+							label: directionLabel(t, sortColumn, direction),
+							icon: <SelectIcon icon={SORT_DIRECTION_ICONS[direction]} />,
+						}))}
+						onValueChange={(direction) => setSort({ direction })}
+					/>
 				</div>
 			) : (
 				<button
@@ -124,7 +123,7 @@ export function SortPanel({
 					onClick={() => setSort({ column_id: sortColumn?.id ?? "title" })}
 				>
 					<Plus size="var(--icon-md)" aria-hidden="true" />
-					Add sort
+					{t("collections.sort.add")}
 				</button>
 			)}
 		</section>

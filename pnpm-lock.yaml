@@ -24,6 +24,9 @@ importers:
 
   .:
     dependencies:
+      '@animate-ui/react':
+        specifier: 2.0.0
+        version: 2.0.0(@base-ui/react@1.8.0(@types/react@19.2.17)(date-fns@4.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(motion@12.42.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@base-ui/react':
         specifier: ^1.8.0
         version: 1.8.0(@types/react@19.2.17)(date-fns@4.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -273,6 +276,35 @@ importers:
         version: 1.0.0(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(@vitest/ui@5.0.1(vitest@5.0.1))(esbuild@0.28.1)(jiti@2.7.0)(jsdom@29.1.1)(terser@5.51.2)(typescript@7.0.2)
 
 packages:
+
+  '@animate-ui/react@2.0.0':
+    resolution: {integrity: sha512-xwSVXnT+QYtlYBMcrUrRSKWfm039A7OIWsv0jA0po9fdqPScdRSFok8phH8f6Lb7xDWaoiHbqEZhFjV68EFprg==}
+    peerDependencies:
+      '@base-ui/react': ^1.8.0
+      '@floating-ui/react': ^0.27.20
+      '@shadcn/react': ^0.3.1
+      input-otp: ^1.5.0
+      motion: ^14.0.0
+      radix-ui: ^1.6.0
+      react: ^19.0.0
+      react-aria-components: ^1.21.0
+      react-dom: ^19.0.0
+      shiki: ^4.5.0
+    peerDependenciesMeta:
+      '@base-ui/react':
+        optional: true
+      '@floating-ui/react':
+        optional: true
+      '@shadcn/react':
+        optional: true
+      input-otp:
+        optional: true
+      radix-ui:
+        optional: true
+      react-aria-components:
+        optional: true
+      shiki:
+        optional: true
 
   '@antfu/install-pkg@2.1.0':
     resolution: {integrity: sha512-sdg9NxU3zR4Mnawfbc/x6GB5Wf17WYud5qOuEuxXjaKpYpMkISSJEjItGebXJ2bQ4DIcly4NYH23mtkGJjvKUw==}
@@ -4157,6 +4189,14 @@ packages:
         optional: true
 
 snapshots:
+
+  '@animate-ui/react@2.0.0(@base-ui/react@1.8.0(@types/react@19.2.17)(date-fns@4.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(motion@12.42.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+    dependencies:
+      motion: 12.42.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+    optionalDependencies:
+      '@base-ui/react': 1.8.0(@types/react@19.2.17)(date-fns@4.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
 
   '@antfu/install-pkg@2.1.0':
     dependencies:

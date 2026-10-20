@@ -50,11 +50,9 @@ import { useTagRefactor } from "../../hooks/useTagRefactor";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
-import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { allDocsCountQueryOptions, formatAllDocsCountLabel } from "../../lib/navigationPrefetch";
 import { type PeriodKind, isPeriodNoteEnabled } from "../../lib/periodNotes";
-import { isFileTreeSortMode } from "../../lib/settings";
 import type { SidebarOrder, SidebarVisibilityKey } from "../../lib/settings/model";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { spaceDisplayName } from "../../lib/spaceRegistry";
@@ -64,6 +62,7 @@ import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
 import { AppearanceIcon } from "../AppearanceIcon";
 import { FileTreePane } from "../filetree";
+import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
 import { SidebarCalendar } from "./calendar/SidebarCalendar";
 import type { OpenPeriodNoteAtDate } from "./calendar/useCalendarView";
@@ -913,32 +912,15 @@ export const SidebarContent = memo(function SidebarContent({
 											: t("sidebar.files")}
 									</h2>
 									<div className="sidebarStackHeaderActions">
-										<label className="sidebarStackHeaderSortNative">
-											<span className="sr-only">{t("sidebar.sortNotes")}</span>
-											<HugeiconsIcon
-												icon={Sorting01Icon}
-												size="var(--icon-sm)"
-												className="sidebarStackHeaderSortIcon"
-												aria-hidden="true"
-											/>
-											<select
-												className="sidebarStackHeaderSortSelect"
-												value={fileTreeSort.sortMode}
-												title={`${t("sidebar.sortNotes")}: ${fileTreeSortLabel(fileTreeSort.sortMode)}`}
-												aria-label={t("sidebar.sortNotes")}
-												onChange={(event) => {
-													const nextSortMode = event.currentTarget.value;
-													if (!isFileTreeSortMode(nextSortMode)) return;
-													void fileTreeSort.setSortMode(nextSortMode);
-												}}
-											>
-												{FILE_TREE_SORT_MODES.map((mode) => (
-													<option key={mode} value={mode}>
-														{fileTreeSortLabel(mode)}
-													</option>
-												))}
-											</select>
-										</label>
+										<FileTreeSortMenu
+											sortMode={fileTreeSort.sortMode}
+											onSortModeChange={(sortMode) => {
+												void fileTreeSort.setSortMode(sortMode);
+											}}
+											triggerClassName="sidebarStackHeaderAction"
+											icon={Sorting01Icon}
+											iconSize="var(--icon-sm)"
+										/>
 										<button
 											type="button"
 											className="sidebarStackHeaderAction"

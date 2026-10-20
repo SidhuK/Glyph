@@ -177,14 +177,9 @@
 
 .attachmentSelect {
 	flex-shrink: 0;
-	height: 30px;
-	padding: 0 8px;
-	border-radius: var(--radius-md);
-	border: 1px solid var(--attachment-rule);
+	border-color: var(--attachment-rule);
 	background: var(--bg-primary);
 	font-size: calc(var(--text-base) * 0.82);
-	color: var(--text-primary);
-	cursor: pointer;
 }
 
 /* List header doubles as the selection action bar. */

@@ -1,16 +1,7 @@
 import { cn } from "@/lib/utils";
-import type { SelectHTMLAttributes } from "react";
-import { ChevronDown } from "../Icons";
+import { Select, type SelectProps } from "../ui/shadcn/select";
 
-type SettingsSelectProps = SelectHTMLAttributes<HTMLSelectElement>;
-
-export function SettingsSelect({ className, children, ...props }: SettingsSelectProps) {
-	return (
-		<span className="settingsSelectWrap">
-			<select className={cn("settingsSelectNative", className)} {...props}>
-				{children}
-			</select>
-			<ChevronDown className="settingsSelectChevron" size="var(--icon-sm)" aria-hidden="true" />
-		</span>
-	);
+/** Settings-sized select: a full-width filled button with a trailing chevron. */
+export function SettingsSelect<Value>({ className, ...props }: SelectProps<Value>) {
+	return <Select {...props} className={cn("settingsSelectTrigger", className)} />;
 }

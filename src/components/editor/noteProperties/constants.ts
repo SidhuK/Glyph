@@ -35,16 +35,6 @@ export const PROPERTY_KIND_ICONS: Record<
 	priority: MediumSignalIcon,
 };
 
-export const PROPERTY_KIND_LABELS: Record<PropertyKind, string> = {
-	text: "Text",
-	url: "URL",
-	date: "Date",
-	checkbox: "Checkbox",
-	tags: "Tags",
-	status: "Status",
-	priority: "Priority",
-};
-
 export function isPropertyKind(kind: string): kind is PropertyKind {
 	return PROPERTY_KINDS.includes(kind as PropertyKind);
 }

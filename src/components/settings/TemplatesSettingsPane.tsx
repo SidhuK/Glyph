@@ -1,3 +1,4 @@
+import { NoteIcon, UnavailableIcon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../contexts";
@@ -13,6 +14,7 @@ import { loadSettings, setTemplatesFolder, writeSpaceSetting } from "../../lib/s
 import { SPACE_SETTINGS, type SpaceSettingDefinition } from "../../lib/settings/definitions";
 import { invoke } from "../../lib/tauri";
 import { listTemplates } from "../../lib/templates";
+import { SelectIcon } from "../ui/shadcn/select";
 import { SettingsFolderPicker } from "./SettingsFolderPicker";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
@@ -332,25 +334,33 @@ export function TemplateSettingsSections() {
 	);
 
 	const summary = useMemo(() => {
-		if (templatesFolder === null) return "Not configured";
-		return `${templates.length} template${templates.length === 1 ? "" : "s"} found`;
-	}, [templates.length, templatesFolder]);
+		if (templatesFolder === null) return t("templates.folder.notConfigured");
+		return t("templates.folder.found", { count: templates.length });
+	}, [t, templates.length, templatesFolder]);
+	const templateOptions = [
+		{ value: "", label: t("templates.none"), icon: <SelectIcon icon={UnavailableIcon} /> },
+		...templates.map((template) => ({ ...template, icon: <SelectIcon icon={NoteIcon} /> })),
+	];
 
 	return (
 		<>
 			{error ? <div className="settingsError">{error}</div> : null}
 
-			<SettingsSection title="Templates">
+			<SettingsSection title={t("templates.sectionTitle")}>
 				<SettingsRow
-					label="Template folder"
-					description="Choose a folder inside the current space that contains your markdown templates."
+					label={t("templates.folder.label")}
+					description={t("templates.folder.description")}
 					stacked
 					interactive={false}
 				>
 					<SettingsFolderPicker
-						path={templatesFolder === null ? "Not configured" : templatesFolder || "/"}
-						browseLabel="Browse"
-						clearLabel="Clear template folder"
+						path={
+							templatesFolder === null
+								? t("templates.folder.notConfigured")
+								: templatesFolder || "/"
+						}
+						browseLabel={t("templates.folder.browse")}
+						clearLabel={t("templates.folder.clear")}
 						onBrowse={() => void handleBrowseFolder()}
 						onClear={templatesFolder !== null ? () => void handleClearFolder() : undefined}
 						helper={summary}
@@ -364,16 +374,10 @@ export function TemplateSettingsSections() {
 					<SettingsRow key={row.kind} label={t(row.labelKey)}>
 						<SettingsSelect
 							value={periodTemplates[row.kind] ?? ""}
-							onChange={(event) => void handlePeriodTemplateChange(row.kind, event.target.value)}
+							options={templateOptions}
+							onValueChange={(value) => void handlePeriodTemplateChange(row.kind, value)}
 							disabled={templatesFolder === null || !templates.length}
-						>
-							<option value="">None</option>
-							{templates.map((template) => (
-								<option key={template.value} value={template.value}>
-									{template.label}
-								</option>
-							))}
-						</SettingsSelect>
+						/>
 					</SettingsRow>
 				))}
 			</SettingsSection>

@@ -184,5 +184,17 @@
 				"wide": "ワイド"
 			}
 		}
+	},
+	"templates": {
+		"sectionTitle": "テンプレート",
+		"none": "なし",
+		"folder": {
+			"label": "テンプレートフォルダ",
+			"description": "現在のスペース内で Markdown テンプレートを含むフォルダを選択します。",
+			"notConfigured": "未設定",
+			"browse": "参照",
+			"clear": "テンプレートフォルダを解除",
+			"found_other": "{{count}} 件のテンプレート"
+		}
 	}
 }

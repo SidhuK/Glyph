@@ -1,8 +1,10 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	CheckmarkCircle02Icon,
+	CloudIcon,
 	GitBranchIcon,
 	InformationCircleIcon,
+	LaptopIcon,
 	Link01Icon,
 } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -25,6 +27,7 @@ import type {
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { Button } from "../ui/shadcn/button";
+import { SelectIcon } from "../ui/shadcn/select";
 import {
 	SettingsRow,
 	SettingsSection,
@@ -39,20 +42,17 @@ const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 	include_non_markdown_files: false,
 };
 
-const GIT_SYNC_INTERVAL_OPTIONS = [
-	{ label: "5 min", value: "5" },
-	{ label: "10 min", value: "10" },
-	{ label: "30 min", value: "30" },
-	{ label: "60 min", value: "60" },
-] as const;
+const GIT_SYNC_INTERVAL_MINUTES: readonly number[] = [5, 10, 30, 60];
 
-const CONFLICT_POLICY_OPTIONS = [
-	{ label: "Local wins", value: "local_wins" },
-	{ label: "Remote wins", value: "remote_wins" },
-] as const satisfies readonly {
-	label: string;
-	value: GitSyncConflictPolicy;
-}[];
+const CONFLICT_POLICY_ICONS = {
+	local_wins: LaptopIcon,
+	remote_wins: CloudIcon,
+} as const satisfies Record<GitSyncConflictPolicy, unknown>;
+
+const CONFLICT_POLICIES = [
+	"local_wins",
+	"remote_wins",
+] as const satisfies readonly GitSyncConflictPolicy[];
 
 export function GitSettingsPane() {
 	const gitSync = useGitSyncContext();
@@ -132,6 +132,11 @@ export function GitSettingsPane() {
 	}, [gitSync]);
 
 	const inclusions = config?.inclusions ?? DEFAULT_INCLUSIONS;
+	const intervalMinutes = config?.interval_minutes ?? 10;
+	// The backend accepts any interval from 1 to 1440, so keep a custom one listed and labelled.
+	const intervalChoices = GIT_SYNC_INTERVAL_MINUTES.includes(intervalMinutes)
+		? GIT_SYNC_INTERVAL_MINUTES
+		: [...GIT_SYNC_INTERVAL_MINUTES, intervalMinutes].sort((a, b) => a - b);
 	const gitEnabledForSpace =
 		Boolean(config) && !status?.unsupported_parent_repo && status?.repo_detected;
 	const repoStateLabel = useMemo(() => getGitSyncRepoStateLabel(status), [status]);
@@ -237,23 +242,22 @@ export function GitSettingsPane() {
 							}}
 						/>
 					</SettingsRow>
-					<SettingsRow label="Interval" description="How often Glyph should run scheduled syncs.">
+					<SettingsRow
+						label={t("gitSync.interval.label")}
+						description={t("gitSync.interval.description")}
+					>
 						<SettingsSelect
-							aria-label="Git sync interval"
-							value={String(config?.interval_minutes ?? 10)}
+							aria-label={t("gitSync.interval.ariaLabel")}
+							value={intervalMinutes}
 							disabled={!gitEnabledForSpace || busy}
-							onChange={(event) => {
-								void updatePatch({
-									interval_minutes: Number(event.currentTarget.value),
-								});
+							options={intervalChoices.map((minutes) => ({
+								value: minutes,
+								label: t("gitSync.interval.minutes", { count: minutes }),
+							}))}
+							onValueChange={(minutes) => {
+								void updatePatch({ interval_minutes: minutes });
 							}}
-						>
-							{GIT_SYNC_INTERVAL_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
-								</option>
-							))}
-						</SettingsSelect>
+						/>
 					</SettingsRow>
 					<SettingsRow
 						label="Actions"
@@ -292,27 +296,27 @@ export function GitSettingsPane() {
 				</SettingsSection>
 
 				<SettingsSection
-					title="Conflict Resolution"
-					description="Choose which side Glyph should favor when local and remote edits conflict."
+					title={t("gitSync.conflict.sectionTitle")}
+					description={t("gitSync.conflict.sectionDescription")}
 					className={!gitEnabledForSpace ? "settingsSectionMuted" : undefined}
 				>
-					<SettingsRow label="Policy" description="Glyph resolves conflicts automatically.">
+					<SettingsRow
+						label={t("gitSync.conflict.label")}
+						description={t("gitSync.conflict.description")}
+					>
 						<SettingsSelect
-							aria-label="Conflict policy"
+							aria-label={t("gitSync.conflict.ariaLabel")}
 							value={config?.conflict_policy ?? "local_wins"}
 							disabled={!gitEnabledForSpace || busy}
-							onChange={(event) => {
-								void updatePatch({
-									conflict_policy: event.currentTarget.value as GitSyncConflictPolicy,
-								});
+							options={CONFLICT_POLICIES.map((policy) => ({
+								value: policy,
+								label: t(`gitSync.conflict.options.${policy}`),
+								icon: <SelectIcon icon={CONFLICT_POLICY_ICONS[policy]} />,
+							}))}
+							onValueChange={(policy) => {
+								void updatePatch({ conflict_policy: policy });
 							}}
-						>
-							{CONFLICT_POLICY_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
-								</option>
-							))}
-						</SettingsSelect>
+						/>
 					</SettingsRow>
 				</SettingsSection>
 

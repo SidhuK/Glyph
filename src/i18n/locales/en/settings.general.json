@@ -318,5 +318,18 @@
 				"wide": "Wide"
 			}
 		}
+	},
+	"templates": {
+		"sectionTitle": "Templates",
+		"none": "None",
+		"folder": {
+			"label": "Template folder",
+			"description": "Choose a folder inside the current space that contains your markdown templates.",
+			"notConfigured": "Not configured",
+			"browse": "Browse",
+			"clear": "Clear template folder",
+			"found_one": "{{count}} template found",
+			"found_other": "{{count}} templates found"
+		}
 	}
 }

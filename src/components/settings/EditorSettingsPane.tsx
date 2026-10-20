@@ -17,6 +17,8 @@ import {
 	loadSettings,
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { EDITOR_VIEW_MODE_ICONS } from "../editor/editorViewModeIcons";
+import { SelectIcon } from "../ui/shadcn/select";
 import { HeadingPalettePicker } from "./HeadingPalettePicker";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
@@ -293,18 +295,13 @@ export function EditorSettingsPane() {
 							aria-label={t("editor.defaultEditorMode.ariaLabel")}
 							value={defaultEditorMode.value}
 							disabled={defaultEditorMode.isSaving}
-							onChange={(event) => {
-								const nextMode = event.currentTarget.value;
-								if (!isEditorViewMode(nextMode)) return;
-								defaultEditorMode.onChange(nextMode);
-							}}
-						>
-							{DEFAULT_EDITOR_MODE_VALUES.map((value) => (
-								<option key={value} value={value}>
-									{t(`editor.defaultEditorMode.options.${value}`)}
-								</option>
-							))}
-						</SettingsSelect>
+							options={DEFAULT_EDITOR_MODE_VALUES.map((value) => ({
+								value,
+								label: t(`editor.defaultEditorMode.options.${value}`),
+								icon: <SelectIcon icon={EDITOR_VIEW_MODE_ICONS[value]} />,
+							}))}
+							onValueChange={defaultEditorMode.onChange}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
@@ -331,17 +328,12 @@ export function EditorSettingsPane() {
 							aria-label={t("editorPresentation.editorWidth.ariaLabel")}
 							value={editorWidthMode.value}
 							disabled={editorWidthMode.isSaving}
-							onChange={(event) => {
-								if (!isEditorWidthMode(event.currentTarget.value)) return;
-								editorWidthMode.onChange(event.currentTarget.value);
-							}}
-						>
-							{EDITOR_WIDTH_VALUES.map((value) => (
-								<option key={value} value={value}>
-									{t(`editorPresentation.editorWidth.options.${value}`)}
-								</option>
-							))}
-						</SettingsSelect>
+							options={EDITOR_WIDTH_VALUES.map((value) => ({
+								value,
+								label: t(`editorPresentation.editorWidth.options.${value}`),
+							}))}
+							onValueChange={editorWidthMode.onChange}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

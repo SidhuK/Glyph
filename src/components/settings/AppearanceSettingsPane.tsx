@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type CustomTheme, customThemeId, customThemeOptions } from "../../lib/customThemes";
-import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import {
 	DEFAULT_UI_TRANSLUCENT_APP,
 	type ThemeMode,
@@ -9,11 +8,7 @@ import {
 	type UiLightThemeId,
 	loadSettings,
 } from "../../lib/settings";
-import {
-	DEFAULT_FILE_TREE_SORT_MODE,
-	DURABLE_SETTINGS,
-	isFileTreeSortMode,
-} from "../../lib/settings/definitions";
+import { DEFAULT_FILE_TREE_SORT_MODE, DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import type { FileTreeSortMode } from "../../lib/settings/model";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -32,6 +27,7 @@ import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
 import { AppearanceLayoutPreview } from "./AppearancePreviewFrame";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
+import { fileTreeSortOptions } from "./FileTreeSettingsSection";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSegmentedPicker } from "./SettingsSegmentedPicker";
 import { SettingsSelect } from "./SettingsSelect";
@@ -285,17 +281,9 @@ export function AppearanceSettingsPane() {
 							aria-label={t("layout.folioSort.ariaLabel")}
 							value={folioSortMode.value}
 							disabled={folioSortMode.isSaving}
-							onChange={(event) => {
-								const nextSortMode = event.currentTarget.value;
-								if (isFileTreeSortMode(nextSortMode)) folioSortMode.onChange(nextSortMode);
-							}}
-						>
-							{FILE_TREE_SORT_MODES.map((mode) => (
-								<option key={mode} value={mode}>
-									{fileTreeSortLabel(mode)}
-								</option>
-							))}
-						</SettingsSelect>
+							options={fileTreeSortOptions()}
+							onValueChange={folioSortMode.onChange}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

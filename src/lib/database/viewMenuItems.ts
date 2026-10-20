@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import type { WorkspaceDatabaseSummary } from "../tauri";
 import type { ActionMenuItem } from "./actionMenuItems";
 
@@ -5,29 +6,29 @@ type DatabaseViewLayout = "table" | "board";
 
 interface ViewMenuActions {
 	onSelectLayout: (layout: DatabaseViewLayout) => void;
-	createLabel: string;
 	onCreate: () => void;
 	onRename: () => void;
 	onDelete: () => void;
 }
 
 export function buildViewMenuItems(
+	t: TFunction<"shell">,
 	activeLayout: DatabaseViewLayout,
 	viewCount: number,
 	actions: ViewMenuActions,
 ): ActionMenuItem[] {
 	return [
-		{ type: "label", label: "View type" },
+		{ type: "label", label: t("collections.viewMenu.viewType") },
 		{
 			type: "item",
-			label: "Table",
+			label: t("collections.viewMenu.table"),
 			checked: activeLayout === "table",
 			iconKey: "table",
 			onClick: () => actions.onSelectLayout("table"),
 		},
 		{
 			type: "item",
-			label: "Board",
+			label: t("collections.viewMenu.board"),
 			checked: activeLayout === "board",
 			iconKey: "board",
 			onClick: () => actions.onSelectLayout("board"),
@@ -35,20 +36,20 @@ export function buildViewMenuItems(
 		{ type: "separator" },
 		{
 			type: "item",
-			label: "Rename",
+			label: t("collections.viewMenu.rename"),
 			iconKey: "edit",
 			onClick: actions.onRename,
 		},
 		{
 			type: "item",
-			label: actions.createLabel,
+			label: t("collections.addView"),
 			iconKey: "plus",
 			onClick: actions.onCreate,
 		},
 		{ type: "separator" },
 		{
 			type: "item",
-			label: "Delete view",
+			label: t("collections.viewMenu.deleteView"),
 			enabled: viewCount > 1,
 			destructive: true,
 			iconKey: "trash",
@@ -58,6 +59,7 @@ export function buildViewMenuItems(
 }
 
 export function buildCollectionMenuItems(
+	t: TFunction<"shell">,
 	summaries: WorkspaceDatabaseSummary[],
 	selectedDatabaseId: string | null,
 	setSelectedDatabaseId: (id: string) => void,
@@ -78,7 +80,7 @@ export function buildCollectionMenuItems(
 
 	items.push({
 		type: "item",
-		label: "New collection",
+		label: t("collections.newCollection"),
 		key: "new-collection",
 		iconKey: "plus",
 		onClick: openCreateCollectionDialog,

@@ -6,6 +6,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuItemCheck,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
@@ -84,22 +85,12 @@ export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 					<PriorityPropertyPill value={props.value || "no"} />
 				)}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				align="start"
-				sideOffset={6}
-				className="databasePickerMenu notePropertyStatusMenu"
-			>
+			<DropdownMenuContent align="start" sideOffset={6}>
 				<div className="notePropertyStatusOptions">
 					{options.map((option) => (
 						<DropdownMenuItem
 							key={option.id}
 							className="notePropertyStatusOption"
-							data-selected={
-								(isStatus ? statusColorKey(option.label) : priorityColorKey(option.label)) ===
-								selectedId
-									? "true"
-									: "false"
-							}
 							onClick={() => void selectValue(option.label)}
 						>
 							{isStatus ? (
@@ -107,12 +98,16 @@ export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 							) : (
 								<PriorityPropertyPill value={option.label} />
 							)}
+							{(isStatus ? statusColorKey(option.label) : priorityColorKey(option.label)) ===
+							selectedId ? (
+								<DropdownMenuItemCheck />
+							) : null}
 						</DropdownMenuItem>
 					))}
 				</div>
 				{isStatus && selectedId && props.onColorChange ? (
 					<>
-						<DropdownMenuSeparator className="databaseBoardContextMenuSeparator" />
+						<DropdownMenuSeparator />
 						<div className="notePropertyStatusColorRibbon">
 							{EDITOR_TEXT_COLORS.map((color) => (
 								<button

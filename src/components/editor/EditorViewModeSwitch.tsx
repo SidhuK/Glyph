@@ -1,20 +1,20 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { CodeIcon, EyeIcon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { EditorViewMode } from "../../lib/editorMode";
+import { EDITOR_VIEW_MODE_ICONS } from "./editorViewModeIcons";
 
 const VIEW_MODES = [
-	{ id: "plain" as const, labelKey: "mode.raw" as const, icon: CodeIcon },
+	{ id: "plain" as const, labelKey: "mode.raw" as const, icon: EDITOR_VIEW_MODE_ICONS.plain },
 	{
 		id: "rich" as const,
 		labelKey: "mode.rich" as const,
-		icon: PencilEdit02Icon,
+		icon: EDITOR_VIEW_MODE_ICONS.rich,
 	},
 	{
 		id: "preview" as const,
 		labelKey: "mode.preview" as const,
-		icon: EyeIcon,
+		icon: EDITOR_VIEW_MODE_ICONS.preview,
 	},
 ] as const;
 

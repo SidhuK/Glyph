@@ -1,16 +1,24 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LocationAdd01Icon } from "@hugeicons/core-free-icons";
-import { type MouseEvent, memo, useCallback, useMemo, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import {
-	type NativeContextMenuItem,
-	isNativeContextMenuAvailable,
-	showNativePopupMenu,
-} from "../../lib/nativeContextMenu";
+	ArrowDown02Icon,
+	ArrowLeft02Icon,
+	ArrowRight02Icon,
+	ArrowUp02Icon,
+	Delete02Icon,
+	InsertColumnLeftIcon,
+	InsertColumnRightIcon,
+	InsertRowDownIcon,
+	InsertRowUpIcon,
+	LocationAdd01Icon,
+} from "@hugeicons/core-free-icons";
+import type { IconSvgElement } from "@hugeicons/react";
+import { memo, useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuItemIcon,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
@@ -21,10 +29,29 @@ import type {
 	TableInlineControlsProps,
 } from "./noteEditorOverlayTypes";
 
+type TableAxisAction = "addBefore" | "addAfter" | "moveBefore" | "moveAfter" | "deleteItem";
+
+const ROW_MENU_ICONS: Record<TableAxisAction, IconSvgElement> = {
+	addBefore: InsertRowUpIcon,
+	addAfter: InsertRowDownIcon,
+	moveBefore: ArrowUp02Icon,
+	moveAfter: ArrowDown02Icon,
+	deleteItem: Delete02Icon,
+};
+
+const COLUMN_MENU_ICONS: Record<TableAxisAction, IconSvgElement> = {
+	addBefore: InsertColumnLeftIcon,
+	addAfter: InsertColumnRightIcon,
+	moveBefore: ArrowLeft02Icon,
+	moveAfter: ArrowRight02Icon,
+	deleteItem: Delete02Icon,
+};
+
 type TableAxisMenuItem =
 	| {
 			type: "action";
 			label: string;
+			icon: IconSvgElement;
 			command: TableEditorCommand;
 			enabled: boolean;
 			destructive?: boolean;
@@ -32,20 +59,9 @@ type TableAxisMenuItem =
 	| { type: "separator"; id: string };
 
 function buildAxisMenuItems(
-	labels: {
-		addBefore: string;
-		addAfter: string;
-		moveBefore: string;
-		moveAfter: string;
-		deleteItem: string;
-	},
-	commands: {
-		addBefore: TableEditorCommand;
-		addAfter: TableEditorCommand;
-		moveBefore: TableEditorCommand;
-		moveAfter: TableEditorCommand;
-		deleteItem: TableEditorCommand;
-	},
+	labels: Record<TableAxisAction, string>,
+	icons: Record<TableAxisAction, IconSvgElement>,
+	commands: Record<TableAxisAction, TableEditorCommand>,
 	enabled: {
 		moveBefore: boolean;
 		moveAfter: boolean;
@@ -56,12 +72,14 @@ function buildAxisMenuItems(
 		{
 			type: "action",
 			label: labels.addBefore,
+			icon: icons.addBefore,
 			command: commands.addBefore,
 			enabled: true,
 		},
 		{
 			type: "action",
 			label: labels.addAfter,
+			icon: icons.addAfter,
 			command: commands.addAfter,
 			enabled: true,
 		},
@@ -69,12 +87,14 @@ function buildAxisMenuItems(
 		{
 			type: "action",
 			label: labels.moveBefore,
+			icon: icons.moveBefore,
 			command: commands.moveBefore,
 			enabled: enabled.moveBefore,
 		},
 		{
 			type: "action",
 			label: labels.moveAfter,
+			icon: icons.moveAfter,
 			command: commands.moveAfter,
 			enabled: enabled.moveAfter,
 		},
@@ -82,27 +102,12 @@ function buildAxisMenuItems(
 		{
 			type: "action",
 			label: labels.deleteItem,
+			icon: icons.deleteItem,
 			command: commands.deleteItem,
 			enabled: enabled.deleteItem,
 			destructive: true,
 		},
 	];
-}
-
-function toNativeMenuItems(
-	items: TableAxisMenuItem[],
-	onCommand: (command: TableEditorCommand) => void,
-): NativeContextMenuItem[] {
-	return items.map((item) => {
-		if (item.type === "separator") {
-			return { type: "separator" };
-		}
-		return {
-			label: item.label,
-			enabled: item.enabled,
-			action: () => onCommand(item.command),
-		};
-	});
 }
 
 interface TableAxisControlProps {
@@ -114,7 +119,6 @@ interface TableAxisControlProps {
 	onControlMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
 	onCommand: (action: TableEditorAction) => void;
 	captureTarget: () => TableActionTarget | null;
-	nativeMenusEnabled: boolean;
 }
 
 const TableAxisControl = memo(function TableAxisControl({
@@ -126,7 +130,6 @@ const TableAxisControl = memo(function TableAxisControl({
 	onControlMouseDown,
 	onCommand,
 	captureTarget,
-	nativeMenusEnabled,
 }: TableAxisControlProps) {
 	const capturedTargetRef = useRef<TableActionTarget | null>(null);
 
@@ -137,19 +140,6 @@ const TableAxisControl = memo(function TableAxisControl({
 			onCommand({ kind: command, target });
 		},
 		[captureTarget, onCommand],
-	);
-
-	const handleNativeMenuClick = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			const target = captureTarget();
-			capturedTargetRef.current = target;
-			if (!target) return;
-			const nativeMenuItems = toNativeMenuItems(menuItems, runCapturedCommand);
-			void showNativePopupMenu(event, nativeMenuItems).catch((error: unknown) => {
-				console.error(`Failed to show table ${axis} menu`, error);
-			});
-		},
-		[axis, captureTarget, menuItems, runCapturedCommand],
 	);
 
 	const handleOpenChange = useCallback(
@@ -173,15 +163,10 @@ const TableAxisControl = memo(function TableAxisControl({
 				top: `${top}px`,
 			}}
 			onMouseDown={onControlMouseDown}
-			onClick={nativeMenusEnabled ? handleNativeMenuClick : undefined}
 		>
 			<HugeiconsIcon icon={LocationAdd01Icon} size="var(--icon-md)" />
 		</button>
 	);
-
-	if (nativeMenusEnabled) {
-		return triggerButton;
-	}
 
 	return (
 		<DropdownMenu onOpenChange={handleOpenChange}>
@@ -198,7 +183,8 @@ const TableAxisControl = memo(function TableAxisControl({
 							variant={item.destructive ? "destructive" : "default"}
 							onClick={() => runCapturedCommand(item.command)}
 						>
-							{item.label}
+							<DropdownMenuItemIcon icon={item.icon} />
+							<span className="glyphMenuItemLabel">{item.label}</span>
 						</DropdownMenuItem>
 					);
 				})}
@@ -215,7 +201,6 @@ export const TableInlineControls = memo(function TableInlineControls({
 	capabilities,
 }: TableInlineControlsProps) {
 	const { t } = useTranslation("editor");
-	const nativeMenusEnabled = isNativeContextMenuAvailable();
 	const rowMenuItems = useMemo(
 		() =>
 			buildAxisMenuItems(
@@ -226,6 +211,7 @@ export const TableInlineControls = memo(function TableInlineControls({
 					moveAfter: t("tableControls.moveRowDown"),
 					deleteItem: t("tableControls.deleteRow"),
 				},
+				ROW_MENU_ICONS,
 				{
 					addBefore: "addRowBefore",
 					addAfter: "addRowAfter",
@@ -251,6 +237,7 @@ export const TableInlineControls = memo(function TableInlineControls({
 					moveAfter: t("tableControls.moveColumnRight"),
 					deleteItem: t("tableControls.deleteColumn"),
 				},
+				COLUMN_MENU_ICONS,
 				{
 					addBefore: "addColumnBefore",
 					addAfter: "addColumnAfter",
@@ -278,7 +265,6 @@ export const TableInlineControls = memo(function TableInlineControls({
 				onControlMouseDown={onControlMouseDown}
 				onCommand={onCommand}
 				captureTarget={captureTarget}
-				nativeMenusEnabled={nativeMenusEnabled}
 			/>
 			<TableAxisControl
 				axis="column"
@@ -289,7 +275,6 @@ export const TableInlineControls = memo(function TableInlineControls({
 				onControlMouseDown={onControlMouseDown}
 				onCommand={onCommand}
 				captureTarget={captureTarget}
-				nativeMenusEnabled={nativeMenusEnabled}
 			/>
 		</>
 	);

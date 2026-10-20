@@ -32,5 +32,32 @@
 				"providerDescription": "Choose the provider whose API and models Glyph should use."
 			}
 		}
+	},
+	"model": {
+		"label": "Model",
+		"description": "Glyph fetches available models for the selected provider when credentials allow it.",
+		"placeholder": "Select a model...",
+		"connecting": "Connecting...",
+		"count_one": "{{count}} model",
+		"count_other": "{{count}} models",
+		"needsApiKey": "Save an API key to load models for this provider.",
+		"retry": "Retry",
+		"empty": "No models available"
+	},
+	"reasoning": {
+		"label": "Reasoning level",
+		"description": "Available when the current model exposes effort levels.",
+		"placeholder": "e.g. low, medium, high",
+		"manualHint": "This model did not publish reasoning options; enter effort manually."
+	},
+	"baseUrl": {
+		"label": "Base URL",
+		"descriptionLlama": "Default is http://localhost:8080/v1 for a local llama.cpp server.",
+		"descriptionCustom": "Only needed for custom OpenAI-compatible providers."
+	},
+	"localNetwork": {
+		"label": "Allow local network",
+		"descriptionLlama": "Enable to use localhost or private-network llama.cpp endpoints.",
+		"descriptionCustom": "Enable to use http:// endpoints on localhost or private networks (e.g. LM Studio, vLLM)."
 	}
 }

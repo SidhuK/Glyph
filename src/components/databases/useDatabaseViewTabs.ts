@@ -170,9 +170,8 @@ export function useDatabaseViewTabs({
 
 	const viewActionMenuItems = useMemo(
 		() =>
-			buildViewMenuItems(activeView.layout, viewCount, {
+			buildViewMenuItems(t, activeView.layout, viewCount, {
 				onSelectLayout: handleSelectViewLayout,
-				createLabel: t("collections.addView"),
 				onCreate: () => {
 					void handleCreateView().catch(() => undefined);
 				},

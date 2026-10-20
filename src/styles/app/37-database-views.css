@@ -236,38 +236,6 @@ button.databaseToolbarChip.databasesNewNoteButton > svg path {
 	}
 }
 
-.databasesViewTabMenuContent {
-	min-width: 0;
-	width: max-content;
-	padding: var(--database-dropdown-padding);
-	border-radius: var(--database-dropdown-radius);
-}
-
-.databasesViewTabMenuLabel {
-	padding: 4px 10px 3px;
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: 500;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
-.databasesViewTabMenuContent .databasesViewTabMenuItem {
-	gap: 8px;
-	min-height: 32px;
-	padding: 0 10px;
-	font-size: calc(var(--text-base) * 0.9);
-	border-radius: var(--database-control-radius);
-}
-
-.databasesViewTabMenuContent .databasesViewTabMenuItem svg {
-	opacity: 0.6;
-}
-
-.databasesViewTabMenuSeparator {
-	margin: 3px 6px;
-}
-
 .databaseViewOptionsTrigger {
 	position: relative;
 }
@@ -594,17 +562,19 @@ button.databaseToolbarChip.databasesNewNoteButton > svg path {
 	flex-wrap: nowrap;
 }
 
-.databaseViewSortRow .databaseViewFilterColumn {
-	flex: 0 1 190px;
+/* Row-level selects read as chips beside the joiner. */
+.databaseViewFilterRow > .glyphSelectTrigger,
+.databaseViewSortRow > .glyphSelectTrigger {
+	max-width: 190px;
+	border-color: transparent;
+	background: color-mix(in srgb, var(--bg-primary) 72%, var(--bg-secondary));
 }
 
-.databaseViewSortRow > .databaseViewInlineSelect {
+.databaseViewSortRow > .glyphSelectTrigger {
 	flex: 0 0 164px;
-	max-width: 164px;
 }
 
-.databaseViewOptionJoiner,
-.databaseViewFilterColumn {
+.databaseViewOptionJoiner {
 	display: inline-flex;
 	align-items: center;
 	flex: 0 1 auto;
@@ -613,33 +583,8 @@ button.databaseToolbarChip.databasesNewNoteButton > svg path {
 	height: 30px;
 	border-radius: var(--database-control-radius);
 	background: color-mix(in srgb, var(--bg-primary) 72%, var(--bg-secondary));
-	color: var(--text-secondary);
-}
-
-.databaseViewOptionJoiner {
 	padding: 0 9px;
-}
-
-.databaseViewFilterColumn {
-	padding: 0 8px;
-}
-
-.databaseViewInlineSelect {
-	max-width: 190px;
-	min-width: 0;
-	height: 30px;
-	border: 0;
-	background: transparent;
-	color: var(--text-primary);
-	font-size: calc(var(--text-base) * 0.9);
-	outline: none;
-	cursor: pointer;
-}
-
-.databaseViewInlineSelect:focus-visible {
-	outline: 2px solid var(--accent);
-	outline-offset: 2px;
-	border-radius: var(--radius-sm);
+	color: var(--text-secondary);
 }
 
 .databaseViewFilterValue {

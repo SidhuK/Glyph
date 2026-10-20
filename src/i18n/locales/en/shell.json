@@ -86,7 +86,152 @@
 		"laneRenamePartial": "Updated {{changed}} of {{total}} cards. {{failed}} could not be updated: {{error}}",
 		"laneRenameConfirm": "Rename",
 		"laneRenameCancel": "Cancel",
-		"sourceTruncated": "This search collection shows only its first {{limit}} matches."
+		"sourceTruncated": "This search collection shows only its first {{limit}} matches.",
+		"laneMenu": {
+			"options": "Open {{lane}} lane options",
+			"unassignedLast": "Unassigned lane stays last",
+			"rename": "Rename {{lane}}",
+			"position": "Position {{position}}: {{lane}}",
+			"setColor": "Set color for {{lane}}",
+			"setColorTo": "Set {{lane}} color to {{color}}",
+			"clearColor": "Clear color",
+			"clearColorFor": "Clear color for {{lane}}",
+			"addNote": "Add note to {{lane}}",
+			"cardCount_one": "{{count}} card",
+			"cardCount_other": "{{count}} cards"
+		},
+		"boardCard": {
+			"openNote": "Open note",
+			"moveTo": "Move to {{lane}}",
+			"openHint": "Double-click to open note",
+			"updated": "Updated {{date}}"
+		},
+		"switch": "Switch collection",
+		"select": "Select collection",
+		"newCollection": "New collection",
+		"viewMenu": {
+			"viewType": "View type",
+			"table": "Table",
+			"board": "Board",
+			"rename": "Rename",
+			"deleteView": "Delete view",
+			"options": "View options",
+			"optionsFor": "View options for {{name}}",
+			"tabs": "Collection views",
+			"name": "View name"
+		},
+		"viewOptions": {
+			"reset": "Reset",
+			"presets": "Presets"
+		},
+		"groupBy": {
+			"label": "Grouped by",
+			"title": "Grouping by {{name}}",
+			"choose": "Choose a field to group by",
+			"none": "No grouping",
+			"multiLane": "{{name}} (multi-lane)",
+			"boardHint": "Add a status, tag, or checkbox field to create lanes"
+		},
+		"sort": {
+			"title": "Sort by",
+			"presets": "Sort presets",
+			"replaceWithPreset": "Replace current sort with {{name}}",
+			"field": "Sort field",
+			"direction": "Sort direction",
+			"add": "Add sort",
+			"directions": {
+				"date": {
+					"asc": "Oldest - Newest",
+					"desc": "Newest - Oldest"
+				},
+				"number": {
+					"asc": "Lowest - Highest",
+					"desc": "Highest - Lowest"
+				},
+				"boolean": {
+					"asc": "Unchecked first",
+					"desc": "Checked first"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "Filter by",
+			"hint": "Narrow this view by column values. To search note text, use the search box in the toolbar.",
+			"presets": "Filter presets",
+			"unsupportedOperator": "Filter {{index}} uses an unsupported operator. Choose a supported operator to restore results.",
+			"addFirst": "Add a condition",
+			"addAnother": "Add another condition",
+			"where": "Where",
+			"and": "And",
+			"fieldAria": "Filter {{index}} field",
+			"operatorAria": "Filter {{index}} operator",
+			"dateRangeAria": "Filter {{index}} date range",
+			"tagLabel": "Filter Tag",
+			"tagDescription": "Choose a tag for this filter.",
+			"tagPlaceholder": "Choose a tag",
+			"valuePlaceholder": "Value",
+			"remove": "Remove filter",
+			"operators": {
+				"equals": "is",
+				"not_equals": "is not",
+				"contains": "contains",
+				"not_contains": "does not contain",
+				"starts_with": "starts with",
+				"ends_with": "ends with",
+				"greater_than": "greater than",
+				"less_than": "less than",
+				"is_empty": "is empty",
+				"is_not_empty": "is not empty",
+				"is_true": "is checked",
+				"is_false": "is unchecked",
+				"tags_contains": "contains",
+				"any_of": "is any of",
+				"none_of": "is none of",
+				"within_last_7_days": "is",
+				"unsupported": "Unsupported: {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "Overdue",
+				"today": "Today",
+				"thisWeek": "This week",
+				"last7Days": "Last 7 days",
+				"last30Days": "Last 30 days"
+			}
+		},
+		"source": {
+			"title": "Source",
+			"hint": "Choose which notes appear in this view. Changes save automatically.",
+			"showFrom": "Show notes from",
+			"kinds": {
+				"all_notes": "All notes",
+				"folder": "A folder",
+				"tag": "A tag",
+				"search": "A search query"
+			},
+			"folder": "Folder",
+			"chooseFolder": "Choose a folder",
+			"includeSubfolders": "Include subfolders",
+			"tag": "Tag",
+			"tagDescription": "Only notes with this tag will appear.",
+			"chooseTag": "Choose a tag",
+			"searchQuery": "Search query",
+			"saveNewIn": "Save new notes in"
+		},
+		"board": {
+			"emptyTitle": "Add a field to create board lanes",
+			"emptyText": "Board view groups notes into lanes. Add a status, priority, checkbox, tag, or similar field to your notes, then pick it in the toolbar above.",
+			"openViewSettings": "Open view settings",
+			"laneEmpty": {
+				"archived": "Archived notes go here",
+				"done": "Done notes land here",
+				"unassigned": "Notes without a value appear here",
+				"default": "Drop notes here or add one below"
+			}
+		}
 	},
 	"tags": {
 		"header": "Tags",
@@ -308,7 +453,25 @@
 		"cancel": "Cancel",
 		"sync": "Sync Now",
 		"manualCommitMessages": "Manual commit messages",
-		"manualCommitMessagesDescription": "Ask for a message before each manual sync. When off, Glyph uses \"Glyph sync\"."
+		"manualCommitMessagesDescription": "Ask for a message before each manual sync. When off, Glyph uses \"Glyph sync\".",
+		"interval": {
+			"label": "Interval",
+			"description": "How often Glyph should run scheduled syncs.",
+			"ariaLabel": "Git sync interval",
+			"minutes_one": "{{count}} min",
+			"minutes_other": "{{count}} min"
+		},
+		"conflict": {
+			"sectionTitle": "Conflict Resolution",
+			"sectionDescription": "Choose which side Glyph should favor when local and remote edits conflict.",
+			"label": "Policy",
+			"description": "Glyph resolves conflicts automatically.",
+			"ariaLabel": "Conflict policy",
+			"options": {
+				"local_wins": "Local wins",
+				"remote_wins": "Remote wins"
+			}
+		}
 	},
 	"ai": {
 		"toolFailed": "{{tool}} failed",
@@ -317,6 +480,15 @@
 		"commands": {
 			"label": "AI commands",
 			"canvas": "Create or edit an Excalidraw canvas"
+		},
+		"modelSelector": {
+			"label": "Model",
+			"select": "Select model",
+			"provider": "Model provider",
+			"loading": "Loading models…",
+			"loadFailed": "Could not load models",
+			"empty": "No models available",
+			"retry": "Retry"
 		}
 	},
 	"connections": {
@@ -365,7 +537,6 @@
 		"changeIcon": "Change Icon…",
 		"closeSpace": "Close Space",
 		"chooseIcon": "Choose a space icon",
-		"menuFailed": "Could not open the space menu",
 		"actionFailed": "Could not complete the space action"
 	},
 	"tasks": {
@@ -520,5 +691,11 @@
 		"updateFailed": "Could not update calendar settings",
 		"collapse": "Collapse calendar",
 		"expand": "Expand calendar"
+	},
+	"quickNoteTarget": {
+		"today": "Today's quick note",
+		"browse": "Change destination: browse {{name}}",
+		"label": "Quick note destination",
+		"resetToToday": "Reset to today's quick note"
 	}
 }

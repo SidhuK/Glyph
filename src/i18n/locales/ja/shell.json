@@ -74,7 +74,151 @@
 		"laneRenamePartial": "{{total}}枚中{{changed}}枚を更新しました。{{failed}}枚は更新できませんでした: {{error}}",
 		"laneRenameConfirm": "名前を変更",
 		"laneRenameCancel": "キャンセル",
-		"sourceTruncated": "この検索コレクションは最初の{{limit}}件のみを表示しています。"
+		"sourceTruncated": "この検索コレクションは最初の{{limit}}件のみを表示しています。",
+		"laneMenu": {
+			"options": "{{lane}} レーンのオプションを開く",
+			"unassignedLast": "未割り当てレーンは常に最後です",
+			"rename": "{{lane}} の名前を変更",
+			"position": "位置 {{position}}: {{lane}}",
+			"setColor": "{{lane}} の色を設定",
+			"setColorTo": "{{lane}} の色を {{color}} に設定",
+			"clearColor": "色をクリア",
+			"clearColorFor": "{{lane}} の色をクリア",
+			"addNote": "{{lane}} にノートを追加",
+			"cardCount_other": "{{count}} 枚のカード"
+		},
+		"boardCard": {
+			"openNote": "ノートを開く",
+			"moveTo": "{{lane}} に移動",
+			"openHint": "ダブルクリックでノートを開く",
+			"updated": "{{date}} に更新"
+		},
+		"switch": "コレクションを切り替え",
+		"select": "コレクションを選択",
+		"newCollection": "新しいコレクション",
+		"viewMenu": {
+			"viewType": "ビューの種類",
+			"table": "テーブル",
+			"board": "ボード",
+			"rename": "名前を変更",
+			"deleteView": "ビューを削除",
+			"options": "ビューのオプション",
+			"optionsFor": "{{name}} のビューオプション",
+			"tabs": "コレクションのビュー",
+			"name": "ビュー名"
+		},
+		"viewOptions": {
+			"reset": "リセット",
+			"presets": "プリセット"
+		},
+		"groupBy": {
+			"label": "グループ化",
+			"title": "{{name}} でグループ化",
+			"choose": "グループ化するフィールドを選択",
+			"none": "グループ化なし",
+			"multiLane": "{{name}} (複数レーン)",
+			"boardHint": "レーンを作るにはステータス、タグ、チェックボックスのフィールドを追加してください"
+		},
+		"sort": {
+			"title": "並べ替え",
+			"presets": "並べ替えプリセット",
+			"replaceWithPreset": "現在の並べ替えを {{name}} に置き換える",
+			"field": "並べ替えフィールド",
+			"direction": "並べ替えの方向",
+			"add": "並べ替えを追加",
+			"directions": {
+				"date": {
+					"asc": "古い順",
+					"desc": "新しい順"
+				},
+				"number": {
+					"asc": "小さい順",
+					"desc": "大きい順"
+				},
+				"boolean": {
+					"asc": "未チェックを先に",
+					"desc": "チェック済みを先に"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "フィルタ",
+			"hint": "列の値でこのビューを絞り込みます。ノート本文を検索するにはツールバーの検索ボックスを使います。",
+			"presets": "フィルタプリセット",
+			"unsupportedOperator": "フィルタ {{index}} は未対応の演算子を使っています。結果を表示するには対応する演算子を選んでください。",
+			"addFirst": "条件を追加",
+			"addAnother": "条件をさらに追加",
+			"where": "条件",
+			"and": "かつ",
+			"fieldAria": "フィルタ {{index}} のフィールド",
+			"operatorAria": "フィルタ {{index}} の演算子",
+			"dateRangeAria": "フィルタ {{index}} の期間",
+			"tagLabel": "フィルタのタグ",
+			"tagDescription": "このフィルタのタグを選択します。",
+			"tagPlaceholder": "タグを選択",
+			"valuePlaceholder": "値",
+			"remove": "フィルタを削除",
+			"operators": {
+				"equals": "等しい",
+				"not_equals": "等しくない",
+				"contains": "含む",
+				"not_contains": "含まない",
+				"starts_with": "で始まる",
+				"ends_with": "で終わる",
+				"greater_than": "より大きい",
+				"less_than": "より小さい",
+				"is_empty": "空である",
+				"is_not_empty": "空ではない",
+				"is_true": "チェック済み",
+				"is_false": "未チェック",
+				"tags_contains": "含む",
+				"any_of": "いずれか",
+				"none_of": "いずれでもない",
+				"within_last_7_days": "期間",
+				"unsupported": "未対応: {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "期限切れ",
+				"today": "今日",
+				"thisWeek": "今週",
+				"last7Days": "過去 7 日間",
+				"last30Days": "過去 30 日間"
+			}
+		},
+		"source": {
+			"title": "ソース",
+			"hint": "このビューに表示するノートを選びます。変更は自動で保存されます。",
+			"showFrom": "ノートの取得元",
+			"kinds": {
+				"all_notes": "すべてのノート",
+				"folder": "フォルダ",
+				"tag": "タグ",
+				"search": "検索クエリ"
+			},
+			"folder": "フォルダ",
+			"chooseFolder": "フォルダを選択",
+			"includeSubfolders": "サブフォルダを含める",
+			"tag": "タグ",
+			"tagDescription": "このタグを持つノートだけが表示されます。",
+			"chooseTag": "タグを選択",
+			"searchQuery": "検索クエリ",
+			"saveNewIn": "新しいノートの保存先"
+		},
+		"board": {
+			"emptyTitle": "フィールドを追加してボードのレーンを作成",
+			"emptyText": "ボードビューはノートをレーンにまとめます。ステータス、優先度、チェックボックス、タグなどのフィールドをノートに追加し、上のツールバーで選択してください。",
+			"openViewSettings": "ビューの設定を開く",
+			"laneEmpty": {
+				"archived": "アーカイブしたノートはここに入ります",
+				"done": "完了したノートはここに入ります",
+				"unassigned": "値のないノートはここに表示されます",
+				"default": "ここにノートをドロップするか、下で追加します"
+			}
+		}
 	},
 	"tags": {
 		"header": "タグ",
@@ -243,6 +387,15 @@
 		"commands": {
 			"label": "AI コマンド",
 			"canvas": "Excalidraw キャンバスを作成または編集"
+		},
+		"modelSelector": {
+			"label": "モデル",
+			"select": "モデルを選択",
+			"provider": "モデルプロバイダー",
+			"loading": "モデルを読み込み中…",
+			"loadFailed": "モデルを読み込めませんでした",
+			"empty": "利用可能なモデルがありません",
+			"retry": "再試行"
 		}
 	},
 	"connections": {
@@ -291,7 +444,6 @@
 		"changeIcon": "アイコンを変更…",
 		"closeSpace": "スペースを閉じる",
 		"chooseIcon": "スペースのアイコンを選択",
-		"menuFailed": "スペースメニューを開けませんでした",
 		"actionFailed": "スペースの操作を完了できませんでした"
 	},
 	"appearancePicker": {
@@ -354,5 +506,34 @@
 		"updateFailed": "カレンダーの設定を更新できませんでした",
 		"collapse": "カレンダーを折りたたむ",
 		"expand": "カレンダーを展開"
+	},
+	"breadcrumbs": {
+		"space": "スペース",
+		"emptyFolder": "空のフォルダ"
+	},
+	"quickNoteTarget": {
+		"today": "今日のクイックノート",
+		"browse": "保存先を変更: {{name}} を参照",
+		"label": "クイックノートの保存先",
+		"resetToToday": "今日のクイックノートに戻す"
+	},
+	"gitSync": {
+		"interval": {
+			"label": "間隔",
+			"description": "Glyph が定期同期を実行する頻度です。",
+			"ariaLabel": "Git 同期の間隔",
+			"minutes_other": "{{count}} 分"
+		},
+		"conflict": {
+			"sectionTitle": "競合の解決",
+			"sectionDescription": "ローカルとリモートの変更が競合したときに Glyph が優先する側を選びます。",
+			"label": "ポリシー",
+			"description": "Glyph は競合を自動で解決します。",
+			"ariaLabel": "競合ポリシー",
+			"options": {
+				"local_wins": "ローカルを優先",
+				"remote_wins": "リモートを優先"
+			}
+		}
 	}
 }

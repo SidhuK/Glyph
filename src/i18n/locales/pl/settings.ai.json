@@ -27,5 +27,34 @@
 				"providerDescription": "Wybierz dostawcę, którego interfejsu API i modeli ma używać Glyph."
 			}
 		}
+	},
+	"model": {
+		"label": "Model",
+		"description": "Glyph pobiera dostępne modele wybranego dostawcy, gdy pozwalają na to dane logowania.",
+		"placeholder": "Wybierz model...",
+		"connecting": "Łączenie...",
+		"count_one": "{{count}} model",
+		"count_few": "{{count}} modele",
+		"count_many": "{{count}} modeli",
+		"count_other": "{{count}} modelu",
+		"needsApiKey": "Zapisz klucz API, aby wczytać modele tego dostawcy.",
+		"retry": "Spróbuj ponownie",
+		"empty": "Brak dostępnych modeli"
+	},
+	"reasoning": {
+		"label": "Poziom rozumowania",
+		"description": "Dostępne, gdy bieżący model udostępnia poziomy wysiłku.",
+		"placeholder": "np. low, medium, high",
+		"manualHint": "Ten model nie publikuje opcji rozumowania; wpisz poziom ręcznie."
+	},
+	"baseUrl": {
+		"label": "Bazowy URL",
+		"descriptionLlama": "Domyślnie http://localhost:8080/v1 dla lokalnego serwera llama.cpp.",
+		"descriptionCustom": "Potrzebny tylko dla własnych dostawców zgodnych z OpenAI."
+	},
+	"localNetwork": {
+		"label": "Zezwól na sieć lokalną",
+		"descriptionLlama": "Włącz, aby używać punktów końcowych llama.cpp na localhost lub w sieci prywatnej.",
+		"descriptionCustom": "Włącz, aby używać punktów końcowych http:// na localhost lub w sieciach prywatnych (np. LM Studio, vLLM)."
 	}
 }

@@ -1,6 +1,7 @@
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
 	type BoardLaneRenameTarget,
@@ -166,6 +167,7 @@ export function DatabaseBoard({
 	onLoadMoreRows,
 	onSaveCell,
 }: DatabaseBoardProps) {
+	const { t } = useTranslation("shell");
 	const isCardFieldVisible = useCallback(
 		(fieldId: string) => {
 			if (!boardCardFields || boardCardFields.length === 0) return true;
@@ -347,14 +349,11 @@ export function DatabaseBoard({
 					animate={{ opacity: 1, y: 0 }}
 					transition={shouldReduceMotion ? { duration: 0 } : springPresets.snappy}
 				>
-					<div className="databaseBoardEmptyTitle">Add a field to create board lanes</div>
-					<div className="databaseBoardEmptyText">
-						Board view groups notes into lanes. Add a status, priority, checkbox, tag, or similar
-						field to your notes, then pick it in the toolbar above.
-					</div>
+					<div className="databaseBoardEmptyTitle">{t("collections.board.emptyTitle")}</div>
+					<div className="databaseBoardEmptyText">{t("collections.board.emptyText")}</div>
 					<div className="databaseBoardEmptyActions">
 						<Button type="button" variant="ghost" size="sm" onClick={onOpenColumns}>
-							Open view settings
+							{t("collections.board.openViewSettings")}
 						</Button>
 					</div>
 				</m.div>
@@ -433,14 +432,16 @@ export function DatabaseBoard({
 													onContextMenu={(event) => {
 														void showNativeContextMenu(event, [
 															{
-																label: "Open note",
+																label: t("collections.boardCard.openNote"),
 																action: () => onOpenRow(row.note_path),
 															},
 															...(otherLanes.length > 0
 																? [
 																		{ type: "separator" as const },
 																		...otherLanes.map((targetLane) => ({
-																			label: `Move to ${targetLane.label}`,
+																			label: t("collections.boardCard.moveTo", {
+																				lane: targetLane.label,
+																			}),
 																			action: () =>
 																				void handleLaneDrop(row.note_path, targetLane.id, lane.id),
 																		})),
@@ -479,7 +480,7 @@ export function DatabaseBoard({
 															<div className="databaseBoardCardSubline">
 																<span
 																	className="databaseBoardCardTimestamp"
-																	title={`Updated ${updatedLabel}`}
+																	title={t("collections.boardCard.updated", { date: updatedLabel })}
 																>
 																	{compactUpdatedLabel}
 																</span>
@@ -555,12 +556,12 @@ export function DatabaseBoard({
 									) : (
 										<div className="databaseBoardLaneEmptyCard">
 											{lane.workflowState === "archived"
-												? "Archived notes go here"
+												? t("collections.board.laneEmpty.archived")
 												: lane.workflowState === "done"
-													? "Done notes land here"
+													? t("collections.board.laneEmpty.done")
 													: lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-														? "Notes without a value appear here"
-														: "Drop notes here or add one below"}
+														? t("collections.board.laneEmpty.unassigned")
+														: t("collections.board.laneEmpty.default")}
 										</div>
 									)}
 								</DatabaseBoardLaneView>

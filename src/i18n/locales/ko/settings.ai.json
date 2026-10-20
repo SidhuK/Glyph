@@ -7,7 +7,9 @@
 			"description": "설치된 에이전트, 이 Mac의 비공개 모델 또는 공급자 API를 사용합니다.",
 			"ariaLabel": "AI 연결 유형"
 		},
-		"provider": { "label": "공급자" },
+		"provider": {
+			"label": "공급자"
+		},
 		"types": {
 			"agents": {
 				"label": "에이전트",
@@ -25,5 +27,31 @@
 				"providerDescription": "Glyph가 사용할 API와 모델의 공급자를 선택하세요."
 			}
 		}
+	},
+	"model": {
+		"label": "모델",
+		"description": "자격 증명이 허용되면 Glyph가 선택한 제공업체의 모델 목록을 가져옵니다.",
+		"placeholder": "모델 선택...",
+		"connecting": "연결 중...",
+		"count_other": "모델 {{count}}개",
+		"needsApiKey": "이 제공업체의 모델을 불러오려면 API 키를 저장하세요.",
+		"retry": "다시 시도",
+		"empty": "사용 가능한 모델이 없습니다"
+	},
+	"reasoning": {
+		"label": "추론 수준",
+		"description": "현재 모델이 추론 수준을 제공할 때 사용할 수 있습니다.",
+		"placeholder": "예: low, medium, high",
+		"manualHint": "이 모델은 추론 옵션을 제공하지 않습니다. 직접 입력하세요."
+	},
+	"baseUrl": {
+		"label": "기본 URL",
+		"descriptionLlama": "로컬 llama.cpp 서버의 기본값은 http://localhost:8080/v1입니다.",
+		"descriptionCustom": "사용자 지정 OpenAI 호환 제공업체에만 필요합니다."
+	},
+	"localNetwork": {
+		"label": "로컬 네트워크 허용",
+		"descriptionLlama": "localhost 또는 사설 네트워크의 llama.cpp 엔드포인트를 사용하려면 켜세요.",
+		"descriptionCustom": "localhost 또는 사설 네트워크의 http:// 엔드포인트(예: LM Studio, vLLM)를 사용하려면 켜세요."
 	}
 }

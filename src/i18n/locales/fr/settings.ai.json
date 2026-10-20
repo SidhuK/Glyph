@@ -7,7 +7,9 @@
 			"description": "Utilisez un agent installé, un modèle privé sur ce Mac ou l’API d’un fournisseur.",
 			"ariaLabel": "Type de connexion à l’IA"
 		},
-		"provider": { "label": "Fournisseur" },
+		"provider": {
+			"label": "Fournisseur"
+		},
 		"types": {
 			"agents": {
 				"label": "Agents",
@@ -25,5 +27,32 @@
 				"providerDescription": "Choisissez le fournisseur dont Glyph doit utiliser l’API et les modèles."
 			}
 		}
+	},
+	"model": {
+		"label": "Modèle",
+		"description": "Glyph récupère les modèles disponibles du fournisseur choisi lorsque les identifiants le permettent.",
+		"placeholder": "Choisir un modèle...",
+		"connecting": "Connexion...",
+		"count_one": "{{count}} modèle",
+		"count_other": "{{count}} modèles",
+		"needsApiKey": "Enregistrez une clé API pour charger les modèles de ce fournisseur.",
+		"retry": "Réessayer",
+		"empty": "Aucun modèle disponible"
+	},
+	"reasoning": {
+		"label": "Niveau de raisonnement",
+		"description": "Disponible lorsque le modèle actuel propose des niveaux d’effort.",
+		"placeholder": "ex. low, medium, high",
+		"manualHint": "Ce modèle ne publie pas d’options de raisonnement ; saisissez l’effort manuellement."
+	},
+	"baseUrl": {
+		"label": "URL de base",
+		"descriptionLlama": "Par défaut http://localhost:8080/v1 pour un serveur llama.cpp local.",
+		"descriptionCustom": "Uniquement pour les fournisseurs compatibles OpenAI personnalisés."
+	},
+	"localNetwork": {
+		"label": "Autoriser le réseau local",
+		"descriptionLlama": "Activez pour utiliser des points de terminaison llama.cpp sur localhost ou un réseau privé.",
+		"descriptionCustom": "Activez pour utiliser des points de terminaison http:// sur localhost ou un réseau privé (ex. LM Studio, vLLM)."
 	}
 }

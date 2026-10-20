@@ -1,7 +1,14 @@
-import { Search01Icon } from "@hugeicons/core-free-icons";
+import {
+	Files01Icon,
+	Search01Icon,
+	SortByDown02Icon,
+	SortingAZ01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../../../lib/utils";
+import { Select, SelectIcon } from "../../ui/shadcn/select";
+import { attachmentKindIcon } from "./attachmentFormat";
 import type {
 	AttachmentFilters,
 	AttachmentKindFilter,
@@ -12,16 +19,10 @@ import type {
 const USAGE_OPTIONS = ["unused", "all"] as const satisfies readonly AttachmentUsageFilter[];
 const SORT_OPTIONS = ["size", "name"] as const satisfies readonly AttachmentSort[];
 
-function isSort(value: string): value is AttachmentSort {
-	return SORT_OPTIONS.some((option) => option === value);
-}
-
-function findKind(
-	options: readonly AttachmentKindFilter[],
-	value: string,
-): AttachmentKindFilter | undefined {
-	return options.find((option) => option === value);
-}
+const SORT_ICONS = {
+	size: SortByDown02Icon,
+	name: SortingAZ01Icon,
+} as const satisfies Record<AttachmentSort, unknown>;
 
 export function AttachmentToolbar({ filters }: { filters: AttachmentFilters }) {
 	const { t } = useTranslation("settings.general");
@@ -64,36 +65,29 @@ export function AttachmentToolbar({ filters }: { filters: AttachmentFilters }) {
 				/>
 			</label>
 			{filters.kinds.length > 1 ? (
-				<select
+				<Select
 					className="attachmentSelect"
 					value={filters.kind}
 					aria-label={t("developer.attachments.kindFilter")}
-					onChange={(event) => {
-						const kind = findKind(kindOptions, event.target.value);
-						if (kind) filters.setKind(kind);
-					}}
-				>
-					{kindOptions.map((kind) => (
-						<option key={kind} value={kind}>
-							{t(`developer.attachments.kind.${kind}`)}
-						</option>
-					))}
-				</select>
+					options={kindOptions.map((kind) => ({
+						value: kind,
+						label: t(`developer.attachments.kind.${kind}`),
+						icon: <SelectIcon icon={kind === "any" ? Files01Icon : attachmentKindIcon(kind)} />,
+					}))}
+					onValueChange={filters.setKind}
+				/>
 			) : null}
-			<select
+			<Select
 				className="attachmentSelect"
 				value={filters.sort}
 				aria-label={t("developer.attachments.sortLabel")}
-				onChange={(event) => {
-					if (isSort(event.target.value)) filters.setSort(event.target.value);
-				}}
-			>
-				{SORT_OPTIONS.map((option) => (
-					<option key={option} value={option}>
-						{t(`developer.attachments.sort.${option}`)}
-					</option>
-				))}
-			</select>
+				options={SORT_OPTIONS.map((option) => ({
+					value: option,
+					label: t(`developer.attachments.sort.${option}`),
+					icon: <SelectIcon icon={SORT_ICONS[option]} />,
+				}))}
+				onValueChange={filters.setSort}
+			/>
 		</div>
 	);
 }

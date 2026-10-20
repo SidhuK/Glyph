@@ -304,53 +304,15 @@
 	white-space: nowrap;
 }
 
-.mainTabsBreadcrumbMenu {
+/* Folder breadcrumb menus, shared by the main tabs and the quick note target picker. */
+.breadcrumbMenu {
 	width: min(280px, calc(100vw - 28px));
 	max-height: min(340px, var(--available-height));
-	padding: 6px;
-	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
-	box-shadow: var(--shadow-float);
 }
 
-.mainTabsBreadcrumbMenuLabel {
-	padding: 6px 7px 5px;
+.breadcrumbMenuState {
+	padding: 6px 8px;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-semibold);
-	line-height: 1;
-	letter-spacing: 0;
-	text-transform: uppercase;
-}
-
-.mainTabsBreadcrumbMenuItem {
-	min-height: 30px;
-	padding: 0 8px;
-	border-radius: var(--radius-md);
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-medium);
-	cursor: pointer;
-}
-
-.mainTabsBreadcrumbMenuItem:focus,
-.mainTabsBreadcrumbMenuItem[data-highlighted] {
-	background: color-mix(in srgb, var(--bg-hover) 84%, transparent);
-	color: var(--text-primary);
-}
-
-.mainTabsBreadcrumbMenuItemLabel {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.mainTabsBreadcrumbMenuState {
-	padding: 8px;
-	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.3;
 }
 
@@ -605,21 +567,11 @@ button.mainTabClose {
 }
 
 .mainTabOverflow {
-	position: relative;
 	color: var(--text-secondary);
 }
 
-.mainTabOverflowSelect {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	opacity: 0;
-	cursor: pointer;
-}
-
 .mainTabAdd:hover,
-.mainTabOverflow:focus-within {
+.mainTabOverflow[data-popup-open] {
 	color: var(--text-primary);
 }
 

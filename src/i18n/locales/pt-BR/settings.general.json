@@ -184,5 +184,18 @@
 				"wide": "Largo"
 			}
 		}
+	},
+	"templates": {
+		"sectionTitle": "Modelos",
+		"none": "Nenhum",
+		"folder": {
+			"label": "Pasta de modelos",
+			"description": "Escolha uma pasta no espaço atual que contenha seus modelos em Markdown.",
+			"notConfigured": "Não configurado",
+			"browse": "Procurar",
+			"clear": "Remover pasta de modelos",
+			"found_one": "{{count}} modelo encontrado",
+			"found_other": "{{count}} modelos encontrados"
+		}
 	}
 }

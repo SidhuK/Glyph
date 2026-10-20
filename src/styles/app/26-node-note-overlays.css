@@ -433,11 +433,6 @@
 	overscroll-behavior: contain;
 	scrollbar-width: thin;
 	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 60%, transparent) transparent;
-	background: var(--bg-primary);
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-lg);
-	padding: 4px;
 	z-index: 2000;
 }
 
@@ -466,20 +461,11 @@
 	gap: 8px;
 	padding: 2px 8px 2px 3px;
 	border: none;
-	border-radius: var(--radius-6);
 	background: transparent;
 	color: var(--text-primary);
 	text-align: left;
 	cursor: default;
 	user-select: none;
-}
-
-.slashCommandItem:hover {
-	background: color-mix(in srgb, var(--text-primary) 4%, transparent);
-}
-
-.slashCommandItem.active {
-	background: color-mix(in srgb, var(--text-primary) 7%, transparent);
 }
 
 .slashCommandIcon {
@@ -543,11 +529,6 @@
 	max-height: 260px;
 	overflow-y: auto;
 	overscroll-behavior: contain;
-	background: var(--bg-primary);
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-lg);
-	padding: 4px;
 	z-index: 2100;
 }
 
@@ -557,17 +538,11 @@
 	box-sizing: border-box;
 	text-align: left;
 	padding: 6px 10px;
-	border-radius: var(--radius-md);
 	border: none;
 	background: transparent;
 	color: var(--text-primary);
 	cursor: pointer;
 	overflow: hidden;
-}
-
-.wikiLinkSuggestionItem:hover,
-.wikiLinkSuggestionItem.active {
-	background: var(--bg-hover);
 }
 
 .wikiLinkSuggestionTitle {

@@ -7,8 +7,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
-import { isFileTreeSortMode, type FileTreeSortMode } from "../../lib/settings";
+import type { FileTreeSortMode } from "../../lib/settings";
+import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
 
 interface FolioScopeHeaderProps {
 	searchQuery: string;
@@ -44,24 +44,13 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 						onChange={(event) => onSearchQueryChange(event.currentTarget.value)}
 					/>
 				</label>
-				<label className="folioNotesSort">
-					<HugeiconsIcon icon={sortIcon} size="var(--icon-md)" />
-					<select
-						className="folioNotesSortSelect"
-						value={sortMode}
-						aria-label={t("sidebar.sortNotes")}
-						onChange={(event) => {
-							const mode = event.currentTarget.value;
-							if (isFileTreeSortMode(mode)) onSortModeChange(mode);
-						}}
-					>
-						{FILE_TREE_SORT_MODES.map((mode) => (
-							<option key={mode} value={mode}>
-								{fileTreeSortLabel(mode)}
-							</option>
-						))}
-					</select>
-				</label>
+				<FileTreeSortMenu
+					sortMode={sortMode}
+					onSortModeChange={onSortModeChange}
+					triggerClassName="folioNotesSort"
+					icon={sortIcon}
+					iconSize="var(--icon-md)"
+				/>
 			</div>
 		</header>
 	);

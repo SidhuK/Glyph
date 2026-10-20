@@ -1,3 +1,4 @@
+import { Folder01Icon, FolderTreeIcon, Home01Icon, NoteIcon } from "@hugeicons/core-free-icons";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,7 +21,6 @@ import {
 import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
-	isAttachmentStorageMode,
 	loadSettings,
 	writeSpaceSetting,
 } from "../../lib/settings";
@@ -32,6 +32,7 @@ import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
+import { SelectIcon } from "../ui/shadcn/select";
 import { SettingsFolderPicker } from "./SettingsFolderPicker";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
@@ -39,6 +40,13 @@ import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 import { requireSpacePath, selectFolderRelativeToSpace } from "./spaceFolderSelection";
 
 const ATTACHMENT_SUBFOLDER_ERROR_ID = "attachmentSubfolderError";
+
+const ATTACHMENT_LOCATION_ICONS = {
+	"space-root": Home01Icon,
+	"specific-folder": Folder01Icon,
+	"note-folder": NoteIcon,
+	"note-subfolder": FolderTreeIcon,
+} as const satisfies Record<AttachmentStorageMode, unknown>;
 
 const PERIOD_NOTE_TOGGLE_SETTINGS = {
 	week: SPACE_SETTINGS.dailyNotesWeeklyNotes,
@@ -460,18 +468,12 @@ export function SpaceSettingsPane() {
 							<SettingsSelect
 								aria-label="Attachment location"
 								value={attachmentStorageMode}
-								onChange={(event) => {
-									const nextMode = event.target.value;
-									if (!isAttachmentStorageMode(nextMode)) return;
-									void handleAttachmentModeChange(nextMode);
-								}}
-							>
-								{ATTACHMENT_LOCATION_OPTIONS.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</SettingsSelect>
+								options={ATTACHMENT_LOCATION_OPTIONS.map((option) => ({
+									...option,
+									icon: <SelectIcon icon={ATTACHMENT_LOCATION_ICONS[option.value]} />,
+								}))}
+								onValueChange={(nextMode) => void handleAttachmentModeChange(nextMode)}
+							/>
 							<div className="settingsHelp">{ATTACHMENT_MODE_UI[attachmentStorageMode].help}</div>
 							{attachmentFolderEditor === "browse" ? (
 								<div className="dailyNotesFolderRow">

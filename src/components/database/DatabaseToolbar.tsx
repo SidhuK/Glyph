@@ -1,3 +1,5 @@
+import { UnavailableIcon } from "@hugeicons/core-free-icons";
+import type { TFunction } from "i18next";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type {
@@ -7,6 +9,8 @@ import type {
 } from "../../lib/database/types";
 import { Search, X } from "../Icons";
 import { Input } from "../ui/shadcn/input";
+import { Select, SelectIcon } from "../ui/shadcn/select";
+import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { DatabaseViewOptionsPopover } from "./DatabaseViewOptionsPopover";
 
 interface DatabaseToolbarProps {
@@ -24,12 +28,13 @@ interface DatabaseToolbarProps {
 
 const DATABASE_SEARCH_DEBOUNCE_MS = 300;
 
-function groupColumnOptionLabel(column: DatabaseColumn): string {
-	if (column.type === "tags" || column.property_kind === "tags") {
-		return `${column.label} (multi-lane)`;
-	}
-	if (column.property_kind === "multi_select") {
-		return `${column.label} (multi-lane)`;
+function groupColumnOptionLabel(column: DatabaseColumn, t: TFunction<"shell">): string {
+	if (
+		column.type === "tags" ||
+		column.property_kind === "tags" ||
+		column.property_kind === "multi_select"
+	) {
+		return t("collections.groupBy.multiLane", { name: column.label });
 	}
 	return column.label;
 }
@@ -67,7 +72,7 @@ export function DatabaseToolbar({
 		(databaseView === "board" ? groupColumns[0] : null) ??
 		null;
 	const selectedGroupColumnId = selectedGroupColumn?.id ?? "";
-	const groupByLabel = "Grouped by";
+	const groupByLabel = t("collections.groupBy.label");
 
 	useEffect(() => {
 		if (searchDraft === searchValue) return;
@@ -117,31 +122,37 @@ export function DatabaseToolbar({
 					) : null}
 				</label>
 				{groupColumns.length > 0 ? (
-					<label className="databaseToolbarGroupBy">
+					<div className="databaseToolbarGroupBy">
 						<span className="databaseToolbarGroupByLabel">{groupByLabel}</span>
-						<select
-							className="databaseToolbarGroupBySelect"
+						<Select
 							value={selectedGroupColumnId}
 							title={
 								selectedGroupColumn
-									? `Grouping by ${selectedGroupColumn.label}`
-									: "Choose a field to group by"
+									? t("collections.groupBy.title", { name: selectedGroupColumn.label })
+									: t("collections.groupBy.choose")
 							}
 							aria-label={groupByLabel}
-							onChange={(event) => onGroupColumnIdChange(event.target.value || null)}
-						>
-							{databaseView === "board" ? null : <option value="">No grouping</option>}
-							{groupColumns.map((column) => (
-								<option key={column.id} value={column.id}>
-									{groupColumnOptionLabel(column)}
-								</option>
-							))}
-						</select>
-					</label>
+							options={[
+								...(databaseView === "board"
+									? []
+									: [
+											{
+												value: "",
+												label: t("collections.groupBy.none"),
+												icon: <SelectIcon icon={UnavailableIcon} />,
+											},
+										]),
+								...groupColumns.map((column) => ({
+									value: column.id,
+									label: groupColumnOptionLabel(column, t),
+									icon: <DatabaseColumnIcon column={column} size="var(--icon-sm)" />,
+								})),
+							]}
+							onValueChange={(columnId) => onGroupColumnIdChange(columnId || null)}
+						/>
+					</div>
 				) : databaseView === "board" ? (
-					<span className="databaseToolbarGroupByHint">
-						Add a status, tag, or checkbox field to create lanes
-					</span>
+					<span className="databaseToolbarGroupByHint">{t("collections.groupBy.boardHint")}</span>
 				) : null}
 				<DatabaseViewOptionsPopover
 					open={viewOptionsOpen}

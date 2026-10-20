@@ -74,7 +74,152 @@
 		"laneRenamePartial": "Se actualizaron {{changed}} de {{total}} tarjetas. {{failed}} no se pudieron actualizar: {{error}}",
 		"laneRenameConfirm": "Cambiar nombre",
 		"laneRenameCancel": "Cancelar",
-		"sourceTruncated": "Esta colección de búsqueda solo muestra sus primeros {{limit}} resultados."
+		"sourceTruncated": "Esta colección de búsqueda solo muestra sus primeros {{limit}} resultados.",
+		"laneMenu": {
+			"options": "Abrir opciones de la columna {{lane}}",
+			"unassignedLast": "La columna sin asignar queda al final",
+			"rename": "Renombrar {{lane}}",
+			"position": "Posición {{position}}: {{lane}}",
+			"setColor": "Definir color de {{lane}}",
+			"setColorTo": "Cambiar el color de {{lane}} a {{color}}",
+			"clearColor": "Quitar color",
+			"clearColorFor": "Quitar color de {{lane}}",
+			"addNote": "Añadir nota a {{lane}}",
+			"cardCount_one": "{{count}} tarjeta",
+			"cardCount_other": "{{count}} tarjetas"
+		},
+		"boardCard": {
+			"openNote": "Abrir nota",
+			"moveTo": "Mover a {{lane}}",
+			"openHint": "Haz doble clic para abrir la nota",
+			"updated": "Actualizada {{date}}"
+		},
+		"switch": "Cambiar colección",
+		"select": "Seleccionar colección",
+		"newCollection": "Nueva colección",
+		"viewMenu": {
+			"viewType": "Tipo de vista",
+			"table": "Tabla",
+			"board": "Tablero",
+			"rename": "Cambiar nombre",
+			"deleteView": "Eliminar vista",
+			"options": "Opciones de vista",
+			"optionsFor": "Opciones de vista para {{name}}",
+			"tabs": "Vistas de la colección",
+			"name": "Nombre de la vista"
+		},
+		"viewOptions": {
+			"reset": "Restablecer",
+			"presets": "Preajustes"
+		},
+		"groupBy": {
+			"label": "Agrupado por",
+			"title": "Agrupando por {{name}}",
+			"choose": "Elige un campo para agrupar",
+			"none": "Sin agrupar",
+			"multiLane": "{{name}} (varios carriles)",
+			"boardHint": "Añade un campo de estado, etiqueta o casilla para crear carriles"
+		},
+		"sort": {
+			"title": "Ordenar por",
+			"presets": "Preajustes de orden",
+			"replaceWithPreset": "Reemplazar el orden actual por {{name}}",
+			"field": "Campo de orden",
+			"direction": "Dirección de orden",
+			"add": "Añadir orden",
+			"directions": {
+				"date": {
+					"asc": "Más antiguo - Más reciente",
+					"desc": "Más reciente - Más antiguo"
+				},
+				"number": {
+					"asc": "Menor - Mayor",
+					"desc": "Mayor - Menor"
+				},
+				"boolean": {
+					"asc": "Sin marcar primero",
+					"desc": "Marcados primero"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "Filtrar por",
+			"hint": "Acota esta vista por valores de columna. Para buscar texto en las notas, usa el cuadro de búsqueda de la barra de herramientas.",
+			"presets": "Preajustes de filtro",
+			"unsupportedOperator": "El filtro {{index}} usa un operador no admitido. Elige un operador admitido para recuperar los resultados.",
+			"addFirst": "Añadir una condición",
+			"addAnother": "Añadir otra condición",
+			"where": "Donde",
+			"and": "Y",
+			"fieldAria": "Campo del filtro {{index}}",
+			"operatorAria": "Operador del filtro {{index}}",
+			"dateRangeAria": "Rango de fechas del filtro {{index}}",
+			"tagLabel": "Etiqueta del filtro",
+			"tagDescription": "Elige una etiqueta para este filtro.",
+			"tagPlaceholder": "Elige una etiqueta",
+			"valuePlaceholder": "Valor",
+			"remove": "Quitar filtro",
+			"operators": {
+				"equals": "es",
+				"not_equals": "no es",
+				"contains": "contiene",
+				"not_contains": "no contiene",
+				"starts_with": "empieza por",
+				"ends_with": "termina en",
+				"greater_than": "mayor que",
+				"less_than": "menor que",
+				"is_empty": "está vacío",
+				"is_not_empty": "no está vacío",
+				"is_true": "está marcado",
+				"is_false": "no está marcado",
+				"tags_contains": "contiene",
+				"any_of": "es cualquiera de",
+				"none_of": "no es ninguno de",
+				"within_last_7_days": "es",
+				"unsupported": "No admitido: {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "Vencido",
+				"today": "Hoy",
+				"thisWeek": "Esta semana",
+				"last7Days": "Últimos 7 días",
+				"last30Days": "Últimos 30 días"
+			}
+		},
+		"source": {
+			"title": "Origen",
+			"hint": "Elige qué notas aparecen en esta vista. Los cambios se guardan automáticamente.",
+			"showFrom": "Mostrar notas de",
+			"kinds": {
+				"all_notes": "Todas las notas",
+				"folder": "Una carpeta",
+				"tag": "Una etiqueta",
+				"search": "Una búsqueda"
+			},
+			"folder": "Carpeta",
+			"chooseFolder": "Elige una carpeta",
+			"includeSubfolders": "Incluir subcarpetas",
+			"tag": "Etiqueta",
+			"tagDescription": "Solo aparecerán las notas con esta etiqueta.",
+			"chooseTag": "Elige una etiqueta",
+			"searchQuery": "Búsqueda",
+			"saveNewIn": "Guardar notas nuevas en"
+		},
+		"board": {
+			"emptyTitle": "Añade un campo para crear columnas en el tablero",
+			"emptyText": "La vista de tablero agrupa las notas en columnas. Añade a tus notas un campo de estado, prioridad, casilla, etiqueta o similar y luego elígelo en la barra de herramientas de arriba.",
+			"openViewSettings": "Abrir ajustes de la vista",
+			"laneEmpty": {
+				"archived": "Aquí van las notas archivadas",
+				"done": "Aquí llegan las notas terminadas",
+				"unassigned": "Aquí aparecen las notas sin valor",
+				"default": "Suelta notas aquí o añade una abajo"
+			}
+		}
 	},
 	"tags": {
 		"header": "Etiquetas",
@@ -243,6 +388,15 @@
 		"commands": {
 			"label": "Comandos de IA",
 			"canvas": "Crear o editar un lienzo de Excalidraw"
+		},
+		"modelSelector": {
+			"label": "Modelo",
+			"select": "Seleccionar modelo",
+			"provider": "Proveedor del modelo",
+			"loading": "Cargando modelos…",
+			"loadFailed": "No se pudieron cargar los modelos",
+			"empty": "No hay modelos disponibles",
+			"retry": "Reintentar"
 		}
 	},
 	"connections": {
@@ -291,7 +445,6 @@
 		"changeIcon": "Cambiar icono…",
 		"closeSpace": "Cerrar espacio",
 		"chooseIcon": "Elegir icono del espacio",
-		"menuFailed": "No se pudo abrir el menú de espacios",
 		"actionFailed": "No se pudo completar la acción del espacio"
 	},
 	"appearancePicker": {
@@ -354,5 +507,35 @@
 		"updateFailed": "No se pudieron actualizar los ajustes del calendario",
 		"collapse": "Contraer calendario",
 		"expand": "Expandir calendario"
+	},
+	"breadcrumbs": {
+		"space": "Espacio",
+		"emptyFolder": "Carpeta vacía"
+	},
+	"quickNoteTarget": {
+		"today": "Nota rápida de hoy",
+		"browse": "Cambiar destino: explorar {{name}}",
+		"label": "Destino de la nota rápida",
+		"resetToToday": "Volver a la nota rápida de hoy"
+	},
+	"gitSync": {
+		"interval": {
+			"label": "Intervalo",
+			"description": "Con qué frecuencia Glyph ejecuta las sincronizaciones programadas.",
+			"ariaLabel": "Intervalo de sincronización de Git",
+			"minutes_one": "{{count}} min",
+			"minutes_other": "{{count}} min"
+		},
+		"conflict": {
+			"sectionTitle": "Resolución de conflictos",
+			"sectionDescription": "Elige qué lado prefiere Glyph cuando los cambios locales y remotos entran en conflicto.",
+			"label": "Política",
+			"description": "Glyph resuelve los conflictos automáticamente.",
+			"ariaLabel": "Política de conflictos",
+			"options": {
+				"local_wins": "Gana el local",
+				"remote_wins": "Gana el remoto"
+			}
+		}
 	}
 }

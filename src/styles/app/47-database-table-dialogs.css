@@ -217,59 +217,9 @@
 	padding-right: 18px;
 }
 
-.databaseCellInput,
-.databaseNativeSelect {
-	width: 100%;
-}
-
 .databaseCellInput {
+	width: 100%;
 	height: 34px;
-}
-
-.databaseNativeSelect {
-	-webkit-appearance: none;
-	appearance: none;
-	min-height: 32px;
-	border-radius: var(--database-control-radius);
-	border: 1px solid var(--database-control-border);
-	background-color: var(--database-control-background);
-	color: var(--text-primary);
-	padding: 0 30px 0 10px;
-	background-image:
-		linear-gradient(
-			45deg,
-			transparent 50%,
-			color-mix(in srgb, var(--text-tertiary) 88%, transparent) 50%
-		),
-		linear-gradient(
-			135deg,
-			color-mix(in srgb, var(--text-tertiary) 88%, transparent) 50%,
-			transparent 50%
-		);
-	background-repeat: no-repeat;
-	background-position:
-		calc(100% - 14px) 13px,
-		calc(100% - 9px) 13px;
-	background-size:
-		5px 5px,
-		5px 5px;
-	transition:
-		border-color 140ms ease,
-		background-color 140ms ease,
-		box-shadow 140ms ease,
-		color 140ms ease;
-}
-
-.databaseNativeSelect:hover {
-	border-color: var(--border-default);
-	background-color: var(--database-dropdown-hover);
-}
-
-.databaseNativeSelect:focus,
-.databaseNativeSelect:focus-visible {
-	outline: none;
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
 }
 
 .databaseCellPills {
@@ -706,11 +656,6 @@
 	.databaseToolbarActions {
 		flex-wrap: wrap;
 	}
-}
-
-.databaseBoardContextMenuSeparator {
-	margin: 6px 4px;
-	background: color-mix(in srgb, var(--border-light) 72%, transparent);
 }
 
 .databaseBoardColorMenu {

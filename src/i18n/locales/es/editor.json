@@ -230,5 +230,17 @@
 		"close": "Cerrar vista",
 		"loading": "Cargando nota…",
 		"empty": "Esta nota está vacía."
+	},
+	"propertyKind": {
+		"title": "Tipo de propiedad: {{label}}",
+		"kinds": {
+			"text": "Texto",
+			"url": "URL",
+			"date": "Fecha",
+			"checkbox": "Casilla",
+			"tags": "Etiquetas",
+			"status": "Estado",
+			"priority": "Prioridad"
+		}
 	}
 }

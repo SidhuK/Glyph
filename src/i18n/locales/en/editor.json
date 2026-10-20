@@ -28,7 +28,7 @@
 		"select": "Select",
 		"skip": "Skip",
 		"cancelReview": "Cancel review",
-		"nestedSummary": "Includes {{count}} nested item(s), {{unfinished}} unfinished",
+		"nestedSummary": "Includes {{nested}}, {{unfinished}}",
 		"cancel": "Cancel",
 		"chooseDestination": "Choose destination",
 		"chooseDestinationDescription": "Move {{count}} selected item(s).",
@@ -39,7 +39,11 @@
 		"moveFailedDescription": "The notes changed or could not be saved. Try again.",
 		"saveBeforeMove": "Save the current note before moving its checkbox items.",
 		"itemChanged": "That checkbox item changed. Review it and try again.",
-		"invalidDailyNote": "This daily note has an invalid date."
+		"invalidDailyNote": "This daily note has an invalid date.",
+		"nestedCount_one": "{{count}} nested item",
+		"nestedCount_other": "{{count}} nested items",
+		"unfinishedCount_one": "{{count}} unfinished",
+		"unfinishedCount_other": "{{count}} unfinished"
 	},
 	"unlinkedMentions": {
 		"heading": "Unlinked mentions ({{count}})",
@@ -318,5 +322,17 @@
 		"close": "Close peek",
 		"loading": "Loading note…",
 		"empty": "This note is empty."
+	},
+	"propertyKind": {
+		"title": "Property type: {{label}}",
+		"kinds": {
+			"text": "Text",
+			"url": "URL",
+			"date": "Date",
+			"checkbox": "Checkbox",
+			"tags": "Tags",
+			"status": "Status",
+			"priority": "Priority"
+		}
 	}
 }

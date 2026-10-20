@@ -217,6 +217,7 @@ vi.mock("../ui/shadcn/dropdown-menu", () => ({
 			{children}
 		</button>
 	),
+	DropdownMenuItemIcon: () => null,
 	DropdownMenuSeparator: () => <hr />,
 }));
 

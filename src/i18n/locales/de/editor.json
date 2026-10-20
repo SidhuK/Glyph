@@ -230,5 +230,17 @@
 		"close": "Peek schließen",
 		"loading": "Notiz wird geladen…",
 		"empty": "Diese Notiz ist leer."
+	},
+	"propertyKind": {
+		"title": "Eigenschaftstyp: {{label}}",
+		"kinds": {
+			"text": "Text",
+			"url": "URL",
+			"date": "Datum",
+			"checkbox": "Kontrollkästchen",
+			"tags": "Tags",
+			"status": "Status",
+			"priority": "Priorität"
+		}
 	}
 }

@@ -1,7 +1,7 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { type AppLanguage, LANGUAGE_OPTIONS, isAppLanguage } from "../../i18n/locales";
+import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	DATE_DISPLAY_FORMAT_OPTIONS,
@@ -141,17 +141,12 @@ export function GeneralSettingsPane() {
 							id="settings-language-select"
 							aria-label={t("language.ariaLabel")}
 							value={language}
-							onChange={(event) => {
-								if (!isAppLanguage(event.target.value)) return;
-								void handleLanguageChange(event.target.value);
-							}}
-						>
-							{LANGUAGE_OPTIONS.map((option) => (
-								<option key={option.id} value={option.id}>
-									{option.nativeLabel}
-								</option>
-							))}
-						</SettingsSelect>
+							options={LANGUAGE_OPTIONS.map((option) => ({
+								value: option.id,
+								label: option.nativeLabel,
+							}))}
+							onValueChange={(next) => void handleLanguageChange(next)}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
@@ -169,18 +164,9 @@ export function GeneralSettingsPane() {
 							aria-label={t("dateTime.dateFormat.ariaLabel")}
 							value={dateFormat.value}
 							disabled={dateFormat.isSaving}
-							onChange={(event) => {
-								const next = event.currentTarget.value;
-								if (!isDateDisplayFormat(next)) return;
-								dateFormat.onChange(next);
-							}}
-						>
-							{DATE_DISPLAY_FORMAT_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
-								</option>
-							))}
-						</SettingsSelect>
+							options={DATE_DISPLAY_FORMAT_OPTIONS}
+							onValueChange={dateFormat.onChange}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

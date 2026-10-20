@@ -3,21 +3,11 @@ import { PointerActivationConstraints } from "@dnd-kit/dom";
 import { KeyboardSensor, PointerSensor, useDraggable, useDroppable } from "@dnd-kit/react";
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
-import {
-	type MouseEvent,
-	type MutableRefObject,
-	type ReactNode,
-	useCallback,
-	useMemo,
-} from "react";
-import { DATABASE_BOARD_EMPTY_LANE_ID, type DatabaseBoardLane } from "../../lib/database/board";
+import { type MouseEvent, type MutableRefObject, type ReactNode, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import type { DatabaseBoardLane } from "../../lib/database/board";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseRow } from "../../lib/database/types";
-import {
-	type NativeContextMenuItem,
-	showNativeContextMenu,
-	showNativePopupMenu,
-} from "../../lib/nativeContextMenu";
 import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
 import { Plus } from "../Icons";
@@ -26,6 +16,7 @@ import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
 import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { DatabaseBoardLaneMenu } from "./DatabaseBoardLaneMenu";
 
 const DATABASE_BOARD_CARD_SENSORS = [
 	PointerSensor.configure({
@@ -81,45 +72,7 @@ export function DatabaseBoardLaneView({
 		data: { laneId: lane.id },
 		accept: "database-board-card",
 	});
-	const laneMenuItems = useMemo<NativeContextMenuItem[]>(
-		() => [
-			...(onRenameLane
-				? [
-						{
-							label: `Rename ${lane.label}`,
-							action: () => onRenameLane(lane),
-						},
-					]
-				: []),
-			...(onRenameLane ? [{ type: "separator" as const }] : []),
-			...reorderableLanes.map((targetLane, index) => ({
-				label: `Position ${index + 1}: ${targetLane.label}`,
-				enabled: targetLane.id !== lane.id,
-				action: () => moveLaneToIndex(lane.id, index),
-			})),
-		],
-		[lane, moveLaneToIndex, onRenameLane, reorderableLanes],
-	);
-	const handleLaneContextMenu = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			if (lane.id === DATABASE_BOARD_EMPTY_LANE_ID) return;
-
-			void showNativeContextMenu(event, laneMenuItems).catch((error: unknown) => {
-				console.error("Failed to show board lane context menu", error);
-			});
-		},
-		[lane.id, laneMenuItems],
-	);
-	const handleLaneMenuClick = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			if (lane.id === DATABASE_BOARD_EMPTY_LANE_ID) return;
-
-			void showNativePopupMenu(event, laneMenuItems).catch((error: unknown) => {
-				console.error("Failed to show board lane context menu", error);
-			});
-		},
-		[lane.id, laneMenuItems],
-	);
+	const { t } = useTranslation("shell");
 	const laneTitleContent = (
 		<>
 			{isStatusGroup || isPriorityGroup || isTagGroup ? (
@@ -175,8 +128,8 @@ export function DatabaseBoardLaneView({
 									<button
 										type="button"
 										className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
-										aria-label={`Set color for ${lane.label}`}
-										title={`Set color for ${lane.label}`}
+										aria-label={t("collections.laneMenu.setColor", { lane: lane.label })}
+										title={t("collections.laneMenu.setColor", { lane: lane.label })}
 									/>
 								}
 							>
@@ -192,15 +145,18 @@ export function DatabaseBoardLaneView({
 											style={databaseValueToneStyleForColor(color.id, color.id)}
 											onClick={() => onLaneColorChange(lane.id, color.id)}
 											title={color.label}
-											aria-label={`Set ${lane.label} color to ${color.label}`}
+											aria-label={t("collections.laneMenu.setColorTo", {
+												lane: lane.label,
+												color: color.label,
+											})}
 										/>
 									))}
 									<button
 										type="button"
 										className="databaseBoardColorRibbonClear"
 										onClick={() => onLaneColorChange(lane.id, null)}
-										title="Clear color"
-										aria-label={`Clear color for ${lane.label}`}
+										title={t("collections.laneMenu.clearColor")}
+										aria-label={t("collections.laneMenu.clearColorFor", { lane: lane.label })}
 									>
 										<span />
 									</button>
@@ -210,7 +166,10 @@ export function DatabaseBoardLaneView({
 					) : (
 						<div className="databaseBoardLaneTitleGroup">{laneTitleContent}</div>
 					)}
-					<span className="databaseBoardLaneCount" aria-label={`${lane.cardCount} cards`}>
+					<span
+						className="databaseBoardLaneCount"
+						aria-label={t("collections.laneMenu.cardCount", { count: lane.cardCount })}
+					>
 						{lane.cardCount}
 					</span>
 				</div>
@@ -220,32 +179,18 @@ export function DatabaseBoardLaneView({
 							type="button"
 							className="databaseBoardLaneAddCardButton"
 							onClick={onAddCard}
-							aria-label={`Add note to ${lane.label}`}
-							title={`Add note to ${lane.label}`}
+							aria-label={t("collections.laneMenu.addNote", { lane: lane.label })}
+							title={t("collections.laneMenu.addNote", { lane: lane.label })}
 						>
 							<Plus size="var(--icon-sm)" aria-hidden="true" />
 						</button>
 					) : null}
-					<button
-						type="button"
-						className="databaseBoardLaneHandle"
-						disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
-						aria-label={
-							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-								? "Unassigned lane stays last"
-								: `Open ${lane.label} lane options`
-						}
-						title={
-							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-								? "Unassigned lane stays last"
-								: `Open ${lane.label} lane options`
-						}
-						aria-haspopup="menu"
-						onClick={handleLaneMenuClick}
-						onContextMenu={handleLaneContextMenu}
-					>
-						<span className="databaseBoardLaneHandleDots" />
-					</button>
+					<DatabaseBoardLaneMenu
+						lane={lane}
+						reorderableLanes={reorderableLanes}
+						moveLaneToIndex={moveLaneToIndex}
+						onRenameLane={onRenameLane}
+					/>
 				</div>
 			</div>
 			<div className="databaseBoardLaneBody">{children}</div>
@@ -274,6 +219,7 @@ export function DatabaseBoardCardView({
 	onContextMenu,
 	children,
 }: DatabaseBoardCardViewProps) {
+	const { t } = useTranslation("shell");
 	const dragId = boardCardDragId(row.note_path, laneId);
 	const { ref: droppableRef, isDropTarget } = useDroppable({
 		id: `card:${dragId}`,
@@ -324,7 +270,7 @@ export function DatabaseBoardCardView({
 					onSelectRow(row.note_path);
 				}
 			}}
-			title="Double-click to open note"
+			title={t("collections.boardCard.openHint")}
 		>
 			{children}
 		</button>

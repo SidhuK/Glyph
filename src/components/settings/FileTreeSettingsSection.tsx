@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
+import { SelectIcon } from "../ui/shadcn/select";
+import { FILE_TREE_SORT_ICONS } from "../filetree/fileTreeSortIcons";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
-import { isFileTreeSortMode } from "../../lib/settings";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import type { SettingsBoolean } from "./useSettingsBoolean";
@@ -9,6 +10,15 @@ import type { SettingsBoolean } from "./useSettingsBoolean";
 interface FileTreeSettingsSectionProps {
 	folderCounts: SettingsBoolean;
 	setError: (message: string) => void;
+}
+
+/** File tree sort modes as select options; the Folio sort setting reuses them. */
+export function fileTreeSortOptions() {
+	return FILE_TREE_SORT_MODES.map((mode) => ({
+		value: mode,
+		label: fileTreeSortLabel(mode),
+		icon: <SelectIcon icon={FILE_TREE_SORT_ICONS[mode]} />,
+	}));
 }
 
 export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSettingsSectionProps) {
@@ -40,17 +50,9 @@ export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSett
 					aria-label={t("fileTree.sort.ariaLabel")}
 					value={fileTreeSort.sortMode}
 					disabled={fileTreeSort.isSaving}
-					onChange={(event) => {
-						const mode = event.currentTarget.value;
-						if (isFileTreeSortMode(mode)) void fileTreeSort.setSortMode(mode);
-					}}
-				>
-					{FILE_TREE_SORT_MODES.map((mode) => (
-						<option key={mode} value={mode}>
-							{fileTreeSortLabel(mode)}
-						</option>
-					))}
-				</SettingsSelect>
+					options={fileTreeSortOptions()}
+					onValueChange={(mode) => void fileTreeSort.setSortMode(mode)}
+				/>
 			</SettingsRow>
 		</SettingsSection>
 	);
