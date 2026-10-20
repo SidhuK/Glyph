@@ -76,7 +76,17 @@
 		"laneRenamePartial": "Zaktualizowano {{changed}} z {{total}} kart. Nie udało się zaktualizować {{failed}}: {{error}}",
 		"laneRenameConfirm": "Zmień nazwę",
 		"laneRenameCancel": "Anuluj",
-		"sourceTruncated": "Ta kolekcja wyszukiwania pokazuje tylko pierwsze {{limit}} wyników."
+		"sourceTruncated": "Ta kolekcja wyszukiwania pokazuje tylko pierwsze {{limit}} wyników.",
+		"laneMenu": {
+			"options": "Otwórz opcje kolumny {{lane}}",
+			"unassignedLast": "Kolumna bez przypisania pozostaje ostatnia",
+			"rename": "Zmień nazwę {{lane}}",
+			"position": "Pozycja {{position}}: {{lane}}"
+		},
+		"boardCard": {
+			"openNote": "Otwórz notatkę",
+			"moveTo": "Przenieś do {{lane}}"
+		}
 	},
 	"tags": {
 		"header": "Tagi",
@@ -287,6 +297,15 @@
 		"commands": {
 			"label": "Polecenia AI",
 			"canvas": "Utwórz lub edytuj kanwę Excalidraw"
+		},
+		"modelSelector": {
+			"label": "Model",
+			"select": "Wybierz model",
+			"provider": "Dostawca modelu",
+			"loading": "Wczytywanie modeli…",
+			"loadFailed": "Nie udało się wczytać modeli",
+			"empty": "Brak dostępnych modeli",
+			"retry": "Spróbuj ponownie"
 		}
 	},
 	"connections": {

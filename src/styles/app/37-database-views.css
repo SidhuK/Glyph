@@ -236,38 +236,6 @@ button.databaseToolbarChip.databasesNewNoteButton > svg path {
 	}
 }
 
-.databasesViewTabMenuContent {
-	min-width: 0;
-	width: max-content;
-	padding: var(--database-dropdown-padding);
-	border-radius: var(--database-dropdown-radius);
-}
-
-.databasesViewTabMenuLabel {
-	padding: 4px 10px 3px;
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: 500;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
-.databasesViewTabMenuContent .databasesViewTabMenuItem {
-	gap: 8px;
-	min-height: 32px;
-	padding: 0 10px;
-	font-size: calc(var(--text-base) * 0.9);
-	border-radius: var(--database-control-radius);
-}
-
-.databasesViewTabMenuContent .databasesViewTabMenuItem svg {
-	opacity: 0.6;
-}
-
-.databasesViewTabMenuSeparator {
-	margin: 3px 6px;
-}
-
 .databaseViewOptionsTrigger {
 	position: relative;
 }

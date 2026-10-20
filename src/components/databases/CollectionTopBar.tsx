@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import type { UseDatabasesPaneReturn } from "../../hooks/database/useDatabasesPane";
 import type { ActionMenuItem } from "../../lib/database/actionMenuItems";
 import { buildCollectionMenuItems } from "../../lib/database/viewMenuItems";
-import { isNativeContextMenuAvailable } from "../../lib/nativeContextMenu";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
@@ -70,13 +69,10 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 			<div className="databasesTopBarLeft">
 				<div className="databasesCollectionHeader">
 					<ActionMenuTrigger
-						nativeActionMenusEnabled={isNativeContextMenuAvailable()}
 						items={collectionMenuItems}
 						triggerClassName="databasesCollectionSwitcher"
 						triggerTitle={collectionMenuLabel}
 						triggerAriaLabel={collectionMenuLabel}
-						contentClassName="databasesDropdownContent databasesCollectionMenu"
-						itemClassName="databasesDropdownItem databasesCollectionMenuItem"
 					>
 						<HugeiconsIcon icon={LibraryIcon} size="var(--icon-sm)" />
 						<span className="databasesCollectionSwitcherLabel">{breadcrumbRoot}</span>
@@ -153,13 +149,10 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 						<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
 					</Button>
 					<ActionMenuTrigger
-						nativeActionMenusEnabled={isNativeContextMenuAvailable()}
 						items={collectionActionMenuItems}
 						triggerClassName="databasesTopActionButton databaseCollectionActionsButton"
 						triggerTitle={collectionOptionsLabel}
 						triggerAriaLabel={collectionOptionsLabel}
-						contentClassName="databasesDropdownContent databasesCollectionMenu"
-						itemClassName="databasesDropdownItem databasesCollectionMenuItem"
 					>
 						<HugeiconsIcon icon={MoreVerticalIcon} size="var(--icon-md)" />
 					</ActionMenuTrigger>

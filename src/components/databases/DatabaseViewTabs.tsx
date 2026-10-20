@@ -3,7 +3,6 @@ import { MoreVerticalIcon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import { useCallback, useRef } from "react";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
-import { isNativeContextMenuAvailable } from "../../lib/nativeContextMenu";
 import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 import { Kanban, Table } from "../Icons";
 import { springPresets } from "../ui/animations";
@@ -142,15 +141,10 @@ export function DatabaseViewTabs({
 			</div>
 			<div className="databasesViewTabsActions">
 				<ActionMenuTrigger
-					nativeActionMenusEnabled={isNativeContextMenuAvailable()}
 					items={viewActionMenuItems}
 					triggerClassName="databasesViewTabMenu databaseToolbarChip"
 					triggerTitle="View options"
 					triggerAriaLabel={`View options for ${activeView.name}`}
-					contentClassName="databasesDropdownContent databasesViewTabMenuContent"
-					itemClassName="databasesDropdownItem databasesViewTabMenuItem"
-					separatorClassName="databasesViewTabMenuSeparator"
-					labelClassName="databasesViewTabMenuLabel"
 					finalFocus={() => {
 						if (!skipNextViewMenuAutoFocusRef.current) return true;
 						skipNextViewMenuAutoFocusRef.current = false;

@@ -1,6 +1,7 @@
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
 	type BoardLaneRenameTarget,
@@ -166,6 +167,7 @@ export function DatabaseBoard({
 	onLoadMoreRows,
 	onSaveCell,
 }: DatabaseBoardProps) {
+	const { t } = useTranslation("shell");
 	const isCardFieldVisible = useCallback(
 		(fieldId: string) => {
 			if (!boardCardFields || boardCardFields.length === 0) return true;
@@ -433,14 +435,16 @@ export function DatabaseBoard({
 													onContextMenu={(event) => {
 														void showNativeContextMenu(event, [
 															{
-																label: "Open note",
+																label: t("collections.boardCard.openNote"),
 																action: () => onOpenRow(row.note_path),
 															},
 															...(otherLanes.length > 0
 																? [
 																		{ type: "separator" as const },
 																		...otherLanes.map((targetLane) => ({
-																			label: `Move to ${targetLane.label}`,
+																			label: t("collections.boardCard.moveTo", {
+																				lane: targetLane.label,
+																			}),
 																			action: () =>
 																				void handleLaneDrop(row.note_path, targetLane.id, lane.id),
 																		})),

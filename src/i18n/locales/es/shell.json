@@ -74,7 +74,17 @@
 		"laneRenamePartial": "Se actualizaron {{changed}} de {{total}} tarjetas. {{failed}} no se pudieron actualizar: {{error}}",
 		"laneRenameConfirm": "Cambiar nombre",
 		"laneRenameCancel": "Cancelar",
-		"sourceTruncated": "Esta colección de búsqueda solo muestra sus primeros {{limit}} resultados."
+		"sourceTruncated": "Esta colección de búsqueda solo muestra sus primeros {{limit}} resultados.",
+		"laneMenu": {
+			"options": "Abrir opciones de la columna {{lane}}",
+			"unassignedLast": "La columna sin asignar queda al final",
+			"rename": "Renombrar {{lane}}",
+			"position": "Posición {{position}}: {{lane}}"
+		},
+		"boardCard": {
+			"openNote": "Abrir nota",
+			"moveTo": "Mover a {{lane}}"
+		}
 	},
 	"tags": {
 		"header": "Etiquetas",
@@ -243,6 +253,15 @@
 		"commands": {
 			"label": "Comandos de IA",
 			"canvas": "Crear o editar un lienzo de Excalidraw"
+		},
+		"modelSelector": {
+			"label": "Modelo",
+			"select": "Seleccionar modelo",
+			"provider": "Proveedor del modelo",
+			"loading": "Cargando modelos…",
+			"loadFailed": "No se pudieron cargar los modelos",
+			"empty": "No hay modelos disponibles",
+			"retry": "Reintentar"
 		}
 	},
 	"connections": {

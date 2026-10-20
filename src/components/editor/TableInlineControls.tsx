@@ -1,12 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LocationAdd01Icon } from "@hugeicons/core-free-icons";
-import { type MouseEvent, memo, useCallback, useMemo, useRef } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	type NativeContextMenuItem,
-	isNativeContextMenuAvailable,
-	showNativePopupMenu,
-} from "../../lib/nativeContextMenu";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -89,22 +84,6 @@ function buildAxisMenuItems(
 	];
 }
 
-function toNativeMenuItems(
-	items: TableAxisMenuItem[],
-	onCommand: (command: TableEditorCommand) => void,
-): NativeContextMenuItem[] {
-	return items.map((item) => {
-		if (item.type === "separator") {
-			return { type: "separator" };
-		}
-		return {
-			label: item.label,
-			enabled: item.enabled,
-			action: () => onCommand(item.command),
-		};
-	});
-}
-
 interface TableAxisControlProps {
 	axis: "row" | "column";
 	left: number;
@@ -114,7 +93,6 @@ interface TableAxisControlProps {
 	onControlMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
 	onCommand: (action: TableEditorAction) => void;
 	captureTarget: () => TableActionTarget | null;
-	nativeMenusEnabled: boolean;
 }
 
 const TableAxisControl = memo(function TableAxisControl({
@@ -126,7 +104,6 @@ const TableAxisControl = memo(function TableAxisControl({
 	onControlMouseDown,
 	onCommand,
 	captureTarget,
-	nativeMenusEnabled,
 }: TableAxisControlProps) {
 	const capturedTargetRef = useRef<TableActionTarget | null>(null);
 
@@ -137,19 +114,6 @@ const TableAxisControl = memo(function TableAxisControl({
 			onCommand({ kind: command, target });
 		},
 		[captureTarget, onCommand],
-	);
-
-	const handleNativeMenuClick = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			const target = captureTarget();
-			capturedTargetRef.current = target;
-			if (!target) return;
-			const nativeMenuItems = toNativeMenuItems(menuItems, runCapturedCommand);
-			void showNativePopupMenu(event, nativeMenuItems).catch((error: unknown) => {
-				console.error(`Failed to show table ${axis} menu`, error);
-			});
-		},
-		[axis, captureTarget, menuItems, runCapturedCommand],
 	);
 
 	const handleOpenChange = useCallback(
@@ -173,15 +137,10 @@ const TableAxisControl = memo(function TableAxisControl({
 				top: `${top}px`,
 			}}
 			onMouseDown={onControlMouseDown}
-			onClick={nativeMenusEnabled ? handleNativeMenuClick : undefined}
 		>
 			<HugeiconsIcon icon={LocationAdd01Icon} size="var(--icon-md)" />
 		</button>
 	);
-
-	if (nativeMenusEnabled) {
-		return triggerButton;
-	}
 
 	return (
 		<DropdownMenu onOpenChange={handleOpenChange}>
@@ -198,7 +157,7 @@ const TableAxisControl = memo(function TableAxisControl({
 							variant={item.destructive ? "destructive" : "default"}
 							onClick={() => runCapturedCommand(item.command)}
 						>
-							{item.label}
+							<span className="glyphMenuItemLabel">{item.label}</span>
 						</DropdownMenuItem>
 					);
 				})}
@@ -215,7 +174,6 @@ export const TableInlineControls = memo(function TableInlineControls({
 	capabilities,
 }: TableInlineControlsProps) {
 	const { t } = useTranslation("editor");
-	const nativeMenusEnabled = isNativeContextMenuAvailable();
 	const rowMenuItems = useMemo(
 		() =>
 			buildAxisMenuItems(
@@ -278,7 +236,6 @@ export const TableInlineControls = memo(function TableInlineControls({
 				onControlMouseDown={onControlMouseDown}
 				onCommand={onCommand}
 				captureTarget={captureTarget}
-				nativeMenusEnabled={nativeMenusEnabled}
 			/>
 			<TableAxisControl
 				axis="column"
@@ -289,7 +246,6 @@ export const TableInlineControls = memo(function TableInlineControls({
 				onControlMouseDown={onControlMouseDown}
 				onCommand={onCommand}
 				captureTarget={captureTarget}
-				nativeMenusEnabled={nativeMenusEnabled}
 			/>
 		</>
 	);
