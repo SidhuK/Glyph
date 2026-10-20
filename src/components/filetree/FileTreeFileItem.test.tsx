@@ -128,7 +128,7 @@ describe("FileTreeFileItem", () => {
 	let root: Root;
 
 	beforeEach(() => {
-		showNativeContextMenuMock.mockResolvedValue(false);
+		showNativeContextMenuMock.mockResolvedValue(undefined);
 		container = document.createElement("div");
 		document.body.appendChild(container);
 		root = createRoot(container);
