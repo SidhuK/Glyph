@@ -74,7 +74,17 @@
 		"laneRenamePartial": "{{total}}枚中{{changed}}枚を更新しました。{{failed}}枚は更新できませんでした: {{error}}",
 		"laneRenameConfirm": "名前を変更",
 		"laneRenameCancel": "キャンセル",
-		"sourceTruncated": "この検索コレクションは最初の{{limit}}件のみを表示しています。"
+		"sourceTruncated": "この検索コレクションは最初の{{limit}}件のみを表示しています。",
+		"laneMenu": {
+			"options": "{{lane}} レーンのオプションを開く",
+			"unassignedLast": "未割り当てレーンは常に最後です",
+			"rename": "{{lane}} の名前を変更",
+			"position": "位置 {{position}}: {{lane}}"
+		},
+		"boardCard": {
+			"openNote": "ノートを開く",
+			"moveTo": "{{lane}} に移動"
+		}
 	},
 	"tags": {
 		"header": "タグ",
@@ -243,6 +253,15 @@
 		"commands": {
 			"label": "AI コマンド",
 			"canvas": "Excalidraw キャンバスを作成または編集"
+		},
+		"modelSelector": {
+			"label": "モデル",
+			"select": "モデルを選択",
+			"provider": "モデルプロバイダー",
+			"loading": "モデルを読み込み中…",
+			"loadFailed": "モデルを読み込めませんでした",
+			"empty": "利用可能なモデルがありません",
+			"retry": "再試行"
 		}
 	},
 	"connections": {

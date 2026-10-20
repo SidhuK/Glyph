@@ -8,16 +8,12 @@ import {
 	type MutableRefObject,
 	type ReactNode,
 	useCallback,
-	useMemo,
+	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { DATABASE_BOARD_EMPTY_LANE_ID, type DatabaseBoardLane } from "../../lib/database/board";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseRow } from "../../lib/database/types";
-import {
-	type NativeContextMenuItem,
-	showNativeContextMenu,
-	showNativePopupMenu,
-} from "../../lib/nativeContextMenu";
 import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
 import { Plus } from "../Icons";
@@ -25,6 +21,13 @@ import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../
 import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
 import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../ui/shadcn/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 
 const DATABASE_BOARD_CARD_SENSORS = [
@@ -81,45 +84,12 @@ export function DatabaseBoardLaneView({
 		data: { laneId: lane.id },
 		accept: "database-board-card",
 	});
-	const laneMenuItems = useMemo<NativeContextMenuItem[]>(
-		() => [
-			...(onRenameLane
-				? [
-						{
-							label: `Rename ${lane.label}`,
-							action: () => onRenameLane(lane),
-						},
-					]
-				: []),
-			...(onRenameLane ? [{ type: "separator" as const }] : []),
-			...reorderableLanes.map((targetLane, index) => ({
-				label: `Position ${index + 1}: ${targetLane.label}`,
-				enabled: targetLane.id !== lane.id,
-				action: () => moveLaneToIndex(lane.id, index),
-			})),
-		],
-		[lane, moveLaneToIndex, onRenameLane, reorderableLanes],
-	);
-	const handleLaneContextMenu = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			if (lane.id === DATABASE_BOARD_EMPTY_LANE_ID) return;
-
-			void showNativeContextMenu(event, laneMenuItems).catch((error: unknown) => {
-				console.error("Failed to show board lane context menu", error);
-			});
-		},
-		[lane.id, laneMenuItems],
-	);
-	const handleLaneMenuClick = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			if (lane.id === DATABASE_BOARD_EMPTY_LANE_ID) return;
-
-			void showNativePopupMenu(event, laneMenuItems).catch((error: unknown) => {
-				console.error("Failed to show board lane context menu", error);
-			});
-		},
-		[lane.id, laneMenuItems],
-	);
+	const { t } = useTranslation("shell");
+	const [laneMenuOpen, setLaneMenuOpen] = useState(false);
+	const isEmptyLane = lane.id === DATABASE_BOARD_EMPTY_LANE_ID;
+	const laneHandleLabel = isEmptyLane
+		? t("collections.laneMenu.unassignedLast")
+		: t("collections.laneMenu.options", { lane: lane.label });
 	const laneTitleContent = (
 		<>
 			{isStatusGroup || isPriorityGroup || isTagGroup ? (
@@ -226,26 +196,51 @@ export function DatabaseBoardLaneView({
 							<Plus size="var(--icon-sm)" aria-hidden="true" />
 						</button>
 					) : null}
-					<button
-						type="button"
-						className="databaseBoardLaneHandle"
-						disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
-						aria-label={
-							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-								? "Unassigned lane stays last"
-								: `Open ${lane.label} lane options`
-						}
-						title={
-							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-								? "Unassigned lane stays last"
-								: `Open ${lane.label} lane options`
-						}
-						aria-haspopup="menu"
-						onClick={handleLaneMenuClick}
-						onContextMenu={handleLaneContextMenu}
-					>
-						<span className="databaseBoardLaneHandleDots" />
-					</button>
+					<DropdownMenu open={laneMenuOpen} onOpenChange={setLaneMenuOpen}>
+						<DropdownMenuTrigger
+							render={
+								<button
+									type="button"
+									className="databaseBoardLaneHandle"
+									disabled={isEmptyLane}
+									aria-label={laneHandleLabel}
+									title={laneHandleLabel}
+									onContextMenu={(event) => {
+										event.preventDefault();
+										setLaneMenuOpen(true);
+									}}
+								/>
+							}
+						>
+							<span className="databaseBoardLaneHandleDots" />
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							{onRenameLane ? (
+								<>
+									<DropdownMenuItem onClick={() => onRenameLane(lane)}>
+										<span className="glyphMenuItemLabel">
+											{t("collections.laneMenu.rename", { lane: lane.label })}
+										</span>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+								</>
+							) : null}
+							{reorderableLanes.map((targetLane, index) => (
+								<DropdownMenuItem
+									key={targetLane.id}
+									disabled={targetLane.id === lane.id}
+									onClick={() => moveLaneToIndex(lane.id, index)}
+								>
+									<span className="glyphMenuItemLabel">
+										{t("collections.laneMenu.position", {
+											position: index + 1,
+											lane: targetLane.label,
+										})}
+									</span>
+								</DropdownMenuItem>
+							))}
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 			<div className="databaseBoardLaneBody">{children}</div>

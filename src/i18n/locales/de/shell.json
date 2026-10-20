@@ -74,7 +74,17 @@
 		"laneRenamePartial": "{{changed}} von {{total}} Karten aktualisiert. {{failed}} konnten nicht aktualisiert werden: {{error}}",
 		"laneRenameConfirm": "Umbenennen",
 		"laneRenameCancel": "Abbrechen",
-		"sourceTruncated": "Diese Suchsammlung zeigt nur die ersten {{limit}} Treffer."
+		"sourceTruncated": "Diese Suchsammlung zeigt nur die ersten {{limit}} Treffer.",
+		"laneMenu": {
+			"options": "Optionen für Spalte {{lane}} öffnen",
+			"unassignedLast": "Spalte „Nicht zugewiesen“ bleibt am Ende",
+			"rename": "{{lane}} umbenennen",
+			"position": "Position {{position}}: {{lane}}"
+		},
+		"boardCard": {
+			"openNote": "Notiz öffnen",
+			"moveTo": "Nach {{lane}} verschieben"
+		}
 	},
 	"tags": {
 		"header": "Tags",
@@ -243,6 +253,15 @@
 		"commands": {
 			"label": "KI-Befehle",
 			"canvas": "Eine Excalidraw-Zeichenfläche erstellen oder bearbeiten"
+		},
+		"modelSelector": {
+			"label": "Modell",
+			"select": "Modell auswählen",
+			"provider": "Modellanbieter",
+			"loading": "Modelle werden geladen…",
+			"loadFailed": "Modelle konnten nicht geladen werden",
+			"empty": "Keine Modelle verfügbar",
+			"retry": "Erneut versuchen"
 		}
 	},
 	"connections": {

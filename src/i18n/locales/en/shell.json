@@ -86,7 +86,17 @@
 		"laneRenamePartial": "Updated {{changed}} of {{total}} cards. {{failed}} could not be updated: {{error}}",
 		"laneRenameConfirm": "Rename",
 		"laneRenameCancel": "Cancel",
-		"sourceTruncated": "This search collection shows only its first {{limit}} matches."
+		"sourceTruncated": "This search collection shows only its first {{limit}} matches.",
+		"laneMenu": {
+			"options": "Open {{lane}} lane options",
+			"unassignedLast": "Unassigned lane stays last",
+			"rename": "Rename {{lane}}",
+			"position": "Position {{position}}: {{lane}}"
+		},
+		"boardCard": {
+			"openNote": "Open note",
+			"moveTo": "Move to {{lane}}"
+		}
 	},
 	"tags": {
 		"header": "Tags",
@@ -317,6 +327,15 @@
 		"commands": {
 			"label": "AI commands",
 			"canvas": "Create or edit an Excalidraw canvas"
+		},
+		"modelSelector": {
+			"label": "Model",
+			"select": "Select model",
+			"provider": "Model provider",
+			"loading": "Loading models…",
+			"loadFailed": "Could not load models",
+			"empty": "No models available",
+			"retry": "Retry"
 		}
 	},
 	"connections": {
