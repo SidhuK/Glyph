@@ -49,8 +49,6 @@ export function ActionMenuTrigger({
 	children,
 	finalFocus,
 }: ActionMenuTriggerProps) {
-	let separatorCount = 0;
-
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger
@@ -68,8 +66,7 @@ export function ActionMenuTrigger({
 			<DropdownMenuContent align="start" finalFocus={finalFocus}>
 				{items.map((item, index) => {
 					if (item.type === "separator") {
-						separatorCount += 1;
-						return <DropdownMenuSeparator key={`separator-${separatorCount}`} />;
+						return <DropdownMenuSeparator key={`separator-${index}`} />;
 					}
 
 					if (item.type === "label") {
