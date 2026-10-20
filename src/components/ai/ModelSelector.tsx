@@ -1,4 +1,12 @@
-import { Tick02Icon } from "@hugeicons/core-free-icons";
+import {
+	AiChipIcon,
+	Alert02Icon,
+	InformationCircleIcon,
+	Loading03Icon,
+	RefreshIcon,
+	Tick02Icon,
+} from "@hugeicons/core-free-icons";
+import type { IconSvgElement } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -14,6 +22,19 @@ import {
 } from "../ui/shadcn/dropdown-menu";
 import styles from "./ModelSelector.module.css";
 import { ProviderLogo, providerLogoMap, resolveLogoProvider } from "./modelSelectorConstants";
+
+const ROW_ICON_SIZE = "var(--icon-sm)";
+
+function RowIcon({ icon }: { icon: IconSvgElement }) {
+	return (
+		<HugeiconsIcon
+			icon={icon}
+			size={ROW_ICON_SIZE}
+			className="glyphMenuItemIcon"
+			aria-hidden="true"
+		/>
+	);
+}
 
 interface ModelSelectorProps {
 	profileId: string | null;
@@ -67,37 +88,52 @@ export function ModelSelector({ profileId, value, onChange, provider }: ModelSel
 			<DropdownMenuContent align="end">
 				{modelsQuery.isPending ? (
 					<DropdownMenuItem disabled>
+						<RowIcon icon={Loading03Icon} />
 						<span className="glyphMenuItemLabel">{t("ai.modelSelector.loading")}</span>
 					</DropdownMenuItem>
 				) : modelsQuery.isError ? (
 					<>
 						<DropdownMenuItem disabled title={extractErrorMessage(modelsQuery.error)}>
+							<RowIcon icon={Alert02Icon} />
 							<span className="glyphMenuItemLabel">{t("ai.modelSelector.loadFailed")}</span>
 						</DropdownMenuItem>
 						<DropdownMenuItem closeOnClick={false} onClick={() => void modelsQuery.refetch()}>
+							<RowIcon icon={RefreshIcon} />
 							<span className="glyphMenuItemLabel">{t("ai.modelSelector.retry")}</span>
 						</DropdownMenuItem>
 					</>
 				) : !models?.length ? (
 					<DropdownMenuItem disabled>
+						<RowIcon icon={InformationCircleIcon} />
 						<span className="glyphMenuItemLabel">{t("ai.modelSelector.empty")}</span>
 					</DropdownMenuItem>
 				) : (
-					models.map((model) => (
-						<DropdownMenuItem key={model.id} onClick={() => onChange(model.id)}>
-							<span className="glyphMenuItemLabel" title={model.name}>
-								{model.name}
-							</span>
-							{model.id === value ? (
-								<HugeiconsIcon
-									icon={Tick02Icon}
-									size="var(--icon-sm)"
-									strokeWidth={2.25}
-									className="glyphMenuItemCheck"
-								/>
-							) : null}
-						</DropdownMenuItem>
-					))
+					models.map((model) => {
+						const modelLogoProvider = resolveLogoProvider(provider, model.name);
+						return (
+							<DropdownMenuItem key={model.id} onClick={() => onChange(model.id)}>
+								{modelLogoProvider && providerLogoMap[modelLogoProvider] ? (
+									<ProviderLogo
+										provider={modelLogoProvider}
+										className={`glyphMenuItemIcon ${styles.menuLogo}`}
+									/>
+								) : (
+									<RowIcon icon={AiChipIcon} />
+								)}
+								<span className="glyphMenuItemLabel" title={model.name}>
+									{model.name}
+								</span>
+								{model.id === value ? (
+									<HugeiconsIcon
+										icon={Tick02Icon}
+										size="var(--icon-sm)"
+										strokeWidth={2.25}
+										className="glyphMenuItemCheck"
+									/>
+								) : null}
+							</DropdownMenuItem>
+						);
+					})
 				)}
 			</DropdownMenuContent>
 		</DropdownMenu>

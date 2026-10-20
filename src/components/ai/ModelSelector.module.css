@@ -52,6 +52,12 @@
 	color: var(--text-tertiary);
 }
 
+.menuLogo {
+	width: var(--icon-sm);
+	height: var(--icon-sm);
+	object-fit: contain;
+}
+
 .providerSvg {
 	width: var(--icon-xl);
 	height: var(--icon-xl);

@@ -79,11 +79,28 @@
 			"options": "{{lane}} レーンのオプションを開く",
 			"unassignedLast": "未割り当てレーンは常に最後です",
 			"rename": "{{lane}} の名前を変更",
-			"position": "位置 {{position}}: {{lane}}"
+			"position": "位置 {{position}}: {{lane}}",
+			"setColor": "{{lane}} の色を設定",
+			"setColorTo": "{{lane}} の色を {{color}} に設定",
+			"clearColor": "色をクリア",
+			"clearColorFor": "{{lane}} の色をクリア",
+			"addNote": "{{lane}} にノートを追加",
+			"cardCount_other": "{{count}} 枚のカード"
 		},
 		"boardCard": {
 			"openNote": "ノートを開く",
-			"moveTo": "{{lane}} に移動"
+			"moveTo": "{{lane}} に移動",
+			"openHint": "ダブルクリックでノートを開く"
+		},
+		"switch": "コレクションを切り替え",
+		"select": "コレクションを選択",
+		"newCollection": "新しいコレクション",
+		"viewMenu": {
+			"viewType": "ビューの種類",
+			"table": "テーブル",
+			"board": "ボード",
+			"rename": "名前を変更",
+			"deleteView": "ビューを削除"
 		}
 	},
 	"tags": {
@@ -372,5 +389,14 @@
 		"updateFailed": "カレンダーの設定を更新できませんでした",
 		"collapse": "カレンダーを折りたたむ",
 		"expand": "カレンダーを展開"
+	},
+	"breadcrumbs": {
+		"space": "スペース",
+		"emptyFolder": "空のフォルダ"
+	},
+	"quickNoteTarget": {
+		"today": "今日のクイックノート",
+		"browse": "保存先を変更: {{name}} を参照",
+		"label": "クイックノートの保存先"
 	}
 }

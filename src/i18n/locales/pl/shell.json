@@ -81,11 +81,31 @@
 			"options": "Otwórz opcje kolumny {{lane}}",
 			"unassignedLast": "Kolumna bez przypisania pozostaje ostatnia",
 			"rename": "Zmień nazwę {{lane}}",
-			"position": "Pozycja {{position}}: {{lane}}"
+			"position": "Pozycja {{position}}: {{lane}}",
+			"setColor": "Ustaw kolor dla {{lane}}",
+			"setColorTo": "Ustaw kolor {{lane}} na {{color}}",
+			"clearColor": "Wyczyść kolor",
+			"clearColorFor": "Wyczyść kolor dla {{lane}}",
+			"addNote": "Dodaj notatkę do {{lane}}",
+			"cardCount_one": "{{count}} karta",
+			"cardCount_few": "{{count}} karty",
+			"cardCount_many": "{{count}} kart",
+			"cardCount_other": "{{count}} karty"
 		},
 		"boardCard": {
 			"openNote": "Otwórz notatkę",
-			"moveTo": "Przenieś do {{lane}}"
+			"moveTo": "Przenieś do {{lane}}",
+			"openHint": "Kliknij dwukrotnie, aby otworzyć notatkę"
+		},
+		"switch": "Przełącz kolekcję",
+		"select": "Wybierz kolekcję",
+		"newCollection": "Nowa kolekcja",
+		"viewMenu": {
+			"viewType": "Typ widoku",
+			"table": "Tabela",
+			"board": "Tablica",
+			"rename": "Zmień nazwę",
+			"deleteView": "Usuń widok"
 		}
 	},
 	"tags": {
@@ -416,5 +436,14 @@
 		"updateFailed": "Nie udało się zaktualizować ustawień kalendarza",
 		"collapse": "Zwiń kalendarz",
 		"expand": "Rozwiń kalendarz"
+	},
+	"breadcrumbs": {
+		"space": "Przestrzeń",
+		"emptyFolder": "Pusty folder"
+	},
+	"quickNoteTarget": {
+		"today": "Dzisiejsza szybka notatka",
+		"browse": "Zmień miejsce docelowe: przeglądaj {{name}}",
+		"label": "Miejsce docelowe szybkiej notatki"
 	}
 }

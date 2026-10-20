@@ -1,7 +1,12 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
 import { KeyboardSensor, PointerSensor, useDraggable, useDroppable } from "@dnd-kit/react";
-import { Tag01Icon } from "@hugeicons/core-free-icons";
+import {
+	ArrowLeft02Icon,
+	ArrowRight02Icon,
+	Location01Icon,
+	Tag01Icon,
+} from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import {
 	type MouseEvent,
@@ -16,7 +21,7 @@ import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseRow } from "../../lib/database/types";
 import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
-import { Plus } from "../Icons";
+import { Edit, Plus } from "../Icons";
 import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
 import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
@@ -87,6 +92,7 @@ export function DatabaseBoardLaneView({
 	const { t } = useTranslation("shell");
 	const [laneMenuOpen, setLaneMenuOpen] = useState(false);
 	const isEmptyLane = lane.id === DATABASE_BOARD_EMPTY_LANE_ID;
+	const currentLanePosition = reorderableLanes.findIndex((candidate) => candidate.id === lane.id);
 	const laneHandleLabel = isEmptyLane
 		? t("collections.laneMenu.unassignedLast")
 		: t("collections.laneMenu.options", { lane: lane.label });
@@ -145,8 +151,8 @@ export function DatabaseBoardLaneView({
 									<button
 										type="button"
 										className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
-										aria-label={`Set color for ${lane.label}`}
-										title={`Set color for ${lane.label}`}
+										aria-label={t("collections.laneMenu.setColor", { lane: lane.label })}
+										title={t("collections.laneMenu.setColor", { lane: lane.label })}
 									/>
 								}
 							>
@@ -162,15 +168,18 @@ export function DatabaseBoardLaneView({
 											style={databaseValueToneStyleForColor(color.id, color.id)}
 											onClick={() => onLaneColorChange(lane.id, color.id)}
 											title={color.label}
-											aria-label={`Set ${lane.label} color to ${color.label}`}
+											aria-label={t("collections.laneMenu.setColorTo", {
+												lane: lane.label,
+												color: color.label,
+											})}
 										/>
 									))}
 									<button
 										type="button"
 										className="databaseBoardColorRibbonClear"
 										onClick={() => onLaneColorChange(lane.id, null)}
-										title="Clear color"
-										aria-label={`Clear color for ${lane.label}`}
+										title={t("collections.laneMenu.clearColor")}
+										aria-label={t("collections.laneMenu.clearColorFor", { lane: lane.label })}
 									>
 										<span />
 									</button>
@@ -180,7 +189,10 @@ export function DatabaseBoardLaneView({
 					) : (
 						<div className="databaseBoardLaneTitleGroup">{laneTitleContent}</div>
 					)}
-					<span className="databaseBoardLaneCount" aria-label={`${lane.cardCount} cards`}>
+					<span
+						className="databaseBoardLaneCount"
+						aria-label={t("collections.laneMenu.cardCount", { count: lane.cardCount })}
+					>
 						{lane.cardCount}
 					</span>
 				</div>
@@ -190,8 +202,8 @@ export function DatabaseBoardLaneView({
 							type="button"
 							className="databaseBoardLaneAddCardButton"
 							onClick={onAddCard}
-							aria-label={`Add note to ${lane.label}`}
-							title={`Add note to ${lane.label}`}
+							aria-label={t("collections.laneMenu.addNote", { lane: lane.label })}
+							title={t("collections.laneMenu.addNote", { lane: lane.label })}
 						>
 							<Plus size="var(--icon-sm)" aria-hidden="true" />
 						</button>
@@ -218,6 +230,7 @@ export function DatabaseBoardLaneView({
 							{onRenameLane ? (
 								<>
 									<DropdownMenuItem onClick={() => onRenameLane(lane)}>
+										<Edit size="var(--icon-sm)" className="glyphMenuItemIcon" aria-hidden="true" />
 										<span className="glyphMenuItemLabel">
 											{t("collections.laneMenu.rename", { lane: lane.label })}
 										</span>
@@ -231,6 +244,18 @@ export function DatabaseBoardLaneView({
 									disabled={targetLane.id === lane.id}
 									onClick={() => moveLaneToIndex(lane.id, index)}
 								>
+									<HugeiconsIcon
+										icon={
+											index === currentLanePosition
+												? Location01Icon
+												: index < currentLanePosition
+													? ArrowLeft02Icon
+													: ArrowRight02Icon
+										}
+										size="var(--icon-sm)"
+										className="glyphMenuItemIcon"
+										aria-hidden="true"
+									/>
 									<span className="glyphMenuItemLabel">
 										{t("collections.laneMenu.position", {
 											position: index + 1,
@@ -269,6 +294,7 @@ export function DatabaseBoardCardView({
 	onContextMenu,
 	children,
 }: DatabaseBoardCardViewProps) {
+	const { t } = useTranslation("shell");
 	const dragId = boardCardDragId(row.note_path, laneId);
 	const { ref: droppableRef, isDropTarget } = useDroppable({
 		id: `card:${dragId}`,
@@ -319,7 +345,7 @@ export function DatabaseBoardCardView({
 					onSelectRow(row.note_path);
 				}
 			}}
-			title="Double-click to open note"
+			title={t("collections.boardCard.openHint")}
 		>
 			{children}
 		</button>

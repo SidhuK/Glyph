@@ -79,11 +79,29 @@
 			"options": "Abrir opciones de la columna {{lane}}",
 			"unassignedLast": "La columna sin asignar queda al final",
 			"rename": "Renombrar {{lane}}",
-			"position": "Posición {{position}}: {{lane}}"
+			"position": "Posición {{position}}: {{lane}}",
+			"setColor": "Definir color de {{lane}}",
+			"setColorTo": "Cambiar el color de {{lane}} a {{color}}",
+			"clearColor": "Quitar color",
+			"clearColorFor": "Quitar color de {{lane}}",
+			"addNote": "Añadir nota a {{lane}}",
+			"cardCount_one": "{{count}} tarjeta",
+			"cardCount_other": "{{count}} tarjetas"
 		},
 		"boardCard": {
 			"openNote": "Abrir nota",
-			"moveTo": "Mover a {{lane}}"
+			"moveTo": "Mover a {{lane}}",
+			"openHint": "Haz doble clic para abrir la nota"
+		},
+		"switch": "Cambiar colección",
+		"select": "Seleccionar colección",
+		"newCollection": "Nueva colección",
+		"viewMenu": {
+			"viewType": "Tipo de vista",
+			"table": "Tabla",
+			"board": "Tablero",
+			"rename": "Cambiar nombre",
+			"deleteView": "Eliminar vista"
 		}
 	},
 	"tags": {
@@ -372,5 +390,14 @@
 		"updateFailed": "No se pudieron actualizar los ajustes del calendario",
 		"collapse": "Contraer calendario",
 		"expand": "Expandir calendario"
+	},
+	"breadcrumbs": {
+		"space": "Espacio",
+		"emptyFolder": "Carpeta vacía"
+	},
+	"quickNoteTarget": {
+		"today": "Nota rápida de hoy",
+		"browse": "Cambiar destino: explorar {{name}}",
+		"label": "Destino de la nota rápida"
 	}
 }

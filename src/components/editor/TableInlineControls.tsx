@@ -1,5 +1,17 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LocationAdd01Icon } from "@hugeicons/core-free-icons";
+import {
+	ArrowDown02Icon,
+	ArrowLeft02Icon,
+	ArrowRight02Icon,
+	ArrowUp02Icon,
+	Delete02Icon,
+	InsertColumnLeftIcon,
+	InsertColumnRightIcon,
+	InsertRowDownIcon,
+	InsertRowUpIcon,
+	LocationAdd01Icon,
+} from "@hugeicons/core-free-icons";
+import type { IconSvgElement } from "@hugeicons/react";
 import { memo, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,10 +28,29 @@ import type {
 	TableInlineControlsProps,
 } from "./noteEditorOverlayTypes";
 
+type TableAxisAction = "addBefore" | "addAfter" | "moveBefore" | "moveAfter" | "deleteItem";
+
+const ROW_MENU_ICONS: Record<TableAxisAction, IconSvgElement> = {
+	addBefore: InsertRowUpIcon,
+	addAfter: InsertRowDownIcon,
+	moveBefore: ArrowUp02Icon,
+	moveAfter: ArrowDown02Icon,
+	deleteItem: Delete02Icon,
+};
+
+const COLUMN_MENU_ICONS: Record<TableAxisAction, IconSvgElement> = {
+	addBefore: InsertColumnLeftIcon,
+	addAfter: InsertColumnRightIcon,
+	moveBefore: ArrowLeft02Icon,
+	moveAfter: ArrowRight02Icon,
+	deleteItem: Delete02Icon,
+};
+
 type TableAxisMenuItem =
 	| {
 			type: "action";
 			label: string;
+			icon: IconSvgElement;
 			command: TableEditorCommand;
 			enabled: boolean;
 			destructive?: boolean;
@@ -27,20 +58,9 @@ type TableAxisMenuItem =
 	| { type: "separator"; id: string };
 
 function buildAxisMenuItems(
-	labels: {
-		addBefore: string;
-		addAfter: string;
-		moveBefore: string;
-		moveAfter: string;
-		deleteItem: string;
-	},
-	commands: {
-		addBefore: TableEditorCommand;
-		addAfter: TableEditorCommand;
-		moveBefore: TableEditorCommand;
-		moveAfter: TableEditorCommand;
-		deleteItem: TableEditorCommand;
-	},
+	labels: Record<TableAxisAction, string>,
+	icons: Record<TableAxisAction, IconSvgElement>,
+	commands: Record<TableAxisAction, TableEditorCommand>,
 	enabled: {
 		moveBefore: boolean;
 		moveAfter: boolean;
@@ -51,12 +71,14 @@ function buildAxisMenuItems(
 		{
 			type: "action",
 			label: labels.addBefore,
+			icon: icons.addBefore,
 			command: commands.addBefore,
 			enabled: true,
 		},
 		{
 			type: "action",
 			label: labels.addAfter,
+			icon: icons.addAfter,
 			command: commands.addAfter,
 			enabled: true,
 		},
@@ -64,12 +86,14 @@ function buildAxisMenuItems(
 		{
 			type: "action",
 			label: labels.moveBefore,
+			icon: icons.moveBefore,
 			command: commands.moveBefore,
 			enabled: enabled.moveBefore,
 		},
 		{
 			type: "action",
 			label: labels.moveAfter,
+			icon: icons.moveAfter,
 			command: commands.moveAfter,
 			enabled: enabled.moveAfter,
 		},
@@ -77,6 +101,7 @@ function buildAxisMenuItems(
 		{
 			type: "action",
 			label: labels.deleteItem,
+			icon: icons.deleteItem,
 			command: commands.deleteItem,
 			enabled: enabled.deleteItem,
 			destructive: true,
@@ -157,6 +182,12 @@ const TableAxisControl = memo(function TableAxisControl({
 							variant={item.destructive ? "destructive" : "default"}
 							onClick={() => runCapturedCommand(item.command)}
 						>
+							<HugeiconsIcon
+								icon={item.icon}
+								size="var(--icon-sm)"
+								className="glyphMenuItemIcon"
+								aria-hidden="true"
+							/>
 							<span className="glyphMenuItemLabel">{item.label}</span>
 						</DropdownMenuItem>
 					);
@@ -184,6 +215,7 @@ export const TableInlineControls = memo(function TableInlineControls({
 					moveAfter: t("tableControls.moveRowDown"),
 					deleteItem: t("tableControls.deleteRow"),
 				},
+				ROW_MENU_ICONS,
 				{
 					addBefore: "addRowBefore",
 					addAfter: "addRowAfter",
@@ -209,6 +241,7 @@ export const TableInlineControls = memo(function TableInlineControls({
 					moveAfter: t("tableControls.moveColumnRight"),
 					deleteItem: t("tableControls.deleteColumn"),
 				},
+				COLUMN_MENU_ICONS,
 				{
 					addBefore: "addColumnBefore",
 					addAfter: "addColumnAfter",
