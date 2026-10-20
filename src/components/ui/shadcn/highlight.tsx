@@ -16,11 +16,8 @@ interface HighlightProps {
 
 /**
  * A controlled selection surface that glides between `HighlightItem`s when `value`
- * changes. The surface lives inside the active item, so it stays anchored to it
- * through scrolling, reflow and ancestor transforms, and leaves with the item when
- * the item unmounts. Motion, the spring and reduced motion come from Animate UI;
- * CSS only paints the surface. Items shouldn't paint their own selected or hover
- * fill, or the glide can't be read.
+ * changes. It lives inside the active item, so it stays anchored through scrolling and
+ * reflow. Items shouldn't paint their own selected or hover fill, or the glide can't be read.
  */
 export function Highlight({ value, className, children }: HighlightProps) {
 	return (

@@ -24,7 +24,7 @@ export function SettingsSegmentedPicker<T extends string>({
 	onChange,
 	renderPreview,
 	getDataAttributes,
-	disabled = false,
+	disabled,
 }: SettingsSegmentedPickerProps<T>) {
 	return (
 		<div className="settingsSegmentedPicker">

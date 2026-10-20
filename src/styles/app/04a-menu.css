@@ -149,9 +149,8 @@
 	background: var(--bg-hover);
 }
 
-/* Gliding highlight (components/ui/shadcn/highlight.tsx). Animate UI mounts the
-   surface inside the active item and glides it between items; these rules only
-   anchor it. Each call site paints it with its own class. */
+/* Gliding highlight (components/ui/shadcn/highlight.tsx): these rules only anchor the
+   surface; each call site paints it with its own class. */
 .glyphHighlightItem {
 	position: relative;
 }

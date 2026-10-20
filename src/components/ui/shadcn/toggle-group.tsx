@@ -15,14 +15,12 @@ type ToggleGroupProps<Value extends string> = Omit<
 /**
  * Single-select segmented control. Animate UI slides one shared pill between items (and a
  * hover pill between hovered items), painted from each item's own computed background, so
- * CSS only styles `[aria-pressed="true"]` and `:hover`. Under reduced motion the pill fades in
- * place instead of sliding, and the press scale is skipped.
+ * CSS only styles `[aria-pressed="true"]` and `:hover`.
  *
- * Semantics stay Base UI's toggle group: a labelled `role="group"` of `aria-pressed` buttons
- * with roving focus (arrow keys, Home and End). Radio roles can't be layered on, because the
- * highlight tracks `aria-pressed`, which ARIA doesn't allow on `role="radio"`.
- *
- * Pressing the selected item again is ignored, so the value never becomes empty.
+ * Semantics stay Base UI's: a labelled `role="group"` of `aria-pressed` buttons with roving
+ * focus. Radio roles can't be layered on, because the highlight tracks `aria-pressed`, which
+ * ARIA doesn't allow on `role="radio"`. Pressing the selected item again is ignored, so the
+ * value never becomes empty.
  */
 function ToggleGroup<Value extends string>({
 	value,

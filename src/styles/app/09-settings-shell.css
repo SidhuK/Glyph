@@ -340,12 +340,7 @@
 /* The active fill is a gliding highlight (components/ui/shadcn/highlight.tsx), so
    rows paint no fill of their own, including the shared quick-action hover. */
 .sidebarQuickActionBtn.settingsTabButton:hover {
-	color: var(--text-primary);
 	background: transparent;
-}
-
-.sidebarQuickActionBtn.settingsTabButtonActive {
-	color: var(--text-primary);
 }
 
 .settingsSidebarTabsHighlight {

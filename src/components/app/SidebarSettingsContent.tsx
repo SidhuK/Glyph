@@ -146,10 +146,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 												<button
 													type="button"
 													data-tab={tab.id}
-													className={cn(
-														"sidebarQuickActionBtn settingsTabButton",
-														settingsTab === tab.id && "settingsTabButtonActive",
-													)}
+													className="sidebarQuickActionBtn settingsTabButton"
 													onClick={() => setSettingsTab(tab.id)}
 													aria-pressed={settingsTab === tab.id}
 													aria-current={settingsTab === tab.id ? "page" : undefined}
