@@ -80,23 +80,7 @@ export function ModelSelector({ profileId, value, onChange, provider }: ModelSel
 						<DropdownMenuItemIcon icon={Loading03Icon} />
 						<span className="glyphMenuItemLabel">{t("ai.modelSelector.loading")}</span>
 					</DropdownMenuItem>
-				) : modelsQuery.isError ? (
-					<>
-						<DropdownMenuItem disabled title={extractErrorMessage(modelsQuery.error)}>
-							<DropdownMenuItemIcon icon={Alert02Icon} />
-							<span className="glyphMenuItemLabel">{t("ai.modelSelector.loadFailed")}</span>
-						</DropdownMenuItem>
-						<DropdownMenuItem closeOnClick={false} onClick={() => void modelsQuery.refetch()}>
-							<DropdownMenuItemIcon icon={RefreshIcon} />
-							<span className="glyphMenuItemLabel">{t("ai.modelSelector.retry")}</span>
-						</DropdownMenuItem>
-					</>
-				) : !models?.length ? (
-					<DropdownMenuItem disabled>
-						<DropdownMenuItemIcon icon={InformationCircleIcon} />
-						<span className="glyphMenuItemLabel">{t("ai.modelSelector.empty")}</span>
-					</DropdownMenuItem>
-				) : (
+				) : models?.length ? (
 					models.map((model) => {
 						const modelLogoProvider = resolveLogoProvider(provider, model.name);
 						return (
@@ -116,6 +100,22 @@ export function ModelSelector({ profileId, value, onChange, provider }: ModelSel
 							</DropdownMenuItem>
 						);
 					})
+				) : modelsQuery.isError ? (
+					<>
+						<DropdownMenuItem disabled title={extractErrorMessage(modelsQuery.error)}>
+							<DropdownMenuItemIcon icon={Alert02Icon} />
+							<span className="glyphMenuItemLabel">{t("ai.modelSelector.loadFailed")}</span>
+						</DropdownMenuItem>
+						<DropdownMenuItem closeOnClick={false} onClick={() => void modelsQuery.refetch()}>
+							<DropdownMenuItemIcon icon={RefreshIcon} />
+							<span className="glyphMenuItemLabel">{t("ai.modelSelector.retry")}</span>
+						</DropdownMenuItem>
+					</>
+				) : (
+					<DropdownMenuItem disabled>
+						<DropdownMenuItemIcon icon={InformationCircleIcon} />
+						<span className="glyphMenuItemLabel">{t("ai.modelSelector.empty")}</span>
+					</DropdownMenuItem>
 				)}
 			</DropdownMenuContent>
 		</DropdownMenu>
