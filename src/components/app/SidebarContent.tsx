@@ -826,10 +826,7 @@ export const SidebarContent = memo(function SidebarContent({
 												aria-label={t("sidebar.openFolderTab", {
 													folder: folderPath,
 												})}
-												aria-selected={
-													activeSidebarView.kind === "folder" &&
-													activeSidebarView.path === folderPath
-												}
+												aria-selected={activeFolderPath === folderPath}
 												aria-controls="sidebar-files-panel"
 												title={folderPath}
 												onClick={() => handleSelectSidebarFolder(folderPath)}
