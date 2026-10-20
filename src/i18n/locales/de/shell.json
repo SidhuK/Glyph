@@ -499,7 +499,8 @@
 	"quickNoteTarget": {
 		"today": "Heutige Schnellnotiz",
 		"browse": "Ziel ändern: {{name}} durchsuchen",
-		"label": "Ziel der Schnellnotiz"
+		"label": "Ziel der Schnellnotiz",
+		"resetToToday": "Auf die heutige Schnellnotiz zurücksetzen"
 	},
 	"gitSync": {
 		"interval": {

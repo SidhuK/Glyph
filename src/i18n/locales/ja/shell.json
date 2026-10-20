@@ -498,7 +498,8 @@
 	"quickNoteTarget": {
 		"today": "今日のクイックノート",
 		"browse": "保存先を変更: {{name}} を参照",
-		"label": "クイックノートの保存先"
+		"label": "クイックノートの保存先",
+		"resetToToday": "今日のクイックノートに戻す"
 	},
 	"gitSync": {
 		"interval": {

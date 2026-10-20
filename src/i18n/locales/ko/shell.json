@@ -498,7 +498,8 @@
 	"quickNoteTarget": {
 		"today": "오늘의 빠른 노트",
 		"browse": "저장 위치 변경: {{name}} 탐색",
-		"label": "빠른 노트 저장 위치"
+		"label": "빠른 노트 저장 위치",
+		"resetToToday": "오늘의 빠른 메모로 재설정"
 	},
 	"gitSync": {
 		"interval": {

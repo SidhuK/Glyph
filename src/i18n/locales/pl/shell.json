@@ -545,7 +545,8 @@
 	"quickNoteTarget": {
 		"today": "Dzisiejsza szybka notatka",
 		"browse": "Zmień miejsce docelowe: przeglądaj {{name}}",
-		"label": "Miejsce docelowe szybkiej notatki"
+		"label": "Miejsce docelowe szybkiej notatki",
+		"resetToToday": "Przywróć dzisiejszą szybką notatkę"
 	},
 	"gitSync": {
 		"interval": {

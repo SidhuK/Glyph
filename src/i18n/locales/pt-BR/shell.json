@@ -499,7 +499,8 @@
 	"quickNoteTarget": {
 		"today": "Nota rápida de hoje",
 		"browse": "Alterar destino: navegar em {{name}}",
-		"label": "Destino da nota rápida"
+		"label": "Destino da nota rápida",
+		"resetToToday": "Voltar para a nota rápida de hoje"
 	},
 	"gitSync": {
 		"interval": {

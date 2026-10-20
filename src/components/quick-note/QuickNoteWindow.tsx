@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 import { useQueryClient } from "@tanstack/react-query";
@@ -65,12 +66,12 @@ async function appendQuickNoteToPath(path: string, text: string): Promise<string
 	}
 }
 
-function quickNoteTarget(folder: string): QuickNoteTarget {
+function quickNoteTarget(folder: string, label: string): QuickNoteTarget {
 	const path = quickNotePath(folder);
 	return {
 		value: QUICK_NOTE_TARGET_VALUE,
 		path,
-		label: "Today's quick note",
+		label,
 	};
 }
 
@@ -89,6 +90,7 @@ function clearDraft(editor: Editor | null) {
 }
 
 export function QuickNoteWindow() {
+	const { t } = useTranslation("shell");
 	const [folder, setFolder] = useState("Quick Notes");
 	const [draft, setDraft] = useState("");
 	const [hasText, setHasText] = useState(false);
@@ -117,14 +119,14 @@ export function QuickNoteWindow() {
 	const todayQuickNotePath = useMemo(() => quickNotePath(folder), [folder]);
 	const selectedTarget = useMemo((): QuickNoteTarget => {
 		if (targetValue === QUICK_NOTE_TARGET_VALUE) {
-			return quickNoteTarget(folder);
+			return quickNoteTarget(folder, t("quickNoteTarget.today"));
 		}
 		return {
 			value: targetValue,
 			path: targetValue,
 			label: displayNameFromPath(targetValue),
 		};
-	}, [folder, targetValue]);
+	}, [folder, targetValue, t]);
 	const isMac =
 		navigator.platform.toLowerCase().includes("mac") || navigator.userAgent.includes("Mac");
 	const shortcutLabel = isMac ? "⌘+Enter" : "Ctrl+Enter";
@@ -275,9 +277,9 @@ export function QuickNoteWindow() {
 					<button
 						type="button"
 						className="quickNoteTargetResetButton"
-						aria-label="Reset to today's quick note"
-						title="Today's quick note"
-						onClick={() => chooseTarget(quickNoteTarget(folder))}
+						aria-label={t("quickNoteTarget.resetToToday")}
+						title={t("quickNoteTarget.today")}
+						onClick={() => chooseTarget(quickNoteTarget(folder, t("quickNoteTarget.today")))}
 					>
 						<FileText size="var(--icon-md)" aria-hidden="true" />
 					</button>

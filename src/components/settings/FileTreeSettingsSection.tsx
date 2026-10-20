@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HugeiconsIcon } from "../HugeiconsIcon";
+import { SelectIcon } from "../ui/shadcn/select";
 import { FILE_TREE_SORT_ICONS } from "../filetree/fileTreeSortIcons";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
@@ -44,13 +44,7 @@ export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSett
 					options={FILE_TREE_SORT_MODES.map((mode) => ({
 						value: mode,
 						label: fileTreeSortLabel(mode),
-						icon: (
-							<HugeiconsIcon
-								icon={FILE_TREE_SORT_ICONS[mode]}
-								size="var(--icon-sm)"
-								aria-hidden="true"
-							/>
-						),
+						icon: <SelectIcon icon={FILE_TREE_SORT_ICONS[mode]} />,
 					}))}
 					onValueChange={(mode) => void fileTreeSort.setSortMode(mode)}
 				/>

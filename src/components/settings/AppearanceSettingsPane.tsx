@@ -23,6 +23,8 @@ import {
 	getUiDarkThemeOption,
 	getUiLightThemeOption,
 } from "../../lib/uiThemes";
+import { FILE_TREE_SORT_ICONS } from "../filetree/fileTreeSortIcons";
+import { SelectIcon } from "../ui/shadcn/select";
 import { AppearanceAppIconCard } from "./AppearanceAppIconCard";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
@@ -284,6 +286,7 @@ export function AppearanceSettingsPane() {
 							options={FILE_TREE_SORT_MODES.map((mode) => ({
 								value: mode,
 								label: fileTreeSortLabel(mode),
+								icon: <SelectIcon icon={FILE_TREE_SORT_ICONS[mode]} />,
 							}))}
 							onValueChange={folioSortMode.onChange}
 						/>

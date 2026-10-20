@@ -679,6 +679,7 @@
 	"quickNoteTarget": {
 		"today": "Today's quick note",
 		"browse": "Change destination: browse {{name}}",
-		"label": "Quick note destination"
+		"label": "Quick note destination",
+		"resetToToday": "Reset to today's quick note"
 	}
 }
