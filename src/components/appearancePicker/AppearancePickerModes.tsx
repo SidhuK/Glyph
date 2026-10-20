@@ -1,3 +1,4 @@
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/shadcn/toggle-group";
 import { useTranslation } from "react-i18next";
 import type { AppearancePickerMode } from "./useAppearancePickerGroups";
 
@@ -11,22 +12,17 @@ interface AppearancePickerModesProps {
 export function AppearancePickerModes({ value, onChange }: AppearancePickerModesProps) {
 	const { t } = useTranslation("shell");
 	return (
-		<div
+		<ToggleGroup
 			className="appearancePickerModes"
-			role="group"
 			aria-label={t("appearancePicker.modeLabel")}
+			value={value}
+			onValueChange={onChange}
 		>
 			{PICKER_MODES.map((mode) => (
-				<button
-					key={mode}
-					type="button"
-					aria-pressed={value === mode}
-					className="appearancePickerMode"
-					onClick={() => onChange(mode)}
-				>
+				<ToggleGroupItem key={mode} value={mode} className="appearancePickerMode">
 					{t(`appearancePicker.modes.${mode}`)}
-				</button>
+				</ToggleGroupItem>
 			))}
-		</div>
+		</ToggleGroup>
 	);
 }

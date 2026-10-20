@@ -1,4 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/shadcn/toggle-group";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { EditorViewMode } from "../../lib/editorMode";
@@ -79,26 +80,18 @@ export function EditorViewModeSwitch({
 			>
 				<HugeiconsIcon icon={activeMode.icon} size="var(--icon-md)" />
 			</button>
-			<div className="markdownEditorModeBubble">
-				{VIEW_MODES.map((item) => {
-					const label = t(item.labelKey);
-					const isActive = mode === item.id;
-
-					return (
-						<button
-							key={item.id}
-							type="button"
-							className="markdownEditorModeBtn"
-							aria-pressed={isActive}
-							aria-label={label}
-							data-active={isActive || undefined}
-							onClick={() => onModeChange(item.id)}
-						>
-							<HugeiconsIcon icon={item.icon} size="var(--icon-md)" />
-						</button>
-					);
-				})}
-			</div>
+			<ToggleGroup className="markdownEditorModeBubble" value={mode} onValueChange={onModeChange}>
+				{VIEW_MODES.map((item) => (
+					<ToggleGroupItem
+						key={item.id}
+						value={item.id}
+						className="markdownEditorModeBtn"
+						aria-label={t(item.labelKey)}
+					>
+						<HugeiconsIcon icon={item.icon} size="var(--icon-md)" />
+					</ToggleGroupItem>
+				))}
+			</ToggleGroup>
 		</div>
 	);
 }

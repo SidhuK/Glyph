@@ -16,7 +16,6 @@ export function AppearanceThemeModePicker({
 	const { t } = useTranslation("settings.appearance");
 	return (
 		<SettingsSegmentedPicker
-			name="settings-theme-mode"
 			ariaLabel={t("theme.appearance.ariaLabel")}
 			value={themeMode}
 			options={getThemeModeOptions()}
