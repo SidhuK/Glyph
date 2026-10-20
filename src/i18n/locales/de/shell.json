@@ -79,11 +79,29 @@
 			"options": "Optionen für Spalte {{lane}} öffnen",
 			"unassignedLast": "Spalte „Nicht zugewiesen“ bleibt am Ende",
 			"rename": "{{lane}} umbenennen",
-			"position": "Position {{position}}: {{lane}}"
+			"position": "Position {{position}}: {{lane}}",
+			"setColor": "Farbe für {{lane}} festlegen",
+			"setColorTo": "Farbe von {{lane}} auf {{color}} setzen",
+			"clearColor": "Farbe entfernen",
+			"clearColorFor": "Farbe von {{lane}} entfernen",
+			"addNote": "Notiz zu {{lane}} hinzufügen",
+			"cardCount_one": "{{count}} Karte",
+			"cardCount_other": "{{count}} Karten"
 		},
 		"boardCard": {
 			"openNote": "Notiz öffnen",
-			"moveTo": "Nach {{lane}} verschieben"
+			"moveTo": "Nach {{lane}} verschieben",
+			"openHint": "Doppelklicken, um die Notiz zu öffnen"
+		},
+		"switch": "Sammlung wechseln",
+		"select": "Sammlung auswählen",
+		"newCollection": "Neue Sammlung",
+		"viewMenu": {
+			"viewType": "Ansichtstyp",
+			"table": "Tabelle",
+			"board": "Board",
+			"rename": "Umbenennen",
+			"deleteView": "Ansicht löschen"
 		}
 	},
 	"tags": {
@@ -372,5 +390,14 @@
 		"updateFailed": "Kalendereinstellungen konnten nicht aktualisiert werden",
 		"collapse": "Kalender einklappen",
 		"expand": "Kalender ausklappen"
+	},
+	"breadcrumbs": {
+		"space": "Space",
+		"emptyFolder": "Leerer Ordner"
+	},
+	"quickNoteTarget": {
+		"today": "Heutige Schnellnotiz",
+		"browse": "Ziel ändern: {{name}} durchsuchen",
+		"label": "Ziel der Schnellnotiz"
 	}
 }

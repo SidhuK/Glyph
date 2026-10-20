@@ -1,5 +1,6 @@
-import { Tick02Icon } from "@hugeicons/core-free-icons";
+import { StickyNote03Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { displayNameFromPath } from "../../utils/path";
 import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
@@ -44,19 +45,20 @@ function sortTargetEntries(entries: FsEntry[]) {
 		});
 }
 
-function menuTitleForDir(path: string) {
-	if (!path) return "Space";
+function menuTitleForDir(path: string, rootLabel: string) {
+	if (!path) return rootLabel;
 	const parts = path.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? "Space";
+	return parts[parts.length - 1] ?? rootLabel;
 }
 
 function breadcrumbPartsForTarget(
 	path: string,
 	targetValue: string,
 	todayQuickNotePath: string,
+	labels: { root: string; today: string },
 ): BreadcrumbPart[] {
 	return [
-		{ label: "Space", path: "" },
+		{ label: labels.root, path: "" },
 		...path
 			.split("/")
 			.filter(Boolean)
@@ -65,7 +67,7 @@ function breadcrumbPartsForTarget(
 				const isFile = index === segments.length - 1;
 				let label = isFile ? displayNameFromPath(segment) : segment;
 				if (isFile && targetValue === QUICK_NOTE_TARGET_VALUE && path === todayQuickNotePath) {
-					label = "Today's quick note";
+					label = labels.today;
 				}
 				return { label, path: segmentPath };
 			}),
@@ -80,11 +82,11 @@ function fileTarget(path: string): QuickNoteTarget {
 	};
 }
 
-function todayQuickNoteTarget(todayQuickNotePath: string): QuickNoteTarget {
+function todayQuickNoteTarget(todayQuickNotePath: string, label: string): QuickNoteTarget {
 	return {
 		value: QUICK_NOTE_TARGET_VALUE,
 		path: todayQuickNotePath,
-		label: "Today's quick note",
+		label,
 	};
 }
 
@@ -119,7 +121,10 @@ function TargetBreadcrumbEntryMenu({
 	onSelectTarget: (target: QuickNoteTarget) => void;
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 }) {
+	const { t } = useTranslation("shell");
 	const showTodayQuickNote = dirPath === quickNotesFolder;
+	const dirTitle = menuTitleForDir(dirPath, t("breadcrumbs.space"));
+	const todayLabel = t("quickNoteTarget.today");
 
 	return (
 		<DropdownMenu
@@ -134,7 +139,7 @@ function TargetBreadcrumbEntryMenu({
 					<button
 						type="button"
 						className="quickNoteTargetButton"
-						aria-label={`Change destination — browse ${menuTitleForDir(dirPath)}`}
+						aria-label={t("quickNoteTarget.browse", { name: dirTitle })}
 						aria-current={isCurrent ? "page" : undefined}
 						data-current={isCurrent ? "true" : undefined}
 					/>
@@ -149,13 +154,19 @@ function TargetBreadcrumbEntryMenu({
 				) : null}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start" side="bottom" className="breadcrumbMenu">
-				<DropdownMenuLabel>{menuTitleForDir(dirPath)}</DropdownMenuLabel>
+				<DropdownMenuLabel>{dirTitle}</DropdownMenuLabel>
 				{showTodayQuickNote ? (
 					<DropdownMenuItem
 						title={todayQuickNotePath}
-						onClick={() => onSelectTarget(todayQuickNoteTarget(todayQuickNotePath))}
+						onClick={() => onSelectTarget(todayQuickNoteTarget(todayQuickNotePath, todayLabel))}
 					>
-						<span className="glyphMenuItemLabel">Today&apos;s quick note</span>
+						<HugeiconsIcon
+							icon={StickyNote03Icon}
+							size="var(--icon-sm)"
+							className="glyphMenuItemIcon"
+							aria-hidden="true"
+						/>
+						<span className="glyphMenuItemLabel">{todayLabel}</span>
 						{selectedTargetValue === QUICK_NOTE_TARGET_VALUE ? (
 							<HugeiconsIcon
 								icon={Tick02Icon}
@@ -167,7 +178,7 @@ function TargetBreadcrumbEntryMenu({
 					</DropdownMenuItem>
 				) : null}
 				{loading ? null : entries.length === 0 ? (
-					<div className="breadcrumbMenuState">Empty folder</div>
+					<div className="breadcrumbMenuState">{t("breadcrumbs.emptyFolder")}</div>
 				) : (
 					entries.map((entry) => (
 						<DirectoryBreadcrumbMenuItem
@@ -190,6 +201,7 @@ export function QuickNoteTargetBreadcrumbs({
 	todayQuickNotePath,
 	onSelectTarget,
 }: QuickNoteTargetBreadcrumbsProps) {
+	const { t } = useTranslation("shell");
 	const [childrenByDir, setChildrenByDir] = useState<Record<string, FsEntry[] | undefined>>({});
 	const childrenByDirRef = useRef(childrenByDir);
 	childrenByDirRef.current = childrenByDir;
@@ -198,6 +210,7 @@ export function QuickNoteTargetBreadcrumbs({
 		selectedTarget.path,
 		selectedTarget.value,
 		todayQuickNotePath,
+		{ root: t("breadcrumbs.space"), today: t("quickNoteTarget.today") },
 	);
 
 	const loadDir = useCallback(async (dirPath: string) => {
@@ -233,7 +246,7 @@ export function QuickNoteTargetBreadcrumbs({
 	);
 
 	return (
-		<nav className="quickNoteTargetBreadcrumb" aria-label="Quick note destination">
+		<nav className="quickNoteTargetBreadcrumb" aria-label={t("quickNoteTarget.label")}>
 			{breadcrumbParts.map((part, index) => {
 				const isCurrent = index === breadcrumbParts.length - 1;
 				const menuDirPath = breadcrumbParts[index - 1]?.path ?? "";

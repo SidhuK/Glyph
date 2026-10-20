@@ -1,3 +1,4 @@
+import { Folder01Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useState } from "react";
 import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,9 +13,11 @@ import { spaceDisplayName } from "../../lib/spaceRegistry";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
-import { displayNameFromPath, parentDir } from "../../utils/path";
+import { displayNameFromPath, isMarkdownPath, parentDir } from "../../utils/path";
 import { AppearanceIcon } from "../AppearanceIcon";
 import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
+import { getFileTypeInfo } from "../filetree/fileTypeUtils";
+import { HugeiconsIcon } from "../HugeiconsIcon";
 import { ChevronRight } from "../Icons";
 import {
 	DropdownMenu,
@@ -234,6 +237,21 @@ export function MainTabsBreadcrumbs({
 	);
 }
 
+function BreadcrumbPartIcon({ part }: { part: BreadcrumbPart }) {
+	if (part.kind === "folder") {
+		return (
+			<HugeiconsIcon
+				icon={Folder01Icon}
+				size="var(--icon-sm)"
+				className="glyphMenuItemIcon"
+				aria-hidden="true"
+			/>
+		);
+	}
+	const { Icon } = getFileTypeInfo(part.path, isMarkdownPath(part.path));
+	return <Icon size="var(--icon-sm)" className="glyphMenuItemIcon" aria-hidden="true" />;
+}
+
 function BreadcrumbOverflowMenu({
 	hiddenParts,
 	onNavigateDir,
@@ -271,6 +289,7 @@ function BreadcrumbOverflowMenu({
 							void onOpenFile(part.path);
 						}}
 					>
+						<BreadcrumbPartIcon part={part} />
 						<span className="glyphMenuItemLabel">{part.label}</span>
 					</DropdownMenuItem>
 				))}

@@ -39,7 +39,9 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 				selection.setSelectedDatabaseId,
 				selection.openCreateCollectionDialog,
 			),
+		// t is a dependency so labels rebuild when the language changes.
 		[
+			t,
 			selection.openCreateCollectionDialog,
 			selection.selectedDatabaseId,
 			selection.setSelectedDatabaseId,
@@ -47,7 +49,7 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 		],
 	);
 
-	const collectionMenuLabel = doc.document ? "Switch collection" : "Select collection";
+	const collectionMenuLabel = t(doc.document ? "collections.switch" : "collections.select");
 	const collectionOptionsLabel = t("collections.options");
 	const breadcrumbRoot = doc.collectionFolderBreadcrumb[0]?.label ?? t("sidebar.collections");
 	const isPinned = doc.document?.database.pinned ?? false;

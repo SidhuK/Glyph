@@ -5,12 +5,45 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/shadcn/dropdown-menu";
-import { ArrowDown01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+import {
+	AiBrain04Icon,
+	Archive03Icon,
+	ArrowDown01Icon,
+	ChartRelationshipIcon,
+	CheckListIcon,
+	InboxIcon,
+	LibraryIcon,
+	NoteIcon,
+	PlusSignSquareIcon,
+	Tick02Icon,
+} from "@hugeicons/core-free-icons";
+import type { IconSvgElement } from "@hugeicons/react";
 import { useTranslation } from "react-i18next";
+import { useFileTreeContext } from "../../contexts";
+import { ACTIVITY_TIMELINE_TAB_ID, ARCHIVE_TAB_ID, INBOX_TAB_ID } from "../../lib/activityTimeline";
+import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
+import { DATABASES_TAB_ID } from "../../lib/databases";
+import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import { TASKS_TAB_ID } from "../../lib/tasks";
+import type { FileTreeAppearance } from "../../lib/tauri";
+import { isMarkdownPath } from "../../utils/path";
+import { AppearanceIcon } from "../AppearanceIcon";
+import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import { isPathSpecial } from "./MainTabsBreadcrumbs";
 import type { WorkspaceTab } from "./useTabManager";
 
 const ROW_ICON_SIZE = "var(--icon-sm)";
+
+// Same icons the sidebar uses for these views.
+const SPECIAL_TAB_ICONS = new Map<string, IconSvgElement>([
+	[AGENT_VIEW_TAB_ID, AiBrain04Icon],
+	[INBOX_TAB_ID, InboxIcon],
+	[ARCHIVE_TAB_ID, Archive03Icon],
+	[ACTIVITY_TIMELINE_TAB_ID, NoteIcon],
+	[DATABASES_TAB_ID, LibraryIcon],
+	[SPACE_CONNECTIONS_TAB_ID, ChartRelationshipIcon],
+	[TASKS_TAB_ID, CheckListIcon],
+]);
 
 interface TabOverflowMenuProps {
 	tabs: WorkspaceTab[];
@@ -24,6 +57,47 @@ function overflowLabel(tab: WorkspaceTab, tabLabel: (tab: WorkspaceTab) => strin
 	return tab.target.replace(/([^/])\.[^./]+$/, "$1");
 }
 
+function TabRowIcon({
+	tab,
+	appearance,
+}: {
+	tab: WorkspaceTab;
+	appearance: FileTreeAppearance | undefined;
+}) {
+	if (tab.kind === "blank" || !tab.target) {
+		return (
+			<HugeiconsIcon
+				icon={PlusSignSquareIcon}
+				size={ROW_ICON_SIZE}
+				className="glyphMenuItemIcon"
+				aria-hidden="true"
+			/>
+		);
+	}
+	const specialIcon = SPECIAL_TAB_ICONS.get(tab.target);
+	if (specialIcon) {
+		return (
+			<HugeiconsIcon
+				icon={specialIcon}
+				size={ROW_ICON_SIZE}
+				className="glyphMenuItemIcon"
+				aria-hidden="true"
+			/>
+		);
+	}
+	if (appearance?.icon) {
+		return (
+			<AppearanceIcon
+				iconName={appearance.icon}
+				size={ROW_ICON_SIZE}
+				className="glyphMenuItemIcon"
+			/>
+		);
+	}
+	const { Icon } = getFileTypeInfo(tab.target, isMarkdownPath(tab.target));
+	return <Icon size={ROW_ICON_SIZE} className="glyphMenuItemIcon" aria-hidden="true" />;
+}
+
 /** Lists every open tab when the strip overflows, with a check on the active one. */
 export function TabOverflowMenu({
 	tabs,
@@ -32,6 +106,7 @@ export function TabOverflowMenu({
 	onSelectTab,
 }: TabOverflowMenuProps) {
 	const { t } = useTranslation("shell");
+	const { itemAppearance } = useFileTreeContext();
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger
@@ -58,6 +133,10 @@ export function TabOverflowMenu({
 								if (!active) onSelectTab(tab.id);
 							}}
 						>
+							<TabRowIcon
+								tab={tab}
+								appearance={tab.target ? itemAppearance[tab.target] : undefined}
+							/>
 							<span className="glyphMenuItemLabel">{label}</span>
 							{active ? (
 								<HugeiconsIcon

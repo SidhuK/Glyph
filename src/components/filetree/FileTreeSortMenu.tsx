@@ -11,6 +11,7 @@ import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import type { FileTreeSortMode } from "../../lib/settings";
+import { FILE_TREE_SORT_ICONS } from "./fileTreeSortIcons";
 
 interface FileTreeSortMenuProps {
 	sortMode: FileTreeSortMode;
@@ -63,6 +64,12 @@ export function FileTreeSortMenu({
 								if (mode !== sortMode) onSortModeChange(mode);
 							}}
 						>
+							<HugeiconsIcon
+								icon={FILE_TREE_SORT_ICONS[mode]}
+								size="var(--icon-sm)"
+								className="glyphMenuItemIcon"
+								aria-hidden="true"
+							/>
 							<span className="glyphMenuItemLabel">{fileTreeSortLabel(mode)}</span>
 						</DropdownMenuRadioItem>
 					))}

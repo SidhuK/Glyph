@@ -79,11 +79,28 @@
 			"options": "{{lane}} 레인 옵션 열기",
 			"unassignedLast": "미지정 레인은 항상 마지막에 있습니다",
 			"rename": "{{lane}} 이름 바꾸기",
-			"position": "위치 {{position}}: {{lane}}"
+			"position": "위치 {{position}}: {{lane}}",
+			"setColor": "{{lane}} 색상 설정",
+			"setColorTo": "{{lane}} 색상을 {{color}}(으)로 설정",
+			"clearColor": "색상 지우기",
+			"clearColorFor": "{{lane}} 색상 지우기",
+			"addNote": "{{lane}}에 노트 추가",
+			"cardCount_other": "카드 {{count}}개"
 		},
 		"boardCard": {
 			"openNote": "노트 열기",
-			"moveTo": "{{lane}}(으)로 이동"
+			"moveTo": "{{lane}}(으)로 이동",
+			"openHint": "두 번 클릭하여 노트 열기"
+		},
+		"switch": "컬렉션 전환",
+		"select": "컬렉션 선택",
+		"newCollection": "새 컬렉션",
+		"viewMenu": {
+			"viewType": "보기 유형",
+			"table": "표",
+			"board": "보드",
+			"rename": "이름 변경",
+			"deleteView": "보기 삭제"
 		}
 	},
 	"tags": {
@@ -372,5 +389,14 @@
 		"updateFailed": "캘린더 설정을 업데이트하지 못했습니다",
 		"collapse": "캘린더 접기",
 		"expand": "캘린더 펼치기"
+	},
+	"breadcrumbs": {
+		"space": "스페이스",
+		"emptyFolder": "빈 폴더"
+	},
+	"quickNoteTarget": {
+		"today": "오늘의 빠른 노트",
+		"browse": "저장 위치 변경: {{name}} 탐색",
+		"label": "빠른 노트 저장 위치"
 	}
 }

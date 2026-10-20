@@ -1,3 +1,4 @@
+import { i18n } from "../../i18n";
 import type { WorkspaceDatabaseSummary } from "../tauri";
 import type { ActionMenuItem } from "./actionMenuItems";
 
@@ -17,17 +18,17 @@ export function buildViewMenuItems(
 	actions: ViewMenuActions,
 ): ActionMenuItem[] {
 	return [
-		{ type: "label", label: "View type" },
+		{ type: "label", label: i18n.t("shell:collections.viewMenu.viewType") },
 		{
 			type: "item",
-			label: "Table",
+			label: i18n.t("shell:collections.viewMenu.table"),
 			checked: activeLayout === "table",
 			iconKey: "table",
 			onClick: () => actions.onSelectLayout("table"),
 		},
 		{
 			type: "item",
-			label: "Board",
+			label: i18n.t("shell:collections.viewMenu.board"),
 			checked: activeLayout === "board",
 			iconKey: "board",
 			onClick: () => actions.onSelectLayout("board"),
@@ -35,7 +36,7 @@ export function buildViewMenuItems(
 		{ type: "separator" },
 		{
 			type: "item",
-			label: "Rename",
+			label: i18n.t("shell:collections.viewMenu.rename"),
 			iconKey: "edit",
 			onClick: actions.onRename,
 		},
@@ -48,7 +49,7 @@ export function buildViewMenuItems(
 		{ type: "separator" },
 		{
 			type: "item",
-			label: "Delete view",
+			label: i18n.t("shell:collections.viewMenu.deleteView"),
 			enabled: viewCount > 1,
 			destructive: true,
 			iconKey: "trash",
@@ -78,7 +79,7 @@ export function buildCollectionMenuItems(
 
 	items.push({
 		type: "item",
-		label: "New collection",
+		label: i18n.t("shell:collections.newCollection"),
 		key: "new-collection",
 		iconKey: "plus",
 		onClick: openCreateCollectionDialog,

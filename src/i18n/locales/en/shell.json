@@ -91,11 +91,29 @@
 			"options": "Open {{lane}} lane options",
 			"unassignedLast": "Unassigned lane stays last",
 			"rename": "Rename {{lane}}",
-			"position": "Position {{position}}: {{lane}}"
+			"position": "Position {{position}}: {{lane}}",
+			"setColor": "Set color for {{lane}}",
+			"setColorTo": "Set {{lane}} color to {{color}}",
+			"clearColor": "Clear color",
+			"clearColorFor": "Clear color for {{lane}}",
+			"addNote": "Add note to {{lane}}",
+			"cardCount_one": "{{count}} card",
+			"cardCount_other": "{{count}} cards"
 		},
 		"boardCard": {
 			"openNote": "Open note",
-			"moveTo": "Move to {{lane}}"
+			"moveTo": "Move to {{lane}}",
+			"openHint": "Double-click to open note"
+		},
+		"switch": "Switch collection",
+		"select": "Select collection",
+		"newCollection": "New collection",
+		"viewMenu": {
+			"viewType": "View type",
+			"table": "Table",
+			"board": "Board",
+			"rename": "Rename",
+			"deleteView": "Delete view"
 		}
 	},
 	"tags": {
@@ -538,5 +556,10 @@
 		"updateFailed": "Could not update calendar settings",
 		"collapse": "Collapse calendar",
 		"expand": "Expand calendar"
+	},
+	"quickNoteTarget": {
+		"today": "Today's quick note",
+		"browse": "Change destination: browse {{name}}",
+		"label": "Quick note destination"
 	}
 }

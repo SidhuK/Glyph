@@ -81,11 +81,29 @@
 			"options": "Ouvrir les options de la colonne {{lane}}",
 			"unassignedLast": "La colonne non attribuée reste en dernier",
 			"rename": "Renommer {{lane}}",
-			"position": "Position {{position}} : {{lane}}"
+			"position": "Position {{position}} : {{lane}}",
+			"setColor": "Définir la couleur de {{lane}}",
+			"setColorTo": "Définir la couleur de {{lane}} sur {{color}}",
+			"clearColor": "Effacer la couleur",
+			"clearColorFor": "Effacer la couleur de {{lane}}",
+			"addNote": "Ajouter une note à {{lane}}",
+			"cardCount_one": "{{count}} carte",
+			"cardCount_other": "{{count}} cartes"
 		},
 		"boardCard": {
 			"openNote": "Ouvrir la note",
-			"moveTo": "Déplacer vers {{lane}}"
+			"moveTo": "Déplacer vers {{lane}}",
+			"openHint": "Double-cliquez pour ouvrir la note"
+		},
+		"switch": "Changer de collection",
+		"select": "Sélectionner une collection",
+		"newCollection": "Nouvelle collection",
+		"viewMenu": {
+			"viewType": "Type de vue",
+			"table": "Tableau",
+			"board": "Kanban",
+			"rename": "Renommer",
+			"deleteView": "Supprimer la vue"
 		}
 	},
 	"tags": {
@@ -374,5 +392,14 @@
 		"updateFailed": "Impossible de mettre à jour les réglages du calendrier",
 		"collapse": "Réduire le calendrier",
 		"expand": "Développer le calendrier"
+	},
+	"breadcrumbs": {
+		"space": "Espace",
+		"emptyFolder": "Dossier vide"
+	},
+	"quickNoteTarget": {
+		"today": "Note rapide du jour",
+		"browse": "Changer la destination : parcourir {{name}}",
+		"label": "Destination de la note rapide"
 	}
 }
