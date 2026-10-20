@@ -83,8 +83,12 @@
 .markdownEditorToolbarBtn:hover,
 .markdownEditorToolbarBtn[data-active="true"],
 .markdownEditorModeBtn:hover,
-.markdownEditorModeBtn[data-active="true"] {
+.markdownEditorModeBtn[aria-pressed="true"] {
 	color: var(--text-primary);
+}
+
+.markdownEditorModeBubble .markdownEditorModeBtn[aria-pressed="true"] {
+	background: var(--bg-active);
 }
 
 .markdownEditorToolbarBtn:focus-visible,

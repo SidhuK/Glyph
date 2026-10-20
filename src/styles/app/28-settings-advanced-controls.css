@@ -28,31 +28,24 @@
 	border-radius: var(--radius-md);
 	border: 1px solid transparent;
 	background: transparent;
+	height: auto;
+	line-height: inherit;
 	cursor: pointer;
 	position: relative;
-	transition:
-		border-color var(--transition-base),
-		box-shadow var(--transition-base),
-		background var(--transition-base),
-		transform var(--transition-base);
+	transition: none;
 }
 
-.settingsSegmentedOption:active {
-	transform: scale(0.98);
+.settingsSegmentedOption:focus-visible {
+	outline-offset: 1px;
 }
 
-.settingsSegmentedTrack:has(.settingsSegmentedInput:disabled) {
+.settingsSegmentedTrack[data-disabled] {
 	cursor: wait;
 	opacity: 0.58;
 }
 
-.settingsSegmentedOption:has(.settingsSegmentedInput:disabled) {
-	pointer-events: none;
-}
-
-.settingsSegmentedInput {
-	position: absolute;
-	opacity: 0;
+.settingsSegmentedOption:disabled {
+	opacity: 1;
 	pointer-events: none;
 }
 
@@ -68,21 +61,21 @@
 	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
 }
 
-.settingsSegmentedOption.is-active {
-	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
-	box-shadow:
-		0 1px 3px color-mix(in srgb, black 8%, transparent),
-		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+.settingsSegmentedOption[aria-pressed="true"] {
+	background: var(--bg-primary);
 }
 
-.settingsSegmentedOption.is-active .settingsSegmentedLabel {
+.settingsSegmentedOption[aria-pressed="true"] .settingsSegmentedLabel {
 	color: var(--text-primary);
 }
 
 :root.dark .settingsSegmentedTrack {
 	background: color-mix(in srgb, var(--bg-tertiary) 58%, var(--bg-primary));
 	box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
+}
+
+:root.dark .settingsSegmentedOption[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--text-primary) 9%, var(--bg-primary));
 }
 
 .settingsSegmentedOption[data-corner-radius-style="sharp"] {
@@ -353,14 +346,18 @@
 		inset 0 1px 0 color-mix(in srgb, white 14%, transparent);
 }
 
-.settingsSegmentedOption.is-active > .settingsAppearancePreview > .settingsAppearancePreviewPane,
-.settingsSegmentedOption.is-active > .settingsAppearancePreview > .settingsAppearancePreviewFrame {
+.settingsSegmentedOption[aria-pressed="true"]
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewPane,
+.settingsSegmentedOption[aria-pressed="true"]
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewFrame {
 	box-shadow:
 		0 2px 10px color-mix(in srgb, var(--interactive-accent) 16%, transparent),
 		inset 0 1px 0 color-mix(in srgb, white 16%, transparent);
 }
 
-.settingsSegmentedOption.is-active
+.settingsSegmentedOption[aria-pressed="true"]
 	> .settingsAppearancePreview
 	> .settingsAppearancePreviewPane.is-light {
 	box-shadow:
@@ -368,21 +365,12 @@
 		inset 0 1px 0 color-mix(in srgb, white 16%, transparent);
 }
 
-.settingsSegmentedOption.is-active
+.settingsSegmentedOption[aria-pressed="true"]
 	> .settingsAppearancePreview
 	> .settingsAppearancePreviewPane.is-dark {
 	box-shadow:
 		0 2px 10px color-mix(in srgb, #6e8cff 20%, transparent),
 		inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
-}
-
-.settingsSegmentedInput:focus-visible + .settingsAppearancePreview > .settingsAppearancePreviewPane,
-.settingsSegmentedInput:focus-visible
-	+ .settingsAppearancePreview
-	> .settingsAppearancePreviewFrame {
-	box-shadow:
-		0 0 0 3px color-mix(in srgb, var(--interactive-accent) 18%, transparent),
-		0 2px 8px color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 }
 
 :root.dark .settingsAppearancePreviewPane:not(.is-light, .is-dark) {
@@ -429,7 +417,6 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.settingsField,
-	.settingsSegmentedOption,
 	.settingsAppearancePreviewPane,
 	.settingsAppearancePreviewFrame,
 	.settingsKeySaved {
@@ -437,7 +424,6 @@
 		animation: none;
 	}
 
-	.settingsSegmentedOption:active,
 	.settingsSegmentedOption:hover > .settingsAppearancePreview > .settingsAppearancePreviewPane,
 	.settingsSegmentedOption:hover > .settingsAppearancePreview > .settingsAppearancePreviewFrame {
 		transform: none;

@@ -197,11 +197,6 @@
 	transform: translateY(0);
 }
 
-.externalMarkdownModeSwitch .markdownEditorModeBubble .markdownEditorModeBtn[data-active="true"] {
-	background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
-	color: var(--text-primary);
-}
-
 .externalMarkdownBody {
 	flex: 1;
 	min-height: 0;

@@ -117,7 +117,6 @@ export function AiConnectionPicker({ provider, onProviderChange }: AiConnectionP
 				interactive={false}
 			>
 				<SettingsSegmentedPicker
-					name="settings-ai-connection"
 					ariaLabel={t("connection.type.ariaLabel")}
 					value={connection.value}
 					options={pickerOptions}
