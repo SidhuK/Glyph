@@ -100,7 +100,11 @@
 			"table": "표",
 			"board": "보드",
 			"rename": "이름 변경",
-			"deleteView": "보기 삭제"
+			"deleteView": "보기 삭제",
+			"options": "보기 옵션",
+			"optionsFor": "{{name}} 보기 옵션",
+			"tabs": "컬렉션 보기",
+			"name": "보기 이름"
 		},
 		"viewOptions": {
 			"reset": "초기화",

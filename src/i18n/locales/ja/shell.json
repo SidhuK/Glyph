@@ -100,7 +100,11 @@
 			"table": "テーブル",
 			"board": "ボード",
 			"rename": "名前を変更",
-			"deleteView": "ビューを削除"
+			"deleteView": "ビューを削除",
+			"options": "ビューのオプション",
+			"optionsFor": "{{name}} のビューオプション",
+			"tabs": "コレクションのビュー",
+			"name": "ビュー名"
 		},
 		"viewOptions": {
 			"reset": "リセット",

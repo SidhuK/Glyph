@@ -105,7 +105,11 @@
 			"table": "Tabela",
 			"board": "Tablica",
 			"rename": "Zmień nazwę",
-			"deleteView": "Usuń widok"
+			"deleteView": "Usuń widok",
+			"options": "Opcje widoku",
+			"optionsFor": "Opcje widoku {{name}}",
+			"tabs": "Widoki kolekcji",
+			"name": "Nazwa widoku"
 		},
 		"viewOptions": {
 			"reset": "Resetuj",

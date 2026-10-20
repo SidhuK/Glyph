@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { MoreVerticalIcon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import { useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 import { Kanban, Table } from "../Icons";
@@ -30,6 +31,7 @@ export function DatabaseViewTabs({
 	patchActiveView,
 	reduceMotion,
 }: DatabaseViewTabsProps) {
+	const { t } = useTranslation("shell");
 	const skipNextViewMenuAutoFocusRef = useRef(false);
 
 	const {
@@ -71,7 +73,7 @@ export function DatabaseViewTabs({
 
 	return (
 		<div className="databasesViewTabsCluster">
-			<div className="databasesViewTabs" role="tablist" aria-label="Collection views">
+			<div className="databasesViewTabs" role="tablist" aria-label={t("collections.viewMenu.tabs")}>
 				{views.map((view) => {
 					const isActive = view.id === activeView.id;
 					if (renamingViewId === view.id) {
@@ -82,7 +84,7 @@ export function DatabaseViewTabs({
 								type="text"
 								className="plainTextInput databasesViewTabRenameInput"
 								value={viewNameDraft}
-								aria-label="View name"
+								aria-label={t("collections.viewMenu.name")}
 								onChange={(event) => setViewNameDraft(event.target.value)}
 								onBlur={finishViewRename}
 								onKeyDown={(event) => {
@@ -143,8 +145,8 @@ export function DatabaseViewTabs({
 				<ActionMenuTrigger
 					items={viewActionMenuItems}
 					triggerClassName="databasesViewTabMenu databaseToolbarChip"
-					triggerTitle="View options"
-					triggerAriaLabel={`View options for ${activeView.name}`}
+					triggerTitle={t("collections.viewMenu.options")}
+					triggerAriaLabel={t("collections.viewMenu.optionsFor", { name: activeView.name })}
 					finalFocus={() => {
 						if (!skipNextViewMenuAutoFocusRef.current) return true;
 						skipNextViewMenuAutoFocusRef.current = false;

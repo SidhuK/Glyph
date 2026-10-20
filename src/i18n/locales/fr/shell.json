@@ -103,7 +103,11 @@
 			"table": "Tableau",
 			"board": "Kanban",
 			"rename": "Renommer",
-			"deleteView": "Supprimer la vue"
+			"deleteView": "Supprimer la vue",
+			"options": "Options de la vue",
+			"optionsFor": "Options de la vue {{name}}",
+			"tabs": "Vues de la collection",
+			"name": "Nom de la vue"
 		},
 		"viewOptions": {
 			"reset": "Réinitialiser",

@@ -101,7 +101,11 @@
 			"table": "Tabla",
 			"board": "Tablero",
 			"rename": "Cambiar nombre",
-			"deleteView": "Eliminar vista"
+			"deleteView": "Eliminar vista",
+			"options": "Opciones de vista",
+			"optionsFor": "Opciones de vista para {{name}}",
+			"tabs": "Vistas de la colección",
+			"name": "Nombre de la vista"
 		},
 		"viewOptions": {
 			"reset": "Restablecer",

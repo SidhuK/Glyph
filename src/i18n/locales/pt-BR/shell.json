@@ -101,7 +101,11 @@
 			"table": "Tabela",
 			"board": "Quadro",
 			"rename": "Renomear",
-			"deleteView": "Excluir visualização"
+			"deleteView": "Excluir visualização",
+			"options": "Opções de visualização",
+			"optionsFor": "Opções de visualização de {{name}}",
+			"tabs": "Visualizações da coleção",
+			"name": "Nome da visualização"
 		},
 		"viewOptions": {
 			"reset": "Redefinir",

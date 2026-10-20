@@ -101,7 +101,11 @@
 			"table": "Tabelle",
 			"board": "Board",
 			"rename": "Umbenennen",
-			"deleteView": "Ansicht löschen"
+			"deleteView": "Ansicht löschen",
+			"options": "Ansichtsoptionen",
+			"optionsFor": "Ansichtsoptionen für {{name}}",
+			"tabs": "Sammlungsansichten",
+			"name": "Name der Ansicht"
 		},
 		"viewOptions": {
 			"reset": "Zurücksetzen",

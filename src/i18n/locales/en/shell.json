@@ -113,7 +113,11 @@
 			"table": "Table",
 			"board": "Board",
 			"rename": "Rename",
-			"deleteView": "Delete view"
+			"deleteView": "Delete view",
+			"options": "View options",
+			"optionsFor": "View options for {{name}}",
+			"tabs": "Collection views",
+			"name": "View name"
 		},
 		"viewOptions": {
 			"reset": "Reset",
