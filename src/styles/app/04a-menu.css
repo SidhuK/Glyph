@@ -98,3 +98,52 @@
 .spaceMenuPopup {
 	min-width: 236px;
 }
+
+/* Hand-rolled popups share the menu surface: TipTap suggestion menus (wiki-link,
+   tag, person, markdown-link, slash), the property wiki-link list, the AI composer
+   panels and the command palette. They paint their own active rows, so their fill
+   sits on .active / [data-selected] rather than [data-highlighted]. */
+.wikiLinkSuggestionMenu,
+.slashCommandMenu,
+.aiAddPanel,
+.aiSlashCommandMenu,
+.commandPalette {
+	border: 0.5px solid var(--border-default);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--popover) 82%, transparent);
+	box-shadow:
+		0 2px 6px rgb(0 0 0 / 6%),
+		var(--shadow-overlay);
+	backdrop-filter: blur(28px) saturate(180%);
+	-webkit-backdrop-filter: blur(28px) saturate(180%);
+}
+
+.wikiLinkSuggestionMenu,
+.slashCommandMenu,
+.aiAddPanel,
+.aiSlashCommandMenu {
+	padding: 5px;
+}
+
+.wikiLinkSuggestionItem,
+.slashCommandItem,
+.aiAddPanelItem,
+.aiSlashCommandItem,
+.commandPaletteItem,
+.commandPaletteBreadcrumb {
+	border-radius: 7px;
+	transition: none;
+}
+
+.wikiLinkSuggestionItem:hover,
+.wikiLinkSuggestionItem.active,
+.slashCommandItem:hover,
+.slashCommandItem.active,
+.aiAddPanelItem:hover,
+.aiSlashCommandItem,
+.commandPaletteItem:hover:not(:disabled),
+.commandPaletteItem[data-selected="true"],
+.commandPaletteBreadcrumb:hover,
+.commandPaletteBreadcrumb:focus-visible {
+	background: var(--bg-hover);
+}

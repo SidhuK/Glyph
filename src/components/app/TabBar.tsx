@@ -20,6 +20,7 @@ import { onWindowDragMouseDown } from "../../utils/window";
 import { ActiveFileTitle } from "./ActiveFileTitle";
 import { isPathSpecial, MainTabsBreadcrumbs } from "./MainTabsBreadcrumbs";
 import { MAIN_TAB_DND_TYPE } from "./splitEditorDnd";
+import { TabOverflowMenu } from "./TabOverflowMenu";
 import type { WorkspaceTab } from "./useTabManager";
 
 interface TabBarProps {
@@ -234,37 +235,12 @@ export function TabBar({
 							+
 						</button>
 						{tabsOverflow ? (
-							<div className="mainTabAdd mainTabOverflow">
-								<svg
-									className="size-[14px] shrink-0"
-									viewBox="0 0 24 24"
-									fill="none"
-									aria-hidden="true"
-								>
-									<path
-										d="M18 9C18 9 13.5811 15 12 15C10.4188 15 6 9 6 9"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									/>
-								</svg>
-								<select
-									className="mainTabOverflowSelect"
-									value={activeTabId ?? tabs[0]?.id}
-									onChange={(event) => onSelectTab(event.currentTarget.value)}
-									title={t("tabs.showAllTabs")}
-									aria-label={t("tabs.showAllTabs")}
-								>
-									{tabs.map((tab) => (
-										<option key={tab.id} value={tab.id}>
-											{tab.target && !isPathSpecial(tab.target)
-												? tab.target.replace(/([^/])\.[^./]+$/, "$1")
-												: tabLabel(tab)}
-										</option>
-									))}
-								</select>
-							</div>
+							<TabOverflowMenu
+								tabs={tabs}
+								activeTabId={activeTabId}
+								tabLabel={tabLabel}
+								onSelectTab={onSelectTab}
+							/>
 						) : null}
 					</div>
 				) : null}
