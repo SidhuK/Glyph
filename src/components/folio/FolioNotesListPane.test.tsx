@@ -297,26 +297,41 @@ describe("FolioNotesListPane", () => {
 		expect(container.textContent).not.toContain("Sketch");
 	});
 
+	function sortTrigger() {
+		return container.querySelector<HTMLButtonElement>('button[aria-label="Sort notes"]');
+	}
+
+	function sortMenuItem(label: string) {
+		return (
+			Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]')).find(
+				(item) => item.textContent === label,
+			) ?? null
+		);
+	}
+
+	async function chooseSortMode(label: string) {
+		const trigger = sortTrigger();
+		expect(trigger).toBeTruthy();
+		await act(async () => {
+			trigger?.click();
+		});
+		await waitFor(() => sortMenuItem(label) !== null);
+		const item = sortMenuItem(label);
+		expect(item).toBeTruthy();
+		await act(async () => {
+			item?.click();
+			renderPane();
+		});
+	}
+
 	it("sorts by edited time when selected", async () => {
 		await act(async () => renderPane());
 		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
 
-		const select = container.querySelector(
-			'select[aria-label="Sort notes"]',
-		) as HTMLSelectElement | null;
-		expect(select).toBeTruthy();
-		await act(async () => {
-			if (!select) return;
-			const valueSetter = Object.getOwnPropertyDescriptor(
-				HTMLSelectElement.prototype,
-				"value",
-			)?.set;
-			valueSetter?.call(select, "modified-desc");
-			select.dispatchEvent(new Event("change", { bubbles: true }));
-			renderPane();
-		});
+		await chooseSortMode("Modified newest");
 		await waitFor(() => renderedNotePaths(container).length === 2);
 
+		expect(setFolioSortModeMock).toHaveBeenCalledWith("modified-desc");
 		expect(renderedNotePaths(container)).toEqual(["Ideas/Sketch.md", "Projects/Roadmap.md"]);
 	});
 
@@ -324,45 +339,28 @@ describe("FolioNotesListPane", () => {
 		await act(async () => renderPane());
 		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
 
-		const select = container.querySelector(
-			'select[aria-label="Sort notes"]',
-		) as HTMLSelectElement | null;
-		expect(select).toBeTruthy();
-
-		await act(async () => {
-			if (!select) return;
-			const valueSetter = Object.getOwnPropertyDescriptor(
-				HTMLSelectElement.prototype,
-				"value",
-			)?.set;
-			valueSetter?.call(select, "created-desc");
-			select.dispatchEvent(new Event("change", { bubbles: true }));
-			renderPane();
-		});
+		await chooseSortMode("Created newest");
 		await waitFor(() => renderedNotePaths(container).length === 2);
 
+		expect(setFolioSortModeMock).toHaveBeenCalledWith("created-desc");
 		expect(renderedNotePaths(container)).toEqual(["Projects/Roadmap.md", "Ideas/Sketch.md"]);
 	});
 
-	it("keeps sort control arrow keys inside the select", async () => {
+	it("keeps sort control keys out of note navigation", async () => {
 		await act(async () => renderPane("Projects/Roadmap.md"));
 		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
 
-		const select = container.querySelector(
-			'select[aria-label="Sort notes"]',
-		) as HTMLSelectElement | null;
-		expect(select).toBeTruthy();
+		const trigger = sortTrigger();
+		expect(trigger).toBeTruthy();
 
-		const event = new KeyboardEvent("keydown", {
-			key: "ArrowDown",
-			bubbles: true,
-			cancelable: true,
-		});
-		await act(async () => {
-			select?.dispatchEvent(event);
-		});
+		for (const key of ["ArrowDown", "Enter"]) {
+			const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+			await act(async () => {
+				trigger?.dispatchEvent(event);
+				await new Promise((resolve) => window.requestAnimationFrame(resolve));
+			});
+		}
 
-		expect(event.defaultPrevented).toBe(false);
 		expect(vi.mocked(onOpenFile)).not.toHaveBeenCalled();
 	});
 

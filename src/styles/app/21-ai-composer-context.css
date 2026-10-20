@@ -1,9 +1,5 @@
 .aiAddPanel {
 	margin: 0 12px 6px;
-	padding: 8px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -35,16 +31,11 @@
 	justify-content: flex-start;
 	width: 100%;
 	padding: 5px 8px;
-	border-radius: var(--radius-md);
 	font-size: var(--text-xs);
 	color: var(--text-primary);
 	text-align: left;
 	background: transparent;
 	border: none;
-}
-
-.aiAddPanelItem:hover {
-	background: var(--bg-hover);
 }
 
 .aiAddPanelEmpty {
@@ -67,11 +58,6 @@
 
 .aiSlashCommandMenu {
 	margin: 0 12px 6px;
-	padding: 4px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	border-radius: var(--radius-md);
-	background: var(--bg-secondary);
-	box-shadow: var(--shadow-lg);
 }
 
 .aiSlashCommandItem {
@@ -81,8 +67,6 @@
 	width: 100%;
 	padding: 7px 8px;
 	border: 0;
-	border-radius: var(--radius-sm);
-	background: var(--bg-hover);
 	color: var(--text-primary);
 	text-align: left;
 }
