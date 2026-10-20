@@ -232,8 +232,7 @@
 		"empty": "Diese Notiz ist leer."
 	},
 	"linkPreview": {
-		"label": "Vorschau der verlinkten Notiz",
-		"edited": "Bearbeitet am {{date}}"
+		"label": "Vorschau der verlinkten Notiz"
 	},
 	"propertyKind": {
 		"title": "Eigenschaftstyp: {{label}}",

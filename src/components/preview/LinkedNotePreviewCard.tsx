@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { FileText } from "../Icons";
 import { NotePreviewContent } from "./NotePreviewContent";
 import type { NotePreviewData } from "./notePreviewShared";
 
@@ -10,14 +9,23 @@ function withoutTitleHeading(content: string, title: string): string {
 	return match?.[1]?.trim() === title ? trimmed.slice(match[0].length) : trimmed;
 }
 
-/** The note's place in the space, shown under its title like a handle. */
-function notePathLabel(relPath: string): string {
-	return relPath.replace(/\.md$/i, "");
+/** The note's folder as a breadcrumb, or an empty string at the space root. */
+function folderLabel(relPath: string): string {
+	return relPath.split("/").slice(0, -1).join(" / ");
 }
 
-/** Body of the wiki-link hover card: icon, title and path, an excerpt, then when it was edited. */
+/** Short edit date: the year only shows when it isn't the current one. */
+function editedLabel(mtimeMs: number, locale: string): string {
+	const sameYear = new Date(mtimeMs).getFullYear() === new Date().getFullYear();
+	const options: Intl.DateTimeFormatOptions = sameYear
+		? { month: "short", day: "numeric" }
+		: { dateStyle: "medium" };
+	return new Intl.DateTimeFormat(locale, options).format(mtimeMs);
+}
+
+/** Body of the wiki-link hover card: folder and edit date, the title, then an excerpt. */
 export function LinkedNotePreviewCard({ data }: { data: NotePreviewData }) {
-	const { t, i18n } = useTranslation("editor");
+	const { i18n } = useTranslation();
 	if (data.status === "error") {
 		return (
 			<div className="linkedNotePreviewBody">
@@ -26,29 +34,22 @@ export function LinkedNotePreviewCard({ data }: { data: NotePreviewData }) {
 		);
 	}
 
-	const edited =
-		data.mtimeMs > 0
-			? new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium" }).format(data.mtimeMs)
-			: null;
 	return (
 		<>
 			<header className="linkedNotePreviewHeader">
-				<span className="linkedNotePreviewIcon" aria-hidden="true">
-					<FileText size="var(--icon-md)" />
-				</span>
-				<div className="linkedNotePreviewHeading">
-					<div className="linkedNotePreviewTitle">{data.title}</div>
-					<div className="linkedNotePreviewPath">{notePathLabel(data.relPath)}</div>
+				<div className="linkedNotePreviewMeta">
+					<span className="linkedNotePreviewFolder">{folderLabel(data.relPath)}</span>
+					{data.mtimeMs > 0 ? (
+						<time dateTime={new Date(data.mtimeMs).toISOString()}>
+							{editedLabel(data.mtimeMs, i18n.language)}
+						</time>
+					) : null}
 				</div>
+				<div className="linkedNotePreviewTitle">{data.title}</div>
 			</header>
 			<div className="linkedNotePreviewBody">
 				<NotePreviewContent {...data} content={withoutTitleHeading(data.content, data.title)} />
 			</div>
-			{edited ? (
-				<footer className="linkedNotePreviewMeta">
-					{t("linkPreview.edited", { date: edited })}
-				</footer>
-			) : null}
 		</>
 	);
 }

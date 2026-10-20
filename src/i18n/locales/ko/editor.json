@@ -232,8 +232,7 @@
 		"empty": "이 노트는 비어 있습니다."
 	},
 	"linkPreview": {
-		"label": "연결된 노트 미리보기",
-		"edited": "{{date}}에 편집됨"
+		"label": "연결된 노트 미리보기"
 	},
 	"propertyKind": {
 		"title": "속성 유형: {{label}}",

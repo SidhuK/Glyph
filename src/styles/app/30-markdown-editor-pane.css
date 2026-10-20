@@ -1044,18 +1044,14 @@
 	z-index: 2200;
 }
 
-/* Wiki-link hover card, laid out like Animate UI's preview card: an icon tile, the
-   title with its path as a muted handle, an excerpt and a muted meta line. It shares
-   the frosted menu surface; motion comes from Animate UI. */
+/* Wiki-link hover card: a quiet folder and date line, the title, then a fading
+   excerpt. It shares the frosted menu surface; motion comes from Animate UI. */
 .linkedNotePreviewSheet {
 	position: relative;
 	width: min(320px, calc(100vw - 24px));
-	max-height: min(420px, calc(100vh - 24px));
+	max-height: min(320px, calc(100vh - 24px));
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
-	padding: 16px;
-	overflow: visible;
 	border: 0.5px solid var(--border-default);
 	border-radius: 12px;
 	background: color-mix(in srgb, var(--popover) 82%, transparent);
@@ -1088,49 +1084,40 @@
 }
 
 .linkedNotePreviewHeader {
+	flex: none;
+	padding: 14px 16px 0;
+}
+
+.linkedNotePreviewMeta {
 	display: flex;
-	flex-direction: column;
+	justify-content: space-between;
 	gap: 12px;
+	margin-bottom: 4px;
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.3;
+	color: var(--text-tertiary);
+}
+
+.linkedNotePreviewFolder {
 	min-width: 0;
-}
-
-.linkedNotePreviewIcon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 36px;
-	height: 36px;
-	border: 0.5px solid var(--border-default);
-	border-radius: 10px;
-	background: var(--bg-hover);
-	color: var(--text-secondary);
-}
-
-.linkedNotePreviewHeading {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	min-width: 0;
-}
-
-.linkedNotePreviewTitle,
-.linkedNotePreviewPath {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.linkedNotePreviewTitle {
-	font-size: var(--text-base);
-	font-weight: var(--font-semibold);
-	line-height: 1.3;
+.linkedNotePreviewMeta > time {
+	flex: none;
 }
 
-.linkedNotePreviewPath,
-.linkedNotePreviewMeta {
-	font-size: var(--text-sm);
+.linkedNotePreviewTitle {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	font-size: calc(var(--text-base) * 1.07);
+	font-weight: var(--font-semibold);
 	line-height: 1.3;
-	color: var(--text-tertiary);
+	color: var(--text-primary);
 }
 
 .linkedNotePreviewBody {
@@ -1139,10 +1126,37 @@
 	padding: 10px;
 }
 
+/* The bottom padding doubles as the fade, so short notes stay fully visible and
+   long ones dissolve rather than cut off. */
 .linkedNotePreviewSheet > .linkedNotePreviewBody {
 	flex: 0 1 auto;
-	padding: 0;
+	padding: 8px 16px 20px;
 	overscroll-behavior: contain;
+	-webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+	mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+}
+
+.linkedNotePreviewSheet > .linkedNotePreviewBody:only-child {
+	padding-top: 14px;
+}
+
+/* Headings in the excerpt stay at body size so the title leads. */
+.linkedNotePreviewSheet .tiptapContentInline :is(h1, h2, h3, h4, h5, h6) {
+	margin: 10px 0 2px;
+	font-size: 1em;
+	font-weight: var(--font-semibold);
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--text-primary);
+}
+
+.linkedNotePreviewSheet .tiptapContentInline > :first-child:is(h1, h2, h3, h4, h5, h6) {
+	margin-top: 0;
+}
+
+.linkedNotePreviewSheet .tiptapContentInline img {
+	max-height: 140px;
+	border-radius: 6px;
 }
 
 .commandPalettePreview > .linkedNotePreviewBody {

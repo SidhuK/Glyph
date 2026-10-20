@@ -232,8 +232,7 @@
 		"empty": "Esta nota está vazia."
 	},
 	"linkPreview": {
-		"label": "Pré-visualização da nota vinculada",
-		"edited": "Editado em {{date}}"
+		"label": "Pré-visualização da nota vinculada"
 	},
 	"propertyKind": {
 		"title": "Tipo de propriedade: {{label}}",

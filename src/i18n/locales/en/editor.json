@@ -324,8 +324,7 @@
 		"empty": "This note is empty."
 	},
 	"linkPreview": {
-		"label": "Linked note preview",
-		"edited": "Edited {{date}}"
+		"label": "Linked note preview"
 	},
 	"propertyKind": {
 		"title": "Property type: {{label}}",
