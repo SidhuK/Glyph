@@ -11,11 +11,6 @@
 	align-items: center;
 }
 
-.modelComboboxInputWrap > input {
-	width: 100%;
-	padding-right: 70px;
-}
-
 .modelComboboxInputWrap .settingsSelectTrigger {
 	max-width: none;
 }
