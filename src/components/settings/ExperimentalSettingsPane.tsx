@@ -1,3 +1,4 @@
+import { ParagraphIcon, TextIcon, UnavailableIcon } from "@hugeicons/core-free-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -5,9 +6,16 @@ import { type FocusMode, loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { SETTINGS_QUERY_KEY } from "../../lib/settingsStore";
 import { SettingsInfoHint, SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
+import { SelectIcon } from "../ui/shadcn/select";
 import { SettingsSelect } from "./SettingsSelect";
 
 const FOCUS_MODE_VALUES = ["off", "paragraph", "sentence"] as const satisfies readonly FocusMode[];
+
+const FOCUS_MODE_ICONS = {
+	off: UnavailableIcon,
+	paragraph: ParagraphIcon,
+	sentence: TextIcon,
+} as const satisfies Record<FocusMode, unknown>;
 
 function VimModeInfo() {
 	const { t } = useTranslation("settings.general");
@@ -142,6 +150,7 @@ export function ExperimentalSettingsPane() {
 							options={FOCUS_MODE_VALUES.map((value) => ({
 								value,
 								label: t(`editor.focusMode.options.${value}`),
+								icon: <SelectIcon icon={FOCUS_MODE_ICONS[value]} />,
 							}))}
 							onValueChange={(nextMode) => {
 								saveSetting.mutate(() => DURABLE_SETTINGS.editorFocusMode.write(nextMode));

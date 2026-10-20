@@ -184,5 +184,18 @@
 				"wide": "Breit"
 			}
 		}
+	},
+	"templates": {
+		"sectionTitle": "Vorlagen",
+		"none": "Keine",
+		"folder": {
+			"label": "Vorlagenordner",
+			"description": "Wähle einen Ordner im aktuellen Space, der deine Markdown-Vorlagen enthält.",
+			"notConfigured": "Nicht eingerichtet",
+			"browse": "Durchsuchen",
+			"clear": "Vorlagenordner entfernen",
+			"found_one": "{{count}} Vorlage gefunden",
+			"found_other": "{{count}} Vorlagen gefunden"
+		}
 	}
 }

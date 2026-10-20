@@ -53,11 +53,7 @@ export function AiProviderSection({
 		>
 			<AiConnectionPicker provider={profileDraft.provider} onProviderChange={onProviderChange} />
 
-			<SettingsRow
-				label="Model"
-				htmlFor="aiModel"
-				description="Glyph fetches available models for the selected provider when credentials allow it."
-			>
+			<SettingsRow label={t("model.label")} htmlFor="aiModel" description={t("model.description")}>
 				<AiModelCombobox
 					key={`${profileDraft.id}:${profileDraft.provider}`}
 					profileId={profileDraft.id}
@@ -104,9 +100,9 @@ export function AiProviderSection({
 
 			{shouldShowReasoningSelect ? (
 				<SettingsRow
-					label="Reasoning level"
+					label={t("reasoning.label")}
 					htmlFor="aiReasoningEffort"
-					description="Available when the current model exposes effort levels."
+					description={t("reasoning.description")}
 				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
 						<SettingsSelect
@@ -132,7 +128,7 @@ export function AiProviderSection({
 							<Input
 								id="aiReasoningEffort"
 								value={profileDraft.reasoning_effort ?? ""}
-								placeholder="e.g. low, medium, high"
+								placeholder={t("reasoning.placeholder")}
 								onBlur={(event) =>
 									void onPersistDraft({
 										...profileDraft,
@@ -146,9 +142,7 @@ export function AiProviderSection({
 									}))
 								}
 							/>
-							<div className="settingsHint">
-								This model did not publish reasoning options; enter effort manually.
-							</div>
+							<div className="settingsHint">{t("reasoning.manualHint")}</div>
 						</div>
 					)}
 				</SettingsRow>
@@ -156,12 +150,12 @@ export function AiProviderSection({
 
 			{profileDraft.provider === "openai_compat" || profileDraft.provider === "llama_cpp" ? (
 				<SettingsRow
-					label="Base URL"
+					label={t("baseUrl.label")}
 					htmlFor="aiBaseUrl"
 					description={
 						profileDraft.provider === "llama_cpp"
-							? "Default is http://localhost:8080/v1 for a local llama.cpp server."
-							: "Only needed for custom OpenAI-compatible providers."
+							? t("baseUrl.descriptionLlama")
+							: t("baseUrl.descriptionCustom")
 					}
 				>
 					<Input
@@ -186,15 +180,15 @@ export function AiProviderSection({
 
 			{profileDraft.provider === "openai_compat" || profileDraft.provider === "llama_cpp" ? (
 				<SettingsRow
-					label="Allow local network"
+					label={t("localNetwork.label")}
 					description={
 						profileDraft.provider === "llama_cpp"
-							? "Enable to use localhost or private-network llama.cpp endpoints."
-							: "Enable to use http:// endpoints on localhost or private networks (e.g. LM Studio, vLLM)."
+							? t("localNetwork.descriptionLlama")
+							: t("localNetwork.descriptionCustom")
 					}
 				>
 					<SettingsToggle
-						ariaLabel="Allow local network"
+						ariaLabel={t("localNetwork.label")}
 						checked={profileDraft.allow_private_hosts}
 						onCheckedChange={(checked) =>
 							void onPersistDraft({

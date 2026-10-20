@@ -1,8 +1,14 @@
-import { Search01Icon } from "@hugeicons/core-free-icons";
+import {
+	Files01Icon,
+	Search01Icon,
+	SortByDown02Icon,
+	SortingAZ01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../../../lib/utils";
-import { Select } from "../../ui/shadcn/select";
+import { Select, SelectIcon } from "../../ui/shadcn/select";
+import { attachmentKindIcon } from "./attachmentFormat";
 import type {
 	AttachmentFilters,
 	AttachmentKindFilter,
@@ -12,6 +18,11 @@ import type {
 
 const USAGE_OPTIONS = ["unused", "all"] as const satisfies readonly AttachmentUsageFilter[];
 const SORT_OPTIONS = ["size", "name"] as const satisfies readonly AttachmentSort[];
+
+const SORT_ICONS = {
+	size: SortByDown02Icon,
+	name: SortingAZ01Icon,
+} as const satisfies Record<AttachmentSort, unknown>;
 
 export function AttachmentToolbar({ filters }: { filters: AttachmentFilters }) {
 	const { t } = useTranslation("settings.general");
@@ -61,6 +72,7 @@ export function AttachmentToolbar({ filters }: { filters: AttachmentFilters }) {
 					options={kindOptions.map((kind) => ({
 						value: kind,
 						label: t(`developer.attachments.kind.${kind}`),
+						icon: <SelectIcon icon={kind === "any" ? Files01Icon : attachmentKindIcon(kind)} />,
 					}))}
 					onValueChange={filters.setKind}
 				/>
@@ -72,6 +84,7 @@ export function AttachmentToolbar({ filters }: { filters: AttachmentFilters }) {
 				options={SORT_OPTIONS.map((option) => ({
 					value: option,
 					label: t(`developer.attachments.sort.${option}`),
+					icon: <SelectIcon icon={SORT_ICONS[option]} />,
 				}))}
 				onValueChange={filters.setSort}
 			/>

@@ -3,9 +3,14 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
 import { Select as SelectPrimitive } from "@animate-ui/react/primitives/base-ui/select";
 import { Tick02Icon } from "@hugeicons/core-free-icons";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 const ROW_ICON_SIZE = "var(--icon-sm)";
+
+/** A Hugeicons definition sized for a select row or trigger. */
+export function SelectIcon({ icon }: { icon: ComponentProps<typeof HugeiconsIcon>["icon"] }) {
+	return <HugeiconsIcon icon={icon} size={ROW_ICON_SIZE} />;
+}
 
 export interface SelectOption<Value> {
 	value: Value;
@@ -45,6 +50,7 @@ export function Select<Value>({
 	className,
 	popupClassName,
 }: SelectProps<Value>) {
+	const selectedIcon = options.find((option) => Object.is(option.value, value))?.icon;
 	return (
 		<SelectPrimitive.Root
 			value={value}
@@ -60,6 +66,11 @@ export function Select<Value>({
 				aria-label={ariaLabel}
 				className={cn("glyphSelectTrigger", className)}
 			>
+				{selectedIcon ? (
+					<span className="glyphSelectIcon" aria-hidden="true">
+						{selectedIcon}
+					</span>
+				) : null}
 				<SelectPrimitive.Value className="glyphSelectValue" placeholder={placeholder} />
 				<SelectPrimitive.Icon className="glyphSelectChevron">
 					<ChevronDown size={ROW_ICON_SIZE} aria-hidden="true" />

@@ -106,6 +106,107 @@
 			"board": "Tablica",
 			"rename": "Zmień nazwę",
 			"deleteView": "Usuń widok"
+		},
+		"viewOptions": {
+			"reset": "Resetuj",
+			"presets": "Gotowe ustawienia"
+		},
+		"groupBy": {
+			"label": "Grupuj według",
+			"title": "Grupowanie według {{name}}",
+			"choose": "Wybierz pole do grupowania",
+			"none": "Bez grupowania",
+			"multiLane": "{{name}} (wiele kolumn)",
+			"boardHint": "Dodaj pole statusu, tagu lub pola wyboru, aby utworzyć kolumny"
+		},
+		"sort": {
+			"title": "Sortuj według",
+			"presets": "Gotowe sortowania",
+			"replaceWithPreset": "Zastąp bieżące sortowanie: {{name}}",
+			"field": "Pole sortowania",
+			"direction": "Kierunek sortowania",
+			"add": "Dodaj sortowanie",
+			"directions": {
+				"date": {
+					"asc": "Najstarsze - Najnowsze",
+					"desc": "Najnowsze - Najstarsze"
+				},
+				"number": {
+					"asc": "Najniższe - Najwyższe",
+					"desc": "Najwyższe - Najniższe"
+				},
+				"boolean": {
+					"asc": "Niezaznaczone najpierw",
+					"desc": "Zaznaczone najpierw"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "Filtruj według",
+			"hint": "Zawęź ten widok według wartości kolumn. Aby przeszukać tekst notatek, użyj pola wyszukiwania na pasku narzędzi.",
+			"presets": "Gotowe filtry",
+			"unsupportedOperator": "Filtr {{index}} używa nieobsługiwanego operatora. Wybierz obsługiwany operator, aby przywrócić wyniki.",
+			"addFirst": "Dodaj warunek",
+			"addAnother": "Dodaj kolejny warunek",
+			"where": "Gdzie",
+			"and": "Oraz",
+			"fieldAria": "Pole filtra {{index}}",
+			"operatorAria": "Operator filtra {{index}}",
+			"dateRangeAria": "Zakres dat filtra {{index}}",
+			"tagLabel": "Tag filtra",
+			"tagDescription": "Wybierz tag dla tego filtra.",
+			"tagPlaceholder": "Wybierz tag",
+			"valuePlaceholder": "Wartość",
+			"remove": "Usuń filtr",
+			"operators": {
+				"equals": "jest",
+				"not_equals": "nie jest",
+				"contains": "zawiera",
+				"not_contains": "nie zawiera",
+				"starts_with": "zaczyna się od",
+				"ends_with": "kończy się na",
+				"greater_than": "większe niż",
+				"less_than": "mniejsze niż",
+				"is_empty": "jest puste",
+				"is_not_empty": "nie jest puste",
+				"is_true": "jest zaznaczone",
+				"is_false": "nie jest zaznaczone",
+				"tags_contains": "zawiera",
+				"any_of": "jest jednym z",
+				"none_of": "nie jest żadnym z",
+				"within_last_7_days": "jest",
+				"unsupported": "Nieobsługiwany: {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "Zaległe",
+				"today": "Dzisiaj",
+				"thisWeek": "Ten tydzień",
+				"last7Days": "Ostatnie 7 dni",
+				"last30Days": "Ostatnie 30 dni"
+			}
+		},
+		"source": {
+			"title": "Źródło",
+			"hint": "Wybierz, które notatki pojawią się w tym widoku. Zmiany zapisują się automatycznie.",
+			"showFrom": "Pokaż notatki z",
+			"kinds": {
+				"all_notes": "Wszystkie notatki",
+				"folder": "Folder",
+				"tag": "Tag",
+				"search": "Zapytanie wyszukiwania"
+			},
+			"folder": "Folder",
+			"chooseFolder": "Wybierz folder",
+			"includeSubfolders": "Uwzględnij podfoldery",
+			"tag": "Tag",
+			"tagDescription": "Pojawią się tylko notatki z tym tagiem.",
+			"chooseTag": "Wybierz tag",
+			"searchQuery": "Zapytanie wyszukiwania",
+			"saveNewIn": "Zapisuj nowe notatki w"
 		}
 	},
 	"tags": {
@@ -445,5 +546,27 @@
 		"today": "Dzisiejsza szybka notatka",
 		"browse": "Zmień miejsce docelowe: przeglądaj {{name}}",
 		"label": "Miejsce docelowe szybkiej notatki"
+	},
+	"gitSync": {
+		"interval": {
+			"label": "Interwał",
+			"description": "Jak często Glyph uruchamia zaplanowane synchronizacje.",
+			"ariaLabel": "Interwał synchronizacji Git",
+			"minutes_one": "{{count}} min",
+			"minutes_few": "{{count}} min",
+			"minutes_many": "{{count}} min",
+			"minutes_other": "{{count}} min"
+		},
+		"conflict": {
+			"sectionTitle": "Rozwiązywanie konfliktów",
+			"sectionDescription": "Wybierz, którą stronę Glyph ma preferować, gdy zmiany lokalne i zdalne są sprzeczne.",
+			"label": "Zasada",
+			"description": "Glyph rozwiązuje konflikty automatycznie.",
+			"ariaLabel": "Zasada konfliktów",
+			"options": {
+				"local_wins": "Wygrywa lokalna",
+				"remote_wins": "Wygrywa zdalna"
+			}
+		}
 	}
 }

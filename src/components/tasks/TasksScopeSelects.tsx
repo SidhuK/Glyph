@@ -1,3 +1,10 @@
+import {
+	Folder01Icon,
+	FoldersIcon,
+	InboxIcon,
+	Tag01Icon,
+	TagsIcon,
+} from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,7 +13,7 @@ import { navigationQueryKeys } from "../../lib/navigationPrefetch";
 import { invoke, type TaskScope } from "../../lib/tauri";
 import { formatTagLabel } from "../editor/noteProperties/utils";
 import { Button } from "../ui/shadcn/button";
-import { Select } from "../ui/shadcn/select";
+import { Select, SelectIcon } from "../ui/shadcn/select";
 
 /** The folder list only changes on folder create/move/delete, so skip refetching on note saves. */
 const FOLDER_LIST_STALE_TIME_MS = 60_000;
@@ -61,9 +68,13 @@ export function TasksScopeSelects({
 				aria-label={t("tasks.scope")}
 				value={scopeKind}
 				options={[
-					{ value: "all", label: t("tasks.scopeAll") },
-					{ value: "folder", label: t("tasks.scopeFolder") },
-					{ value: "tag", label: t("tasks.scopeTag") },
+					{ value: "all", label: t("tasks.scopeAll"), icon: <SelectIcon icon={InboxIcon} /> },
+					{
+						value: "folder",
+						label: t("tasks.scopeFolder"),
+						icon: <SelectIcon icon={Folder01Icon} />,
+					},
+					{ value: "tag", label: t("tasks.scopeTag"), icon: <SelectIcon icon={Tag01Icon} /> },
 				]}
 				onValueChange={onScopeKindChange}
 			/>
@@ -85,8 +96,12 @@ export function TasksScopeSelects({
 					aria-label={t("tasks.folder")}
 					value={folder}
 					options={[
-						{ value: "", label: t("tasks.allFolders") },
-						...folders.map((path) => ({ value: path, label: path })),
+						{ value: "", label: t("tasks.allFolders"), icon: <SelectIcon icon={FoldersIcon} /> },
+						...folders.map((path) => ({
+							value: path,
+							label: path,
+							icon: <SelectIcon icon={Folder01Icon} />,
+						})),
 					]}
 					onValueChange={onFolderChange}
 				/>
@@ -97,8 +112,12 @@ export function TasksScopeSelects({
 					aria-label={t("tasks.tag")}
 					value={tag}
 					options={[
-						{ value: "", label: t("tasks.allTags") },
-						...tagNames.map((name) => ({ value: name, label: formatTagLabel(name) })),
+						{ value: "", label: t("tasks.allTags"), icon: <SelectIcon icon={TagsIcon} /> },
+						...tagNames.map((name) => ({
+							value: name,
+							label: formatTagLabel(name),
+							icon: <SelectIcon icon={Tag01Icon} />,
+						})),
 					]}
 					onValueChange={onTagChange}
 				/>

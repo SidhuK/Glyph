@@ -7,7 +7,9 @@
 			"description": "インストール済みエージェント、この Mac 上のプライベートモデル、またはプロバイダー API を使用します。",
 			"ariaLabel": "AI 接続タイプ"
 		},
-		"provider": { "label": "プロバイダー" },
+		"provider": {
+			"label": "プロバイダー"
+		},
 		"types": {
 			"agents": {
 				"label": "エージェント",
@@ -25,5 +27,31 @@
 				"providerDescription": "Glyph が使用する API とモデルのプロバイダーを選びます。"
 			}
 		}
+	},
+	"model": {
+		"label": "モデル",
+		"description": "認証情報が有効な場合、Glyph は選択したプロバイダのモデル一覧を取得します。",
+		"placeholder": "モデルを選択...",
+		"connecting": "接続中...",
+		"count_other": "{{count}} 個のモデル",
+		"needsApiKey": "このプロバイダのモデルを読み込むには API キーを保存してください。",
+		"retry": "再試行",
+		"empty": "利用できるモデルがありません"
+	},
+	"reasoning": {
+		"label": "推論レベル",
+		"description": "現在のモデルが推論レベルを公開している場合に使用できます。",
+		"placeholder": "例: low, medium, high",
+		"manualHint": "このモデルは推論オプションを公開していません。手動で入力してください。"
+	},
+	"baseUrl": {
+		"label": "ベース URL",
+		"descriptionLlama": "ローカルの llama.cpp サーバーの既定値は http://localhost:8080/v1 です。",
+		"descriptionCustom": "OpenAI 互換のカスタムプロバイダでのみ必要です。"
+	},
+	"localNetwork": {
+		"label": "ローカルネットワークを許可",
+		"descriptionLlama": "localhost やプライベートネットワークの llama.cpp エンドポイントを使う場合に有効にします。",
+		"descriptionCustom": "localhost やプライベートネットワークの http:// エンドポイント (LM Studio、vLLM など) を使う場合に有効にします。"
 	}
 }

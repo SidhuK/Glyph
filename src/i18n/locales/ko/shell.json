@@ -101,6 +101,107 @@
 			"board": "보드",
 			"rename": "이름 변경",
 			"deleteView": "보기 삭제"
+		},
+		"viewOptions": {
+			"reset": "초기화",
+			"presets": "프리셋"
+		},
+		"groupBy": {
+			"label": "그룹 기준",
+			"title": "{{name}} 기준으로 그룹화",
+			"choose": "그룹화할 필드 선택",
+			"none": "그룹 없음",
+			"multiLane": "{{name}} (여러 레인)",
+			"boardHint": "레인을 만들려면 상태, 태그 또는 체크박스 필드를 추가하세요"
+		},
+		"sort": {
+			"title": "정렬 기준",
+			"presets": "정렬 프리셋",
+			"replaceWithPreset": "현재 정렬을 {{name}}(으)로 바꾸기",
+			"field": "정렬 필드",
+			"direction": "정렬 방향",
+			"add": "정렬 추가",
+			"directions": {
+				"date": {
+					"asc": "오래된 순",
+					"desc": "최신 순"
+				},
+				"number": {
+					"asc": "낮은 순",
+					"desc": "높은 순"
+				},
+				"boolean": {
+					"asc": "체크 안 된 항목 먼저",
+					"desc": "체크된 항목 먼저"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "필터 기준",
+			"hint": "열 값으로 이 보기를 좁힙니다. 노트 본문을 검색하려면 도구 막대의 검색 상자를 사용하세요.",
+			"presets": "필터 프리셋",
+			"unsupportedOperator": "필터 {{index}}에서 지원되지 않는 연산자를 사용합니다. 결과를 복원하려면 지원되는 연산자를 선택하세요.",
+			"addFirst": "조건 추가",
+			"addAnother": "조건 하나 더 추가",
+			"where": "조건",
+			"and": "그리고",
+			"fieldAria": "필터 {{index}} 필드",
+			"operatorAria": "필터 {{index}} 연산자",
+			"dateRangeAria": "필터 {{index}} 기간",
+			"tagLabel": "필터 태그",
+			"tagDescription": "이 필터에 사용할 태그를 선택하세요.",
+			"tagPlaceholder": "태그 선택",
+			"valuePlaceholder": "값",
+			"remove": "필터 제거",
+			"operators": {
+				"equals": "같음",
+				"not_equals": "같지 않음",
+				"contains": "포함",
+				"not_contains": "포함하지 않음",
+				"starts_with": "으로 시작",
+				"ends_with": "으로 끝남",
+				"greater_than": "보다 큼",
+				"less_than": "보다 작음",
+				"is_empty": "비어 있음",
+				"is_not_empty": "비어 있지 않음",
+				"is_true": "체크됨",
+				"is_false": "체크 안 됨",
+				"tags_contains": "포함",
+				"any_of": "다음 중 하나",
+				"none_of": "다음 중 없음",
+				"within_last_7_days": "기간",
+				"unsupported": "지원되지 않음: {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "기한 지남",
+				"today": "오늘",
+				"thisWeek": "이번 주",
+				"last7Days": "최근 7일",
+				"last30Days": "최근 30일"
+			}
+		},
+		"source": {
+			"title": "소스",
+			"hint": "이 보기에 표시할 노트를 선택하세요. 변경 사항은 자동으로 저장됩니다.",
+			"showFrom": "노트 가져올 곳",
+			"kinds": {
+				"all_notes": "모든 노트",
+				"folder": "폴더",
+				"tag": "태그",
+				"search": "검색어"
+			},
+			"folder": "폴더",
+			"chooseFolder": "폴더 선택",
+			"includeSubfolders": "하위 폴더 포함",
+			"tag": "태그",
+			"tagDescription": "이 태그가 있는 노트만 표시됩니다.",
+			"chooseTag": "태그 선택",
+			"searchQuery": "검색어",
+			"saveNewIn": "새 노트 저장 위치"
 		}
 	},
 	"tags": {
@@ -398,5 +499,24 @@
 		"today": "오늘의 빠른 노트",
 		"browse": "저장 위치 변경: {{name}} 탐색",
 		"label": "빠른 노트 저장 위치"
+	},
+	"gitSync": {
+		"interval": {
+			"label": "간격",
+			"description": "Glyph가 예약 동기화를 실행하는 주기입니다.",
+			"ariaLabel": "Git 동기화 간격",
+			"minutes_other": "{{count}}분"
+		},
+		"conflict": {
+			"sectionTitle": "충돌 해결",
+			"sectionDescription": "로컬과 원격 변경이 충돌할 때 Glyph가 우선할 쪽을 선택하세요.",
+			"label": "정책",
+			"description": "Glyph가 충돌을 자동으로 해결합니다.",
+			"ariaLabel": "충돌 정책",
+			"options": {
+				"local_wins": "로컬 우선",
+				"remote_wins": "원격 우선"
+			}
+		}
 	}
 }

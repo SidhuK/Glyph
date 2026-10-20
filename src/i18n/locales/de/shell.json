@@ -102,6 +102,107 @@
 			"board": "Board",
 			"rename": "Umbenennen",
 			"deleteView": "Ansicht löschen"
+		},
+		"viewOptions": {
+			"reset": "Zurücksetzen",
+			"presets": "Vorlagen"
+		},
+		"groupBy": {
+			"label": "Gruppiert nach",
+			"title": "Gruppiert nach {{name}}",
+			"choose": "Feld zum Gruppieren wählen",
+			"none": "Keine Gruppierung",
+			"multiLane": "{{name}} (mehrere Spalten)",
+			"boardHint": "Füge ein Status-, Tag- oder Checkbox-Feld hinzu, um Spalten zu erstellen"
+		},
+		"sort": {
+			"title": "Sortieren nach",
+			"presets": "Sortiervorlagen",
+			"replaceWithPreset": "Aktuelle Sortierung durch {{name}} ersetzen",
+			"field": "Sortierfeld",
+			"direction": "Sortierrichtung",
+			"add": "Sortierung hinzufügen",
+			"directions": {
+				"date": {
+					"asc": "Älteste - Neueste",
+					"desc": "Neueste - Älteste"
+				},
+				"number": {
+					"asc": "Niedrigste - Höchste",
+					"desc": "Höchste - Niedrigste"
+				},
+				"boolean": {
+					"asc": "Nicht abgehakt zuerst",
+					"desc": "Abgehakt zuerst"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "Filtern nach",
+			"hint": "Grenze diese Ansicht nach Spaltenwerten ein. Um Notiztext zu durchsuchen, nutze das Suchfeld in der Werkzeugleiste.",
+			"presets": "Filtervorlagen",
+			"unsupportedOperator": "Filter {{index}} nutzt einen nicht unterstützten Operator. Wähle einen unterstützten Operator, um Ergebnisse wiederherzustellen.",
+			"addFirst": "Bedingung hinzufügen",
+			"addAnother": "Weitere Bedingung hinzufügen",
+			"where": "Wo",
+			"and": "Und",
+			"fieldAria": "Feld von Filter {{index}}",
+			"operatorAria": "Operator von Filter {{index}}",
+			"dateRangeAria": "Zeitraum von Filter {{index}}",
+			"tagLabel": "Filter-Tag",
+			"tagDescription": "Wähle ein Tag für diesen Filter.",
+			"tagPlaceholder": "Tag wählen",
+			"valuePlaceholder": "Wert",
+			"remove": "Filter entfernen",
+			"operators": {
+				"equals": "ist",
+				"not_equals": "ist nicht",
+				"contains": "enthält",
+				"not_contains": "enthält nicht",
+				"starts_with": "beginnt mit",
+				"ends_with": "endet mit",
+				"greater_than": "größer als",
+				"less_than": "kleiner als",
+				"is_empty": "ist leer",
+				"is_not_empty": "ist nicht leer",
+				"is_true": "ist abgehakt",
+				"is_false": "ist nicht abgehakt",
+				"tags_contains": "enthält",
+				"any_of": "ist eines von",
+				"none_of": "ist keines von",
+				"within_last_7_days": "ist",
+				"unsupported": "Nicht unterstützt: {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "Überfällig",
+				"today": "Heute",
+				"thisWeek": "Diese Woche",
+				"last7Days": "Letzte 7 Tage",
+				"last30Days": "Letzte 30 Tage"
+			}
+		},
+		"source": {
+			"title": "Quelle",
+			"hint": "Wähle, welche Notizen in dieser Ansicht erscheinen. Änderungen werden automatisch gespeichert.",
+			"showFrom": "Notizen anzeigen aus",
+			"kinds": {
+				"all_notes": "Alle Notizen",
+				"folder": "Einem Ordner",
+				"tag": "Einem Tag",
+				"search": "Einer Suchanfrage"
+			},
+			"folder": "Ordner",
+			"chooseFolder": "Ordner wählen",
+			"includeSubfolders": "Unterordner einbeziehen",
+			"tag": "Tag",
+			"tagDescription": "Nur Notizen mit diesem Tag erscheinen.",
+			"chooseTag": "Tag wählen",
+			"searchQuery": "Suchanfrage",
+			"saveNewIn": "Neue Notizen speichern in"
 		}
 	},
 	"tags": {
@@ -399,5 +500,25 @@
 		"today": "Heutige Schnellnotiz",
 		"browse": "Ziel ändern: {{name}} durchsuchen",
 		"label": "Ziel der Schnellnotiz"
+	},
+	"gitSync": {
+		"interval": {
+			"label": "Intervall",
+			"description": "Wie oft Glyph geplante Synchronisierungen ausführt.",
+			"ariaLabel": "Git-Sync-Intervall",
+			"minutes_one": "{{count}} Min.",
+			"minutes_other": "{{count}} Min."
+		},
+		"conflict": {
+			"sectionTitle": "Konfliktlösung",
+			"sectionDescription": "Wähle, welche Seite Glyph bevorzugt, wenn lokale und entfernte Änderungen kollidieren.",
+			"label": "Regel",
+			"description": "Glyph löst Konflikte automatisch.",
+			"ariaLabel": "Konfliktregel",
+			"options": {
+				"local_wins": "Lokal gewinnt",
+				"remote_wins": "Remote gewinnt"
+			}
+		}
 	}
 }

@@ -194,5 +194,20 @@
 				"wide": "Szeroka"
 			}
 		}
+	},
+	"templates": {
+		"sectionTitle": "Szablony",
+		"none": "Brak",
+		"folder": {
+			"label": "Folder szablonów",
+			"description": "Wybierz folder w bieżącej przestrzeni, który zawiera twoje szablony Markdown.",
+			"notConfigured": "Nie skonfigurowano",
+			"browse": "Przeglądaj",
+			"clear": "Usuń folder szablonów",
+			"found_one": "Znaleziono {{count}} szablon",
+			"found_few": "Znaleziono {{count}} szablony",
+			"found_many": "Znaleziono {{count}} szablonów",
+			"found_other": "Znaleziono {{count}} szablonu"
+		}
 	}
 }

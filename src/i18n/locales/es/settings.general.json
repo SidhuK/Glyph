@@ -184,5 +184,18 @@
 				"wide": "Ancho"
 			}
 		}
+	},
+	"templates": {
+		"sectionTitle": "Plantillas",
+		"none": "Ninguna",
+		"folder": {
+			"label": "Carpeta de plantillas",
+			"description": "Elige una carpeta del espacio actual que contenga tus plantillas de Markdown.",
+			"notConfigured": "Sin configurar",
+			"browse": "Examinar",
+			"clear": "Quitar carpeta de plantillas",
+			"found_one": "{{count}} plantilla encontrada",
+			"found_other": "{{count}} plantillas encontradas"
+		}
 	}
 }

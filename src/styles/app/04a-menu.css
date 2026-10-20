@@ -182,6 +182,13 @@
 	opacity: 0.5;
 }
 
+/* Matches .glyphMenuItemIcon so the trigger echoes the selected row. */
+.glyphSelectIcon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	color: var(--text-secondary);
+}
+
 .glyphSelectValue {
 	flex: 1 1 auto;
 	min-width: 0;

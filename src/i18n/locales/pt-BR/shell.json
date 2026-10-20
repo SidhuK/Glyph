@@ -102,6 +102,107 @@
 			"board": "Quadro",
 			"rename": "Renomear",
 			"deleteView": "Excluir visualização"
+		},
+		"viewOptions": {
+			"reset": "Redefinir",
+			"presets": "Predefinições"
+		},
+		"groupBy": {
+			"label": "Agrupado por",
+			"title": "Agrupando por {{name}}",
+			"choose": "Escolha um campo para agrupar",
+			"none": "Sem agrupamento",
+			"multiLane": "{{name}} (várias raias)",
+			"boardHint": "Adicione um campo de status, tag ou caixa de seleção para criar raias"
+		},
+		"sort": {
+			"title": "Ordenar por",
+			"presets": "Predefinições de ordenação",
+			"replaceWithPreset": "Substituir a ordenação atual por {{name}}",
+			"field": "Campo de ordenação",
+			"direction": "Direção da ordenação",
+			"add": "Adicionar ordenação",
+			"directions": {
+				"date": {
+					"asc": "Mais antigo - Mais recente",
+					"desc": "Mais recente - Mais antigo"
+				},
+				"number": {
+					"asc": "Menor - Maior",
+					"desc": "Maior - Menor"
+				},
+				"boolean": {
+					"asc": "Desmarcados primeiro",
+					"desc": "Marcados primeiro"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "Filtrar por",
+			"hint": "Restrinja esta visualização por valores de coluna. Para buscar no texto das notas, use a caixa de busca da barra de ferramentas.",
+			"presets": "Predefinições de filtro",
+			"unsupportedOperator": "O filtro {{index}} usa um operador sem suporte. Escolha um operador compatível para restaurar os resultados.",
+			"addFirst": "Adicionar uma condição",
+			"addAnother": "Adicionar outra condição",
+			"where": "Onde",
+			"and": "E",
+			"fieldAria": "Campo do filtro {{index}}",
+			"operatorAria": "Operador do filtro {{index}}",
+			"dateRangeAria": "Período do filtro {{index}}",
+			"tagLabel": "Tag do filtro",
+			"tagDescription": "Escolha uma tag para este filtro.",
+			"tagPlaceholder": "Escolha uma tag",
+			"valuePlaceholder": "Valor",
+			"remove": "Remover filtro",
+			"operators": {
+				"equals": "é",
+				"not_equals": "não é",
+				"contains": "contém",
+				"not_contains": "não contém",
+				"starts_with": "começa com",
+				"ends_with": "termina com",
+				"greater_than": "maior que",
+				"less_than": "menor que",
+				"is_empty": "está vazio",
+				"is_not_empty": "não está vazio",
+				"is_true": "está marcado",
+				"is_false": "está desmarcado",
+				"tags_contains": "contém",
+				"any_of": "é qualquer um de",
+				"none_of": "não é nenhum de",
+				"within_last_7_days": "é",
+				"unsupported": "Sem suporte: {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "Atrasado",
+				"today": "Hoje",
+				"thisWeek": "Esta semana",
+				"last7Days": "Últimos 7 dias",
+				"last30Days": "Últimos 30 dias"
+			}
+		},
+		"source": {
+			"title": "Origem",
+			"hint": "Escolha quais notas aparecem nesta visualização. As alterações são salvas automaticamente.",
+			"showFrom": "Mostrar notas de",
+			"kinds": {
+				"all_notes": "Todas as notas",
+				"folder": "Uma pasta",
+				"tag": "Uma tag",
+				"search": "Uma busca"
+			},
+			"folder": "Pasta",
+			"chooseFolder": "Escolha uma pasta",
+			"includeSubfolders": "Incluir subpastas",
+			"tag": "Tag",
+			"tagDescription": "Somente notas com esta tag aparecerão.",
+			"chooseTag": "Escolha uma tag",
+			"searchQuery": "Busca",
+			"saveNewIn": "Salvar novas notas em"
 		}
 	},
 	"tags": {
@@ -399,5 +500,25 @@
 		"today": "Nota rápida de hoje",
 		"browse": "Alterar destino: navegar em {{name}}",
 		"label": "Destino da nota rápida"
+	},
+	"gitSync": {
+		"interval": {
+			"label": "Intervalo",
+			"description": "Com que frequência o Glyph executa sincronizações agendadas.",
+			"ariaLabel": "Intervalo de sincronização do Git",
+			"minutes_one": "{{count}} min",
+			"minutes_other": "{{count}} min"
+		},
+		"conflict": {
+			"sectionTitle": "Resolução de conflitos",
+			"sectionDescription": "Escolha qual lado o Glyph deve preferir quando edições locais e remotas entrarem em conflito.",
+			"label": "Política",
+			"description": "O Glyph resolve conflitos automaticamente.",
+			"ariaLabel": "Política de conflitos",
+			"options": {
+				"local_wins": "Local vence",
+				"remote_wins": "Remoto vence"
+			}
+		}
 	}
 }

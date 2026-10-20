@@ -17,6 +17,8 @@ import {
 	loadSettings,
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { EDITOR_VIEW_MODE_ICONS } from "../editor/editorViewModeIcons";
+import { SelectIcon } from "../ui/shadcn/select";
 import { HeadingPalettePicker } from "./HeadingPalettePicker";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
@@ -296,6 +298,7 @@ export function EditorSettingsPane() {
 							options={DEFAULT_EDITOR_MODE_VALUES.map((value) => ({
 								value,
 								label: t(`editor.defaultEditorMode.options.${value}`),
+								icon: <SelectIcon icon={EDITOR_VIEW_MODE_ICONS[value]} />,
 							}))}
 							onValueChange={defaultEditorMode.onChange}
 						/>
