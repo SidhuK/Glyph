@@ -4,9 +4,8 @@ import type { NotePreviewData } from "./notePreviewShared";
 
 /** Drops a leading `# Title` heading that only repeats the card's title. */
 function withoutTitleHeading(content: string, title: string): string {
-	const trimmed = content.trimStart();
-	const match = trimmed.match(/^#\s+(.+)\n*/);
-	return match?.[1]?.trim() === title ? trimmed.slice(match[0].length) : trimmed;
+	const match = content.match(/^(?:[ \t]*\n)*#[ \t]+(.+)\n*/);
+	return match?.[1]?.trim() === title ? content.slice(match[0].length) : content;
 }
 
 /** The note's folder as a breadcrumb, or an empty string at the space root. */
