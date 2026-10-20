@@ -7,7 +7,9 @@
 			"description": "Use um agente instalado, um modelo privado neste Mac ou a API de um provedor.",
 			"ariaLabel": "Tipo de conexão de IA"
 		},
-		"provider": { "label": "Provedor" },
+		"provider": {
+			"label": "Provedor"
+		},
 		"types": {
 			"agents": {
 				"label": "Agentes",
@@ -25,5 +27,32 @@
 				"providerDescription": "Escolha o provedor cuja API e modelos o Glyph deve usar."
 			}
 		}
+	},
+	"model": {
+		"label": "Modelo",
+		"description": "O Glyph busca os modelos disponíveis do provedor escolhido quando as credenciais permitem.",
+		"placeholder": "Selecione um modelo...",
+		"connecting": "Conectando...",
+		"count_one": "{{count}} modelo",
+		"count_other": "{{count}} modelos",
+		"needsApiKey": "Salve uma chave de API para carregar os modelos deste provedor.",
+		"retry": "Tentar novamente",
+		"empty": "Nenhum modelo disponível"
+	},
+	"reasoning": {
+		"label": "Nível de raciocínio",
+		"description": "Disponível quando o modelo atual oferece níveis de esforço.",
+		"placeholder": "ex.: low, medium, high",
+		"manualHint": "Este modelo não publicou opções de raciocínio; informe o esforço manualmente."
+	},
+	"baseUrl": {
+		"label": "URL base",
+		"descriptionLlama": "O padrão é http://localhost:8080/v1 para um servidor llama.cpp local.",
+		"descriptionCustom": "Necessária apenas para provedores personalizados compatíveis com OpenAI."
+	},
+	"localNetwork": {
+		"label": "Permitir rede local",
+		"descriptionLlama": "Ative para usar endpoints do llama.cpp em localhost ou rede privada.",
+		"descriptionCustom": "Ative para usar endpoints http:// em localhost ou redes privadas (ex.: LM Studio, vLLM)."
 	}
 }

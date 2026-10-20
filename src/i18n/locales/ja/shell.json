@@ -84,6 +84,107 @@
 		"boardCard": {
 			"openNote": "ノートを開く",
 			"moveTo": "{{lane}} に移動"
+		},
+		"viewOptions": {
+			"reset": "リセット",
+			"presets": "プリセット"
+		},
+		"groupBy": {
+			"label": "グループ化",
+			"title": "{{name}} でグループ化",
+			"choose": "グループ化するフィールドを選択",
+			"none": "グループ化なし",
+			"multiLane": "{{name}} (複数レーン)",
+			"boardHint": "レーンを作るにはステータス、タグ、チェックボックスのフィールドを追加してください"
+		},
+		"sort": {
+			"title": "並べ替え",
+			"presets": "並べ替えプリセット",
+			"replaceWithPreset": "現在の並べ替えを {{name}} に置き換える",
+			"field": "並べ替えフィールド",
+			"direction": "並べ替えの方向",
+			"add": "並べ替えを追加",
+			"directions": {
+				"date": {
+					"asc": "古い順",
+					"desc": "新しい順"
+				},
+				"number": {
+					"asc": "小さい順",
+					"desc": "大きい順"
+				},
+				"boolean": {
+					"asc": "未チェックを先に",
+					"desc": "チェック済みを先に"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "フィルタ",
+			"hint": "列の値でこのビューを絞り込みます。ノート本文を検索するにはツールバーの検索ボックスを使います。",
+			"presets": "フィルタプリセット",
+			"unsupportedOperator": "フィルタ {{index}} は未対応の演算子を使っています。結果を表示するには対応する演算子を選んでください。",
+			"addFirst": "条件を追加",
+			"addAnother": "条件をさらに追加",
+			"where": "条件",
+			"and": "かつ",
+			"fieldAria": "フィルタ {{index}} のフィールド",
+			"operatorAria": "フィルタ {{index}} の演算子",
+			"dateRangeAria": "フィルタ {{index}} の期間",
+			"tagLabel": "フィルタのタグ",
+			"tagDescription": "このフィルタのタグを選択します。",
+			"tagPlaceholder": "タグを選択",
+			"valuePlaceholder": "値",
+			"remove": "フィルタを削除",
+			"operators": {
+				"equals": "等しい",
+				"not_equals": "等しくない",
+				"contains": "含む",
+				"not_contains": "含まない",
+				"starts_with": "で始まる",
+				"ends_with": "で終わる",
+				"greater_than": "より大きい",
+				"less_than": "より小さい",
+				"is_empty": "空である",
+				"is_not_empty": "空ではない",
+				"is_true": "チェック済み",
+				"is_false": "未チェック",
+				"tags_contains": "含む",
+				"any_of": "いずれか",
+				"none_of": "いずれでもない",
+				"within_last_7_days": "期間",
+				"unsupported": "未対応: {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "期限切れ",
+				"today": "今日",
+				"thisWeek": "今週",
+				"last7Days": "過去 7 日間",
+				"last30Days": "過去 30 日間"
+			}
+		},
+		"source": {
+			"title": "ソース",
+			"hint": "このビューに表示するノートを選びます。変更は自動で保存されます。",
+			"showFrom": "ノートの取得元",
+			"kinds": {
+				"all_notes": "すべてのノート",
+				"folder": "フォルダ",
+				"tag": "タグ",
+				"search": "検索クエリ"
+			},
+			"folder": "フォルダ",
+			"chooseFolder": "フォルダを選択",
+			"includeSubfolders": "サブフォルダを含める",
+			"tag": "タグ",
+			"tagDescription": "このタグを持つノートだけが表示されます。",
+			"chooseTag": "タグを選択",
+			"searchQuery": "検索クエリ",
+			"saveNewIn": "新しいノートの保存先"
 		}
 	},
 	"tags": {
@@ -372,5 +473,24 @@
 		"updateFailed": "カレンダーの設定を更新できませんでした",
 		"collapse": "カレンダーを折りたたむ",
 		"expand": "カレンダーを展開"
+	},
+	"gitSync": {
+		"interval": {
+			"label": "間隔",
+			"description": "Glyph が定期同期を実行する頻度です。",
+			"ariaLabel": "Git 同期の間隔",
+			"minutes_other": "{{count}} 分"
+		},
+		"conflict": {
+			"sectionTitle": "競合の解決",
+			"sectionDescription": "ローカルとリモートの変更が競合したときに Glyph が優先する側を選びます。",
+			"label": "ポリシー",
+			"description": "Glyph は競合を自動で解決します。",
+			"ariaLabel": "競合ポリシー",
+			"options": {
+				"local_wins": "ローカルを優先",
+				"remote_wins": "リモートを優先"
+			}
+		}
 	}
 }

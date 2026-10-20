@@ -195,5 +195,18 @@
 				"wide": "Large"
 			}
 		}
+	},
+	"templates": {
+		"sectionTitle": "Modèles",
+		"none": "Aucun",
+		"folder": {
+			"label": "Dossier de modèles",
+			"description": "Choisissez un dossier de l’espace actuel qui contient vos modèles Markdown.",
+			"notConfigured": "Non configuré",
+			"browse": "Parcourir",
+			"clear": "Retirer le dossier de modèles",
+			"found_one": "{{count}} modèle trouvé",
+			"found_other": "{{count}} modèles trouvés"
+		}
 	}
 }

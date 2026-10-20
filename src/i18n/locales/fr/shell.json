@@ -86,6 +86,107 @@
 		"boardCard": {
 			"openNote": "Ouvrir la note",
 			"moveTo": "Déplacer vers {{lane}}"
+		},
+		"viewOptions": {
+			"reset": "Réinitialiser",
+			"presets": "Préréglages"
+		},
+		"groupBy": {
+			"label": "Groupé par",
+			"title": "Groupé par {{name}}",
+			"choose": "Choisir un champ de regroupement",
+			"none": "Aucun regroupement",
+			"multiLane": "{{name}} (plusieurs colonnes)",
+			"boardHint": "Ajoutez un champ statut, tag ou case à cocher pour créer des colonnes"
+		},
+		"sort": {
+			"title": "Trier par",
+			"presets": "Préréglages de tri",
+			"replaceWithPreset": "Remplacer le tri actuel par {{name}}",
+			"field": "Champ de tri",
+			"direction": "Ordre de tri",
+			"add": "Ajouter un tri",
+			"directions": {
+				"date": {
+					"asc": "Plus ancien - Plus récent",
+					"desc": "Plus récent - Plus ancien"
+				},
+				"number": {
+					"asc": "Plus petit - Plus grand",
+					"desc": "Plus grand - Plus petit"
+				},
+				"boolean": {
+					"asc": "Non cochés d’abord",
+					"desc": "Cochés d’abord"
+				},
+				"text": {
+					"asc": "A - Z",
+					"desc": "Z - A"
+				}
+			}
+		},
+		"filter": {
+			"title": "Filtrer par",
+			"hint": "Affinez cette vue par valeurs de colonne. Pour chercher dans le texte des notes, utilisez la recherche de la barre d’outils.",
+			"presets": "Préréglages de filtre",
+			"unsupportedOperator": "Le filtre {{index}} utilise un opérateur non pris en charge. Choisissez un opérateur pris en charge pour retrouver les résultats.",
+			"addFirst": "Ajouter une condition",
+			"addAnother": "Ajouter une autre condition",
+			"where": "Où",
+			"and": "Et",
+			"fieldAria": "Champ du filtre {{index}}",
+			"operatorAria": "Opérateur du filtre {{index}}",
+			"dateRangeAria": "Période du filtre {{index}}",
+			"tagLabel": "Tag du filtre",
+			"tagDescription": "Choisissez un tag pour ce filtre.",
+			"tagPlaceholder": "Choisir un tag",
+			"valuePlaceholder": "Valeur",
+			"remove": "Supprimer le filtre",
+			"operators": {
+				"equals": "est",
+				"not_equals": "n’est pas",
+				"contains": "contient",
+				"not_contains": "ne contient pas",
+				"starts_with": "commence par",
+				"ends_with": "se termine par",
+				"greater_than": "supérieur à",
+				"less_than": "inférieur à",
+				"is_empty": "est vide",
+				"is_not_empty": "n’est pas vide",
+				"is_true": "est coché",
+				"is_false": "n’est pas coché",
+				"tags_contains": "contient",
+				"any_of": "est l’un de",
+				"none_of": "n’est aucun de",
+				"within_last_7_days": "est",
+				"unsupported": "Non pris en charge : {{operator}}"
+			},
+			"dateRanges": {
+				"overdue": "En retard",
+				"today": "Aujourd’hui",
+				"thisWeek": "Cette semaine",
+				"last7Days": "7 derniers jours",
+				"last30Days": "30 derniers jours"
+			}
+		},
+		"source": {
+			"title": "Source",
+			"hint": "Choisissez les notes affichées dans cette vue. Les modifications sont enregistrées automatiquement.",
+			"showFrom": "Afficher les notes de",
+			"kinds": {
+				"all_notes": "Toutes les notes",
+				"folder": "Un dossier",
+				"tag": "Un tag",
+				"search": "Une recherche"
+			},
+			"folder": "Dossier",
+			"chooseFolder": "Choisir un dossier",
+			"includeSubfolders": "Inclure les sous-dossiers",
+			"tag": "Tag",
+			"tagDescription": "Seules les notes avec ce tag apparaîtront.",
+			"chooseTag": "Choisir un tag",
+			"searchQuery": "Recherche",
+			"saveNewIn": "Enregistrer les nouvelles notes dans"
 		}
 	},
 	"tags": {
@@ -374,5 +475,25 @@
 		"updateFailed": "Impossible de mettre à jour les réglages du calendrier",
 		"collapse": "Réduire le calendrier",
 		"expand": "Développer le calendrier"
+	},
+	"gitSync": {
+		"interval": {
+			"label": "Intervalle",
+			"description": "Fréquence des synchronisations planifiées de Glyph.",
+			"ariaLabel": "Intervalle de synchronisation Git",
+			"minutes_one": "{{count}} min",
+			"minutes_other": "{{count}} min"
+		},
+		"conflict": {
+			"sectionTitle": "Résolution des conflits",
+			"sectionDescription": "Choisissez le côté que Glyph privilégie quand des modifications locales et distantes entrent en conflit.",
+			"label": "Règle",
+			"description": "Glyph résout les conflits automatiquement.",
+			"ariaLabel": "Règle de conflit",
+			"options": {
+				"local_wins": "Le local l’emporte",
+				"remote_wins": "Le distant l’emporte"
+			}
+		}
 	}
 }

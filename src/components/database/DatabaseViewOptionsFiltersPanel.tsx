@@ -1,5 +1,6 @@
+import { useTranslation } from "react-i18next";
 import type { MutableRefObject } from "react";
-import { isBooleanColumn, isDateColumn, isNumberColumn } from "../../lib/database/columns";
+import { isDateColumn } from "../../lib/database/columns";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
@@ -8,9 +9,18 @@ import type {
 } from "../../lib/database/types";
 import { ChevronDown, Plus, Trash2 } from "../Icons";
 import { Input } from "../ui/shadcn/input";
-import { Select, type SelectOption } from "../ui/shadcn/select";
+import { Select } from "../ui/shadcn/select";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { DatabaseTagPicker } from "./DatabaseTagPicker";
+import {
+	DEFAULT_DATE_RANGE,
+	dateRangeOptions,
+	defaultOperatorForColumn,
+	isSupportedFilterOperator,
+	isTagFilterColumn,
+	operatorNeedsValue,
+	operatorOptions,
+} from "./databaseFilterOptions";
 import { type DatabaseFilterPreset, databaseFilterPresets } from "./databaseViewPresets";
 
 interface FiltersPanelProps {
@@ -29,131 +39,13 @@ interface FiltersPanelProps {
 	) => Promise<void>;
 }
 
-const DATE_SHORTCUT_OPTIONS = ["Overdue", "Today", "This Week", "Last 7 Days", "Last 30 Days"];
-
-const SUPPORTED_FILTER_OPERATORS = [
-	"equals",
-	"not_equals",
-	"contains",
-	"not_contains",
-	"starts_with",
-	"ends_with",
-	"greater_than",
-	"less_than",
-	"is_empty",
-	"is_not_empty",
-	"is_true",
-	"is_false",
-	"tags_contains",
-	"any_of",
-	"none_of",
-	"within_last_7_days",
-] as const satisfies readonly DatabaseFilter["operator"][];
-
-function isSupportedFilterOperator(operator: string): operator is DatabaseFilter["operator"] {
-	return SUPPORTED_FILTER_OPERATORS.includes(operator as DatabaseFilter["operator"]);
-}
-
-function isTagFilterColumn(column?: DatabaseColumn | null): boolean {
-	return column?.type === "tags" || column?.property_kind === "tags";
-}
-
-function defaultOperatorForColumn(column?: DatabaseColumn | null): DatabaseFilter["operator"] {
-	if (isTagFilterColumn(column)) return "tags_contains";
-	if (isBooleanColumn(column)) return "is_true";
-	if (isDateColumn(column)) return "within_last_7_days";
-	return "contains";
-}
-
 function emptyFilter(column?: DatabaseColumn | null): DatabaseFilter {
 	return {
 		column_id: column?.id ?? "title",
 		operator: defaultOperatorForColumn(column),
-		value_text: isDateColumn(column) ? "Last 7 Days" : "",
+		value_text: isDateColumn(column) ? DEFAULT_DATE_RANGE : "",
 		value_list: [],
 	};
-}
-
-function operatorNeedsValue(operator: string): boolean {
-	if (!isSupportedFilterOperator(operator)) return false;
-	return !["is_empty", "is_not_empty", "is_true", "is_false", "within_last_7_days"].includes(
-		operator,
-	);
-}
-
-function operatorLabel(operator: string): string {
-	switch (operator) {
-		case "equals":
-			return "is";
-		case "not_equals":
-			return "is not";
-		case "contains":
-		case "tags_contains":
-			return "contains";
-		case "not_contains":
-			return "does not contain";
-		case "starts_with":
-			return "starts with";
-		case "ends_with":
-			return "ends with";
-		case "greater_than":
-			return "> Greater than";
-		case "less_than":
-			return "< Less than";
-		case "is_empty":
-			return "is empty";
-		case "is_not_empty":
-			return "is not empty";
-		case "is_true":
-			return "is checked";
-		case "is_false":
-			return "is unchecked";
-		case "any_of":
-			return "is any of";
-		case "none_of":
-			return "is none of";
-		case "within_last_7_days":
-			return "is";
-		default:
-			return `Unsupported: ${operator}`;
-	}
-}
-
-function operatorOptions(
-	column: DatabaseColumn | null,
-	currentOperator: DatabaseFilter["operator"],
-): SelectOption<DatabaseFilter["operator"]>[] {
-	const options: DatabaseFilter["operator"][] = isBooleanColumn(column)
-		? ["is_true", "is_false", "is_empty", "is_not_empty"]
-		: isDateColumn(column)
-			? ["within_last_7_days", "equals", "is_empty", "is_not_empty"]
-			: isNumberColumn(column)
-				? ["equals", "not_equals", "greater_than", "less_than", "is_empty", "is_not_empty"]
-				: isTagFilterColumn(column)
-					? ["tags_contains", "equals", "not_equals", "any_of", "none_of"]
-					: [
-							"contains",
-							"equals",
-							"not_equals",
-							"not_contains",
-							"starts_with",
-							"ends_with",
-							"is_empty",
-							"is_not_empty",
-						];
-	const normalized = options.map((operator) => ({
-		value: operator,
-		label: operatorLabel(operator),
-		disabled: false,
-	}));
-	if (options.some((operator) => operator === currentOperator)) return normalized;
-
-	const currentOption = {
-		value: currentOperator,
-		label: operatorLabel(currentOperator),
-		disabled: !isSupportedFilterOperator(currentOperator),
-	};
-	return currentOption.disabled ? [currentOption, ...normalized] : [...normalized, currentOption];
 }
 
 export function nextFilterForColumn(
@@ -165,16 +57,17 @@ export function nextFilterForColumn(
 		...filter,
 		column_id: column?.id ?? filter.column_id,
 		operator,
-		value_text: operator === "within_last_7_days" ? "Last 7 Days" : "",
+		value_text: operator === "within_last_7_days" ? DEFAULT_DATE_RANGE : "",
 		value_bool: null,
 		value_list: [],
 	};
 }
 
 function FilterJoiner({ index }: { index: number }) {
+	const { t } = useTranslation("shell");
 	return (
 		<span className="databaseViewOptionJoiner">
-			{index === 0 ? "Where" : "And"}
+			{index === 0 ? t("collections.filter.where") : t("collections.filter.and")}
 			<ChevronDown size="var(--icon-sm)" aria-hidden="true" />
 		</span>
 	);
@@ -216,18 +109,27 @@ export function FiltersPanel({
 	onChangeFilterColumn,
 	updateFilters,
 }: FiltersPanelProps) {
+	const { t } = useTranslation("shell");
 	const presets = databaseFilterPresets(config, availableProperties);
+	const columnOptions = columns.map((column) => ({
+		value: column.id,
+		label: column.label,
+		icon: <DatabaseColumnIcon column={column} size="var(--icon-sm)" />,
+	}));
 	const invalidOperatorIndex = config.filters.findIndex(
 		(filter) => !isSupportedFilterOperator(filter.operator),
 	);
 	const invalidOperatorError =
 		invalidOperatorIndex >= 0
-			? `Filter ${invalidOperatorIndex + 1} uses an unsupported operator. Choose a supported operator to restore results.`
+			? t("collections.filter.unsupportedOperator", { index: invalidOperatorIndex + 1 })
 			: "";
 	return (
-		<section className="databaseViewOptionsPanel is-wide" aria-label="Filter by">
+		<section
+			className="databaseViewOptionsPanel is-wide"
+			aria-label={t("collections.filter.title")}
+		>
 			<div className="databaseViewPanelHeader">
-				<span>Filter by</span>
+				<span>{t("collections.filter.title")}</span>
 				{config.filters.length > 0 ? (
 					<button
 						type="button"
@@ -239,15 +141,13 @@ export function FiltersPanel({
 							)
 						}
 					>
-						Reset
+						{t("collections.viewOptions.reset")}
 					</button>
 				) : null}
 			</div>
-			<p className="databaseViewPanelHint">
-				Narrow this view by column values. To search note text, use the search box in the toolbar.
-			</p>
-			<div className="databaseViewPresetGroup" aria-label="Filter presets">
-				<span className="databaseViewPresetLabel">Presets</span>
+			<p className="databaseViewPanelHint">{t("collections.filter.hint")}</p>
+			<div className="databaseViewPresetGroup" aria-label={t("collections.filter.presets")}>
+				<span className="databaseViewPresetLabel">{t("collections.viewOptions.presets")}</span>
 				<div className="databaseViewPresetChips">
 					{presets.map((preset) => {
 						const applied = isFilterPresetApplied(config.filters, preset);
@@ -282,15 +182,16 @@ export function FiltersPanel({
 					}
 				>
 					<Plus size="var(--icon-md)" aria-hidden="true" />
-					Add a condition
+					{t("collections.filter.addFirst")}
 				</button>
 			) : (
 				<div className="databaseViewFilterList">
 					{config.filters.map((filter, index) => {
 						const selectedColumn = columns.find((column) => column.id === filter.column_id) ?? null;
-						const availableOperators = operatorOptions(selectedColumn, filter.operator);
+						const availableOperators = operatorOptions(t, selectedColumn, filter.operator);
 						const showsValue = operatorNeedsValue(filter.operator);
 						const usesTagPicker = showsValue && isTagFilterColumn(selectedColumn);
+						const position = index + 1;
 						return (
 							<div
 								key={filterUiKeys[index] ?? `filter-fallback-${filter.column_id}`}
@@ -298,11 +199,10 @@ export function FiltersPanel({
 							>
 								<FilterJoiner index={index} />
 								<span className="databaseViewFilterColumn">
-									<DatabaseColumnIcon column={selectedColumn ?? undefined} size="var(--icon-lg)" />
 									<Select
 										value={filter.column_id}
-										aria-label={`Filter ${index + 1} field`}
-										options={columns.map((column) => ({ value: column.id, label: column.label }))}
+										aria-label={t("collections.filter.fieldAria", { index: position })}
+										options={columnOptions}
 										onValueChange={(columnId) =>
 											onChangeFilterColumn(
 												index,
@@ -313,7 +213,7 @@ export function FiltersPanel({
 								</span>
 								<Select
 									value={filter.operator}
-									aria-label={`Filter ${index + 1} operator`}
+									aria-label={t("collections.filter.operatorAria", { index: position })}
 									options={availableOperators}
 									onValueChange={(operator) =>
 										void updateFilters((filters) =>
@@ -324,7 +224,7 @@ export function FiltersPanel({
 															operator,
 															value_text:
 																operator === "within_last_7_days"
-																	? "Last 7 Days"
+																	? DEFAULT_DATE_RANGE
 																	: entry.value_text,
 														}
 													: entry,
@@ -334,12 +234,9 @@ export function FiltersPanel({
 								/>
 								{filter.operator === "within_last_7_days" ? (
 									<Select
-										value={filter.value_text ?? "Last 7 Days"}
-										aria-label={`Filter ${index + 1} date range`}
-										options={DATE_SHORTCUT_OPTIONS.map((option) => ({
-											value: option,
-											label: option,
-										}))}
+										value={filter.value_text ?? DEFAULT_DATE_RANGE}
+										aria-label={t("collections.filter.dateRangeAria", { index: position })}
+										options={dateRangeOptions(t)}
 										onValueChange={(valueText) =>
 											void updateFilters((filters) =>
 												filters.map((entry, i) =>
@@ -352,9 +249,9 @@ export function FiltersPanel({
 									usesTagPicker ? (
 										<DatabaseTagPicker
 											value={filter.value_text ?? ""}
-											label="Filter Tag"
-											description="Choose a tag for this filter."
-											placeholder="Choose a tag"
+											label={t("collections.filter.tagLabel")}
+											description={t("collections.filter.tagDescription")}
+											placeholder={t("collections.filter.tagPlaceholder")}
 											onChange={(value) =>
 												void updateFilters((filters) =>
 													filters.map((entry, i) =>
@@ -373,7 +270,7 @@ export function FiltersPanel({
 										<Input
 											className="databaseViewFilterValue"
 											value={filter.value_text ?? ""}
-											placeholder="Value"
+											placeholder={t("collections.filter.valuePlaceholder")}
 											onChange={(event) =>
 												void updateFilters((filters) =>
 													filters.map((entry, i) =>
@@ -399,8 +296,8 @@ export function FiltersPanel({
 											(keys) => keys.filter((_, i) => i !== index),
 										)
 									}
-									title="Remove filter"
-									aria-label="Remove filter"
+									title={t("collections.filter.remove")}
+									aria-label={t("collections.filter.remove")}
 								>
 									<Trash2 size="var(--icon-lg)" />
 								</button>
@@ -418,7 +315,7 @@ export function FiltersPanel({
 						}
 					>
 						<Plus size="var(--icon-md)" aria-hidden="true" />
-						Add another condition
+						{t("collections.filter.addAnother")}
 					</button>
 				</div>
 			)}
