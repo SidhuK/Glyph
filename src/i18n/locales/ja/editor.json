@@ -232,7 +232,8 @@
 		"empty": "このノートは空です。"
 	},
 	"linkPreview": {
-		"label": "リンク先ノートのプレビュー"
+		"label": "リンク先ノートのプレビュー",
+		"edited": "{{date}}に編集"
 	},
 	"propertyKind": {
 		"title": "プロパティの種類: {{label}}",

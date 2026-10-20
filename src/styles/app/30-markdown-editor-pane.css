@@ -1044,17 +1044,28 @@
 	z-index: 2200;
 }
 
+/* Wiki-link hover card, laid out like Animate UI's preview card: an icon tile, the
+   title with its path as a muted handle, an excerpt and a muted meta line. It shares
+   the frosted menu surface; motion comes from Animate UI. */
 .linkedNotePreviewSheet {
 	position: relative;
-	width: min(360px, calc(100vw - 24px));
+	width: min(320px, calc(100vw - 24px));
 	max-height: min(420px, calc(100vh - 24px));
 	display: flex;
 	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
 	overflow: visible;
-	border-radius: var(--radius-md);
-	background: var(--bg-secondary);
-	box-shadow: var(--shadow-lg);
+	border: 0.5px solid var(--border-default);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--popover) 82%, transparent);
+	box-shadow:
+		0 2px 6px rgb(0 0 0 / 6%),
+		var(--shadow-overlay);
+	backdrop-filter: blur(28px) saturate(180%);
+	-webkit-backdrop-filter: blur(28px) saturate(180%);
 	color: var(--text-primary);
+	transform-origin: var(--transform-origin);
 	outline: none;
 }
 
@@ -1076,16 +1087,62 @@
 	right: -18px;
 }
 
-:root[data-translucent-sidebar="true"] .linkedNotePreviewSheet {
-	background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
-	backdrop-filter: blur(18px);
-	-webkit-backdrop-filter: blur(18px);
+.linkedNotePreviewHeader {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	min-width: 0;
+}
+
+.linkedNotePreviewIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: 0.5px solid var(--border-default);
+	border-radius: 10px;
+	background: var(--bg-hover);
+	color: var(--text-secondary);
+}
+
+.linkedNotePreviewHeading {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.linkedNotePreviewTitle,
+.linkedNotePreviewPath {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.linkedNotePreviewTitle {
+	font-size: var(--text-base);
+	font-weight: var(--font-semibold);
+	line-height: 1.3;
+}
+
+.linkedNotePreviewPath,
+.linkedNotePreviewMeta {
+	font-size: var(--text-sm);
+	line-height: 1.3;
+	color: var(--text-tertiary);
 }
 
 .linkedNotePreviewBody {
 	min-height: 0;
 	overflow: auto;
 	padding: 10px;
+}
+
+.linkedNotePreviewSheet > .linkedNotePreviewBody {
+	flex: 0 1 auto;
+	padding: 0;
+	overscroll-behavior: contain;
 }
 
 .commandPalettePreview > .linkedNotePreviewBody {

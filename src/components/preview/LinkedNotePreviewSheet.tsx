@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PreviewCard, PreviewCardContent } from "../ui/shadcn/preview-card";
-import { NotePreviewContent } from "./NotePreviewContent";
+import { LinkedNotePreviewCard } from "./LinkedNotePreviewCard";
 import {
 	NOTE_PREVIEW_OPEN_DELAY_MS,
 	type NotePreviewData,
@@ -139,11 +139,7 @@ export function LinkedNotePreviewSheet() {
 				onPointerEnter={clearCloseTimer}
 				onPointerLeave={scheduleClose}
 			>
-				{card ? (
-					<div className="linkedNotePreviewBody">
-						<NotePreviewContent {...card.data} />
-					</div>
-				) : null}
+				{card ? <LinkedNotePreviewCard data={card.data} /> : null}
 			</PreviewCardContent>
 		</PreviewCard>
 	);

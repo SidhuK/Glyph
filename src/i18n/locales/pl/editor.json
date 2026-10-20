@@ -321,7 +321,8 @@
 		"empty": "Ta notatka jest pusta."
 	},
 	"linkPreview": {
-		"label": "Podgląd połączonej notatki"
+		"label": "Podgląd połączonej notatki",
+		"edited": "Edytowano {{date}}"
 	},
 	"propertyKind": {
 		"title": "Typ właściwości: {{label}}",
