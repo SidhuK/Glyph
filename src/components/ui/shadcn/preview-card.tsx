@@ -1,14 +1,12 @@
-"use client";
-
 import { PreviewCard as PreviewCardPrimitive } from "@animate-ui/react/primitives/base-ui/preview-card";
 
-function PreviewCard({ ...props }: PreviewCardPrimitive.Root.Props) {
+function PreviewCard(props: PreviewCardPrimitive.Root.Props) {
 	return <PreviewCardPrimitive.Root data-slot="preview-card" {...props} />;
 }
 
 type PreviewCardPositioningProps = Pick<
 	PreviewCardPrimitive.Positioner.Props,
-	"anchor" | "side" | "align" | "sideOffset" | "collisionPadding" | "collisionAvoidance"
+	"anchor" | "side" | "sideOffset" | "collisionPadding" | "collisionAvoidance"
 >;
 
 /**
@@ -16,11 +14,10 @@ type PreviewCardPositioningProps = Pick<
  * rect, so it can open for content that isn't a React trigger (such as editor DOM).
  */
 function PreviewCardContent({
-	positionerClassName = "z-50",
+	positionerClassName,
 	anchor,
 	side,
-	align = "center",
-	sideOffset = 4,
+	sideOffset,
 	collisionPadding,
 	collisionAvoidance,
 	...props
@@ -32,7 +29,6 @@ function PreviewCardContent({
 				className={positionerClassName}
 				anchor={anchor}
 				side={side}
-				align={align}
 				sideOffset={sideOffset}
 				collisionPadding={collisionPadding}
 				collisionAvoidance={collisionAvoidance}

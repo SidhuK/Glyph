@@ -126,7 +126,6 @@ export function CalendarMonth({
 	return (
 		<Collapsible
 			className="calendarMonth"
-			data-collapsed={collapsed}
 			open={!collapsed}
 			onOpenChange={(open) => collapse?.onCollapsedChange(!open)}
 		>
