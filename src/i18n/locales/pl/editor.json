@@ -319,5 +319,17 @@
 		"close": "Zamknij podgląd",
 		"loading": "Wczytywanie notatki…",
 		"empty": "Ta notatka jest pusta."
+	},
+	"propertyKind": {
+		"title": "Typ właściwości: {{label}}",
+		"kinds": {
+			"text": "Tekst",
+			"url": "URL",
+			"date": "Data",
+			"checkbox": "Pole wyboru",
+			"tags": "Tagi",
+			"status": "Status",
+			"priority": "Priorytet"
+		}
 	}
 }

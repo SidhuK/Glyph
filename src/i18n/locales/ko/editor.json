@@ -230,5 +230,17 @@
 		"close": "피크 닫기",
 		"loading": "노트를 불러오는 중…",
 		"empty": "이 노트는 비어 있습니다."
+	},
+	"propertyKind": {
+		"title": "속성 유형: {{label}}",
+		"kinds": {
+			"text": "텍스트",
+			"url": "URL",
+			"date": "날짜",
+			"checkbox": "체크박스",
+			"tags": "태그",
+			"status": "상태",
+			"priority": "우선순위"
+		}
 	}
 }

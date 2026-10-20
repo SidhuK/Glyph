@@ -230,5 +230,17 @@
 		"close": "Fechar peek",
 		"loading": "Carregando nota…",
 		"empty": "Esta nota está vazia."
+	},
+	"propertyKind": {
+		"title": "Tipo de propriedade: {{label}}",
+		"kinds": {
+			"text": "Texto",
+			"url": "URL",
+			"date": "Data",
+			"checkbox": "Caixa de seleção",
+			"tags": "Tags",
+			"status": "Status",
+			"priority": "Prioridade"
+		}
 	}
 }

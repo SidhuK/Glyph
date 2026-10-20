@@ -322,5 +322,17 @@
 		"close": "Close peek",
 		"loading": "Loading note…",
 		"empty": "This note is empty."
+	},
+	"propertyKind": {
+		"title": "Property type: {{label}}",
+		"kinds": {
+			"text": "Text",
+			"url": "URL",
+			"date": "Date",
+			"checkbox": "Checkbox",
+			"tags": "Tags",
+			"status": "Status",
+			"priority": "Priority"
+		}
 	}
 }

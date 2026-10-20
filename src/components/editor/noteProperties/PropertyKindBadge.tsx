@@ -1,4 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
+import { useTranslation } from "react-i18next";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -10,7 +11,6 @@ import {
 import {
 	PROPERTY_KINDS,
 	PROPERTY_KIND_ICONS,
-	PROPERTY_KIND_LABELS,
 	type PropertyKind,
 	isPropertyKind,
 } from "./constants";
@@ -24,7 +24,7 @@ interface PropertyKindBadgeProps {
 export function PropertyKindBadge({ kind, interactive = false, onSelect }: PropertyKindBadgeProps) {
 	const resolvedKind = isPropertyKind(kind) ? kind : "text";
 	const icon = PROPERTY_KIND_ICONS[resolvedKind];
-	const label = PROPERTY_KIND_LABELS[resolvedKind];
+	const { t } = useTranslation("editor");
 
 	if (interactive) {
 		return (
@@ -34,7 +34,7 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 						<button
 							type="button"
 							className="notePropertyKindBadge notePropertyKindTrigger"
-							title={`Property type: ${label}`}
+							title={t("propertyKind.title", { label: t(`propertyKind.kinds.${resolvedKind}`) })}
 						/>
 					}
 				>
@@ -50,7 +50,7 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 						{PROPERTY_KINDS.map((menuKind) => (
 							<DropdownMenuRadioItem key={menuKind} value={menuKind} closeOnClick>
 								<DropdownMenuItemIcon icon={PROPERTY_KIND_ICONS[menuKind]} />
-								<span className="glyphMenuItemLabel">{PROPERTY_KIND_LABELS[menuKind]}</span>
+								<span className="glyphMenuItemLabel">{t(`propertyKind.kinds.${menuKind}`)}</span>
 							</DropdownMenuRadioItem>
 						))}
 					</DropdownMenuRadioGroup>

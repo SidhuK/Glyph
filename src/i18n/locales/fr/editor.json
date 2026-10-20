@@ -230,5 +230,17 @@
 		"close": "Fermer l’aperçu",
 		"loading": "Chargement de la note…",
 		"empty": "Cette note est vide."
+	},
+	"propertyKind": {
+		"title": "Type de propriété : {{label}}",
+		"kinds": {
+			"text": "Texte",
+			"url": "URL",
+			"date": "Date",
+			"checkbox": "Case à cocher",
+			"tags": "Étiquettes",
+			"status": "Statut",
+			"priority": "Priorité"
+		}
 	}
 }

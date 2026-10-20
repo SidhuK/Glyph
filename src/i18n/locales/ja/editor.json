@@ -230,5 +230,17 @@
 		"close": "プレビューを閉じる",
 		"loading": "ノートを読み込み中…",
 		"empty": "このノートは空です。"
+	},
+	"propertyKind": {
+		"title": "プロパティの種類: {{label}}",
+		"kinds": {
+			"text": "テキスト",
+			"url": "URL",
+			"date": "日付",
+			"checkbox": "チェックボックス",
+			"tags": "タグ",
+			"status": "ステータス",
+			"priority": "優先度"
+		}
 	}
 }
