@@ -93,7 +93,8 @@
 		"boardCard": {
 			"openNote": "Ouvrir la note",
 			"moveTo": "Déplacer vers {{lane}}",
-			"openHint": "Double-cliquez pour ouvrir la note"
+			"openHint": "Double-cliquez pour ouvrir la note",
+			"updated": "Modifiée {{date}}"
 		},
 		"switch": "Changer de collection",
 		"select": "Sélectionner une collection",
@@ -209,6 +210,17 @@
 			"chooseTag": "Choisir un tag",
 			"searchQuery": "Recherche",
 			"saveNewIn": "Enregistrer les nouvelles notes dans"
+		},
+		"board": {
+			"emptyTitle": "Ajoutez un champ pour créer des colonnes",
+			"emptyText": "La vue Kanban regroupe les notes en colonnes. Ajoutez à vos notes un champ de statut, de priorité, une case à cocher, un tag ou un champ similaire, puis choisissez-le dans la barre d’outils ci-dessus.",
+			"openViewSettings": "Ouvrir les réglages de la vue",
+			"laneEmpty": {
+				"archived": "Les notes archivées arrivent ici",
+				"done": "Les notes terminées arrivent ici",
+				"unassigned": "Les notes sans valeur apparaissent ici",
+				"default": "Déposez des notes ici ou ajoutez-en une ci-dessous"
+			}
 		}
 	},
 	"tags": {

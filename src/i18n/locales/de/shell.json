@@ -91,7 +91,8 @@
 		"boardCard": {
 			"openNote": "Notiz öffnen",
 			"moveTo": "Nach {{lane}} verschieben",
-			"openHint": "Doppelklicken, um die Notiz zu öffnen"
+			"openHint": "Doppelklicken, um die Notiz zu öffnen",
+			"updated": "Aktualisiert {{date}}"
 		},
 		"switch": "Sammlung wechseln",
 		"select": "Sammlung auswählen",
@@ -207,6 +208,17 @@
 			"chooseTag": "Tag wählen",
 			"searchQuery": "Suchanfrage",
 			"saveNewIn": "Neue Notizen speichern in"
+		},
+		"board": {
+			"emptyTitle": "Füge ein Feld hinzu, um Board-Spalten zu erstellen",
+			"emptyText": "Die Board-Ansicht gruppiert Notizen in Spalten. Füge deinen Notizen ein Feld wie Status, Priorität, Checkbox oder Tag hinzu und wähle es dann oben in der Werkzeugleiste aus.",
+			"openViewSettings": "Ansichtseinstellungen öffnen",
+			"laneEmpty": {
+				"archived": "Archivierte Notizen landen hier",
+				"done": "Erledigte Notizen landen hier",
+				"unassigned": "Notizen ohne Wert erscheinen hier",
+				"default": "Notizen hierher ziehen oder unten eine hinzufügen"
+			}
 		}
 	},
 	"tags": {
