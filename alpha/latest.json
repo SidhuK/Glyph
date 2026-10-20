@@ -1,15 +1,15 @@
 {
-  "version": "0.9.3-alpha.2",
-  "notes": "## What's Changed\n* Fix plain-text <, > and & being saved as HTML entities by @SidhuK in https://github.com/SidhuK/Glyph/pull/655\n* Fix AI composer text scrolling under the control row by @SidhuK in https://github.com/SidhuK/Glyph/pull/658\n* Replace beautiful-mermaid with Pele for Mermaid rendering by @SidhuK in https://github.com/SidhuK/Glyph/pull/659\n* Add optional calendar to the sidebar by @SidhuK in https://github.com/SidhuK/Glyph/pull/660\n* Fix dialog backdrop flashing back after its close animation by @SidhuK in https://github.com/SidhuK/Glyph/pull/661\n* Move space switcher into the sidebar header by @SidhuK in https://github.com/SidhuK/Glyph/pull/662\n* Hide Tasks in the sidebar by default (#663) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/663\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.3-alpha.1...v0.9.3-alpha.2",
-  "pub_date": "2026-10-19T15:33:33.414Z",
+  "version": "0.9.3-alpha.4",
+  "notes": "**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.3-alpha.3...v0.9.3-alpha.4",
+  "pub_date": "2026-10-20T14:25:55.349Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHpLVHNZYVo2djE5R0JSb2FkU3hPaFl0RndhN1ovTnR1Q1NKS282Z2IxcGk3RnJ2UjdQOXpwL3pxcTIyeVNRZDI2bnNMNjdMeDJrckVHcERaNU5uZ3dnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNDI0MDA1CWZpbGU6R2x5cGguYXBwLnRhci5negpLOXBwYTh1UG1uOXNOaDA4eENIMTJYeWtYVW00elRFdHg3M3JrU0laKzhyODlkZEdobFpBTDRUcGxxVFFTMm04b0w1UTRBU1VoODV1WFcrQVB6T0xBUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.3-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHd1aVJDOEZ5eW5wRGJ2YlZzNXMzWVNSN05ZZHg0OG0yekFSQjJHRFd5RE5SRklOdFdmaHJFLzZuY2tKQzJHZ0RuWDdJemRUNGNRZUJwTnVBa1U5N0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTA2MzQ3CWZpbGU6R2x5cGguYXBwLnRhci5negpmRXFqVjBEYjlRQmZNT1RzR2ZIY2x6UTBDcGJIRWJYYW5haHJGaTdVVHUwMzZJTzBwNW9hZmtuMitZMFIyb2tmNTFCYlUvZTZKOGdhQXYxb3pPaGNBZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.3-alpha.4/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHpLVHNZYVo2djE5R0JSb2FkU3hPaFl0RndhN1ovTnR1Q1NKS282Z2IxcGk3RnJ2UjdQOXpwL3pxcTIyeVNRZDI2bnNMNjdMeDJrckVHcERaNU5uZ3dnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNDI0MDA1CWZpbGU6R2x5cGguYXBwLnRhci5negpLOXBwYTh1UG1uOXNOaDA4eENIMTJYeWtYVW00elRFdHg3M3JrU0laKzhyODlkZEdobFpBTDRUcGxxVFFTMm04b0w1UTRBU1VoODV1WFcrQVB6T0xBUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.3-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHd1aVJDOEZ5eW5wRGJ2YlZzNXMzWVNSN05ZZHg0OG0yekFSQjJHRFd5RE5SRklOdFdmaHJFLzZuY2tKQzJHZ0RuWDdJemRUNGNRZUJwTnVBa1U5N0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTA2MzQ3CWZpbGU6R2x5cGguYXBwLnRhci5negpmRXFqVjBEYjlRQmZNT1RzR2ZIY2x6UTBDcGJIRWJYYW5haHJGaTdVVHUwMzZJTzBwNW9hZmtuMitZMFIyb2tmNTFCYlUvZTZKOGdhQXYxb3pPaGNBZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.3-alpha.4/Glyph_aarch64.app.tar.gz"
     }
   }
 }
