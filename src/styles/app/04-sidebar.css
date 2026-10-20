@@ -321,10 +321,19 @@ button.sidebarViewTab {
 	font-weight: var(--font-medium);
 	line-height: 1.25;
 	cursor: pointer;
-	transition:
-		background var(--transition-fast),
-		color var(--transition-fast),
-		box-shadow var(--transition-fast);
+	transition: color var(--transition-fast);
+}
+
+/* The active pill is a gliding highlight (components/ui/shadcn/highlight.tsx), so
+   tabs paint no fill of their own. */
+.sidebarViewTabSlot {
+	flex: 0 0 auto;
+	display: flex;
+}
+
+.sidebarViewTabsHighlight {
+	border-radius: var(--radius-6);
+	background: var(--bg-active);
 }
 
 .sidebarViewTabIcon {
@@ -361,15 +370,10 @@ button.sidebarViewTab:not([aria-selected="true"]) .sidebarViewTabLabel {
 
 button.sidebarViewTab:hover,
 button.sidebarViewTab:active {
-	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 
-button.sidebarViewTab[aria-selected="true"],
-button.sidebarViewTab[aria-selected="true"]:hover,
-button.sidebarViewTab[aria-selected="true"]:active {
-	background: var(--bg-active);
-	box-shadow: none;
+button.sidebarViewTab[aria-selected="true"] {
 	color: var(--text-primary);
 	font-weight: var(--font-semibold);
 }

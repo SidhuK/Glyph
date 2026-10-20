@@ -97,7 +97,8 @@
 /* Hand-rolled popups share the menu surface: TipTap suggestion menus (wiki-link,
    tag, person, markdown-link, slash), the property wiki-link list, the AI composer
    panels and the command palette. They paint their own active rows, so their fill
-   sits on .active / [data-selected] rather than [data-highlighted]. */
+   sits on .active / [data-selected] rather than [data-highlighted]. Command palette
+   results are the exception: a gliding highlight paints their selection. */
 .wikiLinkSuggestionMenu,
 .slashCommandMenu,
 .aiAddPanel,
@@ -136,11 +137,28 @@
 .slashCommandItem.active,
 .aiAddPanelItem:hover,
 .aiSlashCommandItem,
-.commandPaletteItem:hover:not(:disabled),
-.commandPaletteItem[data-selected="true"],
+.commandPaletteSettingOption:hover:not(:disabled),
+.commandPaletteSettingOption[data-selected="true"],
 .commandPaletteBreadcrumb:hover,
 .commandPaletteBreadcrumb:focus-visible {
 	background: var(--bg-hover);
+}
+
+.commandPaletteHighlight {
+	border-radius: 7px;
+	background: var(--bg-hover);
+}
+
+/* Gliding highlight (components/ui/shadcn/highlight.tsx). Animate UI mounts the
+   surface inside the active item and glides it between items; these rules only
+   anchor it. Each call site paints it with its own class. */
+.glyphHighlightItem {
+	position: relative;
+}
+
+.glyphHighlight {
+	inset: 0;
+	pointer-events: none;
 }
 
 /* Select (components/ui/shadcn/select.tsx). The trigger defaults to the compact bordered
