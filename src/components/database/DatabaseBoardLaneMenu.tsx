@@ -1,4 +1,3 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowLeft02Icon, ArrowRight02Icon, Location01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,6 +7,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuItemIcon,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
@@ -71,7 +71,7 @@ export function DatabaseBoardLaneMenu({
 						disabled={targetLane.id === lane.id}
 						onClick={() => moveLaneToIndex(lane.id, index)}
 					>
-						<HugeiconsIcon
+						<DropdownMenuItemIcon
 							icon={
 								index === currentPosition
 									? Location01Icon
@@ -79,9 +79,6 @@ export function DatabaseBoardLaneMenu({
 										? ArrowLeft02Icon
 										: ArrowRight02Icon
 							}
-							size="var(--icon-sm)"
-							className="glyphMenuItemIcon"
-							aria-hidden="true"
 						/>
 						<span className="glyphMenuItemLabel">
 							{t("collections.laneMenu.position", { position: index + 1, lane: targetLane.label })}

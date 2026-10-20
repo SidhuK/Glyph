@@ -26,11 +26,9 @@ export interface SelectProps<Value> {
 	disabled?: boolean;
 	id?: string;
 	title?: string;
-	placeholder?: string;
 	"aria-label"?: string;
 	/** Classes for the trigger button. */
 	className?: string;
-	popupClassName?: string;
 }
 
 /**
@@ -45,10 +43,8 @@ export function Select<Value>({
 	disabled,
 	id,
 	title,
-	placeholder,
 	"aria-label": ariaLabel,
 	className,
-	popupClassName,
 }: SelectProps<Value>) {
 	const selectedIcon = options.find((option) => Object.is(option.value, value))?.icon;
 	return (
@@ -71,7 +67,7 @@ export function Select<Value>({
 						{selectedIcon}
 					</span>
 				) : null}
-				<SelectPrimitive.Value className="glyphSelectValue" placeholder={placeholder} />
+				<SelectPrimitive.Value className="glyphSelectValue" />
 				<SelectPrimitive.Icon className="glyphSelectChevron">
 					<ChevronDown size={ROW_ICON_SIZE} aria-hidden="true" />
 				</SelectPrimitive.Icon>
@@ -83,7 +79,7 @@ export function Select<Value>({
 					sideOffset={6}
 					alignItemWithTrigger={false}
 				>
-					<SelectPrimitive.Popup className={cn("glyphMenuPopup glyphSelectPopup", popupClassName)}>
+					<SelectPrimitive.Popup className="glyphMenuPopup glyphSelectPopup">
 						{options.map((option) => (
 							<SelectPrimitive.Item
 								key={String(option.value)}

@@ -1,13 +1,12 @@
-import { Tick02Icon } from "@hugeicons/core-free-icons";
 import type { MouseEvent } from "react";
 import { priorityColorKey, priorityOptionsWithCustomValues } from "../../lib/priorityProperties";
 import { statusColorKey, statusOptionsWithCustomValues } from "../../lib/statusProperties";
 import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../editor/textColors";
-import { HugeiconsIcon } from "../HugeiconsIcon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuItemCheck,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
@@ -101,12 +100,7 @@ export function PropertyOptionPicker(props: PropertyOptionPickerProps) {
 							)}
 							{(isStatus ? statusColorKey(option.label) : priorityColorKey(option.label)) ===
 							selectedId ? (
-								<HugeiconsIcon
-									icon={Tick02Icon}
-									size="var(--icon-sm)"
-									strokeWidth={2.25}
-									className="glyphMenuItemCheck"
-								/>
+								<DropdownMenuItemCheck />
 							) : null}
 						</DropdownMenuItem>
 					))}

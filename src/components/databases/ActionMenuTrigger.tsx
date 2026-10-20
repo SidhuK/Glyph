@@ -1,5 +1,4 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LibraryIcon, Tick02Icon } from "@hugeicons/core-free-icons";
+import { LibraryIcon } from "@hugeicons/core-free-icons";
 import type { ComponentProps, ReactNode } from "react";
 import type { ActionMenuIconKey, ActionMenuItem } from "../../lib/database/actionMenuItems";
 import { Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
@@ -7,6 +6,8 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuItemCheck,
+	DropdownMenuItemIcon,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
@@ -18,17 +19,17 @@ const ICON_CLASS = "glyphMenuItemIcon";
 function renderMenuIcon(iconKey: ActionMenuIconKey): ReactNode {
 	switch (iconKey) {
 		case "table":
-			return <Table size={ICON_SIZE} className={ICON_CLASS} />;
+			return <Table size={ICON_SIZE} className={ICON_CLASS} aria-hidden="true" />;
 		case "board":
-			return <Kanban size={ICON_SIZE} className={ICON_CLASS} />;
+			return <Kanban size={ICON_SIZE} className={ICON_CLASS} aria-hidden="true" />;
 		case "edit":
-			return <Edit size={ICON_SIZE} className={ICON_CLASS} />;
+			return <Edit size={ICON_SIZE} className={ICON_CLASS} aria-hidden="true" />;
 		case "trash":
-			return <Trash2 size={ICON_SIZE} className={ICON_CLASS} />;
+			return <Trash2 size={ICON_SIZE} className={ICON_CLASS} aria-hidden="true" />;
 		case "plus":
-			return <Plus size={ICON_SIZE} className={ICON_CLASS} />;
+			return <Plus size={ICON_SIZE} className={ICON_CLASS} aria-hidden="true" />;
 		case "library":
-			return <HugeiconsIcon icon={LibraryIcon} size={ICON_SIZE} className={ICON_CLASS} />;
+			return <DropdownMenuItemIcon icon={LibraryIcon} />;
 	}
 }
 
@@ -86,14 +87,7 @@ export function ActionMenuTrigger({
 						>
 							{item.iconKey ? renderMenuIcon(item.iconKey) : null}
 							<span className="glyphMenuItemLabel">{item.label}</span>
-							{item.checked ? (
-								<HugeiconsIcon
-									icon={Tick02Icon}
-									size={ICON_SIZE}
-									strokeWidth={2.25}
-									className="glyphMenuItemCheck"
-								/>
-							) : null}
+							{item.checked ? <DropdownMenuItemCheck /> : null}
 						</DropdownMenuItem>
 					);
 				})}
