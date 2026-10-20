@@ -9,15 +9,11 @@ export function isDeleteKey(event: DeleteKeyEvent): boolean {
 	);
 }
 
-/** Select triggers (`role="combobox"`) and their open option lists own their keys, like `<select>`. */
-const SELECT_CONTROL_SELECTOR = '[role="combobox"], [role="listbox"]';
-
 export function isEditableTarget(target: EventTarget | null): boolean {
 	return (
 		target instanceof HTMLInputElement ||
 		target instanceof HTMLTextAreaElement ||
 		target instanceof HTMLSelectElement ||
-		(target instanceof HTMLElement &&
-			(target.isContentEditable || target.closest(SELECT_CONTROL_SELECTOR) !== null))
+		(target instanceof HTMLElement && target.isContentEditable)
 	);
 }
