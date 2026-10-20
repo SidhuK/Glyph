@@ -91,7 +91,8 @@
 		"boardCard": {
 			"openNote": "Abrir nota",
 			"moveTo": "Mover a {{lane}}",
-			"openHint": "Haz doble clic para abrir la nota"
+			"openHint": "Haz doble clic para abrir la nota",
+			"updated": "Actualizada {{date}}"
 		},
 		"switch": "Cambiar colección",
 		"select": "Seleccionar colección",
@@ -101,7 +102,11 @@
 			"table": "Tabla",
 			"board": "Tablero",
 			"rename": "Cambiar nombre",
-			"deleteView": "Eliminar vista"
+			"deleteView": "Eliminar vista",
+			"options": "Opciones de vista",
+			"optionsFor": "Opciones de vista para {{name}}",
+			"tabs": "Vistas de la colección",
+			"name": "Nombre de la vista"
 		},
 		"viewOptions": {
 			"reset": "Restablecer",
@@ -203,6 +208,17 @@
 			"chooseTag": "Elige una etiqueta",
 			"searchQuery": "Búsqueda",
 			"saveNewIn": "Guardar notas nuevas en"
+		},
+		"board": {
+			"emptyTitle": "Añade un campo para crear columnas en el tablero",
+			"emptyText": "La vista de tablero agrupa las notas en columnas. Añade a tus notas un campo de estado, prioridad, casilla, etiqueta o similar y luego elígelo en la barra de herramientas de arriba.",
+			"openViewSettings": "Abrir ajustes de la vista",
+			"laneEmpty": {
+				"archived": "Aquí van las notas archivadas",
+				"done": "Aquí llegan las notas terminadas",
+				"unassigned": "Aquí aparecen las notas sin valor",
+				"default": "Suelta notas aquí o añade una abajo"
+			}
 		}
 	},
 	"tags": {

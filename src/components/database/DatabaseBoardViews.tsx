@@ -1,39 +1,22 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
 import { KeyboardSensor, PointerSensor, useDraggable, useDroppable } from "@dnd-kit/react";
-import {
-	ArrowLeft02Icon,
-	ArrowRight02Icon,
-	Location01Icon,
-	Tag01Icon,
-} from "@hugeicons/core-free-icons";
+import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
-import {
-	type MouseEvent,
-	type MutableRefObject,
-	type ReactNode,
-	useCallback,
-	useState,
-} from "react";
+import { type MouseEvent, type MutableRefObject, type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { DATABASE_BOARD_EMPTY_LANE_ID, type DatabaseBoardLane } from "../../lib/database/board";
+import type { DatabaseBoardLane } from "../../lib/database/board";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseRow } from "../../lib/database/types";
 import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
-import { Edit, Plus } from "../Icons";
+import { Plus } from "../Icons";
 import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
 import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { DatabaseBoardLaneMenu } from "./DatabaseBoardLaneMenu";
 
 const DATABASE_BOARD_CARD_SENSORS = [
 	PointerSensor.configure({
@@ -90,12 +73,6 @@ export function DatabaseBoardLaneView({
 		accept: "database-board-card",
 	});
 	const { t } = useTranslation("shell");
-	const [laneMenuOpen, setLaneMenuOpen] = useState(false);
-	const isEmptyLane = lane.id === DATABASE_BOARD_EMPTY_LANE_ID;
-	const currentLanePosition = reorderableLanes.findIndex((candidate) => candidate.id === lane.id);
-	const laneHandleLabel = isEmptyLane
-		? t("collections.laneMenu.unassignedLast")
-		: t("collections.laneMenu.options", { lane: lane.label });
 	const laneTitleContent = (
 		<>
 			{isStatusGroup || isPriorityGroup || isTagGroup ? (
@@ -208,64 +185,12 @@ export function DatabaseBoardLaneView({
 							<Plus size="var(--icon-sm)" aria-hidden="true" />
 						</button>
 					) : null}
-					<DropdownMenu open={laneMenuOpen} onOpenChange={setLaneMenuOpen}>
-						<DropdownMenuTrigger
-							render={
-								<button
-									type="button"
-									className="databaseBoardLaneHandle"
-									disabled={isEmptyLane}
-									aria-label={laneHandleLabel}
-									title={laneHandleLabel}
-									onContextMenu={(event) => {
-										event.preventDefault();
-										setLaneMenuOpen(true);
-									}}
-								/>
-							}
-						>
-							<span className="databaseBoardLaneHandleDots" />
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							{onRenameLane ? (
-								<>
-									<DropdownMenuItem onClick={() => onRenameLane(lane)}>
-										<Edit size="var(--icon-sm)" className="glyphMenuItemIcon" aria-hidden="true" />
-										<span className="glyphMenuItemLabel">
-											{t("collections.laneMenu.rename", { lane: lane.label })}
-										</span>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
-								</>
-							) : null}
-							{reorderableLanes.map((targetLane, index) => (
-								<DropdownMenuItem
-									key={targetLane.id}
-									disabled={targetLane.id === lane.id}
-									onClick={() => moveLaneToIndex(lane.id, index)}
-								>
-									<HugeiconsIcon
-										icon={
-											index === currentLanePosition
-												? Location01Icon
-												: index < currentLanePosition
-													? ArrowLeft02Icon
-													: ArrowRight02Icon
-										}
-										size="var(--icon-sm)"
-										className="glyphMenuItemIcon"
-										aria-hidden="true"
-									/>
-									<span className="glyphMenuItemLabel">
-										{t("collections.laneMenu.position", {
-											position: index + 1,
-											lane: targetLane.label,
-										})}
-									</span>
-								</DropdownMenuItem>
-							))}
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<DatabaseBoardLaneMenu
+						lane={lane}
+						reorderableLanes={reorderableLanes}
+						moveLaneToIndex={moveLaneToIndex}
+						onRenameLane={onRenameLane}
+					/>
 				</div>
 			</div>
 			<div className="databaseBoardLaneBody">{children}</div>

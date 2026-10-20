@@ -12,6 +12,15 @@ interface FileTreeSettingsSectionProps {
 	setError: (message: string) => void;
 }
 
+/** File tree sort modes as select options; the Folio sort setting reuses them. */
+export function fileTreeSortOptions() {
+	return FILE_TREE_SORT_MODES.map((mode) => ({
+		value: mode,
+		label: fileTreeSortLabel(mode),
+		icon: <SelectIcon icon={FILE_TREE_SORT_ICONS[mode]} />,
+	}));
+}
+
 export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSettingsSectionProps) {
 	const { t } = useTranslation("settings.general");
 	const fileTreeSort = useFileTreeSortMode({ onError: setError });
@@ -41,11 +50,7 @@ export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSett
 					aria-label={t("fileTree.sort.ariaLabel")}
 					value={fileTreeSort.sortMode}
 					disabled={fileTreeSort.isSaving}
-					options={FILE_TREE_SORT_MODES.map((mode) => ({
-						value: mode,
-						label: fileTreeSortLabel(mode),
-						icon: <SelectIcon icon={FILE_TREE_SORT_ICONS[mode]} />,
-					}))}
+					options={fileTreeSortOptions()}
 					onValueChange={(mode) => void fileTreeSort.setSortMode(mode)}
 				/>
 			</SettingsRow>

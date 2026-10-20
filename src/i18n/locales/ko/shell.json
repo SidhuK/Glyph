@@ -90,7 +90,8 @@
 		"boardCard": {
 			"openNote": "노트 열기",
 			"moveTo": "{{lane}}(으)로 이동",
-			"openHint": "두 번 클릭하여 노트 열기"
+			"openHint": "두 번 클릭하여 노트 열기",
+			"updated": "{{date}}에 업데이트됨"
 		},
 		"switch": "컬렉션 전환",
 		"select": "컬렉션 선택",
@@ -100,7 +101,11 @@
 			"table": "표",
 			"board": "보드",
 			"rename": "이름 변경",
-			"deleteView": "보기 삭제"
+			"deleteView": "보기 삭제",
+			"options": "보기 옵션",
+			"optionsFor": "{{name}} 보기 옵션",
+			"tabs": "컬렉션 보기",
+			"name": "보기 이름"
 		},
 		"viewOptions": {
 			"reset": "초기화",
@@ -202,6 +207,17 @@
 			"chooseTag": "태그 선택",
 			"searchQuery": "검색어",
 			"saveNewIn": "새 노트 저장 위치"
+		},
+		"board": {
+			"emptyTitle": "필드를 추가해 보드 레인 만들기",
+			"emptyText": "보드 보기는 노트를 레인으로 묶습니다. 노트에 상태, 우선순위, 체크박스, 태그 같은 필드를 추가한 다음 위쪽 도구 막대에서 선택하세요.",
+			"openViewSettings": "보기 설정 열기",
+			"laneEmpty": {
+				"archived": "보관된 노트가 여기에 표시됩니다",
+				"done": "완료된 노트가 여기에 표시됩니다",
+				"unassigned": "값이 없는 노트가 여기에 표시됩니다",
+				"default": "여기에 노트를 놓거나 아래에서 추가하세요"
+			}
 		}
 	},
 	"tags": {

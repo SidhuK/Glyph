@@ -91,7 +91,8 @@
 		"boardCard": {
 			"openNote": "Abrir nota",
 			"moveTo": "Mover para {{lane}}",
-			"openHint": "Clique duas vezes para abrir a nota"
+			"openHint": "Clique duas vezes para abrir a nota",
+			"updated": "Atualizada {{date}}"
 		},
 		"switch": "Trocar coleção",
 		"select": "Selecionar coleção",
@@ -101,7 +102,11 @@
 			"table": "Tabela",
 			"board": "Quadro",
 			"rename": "Renomear",
-			"deleteView": "Excluir visualização"
+			"deleteView": "Excluir visualização",
+			"options": "Opções de visualização",
+			"optionsFor": "Opções de visualização de {{name}}",
+			"tabs": "Visualizações da coleção",
+			"name": "Nome da visualização"
 		},
 		"viewOptions": {
 			"reset": "Redefinir",
@@ -203,6 +208,17 @@
 			"chooseTag": "Escolha uma tag",
 			"searchQuery": "Busca",
 			"saveNewIn": "Salvar novas notas em"
+		},
+		"board": {
+			"emptyTitle": "Adicione um campo para criar colunas no quadro",
+			"emptyText": "A visualização em quadro agrupa as notas em colunas. Adicione às suas notas um campo de status, prioridade, caixa de seleção, tag ou similar e escolha-o na barra de ferramentas acima.",
+			"openViewSettings": "Abrir configurações da visualização",
+			"laneEmpty": {
+				"archived": "As notas arquivadas ficam aqui",
+				"done": "As notas concluídas ficam aqui",
+				"unassigned": "As notas sem valor aparecem aqui",
+				"default": "Solte notas aqui ou adicione uma abaixo"
+			}
 		}
 	},
 	"tags": {

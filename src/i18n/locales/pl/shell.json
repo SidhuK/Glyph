@@ -95,7 +95,8 @@
 		"boardCard": {
 			"openNote": "Otwórz notatkę",
 			"moveTo": "Przenieś do {{lane}}",
-			"openHint": "Kliknij dwukrotnie, aby otworzyć notatkę"
+			"openHint": "Kliknij dwukrotnie, aby otworzyć notatkę",
+			"updated": "Zaktualizowano {{date}}"
 		},
 		"switch": "Przełącz kolekcję",
 		"select": "Wybierz kolekcję",
@@ -105,7 +106,11 @@
 			"table": "Tabela",
 			"board": "Tablica",
 			"rename": "Zmień nazwę",
-			"deleteView": "Usuń widok"
+			"deleteView": "Usuń widok",
+			"options": "Opcje widoku",
+			"optionsFor": "Opcje widoku {{name}}",
+			"tabs": "Widoki kolekcji",
+			"name": "Nazwa widoku"
 		},
 		"viewOptions": {
 			"reset": "Resetuj",
@@ -207,6 +212,17 @@
 			"chooseTag": "Wybierz tag",
 			"searchQuery": "Zapytanie wyszukiwania",
 			"saveNewIn": "Zapisuj nowe notatki w"
+		},
+		"board": {
+			"emptyTitle": "Dodaj pole, aby utworzyć kolumny tablicy",
+			"emptyText": "Widok tablicy grupuje notatki w kolumny. Dodaj do notatek pole statusu, priorytetu, pola wyboru, tagu lub podobne, a potem wybierz je na pasku narzędzi powyżej.",
+			"openViewSettings": "Otwórz ustawienia widoku",
+			"laneEmpty": {
+				"archived": "Tu trafiają zarchiwizowane notatki",
+				"done": "Tu trafiają ukończone notatki",
+				"unassigned": "Tu pojawiają się notatki bez wartości",
+				"default": "Upuść tu notatki lub dodaj nową poniżej"
+			}
 		}
 	},
 	"tags": {

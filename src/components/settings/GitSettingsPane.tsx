@@ -132,6 +132,11 @@ export function GitSettingsPane() {
 	}, [gitSync]);
 
 	const inclusions = config?.inclusions ?? DEFAULT_INCLUSIONS;
+	const intervalMinutes = config?.interval_minutes ?? 10;
+	// The backend accepts any interval from 1 to 1440, so keep a custom one listed and labelled.
+	const intervalChoices = GIT_SYNC_INTERVAL_MINUTES.includes(intervalMinutes)
+		? GIT_SYNC_INTERVAL_MINUTES
+		: [...GIT_SYNC_INTERVAL_MINUTES, intervalMinutes].sort((a, b) => a - b);
 	const gitEnabledForSpace =
 		Boolean(config) && !status?.unsupported_parent_repo && status?.repo_detected;
 	const repoStateLabel = useMemo(() => getGitSyncRepoStateLabel(status), [status]);
@@ -243,9 +248,9 @@ export function GitSettingsPane() {
 					>
 						<SettingsSelect
 							aria-label={t("gitSync.interval.ariaLabel")}
-							value={config?.interval_minutes ?? 10}
+							value={intervalMinutes}
 							disabled={!gitEnabledForSpace || busy}
-							options={GIT_SYNC_INTERVAL_MINUTES.map((minutes) => ({
+							options={intervalChoices.map((minutes) => ({
 								value: minutes,
 								label: t("gitSync.interval.minutes", { count: minutes }),
 							}))}

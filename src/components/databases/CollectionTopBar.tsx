@@ -34,12 +34,12 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 	const collectionMenuItems = useMemo(
 		() =>
 			buildCollectionMenuItems(
+				t,
 				selection.summaries,
 				selection.selectedDatabaseId,
 				selection.setSelectedDatabaseId,
 				selection.openCreateCollectionDialog,
 			),
-		// t is a dependency so labels rebuild when the language changes.
 		[
 			t,
 			selection.openCreateCollectionDialog,

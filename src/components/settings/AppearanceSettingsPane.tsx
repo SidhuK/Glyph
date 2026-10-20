@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type CustomTheme, customThemeId, customThemeOptions } from "../../lib/customThemes";
-import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import {
 	DEFAULT_UI_TRANSLUCENT_APP,
 	type ThemeMode,
@@ -23,13 +22,12 @@ import {
 	getUiDarkThemeOption,
 	getUiLightThemeOption,
 } from "../../lib/uiThemes";
-import { FILE_TREE_SORT_ICONS } from "../filetree/fileTreeSortIcons";
-import { SelectIcon } from "../ui/shadcn/select";
 import { AppearanceAppIconCard } from "./AppearanceAppIconCard";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
 import { AppearanceLayoutPreview } from "./AppearancePreviewFrame";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
+import { fileTreeSortOptions } from "./FileTreeSettingsSection";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSegmentedPicker } from "./SettingsSegmentedPicker";
 import { SettingsSelect } from "./SettingsSelect";
@@ -283,11 +281,7 @@ export function AppearanceSettingsPane() {
 							aria-label={t("layout.folioSort.ariaLabel")}
 							value={folioSortMode.value}
 							disabled={folioSortMode.isSaving}
-							options={FILE_TREE_SORT_MODES.map((mode) => ({
-								value: mode,
-								label: fileTreeSortLabel(mode),
-								icon: <SelectIcon icon={FILE_TREE_SORT_ICONS[mode]} />,
-							}))}
+							options={fileTreeSortOptions()}
 							onValueChange={folioSortMode.onChange}
 						/>
 					</SettingsRow>

@@ -103,7 +103,8 @@
 		"boardCard": {
 			"openNote": "Open note",
 			"moveTo": "Move to {{lane}}",
-			"openHint": "Double-click to open note"
+			"openHint": "Double-click to open note",
+			"updated": "Updated {{date}}"
 		},
 		"switch": "Switch collection",
 		"select": "Select collection",
@@ -113,7 +114,11 @@
 			"table": "Table",
 			"board": "Board",
 			"rename": "Rename",
-			"deleteView": "Delete view"
+			"deleteView": "Delete view",
+			"options": "View options",
+			"optionsFor": "View options for {{name}}",
+			"tabs": "Collection views",
+			"name": "View name"
 		},
 		"viewOptions": {
 			"reset": "Reset",
@@ -215,6 +220,17 @@
 			"chooseTag": "Choose a tag",
 			"searchQuery": "Search query",
 			"saveNewIn": "Save new notes in"
+		},
+		"board": {
+			"emptyTitle": "Add a field to create board lanes",
+			"emptyText": "Board view groups notes into lanes. Add a status, priority, checkbox, tag, or similar field to your notes, then pick it in the toolbar above.",
+			"openViewSettings": "Open view settings",
+			"laneEmpty": {
+				"archived": "Archived notes go here",
+				"done": "Done notes land here",
+				"unassigned": "Notes without a value appear here",
+				"default": "Drop notes here or add one below"
+			}
 		}
 	},
 	"tags": {
