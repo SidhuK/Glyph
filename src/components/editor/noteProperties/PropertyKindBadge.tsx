@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuItemIcon,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
@@ -48,11 +49,7 @@ export function PropertyKindBadge({ kind, interactive = false, onSelect }: Prope
 					>
 						{PROPERTY_KINDS.map((menuKind) => (
 							<DropdownMenuRadioItem key={menuKind} value={menuKind} closeOnClick>
-								<HugeiconsIcon
-									icon={PROPERTY_KIND_ICONS[menuKind]}
-									size="var(--icon-sm)"
-									className="glyphMenuItemIcon"
-								/>
+								<DropdownMenuItemIcon icon={PROPERTY_KIND_ICONS[menuKind]} />
 								<span className="glyphMenuItemLabel">{PROPERTY_KIND_LABELS[menuKind]}</span>
 							</DropdownMenuRadioItem>
 						))}

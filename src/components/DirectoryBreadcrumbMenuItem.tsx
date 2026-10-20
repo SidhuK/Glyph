@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import type { FsEntry } from "../lib/tauri";
 import { displayNameFromPath } from "../utils/path";
 import { getFileTypeInfo } from "./filetree/fileTypeUtils";
-import { HugeiconsIcon } from "./HugeiconsIcon";
 import {
 	DropdownMenuItem,
+	DropdownMenuItemIcon,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
@@ -34,7 +34,6 @@ export function DirectoryBreadcrumbMenuItem({
 		const { Icon } = getFileTypeInfo(entry.rel_path, entry.is_markdown);
 		return (
 			<DropdownMenuItem
-				key={entry.rel_path || ROOT_PATH_KEY}
 				title={entry.rel_path || entry.name}
 				onClick={() => onSelectFile(entry.rel_path)}
 			>
@@ -53,12 +52,7 @@ export function DirectoryBreadcrumbMenuItem({
 			}}
 		>
 			<DropdownMenuSubTrigger>
-				<HugeiconsIcon
-					icon={Folder01Icon}
-					size="var(--icon-sm)"
-					className="glyphMenuItemIcon"
-					aria-hidden="true"
-				/>
+				<DropdownMenuItemIcon icon={Folder01Icon} />
 				<span className="glyphMenuItemLabel">{entry.name}</span>
 			</DropdownMenuSubTrigger>
 			<DropdownMenuSubContent className="breadcrumbMenu">

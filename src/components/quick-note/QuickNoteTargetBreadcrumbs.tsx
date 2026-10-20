@@ -1,15 +1,16 @@
-import { StickyNote03Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+import { StickyNote03Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { displayNameFromPath } from "../../utils/path";
 import { DirectoryBreadcrumbMenuItem } from "../DirectoryBreadcrumbMenuItem";
-import { HugeiconsIcon } from "../HugeiconsIcon";
 import { ChevronDown, ChevronRight } from "../Icons";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuItemCheck,
+	DropdownMenuItemIcon,
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
@@ -160,21 +161,9 @@ function TargetBreadcrumbEntryMenu({
 						title={todayQuickNotePath}
 						onClick={() => onSelectTarget(todayQuickNoteTarget(todayQuickNotePath, todayLabel))}
 					>
-						<HugeiconsIcon
-							icon={StickyNote03Icon}
-							size="var(--icon-sm)"
-							className="glyphMenuItemIcon"
-							aria-hidden="true"
-						/>
+						<DropdownMenuItemIcon icon={StickyNote03Icon} />
 						<span className="glyphMenuItemLabel">{todayLabel}</span>
-						{selectedTargetValue === QUICK_NOTE_TARGET_VALUE ? (
-							<HugeiconsIcon
-								icon={Tick02Icon}
-								size="var(--icon-sm)"
-								strokeWidth={2.25}
-								className="glyphMenuItemCheck"
-							/>
-						) : null}
+						{selectedTargetValue === QUICK_NOTE_TARGET_VALUE ? <DropdownMenuItemCheck /> : null}
 					</DropdownMenuItem>
 				) : null}
 				{loading ? null : entries.length === 0 ? (
