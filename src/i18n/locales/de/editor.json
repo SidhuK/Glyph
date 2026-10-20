@@ -231,6 +231,9 @@
 		"loading": "Notiz wird geladen…",
 		"empty": "Diese Notiz ist leer."
 	},
+	"linkPreview": {
+		"label": "Vorschau der verlinkten Notiz"
+	},
 	"propertyKind": {
 		"title": "Eigenschaftstyp: {{label}}",
 		"kinds": {

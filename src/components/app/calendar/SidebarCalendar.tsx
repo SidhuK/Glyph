@@ -66,7 +66,7 @@ export function SidebarCalendar({ onOpenPeriodNoteAtDate, onOpenFile }: SidebarC
 				onShowMonth={() => setLayout.mutate("month")}
 				collapse={{
 					collapsed: settings.collapsed,
-					onToggle: () => setCollapsed.mutate(!settings.collapsed),
+					onCollapsedChange: (collapsed) => setCollapsed.mutate(collapsed),
 				}}
 			/>
 		</section>
