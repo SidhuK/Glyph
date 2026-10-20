@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/shadcn/toggle-group";
 import type { ReactNode } from "react";
 
 interface SettingsSegmentedPickerOption<T extends string> {
@@ -8,7 +8,6 @@ interface SettingsSegmentedPickerOption<T extends string> {
 }
 
 interface SettingsSegmentedPickerProps<T extends string> {
-	name: string;
 	ariaLabel: string;
 	value: T;
 	options: readonly SettingsSegmentedPickerOption<T>[];
@@ -19,39 +18,36 @@ interface SettingsSegmentedPickerProps<T extends string> {
 }
 
 export function SettingsSegmentedPicker<T extends string>({
-	name,
 	ariaLabel,
 	value,
 	options,
 	onChange,
 	renderPreview,
 	getDataAttributes,
-	disabled = false,
+	disabled,
 }: SettingsSegmentedPickerProps<T>) {
 	return (
 		<div className="settingsSegmentedPicker">
-			<div className="settingsSegmentedTrack" role="radiogroup" aria-label={ariaLabel}>
+			<ToggleGroup
+				className="settingsSegmentedTrack"
+				aria-label={ariaLabel}
+				value={value}
+				onValueChange={onChange}
+				disabled={disabled}
+			>
 				{options.map((option) => (
-					<label
+					<ToggleGroupItem
 						key={option.value}
-						className={cn("settingsSegmentedOption", value === option.value && "is-active")}
+						value={option.value}
+						className="settingsSegmentedOption"
 						title={option.description}
-						{...(getDataAttributes?.(option.value) ?? {})}
+						{...getDataAttributes?.(option.value)}
 					>
-						<input
-							type="radio"
-							name={name}
-							checked={value === option.value}
-							onChange={() => onChange(option.value)}
-							disabled={disabled}
-							className="settingsSegmentedInput"
-							aria-label={option.label}
-						/>
 						{renderPreview(option.value)}
 						<span className="settingsSegmentedLabel">{option.label}</span>
-					</label>
+					</ToggleGroupItem>
 				))}
-			</div>
+			</ToggleGroup>
 		</div>
 	);
 }

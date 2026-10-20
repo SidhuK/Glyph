@@ -1,12 +1,11 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { Collapsible, CollapsibleContent } from "@/components/ui/shadcn/collapsible";
 import { format, isSameDay, isSameMonth, isSameWeek, parseISO } from "date-fns";
-import { type MouseEvent, useCallback, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { type MouseEvent, type ReactNode, useCallback, useMemo, useState } from "react";
 import { activityTone } from "../../../lib/calendarActivity";
 import type { SidebarCalendarLayout } from "../../../lib/settings/model";
 import type { CalendarDayActivity } from "../../../lib/tauri";
 import { CalendarDayCell } from "./CalendarDayCell";
+import { CalendarMonthHeader } from "./CalendarMonthHeader";
 import {
 	buildVisibleWeeks,
 	dateForNavigationKey,
@@ -15,6 +14,11 @@ import {
 	weekStartsOnForLocale,
 	weekdayLabels,
 } from "./monthGrid";
+
+export interface CalendarCollapse {
+	collapsed: boolean;
+	onCollapsedChange: (collapsed: boolean) => void;
+}
 
 /** Makes the month title a button; without one the title is plain text. */
 export interface CalendarTitleAction {
@@ -36,7 +40,9 @@ interface CalendarMonthProps {
 	titleAction: CalendarTitleAction | null;
 	onDayContextMenu: (event: MouseEvent<HTMLButtonElement>, date: Date) => void;
 	/** Sidebar only: folds the calendar down to its month row. */
-	collapse?: { collapsed: boolean; onToggle: () => void };
+	collapse?: CalendarCollapse;
+	/** Shown below the grid, folding away with it. */
+	children?: ReactNode;
 }
 
 export function CalendarMonth({
@@ -52,13 +58,12 @@ export function CalendarMonth({
 	titleAction,
 	onDayContextMenu,
 	collapse,
+	children,
 }: CalendarMonthProps) {
-	const { t } = useTranslation("shell");
 	const [focusedKey, setFocusedKey] = useState<string | null>(null);
 	const weekStartsOn = weekStartsOnForLocale(locale);
 	const isWeek = layout === "week";
 	const collapsed = collapse?.collapsed === true;
-	const collapseLabel = collapsed ? t("sidebarCalendar.expand") : t("sidebarCalendar.collapse");
 
 	const weeks = useMemo(
 		() => buildVisibleWeeks(month, weekStartsOn, layout),
@@ -78,18 +83,6 @@ export function CalendarMonth({
 		() => new Intl.DateTimeFormat(locale, { dateStyle: "full" }),
 		[locale],
 	);
-	// Locale order and separators (e.g. "2026年10月"), with only the year muted.
-	const title = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" })
-		.formatToParts(month)
-		.map((part, index) =>
-			part.type === "year" ? (
-				<span key={index} className="calendarMonthTitleYear">
-					{part.value}
-				</span>
-			) : (
-				part.value
-			),
-		);
 
 	const tabStopKey = useMemo(() => {
 		const inView = (date: Date) => isDateInView(date, month, weekStartsOn, layout);
@@ -131,69 +124,26 @@ export function CalendarMonth({
 	);
 
 	return (
-		<div className="calendarMonth" data-collapsed={collapsed}>
-			<header className="calendarMonthHeader">
-				<h2 className="calendarMonthTitle">
-					{titleAction ? (
-						<button
-							type="button"
-							className="calendarMonthTitleButton"
-							title={titleAction.label}
-							onClick={titleAction.onClick}
-						>
-							{title}
-						</button>
-					) : (
-						title
-					)}
-				</h2>
-				<div className="calendarMonthControls">
-					{collapsed ? null : (
-						<>
-							<button
-								type="button"
-								className="calendarTodayButton"
-								onClick={() => {
-									setFocusedKey(null);
-									onGoToToday();
-								}}
-							>
-								{t("calendar.today")}
-							</button>
-							<button
-								type="button"
-								className="calendarNavButton"
-								aria-label={isWeek ? t("calendar.previousWeek") : t("calendar.previousMonth")}
-								onClick={() => goToMonth(-1)}
-							>
-								<HugeiconsIcon icon={ArrowLeft01Icon} size="var(--icon-sm)" />
-							</button>
-							<button
-								type="button"
-								className="calendarNavButton"
-								aria-label={isWeek ? t("calendar.nextWeek") : t("calendar.nextMonth")}
-								onClick={() => goToMonth(1)}
-							>
-								<HugeiconsIcon icon={ArrowRight01Icon} size="var(--icon-sm)" />
-							</button>
-						</>
-					)}
-					{collapse ? (
-						<button
-							type="button"
-							className="calendarNavButton calendarCollapseButton"
-							aria-expanded={!collapse.collapsed}
-							aria-label={collapseLabel}
-							title={collapseLabel}
-							onClick={collapse.onToggle}
-						>
-							<HugeiconsIcon icon={ArrowDown01Icon} size="var(--icon-sm)" />
-						</button>
-					) : null}
-				</div>
-			</header>
+		<Collapsible
+			className="calendarMonth"
+			open={!collapsed}
+			onOpenChange={(open) => collapse?.onCollapsedChange(!open)}
+		>
+			<CalendarMonthHeader
+				month={month}
+				locale={locale}
+				isWeek={isWeek}
+				titleAction={titleAction}
+				collapsible={collapse !== undefined}
+				collapsed={collapsed}
+				onGoToToday={() => {
+					setFocusedKey(null);
+					onGoToToday();
+				}}
+				onStep={goToMonth}
+			/>
 
-			{collapsed ? null : (
+			<CollapsibleContent className="calendarMonthBody">
 				<table className="calendarGrid" aria-label={monthYearLabel} onKeyDown={handleKeyDown}>
 					<thead>
 						<tr>
@@ -233,7 +183,8 @@ export function CalendarMonth({
 						))}
 					</tbody>
 				</table>
-			)}
-		</div>
+				{children}
+			</CollapsibleContent>
+		</Collapsible>
 	);
 }

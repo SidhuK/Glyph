@@ -42,7 +42,6 @@ export function SidebarCalendarOptions({ disabled }: { disabled: boolean }) {
 				interactive={false}
 			>
 				<SettingsSegmentedPicker
-					name="settings-sidebar-calendar-layout"
 					ariaLabel={t("calendarOptions.layout.label")}
 					value={sidebarCalendar.layout}
 					options={layoutOptions}
@@ -68,7 +67,6 @@ export function SidebarCalendarOptions({ disabled }: { disabled: boolean }) {
 				interactive={false}
 			>
 				<SettingsSegmentedPicker
-					name="settings-sidebar-calendar-day-click"
 					ariaLabel={t("calendarOptions.dayClick.label")}
 					value={sidebarCalendar.dayClick}
 					options={dayClickOptions}

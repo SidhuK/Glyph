@@ -320,6 +320,9 @@
 		"loading": "Wczytywanie notatki…",
 		"empty": "Ta notatka jest pusta."
 	},
+	"linkPreview": {
+		"label": "Podgląd połączonej notatki"
+	},
 	"propertyKind": {
 		"title": "Typ właściwości: {{label}}",
 		"kinds": {

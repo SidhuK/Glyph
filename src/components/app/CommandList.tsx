@@ -7,6 +7,7 @@ import {
 	formatShortcutPartsForPlatform,
 } from "../../lib/shortcuts/platform";
 import { FileText } from "../Icons";
+import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
 import type { PaletteResult, PaletteResultKind } from "./paletteResults";
 import { getPaletteSettingIcon } from "./settingsPaletteIcons";
 
@@ -111,89 +112,92 @@ export function CommandList({
 	let previousKind: PaletteResultKind | null = null;
 	return (
 		<div aria-label={t("commandPalette.resultsLabel")}>
-			{results.map((result, index) => {
-				const showGroup = result.kind !== previousKind;
-				previousKind = result.kind;
-				const selected = index === selectedIndex;
-				return (
-					<Fragment key={result.id}>
-						{showGroup ? (
-							<div className="commandPaletteGroupLabel">
-								{t(`commandPalette.groups.${result.kind}`)}
-							</div>
-						) : null}
-						<button
-							ref={selected ? scrollSelectedIntoView : undefined}
-							id={result.id}
-							type="button"
-							aria-current={selected}
-							aria-pressed={result.checked}
-							className="commandPaletteItem commandPaletteUniversalRow"
-							data-selected={selected}
-							data-kind={result.kind}
-							data-control={result.settingControl}
-							disabled={result.enabled === false}
-							onMouseEnter={() => onSetSelectedIndex(index)}
-							onMouseDown={(event) => {
-								event.preventDefault();
-							}}
-							onClick={() => onSelectResult(index)}
-						>
-							<span className="commandPaletteItemMain">
-								<span className="commandPaletteItemIcon" aria-hidden="true">
-									<ResultIcon result={result} />
-								</span>
-								<span className="commandPaletteUniversalContent">
-									<span className="commandPaletteResultLine">
-										<span className="commandPaletteResultTitle">{result.label}</span>
-										{result.description ? (
-											<>
-												<span className="commandPaletteResultLineSep" aria-hidden="true">
-													·
-												</span>
-												<span className="commandPaletteResultPath" title={result.description}>
-													{result.description}
-												</span>
-											</>
-										) : null}
-									</span>
-									{result.snippet ? (
-										<span className="commandPaletteResultSnippet">
-											<HighlightedSnippet snippet={result.snippet} />
+			<Highlight value={results[selectedIndex]?.id ?? null} className="commandPaletteHighlight">
+				{results.map((result, index) => {
+					const showGroup = result.kind !== previousKind;
+					previousKind = result.kind;
+					const selected = index === selectedIndex;
+					return (
+						<Fragment key={result.id}>
+							{showGroup ? (
+								<div className="commandPaletteGroupLabel">
+									{t(`commandPalette.groups.${result.kind}`)}
+								</div>
+							) : null}
+							<HighlightItem value={result.id}>
+								<button
+									ref={selected ? scrollSelectedIntoView : undefined}
+									id={result.id}
+									type="button"
+									aria-current={selected}
+									aria-pressed={result.checked}
+									className="commandPaletteItem commandPaletteUniversalRow"
+									data-kind={result.kind}
+									data-control={result.settingControl}
+									disabled={result.enabled === false}
+									onMouseEnter={() => onSetSelectedIndex(index)}
+									onMouseDown={(event) => {
+										event.preventDefault();
+									}}
+									onClick={() => onSelectResult(index)}
+								>
+									<span className="commandPaletteItemMain">
+										<span className="commandPaletteItemIcon" aria-hidden="true">
+											<ResultIcon result={result} />
 										</span>
-									) : null}
-								</span>
-							</span>
-							{typeof result.checked === "boolean" ? (
-								<span className="commandPaletteInlineSettingValue">
-									<span>{result.trailing}</span>
-									<span
-										className="commandPaletteInlineToggle"
-										data-checked={result.checked}
-										aria-hidden="true"
-									>
-										<span />
+										<span className="commandPaletteUniversalContent">
+											<span className="commandPaletteResultLine">
+												<span className="commandPaletteResultTitle">{result.label}</span>
+												{result.description ? (
+													<>
+														<span className="commandPaletteResultLineSep" aria-hidden="true">
+															·
+														</span>
+														<span className="commandPaletteResultPath" title={result.description}>
+															{result.description}
+														</span>
+													</>
+												) : null}
+											</span>
+											{result.snippet ? (
+												<span className="commandPaletteResultSnippet">
+													<HighlightedSnippet snippet={result.snippet} />
+												</span>
+											) : null}
+										</span>
 									</span>
-								</span>
-							) : result.settingControl === "choice" && result.trailing ? (
-								<span className="commandPaletteInlineSettingValue">
-									<span aria-hidden="true">‹</span>
-									<span className="commandPaletteResultValue" title={result.trailing}>
-										{result.trailing}
-									</span>
-									<span aria-hidden="true">›</span>
-								</span>
-							) : result.trailing ? (
-								<span className="commandPaletteResultValue" title={result.trailing}>
-									{result.trailing}
-								</span>
-							) : (
-								<Shortcut result={result} />
-							)}
-						</button>
-					</Fragment>
-				);
-			})}
+									{typeof result.checked === "boolean" ? (
+										<span className="commandPaletteInlineSettingValue">
+											<span>{result.trailing}</span>
+											<span
+												className="commandPaletteInlineToggle"
+												data-checked={result.checked}
+												aria-hidden="true"
+											>
+												<span />
+											</span>
+										</span>
+									) : result.settingControl === "choice" && result.trailing ? (
+										<span className="commandPaletteInlineSettingValue">
+											<span aria-hidden="true">‹</span>
+											<span className="commandPaletteResultValue" title={result.trailing}>
+												{result.trailing}
+											</span>
+											<span aria-hidden="true">›</span>
+										</span>
+									) : result.trailing ? (
+										<span className="commandPaletteResultValue" title={result.trailing}>
+											{result.trailing}
+										</span>
+									) : (
+										<Shortcut result={result} />
+									)}
+								</button>
+							</HighlightItem>
+						</Fragment>
+					);
+				})}
+			</Highlight>
 		</div>
 	);
 }

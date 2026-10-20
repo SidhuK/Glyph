@@ -16,6 +16,7 @@ import {
 } from "../settings/settingsSearch";
 import { useActiveSettingsTab, useDeveloperMode } from "../settings/useDeveloperMode";
 import { Button } from "../ui/shadcn/button";
+import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
 
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 	const { t: tGeneral, i18n } = useTranslation("settings.general");
@@ -125,43 +126,43 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 					</div>
 				) : (
 					<div className="sidebarQuickActions settingsSidebarTabs">
-						{SETTINGS_TAB_GROUPS.map((group) => (
-							<section
-								key={group.id}
-								className="settingsSidebarTabGroup"
-								aria-labelledby={`settings-sidebar-group-${group.id}`}
-							>
-								<h3
-									id={`settings-sidebar-group-${group.id}`}
-									className="settingsSidebarTabGroupHeading"
+						<Highlight value={settingsTab} className="settingsSidebarTabsHighlight">
+							{SETTINGS_TAB_GROUPS.map((group) => (
+								<section
+									key={group.id}
+									className="settingsSidebarTabGroup"
+									aria-labelledby={`settings-sidebar-group-${group.id}`}
 								>
-									{tGeneral(group.headingKey)}
-								</h3>
-								{group.tabs
-									.filter((tab) => tab.id !== "developer" || developerModeEnabled)
-									.map((tab) => (
-										<button
-											key={tab.id}
-											type="button"
-											data-tab={tab.id}
-											className={cn(
-												"sidebarQuickActionBtn settingsTabButton",
-												settingsTab === tab.id && "settingsTabButtonActive",
-											)}
-											onClick={() => setSettingsTab(tab.id)}
-											aria-pressed={settingsTab === tab.id}
-											aria-current={settingsTab === tab.id ? "page" : undefined}
-										>
-											<span className="settingsTabIcon" aria-hidden="true">
-												{tab.renderIcon()}
-											</span>
-											<span className="sidebarQuickActionLabel settingsTabLabel">
-												{localizedSettingsTabLabel(tab.id, i18n.language)}
-											</span>
-										</button>
-									))}
-							</section>
-						))}
+									<h3
+										id={`settings-sidebar-group-${group.id}`}
+										className="settingsSidebarTabGroupHeading"
+									>
+										{tGeneral(group.headingKey)}
+									</h3>
+									{group.tabs
+										.filter((tab) => tab.id !== "developer" || developerModeEnabled)
+										.map((tab) => (
+											<HighlightItem key={tab.id} value={tab.id}>
+												<button
+													type="button"
+													data-tab={tab.id}
+													className="sidebarQuickActionBtn settingsTabButton"
+													onClick={() => setSettingsTab(tab.id)}
+													aria-pressed={settingsTab === tab.id}
+													aria-current={settingsTab === tab.id ? "page" : undefined}
+												>
+													<span className="settingsTabIcon" aria-hidden="true">
+														{tab.renderIcon()}
+													</span>
+													<span className="sidebarQuickActionLabel settingsTabLabel">
+														{localizedSettingsTabLabel(tab.id, i18n.language)}
+													</span>
+												</button>
+											</HighlightItem>
+										))}
+								</section>
+							))}
+						</Highlight>
 					</div>
 				)}
 			</div>

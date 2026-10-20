@@ -23,7 +23,6 @@ export function AppearanceCornerRadiusCard({
 				interactive={false}
 			>
 				<SettingsSegmentedPicker
-					name="settings-corner-radius"
 					ariaLabel={t("shape.corners.ariaLabel")}
 					value={cornerRadiusStyle}
 					options={getCornerRadiusOptions()}

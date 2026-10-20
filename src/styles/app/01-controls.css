@@ -32,6 +32,9 @@ button:hover:not(
 			.databasesViewTab,
 			.databasesCollectionSwitcher,
 			.glyphSelectTrigger,
+			.commandPaletteItem,
+			.sidebarViewTab,
+			.settingsTabButton,
 			[data-sileo-toast]
 		)
 	) {
@@ -49,6 +52,9 @@ button:active:not(
 			.databasesViewTab,
 			.databasesCollectionSwitcher,
 			.glyphSelectTrigger,
+			.commandPaletteItem,
+			.sidebarViewTab,
+			.settingsTabButton,
 			[data-sileo-toast]
 		)
 	) {

@@ -262,7 +262,6 @@ export function AppearanceSettingsPane() {
 						searchId="appearance-layout-folio-mode"
 					>
 						<SettingsSegmentedPicker
-							name="settings-workspace-layout"
 							ariaLabel={t("layout.folioMode.ariaLabel")}
 							value={workspaceLayout}
 							options={workspaceLayoutOptions}

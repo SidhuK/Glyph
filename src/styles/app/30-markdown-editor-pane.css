@@ -83,8 +83,12 @@
 .markdownEditorToolbarBtn:hover,
 .markdownEditorToolbarBtn[data-active="true"],
 .markdownEditorModeBtn:hover,
-.markdownEditorModeBtn[data-active="true"] {
+.markdownEditorModeBtn[aria-pressed="true"] {
 	color: var(--text-primary);
+}
+
+.markdownEditorModeBubble .markdownEditorModeBtn[aria-pressed="true"] {
+	background: var(--bg-active);
 }
 
 .markdownEditorToolbarBtn:focus-visible,
@@ -1034,47 +1038,101 @@
 	color: var(--text-primary);
 }
 
-.linkedNotePreviewSheet {
-	position: fixed;
+/* Wiki-link hover card (LinkedNotePreviewSheet): a folder and date line, the title, then a
+   fading excerpt on a frosted surface. Animate UI positions and animates it; CSS only paints. */
+.linkedNotePreviewPositioner {
 	z-index: 2200;
-	width: min(360px, calc(100vw - 24px));
-	max-height: min(420px, calc(100vh - 24px));
+}
+
+.linkedNotePreviewSheet {
+	position: relative;
+	width: min(320px, calc(100vw - 24px));
+	max-height: min(320px, calc(100vh - 24px));
 	display: flex;
 	flex-direction: column;
-	overflow: visible;
-	border-radius: var(--radius-md);
-	background: var(--bg-secondary);
-	box-shadow: var(--shadow-lg);
+	border: 0.5px solid var(--border-default);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--popover) 82%, transparent);
+	box-shadow:
+		0 2px 6px rgb(0 0 0 / 6%),
+		var(--shadow-overlay);
+	backdrop-filter: blur(28px) saturate(180%);
+	-webkit-backdrop-filter: blur(28px) saturate(180%);
 	color: var(--text-primary);
 }
 
-.linkedNotePreviewSheet::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 18px;
-	pointer-events: none;
+.linkedNotePreviewHeader {
+	flex: none;
+	padding: 14px 16px 0;
 }
 
-.linkedNotePreviewSheet[data-side="right"]::before {
-	left: -18px;
+.linkedNotePreviewMeta {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 4px;
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.3;
+	color: var(--text-tertiary);
 }
 
-.linkedNotePreviewSheet[data-side="left"]::before {
-	right: -18px;
+.linkedNotePreviewFolder {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-:root[data-translucent-sidebar="true"] .linkedNotePreviewSheet {
-	background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
-	backdrop-filter: blur(18px);
-	-webkit-backdrop-filter: blur(18px);
+.linkedNotePreviewMeta > time {
+	flex: none;
+}
+
+.linkedNotePreviewTitle {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	font-size: calc(var(--text-base) * 1.07);
+	font-weight: var(--font-semibold);
+	line-height: 1.3;
 }
 
 .linkedNotePreviewBody {
 	min-height: 0;
 	overflow: auto;
 	padding: 10px;
+}
+
+/* The bottom padding doubles as the fade, so short notes stay fully visible and
+   long ones dissolve rather than cut off. */
+.linkedNotePreviewSheet > .linkedNotePreviewBody {
+	padding: 8px 16px 20px;
+	overscroll-behavior: contain;
+	-webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+	mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+}
+
+.linkedNotePreviewSheet > .linkedNotePreviewBody:only-child {
+	padding-top: 14px;
+}
+
+/* Headings in the excerpt stay at body size so the title leads. */
+.linkedNotePreviewSheet .tiptapContentInline :is(h1, h2, h3, h4, h5, h6) {
+	margin: 10px 0 2px;
+	font-size: 1em;
+	font-weight: var(--font-semibold);
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--text-primary);
+}
+
+.linkedNotePreviewSheet .tiptapContentInline > :first-child:is(h1, h2, h3, h4, h5, h6) {
+	margin-top: 0;
+}
+
+.linkedNotePreviewSheet .tiptapContentInline img {
+	max-height: 140px;
+	border-radius: 6px;
 }
 
 .commandPalettePreview > .linkedNotePreviewBody {

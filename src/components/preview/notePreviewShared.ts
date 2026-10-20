@@ -8,7 +8,7 @@ export const NOTE_PREVIEW_MAX_BYTES = 96 * 1024;
 export const NOTE_PREVIEW_OPEN_DELAY_MS = 280;
 
 export type NotePreviewData =
-	| { status: "ok"; relPath: string; content: string }
+	| { status: "ok"; relPath: string; title: string; content: string; mtimeMs: number }
 	| { status: "error"; relPath: string; message: string };
 
 export function wikiTargetFromLink(element: HTMLElement): string | null {
@@ -25,8 +25,8 @@ export async function loadNotePreviewFromPath(relPath: string): Promise<NotePrev
 		path: relPath,
 		max_bytes: NOTE_PREVIEW_MAX_BYTES,
 	});
-	const { content } = parseNotePreview(relPath, doc.text);
-	return { status: "ok", relPath, content };
+	const { title, content } = parseNotePreview(relPath, doc.text);
+	return { status: "ok", relPath, title, content, mtimeMs: doc.mtime_ms };
 }
 
 export async function loadNotePreviewFromWikiTarget(target: string): Promise<NotePreviewData> {

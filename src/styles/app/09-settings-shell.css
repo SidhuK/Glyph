@@ -309,7 +309,6 @@
 	border: 1px solid transparent;
 	border-radius: var(--radius-8);
 	transition:
-		background var(--transition-fast),
 		border-color var(--transition-fast),
 		color var(--transition-fast);
 }
@@ -338,13 +337,14 @@
 	flex-wrap: wrap;
 }
 
+/* The active fill is a gliding highlight (components/ui/shadcn/highlight.tsx), so
+   rows paint no fill of their own, including the shared quick-action hover. */
 .sidebarQuickActionBtn.settingsTabButton:hover {
-	color: var(--text-primary);
-	background: var(--bg-hover);
+	background: transparent;
 }
 
-.sidebarQuickActionBtn.settingsTabButtonActive {
-	color: var(--text-primary);
+.settingsSidebarTabsHighlight {
+	border-radius: var(--radius-8);
 	background: var(--bg-active);
 }
 
