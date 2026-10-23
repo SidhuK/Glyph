@@ -535,5 +535,90 @@
 				"remote_wins": "원격 우선"
 			}
 		}
+	},
+	"whatsNew": {
+		"title": "Glyph의 새로운 기능",
+		"version": "버전 {{version}}",
+		"continue": "계속",
+		"releases": {
+			"0_9_3": {
+				"progressRings": {
+					"title": "작업 진행 링",
+					"body": "각 노트의 체크리스트 진행 상황을 한눈에 보거나 설정에서 링을 숨길 수 있습니다."
+				},
+				"appearance": {
+					"title": "새로워진 모양 선택기",
+					"body": "테마, 강조 색상, 아이콘을 부드러운 세그먼트 선택기에서 고를 수 있습니다."
+				},
+				"calendar": {
+					"title": "사이드바 캘린더",
+					"body": "사이드바의 선택형 캘린더에서 원하는 일일 노트로 바로 이동하세요."
+				}
+			}
+		}
+	},
+	"onboarding": {
+		"hello": {
+			"getStarted": "시작하기",
+			"title": "안녕하세요",
+			"hint": "계속하려면 아무 키나 누르세요."
+		},
+		"welcome": {
+			"title": "Glyph에 오신 것을 환영합니다",
+			"features": {
+				"markdown": {
+					"title": "일반 Markdown, 로컬 파일",
+					"body": "노트는 내가 소유한 폴더 안의 평범한 Markdown 파일입니다."
+				},
+				"organize": {
+					"title": "할 일, 데이터베이스, 연결된 노트",
+					"body": "할 일을 관리하고, 표를 만들고, 위키 링크로 아이디어를 연결하세요."
+				},
+				"tools": {
+					"title": "빠른 검색, 빠른 노트, 그리고 AI 도구",
+					"body": "무엇이든 빠르게 찾고, 어디서든 생각을 기록하고, 원하는 AI를 사용하세요."
+				}
+			}
+		},
+		"preferences": {
+			"title": "나에게 맞게 설정하기",
+			"subtitle": "설정에서 언제든지 바꿀 수 있습니다.",
+			"appearance": "모양",
+			"language": "언어",
+			"editorMode": "기본 편집기 모드",
+			"textSize": "텍스트 크기",
+			"textSizeValue": "{{size}} px"
+		},
+		"space": {
+			"title": "스페이스 선택",
+			"subtitle": "스페이스는 노트 폴더입니다. 시작을 돕는 환영 노트가 추가됩니다.",
+			"create": {
+				"title": "새 스페이스 만들기",
+				"body": "노트를 둘 빈 폴더를 선택하세요."
+			},
+			"open": {
+				"title": "기존 폴더 열기",
+				"body": "이미 가지고 있는 Markdown 파일 폴더를 사용하세요."
+			},
+			"working": "처리 중…",
+			"createFailed": "해당 폴더에 스페이스를 만들 수 없습니다. 다른 폴더를 선택해 보세요.",
+			"openFailed": "해당 폴더를 열 수 없습니다. 다른 폴더를 선택해 보세요."
+		},
+		"welcomeBack": {
+			"title": "Glyph",
+			"subtitle": "새 스페이스를 만들거나 노트 폴더를 여세요.",
+			"create": "새 스페이스 만들기…",
+			"open": "폴더 열기…"
+		},
+		"actions": {
+			"continue": "계속",
+			"skip": "건너뛰기",
+			"back": "뒤로",
+			"done": "완료"
+		},
+		"errors": {
+			"savePreference": "이 설정을 저장할 수 없습니다: {{message}}",
+			"saveProgress": "설정 진행 상황을 저장할 수 없습니다"
+		}
 	}
 }

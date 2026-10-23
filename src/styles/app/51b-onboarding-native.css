@@ -1,0 +1,286 @@
+/* ── Native onboarding controls ─────────────────────────────────────────────
+   Tokens, a reset for the global button chrome, and macOS-style buttons and
+   layout. Shared by the onboarding window (.onboardingRoot) and What's New
+   (.obNative). */
+
+.onboardingRoot,
+.obNative {
+	--ob-font: -apple-system, BlinkMacSystemFont, system-ui;
+	--ob-label: light-dark(rgb(0 0 0 / 0.85), rgb(255 255 255 / 0.85));
+	--ob-label-2: light-dark(rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.55));
+	--ob-fill: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.1));
+	--ob-fill-pressed: light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.18));
+	--ob-separator: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+	/* Themes pair --text-inverse with their accent; dark themes use a light accent. */
+	--ob-accent: var(--interactive-accent);
+	--ob-accent-text: var(--text-inverse);
+	--ob-focus: color-mix(in srgb, var(--ob-accent) 50%, transparent);
+	--ob-radius-control: 999px;
+	--ob-radius-tile: 12px;
+	/* light-dark() follows color-scheme, which is pinned to the app theme, not the OS. */
+	color-scheme: light;
+	color: var(--ob-label);
+	font: 400 13px/17px var(--ob-font);
+	-webkit-font-smoothing: antialiased;
+	cursor: default;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+:root.dark :is(.onboardingRoot, .obNative) {
+	color-scheme: dark;
+}
+
+/* Out-ranks every global button rule in 01-controls.css. State rules only read
+   --ob-btn-* variables, so classes below restyle states by setting variables
+   instead of fighting specificity. Select triggers keep their own styling. */
+:is(.onboardingRoot, .obNative) button:not(.glyphSelectTrigger) {
+	height: auto;
+	min-width: 0;
+	padding: 0;
+	color: var(--ob-btn-fg, inherit);
+	font: inherit;
+	line-height: inherit;
+	white-space: normal;
+	background: var(--ob-btn-bg, transparent);
+	border: 0;
+	border-radius: 0;
+	outline: none;
+	cursor: default;
+	transition: none;
+	transform: none;
+	filter: var(--ob-btn-filter, none);
+	opacity: var(--ob-btn-opacity, 1);
+}
+
+:is(.onboardingRoot, .obNative) button:not(.glyphSelectTrigger):hover,
+:is(.onboardingRoot, .obNative) button:not(.glyphSelectTrigger):active,
+:is(.onboardingRoot, .obNative) button:not(.glyphSelectTrigger):disabled,
+:is(.onboardingRoot, .obNative) button:not(.glyphSelectTrigger):disabled:hover {
+	color: var(--ob-btn-fg, inherit);
+	background: var(--ob-btn-bg, transparent);
+	cursor: default;
+	transform: none;
+	filter: var(--ob-btn-filter, none);
+	opacity: var(--ob-btn-opacity, 1);
+}
+
+:is(.onboardingRoot, .obNative) button:not(.glyphSelectTrigger):disabled {
+	--ob-btn-opacity: 0.4;
+}
+
+:is(.onboardingRoot, .obNative) button:not(.glyphSelectTrigger):focus-visible {
+	outline: 3px solid var(--ob-focus);
+	outline-offset: 1px;
+}
+
+:is(.onboardingRoot, .obNative) button:focus:not(:focus-visible) {
+	outline: none;
+}
+
+:is(.onboardingRoot, .obNative) button.obButton {
+	--ob-btn-bg: var(--ob-fill);
+	--ob-btn-fg: var(--ob-label);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	height: 28px;
+	min-width: 88px;
+	padding: 0 16px;
+	font: 500 13px/1 var(--ob-font);
+	white-space: nowrap;
+	border-radius: var(--ob-radius-control);
+}
+
+:is(.onboardingRoot, .obNative) button.obButton:active {
+	--ob-btn-bg: var(--ob-fill-pressed);
+}
+
+:is(.onboardingRoot, .obNative) button.obButton[data-variant="primary"] {
+	--ob-btn-bg: var(--ob-accent);
+	--ob-btn-fg: var(--ob-accent-text);
+}
+
+:is(.onboardingRoot, .obNative) button.obButton[data-variant="primary"]:active {
+	--ob-btn-filter: brightness(0.85);
+}
+
+:is(.onboardingRoot, .obNative) button.obButton[data-variant="plain"] {
+	--ob-btn-bg: transparent;
+	--ob-btn-fg: var(--ob-label-2);
+	min-width: 0;
+	padding: 0 8px;
+}
+
+:is(.onboardingRoot, .obNative) button.obButton[data-variant="plain"]:active {
+	--ob-btn-fg: var(--ob-label);
+}
+
+:is(.onboardingRoot, .obNative) button.obButton[data-size="xl"] {
+	height: 36px;
+	padding: 0 22px;
+	font-size: 15px;
+}
+
+/* Layout: a drag strip clear of the traffic lights, content, then the footer bar. */
+.onboardingRoot {
+	position: relative;
+	flex: 1;
+	display: grid;
+	grid-template-rows: 52px minmax(0, 1fr) auto;
+	grid-template-columns: minmax(0, 1fr);
+	min-width: 0;
+	min-height: 0;
+	height: 100%;
+	overflow: hidden;
+}
+
+.obDragStrip {
+	grid-row: 1;
+	grid-column: 1;
+}
+
+.obPage {
+	display: grid;
+	grid-row: 2 / 4;
+	grid-column: 1;
+	min-height: 0;
+}
+
+.obPageLayout {
+	display: grid;
+	grid-template-rows: minmax(0, 1fr) auto;
+	min-height: 0;
+}
+
+.obContentArea {
+	display: grid;
+	place-items: center;
+	min-height: 0;
+	padding-bottom: 24px;
+	overflow: auto;
+}
+
+.obContent {
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+	width: 100%;
+	max-width: 480px;
+	padding: 0 40px;
+	text-align: center;
+}
+
+.obTitle {
+	margin: 0;
+	font: 700 26px/32px var(--ob-font);
+	text-wrap: balance;
+	outline: none;
+}
+
+.obSubtitle {
+	max-width: 380px;
+	margin: -12px 0 0;
+	color: var(--ob-label-2);
+	font-size: 13px;
+	line-height: 17px;
+}
+
+.obIcon,
+.obIcon img {
+	width: 64px;
+	height: 64px;
+}
+
+.obFooter {
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 64px;
+	padding: 0 20px;
+	border-top: 1px solid var(--ob-separator);
+}
+
+.obFooterLeading,
+.obFooterTrailing {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.obFooterTrailing {
+	margin-left: auto;
+}
+
+/* Pages crossfade, so the bar's separator is drawn once by the root and stays still. */
+.obPage .obFooter {
+	border-top-color: transparent;
+}
+
+.onboardingRoot:has(.obPage .obFooter)::after {
+	content: "";
+	position: absolute;
+	inset: auto 0 0;
+	height: 64px;
+	border-top: 1px solid var(--ob-separator);
+	pointer-events: none;
+}
+
+.obHello {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding-bottom: 52px;
+	outline: none;
+}
+
+.obHelloIcon {
+	width: 96px;
+	height: 96px;
+	pointer-events: none;
+}
+
+.obHelloPath {
+	width: 280px;
+	height: auto;
+	margin-top: 20px;
+	overflow: visible;
+}
+
+.obHelloWord {
+	margin: 20px 0 0;
+	font: 600 44px/52px var(--ob-font);
+	letter-spacing: -0.02em;
+}
+
+.obHelloAction {
+	height: 36px;
+	margin-top: 28px;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+	.onboardingRoot,
+	.obNative {
+		--ob-fill: light-dark(rgb(232 232 232), rgb(58 58 58));
+		--ob-fill-pressed: light-dark(rgb(214 214 214), rgb(76 76 76));
+		background: light-dark(rgb(246 246 246), rgb(30 30 30));
+	}
+}
+
+@media (prefers-contrast: more) {
+	.onboardingRoot,
+	.obNative {
+		--ob-label: light-dark(rgb(0 0 0), rgb(255 255 255));
+		--ob-label-2: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.8));
+		--ob-separator: light-dark(rgb(0 0 0 / 0.4), rgb(255 255 255 / 0.4));
+	}
+
+	:is(.onboardingRoot, .obNative) button.obButton {
+		border: 1px solid var(--ob-separator);
+	}
+}

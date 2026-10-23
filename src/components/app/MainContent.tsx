@@ -1,5 +1,4 @@
 import { INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
-import { m } from "motion/react";
 import {
 	type CSSProperties,
 	type Dispatch,
@@ -35,7 +34,6 @@ import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { useActiveSettingsTab } from "../settings/useDeveloperMode";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
 import { SplitEditorLayout } from "./SplitEditorLayout";
-import { WelcomeScreen } from "./WelcomeScreen";
 import type { SplitEditorDragSource, SplitEditorDropTarget } from "./splitEditorDnd";
 import type { WorkspaceEditorPane } from "./useTabManager";
 
@@ -195,7 +193,7 @@ export const MainContent = memo(function MainContent({
 	onCloseNotePeek,
 	onOpenPeekedNote,
 }: MainContentProps) {
-	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
+	const { spacePath } = useSpace();
 	const { folioMode, settingsMode, zenMode } = useUILayoutContext();
 	const settingsTab = useActiveSettingsTab();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
@@ -410,24 +408,8 @@ export const MainContent = memo(function MainContent({
 		);
 	}
 
-	if (!spacePath) {
-		if (!settingsLoaded) return <main className="mainArea" />;
-		return (
-			<m.main
-				className="mainArea mainAreaWelcome"
-				initial={{ opacity: 0, scale: 0.98 }}
-				animate={{ opacity: 1, scale: 1 }}
-				transition={{
-					type: "spring",
-					stiffness: 260,
-					damping: 24,
-					duration: 0.4,
-				}}
-			>
-				<WelcomeScreen onOpenSpace={onOpenSpace} />
-			</m.main>
-		);
-	}
+	// AppShell renders onboarding in place of this component when no space is open.
+	if (!spacePath) return <main className="mainArea" />;
 
 	return (
 		<>

@@ -475,6 +475,8 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 	const developerMode = DURABLE_SETTINGS.developerMode.load(entries);
 	const diagnosticLogging = DURABLE_SETTINGS.diagnosticLogging.load(entries);
 	const resumeLastSession = DURABLE_SETTINGS.resumeLastSession.load(entries);
+	const onboardingCompletedVersion = DURABLE_SETTINGS.onboardingCompletedVersion.load(entries);
+	const whatsNewLastSeenVersion = DURABLE_SETTINGS.whatsNewLastSeenVersion.load(entries);
 	const dailyNotesFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.dailyNotesFolder,
 		entries,
@@ -637,6 +639,8 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			resumeLastSession,
 			aiAssistantMode,
 			dateDisplayFormat,
+			onboardingCompletedVersion,
+			whatsNewLastSeenVersion,
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,

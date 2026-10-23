@@ -535,5 +535,90 @@
 				"remote_wins": "リモートを優先"
 			}
 		}
+	},
+	"whatsNew": {
+		"title": "Glyph の新機能",
+		"version": "バージョン {{version}}",
+		"continue": "続ける",
+		"releases": {
+			"0_9_3": {
+				"progressRings": {
+					"title": "タスクの進捗リング",
+					"body": "各ノートのチェックリストの進み具合をひと目で確認できます。リングは設定で非表示にできます。"
+				},
+				"appearance": {
+					"title": "新しい外観ピッカー",
+					"body": "テーマ、アクセント、アイコンを滑らかなセグメントピッカーで選べるようになりました。"
+				},
+				"calendar": {
+					"title": "サイドバーのカレンダー",
+					"body": "サイドバーのカレンダーから任意のデイリーノートへすばやく移動できます。"
+				}
+			}
+		}
+	},
+	"onboarding": {
+		"hello": {
+			"getStarted": "はじめる",
+			"title": "こんにちは",
+			"hint": "任意のキーを押して続行します。"
+		},
+		"welcome": {
+			"title": "Glyph へようこそ",
+			"features": {
+				"markdown": {
+					"title": "プレーンな Markdown、ローカルファイル",
+					"body": "ノートは、あなたが所有するフォルダ内の普通の Markdown ファイルです。"
+				},
+				"organize": {
+					"title": "タスク、データベース、リンクされたノート",
+					"body": "ToDo を管理し、表を作り、Wiki リンクでアイデアをつなげます。"
+				},
+				"tools": {
+					"title": "クイック検索、クイックノート、AI ツール",
+					"body": "すばやく探し、どこからでも思いつきを記録し、好きな AI を使えます。"
+				}
+			}
+		},
+		"preferences": {
+			"title": "自分好みに設定",
+			"subtitle": "これらはいつでも設定で変更できます。",
+			"appearance": "外観",
+			"language": "言語",
+			"editorMode": "デフォルトのエディタモード",
+			"textSize": "文字サイズ",
+			"textSizeValue": "{{size}} px"
+		},
+		"space": {
+			"title": "スペースを選択",
+			"subtitle": "スペースはノートのフォルダです。最初に使えるようこそノートが追加されます。",
+			"create": {
+				"title": "新しいスペースを作成",
+				"body": "ノート用の空のフォルダを選びます。"
+			},
+			"open": {
+				"title": "既存のフォルダを開く",
+				"body": "手元にある Markdown ファイルのフォルダを使います。"
+			},
+			"working": "処理中…",
+			"createFailed": "そのフォルダにスペースを作成できませんでした。別のフォルダをお試しください。",
+			"openFailed": "そのフォルダを開けませんでした。別のフォルダをお試しください。"
+		},
+		"welcomeBack": {
+			"title": "Glyph",
+			"subtitle": "新しいスペースを作成するか、ノートのフォルダを開きます。",
+			"create": "新規スペースを作成…",
+			"open": "フォルダを開く…"
+		},
+		"actions": {
+			"continue": "続ける",
+			"skip": "スキップ",
+			"back": "戻る",
+			"done": "完了"
+		},
+		"errors": {
+			"savePreference": "この設定を保存できませんでした: {{message}}",
+			"saveProgress": "セットアップの進行状況を保存できませんでした"
+		}
 	}
 }

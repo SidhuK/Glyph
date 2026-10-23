@@ -303,6 +303,10 @@ function normalizeEditorFontSize(value: unknown): UiFontSize {
 	return DEFAULT_EDITOR_FONT_SIZE;
 }
 
+function normalizeOnboardingVersion(value: unknown): number {
+	return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : 0;
+}
+
 function parseFiniteNumber(value: unknown): SettingParseResult<number> {
 	return typeof value === "number" && Number.isFinite(value) ? parsed(value) : INVALID_PARSE_RESULT;
 }
@@ -355,6 +359,25 @@ export const DURABLE_SETTINGS = {
 		parse: (value) => (isAppLanguage(value) ? parsed(value) : INVALID_PARSE_RESULT),
 		read: (settings) => settings.ui.language,
 		change: (value) => ({ ui: { language: value } }),
+	}),
+	onboardingCompletedVersion: defineApplicationSetting({
+		key: "onboarding.completedVersion",
+		defaultValue: 0,
+		discovery: hidden("Onboarding records its own progress and has no editable control."),
+		normalize: normalizeOnboardingVersion,
+		parse: (value) =>
+			normalizeOnboardingVersion(value) === value ? parsed(value) : INVALID_PARSE_RESULT,
+		read: (settings) => settings.ui.onboardingCompletedVersion,
+		change: (value) => ({ ui: { onboardingCompletedVersion: value } }),
+	}),
+	whatsNewLastSeenVersion: defineApplicationSetting({
+		key: "whatsNew.lastSeenVersion",
+		defaultValue: "",
+		discovery: hidden("What's New records the last version it showed automatically."),
+		normalize: (value) => (typeof value === "string" ? value.trim() : ""),
+		parse: parseString,
+		read: (settings) => settings.ui.whatsNewLastSeenVersion,
+		change: (value) => ({ ui: { whatsNewLastSeenVersion: value } }),
 	}),
 	dateDisplayFormat: defineApplicationSetting({
 		key: "ui.dateDisplayFormat",

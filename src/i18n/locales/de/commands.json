@@ -382,6 +382,14 @@
 			"label": "Notiz speichern",
 			"description": "Die aktuelle Notiz speichern, falls geändert."
 		},
+		"show-welcome": {
+			"label": "Willkommen anzeigen…",
+			"description": "Die Glyph-Einführung erneut abspielen."
+		},
+		"whats-new": {
+			"label": "Neu in Glyph",
+			"description": "Die Highlights dieser Glyph-Version anzeigen."
+		},
 		"open-shortcuts-settings": {
 			"label": "Tastenkürzel…",
 			"description": "Den Tastenkürzel-Bereich in den Einstellungen öffnen."

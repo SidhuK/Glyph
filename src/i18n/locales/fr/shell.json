@@ -539,5 +539,90 @@
 				"remote_wins": "Le distant l’emporte"
 			}
 		}
+	},
+	"whatsNew": {
+		"title": "Nouveautés de Glyph",
+		"version": "Version {{version}}",
+		"continue": "Continuer",
+		"releases": {
+			"0_9_3": {
+				"progressRings": {
+					"title": "Anneaux de progression des tâches",
+					"body": "Voyez d’un coup d’œil l’avancement de la liste de chaque note, ou masquez les anneaux dans les Réglages."
+				},
+				"appearance": {
+					"title": "Sélecteur d’apparence repensé",
+					"body": "Thèmes, accents et icônes se choisissent désormais dans des sélecteurs segmentés fluides."
+				},
+				"calendar": {
+					"title": "Calendrier dans la barre latérale",
+					"body": "Accédez à n’importe quelle note quotidienne depuis un calendrier facultatif dans la barre latérale."
+				}
+			}
+		}
+	},
+	"onboarding": {
+		"hello": {
+			"getStarted": "Commencer",
+			"title": "Bonjour",
+			"hint": "Appuyez sur une touche pour continuer."
+		},
+		"welcome": {
+			"title": "Bienvenue dans Glyph",
+			"features": {
+				"markdown": {
+					"title": "Du Markdown simple, des fichiers locaux",
+					"body": "Vos notes sont de simples fichiers Markdown dans un dossier qui vous appartient."
+				},
+				"organize": {
+					"title": "Tâches, bases de données et notes liées",
+					"body": "Suivez vos tâches, créez des tableaux et reliez vos idées avec des liens wiki."
+				},
+				"tools": {
+					"title": "Recherche rapide, note rapide et vos outils d'IA",
+					"body": "Trouvez tout en un instant, notez vos idées de partout et utilisez votre propre IA."
+				}
+			}
+		},
+		"preferences": {
+			"title": "Personnalisez Glyph",
+			"subtitle": "Vous pourrez modifier ces options à tout moment dans les Réglages.",
+			"appearance": "Apparence",
+			"language": "Langue",
+			"editorMode": "Mode d'éditeur par défaut",
+			"textSize": "Taille du texte",
+			"textSizeValue": "{{size}} px"
+		},
+		"space": {
+			"title": "Choisissez un espace",
+			"subtitle": "Un espace est un dossier de notes. Glyph y ajoute une note de bienvenue pour bien démarrer.",
+			"create": {
+				"title": "Créer un nouvel espace",
+				"body": "Choisissez un dossier vide pour vos notes."
+			},
+			"open": {
+				"title": "Ouvrir un dossier existant",
+				"body": "Utilisez un dossier de fichiers Markdown que vous avez déjà."
+			},
+			"working": "En cours…",
+			"createFailed": "Glyph n'a pas pu créer d'espace dans ce dossier. Essayez-en un autre.",
+			"openFailed": "Glyph n'a pas pu ouvrir ce dossier. Essayez-en un autre."
+		},
+		"welcomeBack": {
+			"title": "Glyph",
+			"subtitle": "Créez un nouvel espace ou ouvrez un dossier de notes.",
+			"create": "Créer un espace…",
+			"open": "Ouvrir un dossier…"
+		},
+		"actions": {
+			"continue": "Continuer",
+			"skip": "Ignorer",
+			"back": "Retour",
+			"done": "Terminé"
+		},
+		"errors": {
+			"savePreference": "Impossible d'enregistrer cette préférence : {{message}}",
+			"saveProgress": "Impossible d'enregistrer la progression de la configuration"
+		}
 	}
 }

@@ -414,6 +414,14 @@
 			"label": "Save Note",
 			"description": "Save the current note if modified."
 		},
+		"show-welcome": {
+			"label": "Show Welcome…",
+			"description": "Replay the Glyph welcome tour."
+		},
+		"whats-new": {
+			"label": "What’s New in Glyph",
+			"description": "Show the highlights of this Glyph release."
+		},
 		"open-shortcuts-settings": {
 			"label": "Keyboard Shortcuts…",
 			"description": "Open the keyboard shortcuts section in settings."

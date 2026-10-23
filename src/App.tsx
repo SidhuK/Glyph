@@ -3,6 +3,8 @@ import { LazyMotion, domAnimation } from "motion/react";
 import { AIConversationProvider } from "./components/ai/hooks/useRigChat";
 import { AppShell } from "./components/app/AppShell";
 import { LicenseGate } from "./components/licensing/LicenseGate";
+import { OnboardingProvider } from "./components/onboarding/OnboardingProvider";
+import { WhatsNewProvider } from "./components/whats-new/WhatsNewContext";
 import { AppProviders, useSpace } from "./contexts";
 
 function LicensedApp() {
@@ -10,7 +12,11 @@ function LicensedApp() {
 	return (
 		<AIConversationProvider key={spacePath ?? ""}>
 			<DragDropProvider>
-				<AppShell />
+				<OnboardingProvider>
+					<WhatsNewProvider>
+						<AppShell />
+					</WhatsNewProvider>
+				</OnboardingProvider>
 			</DragDropProvider>
 		</AIConversationProvider>
 	);

@@ -858,6 +858,22 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     )?;
 
+    let help_show_welcome = menu_item_with_shortcut(
+        app,
+        menu_labels,
+        menu_shortcuts,
+        "help.show_welcome",
+        true,
+        None,
+    )?;
+    let help_whats_new = menu_item_with_shortcut(
+        app,
+        menu_labels,
+        menu_shortcuts,
+        "help.whats_new",
+        true,
+        None,
+    )?;
     let help_shortcuts = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "help.shortcuts",
         true,
         None,
@@ -882,6 +898,9 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             .item(&PredefinedMenuItem::about(app, None, None)?)
             .separator();
         let builder = builder
+            .item(&help_show_welcome)
+            .item(&help_whats_new)
+            .separator()
             .item(&help_shortcuts)
             .separator();
         let mut builder = builder;

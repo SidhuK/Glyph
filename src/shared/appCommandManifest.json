@@ -1194,6 +1194,28 @@
 			"commandPalette": true,
 			"menuId": "file.save_note"
 		},
+		"show-welcome": {
+			"id": "show-welcome",
+			"label": "Show Welcome\u2026",
+			"description": "Replay the Glyph welcome tour.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.show_welcome"
+		},
+		"whats-new": {
+			"id": "whats-new",
+			"label": "What\u2019s New in Glyph",
+			"description": "Show the highlights of this Glyph release.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.whats_new"
+		},
 		"open-shortcuts-settings": {
 			"id": "open-shortcuts-settings",
 			"label": "Keyboard Shortcuts\u2026",

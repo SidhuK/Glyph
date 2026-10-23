@@ -382,6 +382,14 @@
 			"label": "노트 저장",
 			"description": "수정된 경우 현재 노트를 저장합니다."
 		},
+		"show-welcome": {
+			"label": "환영 화면 보기…",
+			"description": "Glyph 환영 둘러보기를 다시 봅니다."
+		},
+		"whats-new": {
+			"label": "Glyph의 새로운 기능",
+			"description": "이번 Glyph 릴리스의 주요 기능을 표시합니다."
+		},
 		"open-shortcuts-settings": {
 			"label": "키보드 단축키…",
 			"description": "설정의 키보드 단축키 섹션을 엽니다."

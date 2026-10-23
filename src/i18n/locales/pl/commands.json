@@ -390,6 +390,14 @@
 			"label": "Zapisz notatkę",
 			"description": "Zapisz bieżącą notatkę, jeśli została zmodyfikowana."
 		},
+		"show-welcome": {
+			"label": "Pokaż powitanie…",
+			"description": "Odtwórz ponownie przewodnik powitalny Glyph."
+		},
+		"whats-new": {
+			"label": "Nowości w Glyph",
+			"description": "Pokaż najważniejsze zmiany w tej wersji Glyph."
+		},
 		"open-shortcuts-settings": {
 			"label": "Skróty klawiszowe…",
 			"description": "Otwórz sekcję skrótów klawiszowych w ustawieniach."

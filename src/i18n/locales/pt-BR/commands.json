@@ -382,6 +382,14 @@
 			"label": "Salvar nota",
 			"description": "Salvar a nota atual se tiver sido modificada."
 		},
+		"show-welcome": {
+			"label": "Mostrar boas-vindas…",
+			"description": "Rever o tour de boas-vindas do Glyph."
+		},
+		"whats-new": {
+			"label": "Novidades do Glyph",
+			"description": "Mostrar os destaques desta versão do Glyph."
+		},
 		"open-shortcuts-settings": {
 			"label": "Atalhos de teclado…",
 			"description": "Abrir a seção de atalhos de teclado nas configurações."

@@ -30,6 +30,8 @@ import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { toast } from "../lib/toast";
 
+export type SpaceSelectionResult = "opened" | "cancelled" | "failed";
+
 interface SpaceContextValue {
 	setError: (error: string) => void;
 	spacePath: string | null;
@@ -41,10 +43,11 @@ interface SpaceContextValue {
 	consumeWelcomeNotePath: () => void;
 	startIndexRebuild: () => Promise<void>;
 	startIndexSync: () => Promise<void>;
-	onOpenSpace: () => Promise<void>;
+	/** "cancelled" means the folder picker closed without a selection. */
+	onOpenSpace: () => Promise<SpaceSelectionResult>;
 	/** Resolves to whether the space is now open. */
 	onOpenSpaceAtPath: (path: string) => Promise<boolean>;
-	onCreateSpace: () => Promise<void>;
+	onCreateSpace: () => Promise<SpaceSelectionResult>;
 	setSpaceIcon: (path: string, iconName: string | null) => Promise<void>;
 	closeSpace: () => Promise<void>;
 }
@@ -311,20 +314,23 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		setWelcomeNotePath(null);
 	}, []);
 
-	const onOpenSpace = useCallback(async () => {
-		const path = await selectSpaceFolder();
-		if (path) await applySpaceSelection(path, "open");
-	}, [applySpaceSelection]);
+	const selectAndApplySpace = useCallback(
+		async (mode: "open" | "create"): Promise<SpaceSelectionResult> => {
+			const path = await selectSpaceFolder();
+			if (!path) return "cancelled";
+			return (await applySpaceSelection(path, mode)) ? "opened" : "failed";
+		},
+		[applySpaceSelection],
+	);
+
+	const onOpenSpace = useCallback(() => selectAndApplySpace("open"), [selectAndApplySpace]);
 
 	const onOpenSpaceAtPath = useCallback(
 		async (path: string) => applySpaceSelection(path, "open"),
 		[applySpaceSelection],
 	);
 
-	const onCreateSpace = useCallback(async () => {
-		const path = await selectSpaceFolder();
-		if (path) await applySpaceSelection(path, "create");
-	}, [applySpaceSelection]);
+	const onCreateSpace = useCallback(() => selectAndApplySpace("create"), [selectAndApplySpace]);
 
 	const spaces = useMemo(
 		() => buildSpaceDefinitions(spacePaths, spaceIconOverrides),

@@ -537,5 +537,90 @@
 				"remote_wins": "Remoto vence"
 			}
 		}
+	},
+	"whatsNew": {
+		"title": "Novidades do Glyph",
+		"version": "Versão {{version}}",
+		"continue": "Continuar",
+		"releases": {
+			"0_9_3": {
+				"progressRings": {
+					"title": "Anéis de progresso de tarefas",
+					"body": "Veja num relance quanto da lista de cada nota está concluído, ou oculte os anéis nos Ajustes."
+				},
+				"appearance": {
+					"title": "Seletor de aparência renovado",
+					"body": "Temas, destaques e ícones agora ficam em seletores segmentados fluidos com destaque deslizante."
+				},
+				"calendar": {
+					"title": "Calendário na barra lateral",
+					"body": "Vá para qualquer nota diária a partir de um calendário opcional na barra lateral."
+				}
+			}
+		}
+	},
+	"onboarding": {
+		"hello": {
+			"getStarted": "Começar",
+			"title": "Olá",
+			"hint": "Pressione qualquer tecla para continuar."
+		},
+		"welcome": {
+			"title": "Boas-vindas ao Glyph",
+			"features": {
+				"markdown": {
+					"title": "Markdown simples, arquivos locais",
+					"body": "Suas notas são arquivos Markdown comuns em uma pasta que é sua."
+				},
+				"organize": {
+					"title": "Tarefas, bancos de dados e notas vinculadas",
+					"body": "Acompanhe pendências, crie tabelas e conecte ideias com links wiki."
+				},
+				"tools": {
+					"title": "Busca rápida, nota rápida e suas ferramentas de IA",
+					"body": "Encontre tudo rapidinho, registre ideias de qualquer lugar e use sua própria IA."
+				}
+			}
+		},
+		"preferences": {
+			"title": "Deixe do seu jeito",
+			"subtitle": "Você pode mudar isso quando quiser em Ajustes.",
+			"appearance": "Aparência",
+			"language": "Idioma",
+			"editorMode": "Modo de editor padrão",
+			"textSize": "Tamanho do texto",
+			"textSizeValue": "{{size}} px"
+		},
+		"space": {
+			"title": "Escolha um espaço",
+			"subtitle": "Um espaço é uma pasta de notas. O Glyph adiciona uma nota de boas-vindas para você começar.",
+			"create": {
+				"title": "Criar um novo espaço",
+				"body": "Escolha uma pasta vazia para suas notas."
+			},
+			"open": {
+				"title": "Abrir uma pasta existente",
+				"body": "Use uma pasta de arquivos Markdown que você já tem."
+			},
+			"working": "Processando…",
+			"createFailed": "O Glyph não conseguiu criar um espaço nessa pasta. Tente outra pasta.",
+			"openFailed": "O Glyph não conseguiu abrir essa pasta. Tente outra pasta."
+		},
+		"welcomeBack": {
+			"title": "Glyph",
+			"subtitle": "Crie um novo espaço ou abra uma pasta de notas.",
+			"create": "Criar novo espaço…",
+			"open": "Abrir pasta…"
+		},
+		"actions": {
+			"continue": "Continuar",
+			"skip": "Pular",
+			"back": "Voltar",
+			"done": "Concluído"
+		},
+		"errors": {
+			"savePreference": "Não foi possível salvar esta preferência: {{message}}",
+			"saveProgress": "Não foi possível salvar o progresso da configuração"
+		}
 	}
 }

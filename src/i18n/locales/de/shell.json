@@ -537,5 +537,90 @@
 				"remote_wins": "Remote gewinnt"
 			}
 		}
+	},
+	"whatsNew": {
+		"title": "Neu in Glyph",
+		"version": "Version {{version}}",
+		"continue": "Weiter",
+		"releases": {
+			"0_9_3": {
+				"progressRings": {
+					"title": "Fortschrittsringe für Aufgaben",
+					"body": "Sieh auf einen Blick, wie viel der Checkliste einer Notiz erledigt ist, oder blende die Ringe in den Einstellungen aus."
+				},
+				"appearance": {
+					"title": "Überarbeitete Darstellungsauswahl",
+					"body": "Themes, Akzente und Symbole wählst du jetzt in flüssigen Segmentauswahlen mit gleitender Markierung."
+				},
+				"calendar": {
+					"title": "Kalender in der Seitenleiste",
+					"body": "Springe über einen optionalen Kalender in der Seitenleiste zu jeder Tagesnotiz."
+				}
+			}
+		}
+	},
+	"onboarding": {
+		"hello": {
+			"getStarted": "Los geht’s",
+			"title": "Hallo",
+			"hint": "Drücke eine beliebige Taste, um fortzufahren."
+		},
+		"welcome": {
+			"title": "Willkommen bei Glyph",
+			"features": {
+				"markdown": {
+					"title": "Reines Markdown, lokale Dateien",
+					"body": "Deine Notizen sind normale Markdown-Dateien in einem Ordner, der dir gehört."
+				},
+				"organize": {
+					"title": "Aufgaben, Datenbanken und verknüpfte Notizen",
+					"body": "Verfolge To-dos, erstelle Tabellen und verbinde Ideen mit Wiki-Links."
+				},
+				"tools": {
+					"title": "Schnellsuche, Schnellnotiz und deine KI-Tools",
+					"body": "Finde alles schnell, halte Gedanken von überall fest und nutze deine eigene KI."
+				}
+			}
+		},
+		"preferences": {
+			"title": "Mach es zu deinem",
+			"subtitle": "Du kannst das jederzeit in den Einstellungen ändern.",
+			"appearance": "Erscheinungsbild",
+			"language": "Sprache",
+			"editorMode": "Standard-Editormodus",
+			"textSize": "Textgröße",
+			"textSizeValue": "{{size}} px"
+		},
+		"space": {
+			"title": "Space auswählen",
+			"subtitle": "Ein Space ist ein Ordner mit Notizen. Glyph legt eine Willkommensnotiz für den Einstieg an.",
+			"create": {
+				"title": "Neuen Space erstellen",
+				"body": "Wähle einen leeren Ordner für deine Notizen."
+			},
+			"open": {
+				"title": "Vorhandenen Ordner öffnen",
+				"body": "Nutze einen Ordner mit Markdown-Dateien, den du bereits hast."
+			},
+			"working": "Wird bearbeitet …",
+			"createFailed": "Glyph konnte in diesem Ordner keinen Space erstellen. Versuche einen anderen Ordner.",
+			"openFailed": "Glyph konnte diesen Ordner nicht öffnen. Versuche einen anderen Ordner."
+		},
+		"welcomeBack": {
+			"title": "Glyph",
+			"subtitle": "Erstelle einen neuen Space oder öffne einen Notizordner.",
+			"create": "Neuer Space …",
+			"open": "Ordner öffnen …"
+		},
+		"actions": {
+			"continue": "Weiter",
+			"skip": "Überspringen",
+			"back": "Zurück",
+			"done": "Fertig"
+		},
+		"errors": {
+			"savePreference": "Diese Einstellung konnte nicht gespeichert werden: {{message}}",
+			"saveProgress": "Dein Einrichtungsfortschritt konnte nicht gespeichert werden"
+		}
 	}
 }

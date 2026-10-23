@@ -1,0 +1,65 @@
+/* The dialog popup is only a positioner; the sheet visuals live on the inner
+   motion element so the drop-in animation moves the whole surface. */
+.whatsNewPopup.whatsNewPopup {
+	top: 52px;
+	display: block;
+	width: min(520px, calc(100% - 2rem));
+	max-width: none;
+	padding: 0;
+	background: none;
+	border: 0;
+	box-shadow: none;
+	translate: -50% 0;
+	animation: none;
+}
+
+.whatsNewSheet {
+	overflow: hidden;
+	border-radius: 16px;
+	background: #ececec;
+	box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+	color: var(--ob-label, var(--text-primary));
+	font-family: var(--ob-font, -apple-system, BlinkMacSystemFont, sans-serif);
+	text-align: center;
+}
+
+:root.dark .whatsNewSheet {
+	background: #2a2a2a;
+}
+
+.whatsNewBody {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 28px 32px 24px;
+}
+
+.whatsNewTitle.whatsNewTitle {
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1.2;
+	color: inherit;
+}
+
+.whatsNewVersion.whatsNewVersion {
+	margin-top: 4px;
+	font-size: 13px;
+	color: var(--ob-label-2, var(--text-secondary));
+}
+
+.whatsNewFooter {
+	display: flex;
+	justify-content: flex-end;
+	padding: 12px 16px;
+	border-top: 1px solid var(--ob-separator, var(--border-color));
+}
+
+@media (prefers-contrast: more) {
+	.whatsNewSheet {
+		border: 1px solid var(--text-primary);
+	}
+
+	.whatsNewVersion.whatsNewVersion {
+		color: var(--text-primary);
+	}
+}

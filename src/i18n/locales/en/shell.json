@@ -697,5 +697,90 @@
 		"browse": "Change destination: browse {{name}}",
 		"label": "Quick note destination",
 		"resetToToday": "Reset to today's quick note"
+	},
+	"whatsNew": {
+		"title": "What’s New in Glyph",
+		"version": "Version {{version}}",
+		"continue": "Continue",
+		"releases": {
+			"0_9_3": {
+				"progressRings": {
+					"title": "Task progress rings",
+					"body": "See at a glance how much of each note’s checklist is done, or hide the rings in Settings."
+				},
+				"appearance": {
+					"title": "Refined appearance picker",
+					"body": "Themes, accents and icons now sit in smooth segmented pickers with gliding highlights."
+				},
+				"calendar": {
+					"title": "Calendar in the sidebar",
+					"body": "Jump to any daily note from an optional calendar right in the sidebar."
+				}
+			}
+		}
+	},
+	"onboarding": {
+		"hello": {
+			"getStarted": "Get Started",
+			"title": "Hello",
+			"hint": "Press any key to continue."
+		},
+		"welcome": {
+			"title": "Welcome to Glyph",
+			"features": {
+				"markdown": {
+					"title": "Plain Markdown, local files",
+					"body": "Your notes are ordinary Markdown files in a folder you own."
+				},
+				"organize": {
+					"title": "Tasks, databases and linked notes",
+					"body": "Track to-dos, build tables and connect ideas with wiki links."
+				},
+				"tools": {
+					"title": "Quick search, quick note and your AI tools",
+					"body": "Find anything fast, capture thoughts from anywhere and bring your own AI."
+				}
+			}
+		},
+		"preferences": {
+			"title": "Make it yours",
+			"subtitle": "You can change these anytime in Settings.",
+			"appearance": "Appearance",
+			"language": "Language",
+			"editorMode": "Default editor mode",
+			"textSize": "Text size",
+			"textSizeValue": "{{size}} px"
+		},
+		"space": {
+			"title": "Choose a space",
+			"subtitle": "A space is a folder of notes. Glyph adds a welcome note to get you started.",
+			"create": {
+				"title": "Create a new space",
+				"body": "Pick an empty folder for your notes."
+			},
+			"open": {
+				"title": "Open an existing folder",
+				"body": "Use a folder of Markdown files you already have."
+			},
+			"working": "Working…",
+			"createFailed": "Glyph couldn't create a space in that folder. Try another folder.",
+			"openFailed": "Glyph couldn't open that folder. Try another folder."
+		},
+		"welcomeBack": {
+			"title": "Glyph",
+			"subtitle": "Create a new space or open a folder of notes.",
+			"create": "Create New Space…",
+			"open": "Open Folder…"
+		},
+		"actions": {
+			"continue": "Continue",
+			"skip": "Skip",
+			"back": "Back",
+			"done": "Done"
+		},
+		"errors": {
+			"savePreference": "Couldn't save this preference: {{message}}",
+			"saveProgress": "Couldn't save your setup progress"
+		}
 	}
 }

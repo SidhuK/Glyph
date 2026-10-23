@@ -1,0 +1,60 @@
+/* ── Onboarding ─────────────────────────────────────────────────────────────
+   Window-level placement for the first-run flow, the replay overlay and the
+   no-space welcome. Tokens, controls and layout live in 51b-onboarding-native.css;
+   only transform and opacity animate. */
+
+.onboardingOverlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+	background: light-dark(rgb(246 246 246 / 0.92), rgb(30 30 30 / 0.92));
+}
+
+/* Select popups portal to the body and must stay above the overlay. */
+body:has(.onboardingOverlay) .glyphMenuPositioner {
+	z-index: 110;
+}
+
+/* The no-space welcome sits outside the page grid, so it places itself. */
+.onboardingWelcomeBack {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	grid-row: 2 / 4;
+	grid-column: 1;
+	place-self: center;
+	max-width: 480px;
+	padding: 0 40px 52px;
+	text-align: center;
+}
+
+.onboardingAppIcon {
+	display: block;
+	width: 64px;
+	max-width: none;
+	height: 64px;
+	object-fit: contain;
+	pointer-events: none;
+}
+
+/* GlyphBloom's trigger is 48px by default; size it to the icon it wraps. */
+.obWelcomeBackIcon > div {
+	width: 64px;
+	height: 64px;
+	margin: 0;
+}
+
+.onboardingError {
+	width: 100%;
+	margin: 0;
+	color: var(--text-error);
+	font-size: 13px;
+	line-height: 17px;
+	text-align: center;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+	.onboardingOverlay {
+		background: light-dark(rgb(246 246 246), rgb(30 30 30));
+	}
+}

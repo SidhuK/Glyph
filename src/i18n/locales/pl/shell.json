@@ -585,5 +585,90 @@
 				"remote_wins": "Wygrywa zdalna"
 			}
 		}
+	},
+	"whatsNew": {
+		"title": "Nowości w Glyph",
+		"version": "Wersja {{version}}",
+		"continue": "Kontynuuj",
+		"releases": {
+			"0_9_3": {
+				"progressRings": {
+					"title": "Pierścienie postępu zadań",
+					"body": "Sprawdź jednym spojrzeniem postęp listy kontrolnej każdej notatki lub ukryj pierścienie w Ustawieniach."
+				},
+				"appearance": {
+					"title": "Odświeżony wybór wyglądu",
+					"body": "Motywy, akcenty i ikony wybierasz teraz w płynnych przełącznikach segmentowych."
+				},
+				"calendar": {
+					"title": "Kalendarz na pasku bocznym",
+					"body": "Przejdź do dowolnej notatki dziennej z opcjonalnego kalendarza na pasku bocznym."
+				}
+			}
+		}
+	},
+	"onboarding": {
+		"hello": {
+			"getStarted": "Zaczynajmy",
+			"title": "Cześć",
+			"hint": "Naciśnij dowolny klawisz, aby kontynuować."
+		},
+		"welcome": {
+			"title": "Witamy w Glyph",
+			"features": {
+				"markdown": {
+					"title": "Zwykły Markdown, pliki lokalne",
+					"body": "Twoje notatki to zwykłe pliki Markdown w folderze, który należy do Ciebie."
+				},
+				"organize": {
+					"title": "Zadania, bazy danych i połączone notatki",
+					"body": "Śledź zadania, twórz tabele i łącz pomysły linkami wiki."
+				},
+				"tools": {
+					"title": "Szybkie wyszukiwanie, szybka notatka i Twoje narzędzia AI",
+					"body": "Znajduj wszystko błyskawicznie, zapisuj myśli z dowolnego miejsca i korzystaj z własnej AI."
+				}
+			}
+		},
+		"preferences": {
+			"title": "Dostosuj do siebie",
+			"subtitle": "Możesz to zmienić w każdej chwili w Ustawieniach.",
+			"appearance": "Wygląd",
+			"language": "Język",
+			"editorMode": "Domyślny tryb edytora",
+			"textSize": "Rozmiar tekstu",
+			"textSizeValue": "{{size}} px"
+		},
+		"space": {
+			"title": "Wybierz przestrzeń",
+			"subtitle": "Przestrzeń to folder z notatkami. Glyph doda notatkę powitalną na dobry początek.",
+			"create": {
+				"title": "Utwórz nową przestrzeń",
+				"body": "Wybierz pusty folder na notatki."
+			},
+			"open": {
+				"title": "Otwórz istniejący folder",
+				"body": "Użyj folderu z plikami Markdown, który już masz."
+			},
+			"working": "Przetwarzanie…",
+			"createFailed": "Glyph nie mógł utworzyć przestrzeni w tym folderze. Spróbuj innego folderu.",
+			"openFailed": "Glyph nie mógł otworzyć tego folderu. Spróbuj innego folderu."
+		},
+		"welcomeBack": {
+			"title": "Glyph",
+			"subtitle": "Utwórz nową przestrzeń lub otwórz folder z notatkami.",
+			"create": "Utwórz nową przestrzeń…",
+			"open": "Otwórz folder…"
+		},
+		"actions": {
+			"continue": "Dalej",
+			"skip": "Pomiń",
+			"back": "Wstecz",
+			"done": "Gotowe"
+		},
+		"errors": {
+			"savePreference": "Nie udało się zapisać tego ustawienia: {{message}}",
+			"saveProgress": "Nie udało się zapisać postępu konfiguracji"
+		}
 	}
 }

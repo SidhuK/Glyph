@@ -382,6 +382,14 @@
 			"label": "Enregistrer la note",
 			"description": "Enregistrer la note actuelle si elle a été modifiée."
 		},
+		"show-welcome": {
+			"label": "Afficher l’accueil…",
+			"description": "Revoir la visite de bienvenue de Glyph."
+		},
+		"whats-new": {
+			"label": "Nouveautés de Glyph",
+			"description": "Afficher les points forts de cette version de Glyph."
+		},
 		"open-shortcuts-settings": {
 			"label": "Raccourcis clavier…",
 			"description": "Ouvrir la section des raccourcis clavier dans les réglages."

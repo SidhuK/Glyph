@@ -69,6 +69,8 @@ import {
 } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
+import { OnboardingScreen } from "../onboarding/OnboardingScreen";
+import { WhatsNewSheet } from "../whats-new/WhatsNewSheet";
 import { CalendarPaletteController, preloadCalendarPalette } from "./CalendarPaletteController";
 import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
@@ -1337,6 +1339,8 @@ export function AppShell() {
 		}
 	}, [getBinding]);
 
+	const showOnboarding = !spacePath && !settingsMode;
+
 	return (
 		<div
 			className={cn(
@@ -1353,7 +1357,8 @@ export function AppShell() {
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
-			{(!zenMode || settingsMode) && sidebarCollapsed ? (
+			{showOnboarding && settingsLoaded ? <OnboardingScreen /> : null}
+			{!showOnboarding && (!zenMode || settingsMode) && sidebarCollapsed ? (
 				<div className="sidebarCollapsedToggle">
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}
@@ -1362,7 +1367,7 @@ export function AppShell() {
 					/>
 				</div>
 			) : null}
-			{!zenMode || settingsMode ? (
+			{!showOnboarding && (!zenMode || settingsMode) ? (
 				<>
 					<Sidebar
 						onSelectSpace={handleSelectSpace}
@@ -1422,55 +1427,57 @@ export function AppShell() {
 					/>
 				</>
 			) : null}
-			<MainContent
-				fileTree={{
-					createMarkdownFileAtPath: fileTree.createMarkdownFileAtPath,
-					openNonMarkdownExternally: fileTree.openNonMarkdownExternally,
-					onRenameDir: fileTree.onRenameDir,
-					onDeletePath: fileTree.onDeletePath,
-					onNewFileInDir: fileTree.onNewFileInDir,
-					onCreateFromTemplateInDir: (dirPath) => void openTemplatePicker(dirPath),
-					onRequestCreateFolder: (dirPath) => fileTree.requestCreateFolder(dirPath),
-					onDuplicateFile: duplicateFileWithActiveEditorFlush,
-				}}
-				onOpenFile={openWorkspaceFile}
-				onBrowseFile={openBrowseNote}
-				onOpenFolioFile={openFolioWorkspaceFile}
-				onOpenFileInNewTab={openWorkspaceFileInNewTab}
-				onOpenFolioFileInNewTab={openFolioWorkspaceFileInNewTab}
-				onOpenCommandPalette={openCommandPalette}
-				panes={panes}
-				splitLayout={splitLayout}
-				focusedPaneId={focusedPaneId}
-				rootEntries={rootEntries}
-				childrenByDir={childrenByDir}
-				activeTabPath={activeTabPath}
-				setActiveTabId={setActiveTabId}
-				focusPane={focusPane}
-				setDirtyByPath={setDirtyByPath}
-				closeTab={closeTab}
-				toggleTabPinned={toggleTabPinned}
-				reorderTabs={reorderTabs}
-				openBlankTabInPane={openBlankTabInPane}
-				openFileInPane={openFileInPane}
-				splitPaneWithFile={splitPaneWithFile}
-				moveTabToPane={moveTabToPane}
-				resizeSplit={resizeSplit}
-				onStartRenamePath={handleStartRenameFromTab}
-				onNavigateBreadcrumbPath={handleNavigateBreadcrumbPath}
-				onLoadBreadcrumbDir={fileTree.loadDir}
-				onGoBackInPane={goBackInPane}
-				onGoForwardInPane={goForwardInPane}
-				databasesOpenRequest={databasesOpenRequest}
-				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
-				onOpenDailyNotesSettings={() => openSettings("space")}
-				onRightSidebarOpenChange={setRightSidebarOpen}
-				peekNotePath={notePeek && notePeek.spacePath === spacePath ? notePeek.relPath : null}
-				onCloseNotePeek={closeNotePeek}
-				onOpenPeekedNote={() => {
-					void openPeekedNote();
-				}}
-			/>
+			{showOnboarding ? null : (
+				<MainContent
+					fileTree={{
+						createMarkdownFileAtPath: fileTree.createMarkdownFileAtPath,
+						openNonMarkdownExternally: fileTree.openNonMarkdownExternally,
+						onRenameDir: fileTree.onRenameDir,
+						onDeletePath: fileTree.onDeletePath,
+						onNewFileInDir: fileTree.onNewFileInDir,
+						onCreateFromTemplateInDir: (dirPath) => void openTemplatePicker(dirPath),
+						onRequestCreateFolder: (dirPath) => fileTree.requestCreateFolder(dirPath),
+						onDuplicateFile: duplicateFileWithActiveEditorFlush,
+					}}
+					onOpenFile={openWorkspaceFile}
+					onBrowseFile={openBrowseNote}
+					onOpenFolioFile={openFolioWorkspaceFile}
+					onOpenFileInNewTab={openWorkspaceFileInNewTab}
+					onOpenFolioFileInNewTab={openFolioWorkspaceFileInNewTab}
+					onOpenCommandPalette={openCommandPalette}
+					panes={panes}
+					splitLayout={splitLayout}
+					focusedPaneId={focusedPaneId}
+					rootEntries={rootEntries}
+					childrenByDir={childrenByDir}
+					activeTabPath={activeTabPath}
+					setActiveTabId={setActiveTabId}
+					focusPane={focusPane}
+					setDirtyByPath={setDirtyByPath}
+					closeTab={closeTab}
+					toggleTabPinned={toggleTabPinned}
+					reorderTabs={reorderTabs}
+					openBlankTabInPane={openBlankTabInPane}
+					openFileInPane={openFileInPane}
+					splitPaneWithFile={splitPaneWithFile}
+					moveTabToPane={moveTabToPane}
+					resizeSplit={resizeSplit}
+					onStartRenamePath={handleStartRenameFromTab}
+					onNavigateBreadcrumbPath={handleNavigateBreadcrumbPath}
+					onLoadBreadcrumbDir={fileTree.loadDir}
+					onGoBackInPane={goBackInPane}
+					onGoForwardInPane={goForwardInPane}
+					databasesOpenRequest={databasesOpenRequest}
+					dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
+					onOpenDailyNotesSettings={() => openSettings("space")}
+					onRightSidebarOpenChange={setRightSidebarOpen}
+					peekNotePath={notePeek && notePeek.spacePath === spacePath ? notePeek.relPath : null}
+					onCloseNotePeek={closeNotePeek}
+					onOpenPeekedNote={() => {
+						void openPeekedNote();
+					}}
+				/>
+			)}
 			{!zenMode && commandPaletteMounted ? (
 				<Suspense fallback={null}>
 					<LazyCommandPalette
@@ -1511,6 +1518,7 @@ export function AppShell() {
 						onOpenNote={(path) => void openWorkspaceFile(path)}
 						onOpenPeriodNoteAtDate={handleOpenPeriodNoteAtDate}
 					/>
+					<WhatsNewSheet />
 				</>
 			) : null}
 		</div>

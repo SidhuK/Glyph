@@ -257,6 +257,8 @@ export interface AppSettings {
 		resumeLastSession: boolean;
 		aiAssistantMode: AiAssistantMode;
 		dateDisplayFormat: DateDisplayFormat;
+		onboardingCompletedVersion: number;
+		whatsNewLastSeenVersion: string;
 		sidebarVisibility: SidebarVisibility;
 		sidebarOrder: SidebarOrder;
 		sidebarCalendar: SidebarCalendarSettings;

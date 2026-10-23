@@ -1,0 +1,208 @@
+/* Onboarding page content: feature list, grouped preferences, segmented
+   control, pop-up buttons, space tiles and the welcome-back actions. */
+
+.obFeatureList {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: 400px;
+	margin: 24px 0 0;
+	padding: 0;
+	list-style: none;
+	text-align: left;
+}
+
+.obFeatureRow {
+	display: grid;
+	grid-template-columns: 40px 1fr;
+	column-gap: 14px;
+	align-items: start;
+	padding: 12px 0;
+}
+
+.obFeatureIcon {
+	display: flex;
+	justify-content: center;
+	color: var(--ob-accent);
+}
+
+.obFeatureText {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.obFeatureTitle {
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.obFeatureBody {
+	color: var(--ob-label-2);
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+.obGroupedBox {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	margin: 24px 0 0;
+	padding: 0;
+	list-style: none;
+	text-align: left;
+	background: var(--ob-fill);
+	border-radius: var(--ob-radius-tile, 12px);
+}
+
+.obPrefRow {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	align-items: center;
+	justify-content: space-between;
+	height: 44px;
+	padding: 0 12px;
+}
+
+.obPrefRow + .obPrefRow::before {
+	position: absolute;
+	top: 0;
+	right: 12px;
+	left: 12px;
+	height: 1px;
+	background: var(--ob-separator);
+	content: "";
+}
+
+.obPrefLabel {
+	min-width: 0;
+	font-size: 13px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.obPrefControl {
+	display: flex;
+	flex-shrink: 0;
+	justify-content: flex-end;
+	min-width: 0;
+}
+
+.obSegmented {
+	display: inline-flex;
+	gap: 2px;
+	height: 24px;
+	padding: 2px;
+	background: var(--ob-fill);
+	border-radius: var(--ob-radius-control, 999px);
+}
+
+/* Segments and tiles are buttons: they match the native reset's specificity in
+   51b-onboarding-native.css and restyle states through its --ob-btn-* variables. */
+:is(.onboardingRoot, .obNative) .obSegmented button.obSegment {
+	--ob-btn-fg: var(--ob-label);
+	padding: 0 10px;
+	font-size: 12px;
+	line-height: 20px;
+	white-space: nowrap;
+	border-radius: var(--ob-radius-control, 999px);
+}
+
+:is(.onboardingRoot, .obNative) .obSegmented button.obSegment[aria-checked="true"] {
+	--ob-btn-bg: light-dark(#fff, rgb(255 255 255 / 0.22));
+	box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}
+
+.obPopUp.obPopUp {
+	width: auto;
+	min-width: 120px;
+	height: 24px;
+	padding: 0 8px 0 10px;
+	font-size: 12px;
+	background: var(--ob-fill);
+	border: 0;
+	border-radius: var(--ob-radius-control, 999px);
+}
+
+.obTiles {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+	width: 100%;
+	margin-top: 24px;
+}
+
+:is(.onboardingRoot, .obNative) .obTiles button.obTile {
+	--ob-btn-bg: var(--ob-fill);
+	--ob-btn-fg: var(--ob-label);
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	min-height: 132px;
+	padding: 16px;
+	line-height: normal;
+	text-align: left;
+	border-radius: var(--ob-radius-tile, 12px);
+}
+
+:is(.onboardingRoot, .obNative) .obTiles button.obTile:active:not(:disabled) {
+	--ob-btn-bg: var(--ob-fill-pressed);
+}
+
+/* The tile that is waiting on the folder picker stays fully opaque. */
+:is(.onboardingRoot, .obNative) .obTiles button.obTile:disabled {
+	--ob-btn-opacity: 0.6;
+}
+
+:is(.onboardingRoot, .obNative) .obTiles button.obTile:disabled[aria-busy="true"] {
+	--ob-btn-opacity: 1;
+}
+
+.obTileIcon {
+	display: flex;
+	margin-bottom: 12px;
+	color: var(--ob-accent);
+}
+
+.obTileTitle {
+	font-size: 13px;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.obTileCaption {
+	margin-top: 4px;
+	color: var(--ob-label-2);
+	font-size: 11px;
+	line-height: 14px;
+	overflow-wrap: anywhere;
+}
+
+.obWelcomeBackIcon {
+	width: 64px;
+	height: 64px;
+	margin-bottom: 16px;
+}
+
+.obWelcomeBackActions {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	margin-top: 24px;
+}
+
+@media (prefers-contrast: more) {
+	.obGroupedBox,
+	:is(.onboardingRoot, .obNative) :is(.obTiles, .obSegmented) button:is(.obTile, .obSegment) {
+		border: 1px solid var(--ob-label);
+	}
+
+	.obFeatureBody,
+	.obTileCaption {
+		color: var(--ob-label);
+	}
+}

@@ -382,6 +382,14 @@
 			"label": "ノートを保存",
 			"description": "変更がある場合、現在のノートを保存します。"
 		},
+		"show-welcome": {
+			"label": "ようこそ画面を表示…",
+			"description": "Glyph のウェルカムツアーをもう一度見る。"
+		},
+		"whats-new": {
+			"label": "Glyph の新機能",
+			"description": "この Glyph リリースのハイライトを表示します。"
+		},
 		"open-shortcuts-settings": {
 			"label": "キーボードショートカット…",
 			"description": "設定のキーボードショートカットセクションを開きます。"

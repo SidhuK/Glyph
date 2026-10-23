@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useRef } from "react";
+import { useOnboarding } from "../components/onboarding/OnboardingProvider";
+import { useWhatsNewContext } from "../components/whats-new/WhatsNewContext";
 import { useUILayoutContext } from "../contexts";
 import { dispatchAppCommand } from "../lib/commands/commandDispatcher";
 import { extractErrorMessage } from "../lib/errorUtils";
@@ -105,6 +107,8 @@ export function useMenuListeners({
 	onEditorAction,
 }: UseMenuListenersProps): void {
 	const { openSettings } = useUILayoutContext();
+	const { replay: replayOnboarding } = useOnboarding();
+	const { show: showWhatsNew } = useWhatsNewContext();
 	const helpMenuCommandHandlers = useMemo(
 		() => buildHelpMenuCommandHandlers(openSettings),
 		[openSettings],
@@ -140,6 +144,8 @@ export function useMenuListeners({
 				"open-about": () => openSettings("about"),
 				"open-settings": () => openSettings(),
 				...helpMenuCommandHandlers,
+				"show-welcome": replayOnboarding,
+				"whats-new": showWhatsNew,
 				"toggle-ai": onToggleAiPane,
 				"ai-attach-current-note": onAttachCurrentNoteToAi,
 				"ai-attach-all-open-notes": onAttachAllOpenNotesToAi,
@@ -181,6 +187,8 @@ export function useMenuListeners({
 			onSaveNote,
 			onToggleAiPane,
 			openSettings,
+			replayOnboarding,
+			showWhatsNew,
 		],
 	);
 	const replayingPendingCommandsRef = useRef(true);
