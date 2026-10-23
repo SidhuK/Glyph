@@ -561,6 +561,11 @@
 			"section": "Układ",
 			"keywords": ["folio", "sortowanie", "nazwa", "zmieniono", "utworzono"]
 		},
+		"appearance-layout-task-progress-rings": {
+			"title": "Pierścienie postępu zadań",
+			"section": "Układ",
+			"keywords": ["zadania", "postęp", "pierścienie", "lista kontrolna", "ukończone"]
+		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek notatki",
 			"section": "Eksperymentalne",

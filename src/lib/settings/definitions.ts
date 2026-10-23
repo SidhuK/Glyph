@@ -603,6 +603,13 @@ export const DURABLE_SETTINGS = {
 		read: (settings) => settings.ui.folioSortMode,
 		change: (value) => ({ ui: { folioSortMode: value } }),
 	}),
+	showTaskProgressRings: booleanSetting({
+		key: "ui.showTaskProgressRings",
+		defaultValue: true,
+		discovery: searchable("appearance-layout-task-progress-rings"),
+		read: (settings) => settings.ui.showTaskProgressRings,
+		change: (value) => ({ ui: { showTaskProgressRings: value } }),
+	}),
 	folioNotesWidth: defineApplicationSetting({
 		key: "ui.folio.notesWidth",
 		defaultValue: DEFAULT_FOLIO_NOTES_WIDTH,

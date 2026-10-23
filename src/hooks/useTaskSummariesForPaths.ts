@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useFileTreeContext } from "../contexts";
 import { peekCachedMarkdownDoc } from "../components/preview/markdownCache";
 import { summarizeChecklistsFromMarkdown } from "../lib/checklistSummary";
 import { navigationQueryKeys } from "../lib/navigationPrefetch";
@@ -20,10 +21,13 @@ function summarizeFromCachedMarkdown(paths: string[]): Record<string, NoteTaskSu
 	return next;
 }
 
+/** Returns no summaries while the task progress rings setting is off, so every ring hides. */
 export function useTaskSummariesForPaths(paths: string[], enabled: boolean | null) {
+	const { showTaskProgressRings } = useFileTreeContext();
+	const active = enabled === true && showTaskProgressRings;
 	const taskSummaryPaths = useMemo(
-		() => Array.from(new Set(paths.filter(Boolean))).sort(),
-		[paths],
+		() => (active ? Array.from(new Set(paths.filter(Boolean))).sort() : []),
+		[active, paths],
 	);
 	const cachedSummaries = useMemo(
 		() => summarizeFromCachedMarkdown(taskSummaryPaths),
@@ -31,7 +35,7 @@ export function useTaskSummariesForPaths(paths: string[], enabled: boolean | nul
 	);
 	const summariesQuery = useQuery({
 		queryKey: [...navigationQueryKeys.taskSummaries(), taskSummaryPaths],
-		enabled: enabled === true && taskSummaryPaths.length > 0,
+		enabled: active && taskSummaryPaths.length > 0,
 		staleTime: 30_000,
 		placeholderData: (previousData) =>
 			previousData && Object.keys(previousData).length > 0 ? previousData : cachedSummaries,
@@ -52,6 +56,7 @@ export function useTaskSummariesForPaths(paths: string[], enabled: boolean | nul
 	});
 
 	return useMemo(() => {
+		if (!active) return EMPTY_TASK_SUMMARIES;
 		if (summariesQuery.isSuccess) {
 			return summariesQuery.data ?? EMPTY_TASK_SUMMARIES;
 		}
@@ -59,5 +64,5 @@ export function useTaskSummariesForPaths(paths: string[], enabled: boolean | nul
 			return cachedSummaries;
 		}
 		return EMPTY_TASK_SUMMARIES;
-	}, [cachedSummaries, summariesQuery.data, summariesQuery.isSuccess]);
+	}, [active, cachedSummaries, summariesQuery.data, summariesQuery.isSuccess]);
 }

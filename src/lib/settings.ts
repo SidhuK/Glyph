@@ -469,6 +469,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 	const fileTreeSortMode = DURABLE_SETTINGS.fileTreeSortMode.load(entries);
 	const folioMode = DURABLE_SETTINGS.folioMode.load(entries);
 	const folioSortMode = DURABLE_SETTINGS.folioSortMode.load(entries);
+	const showTaskProgressRings = DURABLE_SETTINGS.showTaskProgressRings.load(entries);
 	const folioNotesWidth = DURABLE_SETTINGS.folioNotesWidth.load(entries);
 	const noteSidePeek = DURABLE_SETTINGS.noteSidePeek.load(entries);
 	const developerMode = DURABLE_SETTINGS.developerMode.load(entries);
@@ -628,6 +629,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			sidebarFolderTabs,
 			folioMode,
 			folioSortMode,
+			showTaskProgressRings,
 			folioNotesWidth,
 			noteSidePeek,
 			developerMode,

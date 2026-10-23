@@ -606,6 +606,11 @@
 			"section": "Layout",
 			"keywords": ["folio", "sort", "name", "modified", "created"]
 		},
+		"appearance-layout-task-progress-rings": {
+			"title": "Task progress rings",
+			"section": "Layout",
+			"keywords": ["tasks", "progress", "rings", "checklist", "completion"]
+		},
 		"appearance-layout-note-side-peek": {
 			"title": "Note peek",
 			"section": "Experimental",

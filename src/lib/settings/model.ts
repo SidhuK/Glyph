@@ -249,6 +249,7 @@ export interface AppSettings {
 		sidebarFolderTabs: string[];
 		folioMode: boolean;
 		folioSortMode: FileTreeSortMode;
+		showTaskProgressRings: boolean;
 		folioNotesWidth: number;
 		noteSidePeek: boolean;
 		developerMode: boolean;

@@ -547,6 +547,11 @@
 			"section": "Layout",
 			"keywords": ["folio", "sortieren", "name", "geändert", "erstellt"]
 		},
+		"appearance-layout-task-progress-rings": {
+			"title": "Aufgabenfortschrittsringe",
+			"section": "Layout",
+			"keywords": ["aufgaben", "fortschritt", "ringe", "checkliste", "erledigt"]
+		},
 		"appearance-layout-note-side-peek": {
 			"title": "Notiz-Peek",
 			"section": "Experimentell",

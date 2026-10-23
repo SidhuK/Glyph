@@ -213,7 +213,10 @@ export function DatabaseBoard({
 		() => Array.from(new Set(rows.map((row) => row.note_path).filter(Boolean))),
 		[rows],
 	);
-	const taskSummariesByPath = useTaskSummariesForPaths(taskSummaryPaths, true);
+	const taskSummariesByPath = useTaskSummariesForPaths(
+		taskSummaryPaths,
+		isCardFieldVisible("task_progress"),
+	);
 	const reorderableLanes = useMemo(
 		() => lanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
 		[lanes],
