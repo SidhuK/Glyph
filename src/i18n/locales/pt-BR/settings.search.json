@@ -549,6 +549,11 @@
 			"section": "Layout",
 			"keywords": ["folio", "ordenar", "nome", "modificado", "criado"]
 		},
+		"appearance-layout-task-progress-rings": {
+			"title": "Anéis de progresso de tarefas",
+			"section": "Layout",
+			"keywords": ["tarefas", "progresso", "anéis", "checklist", "concluído"]
+		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek de nota",
 			"section": "Experimental",

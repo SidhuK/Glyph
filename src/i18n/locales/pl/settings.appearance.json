@@ -104,6 +104,11 @@
 			"label": "Domyślne sortowanie Folio",
 			"description": "Wybierz początkową kolejność plików na liście notatek Folio.",
 			"ariaLabel": "Domyślne sortowanie Folio"
+		},
+		"taskProgressRings": {
+			"label": "Pierścienie postępu zadań",
+			"description": "Pokazuj pierścienie postępu zadań obok notatek na pasku bocznym, w Folio, Aktywności i tablicach baz danych.",
+			"ariaLabel": "Pokazuj pierścienie postępu zadań"
 		}
 	}
 }

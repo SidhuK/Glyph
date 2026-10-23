@@ -104,6 +104,11 @@
 			"label": "Standard-Sortierung in Folio",
 			"description": "Lege die anfängliche Reihenfolge der Dateien in der Folio-Notizenliste fest.",
 			"ariaLabel": "Standard-Sortierung in Folio"
+		},
+		"taskProgressRings": {
+			"label": "Aufgabenfortschrittsringe",
+			"description": "Ringe für den Aufgabenfortschritt neben Notizen in Seitenleiste, Folio, Aktivität und Datenbank-Boards anzeigen.",
+			"ariaLabel": "Aufgabenfortschrittsringe anzeigen"
 		}
 	}
 }

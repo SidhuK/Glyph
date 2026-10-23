@@ -119,6 +119,16 @@ const DURABLE_SETTING_CASES = [
 		writes: [{ value: true, payload: { ui: { folioMode: true } } }],
 	},
 	{
+		name: "task progress rings",
+		storeKey: "ui.showTaskProgressRings",
+		read: (settings: AppSettings) => settings.ui.showTaskProgressRings,
+		defaultValue: true,
+		storedValue: false,
+		invalidStoredValue: "yes",
+		writeKey: "showTaskProgressRings",
+		writes: [{ value: false, payload: { ui: { showTaskProgressRings: false } } }],
+	},
+	{
 		name: "resume last session",
 		storeKey: "ui.resumeLastSession",
 		read: (settings: AppSettings) => settings.ui.resumeLastSession,

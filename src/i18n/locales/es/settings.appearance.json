@@ -104,6 +104,11 @@
 			"label": "Orden predeterminado de Folio",
 			"description": "Elige el orden inicial de los archivos en la lista de notas de Folio.",
 			"ariaLabel": "Orden predeterminado de Folio"
+		},
+		"taskProgressRings": {
+			"label": "Anillos de progreso de tareas",
+			"description": "Muestra anillos de progreso de tareas junto a las notas en la barra lateral, Folio, Actividad y tableros de bases de datos.",
+			"ariaLabel": "Mostrar anillos de progreso de tareas"
 		}
 	}
 }

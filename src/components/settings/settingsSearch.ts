@@ -114,6 +114,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "ai-assistant-behavior-tools", tab: "ai" },
 	{ id: "appearance-layout-folio-mode", tab: "appearance" },
 	{ id: "appearance-layout-folio-sort", tab: "appearance" },
+	{ id: "appearance-layout-task-progress-rings", tab: "appearance" },
 	{ id: "appearance-layout-note-side-peek", tab: "experimental" },
 	{ id: "general-file-tree-folder-counts", tab: "general" },
 	{ id: "general-file-tree-sort", tab: "general" },

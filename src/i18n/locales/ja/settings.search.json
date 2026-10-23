@@ -548,6 +548,11 @@
 			"section": "レイアウト",
 			"keywords": ["folio", "並べ替え", "名前", "更新日", "作成日"]
 		},
+		"appearance-layout-task-progress-rings": {
+			"title": "タスク進捗リング",
+			"section": "レイアウト",
+			"keywords": ["タスク", "進捗", "リング", "チェックリスト", "完了"]
+		},
 		"appearance-layout-note-side-peek": {
 			"title": "ノートプレビュー",
 			"section": "実験的",

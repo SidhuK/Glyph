@@ -63,6 +63,7 @@ interface FileTreeContextValue {
 	tags: TagCount[];
 	people: PersonCount[];
 	beautifulTags: boolean;
+	showTaskProgressRings: boolean;
 	tagAppearance: Record<string, TagAppearance>;
 	tagsError: string;
 	refreshTags: () => Promise<void>;
@@ -149,6 +150,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const [tags, setTags] = useState<TagCount[]>([]);
 	const [people, setPeople] = useState<PersonCount[]>([]);
 	const [beautifulTags, setBeautifulTags] = useState(false);
+	const [showTaskProgressRings, setShowTaskProgressRings] = useState(true);
 	const [tagAppearance, setTagAppearanceState] = useState<Record<string, TagAppearance>>({});
 	const [tagsError, setTagsError] = useState("");
 	const [fileTreeSortMode, setFileTreeSortModeState] = useState<FileTreeSortMode>("name-asc");
@@ -270,6 +272,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				if (cancelled || currentSpacePathRef.current !== spacePath) return;
 				peopleMentionsEnabledRef.current = settings.editor.enablePeopleMentionsAsTags;
 				setBeautifulTags(settings.editor.beautifulTags);
+				setShowTaskProgressRings(settings.ui.showTaskProgressRings);
 				if (folderTabsMutationVersion === sidebarFolderTabsMutationVersionRef.current) {
 					applySidebarFolderTabs(normalizeSidebarFolderTabs(settings.ui.sidebarFolderTabs));
 				}
@@ -310,6 +313,9 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		}
 		if (typeof payload.editor?.beautifulTags === "boolean") {
 			setBeautifulTags(payload.editor.beautifulTags);
+		}
+		if (typeof payload.ui?.showTaskProgressRings === "boolean") {
+			setShowTaskProgressRings(payload.ui.showTaskProgressRings);
 		}
 		const nextSortMode = payload.ui?.fileTreeSortMode;
 		if (isFileTreeSortMode(nextSortMode)) {
@@ -660,6 +666,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			tags,
 			people,
 			beautifulTags,
+			showTaskProgressRings,
 			tagAppearance,
 			tagsError,
 			refreshTags,
@@ -697,6 +704,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			tags,
 			people,
 			beautifulTags,
+			showTaskProgressRings,
 			tagAppearance,
 			tagsError,
 			refreshTags,

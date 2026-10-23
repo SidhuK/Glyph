@@ -104,6 +104,11 @@
 			"label": "기본 Folio 정렬",
 			"description": "Folio 노트 목록의 기본 파일 순서를 선택합니다.",
 			"ariaLabel": "기본 Folio 정렬"
+		},
+		"taskProgressRings": {
+			"label": "작업 진행률 링",
+			"description": "사이드바, Folio, 활동, 데이터베이스 보드의 노트 옆에 작업 진행률 링을 표시합니다.",
+			"ariaLabel": "작업 진행률 링 표시"
 		}
 	}
 }

@@ -529,6 +529,11 @@
 			"section": "레이아웃",
 			"keywords": ["folio", "정렬", "이름", "수정", "생성"]
 		},
+		"appearance-layout-task-progress-rings": {
+			"title": "작업 진행률 링",
+			"section": "레이아웃",
+			"keywords": ["작업", "진행률", "링", "체크리스트", "완료"]
+		},
 		"appearance-layout-note-side-peek": {
 			"title": "노트 피크",
 			"section": "실험적",

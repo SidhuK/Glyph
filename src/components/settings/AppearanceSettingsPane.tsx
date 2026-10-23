@@ -28,7 +28,7 @@ import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
 import { AppearanceLayoutPreview } from "./AppearancePreviewFrame";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { fileTreeSortOptions } from "./FileTreeSettingsSection";
-import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 import { SettingsSegmentedPicker } from "./SettingsSegmentedPicker";
 import { SettingsSelect } from "./SettingsSelect";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
@@ -43,6 +43,11 @@ export function AppearanceSettingsPane() {
 	const folioSortMode = useSettingsValue<FileTreeSortMode>(
 		DEFAULT_FILE_TREE_SORT_MODE,
 		DURABLE_SETTINGS.folioSortMode.write,
+		setError,
+	);
+	const taskProgressRings = useSettingsBoolean(
+		true,
+		DURABLE_SETTINGS.showTaskProgressRings.write,
 		setError,
 	);
 	const themeMode = useSettingsValue<ThemeMode>("system", DURABLE_SETTINGS.theme.write, setError);
@@ -69,6 +74,7 @@ export function AppearanceSettingsPane() {
 	} = useAppearanceCornerRadius({ setError });
 
 	const setInitialFolioMode = folioMode.setInitialChecked;
+	const setInitialTaskProgressRings = taskProgressRings.setInitialChecked;
 	const workspaceLayout = folioMode.checked ? "folio" : "default";
 	const workspaceLayoutOptions = [
 		{
@@ -96,6 +102,7 @@ export function AppearanceSettingsPane() {
 				setCustomThemesState(settings.ui.customThemes);
 				setInitialFolioMode(settings.ui.folioMode);
 				folioSortMode.setInitialValue(settings.ui.folioSortMode);
+				setInitialTaskProgressRings(settings.ui.showTaskProgressRings);
 				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
 			} catch (e) {
 				if (!cancelled) {
@@ -114,6 +121,7 @@ export function AppearanceSettingsPane() {
 		themeMode.setInitialValue,
 		translucentApp.setInitialValue,
 		folioSortMode.setInitialValue,
+		setInitialTaskProgressRings,
 	]);
 
 	useTauriEvent("settings:updated", (payload) => {
@@ -131,6 +139,7 @@ export function AppearanceSettingsPane() {
 		if (payload.ui?.darkThemeId) darkThemeId.setValue(payload.ui.darkThemeId);
 		applyIfBoolean(payload.ui?.translucentApp, translucentApp.setValue);
 		applyIfBoolean(payload.ui?.folioMode, folioMode.setChecked);
+		applyIfBoolean(payload.ui?.showTaskProgressRings, taskProgressRings.setChecked);
 		if (payload.ui?.folioSortMode && !folioSortMode.isSaving) {
 			folioSortMode.setValue(payload.ui.folioSortMode);
 		}
@@ -282,6 +291,18 @@ export function AppearanceSettingsPane() {
 							disabled={folioSortMode.isSaving}
 							options={fileTreeSortOptions()}
 							onValueChange={folioSortMode.onChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("layout.taskProgressRings.label")}
+						description={t("layout.taskProgressRings.description")}
+						searchId="appearance-layout-task-progress-rings"
+					>
+						<SettingsToggle
+							checked={taskProgressRings.checked}
+							disabled={taskProgressRings.isSaving}
+							ariaLabel={t("layout.taskProgressRings.ariaLabel")}
+							onCheckedChange={taskProgressRings.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>

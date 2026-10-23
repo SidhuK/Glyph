@@ -104,6 +104,11 @@
 			"label": "Ordenação padrão do Folio",
 			"description": "Escolha a ordem inicial dos arquivos na lista de notas do Folio.",
 			"ariaLabel": "Ordenação padrão do Folio"
+		},
+		"taskProgressRings": {
+			"label": "Anéis de progresso de tarefas",
+			"description": "Mostra anéis de progresso de tarefas ao lado das notas na barra lateral, no Folio, em Atividade e em quadros de banco de dados.",
+			"ariaLabel": "Mostrar anéis de progresso de tarefas"
 		}
 	}
 }
