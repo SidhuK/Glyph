@@ -1,15 +1,15 @@
 {
-  "version": "0.9.3-alpha.4",
-  "notes": "**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.3-alpha.3...v0.9.3-alpha.4",
-  "pub_date": "2026-10-20T14:25:55.349Z",
+  "version": "0.9.3-alpha.5",
+  "notes": "## What's Changed\n* Fix new code blocks going blank when the cursor leaves them by @SidhuK in https://github.com/SidhuK/Glyph/pull/666\n* Add setting to show or hide task progress rings by @SidhuK in https://github.com/SidhuK/Glyph/pull/667\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.3-alpha.4...v0.9.3-alpha.5",
+  "pub_date": "2026-10-23T03:19:27.377Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHd1aVJDOEZ5eW5wRGJ2YlZzNXMzWVNSN05ZZHg0OG0yekFSQjJHRFd5RE5SRklOdFdmaHJFLzZuY2tKQzJHZ0RuWDdJemRUNGNRZUJwTnVBa1U5N0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTA2MzQ3CWZpbGU6R2x5cGguYXBwLnRhci5negpmRXFqVjBEYjlRQmZNT1RzR2ZIY2x6UTBDcGJIRWJYYW5haHJGaTdVVHUwMzZJTzBwNW9hZmtuMitZMFIyb2tmNTFCYlUvZTZKOGdhQXYxb3pPaGNBZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.3-alpha.4/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDJrT01xYVZkWVp0SmhTQk40NXYzU3ozMWZMeWNTS3BCelFHc2E0RjNFT3cyYkZHMUtMazM2UmI2a1JheDliTmRjS21IS2YvY3VCRnB2YzM4MXp0VXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNzI1NTYxCWZpbGU6R2x5cGguYXBwLnRhci5negpqT0kzSDBDblZ4L2NuemJTMHJ2WllIbThHdmNkdVJBSUN5Smp2OWJYY05UYmFEL01jS2ZySExtcUx4UTE1djJmeHRvd2l6aCsvSkxHTFR2eWtnRXhCZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.3-alpha.5/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHd1aVJDOEZ5eW5wRGJ2YlZzNXMzWVNSN05ZZHg0OG0yekFSQjJHRFd5RE5SRklOdFdmaHJFLzZuY2tKQzJHZ0RuWDdJemRUNGNRZUJwTnVBa1U5N0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTA2MzQ3CWZpbGU6R2x5cGguYXBwLnRhci5negpmRXFqVjBEYjlRQmZNT1RzR2ZIY2x6UTBDcGJIRWJYYW5haHJGaTdVVHUwMzZJTzBwNW9hZmtuMitZMFIyb2tmNTFCYlUvZTZKOGdhQXYxb3pPaGNBZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.3-alpha.4/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDJrT01xYVZkWVp0SmhTQk40NXYzU3ozMWZMeWNTS3BCelFHc2E0RjNFT3cyYkZHMUtMazM2UmI2a1JheDliTmRjS21IS2YvY3VCRnB2YzM4MXp0VXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNzI1NTYxCWZpbGU6R2x5cGguYXBwLnRhci5negpqT0kzSDBDblZ4L2NuemJTMHJ2WllIbThHdmNkdVJBSUN5Smp2OWJYY05UYmFEL01jS2ZySExtcUx4UTE1djJmeHRvd2l6aCsvSkxHTFR2eWtnRXhCZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.3-alpha.5/Glyph_aarch64.app.tar.gz"
     }
   }
 }
