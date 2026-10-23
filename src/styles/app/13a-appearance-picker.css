@@ -204,11 +204,7 @@
 }
 
 .appearancePickerCategoryLabel {
-	position: sticky;
-	top: -4px;
-	z-index: 1;
 	padding: 6px 4px;
-	background: var(--bg-primary);
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
 	font-weight: 500;
@@ -222,7 +218,7 @@
 
 .appearancePickerOption {
 	height: 36px;
-	scroll-margin: 32px 0 8px;
+	scroll-margin: 8px 0;
 	padding: 0;
 	display: inline-flex;
 	align-items: center;
