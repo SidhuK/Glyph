@@ -616,11 +616,14 @@
 			"continue": "Weiter",
 			"skip": "Überspringen",
 			"back": "Zurück",
-			"done": "Fertig"
+			"done": "Fertig",
+			"retry": "Erneut versuchen"
 		},
 		"errors": {
 			"savePreference": "Diese Einstellung konnte nicht gespeichert werden: {{message}}",
-			"saveProgress": "Dein Einrichtungsfortschritt konnte nicht gespeichert werden"
+			"saveProgress": "Dein Einrichtungsfortschritt konnte nicht gespeichert werden: {{message}}",
+			"loadTitle": "Glyph konnte deine Einstellungen nicht laden",
+			"loadSettings": "Deine Einstellungen konnten nicht gelesen werden: {{message}}"
 		}
 	}
 }

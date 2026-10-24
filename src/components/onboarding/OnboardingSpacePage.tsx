@@ -5,10 +5,10 @@ import { OnboardingSpaceChoices } from "./OnboardingSpaceChoices";
 interface OnboardingSpacePageProps {
 	headingId: string;
 	onBack: () => void;
-	onOpened: () => Promise<void>;
+	beforeSelect: () => Promise<void>;
 }
 
-export function OnboardingSpacePage({ headingId, onBack, onOpened }: OnboardingSpacePageProps) {
+export function OnboardingSpacePage({ headingId, onBack, beforeSelect }: OnboardingSpacePageProps) {
 	const { t } = useTranslation("shell");
 	return (
 		<OnboardingPage
@@ -23,7 +23,7 @@ export function OnboardingSpacePage({ headingId, onBack, onOpened }: OnboardingS
 				</div>
 			}
 		>
-			<OnboardingSpaceChoices onOpened={onOpened} />
+			<OnboardingSpaceChoices beforeSelect={beforeSelect} />
 		</OnboardingPage>
 	);
 }

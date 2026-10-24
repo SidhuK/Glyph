@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import glyphIconUrl from "../../../src-tauri/icons/icon.png";
 import { GlyphBloom } from "../easter-eggs/glyph-bloom/GlyphBloom";
 import { useSpaceSelections } from "./OnboardingSpaceChoices";
-import { pageVariants, revealVariants } from "./onboardingMotion";
+import { focusOnMount, pageVariants, revealVariants } from "./onboardingMotion";
 
 /** The no-space screen once onboarding is complete. */
 export function OnboardingWelcomeBack() {
@@ -28,6 +28,7 @@ export function OnboardingWelcomeBack() {
 			</m.p>
 			<m.div className="obWelcomeBackActions" variants={revealVariants}>
 				<button
+					ref={focusOnMount}
 					type="button"
 					className="obButton"
 					data-variant="primary"

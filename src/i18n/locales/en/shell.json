@@ -776,11 +776,14 @@
 			"continue": "Continue",
 			"skip": "Skip",
 			"back": "Back",
-			"done": "Done"
+			"done": "Done",
+			"retry": "Retry"
 		},
 		"errors": {
 			"savePreference": "Couldn't save this preference: {{message}}",
-			"saveProgress": "Couldn't save your setup progress"
+			"saveProgress": "Couldn't save your setup progress: {{message}}",
+			"loadTitle": "Glyph Couldn't Load Your Settings",
+			"loadSettings": "Your settings couldn't be read: {{message}}"
 		}
 	}
 }

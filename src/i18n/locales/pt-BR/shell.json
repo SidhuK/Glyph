@@ -616,11 +616,14 @@
 			"continue": "Continuar",
 			"skip": "Pular",
 			"back": "Voltar",
-			"done": "Concluído"
+			"done": "Concluído",
+			"retry": "Tentar novamente"
 		},
 		"errors": {
 			"savePreference": "Não foi possível salvar esta preferência: {{message}}",
-			"saveProgress": "Não foi possível salvar o progresso da configuração"
+			"saveProgress": "Não foi possível salvar o progresso da configuração: {{message}}",
+			"loadTitle": "O Glyph não conseguiu carregar seus ajustes",
+			"loadSettings": "Não foi possível ler seus ajustes: {{message}}"
 		}
 	}
 }

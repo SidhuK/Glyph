@@ -2,6 +2,7 @@ import { AnimatePresence, m } from "motion/react";
 import type { ReactNode } from "react";
 import { OnboardingHello } from "./OnboardingHello";
 import { OnboardingPreferencesPage } from "./OnboardingPreferencesPage";
+import { useOnboardingControls } from "./OnboardingProvider";
 import { OnboardingSpacePage } from "./OnboardingSpacePage";
 import { OnboardingWelcomePage } from "./OnboardingWelcomePage";
 import { OnboardingDirectionContext, pageVariants } from "./onboardingMotion";
@@ -11,11 +12,11 @@ interface OnboardingFlowProps {
 	/** With a space open the flow has no space step and finishes on the preferences page. */
 	spaceOpen: boolean;
 	headingId: string;
-	onFinish: () => Promise<void>;
 	onSkip?: () => void;
 }
 
-export function OnboardingFlow({ spaceOpen, headingId, onFinish, onSkip }: OnboardingFlowProps) {
+export function OnboardingFlow({ spaceOpen, headingId, onSkip }: OnboardingFlowProps) {
+	const { complete, finish, completion } = useOnboardingControls();
 	const flow = useOnboardingFlow(!spaceOpen);
 	const { step, direction } = flow;
 
@@ -46,10 +47,12 @@ export function OnboardingFlow({ spaceOpen, headingId, onFinish, onSkip }: Onboa
 			<OnboardingPreferencesPage
 				headingId={headingId}
 				isLastStep={flow.isLastStep}
+				finishing={flow.isLastStep && completion.isPending}
+				finishError={flow.isLastStep ? completion.error : null}
 				onBack={() => flow.back("preferences")}
 				onContinue={() => {
-					if (flow.isLastStep) void onFinish();
-					else flow.next("preferences");
+					if (!flow.isLastStep) flow.next("preferences");
+					else if (!completion.isPending) finish();
 				}}
 				onSkip={() => skipFrom("preferences")}
 			/>
@@ -59,7 +62,7 @@ export function OnboardingFlow({ spaceOpen, headingId, onFinish, onSkip }: Onboa
 			<OnboardingSpacePage
 				headingId={headingId}
 				onBack={() => flow.back("space")}
-				onOpened={onFinish}
+				beforeSelect={complete}
 			/>
 		);
 	}

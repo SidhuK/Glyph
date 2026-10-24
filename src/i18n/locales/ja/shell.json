@@ -614,11 +614,14 @@
 			"continue": "続ける",
 			"skip": "スキップ",
 			"back": "戻る",
-			"done": "完了"
+			"done": "完了",
+			"retry": "再試行"
 		},
 		"errors": {
 			"savePreference": "この設定を保存できませんでした: {{message}}",
-			"saveProgress": "セットアップの進行状況を保存できませんでした"
+			"saveProgress": "セットアップの進行状況を保存できませんでした: {{message}}",
+			"loadTitle": "Glyph は設定を読み込めませんでした",
+			"loadSettings": "設定を読み込めませんでした: {{message}}"
 		}
 	}
 }

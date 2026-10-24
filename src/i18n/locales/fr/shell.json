@@ -618,11 +618,14 @@
 			"continue": "Continuer",
 			"skip": "Ignorer",
 			"back": "Retour",
-			"done": "Terminé"
+			"done": "Terminé",
+			"retry": "Réessayer"
 		},
 		"errors": {
 			"savePreference": "Impossible d'enregistrer cette préférence : {{message}}",
-			"saveProgress": "Impossible d'enregistrer la progression de la configuration"
+			"saveProgress": "Impossible d'enregistrer la progression de la configuration : {{message}}",
+			"loadTitle": "Glyph n'a pas pu charger vos réglages",
+			"loadSettings": "Impossible de lire vos réglages : {{message}}"
 		}
 	}
 }

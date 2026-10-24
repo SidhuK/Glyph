@@ -664,11 +664,14 @@
 			"continue": "Dalej",
 			"skip": "Pomiń",
 			"back": "Wstecz",
-			"done": "Gotowe"
+			"done": "Gotowe",
+			"retry": "Spróbuj ponownie"
 		},
 		"errors": {
 			"savePreference": "Nie udało się zapisać tego ustawienia: {{message}}",
-			"saveProgress": "Nie udało się zapisać postępu konfiguracji"
+			"saveProgress": "Nie udało się zapisać postępu konfiguracji: {{message}}",
+			"loadTitle": "Glyph nie mógł wczytać ustawień",
+			"loadSettings": "Nie udało się odczytać ustawień: {{message}}"
 		}
 	}
 }

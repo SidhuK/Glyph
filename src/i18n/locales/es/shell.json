@@ -616,11 +616,14 @@
 			"continue": "Continuar",
 			"skip": "Omitir",
 			"back": "Atrás",
-			"done": "Listo"
+			"done": "Listo",
+			"retry": "Reintentar"
 		},
 		"errors": {
 			"savePreference": "No se pudo guardar esta preferencia: {{message}}",
-			"saveProgress": "No se pudo guardar el progreso de la configuración"
+			"saveProgress": "No se pudo guardar el progreso de la configuración: {{message}}",
+			"loadTitle": "Glyph no pudo cargar tus ajustes",
+			"loadSettings": "No se pudieron leer tus ajustes: {{message}}"
 		}
 	}
 }

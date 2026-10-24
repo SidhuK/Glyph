@@ -16,6 +16,8 @@ const EDITOR_MODES = ["rich", "preview", "plain"] as const satisfies readonly Ed
 interface OnboardingPreferencesPageProps {
 	headingId: string;
 	isLastStep: boolean;
+	finishing: boolean;
+	finishError: Error | null;
 	onBack: () => void;
 	onContinue: () => void;
 	onSkip: () => void;
@@ -24,6 +26,8 @@ interface OnboardingPreferencesPageProps {
 export function OnboardingPreferencesPage({
 	headingId,
 	isLastStep,
+	finishing,
+	finishError,
 	onBack,
 	onContinue,
 	onSkip,
@@ -34,7 +38,7 @@ export function OnboardingPreferencesPage({
 	const language = useOnboardingSetting(DURABLE_SETTINGS.language);
 	const editorMode = useOnboardingSetting(DURABLE_SETTINGS.editorDefaultEditorMode);
 	const fontSize = useOnboardingSetting(DURABLE_SETTINGS.fontSize);
-	const error = theme.error ?? language.error ?? editorMode.error ?? fontSize.error;
+	const preferenceError = theme.error ?? language.error ?? editorMode.error ?? fontSize.error;
 	const sizes: readonly number[] = TEXT_SIZES.some((size) => size === fontSize.value)
 		? TEXT_SIZES
 		: [...TEXT_SIZES, fontSize.value].sort((a, b) => a - b);
@@ -57,7 +61,14 @@ export function OnboardingPreferencesPage({
 						</button>
 					</div>
 					<div className="obFooterTrailing">
-						<button type="button" className="obButton" data-variant="primary" onClick={onContinue}>
+						<button
+							type="button"
+							className="obButton"
+							data-variant="primary"
+							disabled={finishing}
+							aria-busy={finishing}
+							onClick={onContinue}
+						>
 							{t(isLastStep ? "onboarding.actions.done" : "onboarding.actions.continue")}
 						</button>
 					</div>
@@ -125,9 +136,16 @@ export function OnboardingPreferencesPage({
 					/>
 				</OnboardingPreferenceRow>
 			</ul>
-			{error ? (
+			{preferenceError ? (
 				<p role="alert" className="onboardingError">
-					{t("onboarding.errors.savePreference", { message: extractErrorMessage(error) })}
+					{t("onboarding.errors.savePreference", {
+						message: extractErrorMessage(preferenceError),
+					})}
+				</p>
+			) : null}
+			{finishError ? (
+				<p role="alert" className="onboardingError">
+					{t("onboarding.errors.saveProgress", { message: extractErrorMessage(finishError) })}
 				</p>
 			) : null}
 		</OnboardingPage>

@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { m } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import type { SpaceSelectionResult } from "../../contexts/SpaceContext";
 import { revealVariants } from "./onboardingMotion";
 
@@ -12,24 +13,31 @@ const CHOICE_ICON_SIZE = 28;
 function useSpaceSelection(
 	select: () => Promise<SpaceSelectionResult>,
 	failedMessage: string,
-	onOpened?: () => Promise<void>,
+	beforeSelect?: () => Promise<void>,
 ) {
+	const { t } = useTranslation("shell");
 	return useMutation({
 		mutationFn: async () => {
+			try {
+				await beforeSelect?.();
+			} catch (cause) {
+				throw new Error(
+					t("onboarding.errors.saveProgress", { message: extractErrorMessage(cause) }),
+				);
+			}
 			const result = await select();
 			if (result === "failed") throw new Error(failedMessage);
-			if (result === "opened") await onOpened?.();
 			return result;
 		},
 	});
 }
 
 /** Create and open mutations that clear each other's error when one starts. */
-export function useSpaceSelections(onOpened?: () => Promise<void>) {
+export function useSpaceSelections(beforeSelect?: () => Promise<void>) {
 	const { t } = useTranslation("shell");
 	const { onCreateSpace, onOpenSpace } = useSpace();
-	const create = useSpaceSelection(onCreateSpace, t("onboarding.space.createFailed"), onOpened);
-	const open = useSpaceSelection(onOpenSpace, t("onboarding.space.openFailed"), onOpened);
+	const create = useSpaceSelection(onCreateSpace, t("onboarding.space.createFailed"), beforeSelect);
+	const open = useSpaceSelection(onOpenSpace, t("onboarding.space.openFailed"), beforeSelect);
 	return {
 		create,
 		open,
@@ -47,13 +55,13 @@ export function useSpaceSelections(onOpened?: () => Promise<void>) {
 }
 
 interface OnboardingSpaceChoicesProps {
-	/** Runs after a space opens, before this screen unmounts. */
-	onOpened?: () => Promise<void>;
+	/** Runs before the picker opens; a rejection stops the selection and is shown here. */
+	beforeSelect?: () => Promise<void>;
 }
 
-export function OnboardingSpaceChoices({ onOpened }: OnboardingSpaceChoicesProps) {
+export function OnboardingSpaceChoices({ beforeSelect }: OnboardingSpaceChoicesProps) {
 	const { t } = useTranslation("shell");
-	const selections = useSpaceSelections(onOpened);
+	const selections = useSpaceSelections(beforeSelect);
 	const choices = [
 		{
 			id: "create",

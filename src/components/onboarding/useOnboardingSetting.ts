@@ -8,8 +8,11 @@ export function useOnboardingSetting<Value>(definition: ApplicationSettingDefini
 	const queryClient = useQueryClient();
 	const settings = useQuery({ queryKey: SETTINGS_QUERY_KEY, queryFn: () => loadSettings() });
 	const mutation = useMutation({
+		// A shared scope runs writes in order, so a slower earlier write can't land last.
+		scope: { id: `onboarding-setting:${definition.key}` },
 		mutationFn: definition.write,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY }),
+		// Awaiting the refetch keeps the pending value shown until the stored one has caught up.
+		onSettled: () => queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY }),
 	});
 	const stored = settings.data ? definition.read(settings.data) : definition.defaultValue;
 	const value =
