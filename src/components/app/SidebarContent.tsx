@@ -14,7 +14,6 @@ import {
 	Layout01Icon as TemplatesIcon,
 	LibraryIcon as CollectionsIcon,
 	NoteIcon as AllNotesIcon,
-	PaintBoardIcon as CanvasIcon,
 	PinIcon,
 	Refresh04Icon as SyncIcon,
 	SearchIcon,
@@ -65,6 +64,7 @@ import { FileTreePane } from "../filetree";
 import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
 import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
+import { SidebarCreateMenu } from "./SidebarCreateMenu";
 import { SidebarCalendar } from "./calendar/SidebarCalendar";
 import type { OpenPeriodNoteAtDate } from "./calendar/useCalendarView";
 
@@ -590,17 +590,15 @@ export const SidebarContent = memo(function SidebarContent({
 											) : null}
 										</button>
 									) : null}
-									{sidebarVisibility.newCanvas ? (
-										<button
-											type="button"
-											className="sidebarNewCanvasIconBtn"
-											aria-label={t("sidebar.newCanvas")}
-											title={t("sidebar.newCanvas")}
-											onClick={onNewCanvas}
-										>
-											<HugeiconsIcon icon={CanvasIcon} size="var(--icon-md)" aria-hidden="true" />
-										</button>
-									) : null}
+									<span className="sidebarCreateDivider" aria-hidden="true" />
+									<SidebarCreateMenu
+										showCanvas={sidebarVisibility.newCanvas}
+										onNewCanvas={onNewCanvas}
+										onOpenPeriodNote={onOpenPeriodNote}
+										onOpenQuickNote={onOpenQuickNote}
+										onCreateFromTemplate={onCreateFromTemplate}
+										getBinding={getBinding}
+									/>
 								</div>
 							) : null}
 							{sidebarVisibility.inbox ? (
