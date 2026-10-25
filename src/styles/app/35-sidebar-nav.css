@@ -54,31 +54,95 @@
 .sidebarCreateRow {
 	display: flex;
 	align-items: center;
-	gap: 2px;
 	width: calc(100% - 16px);
+	height: 26px;
 	margin-inline: 8px;
+	border-radius: var(--radius-8);
+	transition: background var(--transition-fast);
+}
+
+/* Translucent hover tokens stack, so the hovered half reads stronger than the row. */
+.sidebarCreateRow:hover,
+.sidebarCreateRow:has([data-popup-open]) {
+	background: var(--bg-hover);
 }
 
 .sidebarCreateRow .sidebarNewNoteBtn {
 	flex: 1 1 auto;
 	min-width: 0;
 	width: auto;
+	height: 26px;
+	border-radius: var(--radius-8) 0 0 var(--radius-8);
 }
 
-button.sidebarNewCanvasIconBtn {
-	flex: 0 0 26px;
-	width: 26px;
+.sidebarCreateRow .sidebarNewNoteBtn .sidebarQuickActionShortcut {
+	padding-right: 4px;
+}
+
+.sidebarCreateDivider {
+	flex: 0 0 1px;
+	align-self: center;
+	height: 14px;
+	background: var(--border-default);
+	transition: opacity var(--transition-fast);
+}
+
+.sidebarCreateRow:has(> :hover) .sidebarCreateDivider,
+.sidebarCreateRow:has([data-popup-open]) .sidebarCreateDivider {
+	opacity: 0;
+}
+
+button.sidebarCreateMenuTrigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 24px;
+	width: 24px;
 	height: 26px;
 	padding: 0;
-	margin-left: auto;
-	border-radius: var(--radius-8);
+	margin: 0;
+	background: none;
+	border: none;
+	border-radius: 0 var(--radius-8) var(--radius-8) 0;
 	color: var(--text-secondary);
+	cursor: pointer;
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
 }
 
-button.sidebarNewCanvasIconBtn:hover,
-button.sidebarNewCanvasIconBtn:active {
+button.sidebarCreateMenuTrigger > svg {
+	flex: 0 0 auto;
+	transition: transform var(--transition-fast);
+}
+
+button.sidebarCreateMenuTrigger:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
+}
+
+button.sidebarCreateMenuTrigger:active,
+button.sidebarCreateMenuTrigger[data-popup-open] {
+	background: var(--bg-active);
+	color: var(--text-primary);
+}
+
+button.sidebarCreateMenuTrigger[data-popup-open] > svg {
+	transform: rotate(180deg);
+}
+
+button.sidebarCreateMenuTrigger:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sidebarCreateRow,
+	.sidebarCreateDivider,
+	button.sidebarCreateMenuTrigger,
+	button.sidebarCreateMenuTrigger > svg {
+		transition: none;
+	}
 }
 
 .sidebarQuickActionShortcut {
