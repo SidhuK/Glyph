@@ -112,11 +112,9 @@ export function GeneralSettingsPane() {
 				</SettingsSection>
 				<FileTreeSettingsSection folderCounts={folderCounts} setError={setError} />
 				<LicenseSettingsCard />
-				<SettingsSection
-					title={t("language.sectionTitle")}
-					description={t("language.sectionDescription")}
-				>
+				<SettingsSection title={t("region.sectionTitle")}>
 					<SettingsRow
+						searchId="general-language"
 						label={t("language.label")}
 						description={
 							<Trans
@@ -148,12 +146,8 @@ export function GeneralSettingsPane() {
 							onValueChange={(next) => void handleLanguageChange(next)}
 						/>
 					</SettingsRow>
-				</SettingsSection>
-				<SettingsSection
-					title={t("dateTime.sectionTitle")}
-					description={t("dateTime.sectionDescription")}
-				>
 					<SettingsRow
+						searchId="general-date-format"
 						label={t("dateTime.dateFormat.label")}
 						description={t("dateTime.dateFormat.description")}
 						htmlFor="settings-date-format-select"

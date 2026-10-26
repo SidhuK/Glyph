@@ -1,6 +1,6 @@
 import { NoteArchiveAction } from "./NoteArchiveAction";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { AiBrain04Icon, LayoutAlignRightIcon } from "@hugeicons/core-free-icons";
+import { LayoutAlignRightIcon, SparklesIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -190,7 +190,6 @@ export function MarkdownEditorPane({
 		rawEditorRef,
 		runAutosave,
 		saveBeforeExternalMutation,
-		saveLabel,
 		text,
 		textRef,
 		loadedRelPath,
@@ -541,7 +540,7 @@ export function MarkdownEditorPane({
 									title={t("toolbar.aiPanel")}
 									aria-pressed={aiPanelOpen}
 								>
-									<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
+									<HugeiconsIcon icon={SparklesIcon} size="var(--icon-md)" />
 								</button>
 							) : null}
 							<button
@@ -637,7 +636,6 @@ export function MarkdownEditorPane({
 						lastSavedMtimeMs={lastSavedMtimeMs}
 						lineCount={infoAnalysis.lineCount}
 						utf8SizeBytes={utf8SizeBytes}
-						saveLabel={saveLabel}
 						gitSyncStatus={gitSyncStatus}
 						selectedGitCommitHash={gitDiff?.commit.hash ?? null}
 						onSelectGitDiff={onGitDiffChange ?? undefined}

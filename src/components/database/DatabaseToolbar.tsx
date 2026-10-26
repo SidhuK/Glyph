@@ -1,5 +1,3 @@
-import { UnavailableIcon } from "@hugeicons/core-free-icons";
-import type { TFunction } from "i18next";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type {
@@ -9,8 +7,6 @@ import type {
 } from "../../lib/database/types";
 import { Search, X } from "../Icons";
 import { Input } from "../ui/shadcn/input";
-import { Select, SelectIcon } from "../ui/shadcn/select";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { DatabaseViewOptionsPopover } from "./DatabaseViewOptionsPopover";
 
 interface DatabaseToolbarProps {
@@ -27,17 +23,6 @@ interface DatabaseToolbarProps {
 }
 
 const DATABASE_SEARCH_DEBOUNCE_MS = 300;
-
-function groupColumnOptionLabel(column: DatabaseColumn, t: TFunction<"shell">): string {
-	if (
-		column.type === "tags" ||
-		column.property_kind === "tags" ||
-		column.property_kind === "multi_select"
-	) {
-		return t("collections.groupBy.multiLane", { name: column.label });
-	}
-	return column.label;
-}
 
 export function DatabaseToolbar({
 	databaseView,
@@ -71,8 +56,6 @@ export function DatabaseToolbar({
 		groupColumns.find((column) => column.id === groupColumnId) ??
 		(databaseView === "board" ? groupColumns[0] : null) ??
 		null;
-	const selectedGroupColumnId = selectedGroupColumn?.id ?? "";
-	const groupByLabel = t("collections.groupBy.label");
 
 	useEffect(() => {
 		if (searchDraft === searchValue) return;
@@ -121,45 +104,18 @@ export function DatabaseToolbar({
 						</button>
 					) : null}
 				</label>
-				{groupColumns.length > 0 ? (
-					<div className="databaseToolbarGroupBy">
-						<span className="databaseToolbarGroupByLabel">{groupByLabel}</span>
-						<Select
-							value={selectedGroupColumnId}
-							title={
-								selectedGroupColumn
-									? t("collections.groupBy.title", { name: selectedGroupColumn.label })
-									: t("collections.groupBy.choose")
-							}
-							aria-label={groupByLabel}
-							options={[
-								...(databaseView === "board"
-									? []
-									: [
-											{
-												value: "",
-												label: t("collections.groupBy.none"),
-												icon: <SelectIcon icon={UnavailableIcon} />,
-											},
-										]),
-								...groupColumns.map((column) => ({
-									value: column.id,
-									label: groupColumnOptionLabel(column, t),
-									icon: <DatabaseColumnIcon column={column} size="var(--icon-sm)" />,
-								})),
-							]}
-							onValueChange={(columnId) => onGroupColumnIdChange(columnId || null)}
-						/>
-					</div>
-				) : databaseView === "board" ? (
-					<span className="databaseToolbarGroupByHint">{t("collections.groupBy.boardHint")}</span>
-				) : null}
 				<DatabaseViewOptionsPopover
 					open={viewOptionsOpen}
 					onOpenChange={onViewOptionsOpenChange}
 					config={config}
 					availableProperties={availableProperties}
 					onChangeConfig={onChangeConfig}
+					grouping={{
+						columns: groupColumns,
+						selectedColumn: selectedGroupColumn,
+						allowNone: databaseView !== "board",
+						onChange: onGroupColumnIdChange,
+					}}
 				/>
 			</div>
 		</div>

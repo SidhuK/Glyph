@@ -9,11 +9,9 @@ import {
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { isReservedUiThemeName } from "../../lib/uiThemes";
-import { Copy, Download, Trash2, Upload } from "../Icons";
+import { Trash2 } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { SettingsInfoHint, SettingsRow, SettingsSection } from "./SettingsScaffold";
-
-const ACTION_BUTTON_CLASS = "rounded-md border-border bg-background justify-center shadow-none";
 
 interface AppearanceCustomThemesCardProps {
 	customThemes: readonly CustomTheme[];
@@ -106,27 +104,11 @@ export function AppearanceCustomThemesCard({
 				interactive={false}
 			>
 				<div className="settingsActions">
-					<Button
-						type="button"
-						variant="outline"
-						size="icon-sm"
-						className={ACTION_BUTTON_CLASS}
-						aria-label={t("customThemes.template.copy")}
-						title={t("customThemes.template.copy")}
-						onClick={() => void handleCopyTemplate()}
-					>
-						<Copy size="var(--icon-md)" />
+					<Button type="button" variant="outline" onClick={() => void handleCopyTemplate()}>
+						{t("customThemes.template.copy")}
 					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="icon-sm"
-						className={ACTION_BUTTON_CLASS}
-						aria-label={t("customThemes.template.save")}
-						title={t("customThemes.template.save")}
-						onClick={() => void handleSaveTemplate()}
-					>
-						<Download size="var(--icon-md)" />
+					<Button type="button" variant="outline" onClick={() => void handleSaveTemplate()}>
+						{t("customThemes.template.save")}
 					</Button>
 				</div>
 			</SettingsRow>
@@ -143,16 +125,8 @@ export function AppearanceCustomThemesCard({
 				}
 				interactive={false}
 			>
-				<Button
-					type="button"
-					variant="outline"
-					size="icon-sm"
-					className={ACTION_BUTTON_CLASS}
-					aria-label={t("customThemes.import.action")}
-					title={t("customThemes.import.action")}
-					onClick={() => void handleImport()}
-				>
-					<Upload size="var(--icon-md)" />
+				<Button type="button" variant="outline" onClick={() => void handleImport()}>
+					{t("customThemes.import.action")}
 				</Button>
 			</SettingsRow>
 
@@ -165,9 +139,8 @@ export function AppearanceCustomThemesCard({
 				>
 					<Button
 						type="button"
-						variant="outline"
+						variant="destructive"
 						size="icon-sm"
-						className={ACTION_BUTTON_CLASS}
 						aria-label={t("customThemes.removeAriaLabel", { name: theme.name })}
 						title={t("customThemes.removeAriaLabel", { name: theme.name })}
 						onClick={() => void handleRemove(theme)}

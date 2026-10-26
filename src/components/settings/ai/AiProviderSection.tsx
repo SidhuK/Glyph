@@ -10,6 +10,10 @@ function usesReasoningControl(provider: AiProviderKind): boolean {
 	return provider === "codex_chatgpt" || provider === "pi" || provider === "grok";
 }
 
+function sentenceCase(value: string): string {
+	return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 interface AiProviderSectionProps {
 	profileDraft: AiProfile;
 	availableModels: AiModel[] | null;
@@ -33,6 +37,14 @@ export function AiProviderSection({
 	const selectedModel = availableModels?.find((model) => model.id === profileDraft.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
 	const shouldShowReasoningSelect = usesReasoningControl(profileDraft.provider);
+	const reasoningValue =
+		profileDraft.reasoning_effort ??
+		selectedModel?.default_reasoning_effort ??
+		reasoningOptions?.[0]?.effort ??
+		"";
+	const reasoningDescription =
+		reasoningOptions?.find((option) => option.effort === reasoningValue)?.description ||
+		t("reasoning.description");
 	const chatNamingModel = profileDraft.chat_naming_model;
 	const chatNamingOptions = [
 		{ value: "", label: t("chatNaming.sameModel") },
@@ -47,10 +59,7 @@ export function AiProviderSection({
 			: "https://api.example.com/v1";
 
 	return (
-		<SettingsSection
-			title={t("connection.sectionTitle")}
-			description={t("connection.sectionDescription")}
-		>
+		<SettingsSection title={t("connection.sectionTitle")}>
 			<AiConnectionPicker provider={profileDraft.provider} onProviderChange={onProviderChange} />
 
 			<SettingsRow label={t("model.label")} htmlFor="aiModel" description={t("model.description")}>
@@ -102,22 +111,17 @@ export function AiProviderSection({
 				<SettingsRow
 					label={t("reasoning.label")}
 					htmlFor="aiReasoningEffort"
-					description={t("reasoning.description")}
+					description={reasoningDescription}
 				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
 						<SettingsSelect
 							id="aiReasoningEffort"
-							value={
-								profileDraft.reasoning_effort ??
-								selectedModel?.default_reasoning_effort ??
-								reasoningOptions?.[0]?.effort ??
-								""
-							}
+							value={reasoningValue}
 							options={(reasoningOptions ?? []).map((option) => ({
 								value: option.effort,
-								label: option.description
-									? `${option.effort} - ${option.description}`
-									: option.effort,
+								label: t(`reasoning.levels.${option.effort}`, {
+									defaultValue: sentenceCase(option.effort),
+								}),
 							}))}
 							onValueChange={(effort) =>
 								void onPersistDraft({ ...profileDraft, reasoning_effort: effort || null })

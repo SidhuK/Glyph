@@ -1,5 +1,5 @@
 import { Collapsible, CollapsibleContent } from "@/components/ui/shadcn/collapsible";
-import { format, isSameDay, isSameMonth, isSameWeek, parseISO } from "date-fns";
+import { format, isSameDay, isSameMonth, parseISO } from "date-fns";
 import { type MouseEvent, type ReactNode, useCallback, useMemo, useState } from "react";
 import { activityTone } from "../../../lib/calendarActivity";
 import type { SidebarCalendarLayout } from "../../../lib/settings/model";
@@ -156,10 +156,7 @@ export function CalendarMonth({
 					</thead>
 					<tbody>
 						{weeks.map((week) => (
-							<tr
-								key={format(week[0], "yyyy-MM-dd")}
-								data-current-week={isSameWeek(week[0], today, { weekStartsOn })}
-							>
+							<tr key={format(week[0], "yyyy-MM-dd")}>
 								{week.map((date) => {
 									const dateKey = format(date, "yyyy-MM-dd");
 									return (

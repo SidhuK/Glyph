@@ -113,13 +113,13 @@
 		},
 		"general-language": {
 			"title": "Język",
-			"section": "Język",
+			"section": "Język i region",
 			"description": "Wybierz język interfejsu dla programu Glyph.",
 			"keywords": ["lokalizacja", "tłumaczenie", "i18n", "język"]
 		},
 		"general-date-format": {
 			"title": "Format daty",
-			"section": "Data i czas",
+			"section": "Język i region",
 			"description": "Wybierz sposób wyświetlania pełnych dat w programie Glyph.",
 			"keywords": [
 				"data",
@@ -164,7 +164,7 @@
 		},
 		"sidebar-calendar": {
 			"title": "Kalendarz na pasku bocznym",
-			"section": "Pasek boczny",
+			"section": "Nawigacja",
 			"description": "Wybierz układ kalendarza, podsumowanie dnia i działanie kliknięcia dnia.",
 			"keywords": [
 				"kalendarz",
@@ -206,12 +206,12 @@
 		},
 		"typography-interface-font": {
 			"title": "Czcionka interfejsu",
-			"section": "Typografia",
+			"section": "Interfejs",
 			"keywords": ["czcionka", "interfejs", "bezszeryfowa"]
 		},
 		"typography-monospace-font": {
 			"title": "Czcionka o stałej szerokości",
-			"section": "Typografia",
+			"section": "Interfejs",
 			"keywords": ["czcionka", "kod", "monowidth"]
 		},
 		"typography-editor-font": {
@@ -231,7 +231,7 @@
 		},
 		"typography-ui-font-size": {
 			"title": "Rozmiar czcionki interfejsu",
-			"section": "Typografia",
+			"section": "Interfejs",
 			"keywords": ["czcionka", "tekst", "interfejs"]
 		},
 		"typography-editor-font-size": {
@@ -414,7 +414,7 @@
 			"keywords": ["repo", "synchronizacja", "gałąź"]
 		},
 		"git-how-it-works": {
-			"title": "Jak to działa",
+			"title": "Zdalne repozytorium",
 			"section": "Połączenie",
 			"description": "Przejrzyj szczegóły połączenia zdalnego dla bieżącego repozytorium.",
 			"keywords": ["zdalny adres url", "zainicjuj git", "poświadczenia"]
@@ -461,7 +461,7 @@
 		},
 		"general-editor-table-of-contents": {
 			"title": "Spis treści",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": ["spis treści", "zarys"]
 		},
 		"space-search-index-people-tags": {
@@ -471,32 +471,32 @@
 		},
 		"general-editor-frontmatter": {
 			"title": "Pokaż frontmatter w edytorze",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": ["właściwości", "yaml", "metadane"]
 		},
 		"general-editor-heading-prefixes": {
 			"title": "Przedrostki nagłówków",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": ["nagłówek", "h1", "h2", "h3", "etykieta"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "Kolorowe nagłówki",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": ["edytor", "kolor"]
 		},
 		"general-editor-heading-palette": {
 			"title": "Paleta nagłówków",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": ["nagłówek", "kolor", "paleta"]
 		},
 		"general-editor-default-mode": {
 			"title": "Domyślny tryb edytora",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": ["wzbogacony", "podgląd", "markdown"]
 		},
 		"general-editor-focus-mode": {
 			"title": "Tryb skupienia",
-			"section": "Eksperymentalne",
+			"section": "Funkcje",
 			"keywords": ["skupienie", "akapit", "zdanie"]
 		},
 		"appearance-editor-presentation-beautiful-tags": {
@@ -511,12 +511,12 @@
 		},
 		"general-editor-collapsible-headings": {
 			"title": "Zwijane nagłówki",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": ["zwijanie", "składanie", "rozwijanie"]
 		},
 		"general-editor-collapsible-lists": {
 			"title": "Zwijane listy",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": [
 				"zwijanie",
 				"składanie",
@@ -528,27 +528,27 @@
 		},
 		"general-editor-spell-check": {
 			"title": "Sprawdzanie pisowni",
-			"section": "Edytor",
+			"section": "Edycja",
 			"keywords": ["pisownia", "literówka", "słownik"]
 		},
 		"general-editor-raw-live-preview": {
 			"title": "Podgląd Markdown na żywo w trybie RAW",
-			"section": "Eksperymentalne",
+			"section": "Funkcje",
 			"keywords": ["raw", "markdown", "vim", "live", "preview"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Tryb Vim",
-			"section": "Eksperymentalne",
+			"section": "Funkcje",
 			"keywords": ["vim", "surowy", "markdown", "powiązania klawiszy", "klawiatura"]
 		},
 		"general-editor-format-bar": {
 			"title": "Pasek formatowania",
-			"section": "Eksperymentalne",
+			"section": "Funkcje",
 			"keywords": ["formatowanie", "pasek", "toolbar", "wzbogacony", "edytor"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "Czat AI ma dostęp do narzędzi",
-			"section": "Zachowanie asystenta",
+			"section": "Dostępność",
 			"keywords": ["asystent", "wywołania narzędzi"]
 		},
 		"appearance-layout-folio-mode": {
@@ -568,7 +568,7 @@
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek notatki",
-			"section": "Eksperymentalne",
+			"section": "Funkcje",
 			"keywords": ["peek", "podgląd", "wiki", "wszystkie notatki", "arc"]
 		},
 		"general-file-tree-folder-counts": {

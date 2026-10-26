@@ -1,8 +1,9 @@
+/* Hugs the model name like the other row selects, inside the same 160-260px range. */
 .modelCombobox {
 	position: relative;
-	min-width: 0;
-	max-width: 280px;
-	width: 100%;
+	min-width: 160px;
+	max-width: 260px;
+	width: auto;
 }
 
 .modelComboboxInputWrap {
@@ -13,24 +14,6 @@
 
 .modelComboboxInputWrap .settingsSelectTrigger {
 	max-width: none;
-}
-
-/* Keep the value clear of the model-count badge: text ends 92px from the trigger's edge. */
-.modelComboboxInputWrap .glyphSelectValue {
-	padding-right: 64px;
-}
-
-.modelComboboxBadge {
-	position: absolute;
-	right: 34px;
-	font-size: calc(var(--text-base) * 0.8);
-	color: var(--text-tertiary);
-	pointer-events: none;
-	white-space: nowrap;
-}
-
-.modelComboboxBadgeLoading {
-	color: var(--interactive-accent);
 }
 
 .modelComboboxStatus {
@@ -51,16 +34,17 @@
 }
 
 .modelComboboxRetry {
-	font-size: calc(var(--text-base) * 0.8);
-	padding: 2px 10px;
-	border-radius: var(--radius-full);
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	color: var(--text-secondary);
+	height: 26px;
+	padding: 0 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--border-default);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
 	cursor: pointer;
 }
 
 .modelComboboxRetry:hover {
-	color: var(--text-primary);
-	border-color: var(--border-default);
+	background: var(--bg-hover);
 }

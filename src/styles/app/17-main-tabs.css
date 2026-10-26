@@ -4,8 +4,8 @@
 	background: var(--bg-primary);
 }
 
-/* Hover strip under the tabs; the breadcrumb itself overlays the editor. */
-.mainTabsBarWrap:has(> .mainTabsBreadcrumb) {
+/* File views keep an 8px band under the bar; the editor's float actions are offset for it. */
+.mainTabsBarWrap:has(.mainTabsBreadcrumb) {
 	padding-bottom: 8px;
 }
 
@@ -55,6 +55,7 @@
 	flex-shrink: 0;
 }
 
+/* The note name: the last, primary-ink breadcrumb segment. Click to rename. */
 .mainTabActiveTitle,
 .mainTabActiveTitleInput {
 	height: 28px;
@@ -62,7 +63,7 @@
 	max-width: min(30vw, 280px);
 	flex: 0 1 auto;
 	border-radius: var(--radius-md);
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 }
@@ -70,10 +71,10 @@
 .mainTabActiveTitle {
 	display: inline-flex;
 	align-items: center;
-	padding: 0 8px;
+	padding: 0 6px;
 	border: 1px solid transparent;
 	background: transparent;
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	cursor: text;
 	transition:
 		background var(--transition-fast),
@@ -81,7 +82,7 @@
 }
 
 .mainTabActiveTitle:hover {
-	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 
@@ -100,8 +101,8 @@
 	min-width: 0;
 	max-width: min(30vw, 280px);
 	flex: 0 1 auto;
-	padding: 0 8px;
-	font-size: calc(var(--text-base) * 0.9);
+	padding: 0 6px;
+	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 }
@@ -110,107 +111,83 @@
 	box-shadow: none;
 }
 
+/* Same ink as the editor toolbar icons on the right of the title bar: tertiary at rest. */
 .mainTabNavBtn {
-	height: calc(var(--header-height) - 8px);
+	height: 28px;
 	width: 28px;
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	border-radius: var(--radius-md);
 	background: transparent;
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.9);
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	line-height: 1;
 	cursor: pointer;
 	transition:
 		color var(--transition-fast),
-		opacity var(--transition-fast);
+		background-color var(--transition-fast);
 }
 
 .mainTabNavBtn:hover:not(:disabled) {
 	color: var(--text-primary);
-	background: transparent;
+	background: var(--bg-hover);
 }
 
+/* Placeholder ink (35% alpha) all but vanishes on the light title bar; 40% primary reads as
+   "unavailable" without disappearing, like the native disabled chevrons. */
 .mainTabNavBtn:disabled {
-	opacity: 0.35;
 	cursor: not-allowed;
-	color: var(--text-tertiary);
+	color: color-mix(in srgb, var(--text-primary) 40%, transparent);
 }
 
 .mainTabNavBtn:active:not(:disabled) {
-	opacity: 0.85;
+	background: var(--bg-active);
 }
 
+/* Folder › note path in the slot and ink of the collection header's "Projects › Glyph":
+   13px, folders tertiary, the note primary. Folders shrink first, so the note name stays. */
 .mainTabsBreadcrumb {
-	position: absolute;
-	top: calc(100% - 8px);
-	left: 50%;
-	z-index: 40;
 	display: flex;
 	align-items: center;
+	flex: 0 1 auto;
+	min-width: 0;
 	gap: 0;
-	width: max-content;
-	max-width: calc(100% - 160px);
-	height: 32px;
-	padding: 0 8px 6px;
-	transform: translateX(-50%);
-	border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-	background: var(--bg-primary);
-	font-size: var(--text-xs);
+	overflow: hidden;
+	font-size: var(--text-sm);
 	color: var(--text-tertiary);
-	overflow-x: auto;
-	overflow-y: hidden;
-	opacity: 0;
-	pointer-events: none;
-	scrollbar-width: none;
-	transition: opacity 140ms ease;
-}
-
-.mainTabsBreadcrumb::before {
-	content: "";
-	position: absolute;
-	inset: 0 0 auto;
-	height: 8px;
-	pointer-events: auto;
-}
-
-.mainTabsBreadcrumb:hover,
-.mainTabsBreadcrumb:focus-within,
-.mainTabsBreadcrumb:has([data-popup-open]) {
-	opacity: 1;
-	pointer-events: auto;
-}
-
-.mainTabsBreadcrumb::-webkit-scrollbar {
-	display: none;
 }
 
 .mainTabsBreadcrumbItem {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
 	min-width: 0;
+	flex: 0 1 auto;
+}
+
+.mainTabsBreadcrumbItem[data-current="true"] {
 	flex-shrink: 0;
+	max-width: 100%;
 }
 
 .mainTabsBreadcrumbSep {
 	width: var(--icon-xs);
 	height: var(--icon-xs);
-	color: var(--text-quaternary);
-	opacity: 0.74;
+	color: var(--text-tertiary);
 	flex-shrink: 0;
 	margin: 0;
-	transition:
-		color var(--transition-fast),
-		transform var(--transition-fast),
-		opacity var(--transition-fast);
+	transition: color var(--transition-fast);
+}
+
+.mainTabsBreadcrumbItem > .mainTabsBreadcrumbSep {
+	margin: 0 2px;
 }
 
 .mainTabsBreadcrumbSepButton {
-	width: 20px;
-	height: 22px;
+	width: 18px;
+	height: 28px;
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
@@ -219,25 +196,23 @@
 	border: 1px solid transparent;
 	border-radius: var(--radius-md);
 	background: transparent;
-	color: var(--text-quaternary);
+	color: var(--text-tertiary);
 	cursor: pointer;
-	transition: color var(--transition-fast);
+	transition:
+		color var(--transition-fast),
+		background-color var(--transition-fast);
 }
 
 .mainTabsBreadcrumbSepButton:hover,
 .mainTabsBreadcrumbSepButton:focus-visible,
 .mainTabsBreadcrumbSepButton[data-popup-open] {
-	background: transparent;
+	background: var(--bg-hover);
 	color: var(--text-primary);
 	outline: none;
 }
 
-.mainTabsBreadcrumbSepButton:hover .mainTabsBreadcrumbSep,
-.mainTabsBreadcrumbSepButton:focus-visible .mainTabsBreadcrumbSep,
-.mainTabsBreadcrumbSepButton[data-popup-open] .mainTabsBreadcrumbSep {
+.mainTabsBreadcrumbSepButton:is(:hover, :focus-visible, [data-popup-open]) .mainTabsBreadcrumbSep {
 	color: currentcolor;
-	opacity: 1;
-	transform: translateX(1px);
 }
 
 .mainTabsBreadcrumbOverflowButton {
@@ -245,22 +220,25 @@
 	align-items: center;
 	justify-content: center;
 	min-width: 24px;
-	height: 24px;
-	padding: 0 7px 2px;
+	height: 28px;
+	padding: 0 6px;
 	border: 1px solid transparent;
 	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-semibold);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	line-height: 1;
 	cursor: pointer;
-	transition: color var(--transition-fast);
+	transition:
+		color var(--transition-fast),
+		background-color var(--transition-fast);
 }
 
 .mainTabsBreadcrumbOverflowButton:hover,
 .mainTabsBreadcrumbOverflowButton:focus-visible,
 .mainTabsBreadcrumbOverflowButton[data-popup-open] {
+	background: var(--bg-hover);
 	color: var(--text-primary);
 	outline: none;
 }
@@ -268,32 +246,36 @@
 .mainTabsBreadcrumbButton {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
-	max-width: min(28vw, 220px);
-	height: 24px;
+	gap: 6px;
+	max-width: 160px;
+	height: 28px;
 	min-width: 0;
-	padding: 0 7px;
+	padding: 0 6px;
 	border: 1px solid transparent;
 	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-medium);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	line-height: 1;
 	white-space: nowrap;
 	cursor: pointer;
-	transition: color var(--transition-fast);
+	transition:
+		color var(--transition-fast),
+		background-color var(--transition-fast);
 }
 
-.mainTabsBreadcrumbButton:hover,
+.mainTabsBreadcrumbButton:hover:not([aria-current="page"]),
 .mainTabsBreadcrumbButton:focus-visible {
-	background: transparent;
+	background: var(--bg-hover);
 	color: var(--text-primary);
 	outline: none;
 }
 
 .mainTabsBreadcrumbButton[aria-current="page"] {
+	max-width: min(30vw, 280px);
 	color: var(--text-primary);
+	font-weight: var(--font-medium);
 	cursor: default;
 }
 
@@ -467,7 +449,7 @@
 }
 
 .mainTabLabel {
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	line-height: 1.2;
 	font-weight: var(--font-medium);
 }
@@ -558,7 +540,7 @@ button.mainTabClose {
 	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 1.1);
+	font-size: var(--text-md);
 	font-weight: var(--font-medium);
 	line-height: 1;
 	transition:
@@ -600,6 +582,7 @@ button.mainTabClose {
 	.mainTabActiveTitle,
 	.mainTabsBreadcrumbSep,
 	.mainTabsBreadcrumbSepButton,
+	.mainTabsBreadcrumbOverflowButton,
 	.mainTabsBreadcrumbButton {
 		transition: none;
 		transform: none;

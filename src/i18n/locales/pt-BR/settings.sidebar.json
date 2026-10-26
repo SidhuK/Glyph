@@ -1,7 +1,8 @@
 {
-	"sectionTitle": "Barra lateral",
+	"sectionTitle": "Navegação",
 	"sectionDescription": "Escolha os itens de navegação visíveis e a ordem deles.",
 	"resetToDefaults": "Restaurar o layout padrão da barra lateral",
+	"reset": "Redefinir",
 	"resetError": "Não foi possível restaurar o layout padrão da barra lateral.",
 	"reorder": "Reordenar {{label}}",
 	"showItem": "Mostrar {{label}} na barra lateral",
@@ -10,13 +11,13 @@
 			"label": "Agente"
 		},
 		"newNoteAndCanvas": {
-			"label": "Nova nota e tela"
+			"label": "Nova nota"
 		},
 		"allNotes": {
 			"label": "Todas as notas"
 		},
 		"databases": {
-			"label": "Coleções / Bancos de dados"
+			"label": "Coleções"
 		},
 		"connections": {
 			"label": "Conexões"
@@ -25,7 +26,7 @@
 			"label": "Calendário"
 		},
 		"search": {
-			"label": "Pesquisar / Abertura rápida"
+			"label": "Pesquisar"
 		},
 		"periodNotes": {
 			"label": "Notas diárias, semanais, mensais e trimestrais"

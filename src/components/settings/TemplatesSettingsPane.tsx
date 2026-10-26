@@ -1,5 +1,5 @@
 import { NoteIcon, UnavailableIcon } from "@hugeicons/core-free-icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../contexts";
 import {
@@ -333,10 +333,6 @@ export function TemplateSettingsSections() {
 		[beginTemplateWrite, currentSpacePath],
 	);
 
-	const summary = useMemo(() => {
-		if (templatesFolder === null) return t("templates.folder.notConfigured");
-		return t("templates.folder.found", { count: templates.length });
-	}, [t, templates.length, templatesFolder]);
 	const templateOptions = [
 		{ value: "", label: t("templates.none"), icon: <SelectIcon icon={UnavailableIcon} /> },
 		...templates.map((template) => ({ ...template, icon: <SelectIcon icon={NoteIcon} /> })),
@@ -349,7 +345,17 @@ export function TemplateSettingsSections() {
 			<SettingsSection title={t("templates.sectionTitle")}>
 				<SettingsRow
 					label={t("templates.folder.label")}
-					description={t("templates.folder.description")}
+					description={
+						<>
+							{t("templates.folder.description")}
+							{templatesFolder === null ? null : (
+								<>
+									<br />
+									{t("templates.folder.found", { count: templates.length })}
+								</>
+							)}
+						</>
+					}
 					stacked
 					interactive={false}
 				>
@@ -359,11 +365,11 @@ export function TemplateSettingsSections() {
 								? t("templates.folder.notConfigured")
 								: templatesFolder || "/"
 						}
+						empty={templatesFolder === null}
 						browseLabel={t("templates.folder.browse")}
 						clearLabel={t("templates.folder.clear")}
 						onBrowse={() => void handleBrowseFolder()}
 						onClear={templatesFolder !== null ? () => void handleClearFolder() : undefined}
-						helper={summary}
 						error={templatesError}
 					/>
 				</SettingsRow>

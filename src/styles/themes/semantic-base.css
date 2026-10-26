@@ -9,9 +9,10 @@
 	--bg-canvas: var(--color-gray-100);
 
 	--text-primary: var(--color-gray-800);
-	--text-secondary: rgba(55, 53, 47, 0.65);
+	--text-secondary: rgba(55, 53, 47, 0.72);
 	--editor-body-color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
-	--text-tertiary: rgba(55, 53, 47, 0.45);
+	/* Tertiary carries real metadata (dates, counts, hints), so it stays near 3.6:1. */
+	--text-tertiary: rgba(55, 53, 47, 0.61);
 	--text-placeholder: rgba(55, 53, 47, 0.35);
 	--text-inverse: var(--color-white);
 	--pill-contrast-fg: #111111;
@@ -79,4 +80,10 @@
 	--editor-readable-content-max-width: var(--readable-content-max-width);
 	--editor-readable-content-gutter: var(--readable-content-gutter);
 	--editor-readable-content-gutter-compact: var(--readable-content-gutter-compact);
+}
+
+/* Disabled controls, strikethrough and decorative separators only; never real information.
+   Declared per element so theme previews resolve their own placeholder ink. */
+:where(:root, .appearanceThemePreview) {
+	--text-quaternary: var(--text-placeholder);
 }

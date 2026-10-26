@@ -1,7 +1,8 @@
 {
-	"sectionTitle": "Pasek boczny",
+	"sectionTitle": "Nawigacja",
 	"sectionDescription": "Wybierz widoczne elementy nawigacji i ich kolejność.",
 	"resetToDefaults": "Przywróć domyślny układ paska bocznego",
+	"reset": "Resetuj",
 	"resetError": "Nie udało się przywrócić domyślnego układu paska bocznego.",
 	"reorder": "Zmień kolejność: {{label}}",
 	"showItem": "Pokaż {{label}} na pasku bocznym",
@@ -10,13 +11,13 @@
 			"label": "Agent"
 		},
 		"newNoteAndCanvas": {
-			"label": "Nowa notatka i płótno"
+			"label": "Nowa notatka"
 		},
 		"allNotes": {
 			"label": "Wszystkie notatki"
 		},
 		"databases": {
-			"label": "Kolekcje / Bazy danych"
+			"label": "Kolekcje"
 		},
 		"connections": {
 			"label": "Graf"
@@ -25,7 +26,7 @@
 			"label": "Kalendarz"
 		},
 		"search": {
-			"label": "Szukaj / Szybkie otwieranie"
+			"label": "Szukaj"
 		},
 		"periodNotes": {
 			"label": "Notatki dzienne, tygodniowe, miesięczne i kwartalne"

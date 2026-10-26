@@ -28,8 +28,6 @@ import { DURABLE_SETTINGS, SPACE_SETTINGS } from "../../lib/settings/definitions
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath, validateRelFolderPath } from "../../utils/path";
-import { Trash2 } from "../Icons";
-import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { SelectIcon } from "../ui/shadcn/select";
@@ -58,12 +56,6 @@ const PERIOD_NOTE_SEARCH_IDS = {
 	week: "space-weekly-notes",
 	month: "space-monthly-notes",
 	quarter: "space-quarterly-notes",
-} as const;
-
-const PERIOD_NOTE_MARKS = {
-	week: "W",
-	month: "M",
-	quarter: "Q",
 } as const;
 
 export function SpaceSettingsPane() {
@@ -365,13 +357,11 @@ export function SpaceSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<SettingsSection
-					title={t("newNotes.sectionTitle")}
-					description={t("newNotes.sectionDescription")}
-				>
+				<SettingsSection title={t("newNotes.sectionTitle")}>
 					<SettingsRow
 						searchId="space-default-new-note-folder"
 						label={t("newNotes.defaultFolder.label")}
+						description={t("newNotes.defaultFolder.description")}
 						stacked
 						interactive={false}
 					>
@@ -388,11 +378,9 @@ export function SpaceSettingsPane() {
 					</SettingsRow>
 				</SettingsSection>
 
-				<SettingsSection
-					title="Daily Notes"
-					description="Choose where dated notes are created in the current space."
-				>
+				<SettingsSection title="Daily notes">
 					<SettingsRow
+						searchId="space-daily-notes-folder"
 						label="Folder"
 						description="Glyph stores dated notes relative to the active space."
 						stacked
@@ -400,6 +388,7 @@ export function SpaceSettingsPane() {
 					>
 						<SettingsFolderPicker
 							path={dailyNotesFolder ?? "Not configured"}
+							empty={!dailyNotesFolder}
 							browseLabel="Browse"
 							clearLabel="Clear daily notes folder"
 							onBrowse={() => void handleBrowseFolder()}
@@ -407,28 +396,20 @@ export function SpaceSettingsPane() {
 							error={dailyNotesError}
 						/>
 					</SettingsRow>
-					<div className="settingsPeriodNoteGrid">
-						{OPTIONAL_PERIOD_KINDS.map((kind) => (
-							<div key={kind} className="settingsPeriodNoteBox">
-								<span className="settingsPeriodNoteMark" aria-hidden="true">
-									{PERIOD_NOTE_MARKS[kind]}
-								</span>
-								<SettingsRow
-									className="settingsPeriodNoteRow"
-									searchId={PERIOD_NOTE_SEARCH_IDS[kind]}
-									stacked
-									label={t(`periodNotes.${kind}.label`)}
-									description={t(`periodNotes.${kind}.description`)}
-								>
-									<SettingsToggle
-										checked={periodNotesEnabled[kind]}
-										ariaLabel={t(`periodNotes.${kind}.ariaLabel`)}
-										onCheckedChange={(checked) => void handlePeriodNoteToggle(kind, checked)}
-									/>
-								</SettingsRow>
-							</div>
-						))}
-					</div>
+					{OPTIONAL_PERIOD_KINDS.map((kind) => (
+						<SettingsRow
+							key={kind}
+							searchId={PERIOD_NOTE_SEARCH_IDS[kind]}
+							label={t(`periodNotes.${kind}.label`)}
+							description={t(`periodNotes.${kind}.description`)}
+						>
+							<SettingsToggle
+								checked={periodNotesEnabled[kind]}
+								ariaLabel={t(`periodNotes.${kind}.ariaLabel`)}
+								onCheckedChange={(checked) => void handlePeriodNoteToggle(kind, checked)}
+							/>
+						</SettingsRow>
+					))}
 					{periodNotesError ? (
 						<div className="settingsError dailyNotesError" role="alert">
 							{periodNotesError}
@@ -454,13 +435,16 @@ export function SpaceSettingsPane() {
 
 				<TemplateSettingsSections />
 
-				<SettingsSection
-					title="Attachments"
-					description="Choose where note attachments are stored within the current space."
-				>
+				<SettingsSection title="Attachments">
 					<SettingsRow
 						label="Location"
-						description="Where to save images and files you paste into notes."
+						description={
+							<>
+								Where to save images and files you paste into notes.
+								<br />
+								{ATTACHMENT_MODE_UI[attachmentStorageMode].help}
+							</>
+						}
 						stacked
 						interactive={false}
 					>
@@ -474,38 +458,15 @@ export function SpaceSettingsPane() {
 								}))}
 								onValueChange={(nextMode) => void handleAttachmentModeChange(nextMode)}
 							/>
-							<div className="settingsHelp">{ATTACHMENT_MODE_UI[attachmentStorageMode].help}</div>
 							{attachmentFolderEditor === "browse" ? (
-								<div className="dailyNotesFolderRow">
-									<div className="dailyNotesFolderPath">
-										{attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
-									</div>
-									<div className="settingsActions dailyNotesActions">
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-											onClick={handleBrowseAttachmentFolder}
-										>
-											<FolderOpen size="var(--icon-md)" />
-											Browse
-										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											size="icon-sm"
-											className="rounded-md border-border bg-background justify-center shadow-none"
-											onClick={() => {
-												void handleResetAttachmentFolder();
-											}}
-											aria-label="Reset attachments folder"
-											title="Reset attachments folder"
-										>
-											<Trash2 size="var(--icon-md)" />
-										</Button>
-									</div>
-								</div>
+								<SettingsFolderPicker
+									path={attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
+									browseLabel="Browse"
+									clearLabel="Reset attachments folder"
+									clearText={t("folderPicker.reset")}
+									onBrowse={() => void handleBrowseAttachmentFolder()}
+									onClear={() => void handleResetAttachmentFolder()}
+								/>
 							) : null}
 							{attachmentFolderEditor === "text" ? (
 								<div
@@ -529,16 +490,15 @@ export function SpaceSettingsPane() {
 									<div className="settingsActions dailyNotesActions">
 										<Button
 											type="button"
-											variant="outline"
-											size="icon-sm"
-											className="rounded-md border-border bg-background justify-center shadow-none"
+											variant="ghost"
+											size="sm"
 											onClick={() => {
 												void handleResetAttachmentFolder();
 											}}
 											aria-label="Reset attachment subfolder"
 											title="Reset attachment subfolder"
 										>
-											<Trash2 size="var(--icon-md)" />
+											{t("folderPicker.reset")}
 										</Button>
 									</div>
 								</div>
@@ -556,8 +516,9 @@ export function SpaceSettingsPane() {
 					</SettingsRow>
 				</SettingsSection>
 
-				<SettingsSection title="Quick Notes">
+				<SettingsSection title="Quick notes">
 					<SettingsRow
+						searchId="space-quick-notes-folder"
 						label="Folder"
 						description="New quick notes are added to today's note in this folder."
 						stacked
@@ -567,6 +528,7 @@ export function SpaceSettingsPane() {
 							path={quickNotesFolder}
 							browseLabel="Browse"
 							clearLabel="Reset quick notes folder"
+							clearText={t("folderPicker.reset")}
 							onBrowse={() => void handleBrowseQuickNotesFolder()}
 							onClear={() => void handleResetQuickNotesFolder()}
 							error={quickNotesError}
@@ -574,11 +536,9 @@ export function SpaceSettingsPane() {
 					</SettingsRow>
 				</SettingsSection>
 
-				<SettingsSection
-					title="Search Index"
-					description="Rebuild the index if search results are incomplete, stale, or missing."
-				>
+				<SettingsSection title="Search index">
 					<SettingsRow
+						searchId="space-search-index-status"
 						label="Status"
 						description="Use this when search results look outdated after large note or file changes."
 						stacked
@@ -592,18 +552,19 @@ export function SpaceSettingsPane() {
 								<Button
 									type="button"
 									size="sm"
-									className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+									variant="outline"
 									onClick={() => {
 										void onRebuildIndex();
 									}}
 									disabled={!currentSpacePath || isIndexing}
 								>
-									{isIndexing ? "Rebuilding..." : "Rebuild"}
+									{isIndexing ? "Rebuilding…" : "Rebuild"}
 								</Button>
 							</div>
 						</div>
 					</SettingsRow>
 					<SettingsRow
+						searchId="space-search-index-people-tags"
 						label="People mentions as tags"
 						description="When enabled, standalone @mentions are indexed and shown as people in the sidebar and search."
 					>

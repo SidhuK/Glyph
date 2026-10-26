@@ -127,7 +127,6 @@ export function AppShell() {
 	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
-		rootEntries,
 		childrenByDir,
 		expandedDirs,
 		activeDirPath,
@@ -1442,7 +1441,6 @@ export function AppShell() {
 				panes={panes}
 				splitLayout={splitLayout}
 				focusedPaneId={focusedPaneId}
-				rootEntries={rootEntries}
 				childrenByDir={childrenByDir}
 				activeTabPath={activeTabPath}
 				setActiveTabId={setActiveTabId}

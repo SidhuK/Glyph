@@ -113,13 +113,13 @@
 		},
 		"general-language": {
 			"title": "Sprache",
-			"section": "Sprache",
+			"section": "Sprache & Region",
 			"description": "Die Anzeigesprache für Glyph wählen.",
 			"keywords": ["locale", "übersetzung", "i18n", "sprache", "language", "translation"]
 		},
 		"general-date-format": {
 			"title": "Datumsformat",
-			"section": "Datum & Uhrzeit",
+			"section": "Sprache & Region",
 			"description": "Lege fest, wie vollständige Daten in Glyph angezeigt werden.",
 			"keywords": ["Datum", "Format", "Kalender", "US", "European", "Friendly", "ISO", "Anzeige"]
 		},
@@ -156,7 +156,7 @@
 		},
 		"sidebar-calendar": {
 			"title": "Kalender in der Seitenleiste",
-			"section": "Seitenleiste",
+			"section": "Navigation",
 			"description": "Lege Layout, Tagesübersicht und das Verhalten beim Klick auf einen Tag fest.",
 			"keywords": ["kalender", "woche", "monat", "tagesnotiz", "tagesübersicht", "seitenleiste"]
 		},
@@ -200,12 +200,12 @@
 		},
 		"typography-interface-font": {
 			"title": "Oberflächenschrift",
-			"section": "Typografie",
+			"section": "Oberfläche",
 			"keywords": ["schrift", "ui", "sans", "font"]
 		},
 		"typography-monospace-font": {
 			"title": "Monospace-Schrift",
-			"section": "Typografie",
+			"section": "Oberfläche",
 			"keywords": ["schrift", "code", "mono", "font"]
 		},
 		"typography-editor-font": {
@@ -225,7 +225,7 @@
 		},
 		"typography-ui-font-size": {
 			"title": "UI-Schriftgröße",
-			"section": "Typografie",
+			"section": "Oberfläche",
 			"keywords": ["schrift", "text", "oberfläche", "font", "interface"]
 		},
 		"typography-editor-font-size": {
@@ -408,7 +408,7 @@
 			"keywords": ["repo", "sync", "branch"]
 		},
 		"git-how-it-works": {
-			"title": "How it works",
+			"title": "Remote",
 			"section": "Connection",
 			"description": "Review remote connection details for the current repository.",
 			"keywords": ["remote url", "initialize git", "credentials"]
@@ -455,7 +455,7 @@
 		},
 		"general-editor-table-of-contents": {
 			"title": "Inhaltsverzeichnis",
-			"section": "Editor",
+			"section": "Bearbeitung",
 			"keywords": ["toc", "gliederung", "outline", "inhalt"]
 		},
 		"space-search-index-people-tags": {
@@ -465,27 +465,27 @@
 		},
 		"general-editor-frontmatter": {
 			"title": "Frontmatter im Editor anzeigen",
-			"section": "Editor",
+			"section": "Bearbeitung",
 			"keywords": ["eigenschaften", "yaml", "metadaten", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "Farbige Überschriften",
-			"section": "Editor",
+			"section": "Bearbeitung",
 			"keywords": ["editor", "farbe", "color"]
 		},
 		"general-editor-heading-palette": {
 			"title": "Überschriftenpalette",
-			"section": "Editor",
+			"section": "Bearbeitung",
 			"keywords": ["überschrift", "farbe", "palette"]
 		},
 		"general-editor-default-mode": {
 			"title": "Standard-Editormodus",
-			"section": "Editor",
+			"section": "Bearbeitung",
 			"keywords": ["rich", "vorschau", "raw", "markdown"]
 		},
 		"general-editor-focus-mode": {
 			"title": "Fokusmodus",
-			"section": "Experimentell",
+			"section": "Funktionen",
 			"keywords": ["fokus", "absatz", "satz"]
 		},
 		"appearance-editor-presentation-beautiful-tags": {
@@ -500,22 +500,22 @@
 		},
 		"general-editor-collapsible-headings": {
 			"title": "Einklappbare Überschriften",
-			"section": "Editor",
+			"section": "Bearbeitung",
 			"keywords": ["falten", "einklappen", "ausklappen", "fold", "collapse", "expand"]
 		},
 		"general-editor-spell-check": {
 			"title": "Rechtschreibprüfung",
-			"section": "Editor",
+			"section": "Bearbeitung",
 			"keywords": ["rechtschreibung", "tippfehler", "wörterbuch", "spelling", "typo", "dictionary"]
 		},
 		"general-editor-raw-live-preview": {
 			"title": "Live-Markdown im RAW-Modus",
-			"section": "Experimentell",
+			"section": "Funktionen",
 			"keywords": ["raw", "markdown", "vim", "live", "preview"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Vim-Modus",
-			"section": "Experimentell",
+			"section": "Funktionen",
 			"keywords": [
 				"vim",
 				"tastenkürzel",
@@ -529,12 +529,12 @@
 		},
 		"general-editor-format-bar": {
 			"title": "Formatierungsleiste",
-			"section": "Experimentell",
+			"section": "Funktionen",
 			"keywords": ["format", "leiste", "toolbar", "ribbon", "rich", "editor", "ausblenden"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
-			"section": "Assistant behavior",
+			"section": "Availability",
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
@@ -554,7 +554,7 @@
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Notiz-Peek",
-			"section": "Experimentell",
+			"section": "Funktionen",
 			"keywords": ["peek", "vorschau", "wiki", "alle notizen", "arc"]
 		},
 		"general-file-tree-folder-counts": {

@@ -26,10 +26,7 @@ export function FileTreeSettingsSection({ folderCounts, setError }: FileTreeSett
 	const fileTreeSort = useFileTreeSortMode({ onError: setError });
 
 	return (
-		<SettingsSection
-			title={t("fileTree.sectionTitle")}
-			description={t("fileTree.sectionDescription")}
-		>
+		<SettingsSection title={t("fileTree.sectionTitle")}>
 			<SettingsRow
 				label={t("fileTree.folderCounts.label")}
 				description={t("fileTree.folderCounts.description")}

@@ -10,6 +10,7 @@
 		"info": "Infos"
 	},
 	"ribbon": {
+		"toolbarLabel": "Mise en forme",
 		"bold": "Gras",
 		"italic": "Italique",
 		"underline": "Souligné",
@@ -22,11 +23,16 @@
 		"heading1": "Titre 1",
 		"heading2": "Titre 2",
 		"heading3": "Titre 3",
-		"bulletList": "Liste à puces",
-		"numberedList": "Liste numérotée",
-		"taskList": "Liste de tâches",
-		"quote": "Citation",
-		"codeBlock": "Bloc de code"
+		"color": "Couleur",
+		"colorSections": {
+			"text": "Texte",
+			"highlight": "Surlignage"
+		},
+		"link": "Lien",
+		"linkUrl": "URL du lien",
+		"linkOpenInNewTab": "Ouvrir dans un nouvel onglet",
+		"linkRemove": "Supprimer",
+		"linkApply": "Appliquer"
 	},
 	"selectionAi": {
 		"title": "Interroger l’IA sur la sélection",
@@ -245,5 +251,12 @@
 			"status": "Statut",
 			"priority": "Priorité"
 		}
+	},
+	"infoSidebar": {
+		"panelLabel": "Panneau d’informations de la note",
+		"sidebarTabsLabel": "Barre latérale de la note",
+		"infoTab": "Infos",
+		"historyTab": "Historique des versions",
+		"close": "Fermer le panneau d’informations"
 	}
 }

@@ -1,5 +1,5 @@
 {
-	"sectionTitle": "Typografia",
+	"sectionTitle": "Interfejs",
 	"sectionDescription": "Niezależnie dostosuj czcionkę interfejsu, styl kodu i skalę czytania.",
 	"interfaceFont": {
 		"label": "Czcionka interfejsu",
@@ -11,12 +11,12 @@
 	},
 	"headingFontEnabled": {
 		"label": "Oddzielna czcionka nagłówków",
-		"description": "Używaj innej czcionki dla H1-H6 w trybie edycji i podglądu.",
+		"description": "Używaj innej czcionki dla H1–H6 w trybie edycji i podglądu.",
 		"ariaLabel": "Oddzielna czcionka nagłówków"
 	},
 	"headingFont": {
 		"label": "Czcionka nagłówków",
-		"description": "Używana dla H1-H6 po włączeniu oddzielnej czcionki. Surowy Markdown zachowuje czcionkę edytora."
+		"description": "Używana dla H1–H6 po włączeniu oddzielnej czcionki. Surowy Markdown zachowuje czcionkę edytora."
 	},
 	"monospaceFont": {
 		"label": "Czcionka o stałej szerokości",

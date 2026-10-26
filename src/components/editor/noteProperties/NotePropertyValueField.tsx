@@ -9,6 +9,7 @@ import { StatusPropertyPill } from "../../status/StatusPropertyPill";
 import type { EditorTextColor } from "../textColors";
 import { TextPropertyValueField } from "./TextPropertyValueField";
 import { WikiLinkedText } from "./WikiLinkedText";
+import { databaseValueToneStyleForColor } from "../../../lib/database/palette";
 import { buildTagSuggestions, formatPropertyDate, formatTagLabel, tagHueFromName } from "./utils";
 
 interface NotePropertyValueFieldProps {
@@ -75,11 +76,10 @@ export function NotePropertyValueField({
 							<span
 								key={`${property.key || rowId}-${valueIndex}-${value}`}
 								className="notePropertyPill"
-								style={
-									{
-										"--tag-pill-hue": `${hue}`,
-									} as CSSProperties
-								}
+								style={{
+									...databaseValueToneStyleForColor(value, null),
+									...({ "--tag-pill-hue": `${hue}` } as CSSProperties),
+								}}
 							>
 								{value.startsWith("#") ? value.slice(1) : value}
 							</span>
@@ -188,11 +188,10 @@ export function NotePropertyValueField({
 								key={`${property.key || rowId}-${valueIndex}-${value}`}
 								type="button"
 								className="notePropertyToken"
-								style={
-									{
-										"--tag-pill-hue": `${hue}`,
-									} as CSSProperties
-								}
+								style={{
+									...databaseValueToneStyleForColor(value, null),
+									...({ "--tag-pill-hue": `${hue}` } as CSSProperties),
+								}}
 								onClick={() => onRemoveTag(index, value)}
 								title={`Remove ${label}`}
 								aria-label={`Remove ${label}`}

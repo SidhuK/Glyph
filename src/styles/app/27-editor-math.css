@@ -80,7 +80,7 @@
 	background: transparent;
 	color: var(--text-primary);
 	font-family: var(--font-mono);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 }
 
 .latexSourceEditor[data-multiline="true"] .cm-editor {
@@ -120,7 +120,7 @@
 .mathNodeEditorPreview[data-error="true"] {
 	color: var(--status-danger-fg);
 	font-family: var(--font-mono);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	text-align: left;
 	white-space: pre-wrap;
 }
@@ -131,7 +131,7 @@
 	margin: var(--space-2) 0 0;
 	overflow: auto;
 	color: var(--status-danger-fg);
-	font-size: var(--text-xs);
+	font-size: var(--text-sm);
 	line-height: 1.4;
 }
 

@@ -6,7 +6,6 @@ import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { m } from "motion/react";
 import type { KeyboardEvent } from "react";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
-import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { AllDocsItem, FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import type { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
@@ -16,82 +15,11 @@ import {
 } from "../database/DatabaseNoteAppearanceIcon";
 import type { springPresets } from "../ui/animations";
 import { NoteThumbnail } from "../NoteThumbnail";
+import { type PreviewLine, previewLines } from "./allDocsPreviewLines";
 
 export function titleFromPath(notePath: string): string {
 	const fileName = notePath.split("/").pop() ?? notePath;
 	return fileName.replace(/\.md$/i, "");
-}
-
-type PreviewLineKind = "heading" | "quote" | "task" | "list" | "code" | "body";
-
-export type PreviewLine = {
-	key: string;
-	kind: PreviewLineKind;
-	text: string;
-};
-
-function pushPreviewLine(parsed: PreviewLine[], kind: PreviewLineKind, text: string) {
-	parsed.push({ key: `${kind}:${parsed.length}:${text}`, kind, text });
-}
-
-export function previewLines(preview: string, title: string): PreviewLine[] {
-	const lines = preview.replace(/\r\n?/g, "\n").split("\n");
-	const parsed: PreviewLine[] = [];
-	const normalizedTitle = normalizeInlineMarkdown(title).trim().toLowerCase();
-	let inFence = false;
-
-	for (const raw of lines) {
-		const line = raw.trim();
-		if (!line) continue;
-		if (line.startsWith("```")) {
-			inFence = !inFence;
-			continue;
-		}
-
-		if (inFence) {
-			const text = normalizeInlineMarkdown(line);
-			if (text) pushPreviewLine(parsed, "code", text);
-			continue;
-		}
-
-		const headingMatch = line.match(/^#{1,6}\s+(.*)$/);
-		if (headingMatch?.[1]) {
-			const text = normalizeInlineMarkdown(headingMatch[1]);
-			if (text) pushPreviewLine(parsed, "heading", text);
-			continue;
-		}
-
-		const quoteMatch = line.match(/^>\s?(.*)$/);
-		if (quoteMatch?.[1]) {
-			const text = normalizeInlineMarkdown(quoteMatch[1]);
-			if (text) pushPreviewLine(parsed, "quote", text);
-			continue;
-		}
-
-		const taskMatch = line.match(/^(?:(?:[-*+]|\d+\.)\s+)?\[(?: |x|X)\]\s+(.*)$/);
-		if (taskMatch?.[1]) {
-			const text = normalizeInlineMarkdown(taskMatch[1]);
-			if (text) pushPreviewLine(parsed, "task", text);
-			continue;
-		}
-
-		const listMatch = line.match(/^(?:[-*+]|\d+\.)\s+(.*)$/);
-		if (listMatch?.[1]) {
-			const text = normalizeInlineMarkdown(listMatch[1]);
-			if (text) pushPreviewLine(parsed, "list", text);
-			continue;
-		}
-
-		const text = normalizeInlineMarkdown(line);
-		if (text) pushPreviewLine(parsed, "body", text);
-	}
-
-	const filtered = parsed.filter((line) => {
-		const normalizedLine = normalizeInlineMarkdown(line.text).trim().toLowerCase();
-		return !(normalizedTitle && normalizedLine === normalizedTitle);
-	});
-
-	return filtered;
 }
 
 export interface AllDocsCardProps {
@@ -236,20 +164,19 @@ export function AllDocsCard({
 			<div className="allDocsCardSurface">
 				<div className="allDocsCardTop">
 					<span className="allDocsCardTitle" title={title} style={noteAppearanceStyle}>
-						<DatabaseNoteAppearanceIcon
-							notePath={notePath}
-							appearance={noteAppearance}
-							className="allDocsCardTitleIcon"
-							size="var(--icon-md)"
-						/>
+						{noteAppearance?.icon ? (
+							<DatabaseNoteAppearanceIcon
+								notePath={notePath}
+								appearance={noteAppearance}
+								className="allDocsCardTitleIcon"
+								size="var(--icon-md)"
+							/>
+						) : null}
 						{title}
 					</span>
 					{taskSummary && taskCount > 0 ? (
 						<span className="allDocsCardTaskSummary">
 							<TaskProgressComponent summary={taskSummary} className="allDocsCardTaskProgress" />
-							<span className="allDocsCardTaskText">
-								{taskSummary.completed_count}/{taskCount}
-							</span>
 						</span>
 					) : null}
 				</div>
@@ -266,7 +193,7 @@ export function AllDocsCard({
 						))}
 					</div>
 				) : (
-					<div className="allDocsCardPreview is-placeholder">No preview yet</div>
+					<div className="allDocsCardPreview is-placeholder">{t("activity.noPreviewYet")}</div>
 				)}
 			</div>
 		</m.button>

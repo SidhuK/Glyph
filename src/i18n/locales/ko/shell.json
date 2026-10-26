@@ -15,7 +15,7 @@
 		"connections": "연결",
 		"agent": "에이전트",
 		"calendar": "캘린더",
-		"search": "검색 / 빠른 열기",
+		"search": "검색",
 		"searchPlaceholder": "검색",
 		"dailyNote": "일간 노트",
 		"weeklyNote": "주간 노트",
@@ -31,11 +31,12 @@
 		"sortNotes": "노트 정렬",
 		"sort": "정렬",
 		"expandAllFolders": "모든 폴더 펼치기",
-		"collapseAllFolders": "모든 폴더 접기"
+		"collapseAllFolders": "모든 폴더 접기",
+		"fileTreeOptions": "파일 트리 옵션"
 	},
 	"sort": {
-		"nameAsc": "이름 A-Z",
-		"nameDesc": "이름 Z-A",
+		"nameAsc": "이름 A–Z",
+		"nameDesc": "이름 Z–A",
 		"modifiedNewest": "수정일 (최신순)",
 		"modifiedOldest": "수정일 (오래된순)",
 		"createdNewest": "생성일 (최신순)",
@@ -94,8 +95,7 @@
 		"boardCard": {
 			"openNote": "노트 열기",
 			"moveTo": "{{lane}}(으)로 이동",
-			"openHint": "두 번 클릭하여 노트 열기",
-			"updated": "{{date}}에 업데이트됨"
+			"openHint": "두 번 클릭하여 노트 열기"
 		},
 		"switch": "컬렉션 전환",
 		"select": "컬렉션 선택",
@@ -113,23 +113,33 @@
 		},
 		"viewOptions": {
 			"reset": "초기화",
-			"presets": "프리셋"
+			"presets": "프리셋",
+			"display": "표시",
+			"grouping": "그룹화",
+			"ordering": "정렬",
+			"filter": "필터",
+			"none": "없음",
+			"filtersApplied": "{{count}}개 적용됨",
+			"columns": "열",
+			"cardFields": "카드 필드",
+			"showAll": "모두 표시",
+			"groupedBy": "이 필드로 그룹화됨",
+			"cardFieldLabels": {
+				"date": "날짜",
+				"task_progress": "작업 진행률",
+				"status": "상태",
+				"priority": "우선순위",
+				"tags": "태그"
+			}
 		},
 		"groupBy": {
-			"label": "그룹 기준",
-			"title": "{{name}} 기준으로 그룹화",
-			"choose": "그룹화할 필드 선택",
 			"none": "그룹 없음",
 			"multiLane": "{{name}} (여러 레인)",
 			"boardHint": "레인을 만들려면 상태, 태그 또는 체크박스 필드를 추가하세요"
 		},
 		"sort": {
-			"title": "정렬 기준",
-			"presets": "정렬 프리셋",
-			"replaceWithPreset": "현재 정렬을 {{name}}(으)로 바꾸기",
 			"field": "정렬 필드",
 			"direction": "정렬 방향",
-			"add": "정렬 추가",
 			"directions": {
 				"date": {
 					"asc": "오래된 순",
@@ -150,7 +160,6 @@
 			}
 		},
 		"filter": {
-			"title": "필터 기준",
 			"hint": "열 값으로 이 보기를 좁힙니다. 노트 본문을 검색하려면 도구 막대의 검색 상자를 사용하세요.",
 			"presets": "필터 프리셋",
 			"unsupportedOperator": "필터 {{index}}에서 지원되지 않는 연산자를 사용합니다. 결과를 복원하려면 지원되는 연산자를 선택하세요.",
@@ -216,12 +225,33 @@
 			"emptyTitle": "필드를 추가해 보드 레인 만들기",
 			"emptyText": "보드 보기는 노트를 레인으로 묶습니다. 노트에 상태, 우선순위, 체크박스, 태그 같은 필드를 추가한 다음 위쪽 도구 막대에서 선택하세요.",
 			"openViewSettings": "보기 설정 열기",
+			"noPriority": "우선순위 없음",
 			"laneEmpty": {
 				"archived": "보관된 노트가 여기에 표시됩니다",
 				"done": "완료된 노트가 여기에 표시됩니다",
 				"unassigned": "값이 없는 노트가 여기에 표시됩니다",
 				"default": "여기에 노트를 놓거나 아래에서 추가하세요"
 			}
+		},
+		"changeStatus": "상태 변경",
+		"statusLabel": "상태",
+		"cell": {
+			"addOrChooseTag": "태그 추가 또는 선택",
+			"addOrChooseValue": "값 추가 또는 선택",
+			"suggestedTags": "추천 태그",
+			"suggestedValues": "추천 값",
+			"changePriority": "우선순위 변경",
+			"editTagsHint": "두 번 클릭하여 태그 편집",
+			"editHint": "두 번 클릭하여 편집",
+			"renameNoteHint": "두 번 클릭하여 노트 이름 변경"
+		},
+		"tagPicker": {
+			"source": "태그 소스",
+			"selected": "선택한 태그",
+			"open": "태그 선택기 열기",
+			"placeholder": "태그 선택",
+			"empty": "일치하는 태그가 없습니다.",
+			"search": "태그 검색"
 		}
 	},
 	"tags": {
@@ -324,8 +354,6 @@
 		"noResults": "결과 없음",
 		"resultsLabel": "팔레트 결과",
 		"searchEverything": "노트, 명령, 설정 등을 검색…",
-		"on": "켜짐",
-		"off": "꺼짐",
 		"notSet": "설정되지 않음",
 		"spaceRequired": "이 설정을 사용하려면 스페이스를 여세요",
 		"settingUpdated": "설정이 업데이트되었습니다",
@@ -345,6 +373,12 @@
 		"noTemplates": "템플릿 폴더에서 Markdown 템플릿을 찾지 못했습니다.",
 		"templateSelectionInvalid": "설정된 템플릿 폴더에서 Markdown 템플릿을 선택하세요.",
 		"templateSelectionFailed": "템플릿 선택기를 열지 못했습니다",
+		"moreMatches": "외 {{count}}개",
+		"footer": {
+			"navigate": "이동",
+			"open": "열기",
+			"close": "닫기"
+		},
 		"groups": {
 			"command": "명령",
 			"setting": "설정",
@@ -382,7 +416,12 @@
 	},
 	"tabs": {
 		"allNotes": "모든 노트",
-		"collections": "컬렉션"
+		"collections": "컬렉션",
+		"goBack": "뒤로",
+		"goForward": "앞으로",
+		"closeNamed": "{{label}} 닫기",
+		"renameNamed": "{{name}} 이름 변경",
+		"renameCurrent": "현재 파일 이름 변경"
 	},
 	"ai": {
 		"toolFailed": "{{tool}} 실패",
@@ -539,5 +578,8 @@
 				"remote_wins": "원격 우선"
 			}
 		}
+	},
+	"activity": {
+		"noPreviewYet": "아직 미리보기가 없습니다"
 	}
 }

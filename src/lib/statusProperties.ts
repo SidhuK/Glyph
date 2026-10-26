@@ -6,18 +6,6 @@ export interface StatusOption {
 	id: string;
 	label: string;
 	color: EditorTextColor;
-	iconKey:
-		| "activity"
-		| "archive"
-		| "cancel"
-		| "check_square"
-		| "clock"
-		| "file_block"
-		| "file_search"
-		| "progress"
-		| "queue"
-		| "task"
-		| "waiting";
 	aliases: readonly string[];
 }
 
@@ -32,42 +20,36 @@ const STATUS_OPTIONS = [
 		id: "backlog",
 		label: "Backlog",
 		color: "gray",
-		iconKey: "queue",
 		aliases: ["backlog", "icebox", "later", "someday"],
 	},
 	{
 		id: "todo",
 		label: "Todo",
 		color: "gray",
-		iconKey: "task",
 		aliases: ["todo", "to do", "not started", "not-started", "open", "new", "unstarted"],
 	},
 	{
 		id: "in_progress",
 		label: "In progress",
 		color: "blue",
-		iconKey: "progress",
 		aliases: ["in progress", "in-progress", "progress", "doing", "wip"],
 	},
 	{
 		id: "in_review",
 		label: "In review",
 		color: "yellow",
-		iconKey: "file_search",
 		aliases: ["in review", "in-review", "review", "reviewing"],
 	},
 	{
 		id: "blocked",
 		label: "Blocked",
 		color: "red",
-		iconKey: "file_block",
 		aliases: ["blocked", "stuck"],
 	},
 	{
 		id: "waiting",
 		label: "Waiting",
 		color: "orange",
-		iconKey: "waiting",
 		aliases: [
 			"waiting",
 			"pending",
@@ -91,7 +73,6 @@ const STATUS_OPTIONS = [
 		id: "done",
 		label: "Done",
 		color: "green",
-		iconKey: "check_square",
 		aliases: [
 			"done",
 			"finished",
@@ -110,7 +91,6 @@ const STATUS_OPTIONS = [
 		id: "canceled",
 		label: "Canceled",
 		color: "red",
-		iconKey: "cancel",
 		aliases: [
 			"canceled",
 			"cancelled",
@@ -132,7 +112,6 @@ const STATUS_OPTIONS = [
 		id: "archived",
 		label: "Archived",
 		color: "gray",
-		iconKey: "archive",
 		aliases: ["archived", "archive"],
 	},
 ] as const satisfies readonly StatusOption[];

@@ -4,9 +4,9 @@
 	align-items: center;
 	justify-content: flex-start;
 	gap: 8px;
-	min-height: 26px;
+	min-height: 28px;
 	padding: 2px 8px;
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	color: var(--text-primary);
 	background: none;
 	border: 1px solid transparent;
@@ -25,9 +25,11 @@
 	background: var(--bg-hover);
 }
 
-.sidebarQuickActionBtn:focus-visible {
-	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: 2px;
+/* Keyboard focus only: a thin ring on the row's own edge, inside the 8px sidebar inset. */
+.sidebarQuickActionBtn:focus-visible,
+button.sidebarCreateMenuTrigger:focus-visible {
+	outline: 1.5px solid color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	outline-offset: 0;
 }
 
 .sidebarQuickActionBtn:disabled {
@@ -37,7 +39,9 @@
 
 .sidebarQuickActionBtn > svg {
 	flex: 0 0 auto;
-	color: var(--text-primary);
+	width: var(--icon-lg);
+	height: var(--icon-lg);
+	color: var(--text-secondary);
 }
 
 .sidebarQuickActionBtn:hover > svg {
@@ -55,7 +59,7 @@
 	display: flex;
 	align-items: center;
 	width: calc(100% - 16px);
-	height: 26px;
+	height: 28px;
 	margin-inline: 8px;
 	border-radius: var(--radius-8);
 	transition: background var(--transition-fast);
@@ -71,7 +75,7 @@
 	flex: 1 1 auto;
 	min-width: 0;
 	width: auto;
-	height: 26px;
+	height: 28px;
 	border-radius: var(--radius-8) 0 0 var(--radius-8);
 }
 
@@ -98,7 +102,7 @@ button.sidebarCreateMenuTrigger {
 	justify-content: center;
 	flex: 0 0 24px;
 	width: 24px;
-	height: 26px;
+	height: 28px;
 	padding: 0;
 	margin: 0;
 	background: none;
@@ -131,9 +135,10 @@ button.sidebarCreateMenuTrigger[data-popup-open] > svg {
 	transform: rotate(180deg);
 }
 
-button.sidebarCreateMenuTrigger:focus-visible {
-	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: 2px;
+/* The halves are square on their inner edge; a focused half gets a full rounded ring. */
+button.sidebarCreateMenuTrigger:focus-visible,
+.sidebarCreateRow .sidebarNewNoteBtn:focus-visible {
+	border-radius: var(--radius-8);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -151,7 +156,7 @@ button.sidebarCreateMenuTrigger:focus-visible {
 	flex: 0 0 auto;
 	margin-left: auto;
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-2xs);
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
 	line-height: 1;
@@ -168,7 +173,7 @@ button.sidebarCreateMenuTrigger:focus-visible {
 	flex: 0 0 auto;
 	margin-left: auto;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.85);
+	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
 	line-height: 1;
@@ -188,50 +193,25 @@ button.sidebarCreateMenuTrigger:focus-visible {
 	font-variant-numeric: tabular-nums;
 }
 
+/* Resting rows use secondary ink; hover and the active pill bring them to primary. */
 .sidebarNavBtn {
-	color: var(--text-primary);
+	height: 28px;
+	color: var(--text-secondary);
 }
 
 .sidebarNavBtn > svg {
-	color: var(--text-primary);
+	color: var(--text-secondary);
 }
 
-.sidebarNavBtn:hover > svg {
-	color: var(--text-primary);
-}
-
-.sidebarNavBtn[data-active="true"] {
-	position: relative;
-	background: var(--bg-active);
-}
-
-.sidebarNavBtn[data-active="true"]::before,
-.sidebar .fileTreeItem.active > .fileTreeRowShell::before {
-	content: "";
-	position: absolute;
-	inset-block: 5px;
-	inset-inline-start: -8px;
-	width: 3px;
-	border-radius: 0 3px 3px 0;
-	background: var(--interactive-accent);
-	pointer-events: none;
-}
-
-.sidebarNavBtn[data-active="true"]::before {
-	inset-inline-start: -9px;
-}
-
+.sidebarNavBtn:hover,
+.sidebarNavBtn:hover > svg,
+.sidebarNavBtn[data-active="true"],
 .sidebarNavBtn[data-active="true"] > svg {
 	color: var(--text-primary);
 }
 
-/* ── New note: filled accent icon ── */
-.sidebarNavBtn[data-kind="new-note"] > svg {
-	color: var(--interactive-accent);
-}
-
-.sidebarNavBtn[data-kind="new-note"] > svg path {
-	fill: currentcolor;
+.sidebarNavBtn[data-active="true"] {
+	background: var(--bg-active);
 }
 
 .sidebarNavBtn .sidebarQuickActionLabel {
@@ -256,7 +236,7 @@ button.sidebarCreateMenuTrigger:focus-visible {
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-8);
 	color: var(--text-primary);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	text-align: left;
 	cursor: pointer;
 	transition:
@@ -271,8 +251,8 @@ button.sidebarCreateMenuTrigger:focus-visible {
 }
 
 .sidebarSearchBar:focus-visible {
-	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: 2px;
+	outline: 1.5px solid color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	outline-offset: 0;
 	border-color: var(--border-default);
 }
 
@@ -308,7 +288,7 @@ button.sidebarCreateMenuTrigger:focus-visible {
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-6);
 	color: var(--text-tertiary);
-	font-size: 11px;
+	font-size: var(--text-2xs);
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
 	line-height: 1;

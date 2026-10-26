@@ -1,13 +1,20 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { Folder01Icon, TableIcon, Tag01Icon, UserIcon } from "@hugeicons/core-free-icons";
-import { Fragment, type ReactNode, useCallback } from "react";
+import {
+	File02Icon,
+	Folder01Icon,
+	Layout01Icon,
+	TableIcon,
+	Tag01Icon,
+	UserIcon,
+} from "@hugeicons/core-free-icons";
+import { Fragment, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	formatShortcutForPlatform,
 	formatShortcutPartsForPlatform,
 } from "../../lib/shortcuts/platform";
-import { FileText } from "../Icons";
 import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
+import { PaletteSnippet } from "./CommandPaletteSnippet";
 import type { PaletteResult, PaletteResultKind } from "./paletteResults";
 import { getPaletteSettingIcon } from "./settingsPaletteIcons";
 
@@ -18,62 +25,29 @@ interface CommandListProps {
 	onSelectResult: (index: number) => void;
 }
 
-const SNIPPET_ESCAPE = "\u001b";
-const SNIPPET_HIGHLIGHT_START = "\u001c";
-const SNIPPET_HIGHLIGHT_END = "\u001d";
-
-function HighlightedSnippet({ snippet }: { snippet: string }) {
-	const output: ReactNode[] = [];
-	let highlighted = false;
-	let text = "";
-	const pushText = (index: number) => {
-		if (!text) return;
-		output.push(
-			<Fragment key={`${index}:${text.slice(0, 8)}`}>
-				{highlighted ? <mark>{text}</mark> : text}
-			</Fragment>,
-		);
-		text = "";
-	};
-	for (let index = 0; index < snippet.length; index += 1) {
-		const char = snippet[index];
-		const next = snippet[index + 1];
-		if (char === SNIPPET_ESCAPE && next) {
-			text += next;
-			index += 1;
-		} else if (char === SNIPPET_HIGHLIGHT_START) {
-			pushText(index);
-			highlighted = true;
-		} else if (char === SNIPPET_HIGHLIGHT_END) {
-			pushText(index);
-			highlighted = false;
-		} else {
-			text += char;
-		}
+/** Notes, open tabs and content matches share the plain document glyph. */
+function resultIconFor(result: PaletteResult) {
+	switch (result.kind) {
+		case "setting":
+			return getPaletteSettingIcon(result.settingId);
+		case "folder":
+			return Folder01Icon;
+		case "tag":
+			return Tag01Icon;
+		case "person":
+			return UserIcon;
+		case "database":
+			return TableIcon;
+		case "template":
+			return Layout01Icon;
+		default:
+			return File02Icon;
 	}
-	pushText(snippet.length);
-	return <>{output}</>;
 }
 
 function ResultIcon({ result }: { result: PaletteResult }) {
 	if (result.kind === "command") return result.command?.icon ?? null;
-	const icon =
-		result.kind === "setting"
-			? getPaletteSettingIcon(result.settingId)
-			: result.kind === "folder"
-				? Folder01Icon
-				: result.kind === "tag"
-					? Tag01Icon
-					: result.kind === "person"
-						? UserIcon
-						: result.kind === "database"
-							? TableIcon
-							: null;
-	return icon ? (
-		<HugeiconsIcon icon={icon} size="var(--icon-md)" />
-	) : (
-		<FileText size="var(--icon-md)" />
-	);
+	return <HugeiconsIcon icon={resultIconFor(result)} size="var(--icon-lg)" />;
 }
 
 function Shortcut({ result }: { result: PaletteResult }) {
@@ -91,6 +65,33 @@ function Shortcut({ result }: { result: PaletteResult }) {
 				</span>
 			</kbd>
 		</span>
+	);
+}
+
+const FOOTER_HINTS = [
+	{ keys: ["↑", "↓"], label: "navigate" },
+	{ keys: ["↵"], label: "open" },
+	{ keys: ["esc"], label: "close" },
+] as const;
+
+/** Keyboard hints under the results, like the native launcher palettes. */
+export function CommandPaletteFooter() {
+	const { t } = useTranslation("shell");
+	return (
+		<div className="commandPaletteFooter">
+			{FOOTER_HINTS.map((hint) => (
+				<span key={hint.label} className="commandPaletteFooterHint">
+					<span className="commandPaletteFooterKeys">
+						{hint.keys.map((key) => (
+							<kbd key={key} className="commandPaletteKeycap">
+								{key}
+							</kbd>
+						))}
+					</span>
+					{t(`commandPalette.footer.${hint.label}`)}
+				</span>
+			))}
+		</div>
 	);
 }
 
@@ -146,29 +147,35 @@ export function CommandList({
 											<ResultIcon result={result} />
 										</span>
 										<span className="commandPaletteUniversalContent">
-											<span className="commandPaletteResultLine">
-												<span className="commandPaletteResultTitle">{result.label}</span>
-												{result.description ? (
-													<>
-														<span className="commandPaletteResultLineSep" aria-hidden="true">
-															·
-														</span>
-														<span className="commandPaletteResultPath" title={result.description}>
-															{result.description}
-														</span>
-													</>
+											<span className="commandPaletteResultHead">
+												<span className="commandPaletteResultLine">
+													<span className="commandPaletteResultTitle">{result.label}</span>
+													{result.description ? (
+														<>
+															<span className="commandPaletteResultLineSep" aria-hidden="true">
+																·
+															</span>
+															<span className="commandPaletteResultPath" title={result.description}>
+																{result.description}
+															</span>
+														</>
+													) : null}
+												</span>
+												{typeof result.checked !== "boolean" && result.trailing ? (
+													<span className="commandPaletteResultValue" title={result.trailing}>
+														{result.trailing}
+													</span>
 												) : null}
 											</span>
 											{result.snippet ? (
 												<span className="commandPaletteResultSnippet">
-													<HighlightedSnippet snippet={result.snippet} />
+													<PaletteSnippet snippet={result.snippet} />
 												</span>
 											) : null}
 										</span>
 									</span>
 									{typeof result.checked === "boolean" ? (
 										<span className="commandPaletteInlineSettingValue">
-											<span>{result.trailing}</span>
 											<span
 												className="commandPaletteInlineToggle"
 												data-checked={result.checked}
@@ -177,19 +184,7 @@ export function CommandList({
 												<span />
 											</span>
 										</span>
-									) : result.settingControl === "choice" && result.trailing ? (
-										<span className="commandPaletteInlineSettingValue">
-											<span aria-hidden="true">‹</span>
-											<span className="commandPaletteResultValue" title={result.trailing}>
-												{result.trailing}
-											</span>
-											<span aria-hidden="true">›</span>
-										</span>
-									) : result.trailing ? (
-										<span className="commandPaletteResultValue" title={result.trailing}>
-											{result.trailing}
-										</span>
-									) : (
+									) : result.trailing ? null : (
 										<Shortcut result={result} />
 									)}
 								</button>

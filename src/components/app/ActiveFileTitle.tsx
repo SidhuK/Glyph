@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { basename, splitEditableFileName } from "../../utils/path";
 
 interface ActiveFileTitleProps {
 	path: string | null;
 	onRenameFile: (path: string, nextName: string) => Promise<string | null>;
+	onContextMenu?: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
+export function ActiveFileTitle({ path, onRenameFile, onContextMenu }: ActiveFileTitleProps) {
+	const { t } = useTranslation("shell");
 	const fileName = path ? basename(path) : "";
 	const editableName = splitEditableFileName(fileName);
 	const activeTitleKey = path ?? "";
@@ -31,7 +34,7 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 	const commitRename = useCallback(async () => {
 		if (!path || submittedRef.current) return;
 		submittedRef.current = true;
-		const fallbackName = editableName.stem || "Untitled";
+		const fallbackName = editableName.stem || t("tabs.untitled");
 		const nextStem = draftName.trim() || fallbackName;
 		const nextName = `${nextStem}${editableName.ext || ".md"}`;
 		if (nextName === fileName) {
@@ -43,7 +46,7 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 		} finally {
 			setIsRenaming(false);
 		}
-	}, [draftName, editableName.ext, editableName.stem, fileName, onRenameFile, path]);
+	}, [draftName, editableName.ext, editableName.stem, fileName, onRenameFile, path, t]);
 
 	const cancelRename = useCallback(() => {
 		submittedRef.current = true;
@@ -59,8 +62,8 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 				ref={inputRef}
 				className="plainTextInput mainTabActiveTitleInput"
 				value={draftName}
-				placeholder="Untitled"
-				aria-label="Rename current file"
+				placeholder={t("tabs.untitled")}
+				aria-label={t("tabs.renameCurrent")}
 				onChange={(event) => {
 					submittedRef.current = false;
 					setDraftName(event.target.value);
@@ -85,13 +88,14 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 		<button
 			type="button"
 			className="mainTabActiveTitle"
-			title={`Rename ${fileName}`}
-			aria-label={`Rename ${fileName}`}
+			title={t("tabs.renameNamed", { name: fileName })}
+			aria-label={t("tabs.renameNamed", { name: fileName })}
 			onClick={() => {
 				submittedRef.current = false;
 				setDraftName(editableName.stem);
 				setIsRenaming(true);
 			}}
+			onContextMenu={onContextMenu}
 		>
 			<span className="mainTabActiveTitleText">{editableName.stem}</span>
 		</button>

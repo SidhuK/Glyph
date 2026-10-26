@@ -16,7 +16,7 @@ export function AppearanceCornerRadiusCard({
 }: AppearanceCornerRadiusCardProps) {
 	const { t } = useTranslation("settings.appearance");
 	return (
-		<SettingsSection title={t("shape.sectionTitle")} description={t("shape.sectionDescription")}>
+		<SettingsSection title={t("shape.sectionTitle")}>
 			<SettingsRow
 				label={t("shape.corners.label")}
 				description={t("shape.corners.description")}

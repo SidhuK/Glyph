@@ -8,27 +8,26 @@ import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
-import { spaceDisplayName } from "../../lib/spaceRegistry";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
-import { displayNameFromPath, parentDir } from "../../utils/path";
+import { displayNameFromPath, isMarkdownPath, parentDir } from "../../utils/path";
 import { AppearanceIcon } from "../AppearanceIcon";
 import { ChevronRight } from "../Icons";
+import { ActiveFileTitle } from "./ActiveFileTitle";
 import {
 	BreadcrumbEntryMenu,
 	BreadcrumbOverflowMenu,
 	type BreadcrumbPart,
-	ROOT_PATH_KEY,
 } from "./MainTabsBreadcrumbMenus";
 
 interface MainTabsBreadcrumbsProps {
 	activeTabPath: string | null;
-	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	onNavigateBreadcrumbPath: (dirPath: string) => void;
 	onLoadBreadcrumbDir: (dirPath: string) => Promise<void>;
 	onOpenBreadcrumbFile: (relPath: string) => Promise<void>;
+	onRenameFile: (path: string, nextName: string) => Promise<string | null>;
 }
 
 type BreadcrumbDisplayItem =
@@ -82,38 +81,37 @@ function breadcrumbDisplayItems(parts: BreadcrumbPart[]): BreadcrumbDisplayItem[
 	];
 }
 
-function breadcrumbPartsForPath(path: string | null, rootLabel: string): BreadcrumbPart[] {
+// The space root is left out, like the collection header: the sidebar already names the space.
+function breadcrumbPartsForPath(path: string | null): BreadcrumbPart[] {
 	if (!path || isPathSpecial(path)) return [];
-	return [
-		{ label: rootLabel, path: "", kind: "folder" },
-		...path
-			.split("/")
-			.filter(Boolean)
-			.map((segment, index, segments): BreadcrumbPart => {
-				const isFile = index === segments.length - 1;
-				return {
-					label: isFile ? displayNameFromPath(segment) : segment,
-					path: segments.slice(0, index + 1).join("/"),
-					kind: isFile ? "file" : "folder",
-				};
-			}),
-	];
+	return path
+		.split("/")
+		.filter(Boolean)
+		.map((segment, index, segments): BreadcrumbPart => {
+			const isFile = index === segments.length - 1;
+			return {
+				label: isFile ? displayNameFromPath(segment) : segment,
+				path: segments.slice(0, index + 1).join("/"),
+				kind: isFile ? "file" : "folder",
+			};
+		});
 }
 
+/** Folder › note path beside the back/forward arrows. Folders reveal themselves in the file
+ * tree, each chevron browses its folder, and the note name renames the note. */
 export function MainTabsBreadcrumbs({
 	activeTabPath,
-	rootEntries,
 	childrenByDir,
 	onNavigateBreadcrumbPath,
 	onLoadBreadcrumbDir,
 	onOpenBreadcrumbFile,
+	onRenameFile,
 }: MainTabsBreadcrumbsProps) {
 	const { t } = useTranslation("shell");
 	const [openBreadcrumbMenuKey, setOpenBreadcrumbMenuKey] = useState<string | null>(null);
 	const { spacePath } = useSpace();
 	const { itemAppearance } = useFileTreeContext();
-	const rootLabel = spacePath ? spaceDisplayName(spacePath) : t("breadcrumbs.space");
-	const breadcrumbParts = breadcrumbPartsForPath(activeTabPath, rootLabel);
+	const breadcrumbParts = breadcrumbPartsForPath(activeTabPath);
 	const breadcrumbDisplay = breadcrumbDisplayItems(breadcrumbParts);
 	const handleRevealInFinder = useCallback(
 		async (part: BreadcrumbPart) => {
@@ -162,13 +160,11 @@ export function MainTabsBreadcrumbs({
 				if (item.type === "overflow") {
 					return (
 						<span key="breadcrumb-overflow" className="mainTabsBreadcrumbItem">
-							{displayIndex > 0 ? (
-								<ChevronRight
-									size="var(--icon-xs)"
-									className="mainTabsBreadcrumbSep"
-									aria-hidden="true"
-								/>
-							) : null}
+							<ChevronRight
+								size="var(--icon-xs)"
+								className="mainTabsBreadcrumbSep"
+								aria-hidden="true"
+							/>
 							<BreadcrumbOverflowMenu
 								hiddenParts={item.hiddenParts}
 								onNavigateDir={onNavigateBreadcrumbPath}
@@ -180,43 +176,54 @@ export function MainTabsBreadcrumbs({
 
 				const { part, originalIndex } = item;
 				const isCurrent = originalIndex === breadcrumbParts.length - 1;
-				const menuDirPath = breadcrumbParts[originalIndex - 1]?.path ?? "";
-				const menuEntries = menuDirPath === "" ? rootEntries : childrenByDir[menuDirPath];
-				const menuItems = sortBreadcrumbEntries(menuEntries ?? []);
-				const menuKey = `${originalIndex}:${menuDirPath || ROOT_PATH_KEY}`;
+				const parentPart = displayIndex > 0 ? breadcrumbParts[originalIndex - 1] : undefined;
+				const menuKey = `${originalIndex}:${parentPart?.path ?? ""}`;
+				const parentEntries = parentPart ? childrenByDir[parentPart.path] : undefined;
 				const appearanceIcon = itemAppearance[part.path]?.icon;
 
 				return (
-					<span key={part.path || ROOT_PATH_KEY} className="mainTabsBreadcrumbItem">
-						{displayIndex > 0 ? (
+					<span
+						key={part.path}
+						className="mainTabsBreadcrumbItem"
+						data-current={isCurrent ? "true" : undefined}
+					>
+						{parentPart ? (
 							<BreadcrumbEntryMenu
 								open={openBreadcrumbMenuKey === menuKey}
-								dirLabel={breadcrumbParts[originalIndex - 1]?.label ?? rootLabel}
-								dirPath={menuDirPath}
-								entries={menuItems}
-								loading={menuEntries === undefined}
+								dirLabel={parentPart.label}
+								dirPath={parentPart.path}
+								entries={sortBreadcrumbEntries(parentEntries ?? [])}
+								loading={parentEntries === undefined}
 								onOpenChange={(open) => setOpenBreadcrumbMenuKey(open ? menuKey : null)}
 								onLoadDir={onLoadBreadcrumbDir}
 								onOpenFile={onOpenBreadcrumbFile}
 								childrenByDir={childrenByDir}
 							/>
 						) : null}
-						<button
-							type="button"
-							className="mainTabsBreadcrumbButton"
-							aria-current={isCurrent ? "page" : undefined}
-							aria-disabled={isCurrent}
-							title={part.path || rootLabel}
-							onClick={() => {
-								if (part.kind === "folder") onNavigateBreadcrumbPath(part.path);
-							}}
-							onContextMenu={(event) => handleBreadcrumbContextMenu(event, part)}
-						>
-							{appearanceIcon ? (
-								<AppearanceIcon iconName={appearanceIcon} size="var(--icon-sm)" />
-							) : null}
-							<span className="mainTabsBreadcrumbLabel">{part.label}</span>
-						</button>
+						{isCurrent && isMarkdownPath(part.path) ? (
+							<ActiveFileTitle
+								path={part.path}
+								onRenameFile={onRenameFile}
+								onContextMenu={(event) => handleBreadcrumbContextMenu(event, part)}
+							/>
+						) : (
+							<button
+								type="button"
+								className="mainTabsBreadcrumbButton"
+								aria-current={isCurrent ? "page" : undefined}
+								aria-disabled={isCurrent}
+								title={part.path}
+								onClick={() => {
+									if (part.kind === "folder") onNavigateBreadcrumbPath(part.path);
+								}}
+								onContextMenu={(event) => handleBreadcrumbContextMenu(event, part)}
+							>
+								{appearanceIcon ? (
+									<AppearanceIcon iconName={appearanceIcon} size="var(--icon-sm)" />
+								) : null}
+								<span className="mainTabsBreadcrumbLabel">{part.label}</span>
+							</button>
+						)}
 					</span>
 				);
 			})}

@@ -7,8 +7,8 @@
 	align-items: center;
 	min-height: 0;
 	overflow-y: auto;
-	padding: calc(var(--header-height) + clamp(28px, 3.2vw, 46px)) clamp(18px, 4vw, 56px)
-		clamp(34px, 5vw, 64px);
+	/* The title lands on the editor's H1 line (header + 28px). */
+	padding: calc(var(--header-height) + 28px) clamp(40px, 4vw, 56px) clamp(34px, 5vw, 64px);
 	background: var(--bg-primary);
 	gap: 26px;
 }
@@ -20,29 +20,46 @@
 .activityTimelineTitle {
 	display: inline-flex;
 	align-items: center;
-	gap: 9px;
-	font-size: calc(var(--text-base) * 2.1);
+	gap: 10px;
+	font-size: var(--text-xl);
 	line-height: 1.2;
-	letter-spacing: -0.025em;
-	font-weight: var(--font-medium);
+	letter-spacing: -0.015em;
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 	text-wrap: balance;
 }
 
 .activityTimelineTitle svg {
 	flex: 0 0 auto;
-	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+	color: var(--text-secondary);
 }
 
 .activityHeatmapBlock {
 	--activity-heatmap-gap: 3px;
-	--activity-heatmap-level-0: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-secondary));
+	/* Empty days barely lift off the page so only active days read, not the grid. */
+	--activity-heatmap-level-0: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
+	--activity-heatmap-ink: var(--interactive-accent);
+	/* Evenly spaced ink shares for levels 1-4. The top step stops near half ink in both themes, so
+	   the busiest days stay lighter than the page title instead of reading as solid blocks. */
+	--activity-heatmap-step-1: 11.25%;
+	--activity-heatmap-step-2: 22.5%;
+	--activity-heatmap-step-3: 33.75%;
+	--activity-heatmap-step-4: 45%;
 
 	display: flex;
 	width: var(--activity-content-width);
 	flex-direction: column;
 	gap: 10px;
+	margin-bottom: 6px;
 	container-type: inline-size;
+}
+
+.dark .activityHeatmapBlock {
+	--activity-heatmap-level-0: color-mix(in srgb, var(--text-primary) 5%, var(--bg-primary));
+	--activity-heatmap-step-1: 12.5%;
+	--activity-heatmap-step-2: 25%;
+	--activity-heatmap-step-3: 37.5%;
+	--activity-heatmap-step-4: 50%;
 }
 
 .activityHeatmapToolbar {
@@ -69,30 +86,32 @@
 
 .activityHeatmapPeriod .calendarNavButton:disabled {
 	background: transparent;
-	color: var(--text-tertiary);
+	color: var(--text-quaternary);
 	cursor: default;
 	opacity: 0.35;
 }
 
 .activityHeatmapPeriodLabel {
 	min-width: 72px;
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	text-align: center;
 	font-variant-numeric: tabular-nums;
 }
 
-/* Row-reverse anchors overflow at the end, so narrow panes open scrolled to today. */
+/* Row-reverse anchors overflow at the end, so narrow panes open scrolled to today. The grid's
+   ring padding hangs outside the block, so the last week ends on the timeline's right edge. */
 .activityHeatmapScroller {
 	--activity-heatmap-cell: clamp(
 		10px,
-		calc((100cqi - 32px) / 53 - var(--activity-heatmap-gap)),
+		calc((100cqi - 44px) / 53 - var(--activity-heatmap-gap)),
 		15px
 	);
 
 	display: flex;
 	flex-direction: row-reverse;
+	margin-inline: -3px;
 	overflow-x: auto;
 	scrollbar-width: thin;
 }
@@ -100,8 +119,9 @@
 .activityHeatmapGrid {
 	display: grid;
 	flex: none;
+	/* The weekday column absorbs the slack, so cells always reach the right edge. */
+	min-width: 100%;
 	gap: var(--activity-heatmap-gap);
-	margin-right: auto;
 	padding: 3px;
 }
 
@@ -112,17 +132,17 @@
 .activityHeatmapMonth,
 .activityHeatmapWeekday {
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.7);
+	font-size: var(--text-xs);
 	line-height: 1;
 	white-space: nowrap;
 }
 
 .activityHeatmapMonth {
-	padding-bottom: 2px;
+	padding-bottom: 4px;
 }
 
 .activityHeatmapWeekday {
-	padding-right: 4px;
+	padding-right: 6px;
 	line-height: var(--activity-heatmap-cell);
 	text-align: right;
 }
@@ -135,7 +155,7 @@
 
 .activityHeatmapCell,
 .activityHeatmapLegendCell {
-	border-radius: 3px;
+	border-radius: 2px;
 	background: var(--activity-heatmap-level-0);
 }
 
@@ -170,31 +190,47 @@
 
 .activityHeatmapCell[data-level="1"],
 .activityHeatmapLegendCell[data-level="1"] {
-	background: color-mix(in oklch, var(--interactive-accent) 30%, var(--activity-heatmap-level-0));
+	background: color-mix(
+		in oklch,
+		var(--activity-heatmap-ink) var(--activity-heatmap-step-1),
+		var(--activity-heatmap-level-0)
+	);
 }
 
 .activityHeatmapCell[data-level="2"],
 .activityHeatmapLegendCell[data-level="2"] {
-	background: color-mix(in oklch, var(--interactive-accent) 52%, var(--activity-heatmap-level-0));
+	background: color-mix(
+		in oklch,
+		var(--activity-heatmap-ink) var(--activity-heatmap-step-2),
+		var(--activity-heatmap-level-0)
+	);
 }
 
 .activityHeatmapCell[data-level="3"],
 .activityHeatmapLegendCell[data-level="3"] {
-	background: color-mix(in oklch, var(--interactive-accent) 76%, var(--activity-heatmap-level-0));
+	background: color-mix(
+		in oklch,
+		var(--activity-heatmap-ink) var(--activity-heatmap-step-3),
+		var(--activity-heatmap-level-0)
+	);
 }
 
 .activityHeatmapCell[data-level="4"],
 .activityHeatmapLegendCell[data-level="4"] {
-	background: var(--interactive-accent);
+	background: color-mix(
+		in oklch,
+		var(--activity-heatmap-ink) var(--activity-heatmap-step-4),
+		var(--activity-heatmap-level-0)
+	);
 }
 
 .activityHeatmapLegend {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
-	gap: 5px;
+	gap: 4px;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.72);
+	font-size: var(--text-xs);
 	line-height: 1;
 }
 
@@ -208,8 +244,8 @@
 	max-width: 260px;
 	padding: 8px 10px;
 	border-radius: var(--radius-md);
-	font-size: calc(var(--text-base) * 0.8);
-	line-height: 1.35;
+	font-size: var(--text-xs);
+	line-height: 1.4;
 	pointer-events: none;
 }
 
@@ -241,7 +277,6 @@
 
 .activityHeatmapPreviewHint {
 	margin-top: 4px;
-	font-size: calc(var(--text-base) * 0.72);
 }
 
 .activityDayFilter {
@@ -253,10 +288,11 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	padding: 3px 3px 3px 10px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
-	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-primary));
+	height: 28px;
+	padding: 0 4px 0 10px;
+	border-radius: var(--radius-md);
+	background: var(--bg-active);
+	color: var(--text-primary);
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	line-height: 1.3;
@@ -271,30 +307,33 @@
 	height: 20px;
 	padding: 0;
 	border: 0;
-	border-radius: 50%;
+	border-radius: var(--radius-sm);
 	background: transparent;
-	color: inherit;
+	color: var(--text-secondary);
 	cursor: pointer;
-	opacity: 0.7;
 	transition:
 		background var(--transition-fast),
-		opacity var(--transition-fast);
+		color var(--transition-fast);
 }
 
 .activityDayFilterChip button:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-	opacity: 1;
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .activityDayFilterChip button:focus-visible {
-	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 60%, transparent);
+	outline: 2px solid var(--border-focus);
 	outline-offset: 1px;
-	opacity: 1;
 }
 
+/* The day rail hangs in the left gutter, so day headings and cards share the title and
+   heatmap's left edge instead of starting one rail-width further in. */
 .activityFeed {
+	--activity-rail-offset: 40px;
+
 	display: flex;
-	width: var(--activity-content-width);
+	width: calc(var(--activity-content-width) + var(--activity-rail-offset));
+	margin-left: calc(var(--activity-rail-offset) * -1);
 	flex-direction: column;
 }
 
@@ -340,7 +379,7 @@
 .activityDayRail::before {
 	content: "";
 	position: absolute;
-	top: 26px;
+	top: 18px;
 	left: 11px;
 	bottom: -32px;
 	width: 1px;
@@ -350,13 +389,12 @@
 .activityDayRail::after {
 	content: "";
 	position: absolute;
-	top: 20px;
-	left: 5px;
-	width: 13px;
-	height: 13px;
+	top: 8px;
+	left: 8px;
+	width: 7px;
+	height: 7px;
 	border-radius: 50%;
-	background: var(--bg-primary);
-	border: 2px solid var(--border-light);
+	background: var(--border-strong);
 }
 
 .activityVirtualRow:last-child .activityDayRail::before {
@@ -378,70 +416,38 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	margin-bottom: 14px;
+	margin-bottom: 2px;
 }
 
 .activityDayHeader h2 {
-	font-size: calc(var(--text-base) * 1.3);
+	font-size: var(--text-md);
 	font-weight: var(--font-semibold);
-	line-height: 1.25;
-	color: var(--interactive-accent);
+	line-height: 1.3;
+	color: var(--text-primary);
 	text-wrap: balance;
 }
 
 .activityDayHeading {
 	display: flex;
-	align-items: center;
-	gap: 12px;
+	align-items: baseline;
+	gap: 8px;
 	min-width: 0;
 }
 
-.activityDateBadge {
-	display: flex;
-	flex: 0 0 auto;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	min-width: 48px;
-	min-height: 52px;
-	padding: 5px 8px;
-	gap: 2px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-8);
-	background: var(--bg-secondary);
-	color: var(--text-secondary);
+.activityDayDate {
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+	line-height: 1.3;
 	font-variant-numeric: tabular-nums;
 }
 
-.activityDateBadge span {
-	font-size: var(--text-xs);
-	font-weight: var(--font-medium);
-	line-height: 1.2;
-}
-
-.activityDateBadge strong {
-	color: var(--interactive-accent);
-	font-size: calc(var(--text-base) * 1.5);
-	font-weight: var(--font-semibold);
-	line-height: 1;
-}
-
-.activityDayDate {
-	display: block;
-	margin-top: 4px;
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.8);
-	line-height: 1.4;
-}
-
 .activityDayHeaderRow[data-today="true"] .activityDayRail::after {
-	background: var(--interactive-accent);
-	border-color: var(--interactive-accent);
+	background: var(--text-primary);
 }
 
 .activityDayCounts {
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.82);
+	font-size: var(--text-xs);
 	line-height: 1.35;
 	font-variant-numeric: tabular-nums;
 }
@@ -455,6 +461,10 @@
 	.activityTimelinePane {
 		padding-right: 18px;
 		padding-left: 18px;
+	}
+
+	.activityFeed {
+		--activity-rail-offset: 0px;
 	}
 
 	.activityDayGroup {
@@ -471,7 +481,7 @@
 	}
 
 	.activityDayRail::after {
-		left: 2px;
+		left: 5px;
 	}
 
 	.activityDayHeader {

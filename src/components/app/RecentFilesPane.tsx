@@ -24,7 +24,8 @@ function SidebarFileList({ paths, activeFilePath, onOpenFile }: SidebarFileListP
 		<div className="fileTreeScroll">
 			<ul className="fileTreeList">
 				{paths.map((path) => {
-					const { Icon, color } = getFileTypeInfo(path, isMarkdownPath(path));
+					const isNote = isMarkdownPath(path);
+					const { Icon, color } = getFileTypeInfo(path, isNote);
 					const folder = displayFolderFromPath(path);
 					return (
 						<li
@@ -39,9 +40,9 @@ function SidebarFileList({ paths, activeFilePath, onOpenFile }: SidebarFileListP
 									title={path}
 								>
 									<Icon
-										size="var(--icon-md)"
+										size="var(--icon-lg)"
 										className="fileTreeIcon"
-										style={{ color }}
+										style={isNote ? undefined : { color }}
 										aria-hidden="true"
 									/>
 									<span className="fileTreeFileText">

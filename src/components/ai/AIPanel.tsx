@@ -373,7 +373,7 @@ export function AIPanel(props: AIPanelProps) {
 						onClick={() => setHistoryExpanded((prev) => !prev)}
 						title="Recent chats"
 					>
-						Recent Chats
+						Recent chats
 					</button>
 				</div>
 				<div className="aiPanelHeaderRight">

@@ -82,22 +82,6 @@ function searchMatchIds(graph: ConnectionsGraph, query: string) {
 	return matches;
 }
 
-function SpaceConnectionsLegend() {
-	const { t } = useTranslation("shell");
-	return (
-		<div className="localNoteConnectionsLegend" aria-label={t("connections.legendAria")}>
-			<span className="localNoteConnectionsLegendItem">
-				<span className="localNoteConnectionsLegendNode is-community" aria-hidden="true" />
-				{t("connections.legendNote")}
-			</span>
-			<span className="localNoteConnectionsLegendItem">
-				<span className="localNoteConnectionsLegendNode is-tag" aria-hidden="true" />
-				{t("connections.legendTag")}
-			</span>
-		</div>
-	);
-}
-
 export function SpaceConnectionsView() {
 	const { t } = useTranslation("shell");
 	const { spacePath } = useSpace();
@@ -226,30 +210,27 @@ export function SpaceConnectionsView() {
 	};
 
 	const toolbar = (
-		<>
-			<SpaceConnectionsToolbar
-				searchOpen={searchOpen}
-				searchQuery={searchQuery}
-				onSearchOpenChange={(open) => {
-					setSearchOpen(open);
-					if (!open) applySearch("");
-				}}
-				onSearchQueryChange={applySearch}
-				searchInputRef={searchInputRef}
-				options={options}
-				onOptionsChange={(next) => {
-					optionsMutation.mutate(next);
-					overlay.current.setDisplay({
-						nodeSizeScale: connectionsNodeSizeScale(next.nodeSize),
-						linkOpacity: connectionsLinkOpacity(next.linkOpacity),
-						linkThicknessScale: connectionsLinkThicknessScale(next.linkThickness),
-						edgeBundling: connectionsEdgeBundling(next.edgeBundling),
-					});
-					overlay.current.setLabelZoomThreshold(next.labelZoomThreshold);
-				}}
-			/>
-			<SpaceConnectionsLegend />
-		</>
+		<SpaceConnectionsToolbar
+			searchOpen={searchOpen}
+			searchQuery={searchQuery}
+			onSearchOpenChange={(open) => {
+				setSearchOpen(open);
+				if (!open) applySearch("");
+			}}
+			onSearchQueryChange={applySearch}
+			searchInputRef={searchInputRef}
+			options={options}
+			onOptionsChange={(next) => {
+				optionsMutation.mutate(next);
+				overlay.current.setDisplay({
+					nodeSizeScale: connectionsNodeSizeScale(next.nodeSize),
+					linkOpacity: connectionsLinkOpacity(next.linkOpacity),
+					linkThicknessScale: connectionsLinkThicknessScale(next.linkThickness),
+					edgeBundling: connectionsEdgeBundling(next.edgeBundling),
+				});
+				overlay.current.setLabelZoomThreshold(next.labelZoomThreshold);
+			}}
+		/>
 	);
 
 	if (dataLoading || layoutLoading) {

@@ -7,7 +7,10 @@
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Rechercher dans les réglages",
 		"searchAriaLabel": "Rechercher dans les réglages",
-		"clearSearchAriaLabel": "Effacer la recherche des réglages"
+		"clearSearchAriaLabel": "Effacer la recherche des réglages",
+		"searchEmpty": "Aucun réglage correspondant",
+		"sendFeedback": "Envoyer un avis",
+		"buyLicense": "Acheter une licence officielle"
 	},
 	"about": {
 		"developer": {
@@ -16,30 +19,87 @@
 			"bio": "Dans la vie, Karat est scientifique biomédical et chercheur. Ses recherches l'ont mené dans des établissements comme Texas A&M University et University of Vermont. Il développe des logiciels pour le plaisir de résoudre ses propres problèmes, et Glyph est l'un de ces outils.",
 			"github": "GitHub",
 			"twitter": "X / Twitter"
+		},
+		"tagline": {
+			"first": "Vos pensées méritent un foyer,",
+			"second": "pas un serveur."
+		},
+		"links": {
+			"ariaLabel": "Liens Glyph",
+			"website": "Site web",
+			"terms": "Conditions",
+			"privacy": "Confidentialité"
+		},
+		"errors": {
+			"loadInfoFailed": "Impossible de charger les informations de l’app.",
+			"checkFailed": "Impossible de rechercher des mises à jour.",
+			"saveChannelFailed": "Impossible d’enregistrer le canal de versions."
+		},
+		"updates": {
+			"sectionTitle": "Mises à jour",
+			"descriptionLoading": "Vérification de la prise en charge des mises à jour automatiques par cette version.",
+			"descriptionUnknown": "Glyph n’a pas pu déterminer si cette version prend en charge les mises à jour automatiques.",
+			"descriptionAuto": "Recherchez les nouvelles versions et installez-les sans quitter Glyph.",
+			"descriptionManual": "Les versions communautaires se mettent à jour manuellement.",
+			"upToDate": "Vous utilisez déjà la dernière version.",
+			"ready": "La v{{version}} est téléchargée et prête. Cliquez sur le bouton de mise à jour pour l’installer.",
+			"licenseStatus": {
+				"label": "État de la licence",
+				"description": "Glyph n’a pas pu vérifier l’état de la licence dans cette fenêtre, les mises à jour sont donc indisponibles pour le moment.",
+				"unknown": "État de la licence inconnu"
+			},
+			"appUpdates": {
+				"label": "Mises à jour de l’app",
+				"description": "Recherche immédiatement et télécharge la dernière version publiée en arrière-plan. L’installation n’a lieu que lorsque vous la lancez.",
+				"check": "Rechercher des mises à jour",
+				"checking": "Recherche…",
+				"install": "Installer la mise à jour",
+				"installVersion": "Installer {{version}}"
+			},
+			"alpha": {
+				"label": "Versions alpha",
+				"description": "Accédez en avance aux versions alpha. Elles peuvent être instables : activez cette option seulement si vous êtes à l’aise avec des versions inachevées."
+			},
+			"communityBuild": {
+				"label": "Version communautaire",
+				"description": "Vous utilisez la version communautaire et open source de Glyph. Achetez une licence officielle pour soutenir le développement de Glyph et recevoir automatiquement les mises à jour."
+			},
+			"status": {
+				"label": "État",
+				"description": "Dernière activité de mise à jour dans cette fenêtre."
+			},
+			"changelog": {
+				"label": "Journal des modifications",
+				"description": "Ouvrir le journal des modifications de Glyph dans votre navigateur.",
+				"view": "Voir le journal des modifications"
+			}
 		}
 	},
 	"newNotes": {
 		"sectionTitle": "Nouvelles notes",
-		"sectionDescription": "Choisissez où Glyph crée les nouvelles notes dans cet espace.",
 		"root": "Non configuré",
 		"browse": "Parcourir",
 		"clear": "Effacer le dossier par défaut",
 		"defaultFolder": {
 			"label": "Dossier par défaut",
+			"description": "Choisissez où Glyph crée les nouvelles notes dans cet espace.",
 			"description": "Nouvelle note et Cmd+N créent les notes ici lorsqu’un dossier est défini."
 		}
 	},
+	"folderPicker": {
+		"clear": "Effacer",
+		"reset": "Réinitialiser"
+	},
 	"language": {
-		"sectionTitle": "Langue",
-		"sectionDescription": "Choisissez la langue utilisée dans Glyph.",
 		"label": "Langue",
 		"description": "S’applique immédiatement aux menus, réglages et navigation.",
 		"ariaLabel": "Langue",
 		"communityNotice": "Les traductions sont fournies par la communauté et peuvent être incomplètes. Des questions ou des améliorations ? <discord>Rejoindre Discord</discord>."
 	},
+	"region": {
+		"sectionTitle": "Langue et région"
+	},
 	"dateTime": {
-		"sectionTitle": "Date et heure",
-		"sectionDescription": "Choisissez l’affichage des dates complètes dans Glyph.",
 		"dateFormat": {
 			"label": "Format de date",
 			"description": "S’applique immédiatement aux dates complètes dans les notes, métadonnées, bases de données et l’historique.",
@@ -55,7 +115,7 @@
 		}
 	},
 	"experimental": {
-		"sectionTitle": "Expérimental",
+		"sectionTitle": "Fonctionnalités",
 		"sectionDescription": "Fonctionnalités expérimentales encore inachevées. Une version ultérieure de Glyph peut les modifier ou les retirer.",
 		"noteSidePeek": {
 			"label": "Peek de note",
@@ -64,8 +124,7 @@
 		}
 	},
 	"editor": {
-		"sectionTitle": "Éditeur",
-		"sectionDescription": "Contrôles du comportement d’édition et de la structure des notes dans Glyph.",
+		"sectionTitle": "Édition",
 		"defaultEditorMode": {
 			"label": "Mode d’éditeur par défaut",
 			"description": "Comment les notes s’ouvrent par défaut : Enrichi pour modifier, Aperçu en lecture seule ou Brut pour le Markdown pur.",
@@ -98,7 +157,7 @@
 		},
 		"colorfulHeadings": {
 			"label": "Titres colorés",
-			"description": "Utiliser une palette sélectionnée pour H1-H6 lors de l’édition des notes.",
+			"description": "Utiliser une palette sélectionnée pour H1–H6 lors de l’édition des notes.",
 			"ariaLabel": "Titres colorés",
 			"palette": {
 				"label": "Palette des titres",
@@ -141,7 +200,6 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Arborescence des fichiers",
-		"sectionDescription": "Configurez l’arborescence de la barre latérale.",
 		"folderCounts": {
 			"label": "Afficher le nombre de fichiers par dossier",
 			"description": "Afficher le total récursif de fichiers à la fin de chaque ligne de dossier dans l’arborescence.",
@@ -179,7 +237,6 @@
 	},
 	"editorPresentation": {
 		"sectionTitle": "Présentation de l’éditeur",
-		"sectionDescription": "Choisissez l’apparence des notes pendant l’édition.",
 		"beautifulTags": {
 			"label": "Belles étiquettes",
 			"description": "Activer la présentation expérimentale Beautiful Tags pour les étiquettes.",
@@ -207,6 +264,66 @@
 			"clear": "Retirer le dossier de modèles",
 			"found_one": "{{count}} modèle trouvé",
 			"found_other": "{{count}} modèles trouvés"
+		}
+	},
+	"license": {
+		"sectionTitle": "Licence",
+		"status": {
+			"licensed": "Sous licence",
+			"trialActive": "Essai actif",
+			"trialExpired": "Essai expiré",
+			"communityBuild": "Version communautaire"
+		},
+		"trialStatus": {
+			"label": "État de l’essai",
+			"description": "Temps restant de l’essai en cours sur cet appareil."
+		},
+		"activated": "Activée",
+		"licenseKey": "Clé de licence",
+		"storedLocally": "Enregistrée localement",
+		"officialBuild": {
+			"label": "Version officielle",
+			"description": "Merci d’avoir téléchargé et compilé Glyph vous-même. Les versions communautaires n’incluent pas les mises à jour automatiques. Pour obtenir la dernière version, téléchargez de nouveau le code source et recompilez-le, ou procurez-vous la version officielle sous licence pour soutenir Glyph et activer les mises à jour automatiques."
+		},
+		"buyOfficial": "Acheter une licence officielle",
+		"activate": {
+			"label": "Activer Glyph",
+			"description": "Saisissez votre clé de licence pour débloquer Glyph définitivement sur cet appareil.",
+			"action": "Activer",
+			"verifying": "Vérification…",
+			"buy": "Acheter"
+		},
+		"help": {
+			"label": "Aide",
+			"description": "Questions sur les licences, les clés perdues ou les achats.",
+			"openSupport": "Ouvrir l’assistance",
+			"removeActivation": "Supprimer l’activation locale"
+		},
+		"errors": {
+			"keyRequired": "Saisissez une clé de licence.",
+			"activateFailed": "Impossible d’activer la licence.",
+			"removeFailed": "Impossible de supprimer l’activation locale."
+		},
+		"messages": {
+			"activated": "Licence activée.",
+			"removed": "Activation locale supprimée."
+		}
+	},
+	"shortcuts": {
+		"searchPlaceholder": "Rechercher des actions, catégories ou raccourcis",
+		"pressShortcut": "Appuyez sur un raccourci…",
+		"recordHint": "Enregistrer un raccourci",
+		"record": "Modifier le raccourci de {{action}}",
+		"remove": "Supprimer le raccourci de {{action}}",
+		"removeTitle": "Supprimer le raccourci",
+		"reset": "Réinitialiser le raccourci de {{action}}",
+		"resetTitle": "Rétablir la valeur par défaut",
+		"errors": {
+			"removeFailed": "Impossible de supprimer le raccourci.",
+			"resetFailed": "Impossible de réinitialiser le raccourci.",
+			"invalid": "Raccourci non valide.",
+			"saveFailed": "Impossible d’enregistrer le raccourci.",
+			"conflict": "{{shortcut}} est déjà utilisé par {{action}}."
 		}
 	}
 }

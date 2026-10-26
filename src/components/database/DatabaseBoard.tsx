@@ -15,12 +15,19 @@ import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
 	boardDropValue,
+	boardLaneIdForValue,
 	boardRowHasLane,
 	canManageBoardLanes,
 } from "../../lib/database/board";
-import { formatDatabaseDateTime } from "../../lib/database/config";
-import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
-import type { DateDisplayFormat } from "../../lib/dateDisplayFormat";
+import { isDateColumn } from "../../lib/database/columns";
+import {
+	databaseCellValueFromRow,
+	formatCompactDatabaseDate,
+	formatDatabaseDateTime,
+} from "../../lib/database/config";
+import { databaseValueToneStyleForColor } from "../../lib/database/palette";
+import { statusLabel, statusToneStyle } from "../../lib/statusProperties";
+import type { DatabaseColumn, DatabaseRow, DatabaseSort } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import {
@@ -33,7 +40,6 @@ import { NoteThumbnail } from "../NoteThumbnail";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import type { EditorTextColor } from "../editor/textColors";
 import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
-import { StatusPropertyPill } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import { DatabaseBoardCardView, DatabaseBoardLaneView } from "./DatabaseBoardViews";
@@ -42,6 +48,7 @@ import {
 	DatabaseNoteAppearanceIcon,
 	databaseNoteAppearanceStyle,
 } from "./DatabaseNoteAppearanceIcon";
+import { StatusRingIcon } from "../status/StatusRingIcon";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 interface DatabaseBoardProps {
@@ -67,6 +74,8 @@ interface DatabaseBoardProps {
 	onLaneColorChange?: ((laneId: string, color: EditorTextColor | null) => void) | null;
 	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
 	boardCardFields?: string[];
+	/** Cards show a date only when the view is sorted by one, so the date explains the order. */
+	activeSort?: DatabaseSort | null;
 	laneRenameTarget: BoardLaneRenameTarget;
 	membershipComplete: boolean;
 	hasMoreRows?: boolean;
@@ -132,16 +141,6 @@ function boardCardTextPropertyValues(row: DatabaseRow, kind: "status" | "priorit
 	return values;
 }
 
-function formatCompactBoardDateTime(value: string, dateFormat: DateDisplayFormat): string {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) {
-		return formatDatabaseDateTime(value, dateFormat);
-	}
-	const month = date.toLocaleString("en-US", { month: "short" });
-	const day = date.getDate();
-	return `${month} ${day}`;
-}
-
 export function DatabaseBoard({
 	rows,
 	columns,
@@ -160,6 +159,7 @@ export function DatabaseBoard({
 	onLaneColorChange,
 	onStatusColorChange,
 	boardCardFields,
+	activeSort = null,
 	laneRenameTarget,
 	membershipComplete,
 	hasMoreRows = false,
@@ -167,7 +167,7 @@ export function DatabaseBoard({
 	onLoadMoreRows,
 	onSaveCell,
 }: DatabaseBoardProps) {
-	const { t } = useTranslation("shell");
+	const { t, i18n } = useTranslation("shell");
 	const isCardFieldVisible = useCallback(
 		(fieldId: string) => {
 			if (!boardCardFields || boardCardFields.length === 0) return true;
@@ -221,6 +221,10 @@ export function DatabaseBoard({
 		() => lanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
 		[lanes],
 	);
+	const dateSortColumn = useMemo(() => {
+		const column = columns.find((entry) => entry.id === activeSort?.column_id) ?? null;
+		return isDateColumn(column) ? column : null;
+	}, [activeSort, columns]);
 	const isStatusGroup = isStatusBoardColumn(groupColumn);
 	const isPriorityGroup = isPriorityBoardColumn(groupColumn);
 	const isTagGroup = isTagBoardColumn(groupColumn);
@@ -378,33 +382,35 @@ export function DatabaseBoard({
 									onLaneColorChange={isPriorityGroup ? null : handleLaneColorChange}
 									onAddCard={onCreateRow ? () => handleCreateRowInLane(lane.id) : undefined}
 									onRenameLane={canManageLanes ? handleRenameLane : undefined}
+									countIsPartial={hasMoreRows}
 									reorderableLanes={reorderableLanes}
 									moveLaneToIndex={moveLaneToIndex}
 								>
 									{lane.rows.length > 0 ? (
 										lane.rows.map((row) => {
 											const title = boardCardTitle(row, lane.label);
-											const visibleTags = row.tags.slice(0, 1);
-											const extraTagCount = Math.max(row.tags.length - 1, 0);
-											const statusValues = boardCardTextPropertyValues(row, "status");
-											const maxVisibleStatuses = 2;
-											const visibleStatuses = statusValues.slice(0, maxVisibleStatuses);
-											const extraStatusCount = Math.max(
-												statusValues.length - maxVisibleStatuses,
-												0,
+											// The grouped-by value is already the lane header, so cards don't repeat it.
+											const isLaneValue = (value: string) =>
+												groupColumn != null && boardLaneIdForValue(groupColumn, value) === lane.id;
+											const cardTags = isTagGroup
+												? row.tags.filter((tag) => !isLaneValue(tag))
+												: row.tags;
+											const visibleTags = cardTags.slice(0, 1);
+											const extraTagCount = Math.max(cardTags.length - 1, 0);
+											const statusValues = boardCardTextPropertyValues(row, "status").filter(
+												(value) => !(isStatusGroup && isLaneValue(value)),
 											);
-											const priorityValues = boardCardTextPropertyValues(row, "priority");
-											const maxVisiblePriorities = 2;
-											const visiblePriorities = priorityValues.slice(0, maxVisiblePriorities);
-											const extraPriorityCount = Math.max(
-												priorityValues.length - maxVisiblePriorities,
-												0,
+											// One status signal per card; extra values collapse into a muted count.
+											const visibleStatuses = statusValues.slice(0, 1);
+											const extraStatusCount = Math.max(statusValues.length - 1, 0);
+											const priorityValues = boardCardTextPropertyValues(row, "priority").filter(
+												(value) => !(isPriorityGroup && isLaneValue(value)),
 											);
-											const updatedLabel = formatDatabaseDateTime(row.updated, dateDisplayFormat);
-											const compactUpdatedLabel = formatCompactBoardDateTime(
-												row.updated,
-												dateDisplayFormat,
-											);
+											const visiblePriorities = priorityValues.slice(0, 1);
+											const extraPriorityCount = Math.max(priorityValues.length - 1, 0);
+											const sortDate = dateSortColumn
+												? databaseCellValueFromRow(row, dateSortColumn).value_text?.trim()
+												: null;
 											const taskSummary =
 												taskSummariesByPath?.[row.note_path] ?? EMPTY_TASK_SUMMARY;
 											const noteAppearance = itemAppearance[row.note_path] ?? null;
@@ -416,6 +422,9 @@ export function DatabaseBoard({
 												(isCardFieldVisible("status") && visibleStatuses.length > 0) ||
 												(isCardFieldVisible("priority") && visiblePriorities.length > 0);
 											const hasTags = isCardFieldVisible("tags") && visibleTags.length > 0;
+											const showDate = isCardFieldVisible("date") && Boolean(sortDate);
+											const showTaskProgress =
+												isCardFieldVisible("task_progress") && taskSummary.total_count > 0;
 											const otherLanes = lanes.filter(
 												(l) =>
 													l.id !== lane.id &&
@@ -461,98 +470,109 @@ export function DatabaseBoard({
 														className="databaseBoardCardThumbnail"
 													/>
 													<div className="databaseBoardCardMain">
-														<div className="databaseBoardCardHeaderRow">
+														<div className="databaseBoardCardTitleRow">
 															<span className="databaseBoardCardTitle" style={noteAppearanceStyle}>
-																<DatabaseNoteAppearanceIcon
-																	notePath={row.note_path}
-																	appearance={noteAppearance}
-																	className="databaseBoardCardTitleIcon"
-																	size="var(--icon-md)"
-																/>
+																{noteAppearance?.icon ? (
+																	<DatabaseNoteAppearanceIcon
+																		notePath={row.note_path}
+																		appearance={noteAppearance}
+																		className="databaseBoardCardTitleIcon"
+																		size="var(--icon-md)"
+																	/>
+																) : null}
 																{title}
 															</span>
-															{isCardFieldVisible("task_progress") &&
-															taskSummary.total_count > 0 ? (
-																<TaskProgressIndicator
-																	summary={taskSummary}
-																	className="databaseBoardCardTaskProgress"
-																/>
+															{showDate || showTaskProgress ? (
+																<span className="databaseBoardCardMeta">
+																	{showTaskProgress ? (
+																		<TaskProgressIndicator
+																			summary={taskSummary}
+																			className="databaseBoardCardTaskProgress"
+																		/>
+																	) : null}
+																	{showDate && sortDate ? (
+																		<span
+																			className="databaseBoardCardTimestamp"
+																			title={formatDatabaseDateTime(sortDate, dateDisplayFormat)}
+																		>
+																			{formatCompactDatabaseDate(sortDate, i18n.language)}
+																		</span>
+																	) : null}
+																</span>
 															) : null}
 														</div>
-														{isCardFieldVisible("date") ? (
-															<div className="databaseBoardCardSubline">
-																<span
-																	className="databaseBoardCardTimestamp"
-																	title={t("collections.boardCard.updated", { date: updatedLabel })}
-																>
-																	{compactUpdatedLabel}
-																</span>
+														{hasStatusOrPriority || hasTags ? (
+															<div className="databaseBoardCardChips">
+																{isCardFieldVisible("status") &&
+																	visibleStatuses.map((status, statusIndex) => (
+																		<span
+																			key={`${row.note_path}:status:${statusIndex}:${status}`}
+																			className="propertyValueText databaseBoardCardStatus"
+																			style={statusToneStyle(status, statusColors)}
+																			title={statusLabel(status)}
+																		>
+																			<StatusRingIcon
+																				value={status}
+																				className="propertyValueTextIcon"
+																			/>
+																			<span>{statusLabel(status)}</span>
+																		</span>
+																	))}
+																{isCardFieldVisible("status") && extraStatusCount > 0 ? (
+																	<span className="databaseBoardTag is-muted">
+																		+{extraStatusCount}
+																	</span>
+																) : null}
+																{isCardFieldVisible("priority") &&
+																	visiblePriorities.map((priority, priorityIndex) => (
+																		<PriorityPropertyPill
+																			key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
+																			value={priority}
+																			className="databaseBoardCardStatus is-priority"
+																		/>
+																	))}
+																{isCardFieldVisible("priority") && extraPriorityCount > 0 ? (
+																	<span className="databaseBoardTag is-muted">
+																		+{extraPriorityCount}
+																	</span>
+																) : null}
+																{hasTags
+																	? visibleTags.map((tag) => (
+																			<span
+																				key={`${row.note_path}:${tag}`}
+																				className="databaseBoardTag"
+																				title={formatDatabaseTagLabel(tag)}
+																			>
+																				{beautifulTags ? (
+																					<DatabaseColumnIcon
+																						iconName={iconNameForTag(tag)}
+																						className="databaseTagPillIcon"
+																						size="var(--icon-xs)"
+																					/>
+																				) : (
+																					<span
+																						className="databaseTagDot"
+																						style={databaseValueToneStyleForColor(
+																							formatDatabaseTagLabel(tag),
+																							null,
+																						)}
+																						aria-hidden="true"
+																					/>
+																				)}
+																				<span className="databaseBoardTagLabel">
+																					{formatDatabaseTagLabel(tag)}
+																				</span>
+																			</span>
+																		))
+																	: null}
+																{hasTags && extraTagCount > 0 ? (
+																	<span className="databaseBoardTag is-muted">
+																		+{extraTagCount}
+																	</span>
+																) : null}
 															</div>
 														) : null}
 													</div>
-													{hasStatusOrPriority || hasTags ? (
-														<div className="databaseBoardCardFooter">
-															{hasStatusOrPriority ? (
-																<div className="databaseBoardCardMetaRow">
-																	<div className="databaseBoardCardMetaGroup">
-																		{isCardFieldVisible("status") &&
-																			visibleStatuses.map((status, statusIndex) => (
-																				<StatusPropertyPill
-																					key={`${row.note_path}:status:${statusIndex}:${status}`}
-																					value={status}
-																					colors={statusColors}
-																					className="databaseBoardCardStatus"
-																				/>
-																			))}
-																		{isCardFieldVisible("status") && extraStatusCount > 0 ? (
-																			<span className="databaseBoardTag is-muted">
-																				+{extraStatusCount}
-																			</span>
-																		) : null}
-																	</div>
-																	<div className="databaseBoardCardMetaGroup">
-																		{isCardFieldVisible("priority") &&
-																			visiblePriorities.map((priority, priorityIndex) => (
-																				<PriorityPropertyPill
-																					key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
-																					value={priority}
-																					className="databaseBoardCardStatus"
-																				/>
-																			))}
-																		{isCardFieldVisible("priority") && extraPriorityCount > 0 ? (
-																			<span className="databaseBoardTag is-muted">
-																				+{extraPriorityCount}
-																			</span>
-																		) : null}
-																	</div>
-																</div>
-															) : null}
-															{hasTags ? (
-																<div className="databaseBoardCardTags">
-																	{visibleTags.map((tag) => (
-																		<span
-																			key={`${row.note_path}:${tag}`}
-																			className="databaseBoardTag"
-																			data-beautiful-tags={beautifulTags ? "true" : undefined}
-																			title={formatDatabaseTagLabel(tag)}
-																		>
-																			<DatabaseColumnIcon
-																				iconName={iconNameForTag(tag)}
-																				className="databaseTagPillIcon"
-																				size="var(--icon-xs)"
-																			/>
-																			{formatDatabaseTagLabel(tag)}
-																		</span>
-																	))}
-																	{extraTagCount > 0 ? (
-																		<span className="databaseBoardTag is-muted">
-																			+{extraTagCount}
-																		</span>
-																	) : null}
-																</div>
-															) : null}
-														</div>
-													) : null}
 												</DatabaseBoardCardView>
 											);
 										})

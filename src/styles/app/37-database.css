@@ -2,15 +2,13 @@
 	--database-radius-sm: var(--radius-sm);
 	--database-radius-md: var(--radius-md);
 	--database-radius-lg: var(--radius-lg);
-	--database-dropdown-radius: calc(var(--radius-lg) + 2px);
-	--database-dropdown-padding: 8px;
-	--database-dropdown-border: color-mix(in srgb, var(--border-default) 88%, transparent);
-	--database-dropdown-background: var(--bg-primary);
-	--database-dropdown-hover: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-primary));
-	--database-dropdown-shadow:
-		0 18px 42px color-mix(in srgb, black 18%, transparent),
-		0 6px 18px color-mix(in srgb, black 10%, transparent),
-		0 1px 0 color-mix(in srgb, white 8%, transparent);
+	/* Collection pickers and menus share the app's floating surface, so they lift in dark mode. */
+	--database-dropdown-radius: var(--floating-surface-radius);
+	--database-dropdown-padding: 6px;
+	--database-dropdown-border: transparent;
+	--database-dropdown-background: var(--floating-surface-bg);
+	--database-dropdown-hover: var(--bg-hover);
+	--database-dropdown-shadow: var(--floating-surface-shadow);
 	--database-control-height: 30px;
 	--database-control-radius: calc(var(--radius-md) + 1px);
 	--database-control-border: color-mix(in srgb, var(--border-default) 78%, transparent);
@@ -32,7 +30,7 @@
 .databaseBoardColorMenu,
 .databasePickerPopover {
 	border-radius: var(--database-dropdown-radius);
-	border: 1px solid var(--database-dropdown-border);
+	border: 0;
 	background: var(--database-dropdown-background);
 	box-shadow: var(--database-dropdown-shadow);
 }
@@ -68,7 +66,7 @@
 .databaseToolbarActions {
 	display: flex;
 	align-items: center;
-	gap: 3px;
+	gap: 4px;
 }
 
 .databaseToolbarSearch {
@@ -77,30 +75,35 @@
 	gap: 6px;
 	width: min(200px, 24vw);
 	min-width: 132px;
-	height: var(--database-control-height);
-	padding: 0 7px;
-	border: 1px solid var(--database-control-border);
-	border-radius: var(--database-control-radius);
-	background: var(--database-control-background);
+	height: 28px;
+	padding: 0 8px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
 	color: var(--text-tertiary);
 	margin-right: 8px;
 	cursor: text;
+	transition: border-color 140ms ease;
+}
+
+.databaseToolbarSearch:hover {
+	border-color: var(--border-default);
 }
 
 .databaseToolbarSearch:focus-within {
-	border-color: color-mix(in srgb, var(--interactive-accent) 50%, var(--border-default));
+	border-color: var(--border-focus);
 	color: var(--text-secondary);
 }
 
 .databaseToolbarSearchInput {
-	height: calc(var(--database-control-height) - 2px);
+	height: 26px;
 	min-width: 0;
 	flex: 1 1 auto;
 	border: 0;
 	background: transparent;
 	box-shadow: none;
 	padding: 0;
-	font-size: var(--text-xs);
+	font-size: var(--text-sm);
 	color: var(--text-primary);
 }
 
@@ -132,65 +135,58 @@
 	align-items: center;
 	justify-content: center;
 	gap: 6px;
-	min-height: var(--database-control-height);
-	padding: 0 9px;
-	border-radius: var(--database-radius-md);
-	border: 1px solid var(--database-control-border);
-	background: var(--database-control-background);
+	min-height: 28px;
+	padding: 0 8px;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	background: transparent;
 	color: var(--text-secondary);
 	transition:
-		transform 180ms ease,
-		border-color 180ms ease,
-		background-color 180ms ease,
-		color 180ms ease;
+		background-color 140ms ease,
+		color 140ms ease;
 }
 
 .databaseToolbarChip:hover {
-	border-color: var(--border-default);
 	background: var(--bg-hover);
 	color: var(--text-primary);
-	transform: none;
 }
 
 .databaseToolbarChip.is-active {
-	border-color: var(--border-strong);
-	background: var(--bg-secondary);
+	background: var(--bg-active);
 	color: var(--text-primary);
 }
 
-.databaseToolbarChip[data-kind="new-note"] > svg {
-	color: var(--interactive-accent);
+/* Linear's "Display" control: one quiet outlined ghost button holding grouping, filters and sort. */
+button.databaseToolbarChip.databaseViewOptionsTrigger {
+	width: auto;
+	height: 28px;
+	min-height: 28px;
+	gap: 6px;
+	margin-left: 0;
+	padding: 0 10px 0 8px;
+	border-color: var(--border-light);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 }
 
-.databaseToolbarChip[data-kind="new-note"] {
-	padding-inline: 10px 12px;
-	font-size: calc(var(--text-base) * 0.86);
-	font-weight: var(--font-semibold);
+button.databaseToolbarChip.databaseViewOptionsTrigger:hover,
+button.databaseToolbarChip.databaseViewOptionsTrigger[data-popup-open] {
+	border-color: var(--border-default);
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+/* One focus ring (the global outline) and only for keyboard focus; the Button primitive's
+   3px box-shadow ring would otherwise stack on top of it. */
+button.databaseToolbarChip:focus-visible {
 	box-shadow: none;
 }
 
-.databaseToolbarGroupBy {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	min-width: 0;
+button.databaseToolbarChip.databaseViewOptionsTrigger:focus-visible {
+	border-color: var(--border-default);
 }
 
-.databaseToolbarGroupByLabel {
-	font-size: var(--text-xs);
-	font-weight: var(--font-medium);
-	line-height: 1.25;
-	color: var(--text-tertiary);
-	white-space: nowrap;
-}
-
-.databaseToolbarGroupBy > .glyphSelectTrigger {
-	font-size: var(--text-xs);
-	color: var(--text-secondary);
-}
-
-.databaseToolbarGroupByHint {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-	max-width: min(280px, 36vw);
+button.databaseToolbarChip[data-popup-open]:not(:focus-visible) {
+	outline: none;
 }

@@ -7,7 +7,7 @@
 		"sectionTitle": "テーマ",
 		"sectionDescription": "ライトとダークのテーマファミリーを組み合わせます。",
 		"appearance": {
-			"label": "外観",
+			"label": "カラーモード",
 			"description": "システムに合わせるか、Glyph をライトまたはダークに固定します。",
 			"ariaLabel": "テーマモード"
 		},
@@ -43,7 +43,7 @@
 		"sectionDescription": "JSON のパレットをインポートすると、組み込みテーマと同じように使えます。",
 		"template": {
 			"label": "テーマテンプレート",
-			"description": "Glyph 標準のライト・ダークカラーがベースです。16 進カラーと名前を編集してください。",
+			"description": "Glyph 標準のライト・ダークカラーをベースに、16 進カラーと名前を編集してください。",
 			"copy": "JSON をコピー",
 			"save": "ファイルを保存"
 		},
@@ -61,7 +61,6 @@
 	},
 	"shape": {
 		"sectionTitle": "形状",
-		"sectionDescription": "アプリ全体のパネル、ボタン、ウィンドウの角の丸みを選びます。",
 		"corners": {
 			"label": "角",
 			"description": "サイドバー、ダイアログ、入力欄、カードなど全体に適用されます。",
@@ -84,7 +83,6 @@
 	},
 	"layout": {
 		"sectionTitle": "レイアウト",
-		"sectionDescription": "ナビゲーションとノートのワークスペース配置を選択します。",
 		"folioMode": {
 			"label": "ワークスペースのレイアウト",
 			"description": "ナビゲーション、ノート一覧、エディタの配置を選択します。",
@@ -106,9 +104,12 @@
 			"ariaLabel": "Folio の既定の並び順"
 		},
 		"taskProgressRings": {
-			"label": "タスク進捗リング",
-			"description": "サイドバー、Folio、アクティビティ、データベースボードのノートの横にタスクの進捗リングを表示します。",
-			"ariaLabel": "タスク進捗リングを表示"
+			"label": "タスクの進捗",
+			"description": "サイドバー、Folio、アクティビティ、データベースボードのノートの横に完了したタスク数と合計を表示します。",
+			"ariaLabel": "タスクの進捗を表示"
 		}
+	},
+	"appIcon": {
+		"sectionTitle": "アプリアイコン"
 	}
 }

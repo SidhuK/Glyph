@@ -1,5 +1,5 @@
 {
-	"sectionTitle": "Typographie",
+	"sectionTitle": "Interface",
 	"sectionDescription": "Réglez indépendamment la police d’interface, le style du code et l’échelle de lecture.",
 	"interfaceFont": {
 		"label": "Police d’interface",

@@ -48,10 +48,12 @@
 		},
 		"ai-attach-all-open-notes": {
 			"label": "IA: Adjuntar todas las notas abiertas",
+			"menuLabel": "IA: Adjuntar todas las notas abiertas",
 			"description": "Adjuntar todas las notas abiertas a la IA."
 		},
 		"ai-attach-current-note": {
 			"label": "IA: Adjuntar nota actual",
+			"menuLabel": "IA: Adjuntar nota actual",
 			"description": "Adjuntar la nota actual a la IA."
 		},
 		"ai_selection_to_context": {
@@ -60,10 +62,12 @@
 		},
 		"bold": {
 			"label": "Negrita",
+			"menuLabel": "Negrita",
 			"description": "Alternar negrita en la selección actual."
 		},
 		"bullet_list": {
 			"label": "Lista con viñetas",
+			"menuLabel": "Lista con viñetas",
 			"description": "Alternar una lista con viñetas."
 		},
 		"buy-glyph-license": {
@@ -72,26 +76,32 @@
 		},
 		"callout_error": {
 			"label": "Aviso de error",
+			"menuLabel": "Aviso de error",
 			"description": "Insertar un bloque de aviso de error."
 		},
 		"callout_info": {
 			"label": "Aviso informativo",
+			"menuLabel": "Aviso informativo",
 			"description": "Insertar un bloque de aviso informativo."
 		},
 		"callout_success": {
 			"label": "Aviso de éxito",
+			"menuLabel": "Aviso de éxito",
 			"description": "Insertar un bloque de aviso de éxito."
 		},
 		"callout_tip": {
 			"label": "Aviso de consejo",
+			"menuLabel": "Aviso de consejo",
 			"description": "Insertar un bloque de aviso de consejo."
 		},
 		"callout_warning": {
 			"label": "Aviso de advertencia",
+			"menuLabel": "Aviso de advertencia",
 			"description": "Insertar un bloque de aviso de advertencia."
 		},
 		"close-active-tab": {
 			"label": "Cerrar pestaña activa",
+			"menuLabel": "Cerrar pestaña activa",
 			"description": "Cerrar la pestaña actual."
 		},
 		"close-all-tabs": {
@@ -100,50 +110,62 @@
 		},
 		"close-space": {
 			"label": "Cerrar espacio actual",
+			"menuLabel": "Cerrar espacio actual",
 			"description": "Cerrar el espacio abierto actualmente."
 		},
 		"code_block": {
 			"label": "Bloque de código",
+			"menuLabel": "Bloque de código",
 			"description": "Alternar un bloque de código."
 		},
 		"collapse_all_headings": {
 			"label": "Contraer todos los encabezados",
+			"menuLabel": "Contraer todos los encabezados",
 			"description": "Contraer todos los encabezados de la nota actual."
 		},
 		"color_blue": {
 			"label": "Color de texto: Azul",
+			"menuLabel": "Color de texto: Azul",
 			"description": "Aplicar color de texto azul."
 		},
 		"color_brown": {
 			"label": "Color de texto: Marrón",
+			"menuLabel": "Color de texto: Marrón",
 			"description": "Aplicar color de texto marrón."
 		},
 		"color_clear": {
 			"label": "Quitar color de texto",
+			"menuLabel": "Quitar color de texto",
 			"description": "Eliminar el formato de color del texto."
 		},
 		"color_gray": {
 			"label": "Color de texto: Gris",
+			"menuLabel": "Color de texto: Gris",
 			"description": "Aplicar color de texto gris."
 		},
 		"color_green": {
 			"label": "Color de texto: Verde",
+			"menuLabel": "Color de texto: Verde",
 			"description": "Aplicar color de texto verde."
 		},
 		"color_orange": {
 			"label": "Color de texto: Naranja",
+			"menuLabel": "Color de texto: Naranja",
 			"description": "Aplicar color de texto naranja."
 		},
 		"color_purple": {
 			"label": "Color de texto: Morado",
+			"menuLabel": "Color de texto: Morado",
 			"description": "Aplicar color de texto morado."
 		},
 		"color_red": {
 			"label": "Color de texto: Rojo",
+			"menuLabel": "Color de texto: Rojo",
 			"description": "Aplicar color de texto rojo."
 		},
 		"color_yellow": {
 			"label": "Color de texto: Amarillo",
+			"menuLabel": "Color de texto: Amarillo",
 			"description": "Aplicar color de texto amarillo."
 		},
 		"copy-note-markdown": {
@@ -152,18 +174,22 @@
 		},
 		"create-from-template": {
 			"label": "Crear desde plantilla",
+			"menuLabel": "Crear desde plantilla",
 			"description": "Crear una nota nueva a partir de una plantilla."
 		},
 		"create-space": {
 			"label": "Crear espacio",
+			"menuLabel": "Crear espacio",
 			"description": "Crear un espacio nuevo."
 		},
 		"details_block": {
 			"label": "Bloque de detalles",
+			"menuLabel": "Bloque de detalles",
 			"description": "Insertar una sección plegable."
 		},
 		"divider": {
 			"label": "Separador",
+			"menuLabel": "Separador",
 			"description": "Insertar un separador horizontal."
 		},
 		"duplicate-current-note": {
@@ -172,6 +198,7 @@
 		},
 		"expand_all_headings": {
 			"label": "Expandir todos los encabezados",
+			"menuLabel": "Expandir todos los encabezados",
 			"description": "Expandir todos los encabezados de la nota actual."
 		},
 		"extract_selection_to_note": {
@@ -180,6 +207,7 @@
 		},
 		"git-sync-now": {
 			"label": "Sincronizar ahora",
+			"menuLabel": "Sincronizar ahora",
 			"description": "Ejecutar Git Sync ahora."
 		},
 		"go-back-note": {
@@ -192,50 +220,62 @@
 		},
 		"heading_1": {
 			"label": "Encabezado 1",
+			"menuLabel": "Encabezado 1",
 			"description": "Convertir el bloque actual en un encabezado de nivel 1."
 		},
 		"heading_2": {
 			"label": "Encabezado 2",
+			"menuLabel": "Encabezado 2",
 			"description": "Convertir el bloque actual en un encabezado de nivel 2."
 		},
 		"heading_3": {
 			"label": "Encabezado 3",
+			"menuLabel": "Encabezado 3",
 			"description": "Convertir el bloque actual en un encabezado de nivel 3."
 		},
 		"highlight_blue": {
 			"label": "Resaltado: Azul",
+			"menuLabel": "Resaltado: Azul",
 			"description": "Aplicar resaltado de texto azul."
 		},
 		"highlight_clear": {
 			"label": "Quitar resaltado",
+			"menuLabel": "Quitar resaltado",
 			"description": "Eliminar el formato de resaltado del texto."
 		},
 		"highlight_green": {
 			"label": "Resaltado: Verde",
+			"menuLabel": "Resaltado: Verde",
 			"description": "Aplicar resaltado de texto verde."
 		},
 		"highlight_red": {
 			"label": "Resaltado: Rojo",
+			"menuLabel": "Resaltado: Rojo",
 			"description": "Aplicar resaltado de texto rojo."
 		},
 		"highlight_yellow": {
 			"label": "Resaltado: Amarillo",
+			"menuLabel": "Resaltado: Amarillo",
 			"description": "Aplicar resaltado de texto amarillo."
 		},
 		"italic": {
 			"label": "Cursiva",
+			"menuLabel": "Cursiva",
 			"description": "Alternar cursiva en la selección actual."
 		},
 		"link_clear": {
 			"label": "Quitar enlace",
+			"menuLabel": "Quitar enlace",
 			"description": "Quitar el enlace actual de la selección."
 		},
 		"link_set": {
 			"label": "Insertar o editar enlace",
+			"menuLabel": "Insertar o editar enlace",
 			"description": "Insertar un enlace o editar el enlace actual."
 		},
 		"mermaid_chart": {
 			"label": "Diagrama Mermaid",
+			"menuLabel": "Diagrama Mermaid",
 			"description": "Insertar un bloque de código Mermaid."
 		},
 		"move-active-file": {
@@ -268,6 +308,7 @@
 		},
 		"new-note": {
 			"label": "Nueva nota",
+			"menuLabel": "Nueva nota",
 			"description": "Crear una nota nueva en la carpeta actual."
 		},
 		"new-tab": {
@@ -280,14 +321,17 @@
 		},
 		"numbered_list": {
 			"label": "Lista numerada",
+			"menuLabel": "Lista numerada",
 			"description": "Alternar una lista numerada."
 		},
 		"open-about": {
 			"label": "Abrir Acerca de",
+			"menuLabel": "Abrir Acerca de",
 			"description": "Abrir la pantalla Acerca de."
 		},
 		"open-ai-settings": {
 			"label": "Abrir ajustes de IA",
+			"menuLabel": "Abrir ajustes de IA",
 			"description": "Abrir los ajustes de IA."
 		},
 		"open-agent": {
@@ -304,18 +348,22 @@
 		},
 		"open-daily-note": {
 			"label": "Abrir nota diaria",
+			"menuLabel": "Abrir nota diaria",
 			"description": "Abrir o crear la nota diaria de hoy."
 		},
 		"open-weekly-note": {
 			"label": "Abrir nota semanal",
+			"menuLabel": "Abrir nota semanal",
 			"description": "Abrir o crear la nota de esta semana."
 		},
 		"open-monthly-note": {
 			"label": "Abrir nota mensual",
+			"menuLabel": "Abrir nota mensual",
 			"description": "Abrir o crear la nota de este mes."
 		},
 		"open-quarterly-note": {
 			"label": "Abrir nota trimestral",
+			"menuLabel": "Abrir nota trimestral",
 			"description": "Abrir o crear la nota de este trimestre."
 		},
 		"open-databases": {
@@ -324,6 +372,7 @@
 		},
 		"open-git-sync-settings": {
 			"label": "Abrir ajustes de Git Sync",
+			"menuLabel": "Abrir ajustes de Git Sync",
 			"description": "Abrir la sección Git Sync en ajustes."
 		},
 		"open-license-settings": {
@@ -348,18 +397,22 @@
 		},
 		"open-settings": {
 			"label": "Abrir ajustes",
+			"menuLabel": "Abrir ajustes",
 			"description": "Abrir la vista de ajustes."
 		},
 		"open-space": {
 			"label": "Abrir espacio",
+			"menuLabel": "Abrir espacio",
 			"description": "Abrir un espacio existente."
 		},
 		"open-space-settings": {
 			"label": "Abrir ajustes del espacio",
+			"menuLabel": "Abrir ajustes del espacio",
 			"description": "Abrir los ajustes del espacio actual."
 		},
 		"paste_without_formatting": {
 			"label": "Pegar sin formato",
+			"menuLabel": "Pegar sin formato",
 			"description": "Pegar el texto del portapapeles sin formato."
 		},
 		"previous-tab": {
@@ -372,46 +425,57 @@
 		},
 		"quote": {
 			"label": "Cita",
+			"menuLabel": "Cita",
 			"description": "Alternar una cita en bloque."
 		},
 		"reveal-space": {
 			"label": "Mostrar espacio",
-			"description": "Mostrar el espacio actual en el explorador de archivos del sistema."
+			"menuLabel": "Mostrar espacio",
+			"description": "Mostrar el espacio actual en el Finder."
 		},
 		"save-note": {
 			"label": "Guardar nota",
+			"menuLabel": "Guardar nota",
 			"description": "Guardar la nota actual si se ha modificado."
 		},
 		"open-shortcuts-settings": {
 			"label": "Atajos de teclado…",
+			"menuLabel": "Atajos de teclado…",
 			"description": "Abrir la sección de atajos de teclado en ajustes."
 		},
 		"open-glyph-website": {
 			"label": "Sitio web de Glyph",
+			"menuLabel": "Sitio web de Glyph",
 			"description": "Abrir el sitio web de Glyph."
 		},
 		"open-glyph-changelog": {
 			"label": "Registro de cambios",
+			"menuLabel": "Registro de cambios",
 			"description": "Abrir el registro de cambios publicado de Glyph."
 		},
 		"open-glyph-privacy": {
 			"label": "Política de privacidad",
+			"menuLabel": "Política de privacidad",
 			"description": "Abrir la política de privacidad de Glyph."
 		},
 		"open-glyph-terms": {
 			"label": "Términos de servicio",
+			"menuLabel": "Términos de servicio",
 			"description": "Abrir los términos de servicio de Glyph."
 		},
 		"open-glyph-discord": {
 			"label": "Discord",
+			"menuLabel": "Discord",
 			"description": "Abrir el Discord de la comunidad de Glyph."
 		},
 		"open-glyph-github": {
 			"label": "GitHub",
+			"menuLabel": "GitHub",
 			"description": "Abrir el repositorio de Glyph en GitHub."
 		},
 		"open-glyph-x": {
 			"label": "Seguir en X",
+			"menuLabel": "Seguir en X",
 			"description": "Abrir Karat Sidhu en X."
 		},
 		"split-editor-above": {
@@ -432,14 +496,17 @@
 		},
 		"strikethrough": {
 			"label": "Tachado",
+			"menuLabel": "Tachado",
 			"description": "Alternar tachado en la selección actual."
 		},
 		"table": {
 			"label": "Tabla",
+			"menuLabel": "Tabla",
 			"description": "Insertar una tabla Markdown."
 		},
 		"todo_list": {
 			"label": "Lista de tareas",
+			"menuLabel": "Lista de tareas",
 			"description": "Alternar una lista de tareas."
 		},
 		"toggle_heading_or_list_collapse": {
@@ -448,6 +515,7 @@
 		},
 		"toggle-ai": {
 			"label": "Mostrar u ocultar panel de IA",
+			"menuLabel": "Mostrar u ocultar panel de IA",
 			"description": "Mostrar u ocultar el panel del asistente de IA."
 		},
 		"toggle-note-info-sidebar": {
@@ -464,6 +532,7 @@
 		},
 		"underline": {
 			"label": "Subrayado",
+			"menuLabel": "Subrayado",
 			"description": "Alternar subrayado en la selección actual."
 		},
 		"switch-to-edit": {

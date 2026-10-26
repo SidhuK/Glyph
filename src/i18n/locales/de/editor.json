@@ -10,6 +10,7 @@
 		"info": "Info"
 	},
 	"ribbon": {
+		"toolbarLabel": "Formatierung",
 		"bold": "Fett",
 		"italic": "Kursiv",
 		"underline": "Unterstrichen",
@@ -22,11 +23,16 @@
 		"heading1": "Überschrift 1",
 		"heading2": "Überschrift 2",
 		"heading3": "Überschrift 3",
-		"bulletList": "Aufzählungsliste",
-		"numberedList": "Nummerierte Liste",
-		"taskList": "Aufgabenliste",
-		"quote": "Zitat",
-		"codeBlock": "Codeblock"
+		"color": "Farbe",
+		"colorSections": {
+			"text": "Text",
+			"highlight": "Hervorhebung"
+		},
+		"link": "Link",
+		"linkUrl": "Link-URL",
+		"linkOpenInNewTab": "In neuem Tab öffnen",
+		"linkRemove": "Entfernen",
+		"linkApply": "Anwenden"
 	},
 	"selectionAi": {
 		"title": "KI zur Auswahl fragen",
@@ -245,5 +251,12 @@
 			"status": "Status",
 			"priority": "Priorität"
 		}
+	},
+	"infoSidebar": {
+		"panelLabel": "Notiz-Infobereich",
+		"sidebarTabsLabel": "Notiz-Seitenleiste",
+		"infoTab": "Info",
+		"historyTab": "Versionsverlauf",
+		"close": "Infobereich schließen"
 	}
 }

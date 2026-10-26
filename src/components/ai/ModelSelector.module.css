@@ -4,15 +4,15 @@
 	gap: var(--space-1);
 	width: fit-content;
 	max-width: 100%;
-	height: 30px;
+	height: 28px;
 	padding: 0 8px;
-	border-radius: var(--radius-lg);
-	font-size: calc(var(--text-base) * 0.8);
+	border-radius: var(--radius-md);
+	font-size: var(--text-sm);
 	font-family: var(--font-sans);
-	font-weight: var(--font-semibold);
+	font-weight: var(--font-medium);
 	border: 1px solid transparent;
 	background: transparent;
-	color: var(--text-primary);
+	color: var(--text-secondary);
 	cursor: pointer;
 	box-shadow: none;
 	transition: background var(--transition-fast);
@@ -24,6 +24,7 @@
 
 .trigger:hover {
 	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .trigger:disabled {

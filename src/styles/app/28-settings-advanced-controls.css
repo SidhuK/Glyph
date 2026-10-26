@@ -8,13 +8,11 @@
 .settingsSegmentedTrack {
 	display: inline-flex;
 	align-items: stretch;
-	gap: 3px;
+	gap: 12px;
 	flex-shrink: 0;
-	padding: 4px;
-	border-radius: calc(var(--radius-lg) + 2px);
-	border: 1px solid color-mix(in srgb, var(--border-light) 58%, transparent);
-	background: color-mix(in srgb, var(--bg-tertiary) 72%, var(--bg-primary));
-	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
+	padding: 0;
+	border: 0;
+	background: transparent;
 }
 
 .settingsSegmentedOption {
@@ -22,9 +20,9 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 7px;
-	min-width: 84px;
-	padding: 10px 12px 9px;
+	gap: 8px;
+	min-width: 0;
+	padding: 4px;
 	border-radius: var(--radius-md);
 	border: 1px solid transparent;
 	background: transparent;
@@ -50,32 +48,60 @@
 }
 
 .settingsSegmentedLabel {
-	font-size: calc(var(--text-base) * 0.74);
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.01em;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
 	color: var(--text-secondary);
-	transition: color var(--transition-base);
+	transition: color var(--transition-fast);
 }
 
 .settingsSegmentedOption:hover {
-	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
+	background: var(--bg-hover);
 }
 
 .settingsSegmentedOption[aria-pressed="true"] {
-	background: var(--bg-primary);
+	background: var(--bg-active);
+}
+
+/* Image tiles read like ChatGPT's Mode tiles: no fill behind the option; the chosen
+   preview gets one soft ring (shared with the dock icon picker), hover a hairline one. */
+.settingsSegmentedOption:has(.settingsAppearancePreview, .aiConnectionPreview):hover,
+.settingsSegmentedOption:has(
+		.settingsAppearancePreview,
+		.aiConnectionPreview
+	)[aria-pressed="true"] {
+	background: transparent;
+}
+
+.settingsSegmentedOption[aria-pressed="true"]
+	:is(.settingsAppearancePreview, .aiConnectionPreview) {
+	outline: 1.5px solid var(--settings-selection-ring);
+	outline-offset: 2px;
+}
+
+.settingsSegmentedOption:hover:not([aria-pressed="true"])
+	:is(.settingsAppearancePreview, .aiConnectionPreview) {
+	outline: 1.5px solid var(--border-default);
+	outline-offset: 2px;
+}
+
+/* AI connection tiles are the same 68x46 box as the Color mode previews: every tile has a
+   hairline outline and its provider logos centred at 20px. */
+.settingsSegmentedOption .aiConnectionPreview {
+	width: 68px;
+	height: 46px;
+	gap: 6px;
+	border-radius: var(--radius-md);
+	background: var(--settings-card-bg);
+	box-shadow: 0 0 0 1px var(--border-default);
+}
+
+.settingsSegmentedOption .aiConnectionPreviewLogo .aiConnectionPreviewLogoImage {
+	width: 20px;
+	height: 20px;
 }
 
 .settingsSegmentedOption[aria-pressed="true"] .settingsSegmentedLabel {
 	color: var(--text-primary);
-}
-
-:root.dark .settingsSegmentedTrack {
-	background: color-mix(in srgb, var(--bg-tertiary) 58%, var(--bg-primary));
-	box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
-}
-
-:root.dark .settingsSegmentedOption[aria-pressed="true"] {
-	background: color-mix(in srgb, var(--text-primary) 9%, var(--bg-primary));
 }
 
 .settingsSegmentedOption[data-corner-radius-style="sharp"] {
@@ -91,8 +117,9 @@
 }
 
 .settingsAppearancePreview {
-	width: 60px;
-	height: 42px;
+	width: 68px;
+	height: 46px;
+	border-radius: var(--settings-corner-radius-preview, var(--radius-md));
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -335,44 +362,6 @@
 	box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent);
 }
 
-.settingsSegmentedOption:hover > .settingsAppearancePreview > .settingsAppearancePreviewPane,
-.settingsSegmentedOption:hover > .settingsAppearancePreview > .settingsAppearancePreviewFrame {
-	transform: translateY(-1px);
-}
-
-.settingsSegmentedOption:hover > .settingsAppearancePreview > .settingsAppearancePreviewPane {
-	box-shadow:
-		0 3px 8px color-mix(in srgb, black 12%, transparent),
-		inset 0 1px 0 color-mix(in srgb, white 14%, transparent);
-}
-
-.settingsSegmentedOption[aria-pressed="true"]
-	> .settingsAppearancePreview
-	> .settingsAppearancePreviewPane,
-.settingsSegmentedOption[aria-pressed="true"]
-	> .settingsAppearancePreview
-	> .settingsAppearancePreviewFrame {
-	box-shadow:
-		0 2px 10px color-mix(in srgb, var(--interactive-accent) 16%, transparent),
-		inset 0 1px 0 color-mix(in srgb, white 16%, transparent);
-}
-
-.settingsSegmentedOption[aria-pressed="true"]
-	> .settingsAppearancePreview
-	> .settingsAppearancePreviewPane.is-light {
-	box-shadow:
-		0 2px 10px color-mix(in srgb, #8ab4ff 18%, transparent),
-		inset 0 1px 0 color-mix(in srgb, white 16%, transparent);
-}
-
-.settingsSegmentedOption[aria-pressed="true"]
-	> .settingsAppearancePreview
-	> .settingsAppearancePreviewPane.is-dark {
-	box-shadow:
-		0 2px 10px color-mix(in srgb, #6e8cff 20%, transparent),
-		inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
-}
-
 :root.dark .settingsAppearancePreviewPane:not(.is-light, .is-dark) {
 	background: linear-gradient(
 		165deg,
@@ -387,18 +376,12 @@
 @media (max-width: 760px) {
 	.settingsField {
 		gap: 10px;
-		padding: 12px;
 	}
 
 	.settingsFieldCopy,
 	.settingsFieldControl {
 		flex-basis: 100%;
 		max-width: none;
-	}
-
-	.settingsField::after {
-		left: 12px;
-		right: 12px;
 	}
 
 	.settingsSegmentedPicker {
@@ -409,10 +392,6 @@
 	.settingsSegmentedTrack {
 		flex-wrap: wrap;
 	}
-
-	.settingsPeriodNoteGrid {
-		grid-template-columns: 1fr;
-	}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -422,11 +401,6 @@
 	.settingsKeySaved {
 		transition: none;
 		animation: none;
-	}
-
-	.settingsSegmentedOption:hover > .settingsAppearancePreview > .settingsAppearancePreviewPane,
-	.settingsSegmentedOption:hover > .settingsAppearancePreview > .settingsAppearancePreviewFrame {
-		transform: none;
 	}
 }
 

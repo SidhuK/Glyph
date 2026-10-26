@@ -3,20 +3,21 @@ import { PointerActivationConstraints } from "@dnd-kit/dom";
 import { KeyboardSensor, PointerSensor, useDraggable, useDroppable } from "@dnd-kit/react";
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
+import type { TFunction } from "i18next";
 import { type MouseEvent, type MutableRefObject, type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseBoardLane } from "../../lib/database/board";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseRow } from "../../lib/database/types";
-import { priorityToneStyle } from "../../lib/priorityProperties";
+import { priorityOptionFromValue } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
 import { Plus } from "../Icons";
 import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
-import { statusPropertyIconForValue } from "../status/StatusPropertyPill";
 import { springPresets } from "../ui/animations";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { DatabaseBoardLaneMenu } from "./DatabaseBoardLaneMenu";
+import { StatusRingIcon } from "../status/StatusRingIcon";
 
 const DATABASE_BOARD_CARD_SENSORS = [
 	PointerSensor.configure({
@@ -34,6 +35,41 @@ function boardCardDragId(notePath: string, laneId: string): string {
 	return `${laneId}:${notePath}`;
 }
 
+export type DatabaseLaneKind = "status" | "priority" | "tag" | null;
+
+/** The explicit "No" priority reads as "No priority", like other lane labels that stand alone. */
+export function databaseLaneDisplayLabel(
+	label: string,
+	kind: DatabaseLaneKind,
+	t: TFunction<"shell">,
+): string {
+	if (kind === "priority" && priorityOptionFromValue(label)?.id === "no") {
+		return t("collections.board.noPriority");
+	}
+	return label;
+}
+
+export function DatabaseLaneIcon({
+	label,
+	kind,
+	className,
+}: {
+	label: string;
+	kind: DatabaseLaneKind;
+	className: string;
+}) {
+	if (!kind) return <span className={`${className} is-dot`} aria-hidden="true" />;
+	if (kind === "status") return <StatusRingIcon value={label} className={className} />;
+	return (
+		<HugeiconsIcon
+			icon={kind === "priority" ? priorityPropertyIconForValue(label) : Tag01Icon}
+			className={kind === "priority" ? `${className} is-neutral` : className}
+			size="var(--icon-sm)"
+			aria-hidden="true"
+		/>
+	);
+}
+
 interface DatabaseBoardLaneViewProps {
 	lane: DatabaseBoardLane;
 	laneIndex: number;
@@ -46,6 +82,8 @@ interface DatabaseBoardLaneViewProps {
 	onLaneColorChange?: ((laneId: string, color: EditorTextColor | null) => void) | null;
 	onAddCard?: () => void;
 	onRenameLane?: (lane: DatabaseBoardLane) => void;
+	/** More rows are still unloaded, so the lane count is a lower bound. */
+	countIsPartial: boolean;
 	reorderableLanes: DatabaseBoardLane[];
 	moveLaneToIndex: (sourceLaneId: string, targetIndex: number) => void;
 	children: ReactNode;
@@ -63,6 +101,7 @@ export function DatabaseBoardLaneView({
 	onLaneColorChange,
 	onAddCard,
 	onRenameLane,
+	countIsPartial,
 	reorderableLanes,
 	moveLaneToIndex,
 	children,
@@ -73,25 +112,19 @@ export function DatabaseBoardLaneView({
 		accept: "database-board-card",
 	});
 	const { t } = useTranslation("shell");
+	const laneKind: DatabaseLaneKind = isStatusGroup
+		? "status"
+		: isPriorityGroup
+			? "priority"
+			: isTagGroup
+				? "tag"
+				: null;
 	const laneTitleContent = (
 		<>
-			{isStatusGroup || isPriorityGroup || isTagGroup ? (
-				<HugeiconsIcon
-					icon={
-						isStatusGroup
-							? statusPropertyIconForValue(lane.label)
-							: isPriorityGroup
-								? priorityPropertyIconForValue(lane.label)
-								: Tag01Icon
-					}
-					className="databaseBoardLaneTitleIcon"
-					size="var(--icon-sm)"
-					aria-hidden="true"
-				/>
-			) : (
-				<span className="databaseBoardLaneDot" />
-			)}
-			<div className="databaseBoardLaneTitle">{lane.label}</div>
+			<DatabaseLaneIcon label={lane.label} kind={laneKind} className="databaseBoardLaneTitleIcon" />
+			<div className="databaseBoardLaneTitle">
+				{databaseLaneDisplayLabel(lane.label, laneKind, t)}
+			</div>
 		</>
 	);
 
@@ -104,7 +137,7 @@ export function DatabaseBoardLaneView({
 				isStatusGroup
 					? statusToneStyle(lane.label, statusColors)
 					: isPriorityGroup
-						? priorityToneStyle(lane.label)
+						? undefined
 						: databaseValueToneStyleForColor(lane.id, getLaneColor(laneColors, lane.id))
 			}
 			data-active={isDropTarget ? "true" : "false"}
@@ -170,7 +203,7 @@ export function DatabaseBoardLaneView({
 						className="databaseBoardLaneCount"
 						aria-label={t("collections.laneMenu.cardCount", { count: lane.cardCount })}
 					>
-						{lane.cardCount}
+						{countIsPartial ? `${lane.cardCount}+` : lane.cardCount}
 					</span>
 				</div>
 				<div className="databaseBoardLaneHeaderActions">
@@ -182,7 +215,7 @@ export function DatabaseBoardLaneView({
 							aria-label={t("collections.laneMenu.addNote", { lane: lane.label })}
 							title={t("collections.laneMenu.addNote", { lane: lane.label })}
 						>
-							<Plus size="var(--icon-sm)" aria-hidden="true" />
+							<Plus size="var(--icon-md)" aria-hidden="true" />
 						</button>
 					) : null}
 					<DatabaseBoardLaneMenu
@@ -193,7 +226,20 @@ export function DatabaseBoardLaneView({
 					/>
 				</div>
 			</div>
-			<div className="databaseBoardLaneBody">{children}</div>
+			<div className="databaseBoardLaneBody">
+				{children}
+				{onAddCard ? (
+					<button
+						type="button"
+						className="databaseBoardLaneAddRow"
+						onClick={onAddCard}
+						aria-label={t("collections.laneMenu.addNote", { lane: lane.label })}
+						title={t("collections.laneMenu.addNote", { lane: lane.label })}
+					>
+						<Plus size="var(--icon-sm)" aria-hidden="true" />
+					</button>
+				) : null}
+			</div>
 		</m.div>
 	);
 }

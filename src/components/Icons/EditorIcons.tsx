@@ -6,11 +6,11 @@ import {
 	Heading2 as Heading2Icon,
 	Heading3 as Heading3Icon,
 	Italic as ItalicIcon,
+	LeftToRightBlockQuoteIcon,
 	LeftToRightListBulletIcon,
 	Link2 as Link2Icon,
 	ListChecks as ListChecksIcon,
 	ListOrdered as ListOrderedIcon,
-	Quote as QuoteIcon,
 	SourceCodeIcon,
 	Strikethrough as StrikethroughIcon,
 	TextUnderlineIcon,
@@ -33,7 +33,7 @@ export const Code = (props: IconProps) => (
 	<HugeiconsIcon icon={SourceCodeIcon} {...withDefaultIconSize(props)} />
 );
 export const Quote = (props: IconProps) => (
-	<HugeiconsIcon icon={QuoteIcon} {...withDefaultIconSize(props)} />
+	<HugeiconsIcon icon={LeftToRightBlockQuoteIcon} {...withDefaultIconSize(props)} />
 );
 export const List = (props: IconProps) => (
 	<HugeiconsIcon icon={LeftToRightListBulletIcon} {...withDefaultIconSize(props)} />

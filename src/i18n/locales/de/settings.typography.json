@@ -1,5 +1,5 @@
 {
-	"sectionTitle": "Typografie",
+	"sectionTitle": "Oberfläche",
 	"sectionDescription": "Oberflächenschrift, Codestil und Leseskala unabhängig einstellen.",
 	"interfaceFont": {
 		"label": "Oberflächenschrift",
@@ -11,12 +11,12 @@
 	},
 	"headingFontEnabled": {
 		"label": "Eigene Überschriftenschrift",
-		"description": "Für H1-H6 im Bearbeitungs- und Vorschaumodus eine andere Schrift verwenden.",
+		"description": "Für H1–H6 im Bearbeitungs- und Vorschaumodus eine andere Schrift verwenden.",
 		"ariaLabel": "Eigene Überschriftenschrift"
 	},
 	"headingFont": {
 		"label": "Überschriftenschrift",
-		"description": "Wird bei aktivierter eigener Überschriftenschrift für H1-H6 verwendet. Raw-Markdown behält die Editorschrift."
+		"description": "Wird bei aktivierter eigener Überschriftenschrift für H1–H6 verwendet. Raw-Markdown behält die Editorschrift."
 	},
 	"monospaceFont": {
 		"label": "Monospace-Schrift",

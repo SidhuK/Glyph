@@ -1,7 +1,8 @@
 {
-	"sectionTitle": "Sidebar",
+	"sectionTitle": "Navigation",
 	"sectionDescription": "Choose which navigation items appear in the sidebar and set their order. Hiding an item does not disable its feature.",
 	"resetToDefaults": "Restore default sidebar layout",
+	"reset": "Reset",
 	"resetError": "Failed to restore the default sidebar layout.",
 	"reorder": "Reorder {{label}}",
 	"showItem": "Show {{label}} in sidebar",
@@ -10,13 +11,13 @@
 			"label": "Agent"
 		},
 		"newNoteAndCanvas": {
-			"label": "New Note and Canvas"
+			"label": "New note"
 		},
 		"allNotes": {
-			"label": "All Notes"
+			"label": "All notes"
 		},
 		"databases": {
-			"label": "Collections / Databases"
+			"label": "Collections"
 		},
 		"tasks": {
 			"label": "Tasks"
@@ -28,13 +29,13 @@
 			"label": "Calendar"
 		},
 		"search": {
-			"label": "Search / Quick Open"
+			"label": "Search"
 		},
 		"periodNotes": {
-			"label": "Daily, Weekly, Monthly, Quarterly Notes"
+			"label": "Daily, weekly, monthly, quarterly notes"
 		},
 		"quickNote": {
-			"label": "Quick Note"
+			"label": "Quick note"
 		},
 		"templates": {
 			"label": "Templates"

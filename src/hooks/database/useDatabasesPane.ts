@@ -8,8 +8,8 @@ import { useDatabaseRowActions } from "./useDatabaseRowActions";
 import { useDatabaseRows } from "./useDatabaseRows";
 import { useDatabaseViewActions } from "./useDatabaseViewActions";
 
-const DATABASE_TABLE_ROW_PAGE_SIZE = 200;
-const DATABASE_BOARD_ROW_PAGE_SIZE = 48;
+// Board lanes and table groups count the loaded rows, so both layouts page the same way and agree.
+const DATABASE_ROW_PAGE_SIZE = 200;
 
 interface UseDatabasesPaneOptions {
 	onRenameNotePath?: (notePath: string, nextName: string) => Promise<string | null>;
@@ -40,15 +40,11 @@ export function useDatabasesPane({
 		saveDatabase: workspace.saveDatabase,
 	});
 
-	const rowPageSize =
-		views.activeConfig?.view.layout === "board"
-			? DATABASE_BOARD_ROW_PAGE_SIZE
-			: DATABASE_TABLE_ROW_PAGE_SIZE;
 	const rows = useDatabaseRows({
 		selectedDatabaseId: workspace.selectedDatabaseId,
 		selectedViewId: workspace.selectedViewId,
 		document: workspace.document,
-		pageSize: rowPageSize,
+		pageSize: DATABASE_ROW_PAGE_SIZE,
 		setError,
 		clearError,
 	});

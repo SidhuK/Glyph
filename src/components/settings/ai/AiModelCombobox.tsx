@@ -53,11 +53,13 @@ export function AiModelCombobox({
 		void modelsQuery.refetch();
 	}, [canFetchModels, modelsQuery, onModelsChange]);
 
-	const statusLabel = loading
-		? t("model.connecting")
-		: models
-			? t("model.count", { count: models.length })
-			: null;
+	// One state at a time: "Connecting..." while models load, otherwise the chosen model.
+	const options = loading
+		? [{ value, label: t("model.connecting") }]
+		: [
+				{ value: "", label: t("model.placeholder") },
+				...(models ?? []).map((m) => ({ value: m.id, label: m.name })),
+			];
 
 	return (
 		<div className="modelCombobox">
@@ -65,18 +67,10 @@ export function AiModelCombobox({
 				<SettingsSelect
 					id="aiModel"
 					value={value}
-					options={[
-						{ value: "", label: t("model.placeholder") },
-						...(models ?? []).map((m) => ({ value: m.id, label: m.name })),
-					]}
+					options={options}
 					onValueChange={onChange}
 					disabled={loading || !models || !canFetchModels}
 				/>
-				{statusLabel ? (
-					<span className={`modelComboboxBadge ${loading ? "modelComboboxBadgeLoading" : ""}`}>
-						{statusLabel}
-					</span>
-				) : null}
 			</div>
 			{!canFetchModels ? <div className="modelComboboxStatus">{t("model.needsApiKey")}</div> : null}
 			{error ? (

@@ -2,24 +2,16 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	AiBrain04Icon as AgentIcon,
 	Archive03Icon as ArchiveIcon,
-	ArrowShrinkIcon,
-	CalendarAdd01Icon as PeriodNoteIcon,
 	CheckListIcon as TasksIcon,
 	ChartRelationshipIcon as ConnectionsIcon,
-	CursorAddSelection02Icon,
-	ExpandParagraphIcon,
-	Folder01Icon,
-	HistoryIcon,
+	Database01Icon as CollectionsIcon,
+	Files02Icon as AllNotesIcon,
 	InboxIcon,
 	Layout01Icon as TemplatesIcon,
-	LibraryIcon as CollectionsIcon,
-	NoteIcon as AllNotesIcon,
-	PinIcon,
+	PlusSignIcon as NewNoteIcon,
 	Refresh04Icon as SyncIcon,
 	SearchIcon,
-	Sorting01Icon,
 	StickyNote03Icon as QuickNoteIcon,
-	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -51,7 +43,7 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { allDocsCountQueryOptions, formatAllDocsCountLabel } from "../../lib/navigationPrefetch";
-import { type PeriodKind, isPeriodNoteEnabled } from "../../lib/periodNotes";
+import type { PeriodKind } from "../../lib/periodNotes";
 import type { SidebarOrder, SidebarVisibilityKey } from "../../lib/settings/model";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { spaceDisplayName } from "../../lib/spaceRegistry";
@@ -59,12 +51,10 @@ import type { FsEntry } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
-import { AppearanceIcon } from "../AppearanceIcon";
 import { FileTreePane } from "../filetree";
-import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
-import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
-import { SidebarCreateMenu } from "./SidebarCreateMenu";
+import { SidebarCreateMenu, enabledPeriodItems } from "./SidebarCreateMenu";
+import { type SidebarView, type SidebarViewKind, SidebarViewStrip } from "./SidebarViewStrip";
 import { SidebarCalendar } from "./calendar/SidebarCalendar";
 import type { OpenPeriodNoteAtDate } from "./calendar/useCalendarView";
 
@@ -120,20 +110,6 @@ export interface SidebarContentProps {
 	onCreateFromTemplate: () => void;
 	onGitSyncNow: () => void;
 }
-
-type SidebarView =
-	| { kind: "files" }
-	| { kind: "pinned" }
-	| { kind: "recents" }
-	| { kind: "tags" }
-	| { kind: "folder"; path: string };
-
-const SIDEBAR_VIEW_TABS = [
-	{ kind: "files", icon: Folder01Icon, labelKey: "sidebar.files" },
-	{ kind: "pinned", icon: PinIcon, labelKey: "sidebar.pinned" },
-	{ kind: "tags", icon: Tag01Icon, labelKey: "tags.header" },
-	{ kind: "recents", icon: HistoryIcon, labelKey: "sidebar.recents" },
-] as const;
 
 function isSpaceContainerEntry(entry: FsEntry, spaceLabel: string): boolean {
 	const normalizedSpaceLabel = spaceLabel.trim().toLocaleLowerCase();
@@ -203,7 +179,7 @@ function SidebarActionButton({
 			disabled={disabled}
 			title={label}
 		>
-			<HugeiconsIcon icon={icon} size="var(--icon-md)" />
+			<HugeiconsIcon icon={icon} size="var(--icon-lg)" />
 			<span className="sidebarQuickActionLabel">{label}</span>
 			{badge}
 		</button>
@@ -315,12 +291,6 @@ export const SidebarContent = memo(function SidebarContent({
 		t("sidebar.searchPlaceholder") !== "sidebar.searchPlaceholder"
 			? t("sidebar.searchPlaceholder")
 			: t("sidebar.search");
-	const sidebarViewTabsLabel = [
-		t("sidebar.files"),
-		t("sidebar.recents"),
-		t("tags.header"),
-		t("sidebar.pinned"),
-	].join(" / ");
 	const newNoteTitle = newNoteFolder
 		? t("sidebar.newNoteInFolder", { folder: newNoteFolder })
 		: t("sidebar.newNoteInRoot");
@@ -439,8 +409,6 @@ export const SidebarContent = memo(function SidebarContent({
 			? { kind: "files" }
 			: sidebarView;
 	const activeFolderPath = activeSidebarView.kind === "folder" ? activeSidebarView.path : null;
-	const activeSidebarTabValue =
-		activeFolderPath === null ? activeSidebarView.kind : `folder:${activeFolderPath}`;
 	const handleSelectFolioFolder = useCallback(
 		(dirPath: string) => {
 			onSelectDir(dirPath);
@@ -453,7 +421,7 @@ export const SidebarContent = memo(function SidebarContent({
 		[onSelectDir, setFolioScope],
 	);
 	const handleSidebarViewChange = useCallback(
-		(view: "files" | "pinned" | "recents" | "tags") => {
+		(view: SidebarViewKind) => {
 			if (
 				folioMode &&
 				activeSidebarView.kind !== view &&
@@ -581,7 +549,7 @@ export const SidebarContent = memo(function SidebarContent({
 												newNoteShortcut ? ` (${formatShortcutForPlatform(newNoteShortcut)})` : ""
 											}`}
 										>
-											<HugeiconsIcon icon={CursorAddSelection02Icon} size="var(--icon-lg)" />
+											<HugeiconsIcon icon={NewNoteIcon} size="var(--icon-lg)" />
 											<span className="sidebarQuickActionLabel">{t("sidebar.newNote")}</span>
 											{newNoteShortcut ? (
 												<span className="sidebarQuickActionShortcut">
@@ -640,7 +608,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onFocus={onPrefetchAllDocs}
 									title={t("sidebar.allNotes")}
 								>
-									<HugeiconsIcon icon={AllNotesIcon} size="var(--icon-md)" />
+									<HugeiconsIcon icon={AllNotesIcon} size="var(--icon-lg)" />
 									<span className="sidebarQuickActionLabel">{t("sidebar.allNotes")}</span>
 									<AllNotesCountBadge />
 								</button>
@@ -663,7 +631,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onFocus={() => onPrefetchDatabases()}
 									title={t("sidebar.collections")}
 								>
-									<HugeiconsIcon icon={CollectionsIcon} size="var(--icon-md)" />
+									<HugeiconsIcon icon={CollectionsIcon} size="var(--icon-lg)" />
 									<span className="sidebarQuickActionLabel">{t("sidebar.collections")}</span>
 								</button>
 							) : null}
@@ -690,7 +658,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onClick={onOpenConnections}
 									title={t("sidebar.connections")}
 								>
-									<HugeiconsIcon icon={ConnectionsIcon} size="var(--icon-md)" />
+									<HugeiconsIcon icon={ConnectionsIcon} size="var(--icon-lg)" />
 									<span className="sidebarQuickActionLabel">{t("sidebar.connections")}</span>
 								</button>
 							) : null}
@@ -756,101 +724,33 @@ export const SidebarContent = memo(function SidebarContent({
 									data-sidebar-key="periodNotes"
 									data-section="period-notes"
 								>
-									<SidebarActionButton
-										label={t("sidebar.dailyNote")}
-										icon={PeriodNoteIcon}
-										onClick={() => onOpenPeriodNote("day")}
-									/>
-									{isPeriodNoteEnabled("week", periodNotesEnabled) ? (
+									{enabledPeriodItems(periodNotesEnabled).map((item) => (
 										<SidebarActionButton
-											label={t("sidebar.weeklyNote")}
-											icon={PeriodNoteIcon}
-											onClick={() => onOpenPeriodNote("week")}
+											key={item.kind}
+											label={t(item.labelKey)}
+											icon={item.icon}
+											onClick={() => onOpenPeriodNote(item.kind)}
 										/>
-									) : null}
-									{isPeriodNoteEnabled("month", periodNotesEnabled) ? (
-										<SidebarActionButton
-											label={t("sidebar.monthlyNote")}
-											icon={PeriodNoteIcon}
-											onClick={() => onOpenPeriodNote("month")}
-										/>
-									) : null}
-									{isPeriodNoteEnabled("quarter", periodNotesEnabled) ? (
-										<SidebarActionButton
-											label={t("sidebar.quarterlyNote")}
-											icon={PeriodNoteIcon}
-											onClick={() => onOpenPeriodNote("quarter")}
-										/>
-									) : null}
+									))}
 								</div>
 							) : null}
 						</OrderedSidebarItems>
-						<div className="sidebarViewTabs" role="tablist" aria-label={sidebarViewTabsLabel}>
-							<Highlight value={activeSidebarTabValue} className="sidebarViewTabsHighlight">
-								{SIDEBAR_VIEW_TABS.map((tab) => (
-									<HighlightItem key={tab.kind} value={tab.kind} className="sidebarViewTabSlot">
-										<button
-											type="button"
-											className="sidebarViewTab"
-											id={`sidebar-${tab.kind}-tab`}
-											role="tab"
-											aria-selected={activeSidebarView.kind === tab.kind}
-											aria-controls={`sidebar-${tab.kind}-panel`}
-											onClick={() => handleSidebarViewChange(tab.kind)}
-										>
-											<HugeiconsIcon
-												icon={tab.icon}
-												size="var(--icon-md)"
-												className="sidebarViewTabIcon sidebarViewTabIconFilled"
-												aria-hidden="true"
-											/>
-											<span className="sidebarViewTabLabel">{t(tab.labelKey)}</span>
-										</button>
-									</HighlightItem>
-								))}
-								{sidebarFolderTabs.map((folderPath, index) => {
-									const appearance = itemAppearance[folderPath];
-									return (
-										<HighlightItem
-											key={folderPath}
-											value={`folder:${folderPath}`}
-											className="sidebarViewTabSlot"
-										>
-											<button
-												type="button"
-												className="sidebarViewTab"
-												id={`sidebar-folder-tab-${index + 1}`}
-												role="tab"
-												aria-label={t("sidebar.openFolderTab", {
-													folder: folderPath,
-												})}
-												aria-selected={activeFolderPath === folderPath}
-												aria-controls="sidebar-files-panel"
-												title={folderPath}
-												onClick={() => handleSelectSidebarFolder(folderPath)}
-												onContextMenu={(event) => handleFolderTabContextMenu(event, folderPath)}
-											>
-												{appearance?.icon ? (
-													<AppearanceIcon
-														iconName={appearance.icon}
-														size="var(--icon-md)"
-														className="sidebarViewTabIcon sidebarViewTabIconFilled"
-													/>
-												) : (
-													<HugeiconsIcon
-														icon={Folder01Icon}
-														size="var(--icon-md)"
-														className="sidebarViewTabIcon sidebarViewTabIconFilled"
-														aria-hidden="true"
-													/>
-												)}
-												<span className="sidebarViewTabLabel">{basename(folderPath)}</span>
-											</button>
-										</HighlightItem>
-									);
-								})}
-							</Highlight>
-						</div>
+						<SidebarViewStrip
+							view={activeSidebarView}
+							folderTabs={sidebarFolderTabs}
+							folderIcons={itemAppearance}
+							sortMode={fileTreeSort.sortMode}
+							onSortModeChange={(sortMode) => {
+								void fileTreeSort.setSortMode(sortMode);
+							}}
+							onSelectView={handleSidebarViewChange}
+							onSelectFolder={handleSelectSidebarFolder}
+							onFolderContextMenu={handleFolderTabContextMenu}
+							onExpandAllDirs={() => {
+								void onExpandAllDirs();
+							}}
+							onCollapseAllDirs={onCollapseAllDirs}
+						/>
 					</div>
 					<div className="sidebarViewContent">
 						<Activity
@@ -871,44 +771,6 @@ export const SidebarContent = memo(function SidebarContent({
 										: "sidebar-files-tab"
 								}
 							>
-								<div className="sidebarStackHeader sidebarFileTreeToolbar">
-									<h2 className="sidebarFileTreeToolbarTitle">
-										{activeSidebarView.kind === "folder"
-											? basename(activeSidebarView.path)
-											: t("sidebar.files")}
-									</h2>
-									<div className="sidebarStackHeaderActions">
-										<FileTreeSortMenu
-											sortMode={fileTreeSort.sortMode}
-											onSortModeChange={(sortMode) => {
-												void fileTreeSort.setSortMode(sortMode);
-											}}
-											triggerClassName="sidebarStackHeaderAction"
-											icon={Sorting01Icon}
-											iconSize="var(--icon-sm)"
-										/>
-										<button
-											type="button"
-											className="sidebarStackHeaderAction"
-											title={t("sidebar.expandAllFolders")}
-											aria-label={t("sidebar.expandAllFolders")}
-											onClick={() => {
-												void onExpandAllDirs();
-											}}
-										>
-											<HugeiconsIcon icon={ExpandParagraphIcon} size="var(--icon-sm)" />
-										</button>
-										<button
-											type="button"
-											className="sidebarStackHeaderAction"
-											title={t("sidebar.collapseAllFolders")}
-											aria-label={t("sidebar.collapseAllFolders")}
-											onClick={onCollapseAllDirs}
-										>
-											<HugeiconsIcon icon={ArrowShrinkIcon} size="var(--icon-sm)" />
-										</button>
-									</div>
-								</div>
 								<FileTreePane
 									key={
 										activeSidebarView.kind === "folder"

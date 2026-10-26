@@ -33,7 +33,7 @@
 
 .licenseLockTitle {
 	margin: 0;
-	font-size: calc(var(--text-base) * 2.1);
+	font-size: var(--text-3xl);
 	line-height: 1.05;
 	letter-spacing: -0.03em;
 	color: var(--text-primary);
@@ -49,11 +49,9 @@
 
 .licenseLockEyebrow {
 	margin-bottom: 10px;
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.18em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 }
 
 .licenseLockMetaRow {
@@ -65,7 +63,7 @@
 }
 
 .licenseLockMetaText {
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	color: var(--text-secondary);
 }
 
@@ -76,8 +74,7 @@
 	margin-top: 24px;
 }
 
-.licenseLockField input,
-.licenseSettingsInputWrap input {
+.licenseLockField input {
 	width: 100%;
 	min-height: 40px;
 	padding: 0 12px;
@@ -87,8 +84,21 @@
 	color: var(--text-primary);
 }
 
-.licenseLockField input:focus-visible,
-.licenseSettingsInputWrap input:focus-visible {
+.licenseSettingsInputWrap input {
+	flex: 1 1 auto;
+	min-width: 0;
+	width: auto;
+	height: var(--settings-control-height, 32px);
+	padding: 0 10px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: var(--settings-pill, var(--bg-hover));
+	color: var(--text-primary);
+	font-family: var(--font-mono);
+	font-size: var(--text-sm);
+}
+
+.licenseLockField input:focus-visible {
 	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
 }
@@ -128,17 +138,14 @@
 	align-items: center;
 	gap: 8px;
 	width: calc(100% - 16px);
-	margin: 4px 8px 10px;
-	padding: 7px 7px 7px 10px;
+	margin: 0 8px 8px;
+	padding: 8px 4px 0 8px;
 	flex-shrink: 0;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-lg);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-secondary) 70%, transparent),
-		color-mix(in srgb, var(--bg-secondary) 35%, transparent)
-	);
-	box-shadow: var(--shadow-sm);
+	border: 0;
+	border-top: 1px solid var(--border-light);
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
 }
 
 .licenseSidebarFooter[data-mode="community"] {
@@ -147,8 +154,8 @@
 	gap: 12px;
 	margin: 8px 8px 12px;
 	padding: 14px;
+	border: 1px solid color-mix(in srgb, var(--interactive-accent) 42%, var(--border-light));
 	border-radius: calc(var(--radius-lg) + 2px);
-	border-color: color-mix(in srgb, var(--interactive-accent) 42%, var(--border-light));
 	background: linear-gradient(
 		180deg,
 		color-mix(in srgb, var(--interactive-accent) 14%, var(--bg-primary)),
@@ -159,18 +166,14 @@
 		0 10px 26px color-mix(in srgb, var(--text-primary) 16%, transparent);
 }
 
-.licenseSidebarFooter[data-urgent="true"] {
-	border-color: color-mix(in srgb, var(--color-yellow-500) 38%, var(--border-light));
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--color-yellow-500) 12%, transparent),
-		color-mix(in srgb, var(--color-yellow-500) 4%, transparent)
-	);
+.licenseSidebarFooter[data-urgent="true"] .licenseSidebarMeta {
+	color: var(--status-warning-fg);
 }
 
 .licenseSidebarInfo {
 	display: flex;
 	align-items: center;
+	justify-content: flex-start;
 	gap: 8px;
 	flex: 1 1 auto;
 	min-width: 0;
@@ -209,29 +212,27 @@
 
 .licenseSidebarLabel {
 	overflow: hidden;
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.68);
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.06em;
-	line-height: 1;
-	text-transform: uppercase;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.2;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .licenseSidebarMeta {
 	overflow: hidden;
-	color: var(--text-primary);
-	font-size: calc(var(--text-base) * 0.82);
-	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-normal);
 	font-variant-numeric: tabular-nums;
-	line-height: 1;
+	line-height: 1.2;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .licenseSidebarFooter[data-mode="community"] .licenseSidebarMeta {
-	font-size: calc(var(--text-base) * 0.95);
+	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
 	white-space: normal;
 	line-height: 1.25;
@@ -244,7 +245,7 @@
 .licenseSidebarFooter[data-mode="community"] .licenseSidebarBody {
 	display: block;
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.84);
+	font-size: var(--text-xs);
 	font-weight: var(--font-normal);
 	line-height: 1.42;
 	text-wrap: pretty;
@@ -260,46 +261,44 @@
 	padding-top: 8px;
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 75%, transparent);
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.76);
+	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	line-height: 1.3;
 }
 
+/* The shared secondary button geometry: 28px, var(--radius-md), flat. */
 .licenseSidebarAction {
 	flex: 0 0 auto;
-	min-height: 26px;
-	padding: 0 12px;
-	border: none;
+	height: 28px;
+	padding: 0 10px;
+	border: 1px solid var(--border-default);
 	border-radius: var(--radius-md);
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-semibold);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
 	cursor: pointer;
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 14%, transparent);
 	transition:
 		background var(--transition-fast),
-		transform 140ms ease,
-		box-shadow var(--transition-fast);
+		color var(--transition-fast);
 }
 
 .licenseSidebarFooter[data-mode="community"] .licenseSidebarAction {
 	width: 100%;
+	border: none;
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
 	flex: 0 0 auto;
-	min-height: 32px;
-	font-size: calc(var(--text-base) * 0.86);
-	box-shadow: 0 6px 14px color-mix(in srgb, var(--interactive-accent) 26%, transparent);
 }
 
 .licenseSidebarAction:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
-	transform: translateY(-1px);
-	box-shadow: 0 2px 6px color-mix(in srgb, var(--interactive-accent) 35%, transparent);
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
-.licenseSidebarAction:active {
-	transform: translateY(0) scale(0.97);
+.licenseSidebarFooter[data-mode="community"] .licenseSidebarAction:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
 }
 
 .licenseSidebarInfo:focus-visible,
@@ -308,15 +307,33 @@
 	outline-offset: 2px;
 }
 
+/* Activate: label and description on the first line, then the key field across the full
+   row with one ink "Activate" pill and a quiet "Buy" beside it. */
 .licenseSettingsField {
 	align-items: flex-start;
+	row-gap: 12px;
+}
+
+.licenseSettingsField .settingsFieldCopy {
+	flex-basis: 100%;
+	max-width: none;
+}
+
+.licenseSettingsField .settingsFieldControlStacked {
+	flex: 1 0 100%;
 }
 
 .licenseSettingsInputWrap {
 	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	width: min(100%, 340px);
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+}
+
+.licenseSettingsInputWrap .settingsActions {
+	flex: 0 0 auto;
+	flex-wrap: nowrap;
+	width: auto;
 }
 
 @media (max-width: 720px) {

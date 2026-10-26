@@ -1,10 +1,8 @@
 import type { CSSProperties } from "react";
-import { databaseValueToneStyleForColor } from "./database/palette";
 
 export interface PriorityOption {
 	id: "no" | "low" | "medium" | "high";
 	label: string;
-	color: "gray" | "green" | "yellow" | "red";
 	iconKey: "no" | "low" | "medium" | "high";
 	aliases: readonly string[];
 }
@@ -19,28 +17,24 @@ const PRIORITY_OPTIONS = [
 	{
 		id: "no",
 		label: "No",
-		color: "gray",
 		iconKey: "no",
 		aliases: ["no", "none", "false"],
 	},
 	{
 		id: "low",
 		label: "Low",
-		color: "green",
 		iconKey: "low",
 		aliases: ["low"],
 	},
 	{
 		id: "medium",
 		label: "Medium",
-		color: "yellow",
 		iconKey: "medium",
 		aliases: ["medium", "med"],
 	},
 	{
 		id: "high",
 		label: "High",
-		color: "red",
 		iconKey: "high",
 		aliases: ["high"],
 	},
@@ -71,28 +65,25 @@ export function priorityOptionFromValue(value: string | null | undefined): Prior
 	return priorityId ? (PRIORITY_BY_ID.get(priorityId) ?? null) : null;
 }
 
+/** Urgency rank: high = 3 … no = 0; custom or unknown values rank below every built-in. */
+export function priorityRank(value: string | null | undefined): number {
+	const priorityId = priorityIdFromValue(value);
+	return PRIORITY_OPTIONS.findIndex((option) => option.id === priorityId);
+}
+
 export function priorityLabel(value: string | null | undefined): string {
 	const option = priorityOptionFromValue(value);
 	if (option) return option.label;
 	return (value ?? "").trim();
 }
 
-export function priorityToneStyle(value: string | null | undefined): CSSProperties {
-	const option = priorityOptionFromValue(value);
-	const fallbackValue = (value ?? "").trim();
-	return databaseValueToneStyleForColor(option?.id ?? fallbackValue, option?.color ?? null);
-}
-
+/**
+ * Priority stays in the neutral ink like Linear: the filled/unfilled bar glyph carries the level,
+ * so High/Medium/Low never compete with status colour. "No priority" drops to tertiary.
+ */
 export function priorityTextStyle(value: string | null | undefined): CSSProperties {
 	const option = priorityOptionFromValue(value);
-	const toneStyle = priorityToneStyle(value);
-	return {
-		...toneStyle,
-		color:
-			option?.id === "no"
-				? "var(--text-muted)"
-				: "color-mix(in srgb, var(--database-tone) 78%, var(--text-primary))",
-	};
+	return { color: option?.id === "no" ? "var(--text-tertiary)" : "var(--text-secondary)" };
 }
 
 export function priorityColorKey(value: string | null | undefined): string | null {

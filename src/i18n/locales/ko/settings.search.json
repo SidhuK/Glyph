@@ -113,13 +113,13 @@
 		},
 		"general-language": {
 			"title": "언어",
-			"section": "언어",
+			"section": "언어 및 지역",
 			"description": "Glyph 표시 언어를 선택합니다.",
 			"keywords": ["locale", "번역", "i18n", "언어", "language", "translation"]
 		},
 		"general-date-format": {
 			"title": "날짜 형식",
-			"section": "날짜 및 시간",
+			"section": "언어 및 지역",
 			"description": "Glyph 전체에서 완전한 날짜가 표시되는 방식을 선택합니다.",
 			"keywords": ["날짜", "형식", "달력", "US", "European", "Friendly", "ISO", "표시"]
 		},
@@ -147,7 +147,7 @@
 		},
 		"sidebar-calendar": {
 			"title": "사이드바 캘린더",
-			"section": "사이드바",
+			"section": "탐색",
 			"description": "캘린더 레이아웃, 하루 요약, 날짜를 클릭할 때의 동작을 선택하세요.",
 			"keywords": ["캘린더", "주", "월", "데일리 노트", "하루 요약", "사이드바"]
 		},
@@ -182,12 +182,12 @@
 		},
 		"typography-interface-font": {
 			"title": "인터페이스 글꼴",
-			"section": "타이포그래피",
+			"section": "인터페이스",
 			"keywords": ["글꼴", "ui", "sans", "font"]
 		},
 		"typography-monospace-font": {
 			"title": "고정폭 글꼴",
-			"section": "타이포그래피",
+			"section": "인터페이스",
 			"keywords": ["글꼴", "코드", "mono", "font", "code"]
 		},
 		"typography-editor-font": {
@@ -207,7 +207,7 @@
 		},
 		"typography-ui-font-size": {
 			"title": "UI 글꼴 크기",
-			"section": "타이포그래피",
+			"section": "인터페이스",
 			"keywords": ["글꼴", "텍스트", "인터페이스", "font", "text", "interface"]
 		},
 		"typography-editor-font-size": {
@@ -390,7 +390,7 @@
 			"keywords": ["repo", "sync", "branch"]
 		},
 		"git-how-it-works": {
-			"title": "How it works",
+			"title": "Remote",
 			"section": "Connection",
 			"description": "Review remote connection details for the current repository.",
 			"keywords": ["remote url", "initialize git", "credentials"]
@@ -437,7 +437,7 @@
 		},
 		"general-editor-table-of-contents": {
 			"title": "목차",
-			"section": "편집기",
+			"section": "편집",
 			"keywords": ["toc", "개요", "outline", "목차"]
 		},
 		"space-search-index-people-tags": {
@@ -447,27 +447,27 @@
 		},
 		"general-editor-frontmatter": {
 			"title": "편집기에서 frontmatter 표시",
-			"section": "편집기",
+			"section": "편집",
 			"keywords": ["속성", "yaml", "메타데이터", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "컬러풀 제목",
-			"section": "편집기",
+			"section": "편집",
 			"keywords": ["편집기", "색상", "editor", "color"]
 		},
 		"general-editor-heading-palette": {
 			"title": "제목 팔레트",
-			"section": "편집기",
+			"section": "편집",
 			"keywords": ["제목", "색상", "팔레트"]
 		},
 		"general-editor-default-mode": {
 			"title": "기본 편집기 모드",
-			"section": "편집기",
+			"section": "편집",
 			"keywords": ["리치", "미리보기", "markdown"]
 		},
 		"general-editor-focus-mode": {
 			"title": "집중 모드",
-			"section": "실험적",
+			"section": "기능",
 			"keywords": ["집중", "문단", "문장"]
 		},
 		"appearance-editor-presentation-beautiful-tags": {
@@ -482,22 +482,22 @@
 		},
 		"general-editor-collapsible-headings": {
 			"title": "접을 수 있는 제목",
-			"section": "편집기",
+			"section": "편집",
 			"keywords": ["접기", "펼치기", "fold", "collapse", "expand"]
 		},
 		"general-editor-spell-check": {
 			"title": "맞춤법 검사",
-			"section": "편집기",
+			"section": "편집",
 			"keywords": ["맞춤법", "오타", "사전", "spelling", "typo", "dictionary"]
 		},
 		"general-editor-raw-live-preview": {
 			"title": "RAW 모드의 실시간 Markdown",
-			"section": "실험적",
+			"section": "기능",
 			"keywords": ["raw", "markdown", "vim", "live", "preview"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Vim 모드",
-			"section": "실험적",
+			"section": "기능",
 			"keywords": [
 				"vim",
 				"키 바인딩",
@@ -511,12 +511,12 @@
 		},
 		"general-editor-format-bar": {
 			"title": "서식 막대",
-			"section": "실험적",
+			"section": "기능",
 			"keywords": ["서식", "막대", "툴바", "리치", "editor", "toolbar"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
-			"section": "Assistant behavior",
+			"section": "Availability",
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
@@ -536,7 +536,7 @@
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "노트 피크",
-			"section": "실험적",
+			"section": "기능",
 			"keywords": ["peek", "미리보기", "wiki", "모든 노트", "arc"]
 		},
 		"general-file-tree-folder-counts": {

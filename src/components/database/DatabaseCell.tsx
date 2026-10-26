@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
 	databaseCellValueFromRow,
+	formatCompactDatabaseDate,
 	formatDatabaseDateTime,
 	isColumnEditable,
 } from "../../lib/database/config";
@@ -10,6 +11,7 @@ import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { statusLabel } from "../../lib/statusProperties";
 import {
 	DEFAULT_TAG_ICON_NAME,
 	resolveTagIconName,
@@ -63,6 +65,27 @@ interface DatabaseDisplayPill {
 	title?: string;
 }
 
+function DatabaseDisplayPillContent({ item }: { item: DatabaseDisplayPill }) {
+	return (
+		<>
+			{item.kind !== "tag" ? null : item.iconName ? (
+				<DatabaseColumnIcon
+					iconName={item.iconName}
+					className="databaseTagPillIcon"
+					size="var(--icon-xs)"
+				/>
+			) : (
+				<span
+					className="databaseTagDot"
+					style={databaseValueToneStyleForColor(item.label, null)}
+					aria-hidden="true"
+				/>
+			)}
+			{item.label}
+		</>
+	);
+}
+
 function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const itemMeasureRefs = useRef<Array<HTMLSpanElement | null>>([]);
@@ -71,14 +94,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 
 	const renderPill = (item: DatabaseDisplayPill) => (
 		<span key={item.key} className="databaseCellPill" title={item.title}>
-			{item.kind === "tag" ? (
-				<DatabaseColumnIcon
-					iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
-					className="databaseTagPillIcon"
-					size="var(--icon-xs)"
-				/>
-			) : null}
-			{item.label}
+			<DatabaseDisplayPillContent item={item} />
 		</span>
 	);
 
@@ -174,14 +190,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 						}}
 						className="databaseCellPill"
 					>
-						{item.kind === "tag" ? (
-							<DatabaseColumnIcon
-								iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
-								className="databaseTagPillIcon"
-								size="var(--icon-xs)"
-							/>
-						) : null}
-						{item.label}
+						<DatabaseDisplayPillContent item={item} />
 					</span>
 				))}
 				{Array.from({ length: items.length }, (_, index) => (
@@ -259,6 +268,7 @@ function DatabaseCellEditor({
 	onSave,
 	onClose,
 }: DatabaseCellEditorProps) {
+	const { t } = useTranslation("shell");
 	const { tags: availableTags, beautifulTags, tagAppearance } = useFileTreeContext();
 	const cellValue = useMemo(() => databaseCellValueFromRow(row, column), [column, row]);
 	const [draft, setDraft] = useState(() => cellValue.value_text ?? listDraft(row, column));
@@ -536,7 +546,9 @@ function DatabaseCellEditor({
 						type="text"
 						className="notePropertyTagInput"
 						value={tagDraft}
-						placeholder={cellValue.value_list.length > 0 ? "" : "Add or choose a tag"}
+						placeholder={
+							cellValue.value_list.length > 0 ? "" : t("collections.cell.addOrChooseTag")
+						}
 						onFocus={handleSelectRow}
 						onChange={(event) => setTagDraft(event.target.value)}
 						onBlur={(event) => {
@@ -584,7 +596,9 @@ function DatabaseCellEditor({
 				</div>
 				{tagSuggestions.length > 0 ? (
 					<div className="notePropertySuggestions databaseTagSuggestions">
-						<div className="notePropertySuggestionsLabel">Suggested tags</div>
+						<div className="notePropertySuggestionsLabel">
+							{t("collections.cell.suggestedTags")}
+						</div>
 						<div className="notePropertySuggestionList">
 							{tagSuggestions.map(({ tag }) => (
 								<button
@@ -705,7 +719,9 @@ function DatabaseCellEditor({
 						type="text"
 						className="notePropertyTagInput"
 						value={valueDraft}
-						placeholder={cellValue.value_list.length > 0 ? "" : "Add or choose a value"}
+						placeholder={
+							cellValue.value_list.length > 0 ? "" : t("collections.cell.addOrChooseValue")
+						}
 						onFocus={handleSelectRow}
 						onChange={(event) => {
 							const nextValue = event.target.value;
@@ -769,7 +785,9 @@ function DatabaseCellEditor({
 					/>
 				) : valueSuggestions.length > 0 ? (
 					<div className="notePropertySuggestions databaseTagSuggestions">
-						<div className="notePropertySuggestionsLabel">Suggested values</div>
+						<div className="notePropertySuggestionsLabel">
+							{t("collections.cell.suggestedValues")}
+						</div>
 						<div className="notePropertySuggestionList">
 							{valueSuggestions.map((value) => (
 								<button
@@ -845,7 +863,9 @@ function DatabaseCellEditor({
 				/>
 			) : textSuggestions.length > 0 ? (
 				<div className="notePropertySuggestions databaseTagSuggestions">
-					<div className="notePropertySuggestionsLabel">Suggested values</div>
+					<div className="notePropertySuggestionsLabel">
+						{t("collections.cell.suggestedValues")}
+					</div>
 					<div className="notePropertySuggestionList">
 						{textSuggestions.map((value) => (
 							<button
@@ -880,7 +900,7 @@ export function DatabaseCell({
 	onRenameTitle,
 	onSave,
 }: DatabaseCellProps) {
-	const { t } = useTranslation("shell");
+	const { t, i18n } = useTranslation("shell");
 	const dateDisplayFormat = useDateDisplayFormat();
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
@@ -889,33 +909,32 @@ export function DatabaseCell({
 	const noteAppearanceStyle = databaseNoteAppearanceStyle(row.note_path, noteAppearance);
 	const [editing, setEditing] = useState(false);
 	const [saveError, setSaveError] = useState("");
-	const displayText =
+	const isDateValue = cellValue.kind === "datetime" || cellValue.kind === "date";
+	const fullDateText =
 		cellValue.kind === "datetime"
 			? formatDatabaseDateTime(cellValue.value_text, dateDisplayFormat)
 			: cellValue.kind === "date" && cellValue.value_text
 				? formatDisplayDate(cellValue.value_text, dateDisplayFormat)
-				: (cellValue.value_text ?? "");
+				: "";
+	const displayText = isDateValue
+		? formatCompactDatabaseDate(cellValue.value_text, i18n.language)
+		: (cellValue.value_text ?? "");
 	const tagIconOverrides = useMemo(
 		() => tagIconOverridesFromAppearance(tagAppearance),
 		[tagAppearance],
-	);
-	const iconNameForTag = useCallback(
-		(tag: string) =>
-			beautifulTags
-				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
-				: DEFAULT_TAG_ICON_NAME,
-		[beautifulTags, tagIconOverrides],
 	);
 	const tagPillItems = useMemo<DatabaseDisplayPill[]>(() => {
 		if (cellValue.kind !== "tags") return [];
 		return cellValue.value_list.map((value) => ({
 			key: `${column.id}:${value}`,
 			kind: "tag",
-			iconName: iconNameForTag(value),
+			iconName: beautifulTags
+				? resolveTagIconName(value, tagIconOverrides, beautifulTags)
+				: undefined,
 			label: formatDatabaseTagLabel(value),
 			title: formatDatabaseTagLabel(value),
 		}));
-	}, [cellValue.kind, cellValue.value_list, column.id, iconNameForTag]);
+	}, [beautifulTags, cellValue.kind, cellValue.value_list, column.id, tagIconOverrides]);
 	const listPillItems = useMemo<DatabaseDisplayPill[]>(() => {
 		if (cellValue.kind !== "relation" && cellValue.kind !== "multi_select") {
 			return [];
@@ -975,7 +994,7 @@ export function DatabaseCell({
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title={fullValue || "Double-click to edit tags"}
+					title={fullValue || t("collections.cell.editTagsHint")}
 				>
 					<ResponsivePillList items={tagPillItems} />
 				</button>
@@ -994,7 +1013,7 @@ export function DatabaseCell({
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title={fullValue || "Double-click to edit"}
+					title={fullValue || t("collections.cell.editHint")}
 				>
 					<ResponsivePillList items={listPillItems} />
 				</button>
@@ -1002,6 +1021,8 @@ export function DatabaseCell({
 		}
 		if (cellValue.kind === "status") {
 			const currentValue = cellValue.value_text ?? "";
+			// A missing status isn't a to-do; it only shows on row hover so it can still be set.
+			const emptyStatusClass = currentValue.trim() ? "" : " is-empty-status";
 			if (editable) {
 				return (
 					<div className="databaseTagEditor">
@@ -1010,8 +1031,9 @@ export function DatabaseCell({
 							value={currentValue}
 							valueOptions={valueOptions}
 							colors={statusColors}
-							triggerClassName="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
-							triggerTitle={displayText || "Change status"}
+							triggerClassName={`databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger${emptyStatusClass}`}
+							triggerTitle={displayText || t("collections.changeStatus")}
+							triggerAriaLabel={statusLabel(currentValue || "not_started")}
 							stopTriggerClickPropagation
 							onTriggerClick={handleSelectRow}
 							onChange={(value) => {
@@ -1033,12 +1055,13 @@ export function DatabaseCell({
 			return (
 				<button
 					type="button"
-					className="databaseCellButton is-pill-list"
+					className={`databaseCellButton is-pill-list${emptyStatusClass}`}
 					onClick={(event) => {
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title={displayText || "Status"}
+					title={displayText || t("collections.statusLabel")}
+					aria-label={statusLabel(currentValue || "not_started")}
 				>
 					<StatusPropertyPill value={currentValue || "not_started"} colors={statusColors} />
 				</button>
@@ -1054,7 +1077,7 @@ export function DatabaseCell({
 							value={currentValue}
 							valueOptions={valueOptions}
 							triggerClassName="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
-							triggerTitle={displayText || "Change priority"}
+							triggerTitle={displayText || t("collections.cell.changePriority")}
 							stopTriggerClickPropagation
 							onTriggerClick={handleSelectRow}
 							onChange={(value) => {
@@ -1100,14 +1123,16 @@ export function DatabaseCell({
 							handleSelectRow();
 							event.stopPropagation();
 						}}
-						title="Double-click to rename note"
+						title={t("collections.cell.renameNoteHint")}
 					>
-						<DatabaseNoteAppearanceIcon
-							notePath={row.note_path}
-							appearance={noteAppearance}
-							className="databaseTitleCellIcon"
-							size="var(--icon-md)"
-						/>
+						{noteAppearance?.icon ? (
+							<DatabaseNoteAppearanceIcon
+								notePath={row.note_path}
+								appearance={noteAppearance}
+								className="databaseTitleCellIcon"
+								size="var(--icon-md)"
+							/>
+						) : null}
 						{displayText.trim() ? <span className="databaseCellText">{displayText}</span> : null}
 					</button>
 					<button
@@ -1136,7 +1161,7 @@ export function DatabaseCell({
 					handleSelectRow();
 					event.stopPropagation();
 				}}
-				title={editable ? "Double-click to edit" : undefined}
+				title={fullDateText || (editable ? t("collections.cell.editHint") : undefined)}
 			>
 				{displayText.trim() ? <span className="databaseCellText">{displayText}</span> : null}
 			</button>

@@ -12,7 +12,6 @@ import {
 	type SidebarVisibilityKey,
 } from "../../lib/settings/model";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { RefreshCw } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { SidebarItems } from "./SidebarItems";
 import { SettingsSection } from "./SettingsScaffold";
@@ -103,14 +102,14 @@ function SidebarSettingsContent({
 					aside={
 						<Button
 							type="button"
-							variant="outline"
-							size="icon-sm"
+							variant="ghost"
+							size="sm"
 							aria-label={t("resetToDefaults")}
 							title={t("resetToDefaults")}
 							disabled={disabled}
 							onClick={onReset}
 						>
-							<RefreshCw size="var(--icon-md)" aria-hidden="true" />
+							{t("reset")}
 						</Button>
 					}
 				>

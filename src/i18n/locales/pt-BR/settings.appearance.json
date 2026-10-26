@@ -7,7 +7,7 @@
 		"sectionTitle": "Temas",
 		"sectionDescription": "Combine famílias de temas claros e escuros.",
 		"appearance": {
-			"label": "Aparência",
+			"label": "Modo de cor",
 			"description": "Seguir o sistema ou fixar o Glyph no modo claro ou escuro.",
 			"ariaLabel": "Modo do tema"
 		},
@@ -43,7 +43,7 @@
 		"sectionDescription": "Importe uma paleta JSON e use-a como qualquer tema nativo.",
 		"template": {
 			"label": "Modelo de tema",
-			"description": "Parte das cores claras e escuras padrão do Glyph — edite os códigos hex e o nome.",
+			"description": "Parte das cores claras e escuras padrão do Glyph, depois edite os códigos hex e o nome.",
 			"copy": "Copiar JSON",
 			"save": "Salvar arquivo"
 		},
@@ -61,10 +61,9 @@
 	},
 	"shape": {
 		"sectionTitle": "Forma",
-		"sectionDescription": "Escolha o arredondamento de painéis, botões e janelas em todo o app.",
 		"corners": {
 			"label": "Cantos",
-			"description": "Aplica-se em todos os lugares — barras laterais, diálogos, campos e cartões.",
+			"description": "Aplica-se em todos os lugares, incluindo barras laterais, diálogos, campos e cartões.",
 			"ariaLabel": "Forma da interface"
 		},
 		"options": {
@@ -84,7 +83,6 @@
 	},
 	"layout": {
 		"sectionTitle": "Layout",
-		"sectionDescription": "Escolha como a navegação e as notas dividem o espaço de trabalho.",
 		"folioMode": {
 			"label": "Layout do espaço de trabalho",
 			"description": "Escolha como a navegação, a lista de notas e o editor são organizados.",
@@ -106,9 +104,12 @@
 			"ariaLabel": "Ordenação padrão do Folio"
 		},
 		"taskProgressRings": {
-			"label": "Anéis de progresso de tarefas",
-			"description": "Mostra anéis de progresso de tarefas ao lado das notas na barra lateral, no Folio, em Atividade e em quadros de banco de dados.",
-			"ariaLabel": "Mostrar anéis de progresso de tarefas"
+			"label": "Progresso de tarefas",
+			"description": "Mostra as tarefas concluídas e o total ao lado das notas na barra lateral, no Folio, em Atividade e em quadros de banco de dados.",
+			"ariaLabel": "Mostrar progresso de tarefas"
 		}
+	},
+	"appIcon": {
+		"sectionTitle": "Ícone do app"
 	}
 }

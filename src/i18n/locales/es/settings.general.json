@@ -7,7 +7,10 @@
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Buscar ajustes",
 		"searchAriaLabel": "Buscar ajustes",
-		"clearSearchAriaLabel": "Borrar búsqueda de ajustes"
+		"clearSearchAriaLabel": "Borrar búsqueda de ajustes",
+		"searchEmpty": "No hay ajustes que coincidan",
+		"sendFeedback": "Enviar comentarios",
+		"buyLicense": "Comprar licencia oficial"
 	},
 	"about": {
 		"developer": {
@@ -16,19 +19,72 @@
 			"bio": "De día, Karat es científico biomédico e investigador. Su labor de investigación lo ha llevado a lugares como Texas A&M University y University of Vermont. Escribe software por el placer de resolver sus propios problemas, y Glyph es una de esas herramientas.",
 			"github": "GitHub",
 			"twitter": "X / Twitter"
+		},
+		"tagline": {
+			"first": "Tus ideas merecen un hogar,",
+			"second": "no un servidor."
+		},
+		"links": {
+			"ariaLabel": "Enlaces de Glyph",
+			"website": "Sitio web",
+			"terms": "Términos",
+			"privacy": "Privacidad"
+		},
+		"errors": {
+			"loadInfoFailed": "No se pudo cargar la información de la app.",
+			"checkFailed": "No se pudieron buscar actualizaciones.",
+			"saveChannelFailed": "No se pudo guardar el canal de versiones."
+		},
+		"updates": {
+			"sectionTitle": "Actualizaciones",
+			"descriptionLoading": "Comprobando si esta compilación puede usar actualizaciones automáticas.",
+			"descriptionUnknown": "Glyph no pudo determinar si esta compilación puede usar actualizaciones automáticas.",
+			"descriptionAuto": "Busca nuevas versiones e instálalas sin salir de Glyph.",
+			"descriptionManual": "Las compilaciones de la comunidad se actualizan manualmente.",
+			"upToDate": "Ya tienes la versión más reciente.",
+			"ready": "v{{version}} se ha descargado y está lista. Haz clic en el botón de actualización para instalarla.",
+			"licenseStatus": {
+				"label": "Estado de la licencia",
+				"description": "Glyph no pudo verificar el estado de la licencia en esta ventana, así que las acciones de actualización no están disponibles ahora.",
+				"unknown": "Estado de la licencia desconocido"
+			},
+			"appUpdates": {
+				"label": "Actualizaciones de la app",
+				"description": "Busca de inmediato y descarga en segundo plano la última versión publicada. Solo se instala cuando tú lo eliges.",
+				"check": "Buscar actualizaciones",
+				"checking": "Buscando…",
+				"install": "Instalar actualización",
+				"installVersion": "Instalar {{version}}"
+			},
+			"alpha": {
+				"label": "Versiones alfa",
+				"description": "Accede antes a las compilaciones alfa. Pueden ser inestables, así que actívalo solo si te sientes cómodo probando versiones sin terminar."
+			},
+			"communityBuild": {
+				"label": "Compilación de la comunidad",
+				"description": "Estás usando la versión comunitaria y de código abierto de Glyph. Compra una licencia oficial para apoyar el desarrollo de Glyph y recibir las actualizaciones automáticamente."
+			},
+			"status": {
+				"label": "Estado",
+				"description": "Actividad reciente del actualizador en esta ventana."
+			},
+			"changelog": {
+				"label": "Registro de cambios",
+				"description": "Abre en el navegador el registro de cambios publicado de Glyph.",
+				"view": "Ver registro de cambios"
+			}
 		}
 	},
 	"language": {
-		"sectionTitle": "Idioma",
-		"sectionDescription": "Elige el idioma usado en Glyph.",
 		"label": "Idioma",
 		"description": "Se aplica de inmediato a menús, ajustes y navegación.",
 		"ariaLabel": "Idioma",
 		"communityNotice": "Las traducciones son aportadas por la comunidad y pueden estar incompletas. ¿Preguntas o mejoras? <discord>Únete a Discord</discord>."
 	},
+	"region": {
+		"sectionTitle": "Idioma y región"
+	},
 	"dateTime": {
-		"sectionTitle": "Fecha y hora",
-		"sectionDescription": "Elige cómo se muestran las fechas completas en Glyph.",
 		"dateFormat": {
 			"label": "Formato de fecha",
 			"description": "Se aplica de inmediato a las fechas completas en notas, metadatos, bases de datos e historial.",
@@ -44,7 +100,7 @@
 		}
 	},
 	"experimental": {
-		"sectionTitle": "Experimental",
+		"sectionTitle": "Funciones",
 		"sectionDescription": "Funciones experimentales que aún no están del todo definidas. Una versión posterior de Glyph puede cambiarlas o quitarlas.",
 		"noteSidePeek": {
 			"label": "Peek de nota",
@@ -53,8 +109,7 @@
 		}
 	},
 	"editor": {
-		"sectionTitle": "Editor",
-		"sectionDescription": "Controles del comportamiento de edición y la estructura de las notas en Glyph.",
+		"sectionTitle": "Edición",
 		"defaultEditorMode": {
 			"label": "Modo de editor predeterminado",
 			"description": "Cómo se abren las notas de forma predeterminada: Enriquecido para editar, Vista previa para solo lectura o Sin formato para Markdown puro.",
@@ -87,7 +142,7 @@
 		},
 		"colorfulHeadings": {
 			"label": "Encabezados con color",
-			"description": "Usar una paleta de colores seleccionada para H1-H6 al editar notas.",
+			"description": "Usar una paleta de colores seleccionada para H1–H6 al editar notas.",
 			"ariaLabel": "Encabezados con color",
 			"palette": {
 				"label": "Paleta de encabezados",
@@ -130,7 +185,6 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Árbol de archivos",
-		"sectionDescription": "Configura el árbol de archivos de la barra lateral.",
 		"folderCounts": {
 			"label": "Mostrar recuento de archivos por carpeta",
 			"description": "Mostrar el total recursivo de archivos al final de cada fila de carpeta en el árbol.",
@@ -168,7 +222,6 @@
 	},
 	"editorPresentation": {
 		"sectionTitle": "Presentación del editor",
-		"sectionDescription": "Elige cómo se ven las notas al editarlas.",
 		"beautifulTags": {
 			"label": "Etiquetas bonitas",
 			"description": "Activar la presentación experimental Beautiful Tags para las etiquetas.",
@@ -197,5 +250,69 @@
 			"found_one": "{{count}} plantilla encontrada",
 			"found_other": "{{count}} plantillas encontradas"
 		}
+	},
+	"license": {
+		"sectionTitle": "Licencia",
+		"status": {
+			"licensed": "Con licencia",
+			"trialActive": "Prueba activa",
+			"trialExpired": "Prueba vencida",
+			"communityBuild": "Compilación de la comunidad"
+		},
+		"trialStatus": {
+			"label": "Estado de la prueba",
+			"description": "Tiempo restante de la prueba actual en este dispositivo."
+		},
+		"activated": "Activada",
+		"licenseKey": "Clave de licencia",
+		"storedLocally": "Guardada localmente",
+		"officialBuild": {
+			"label": "Compilación oficial",
+			"description": "Gracias por descargar y compilar Glyph tú mismo. Las compilaciones de la comunidad no incluyen actualizaciones automáticas. Para obtener la última versión, vuelve a descargar el código fuente y compílalo, o consigue la compilación oficial con licencia para apoyar Glyph y activar las actualizaciones automáticas."
+		},
+		"buyOfficial": "Comprar licencia oficial",
+		"activate": {
+			"label": "Activar Glyph",
+			"description": "Introduce tu clave de licencia para desbloquear Glyph de forma permanente en este dispositivo.",
+			"action": "Activar",
+			"verifying": "Verificando…",
+			"buy": "Comprar"
+		},
+		"help": {
+			"label": "Ayuda",
+			"description": "Preguntas sobre licencias, claves perdidas o problemas de compra.",
+			"openSupport": "Abrir soporte",
+			"removeActivation": "Quitar activación local"
+		},
+		"errors": {
+			"keyRequired": "Introduce una clave de licencia.",
+			"activateFailed": "No se pudo activar la licencia.",
+			"removeFailed": "No se pudo quitar la activación local."
+		},
+		"messages": {
+			"activated": "Licencia activada.",
+			"removed": "Activación local eliminada."
+		}
+	},
+	"shortcuts": {
+		"searchPlaceholder": "Buscar acciones, categorías o atajos",
+		"pressShortcut": "Pulsa un atajo…",
+		"recordHint": "Grabar atajo",
+		"record": "Cambiar el atajo de {{action}}",
+		"remove": "Quitar el atajo de {{action}}",
+		"removeTitle": "Quitar atajo",
+		"reset": "Restablecer el atajo de {{action}}",
+		"resetTitle": "Restablecer valor predeterminado",
+		"errors": {
+			"removeFailed": "No se pudo quitar el atajo.",
+			"resetFailed": "No se pudo restablecer el atajo.",
+			"invalid": "Atajo no válido.",
+			"saveFailed": "No se pudo guardar el atajo.",
+			"conflict": "{{shortcut}} ya lo usa {{action}}."
+		}
+	},
+	"folderPicker": {
+		"clear": "Borrar",
+		"reset": "Restablecer"
 	}
 }

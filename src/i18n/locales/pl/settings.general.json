@@ -7,7 +7,10 @@
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Szukaj w ustawieniach",
 		"searchAriaLabel": "Szukaj w ustawieniach",
-		"clearSearchAriaLabel": "Wyczyść wyszukiwanie ustawień"
+		"clearSearchAriaLabel": "Wyczyść wyszukiwanie ustawień",
+		"searchEmpty": "Brak pasujących ustawień",
+		"sendFeedback": "Wyślij opinię",
+		"buyLicense": "Kup oficjalną licencję"
 	},
 	"about": {
 		"developer": {
@@ -16,19 +19,72 @@
 			"bio": "Na co dzień Karat jest naukowcem biomedycznym i badaczem. Jego praca badawcza zaprowadziła go do miejsc takich jak Texas A&M University i University of Vermont. Tworzy oprogramowanie dla przyjemności rozwiązywania własnych problemów, a Glyph jest jednym z takich narzędzi.",
 			"github": "GitHub",
 			"twitter": "X / Twitter"
+		},
+		"tagline": {
+			"first": "Twoje myśli zasługują na dom,",
+			"second": "nie na serwer."
+		},
+		"links": {
+			"ariaLabel": "Linki Glyph",
+			"website": "Strona internetowa",
+			"terms": "Warunki",
+			"privacy": "Prywatność"
+		},
+		"errors": {
+			"loadInfoFailed": "Nie udało się wczytać informacji o aplikacji.",
+			"checkFailed": "Nie udało się sprawdzić aktualizacji.",
+			"saveChannelFailed": "Nie udało się zapisać kanału wydań."
+		},
+		"updates": {
+			"sectionTitle": "Aktualizacje",
+			"descriptionLoading": "Sprawdzanie, czy ta wersja może korzystać z automatycznych aktualizacji.",
+			"descriptionUnknown": "Glyph nie mógł ustalić, czy ta wersja może korzystać z automatycznych aktualizacji.",
+			"descriptionAuto": "Sprawdzaj nowe wydania i instaluj je bez opuszczania Glyph.",
+			"descriptionManual": "Wersje społecznościowe aktualizuje się ręcznie.",
+			"upToDate": "Masz już najnowszą wersję.",
+			"ready": "Wersja v{{version}} została pobrana i jest gotowa. Kliknij przycisk aktualizacji, aby ją zainstalować.",
+			"licenseStatus": {
+				"label": "Stan licencji",
+				"description": "Glyph nie mógł zweryfikować stanu licencji w tym oknie, więc aktualizacje są teraz niedostępne.",
+				"unknown": "Nieznany stan licencji"
+			},
+			"appUpdates": {
+				"label": "Aktualizacje aplikacji",
+				"description": "Sprawdza od razu i pobiera w tle najnowszą opublikowaną wersję. Instalacja następuje dopiero, gdy ją wybierzesz.",
+				"check": "Sprawdź aktualizacje",
+				"checking": "Sprawdzanie…",
+				"install": "Zainstaluj aktualizację",
+				"installVersion": "Zainstaluj {{version}}"
+			},
+			"alpha": {
+				"label": "Wydania alfa",
+				"description": "Uzyskaj wczesny dostęp do wersji alfa. Mogą być niestabilne, więc włącz to tylko, jeśli chcesz testować niedokończone wydania."
+			},
+			"communityBuild": {
+				"label": "Wersja społecznościowa",
+				"description": "Używasz społecznościowej wersji open source Glyph. Kup oficjalną licencję, aby wesprzeć rozwój Glyph i automatycznie otrzymywać najnowsze aktualizacje."
+			},
+			"status": {
+				"label": "Stan",
+				"description": "Ostatnia aktywność aktualizatora w tym oknie."
+			},
+			"changelog": {
+				"label": "Lista zmian",
+				"description": "Otwórz opublikowaną listę zmian Glyph w przeglądarce.",
+				"view": "Pokaż listę zmian"
+			}
 		}
 	},
 	"language": {
-		"sectionTitle": "Język",
-		"sectionDescription": "Wybierz język używany w programie Glyph.",
 		"label": "Język",
 		"description": "Dotyczy menu, ustawień i nawigacji.",
 		"ariaLabel": "Język",
 		"communityNotice": "Tłumaczenia są przygotowywane przez społeczność i mogą być niekompletne. Masz pytania lub propozycje ulepszeń? <discord>Dołącz do serwera Discord</discord>."
 	},
+	"region": {
+		"sectionTitle": "Język i region"
+	},
 	"dateTime": {
-		"sectionTitle": "Data i czas",
-		"sectionDescription": "Wybierz sposób wyświetlania dat w programie Glyph.",
 		"dateFormat": {
 			"label": "Format daty",
 			"description": "Dotyczy natychmiast dat w notatkach, metadanych, bazach danych i historii.",
@@ -44,7 +100,7 @@
 		}
 	},
 	"experimental": {
-		"sectionTitle": "Eksperymentalne",
+		"sectionTitle": "Funkcje",
 		"sectionDescription": "Funkcje eksperymentalne, które nie są jeszcze dopracowane. Późniejsza wersja Glyph może je zmienić lub usunąć.",
 		"noteSidePeek": {
 			"label": "Peek notatki",
@@ -53,8 +109,7 @@
 		}
 	},
 	"editor": {
-		"sectionTitle": "Edytor",
-		"sectionDescription": "Elementy sterujące zachowaniem podczas edycji i strukturą notatek w programie Glyph.",
+		"sectionTitle": "Edycja",
 		"defaultEditorMode": {
 			"label": "Domyślny tryb edytora",
 			"description": "Sposób domyślnego otwierania notatek: Wzbogacony do edycji, Podgląd do przeglądania lub Źródłowy do zwykłego Markdown.",
@@ -87,12 +142,12 @@
 		},
 		"headingPrefixes": {
 			"label": "Przedrostki nagłówków",
-			"description": "Pokaż etykiety H1-H6 obok nagłówków w edytorze tekstu wzbogaconego.",
+			"description": "Pokaż etykiety H1–H6 obok nagłówków w edytorze tekstu wzbogaconego.",
 			"ariaLabel": "Pokaż przedrostki nagłówków"
 		},
 		"colorfulHeadings": {
 			"label": "Kolorowe nagłówki",
-			"description": "Użyj wybranej palety kolorów dla H1-H6 podczas edycji notatek.",
+			"description": "Użyj wybranej palety kolorów dla H1–H6 podczas edycji notatek.",
 			"ariaLabel": "Kolorowe nagłówki",
 			"palette": {
 				"label": "Paleta nagłówków",
@@ -140,7 +195,6 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Drzewo plików",
-		"sectionDescription": "Skonfiguruj drzewo plików na pasku bocznym.",
 		"folderCounts": {
 			"label": "Pokaż liczbę plików w folderach",
 			"description": "Pokaż rekurencyjną sumę plików na końcu każdego wiersza folderu w drzewie plików.",
@@ -178,7 +232,6 @@
 	},
 	"editorPresentation": {
 		"sectionTitle": "Prezentacja edytora",
-		"sectionDescription": "Wybierz wygląd notatek podczas ich edycji.",
 		"beautifulTags": {
 			"label": "Ładne tagi",
 			"description": "Włącz eksperymentalną prezentację ładnych tagów.",
@@ -209,5 +262,69 @@
 			"found_many": "Znaleziono {{count}} szablonów",
 			"found_other": "Znaleziono {{count}} szablonu"
 		}
+	},
+	"license": {
+		"sectionTitle": "Licencja",
+		"status": {
+			"licensed": "Licencja aktywna",
+			"trialActive": "Okres próbny aktywny",
+			"trialExpired": "Okres próbny wygasł",
+			"communityBuild": "Wersja społecznościowa"
+		},
+		"trialStatus": {
+			"label": "Okres próbny",
+			"description": "Czas pozostały w bieżącym okresie próbnym na tym urządzeniu."
+		},
+		"activated": "Aktywowano",
+		"licenseKey": "Klucz licencji",
+		"storedLocally": "Zapisany lokalnie",
+		"officialBuild": {
+			"label": "Oficjalna wersja",
+			"description": "Dziękujemy za samodzielne pobranie i zbudowanie Glyph. Wersje społecznościowe nie obejmują automatycznych aktualizacji. Aby uzyskać najnowszą wersję, pobierz ponownie kod źródłowy i zbuduj go, albo zdobądź oficjalną licencjonowaną wersję, aby wesprzeć Glyph i odblokować automatyczne aktualizacje."
+		},
+		"buyOfficial": "Kup oficjalną licencję",
+		"activate": {
+			"label": "Aktywuj Glyph",
+			"description": "Wpisz klucz licencji, aby trwale odblokować Glyph na tym urządzeniu.",
+			"action": "Aktywuj",
+			"verifying": "Weryfikowanie…",
+			"buy": "Kup"
+		},
+		"help": {
+			"label": "Pomoc",
+			"description": "Pytania o licencje, zgubione klucze lub zakupy.",
+			"openSupport": "Otwórz pomoc",
+			"removeActivation": "Usuń lokalną aktywację"
+		},
+		"errors": {
+			"keyRequired": "Wpisz klucz licencji.",
+			"activateFailed": "Nie udało się aktywować licencji.",
+			"removeFailed": "Nie udało się usunąć lokalnej aktywacji."
+		},
+		"messages": {
+			"activated": "Licencja aktywowana.",
+			"removed": "Lokalna aktywacja usunięta."
+		}
+	},
+	"shortcuts": {
+		"searchPlaceholder": "Szukaj akcji, kategorii lub skrótów",
+		"pressShortcut": "Naciśnij skrót…",
+		"recordHint": "Nagraj skrót",
+		"record": "Zmień skrót dla: {{action}}",
+		"remove": "Usuń skrót dla: {{action}}",
+		"removeTitle": "Usuń skrót",
+		"reset": "Przywróć skrót dla: {{action}}",
+		"resetTitle": "Przywróć domyślny",
+		"errors": {
+			"removeFailed": "Nie udało się usunąć skrótu.",
+			"resetFailed": "Nie udało się przywrócić skrótu.",
+			"invalid": "Nieprawidłowy skrót.",
+			"saveFailed": "Nie udało się zapisać skrótu.",
+			"conflict": "Skrót {{shortcut}} jest już używany przez: {{action}}."
+		}
+	},
+	"folderPicker": {
+		"clear": "Wyczyść",
+		"reset": "Resetuj"
 	}
 }

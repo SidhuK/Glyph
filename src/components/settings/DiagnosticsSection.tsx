@@ -81,7 +81,7 @@ export function DiagnosticsSection() {
 					<Button
 						type="button"
 						size="sm"
-						variant="outline"
+						variant="destructive"
 						disabled={clearLogs.isPending}
 						onClick={() => clearLogs.mutate()}
 					>

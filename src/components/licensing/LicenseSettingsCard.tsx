@@ -1,5 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat } from "../../contexts";
 import {
 	activateLicenseKey,
@@ -8,39 +9,12 @@ import {
 	formatTrialRemaining,
 	useLicenseStatus,
 } from "../../lib/license";
-import type { LicenseStatus } from "../../lib/tauri";
 import { SettingsRow, SettingsSection } from "../settings/SettingsScaffold";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 
-function statusPillClassName(status: LicenseStatus | null): string {
-	if (!status) return "settingsPill";
-	switch (status.mode) {
-		case "licensed":
-			return "settingsPill settingsPillOk";
-		case "trial_active":
-			return "settingsPill settingsPillWarn";
-		case "trial_expired":
-			return "settingsPill settingsPillError";
-		default:
-			return "settingsPill settingsPillInfo";
-	}
-}
-
-function statusLabel(status: LicenseStatus): string {
-	switch (status.mode) {
-		case "licensed":
-			return "Licensed";
-		case "trial_active":
-			return "Trial Active";
-		case "trial_expired":
-			return "Trial Expired";
-		default:
-			return "Community Build";
-	}
-}
-
 export function LicenseSettingsCard() {
+	const { t } = useTranslation("settings.general", { keyPrefix: "license" });
 	const dateDisplayFormat = useDateDisplayFormat();
 	const { status, error, reload } = useLicenseStatus(false);
 	const [licenseKey, setLicenseKey] = useState("");
@@ -71,7 +45,7 @@ export function LicenseSettingsCard() {
 		const normalizedLicenseKey = licenseKey.trim();
 		if (!normalizedLicenseKey) {
 			setSuccessMessage("");
-			setActionError("Please provide a license key");
+			setActionError(t("errors.keyRequired"));
 			return;
 		}
 
@@ -83,10 +57,10 @@ export function LicenseSettingsCard() {
 			await activateLicenseKey(normalizedLicenseKey);
 			setLicenseKey("");
 			await reload();
-			setSuccessMessage("License activated.");
+			setSuccessMessage(t("messages.activated"));
 			scheduleSuccessMessageReset();
 		} catch (cause) {
-			setActionError(cause instanceof Error ? cause.message : "Failed to activate license");
+			setActionError(cause instanceof Error ? cause.message : t("errors.activateFailed"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -99,31 +73,26 @@ export function LicenseSettingsCard() {
 		setIsSubmitting(true);
 		try {
 			await clearLocalLicense();
-			setSuccessMessage("Local activation removed.");
+			setSuccessMessage(t("messages.removed"));
 			scheduleSuccessMessageReset();
 			await reload();
 		} catch (cause) {
-			setActionError(cause instanceof Error ? cause.message : "Failed to remove local activation");
+			setActionError(cause instanceof Error ? cause.message : t("errors.removeFailed"));
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
 	return (
-		<SettingsSection
-			title="License"
-			aside={
-				status ? <span className={statusPillClassName(status)}>{statusLabel(status)}</span> : null
-			}
-		>
+		<SettingsSection title={t("sectionTitle")}>
 			{error ? <div className="settingsError">{error}</div> : null}
 			{actionError ? <div className="settingsError">{actionError}</div> : null}
 			{successMessage ? <div className="settingsKeySaved">{successMessage}</div> : null}
 
 			{status?.mode === "trial_active" || status?.mode === "trial_expired" ? (
 				<SettingsRow
-					label="Trial status"
-					description="Remaining time on the current trial for this device."
+					label={t("trialStatus.label")}
+					description={t("trialStatus.description")}
 					interactive={false}
 				>
 					<div className="settingsValue">
@@ -134,27 +103,32 @@ export function LicenseSettingsCard() {
 
 			{status?.mode === "licensed" ? (
 				<>
-					<SettingsRow label="Activated" interactive={false}>
+					<SettingsRow label={t("activated")} interactive={false}>
 						<div className="settingsValue">
 							{formatLicenseDate(status.activated_at_ms, dateDisplayFormat)}
 						</div>
 					</SettingsRow>
-					<SettingsRow label="License key" interactive={false}>
-						<div className="settingsValue">{status.license_key_masked ?? "Stored locally"}</div>
+					<SettingsRow label={t("licenseKey")} interactive={false}>
+						<div className="settingsValue">{status.license_key_masked ?? t("storedLocally")}</div>
 					</SettingsRow>
 				</>
 			) : null}
 
 			{status?.mode === "community_build" ? (
 				<SettingsRow
-					label="Official build"
-					description="Thanks for downloading and building Glyph yourself. Community builds do not include automatic updates. To get the latest version, download the source again and rebuild, or get the official licensed build to support Glyph and unlock automatic updates."
+					label={t("officialBuild.label")}
+					description={t("officialBuild.description")}
 					stacked
 					interactive={false}
 				>
 					<div className="settingsActions">
-						<Button type="button" size="sm" onClick={() => void openUrl(status.purchase_url)}>
-							Buy Official License
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							onClick={() => void openUrl(status.purchase_url)}
+						>
+							{t("buyOfficial")}
 						</Button>
 					</div>
 				</SettingsRow>
@@ -162,9 +136,9 @@ export function LicenseSettingsCard() {
 
 			{status?.is_official_build ? (
 				<SettingsRow
-					label="Activate Glyph"
+					label={t("activate.label")}
 					htmlFor="settings-license-key"
-					description="Enter your license key to unlock Glyph permanently on this device."
+					description={t("activate.description")}
 					stacked
 					className="licenseSettingsField"
 				>
@@ -174,7 +148,7 @@ export function LicenseSettingsCard() {
 							type="text"
 							autoComplete="off"
 							spellCheck={false}
-							aria-label="License key"
+							aria-label={t("licenseKey")}
 							placeholder="XXXX-XXXX-XXXX-XXXX"
 							value={licenseKey}
 							onChange={(event) => setLicenseKey(event.target.value)}
@@ -189,10 +163,11 @@ export function LicenseSettingsCard() {
 							<Button
 								type="button"
 								size="sm"
+								variant="default"
 								onClick={() => void handleActivate()}
 								disabled={isSubmitting}
 							>
-								{isSubmitting ? "Verifying..." : "Activate"}
+								{isSubmitting ? t("activate.verifying") : t("activate.action")}
 							</Button>
 							<Button
 								type="button"
@@ -200,36 +175,32 @@ export function LicenseSettingsCard() {
 								variant="outline"
 								onClick={() => status && void openUrl(status.purchase_url)}
 							>
-								Buy
+								{t("activate.buy")}
 							</Button>
 						</div>
 					</div>
 				</SettingsRow>
 			) : null}
 
-			<SettingsRow
-				label="Help"
-				description="Questions about licensing, lost keys, or purchase issues."
-			>
+			<SettingsRow label={t("help.label")} description={t("help.description")}>
 				<div className="settingsActions">
 					<Button
 						type="button"
 						size="sm"
 						variant="outline"
-						className="min-w-32 rounded-md border-border bg-background justify-center shadow-none"
 						onClick={() => status && void openUrl(status.support_url)}
 					>
-						Open Support
+						{t("help.openSupport")}
 					</Button>
 					{status?.is_official_build && status.mode === "licensed" ? (
 						<Button
 							type="button"
 							size="sm"
-							variant="ghost"
+							variant="destructive"
 							onClick={() => void handleClear()}
 							disabled={isSubmitting}
 						>
-							Remove Local Activation
+							{t("help.removeActivation")}
 						</Button>
 					) : null}
 				</div>

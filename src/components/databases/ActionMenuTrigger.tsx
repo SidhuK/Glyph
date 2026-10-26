@@ -1,7 +1,7 @@
-import { LibraryIcon } from "@hugeicons/core-free-icons";
+import { LayoutThreeColumnIcon, LibraryIcon } from "@hugeicons/core-free-icons";
 import type { ComponentProps, ReactNode } from "react";
 import type { ActionMenuIconKey, ActionMenuItem } from "../../lib/database/actionMenuItems";
-import { Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
+import { Edit, Plus, Table, Trash2 } from "../Icons";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -21,7 +21,7 @@ function renderMenuIcon(iconKey: ActionMenuIconKey): ReactNode {
 		case "table":
 			return <Table size={ICON_SIZE} className={ICON_CLASS} aria-hidden="true" />;
 		case "board":
-			return <Kanban size={ICON_SIZE} className={ICON_CLASS} aria-hidden="true" />;
+			return <DropdownMenuItemIcon icon={LayoutThreeColumnIcon} />;
 		case "edit":
 			return <Edit size={ICON_SIZE} className={ICON_CLASS} aria-hidden="true" />;
 		case "trash":

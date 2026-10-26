@@ -130,6 +130,12 @@
 	line-height: 1.25;
 }
 
+/* UnfoldMore draws in the middle third of its box; 16px gives a ~12px glyph. */
+svg.spaceMenuButtonChevron {
+	width: 16px;
+	height: 16px;
+}
+
 .spaceMenuButtonChevron {
 	margin-left: -1px;
 	color: var(--text-tertiary);
@@ -179,7 +185,7 @@
 	background: rgb(0 112 249);
 	box-shadow: inset 0 0 0 0.5px color-mix(in srgb, white 28%, transparent);
 	color: white;
-	font-size: 12px;
+	font-size: var(--text-xs);
 	font-weight: var(--font-normal);
 	letter-spacing: 0.04em;
 	line-height: 1;
@@ -241,7 +247,7 @@
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: 0;
 	padding-top: 10px;
 }
 
@@ -276,28 +282,44 @@
 }
 
 .sidebarSectionContent button:focus-visible {
-	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: 2px;
+	outline: 1.5px solid color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	outline-offset: 0;
 }
 
+/* Section header for the lower sidebar: view name, icon view tabs, overflow. */
+.sidebarViewTabsRow {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	width: calc(100% - 16px);
+	height: 28px;
+	margin: 12px 8px 2px;
+	padding-left: 9px;
+	flex-shrink: 0;
+}
+
+.sidebarViewTitle {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	line-height: 1.25;
+}
+
+/* The app's one tab style (collection view tabs, Info panel tabs): flat cells on the sidebar,
+   var(--bg-active) under the active one, var(--bg-hover) on hover. No tray, ring or shadow. */
 .sidebarViewTabs {
 	display: flex;
 	align-items: center;
-	justify-content: flex-start;
-	gap: 1px;
-	width: calc(100% - 16px);
-	max-width: calc(100% - 16px);
-	margin: 10px 8px 6px;
-	padding: 2px 0;
-	border-radius: var(--radius-8);
-	background: transparent;
-	flex-shrink: 0;
+	gap: 2px;
+	flex: 0 1 auto;
+	min-width: 0;
 	overflow-x: auto;
 	scrollbar-width: none;
-}
-
-:root[data-translucent-sidebar="false"] .sidebarViewTabs {
-	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
 }
 
 .sidebarViewTabs::-webkit-scrollbar {
@@ -309,151 +331,91 @@ button.sidebarViewTab {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 5px;
-	min-width: 0;
+	width: 26px;
 	height: 26px;
-	padding: 0 8px;
+	padding: 0;
 	border: 0;
-	border-radius: var(--radius-6);
+	border-radius: var(--radius-md);
 	background: transparent;
-	color: var(--text-tertiary);
-	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
-	line-height: 1.25;
+	color: var(--text-secondary);
 	cursor: pointer;
-	transition: color var(--transition-fast);
+	transition:
+		color var(--transition-fast),
+		background-color var(--transition-fast);
 }
 
-/* The active pill is a gliding highlight (components/ui/shadcn/highlight.tsx), so
-   tabs paint no fill of their own. */
+/* The active fill is a gliding highlight (components/ui/shadcn/highlight.tsx), so the
+   selected cell paints none of its own. */
 .sidebarViewTabSlot {
 	flex: 0 0 auto;
 	display: flex;
 }
 
 .sidebarViewTabsHighlight {
-	border-radius: var(--radius-6);
+	border-radius: var(--radius-md);
 	background: var(--bg-active);
 }
 
 .sidebarViewTabIcon {
 	flex: 0 0 var(--icon-md);
-	opacity: 0.64;
 }
 
-.sidebarViewTabIconFilled path {
-	fill: currentcolor;
-	fill-opacity: 0.2;
-	stroke: currentcolor;
-	stroke-opacity: 1;
-}
-
-.sidebarViewTabLabel {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	line-height: 1.25;
-}
-
-button.sidebarViewTab:not([aria-selected="true"]) .sidebarViewTabLabel {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
-button.sidebarViewTab:hover,
-button.sidebarViewTab:active {
+button.sidebarViewTab:hover:not([aria-selected="true"]) {
+	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 
 button.sidebarViewTab[aria-selected="true"] {
+	background: transparent;
 	color: var(--text-primary);
-	font-weight: var(--font-semibold);
-}
-
-button.sidebarViewTab[aria-selected="true"] .sidebarViewTabIcon {
-	opacity: 1;
 }
 
 button.sidebarViewTab:focus-visible {
-	outline: 2px solid var(--border-focus);
-	outline-offset: 1px;
-}
-
-.sidebarStackHeader.sidebarFileTreeToolbar {
-	justify-content: space-between;
-}
-
-.sidebarFileTreeToolbarTitle {
-	margin: 0;
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
-	font-weight: var(--font-semibold);
-	line-height: 1.25;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-}
-
-.sidebarStackHeader {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	min-height: 22px;
-	padding: 10px 16px 4px;
-	justify-content: space-between;
-	flex-shrink: 0;
-}
-
-.sidebarStackHeader svg {
-	color: currentcolor;
-	flex-shrink: 0;
+	outline: 1.5px solid color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	outline-offset: 0;
 }
 
 .tagsHeaderTitle {
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	font-weight: var(--font-normal);
 	line-height: 1.3;
 	letter-spacing: normal;
 }
 
-.sidebarStackHeaderActions {
-	display: inline-flex;
-	align-items: center;
-	gap: 2px;
-	flex-shrink: 0;
-	min-width: 0;
-}
-
-.sidebarStackHeaderAction {
+/* One overflow trigger for sort / expand / collapse; an empty slot keeps the
+   segmented control in place on views without a file tree. */
+.sidebarViewMenuTrigger {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	flex: 0 0 24px;
+	width: 24px;
+	height: 24px;
+}
+
+button.sidebarViewMenuTrigger {
 	padding: 0;
 	border: 0;
-	border-radius: var(--radius-sm);
+	border-radius: var(--radius-6);
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
-	transition: color var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
 }
 
-.sidebarStackHeaderAction:hover,
-.sidebarStackHeaderAction:focus-visible,
-.sidebarStackHeaderAction:active,
-.sidebarStackHeaderAction[data-popup-open] {
-	background: transparent;
-	box-shadow: none;
+button.sidebarViewMenuTrigger:hover,
+button.sidebarViewMenuTrigger[data-popup-open] {
+	background: var(--bg-hover);
 	color: var(--text-primary);
-	outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	button.sidebarViewTab,
+	button.sidebarViewMenuTrigger {
+		transition: none;
+	}
 }
 
 .sidebarStackItem {
@@ -474,13 +436,13 @@ button.sidebarViewTab:focus-visible {
 }
 
 .sidebarEmptyTitle {
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	color: var(--text-primary);
 	font-weight: var(--font-semibold);
 }
 
 .sidebarEmptyHint {
-	font-size: var(--text-xs);
+	font-size: var(--text-sm);
 	color: var(--text-tertiary);
 }
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -518,4 +480,15 @@ button.sidebarViewTab:focus-visible {
 	width: 1px;
 	transform: translateX(-50%);
 	background: transparent;
+}
+
+/* Dark surfaces sit only a few steps apart, so an opaque sidebar gets a hairline
+   on its editor edge (the handle's right edge, where the sidebar fill ends). */
+:root.dark[data-translucent-app-frame="false"]
+	.appShell:not(.appShellSidebarCollapsed)
+	.sidebarResizeHandle::before {
+	left: auto;
+	right: 0;
+	transform: none;
+	background: color-mix(in srgb, var(--border-light) 80%, transparent);
 }

@@ -21,7 +21,12 @@ import {
 	UnavailableIcon,
 } from "@hugeicons/core-free-icons";
 import type { TFunction } from "i18next";
-import { isBooleanColumn, isDateColumn, isNumberColumn } from "../../lib/database/columns";
+import {
+	databaseColumnLabel,
+	isBooleanColumn,
+	isDateColumn,
+	isNumberColumn,
+} from "../../lib/database/columns";
 import type { DatabaseColumn, DatabaseFilter } from "../../lib/database/types";
 import { SelectIcon, type SelectOption } from "../ui/shadcn/select";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
@@ -151,7 +156,7 @@ export function dateRangeOptions(t: TFunction<"shell">): SelectOption<string>[] 
 export function columnSelectOptions(columns: readonly DatabaseColumn[]): SelectOption<string>[] {
 	return columns.map((column) => ({
 		value: column.id,
-		label: column.label,
+		label: databaseColumnLabel(column),
 		icon: <DatabaseColumnIcon column={column} size="var(--icon-sm)" />,
 	}));
 }

@@ -67,7 +67,7 @@
 	caret-color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-secondary));
 	color: var(--text-primary);
 	font: inherit;
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	line-height: 18px;
 }
 
@@ -241,7 +241,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: var(--folio-file-color, var(--text-primary));
-	font-size: calc(var(--text-base) * 0.95);
+	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
 	line-height: 1.32;
 }
@@ -260,21 +260,7 @@
 }
 
 .folioNoteTaskProgress {
-	--task-progress-width: var(--icon-lg);
-	--task-progress-height: var(--icon-lg);
-	--task-progress-ring-size: var(--icon-md);
-	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
 	flex: 0 0 auto;
-	opacity: 0.9;
-}
-
-.folioNoteTaskProgress .markdownEditorTaskProgressRing {
-	border-width: 2px;
-}
-
-.folioNoteRow:hover .folioNoteTaskProgress,
-.folioNoteRow[data-state="selected"] .folioNoteTaskProgress {
-	opacity: 1;
 }
 
 .folioNoteBody {
@@ -300,7 +286,7 @@
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	color: color-mix(in srgb, var(--text-secondary) 82%, transparent);
-	font-size: calc(var(--text-base) * 0.85);
+	font-size: var(--text-xs);
 	line-height: 1.42;
 	white-space: normal;
 	overflow-wrap: anywhere;
@@ -344,7 +330,7 @@
 	border-radius: 4px;
 	background: color-mix(in srgb, var(--bg-hover) 68%, transparent);
 	color: color-mix(in srgb, var(--text-secondary) 76%, var(--text-tertiary));
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-2xs);
 	font-weight: var(--font-medium);
 	line-height: 18px;
 	overflow: hidden;
@@ -373,7 +359,7 @@
 	min-width: 0;
 	overflow: hidden;
 	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-2xs);
 	line-height: 16px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -382,7 +368,7 @@
 .folioNoteDates {
 	flex: 0 0 auto;
 	color: var(--interactive-accent);
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-2xs);
 	line-height: 16px;
 	white-space: nowrap;
 }
@@ -403,7 +389,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: var(--folio-file-color, var(--text-primary));
-	font-size: calc(var(--text-base) * 0.95);
+	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
 	line-height: 1.25;
 }
@@ -411,7 +397,7 @@
 .folioNotesState {
 	margin: 14px 12px;
 	color: var(--text-tertiary);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	line-height: 1.4;
 	text-align: left;
 }

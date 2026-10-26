@@ -10,6 +10,7 @@ import {
 	isSameHeadingList,
 	updateHeadingsFromTransaction,
 } from "../hooks/useTableOfContents";
+import { i18n } from "../../../i18n";
 import { INLINE_TOC_EDITOR_MARKER } from "../markdown/inlineTocMarkdown";
 
 const INLINE_TOC_MARKER = INLINE_TOC_EDITOR_MARKER;
@@ -77,14 +78,14 @@ function createInlineTocWidget(editor: Editor, headings: readonly TOCHeading[], 
 	const root = document.createElement("nav");
 	root.className = "inlineTocWidget";
 	root.contentEditable = "false";
-	root.setAttribute("aria-label", "Table of contents");
+	root.setAttribute("aria-label", i18n.t("editor:slash.tableOfContents.title"));
 
 	const header = document.createElement("div");
 	header.className = "inlineTocHeader";
 
 	const title = document.createElement("div");
 	title.className = "inlineTocTitle";
-	title.textContent = "Table of contents";
+	title.textContent = i18n.t("editor:slash.tableOfContents.title");
 
 	const removeButton = document.createElement("button");
 	removeButton.type = "button";

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
 import { Hash, Search, Tags } from "../Icons";
 import {
@@ -66,9 +67,10 @@ export function DatabaseTagPicker({
 	onChange,
 	label,
 	description,
-	placeholder = "Choose a tag",
-	emptyLabel = "No matching tags found.",
+	placeholder,
+	emptyLabel,
 }: DatabaseTagPickerProps) {
+	const { t } = useTranslation("shell");
 	const { tags } = useFileTreeContext();
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
@@ -81,7 +83,9 @@ export function DatabaseTagPicker({
 	const manualTag = normalizeTagToken(query);
 	const hasExactOption = explicitTags.some((tag) => tag === manualTag);
 
-	const selectedLabel = selectedTag ? formatTagLabel(selectedTag) : placeholder;
+	const selectedLabel = selectedTag
+		? formatTagLabel(selectedTag)
+		: (placeholder ?? t("collections.tagPicker.placeholder"));
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
@@ -92,7 +96,7 @@ export function DatabaseTagPicker({
 				<span className="databasePickerTriggerText">
 					<span className="databasePickerTriggerLabel">{selectedLabel}</span>
 					<span className="databasePickerTriggerMeta">
-						{selectedTag ? "Selected tag" : "Open tag picker"}
+						{selectedTag ? t("collections.tagPicker.selected") : t("collections.tagPicker.open")}
 					</span>
 				</span>
 			</PopoverTrigger>
@@ -100,7 +104,7 @@ export function DatabaseTagPicker({
 				<PopoverHeader className="databasePickerHeader">
 					<div className="databasePickerEyebrow">
 						<Tags size="var(--icon-sm)" />
-						<span>Tag Source</span>
+						<span>{t("collections.tagPicker.source")}</span>
 					</div>
 					<PopoverTitle>{label}</PopoverTitle>
 					<PopoverDescription>{description}</PopoverDescription>
@@ -109,7 +113,7 @@ export function DatabaseTagPicker({
 					<Search size="var(--icon-sm)" />
 					<Input
 						value={query}
-						placeholder="Search tags"
+						placeholder={t("collections.tagPicker.search")}
 						onChange={(event) => setQuery(event.target.value)}
 					/>
 				</div>
@@ -158,7 +162,9 @@ export function DatabaseTagPicker({
 							</button>
 						) : null}
 						{options.length === 0 && !manualTag ? (
-							<div className="databasePickerEmpty">{emptyLabel}</div>
+							<div className="databasePickerEmpty">
+								{emptyLabel ?? t("collections.tagPicker.empty")}
+							</div>
 						) : null}
 					</div>
 				</ScrollArea>

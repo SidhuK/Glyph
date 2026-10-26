@@ -22,6 +22,8 @@ export type ConnectionsNodeCommunity =
 			readonly index: number;
 			readonly tone: ConnectionsCommunityTone;
 			readonly isHub: boolean;
+			/** Unlinked notes parked together on the ring; drawn faded and unlabelled at rest. */
+			readonly isolated: boolean;
 	  };
 
 export type ConnectionsGraphVariant = "space" | "local";
@@ -172,13 +174,20 @@ function nodeCommunity(
 	const community = communities[communityIndex];
 	if (!community) return NO_COMMUNITY;
 	if (community.kind === "isolated") {
-		return { kind: "member", index: communityIndex, tone: { kind: "neutral" }, isHub: false };
+		return {
+			kind: "member",
+			index: communityIndex,
+			tone: { kind: "neutral" },
+			isHub: false,
+			isolated: true,
+		};
 	}
 	return {
 		kind: "member",
 		index: communityIndex,
 		tone: community.tone,
 		isHub: community.hubId === nodeId,
+		isolated: false,
 	};
 }
 

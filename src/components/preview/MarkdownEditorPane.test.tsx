@@ -112,8 +112,8 @@ vi.mock("../connections/LocalNoteConnectionsDialog", () => ({
 }));
 
 vi.mock("./infoSidebar/NotesInfoSidebar", () => ({
-	NotesInfoSidebar: ({ open, saveLabel }: { open: boolean; saveLabel: string }) =>
-		open ? <div data-testid="notes-info-sidebar">Save status {saveLabel}</div> : null,
+	NotesInfoSidebar: ({ open }: { open: boolean }) =>
+		open ? <div data-testid="notes-info-sidebar">Info</div> : null,
 }));
 
 vi.mock("./useUnlinkedMentions", () => ({
@@ -324,91 +324,5 @@ describe("MarkdownEditorPane", () => {
 			mode: "plain",
 			pasteMarkdownBehavior: "smart-markdown",
 		});
-	});
-
-	it("renders save status in info sidebar through dirty, saving, and saved states", async () => {
-		let resolveWrite: ((value: { etag: string; mtime_ms: number }) => void) | null = null;
-		invokeMock.mockImplementation((...args: Parameters<typeof mockInvoke>) => {
-			const [command, params] = args;
-			if (command === "space_write_text") {
-				return new Promise((resolve) => {
-					resolveWrite = resolve;
-				});
-			}
-			if (command === "space_read_text") {
-				return Promise.resolve(makeDoc(params.path, "", 1));
-			}
-			if (command === "databases_preview_context") {
-				return Promise.resolve({
-					note_path: params.note_path,
-					title: "Note",
-					markdown: "",
-					created: "2026-04-23T10:00:00.000Z",
-					updated: "2026-04-23T10:00:00.000Z",
-					word_count: 0,
-					character_count: 0,
-					line_count: 1,
-					reading_time_minutes: 1,
-					backlinks: [],
-				});
-			}
-			if (command === "backlinks") {
-				return Promise.resolve([]);
-			}
-			if (command === "note_relationships") {
-				return Promise.resolve([]);
-			}
-			if (command === "note_frontmatter_parse_properties") {
-				return Promise.resolve([]);
-			}
-			if (command === "task_summary") {
-				return Promise.resolve({ total: 0, completed: 0 });
-			}
-			throw new Error(`Unexpected command: ${command}`);
-		});
-
-		await act(async () => {
-			root.render(
-				<MarkdownEditorPane
-					relPath="notes/status.md"
-					initialDoc={makeDoc("notes/status.md", "seed text")}
-				/>,
-			);
-		});
-
-		const infoButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.getAttribute("aria-label") === "Info",
-		);
-		expect(infoButton).not.toBeNull();
-		await act(async () => {
-			infoButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-		});
-
-		expect(container.textContent).toContain("Save status");
-		expect(container.textContent).toContain("Saved");
-
-		const changeButton = Array.from(container.querySelectorAll("button")).find((button) =>
-			button.textContent?.includes("Type latest text"),
-		);
-		expect(changeButton).not.toBeNull();
-
-		await act(async () => {
-			changeButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-		});
-
-		expect(container.textContent).toContain("Edited");
-
-		await act(async () => {
-			vi.advanceTimersByTime(900);
-		});
-
-		expect(container.textContent).toContain("Saving");
-
-		await act(async () => {
-			resolveWrite?.({ etag: "notes/status.md-saved", mtime_ms: 2 });
-			await Promise.resolve();
-		});
-
-		expect(container.textContent).toContain("Saved");
 	});
 });

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { type ReactNode, Suspense, lazy } from "react";
 import { AboutSettingsPane } from "./AboutSettingsPane";
 import { AiSettingsPane } from "./AiSettingsPane";
 import { AppearanceSettingsPane } from "./AppearanceSettingsPane";
@@ -18,7 +18,7 @@ const ShortcutsSettingsPane = lazy(() =>
 	})),
 );
 
-export function SettingsTabContent({ tab }: { tab: SettingsTab }) {
+export function SettingsTabContent({ tab }: { tab: SettingsTab }): ReactNode {
 	switch (tab) {
 		case "general":
 			return <GeneralSettingsPane />;

@@ -4,7 +4,6 @@ import type {
 	DatabaseConfig,
 	DatabaseFilter,
 	DatabasePropertyOption,
-	DatabaseSort,
 } from "../../lib/database/types";
 
 interface PresetColumnContext {
@@ -16,14 +15,6 @@ export interface DatabaseFilterPreset {
 	id: string;
 	label: string;
 	filter: DatabaseFilter | null;
-	column: DatabaseColumn | null;
-	disabledReason: string | null;
-}
-
-export interface DatabaseSortPreset {
-	id: string;
-	label: string;
-	sort: DatabaseSort | null;
 	column: DatabaseColumn | null;
 	disabledReason: string | null;
 }
@@ -238,74 +229,6 @@ export function databaseFilterPresets(
 			projectStatusColumn(context),
 			(column) => textFilter(column, "equals", "Active"),
 			"Add a Status property to use this preset.",
-		),
-	];
-}
-
-function sortPreset(
-	id: string,
-	label: string,
-	column: DatabaseColumn | null,
-	direction: DatabaseSort["direction"],
-	disabledReason: string,
-): DatabaseSortPreset {
-	return {
-		id,
-		label,
-		column,
-		sort: column ? { column_id: column.id, direction } : null,
-		disabledReason: column ? null : disabledReason,
-	};
-}
-
-export function databaseSortPresets(
-	config: DatabaseConfig,
-	availableProperties: DatabasePropertyOption[],
-): DatabaseSortPreset[] {
-	const context = { columns: config.columns, availableProperties };
-	const updatedColumn = config.columns.find((column) => column.id === "updated") ?? null;
-	return [
-		sortPreset(
-			"updated-newest",
-			"Recently updated",
-			updatedColumn,
-			"desc",
-			"Updated column is unavailable.",
-		),
-		sortPreset(
-			"due-soon",
-			"Due date soon",
-			dueDateColumn(context),
-			"asc",
-			"Add a Due date property to use this sort.",
-		),
-		sortPreset(
-			"priority-high",
-			"Priority high first",
-			priorityColumn(context),
-			"asc",
-			"Add a Priority property to use this sort.",
-		),
-		sortPreset(
-			"status",
-			"Status",
-			statusColumn(context),
-			"asc",
-			"Add a Status property to use this sort.",
-		),
-		sortPreset(
-			"owner",
-			"Owner",
-			ownerColumn(context),
-			"asc",
-			"Add an Owner property to use this sort.",
-		),
-		sortPreset(
-			"project",
-			"Project",
-			findPropertyColumn(context, ["project", "projects"]),
-			"asc",
-			"Add a Project property to use this sort.",
 		),
 	];
 }

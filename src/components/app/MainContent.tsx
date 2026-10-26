@@ -125,7 +125,6 @@ interface MainContentProps {
 	panes: Record<string, WorkspaceEditorPane>;
 	splitLayout: SplitEditorNode;
 	focusedPaneId: string;
-	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	activeTabPath: string | null;
 	setActiveTabId: (tabId: string | null) => void;
@@ -168,7 +167,6 @@ export const MainContent = memo(function MainContent({
 	panes,
 	splitLayout,
 	focusedPaneId,
-	rootEntries,
 	childrenByDir,
 	activeTabPath,
 	setActiveTabId,
@@ -304,7 +302,6 @@ export const MainContent = memo(function MainContent({
 					pane={pane}
 					focused={focused}
 					allowWindowDrag={splitLayout.type === "pane"}
-					rootEntries={rootEntries}
 					childrenByDir={childrenByDir}
 					emptyState={<EmptyStateCommandPaletteHint onOpenCommandPalette={onOpenCommandPalette} />}
 					createMarkdownFileAtPath={fileTree.createMarkdownFileAtPath}
@@ -347,7 +344,6 @@ export const MainContent = memo(function MainContent({
 			openBlankTabInPane,
 			panes,
 			reorderTabs,
-			rootEntries,
 			setActiveTabId,
 			setDirtyByPath,
 			splitLayout.type,

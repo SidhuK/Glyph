@@ -1,5 +1,5 @@
 {
-	"sectionTitle": "タイポグラフィ",
+	"sectionTitle": "インターフェース",
 	"sectionDescription": "インターフェース書体、コードスタイル、読書スケールを個別に調整します。",
 	"interfaceFont": {
 		"label": "インターフェースフォント",

@@ -1,11 +1,53 @@
 .databasesTopBar {
+	--databases-top-bar-nav-reserve: 0px;
+
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	min-height: 60px;
-	padding: 10px 14px 10px 16px;
+	box-sizing: border-box;
+	min-height: 44px;
+	padding: 4px 16px 4px calc(16px + var(--databases-top-bar-nav-reserve));
 	background: var(--bg-primary);
+}
+
+/* When the tab bar only holds the back/forward arrows, the collection header moves up into
+   that row (like Linear's single header) instead of stacking a second bar under it. The
+   transparent tab bar stops catching clicks so the header beneath can take them, and the
+   header itself becomes the window drag region. */
+.canvasPaneHost[data-databases="true"]:has(.mainTabNavControls):not(
+		:has(.mainTabsStrip, .mainTabActiveTitle, .mainTabActiveTitleInput)
+	) {
+	& .mainTabBarTransition {
+		pointer-events: none;
+	}
+
+	& .mainTabNavControls {
+		pointer-events: auto;
+	}
+
+	& .databaseHostPane {
+		padding-top: 0;
+	}
+
+	& .databasesTopBar {
+		/* Two 28px nav buttons plus the tab bar's 8px gap. */
+		--databases-top-bar-nav-reserve: calc(var(--space-3) - 16px + 56px + 8px);
+
+		height: var(--header-height);
+		padding-top: 6px;
+		padding-bottom: 0;
+	}
+}
+
+.appShell.appShellSidebarCollapsed
+	.canvasPaneHost[data-databases="true"]:has(.mainTabNavControls):not(
+		:has(.mainTabsStrip, .mainTabActiveTitle, .mainTabActiveTitleInput)
+	)
+	.databasesTopBar {
+	--databases-top-bar-nav-reserve: calc(
+		max(var(--space-3), var(--collapsed-sidebar-top-reserve)) - 16px + 56px + 8px
+	);
 }
 
 .databasesTopBarLeft {
@@ -33,7 +75,8 @@
 	flex: 0 1 auto;
 	min-width: 0;
 	overflow: hidden;
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	line-height: 1.35;
 	color: var(--text-tertiary);
 }
@@ -47,9 +90,10 @@
 
 .databasesCollectionBreadcrumbSep {
 	flex-shrink: 0;
-	margin: 0 2px;
-	color: var(--text-quaternary);
-	opacity: 0.8;
+	/* The title input after it brings its own 7px (padding + border), so only the left side
+	   needs space for the chevron to sit evenly, like the note breadcrumb. */
+	margin: 0 0 0 6px;
+	color: var(--text-tertiary);
 }
 
 .databasesCollectionBreadcrumbLabel {
@@ -69,7 +113,7 @@
 }
 
 .databasesTopActionButton {
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 }
 
 .databasesTopActionButton:hover {
@@ -77,8 +121,8 @@
 }
 
 .databasePinButton {
-	min-width: 30px;
-	min-height: 30px;
+	min-width: 28px;
+	min-height: 28px;
 }
 
 .databasePinButton[data-pinned="true"] {
@@ -93,17 +137,17 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 30px;
-	height: 30px;
+	width: 28px;
+	height: 28px;
 	padding: 0;
-	border: 1px solid transparent;
-	border-radius: var(--database-radius-md);
+	border: 0;
+	border-radius: var(--radius-md);
 	background: transparent;
 	cursor: pointer;
 }
 
 .databaseCollectionActionsButton:hover {
-	background: color-mix(in srgb, var(--bg-hover) 78%, transparent);
+	background: var(--bg-hover);
 }
 
 .databasesCollectionTitleInput {
@@ -114,16 +158,16 @@
 	max-width: min(440px, 44vw);
 	flex: 0 0 auto;
 	height: auto;
-	min-height: 30px;
+	min-height: 28px;
 	margin: 0;
-	padding: 2px 5px;
+	padding: 2px 6px;
 	border: 1px solid transparent;
-	border-radius: var(--database-radius-md);
+	border-radius: var(--radius-md);
 	background: transparent;
-	font-size: calc(var(--text-base) * 1.04);
-	font-weight: var(--font-semibold);
-	line-height: 1.15;
-	letter-spacing: -0.025em;
+	/* Same type as the note view's current breadcrumb item (.mainTabsBreadcrumbButton). */
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.35;
 	color: var(--text-primary);
 	transition:
 		background-color 140ms ease,
@@ -131,28 +175,32 @@
 }
 
 .databasesCollectionTitleInput:hover {
-	background: color-mix(in srgb, var(--bg-hover) 55%, transparent);
+	background: var(--bg-hover);
 }
 
 .databasesCollectionTitleInput:focus,
 .databasesCollectionTitleInput:focus-visible {
 	background: var(--bg-primary);
-	border-color: var(--border-default);
+	border-color: var(--border-focus);
+	box-shadow: none;
 }
 
 button.databasesCollectionSwitcher {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	gap: 6px;
+	width: 28px;
 	height: 28px;
 	min-height: 28px;
-	padding: 0 5px;
+	margin-left: -6px;
+	padding: 0;
 	border: 1px solid transparent;
-	border-radius: var(--database-radius-md);
+	border-radius: var(--radius-md);
 	background: transparent;
-	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-medium);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	line-height: 1.2;
 	cursor: pointer;
 	transition:
@@ -161,17 +209,13 @@ button.databasesCollectionSwitcher {
 	white-space: nowrap;
 }
 
-button.databasesCollectionSwitcher:hover {
+/* Like the breadcrumb beside it, the glyph has no box at rest; focus gets the hover fill
+   instead of the global outline ring, which read as a bordered tile after the menu closed. */
+button.databasesCollectionSwitcher:is(:hover, :focus-visible, [data-popup-open]) {
 	border-color: transparent;
-	background: color-mix(in srgb, var(--bg-hover) 78%, transparent);
+	outline: none;
+	background: var(--bg-hover);
 	color: var(--text-primary);
-}
-
-.databasesCollectionSwitcherLabel {
-	max-width: 160px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
 @media (max-width: 760px) {

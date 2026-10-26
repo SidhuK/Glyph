@@ -1,7 +1,8 @@
 {
-	"sectionTitle": "Seitenleiste",
+	"sectionTitle": "Navigation",
 	"sectionDescription": "Wähle sichtbare Navigationseinträge und ihre Reihenfolge.",
 	"resetToDefaults": "Standardlayout der Seitenleiste wiederherstellen",
+	"reset": "Zurücksetzen",
 	"resetError": "Das Standardlayout der Seitenleiste konnte nicht wiederhergestellt werden.",
 	"reorder": "{{label}} neu anordnen",
 	"showItem": "{{label}} in der Seitenleiste anzeigen",
@@ -10,13 +11,13 @@
 			"label": "Agent"
 		},
 		"newNoteAndCanvas": {
-			"label": "Neue Notiz und Zeichenfläche"
+			"label": "Neue Notiz"
 		},
 		"allNotes": {
 			"label": "Alle Notizen"
 		},
 		"databases": {
-			"label": "Sammlungen / Datenbanken"
+			"label": "Sammlungen"
 		},
 		"connections": {
 			"label": "Verbindungen"
@@ -25,7 +26,7 @@
 			"label": "Kalender"
 		},
 		"search": {
-			"label": "Suche / Schnell öffnen"
+			"label": "Suche"
 		},
 		"periodNotes": {
 			"label": "Tages-, Wochen-, Monats- und Quartalsnotizen"

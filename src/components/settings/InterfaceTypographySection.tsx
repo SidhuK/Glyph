@@ -49,7 +49,7 @@ export function FontSizeControl({
 }: FontSizeControlProps) {
 	return (
 		<SettingsRow label={label} htmlFor={id} description={description} searchId={searchId}>
-			<div className="flex w-full justify-end">
+			<div className="flex justify-end">
 				<Input
 					id={id}
 					type="number"

@@ -7,7 +7,7 @@
 		"sectionTitle": "Temas",
 		"sectionDescription": "Combina familias de temas claros y oscuros.",
 		"appearance": {
-			"label": "Apariencia",
+			"label": "Modo de color",
 			"description": "Sigue el sistema o fija Glyph en modo claro u oscuro.",
 			"ariaLabel": "Modo del tema"
 		},
@@ -43,7 +43,7 @@
 		"sectionDescription": "Importa una paleta JSON y úsala como cualquier tema incluido.",
 		"template": {
 			"label": "Plantilla de tema",
-			"description": "Parte de los colores claros y oscuros predeterminados de Glyph: edita los códigos hex y el nombre.",
+			"description": "Parte de los colores claros y oscuros predeterminados de Glyph, luego edita los códigos hex y el nombre.",
 			"copy": "Copiar JSON",
 			"save": "Guardar archivo"
 		},
@@ -61,7 +61,6 @@
 	},
 	"shape": {
 		"sectionTitle": "Forma",
-		"sectionDescription": "Elige el redondeo de paneles, botones y ventanas en toda la app.",
 		"corners": {
 			"label": "Esquinas",
 			"description": "Se aplica en todas partes: barras laterales, diálogos, campos y tarjetas.",
@@ -84,7 +83,6 @@
 	},
 	"layout": {
 		"sectionTitle": "Diseño",
-		"sectionDescription": "Elige cómo comparten el espacio de trabajo la navegación y las notas.",
 		"folioMode": {
 			"label": "Diseño del espacio de trabajo",
 			"description": "Elige cómo se organizan la navegación, la lista de notas y el editor.",
@@ -106,9 +104,12 @@
 			"ariaLabel": "Orden predeterminado de Folio"
 		},
 		"taskProgressRings": {
-			"label": "Anillos de progreso de tareas",
-			"description": "Muestra anillos de progreso de tareas junto a las notas en la barra lateral, Folio, Actividad y tableros de bases de datos.",
-			"ariaLabel": "Mostrar anillos de progreso de tareas"
+			"label": "Progreso de tareas",
+			"description": "Muestra las tareas completadas y totales junto a las notas en la barra lateral, Folio, Actividad y tableros de bases de datos.",
+			"ariaLabel": "Mostrar progreso de tareas"
 		}
+	},
+	"appIcon": {
+		"sectionTitle": "Icono de la app"
 	}
 }

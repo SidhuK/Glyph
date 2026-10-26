@@ -33,13 +33,18 @@
 	--font-mono: "JetBrains Mono", ui-monospace, monospace;
 
 	--text-base: 0.875rem;
-	--text-xs: calc(var(--text-base) * 0.9);
-	--text-sm: var(--text-base);
-	--text-md: calc(var(--text-base) * 1.1);
+	/* UI type scale: 11 / 12 / 13 / 14 / 16 / 20 / 28px at the default 14px base.
+	   --text-lg is left to Tailwind so shadcn dialog titles keep their size. */
+	--text-2xs: calc(var(--text-base) * 11 / 14);
+	--text-xs: calc(var(--text-base) * 12 / 14);
+	--text-sm: calc(var(--text-base) * 13 / 14);
+	--text-md: calc(var(--text-base) * 16 / 14);
+	--text-xl: calc(var(--text-base) * 20 / 14);
+	--text-3xl: calc(var(--text-base) * 28 / 14);
 	--editor-font-size: calc(var(--text-base) * 1.1);
 	--editor-inline-font-size: var(--editor-font-size);
 	--editor-raw-font-size: var(--editor-font-size);
-	--editor-h1-font-size: calc(var(--editor-font-size) * 1.6);
+	--editor-h1-font-size: calc(var(--editor-font-size) * 1.85);
 	--editor-h2-font-size: calc(var(--editor-font-size) * 1.3);
 	--editor-h3-font-size: calc(var(--editor-font-size) * 1.1);
 	--editor-h4-font-size: var(--editor-font-size);

@@ -22,7 +22,7 @@ export function AiApiKeySection({
 }: AiApiKeySectionProps) {
 	return (
 		<SettingsSection
-			title="API Key"
+			title="API key"
 			description="Stored locally in the secure secret store used by Glyph."
 			aside={
 				<div className={`settingsPill ${toneForSecretConfigured(secretConfigured)}`}>
@@ -31,6 +31,7 @@ export function AiApiKeySection({
 			}
 		>
 			<SettingsRow
+				searchId="ai-api-key"
 				label={secretConfigured ? "Update key" : "Set key"}
 				htmlFor="aiApiKeyInput"
 				description="Paste a provider key, save it locally, or clear the current stored secret."
@@ -40,16 +41,16 @@ export function AiApiKeySection({
 					<Input
 						id="aiApiKeyInput"
 						type="password"
-						placeholder="Paste key..."
+						placeholder="Paste key…"
 						value={apiKeyDraft}
 						onChange={(event) => onApiKeyDraftChange(event.target.value)}
 					/>
 					<div className="settingsActions">
-						<Button type="button" size="sm" onClick={() => void onSaveKey()}>
+						<Button type="button" size="sm" variant="outline" onClick={() => void onSaveKey()}>
 							Save
 						</Button>
 						{secretConfigured ? (
-							<Button type="button" variant="ghost" size="sm" onClick={() => void onClearKey()}>
+							<Button type="button" variant="outline" size="sm" onClick={() => void onClearKey()}>
 								Clear
 							</Button>
 						) : null}

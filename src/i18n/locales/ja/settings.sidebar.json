@@ -1,7 +1,8 @@
 {
-	"sectionTitle": "サイドバー",
+	"sectionTitle": "ナビゲーション",
 	"sectionDescription": "表示するナビゲーション項目と順序を選択します。",
 	"resetToDefaults": "サイドバーを既定の配置に戻す",
+	"reset": "リセット",
 	"resetError": "サイドバーを既定の配置に戻せませんでした。",
 	"reorder": "{{label}}の順序を変更",
 	"showItem": "サイドバーに{{label}}を表示",
@@ -10,13 +11,13 @@
 			"label": "エージェント"
 		},
 		"newNoteAndCanvas": {
-			"label": "新規ノートとキャンバス"
+			"label": "新規ノート"
 		},
 		"allNotes": {
 			"label": "すべてのノート"
 		},
 		"databases": {
-			"label": "コレクション / データベース"
+			"label": "コレクション"
 		},
 		"connections": {
 			"label": "接続"
@@ -25,7 +26,7 @@
 			"label": "カレンダー"
 		},
 		"search": {
-			"label": "検索 / クイックオープン"
+			"label": "検索"
 		},
 		"periodNotes": {
 			"label": "日次・週次・月次・四半期ノート"

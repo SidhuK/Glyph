@@ -11,7 +11,7 @@
 	padding-inline: calc(var(--space-2) + var(--task-depth, 0) * var(--task-indent-step))
 		var(--space-2);
 	border-radius: var(--radius-md);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	line-height: var(--tasks-line);
 	transition: background-color var(--transition-base);
 }
@@ -31,7 +31,7 @@
 			2
 	);
 	width: 1px;
-	background: color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: var(--border-light);
 	pointer-events: none;
 }
 
@@ -51,23 +51,31 @@
 	user-select: none;
 }
 
-/* Checkbox and tick mirror the editor task list, 25-node-note-content.css:894-938. */
+/* Checkbox and tick mirror the editor task list in 25-node-note-content.css. */
 .tasksCheckbox {
 	flex: 0 0 auto;
 	width: var(--task-checkbox-size);
 	height: var(--task-checkbox-size);
 	margin: 0;
 	padding: 0;
-	accent-color: var(--interactive-accent);
+	appearance: none;
+	border: 1.5px solid color-mix(in srgb, var(--text-tertiary) 80%, transparent);
+	border-radius: 4px;
+	background: transparent;
 	cursor: pointer;
 	transition:
-		opacity 180ms ease,
-		transform 180ms ease;
+		background-color 180ms ease,
+		border-color 180ms ease;
 }
 
+.tasksCheckbox:hover {
+	border-color: var(--text-secondary);
+}
+
+/* Done = the same box, filled, so both states share one silhouette. */
 .tasksCheckbox:checked {
-	opacity: 0;
-	transform: scale(0.85);
+	border-color: transparent;
+	background: color-mix(in srgb, var(--text-tertiary) 70%, transparent);
 }
 
 .tasksCheckboxWrap::after {
@@ -75,12 +83,12 @@
 	position: absolute;
 	top: 50%;
 	left: 50%;
-	width: 4px;
-	height: 8px;
+	width: 3.5px;
+	height: 7px;
 	margin-top: -5px;
-	margin-left: -3px;
-	border-right: 2px solid var(--interactive-accent);
-	border-bottom: 2px solid var(--interactive-accent);
+	margin-left: -2.5px;
+	border-right: 1.75px solid var(--bg-primary);
+	border-bottom: 1.75px solid var(--bg-primary);
 	pointer-events: none;
 	opacity: 0;
 	transform: rotate(45deg) scale(0.75);
@@ -142,6 +150,7 @@
 
 .tasksOpenButton:hover {
 	color: var(--text-primary);
+	background: var(--bg-active);
 }
 
 .tasksMatch {

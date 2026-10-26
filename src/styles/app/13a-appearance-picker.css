@@ -71,7 +71,7 @@
 
 .appearancePickerTitle {
 	color: var(--text-primary);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	font-weight: 600;
 }
 
@@ -90,30 +90,30 @@
 	flex: 0 0 auto;
 	display: flex;
 	gap: 2px;
-	padding: 2px;
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-hover) 70%, transparent);
 }
 
 .appearancePickerMode {
-	height: 30px;
+	height: 28px;
 	padding: 0 10px;
 	border: 0;
 	border-radius: var(--radius-md);
 	background: transparent;
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
 	font-weight: 500;
-	transition: color var(--transition-fast);
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
 	cursor: default;
 	outline: none;
 
 	&:hover {
-		color: var(--text-secondary);
+		background: var(--bg-hover);
+		color: var(--text-primary);
 	}
 
 	&[aria-pressed="true"] {
-		background: var(--bg-primary);
+		background: var(--bg-active);
 		color: var(--text-primary);
 	}
 
@@ -124,12 +124,12 @@
 }
 
 .appearancePickerDialog .commandPaletteInputWrapper {
-	height: 34px;
+	height: 28px;
 	flex: 1 1 auto;
 	min-width: 0;
 	gap: 8px;
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-hover) 70%, transparent);
+	border-radius: var(--radius-md);
+	background: var(--bg-hover);
 
 	& .commandPaletteInput {
 		font-size: var(--text-sm);
@@ -152,15 +152,9 @@
 	border-radius: 999px;
 	background: currentcolor;
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, black 12%, transparent);
-	transition:
-		box-shadow var(--transition-fast),
-		transform var(--transition-fast);
+	transition: box-shadow var(--transition-fast);
 	cursor: default;
 	outline: none;
-
-	&:hover {
-		transform: scale(1.1);
-	}
 
 	&[aria-pressed="true"] {
 		box-shadow:
@@ -205,9 +199,9 @@
 
 .appearancePickerCategoryLabel {
 	padding: 6px 4px;
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 	font-size: var(--text-xs);
-	font-weight: 500;
+	font-weight: 600;
 }
 
 .appearancePickerGrid {
@@ -227,9 +221,7 @@
 	border-radius: var(--radius-md);
 	background: transparent;
 	color: inherit;
-	transition:
-		background var(--transition-fast),
-		transform var(--transition-fast);
+	transition: background var(--transition-fast);
 	cursor: default;
 	outline: none;
 
@@ -237,13 +229,8 @@
 		background: var(--bg-hover);
 	}
 
-	&:active {
-		transform: scale(0.92);
-	}
-
 	&[aria-pressed="true"] {
-		background: color-mix(in srgb, currentcolor 14%, transparent);
-		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, currentcolor 45%, transparent);
+		background: var(--bg-active);
 	}
 
 	&:focus-visible {
@@ -305,7 +292,7 @@
 	}
 
 	&[aria-current="true"] {
-		background: var(--bg-hover);
+		background: var(--bg-active);
 		color: var(--text-primary);
 	}
 

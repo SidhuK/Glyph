@@ -15,7 +15,7 @@
 		"connections": "Graf",
 		"agent": "Agent",
 		"calendar": "Kalendarz",
-		"search": "Szukaj / Szybkie otwieranie",
+		"search": "Szukaj",
 		"searchPlaceholder": "Szukaj",
 		"dailyNote": "Notatka dzienna",
 		"weeklyNote": "Notatka tygodniowa",
@@ -31,11 +31,12 @@
 		"sortNotes": "Sortuj",
 		"sort": "Sortuj",
 		"expandAllFolders": "Rozwiń wszystkie foldery",
-		"collapseAllFolders": "Zwiń wszystkie foldery"
+		"collapseAllFolders": "Zwiń wszystkie foldery",
+		"fileTreeOptions": "Opcje drzewa plików"
 	},
 	"sort": {
-		"nameAsc": "Nazwa A-Z",
-		"nameDesc": "Nazwa Z-A",
+		"nameAsc": "Nazwa A–Z",
+		"nameDesc": "Nazwa Z–A",
 		"modifiedNewest": "Zmodyfikowane: najnowsze",
 		"modifiedOldest": "Zmodyfikowane: najstarsze",
 		"createdNewest": "Utworzone: najnowsze",
@@ -99,8 +100,7 @@
 		"boardCard": {
 			"openNote": "Otwórz notatkę",
 			"moveTo": "Przenieś do {{lane}}",
-			"openHint": "Kliknij dwukrotnie, aby otworzyć notatkę",
-			"updated": "Zaktualizowano {{date}}"
+			"openHint": "Kliknij dwukrotnie, aby otworzyć notatkę"
 		},
 		"switch": "Przełącz kolekcję",
 		"select": "Wybierz kolekcję",
@@ -118,23 +118,33 @@
 		},
 		"viewOptions": {
 			"reset": "Resetuj",
-			"presets": "Gotowe ustawienia"
+			"presets": "Gotowe ustawienia",
+			"display": "Widok",
+			"grouping": "Grupowanie",
+			"ordering": "Kolejność",
+			"filter": "Filtr",
+			"none": "Brak",
+			"filtersApplied": "Zastosowano: {{count}}",
+			"columns": "Kolumny",
+			"cardFields": "Pola karty",
+			"showAll": "Pokaż wszystko",
+			"groupedBy": "Pogrupowano według tego pola",
+			"cardFieldLabels": {
+				"date": "Data",
+				"task_progress": "Postęp zadań",
+				"status": "Status",
+				"priority": "Priorytet",
+				"tags": "Tagi"
+			}
 		},
 		"groupBy": {
-			"label": "Grupuj według",
-			"title": "Grupowanie według {{name}}",
-			"choose": "Wybierz pole do grupowania",
 			"none": "Bez grupowania",
 			"multiLane": "{{name}} (wiele kolumn)",
 			"boardHint": "Dodaj pole statusu, tagu lub pola wyboru, aby utworzyć kolumny"
 		},
 		"sort": {
-			"title": "Sortuj według",
-			"presets": "Gotowe sortowania",
-			"replaceWithPreset": "Zastąp bieżące sortowanie: {{name}}",
 			"field": "Pole sortowania",
 			"direction": "Kierunek sortowania",
-			"add": "Dodaj sortowanie",
 			"directions": {
 				"date": {
 					"asc": "Najstarsze - Najnowsze",
@@ -155,7 +165,6 @@
 			}
 		},
 		"filter": {
-			"title": "Filtruj według",
 			"hint": "Zawęź ten widok według wartości kolumn. Aby przeszukać tekst notatek, użyj pola wyszukiwania na pasku narzędzi.",
 			"presets": "Gotowe filtry",
 			"unsupportedOperator": "Filtr {{index}} używa nieobsługiwanego operatora. Wybierz obsługiwany operator, aby przywrócić wyniki.",
@@ -221,12 +230,33 @@
 			"emptyTitle": "Dodaj pole, aby utworzyć kolumny tablicy",
 			"emptyText": "Widok tablicy grupuje notatki w kolumny. Dodaj do notatek pole statusu, priorytetu, pola wyboru, tagu lub podobne, a potem wybierz je na pasku narzędzi powyżej.",
 			"openViewSettings": "Otwórz ustawienia widoku",
+			"noPriority": "Brak priorytetu",
 			"laneEmpty": {
 				"archived": "Tu trafiają zarchiwizowane notatki",
 				"done": "Tu trafiają ukończone notatki",
 				"unassigned": "Tu pojawiają się notatki bez wartości",
 				"default": "Upuść tu notatki lub dodaj nową poniżej"
 			}
+		},
+		"changeStatus": "Zmień status",
+		"statusLabel": "Status",
+		"cell": {
+			"addOrChooseTag": "Dodaj lub wybierz tag",
+			"addOrChooseValue": "Dodaj lub wybierz wartość",
+			"suggestedTags": "Sugerowane tagi",
+			"suggestedValues": "Sugerowane wartości",
+			"changePriority": "Zmień priorytet",
+			"editTagsHint": "Kliknij dwukrotnie, aby edytować tagi",
+			"editHint": "Kliknij dwukrotnie, aby edytować",
+			"renameNoteHint": "Kliknij dwukrotnie, aby zmienić nazwę notatki"
+		},
+		"tagPicker": {
+			"source": "Źródło tagów",
+			"selected": "Wybrany tag",
+			"open": "Otwórz wybór tagu",
+			"placeholder": "Wybierz tag",
+			"empty": "Nie znaleziono pasujących tagów.",
+			"search": "Szukaj tagów"
 		}
 	},
 	"tags": {
@@ -363,8 +393,6 @@
 		"noResults": "Brak wyników",
 		"resultsLabel": "Wyniki palety",
 		"searchEverything": "Szukaj notatek, poleceń, ustawień i innych elementów…",
-		"on": "Włączone",
-		"off": "Wyłączone",
 		"notSet": "Nie ustawiono",
 		"spaceRequired": "Otwórz przestrzeń, aby użyć tego ustawienia",
 		"settingUpdated": "Zaktualizowano ustawienie",
@@ -384,6 +412,12 @@
 		"noTemplates": "W folderze szablonów nie znaleziono szablonów Markdown.",
 		"templateSelectionInvalid": "Wybierz szablon Markdown ze skonfigurowanego folderu szablonów.",
 		"templateSelectionFailed": "Nie udało się otworzyć selektora szablonów",
+		"moreMatches": "+{{count}} więcej",
+		"footer": {
+			"navigate": "Nawiguj",
+			"open": "Otwórz",
+			"close": "Zamknij"
+		},
 		"groups": {
 			"command": "Polecenia",
 			"setting": "Ustawienia",
@@ -424,7 +458,12 @@
 		"collections": "Kolekcje",
 		"pinTab": "Przypnij",
 		"unpinTab": "Odepnij",
-		"unpinNamed": "Odepnij {{label}}"
+		"unpinNamed": "Odepnij {{label}}",
+		"goBack": "Wstecz",
+		"goForward": "Dalej",
+		"closeNamed": "Zamknij {{label}}",
+		"renameNamed": "Zmień nazwę {{name}}",
+		"renameCurrent": "Zmień nazwę bieżącego pliku"
 	},
 	"workspace": {
 		"openSpace": "Otwórz przestrzeń",
@@ -589,5 +628,8 @@
 				"remote_wins": "Wygrywa zdalna"
 			}
 		}
+	},
+	"activity": {
+		"noPreviewYet": "Brak podglądu"
 	}
 }

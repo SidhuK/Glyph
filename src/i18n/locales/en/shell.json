@@ -7,27 +7,27 @@
 		"collapse": "Collapse sidebar",
 		"expand": "Expand sidebar",
 		"devBadge": "DEV",
-		"newNote": "New Note",
-		"newCanvas": "New Canvas",
+		"newNote": "New note",
+		"newCanvas": "New canvas",
 		"moreCreateOptions": "More create options",
-		"fromTemplate": "From Template",
+		"fromTemplate": "From template",
 		"createSection": "Create",
-		"periodicNotesSection": "Periodic Notes",
+		"periodicNotesSection": "Periodic notes",
 		"newNoteInFolder": "Create new note in {{folder}}",
 		"newNoteInRoot": "Create new note in the workspace root",
 		"pinned": "Pinned",
-		"allNotes": "All Notes",
+		"allNotes": "All notes",
 		"collections": "Collections",
 		"connections": "Connections",
 		"agent": "Agent",
 		"calendar": "Calendar",
-		"search": "Search / Quick Open",
+		"search": "Search",
 		"searchPlaceholder": "Search",
-		"dailyNote": "Daily Note",
-		"weeklyNote": "Weekly Note",
-		"monthlyNote": "Monthly Note",
-		"quarterlyNote": "Quarterly Note",
-		"quickNote": "Quick Note",
+		"dailyNote": "Daily note",
+		"weeklyNote": "Weekly note",
+		"monthlyNote": "Monthly note",
+		"quarterlyNote": "Quarterly note",
+		"quickNote": "Quick note",
 		"templates": "Templates",
 		"gitSync": "Git Sync",
 		"files": "Files",
@@ -41,13 +41,14 @@
 		"sort": "Sort",
 		"expandAllFolders": "Expand all folders",
 		"collapseAllFolders": "Collapse all folders",
+		"fileTreeOptions": "File tree options",
 		"inbox": "Inbox",
 		"archive": "Archive",
 		"tasks": "Tasks"
 	},
 	"sort": {
-		"nameAsc": "Name A-Z",
-		"nameDesc": "Name Z-A",
+		"nameAsc": "Name A–Z",
+		"nameDesc": "Name Z–A",
 		"modifiedNewest": "Modified newest",
 		"modifiedOldest": "Modified oldest",
 		"createdNewest": "Created newest",
@@ -79,7 +80,7 @@
 		"delete": "Delete collection",
 		"options": "Collection options",
 		"pin": "Pin collection",
-		"searchView": "Search Collection",
+		"searchView": "Search collection",
 		"unpin": "Unpin collection",
 		"unpinNamed": "Unpin {{name}}",
 		"unpinFailed": "Could not unpin collection",
@@ -107,8 +108,7 @@
 		"boardCard": {
 			"openNote": "Open note",
 			"moveTo": "Move to {{lane}}",
-			"openHint": "Double-click to open note",
-			"updated": "Updated {{date}}"
+			"openHint": "Double-click to open note"
 		},
 		"switch": "Switch collection",
 		"select": "Select collection",
@@ -126,23 +126,33 @@
 		},
 		"viewOptions": {
 			"reset": "Reset",
-			"presets": "Presets"
+			"presets": "Presets",
+			"display": "Display",
+			"grouping": "Grouping",
+			"ordering": "Ordering",
+			"filter": "Filter",
+			"none": "None",
+			"filtersApplied": "{{count}} applied",
+			"columns": "Columns",
+			"cardFields": "Card fields",
+			"showAll": "Show all",
+			"groupedBy": "Grouped by this field",
+			"cardFieldLabels": {
+				"date": "Date",
+				"task_progress": "Task progress",
+				"status": "Status",
+				"priority": "Priority",
+				"tags": "Tags"
+			}
 		},
 		"groupBy": {
-			"label": "Grouped by",
-			"title": "Grouping by {{name}}",
-			"choose": "Choose a field to group by",
 			"none": "No grouping",
 			"multiLane": "{{name}} (multi-lane)",
 			"boardHint": "Add a status, tag, or checkbox field to create lanes"
 		},
 		"sort": {
-			"title": "Sort by",
-			"presets": "Sort presets",
-			"replaceWithPreset": "Replace current sort with {{name}}",
 			"field": "Sort field",
 			"direction": "Sort direction",
-			"add": "Add sort",
 			"directions": {
 				"date": {
 					"asc": "Oldest - Newest",
@@ -163,7 +173,6 @@
 			}
 		},
 		"filter": {
-			"title": "Filter by",
 			"hint": "Narrow this view by column values. To search note text, use the search box in the toolbar.",
 			"presets": "Filter presets",
 			"unsupportedOperator": "Filter {{index}} uses an unsupported operator. Choose a supported operator to restore results.",
@@ -174,7 +183,7 @@
 			"fieldAria": "Filter {{index}} field",
 			"operatorAria": "Filter {{index}} operator",
 			"dateRangeAria": "Filter {{index}} date range",
-			"tagLabel": "Filter Tag",
+			"tagLabel": "Filter tag",
 			"tagDescription": "Choose a tag for this filter.",
 			"tagPlaceholder": "Choose a tag",
 			"valuePlaceholder": "Value",
@@ -229,28 +238,49 @@
 			"emptyTitle": "Add a field to create board lanes",
 			"emptyText": "Board view groups notes into lanes. Add a status, priority, checkbox, tag, or similar field to your notes, then pick it in the toolbar above.",
 			"openViewSettings": "Open view settings",
+			"noPriority": "No priority",
 			"laneEmpty": {
 				"archived": "Archived notes go here",
 				"done": "Done notes land here",
 				"unassigned": "Notes without a value appear here",
 				"default": "Drop notes here or add one below"
 			}
+		},
+		"changeStatus": "Change status",
+		"statusLabel": "Status",
+		"cell": {
+			"addOrChooseTag": "Add or choose a tag",
+			"addOrChooseValue": "Add or choose a value",
+			"suggestedTags": "Suggested tags",
+			"suggestedValues": "Suggested values",
+			"changePriority": "Change priority",
+			"editTagsHint": "Double-click to edit tags",
+			"editHint": "Double-click to edit",
+			"renameNoteHint": "Double-click to rename note"
+		},
+		"tagPicker": {
+			"source": "Tag source",
+			"selected": "Selected tag",
+			"open": "Open tag picker",
+			"placeholder": "Choose a tag",
+			"empty": "No matching tags found.",
+			"search": "Search tags"
 		}
 	},
 	"tags": {
 		"header": "Tags",
 		"people": "People",
 		"refactor": {
-			"renameMenu": "Rename Tag…",
-			"mergeMenu": "Merge Into…",
-			"deleteMenu": "Delete Tag…",
+			"renameMenu": "Rename tag…",
+			"mergeMenu": "Merge into…",
+			"deleteMenu": "Delete tag…",
 			"renameTitle": "Rename #{{tag}}",
 			"mergeTitle": "Merge #{{tag}} into another tag",
 			"renamePrompt": "Enter a new name. Nested tags under #{{tag}} move with it.",
 			"mergePrompt": "Enter an existing tag. Notes that already have both keep only one.",
-			"renamePicker": "Choose a Tag to Rename",
-			"mergePicker": "Choose a Tag to Merge",
-			"deletePicker": "Choose a Tag to Delete",
+			"renamePicker": "Choose a tag to rename",
+			"mergePicker": "Choose a tag to merge",
+			"deletePicker": "Choose a tag to delete",
 			"continue": "Continue",
 			"cancel": "Cancel",
 			"invalid": "\"{{name}}\" is not a valid tag name.",
@@ -290,31 +320,31 @@
 	},
 	"fileTree": {
 		"open": "Open",
-		"openInNewTab": "Open in New Tab",
-		"openInNewWindow": "Open in New Window",
-		"showInFolder": "Show in Folder",
+		"openInNewTab": "Open in new tab",
+		"openInNewWindow": "Open in new window",
+		"showInFolder": "Show in folder",
 		"showInFinder": "Show in Finder",
-		"copyRelativePath": "Copy Relative Path",
-		"copyAbsolutePath": "Copy Absolute Path",
+		"copyRelativePath": "Copy relative path",
+		"copyAbsolutePath": "Copy absolute path",
 		"rename": "Rename",
 		"duplicateFile": "Duplicate file",
 		"pinFile": "Pin file",
 		"unpinFile": "Unpin file",
-		"iconAndColor": "Icon & Color...",
+		"iconAndColor": "Icon & color…",
 		"appearance": {
 			"title": "Choose file appearance",
 			"updateFailed": "Could not update file appearance"
 		},
-		"addFolderTab": "Add to Quick Folders",
-		"removeFolderTab": "Remove from Quick Folders",
+		"addFolderTab": "Add to quick folders",
+		"removeFolderTab": "Remove from quick folders",
 		"addFile": "Add file",
 		"createFromTemplate": "Create from template",
 		"addFolder": "Add folder",
-		"importFilesHere": "Import Files Here…",
-		"importFolderHere": "Import Folder Here…",
+		"importFilesHere": "Import files here…",
+		"importFolderHere": "Import folder here…",
 		"deleteFile": "Delete file",
 		"deleteFolder": "Delete folder",
-		"copyDeeplink": "Copy Deeplink",
+		"copyDeeplink": "Copy deeplink",
 		"deeplinkCopied": "Copied deeplink.",
 		"deeplinkCopyFailed": "Could not copy deeplink"
 	},
@@ -326,16 +356,16 @@
 		"noteNotMarkdown": "That link does not point to a Markdown note."
 	},
 	"import": {
-		"filesTitle": "Import Files",
-		"folderTitle": "Import Folder",
+		"filesTitle": "Import files",
+		"folderTitle": "Import folder",
 		"markdownFilter": "Markdown files",
-		"conflictTitle": "Items Already Exist",
+		"conflictTitle": "Items already exist",
 		"conflictMessage_one": "1 item already exists in this folder. Apply the selected action to this conflict.",
 		"conflictMessage_other": "{{count}} items already exist in this folder. Apply the selected action to all conflicts.",
-		"keepBoth": "Keep Both",
+		"keepBoth": "Keep both",
 		"replace": "Replace",
 		"skip": "Skip",
-		"errorTitle": "Import Failed",
+		"errorTitle": "Import failed",
 		"success_one": "Imported 1 file.",
 		"success_other": "Imported {{count}} files.",
 		"noneImported": "No files were imported."
@@ -345,7 +375,7 @@
 		"openCommandPalette": "Open command palette"
 	},
 	"commandPalette": {
-		"title": "Command Palette",
+		"title": "Command palette",
 		"notePreview": "Note preview",
 		"sectionGeneral": "General",
 		"saveSearch": "Save and pin search",
@@ -356,8 +386,6 @@
 		"noResults": "No results",
 		"resultsLabel": "Palette results",
 		"searchEverything": "Search notes, commands, settings, and more…",
-		"on": "On",
-		"off": "Off",
 		"notSet": "Not set",
 		"spaceRequired": "Open a space to use this setting",
 		"settingUpdated": "Setting updated",
@@ -377,6 +405,12 @@
 		"noTemplates": "No Markdown templates were found in the template folder.",
 		"templateSelectionInvalid": "Choose a Markdown template from the configured template folder.",
 		"templateSelectionFailed": "Could not open the template picker",
+		"moreMatches": "+{{count}} more",
+		"footer": {
+			"navigate": "Navigate",
+			"open": "Open",
+			"close": "Close"
+		},
 		"groups": {
 			"command": "Commands",
 			"setting": "Settings",
@@ -407,21 +441,26 @@
 		"dailyNotesNotConfigured": "Set a daily notes folder in Settings to open notes from the calendar",
 		"openFailed": "Could not open note",
 		"menu": {
-			"openDailyNote": "Open Daily Note",
-			"createDailyNote": "Create Daily Note",
-			"openWeeklyNote": "Open Weekly Note"
+			"openDailyNote": "Open daily note",
+			"createDailyNote": "Create daily note",
+			"openWeeklyNote": "Open weekly note"
 		}
 	},
 	"tabs": {
-		"allNotes": "All Notes",
+		"allNotes": "All notes",
 		"collections": "Collections",
-		"pinTab": "Pin Active Tab",
-		"unpinTab": "Unpin Active Tab",
+		"pinTab": "Pin active tab",
+		"unpinTab": "Unpin active tab",
 		"unpinNamed": "Unpin {{label}}",
-		"newTab": "New Tab",
+		"newTab": "New tab",
 		"untitled": "Untitled",
 		"openBlankTab": "Open blank tab",
-		"showAllTabs": "Show all tabs"
+		"showAllTabs": "Show all tabs",
+		"goBack": "Go back",
+		"goForward": "Go forward",
+		"closeNamed": "Close {{label}}",
+		"renameNamed": "Rename {{name}}",
+		"renameCurrent": "Rename current file"
 	},
 	"breadcrumbs": {
 		"label": "Current file path",
@@ -433,7 +472,7 @@
 		"showHidden": "Show hidden path items",
 		"hiddenItems_one": "1 hidden path item",
 		"hiddenItems_other": "{{count}} hidden path items",
-		"revealInFileTree": "Reveal in File Tree",
+		"revealInFileTree": "Reveal in file tree",
 		"showInFinderFailed": "Could not show file in Finder"
 	},
 	"workspace": {
@@ -443,8 +482,8 @@
 	},
 	"documentExport": {
 		"untitled": "Untitled",
-		"docxDialogTitle": "Export Note as Word",
-		"docxFormat": "Word Document",
+		"docxDialogTitle": "Export note as Word",
+		"docxFormat": "Word document",
 		"docxComplete": "Exported note as Word.",
 		"pdfFailed": "Could not export the note as PDF",
 		"docxFailed": "Could not export the note as Word",
@@ -455,7 +494,7 @@
 		"commitDescription": "Optionally add a message to the local commit created by this manual sync.",
 		"commitMessagePlaceholder": "Optional. Defaults to Glyph sync",
 		"cancel": "Cancel",
-		"sync": "Sync Now",
+		"sync": "Sync now",
 		"manualCommitMessages": "Manual commit messages",
 		"manualCommitMessagesDescription": "Ask for a message before each manual sync. When off, Glyph uses \"Glyph sync\".",
 		"interval": {
@@ -466,7 +505,7 @@
 			"minutes_other": "{{count}} min"
 		},
 		"conflict": {
-			"sectionTitle": "Conflict Resolution",
+			"sectionTitle": "Conflict resolution",
 			"sectionDescription": "Choose which side Glyph should favor when local and remote edits conflict.",
 			"label": "Policy",
 			"description": "Glyph resolves conflicts automatically.",
@@ -509,11 +548,11 @@
 		"legendCurrent": "Selected note",
 		"legendLink": "Note link",
 		"legendTagShare": "Shares tag",
-		"localTitle": "Connected Notes",
+		"localTitle": "Connected notes",
 		"closeAria": "Close connections",
 		"localGraphAria": "Local connections",
-		"searchPlaceholder": "Search Connections",
-		"searchAria": "Search Connections",
+		"searchPlaceholder": "Search connections",
+		"searchAria": "Search connections",
 		"optionsAria": "Graph options",
 		"display": "Appearance",
 		"nodeSize": "Note size",
@@ -523,7 +562,7 @@
 		"labelZoomThreshold": "Title visibility",
 		"filters": "Filters",
 		"hideOrphans": "Hide unconnected notes",
-		"minConnections": "Min. Connections",
+		"minConnections": "Min. connections",
 		"resetDefaults": "Reset to defaults",
 		"largeGraphTitle": "Large connections graph",
 		"largeGraphBody": "This space contains {{count}} notes. Building the full connections graph may take a while and make Glyph temporarily less responsive.",
@@ -536,10 +575,10 @@
 	},
 	"spaceSwitcher": {
 		"label": "Current space: {{name}}",
-		"openSpace": "Open Space…",
-		"createSpace": "Create Space…",
-		"changeIcon": "Change Icon…",
-		"closeSpace": "Close Space",
+		"openSpace": "Open space…",
+		"createSpace": "Create space…",
+		"changeIcon": "Change icon…",
+		"closeSpace": "Close space",
 		"chooseIcon": "Choose a space icon",
 		"actionFailed": "Could not complete the space action"
 	},
@@ -594,8 +633,8 @@
 		"pastYear": "Past year",
 		"previousPeriod": "Previous year",
 		"nextPeriod": "Next year",
-		"notesCount_one": "{{count}} note",
-		"notesCount_other": "{{count}} notes",
+		"notesCount_one": "{{count}} note created or edited",
+		"notesCount_other": "{{count}} notes created or edited",
 		"activeDays_one": "{{count}} active day",
 		"activeDays_other": "{{count}} active days",
 		"noActivityInPeriod": "No notes created or edited in this period",
@@ -611,12 +650,13 @@
 		"empty": "No activity yet. Create or edit a note to start the timeline.",
 		"loadError": "Could not load activity: {{message}}",
 		"loadOlder": "Load older notes",
-		"loadingOlder": "Loading…"
+		"loadingOlder": "Loading…",
+		"noPreviewYet": "No preview yet"
 	},
 	"noteCollections": {
 		"loading": "Loading notes…",
 		"noFiles": "No files found.",
-		"enableArchive": "Enable Archive in Space settings",
+		"enableArchive": "Enable archive in Space settings",
 		"configureInbox": "Set up Inbox",
 		"archive": "Archive",
 		"unarchive": "Unarchive",
@@ -668,11 +708,11 @@
 			"science": "Science"
 		},
 		"emojiGroups": {
-			"smileys_emotion": "Smileys & Emotion",
-			"people_body": "People & Body",
-			"animals_nature": "Animals & Nature",
-			"food_drink": "Food & Drink",
-			"travel_places": "Travel & Places",
+			"smileys_emotion": "Smileys & emotion",
+			"people_body": "People & body",
+			"animals_nature": "Animals & nature",
+			"food_drink": "Food & drink",
+			"travel_places": "Travel & places",
 			"activities": "Activities",
 			"objects": "Objects",
 			"symbols": "Symbols",
@@ -680,17 +720,17 @@
 		}
 	},
 	"quickSearch": {
-		"title": "Quick Search",
+		"title": "Quick search",
 		"placeholder": "Search notes, tags, and collections…",
 		"noSpace": "Open a space in Glyph to search it.",
 		"openFailed": "Could not open in Glyph: {{message}}",
-		"hideFailed": "Could not close Quick Search: {{message}}"
+		"hideFailed": "Could not close quick search: {{message}}"
 	},
 	"sidebarCalendar": {
 		"menu": {
-			"showWeekStrip": "Show Week Strip",
-			"showMonth": "Show Full Month",
-			"hide": "Hide Calendar from Sidebar"
+			"showWeekStrip": "Show week strip",
+			"showMonth": "Show full month",
+			"hide": "Hide calendar from sidebar"
 		},
 		"updateFailed": "Could not update calendar settings",
 		"collapse": "Collapse calendar",

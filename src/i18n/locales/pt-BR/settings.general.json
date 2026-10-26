@@ -7,7 +7,10 @@
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Buscar configurações",
 		"searchAriaLabel": "Buscar configurações",
-		"clearSearchAriaLabel": "Limpar busca de configurações"
+		"clearSearchAriaLabel": "Limpar busca de configurações",
+		"searchEmpty": "Nenhuma configuração correspondente",
+		"sendFeedback": "Enviar feedback",
+		"buyLicense": "Comprar licença oficial"
 	},
 	"about": {
 		"developer": {
@@ -16,19 +19,72 @@
 			"bio": "Durante o dia, Karat é cientista biomédico e pesquisador. Sua pesquisa o levou a lugares como a Texas A&M University e a University of Vermont. Cria software pelo prazer de resolver os próprios problemas, e o Glyph é uma dessas ferramentas.",
 			"github": "GitHub",
 			"twitter": "X / Twitter"
+		},
+		"tagline": {
+			"first": "Seus pensamentos merecem um lar,",
+			"second": "não um servidor."
+		},
+		"links": {
+			"ariaLabel": "Links do Glyph",
+			"website": "Site",
+			"terms": "Termos",
+			"privacy": "Privacidade"
+		},
+		"errors": {
+			"loadInfoFailed": "Não foi possível carregar as informações do app.",
+			"checkFailed": "Não foi possível verificar atualizações.",
+			"saveChannelFailed": "Não foi possível salvar o canal de versões."
+		},
+		"updates": {
+			"sectionTitle": "Atualizações",
+			"descriptionLoading": "Verificando se esta versão pode usar atualizações automáticas.",
+			"descriptionUnknown": "O Glyph não conseguiu determinar se esta versão pode usar atualizações automáticas.",
+			"descriptionAuto": "Verifique novas versões e instale-as sem sair do Glyph.",
+			"descriptionManual": "Versões da comunidade são atualizadas manualmente.",
+			"upToDate": "Você já está na versão mais recente.",
+			"ready": "A v{{version}} foi baixada e está pronta. Clique no botão de atualização para instalá-la.",
+			"licenseStatus": {
+				"label": "Status da licença",
+				"description": "O Glyph não conseguiu verificar o status da licença nesta janela, então as atualizações estão indisponíveis no momento.",
+				"unknown": "Status da licença desconhecido"
+			},
+			"appUpdates": {
+				"label": "Atualizações do app",
+				"description": "Verifica na hora e baixa em segundo plano a versão publicada mais recente. A instalação só acontece quando você escolher.",
+				"check": "Verificar atualizações",
+				"checking": "Verificando…",
+				"install": "Instalar atualização",
+				"installVersion": "Instalar {{version}}"
+			},
+			"alpha": {
+				"label": "Versões alfa",
+				"description": "Tenha acesso antecipado às versões alfa. Elas podem ser instáveis, então ative apenas se estiver confortável testando versões inacabadas."
+			},
+			"communityBuild": {
+				"label": "Versão da comunidade",
+				"description": "Você está usando a versão da comunidade e de código aberto do Glyph. Compre uma licença oficial para apoiar o desenvolvimento do Glyph e receber as atualizações automaticamente."
+			},
+			"status": {
+				"label": "Status",
+				"description": "Atividade mais recente do atualizador nesta janela."
+			},
+			"changelog": {
+				"label": "Registro de alterações",
+				"description": "Abra no navegador o registro de alterações publicado do Glyph.",
+				"view": "Ver registro de alterações"
+			}
 		}
 	},
 	"language": {
-		"sectionTitle": "Idioma",
-		"sectionDescription": "Escolha o idioma usado no Glyph.",
 		"label": "Idioma",
 		"description": "Aplica-se imediatamente a menus, configurações e navegação.",
 		"ariaLabel": "Idioma",
 		"communityNotice": "As traduções são contribuições da comunidade e podem estar incompletas. Dúvidas ou melhorias? <discord>Entre no Discord</discord>."
 	},
+	"region": {
+		"sectionTitle": "Idioma e região"
+	},
 	"dateTime": {
-		"sectionTitle": "Data e hora",
-		"sectionDescription": "Escolha como as datas completas aparecem no Glyph.",
 		"dateFormat": {
 			"label": "Formato de data",
 			"description": "Aplica-se imediatamente às datas completas em notas, metadados, bancos de dados e histórico.",
@@ -44,7 +100,7 @@
 		}
 	},
 	"experimental": {
-		"sectionTitle": "Experimental",
+		"sectionTitle": "Recursos",
 		"sectionDescription": "Recursos experimentais ainda incompletos. Uma versão posterior do Glyph pode alterá-los ou removê-los.",
 		"noteSidePeek": {
 			"label": "Peek de nota",
@@ -53,8 +109,7 @@
 		}
 	},
 	"editor": {
-		"sectionTitle": "Editor",
-		"sectionDescription": "Controles do comportamento de edição e da estrutura das notas no Glyph.",
+		"sectionTitle": "Edição",
 		"defaultEditorMode": {
 			"label": "Modo de editor padrão",
 			"description": "Como as notas abrem por padrão: Rico para editar, Pré-visualização para somente leitura ou Bruto para Markdown puro.",
@@ -87,7 +142,7 @@
 		},
 		"colorfulHeadings": {
 			"label": "Títulos coloridos",
-			"description": "Usar uma paleta de cores selecionada para H1-H6 ao editar notas.",
+			"description": "Usar uma paleta de cores selecionada para H1–H6 ao editar notas.",
 			"ariaLabel": "Títulos coloridos",
 			"palette": {
 				"label": "Paleta dos títulos",
@@ -130,7 +185,6 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Árvore de arquivos",
-		"sectionDescription": "Configure a árvore de arquivos da barra lateral.",
 		"folderCounts": {
 			"label": "Mostrar contagem de arquivos por pasta",
 			"description": "Mostrar o total recursivo de arquivos no final de cada linha de pasta na árvore.",
@@ -168,7 +222,6 @@
 	},
 	"editorPresentation": {
 		"sectionTitle": "Apresentação do editor",
-		"sectionDescription": "Escolha como as notas aparecem enquanto você as edita.",
 		"beautifulTags": {
 			"label": "Beautiful Tags",
 			"description": "Ativar a apresentação experimental Beautiful Tags para tags.",
@@ -197,5 +250,69 @@
 			"found_one": "{{count}} modelo encontrado",
 			"found_other": "{{count}} modelos encontrados"
 		}
+	},
+	"license": {
+		"sectionTitle": "Licença",
+		"status": {
+			"licensed": "Licenciado",
+			"trialActive": "Teste ativo",
+			"trialExpired": "Teste expirado",
+			"communityBuild": "Versão da comunidade"
+		},
+		"trialStatus": {
+			"label": "Status do teste",
+			"description": "Tempo restante do teste atual neste dispositivo."
+		},
+		"activated": "Ativada",
+		"licenseKey": "Chave de licença",
+		"storedLocally": "Salva localmente",
+		"officialBuild": {
+			"label": "Versão oficial",
+			"description": "Obrigado por baixar e compilar o Glyph por conta própria. Versões da comunidade não incluem atualizações automáticas. Para obter a versão mais recente, baixe o código-fonte de novo e recompile, ou adquira a versão oficial licenciada para apoiar o Glyph e liberar as atualizações automáticas."
+		},
+		"buyOfficial": "Comprar licença oficial",
+		"activate": {
+			"label": "Ativar o Glyph",
+			"description": "Digite sua chave de licença para liberar o Glyph permanentemente neste dispositivo.",
+			"action": "Ativar",
+			"verifying": "Verificando…",
+			"buy": "Comprar"
+		},
+		"help": {
+			"label": "Ajuda",
+			"description": "Dúvidas sobre licenças, chaves perdidas ou problemas na compra.",
+			"openSupport": "Abrir suporte",
+			"removeActivation": "Remover ativação local"
+		},
+		"errors": {
+			"keyRequired": "Digite uma chave de licença.",
+			"activateFailed": "Não foi possível ativar a licença.",
+			"removeFailed": "Não foi possível remover a ativação local."
+		},
+		"messages": {
+			"activated": "Licença ativada.",
+			"removed": "Ativação local removida."
+		}
+	},
+	"shortcuts": {
+		"searchPlaceholder": "Buscar ações, categorias ou atalhos",
+		"pressShortcut": "Pressione um atalho…",
+		"recordHint": "Gravar atalho",
+		"record": "Alterar o atalho de {{action}}",
+		"remove": "Remover o atalho de {{action}}",
+		"removeTitle": "Remover atalho",
+		"reset": "Redefinir o atalho de {{action}}",
+		"resetTitle": "Restaurar padrão",
+		"errors": {
+			"removeFailed": "Não foi possível remover o atalho.",
+			"resetFailed": "Não foi possível redefinir o atalho.",
+			"invalid": "Atalho inválido.",
+			"saveFailed": "Não foi possível salvar o atalho.",
+			"conflict": "{{shortcut}} já é usado por {{action}}."
+		}
+	},
+	"folderPicker": {
+		"clear": "Limpar",
+		"reset": "Redefinir"
 	}
 }

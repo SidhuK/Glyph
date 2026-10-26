@@ -7,26 +7,22 @@
 	width: 32px;
 	height: 32px;
 	border-radius: var(--radius-full);
-	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
+	border: 0;
+	background: var(--bg-primary);
 	color: var(--text-secondary);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	box-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 10%, transparent);
-	transition:
-		border-color var(--transition-fast),
-		color var(--transition-fast),
-		box-shadow var(--transition-fast);
+	box-shadow:
+		0 0 0 0.5px var(--border-strong),
+		0 2px 6px rgb(0 0 0 / 5%),
+		0 10px 28px rgb(0 0 0 / 7%);
+	transition: color var(--transition-fast);
 }
 
 .aiScrollFab:hover {
-	border-color: var(--border-default);
 	color: var(--text-primary);
-	box-shadow: 0 4px 12px color-mix(in srgb, var(--text-primary) 14%, transparent);
 }
 
 /* ── CODE BLOCK ENHANCEMENTS ── */
@@ -41,37 +37,32 @@
 	gap: 6px;
 	padding: 4px 8px;
 	margin: -8px -8px 8px -8px;
-	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
+	border-bottom: 1px solid var(--border-light);
 	border-radius: var(--radius-md) var(--radius-md) 0 0;
-	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
 	font-size: 0;
 }
 
 .aiCodeBlockLang {
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-semibold);
-	color: var(--text-tertiary);
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
 }
 
 .aiCodeBlockCopy {
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 	background: transparent;
-	border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
+	border: 0;
 	border-radius: var(--radius-sm);
 	padding: 2px 8px;
 	cursor: pointer;
 	transition:
 		color var(--transition-fast),
-		border-color var(--transition-fast),
 		background var(--transition-fast);
 }
 
 .aiCodeBlockCopy:hover {
 	color: var(--text-primary);
-	border-color: var(--border-default);
-	background: color-mix(in srgb, var(--bg-hover) 60%, transparent);
+	background: var(--bg-hover);
 }

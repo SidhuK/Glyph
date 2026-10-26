@@ -18,7 +18,7 @@
 	},
 	"rollover": {
 		"bannerLabel": "Daily note rollover",
-		"bannerTitle": "{{count}} Unfinished Items",
+		"bannerTitle": "{{count}} unfinished items",
 		"review": "Review",
 		"reviewGroupTitle": "Items from {{date}}",
 		"reviewGroupDescription": "{{count}} unfinished checkbox block(s).",
@@ -67,13 +67,11 @@
 			"lines": "Lines",
 			"readingTime": "Read time",
 			"tasks": "Tasks",
-			"tasksDone": "{{completed}} of {{total}} done",
 			"file": "File",
 			"modified": "Modified",
 			"created": "Created",
 			"path": "Path",
-			"size": "Size",
-			"saveStatus": "Save status"
+			"size": "Size"
 		},
 		"contents": {
 			"empty": "No headings in this note yet."
@@ -84,9 +82,15 @@
 			"relationships": "Relationships",
 			"linkedNotes": "Linked notes",
 			"noLinkedNotes": "No linked notes."
-		}
+		},
+		"panelLabel": "Note info panel",
+		"sidebarTabsLabel": "Note sidebar",
+		"infoTab": "Info",
+		"historyTab": "Version history",
+		"close": "Close info panel"
 	},
 	"ribbon": {
+		"toolbarLabel": "Formatting",
 		"bold": "Bold",
 		"italic": "Italic",
 		"underline": "Underline",
@@ -99,11 +103,16 @@
 		"heading1": "Heading 1",
 		"heading2": "Heading 2",
 		"heading3": "Heading 3",
-		"bulletList": "Bullet list",
-		"numberedList": "Numbered list",
-		"taskList": "Task list",
-		"quote": "Quote",
-		"codeBlock": "Code block"
+		"color": "Color",
+		"colorSections": {
+			"text": "Text",
+			"highlight": "Highlight"
+		},
+		"link": "Link",
+		"linkUrl": "Link URL",
+		"linkOpenInNewTab": "Open in new tab",
+		"linkRemove": "Remove",
+		"linkApply": "Apply"
 	},
 	"selectionAi": {
 		"title": "Ask AI about selection",

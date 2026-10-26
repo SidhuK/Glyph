@@ -58,14 +58,17 @@
 	align-items: center;
 	justify-content: center;
 	gap: 2px;
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-xs);
 	line-height: 1;
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
-	color: var(--text-tertiary);
-	background: var(--bg-tertiary);
-	border: 1px solid var(--border-light);
+	color: var(--text-secondary);
+	background: var(--bg-hover);
+	border: 0;
 	border-radius: var(--radius-sm);
+	transition:
+		background-color 140ms ease,
+		color 140ms ease;
 }
 
 .mainEmptyShortcutCombo {
@@ -81,8 +84,8 @@
 }
 
 .mainEmptyShortcutInline:hover .mainEmptyShortcutBadge {
-	border-color: var(--border-default);
-	color: var(--text-secondary);
+	background: var(--bg-active);
+	color: var(--text-primary);
 }
 
 .mainEmptyShortcutInline:focus-visible {

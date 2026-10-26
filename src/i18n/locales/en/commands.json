@@ -3,7 +3,7 @@
 		"workspace": "Workspace",
 		"navigation": "Navigation",
 		"search": "Search",
-		"file": "File Operations",
+		"file": "File operations",
 		"tabs": "Tabs",
 		"ai": "AI",
 		"editor": "Editor",
@@ -11,239 +11,281 @@
 	},
 	"commands": {
 		"activate-tab-1": {
-			"label": "Activate Tab 1",
+			"label": "Activate tab 1",
 			"description": "Switch to tab 1."
 		},
 		"activate-tab-2": {
-			"label": "Activate Tab 2",
+			"label": "Activate tab 2",
 			"description": "Switch to tab 2."
 		},
 		"activate-tab-3": {
-			"label": "Activate Tab 3",
+			"label": "Activate tab 3",
 			"description": "Switch to tab 3."
 		},
 		"activate-tab-4": {
-			"label": "Activate Tab 4",
+			"label": "Activate tab 4",
 			"description": "Switch to tab 4."
 		},
 		"activate-tab-5": {
-			"label": "Activate Tab 5",
+			"label": "Activate tab 5",
 			"description": "Switch to tab 5."
 		},
 		"activate-tab-6": {
-			"label": "Activate Tab 6",
+			"label": "Activate tab 6",
 			"description": "Switch to tab 6."
 		},
 		"activate-tab-7": {
-			"label": "Activate Tab 7",
+			"label": "Activate tab 7",
 			"description": "Switch to tab 7."
 		},
 		"activate-tab-8": {
-			"label": "Activate Tab 8",
+			"label": "Activate tab 8",
 			"description": "Switch to tab 8."
 		},
 		"activate-tab-9": {
-			"label": "Activate Tab 9",
+			"label": "Activate tab 9",
 			"description": "Switch to tab 9."
 		},
 		"ai-attach-all-open-notes": {
-			"label": "AI: Attach All Open Notes",
+			"label": "AI: Attach all open notes",
+			"menuLabel": "AI: Attach All Open Notes",
 			"description": "Attach all open notes to AI."
 		},
 		"ai-attach-current-note": {
-			"label": "AI: Attach Current Note",
+			"label": "AI: Attach current note",
+			"menuLabel": "AI: Attach Current Note",
 			"description": "Attach the current note to AI."
 		},
 		"ai_selection_to_context": {
-			"label": "AI: Use Selection as Context",
+			"label": "AI: Use selection as context",
 			"description": "Send the selected text to the AI panel as its main context."
 		},
 		"bold": {
 			"label": "Bold",
+			"menuLabel": "Bold",
 			"description": "Toggle bold formatting for the current selection."
 		},
 		"bullet_list": {
-			"label": "Bullet List",
+			"label": "Bullet list",
+			"menuLabel": "Bullet List",
 			"description": "Toggle a bullet list."
 		},
 		"buy-glyph-license": {
-			"label": "Buy Glyph License",
+			"label": "Buy Glyph license",
 			"description": "Open the purchase page for Glyph."
 		},
 		"callout_error": {
-			"label": "Error Callout",
+			"label": "Error callout",
+			"menuLabel": "Error Callout",
 			"description": "Insert an error callout block."
 		},
 		"callout_info": {
-			"label": "Info Callout",
+			"label": "Info callout",
+			"menuLabel": "Info Callout",
 			"description": "Insert an info callout block."
 		},
 		"callout_success": {
-			"label": "Success Callout",
+			"label": "Success callout",
+			"menuLabel": "Success Callout",
 			"description": "Insert a success callout block."
 		},
 		"callout_tip": {
-			"label": "Tip Callout",
+			"label": "Tip callout",
+			"menuLabel": "Tip Callout",
 			"description": "Insert a tip callout block."
 		},
 		"callout_warning": {
-			"label": "Warning Callout",
+			"label": "Warning callout",
+			"menuLabel": "Warning Callout",
 			"description": "Insert a warning callout block."
 		},
 		"close-active-tab": {
-			"label": "Close Active Tab",
+			"label": "Close active tab",
+			"menuLabel": "Close Active Tab",
 			"description": "Close the current tab."
 		},
 		"close-all-tabs": {
-			"label": "Close All Tabs",
+			"label": "Close all tabs",
 			"description": "Close every open tab."
 		},
 		"close-space": {
-			"label": "Close Current Space",
+			"label": "Close current space",
+			"menuLabel": "Close Current Space",
 			"description": "Close the currently open space."
 		},
 		"code_block": {
-			"label": "Code Block",
+			"label": "Code block",
+			"menuLabel": "Code Block",
 			"description": "Toggle a code block."
 		},
 		"collapse_all_headings": {
-			"label": "Collapse All Headings",
+			"label": "Collapse all headings",
+			"menuLabel": "Collapse All Headings",
 			"description": "Collapse every heading in the current note."
 		},
 		"color_blue": {
-			"label": "Text Color: Blue",
+			"label": "Text color: blue",
+			"menuLabel": "Text Color: Blue",
 			"description": "Apply blue text color."
 		},
 		"color_brown": {
-			"label": "Text Color: Brown",
+			"label": "Text color: brown",
+			"menuLabel": "Text Color: Brown",
 			"description": "Apply brown text color."
 		},
 		"color_clear": {
-			"label": "Clear Text Color",
+			"label": "Clear text color",
+			"menuLabel": "Clear Text Color",
 			"description": "Remove text color formatting."
 		},
 		"color_gray": {
-			"label": "Text Color: Gray",
+			"label": "Text color: gray",
+			"menuLabel": "Text Color: Gray",
 			"description": "Apply gray text color."
 		},
 		"color_green": {
-			"label": "Text Color: Green",
+			"label": "Text color: green",
+			"menuLabel": "Text Color: Green",
 			"description": "Apply green text color."
 		},
 		"color_orange": {
-			"label": "Text Color: Orange",
+			"label": "Text color: orange",
+			"menuLabel": "Text Color: Orange",
 			"description": "Apply orange text color."
 		},
 		"color_purple": {
-			"label": "Text Color: Purple",
+			"label": "Text color: purple",
+			"menuLabel": "Text Color: Purple",
 			"description": "Apply purple text color."
 		},
 		"color_red": {
-			"label": "Text Color: Red",
+			"label": "Text color: red",
+			"menuLabel": "Text Color: Red",
 			"description": "Apply red text color."
 		},
 		"color_yellow": {
-			"label": "Text Color: Yellow",
+			"label": "Text color: yellow",
+			"menuLabel": "Text Color: Yellow",
 			"description": "Apply yellow text color."
 		},
 		"copy-note-markdown": {
-			"label": "Copy Note as Markdown",
+			"label": "Copy note as Markdown",
 			"description": "Copy the current note as markdown."
 		},
 		"create-from-template": {
-			"label": "Create From Template",
+			"label": "Create from template",
+			"menuLabel": "Create From Template",
 			"description": "Create a new note from a template."
 		},
 		"create-space": {
-			"label": "Create Space",
+			"label": "Create space",
+			"menuLabel": "Create Space",
 			"description": "Create a new space."
 		},
 		"details_block": {
-			"label": "Details Block",
+			"label": "Details block",
+			"menuLabel": "Details Block",
 			"description": "Insert a collapsible toggle section."
 		},
 		"divider": {
 			"label": "Divider",
+			"menuLabel": "Divider",
 			"description": "Insert a horizontal divider."
 		},
 		"duplicate-current-note": {
-			"label": "Duplicate Current Note",
+			"label": "Duplicate current note",
 			"description": "Duplicate the current note."
 		},
 		"expand_all_headings": {
-			"label": "Expand All Headings",
+			"label": "Expand all headings",
+			"menuLabel": "Expand All Headings",
 			"description": "Expand every heading in the current note."
 		},
 		"extract_selection_to_note": {
-			"label": "Extract to Note",
+			"label": "Extract to note",
 			"description": "Create a note from the current selection."
 		},
 		"git-sync-now": {
-			"label": "Sync Now",
+			"label": "Sync now",
+			"menuLabel": "Sync Now",
 			"description": "Run Git Sync now."
 		},
 		"go-back-note": {
-			"label": "Go Back",
+			"label": "Go back",
 			"description": "Go back in the current tab's note history."
 		},
 		"go-forward-note": {
-			"label": "Go Forward",
+			"label": "Go forward",
 			"description": "Go forward in the current tab's note history."
 		},
 		"heading_1": {
 			"label": "Heading 1",
+			"menuLabel": "Heading 1",
 			"description": "Convert the current block to a level 1 heading."
 		},
 		"heading_2": {
 			"label": "Heading 2",
+			"menuLabel": "Heading 2",
 			"description": "Convert the current block to a level 2 heading."
 		},
 		"heading_3": {
 			"label": "Heading 3",
+			"menuLabel": "Heading 3",
 			"description": "Convert the current block to a level 3 heading."
 		},
 		"highlight_blue": {
-			"label": "Highlight: Blue",
+			"label": "Highlight: blue",
+			"menuLabel": "Highlight: Blue",
 			"description": "Apply blue text highlight."
 		},
 		"highlight_clear": {
-			"label": "Clear Highlight",
+			"label": "Clear highlight",
+			"menuLabel": "Clear Highlight",
 			"description": "Remove text highlight formatting."
 		},
 		"highlight_green": {
-			"label": "Highlight: Green",
+			"label": "Highlight: green",
+			"menuLabel": "Highlight: Green",
 			"description": "Apply green text highlight."
 		},
 		"highlight_red": {
-			"label": "Highlight: Red",
+			"label": "Highlight: red",
+			"menuLabel": "Highlight: Red",
 			"description": "Apply red text highlight."
 		},
 		"highlight_yellow": {
-			"label": "Highlight: Yellow",
+			"label": "Highlight: yellow",
+			"menuLabel": "Highlight: Yellow",
 			"description": "Apply yellow text highlight."
 		},
 		"import-files": {
-			"label": "Import Files…",
+			"label": "Import files…",
+			"menuLabel": "Import Files…",
 			"description": "Copy Markdown files into the current folder."
 		},
 		"import-folder": {
-			"label": "Import Folder…",
+			"label": "Import folder…",
+			"menuLabel": "Import Folder…",
 			"description": "Copy a folder into the current folder."
 		},
 		"italic": {
 			"label": "Italic",
+			"menuLabel": "Italic",
 			"description": "Toggle italic formatting for the current selection."
 		},
 		"link_clear": {
-			"label": "Remove Link",
+			"label": "Remove link",
+			"menuLabel": "Remove Link",
 			"description": "Remove the current link from the selection."
 		},
 		"link_set": {
-			"label": "Insert or Edit Link",
+			"label": "Insert or edit link",
+			"menuLabel": "Insert or Edit Link",
 			"description": "Insert a link or edit the current link."
 		},
 		"mermaid_chart": {
-			"label": "Mermaid Chart",
+			"label": "Mermaid chart",
+			"menuLabel": "Mermaid Chart",
 			"description": "Insert a Mermaid code block."
 		},
 		"send-note-to-inbox": {
@@ -251,267 +293,298 @@
 			"description": "Move the current note to Inbox."
 		},
 		"archive-note": {
-			"label": "Archive Note",
+			"label": "Archive note",
 			"description": "Archive the current note."
 		},
 		"unarchive-note": {
-			"label": "Unarchive Note",
+			"label": "Unarchive note",
 			"description": "Restore the current note from Archive."
 		},
 		"move-active-file": {
-			"label": "Move Active File",
+			"label": "Move active file",
 			"description": "Move the current file to a different folder."
 		},
 		"rename-tag": {
-			"label": "Rename Tag",
+			"label": "Rename tag",
 			"description": "Rename a tag in every note."
 		},
 		"merge-tag": {
-			"label": "Merge Tag",
+			"label": "Merge tag",
 			"description": "Merge a tag into another tag in every note."
 		},
 		"delete-tag": {
-			"label": "Delete Tag",
+			"label": "Delete tag",
 			"description": "Remove a tag from every note."
 		},
 		"new-database": {
-			"label": "New Collection",
+			"label": "New collection",
 			"description": "Create a new collection."
 		},
 		"new-canvas": {
-			"label": "New Canvas",
+			"label": "New canvas",
 			"description": "Create a new Excalidraw canvas in the current folder."
 		},
 		"new-folder": {
-			"label": "New Folder",
+			"label": "New folder",
 			"description": "Create a new folder."
 		},
 		"new-note": {
-			"label": "New Note",
+			"label": "New note",
+			"menuLabel": "New Note",
 			"description": "Create a new note in the current folder."
 		},
 		"new-tab": {
-			"label": "New Tab",
+			"label": "New tab",
 			"description": "Open a blank tab."
 		},
 		"next-tab": {
-			"label": "Next Tab",
+			"label": "Next tab",
 			"description": "Move to the next tab."
 		},
 		"numbered_list": {
-			"label": "Numbered List",
+			"label": "Numbered list",
+			"menuLabel": "Numbered List",
 			"description": "Toggle a numbered list."
 		},
 		"open-about": {
 			"label": "Open About",
+			"menuLabel": "Open About",
 			"description": "Open the about screen."
 		},
 		"open-ai-settings": {
-			"label": "Open AI Settings",
+			"label": "Open AI settings",
+			"menuLabel": "Open AI Settings",
 			"description": "Open AI settings."
 		},
 		"open-agent": {
-			"label": "Open Agent",
+			"label": "Open agent",
 			"description": "Open the AI agent in the main view."
 		},
 		"open-all-docs": {
-			"label": "Open All Notes",
+			"label": "Open all notes",
 			"description": "Open the all notes view."
 		},
 		"open-tasks": {
-			"label": "Open Tasks",
+			"label": "Open tasks",
 			"description": "Open the tasks view."
 		},
 		"open-command-palette": {
-			"label": "Open Command Palette",
+			"label": "Open command palette",
 			"description": "Open the command palette."
 		},
 		"open-daily-note": {
-			"label": "Open Daily Note",
+			"label": "Open daily note",
+			"menuLabel": "Open Daily Note",
 			"description": "Open or create today's daily note."
 		},
 		"open-weekly-note": {
-			"label": "Open Weekly Note",
+			"label": "Open weekly note",
+			"menuLabel": "Open Weekly Note",
 			"description": "Open or create this week's weekly note."
 		},
 		"open-monthly-note": {
-			"label": "Open Monthly Note",
+			"label": "Open monthly note",
+			"menuLabel": "Open Monthly Note",
 			"description": "Open or create this month's monthly note."
 		},
 		"open-quarterly-note": {
-			"label": "Open Quarterly Note",
+			"label": "Open quarterly note",
+			"menuLabel": "Open Quarterly Note",
 			"description": "Open or create this quarter's quarterly note."
 		},
 		"open-databases": {
-			"label": "Open Collections",
+			"label": "Open collections",
 			"description": "Open the collections view."
 		},
 		"open-git-sync-settings": {
-			"label": "Open Git Sync Settings",
+			"label": "Open Git Sync settings",
+			"menuLabel": "Open Git Sync Settings",
 			"description": "Open the Git Sync section in settings."
 		},
 		"open-license-settings": {
-			"label": "Open License Settings",
+			"label": "Open license settings",
 			"description": "Open the license section in settings."
 		},
 		"open-local-connections": {
-			"label": "Open Local Connections",
+			"label": "Open local connections",
 			"description": "Open local connections for the current note."
 		},
 		"open-quick-note": {
-			"label": "Open Quick Note",
+			"label": "Open quick note",
 			"description": "Open the floating quick note scratchpad."
 		},
 		"open-quick-search": {
-			"label": "Open Quick Search",
+			"label": "Open quick search",
 			"description": "Open the floating quick search window to find notes, tags, and collections."
 		},
 		"open-search-palette": {
-			"label": "Open Search Palette",
+			"label": "Open search palette",
 			"description": "Open search in the command palette."
 		},
 		"open-settings": {
-			"label": "Open Settings",
+			"label": "Open settings",
+			"menuLabel": "Open Settings",
 			"description": "Open the settings view."
 		},
 		"open-space": {
-			"label": "Open Space",
+			"label": "Open space",
+			"menuLabel": "Open Space",
 			"description": "Open an existing space."
 		},
 		"open-space-settings": {
-			"label": "Open Space Settings",
+			"label": "Open space settings",
+			"menuLabel": "Open Space Settings",
 			"description": "Open settings for the current space."
 		},
 		"paste_without_formatting": {
-			"label": "Paste without Formatting",
+			"label": "Paste without formatting",
+			"menuLabel": "Paste without Formatting",
 			"description": "Paste clipboard text without formatting."
 		},
 		"previous-tab": {
-			"label": "Previous Tab",
+			"label": "Previous tab",
 			"description": "Move to the previous tab."
 		},
 		"print-note": {
-			"label": "Export Note as PDF…",
+			"label": "Export note as PDF…",
+			"menuLabel": "Export Note as PDF…",
 			"description": "Open the macOS Print dialog to save the current note as PDF."
 		},
 		"export-note-docx": {
-			"label": "Export Note as Word…",
+			"label": "Export note as Word…",
+			"menuLabel": "Export Note as Word…",
 			"description": "Export the current note as a Word document."
 		},
 		"quick-open": {
-			"label": "Quick Open",
+			"label": "Quick open",
 			"description": "Open the command palette directly in file mode."
 		},
 		"quote": {
 			"label": "Quote",
+			"menuLabel": "Quote",
 			"description": "Toggle a blockquote."
 		},
 		"reveal-space": {
-			"label": "Reveal Space",
-			"description": "Show the current space in the system file browser."
+			"label": "Reveal space",
+			"menuLabel": "Reveal Space",
+			"description": "Show the current space in Finder."
 		},
 		"save-note": {
-			"label": "Save Note",
+			"label": "Save note",
+			"menuLabel": "Save Note",
 			"description": "Save the current note if modified."
 		},
 		"open-shortcuts-settings": {
-			"label": "Keyboard Shortcuts…",
+			"label": "Keyboard shortcuts…",
+			"menuLabel": "Keyboard Shortcuts…",
 			"description": "Open the keyboard shortcuts section in settings."
 		},
 		"open-glyph-website": {
-			"label": "Glyph Website",
+			"label": "Glyph website",
+			"menuLabel": "Glyph Website",
 			"description": "Open the Glyph website."
 		},
 		"open-glyph-changelog": {
 			"label": "Changelog",
+			"menuLabel": "Changelog",
 			"description": "Open the published Glyph changelog."
 		},
 		"open-glyph-privacy": {
-			"label": "Privacy Policy",
+			"label": "Privacy policy",
+			"menuLabel": "Privacy Policy",
 			"description": "Open the Glyph privacy policy."
 		},
 		"open-glyph-terms": {
-			"label": "Terms of Service",
+			"label": "Terms of service",
+			"menuLabel": "Terms of Service",
 			"description": "Open the Glyph terms of service."
 		},
 		"open-glyph-discord": {
 			"label": "Discord",
+			"menuLabel": "Discord",
 			"description": "Open the Glyph community Discord."
 		},
 		"open-glyph-github": {
 			"label": "GitHub",
+			"menuLabel": "GitHub",
 			"description": "Open the Glyph repository on GitHub."
 		},
 		"open-glyph-x": {
 			"label": "Follow on X",
+			"menuLabel": "Follow on X",
 			"description": "Open Karat Sidhu on X."
 		},
 		"split-editor-above": {
-			"label": "Split Editor Above",
+			"label": "Split editor above",
 			"description": "Create a blank editor pane above the focused pane."
 		},
 		"split-editor-below": {
-			"label": "Split Editor Below",
+			"label": "Split editor below",
 			"description": "Create a blank editor pane below the focused pane."
 		},
 		"split-editor-left": {
-			"label": "Split Editor Left",
+			"label": "Split editor left",
 			"description": "Create a blank editor pane to the left of the focused pane."
 		},
 		"split-editor-right": {
-			"label": "Split Editor Right",
+			"label": "Split editor right",
 			"description": "Create a blank editor pane to the right of the focused pane."
 		},
 		"strikethrough": {
 			"label": "Strikethrough",
+			"menuLabel": "Strikethrough",
 			"description": "Toggle strikethrough formatting for the current selection."
 		},
 		"table": {
 			"label": "Table",
+			"menuLabel": "Table",
 			"description": "Insert a markdown table."
 		},
 		"todo_list": {
 			"label": "To-do List",
+			"menuLabel": "To-do List",
 			"description": "Toggle a task list."
 		},
 		"toggle_heading_or_list_collapse": {
-			"label": "Toggle Heading/List Collapse",
+			"label": "Toggle heading/list collapse",
 			"description": "Toggle the current heading section or nested list branch."
 		},
 		"toggle-ai": {
-			"label": "Toggle AI Panel",
+			"label": "Toggle AI panel",
+			"menuLabel": "Toggle AI Panel",
 			"description": "Show or hide the AI assistant panel."
 		},
 		"toggle-note-info-sidebar": {
-			"label": "Toggle Note Info Sidebar",
+			"label": "Toggle note info sidebar",
 			"description": "Show or hide the note info sidebar."
 		},
 		"toggle-pin-active-file": {
-			"label": "Pin or Unpin Current File",
+			"label": "Pin or unpin current file",
 			"description": "Pin or unpin the active file."
 		},
 		"toggle-pin-active-tab": {
-			"label": "Pin or Unpin Active Tab",
+			"label": "Pin or unpin active tab",
 			"description": "Keep the active tab open until it is unpinned."
 		},
 		"toggle-sidebar": {
-			"label": "Toggle Sidebar",
+			"label": "Toggle sidebar",
 			"description": "Show or hide the file tree sidebar."
 		},
 		"underline": {
 			"label": "Underline",
+			"menuLabel": "Underline",
 			"description": "Toggle underline formatting for the current selection."
 		},
 		"switch-to-edit": {
-			"label": "Rich Mode",
+			"label": "Rich mode",
 			"description": "Switch to the rich WYSIWYG editing mode."
 		},
 		"switch-to-preview": {
-			"label": "Preview Mode",
+			"label": "Preview mode",
 			"description": "Switch to the read-only preview mode."
 		},
 		"switch-to-raw": {
-			"label": "Raw Mode",
+			"label": "Raw mode",
 			"description": "Switch to the raw Markdown editing mode."
 		}
 	}

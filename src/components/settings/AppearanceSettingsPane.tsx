@@ -260,10 +260,7 @@ export function AppearanceSettingsPane() {
 					cornerRadiusStyle={cornerRadiusStyle}
 					onCornerRadiusStyleChange={onCornerRadiusStyleChange}
 				/>
-				<SettingsSection
-					title={t("layout.sectionTitle")}
-					description={t("layout.sectionDescription")}
-				>
+				<SettingsSection title={t("layout.sectionTitle")}>
 					<SettingsRow
 						label={t("layout.folioMode.label")}
 						description={t("layout.folioMode.description")}

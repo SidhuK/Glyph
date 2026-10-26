@@ -3,12 +3,14 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItemIcon,
+	DropdownMenuLabel,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/shadcn/dropdown-menu";
 import type { IconSvgElement } from "@hugeicons/react";
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import type { FileTreeSortMode } from "../../lib/settings";
@@ -20,6 +22,10 @@ interface FileTreeSortMenuProps {
 	triggerClassName: string;
 	icon: IconSvgElement;
 	iconSize: string;
+	/** Names the trigger when the menu holds more than sorting. */
+	triggerLabel?: string;
+	/** Extra items listed under the sort modes, after a separator. */
+	children?: ReactNode;
 }
 
 // Keep menu keystrokes (navigation, activation, typeahead) away from keyboard
@@ -37,6 +43,8 @@ export function FileTreeSortMenu({
 	triggerClassName,
 	icon,
 	iconSize,
+	triggerLabel,
+	children,
 }: FileTreeSortMenuProps) {
 	const { t } = useTranslation("shell");
 	return (
@@ -46,8 +54,8 @@ export function FileTreeSortMenu({
 					<button
 						type="button"
 						className={triggerClassName}
-						title={`${t("sidebar.sortNotes")}: ${fileTreeSortLabel(sortMode)}`}
-						aria-label={t("sidebar.sortNotes")}
+						title={triggerLabel ?? `${t("sidebar.sortNotes")}: ${fileTreeSortLabel(sortMode)}`}
+						aria-label={triggerLabel ?? t("sidebar.sortNotes")}
 						onKeyDown={stopMenuKeyPropagation}
 					/>
 				}
@@ -55,6 +63,7 @@ export function FileTreeSortMenu({
 				<HugeiconsIcon icon={icon} size={iconSize} aria-hidden="true" />
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" side="bottom" onKeyDown={stopMenuKeyPropagation}>
+				{children ? <DropdownMenuLabel>{t("sidebar.sort")}</DropdownMenuLabel> : null}
 				<DropdownMenuRadioGroup value={sortMode}>
 					{FILE_TREE_SORT_MODES.map((mode) => (
 						<DropdownMenuRadioItem
@@ -70,6 +79,12 @@ export function FileTreeSortMenu({
 						</DropdownMenuRadioItem>
 					))}
 				</DropdownMenuRadioGroup>
+				{children ? (
+					<>
+						<DropdownMenuSeparator />
+						{children}
+					</>
+				) : null}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
