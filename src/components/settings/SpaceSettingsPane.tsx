@@ -367,6 +367,7 @@ export function SpaceSettingsPane() {
 					>
 						<SettingsFolderPicker
 							path={defaultNewNoteFolder ?? t("newNotes.root")}
+							empty={!defaultNewNoteFolder}
 							browseLabel={t("newNotes.browse")}
 							clearLabel={t("newNotes.clear")}
 							onBrowse={() => void handleBrowseDefaultNewNoteFolder()}

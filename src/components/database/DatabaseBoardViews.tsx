@@ -233,8 +233,12 @@ export function DatabaseBoardLaneView({
 						type="button"
 						className="databaseBoardLaneAddRow"
 						onClick={onAddCard}
-						aria-label={t("collections.laneMenu.addNote", { lane: lane.label })}
-						title={t("collections.laneMenu.addNote", { lane: lane.label })}
+						aria-label={t("collections.laneMenu.addNote", {
+							lane: databaseLaneDisplayLabel(lane.label, laneKind, t),
+						})}
+						title={t("collections.laneMenu.addNote", {
+							lane: databaseLaneDisplayLabel(lane.label, laneKind, t),
+						})}
 					>
 						<Plus size="var(--icon-sm)" aria-hidden="true" />
 					</button>
