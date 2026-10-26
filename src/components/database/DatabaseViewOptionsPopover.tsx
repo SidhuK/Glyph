@@ -288,20 +288,10 @@ export function DatabaseViewOptionsPopover({
 		});
 	};
 
-	const resetViewOptions = () => {
-		void updateConfig({
-			...config,
-			view: {
-				...config.view,
-				search: "",
-				board_group_by: null,
-				board_card_fields: undefined,
-			},
-			columns: RESTORE_DEFAULT_COLUMNS,
-			sorts: [],
-			filters: [],
-		});
-	};
+	// Each Reset restores only its own section; filters, sorting and grouping are left alone.
+	const resetColumns = () => void updateConfig({ ...config, columns: RESTORE_DEFAULT_COLUMNS });
+	const resetCardFields = () =>
+		void updateConfig({ ...config, view: { ...config.view, board_card_fields: undefined } });
 
 	const toggleSection = (section: ExpandedSection) => {
 		setExpanded((current) => (current === section ? null : section));
@@ -415,7 +405,7 @@ export function DatabaseViewOptionsPopover({
 							if (entry) void setColumnEnabled(entry.column, enabled);
 						}}
 						onShowAll={showAllColumns}
-						onReset={resetViewOptions}
+						onReset={resetColumns}
 					/>
 				) : (
 					<PropertyChipsSection
@@ -427,7 +417,7 @@ export function DatabaseViewOptionsPopover({
 							setCardFields(toggledCardFields(config.view.board_card_fields, key, enabled))
 						}
 						onShowAll={() => setCardFields(ALL_CARD_FIELDS)}
-						onReset={resetViewOptions}
+						onReset={resetCardFields}
 					/>
 				)}
 			</PopoverContent>

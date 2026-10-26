@@ -579,7 +579,11 @@
 				"local_wins": "Lokal gewinnt",
 				"remote_wins": "Remote gewinnt"
 			}
-		}
+		},
+		"sync": "Jetzt synchronisieren",
+		"resumeAutoSync": "Automatische Synchronisierung fortsetzen",
+		"remote": "Remote",
+		"actions": "Aktionen"
 	},
 	"activity": {
 		"noPreviewYet": "Noch keine Vorschau"

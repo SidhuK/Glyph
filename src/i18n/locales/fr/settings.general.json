@@ -82,8 +82,7 @@
 		"clear": "Effacer le dossier par défaut",
 		"defaultFolder": {
 			"label": "Dossier par défaut",
-			"description": "Choisissez où Glyph crée les nouvelles notes dans cet espace.",
-			"description": "Nouvelle note et Cmd+N créent les notes ici lorsqu’un dossier est défini."
+			"description": "Les nouvelles notes sont créées dans ce dossier."
 		}
 	},
 	"folderPicker": {

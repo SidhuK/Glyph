@@ -313,5 +313,10 @@
 	"folderPicker": {
 		"clear": "クリア",
 		"reset": "リセット"
+	},
+	"newNotes": {
+		"defaultFolder": {
+			"description": "新しいノートはこのフォルダに作成されます。"
+		}
 	}
 }

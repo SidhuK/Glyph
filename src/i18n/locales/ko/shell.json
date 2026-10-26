@@ -577,7 +577,11 @@
 				"local_wins": "로컬 우선",
 				"remote_wins": "원격 우선"
 			}
-		}
+		},
+		"sync": "지금 동기화",
+		"resumeAutoSync": "자동 동기화 재개",
+		"remote": "원격",
+		"actions": "작업"
 	},
 	"activity": {
 		"noPreviewYet": "아직 미리보기가 없습니다"

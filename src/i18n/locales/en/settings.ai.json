@@ -52,7 +52,9 @@
 			"low": "Low",
 			"medium": "Medium",
 			"high": "High",
-			"xhigh": "Extra high"
+			"xhigh": "Extra high",
+			"max": "Max",
+			"off": "Off"
 		}
 	},
 	"baseUrl": {

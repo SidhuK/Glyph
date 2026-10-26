@@ -183,7 +183,12 @@ export function GitSettingsPane() {
 							value={repoStateLabel}
 						/>
 					</SettingsRow>
-					<SettingsRow label="Remote" description={connectionHelp} stacked interactive={false}>
+					<SettingsRow
+						label={t("gitSync.remote")}
+						description={connectionHelp}
+						stacked
+						interactive={false}
+					>
 						<SettingsValueCard
 							icon={<HugeiconsIcon icon={Link01Icon} size="var(--icon-md)" />}
 							value={config?.remote_url ?? "Open a folder that already has Git initialized."}
@@ -252,7 +257,11 @@ export function GitSettingsPane() {
 							}}
 						/>
 					</SettingsRow>
-					<SettingsRow label="Actions" description={presentation.headline} interactive={false}>
+					<SettingsRow
+						label={t("gitSync.actions")}
+						description={presentation.headline}
+						interactive={false}
+					>
 						<div className="settingsActions">
 							{presentation.showResume ? (
 								<Button
@@ -263,7 +272,7 @@ export function GitSettingsPane() {
 									}}
 									disabled={busy}
 								>
-									Resume auto sync
+									{t("gitSync.resumeAutoSync")}
 								</Button>
 							) : null}
 							<Button

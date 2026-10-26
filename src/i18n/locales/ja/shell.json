@@ -577,7 +577,11 @@
 				"local_wins": "ローカルを優先",
 				"remote_wins": "リモートを優先"
 			}
-		}
+		},
+		"sync": "今すぐ同期",
+		"resumeAutoSync": "自動同期を再開",
+		"remote": "リモート",
+		"actions": "操作"
 	},
 	"activity": {
 		"noPreviewYet": "プレビューはまだありません"

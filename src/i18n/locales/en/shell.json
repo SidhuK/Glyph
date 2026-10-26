@@ -514,7 +514,10 @@
 				"local_wins": "Local wins",
 				"remote_wins": "Remote wins"
 			}
-		}
+		},
+		"resumeAutoSync": "Resume auto sync",
+		"remote": "Remote",
+		"actions": "Actions"
 	},
 	"ai": {
 		"toolFailed": "{{tool}} failed",

@@ -313,5 +313,10 @@
 	"folderPicker": {
 		"clear": "지우기",
 		"reset": "재설정"
+	},
+	"newNotes": {
+		"defaultFolder": {
+			"description": "새 노트는 이 폴더에 만들어집니다."
+		}
 	}
 }

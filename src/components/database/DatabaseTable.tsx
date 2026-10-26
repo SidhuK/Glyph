@@ -15,6 +15,7 @@ import {
 	boardCreateValue,
 	boardDropValue,
 	createDatabaseRowGroups,
+	isMultiValueBoardColumn,
 	moveBoardCardToLane,
 } from "../../lib/database/board";
 import { databaseColumnLabel, isDateColumn } from "../../lib/database/columns";
@@ -264,26 +265,21 @@ export function DatabaseTable({
 		return next;
 	}, [laneColors]);
 
-	// Grouped rows already sit under a header naming the value, so the grouped-by column would
-	// only repeat it on every row; the board hides it on cards for the same reason. Status leads
-	// the row like Linear's status icon, ahead of the title it describes, and drops out entirely
-	// when no row has one, so a collection without statuses isn't a column of empty rings.
+	// Grouped rows already sit under a header naming the value, so a single-value grouped-by
+	// column would only repeat it on every row; the board hides it on cards for the same reason.
+	// Multi-value columns (tags) stay: a row is grouped by its first value only. Status leads the
+	// row like Linear's status icon, ahead of the title it describes.
 	const displayColumns = useMemo(() => {
-		const shown = (
-			groupColumn
+		const shown =
+			groupColumn && !isMultiValueBoardColumn(groupColumn)
 				? columns.filter((column) => column.id !== groupColumn.id || column.type === "title")
-				: columns
-		).filter(
-			(column) =>
-				!isStatusColumn(column) ||
-				rows.some((row) => databaseCellValueFromRow(row, column).value_text?.trim()),
-		);
+				: columns;
 		if (!shown.some((column) => column.type === "title")) return shown;
 		return [
 			...shown.filter((column) => isStatusColumn(column)),
 			...shown.filter((column) => !isStatusColumn(column)),
 		];
-	}, [columns, groupColumn, rows]);
+	}, [columns, groupColumn]);
 
 	const columnValueOptions = useMemo<Record<string, string[]>>(() => {
 		const next: Record<string, string[]> = {};

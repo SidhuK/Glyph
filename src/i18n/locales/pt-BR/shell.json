@@ -579,7 +579,11 @@
 				"local_wins": "Local vence",
 				"remote_wins": "Remoto vence"
 			}
-		}
+		},
+		"sync": "Sincronizar agora",
+		"resumeAutoSync": "Retomar a sincronização automática",
+		"remote": "Remoto",
+		"actions": "Ações"
 	},
 	"activity": {
 		"noPreviewYet": "Ainda sem prévia"

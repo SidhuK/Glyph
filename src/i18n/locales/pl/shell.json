@@ -627,7 +627,11 @@
 				"local_wins": "Wygrywa lokalna",
 				"remote_wins": "Wygrywa zdalna"
 			}
-		}
+		},
+		"sync": "Synchronizuj teraz",
+		"resumeAutoSync": "Wznów automatyczną synchronizację",
+		"remote": "Zdalne repozytorium",
+		"actions": "Działania"
 	},
 	"activity": {
 		"noPreviewYet": "Brak podglądu"

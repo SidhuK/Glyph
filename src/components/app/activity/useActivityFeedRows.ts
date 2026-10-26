@@ -99,12 +99,24 @@ export function useActivityVirtualization(
 			if (paneEntry) setPaneWidth(paneEntry.contentRect.width);
 			measureFeedOffset();
 		});
+		// Header and feed resizes (heatmap reflow, measured rows) move the feed's offset.
+		const observeChildren = () => {
+			for (const child of paneElement.children) observer.observe(child);
+		};
+		// Children mounted later (the day filter chip, a feed replacing an empty state) move it too.
+		const mutations = new MutationObserver(() => {
+			observeChildren();
+			measureFeedOffset();
+		});
 		observer.observe(paneElement);
-		// Header and feed resizes (heatmap reflow, day filter, measured rows) move the feed's offset.
-		for (const child of paneElement.children) observer.observe(child);
+		observeChildren();
+		mutations.observe(paneElement, { childList: true });
 		setPaneWidth(paneElement.clientWidth);
 		measureFeedOffset();
-		return () => observer.disconnect();
+		return () => {
+			observer.disconnect();
+			mutations.disconnect();
+		};
 	}, [paneElement]);
 
 	return { rowVirtualizer, virtualItems };

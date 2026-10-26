@@ -579,7 +579,11 @@
 				"local_wins": "Gana el local",
 				"remote_wins": "Gana el remoto"
 			}
-		}
+		},
+		"sync": "Sincronizar ahora",
+		"resumeAutoSync": "Reanudar la sincronización automática",
+		"remote": "Remoto",
+		"actions": "Acciones"
 	},
 	"activity": {
 		"noPreviewYet": "Aún no hay vista previa"

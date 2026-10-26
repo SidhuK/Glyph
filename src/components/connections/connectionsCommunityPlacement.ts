@@ -27,6 +27,8 @@ const MAX_ISOLATED_ROWS = 4;
 const ISOLATED_COLUMN_SHARE = 0.25;
 /** Unlinked notes sit this many ring steps apart, both along and across the ring, so the block stays airy. */
 const ISOLATED_SPACING = 1.3;
+/** The unlinked rows never reach deeper into the ring than this share of its radius. */
+const ISOLATED_MAX_DEPTH_SHARE = 0.3;
 
 type ClusterCommunity = Extract<ConnectionsCommunity, { kind: "cluster" }>;
 
@@ -148,8 +150,13 @@ export function placeConnectionsCommunities(
 	const gapAngle =
 		gapCount > 0 ? Math.min(MAX_GAP_ANGLE, (FULL_CIRCLE * MAX_TOTAL_GAP_SHARE) / gapCount) : 0;
 	const columnAngle = (FULL_CIRCLE - gapAngle * gapCount) / columnCount;
-	// Rows sit one ring step apart, matching the spacing between neighbouring notes.
-	const rowStep = columnAngle * CONNECTIONS_RING_RADIUS;
+	// Rows sit one ring step apart, matching the spacing between neighbouring notes. In small
+	// graphs a ring step is wide, so the rows are squeezed to stay inside the ring.
+	const rowStep = Math.min(
+		columnAngle * CONNECTIONS_RING_RADIUS,
+		(CONNECTIONS_RING_RADIUS * ISOLATED_MAX_DEPTH_SHARE) /
+			(Math.max(1, isolatedRows - 1) * ISOLATED_SPACING),
+	);
 
 	// Center the last segment (the unlinked block when present) at the bottom.
 	const lastIndex = segments.length - 1;

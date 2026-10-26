@@ -326,5 +326,10 @@
 	"folderPicker": {
 		"clear": "Wyczyść",
 		"reset": "Resetuj"
+	},
+	"newNotes": {
+		"defaultFolder": {
+			"description": "Nowe notatki są tworzone w tym folderze."
+		}
 	}
 }

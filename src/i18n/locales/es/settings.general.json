@@ -314,5 +314,10 @@
 	"folderPicker": {
 		"clear": "Borrar",
 		"reset": "Restablecer"
+	},
+	"newNotes": {
+		"defaultFolder": {
+			"description": "Las notas nuevas se crean en esta carpeta."
+		}
 	}
 }

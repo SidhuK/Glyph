@@ -12,7 +12,11 @@ function withoutTitleHeading(content: string, title: string): string {
 	const heading = match?.[1]?.trim().toLocaleLowerCase();
 	const normalizedTitle = title.trim().toLocaleLowerCase();
 	if (!match || !heading || !normalizedTitle) return content;
-	const repeatsTitle = normalizedTitle.includes(heading) || heading.includes(normalizedTitle);
+	// Whole words only, so "# Guidelines" stays on a note named "Guide".
+	const repeatsTitle =
+		normalizedTitle === heading ||
+		` ${normalizedTitle} `.includes(` ${heading} `) ||
+		` ${heading} `.includes(` ${normalizedTitle} `);
 	return repeatsTitle ? content.slice(match[0].length) : content;
 }
 

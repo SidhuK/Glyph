@@ -47,7 +47,9 @@
 			"low": "Baixo",
 			"medium": "Médio",
 			"high": "Alto",
-			"xhigh": "Muito alto"
+			"xhigh": "Muito alto",
+			"max": "Máximo",
+			"off": "Desativado"
 		}
 	},
 	"baseUrl": {

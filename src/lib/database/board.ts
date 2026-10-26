@@ -33,7 +33,7 @@ export interface DatabaseRowGroup {
 	rows: DatabaseRow[];
 }
 
-function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
+export function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
 	return (
 		column.type === "tags" ||
 		column.property_kind === "tags" ||

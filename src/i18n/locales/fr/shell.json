@@ -581,7 +581,11 @@
 				"local_wins": "Le local l’emporte",
 				"remote_wins": "Le distant l’emporte"
 			}
-		}
+		},
+		"sync": "Synchroniser maintenant",
+		"resumeAutoSync": "Reprendre la synchronisation automatique",
+		"remote": "Dépôt distant",
+		"actions": "Actions"
 	},
 	"activity": {
 		"noPreviewYet": "Pas encore d’aperçu"
