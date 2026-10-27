@@ -167,7 +167,7 @@ function SidebarItem({
 					aria-label={reorderLabel}
 					title={reorderLabel}
 				>
-					<HugeiconsIcon icon={DragDropVerticalIcon} size="var(--icon-md)" />
+					<HugeiconsIcon icon={DragDropVerticalIcon} size="var(--icon-sm)" />
 				</button>
 			}
 		/>
@@ -211,7 +211,7 @@ function SidebarItemRow({
 				searchId={searchId}
 				label={
 					<span className="settingsSidebarItemLabel">
-						{handle ?? <span className="settingsSidebarDragSpacer" aria-hidden="true" />}
+						{handle}
 						{label}
 					</span>
 				}

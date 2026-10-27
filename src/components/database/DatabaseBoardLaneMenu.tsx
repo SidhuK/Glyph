@@ -1,4 +1,10 @@
-import { ArrowLeft02Icon, ArrowRight02Icon, Location01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
+import {
+	ArrowLeft02Icon,
+	ArrowRight02Icon,
+	Location01Icon,
+	MoreHorizontalIcon,
+} from "@hugeicons/core-free-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DATABASE_BOARD_EMPTY_LANE_ID, type DatabaseBoardLane } from "../../lib/database/board";
@@ -51,7 +57,7 @@ export function DatabaseBoardLaneMenu({
 					/>
 				}
 			>
-				<span className="databaseBoardLaneHandleDots" />
+				<HugeiconsIcon icon={MoreHorizontalIcon} size="var(--icon-md)" aria-hidden="true" />
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
 				{onRenameLane ? (

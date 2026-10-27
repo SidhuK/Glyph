@@ -1,24 +1,20 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { NoteAddIcon } from "@hugeicons/core-free-icons";
+import { SquareArrowUpRightIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/core";
-import { m } from "motion/react";
+import { useEditorState } from "@tiptap/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { springPresets } from "../ui/animations";
-import { RibbonColorPopover, RibbonHighlightPopover } from "./RibbonColorPopover";
+import { RibbonColorPopover } from "./RibbonColorPopover";
 import { RibbonLinkPopover } from "./RibbonLinkPopover";
 import {
 	type RibbonButtonConfig,
-	getBlockButtons,
 	getFormatButtons,
 	getHeadingButtons,
-	getListButtons,
 } from "./ribbonButtonConfigs";
 
 interface EditorRibbonProps {
 	editor: Editor;
 	canEdit: boolean;
-	className?: string;
 	onExtractSelectionToNote?: () => void;
 }
 
@@ -28,13 +24,30 @@ interface RibbonButtonListProps {
 	onPreventMouseDown: (e: React.MouseEvent) => void;
 }
 
+/** Marks, links and headings the buttons light up for; re-renders the bar when any of them changes. */
+function activeFormatKey(editor: Editor): string {
+	if (editor.isDestroyed) return "";
+	return [
+		editor.isActive("bold"),
+		editor.isActive("italic"),
+		editor.isActive("underline"),
+		editor.isActive("strike"),
+		editor.isActive("link"),
+		editor.isActive("heading", { level: 1 }),
+		editor.isActive("heading", { level: 2 }),
+		editor.isActive("heading", { level: 3 }),
+	]
+		.map((active) => (active ? "1" : "0"))
+		.join("");
+}
+
 const RibbonButtonList = memo(function RibbonButtonList({
 	buttons,
 	canEdit,
 	onPreventMouseDown,
 }: RibbonButtonListProps) {
 	return buttons.map((btn) => (
-		<m.button
+		<button
 			key={btn.title}
 			type="button"
 			className={`ribbonBtn ${btn.isActive?.() ? "active" : ""}`}
@@ -43,27 +56,29 @@ const RibbonButtonList = memo(function RibbonButtonList({
 			disabled={!canEdit}
 			onMouseDown={onPreventMouseDown}
 			onClick={() => canEdit && btn.onClick()}
-			whileTap={canEdit ? { scale: 0.97 } : undefined}
-			transition={springPresets.snappy}
 		>
 			{btn.icon}
-		</m.button>
+		</button>
 	));
 });
 
+/**
+ * Format bar pinned to the bottom of the editor while the "Show format bar" setting is on:
+ * inline marks, link, colour and headings. Lists and blocks stay on the slash menu and markdown shortcuts.
+ */
 export const EditorRibbon = memo(function EditorRibbon({
 	editor,
 	canEdit,
-	className,
 	onExtractSelectionToNote,
 }: EditorRibbonProps) {
 	const { t } = useTranslation("editor");
+	useEditorState({ editor, selector: ({ editor: instance }) => activeFormatKey(instance) });
 	const focusChain = () => editor.chain().focus(undefined, { scrollIntoView: false });
 
 	const preventMouseDown = (e: React.MouseEvent) => e.preventDefault();
 
 	const runCommand = (fn: () => void) => {
-		const host = editor.view.dom.closest(".rfNodeNoteEditorBody") as HTMLElement | null;
+		const host = editor.view.dom.closest(".rfNodeNoteEditorBody");
 		const scrollTop = host?.scrollTop ?? 0;
 		fn();
 		if (host) {
@@ -75,45 +90,41 @@ export const EditorRibbon = memo(function EditorRibbon({
 
 	return (
 		<div className="rfNodeNoteEditorRibbonAnchor">
-			<m.div
-				className={["rfNodeNoteEditorRibbon nodrag nopan nowheel", className]
-					.filter(Boolean)
-					.join(" ")}
-				initial={{ opacity: 0, scale: 0.96, y: 4, filter: "blur(2px)" }}
-				animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-				exit={{ opacity: 0, scale: 0.98, y: 3, filter: "blur(1px)" }}
-				transition={springPresets.gentle}
+			<div
+				className="rfNodeNoteEditorRibbon nodrag nopan nowheel"
+				role="toolbar"
+				aria-label={t("ribbon.toolbarLabel")}
 			>
-				<div className="ribbonGroup ribbonGroupUnified">
-					<RibbonButtonList
-						buttons={getFormatButtons(editor, runCommand, focusChain)}
-						canEdit={canEdit}
-						onPreventMouseDown={preventMouseDown}
-					/>
-					<span className="ribbonDivider" />
-					<RibbonColorPopover
-						editor={editor}
-						canEdit={canEdit}
-						runCommand={runCommand}
-						focusChain={focusChain}
-						preventMouseDown={preventMouseDown}
-					/>
-					<RibbonHighlightPopover
-						editor={editor}
-						canEdit={canEdit}
-						runCommand={runCommand}
-						focusChain={focusChain}
-						preventMouseDown={preventMouseDown}
-					/>
-					<RibbonLinkPopover
-						editor={editor}
-						canEdit={canEdit}
-						runCommand={runCommand}
-						focusChain={focusChain}
-						preventMouseDown={preventMouseDown}
-					/>
-					{onExtractSelectionToNote ? (
-						<m.button
+				<RibbonButtonList
+					buttons={getFormatButtons(editor, runCommand, focusChain)}
+					canEdit={canEdit}
+					onPreventMouseDown={preventMouseDown}
+				/>
+				<span className="ribbonDivider" />
+				<RibbonLinkPopover
+					editor={editor}
+					canEdit={canEdit}
+					runCommand={runCommand}
+					focusChain={focusChain}
+					preventMouseDown={preventMouseDown}
+				/>
+				<RibbonColorPopover
+					editor={editor}
+					canEdit={canEdit}
+					runCommand={runCommand}
+					focusChain={focusChain}
+					preventMouseDown={preventMouseDown}
+				/>
+				<span className="ribbonDivider" />
+				<RibbonButtonList
+					buttons={getHeadingButtons(editor, runCommand, focusChain)}
+					canEdit={canEdit}
+					onPreventMouseDown={preventMouseDown}
+				/>
+				{onExtractSelectionToNote ? (
+					<>
+						<span className="ribbonDivider" />
+						<button
 							type="button"
 							className="ribbonBtn"
 							title={t("ribbon.extractToNote")}
@@ -121,31 +132,12 @@ export const EditorRibbon = memo(function EditorRibbon({
 							disabled={!canEdit}
 							onMouseDown={preventMouseDown}
 							onClick={() => canEdit && onExtractSelectionToNote()}
-							whileTap={canEdit ? { scale: 0.97 } : undefined}
-							transition={springPresets.snappy}
 						>
-							<HugeiconsIcon icon={NoteAddIcon} size="var(--icon-lg)" />
-						</m.button>
-					) : null}
-					<span className="ribbonDivider" />
-					<RibbonButtonList
-						buttons={getHeadingButtons(editor, runCommand, focusChain)}
-						canEdit={canEdit}
-						onPreventMouseDown={preventMouseDown}
-					/>
-					<span className="ribbonDivider" />
-					<RibbonButtonList
-						buttons={getListButtons(editor, runCommand, focusChain)}
-						canEdit={canEdit}
-						onPreventMouseDown={preventMouseDown}
-					/>
-					<RibbonButtonList
-						buttons={getBlockButtons(editor, runCommand, focusChain)}
-						canEdit={canEdit}
-						onPreventMouseDown={preventMouseDown}
-					/>
-				</div>
-			</m.div>
+							<HugeiconsIcon icon={SquareArrowUpRightIcon} size="var(--icon-md)" />
+						</button>
+					</>
+				) : null}
+			</div>
 		</div>
 	);
 });

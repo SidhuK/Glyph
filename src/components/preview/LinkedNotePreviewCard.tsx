@@ -3,10 +3,21 @@ import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import { NotePreviewContent } from "./NotePreviewContent";
 import type { NotePreviewData } from "./notePreviewShared";
 
-/** Drops a leading `# Title` heading that only repeats the card's title. */
+/**
+ * Drops a leading `# Title` heading that repeats the card's title, including the common
+ * case where the file name carries a prefix the heading leaves out ("Glyph 0.8.5 Tables" vs "Tables").
+ */
 function withoutTitleHeading(content: string, title: string): string {
 	const match = content.match(/^(?:[ \t]*\n)*#[ \t]+(.+)\n*/);
-	return match?.[1]?.trim() === title ? content.slice(match[0].length) : content;
+	const heading = match?.[1]?.trim().toLocaleLowerCase();
+	const normalizedTitle = title.trim().toLocaleLowerCase();
+	if (!match || !heading || !normalizedTitle) return content;
+	// Whole words only, so "# Guidelines" stays on a note named "Guide".
+	const repeatsTitle =
+		normalizedTitle === heading ||
+		` ${normalizedTitle} `.includes(` ${heading} `) ||
+		` ${heading} `.includes(` ${normalizedTitle} `);
+	return repeatsTitle ? content.slice(match[0].length) : content;
 }
 
 /** The note's folder as a breadcrumb, or an empty string at the space root. */

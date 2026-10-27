@@ -18,6 +18,8 @@ interface AiProviderOption {
 interface AiConnectionOption {
 	value: AiConnectionType;
 	providers: readonly AiProviderOption[];
+	/** Two logos that stand for the connection type on its tile. */
+	preview: readonly [AiProviderKind, AiProviderKind];
 }
 
 const CONNECTION_OPTIONS = [
@@ -32,6 +34,7 @@ const CONNECTION_OPTIONS = [
 			{ value: "opencode", label: "OpenCode" },
 			{ value: "pi", label: "PI" },
 		],
+		preview: ["codex_chatgpt", "claude_code"],
 	},
 	{
 		value: "local",
@@ -39,6 +42,7 @@ const CONNECTION_OPTIONS = [
 			{ value: "ollama", label: "Ollama" },
 			{ value: "llama_cpp", label: "llama.cpp" },
 		],
+		preview: ["ollama", "llama_cpp"],
 	},
 	{
 		value: "api",
@@ -49,6 +53,7 @@ const CONNECTION_OPTIONS = [
 			{ value: "openrouter", label: "OpenRouter" },
 			{ value: "openai_compat", label: "OpenAI compatible" },
 		],
+		preview: ["anthropic", "gemini"],
 	},
 ] as const satisfies readonly AiConnectionOption[];
 
@@ -67,14 +72,14 @@ function connectionForType(type: AiConnectionType): AiConnectionOption {
 function ConnectionPreview({ option }: { option: AiConnectionOption }) {
 	return (
 		<span className="aiConnectionPreview" aria-hidden="true">
-			{option.providers.slice(0, 3).map((provider) => (
+			{option.preview.map((provider) => (
 				<span
-					key={provider.value}
+					key={provider}
 					className="aiConnectionPreviewLogo"
-					data-provider={provider.value}
+					data-provider={provider}
 					aria-hidden="true"
 				>
-					<ProviderLogo provider={provider.value} className="aiConnectionPreviewLogoImage" />
+					<ProviderLogo provider={provider} className="aiConnectionPreviewLogoImage" />
 				</span>
 			))}
 		</span>
@@ -133,22 +138,10 @@ export function AiConnectionPicker({ provider, onProviderChange }: AiConnectionP
 				interactive={false}
 			>
 				<Popover open={providerMenuOpen} onOpenChange={setProviderMenuOpen}>
-					<PopoverTrigger
-						render={
-							<button
-								type="button"
-								className={cn("appearanceThemeDropdownTrigger", providerMenuOpen && "is-open")}
-							/>
-						}
-					>
-						<span className="appearanceThemeDropdownLeading">
-							<ProviderIdentity option={selectedProvider} />
-						</span>
-						<span
-							className={cn("appearanceThemeDropdownChevron", providerMenuOpen && "is-open")}
-							aria-hidden="true"
-						>
-							<ChevronDown size="var(--icon-md)" />
+					<PopoverTrigger render={<button type="button" className="settingsSelectTrigger" />}>
+						<span className="glyphSelectValue">{selectedProvider.label}</span>
+						<span className="glyphSelectChevron" aria-hidden="true">
+							<ChevronDown size="var(--icon-sm)" />
 						</span>
 					</PopoverTrigger>
 					<PopoverContent

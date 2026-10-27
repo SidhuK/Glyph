@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useDateDisplayFormat } from "../../../contexts";
 import type { NoteProperty } from "../../../lib/tauri";
 import { Edit } from "../../Icons";
 import { Button } from "../../ui/shadcn/button";
@@ -7,6 +8,7 @@ import { Input } from "../../ui/shadcn/input";
 import { WikiLinkSuggestionList, useWikiLinkAutocomplete } from "../hooks/useWikiLinkAutocomplete";
 import { findWikiLinkSpans } from "../markdown/wikiLinkCodec";
 import { WikiLinkedText } from "./WikiLinkedText";
+import { formatPropertyDate } from "./utils";
 
 interface TextPropertyValueFieldProps {
 	property: NoteProperty;
@@ -20,11 +22,15 @@ export function TextPropertyValueField({
 	onUpdate,
 }: TextPropertyValueFieldProps) {
 	const { t } = useTranslation("menu");
+	const dateDisplayFormat = useDateDisplayFormat();
 	const value = property.value_text ?? "";
 	const isTextProperty = property.kind === "text";
+	// Dates read as formatted text and only become the native segmented input while edited.
+	const isDateProperty = property.kind === "date";
 	const containsWikiLinks = isTextProperty && findWikiLinkSpans(value).length > 0;
+	const restsAsText = containsWikiLinks || isDateProperty;
 	const [draft, setDraft] = useState(value);
-	const [isEditing, setIsEditing] = useState(() => !containsWikiLinks);
+	const [isEditing, setIsEditing] = useState(() => !restsAsText);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const wikiLinkAutocomplete = useWikiLinkAutocomplete({
 		enabled: isTextProperty && isEditing,
@@ -37,8 +43,22 @@ export function TextPropertyValueField({
 	const commitDraft = () => {
 		wikiLinkAutocomplete.close();
 		if (draft !== value) onUpdate({ value_text: draft });
-		setIsEditing(!hasWikiLinks);
+		setIsEditing(!hasWikiLinks && !isDateProperty);
 	};
+
+	if (!isEditing && isDateProperty) {
+		const formatted = formatPropertyDate(draft, dateDisplayFormat);
+		return (
+			<button
+				type="button"
+				className="notePropertyDateButton"
+				data-empty={formatted ? undefined : "true"}
+				onClick={() => setIsEditing(true)}
+			>
+				{formatted || "—"}
+			</button>
+		);
+	}
 
 	if (!isEditing && hasWikiLinks) {
 		return (
@@ -63,7 +83,7 @@ export function TextPropertyValueField({
 		<div className="notePropertyTextEditor">
 			<Input
 				ref={inputRef}
-				autoFocus={hasWikiLinks}
+				autoFocus={hasWikiLinks || isDateProperty}
 				className="plainTextInput notePropertyFieldInput"
 				style={{ color: "var(--text-primary)" }}
 				type={property.kind === "date" ? "date" : property.kind === "url" ? "url" : "text"}
@@ -93,7 +113,7 @@ export function TextPropertyValueField({
 						event.preventDefault();
 						wikiLinkAutocomplete.close();
 						setDraft(value);
-						setIsEditing(!containsWikiLinks);
+						setIsEditing(!restsAsText);
 						return;
 					}
 					if (wikiLinkAutocomplete.handleKeyDown(event)) return;

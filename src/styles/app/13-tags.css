@@ -24,7 +24,9 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
 }
 
 .tagsList {
@@ -45,12 +47,12 @@
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	gap: 6px;
+	gap: 8px;
 	padding: 1px 8px;
 	min-height: 28px;
 	border-radius: var(--radius-8);
 	color: var(--text-primary);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 }
 
 .tagsMainButton {
@@ -84,7 +86,7 @@
 .tagsNameWrap {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 	min-width: 0;
 	flex: 1 1 0%;
 	overflow: hidden;
@@ -96,8 +98,10 @@
 }
 
 .tagsIcon {
+	flex-shrink: 0;
 	width: var(--icon-md);
 	height: var(--icon-md);
+	color: var(--text-secondary);
 }
 
 button.tagsIconPicker {
@@ -105,14 +109,14 @@ button.tagsIconPicker {
 	height: var(--icon-md);
 	padding: 0;
 	margin-left: 0;
-	color: currentcolor;
+	color: var(--text-secondary);
 }
 
 .tagsIconPicker:hover,
 .tagsIconPicker:active,
 .tagsIconPicker:focus-visible {
 	background: transparent;
-	color: currentcolor;
+	color: var(--text-primary);
 	box-shadow: none;
 }
 
@@ -127,6 +131,7 @@ button.tagsIconPicker {
 	margin-left: auto;
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
+	font-variant-numeric: tabular-nums;
 	flex-shrink: 0;
 	white-space: nowrap;
 }

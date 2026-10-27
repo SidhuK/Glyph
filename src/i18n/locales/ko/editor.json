@@ -10,6 +10,7 @@
 		"info": "정보"
 	},
 	"ribbon": {
+		"toolbarLabel": "서식",
 		"bold": "굵게",
 		"italic": "기울임꼴",
 		"underline": "밑줄",
@@ -22,11 +23,16 @@
 		"heading1": "제목 1",
 		"heading2": "제목 2",
 		"heading3": "제목 3",
-		"bulletList": "글머리 기호 목록",
-		"numberedList": "번호 매기기 목록",
-		"taskList": "작업 목록",
-		"quote": "인용",
-		"codeBlock": "코드 블록"
+		"color": "색상",
+		"colorSections": {
+			"text": "텍스트",
+			"highlight": "강조"
+		},
+		"link": "링크",
+		"linkUrl": "링크 URL",
+		"linkOpenInNewTab": "새 탭에서 열기",
+		"linkRemove": "제거",
+		"linkApply": "적용"
 	},
 	"selectionAi": {
 		"title": "선택 영역에 대해 AI에게 질문",
@@ -244,6 +250,17 @@
 			"tags": "태그",
 			"status": "상태",
 			"priority": "우선순위"
+		}
+	},
+	"infoSidebar": {
+		"panelLabel": "노트 정보 패널",
+		"sidebarTabsLabel": "노트 사이드바",
+		"infoTab": "정보",
+		"historyTab": "버전 기록",
+		"close": "정보 패널 닫기",
+		"stats": {
+			"tasks": "작업",
+			"tasksDone": "{{total}}개 중 {{completed}}개 완료"
 		}
 	}
 }

@@ -1,11 +1,11 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { MoreVerticalIcon } from "@hugeicons/core-free-icons";
+import { LayoutThreeColumnIcon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
-import { Kanban, Table } from "../Icons";
+import { Table } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { ActionMenuTrigger } from "./ActionMenuTrigger";
 import { useDatabaseViewTabs } from "./useDatabaseViewTabs";
@@ -132,7 +132,12 @@ export function DatabaseViewTabs({
 								)
 							) : null}
 							{view.layout === "board" ? (
-								<Kanban size="var(--icon-sm)" className="databasesViewTabIcon" aria-hidden />
+								<HugeiconsIcon
+									icon={LayoutThreeColumnIcon}
+									size="var(--icon-sm)"
+									className="databasesViewTabIcon"
+									aria-hidden
+								/>
 							) : (
 								<Table size="var(--icon-sm)" className="databasesViewTabIcon" aria-hidden />
 							)}
@@ -154,7 +159,7 @@ export function DatabaseViewTabs({
 					}}
 				>
 					<HugeiconsIcon
-						icon={MoreVerticalIcon}
+						icon={MoreHorizontalIcon}
 						className="databasesViewTabMenuIcon"
 						size="var(--icon-md)"
 						color="currentColor"

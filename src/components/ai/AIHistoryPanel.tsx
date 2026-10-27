@@ -14,7 +14,7 @@ export function AIHistoryPanel({ history, onLoadHistory }: AIHistoryPanelProps) 
 	return (
 		<div className="aiHistory">
 			<div className="aiHistoryHeader">
-				<span>Recent Chats</span>
+				<span>Recent chats</span>
 			</div>
 			<div className="aiHistoryList">
 				{history.summaries.length > 0 ? (

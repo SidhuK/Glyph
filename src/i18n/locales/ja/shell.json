@@ -15,7 +15,7 @@
 		"connections": "接続",
 		"agent": "エージェント",
 		"calendar": "カレンダー",
-		"search": "検索 / クイックオープン",
+		"search": "検索",
 		"searchPlaceholder": "検索",
 		"dailyNote": "デイリーノート",
 		"weeklyNote": "ウィークリーノート",
@@ -31,11 +31,12 @@
 		"sortNotes": "ノートを並べ替え",
 		"sort": "並べ替え",
 		"expandAllFolders": "すべてのフォルダを展開",
-		"collapseAllFolders": "すべてのフォルダを折りたたむ"
+		"collapseAllFolders": "すべてのフォルダを折りたたむ",
+		"fileTreeOptions": "ファイルツリーのオプション"
 	},
 	"sort": {
-		"nameAsc": "名前 A-Z",
-		"nameDesc": "名前 Z-A",
+		"nameAsc": "名前 A–Z",
+		"nameDesc": "名前 Z–A",
 		"modifiedNewest": "更新日（新しい順）",
 		"modifiedOldest": "更新日（古い順）",
 		"createdNewest": "作成日（新しい順）",
@@ -94,8 +95,7 @@
 		"boardCard": {
 			"openNote": "ノートを開く",
 			"moveTo": "{{lane}} に移動",
-			"openHint": "ダブルクリックでノートを開く",
-			"updated": "{{date}} に更新"
+			"openHint": "ダブルクリックでノートを開く"
 		},
 		"switch": "コレクションを切り替え",
 		"select": "コレクションを選択",
@@ -113,23 +113,33 @@
 		},
 		"viewOptions": {
 			"reset": "リセット",
-			"presets": "プリセット"
+			"presets": "プリセット",
+			"display": "表示",
+			"grouping": "グループ化",
+			"ordering": "並び順",
+			"filter": "フィルター",
+			"none": "なし",
+			"filtersApplied": "{{count}} 件適用中",
+			"columns": "列",
+			"cardFields": "カードの項目",
+			"showAll": "すべて表示",
+			"groupedBy": "このフィールドでグループ化中",
+			"cardFieldLabels": {
+				"date": "日付",
+				"task_progress": "タスクの進捗",
+				"status": "ステータス",
+				"priority": "優先度",
+				"tags": "タグ"
+			}
 		},
 		"groupBy": {
-			"label": "グループ化",
-			"title": "{{name}} でグループ化",
-			"choose": "グループ化するフィールドを選択",
 			"none": "グループ化なし",
 			"multiLane": "{{name}} (複数レーン)",
 			"boardHint": "レーンを作るにはステータス、タグ、チェックボックスのフィールドを追加してください"
 		},
 		"sort": {
-			"title": "並べ替え",
-			"presets": "並べ替えプリセット",
-			"replaceWithPreset": "現在の並べ替えを {{name}} に置き換える",
 			"field": "並べ替えフィールド",
 			"direction": "並べ替えの方向",
-			"add": "並べ替えを追加",
 			"directions": {
 				"date": {
 					"asc": "古い順",
@@ -150,7 +160,6 @@
 			}
 		},
 		"filter": {
-			"title": "フィルタ",
 			"hint": "列の値でこのビューを絞り込みます。ノート本文を検索するにはツールバーの検索ボックスを使います。",
 			"presets": "フィルタプリセット",
 			"unsupportedOperator": "フィルタ {{index}} は未対応の演算子を使っています。結果を表示するには対応する演算子を選んでください。",
@@ -216,12 +225,33 @@
 			"emptyTitle": "フィールドを追加してボードのレーンを作成",
 			"emptyText": "ボードビューはノートをレーンにまとめます。ステータス、優先度、チェックボックス、タグなどのフィールドをノートに追加し、上のツールバーで選択してください。",
 			"openViewSettings": "ビューの設定を開く",
+			"noPriority": "優先度なし",
 			"laneEmpty": {
 				"archived": "アーカイブしたノートはここに入ります",
 				"done": "完了したノートはここに入ります",
 				"unassigned": "値のないノートはここに表示されます",
 				"default": "ここにノートをドロップするか、下で追加します"
 			}
+		},
+		"changeStatus": "ステータスを変更",
+		"statusLabel": "ステータス",
+		"cell": {
+			"addOrChooseTag": "タグを追加または選択",
+			"addOrChooseValue": "値を追加または選択",
+			"suggestedTags": "おすすめのタグ",
+			"suggestedValues": "おすすめの値",
+			"changePriority": "優先度を変更",
+			"editTagsHint": "ダブルクリックでタグを編集",
+			"editHint": "ダブルクリックで編集",
+			"renameNoteHint": "ダブルクリックでノート名を変更"
+		},
+		"tagPicker": {
+			"source": "タグのソース",
+			"selected": "選択中のタグ",
+			"open": "タグピッカーを開く",
+			"placeholder": "タグを選択",
+			"empty": "一致するタグがありません。",
+			"search": "タグを検索"
 		}
 	},
 	"tags": {
@@ -324,8 +354,6 @@
 		"noResults": "結果がありません",
 		"resultsLabel": "パレットの結果",
 		"searchEverything": "ノート、コマンド、設定などを検索…",
-		"on": "オン",
-		"off": "オフ",
 		"notSet": "未設定",
 		"spaceRequired": "この設定を使うにはスペースを開いてください",
 		"settingUpdated": "設定を更新しました",
@@ -345,6 +373,12 @@
 		"noTemplates": "テンプレートフォルダに Markdown テンプレートが見つかりませんでした。",
 		"templateSelectionInvalid": "設定されたテンプレートフォルダ内の Markdown テンプレートを選択してください。",
 		"templateSelectionFailed": "テンプレート選択画面を開けませんでした",
+		"moreMatches": "他 {{count}} 件",
+		"footer": {
+			"navigate": "移動",
+			"open": "開く",
+			"close": "閉じる"
+		},
 		"groups": {
 			"command": "コマンド",
 			"setting": "設定",
@@ -382,7 +416,12 @@
 	},
 	"tabs": {
 		"allNotes": "すべてのノート",
-		"collections": "コレクション"
+		"collections": "コレクション",
+		"goBack": "戻る",
+		"goForward": "進む",
+		"closeNamed": "{{label}} を閉じる",
+		"renameNamed": "{{name}} の名前を変更",
+		"renameCurrent": "現在のファイル名を変更"
 	},
 	"ai": {
 		"toolFailed": "{{tool}} に失敗しました",
@@ -538,6 +577,13 @@
 				"local_wins": "ローカルを優先",
 				"remote_wins": "リモートを優先"
 			}
-		}
+		},
+		"sync": "今すぐ同期",
+		"resumeAutoSync": "自動同期を再開",
+		"remote": "リモート",
+		"actions": "操作"
+	},
+	"activity": {
+		"noPreviewYet": "プレビューはまだありません"
 	}
 }

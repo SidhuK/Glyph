@@ -1,8 +1,7 @@
 import type { Editor } from "@tiptap/core";
-import { m } from "motion/react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link2, X } from "../Icons";
-import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
@@ -23,6 +22,7 @@ export function RibbonLinkPopover({
 	focusChain,
 	preventMouseDown,
 }: RibbonLinkPopoverProps) {
+	const { t } = useTranslation("editor");
 	const [linkOpen, setLinkOpen] = useState(false);
 	const [linkHref, setLinkHref] = useState("");
 	const [linkTarget, setLinkTarget] = useState<"_self" | "_blank">("_self");
@@ -67,14 +67,12 @@ export function RibbonLinkPopover({
 			<PopoverTrigger
 				disabled={!canEdit}
 				render={
-					<m.button
+					<button
 						type="button"
 						className={`ribbonBtn ${editor.isActive("link") ? "active" : ""}`}
-						title="Link"
-						aria-label="Link"
+						title={t("ribbon.link")}
+						aria-label={t("ribbon.link")}
 						onMouseDown={preventMouseDown}
-						whileTap={canEdit ? { scale: 0.97 } : undefined}
-						transition={springPresets.snappy}
 					/>
 				}
 			>
@@ -92,7 +90,7 @@ export function RibbonLinkPopover({
 							}
 						}}
 						placeholder="https://example.com"
-						aria-label="Link URL"
+						aria-label={t("ribbon.linkUrl")}
 					/>
 				</div>
 				<label className="editorLinkPopoverCheckbox">
@@ -101,15 +99,15 @@ export function RibbonLinkPopover({
 						checked={linkTarget === "_blank"}
 						onChange={(event) => setLinkTarget(event.target.checked ? "_blank" : "_self")}
 					/>
-					<span>Open in new tab</span>
+					<span>{t("ribbon.linkOpenInNewTab")}</span>
 				</label>
 				<div className="editorLinkPopoverActions">
 					<Button type="button" variant="ghost" size="sm" onClick={removeLink}>
 						<X size="var(--icon-md)" />
-						Remove
+						{t("ribbon.linkRemove")}
 					</Button>
 					<Button type="button" size="sm" onClick={applyLink}>
-						Apply
+						{t("ribbon.linkApply")}
 					</Button>
 				</div>
 			</PopoverContent>

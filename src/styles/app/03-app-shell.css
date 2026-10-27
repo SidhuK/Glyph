@@ -72,7 +72,7 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 .glyphToastTitle {
 	overflow: hidden !important;
 	color: var(--glyph-toast-text) !important;
-	font-size: 12.5px !important;
+	font-size: var(--text-sm) !important;
 	font-weight: 600 !important;
 	letter-spacing: 0 !important;
 	text-overflow: ellipsis !important;
@@ -81,7 +81,7 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 
 .glyphToastDescription {
 	color: var(--glyph-toast-muted) !important;
-	font-size: 12.5px !important;
+	font-size: var(--text-sm) !important;
 	line-height: 1.35 !important;
 }
 
@@ -101,7 +101,7 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 	border-radius: 999px;
 	background: transparent;
 	color: var(--glyph-toast-muted);
-	font-size: 10px;
+	font-size: var(--text-2xs);
 	line-height: 18px;
 	text-align: center;
 	cursor: pointer;
@@ -154,7 +154,7 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 12px;
-	font-size: 12.5px;
+	font-size: var(--text-sm);
 	line-height: 1.3;
 }
 

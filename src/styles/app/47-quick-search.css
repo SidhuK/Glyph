@@ -21,7 +21,7 @@
 .quickSearchHideError {
 	padding: 0 20px 12px;
 	color: var(--status-danger-fg);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 }
 
 .quickSearchEmpty {
@@ -33,7 +33,7 @@
 	gap: 6px;
 	padding: 24px;
 	color: var(--text-tertiary);
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	text-align: center;
 	outline: none;
 }

@@ -1,29 +1,29 @@
-import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
+import type { ConnectionsGraphVariant } from "./connectionsGraph";
 import {
 	CONNECTIONS_COMMUNITY_HUE_VARIABLES,
 	type ConnectionsCommunityTone,
 } from "./connectionsCommunities";
-import { LOCAL_FOCUS_NODE_SIZE } from "./connectionsDensity";
-import type {
-	ConnectionsEdgeAttributes,
-	ConnectionsEdgeTone,
-	ConnectionsGraphVariant,
-	ConnectionsNodeAttributes,
-} from "./connectionsGraph";
 
-/** Unfocused edges drop to this share of the link opacity while a node is focused. */
-const FADED_EDGE_ALPHA_SCALE = 0.2;
-const HIGHLIGHTED_EDGE_Z_INDEX = 1;
+/** Community edges keep only this much of their hue; the rest is the grey edge ink. */
+const COMMUNITY_EDGE_HUE_WEIGHT = 0.35;
+/** The hovered or selected node's label steps up to this weight. */
+export const FOCUS_LABEL_WEIGHT = "500";
 /** Space-graph nodes grow by this factor while focused. */
 export const SPACE_FOCUS_NODE_SCALE = 1.15;
 
 export interface ConnectionsPalette {
 	accent: string;
+	/** Graph surface; translucent looks are mixed into it because sigma's WebGL blend ignores alpha. */
+	background: string;
 	text: string;
+	/** Resting label ink; labels switch to `text` only while hovered or selected. */
+	textSecondary: string;
 	note: string;
 	tag: string;
 	/** Indexed by `ConnectionsCommunityHue`. */
 	communities: readonly string[];
+	/** Community hues pulled toward the grey edge ink, indexed like `communities`. */
+	communityEdges: readonly string[];
 	communityNeutral: string;
 	edgeDefault: string;
 	edgeInternal: string;
@@ -39,6 +39,8 @@ export interface ConnectionsFocusState {
 	neighborIds: Set<string> | null;
 	selectedNodeId: string | null;
 	searchMatchIds: Set<string> | null;
+	/** Community tone of the hovered or selected space-graph node; null for local graphs. */
+	focusTone: ConnectionsCommunityTone | null;
 }
 
 export interface ConnectionsDisplayState {
@@ -77,7 +79,37 @@ function cssColor(element: HTMLElement, name: string, fallback: string) {
 	return sigmaCompatibleColor(color || fallback, fallback);
 }
 
-function withAlpha(color: string, alpha: number) {
+/** Resolves a UI type-scale token to pixels so labels follow the user's UI font size. */
+export function resolveConnectionsLabelSize(
+	container: HTMLElement,
+	variant: ConnectionsGraphVariant,
+) {
+	const [token, fallback] = variant === "local" ? ["--text-xs", 12] : ["--text-2xs", 11];
+	const probe = document.createElement("span");
+	probe.style.cssText = `font-size: ${fallback}px; font-size: var(${token});`;
+	container.appendChild(probe);
+	const size = Number.parseFloat(getComputedStyle(probe).fontSize);
+	probe.remove();
+	return Number.isFinite(size) && size > 0 ? size : fallback;
+}
+
+function parseRgb(color: string): [number, number, number] | null {
+	const rgb = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i);
+	if (!rgb) return null;
+	return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+}
+
+function mixRgb(color: string, base: string, weight: number) {
+	const from = parseRgb(color);
+	const to = parseRgb(base);
+	if (!from || !to) return color;
+	const [red, green, blue] = from.map((channel, index) =>
+		Math.round(channel * weight + (to[index] ?? channel) * (1 - weight)),
+	);
+	return `rgb(${red}, ${green}, ${blue})`;
+}
+
+export function withAlpha(color: string, alpha: number) {
 	const clamped = Math.min(1, Math.max(0, alpha));
 	const rgb = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i);
 	if (!rgb) return color;
@@ -86,7 +118,9 @@ function withAlpha(color: string, alpha: number) {
 
 export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPalette {
 	const accent = cssColor(container, "--interactive-accent", "#888888");
+	const background = cssColor(container, "--bg-primary", "#ffffff");
 	const text = cssColor(container, "--text-primary", "#1f2328");
+	const textSecondary = cssColor(container, "--text-secondary", "#59636e");
 	const note = cssColor(container, "--local-connections-note-bg", "#4269d0");
 	const tag = cssColor(container, "--local-connections-tag-node", "#a463f2");
 	const communities = CONNECTIONS_COMMUNITY_HUE_VARIABLES.map((variable) =>
@@ -109,10 +143,15 @@ export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPa
 
 	return {
 		accent,
+		background,
 		text,
+		textSecondary,
 		note,
 		tag,
 		communities,
+		communityEdges: communities.map((color) =>
+			mixRgb(color, edgeDefault, COMMUNITY_EDGE_HUE_WEIGHT),
+		),
 		communityNeutral,
 		edgeDefault,
 		edgeInternal: edgeMuted,
@@ -121,149 +160,5 @@ export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPa
 		labelBorder,
 		hoverHalo: withAlpha(accent, 0.28),
 		hoverHaloSoft: withAlpha(accent, 0.12),
-	};
-}
-
-function communityToneColor(tone: ConnectionsCommunityTone, palette: ConnectionsPalette) {
-	switch (tone.kind) {
-		case "hue":
-			return palette.communities[tone.hue];
-		case "neutral":
-			return palette.communityNeutral;
-		default: {
-			const _exhaustive: never = tone;
-			return _exhaustive;
-		}
-	}
-}
-
-function nodeColorForAttributes(attrs: ConnectionsNodeAttributes, palette: ConnectionsPalette) {
-	if (attrs.isCenter) return palette.accent;
-	if (attrs.kind === "tag") return palette.tag;
-	if (attrs.community.kind === "member") return communityToneColor(attrs.community.tone, palette);
-	return palette.note;
-}
-
-function isLabeledHub({ community }: ConnectionsNodeAttributes) {
-	return community.kind === "member" && community.isHub && community.tone.kind === "hue";
-}
-
-export function buildNodeReducer(
-	getPalette: () => ConnectionsPalette,
-	variant: ConnectionsGraphVariant,
-	getFocusState: () => ConnectionsFocusState,
-	getDisplayState: () => ConnectionsDisplayState,
-) {
-	return (nodeKey: string, data: ConnectionsNodeAttributes): Partial<NodeDisplayData> => {
-		const palette = getPalette();
-		const { hoveredNode, neighborIds, selectedNodeId, searchMatchIds } = getFocusState();
-		const display = getDisplayState();
-		const activeFocusId = selectedNodeId ?? hoveredNode;
-		const activeNeighbors = neighborIds;
-		const searching = searchMatchIds !== null;
-		const isSearchMatch = searching && searchMatchIds.has(nodeKey);
-		const isFocus = activeFocusId === nodeKey;
-		const isNeighbor = activeNeighbors?.has(nodeKey) ?? false;
-		const isFaded = searching ? !isSearchMatch : Boolean(activeFocusId) && !isFocus && !isNeighbor;
-
-		let color = nodeColorForAttributes(data, palette);
-		let label = data.label;
-		let size = data.size * display.nodeSizeScale;
-		let zIndex = isFocus ? 30 : isNeighbor || isSearchMatch ? 20 : 0;
-		let forceLabel: boolean | undefined;
-
-		if (isFaded) {
-			color = palette.faded;
-			label = "";
-			zIndex = 0;
-		} else if (isFocus) {
-			forceLabel = true;
-			size = Math.max(
-				size,
-				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : size * SPACE_FOCUS_NODE_SCALE,
-			);
-			zIndex = 30;
-		} else if (isSearchMatch) {
-			forceLabel = true;
-			zIndex = 20;
-		} else if (activeFocusId && isNeighbor) {
-			forceLabel = true;
-		} else if (data.isCenter || isLabeledHub(data)) {
-			forceLabel = true;
-		}
-
-		return {
-			x: data.x,
-			y: data.y,
-			size,
-			label,
-			color,
-			zIndex,
-			highlighted: isFocus,
-			...(forceLabel ? { forceLabel } : {}),
-		};
-	};
-}
-
-function edgeColorForTone(tone: ConnectionsEdgeTone, palette: ConnectionsPalette) {
-	switch (tone.kind) {
-		case "default":
-			return palette.edgeDefault;
-		case "accent":
-			return palette.accent;
-		case "internal":
-			return palette.edgeInternal;
-		case "community":
-			return tone.tone.kind === "hue"
-				? communityToneColor(tone.tone, palette)
-				: palette.edgeDefault;
-		default: {
-			const _exhaustive: never = tone;
-			return _exhaustive;
-		}
-	}
-}
-
-export function buildEdgeReducer(
-	getPalette: () => ConnectionsPalette,
-	getFocusState: () => ConnectionsFocusState,
-	getDisplayState: () => ConnectionsDisplayState,
-	isEdgeInFocus: (source: string, target: string) => boolean,
-) {
-	return (
-		_edgeKey: string,
-		data: ConnectionsEdgeAttributes,
-		source: string,
-		target: string,
-	): Partial<EdgeDisplayData> => {
-		const palette = getPalette();
-		const display = getDisplayState();
-		const { hoveredNode, selectedNodeId, searchMatchIds } = getFocusState();
-		const activeFocusId = selectedNodeId ?? hoveredNode;
-		const matchEdge = searchMatchIds?.has(source) && searchMatchIds.has(target);
-		const isHighlighted = searchMatchIds === null && isEdgeInFocus(source, target);
-		const isFaded = searchMatchIds !== null ? !matchEdge : Boolean(activeFocusId) && !isHighlighted;
-		const baseColor = edgeColorForTone(data.tone, palette);
-
-		let color = withAlpha(baseColor, display.linkOpacity);
-		let size = data.size * display.linkThicknessScale;
-		let zIndex = 0;
-
-		if (isHighlighted) {
-			color = palette.accent;
-			size = Math.max(size, 1.5);
-			zIndex = HIGHLIGHTED_EDGE_Z_INDEX;
-		}
-
-		if (isFaded) {
-			color = withAlpha(palette.edgeInternal, display.linkOpacity * FADED_EDGE_ALPHA_SCALE);
-			size = Math.max(0.45, size * 0.7);
-		}
-
-		return {
-			color,
-			size,
-			zIndex,
-		};
 	};
 }

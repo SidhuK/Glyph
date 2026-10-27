@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { CursorAddSelection02Icon, LibraryIcon } from "@hugeicons/core-free-icons";
+import { LibraryIcon } from "@hugeicons/core-free-icons";
 import { useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { useDatabasesPane } from "../../hooks/database/useDatabasesPane";
@@ -82,12 +82,7 @@ function DatabasesPaneContent({
 								title={t("sidebar.newNote")}
 								aria-label={t("sidebar.newNote")}
 							>
-								<HugeiconsIcon
-									icon={CursorAddSelection02Icon}
-									size="var(--icon-lg)"
-									aria-hidden="true"
-								/>
-								<span>{t("sidebar.newNote")}</span>
+								<Plus size="var(--icon-md)" aria-hidden="true" />
 							</button>
 						</div>
 						<DatabaseToolbar
@@ -132,6 +127,7 @@ function DatabasesPaneContent({
 							boardCardFields={
 								activeCollection.config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS
 							}
+							activeSort={activeCollection.config.sorts[0] ?? null}
 							onLaneOrderChange={views.boardHandlers.onLaneOrderChange}
 							onCardOrderChange={views.boardHandlers.onCardOrderChange}
 							onLaneColorChange={views.boardHandlers.onLaneColorChange}

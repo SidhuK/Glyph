@@ -106,30 +106,26 @@ export function FiltersPanel({
 			? t("collections.filter.unsupportedOperator", { index: invalidOperatorIndex + 1 })
 			: "";
 	return (
-		<section
-			className="databaseViewOptionsPanel is-wide"
-			aria-label={t("collections.filter.title")}
-		>
-			<div className="databaseViewPanelHeader">
-				<span>{t("collections.filter.title")}</span>
-				{config.filters.length > 0 ? (
-					<button
-						type="button"
-						className="databaseViewPanelReset"
-						onClick={() =>
-							void updateFilters(
-								() => [],
-								() => [],
-							)
-						}
-					>
-						{t("collections.viewOptions.reset")}
-					</button>
-				) : null}
-			</div>
+		<>
 			<p className="databaseViewPanelHint">{t("collections.filter.hint")}</p>
 			<div className="databaseViewPresetGroup" aria-label={t("collections.filter.presets")}>
-				<span className="databaseViewPresetLabel">{t("collections.viewOptions.presets")}</span>
+				<div className="databaseViewPresetLabel">
+					<span>{t("collections.viewOptions.presets")}</span>
+					{config.filters.length > 0 ? (
+						<button
+							type="button"
+							className="databaseViewPanelReset"
+							onClick={() =>
+								void updateFilters(
+									() => [],
+									() => [],
+								)
+							}
+						>
+							{t("collections.viewOptions.reset")}
+						</button>
+					) : null}
+				</div>
 				<div className="databaseViewPresetChips">
 					{presets.map((preset) => {
 						const applied = isFilterPresetApplied(config.filters, preset);
@@ -176,6 +172,6 @@ export function FiltersPanel({
 					</button>
 				</div>
 			)}
-		</section>
+		</>
 	);
 }

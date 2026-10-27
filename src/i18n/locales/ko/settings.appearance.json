@@ -7,7 +7,7 @@
 		"sectionTitle": "테마",
 		"sectionDescription": "라이트와 다크 테마 패밀리를 조합합니다.",
 		"appearance": {
-			"label": "모양",
+			"label": "색상 모드",
 			"description": "시스템을 따르거나 Glyph를 라이트 또는 다크 모드로 고정합니다.",
 			"ariaLabel": "테마 모드"
 		},
@@ -43,7 +43,7 @@
 		"sectionDescription": "JSON 팔레트를 가져오면 기본 테마처럼 사용할 수 있습니다.",
 		"template": {
 			"label": "테마 템플릿",
-			"description": "Glyph 기본 라이트·다크 색상에서 시작합니다. 헥스 코드와 이름을 수정하세요.",
+			"description": "Glyph 기본 라이트·다크 색상에서 시작해, 헥스 코드와 이름을 수정하세요.",
 			"copy": "JSON 복사",
 			"save": "파일 저장"
 		},
@@ -61,7 +61,6 @@
 	},
 	"shape": {
 		"sectionTitle": "형태",
-		"sectionDescription": "앱 전반의 패널, 버튼, 창의 둥근 정도를 선택합니다.",
 		"corners": {
 			"label": "모서리",
 			"description": "사이드바, 대화상자, 입력란, 카드 등 어디에나 적용됩니다.",
@@ -84,7 +83,6 @@
 	},
 	"layout": {
 		"sectionTitle": "레이아웃",
-		"sectionDescription": "탐색과 노트가 작업 공간을 나누는 방식을 선택합니다.",
 		"folioMode": {
 			"label": "작업 공간 레이아웃",
 			"description": "탐색, 노트 목록, 편집기의 배치를 선택합니다.",
@@ -106,9 +104,12 @@
 			"ariaLabel": "기본 Folio 정렬"
 		},
 		"taskProgressRings": {
-			"label": "작업 진행률 링",
-			"description": "사이드바, Folio, 활동, 데이터베이스 보드의 노트 옆에 작업 진행률 링을 표시합니다.",
-			"ariaLabel": "작업 진행률 링 표시"
+			"label": "작업 진행률",
+			"description": "사이드바, Folio, 활동, 데이터베이스 보드의 노트 옆에 완료된 작업 수와 전체 작업 수를 표시합니다.",
+			"ariaLabel": "작업 진행률 표시"
 		}
+	},
+	"appIcon": {
+		"sectionTitle": "앱 아이콘"
 	}
 }

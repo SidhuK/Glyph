@@ -190,7 +190,6 @@ export function MarkdownEditorPane({
 		rawEditorRef,
 		runAutosave,
 		saveBeforeExternalMutation,
-		saveLabel,
 		text,
 		textRef,
 		loadedRelPath,
@@ -637,7 +636,6 @@ export function MarkdownEditorPane({
 						lastSavedMtimeMs={lastSavedMtimeMs}
 						lineCount={infoAnalysis.lineCount}
 						utf8SizeBytes={utf8SizeBytes}
-						saveLabel={saveLabel}
 						gitSyncStatus={gitSyncStatus}
 						selectedGitCommitHash={gitDiff?.commit.hash ?? null}
 						onSelectGitDiff={onGitDiffChange ?? undefined}

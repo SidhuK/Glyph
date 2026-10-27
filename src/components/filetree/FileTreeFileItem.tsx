@@ -105,7 +105,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			.trim() ||
 		"Untitled";
 	const extBadge = !entry.is_markdown && !isExcalidraw && fileExt ? fileExt.slice(1) : "";
-	const iconColor = customColor ? "var(--file-tree-row-icon-color)" : color;
+	// Notes take the tree's neutral icon ink; only other file types keep a type colour.
+	const iconColor = customColor
+		? "var(--file-tree-row-icon-color)"
+		: entry.is_markdown
+			? undefined
+			: color;
 	const {
 		ref: draggableRef,
 		handleRef,
@@ -260,14 +265,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						{appearance?.icon ? (
 							<AppearanceIcon
 								iconName={appearance.icon}
-								size="var(--icon-md)"
+								size="var(--icon-lg)"
 								className="fileTreeIcon"
 							/>
 						) : (
 							<Icon
-								size="var(--icon-md)"
+								size="var(--icon-lg)"
 								className="fileTreeIcon"
-								style={{ color: iconColor }}
+								style={iconColor ? { color: iconColor } : undefined}
 								aria-hidden="true"
 							/>
 						)}

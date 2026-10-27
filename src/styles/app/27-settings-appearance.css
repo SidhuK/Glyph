@@ -1,4 +1,19 @@
-.appearanceThemeDropdownTrigger,
+/* The dock icon choices always sit on one row; the copy column wraps instead. */
+.settingsFieldControl:has(> .appIconPicker) {
+	flex: 0 0 auto;
+	max-width: none;
+}
+
+/* Dock icons take the image tiles' selection style: no fill, a hairline ring on hover and
+   the soft selection ring 2px outside the chosen icon. */
+.appIconPicker label:hover input:not(:checked) + .appIconPickerTile {
+	outline: 1.5px solid var(--border-default);
+}
+
+.appIconPicker input:checked + .appIconPickerTile {
+	outline: 1.5px solid var(--settings-selection-ring);
+}
+
 .appearanceThemeDropdownOption {
 	position: relative;
 	display: flex;
@@ -14,61 +29,22 @@
 	color: var(--text-primary);
 	cursor: pointer;
 	box-shadow: none;
-	transition:
-		background var(--transition-base),
-		border-color var(--transition-base),
-		box-shadow var(--transition-base),
-		transform var(--transition-base);
+	transition: background var(--transition-fast);
 }
 
-.appearanceThemeDropdownTrigger {
-	padding: 7px 10px;
-	background: var(--settings-control-surface);
-	border: 1px solid color-mix(in srgb, var(--border-default) 90%, transparent);
-}
-
-.appearanceThemeDropdownTrigger:hover,
 .appearanceThemeDropdownOption:hover {
-	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	background: var(--bg-hover);
 }
 
-.appearanceThemeDropdownTrigger:active,
-.appearanceThemeDropdownOption:active {
-	transform: scale(0.985);
-}
-
-.appearanceThemeDropdownTrigger:focus-visible,
 .appearanceThemeDropdownOption:focus-visible {
 	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 44%, transparent);
 	outline-offset: 2px;
 }
 
-.appearanceThemeDropdownTrigger.is-open {
-	border-color: color-mix(in srgb, var(--border-default) 100%, transparent);
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-}
-
 .appearanceThemeDropdownTitle,
 .appearanceThemeDropdownOptionTitle {
-	font-size: calc(var(--text-base) * 0.86);
-	font-weight: var(--font-medium);
-	color: var(--text-primary);
-}
-
-.appearanceThemeDropdownChevron {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	margin-left: auto;
-	color: var(--text-secondary);
-	transition:
-		transform var(--transition-base),
-		color var(--transition-base);
-}
-
-.appearanceThemeDropdownChevron.is-open {
-	transform: rotate(180deg);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	color: var(--text-primary);
 }
 
@@ -79,16 +55,9 @@
 	border: 0;
 	background: var(--bg-primary);
 	box-shadow:
-		0 0 0 1px color-mix(in srgb, var(--border-default) 52%, transparent),
-		0 10px 28px color-mix(in srgb, black 10%, transparent),
-		0 2px 8px color-mix(in srgb, black 5%, transparent);
-}
-
-:root.dark .appearanceThemeDropdownContent {
-	box-shadow:
-		0 0 0 1px color-mix(in srgb, white 8%, transparent),
-		0 12px 32px color-mix(in srgb, black 42%, transparent),
-		0 2px 8px color-mix(in srgb, black 24%, transparent);
+		0 0 0 0.5px var(--border-default),
+		0 2px 6px rgb(0 0 0 / 5%),
+		0 10px 28px rgb(0 0 0 / 7%);
 }
 
 .appearanceThemeDropdownOption.is-selected {
@@ -113,7 +82,6 @@
 	-webkit-mask-size: 11px 11px;
 }
 
-.appearanceThemeDropdownLeading,
 .appearanceThemeDropdownOptionLead {
 	display: flex;
 	align-items: center;
@@ -127,15 +95,15 @@
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
-	width: 24px;
-	height: 24px;
-	min-width: 24px;
+	width: 22px;
+	height: 22px;
+	min-width: 22px;
 	padding: 0;
-	border-radius: 6px;
-	border: 1px solid var(--border-default);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border-light);
 	background: var(--bg-secondary);
-	color: var(--interactive-accent);
-	font-size: calc(var(--text-base) * 0.68);
+	color: var(--text-primary);
+	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.04em;
 	line-height: 1;
@@ -148,14 +116,14 @@
 }
 
 .appearanceThemeDropdownHeaderTitle {
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
 .appearanceThemeDropdownHeaderHint {
-	margin-top: 3px;
-	font-size: calc(var(--text-base) * 0.8);
+	margin-top: 2px;
+	font-size: var(--text-xs);
 	line-height: 1.35;
 	color: var(--text-secondary);
 	text-wrap: pretty;
@@ -178,15 +146,6 @@
 	gap: 12px;
 }
 
-.headingPaletteTrigger {
-	min-width: 286px;
-}
-
-.headingPaletteTrigger:disabled {
-	cursor: not-allowed;
-	opacity: 0.55;
-}
-
 .headingPalettePreview {
 	display: flex;
 	align-items: center;
@@ -194,9 +153,9 @@
 }
 
 .headingPaletteSwatch {
-	font-size: calc(var(--text-base) * 0.66);
+	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.06em;
+	letter-spacing: -0.02em;
 	line-height: 1;
 }
 
@@ -222,20 +181,10 @@
 	.colorfulHeadingsControls {
 		flex-wrap: wrap-reverse;
 	}
-
-	.headingPaletteTrigger {
-		min-width: 0;
-	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.appearanceThemeDropdownTrigger,
 	.appearanceThemeDropdownOption {
 		transition: none;
-	}
-
-	.appearanceThemeDropdownTrigger:active,
-	.appearanceThemeDropdownOption:active {
-		transform: none;
 	}
 }

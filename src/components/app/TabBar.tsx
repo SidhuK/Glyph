@@ -15,9 +15,8 @@ import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
-import { displayNameFromPath, isMarkdownPath } from "../../utils/path";
+import { displayNameFromPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { ActiveFileTitle } from "./ActiveFileTitle";
 import { isPathSpecial, MainTabsBreadcrumbs } from "./MainTabsBreadcrumbs";
 import { MAIN_TAB_DND_TYPE } from "./splitEditorDnd";
 import { TabOverflowMenu } from "./TabOverflowMenu";
@@ -26,7 +25,6 @@ import type { WorkspaceTab } from "./useTabManager";
 interface TabBarProps {
 	paneId: string;
 	tabs: WorkspaceTab[];
-	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	activeTabId: string | null;
 	activeTabPath: string | null;
@@ -59,7 +57,6 @@ const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
 export function TabBar({
 	paneId,
 	tabs,
-	rootEntries,
 	childrenByDir,
 	activeTabId,
 	activeTabPath,
@@ -134,10 +131,6 @@ export function TabBar({
 	}, []);
 
 	const newTabShortcut = getBinding("new-tab");
-	const activeMarkdownPath =
-		activeTabPath && !isPathSpecial(activeTabPath) && isMarkdownPath(activeTabPath)
-			? activeTabPath
-			: null;
 	// Reorder only when one of this pane's tabs is dropped onto another tab in
 	// the same pane. Drops onto the editor body resolve to a pane droppable
 	// instead, which SplitEditorLayout handles.
@@ -186,8 +179,8 @@ export function TabBar({
 						className="mainTabNavBtn"
 						onClick={onGoBack}
 						disabled={!canGoBack}
-						title="Go back"
-						aria-label="Go back"
+						title={t("tabs.goBack")}
+						aria-label={t("tabs.goBack")}
 					>
 						←
 					</button>
@@ -196,13 +189,20 @@ export function TabBar({
 						className="mainTabNavBtn"
 						onClick={onGoForward}
 						disabled={!canGoForward}
-						title="Go forward"
-						aria-label="Go forward"
+						title={t("tabs.goForward")}
+						aria-label={t("tabs.goForward")}
 					>
 						→
 					</button>
 				</div>
-				<ActiveFileTitle path={activeMarkdownPath} onRenameFile={onRenameFile} />
+				<MainTabsBreadcrumbs
+					activeTabPath={activeTabPath}
+					childrenByDir={childrenByDir}
+					onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
+					onLoadBreadcrumbDir={onLoadBreadcrumbDir}
+					onOpenBreadcrumbFile={onOpenBreadcrumbFile}
+					onRenameFile={onRenameFile}
+				/>
 				{tabs.length > 1 || tabs[0]?.isPinned ? (
 					<div className="mainTabsStrip">
 						<div className="mainTabsStripTabs" ref={measureTabsRef}>
@@ -245,14 +245,6 @@ export function TabBar({
 					</div>
 				) : null}
 			</div>
-			<MainTabsBreadcrumbs
-				activeTabPath={activeTabPath}
-				rootEntries={rootEntries}
-				childrenByDir={childrenByDir}
-				onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
-				onLoadBreadcrumbDir={onLoadBreadcrumbDir}
-				onOpenBreadcrumbFile={onOpenBreadcrumbFile}
-			/>
 		</div>
 	);
 }
@@ -361,7 +353,7 @@ const TabItem = memo(function TabItem({
 					type="button"
 					className="mainTabClose"
 					onClick={handleClose}
-					aria-label={`Close ${label}`}
+					aria-label={t("tabs.closeNamed", { label })}
 				>
 					<HugeiconsIcon icon={Cancel01Icon} size={13} aria-hidden="true" />
 				</button>

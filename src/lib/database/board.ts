@@ -1,4 +1,4 @@
-import { priorityLabel, priorityOptionFromValue } from "../priorityProperties";
+import { priorityLabel, priorityOptionFromValue, priorityRank } from "../priorityProperties";
 import { statusColorKey, statusLabel, statusOptionFromValue } from "../statusProperties";
 import { resolveDatabaseColumns } from "./columns";
 import { databaseCellValueFromRow } from "./config";
@@ -33,7 +33,7 @@ export interface DatabaseRowGroup {
 	rows: DatabaseRow[];
 }
 
-function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
+export function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
 	return (
 		column.type === "tags" ||
 		column.property_kind === "tags" ||
@@ -339,7 +339,12 @@ export function createDatabaseRowGroups(
 		(group) => group.id !== DATABASE_BOARD_EMPTY_LANE_ID,
 	);
 	const emptyGroup = groups.get(DATABASE_BOARD_EMPTY_LANE_ID);
-	filledGroups.sort((left, right) => boardCollator.compare(left.label, right.label));
+	filledGroups.sort((left, right) =>
+		column.property_kind === "priority"
+			? priorityRank(right.id) - priorityRank(left.id) ||
+				boardCollator.compare(left.label, right.label)
+			: boardCollator.compare(left.label, right.label),
+	);
 	if (!ascending) filledGroups.reverse();
 	return emptyGroup ? [...filledGroups, emptyGroup] : filledGroups;
 }

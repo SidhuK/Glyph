@@ -48,10 +48,12 @@
 		},
 		"ai-attach-all-open-notes": {
 			"label": "KI: Alle offenen Notizen anhängen",
+			"menuLabel": "KI: Alle offenen Notizen anhängen",
 			"description": "Alle offenen Notizen an die KI anhängen."
 		},
 		"ai-attach-current-note": {
 			"label": "KI: Aktuelle Notiz anhängen",
+			"menuLabel": "KI: Aktuelle Notiz anhängen",
 			"description": "Die aktuelle Notiz an die KI anhängen."
 		},
 		"ai_selection_to_context": {
@@ -60,10 +62,12 @@
 		},
 		"bold": {
 			"label": "Fett",
+			"menuLabel": "Fett",
 			"description": "Fettformatierung für die aktuelle Auswahl umschalten."
 		},
 		"bullet_list": {
 			"label": "Aufzählungsliste",
+			"menuLabel": "Aufzählungsliste",
 			"description": "Eine Aufzählungsliste umschalten."
 		},
 		"buy-glyph-license": {
@@ -72,26 +76,32 @@
 		},
 		"callout_error": {
 			"label": "Fehler-Callout",
+			"menuLabel": "Fehler-Callout",
 			"description": "Einen Fehler-Callout-Block einfügen."
 		},
 		"callout_info": {
 			"label": "Info-Callout",
+			"menuLabel": "Info-Callout",
 			"description": "Einen Info-Callout-Block einfügen."
 		},
 		"callout_success": {
 			"label": "Erfolgs-Callout",
+			"menuLabel": "Erfolgs-Callout",
 			"description": "Einen Erfolgs-Callout-Block einfügen."
 		},
 		"callout_tip": {
 			"label": "Tipp-Callout",
+			"menuLabel": "Tipp-Callout",
 			"description": "Einen Tipp-Callout-Block einfügen."
 		},
 		"callout_warning": {
 			"label": "Warn-Callout",
+			"menuLabel": "Warn-Callout",
 			"description": "Einen Warn-Callout-Block einfügen."
 		},
 		"close-active-tab": {
 			"label": "Aktiven Tab schließen",
+			"menuLabel": "Aktiven Tab schließen",
 			"description": "Den aktuellen Tab schließen."
 		},
 		"close-all-tabs": {
@@ -100,50 +110,62 @@
 		},
 		"close-space": {
 			"label": "Aktuellen Space schließen",
+			"menuLabel": "Aktuellen Space schließen",
 			"description": "Den aktuell geöffneten Space schließen."
 		},
 		"code_block": {
 			"label": "Codeblock",
+			"menuLabel": "Codeblock",
 			"description": "Einen Codeblock umschalten."
 		},
 		"collapse_all_headings": {
 			"label": "Alle Überschriften einklappen",
+			"menuLabel": "Alle Überschriften einklappen",
 			"description": "Alle Überschriften in der aktuellen Notiz einklappen."
 		},
 		"color_blue": {
 			"label": "Textfarbe: Blau",
+			"menuLabel": "Textfarbe: Blau",
 			"description": "Blaue Textfarbe anwenden."
 		},
 		"color_brown": {
 			"label": "Textfarbe: Braun",
+			"menuLabel": "Textfarbe: Braun",
 			"description": "Braune Textfarbe anwenden."
 		},
 		"color_clear": {
 			"label": "Textfarbe entfernen",
+			"menuLabel": "Textfarbe entfernen",
 			"description": "Textfarbenformatierung entfernen."
 		},
 		"color_gray": {
 			"label": "Textfarbe: Grau",
+			"menuLabel": "Textfarbe: Grau",
 			"description": "Graue Textfarbe anwenden."
 		},
 		"color_green": {
 			"label": "Textfarbe: Grün",
+			"menuLabel": "Textfarbe: Grün",
 			"description": "Grüne Textfarbe anwenden."
 		},
 		"color_orange": {
 			"label": "Textfarbe: Orange",
+			"menuLabel": "Textfarbe: Orange",
 			"description": "Orange Textfarbe anwenden."
 		},
 		"color_purple": {
 			"label": "Textfarbe: Lila",
+			"menuLabel": "Textfarbe: Lila",
 			"description": "Lilane Textfarbe anwenden."
 		},
 		"color_red": {
 			"label": "Textfarbe: Rot",
+			"menuLabel": "Textfarbe: Rot",
 			"description": "Rote Textfarbe anwenden."
 		},
 		"color_yellow": {
 			"label": "Textfarbe: Gelb",
+			"menuLabel": "Textfarbe: Gelb",
 			"description": "Gelbe Textfarbe anwenden."
 		},
 		"copy-note-markdown": {
@@ -152,18 +174,22 @@
 		},
 		"create-from-template": {
 			"label": "Aus Vorlage erstellen",
+			"menuLabel": "Aus Vorlage erstellen",
 			"description": "Eine neue Notiz aus einer Vorlage erstellen."
 		},
 		"create-space": {
 			"label": "Space erstellen",
+			"menuLabel": "Space erstellen",
 			"description": "Einen neuen Space erstellen."
 		},
 		"details_block": {
 			"label": "Details-Block",
+			"menuLabel": "Details-Block",
 			"description": "Einen einklappbaren Abschnitt einfügen."
 		},
 		"divider": {
 			"label": "Trennlinie",
+			"menuLabel": "Trennlinie",
 			"description": "Eine horizontale Trennlinie einfügen."
 		},
 		"duplicate-current-note": {
@@ -172,6 +198,7 @@
 		},
 		"expand_all_headings": {
 			"label": "Alle Überschriften ausklappen",
+			"menuLabel": "Alle Überschriften ausklappen",
 			"description": "Alle Überschriften in der aktuellen Notiz ausklappen."
 		},
 		"extract_selection_to_note": {
@@ -180,6 +207,7 @@
 		},
 		"git-sync-now": {
 			"label": "Jetzt synchronisieren",
+			"menuLabel": "Jetzt synchronisieren",
 			"description": "Git Sync jetzt ausführen."
 		},
 		"go-back-note": {
@@ -192,50 +220,62 @@
 		},
 		"heading_1": {
 			"label": "Überschrift 1",
+			"menuLabel": "Überschrift 1",
 			"description": "Den aktuellen Block in eine Überschrift der Ebene 1 umwandeln."
 		},
 		"heading_2": {
 			"label": "Überschrift 2",
+			"menuLabel": "Überschrift 2",
 			"description": "Den aktuellen Block in eine Überschrift der Ebene 2 umwandeln."
 		},
 		"heading_3": {
 			"label": "Überschrift 3",
+			"menuLabel": "Überschrift 3",
 			"description": "Den aktuellen Block in eine Überschrift der Ebene 3 umwandeln."
 		},
 		"highlight_blue": {
 			"label": "Hervorhebung: Blau",
+			"menuLabel": "Hervorhebung: Blau",
 			"description": "Blaue Texthervorhebung anwenden."
 		},
 		"highlight_clear": {
 			"label": "Hervorhebung entfernen",
+			"menuLabel": "Hervorhebung entfernen",
 			"description": "Texthervorhebungsformatierung entfernen."
 		},
 		"highlight_green": {
 			"label": "Hervorhebung: Grün",
+			"menuLabel": "Hervorhebung: Grün",
 			"description": "Grüne Texthervorhebung anwenden."
 		},
 		"highlight_red": {
 			"label": "Hervorhebung: Rot",
+			"menuLabel": "Hervorhebung: Rot",
 			"description": "Rote Texthervorhebung anwenden."
 		},
 		"highlight_yellow": {
 			"label": "Hervorhebung: Gelb",
+			"menuLabel": "Hervorhebung: Gelb",
 			"description": "Gelbe Texthervorhebung anwenden."
 		},
 		"italic": {
 			"label": "Kursiv",
+			"menuLabel": "Kursiv",
 			"description": "Kursivformatierung für die aktuelle Auswahl umschalten."
 		},
 		"link_clear": {
 			"label": "Link entfernen",
+			"menuLabel": "Link entfernen",
 			"description": "Den aktuellen Link aus der Auswahl entfernen."
 		},
 		"link_set": {
 			"label": "Link einfügen oder bearbeiten",
+			"menuLabel": "Link einfügen oder bearbeiten",
 			"description": "Einen Link einfügen oder den aktuellen Link bearbeiten."
 		},
 		"mermaid_chart": {
 			"label": "Mermaid-Diagramm",
+			"menuLabel": "Mermaid-Diagramm",
 			"description": "Einen Mermaid-Codeblock einfügen."
 		},
 		"move-active-file": {
@@ -268,6 +308,7 @@
 		},
 		"new-note": {
 			"label": "Neue Notiz",
+			"menuLabel": "Neue Notiz",
 			"description": "Eine neue Notiz im aktuellen Ordner erstellen."
 		},
 		"new-tab": {
@@ -280,14 +321,17 @@
 		},
 		"numbered_list": {
 			"label": "Nummerierte Liste",
+			"menuLabel": "Nummerierte Liste",
 			"description": "Eine nummerierte Liste umschalten."
 		},
 		"open-about": {
 			"label": "Info öffnen",
+			"menuLabel": "Info öffnen",
 			"description": "Den Info-Bildschirm öffnen."
 		},
 		"open-ai-settings": {
 			"label": "KI-Einstellungen öffnen",
+			"menuLabel": "KI-Einstellungen öffnen",
 			"description": "KI-Einstellungen öffnen."
 		},
 		"open-agent": {
@@ -304,18 +348,22 @@
 		},
 		"open-daily-note": {
 			"label": "Tagesnotiz öffnen",
+			"menuLabel": "Tagesnotiz öffnen",
 			"description": "Die heutige Tagesnotiz öffnen oder erstellen."
 		},
 		"open-weekly-note": {
 			"label": "Wochennotiz öffnen",
+			"menuLabel": "Wochennotiz öffnen",
 			"description": "Die Notiz dieser Woche öffnen oder erstellen."
 		},
 		"open-monthly-note": {
 			"label": "Monatsnotiz öffnen",
+			"menuLabel": "Monatsnotiz öffnen",
 			"description": "Die Notiz dieses Monats öffnen oder erstellen."
 		},
 		"open-quarterly-note": {
 			"label": "Quartalsnotiz öffnen",
+			"menuLabel": "Quartalsnotiz öffnen",
 			"description": "Die Notiz dieses Quartals öffnen oder erstellen."
 		},
 		"open-databases": {
@@ -324,6 +372,7 @@
 		},
 		"open-git-sync-settings": {
 			"label": "Git-Sync-Einstellungen öffnen",
+			"menuLabel": "Git-Sync-Einstellungen öffnen",
 			"description": "Den Git-Sync-Bereich in den Einstellungen öffnen."
 		},
 		"open-license-settings": {
@@ -348,18 +397,22 @@
 		},
 		"open-settings": {
 			"label": "Einstellungen öffnen",
+			"menuLabel": "Einstellungen öffnen",
 			"description": "Die Einstellungsansicht öffnen."
 		},
 		"open-space": {
 			"label": "Space öffnen",
+			"menuLabel": "Space öffnen",
 			"description": "Einen vorhandenen Space öffnen."
 		},
 		"open-space-settings": {
 			"label": "Space-Einstellungen öffnen",
+			"menuLabel": "Space-Einstellungen öffnen",
 			"description": "Einstellungen für den aktuellen Space öffnen."
 		},
 		"paste_without_formatting": {
 			"label": "Ohne Formatierung einfügen",
+			"menuLabel": "Ohne Formatierung einfügen",
 			"description": "Text aus der Zwischenablage ohne Formatierung einfügen."
 		},
 		"previous-tab": {
@@ -372,46 +425,57 @@
 		},
 		"quote": {
 			"label": "Zitat",
+			"menuLabel": "Zitat",
 			"description": "Ein Blockzitat umschalten."
 		},
 		"reveal-space": {
 			"label": "Space anzeigen",
-			"description": "Den aktuellen Space im System-Dateibrowser anzeigen."
+			"menuLabel": "Space anzeigen",
+			"description": "Den aktuellen Space im Finder anzeigen."
 		},
 		"save-note": {
 			"label": "Notiz speichern",
+			"menuLabel": "Notiz speichern",
 			"description": "Die aktuelle Notiz speichern, falls geändert."
 		},
 		"open-shortcuts-settings": {
 			"label": "Tastenkürzel…",
+			"menuLabel": "Tastenkürzel…",
 			"description": "Den Tastenkürzel-Bereich in den Einstellungen öffnen."
 		},
 		"open-glyph-website": {
 			"label": "Glyph-Website",
+			"menuLabel": "Glyph-Website",
 			"description": "Die Glyph-Website öffnen."
 		},
 		"open-glyph-changelog": {
 			"label": "Änderungsprotokoll",
+			"menuLabel": "Änderungsprotokoll",
 			"description": "Das veröffentlichte Glyph-Änderungsprotokoll öffnen."
 		},
 		"open-glyph-privacy": {
 			"label": "Datenschutzrichtlinie",
+			"menuLabel": "Datenschutzrichtlinie",
 			"description": "Die Glyph-Datenschutzrichtlinie öffnen."
 		},
 		"open-glyph-terms": {
 			"label": "Nutzungsbedingungen",
+			"menuLabel": "Nutzungsbedingungen",
 			"description": "Die Glyph-Nutzungsbedingungen öffnen."
 		},
 		"open-glyph-discord": {
 			"label": "Discord",
+			"menuLabel": "Discord",
 			"description": "Den Glyph-Community-Discord öffnen."
 		},
 		"open-glyph-github": {
 			"label": "GitHub",
+			"menuLabel": "GitHub",
 			"description": "Das Glyph-Repository auf GitHub öffnen."
 		},
 		"open-glyph-x": {
 			"label": "Auf X folgen",
+			"menuLabel": "Auf X folgen",
 			"description": "Karat Sidhu auf X öffnen."
 		},
 		"split-editor-above": {
@@ -432,14 +496,17 @@
 		},
 		"strikethrough": {
 			"label": "Durchgestrichen",
+			"menuLabel": "Durchgestrichen",
 			"description": "Durchgestrichen-Formatierung für die aktuelle Auswahl umschalten."
 		},
 		"table": {
 			"label": "Tabelle",
+			"menuLabel": "Tabelle",
 			"description": "Eine Markdown-Tabelle einfügen."
 		},
 		"todo_list": {
 			"label": "Aufgabenliste",
+			"menuLabel": "Aufgabenliste",
 			"description": "Eine Aufgabenliste umschalten."
 		},
 		"toggle_heading_or_list_collapse": {
@@ -448,6 +515,7 @@
 		},
 		"toggle-ai": {
 			"label": "KI-Panel umschalten",
+			"menuLabel": "KI-Panel umschalten",
 			"description": "Das KI-Assistentenpanel ein- oder ausblenden."
 		},
 		"toggle-note-info-sidebar": {
@@ -464,6 +532,7 @@
 		},
 		"underline": {
 			"label": "Unterstrichen",
+			"menuLabel": "Unterstrichen",
 			"description": "Unterstrichen-Formatierung für die aktuelle Auswahl umschalten."
 		},
 		"switch-to-edit": {

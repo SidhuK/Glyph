@@ -15,7 +15,7 @@
 		"connections": "Verbindungen",
 		"agent": "Agent",
 		"calendar": "Kalender",
-		"search": "Suche / Schnell öffnen",
+		"search": "Suche",
 		"searchPlaceholder": "Suchen",
 		"dailyNote": "Tagesnotiz",
 		"weeklyNote": "Wochennotiz",
@@ -31,11 +31,12 @@
 		"sortNotes": "Notizen sortieren",
 		"sort": "Sortieren",
 		"expandAllFolders": "Alle Ordner ausklappen",
-		"collapseAllFolders": "Alle Ordner einklappen"
+		"collapseAllFolders": "Alle Ordner einklappen",
+		"fileTreeOptions": "Dateibaum-Optionen"
 	},
 	"sort": {
-		"nameAsc": "Name A-Z",
-		"nameDesc": "Name Z-A",
+		"nameAsc": "Name A–Z",
+		"nameDesc": "Name Z–A",
 		"modifiedNewest": "Geändert (neueste)",
 		"modifiedOldest": "Geändert (älteste)",
 		"createdNewest": "Erstellt (neueste)",
@@ -95,8 +96,7 @@
 		"boardCard": {
 			"openNote": "Notiz öffnen",
 			"moveTo": "Nach {{lane}} verschieben",
-			"openHint": "Doppelklicken, um die Notiz zu öffnen",
-			"updated": "Aktualisiert {{date}}"
+			"openHint": "Doppelklicken, um die Notiz zu öffnen"
 		},
 		"switch": "Sammlung wechseln",
 		"select": "Sammlung auswählen",
@@ -114,23 +114,33 @@
 		},
 		"viewOptions": {
 			"reset": "Zurücksetzen",
-			"presets": "Vorlagen"
+			"presets": "Vorlagen",
+			"display": "Anzeige",
+			"grouping": "Gruppierung",
+			"ordering": "Sortierung",
+			"filter": "Filter",
+			"none": "Keine",
+			"filtersApplied": "{{count}} aktiv",
+			"columns": "Spalten",
+			"cardFields": "Kartenfelder",
+			"showAll": "Alle anzeigen",
+			"groupedBy": "Nach diesem Feld gruppiert",
+			"cardFieldLabels": {
+				"date": "Datum",
+				"task_progress": "Aufgabenfortschritt",
+				"status": "Status",
+				"priority": "Priorität",
+				"tags": "Tags"
+			}
 		},
 		"groupBy": {
-			"label": "Gruppiert nach",
-			"title": "Gruppiert nach {{name}}",
-			"choose": "Feld zum Gruppieren wählen",
 			"none": "Keine Gruppierung",
 			"multiLane": "{{name}} (mehrere Spalten)",
 			"boardHint": "Füge ein Status-, Tag- oder Checkbox-Feld hinzu, um Spalten zu erstellen"
 		},
 		"sort": {
-			"title": "Sortieren nach",
-			"presets": "Sortiervorlagen",
-			"replaceWithPreset": "Aktuelle Sortierung durch {{name}} ersetzen",
 			"field": "Sortierfeld",
 			"direction": "Sortierrichtung",
-			"add": "Sortierung hinzufügen",
 			"directions": {
 				"date": {
 					"asc": "Älteste - Neueste",
@@ -151,7 +161,6 @@
 			}
 		},
 		"filter": {
-			"title": "Filtern nach",
 			"hint": "Grenze diese Ansicht nach Spaltenwerten ein. Um Notiztext zu durchsuchen, nutze das Suchfeld in der Werkzeugleiste.",
 			"presets": "Filtervorlagen",
 			"unsupportedOperator": "Filter {{index}} nutzt einen nicht unterstützten Operator. Wähle einen unterstützten Operator, um Ergebnisse wiederherzustellen.",
@@ -217,12 +226,33 @@
 			"emptyTitle": "Füge ein Feld hinzu, um Board-Spalten zu erstellen",
 			"emptyText": "Die Board-Ansicht gruppiert Notizen in Spalten. Füge deinen Notizen ein Feld wie Status, Priorität, Checkbox oder Tag hinzu und wähle es dann oben in der Werkzeugleiste aus.",
 			"openViewSettings": "Ansichtseinstellungen öffnen",
+			"noPriority": "Keine Priorität",
 			"laneEmpty": {
 				"archived": "Archivierte Notizen landen hier",
 				"done": "Erledigte Notizen landen hier",
 				"unassigned": "Notizen ohne Wert erscheinen hier",
 				"default": "Notizen hierher ziehen oder unten eine hinzufügen"
 			}
+		},
+		"changeStatus": "Status ändern",
+		"statusLabel": "Status",
+		"cell": {
+			"addOrChooseTag": "Tag hinzufügen oder auswählen",
+			"addOrChooseValue": "Wert hinzufügen oder auswählen",
+			"suggestedTags": "Vorgeschlagene Tags",
+			"suggestedValues": "Vorgeschlagene Werte",
+			"changePriority": "Priorität ändern",
+			"editTagsHint": "Doppelklicken, um Tags zu bearbeiten",
+			"editHint": "Doppelklicken zum Bearbeiten",
+			"renameNoteHint": "Doppelklicken, um die Notiz umzubenennen"
+		},
+		"tagPicker": {
+			"source": "Tag-Quelle",
+			"selected": "Ausgewählter Tag",
+			"open": "Tag-Auswahl öffnen",
+			"placeholder": "Tag auswählen",
+			"empty": "Keine passenden Tags gefunden.",
+			"search": "Tags durchsuchen"
 		}
 	},
 	"tags": {
@@ -325,8 +355,6 @@
 		"noResults": "Keine Ergebnisse",
 		"resultsLabel": "Palettenergebnisse",
 		"searchEverything": "Notizen, Befehle, Einstellungen und mehr durchsuchen…",
-		"on": "Ein",
-		"off": "Aus",
 		"notSet": "Nicht festgelegt",
 		"spaceRequired": "Öffne einen Space, um diese Einstellung zu verwenden",
 		"settingUpdated": "Einstellung aktualisiert",
@@ -346,6 +374,12 @@
 		"noTemplates": "Im Vorlagenordner wurden keine Markdown-Vorlagen gefunden.",
 		"templateSelectionInvalid": "Wähle eine Markdown-Vorlage aus dem festgelegten Vorlagenordner.",
 		"templateSelectionFailed": "Die Vorlagenauswahl konnte nicht geöffnet werden",
+		"moreMatches": "+{{count}} weitere",
+		"footer": {
+			"navigate": "Navigieren",
+			"open": "Öffnen",
+			"close": "Schließen"
+		},
 		"groups": {
 			"command": "Befehle",
 			"setting": "Einstellungen",
@@ -383,7 +417,12 @@
 	},
 	"tabs": {
 		"allNotes": "Alle Notizen",
-		"collections": "Sammlungen"
+		"collections": "Sammlungen",
+		"goBack": "Zurück",
+		"goForward": "Vorwärts",
+		"closeNamed": "{{label}} schließen",
+		"renameNamed": "{{name}} umbenennen",
+		"renameCurrent": "Aktuelle Datei umbenennen"
 	},
 	"ai": {
 		"toolFailed": "{{tool}} ist fehlgeschlagen",
@@ -540,6 +579,13 @@
 				"local_wins": "Lokal gewinnt",
 				"remote_wins": "Remote gewinnt"
 			}
-		}
+		},
+		"sync": "Jetzt synchronisieren",
+		"resumeAutoSync": "Automatische Synchronisierung fortsetzen",
+		"remote": "Remote",
+		"actions": "Aktionen"
+	},
+	"activity": {
+		"noPreviewYet": "Noch keine Vorschau"
 	}
 }

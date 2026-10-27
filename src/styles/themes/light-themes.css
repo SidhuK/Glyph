@@ -10,8 +10,8 @@
 	--bg-canvas: #f5f5f4;
 
 	--text-primary: #37352f;
-	--text-secondary: rgba(55, 53, 47, 0.65);
-	--text-tertiary: rgba(55, 53, 47, 0.45);
+	--text-secondary: rgba(55, 53, 47, 0.72);
+	--text-tertiary: rgba(55, 53, 47, 0.61);
 	--text-placeholder: rgba(55, 53, 47, 0.35);
 	--text-inverse: #ffffff;
 	--text-accent: #37352f;
@@ -26,6 +26,8 @@
 	--interactive-accent: #37352f;
 	--interactive-accent-hover: #1f1f1f;
 	--accent-color: #37352f;
+	/* The neutral accent makes a grey selection that reads as inactive; select in soft blue. */
+	--text-selection: rgba(35, 131, 226, 0.22);
 
 	--selection-bg-muted: rgba(55, 53, 47, 0.06);
 
@@ -49,8 +51,8 @@
 	--bg-sidebar: #f7f6f3;
 	--bg-canvas: #f1efeb;
 	--text-primary: #37352f;
-	--text-secondary: rgba(55, 53, 47, 0.67);
-	--text-tertiary: rgba(55, 53, 47, 0.46);
+	--text-secondary: rgba(55, 53, 47, 0.72);
+	--text-tertiary: rgba(55, 53, 47, 0.61);
 	--text-placeholder: rgba(55, 53, 47, 0.34);
 	--text-inverse: #ffffff;
 	--text-accent: #37352f;
@@ -94,8 +96,8 @@
 	--bg-sidebar: #f5efdc;
 	--bg-canvas: #eee8d5;
 	--text-primary: #586e75;
-	--text-secondary: rgba(88, 110, 117, 0.72);
-	--text-tertiary: rgba(88, 110, 117, 0.52);
+	--text-secondary: rgba(88, 110, 117, 0.92);
+	--text-tertiary: rgba(88, 110, 117, 0.82);
 	--text-placeholder: rgba(88, 110, 117, 0.36);
 	--text-inverse: #fdf6e3;
 	--text-accent: #657b83;
@@ -140,7 +142,7 @@
 	--bg-canvas: #f3f4f6;
 	--text-primary: #1f2328;
 	--text-secondary: rgba(31, 35, 40, 0.72);
-	--text-tertiary: rgba(31, 35, 40, 0.52);
+	--text-tertiary: rgba(31, 35, 40, 0.56);
 	--text-placeholder: rgba(31, 35, 40, 0.36);
 	--text-inverse: #ffffff;
 	--text-accent: #1f2328;
@@ -184,8 +186,8 @@
 	--bg-sidebar: #e5e9f0;
 	--bg-canvas: #dfe5ee;
 	--text-primary: #2e3440;
-	--text-secondary: rgba(46, 52, 64, 0.72);
-	--text-tertiary: rgba(46, 52, 64, 0.5);
+	--text-secondary: rgba(46, 52, 64, 0.74);
+	--text-tertiary: rgba(46, 52, 64, 0.63);
 	--text-placeholder: rgba(46, 52, 64, 0.36);
 	--text-inverse: #eceff4;
 	--text-accent: #2e3440;
@@ -229,8 +231,8 @@
 	--bg-sidebar: #efe9da;
 	--bg-canvas: #ece5d4;
 	--text-primary: #475258;
-	--text-secondary: rgba(71, 82, 88, 0.72);
-	--text-tertiary: rgba(71, 82, 88, 0.5);
+	--text-secondary: rgba(71, 82, 88, 0.86);
+	--text-tertiary: rgba(71, 82, 88, 0.74);
 	--border-light: rgba(102, 119, 106, 0.14);
 	--border-default: rgba(102, 119, 106, 0.24);
 	--border-strong: rgba(102, 119, 106, 0.36);
@@ -261,7 +263,7 @@
 	--bg-canvas: #eceef5;
 	--text-primary: #222530;
 	--text-secondary: rgba(34, 37, 48, 0.72);
-	--text-tertiary: rgba(34, 37, 48, 0.5);
+	--text-tertiary: rgba(34, 37, 48, 0.57);
 	--border-light: rgba(94, 106, 210, 0.12);
 	--border-default: rgba(94, 106, 210, 0.22);
 	--border-strong: rgba(94, 106, 210, 0.34);
@@ -291,8 +293,8 @@
 	--bg-sidebar: #f2f4f9;
 	--bg-canvas: #eef1f7;
 	--text-primary: #383a42;
-	--text-secondary: rgba(56, 58, 66, 0.72);
-	--text-tertiary: rgba(56, 58, 66, 0.5);
+	--text-secondary: rgba(56, 58, 66, 0.74);
+	--text-tertiary: rgba(56, 58, 66, 0.63);
 	--border-light: rgba(64, 120, 242, 0.12);
 	--border-default: rgba(64, 120, 242, 0.2);
 	--border-strong: rgba(64, 120, 242, 0.3);
@@ -322,8 +324,8 @@
 	--bg-sidebar: #f6eee6;
 	--bg-canvas: #f2e9df;
 	--text-primary: #575279;
-	--text-secondary: rgba(87, 82, 121, 0.72);
-	--text-tertiary: rgba(87, 82, 121, 0.5);
+	--text-secondary: rgba(87, 82, 121, 0.89);
+	--text-tertiary: rgba(87, 82, 121, 0.75);
 	--border-light: rgba(180, 99, 122, 0.12);
 	--border-default: rgba(180, 99, 122, 0.22);
 	--border-strong: rgba(180, 99, 122, 0.34);
@@ -353,8 +355,8 @@
 	--bg-sidebar: #e6e9ef;
 	--bg-canvas: #dce0e8;
 	--text-primary: #4c4f69;
-	--text-secondary: rgba(92, 95, 119, 0.78);
-	--text-tertiary: rgba(108, 111, 133, 0.6);
+	--text-secondary: rgba(92, 95, 119, 0.96);
+	--text-tertiary: rgba(92, 95, 119, 0.8);
 	--text-placeholder: rgba(124, 127, 147, 0.44);
 	--text-inverse: #eff1f5;
 	--text-accent: #4c4f69;
@@ -418,8 +420,8 @@
 	--bg-sidebar: #f2e5bc;
 	--bg-canvas: #ebdbb2;
 	--text-primary: #3c3836;
-	--text-secondary: rgba(80, 73, 69, 0.78);
-	--text-tertiary: rgba(102, 92, 84, 0.58);
+	--text-secondary: rgba(80, 73, 69, 0.83);
+	--text-tertiary: rgba(80, 73, 69, 0.7);
 	--text-placeholder: rgba(146, 131, 116, 0.44);
 	--text-inverse: #fbf1c7;
 	--text-accent: #3c3836;
@@ -463,8 +465,8 @@
 	--bg-sidebar: #f6f7f8;
 	--bg-canvas: #f3f1e7;
 	--text-primary: #5c6773;
-	--text-secondary: rgba(92, 103, 115, 0.76);
-	--text-tertiary: rgba(92, 103, 115, 0.56);
+	--text-secondary: rgba(92, 103, 115, 0.9);
+	--text-tertiary: rgba(92, 103, 115, 0.79);
 	--text-placeholder: rgba(92, 103, 115, 0.4);
 	--text-inverse: #fcfcfc;
 	--text-accent: #5c6773;
@@ -508,8 +510,8 @@
 	--bg-sidebar: #d8dbe4;
 	--bg-canvas: #ccd2e0;
 	--text-primary: #3760bf;
-	--text-secondary: rgba(55, 96, 191, 0.78);
-	--text-tertiary: rgba(97, 114, 176, 0.58);
+	--text-secondary: rgba(55, 96, 191, 0.92);
+	--text-tertiary: rgba(55, 96, 191, 0.8);
 	--text-placeholder: rgba(97, 114, 176, 0.42);
 	--text-inverse: #e1e2e7;
 	--text-accent: #3760bf;
@@ -553,8 +555,8 @@
 	--bg-sidebar: #fbe4df;
 	--bg-canvas: #fadad1;
 	--text-primary: #403c3d;
-	--text-secondary: rgba(64, 60, 61, 0.76);
-	--text-tertiary: rgba(64, 60, 61, 0.56);
+	--text-secondary: rgba(64, 60, 61, 0.77);
+	--text-tertiary: rgba(64, 60, 61, 0.66);
 	--text-placeholder: rgba(64, 60, 61, 0.4);
 	--text-inverse: #fdf0ed;
 	--text-accent: #403c3d;
@@ -599,7 +601,7 @@
 	--bg-canvas: #ece9df;
 	--text-primary: #100f0f;
 	--text-secondary: rgba(64, 62, 60, 0.8);
-	--text-tertiary: rgba(87, 86, 83, 0.62);
+	--text-tertiary: rgba(87, 86, 83, 0.75);
 	--text-placeholder: rgba(111, 110, 105, 0.5);
 	--text-inverse: #fffcf0;
 	--text-accent: #100f0f;
@@ -644,7 +646,7 @@
 	--bg-canvas: #ecebe4;
 	--text-primary: #141413;
 	--text-secondary: rgba(20, 20, 19, 0.72);
-	--text-tertiary: rgba(20, 20, 19, 0.52);
+	--text-tertiary: rgba(20, 20, 19, 0.53);
 	--text-placeholder: rgba(20, 20, 19, 0.36);
 	--text-inverse: #faf9f5;
 	--text-accent: #141413;
@@ -733,8 +735,8 @@
 	--bg-sidebar: #f6f6f6;
 	--bg-canvas: #f0f0f0;
 	--text-primary: #3d3d3d;
-	--text-secondary: rgba(61, 61, 61, 0.72);
-	--text-tertiary: rgba(61, 61, 61, 0.52);
+	--text-secondary: rgba(61, 61, 61, 0.75);
+	--text-tertiary: rgba(61, 61, 61, 0.64);
 	--text-placeholder: rgba(61, 61, 61, 0.36);
 	--text-inverse: #ffffff;
 	--text-accent: #3d3d3d;

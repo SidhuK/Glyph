@@ -7,6 +7,7 @@ import {
 	type ReactNode,
 	useCallback,
 } from "react";
+import { useTranslation } from "react-i18next";
 import type { DatabaseRow } from "../../lib/database/types";
 import { Plus } from "../Icons";
 
@@ -27,8 +28,12 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
 interface DatabaseTableGroupHeaderProps {
 	groupId: string;
 	label: string;
+	icon: ReactNode;
 	rowCount: number;
+	/** More rows are still unloaded, so the group count is a lower bound. */
+	countIsPartial: boolean;
 	visibleColumnCount: number;
+	hasStatusColumn: boolean;
 	style: CSSProperties;
 	canCreateInGroup: boolean;
 	onCreateInGroup?: () => void;
@@ -37,12 +42,16 @@ interface DatabaseTableGroupHeaderProps {
 export function DatabaseTableGroupHeader({
 	groupId,
 	label,
+	icon,
 	rowCount,
+	countIsPartial,
 	visibleColumnCount,
+	hasStatusColumn,
 	style,
 	canCreateInGroup,
 	onCreateInGroup,
 }: DatabaseTableGroupHeaderProps) {
+	const { t } = useTranslation("shell");
 	const { ref, isDropTarget } = useDroppable({
 		id: `group:${groupId}`,
 		data: { laneId: groupId },
@@ -56,18 +65,26 @@ export function DatabaseTableGroupHeader({
 			data-drop-target={isDropTarget ? "true" : undefined}
 			style={style}
 		>
-			<td colSpan={visibleColumnCount} className="databaseGroupCell">
+			<td
+				colSpan={visibleColumnCount}
+				className="databaseGroupCell"
+				data-status-gutter={hasStatusColumn ? "true" : undefined}
+			>
+				<span className="databaseGroupIconSlot">{icon}</span>
 				<span className="databaseGroupLabel">{label}</span>
-				<span className="databaseGroupCount" aria-label={`${rowCount} notes`}>
-					{rowCount}
+				<span
+					className="databaseGroupCount"
+					aria-label={t("collections.laneMenu.cardCount", { count: rowCount })}
+				>
+					{countIsPartial ? `${rowCount}+` : rowCount}
 				</span>
 				{canCreateInGroup && onCreateInGroup ? (
 					<button
 						type="button"
 						className="databaseGroupAddButton"
 						onClick={onCreateInGroup}
-						title={`Add note to ${label}`}
-						aria-label={`Add note to ${label}`}
+						title={t("collections.laneMenu.addNote", { lane: label })}
+						aria-label={t("collections.laneMenu.addNote", { lane: label })}
 					>
 						<Plus size="var(--icon-sm)" aria-hidden="true" />
 					</button>

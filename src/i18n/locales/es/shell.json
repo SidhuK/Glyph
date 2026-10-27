@@ -15,7 +15,7 @@
 		"connections": "Conexiones",
 		"agent": "Agente",
 		"calendar": "Calendario",
-		"search": "Buscar / Apertura rápida",
+		"search": "Buscar",
 		"searchPlaceholder": "Buscar",
 		"dailyNote": "Nota diaria",
 		"weeklyNote": "Nota semanal",
@@ -31,11 +31,12 @@
 		"sortNotes": "Ordenar notas",
 		"sort": "Ordenar",
 		"expandAllFolders": "Expandir todas las carpetas",
-		"collapseAllFolders": "Contraer todas las carpetas"
+		"collapseAllFolders": "Contraer todas las carpetas",
+		"fileTreeOptions": "Opciones del árbol de archivos"
 	},
 	"sort": {
-		"nameAsc": "Nombre A-Z",
-		"nameDesc": "Nombre Z-A",
+		"nameAsc": "Nombre A–Z",
+		"nameDesc": "Nombre Z–A",
 		"modifiedNewest": "Modificadas más recientes",
 		"modifiedOldest": "Modificadas más antiguas",
 		"createdNewest": "Creadas más recientes",
@@ -95,8 +96,7 @@
 		"boardCard": {
 			"openNote": "Abrir nota",
 			"moveTo": "Mover a {{lane}}",
-			"openHint": "Haz doble clic para abrir la nota",
-			"updated": "Actualizada {{date}}"
+			"openHint": "Haz doble clic para abrir la nota"
 		},
 		"switch": "Cambiar colección",
 		"select": "Seleccionar colección",
@@ -114,23 +114,33 @@
 		},
 		"viewOptions": {
 			"reset": "Restablecer",
-			"presets": "Preajustes"
+			"presets": "Preajustes",
+			"display": "Visualización",
+			"grouping": "Agrupación",
+			"ordering": "Orden",
+			"filter": "Filtro",
+			"none": "Ninguno",
+			"filtersApplied": "{{count}} aplicados",
+			"columns": "Columnas",
+			"cardFields": "Campos de tarjeta",
+			"showAll": "Mostrar todo",
+			"groupedBy": "Agrupado por este campo",
+			"cardFieldLabels": {
+				"date": "Fecha",
+				"task_progress": "Progreso de tareas",
+				"status": "Estado",
+				"priority": "Prioridad",
+				"tags": "Etiquetas"
+			}
 		},
 		"groupBy": {
-			"label": "Agrupado por",
-			"title": "Agrupando por {{name}}",
-			"choose": "Elige un campo para agrupar",
 			"none": "Sin agrupar",
 			"multiLane": "{{name}} (varios carriles)",
 			"boardHint": "Añade un campo de estado, etiqueta o casilla para crear carriles"
 		},
 		"sort": {
-			"title": "Ordenar por",
-			"presets": "Preajustes de orden",
-			"replaceWithPreset": "Reemplazar el orden actual por {{name}}",
 			"field": "Campo de orden",
 			"direction": "Dirección de orden",
-			"add": "Añadir orden",
 			"directions": {
 				"date": {
 					"asc": "Más antiguo - Más reciente",
@@ -151,7 +161,6 @@
 			}
 		},
 		"filter": {
-			"title": "Filtrar por",
 			"hint": "Acota esta vista por valores de columna. Para buscar texto en las notas, usa el cuadro de búsqueda de la barra de herramientas.",
 			"presets": "Preajustes de filtro",
 			"unsupportedOperator": "El filtro {{index}} usa un operador no admitido. Elige un operador admitido para recuperar los resultados.",
@@ -217,12 +226,33 @@
 			"emptyTitle": "Añade un campo para crear columnas en el tablero",
 			"emptyText": "La vista de tablero agrupa las notas en columnas. Añade a tus notas un campo de estado, prioridad, casilla, etiqueta o similar y luego elígelo en la barra de herramientas de arriba.",
 			"openViewSettings": "Abrir ajustes de la vista",
+			"noPriority": "Sin prioridad",
 			"laneEmpty": {
 				"archived": "Aquí van las notas archivadas",
 				"done": "Aquí llegan las notas terminadas",
 				"unassigned": "Aquí aparecen las notas sin valor",
 				"default": "Suelta notas aquí o añade una abajo"
 			}
+		},
+		"changeStatus": "Cambiar estado",
+		"statusLabel": "Estado",
+		"cell": {
+			"addOrChooseTag": "Añade o elige una etiqueta",
+			"addOrChooseValue": "Añade o elige un valor",
+			"suggestedTags": "Etiquetas sugeridas",
+			"suggestedValues": "Valores sugeridos",
+			"changePriority": "Cambiar prioridad",
+			"editTagsHint": "Doble clic para editar etiquetas",
+			"editHint": "Doble clic para editar",
+			"renameNoteHint": "Doble clic para renombrar la nota"
+		},
+		"tagPicker": {
+			"source": "Origen de etiquetas",
+			"selected": "Etiqueta seleccionada",
+			"open": "Abrir selector de etiquetas",
+			"placeholder": "Elige una etiqueta",
+			"empty": "No se encontraron etiquetas.",
+			"search": "Buscar etiquetas"
 		}
 	},
 	"tags": {
@@ -325,8 +355,6 @@
 		"noResults": "Sin resultados",
 		"resultsLabel": "Resultados de la paleta",
 		"searchEverything": "Buscar notas, comandos, ajustes y más…",
-		"on": "Activado",
-		"off": "Desactivado",
 		"notSet": "Sin configurar",
 		"spaceRequired": "Abre un espacio para usar este ajuste",
 		"settingUpdated": "Ajuste actualizado",
@@ -346,6 +374,12 @@
 		"noTemplates": "No se encontraron plantillas Markdown en la carpeta de plantillas.",
 		"templateSelectionInvalid": "Elige una plantilla Markdown de la carpeta de plantillas configurada.",
 		"templateSelectionFailed": "No se pudo abrir el selector de plantillas",
+		"moreMatches": "+{{count}} más",
+		"footer": {
+			"navigate": "Navegar",
+			"open": "Abrir",
+			"close": "Cerrar"
+		},
 		"groups": {
 			"command": "Comandos",
 			"setting": "Ajustes",
@@ -383,7 +417,12 @@
 	},
 	"tabs": {
 		"allNotes": "Todas las notas",
-		"collections": "Colecciones"
+		"collections": "Colecciones",
+		"goBack": "Atrás",
+		"goForward": "Adelante",
+		"closeNamed": "Cerrar {{label}}",
+		"renameNamed": "Renombrar {{name}}",
+		"renameCurrent": "Renombrar el archivo actual"
 	},
 	"ai": {
 		"toolFailed": "Falló {{tool}}",
@@ -540,6 +579,13 @@
 				"local_wins": "Gana el local",
 				"remote_wins": "Gana el remoto"
 			}
-		}
+		},
+		"sync": "Sincronizar ahora",
+		"resumeAutoSync": "Reanudar la sincronización automática",
+		"remote": "Remoto",
+		"actions": "Acciones"
+	},
+	"activity": {
+		"noPreviewYet": "Aún no hay vista previa"
 	}
 }

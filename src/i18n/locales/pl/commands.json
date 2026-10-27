@@ -48,10 +48,12 @@
 		},
 		"ai-attach-all-open-notes": {
 			"label": "AI: Dołącz wszystkie otwarte notatki",
+			"menuLabel": "AI: Dołącz wszystkie otwarte notatki",
 			"description": "Dołącz wszystkie otwarte notatki do AI."
 		},
 		"ai-attach-current-note": {
 			"label": "AI: Dołącz bieżącą notatkę",
+			"menuLabel": "AI: Dołącz bieżącą notatkę",
 			"description": "Dołącz bieżącą notatkę do AI."
 		},
 		"ai_selection_to_context": {
@@ -60,10 +62,12 @@
 		},
 		"bold": {
 			"label": "Pogrubienie",
+			"menuLabel": "Pogrubienie",
 			"description": "Włącz lub wyłącz pogrubienie dla bieżącego zaznaczenia."
 		},
 		"bullet_list": {
 			"label": "Lista wypunktowana",
+			"menuLabel": "Lista wypunktowana",
 			"description": "Włącz lub wyłącz listę wypunktowaną."
 		},
 		"buy-glyph-license": {
@@ -72,26 +76,32 @@
 		},
 		"callout_error": {
 			"label": "Wyróżnienie: Błąd",
+			"menuLabel": "Wyróżnienie: Błąd",
 			"description": "Wstaw blok wyróżnienia błędu."
 		},
 		"callout_info": {
 			"label": "Wyróżnienie: Informacja",
+			"menuLabel": "Wyróżnienie: Informacja",
 			"description": "Wstaw blok wyróżnienia informacji."
 		},
 		"callout_success": {
 			"label": "Wyróżnienie: Sukces",
+			"menuLabel": "Wyróżnienie: Sukces",
 			"description": "Wstaw blok wyróżnienia sukcesu."
 		},
 		"callout_tip": {
 			"label": "Wyróżnienie: Wskazówka",
+			"menuLabel": "Wyróżnienie: Wskazówka",
 			"description": "Wstaw blok wyróżnienia wskazówki."
 		},
 		"callout_warning": {
 			"label": "Wyróżnienie: Ostrzeżenie",
+			"menuLabel": "Wyróżnienie: Ostrzeżenie",
 			"description": "Wstaw blok wyróżnienia ostrzeżenia."
 		},
 		"close-active-tab": {
 			"label": "Zamknij aktywną zakładkę",
+			"menuLabel": "Zamknij aktywną zakładkę",
 			"description": "Zamknij bieżącą zakładkę."
 		},
 		"close-all-tabs": {
@@ -100,50 +110,62 @@
 		},
 		"close-space": {
 			"label": "Zamknij bieżącą przestrzeń",
+			"menuLabel": "Zamknij bieżącą przestrzeń",
 			"description": "Zamknij obecnie otwartą przestrzeń."
 		},
 		"code_block": {
 			"label": "Blok kodu",
+			"menuLabel": "Blok kodu",
 			"description": "Włącz lub wyłącz blok kodu."
 		},
 		"collapse_all_headings": {
 			"label": "Zwiń wszystkie nagłówki",
+			"menuLabel": "Zwiń wszystkie nagłówki",
 			"description": "Zwiń każdy nagłówek w bieżącej notatce."
 		},
 		"color_blue": {
 			"label": "Kolor tekstu: Niebieski",
+			"menuLabel": "Kolor tekstu: Niebieski",
 			"description": "Zastosuj niebieski kolor tekstu."
 		},
 		"color_brown": {
 			"label": "Kolor tekstu: Brązowy",
+			"menuLabel": "Kolor tekstu: Brązowy",
 			"description": "Zastosuj brązowy kolor tekstu."
 		},
 		"color_clear": {
 			"label": "Wyczyść kolor tekstu",
+			"menuLabel": "Wyczyść kolor tekstu",
 			"description": "Usuń formatowanie koloru tekstu."
 		},
 		"color_gray": {
 			"label": "Kolor tekstu: Szary",
+			"menuLabel": "Kolor tekstu: Szary",
 			"description": "Zastosuj szary kolor tekstu."
 		},
 		"color_green": {
 			"label": "Kolor tekstu: Zielony",
+			"menuLabel": "Kolor tekstu: Zielony",
 			"description": "Zastosuj zielony kolor tekstu."
 		},
 		"color_orange": {
 			"label": "Kolor tekstu: Pomarańczowy",
+			"menuLabel": "Kolor tekstu: Pomarańczowy",
 			"description": "Zastosuj pomarańczowy kolor tekstu."
 		},
 		"color_purple": {
 			"label": "Kolor tekstu: Fioletowy",
+			"menuLabel": "Kolor tekstu: Fioletowy",
 			"description": "Zastosuj fioletowy kolor tekstu."
 		},
 		"color_red": {
 			"label": "Kolor tekstu: Czerwony",
+			"menuLabel": "Kolor tekstu: Czerwony",
 			"description": "Zastosuj czerwony kolor tekstu."
 		},
 		"color_yellow": {
 			"label": "Kolor tekstu: Żółty",
+			"menuLabel": "Kolor tekstu: Żółty",
 			"description": "Zastosuj żółty kolor tekstu."
 		},
 		"copy-note-markdown": {
@@ -152,18 +174,22 @@
 		},
 		"create-from-template": {
 			"label": "Utwórz z szablonu",
+			"menuLabel": "Utwórz z szablonu",
 			"description": "Utwórz nową notatkę z szablonu."
 		},
 		"create-space": {
 			"label": "Utwórz przestrzeń",
+			"menuLabel": "Utwórz przestrzeń",
 			"description": "Utwórz nową przestrzeń."
 		},
 		"details_block": {
 			"label": "Blok szczegółów",
+			"menuLabel": "Blok szczegółów",
 			"description": "Wstaw zwijaną sekcję przełączaną."
 		},
 		"divider": {
 			"label": "Separator",
+			"menuLabel": "Separator",
 			"description": "Wstaw poziomą linię podziału."
 		},
 		"duplicate-current-note": {
@@ -172,6 +198,7 @@
 		},
 		"expand_all_headings": {
 			"label": "Rozwiń wszystkie nagłówki",
+			"menuLabel": "Rozwiń wszystkie nagłówki",
 			"description": "Rozwiń każdy nagłówek w bieżącej notatce."
 		},
 		"extract_selection_to_note": {
@@ -180,6 +207,7 @@
 		},
 		"git-sync-now": {
 			"label": "Synchronizuj teraz",
+			"menuLabel": "Synchronizuj teraz",
 			"description": "Uruchom synchronizację Git teraz."
 		},
 		"go-back-note": {
@@ -192,58 +220,72 @@
 		},
 		"heading_1": {
 			"label": "Nagłówek 1",
+			"menuLabel": "Nagłówek 1",
 			"description": "Przekształć bieżący blok w nagłówek poziomu 1."
 		},
 		"heading_2": {
 			"label": "Nagłówek 2",
+			"menuLabel": "Nagłówek 2",
 			"description": "Przekształć bieżący blok w nagłówek poziomu 2."
 		},
 		"heading_3": {
 			"label": "Nagłówek 3",
+			"menuLabel": "Nagłówek 3",
 			"description": "Przekształć bieżący blok w nagłówek poziomu 3."
 		},
 		"highlight_blue": {
 			"label": "Wyróżnienie: Niebieskie",
+			"menuLabel": "Wyróżnienie: Niebieskie",
 			"description": "Zastosuj niebieskie wyróżnienie tekstu."
 		},
 		"highlight_clear": {
 			"label": "Wyczyść wyróżnienie",
+			"menuLabel": "Wyczyść wyróżnienie",
 			"description": "Usuń formatowanie wyróżnienia tekstu."
 		},
 		"highlight_green": {
 			"label": "Wyróżnienie: Zielone",
+			"menuLabel": "Wyróżnienie: Zielone",
 			"description": "Zastosuj zielone wyróżnienie tekstu."
 		},
 		"highlight_red": {
 			"label": "Wyróżnienie: Czerwone",
+			"menuLabel": "Wyróżnienie: Czerwone",
 			"description": "Zastosuj czerwone wyróżnienie tekstu."
 		},
 		"highlight_yellow": {
 			"label": "Wyróżnienie: Żółte",
+			"menuLabel": "Wyróżnienie: Żółte",
 			"description": "Zastosuj żółte wyróżnienie tekstu."
 		},
 		"import-files": {
 			"label": "Importuj pliki…",
+			"menuLabel": "Importuj pliki…",
 			"description": "Importuj pliki Markdown do bieżącego folderu."
 		},
 		"import-folder": {
 			"label": "Importuj folder…",
+			"menuLabel": "Importuj folder…",
 			"description": "Importuj folder do bieżącego folderu."
 		},
 		"italic": {
 			"label": "Kursywa",
+			"menuLabel": "Kursywa",
 			"description": "Włącz lub wyłącz kursywę dla bieżącego zaznaczenia."
 		},
 		"link_clear": {
 			"label": "Usuń odnośnik",
+			"menuLabel": "Usuń odnośnik",
 			"description": "Usuń bieżący odnośnik z zaznaczenia."
 		},
 		"link_set": {
 			"label": "Wstaw lub edytuj odnośnik",
+			"menuLabel": "Wstaw lub edytuj odnośnik",
 			"description": "Wstaw odnośnik lub edytuj bieżący odnośnik."
 		},
 		"mermaid_chart": {
 			"label": "Wykres Mermaid",
+			"menuLabel": "Wykres Mermaid",
 			"description": "Wstaw blok kodu Mermaid."
 		},
 		"move-active-file": {
@@ -276,6 +318,7 @@
 		},
 		"new-note": {
 			"label": "Nowa notatka",
+			"menuLabel": "Nowa notatka",
 			"description": "Utwórz nową notatkę w bieżącym folderze."
 		},
 		"new-tab": {
@@ -288,14 +331,17 @@
 		},
 		"numbered_list": {
 			"label": "Lista numerowana",
+			"menuLabel": "Lista numerowana",
 			"description": "Włącz lub wyłącz listę numerowaną."
 		},
 		"open-about": {
 			"label": "O programie",
+			"menuLabel": "O programie",
 			"description": "Otwórz ekran informacji o programie."
 		},
 		"open-ai-settings": {
 			"label": "Otwórz ustawienia AI",
+			"menuLabel": "Otwórz ustawienia AI",
 			"description": "Otwórz ustawienia sztucznej inteligencji."
 		},
 		"open-agent": {
@@ -312,18 +358,22 @@
 		},
 		"open-daily-note": {
 			"label": "Otwórz dzisiejszą notatkę",
+			"menuLabel": "Otwórz dzisiejszą notatkę",
 			"description": "Otwórz lub utwórz dzisiejszą notatkę w dzienniku."
 		},
 		"open-weekly-note": {
 			"label": "Otwórz notatkę tygodniową",
+			"menuLabel": "Otwórz notatkę tygodniową",
 			"description": "Otwórz lub utwórz notatkę tego tygodnia."
 		},
 		"open-monthly-note": {
 			"label": "Otwórz notatkę miesięczną",
+			"menuLabel": "Otwórz notatkę miesięczną",
 			"description": "Otwórz lub utwórz notatkę tego miesiąca."
 		},
 		"open-quarterly-note": {
 			"label": "Otwórz notatkę kwartalną",
+			"menuLabel": "Otwórz notatkę kwartalną",
 			"description": "Otwórz lub utwórz notatkę tego kwartału."
 		},
 		"open-databases": {
@@ -332,6 +382,7 @@
 		},
 		"open-git-sync-settings": {
 			"label": "Otwórz ustawienia synchronizacji Git",
+			"menuLabel": "Otwórz ustawienia synchronizacji Git",
 			"description": "Otwórz sekcję synchronizacji Git w ustawieniach."
 		},
 		"open-license-settings": {
@@ -356,18 +407,22 @@
 		},
 		"open-settings": {
 			"label": "Otwórz ustawienia",
+			"menuLabel": "Otwórz ustawienia",
 			"description": "Otwórz widok ustawień."
 		},
 		"open-space": {
 			"label": "Otwórz przestrzeń",
+			"menuLabel": "Otwórz przestrzeń",
 			"description": "Otwórz istniejącą przestrzeń."
 		},
 		"open-space-settings": {
 			"label": "Otwórz ustawienia przestrzeni",
+			"menuLabel": "Otwórz ustawienia przestrzeni",
 			"description": "Otwórz ustawienia dla bieżącej przestrzeni."
 		},
 		"paste_without_formatting": {
 			"label": "Wklej bez formatowania",
+			"menuLabel": "Wklej bez formatowania",
 			"description": "Wklej tekst bez formatowania."
 		},
 		"previous-tab": {
@@ -380,46 +435,57 @@
 		},
 		"quote": {
 			"label": "Cytat",
+			"menuLabel": "Cytat",
 			"description": "Włącz lub wyłącz blok cytatu."
 		},
 		"reveal-space": {
 			"label": "Pokaż przestrzeń",
-			"description": "Pokaż bieżącą przestrzeń w menedżerze plików systemu."
+			"menuLabel": "Pokaż przestrzeń",
+			"description": "Pokaż bieżącą przestrzeń w Finderze."
 		},
 		"save-note": {
 			"label": "Zapisz notatkę",
+			"menuLabel": "Zapisz notatkę",
 			"description": "Zapisz bieżącą notatkę, jeśli została zmodyfikowana."
 		},
 		"open-shortcuts-settings": {
 			"label": "Skróty klawiszowe…",
+			"menuLabel": "Skróty klawiszowe…",
 			"description": "Otwórz sekcję skrótów klawiszowych w ustawieniach."
 		},
 		"open-glyph-website": {
 			"label": "Strona Glyph",
+			"menuLabel": "Strona Glyph",
 			"description": "Otwórz stronę www programu Glyph."
 		},
 		"open-glyph-changelog": {
 			"label": "Lista zmian",
+			"menuLabel": "Lista zmian",
 			"description": "Otwórz opublikowaną listę zmian programu Glyph."
 		},
 		"open-glyph-privacy": {
 			"label": "Polityka prywatności",
+			"menuLabel": "Polityka prywatności",
 			"description": "Otwórz politykę prywatności programu Glyph."
 		},
 		"open-glyph-terms": {
 			"label": "Regulamin usługi",
+			"menuLabel": "Regulamin usługi",
 			"description": "Otwórz regulamin usługi programu Glyph."
 		},
 		"open-glyph-discord": {
 			"label": "Discord",
+			"menuLabel": "Discord",
 			"description": "Otwórz społecznościowy serwer Discord programu Glyph."
 		},
 		"open-glyph-github": {
 			"label": "GitHub",
+			"menuLabel": "GitHub",
 			"description": "Otwórz repozytorium programu Glyph w serwisie GitHub."
 		},
 		"open-glyph-x": {
 			"label": "Obserwuj na X",
+			"menuLabel": "Obserwuj na X",
 			"description": "Otwórz profil Karata Sidhu w serwisie X."
 		},
 		"split-editor-above": {
@@ -440,14 +506,17 @@
 		},
 		"strikethrough": {
 			"label": "Przekreślenie",
+			"menuLabel": "Przekreślenie",
 			"description": "Włącz lub wyłącz przekreślenie dla bieżącego zaznaczenia."
 		},
 		"table": {
 			"label": "Tabela",
+			"menuLabel": "Tabela",
 			"description": "Wstaw tabelę Markdown."
 		},
 		"todo_list": {
 			"label": "Lista zadań",
+			"menuLabel": "Lista zadań",
 			"description": "Włącz lub wyłącz listę zadań."
 		},
 		"toggle_heading_or_list_collapse": {
@@ -456,6 +525,7 @@
 		},
 		"toggle-ai": {
 			"label": "Przełącz panel AI",
+			"menuLabel": "Przełącz panel AI",
 			"description": "Pokaż lub ukryj panel asystenta AI."
 		},
 		"toggle-note-info-sidebar": {
@@ -476,6 +546,7 @@
 		},
 		"underline": {
 			"label": "Podkreślenie",
+			"menuLabel": "Podkreślenie",
 			"description": "Włącz lub wyłącz podkreślenie dla bieżącego zaznaczenia."
 		},
 		"switch-to-edit": {

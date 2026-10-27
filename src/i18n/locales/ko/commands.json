@@ -48,10 +48,12 @@
 		},
 		"ai-attach-all-open-notes": {
 			"label": "AI: 열린 모든 노트 첨부",
+			"menuLabel": "AI: 열린 모든 노트 첨부",
 			"description": "열린 모든 노트를 AI에 첨부합니다."
 		},
 		"ai-attach-current-note": {
 			"label": "AI: 현재 노트 첨부",
+			"menuLabel": "AI: 현재 노트 첨부",
 			"description": "현재 노트를 AI에 첨부합니다."
 		},
 		"ai_selection_to_context": {
@@ -60,10 +62,12 @@
 		},
 		"bold": {
 			"label": "굵게",
+			"menuLabel": "굵게",
 			"description": "현재 선택 영역의 굵게 서식을 전환합니다."
 		},
 		"bullet_list": {
 			"label": "글머리 기호 목록",
+			"menuLabel": "글머리 기호 목록",
 			"description": "글머리 기호 목록을 전환합니다."
 		},
 		"buy-glyph-license": {
@@ -72,26 +76,32 @@
 		},
 		"callout_error": {
 			"label": "오류 콜아웃",
+			"menuLabel": "오류 콜아웃",
 			"description": "오류 콜아웃 블록을 삽입합니다."
 		},
 		"callout_info": {
 			"label": "정보 콜아웃",
+			"menuLabel": "정보 콜아웃",
 			"description": "정보 콜아웃 블록을 삽입합니다."
 		},
 		"callout_success": {
 			"label": "성공 콜아웃",
+			"menuLabel": "성공 콜아웃",
 			"description": "성공 콜아웃 블록을 삽입합니다."
 		},
 		"callout_tip": {
 			"label": "팁 콜아웃",
+			"menuLabel": "팁 콜아웃",
 			"description": "팁 콜아웃 블록을 삽입합니다."
 		},
 		"callout_warning": {
 			"label": "경고 콜아웃",
+			"menuLabel": "경고 콜아웃",
 			"description": "경고 콜아웃 블록을 삽입합니다."
 		},
 		"close-active-tab": {
 			"label": "활성 탭 닫기",
+			"menuLabel": "활성 탭 닫기",
 			"description": "현재 탭을 닫습니다."
 		},
 		"close-all-tabs": {
@@ -100,50 +110,62 @@
 		},
 		"close-space": {
 			"label": "현재 스페이스 닫기",
+			"menuLabel": "현재 스페이스 닫기",
 			"description": "현재 열린 스페이스를 닫습니다."
 		},
 		"code_block": {
 			"label": "코드 블록",
+			"menuLabel": "코드 블록",
 			"description": "코드 블록을 전환합니다."
 		},
 		"collapse_all_headings": {
 			"label": "모든 제목 접기",
+			"menuLabel": "모든 제목 접기",
 			"description": "현재 노트의 모든 제목을 접습니다."
 		},
 		"color_blue": {
 			"label": "텍스트 색상: 파란색",
+			"menuLabel": "텍스트 색상: 파란색",
 			"description": "파란색 텍스트 색상을 적용합니다."
 		},
 		"color_brown": {
 			"label": "텍스트 색상: 갈색",
+			"menuLabel": "텍스트 색상: 갈색",
 			"description": "갈색 텍스트 색상을 적용합니다."
 		},
 		"color_clear": {
 			"label": "텍스트 색상 지우기",
+			"menuLabel": "텍스트 색상 지우기",
 			"description": "텍스트 색상 서식을 제거합니다."
 		},
 		"color_gray": {
 			"label": "텍스트 색상: 회색",
+			"menuLabel": "텍스트 색상: 회색",
 			"description": "회색 텍스트 색상을 적용합니다."
 		},
 		"color_green": {
 			"label": "텍스트 색상: 초록색",
+			"menuLabel": "텍스트 색상: 초록색",
 			"description": "초록색 텍스트 색상을 적용합니다."
 		},
 		"color_orange": {
 			"label": "텍스트 색상: 주황색",
+			"menuLabel": "텍스트 색상: 주황색",
 			"description": "주황색 텍스트 색상을 적용합니다."
 		},
 		"color_purple": {
 			"label": "텍스트 색상: 보라색",
+			"menuLabel": "텍스트 색상: 보라색",
 			"description": "보라색 텍스트 색상을 적용합니다."
 		},
 		"color_red": {
 			"label": "텍스트 색상: 빨간색",
+			"menuLabel": "텍스트 색상: 빨간색",
 			"description": "빨간색 텍스트 색상을 적용합니다."
 		},
 		"color_yellow": {
 			"label": "텍스트 색상: 노란색",
+			"menuLabel": "텍스트 색상: 노란색",
 			"description": "노란색 텍스트 색상을 적용합니다."
 		},
 		"copy-note-markdown": {
@@ -152,18 +174,22 @@
 		},
 		"create-from-template": {
 			"label": "템플릿에서 만들기",
+			"menuLabel": "템플릿에서 만들기",
 			"description": "템플릿에서 새 노트를 만듭니다."
 		},
 		"create-space": {
 			"label": "스페이스 만들기",
+			"menuLabel": "스페이스 만들기",
 			"description": "새 스페이스를 만듭니다."
 		},
 		"details_block": {
 			"label": "세부 정보 블록",
+			"menuLabel": "세부 정보 블록",
 			"description": "접을 수 있는 토글 섹션을 삽입합니다."
 		},
 		"divider": {
 			"label": "구분선",
+			"menuLabel": "구분선",
 			"description": "가로 구분선을 삽입합니다."
 		},
 		"duplicate-current-note": {
@@ -172,6 +198,7 @@
 		},
 		"expand_all_headings": {
 			"label": "모든 제목 펼치기",
+			"menuLabel": "모든 제목 펼치기",
 			"description": "현재 노트의 모든 제목을 펼칩니다."
 		},
 		"extract_selection_to_note": {
@@ -180,6 +207,7 @@
 		},
 		"git-sync-now": {
 			"label": "지금 동기화",
+			"menuLabel": "지금 동기화",
 			"description": "지금 Git Sync를 실행합니다."
 		},
 		"go-back-note": {
@@ -192,50 +220,62 @@
 		},
 		"heading_1": {
 			"label": "제목 1",
+			"menuLabel": "제목 1",
 			"description": "현재 블록을 1단계 제목으로 변환합니다."
 		},
 		"heading_2": {
 			"label": "제목 2",
+			"menuLabel": "제목 2",
 			"description": "현재 블록을 2단계 제목으로 변환합니다."
 		},
 		"heading_3": {
 			"label": "제목 3",
+			"menuLabel": "제목 3",
 			"description": "현재 블록을 3단계 제목으로 변환합니다."
 		},
 		"highlight_blue": {
 			"label": "강조: 파란색",
+			"menuLabel": "강조: 파란색",
 			"description": "파란색 텍스트 강조를 적용합니다."
 		},
 		"highlight_clear": {
 			"label": "강조 지우기",
+			"menuLabel": "강조 지우기",
 			"description": "텍스트 강조 서식을 제거합니다."
 		},
 		"highlight_green": {
 			"label": "강조: 초록색",
+			"menuLabel": "강조: 초록색",
 			"description": "초록색 텍스트 강조를 적용합니다."
 		},
 		"highlight_red": {
 			"label": "강조: 빨간색",
+			"menuLabel": "강조: 빨간색",
 			"description": "빨간색 텍스트 강조를 적용합니다."
 		},
 		"highlight_yellow": {
 			"label": "강조: 노란색",
+			"menuLabel": "강조: 노란색",
 			"description": "노란색 텍스트 강조를 적용합니다."
 		},
 		"italic": {
 			"label": "기울임꼴",
+			"menuLabel": "기울임꼴",
 			"description": "현재 선택 영역의 기울임꼴 서식을 전환합니다."
 		},
 		"link_clear": {
 			"label": "링크 제거",
+			"menuLabel": "링크 제거",
 			"description": "선택 영역에서 현재 링크를 제거합니다."
 		},
 		"link_set": {
 			"label": "링크 삽입 또는 편집",
+			"menuLabel": "링크 삽입 또는 편집",
 			"description": "링크를 삽입하거나 현재 링크를 편집합니다."
 		},
 		"mermaid_chart": {
 			"label": "Mermaid 차트",
+			"menuLabel": "Mermaid 차트",
 			"description": "Mermaid 코드 블록을 삽입합니다."
 		},
 		"move-active-file": {
@@ -268,6 +308,7 @@
 		},
 		"new-note": {
 			"label": "새 노트",
+			"menuLabel": "새 노트",
 			"description": "현재 폴더에 새 노트를 만듭니다."
 		},
 		"new-tab": {
@@ -280,14 +321,17 @@
 		},
 		"numbered_list": {
 			"label": "번호 매기기 목록",
+			"menuLabel": "번호 매기기 목록",
 			"description": "번호 매기기 목록을 전환합니다."
 		},
 		"open-about": {
 			"label": "정보 열기",
+			"menuLabel": "정보 열기",
 			"description": "정보 화면을 엽니다."
 		},
 		"open-ai-settings": {
 			"label": "AI 설정 열기",
+			"menuLabel": "AI 설정 열기",
 			"description": "AI 설정을 엽니다."
 		},
 		"open-agent": {
@@ -304,18 +348,22 @@
 		},
 		"open-daily-note": {
 			"label": "데일리 노트 열기",
+			"menuLabel": "데일리 노트 열기",
 			"description": "오늘의 데일리 노트를 열거나 만듭니다."
 		},
 		"open-weekly-note": {
 			"label": "주간 노트 열기",
+			"menuLabel": "주간 노트 열기",
 			"description": "이번 주 주간 노트를 열거나 만듭니다."
 		},
 		"open-monthly-note": {
 			"label": "월간 노트 열기",
+			"menuLabel": "월간 노트 열기",
 			"description": "이번 달 월간 노트를 열거나 만듭니다."
 		},
 		"open-quarterly-note": {
 			"label": "분기 노트 열기",
+			"menuLabel": "분기 노트 열기",
 			"description": "이번 분기 노트를 열거나 만듭니다."
 		},
 		"open-databases": {
@@ -324,6 +372,7 @@
 		},
 		"open-git-sync-settings": {
 			"label": "Git Sync 설정 열기",
+			"menuLabel": "Git Sync 설정 열기",
 			"description": "설정의 Git Sync 섹션을 엽니다."
 		},
 		"open-license-settings": {
@@ -348,18 +397,22 @@
 		},
 		"open-settings": {
 			"label": "설정 열기",
+			"menuLabel": "설정 열기",
 			"description": "설정 보기를 엽니다."
 		},
 		"open-space": {
 			"label": "스페이스 열기",
+			"menuLabel": "스페이스 열기",
 			"description": "기존 스페이스를 엽니다."
 		},
 		"open-space-settings": {
 			"label": "스페이스 설정 열기",
+			"menuLabel": "스페이스 설정 열기",
 			"description": "현재 스페이스의 설정을 엽니다."
 		},
 		"paste_without_formatting": {
 			"label": "서식 없이 붙여넣기",
+			"menuLabel": "서식 없이 붙여넣기",
 			"description": "클립보드의 텍스트를 서식 없이 붙여넣습니다."
 		},
 		"previous-tab": {
@@ -372,46 +425,57 @@
 		},
 		"quote": {
 			"label": "인용",
+			"menuLabel": "인용",
 			"description": "인용 블록을 전환합니다."
 		},
 		"reveal-space": {
 			"label": "스페이스 표시",
-			"description": "시스템 파일 브라우저에서 현재 스페이스를 표시합니다."
+			"menuLabel": "스페이스 표시",
+			"description": "Finder에서 현재 스페이스를 표시합니다."
 		},
 		"save-note": {
 			"label": "노트 저장",
+			"menuLabel": "노트 저장",
 			"description": "수정된 경우 현재 노트를 저장합니다."
 		},
 		"open-shortcuts-settings": {
 			"label": "키보드 단축키…",
+			"menuLabel": "키보드 단축키…",
 			"description": "설정의 키보드 단축키 섹션을 엽니다."
 		},
 		"open-glyph-website": {
 			"label": "Glyph 웹사이트",
+			"menuLabel": "Glyph 웹사이트",
 			"description": "Glyph 웹사이트를 엽니다."
 		},
 		"open-glyph-changelog": {
 			"label": "변경 기록",
+			"menuLabel": "변경 기록",
 			"description": "게시된 Glyph 변경 기록을 엽니다."
 		},
 		"open-glyph-privacy": {
 			"label": "개인정보 처리방침",
+			"menuLabel": "개인정보 처리방침",
 			"description": "Glyph 개인정보 처리방침을 엽니다."
 		},
 		"open-glyph-terms": {
 			"label": "서비스 약관",
+			"menuLabel": "서비스 약관",
 			"description": "Glyph 서비스 약관을 엽니다."
 		},
 		"open-glyph-discord": {
 			"label": "Discord",
+			"menuLabel": "Discord",
 			"description": "Glyph 커뮤니티 Discord를 엽니다."
 		},
 		"open-glyph-github": {
 			"label": "GitHub",
+			"menuLabel": "GitHub",
 			"description": "GitHub에서 Glyph 저장소를 엽니다."
 		},
 		"open-glyph-x": {
 			"label": "X에서 팔로우",
+			"menuLabel": "X에서 팔로우",
 			"description": "X에서 Karat Sidhu를 엽니다."
 		},
 		"split-editor-above": {
@@ -432,14 +496,17 @@
 		},
 		"strikethrough": {
 			"label": "취소선",
+			"menuLabel": "취소선",
 			"description": "현재 선택 영역의 취소선 서식을 전환합니다."
 		},
 		"table": {
 			"label": "표",
+			"menuLabel": "표",
 			"description": "Markdown 표를 삽입합니다."
 		},
 		"todo_list": {
 			"label": "할 일 목록",
+			"menuLabel": "할 일 목록",
 			"description": "할 일 목록을 전환합니다."
 		},
 		"toggle_heading_or_list_collapse": {
@@ -448,6 +515,7 @@
 		},
 		"toggle-ai": {
 			"label": "AI 패널 전환",
+			"menuLabel": "AI 패널 전환",
 			"description": "AI 어시스턴트 패널을 표시하거나 숨깁니다."
 		},
 		"toggle-note-info-sidebar": {
@@ -464,6 +532,7 @@
 		},
 		"underline": {
 			"label": "밑줄",
+			"menuLabel": "밑줄",
 			"description": "현재 선택 영역의 밑줄 서식을 전환합니다."
 		},
 		"switch-to-edit": {

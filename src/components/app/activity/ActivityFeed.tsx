@@ -56,7 +56,9 @@ export function ActivityFeed({
 						data-index={virtualRow.index}
 						ref={rowVirtualizer.measureElement}
 						className="activityVirtualRow"
-						style={{ transform: `translateY(${virtualRow.start}px)` }}
+						style={{
+							transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
+						}}
 					>
 						{row.kind === "header" ? (
 							<ActivityDayHeaderRow day={row.day} />
@@ -93,20 +95,10 @@ const ActivityDayHeaderRow = memo(function ActivityDayHeaderRow({ day }: { day: 
 			<div className="activityDayRail" aria-hidden="true" />
 			<header className="activityDayHeader">
 				<div className="activityDayHeading">
-					<div className="activityDateBadge" aria-hidden="true">
-						<span>
-							{new Intl.DateTimeFormat(i18n.language, { month: "short" }).format(day.date)}
-						</span>
-						<strong>
-							{new Intl.DateTimeFormat(i18n.language, { day: "numeric" }).format(day.date)}
-						</strong>
-					</div>
-					<div>
-						<h2>{label}</h2>
-						<time className="activityDayDate" dateTime={day.dateKey}>
-							{formatDate(day.date)}
-						</time>
-					</div>
+					<h2>{label}</h2>
+					<time className="activityDayDate" dateTime={day.dateKey}>
+						{formatDate(day.date)}
+					</time>
 				</div>
 				<span className="activityDayCounts">
 					{t("activity.noteCount", { count: day.notes.size })}

@@ -43,21 +43,16 @@ export function HeadingPalettePicker({
 				render={
 					<button
 						type="button"
-						className={cn(
-							"appearanceThemeDropdownTrigger",
-							"headingPaletteTrigger",
-							open && "is-open",
-						)}
+						className="settingsSelectTrigger"
 						aria-label={t("editor.colorfulHeadings.palette.label")}
 					/>
 				}
 			>
-				<HeadingPalettePreview colors={isDark ? selected.dark : selected.light} />
-				<span className="appearanceThemeDropdownTitle">
+				<span className="glyphSelectValue">
 					{t(`editor.colorfulHeadings.palette.options.${selected.id}`)}
 				</span>
-				<span className={cn("appearanceThemeDropdownChevron", open && "is-open")}>
-					<ChevronDown size="var(--icon-md)" />
+				<span className="glyphSelectChevron">
+					<ChevronDown size="var(--icon-sm)" aria-hidden="true" />
 				</span>
 			</PopoverTrigger>
 			<PopoverContent

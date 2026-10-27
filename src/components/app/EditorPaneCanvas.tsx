@@ -60,7 +60,6 @@ interface EditorPaneCanvasProps {
 	pane: WorkspaceEditorPane;
 	focused: boolean;
 	allowWindowDrag: boolean;
-	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	emptyState: ReactNode;
 	createMarkdownFileAtPath: (options: CreateMarkdownFileOptions) => Promise<string | null>;
@@ -87,7 +86,6 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	pane,
 	focused,
 	allowWindowDrag,
-	rootEntries,
 	childrenByDir,
 	emptyState,
 	createMarkdownFileAtPath,
@@ -166,7 +164,6 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 					<TabBar
 						paneId={pane.id}
 						tabs={pane.tabs}
-						rootEntries={rootEntries}
 						childrenByDir={childrenByDir}
 						activeTabId={pane.activeTabId}
 						activeTabPath={pane.activeTabPath}

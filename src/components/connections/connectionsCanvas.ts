@@ -7,8 +7,13 @@ import type {
 	ConnectionsNodeAttributes,
 	ConnectionsSigma,
 } from "./connectionsGraph";
-import type { ConnectionsRingGeometry } from "./connectionsRing";
-import type { ConnectionsPalette } from "./connectionsTheme";
+import {
+	type ConnectionsRingFrame,
+	RING_LABEL_MAX_CHARS,
+	claimRingLabel,
+	placeRingLabel,
+} from "./connectionsRing";
+import { type ConnectionsPalette, FOCUS_LABEL_WEIGHT } from "./connectionsTheme";
 
 type NodeLabelData = Parameters<
 	NodeLabelDrawingFunction<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>
@@ -218,8 +223,8 @@ export function drawConnectionsNodeHover(
 }
 
 /**
- * Restrained floating labels. Hovered/selected nodes get a soft pill;
- * search matches and ordinary space-graph labels use a text veil.
+ * Restrained floating labels. Local-graph labels sit in a soft pill; space-graph labels park
+ * outside the ring behind a text veil, and the hovered or selected one shows its full title.
  */
 export function drawConnectionsNodeLabel(
 	context: CanvasRenderingContext2D,
@@ -227,7 +232,8 @@ export function drawConnectionsNodeLabel(
 	settings: NodeLabelSettings,
 	palette: ConnectionsPalette,
 	variant: ConnectionsGraphVariant,
-	ring: ConnectionsRingGeometry | null,
+	/** Space graphs only: null until the renderer's first frame has been measured. */
+	frame: ConnectionsRingFrame | null,
 ) {
 	const label = data.label;
 	if (!label) return;
@@ -235,61 +241,59 @@ export function drawConnectionsNodeLabel(
 	const size = data.size ?? 1;
 	const emphasized = Boolean(data.highlighted);
 	const fontSize = settings.labelSize;
-	const weight = data.highlighted || data.forceLabel ? "600" : settings.labelWeight;
+	// One quiet ink and weight at rest; only the hovered or selected node steps up.
+	const weight = emphasized ? FOCUS_LABEL_WEIGHT : settings.labelWeight;
+	const ink = emphasized ? palette.text : palette.textSecondary;
 
 	context.save();
 	context.font = `${weight} ${fontSize}px ${settings.labelFont}`;
 	context.textBaseline = "alphabetic";
 
-	if (variant === "space" && !emphasized) {
-		const centerX = ring?.center.x ?? context.canvas.clientWidth / 2;
-		const centerY = ring?.center.y ?? context.canvas.clientHeight / 2;
-		const angle = Math.atan2(data.y - centerY, data.x - centerX);
-		const onLeft = Math.cos(angle) < 0;
-		// Start every radial label just past the community arcs so labels line up.
-		const distance = Math.hypot(data.x - centerX, data.y - centerY);
-		const labelOffset = Math.max(size + 6, (ring?.labelRadius ?? 0) - distance);
-		context.translate(data.x, data.y);
-		context.rotate(onLeft ? angle + Math.PI : angle);
-		context.textAlign = onLeft ? "right" : "left";
-		context.textBaseline = "middle";
-		context.lineJoin = "round";
-		context.lineWidth = 3;
-		context.strokeStyle = palette.labelBackground;
-		context.strokeText(label, onLeft ? -labelOffset : labelOffset, 0);
-		context.fillStyle = palette.text;
-		context.fillText(label, onLeft ? -labelOffset : labelOffset, 0);
+	if (variant === "space") {
+		const nodeId = "key" in data && typeof data.key === "string" ? data.key : null;
+		// The focused label keeps its full title in the box it reserved when the frame was built.
+		const placed = frame
+			? placeRingLabel(
+					context,
+					frame.ring,
+					frame.viewport,
+					data,
+					label,
+					fontSize,
+					emphasized ? null : RING_LABEL_MAX_CHARS,
+				)
+			: null;
+		if (frame && placed && (emphasized || claimRingLabel(frame, nodeId, placed))) {
+			context.textAlign = "left";
+			context.textBaseline = "middle";
+			context.lineJoin = "round";
+			context.lineWidth = 3;
+			context.strokeStyle = palette.labelBackground;
+			context.strokeText(placed.text, placed.x, placed.y);
+			context.fillStyle = ink;
+			context.fillText(placed.text, placed.x, placed.y);
+		}
 		context.restore();
 		return;
 	}
 
 	const textWidth = context.measureText(label).width;
-	const offsetX = variant === "local" ? 8 : 6;
-	const textX = Math.round(data.x + size + offsetX);
+	const textX = Math.round(data.x + size + 8);
 	const textY = Math.round(data.y + fontSize / 3);
 
-	const drawPill = variant === "local" || emphasized;
+	const paddingX = emphasized ? 7 : 6;
+	const pillHeight = fontSize + (emphasized ? 9 : 7);
+	const pillX = textX - paddingX;
+	const pillY = Math.round(data.y - pillHeight / 2);
+	const pillWidth = Math.ceil(textWidth + paddingX * 2);
+	roundedRectPath(context, pillX, pillY, pillWidth, pillHeight, Math.min(9, pillHeight / 2));
+	context.fillStyle = palette.labelBackground;
+	context.fill();
+	context.strokeStyle = palette.labelBorder;
+	context.lineWidth = 1;
+	context.stroke();
 
-	if (drawPill) {
-		const paddingX = emphasized ? 7 : 6;
-		const pillHeight = fontSize + (emphasized ? 9 : 7);
-		const pillX = textX - paddingX;
-		const pillY = Math.round(data.y - pillHeight / 2);
-		const pillWidth = Math.ceil(textWidth + paddingX * 2);
-		roundedRectPath(context, pillX, pillY, pillWidth, pillHeight, Math.min(9, pillHeight / 2));
-		context.fillStyle = palette.labelBackground;
-		context.fill();
-		context.strokeStyle = palette.labelBorder;
-		context.lineWidth = 1;
-		context.stroke();
-	} else {
-		context.lineJoin = "round";
-		context.lineWidth = 3;
-		context.strokeStyle = palette.labelBackground;
-		context.strokeText(label, textX, textY);
-	}
-
-	context.fillStyle = palette.text;
+	context.fillStyle = ink;
 	context.fillText(label, textX, textY);
 
 	context.restore();

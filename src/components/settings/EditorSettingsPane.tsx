@@ -193,10 +193,7 @@ export function EditorSettingsPane() {
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
-				<SettingsSection
-					title={t("editor.sectionTitle")}
-					description={t("editor.sectionDescription")}
-				>
+				<SettingsSection title={t("editor.sectionTitle")}>
 					<SettingsRow
 						label={t("editor.tableOfContents.label")}
 						description={t("editor.tableOfContents.description")}
@@ -304,10 +301,7 @@ export function EditorSettingsPane() {
 						/>
 					</SettingsRow>
 				</SettingsSection>
-				<SettingsSection
-					title={t("editorPresentation.sectionTitle")}
-					description={t("editorPresentation.sectionDescription")}
-				>
+				<SettingsSection title={t("editorPresentation.sectionTitle")}>
 					<SettingsRow
 						label={t("editorPresentation.beautifulTags.label")}
 						description={t("editorPresentation.beautifulTags.description")}

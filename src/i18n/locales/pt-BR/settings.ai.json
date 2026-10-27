@@ -1,7 +1,6 @@
 {
 	"connection": {
 		"sectionTitle": "Conexão",
-		"sectionDescription": "Escolha como o Glyph se conecta à IA e configure o provedor e o modelo.",
 		"type": {
 			"label": "Tipo de conexão",
 			"description": "Use um agente instalado, um modelo privado neste Mac ou a API de um provedor.",
@@ -33,8 +32,6 @@
 		"description": "O Glyph busca os modelos disponíveis do provedor escolhido quando as credenciais permitem.",
 		"placeholder": "Selecione um modelo...",
 		"connecting": "Conectando...",
-		"count_one": "{{count}} modelo",
-		"count_other": "{{count}} modelos",
 		"needsApiKey": "Salve uma chave de API para carregar os modelos deste provedor.",
 		"retry": "Tentar novamente",
 		"empty": "Nenhum modelo disponível"
@@ -43,7 +40,17 @@
 		"label": "Nível de raciocínio",
 		"description": "Disponível quando o modelo atual oferece níveis de esforço.",
 		"placeholder": "ex.: low, medium, high",
-		"manualHint": "Este modelo não publicou opções de raciocínio; informe o esforço manualmente."
+		"manualHint": "Este modelo não publicou opções de raciocínio; informe o esforço manualmente.",
+		"levels": {
+			"none": "Nenhum",
+			"minimal": "Mínimo",
+			"low": "Baixo",
+			"medium": "Médio",
+			"high": "Alto",
+			"xhigh": "Muito alto",
+			"max": "Máximo",
+			"off": "Desativado"
+		}
 	},
 	"baseUrl": {
 		"label": "URL base",

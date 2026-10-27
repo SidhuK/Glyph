@@ -174,16 +174,17 @@ export function SettingsToggle({
 interface SettingsValueCardProps {
 	icon: ReactNode;
 	value: string;
-	mono?: boolean;
 }
 
-export function SettingsValueCard({ icon, value, mono = false }: SettingsValueCardProps) {
+export function SettingsValueCard({ icon, value }: SettingsValueCardProps) {
 	return (
 		<div className="settingsValueCard">
 			<div className="settingsValueIcon" aria-hidden="true">
 				{icon}
 			</div>
-			<div className={cn("settingsValueText", { mono })}>{value}</div>
+			<div className="settingsValueText" title={value}>
+				{value}
+			</div>
 		</div>
 	);
 }

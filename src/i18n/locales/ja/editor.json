@@ -10,6 +10,7 @@
 		"info": "情報"
 	},
 	"ribbon": {
+		"toolbarLabel": "書式",
 		"bold": "太字",
 		"italic": "斜体",
 		"underline": "下線",
@@ -22,11 +23,16 @@
 		"heading1": "見出し 1",
 		"heading2": "見出し 2",
 		"heading3": "見出し 3",
-		"bulletList": "箇条書きリスト",
-		"numberedList": "番号付きリスト",
-		"taskList": "タスクリスト",
-		"quote": "引用",
-		"codeBlock": "コードブロック"
+		"color": "色",
+		"colorSections": {
+			"text": "文字",
+			"highlight": "ハイライト"
+		},
+		"link": "リンク",
+		"linkUrl": "リンク URL",
+		"linkOpenInNewTab": "新しいタブで開く",
+		"linkRemove": "削除",
+		"linkApply": "適用"
 	},
 	"selectionAi": {
 		"title": "選択範囲について AI に質問",
@@ -244,6 +250,17 @@
 			"tags": "タグ",
 			"status": "ステータス",
 			"priority": "優先度"
+		}
+	},
+	"infoSidebar": {
+		"panelLabel": "ノート情報パネル",
+		"sidebarTabsLabel": "ノートサイドバー",
+		"infoTab": "情報",
+		"historyTab": "バージョン履歴",
+		"close": "情報パネルを閉じる",
+		"stats": {
+			"tasks": "タスク",
+			"tasksDone": "{{total}} 件中 {{completed}} 件完了"
 		}
 	}
 }

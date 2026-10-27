@@ -82,3 +82,18 @@ export function ensureDatabaseColumn(
 	if (columns.some((entry) => entry.id === column.id)) return columns;
 	return [...columns, column];
 }
+
+/**
+ * Column labels carry raw frontmatter keys ("completed_on", "Completed On") or older saved
+ * built-in labels ("Linked Notes"); the UI shows them in sentence case. Only plain capitalised
+ * words are lowered, so names like "GitHub" or "URL" keep their casing.
+ */
+export function databaseColumnLabel(column: DatabaseColumn): string {
+	const words = column.label.replace(/[_-]+/g, " ").trim().split(/\s+/);
+	return words
+		.map((word, index) => {
+			if (index === 0) return word.charAt(0).toUpperCase() + word.slice(1);
+			return /^\p{Lu}\p{Ll}+$/u.test(word) ? word.toLowerCase() : word;
+		})
+		.join(" ");
+}

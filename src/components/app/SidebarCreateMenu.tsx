@@ -22,7 +22,11 @@ import type { IconSvgElement } from "@hugeicons/react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../contexts";
-import { type PeriodKind, isPeriodNoteEnabled } from "../../lib/periodNotes";
+import {
+	type PeriodKind,
+	type PeriodNotesEnabled,
+	isPeriodNoteEnabled,
+} from "../../lib/periodNotes";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { Shortcut } from "../../lib/shortcuts/types";
 
@@ -52,6 +56,28 @@ const PERIOD_ITEMS = [
 		icon: Calendar04Icon,
 	},
 ] as const;
+
+/** Period-note rows to offer: daily always, the rest when enabled in settings. */
+export function enabledPeriodItems(enabled: PeriodNotesEnabled) {
+	return PERIOD_ITEMS.filter((item) => isPeriodNoteEnabled(item.kind, enabled));
+}
+
+// Pointer-closed menus would hand focus back to the chevron and paint a
+// keyboard focus ring; only keyboard closes return focus to the trigger.
+function returnFocusOnKeyboardClose(closeType: string) {
+	return closeType === "keyboard";
+}
+
+// The animated popup also refocuses the trigger while it exits if focus is still
+// inside it, regardless of finalFocus, so pointer closes drop focus up front.
+function blurOnPointerClose(open: boolean, { event }: { event: Event }) {
+	if (open) return;
+	const isPointer =
+		event instanceof PointerEvent || (event instanceof MouseEvent && event.detail > 0);
+	if (isPointer && document.activeElement instanceof HTMLElement) {
+		document.activeElement.blur();
+	}
+}
 
 // React bubbles portal key events through the tree; keep menu navigation away
 // from surrounding sidebar handlers while letting Escape and shortcuts through.
@@ -102,11 +128,9 @@ export function SidebarCreateMenu({
 		const binding = getBinding(id);
 		return binding ? formatShortcutForPlatform(binding) : "";
 	};
-	const periodItems = PERIOD_ITEMS.filter(
-		(item) => item.kind === "day" || isPeriodNoteEnabled(item.kind, periodNotesEnabled),
-	);
+	const periodItems = enabledPeriodItems(periodNotesEnabled);
 	return (
-		<DropdownMenu>
+		<DropdownMenu onOpenChange={blurOnPointerClose}>
 			<DropdownMenuTrigger
 				render={
 					<button
@@ -120,7 +144,12 @@ export function SidebarCreateMenu({
 			>
 				<HugeiconsIcon icon={ArrowDown01Icon} size="var(--icon-sm)" aria-hidden="true" />
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" side="bottom" onKeyDown={stopMenuKeyPropagation}>
+			<DropdownMenuContent
+				align="end"
+				side="bottom"
+				finalFocus={returnFocusOnKeyboardClose}
+				onKeyDown={stopMenuKeyPropagation}
+			>
 				<DropdownMenuLabel>{t("sidebar.createSection")}</DropdownMenuLabel>
 				{showCanvas ? (
 					<CreateMenuItem

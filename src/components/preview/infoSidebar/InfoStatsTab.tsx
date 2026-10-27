@@ -1,5 +1,10 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { Clock01Icon, TextAlignLeftIcon, TextFontIcon, TextIcon } from "@hugeicons/core-free-icons";
+import {
+	CalendarAdd01Icon,
+	Clock01Icon,
+	File01Icon,
+	Folder01Icon,
+} from "@hugeicons/core-free-icons";
 import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat } from "../../../contexts";
 import {
@@ -23,7 +28,6 @@ interface InfoStatsTabProps {
 	lastSavedMtimeMs: number | null;
 	lineCount: number;
 	utf8SizeBytes: number;
-	saveLabel: string;
 }
 
 function formatMetadataDate(
@@ -61,19 +65,33 @@ export function InfoStatsTab({
 	lastSavedMtimeMs,
 	lineCount,
 	utf8SizeBytes,
-	saveLabel,
 }: InfoStatsTabProps) {
 	const { t } = useTranslation("editor");
 	const dateDisplayFormat = useDateDisplayFormat();
 	const statCards = [
-		{ key: "words", icon: TextFontIcon, value: stats.words.toLocaleString() },
-		{ key: "characters", icon: TextIcon, value: stats.characters.toLocaleString() },
+		{ key: "words", value: stats.words.toLocaleString() },
+		{ key: "characters", value: stats.characters.toLocaleString() },
+		{ key: "lines", value: (previewContext?.line_count ?? lineCount).toLocaleString() },
+		{ key: "readingTime", value: stats.readingTime },
+	] as const;
+	const fileRows = [
 		{
-			key: "lines",
-			icon: TextAlignLeftIcon,
-			value: (previewContext?.line_count ?? lineCount).toLocaleString(),
+			key: "modified",
+			icon: Clock01Icon,
+			value: formatMetadataDate(
+				lastSavedMtimeMs
+					? new Date(lastSavedMtimeMs).toISOString()
+					: (previewContext?.updated ?? null),
+				dateDisplayFormat,
+			),
 		},
-		{ key: "readingTime", icon: Clock01Icon, value: stats.readingTime },
+		{
+			key: "created",
+			icon: CalendarAdd01Icon,
+			value: formatMetadataDate(previewContext?.created, dateDisplayFormat),
+		},
+		{ key: "path", icon: Folder01Icon, value: relPath },
+		{ key: "size", icon: File01Icon, value: formatFileSize(utf8SizeBytes) },
 	] as const;
 
 	return (
@@ -82,19 +100,13 @@ export function InfoStatsTab({
 				<div className="markdownEditorInfoStatGrid">
 					{statCards.map((card) => (
 						<div key={card.key} className="markdownEditorInfoStatCard">
-							<HugeiconsIcon
-								className="markdownEditorInfoStatIcon"
-								icon={card.icon}
-								size="var(--icon-sm)"
-								aria-hidden="true"
-							/>
 							<strong>{card.value}</strong>
 							<span>{t(`infoSidebar.stats.${card.key}`)}</span>
 						</div>
 					))}
 				</div>
 				{taskSummary.total_count > 0 ? (
-					<div className="markdownEditorInfoCard markdownEditorInfoTaskSummary">
+					<div className="markdownEditorInfoTaskSummary">
 						<TaskProgressIndicator summary={taskSummary} />
 						<span>{t("infoSidebar.stats.tasks")}</span>
 						<strong>
@@ -109,36 +121,24 @@ export function InfoStatsTab({
 
 			<section className="markdownEditorInfoSection">
 				<h3 className="markdownEditorInfoSectionLabel">{t("infoSidebar.stats.file")}</h3>
-				<div className="markdownEditorInfoCard markdownEditorInfoRows">
-					<div className="markdownEditorInfoRow">
-						<span>{t("infoSidebar.stats.modified")}</span>
-						<span className="markdownEditorInfoValue">
-							{formatMetadataDate(
-								lastSavedMtimeMs
-									? new Date(lastSavedMtimeMs).toISOString()
-									: (previewContext?.updated ?? null),
-								dateDisplayFormat,
-							)}
-						</span>
-					</div>
-					<div className="markdownEditorInfoRow">
-						<span>{t("infoSidebar.stats.created")}</span>
-						<span className="markdownEditorInfoValue">
-							{formatMetadataDate(previewContext?.created, dateDisplayFormat)}
-						</span>
-					</div>
-					<div className="markdownEditorInfoRow">
-						<span>{t("infoSidebar.stats.path")}</span>
-						<span className="markdownEditorInfoValue">{relPath}</span>
-					</div>
-					<div className="markdownEditorInfoRow">
-						<span>{t("infoSidebar.stats.size")}</span>
-						<span className="markdownEditorInfoValue">{formatFileSize(utf8SizeBytes)}</span>
-					</div>
-					<div className="markdownEditorInfoRow">
-						<span>{t("infoSidebar.stats.saveStatus")}</span>
-						<span className="markdownEditorInfoValue">{saveLabel}</span>
-					</div>
+				<div className="markdownEditorInfoRows">
+					{fileRows.map((row) => (
+						<div key={row.key} className="markdownEditorInfoRow">
+							<span className="markdownEditorInfoRowLabel">
+								<span className="markdownEditorInfoRowIcon" aria-hidden="true">
+									<HugeiconsIcon icon={row.icon} size="var(--icon-sm)" />
+								</span>
+								{t(`infoSidebar.stats.${row.key}`)}
+							</span>
+							<span
+								className="markdownEditorInfoValue"
+								data-truncate={row.key === "path" ? "start" : undefined}
+								title={row.value}
+							>
+								{row.key === "path" ? <span>{row.value}</span> : row.value}
+							</span>
+						</div>
+					))}
 				</div>
 			</section>
 		</>

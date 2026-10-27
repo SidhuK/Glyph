@@ -2,7 +2,6 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import type { AnyExtension, Editor, JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { Selection } from "@tiptap/pm/state";
-import { AnimatePresence } from "motion/react";
 import {
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
@@ -263,15 +262,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const canEdit = mode === "rich" && Boolean(liveEditor?.isEditable);
 	const showEditorChrome = canEdit && !chromeMinimal;
 	const showEditorFormatBar = showEditorChrome && showFormatBar;
-	const showLiveFormatBar = Boolean(showEditorFormatBar && liveEditor);
-	const showLiveFormatBarRef = useRef(showLiveFormatBar);
-	showLiveFormatBarRef.current = showLiveFormatBar;
-	const [reserveFormatBarSpace, setReserveFormatBarSpace] = useState(showLiveFormatBar);
-	useLayoutEffect(() => {
-		if (showLiveFormatBar) {
-			setReserveFormatBarSpace(true);
-		}
-	}, [showLiveFormatBar]);
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
@@ -819,7 +809,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			className={[
 				"rfNodeNoteEditor",
 				"rfNodeNoteEditorFlatEdges",
-				reserveFormatBarSpace ? "rfNodeNoteEditorHasRibbon" : "",
+				showEditorFormatBar && liveEditor ? "rfNodeNoteEditorHasRibbon" : "",
 				"nodrag",
 				"nopan",
 			]
@@ -880,24 +870,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 			</div>
-			<AnimatePresence
-				onExitComplete={() => {
-					if (!showLiveFormatBarRef.current) {
-						setReserveFormatBarSpace(false);
+			{showEditorFormatBar && liveEditor ? (
+				<EditorRibbon
+					editor={liveEditor}
+					canEdit={canEdit}
+					onExtractSelectionToNote={
+						extractToNote.canExtractToNote ? extractToNote.openExtractDialog : undefined
 					}
-				}}
-			>
-				{showEditorFormatBar && liveEditor ? (
-					<EditorRibbon
-						editor={liveEditor}
-						canEdit={canEdit}
-						className="rfNodeNoteEditorRibbonBottom"
-						onExtractSelectionToNote={
-							extractToNote.canExtractToNote ? extractToNote.openExtractDialog : undefined
-						}
-					/>
-				) : null}
-			</AnimatePresence>
+				/>
+			) : null}
 			{showEditorChrome ? (
 				<ExtractToNoteDialog
 					state={extractToNote.dialogState}

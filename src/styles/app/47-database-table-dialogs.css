@@ -27,28 +27,26 @@
 	text-align: left;
 	padding-top: 0;
 	padding-bottom: 0;
-	padding-right: 10px;
-	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	padding-right: 12px;
+	border-bottom: 0;
 	border-right: 1px solid transparent;
-	font-size: calc(var(--text-base) * 0.84);
-	letter-spacing: 0.02em;
+	font-size: var(--text-xs);
+	font-weight: var(--font-normal);
 	color: var(--text-tertiary);
-	transition:
-		border-color 160ms ease,
-		box-shadow 200ms ease;
+	transition: border-color 160ms ease;
+}
+
+/* Hairlines live on the rows, not the cells, so they run the full width past the last column. */
+.databaseTable .databaseHeaderRow {
+	border-bottom: 1px solid var(--border-light);
 }
 
 .databaseHeaderRow:hover .databaseHeadCell:not(:last-child) {
-	border-right-color: color-mix(in srgb, var(--border-light) 62%, transparent);
-}
-
-.databaseTableShell.is-scrolled .databaseTable .databaseHeadCell {
-	border-bottom-color: var(--border-light);
-	box-shadow: 0 6px 12px -10px color-mix(in srgb, black 28%, transparent);
+	border-right-color: var(--database-row-divider);
 }
 
 .databaseHeadCell:first-child {
-	padding-left: 14px;
+	padding-left: 16px;
 }
 
 .databaseHeadCell:not(:first-child) {
@@ -56,7 +54,7 @@
 }
 
 .databaseHeadCell:last-child {
-	padding-right: 14px;
+	padding-right: 16px;
 }
 
 .databaseColumnResizeHandle {
@@ -86,7 +84,7 @@
 .databaseHeadCell:hover .databaseColumnResizeHandle::after,
 .databaseColumnResizeHandle.is-resizing::after,
 .databaseTableShell.is-resizing .databaseColumnResizeHandle::after {
-	background: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+	background: var(--border-strong);
 }
 
 .databaseTableShell.is-resizing,
@@ -118,7 +116,7 @@
 }
 
 .databaseHeaderButton {
-	font-weight: var(--font-medium);
+	font-weight: var(--font-normal);
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
@@ -132,7 +130,7 @@
 .databaseHeaderControls {
 	display: flex;
 	align-items: center;
-	gap: 4px;
+	gap: 0;
 	width: 100%;
 	min-width: 0;
 }
@@ -143,7 +141,7 @@
 }
 
 .databaseHeaderButton:hover {
-	color: var(--text-secondary);
+	color: var(--text-primary);
 }
 
 .databaseHeaderLabel {
@@ -154,17 +152,22 @@
 	min-width: 0;
 }
 
+/* Column icons stay out of the idle header and fade in at the trailing edge on hover,
+   so labels align with cell text and nothing shifts. */
 .databaseHeaderIconPicker {
+	order: 1;
+	flex: 0 0 auto;
 	width: var(--icon-md);
 	height: var(--icon-md);
+	margin-left: 4px;
+	opacity: 0;
 	color: var(--text-tertiary);
-	opacity: 0.6;
 	transition:
 		opacity 140ms ease,
 		color 140ms ease;
 }
 
-.databaseHeadCell:hover .databaseHeaderIconPicker {
+.databaseHeadCell:is(:hover, :focus-within) .databaseHeaderIconPicker {
 	opacity: 1;
 }
 
@@ -190,9 +193,9 @@
 	text-align: left;
 	padding-top: 0;
 	padding-bottom: 0;
-	padding-right: 14px;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 36%, transparent);
+	padding-right: 12px;
 	color: var(--text-secondary);
+	font-size: var(--text-sm);
 }
 
 .databaseBodyCell:has(.databaseTagSuggestions),
@@ -206,20 +209,73 @@
 }
 
 .databaseBodyCell:first-child {
-	padding-left: 18px;
+	padding-left: 16px;
 }
 
 .databaseBodyCell:not(:first-child) {
-	padding-left: 14px;
+	padding-left: 12px;
 }
 
 .databaseBodyCell:last-child {
-	padding-right: 18px;
+	padding-right: 16px;
+}
+
+/* Status is an icon slot that hugs the title; its label lives in the tooltip and aria-label. */
+:is(.databaseHeadCell, .databaseBodyCell)[data-column-placement="status"] {
+	padding-right: 0;
+}
+
+:is(.databaseHeadCell, .databaseBodyCell)[data-column-placement="status"]
+	+ [data-column-placement="title"] {
+	padding-left: 8px;
+}
+
+.databaseBodyCell[data-column-placement="status"] .propertyValueText > span {
+	display: none;
+}
+
+/* No status: blank at rest; a faint dashed ring on row hover keeps the picker discoverable. */
+.is-empty-status .propertyValueTextIcon {
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.is-empty-status .propertyValueTextIcon circle {
+	stroke-dasharray: 1.6 1.7;
+}
+
+.databaseRow:is(:hover, :focus-within) .is-empty-status .propertyValueTextIcon,
+.is-empty-status:is(:focus-visible, [data-popup-open]) .propertyValueTextIcon {
+	opacity: 0.4;
+}
+
+/* The trailing cluster aligns to the row's end like Linear's labels and dates; headers follow so
+   they stay over their values, with the sort arrow and icon picker moving to the leading side. */
+.databaseBodyCell[data-column-placement="trailing"],
+.databaseBodyCell[data-column-placement="trailing"] :is(.databaseCellButton, .databaseCellPills) {
+	justify-content: flex-end;
+	text-align: right;
+}
+
+/* Dates are secondary metadata: tertiary ink, tabular digits so a column of them lines up. */
+.databaseBodyCell[data-date-column] {
+	color: var(--text-tertiary);
+	font-variant-numeric: tabular-nums;
+}
+
+.databaseHeadCell[data-column-placement="trailing"] .databaseHeaderLabel {
+	flex-direction: row-reverse;
+}
+
+.databaseHeadCell[data-column-placement="trailing"] .databaseHeaderIconPicker {
+	order: -1;
+	margin-right: 4px;
+	margin-left: 0;
 }
 
 .databaseCellInput {
 	width: 100%;
-	height: 34px;
+	height: 28px;
 }
 
 .databaseCellPills {
@@ -243,13 +299,19 @@
 }
 
 .databaseTagField {
-	min-height: 32px;
-	background: color-mix(in srgb, var(--bg-primary) 78%, var(--bg-secondary));
+	min-height: 28px;
+	background: var(--bg-primary);
+}
+
+.databaseTagField .notePropertyToken {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	font-weight: var(--font-normal);
 }
 
 .databaseTagField .notePropertyToken:hover,
 .databaseTagField .notePropertyToken:focus-visible {
-	background: color-mix(in srgb, var(--pill-tone) 16%, var(--bg-secondary));
+	background: var(--bg-active);
 }
 
 .databaseTagField .notePropertyToken svg {
@@ -268,17 +330,20 @@
 	min-width: max(180px, 100%);
 	max-width: min(320px, calc(100vw - 40px));
 	max-height: 220px;
-	padding: 7px;
+	padding: var(--database-dropdown-padding);
 	border-radius: var(--database-dropdown-radius);
-	border: 1px solid var(--database-dropdown-border);
+	border: 0;
 	background: var(--database-dropdown-background);
 	box-shadow: var(--database-dropdown-shadow);
 }
 
 .databaseTagEditor .databaseTagSuggestions .notePropertySuggestionsLabel {
-	padding: 0 4px 2px;
-	font-size: calc(var(--text-base) * 0.8);
-	letter-spacing: 0.08em;
+	padding: 2px 8px 4px;
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--text-secondary);
 }
 
 .databaseTagEditor .databaseTagSuggestions .notePropertySuggestionList {
@@ -294,11 +359,17 @@
 .databaseTagEditor .databaseTagSuggestions .notePropertySuggestionChip {
 	justify-content: space-between;
 	width: 100%;
-	min-height: 26px;
+	min-height: 28px;
 	padding: 0 8px;
-	border-radius: var(--database-control-radius);
+	border-radius: var(--radius-md);
 	background: transparent;
 	border-color: transparent;
+	color: var(--text-primary);
+	font-weight: var(--font-normal);
+}
+
+.databaseTagEditor .databaseTagSuggestions .notePropertySuggestionChip:hover {
+	background: var(--bg-hover);
 }
 
 .databaseTagEditor .databaseWikiLinkSuggestions {
@@ -312,30 +383,57 @@
 }
 
 .databaseCellPill {
-	--database-tone: var(--interactive-accent);
+	--database-tone: var(--text-tertiary);
 
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
-	min-height: 22px;
-	padding: 0 7px;
-	border: 1px solid color-mix(in srgb, var(--database-tone) 18%, var(--border-light));
-	border-radius: var(--pill-radius);
-	background: color-mix(in srgb, var(--database-tone) 7%, var(--bg-primary));
+	min-height: 20px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	box-shadow: inset 0 0 0 1px var(--border-default);
 	font-size: var(--text-xs);
-	font-weight: var(--font-medium);
-	color: color-mix(in srgb, var(--database-tone) 68%, var(--text-primary));
-	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	font-weight: var(--font-normal);
+	line-height: 1.2;
+	color: var(--text-secondary);
 	white-space: nowrap;
 	flex: 0 0 auto;
 }
 
-.databaseCellPillMore {
-	--database-tone: var(--text-tertiary);
+.databaseCellPill:has(.databaseTagDot) {
+	padding-left: 7px;
+}
 
-	flex: 0 0 auto;
-	font-weight: var(--font-medium);
+.databaseCellPill .databaseTagPillIcon {
 	color: var(--text-tertiary);
+}
+
+.databaseTagDot {
+	flex: 0 0 auto;
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--database-tone);
+}
+
+.databaseCellPillMore {
+	flex: 0 0 auto;
+	padding-inline: 2px;
+	box-shadow: none;
+	color: var(--text-tertiary);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Status and priority keep their tone on the icon only, so the table reads as one ink. */
+:is(.databaseTable, .databaseBoardCard) .propertyValueText > span {
+	color: var(--text-secondary);
+	font-weight: var(--font-normal);
+}
+
+.databaseTable .propertyValueText {
+	font-size: var(--text-sm);
 }
 
 .databaseCellPillsMeasure {
@@ -355,6 +453,7 @@
 	justify-content: flex-start;
 	min-width: 0;
 	min-height: 18px;
+	font-weight: var(--font-normal);
 	line-height: 1.25;
 	cursor: default;
 	text-align: left;
@@ -370,27 +469,27 @@
 	line-height: 1.25;
 }
 
+/* The title is the row's anchor; every other cell stays at regular weight so it reads lighter. */
 .databaseCellButton.is-title {
-	font-size: calc(var(--text-base) * 0.95);
-	font-weight: var(--font-semibold);
-	letter-spacing: -0.005em;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
 }
 
 .databaseTitleCellMain.is-title {
-	gap: 6px;
+	gap: 8px;
+	overflow: hidden;
 	color: var(--database-note-appearance-color, var(--text-primary));
-	mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
 }
 
 .databaseTitleCellMain.is-title .databaseCellText {
-	text-overflow: clip;
+	min-width: 0;
 }
 
 .databaseTitleCellIcon {
 	display: inline-flex;
 	width: var(--icon-md);
 	flex: 0 0 auto;
-	color: var(--database-note-appearance-color, var(--text-accent));
+	color: var(--database-note-appearance-color, var(--text-tertiary));
 }
 
 .databaseTitleCell {
@@ -413,21 +512,20 @@
 	gap: 4px;
 	height: 22px;
 	padding: 0 8px 0 6px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 70%, transparent);
-	border-radius: var(--database-radius-md);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
 	background: var(--bg-primary);
-	box-shadow: 0 1px 2px color-mix(in srgb, black 8%, transparent);
+	box-shadow: none;
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.76);
-	letter-spacing: 0.01em;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
 	opacity: 0;
 	pointer-events: none;
-	transform: translate(4px, -50%);
+	transform: translateY(-50%);
 	transition:
 		opacity 140ms ease,
-		transform 140ms ease,
 		color 140ms ease,
-		border-color 140ms ease;
+		background-color 140ms ease;
 }
 
 .databaseRow:hover .databaseCellOpenButton,
@@ -435,20 +533,12 @@
 .databaseCellOpenButton:focus-visible {
 	opacity: 1;
 	pointer-events: auto;
-	transform: translate(0, -50%);
 }
 
 .databaseCellOpenButton:hover,
 .databaseCellOpenButton:focus-visible {
-	border-color: var(--border-strong);
-	background: var(--bg-primary);
+	background: var(--bg-hover);
 	color: var(--text-primary);
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.databaseCellOpenButton {
-		transform: translate(0, -50%);
-	}
 }
 
 .databaseCellText {
@@ -458,9 +548,21 @@
 	white-space: nowrap;
 }
 
+.databaseTableShell {
+	--database-row-divider: color-mix(in srgb, var(--border-light) 60%, transparent);
+	--database-group-band: color-mix(in srgb, var(--text-primary) 1.5%, var(--bg-primary));
+}
+
+.dark .databaseTableShell {
+	--database-row-divider: color-mix(in srgb, var(--border-light) 40%, transparent);
+	--database-group-band: color-mix(in srgb, var(--text-primary) 2.5%, var(--bg-primary));
+}
+
+/* Rows carry no hairline (Linear list); hover and selection fills separate them instead. */
 .databaseRow {
 	position: relative;
 	z-index: 0;
+	border-bottom: 0;
 	cursor: default;
 	user-select: none;
 	-webkit-user-select: none;
@@ -469,11 +571,10 @@
 .databaseRow::before {
 	content: "";
 	position: absolute;
-	inset: 3px 6px;
+	inset: 0;
 	z-index: -1;
-	border-radius: var(--database-radius-lg);
 	pointer-events: none;
-	transition: background-color 140ms ease;
+	transition: background-color 100ms ease;
 }
 
 .databaseRow:has(.databaseTagSuggestions),
@@ -482,20 +583,12 @@
 }
 
 .databaseRow:hover::before {
-	background: color-mix(in srgb, var(--bg-hover) 70%, transparent);
+	background: var(--bg-hover);
 }
 
-.databaseRow[data-state="selected"]::before {
-	background: color-mix(in srgb, var(--interactive-accent) 11%, var(--bg-primary));
-}
-
+.databaseRow[data-state="selected"]::before,
 .databaseRow[data-state="selected"]:hover::before {
-	background: color-mix(in srgb, var(--interactive-accent) 14%, var(--bg-primary));
-}
-
-.databaseRow[data-state="selected"] .databaseBodyCell,
-.databaseRow[data-state="selected"] + .databaseRow .databaseBodyCell {
-	border-top-color: transparent;
+	background: var(--bg-active);
 }
 
 .databaseRow:focus-visible {
@@ -550,14 +643,42 @@
 .databaseGroupCell {
 	display: flex;
 	align-items: center;
-	gap: 7px;
-	min-height: 44px;
-	padding: 0 18px;
-	background: color-mix(in srgb, var(--database-tone) 7%, var(--bg-secondary));
+	gap: 8px;
+	min-height: 36px;
+	padding: 0 12px 0 16px;
+	background: var(--database-group-band);
 	color: var(--text-secondary);
 	border-radius: 0;
-	border-top: 1px solid color-mix(in srgb, var(--database-tone) 12%, var(--border-light));
-	border-bottom: 1px solid color-mix(in srgb, var(--database-tone) 14%, var(--border-light));
+}
+
+.databaseGroupIconSlot {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+}
+
+/* With a status column the group icon fills the status icon's 24px slot (40px column minus its
+   16px inset), so the group label starts on the row titles' left edge. */
+.databaseGroupCell[data-status-gutter="true"] .databaseGroupIconSlot {
+	flex-basis: 24px;
+}
+
+.databaseGroupIcon {
+	flex: 0 0 auto;
+	color: var(--database-tone, var(--text-tertiary));
+}
+
+.databaseGroupIcon.is-neutral {
+	color: var(--text-secondary);
+}
+
+.databaseGroupIcon.is-dot {
+	flex: 0 0 6px;
+	width: 6px;
+	height: 6px;
+	margin-inline: 4px;
+	border-radius: 999px;
+	background: var(--database-tone, var(--text-tertiary));
 }
 
 .databaseGroupAddButton {
@@ -570,27 +691,29 @@
 	height: 24px;
 	margin-left: auto;
 	border: none;
-	border-radius: var(--database-radius-md);
+	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
-	opacity: 0.7;
+	opacity: 0;
 	transition:
+		opacity var(--transition-fast),
 		color var(--transition-fast),
-		background-color var(--transition-fast),
-		opacity var(--transition-fast);
+		background-color var(--transition-fast);
+}
+
+.databaseGroupHeaderRow:is(:hover, :focus-within) .databaseGroupAddButton {
+	opacity: 1;
 }
 
 .databaseGroupAddButton svg {
 	display: block;
 	flex: 0 0 auto;
-	opacity: 1;
 }
 
 .databaseGroupAddButton:hover {
-	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-primary));
+	background: var(--bg-hover);
 	color: var(--text-primary);
-	opacity: 1;
 }
 
 .databaseGroupLabel {
@@ -598,52 +721,45 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	color: color-mix(in srgb, var(--database-tone) 24%, var(--text-primary));
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-semibold);
-	letter-spacing: -0.01em;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
 	line-height: 1.2;
 	text-transform: none;
 }
 
 .databaseGroupCount {
 	flex: 0 0 auto;
-	margin-left: -2px;
 	min-width: 1.25em;
-	font-size: calc(var(--text-base) * 0.78);
-	font-weight: var(--font-medium);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	font-variant-numeric: tabular-nums;
 	line-height: 1;
 	color: var(--text-tertiary);
-	text-align: right;
+	text-align: left;
 }
 
 .databaseLoadingState,
 .databaseNotice {
-	padding: 14px 18px;
-}
-
-.databaseLoadingState,
-.databaseNotice {
-	margin: 14px 18px 0;
-	border-radius: var(--radius-lg);
+	margin: 12px 16px 0;
+	padding: 10px 12px;
+	border-radius: var(--radius-md);
 	border: 1px solid var(--border-light);
-	background: var(--bg-secondary);
-}
-
-.databaseNotice {
-	border-bottom: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
 }
 
 .databaseNoticeError {
 	color: var(--text-error);
-	background: color-mix(in srgb, #f6d8d1 20%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--text-error) 24%, var(--border-light));
+	background: color-mix(in srgb, var(--text-error) 5%, var(--bg-primary));
 }
 
 .databaseEmptyCell {
-	padding: 28px 18px;
+	padding: 28px 16px;
 	font-size: var(--text-sm);
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 	text-align: center;
 }
 
@@ -704,7 +820,7 @@
 }
 
 .databaseHeaderButton:hover .databaseHeaderSortIcon {
-	color: var(--text-primary);
+	color: var(--text-secondary);
 }
 
 .databaseBoardLaneTitleGroup {
@@ -717,28 +833,17 @@
 	background: transparent;
 }
 
-.databaseBoardLaneDot {
-	flex: 0 0 auto;
-	width: 8px;
-	height: 8px;
-	border-radius: 999px;
-	background: var(--database-tone);
-	border: none;
-	box-shadow: none;
-	opacity: 0.9;
-}
-
 .databaseBoardLaneEmptyCard {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 130px;
-	padding: 18px 14px;
-	border: 1px dashed var(--border-default);
-	border-radius: var(--radius-xl);
-	background: var(--bg-secondary);
-	font-size: calc(var(--text-base) * 0.82);
-	line-height: 1.35;
+	min-height: 64px;
+	padding: 12px;
+	border: 0;
+	border-radius: var(--radius-8);
+	background: transparent;
+	font-size: var(--text-xs);
+	line-height: 1.4;
 	color: var(--text-tertiary);
 	text-align: center;
 }
@@ -756,13 +861,13 @@
 }
 
 .databasesEmptyTitle {
-	font-size: calc(var(--text-base) * 1.1);
+	font-size: var(--text-md);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
 .databasesEmptyText {
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	color: var(--text-secondary);
 	max-width: 340px;
 	line-height: 1.5;
@@ -777,7 +882,7 @@
 	gap: 8px;
 	max-width: 380px;
 	text-align: left;
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	color: var(--text-secondary);
 	line-height: 1.45;
 }
@@ -792,31 +897,35 @@
 	gap: 0;
 	padding: 0;
 	overflow: hidden;
-	border-radius: var(--radius-2xl);
-	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
+	border: 0;
+	border-radius: var(--radius-lg);
 	background: var(--bg-primary);
-	box-shadow: var(--shadow-float);
+	box-shadow:
+		0 0 0 0.5px var(--border-default),
+		0 2px 6px rgb(0 0 0 / 5%),
+		0 10px 28px rgb(0 0 0 / 7%);
 }
 
 .createCollectionDialog [data-slot="dialog-close"] {
-	top: 16px;
-	right: 16px;
-	opacity: 0.55;
+	top: 14px;
+	right: 14px;
+	color: var(--text-secondary);
 }
 
 .createCollectionDialog [data-slot="dialog-close"]:hover {
-	opacity: 0.9;
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .createCollectionHero {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 12px;
-	padding: 24px 22px 18px;
+	gap: 10px;
+	padding: 24px 22px 16px;
 	text-align: center;
-	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
-	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	background: var(--bg-primary);
+	border-bottom: 1px solid var(--border-light);
 }
 
 .createCollectionIcon {
@@ -824,7 +933,7 @@
 	align-items: center;
 	justify-content: center;
 	flex: 0 0 auto;
-	color: var(--interactive-accent);
+	color: var(--text-secondary);
 }
 
 .createCollectionHeader {
@@ -836,23 +945,22 @@
 
 .createCollectionEyebrow {
 	margin: 0 0 2px;
-	font-size: calc(var(--text-base) * 0.78);
+	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 }
 
 .createCollectionDialog [data-slot="dialog-title"] {
-	font-size: calc(var(--text-base) * 1.22);
+	font-size: var(--text-md);
+	font-weight: var(--font-semibold);
 	line-height: 1.2;
-	letter-spacing: -0.015em;
+	letter-spacing: -0.01em;
 	color: var(--text-primary);
 }
 
 .createCollectionDescription {
 	margin-top: 2px;
-	font-size: calc(var(--text-base) * 0.92);
+	font-size: var(--text-sm);
 	line-height: 1.45;
 	color: var(--text-secondary);
 }
@@ -874,16 +982,16 @@
 }
 
 .createCollectionLabel {
-	font-size: calc(var(--text-base) * 0.86);
-	font-weight: var(--font-medium);
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
 	color: var(--text-secondary);
 }
 
 .createCollectionInput {
-	height: 40px;
-	border-radius: var(--radius-lg);
-	border-color: color-mix(in srgb, var(--border-default) 84%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+	height: 34px;
+	border-radius: var(--radius-md);
+	border-color: var(--border-default);
+	background: var(--bg-primary);
 	box-shadow: none;
 	transition:
 		border-color var(--transition-fast),
@@ -902,22 +1010,19 @@
 	width: 100%;
 	max-width: none;
 	align-self: stretch;
-	min-height: 40px;
-	border-radius: var(--radius-lg);
-	background: var(--bg-tertiary);
-	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
+	min-height: 34px;
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	border-color: var(--border-default);
 }
 
 .createCollectionDialog .createCollectionFolderTrigger:hover {
-	background: color-mix(in srgb, var(--bg-tertiary) 86%, var(--bg-hover));
+	background: var(--bg-hover);
 	border-color: var(--border-default);
 }
 
 .createCollectionTips {
-	padding: 12px 14px;
-	border-radius: var(--radius-lg);
-	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	padding: 4px 0 0;
 	text-align: center;
 }
 
@@ -937,20 +1042,20 @@
 	gap: 10px;
 	width: fit-content;
 	max-width: 100%;
-	font-size: calc(var(--text-base) * 0.84);
+	font-size: var(--text-xs);
 	line-height: 1.45;
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 	text-align: center;
 }
 
 .createCollectionTip::before {
 	content: "";
-	width: 5px;
-	height: 5px;
-	margin-top: 0.55em;
+	width: 4px;
+	height: 4px;
+	margin-top: 0.6em;
 	flex: 0 0 auto;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--interactive-accent) 55%, var(--text-tertiary));
+	background: var(--text-tertiary);
 }
 
 .createCollectionTip:has(.createCollectionTipIcons)::before {
@@ -973,10 +1078,10 @@
 }
 
 .createCollectionCta[data-slot="button"] {
-	border: 1px solid color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
+	border: 1px solid transparent;
 	background: var(--interactive-accent);
 	color: var(--text-inverse);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+	box-shadow: none;
 }
 
 .createCollectionCta[data-slot="button"]:hover:not(:disabled) {

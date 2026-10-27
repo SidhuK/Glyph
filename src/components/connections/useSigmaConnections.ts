@@ -13,16 +13,22 @@ import type {
 	ConnectionsGraphVariant,
 	ConnectionsSigma,
 } from "./connectionsGraph";
-import { connectionsRingGeometry, drawConnectionsCommunityArcs } from "./connectionsRing";
+import {
+	type ConnectionsRingFrame,
+	connectionsRingFrame,
+	drawConnectionsCommunityArcs,
+} from "./connectionsRing";
+import { buildEdgeReducer, buildNodeReducer, isLabeledHub } from "./connectionsReducers";
 import {
 	type ConnectionsDisplayState,
 	type ConnectionsFocusState,
 	type ConnectionsPalette,
 	SPACE_FOCUS_NODE_SCALE,
-	buildEdgeReducer,
-	buildNodeReducer,
+	FOCUS_LABEL_WEIGHT,
+	resolveConnectionsLabelSize,
 	resolveConnectionsPalette,
 } from "./connectionsTheme";
+import { drawConnectionsUnlinkedBand } from "./connectionsUnlinkedBand";
 
 interface UseSigmaConnectionsOptions {
 	graph: ConnectionsGraph | null;
@@ -42,11 +48,19 @@ export interface ConnectionsOverlayApi {
 	setLabelZoomThreshold: (value: number) => void;
 }
 
+const labelMeasureContext = document.createElement("canvas").getContext("2d");
+
 function neighborIdsForNode(graph: ConnectionsGraph, nodeId: string | null) {
 	if (!nodeId) return null;
 	const neighbors = new Set(graph.neighbors(nodeId));
 	neighbors.add(nodeId);
 	return neighbors;
+}
+
+function focusToneForNode(graph: ConnectionsGraph, nodeId: string | null) {
+	if (!nodeId || !graph.hasNode(nodeId)) return null;
+	const community = graph.getNodeAttribute(nodeId, "community");
+	return community.kind === "member" ? community.tone : null;
 }
 
 function isEdgeConnectedToFocus(focusId: string | null, source: string, target: string) {
@@ -91,6 +105,7 @@ export function useSigmaConnections({
 		neighborIds: null,
 		selectedNodeId: null,
 		searchMatchIds: null,
+		focusTone: null,
 	});
 	const displayRef = useRef(display);
 	displayRef.current = display;
@@ -130,6 +145,7 @@ export function useSigmaConnections({
 			focusRef.current.hoveredNode = null;
 			focusRef.current.neighborIds = null;
 			focusRef.current.selectedNodeId = null;
+			focusRef.current.focusTone = null;
 			overlayRef.current = {
 				setSearchMatches: () => {},
 				setDisplay: () => {},
@@ -173,6 +189,7 @@ export function useSigmaConnections({
 				}
 				const focusId = focusState.selectedNodeId ?? focusState.hoveredNode;
 				focusState.neighborIds = neighborIdsForNode(graph, focusId);
+				focusState.focusTone = focusToneForNode(graph, focusId);
 				scheduleRefresh(activeRenderer);
 			};
 
@@ -203,19 +220,30 @@ export function useSigmaConnections({
 			) => edgeReducer(edge, data, source, target);
 
 			const baseNodeSize = maxBaseNodeSize(graph);
-			const ringGeometry = (target: ConnectionsSigma) =>
-				connectionsRingGeometry(
-					target,
-					baseNodeSize * displayRef.current.nodeSizeScale * SPACE_FOCUS_NODE_SCALE,
-				);
+			const hubIds = graph.filterNodes((_node, attributes) => isLabeledHub(attributes));
+			// Rebuilt before every space-graph render so labels claim space within one frame.
+			let ringFrame: ConnectionsRingFrame | null = null;
+			const measureRingFrame = (target: ConnectionsSigma) => {
+				if (!labelMeasureContext) return null;
+				const fontSize = target.getSetting("labelSize");
+				const labelFont = target.getSetting("labelFont");
+				return connectionsRingFrame(target, graph, labelMeasureContext, {
+					maxNodeSize: baseNodeSize * displayRef.current.nodeSizeScale * SPACE_FOCUS_NODE_SCALE,
+					fontSize,
+					font: `${target.getSetting("labelWeight")} ${fontSize}px ${labelFont}`,
+					focusFont: `${FOCUS_LABEL_WEIGHT} ${fontSize}px ${labelFont}`,
+					focusId: focusState.selectedNodeId ?? focusState.hoveredNode,
+					hubIds,
+				});
+			};
 
 			const activeRenderer: ConnectionsSigma = new Sigma(graph, container, {
 				...sigmaSettings,
 				...(variant === "space" ? connectionsLabelVisibility(labelZoomRef.current) : {}),
-				labelColor: { color: palette.text },
+				labelColor: { color: palette.textSecondary },
 				labelFont,
-				labelSize: variant === "local" ? 11.5 : 10.5,
-				labelWeight: "500",
+				labelSize: resolveConnectionsLabelSize(container, variant),
+				labelWeight: "400",
 				defaultDrawNodeLabel: (context, data, labelSettings) =>
 					drawConnectionsNodeLabel(
 						context,
@@ -223,7 +251,7 @@ export function useSigmaConnections({
 						labelSettings,
 						paletteRef.current ?? palette,
 						variant,
-						variant === "space" && renderer ? ringGeometry(renderer) : null,
+						ringFrame,
 					),
 				defaultDrawNodeHover: (context, data) =>
 					drawConnectionsNodeHover(context, data, paletteRef.current ?? palette, variant),
@@ -243,6 +271,9 @@ export function useSigmaConnections({
 			renderer = activeRenderer;
 
 			if (variant === "space") {
+				activeRenderer.on("beforeRender", () => {
+					ringFrame = measureRingFrame(activeRenderer);
+				});
 				const bundledEdgesCanvas = activeRenderer.createCanvas("bundledEdges", {
 					afterLayer: "edges",
 					style: {
@@ -262,12 +293,20 @@ export function useSigmaConnections({
 							bundling: displayRef.current.edgeBundling,
 							resolveStyle: resolveEdgeStyle,
 						});
+						if (!ringFrame) return;
 						drawConnectionsCommunityArcs(
 							bundledEdgesContext,
 							activeRenderer,
 							graph,
 							paletteRef.current ?? palette,
-							ringGeometry(activeRenderer),
+							ringFrame.ring,
+						);
+						drawConnectionsUnlinkedBand(
+							bundledEdgesContext,
+							activeRenderer,
+							graph,
+							paletteRef.current ?? palette,
+							ringFrame.ring,
 						);
 					});
 				}
@@ -360,8 +399,9 @@ export function useSigmaConnections({
 				const nextPalette = resolveConnectionsPalette(container);
 				paletteRef.current = nextPalette;
 				activeRenderer.setSettings({
-					labelColor: { color: nextPalette.text },
+					labelColor: { color: nextPalette.textSecondary },
 					labelFont: getComputedStyle(container).fontFamily,
+					labelSize: resolveConnectionsLabelSize(container, variant),
 				});
 				scheduleRefresh(activeRenderer);
 			});

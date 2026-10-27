@@ -7,7 +7,7 @@
 		"sectionTitle": "Motyw",
 		"sectionDescription": "Wybierz motyw programu Glyph.",
 		"appearance": {
-			"label": "Wygląd",
+			"label": "Tryb kolorów",
 			"description": "Dopasuj do systemu lub zablokuj program Glyph w trybie jasnym lub ciemnym.",
 			"ariaLabel": "Tryb motywu"
 		},
@@ -43,7 +43,7 @@
 		"sectionDescription": "Zaimportuj paletę JSON i używaj jej jak każdego wbudowanego motywu.",
 		"template": {
 			"label": "Szablon motywu",
-			"description": "Bazując na domyślnych jasnych i ciemnych kolorach Glyph — zmień kody szesnastkowe i nazwę.",
+			"description": "Bazując na domyślnych jasnych i ciemnych kolorach Glyph, zmień kody szesnastkowe i nazwę.",
 			"copy": "Kopiuj JSON",
 			"save": "Zapisz plik"
 		},
@@ -61,10 +61,9 @@
 	},
 	"shape": {
 		"sectionTitle": "Kształt",
-		"sectionDescription": "Wybierz stopień zaokrąglenia paneli, przycisków i okien w całej aplikacji.",
 		"corners": {
 			"label": "Narożniki",
-			"description": "Dotyczy wszystkich elementów — pasków bocznych, okien dialogowych, pól wprowadzania i kart.",
+			"description": "Dotyczy wszystkich elementów, w tym pasków bocznych, okien dialogowych, pól wprowadzania i kart.",
 			"ariaLabel": "Kształt interfejsu"
 		},
 		"options": {
@@ -84,7 +83,6 @@
 	},
 	"layout": {
 		"sectionTitle": "Układ",
-		"sectionDescription": "Wybierz, jak nawigacja i notatki dzielą przestrzeń roboczą.",
 		"folioMode": {
 			"label": "Układ przestrzeni roboczej",
 			"description": "Wybierz sposób rozmieszczenia nawigacji, listy notatek i edytora.",
@@ -106,9 +104,12 @@
 			"ariaLabel": "Domyślne sortowanie Folio"
 		},
 		"taskProgressRings": {
-			"label": "Pierścienie postępu zadań",
-			"description": "Pokazuj pierścienie postępu zadań obok notatek na pasku bocznym, w Folio, Aktywności i tablicach baz danych.",
-			"ariaLabel": "Pokazuj pierścienie postępu zadań"
+			"label": "Postęp zadań",
+			"description": "Pokazuj liczbę ukończonych i wszystkich zadań obok notatek na pasku bocznym, w Folio, Aktywności i tablicach baz danych.",
+			"ariaLabel": "Pokazuj postęp zadań"
 		}
+	},
+	"appIcon": {
+		"sectionTitle": "Ikona aplikacji"
 	}
 }

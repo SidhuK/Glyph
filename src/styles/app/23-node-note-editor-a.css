@@ -20,6 +20,7 @@
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 }
 
+/* Centred along the bottom edge of the editor; the body pads its end so the bar never covers text. */
 .rfNodeNoteEditorRibbonAnchor {
 	position: absolute;
 	right: 12px;
@@ -31,95 +32,120 @@
 	pointer-events: none;
 }
 
-.rfNodeNoteEditorRibbon {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 4px;
-	padding: 5px 9px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 86%, transparent);
-	border-radius: var(--radius-lg);
-	background-color: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
-	color: var(--editor-body-color);
-	flex-shrink: 0;
-	overflow-x: auto;
-	overflow-y: hidden;
-	white-space: nowrap;
-	scrollbar-width: thin;
-	width: fit-content;
-	max-width: calc(100% - 24px);
-	margin: 0;
-	will-change: transform, opacity;
-	pointer-events: auto;
-	isolation: isolate;
-	z-index: 1;
+.rfNodeNoteEditorHasRibbon .rfNodeNoteEditorBody {
+	padding-bottom: 62px;
 }
 
-.rfNodeNoteEditorRibbonBottom {
+@keyframes rfNodeNoteEditorRibbonIn {
+	from {
+		opacity: 0;
+		transform: translateY(3px) scale(0.98);
+	}
+}
+
+/* Same floating surface as menus and popovers. */
+.rfNodeNoteEditorRibbon {
+	display: flex;
+	max-width: 100%;
+	overflow-x: auto;
+	scrollbar-width: none;
+	pointer-events: auto;
+	align-items: center;
+	gap: 2px;
+	padding: 3px;
+	border-radius: var(--radius-lg);
+	background-color: var(--bg-primary);
+	color: var(--text-secondary);
+	white-space: nowrap;
 	transform-origin: center bottom;
 	box-shadow:
-		var(--shadow-overlay),
-		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 84%, transparent);
+		0 0 0 0.5px color-mix(in srgb, var(--text-primary) 14%, transparent),
+		0 2px 6px color-mix(in srgb, black 5%, transparent),
+		0 10px 28px color-mix(in srgb, black 7%, transparent);
+	animation: rfNodeNoteEditorRibbonIn 140ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-.rfNodeNoteEditorRibbon .ribbonGroup {
-	display: inline-flex;
-	align-items: center;
-	gap: 1px;
-	padding: 1px;
-	border: 1px solid transparent;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 42%, transparent);
-	flex: 0 0 auto;
-}
-
-.rfNodeNoteEditorRibbon .ribbonGroupUnified {
-	gap: 3px;
-	padding: 0;
-	background: transparent;
+@media (prefers-reduced-motion: reduce) {
+	.rfNodeNoteEditorRibbon {
+		animation: none;
+	}
 }
 
 .rfNodeNoteEditorRibbon .ribbonDivider {
 	width: 1px;
-	height: 20px;
-	margin: 0 1px;
-	background: color-mix(in srgb, var(--border-default) 74%, transparent);
+	height: 16px;
+	margin: 0 4px;
+	background: var(--border-light);
 	flex: 0 0 auto;
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn {
 	position: relative;
-	width: 26px;
-	height: 26px;
+	width: 28px;
+	height: 28px;
 	padding: 0;
-	border-radius: var(--radius-sm);
-	color: var(--editor-body-color);
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
 	flex: 0 0 auto;
 	transition:
 		background-color var(--transition-base),
-		color var(--transition-base),
-		box-shadow var(--transition-base),
-		transform var(--transition-base);
+		color var(--transition-base);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:hover {
-	background: color-mix(in srgb, var(--editor-body-color) 6%, transparent);
-	color: var(--editor-body-color);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--editor-body-color) 10%, transparent);
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	box-shadow: none;
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn.active {
-	background: color-mix(in srgb, var(--editor-body-color) 10%, var(--bg-hover));
-	color: var(--interactive-accent);
-	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--editor-body-color) 14%, transparent),
-		inset 0 -1px 0 color-mix(in srgb, var(--bg-primary) 54%, transparent);
+	background: var(--bg-active);
+	color: var(--text-primary);
+	box-shadow: none;
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+/* The "A" sits on a 2px bar in the current text colour, where the glyph's own baseline was. */
+.rfNodeNoteEditorRibbon .ribbonColorBtn {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.ribbonColorUnderline {
+	width: 12px;
+	height: 2px;
+	margin-top: -3px;
+	border-radius: 1px;
+	background-color: currentColor;
+}
+
+/* Text colour and highlight share one popover: a labelled swatch row for each. */
+.editorColorSection + .editorColorSection {
+	margin-top: 4px;
+}
+
+.editorColorSectionLabel {
+	padding: 4px 6px;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	line-height: 1.3;
+	user-select: none;
+}
+
+.editorColorSection .editorColorGrid {
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+/* Clear always sits in the last column, so it lines up across the Text and Highlight sections. */
+.editorColorSection .editorColorClearButton {
+	grid-column: -2;
 }
 
 .rfNodeNoteEditorBody {
@@ -130,10 +156,6 @@
 	flex-direction: column;
 	overscroll-behavior: contain;
 	background: var(--bg-primary);
-}
-
-.rfNodeNoteEditorHasRibbon .rfNodeNoteEditorBody {
-	padding-bottom: 62px;
 }
 
 .noteFindBar {
@@ -165,7 +187,7 @@
 	padding: 0 2px;
 	background: transparent;
 	box-shadow: none;
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 }
 
 .noteFindInput:focus-visible {
@@ -176,7 +198,7 @@
 	min-width: 48px;
 	flex: 0 0 auto;
 	text-align: right;
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-xs);
 	font-variant-numeric: tabular-nums;
 	color: var(--text-tertiary);
 }
@@ -257,7 +279,7 @@
 	padding: 5px 10px;
 	background: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	line-height: 1.42;
 }
 

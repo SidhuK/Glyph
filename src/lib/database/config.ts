@@ -111,3 +111,20 @@ export function formatDatabaseDateTime(
 		time: formatDatabaseClockTime(date),
 	});
 }
+
+/** Dense table cells and board cards: "Oct 17", with the year only outside the current one.
+    The full date (in the user's date format) belongs in the tooltip. */
+export function formatCompactDatabaseDate(
+	value: string | null | undefined,
+	locale: string,
+	now: Date = new Date(),
+): string {
+	if (!value) return "";
+	const date = parseDisplayDateInput(value);
+	if (!date) return value;
+	return date.toLocaleDateString(locale, {
+		month: "short",
+		day: "numeric",
+		...(date.getFullYear() === now.getFullYear() ? {} : { year: "numeric" }),
+	});
+}

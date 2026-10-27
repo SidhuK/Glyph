@@ -113,13 +113,13 @@
 		},
 		"general-language": {
 			"title": "Idioma",
-			"section": "Idioma",
+			"section": "Idioma y región",
 			"description": "Elige el idioma de la interfaz de Glyph.",
 			"keywords": ["locale", "traducción", "i18n", "idioma", "language", "translation"]
 		},
 		"general-date-format": {
 			"title": "Formato de fecha",
-			"section": "Fecha y hora",
+			"section": "Idioma y región",
 			"description": "Elige cómo se muestran las fechas completas en Glyph.",
 			"keywords": [
 				"fecha",
@@ -166,7 +166,7 @@
 		},
 		"sidebar-calendar": {
 			"title": "Calendario de la barra lateral",
-			"section": "Barra lateral",
+			"section": "Navegación",
 			"description": "Elige el diseño del calendario, el resumen del día y qué pasa al hacer clic en un día.",
 			"keywords": ["calendario", "semana", "mes", "nota diaria", "resumen del día", "barra lateral"]
 		},
@@ -210,12 +210,12 @@
 		},
 		"typography-interface-font": {
 			"title": "Fuente de la interfaz",
-			"section": "Tipografía",
+			"section": "Interfaz",
 			"keywords": ["fuente", "ui", "sans", "font"]
 		},
 		"typography-monospace-font": {
 			"title": "Fuente monoespaciada",
-			"section": "Tipografía",
+			"section": "Interfaz",
 			"keywords": ["fuente", "código", "mono", "font", "code"]
 		},
 		"typography-editor-font": {
@@ -235,7 +235,7 @@
 		},
 		"typography-ui-font-size": {
 			"title": "Tamaño de fuente de la UI",
-			"section": "Tipografía",
+			"section": "Interfaz",
 			"keywords": ["fuente", "texto", "interfaz", "font", "text", "interface"]
 		},
 		"typography-editor-font-size": {
@@ -418,7 +418,7 @@
 			"keywords": ["repo", "sync", "branch"]
 		},
 		"git-how-it-works": {
-			"title": "How it works",
+			"title": "Remote",
 			"section": "Connection",
 			"description": "Review remote connection details for the current repository.",
 			"keywords": ["remote url", "initialize git", "credentials"]
@@ -465,7 +465,7 @@
 		},
 		"general-editor-table-of-contents": {
 			"title": "Tabla de contenidos",
-			"section": "Editor",
+			"section": "Edición",
 			"keywords": ["toc", "índice", "outline", "contenido"]
 		},
 		"space-search-index-people-tags": {
@@ -475,27 +475,27 @@
 		},
 		"general-editor-frontmatter": {
 			"title": "Mostrar frontmatter en el editor",
-			"section": "Editor",
+			"section": "Edición",
 			"keywords": ["propiedades", "yaml", "metadatos", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "Encabezados con color",
-			"section": "Editor",
+			"section": "Edición",
 			"keywords": ["editor", "color", "encabezados"]
 		},
 		"general-editor-heading-palette": {
 			"title": "Paleta de encabezados",
-			"section": "Editor",
+			"section": "Edición",
 			"keywords": ["encabezado", "color", "paleta"]
 		},
 		"general-editor-default-mode": {
 			"title": "Modo de editor predeterminado",
-			"section": "Editor",
+			"section": "Edición",
 			"keywords": ["enriquecido", "vista previa", "markdown"]
 		},
 		"general-editor-focus-mode": {
 			"title": "Modo de enfoque",
-			"section": "Experimental",
+			"section": "Funciones",
 			"keywords": ["enfoque", "párrafo", "oración"]
 		},
 		"appearance-editor-presentation-beautiful-tags": {
@@ -510,22 +510,22 @@
 		},
 		"general-editor-collapsible-headings": {
 			"title": "Encabezados plegables",
-			"section": "Editor",
+			"section": "Edición",
 			"keywords": ["plegar", "contraer", "expandir", "fold", "collapse", "expand"]
 		},
 		"general-editor-spell-check": {
 			"title": "Corrector ortográfico",
-			"section": "Editor",
+			"section": "Edición",
 			"keywords": ["ortografía", "typo", "diccionario", "spelling", "dictionary"]
 		},
 		"general-editor-raw-live-preview": {
 			"title": "Markdown en vivo en modo RAW",
-			"section": "Experimental",
+			"section": "Funciones",
 			"keywords": ["raw", "markdown", "vim", "live", "preview"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Modo Vim",
-			"section": "Experimental",
+			"section": "Funciones",
 			"keywords": [
 				"vim",
 				"atajos",
@@ -539,12 +539,12 @@
 		},
 		"general-editor-format-bar": {
 			"title": "Barra de formato",
-			"section": "Experimental",
+			"section": "Funciones",
 			"keywords": ["formato", "barra", "toolbar", "ribbon", "enriquecido", "editor"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
-			"section": "Assistant behavior",
+			"section": "Availability",
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
@@ -572,7 +572,7 @@
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Peek de nota",
-			"section": "Experimental",
+			"section": "Funciones",
 			"keywords": ["peek", "vista", "wiki", "todas las notas", "arc"]
 		},
 		"general-file-tree-folder-counts": {

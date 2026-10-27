@@ -184,7 +184,7 @@ export function GitSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="How it works"
+						label={t("gitSync.remote")}
 						description={connectionHelp}
 						stacked
 						interactive={false}
@@ -192,7 +192,6 @@ export function GitSettingsPane() {
 						<SettingsValueCard
 							icon={<HugeiconsIcon icon={Link01Icon} size="var(--icon-md)" />}
 							value={config?.remote_url ?? "Open a folder that already has Git initialized."}
-							mono={Boolean(config?.remote_url)}
 						/>
 					</SettingsRow>
 					{config ? (
@@ -205,7 +204,6 @@ export function GitSettingsPane() {
 							<SettingsValueCard
 								icon={<HugeiconsIcon icon={GitBranchIcon} size="var(--icon-md)" />}
 								value={config.branch}
-								mono
 							/>
 						</SettingsRow>
 					) : null}
@@ -260,39 +258,36 @@ export function GitSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Actions"
-						description="Run a sync from settings and review the latest sync state here."
-						stacked
+						label={t("gitSync.actions")}
+						description={presentation.headline}
+						interactive={false}
 					>
-						<div className="gitSettingsActionRow">
-							<Button
-								type="button"
-								size="sm"
-								variant="default"
-								onClick={() => void handleSyncNow()}
-								disabled={!gitEnabledForSpace || busy || !presentation.canSyncNow}
-							>
-								Sync Now
-							</Button>
-							<div className="settingsHelp gitSettingsInlineStatus">{presentation.headline}</div>
+						<div className="settingsActions">
 							{presentation.showResume ? (
 								<Button
 									type="button"
-									size="sm"
-									variant="outline"
+									variant="ghost"
 									onClick={() => {
 										void updatePatch({ paused: false, enabled: true });
 									}}
 									disabled={busy}
 								>
-									Resume Auto Sync
+									{t("gitSync.resumeAutoSync")}
 								</Button>
 							) : null}
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => void handleSyncNow()}
+								disabled={!gitEnabledForSpace || busy || !presentation.canSyncNow}
+							>
+								{t("gitSync.sync")}
+							</Button>
 						</div>
-						{presentation.issueText ? (
-							<div className="settingsError">{presentation.issueText}</div>
-						) : null}
 					</SettingsRow>
+					{presentation.issueText ? (
+						<div className="settingsError">{presentation.issueText}</div>
+					) : null}
 				</SettingsSection>
 
 				<SettingsSection

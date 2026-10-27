@@ -1,7 +1,6 @@
 {
 	"connection": {
 		"sectionTitle": "接続",
-		"sectionDescription": "Glyph を AI に接続する方法を選び、プロバイダーとモデルを設定します。",
 		"type": {
 			"label": "接続タイプ",
 			"description": "インストール済みエージェント、この Mac 上のプライベートモデル、またはプロバイダー API を使用します。",
@@ -33,7 +32,6 @@
 		"description": "認証情報が有効な場合、Glyph は選択したプロバイダのモデル一覧を取得します。",
 		"placeholder": "モデルを選択...",
 		"connecting": "接続中...",
-		"count_other": "{{count}} 個のモデル",
 		"needsApiKey": "このプロバイダのモデルを読み込むには API キーを保存してください。",
 		"retry": "再試行",
 		"empty": "利用できるモデルがありません"
@@ -42,7 +40,17 @@
 		"label": "推論レベル",
 		"description": "現在のモデルが推論レベルを公開している場合に使用できます。",
 		"placeholder": "例: low, medium, high",
-		"manualHint": "このモデルは推論オプションを公開していません。手動で入力してください。"
+		"manualHint": "このモデルは推論オプションを公開していません。手動で入力してください。",
+		"levels": {
+			"none": "なし",
+			"minimal": "最小",
+			"low": "低",
+			"medium": "中",
+			"high": "高",
+			"xhigh": "最高",
+			"max": "最大",
+			"off": "オフ"
+		}
 	},
 	"baseUrl": {
 		"label": "ベース URL",

@@ -23,32 +23,32 @@
 	gap: 8px;
 	margin: 0;
 	color: var(--text-primary);
-	font-size: calc(var(--text-base) * 2.1);
-	font-weight: 760;
-	letter-spacing: 0;
-	line-height: 1.05;
+	font-size: var(--text-3xl);
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.02em;
+	line-height: 1.1;
 }
 
 .aboutVersion {
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 	font-size: var(--text-base);
-	font-weight: var(--font-medium);
+	font-weight: 400;
 }
 
 .aboutTagline {
-	margin: -2px 0 0;
+	margin: -4px 0 0;
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 1.1);
-	font-weight: var(--font-medium);
-	line-height: 1.35;
+	font-size: var(--text-md);
+	font-weight: 400;
+	line-height: 1.45;
 	text-align: center;
 }
 
 .aboutAttribution {
 	margin: 0;
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+	font-weight: 400;
 	line-height: 1.4;
 	text-align: center;
 }
@@ -83,10 +83,10 @@
 	min-height: 270px;
 	margin: 24px auto 4px;
 	overflow: hidden;
-	border: 1px solid rgb(37 91 206 / 32%);
-	border-radius: 18px;
-	background: #f8faff;
-	color: #0d2a63;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+	color: var(--text-primary);
 	text-align: left;
 }
 
@@ -95,8 +95,12 @@
 	z-index: -1;
 	inset: 0;
 	background-image:
-		linear-gradient(rgb(37 91 206 / 6%) 1px, transparent 1px),
-		linear-gradient(90deg, rgb(37 91 206 / 6%) 1px, transparent 1px);
+		linear-gradient(color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px),
+		linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--text-primary) 4%, transparent) 1px,
+			transparent 1px
+		);
 	background-size: 20px 20px;
 	content: "";
 	mask-image: linear-gradient(90deg, transparent 28%, black 68%);
@@ -110,8 +114,8 @@
 	position: relative;
 	min-height: 270px;
 	overflow: hidden;
-	border-right: 1px solid rgb(37 91 206 / 20%);
-	background: #fff;
+	border-right: 1px solid var(--border-light);
+	background: var(--bg-primary);
 }
 
 .aboutDeveloperPortrait img {
@@ -128,14 +132,14 @@
 	z-index: 1;
 	top: 14px;
 	left: 16px;
-	padding: 4px 7px;
-	border: 1px solid rgb(37 91 206 / 26%);
-	background: rgb(255 255 255 / 82%);
-	color: #255bce;
+	padding: 2px 6px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	box-shadow: 0 0 0 0.5px var(--border-default);
+	color: var(--text-secondary);
 	font-family: var(--font-mono);
-	font-size: 9px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.14em;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
 }
 
 .aboutDeveloperStory {
@@ -146,29 +150,26 @@
 }
 
 .aboutDeveloperEyebrow {
-	margin: 0 0 12px;
-	color: #255bce;
-	font-family: var(--font-mono);
-	font-size: 10px;
+	margin: 0 0 8px;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.16em;
 	line-height: 1.4;
-	text-transform: uppercase;
 }
 
 .aboutDeveloperStory h3 {
 	margin: 0;
-	color: #0d2a63;
-	font-size: calc(var(--text-base) * 1.55);
-	font-weight: 760;
-	letter-spacing: -0.02em;
-	line-height: 1.1;
+	color: var(--text-primary);
+	font-size: var(--text-xl);
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.01em;
+	line-height: 1.15;
 }
 
 .aboutDeveloperBio {
-	margin: 16px 0 0;
-	color: #30466f;
-	font-size: calc(var(--text-base) * 0.93);
+	margin: 12px 0 0;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
 	line-height: 1.65;
 }
 
@@ -182,26 +183,30 @@
 .aboutDeveloperLink {
 	display: inline-flex;
 	align-items: center;
-	gap: 7px;
-	padding: 6px 10px;
-	border: 1px solid rgb(37 91 206 / 28%);
-	border-radius: 999px;
-	background: rgb(255 255 255 / 58%);
+	gap: 6px;
+	height: 28px;
+	padding: 0 10px;
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
 	box-shadow: none;
-	color: #17479f;
+	color: var(--text-primary);
 	cursor: pointer;
 	font: inherit;
-	font-size: calc(var(--text-base) * 0.78);
-	font-weight: var(--font-semibold);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+.aboutDeveloperLink > span {
+	color: var(--text-tertiary);
 }
 
 .aboutDeveloperLink:hover {
-	border-color: rgb(37 91 206 / 48%);
-	background: rgb(37 91 206 / 8%);
+	background: var(--bg-hover);
 }
 
 .aboutDeveloperLink:focus-visible {
-	outline: 2px solid rgb(37 91 206 / 46%);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 	outline-offset: 2px;
 }
 
@@ -221,18 +226,24 @@
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
-	gap: 10px;
-	margin-top: 28px;
+	gap: 4px;
+	margin-top: 20px;
 }
 
 .aboutLinkButton {
-	height: 32px;
-	border-color: var(--border-light);
-	background: var(--bg-primary);
+	height: 28px;
+	padding-inline: 10px;
+	border-color: transparent;
+	background: transparent;
 	box-shadow: none;
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-semibold);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+.aboutLinkButton:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .settingsInlineLink {
@@ -261,40 +272,47 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	width: 100%;
 }
 
 .dailyNotesFolderRow {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 12px;
 	flex-wrap: nowrap;
 	width: 100%;
 }
 
 .dailyNotesActions {
 	display: inline-flex;
+	flex: 0 0 auto;
 	flex-direction: row;
 	align-items: center;
-	gap: var(--space-2);
+	gap: 6px;
 	flex-wrap: nowrap;
+	width: auto;
 }
 
+/* A chosen folder (or status) is plain text beside its buttons, one step above the quiet
+   Clear button, so it never reads as a control or a placeholder; "Not configured" is tertiary. */
 .dailyNotesFolderPath {
-	flex: 1 1 280px;
+	flex: 0 1 auto;
 	min-width: 0;
-	padding: 8px 10px;
-	font-size: var(--text-xs);
-	line-height: 1.45;
-	color: var(--text-secondary);
-	word-break: break-all;
-	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
-	background: var(--settings-surface-soft);
-	border-radius: var(--radius-lg);
+	max-width: 280px;
+	font-size: var(--text-sm);
+	line-height: 1.3;
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.dailyNotesFolderPath[data-compact] {
-	flex: 0 0 auto;
-	align-self: flex-end;
+.dailyNotesFolderPath[data-empty] {
+	color: var(--text-tertiary);
+}
+
+.dailyNotesActions > [data-slot="button"][data-variant="ghost"]:not([data-size^="icon"]) {
+	padding-inline: 10px;
 }
 
 .dailyNotesError {
@@ -305,49 +323,38 @@
 	opacity: 0.56;
 }
 
+.settingsFieldControl:has(> .settingsValueCard) {
+	flex: 0 1 auto;
+	align-items: flex-end;
+	max-width: 400px;
+}
+
 .settingsValueCard {
-	width: 100%;
+	max-width: 100%;
+	min-width: 0;
 	display: flex;
 	align-items: flex-start;
 	justify-content: flex-end;
-	gap: 10px;
-	padding: 10px 12px;
-	border-radius: var(--radius-lg);
-}
-
-:root.light .settingsValueCard {
-	background: var(--bg-primary);
+	gap: 8px;
+	padding: 0;
 }
 
 .settingsValueIcon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--icon-3xl);
-	height: var(--icon-3xl);
-	color: var(--text-secondary);
+	width: var(--icon-lg);
+	height: 20px;
+	color: var(--text-tertiary);
 	flex: 0 0 auto;
 }
 
 .settingsValueText {
-	padding-top: 4px;
-	font-size: calc(var(--text-base) * 0.9);
-	line-height: 1.5;
-	color: var(--text-primary);
+	font-size: var(--text-sm);
+	line-height: 20px;
+	color: var(--text-secondary);
 	overflow-wrap: break-word;
 	text-align: right;
-}
-
-.gitSettingsActionRow {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-
-.gitSettingsInlineStatus {
-	flex: 0 1 auto;
-	min-width: 0;
 }
 
 @media (max-width: 760px) {
@@ -376,7 +383,7 @@
 	.aboutDeveloperPortrait {
 		min-height: 220px;
 		border-right: 0;
-		border-bottom: 1px solid rgb(37 91 206 / 20%);
+		border-bottom: 1px solid var(--border-light);
 	}
 
 	.aboutDeveloperStory {
@@ -397,39 +404,47 @@
 .shortcutsToolbar {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
-	padding: 16px 18px 18px;
-	width: 70%;
-	margin: 0 auto;
+	gap: 12px;
+	width: 100%;
 }
 
-.shortcutsSearchInput {
+.shortcutsToolbar .shortcutsSearchInput {
 	width: 100%;
-	height: 40px;
-	padding: 0 14px;
+	height: var(--settings-control-height);
+	padding: 0 10px;
 	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
-	background: var(--settings-control-surface);
 	color: var(--text-primary);
 	font-size: var(--text-sm);
 }
 
 .shortcutsSearchInput::placeholder {
-	color: var(--text-tertiary);
+	color: var(--text-placeholder);
+}
+
+.shortcutField {
+	min-height: 44px;
+	padding-block: 8px;
+}
+
+.shortcutField .settingsFieldControl {
+	flex: 0 0 auto;
 }
 
 .shortcutActionButton {
-	padding: 0 8px;
-	border: none !important;
-	background: transparent !important;
-	color: var(--text-tertiary);
+	width: 24px;
+	height: 24px;
+	min-height: 24px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-secondary);
 	box-shadow: none;
 }
 
-.shortcutActionButton:hover {
+.shortcutActionButton:hover:not(:disabled) {
+	background: var(--bg-hover);
 	color: var(--text-primary);
-	background: transparent !important;
-	border-color: transparent !important;
 }
 
 .shortcutError {
@@ -438,41 +453,99 @@
 	border: 1px solid color-mix(in srgb, var(--status-danger-fg) 38%, transparent);
 	background: color-mix(in srgb, var(--status-danger-fg) 10%, var(--bg-primary));
 	color: var(--text-primary);
-	font-size: var(--text-xs);
+	font-size: var(--text-sm);
 	line-height: 1.45;
 }
 
 .shortcutBindingRow {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	flex-wrap: wrap;
-	width: 100%;
+	justify-content: flex-end;
+	gap: 4px;
+	/* The keys end on the column edge like toggles; only the hover chip overhangs it. */
+	margin-right: -8px;
 }
 
+/* The binding reads as small tertiary keycaps; the button only looks like a control on
+   hover or while recording. */
 .shortcutRecordButton {
-	min-width: 180px;
-	height: 38px;
-	padding: 0 12px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	min-width: 72px;
+	height: 26px;
+	padding: 0 8px;
+	border: 0;
 	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
-	background: var(--settings-control-surface);
-	color: var(--text-primary);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
 	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
-	text-align: left;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.shortcutRecordButton:hover:not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .shortcutRecordButton.is-recording {
-	border-color: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
-	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--settings-control-surface));
+	background: var(--bg-active);
+	color: var(--text-primary);
+}
+
+.shortcutKeys {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.shortcutKeys kbd {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 4px;
+	/* Same keycap as the command palette footer (.commandPaletteKeycap). */
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	font-family: var(--font-sans);
+	font-size: var(--text-2xs);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	letter-spacing: 0;
+}
+
+.shortcutRecordButton:hover:not(:disabled) kbd {
+	border-color: var(--border-strong);
+	color: var(--text-secondary);
+}
+
+/* An unassigned action shows nothing at rest; hovering or focusing its row offers to record. */
+.shortcutUnassigned {
+	color: var(--text-tertiary);
+	opacity: 0;
+	transition: opacity var(--transition-fast);
+}
+
+.shortcutField:hover .shortcutUnassigned,
+.shortcutField:focus-within .shortcutUnassigned {
+	opacity: 1;
 }
 
 .shortcutBindingActions {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-	flex-wrap: wrap;
+	gap: 2px;
+	opacity: 0;
+	transition: opacity var(--transition-fast);
+}
+
+.shortcutField:hover .shortcutBindingActions,
+.shortcutField:focus-within .shortcutBindingActions {
+	opacity: 1;
 }

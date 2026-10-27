@@ -251,13 +251,13 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							{appearance?.icon ? (
 								<AppearanceIcon
 									iconName={appearance.icon}
-									size="var(--icon-md)"
+									size="var(--icon-lg)"
 									className="fileTreeChevron fileTreeFolderIcon"
 								/>
 							) : (
 								<HugeiconsIcon
 									icon={isExpanded ? Folder03Icon : Folder01Icon}
-									size="var(--icon-sm)"
+									size="var(--icon-lg)"
 									className="fileTreeChevron fileTreeFolderIcon"
 								/>
 							)}

@@ -54,20 +54,10 @@ function ThemeSelector<T extends string>({
 	return (
 		<SettingsRow label={label} interactive={false}>
 			<Popover open={open} onOpenChange={setOpen}>
-				<PopoverTrigger
-					render={
-						<button
-							type="button"
-							className={cn("appearanceThemeDropdownTrigger", open && "is-open")}
-						/>
-					}
-				>
-					<span className="appearanceThemeDropdownLeading">
-						<ThemeBadge mode={mode} themeId={selected.id} />
-						<span className="appearanceThemeDropdownTitle">{selected.label}</span>
-					</span>
-					<span className={cn("appearanceThemeDropdownChevron", open && "is-open")}>
-						<ChevronDown size="var(--icon-md)" />
+				<PopoverTrigger render={<button type="button" className="settingsSelectTrigger" />}>
+					<span className="glyphSelectValue">{selected.label}</span>
+					<span className="glyphSelectChevron">
+						<ChevronDown size="var(--icon-sm)" aria-hidden="true" />
 					</span>
 				</PopoverTrigger>
 				<PopoverContent

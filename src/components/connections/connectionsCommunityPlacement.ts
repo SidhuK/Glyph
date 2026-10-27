@@ -21,6 +21,14 @@ const BUNDLE_RING_RADIUS = 360;
 const MIN_HUED_COMMUNITY_NOTES = 3;
 const MAX_GAP_ANGLE = FULL_CIRCLE * 0.012;
 const MAX_TOTAL_GAP_SHARE = 0.15;
+/** Unlinked notes pack into at most this many rows just inside the ring, so they never set its shape. */
+const MAX_ISOLATED_ROWS = 4;
+/** The unlinked block aims to be no wider than this share of the linked notes' columns. */
+const ISOLATED_COLUMN_SHARE = 0.25;
+/** Unlinked notes sit this many ring steps apart, both along and across the ring, so the block stays airy. */
+const ISOLATED_SPACING = 1.3;
+/** The unlinked rows never reach deeper into the ring than this share of its radius. */
+const ISOLATED_MAX_DEPTH_SHARE = 0.3;
 
 type ClusterCommunity = Extract<ConnectionsCommunity, { kind: "cluster" }>;
 
@@ -65,9 +73,27 @@ function ringSegments(communities: readonly ConnectionsCommunity[]) {
 			tone,
 		});
 	}
+	const ordered = interleaveNeutralClusters(segments);
 	// Isolated notes share one block so they never dilute the clusters.
-	if (isolated.length > 0) segments.push({ kind: "isolated", members: isolated.sort(byHash) });
-	return segments;
+	if (isolated.length > 0) ordered.push({ kind: "isolated", members: isolated.sort(byHash) });
+	return ordered;
+}
+
+/**
+ * Spreads the small neutral clusters across the gaps after each hued cluster, filling the
+ * lightest gap first, so colour reaches the whole ring instead of one grey run on one side.
+ */
+function interleaveNeutralClusters(segments: readonly RingSegment[]) {
+	const hued = segments.filter((segment) => !isNeutralCluster(segment));
+	const neutral = segments.filter(isNeutralCluster);
+	if (hued.length === 0) return [...neutral];
+	const slots = hued.map((segment) => ({ weight: segment.members.length, segments: [segment] }));
+	for (const segment of neutral) {
+		const lightest = slots.reduce((min, slot) => (slot.weight < min.weight ? slot : min));
+		lightest.segments.push(segment);
+		lightest.weight += segment.members.length;
+	}
+	return slots.flatMap((slot) => slot.segments);
 }
 
 function isNeutralCluster(segment: RingSegment) {
@@ -83,6 +109,24 @@ function hasGapAfter(segments: readonly RingSegment[], index: number) {
 	return !(isNeutralCluster(current) && isNeutralCluster(next));
 }
 
+function isolatedRowCount(segments: readonly RingSegment[]) {
+	let linked = 0;
+	let isolated = 0;
+	for (const segment of segments) {
+		if (segment.kind === "isolated") isolated += segment.members.length;
+		else linked += segment.members.length;
+	}
+	if (linked === 0 || isolated === 0) return 1;
+	const columnBudget = Math.max(1, Math.round(linked * ISOLATED_COLUMN_SHARE));
+	return Math.min(MAX_ISOLATED_ROWS, Math.ceil(isolated / columnBudget));
+}
+
+/** Ring columns a segment occupies; the unlinked block stacks its notes into rows. */
+function segmentColumns(segment: RingSegment, isolatedRows: number) {
+	if (segment.kind === "cluster") return segment.members.length;
+	return Math.ceil(segment.members.length / isolatedRows) * ISOLATED_SPACING;
+}
+
 function toLayoutCommunity(
 	segment: RingSegment,
 	startAngle: number,
@@ -96,18 +140,27 @@ export function placeConnectionsCommunities(
 	model: ConnectionsCommunityModel,
 ): SerializedConnectionsLayout {
 	const segments = ringSegments(model.communities);
-	const nodeCount = segments.reduce((total, segment) => total + segment.members.length, 0);
-	if (nodeCount === 0) return { positions: [], communities: [] };
+	const isolatedRows = isolatedRowCount(segments);
+	const columns = segments.map((segment) => segmentColumns(segment, isolatedRows));
+	const columnCount = columns.reduce((total, count) => total + count, 0);
+	if (columnCount === 0) return { positions: [], communities: [] };
 
 	const gaps = segments.map((_segment, index) => hasGapAfter(segments, index));
 	const gapCount = gaps.filter(Boolean).length;
 	const gapAngle =
 		gapCount > 0 ? Math.min(MAX_GAP_ANGLE, (FULL_CIRCLE * MAX_TOTAL_GAP_SHARE) / gapCount) : 0;
-	const nodeAngle = (FULL_CIRCLE - gapAngle * gapCount) / nodeCount;
+	const columnAngle = (FULL_CIRCLE - gapAngle * gapCount) / columnCount;
+	// Rows sit one ring step apart, matching the spacing between neighbouring notes. In small
+	// graphs a ring step is wide, so the rows are squeezed to stay inside the ring.
+	const rowStep = Math.min(
+		columnAngle * CONNECTIONS_RING_RADIUS,
+		(CONNECTIONS_RING_RADIUS * ISOLATED_MAX_DEPTH_SHARE) /
+			(Math.max(1, isolatedRows - 1) * ISOLATED_SPACING),
+	);
 
-	// Center the last segment (the isolated block when present) at the bottom.
+	// Center the last segment (the unlinked block when present) at the bottom.
 	const lastIndex = segments.length - 1;
-	const lastSpan = (segments[lastIndex]?.members.length ?? 0) * nodeAngle;
+	const lastSpan = (columns[lastIndex] ?? 0) * columnAngle;
 	const lastGap = gaps[lastIndex] ? gapAngle : 0;
 	let cursor = BOTTOM_ANGLE + lastGap + lastSpan / 2;
 
@@ -115,16 +168,20 @@ export function placeConnectionsCommunities(
 	const communities: ConnectionsCommunityLayout[] = [];
 	segments.forEach((segment, communityIndex) => {
 		const startAngle = cursor;
-		const endAngle = startAngle + segment.members.length * nodeAngle;
+		const endAngle = startAngle + (columns[communityIndex] ?? 0) * columnAngle;
 		const midAngle = (startAngle + endAngle) / 2;
 		const bundleX = Math.cos(midAngle) * BUNDLE_RING_RADIUS;
 		const bundleY = Math.sin(midAngle) * BUNDLE_RING_RADIUS;
+		const isolated = segment.kind === "isolated";
+		const rows = isolated ? isolatedRows : 1;
+		const spacing = isolated ? ISOLATED_SPACING : 1;
 		segment.members.forEach((id, index) => {
-			const angle = startAngle + (index + 0.5) * nodeAngle;
+			const angle = startAngle + (Math.floor(index / rows) + 0.5) * columnAngle * spacing;
+			const radius = CONNECTIONS_RING_RADIUS - (index % rows) * rowStep * spacing;
 			positions.push([
 				id,
-				Math.cos(angle) * CONNECTIONS_RING_RADIUS,
-				Math.sin(angle) * CONNECTIONS_RING_RADIUS,
+				Math.cos(angle) * radius,
+				Math.sin(angle) * radius,
 				bundleX,
 				bundleY,
 				communityIndex,

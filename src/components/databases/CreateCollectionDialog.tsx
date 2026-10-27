@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LibraryIcon } from "@hugeicons/core-free-icons";
+import { LayoutThreeColumnIcon, LibraryIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useMemo, useState } from "react";
 import {
 	folderNameFromPath,
@@ -12,7 +12,7 @@ import {
 	type WorkspaceDatabaseSummary,
 	invoke,
 } from "../../lib/tauri";
-import { Kanban, Table } from "../Icons";
+import { Table } from "../Icons";
 import { DatabaseFolderPicker } from "../database/DatabaseFolderPicker";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -44,7 +44,7 @@ const COLLECTION_TIPS = [
 		icons: (
 			<span className="createCollectionTipIcons" aria-hidden="true">
 				<Table size="var(--icon-sm)" />
-				<Kanban size="var(--icon-sm)" />
+				<HugeiconsIcon icon={LayoutThreeColumnIcon} size="var(--icon-sm)" />
 			</span>
 		),
 	},

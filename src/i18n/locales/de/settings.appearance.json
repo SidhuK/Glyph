@@ -7,7 +7,7 @@
 		"sectionTitle": "Designs",
 		"sectionDescription": "Helle und dunkle Designfamilien kombinieren.",
 		"appearance": {
-			"label": "Darstellung",
+			"label": "Farbmodus",
 			"description": "Dem System folgen oder Glyph auf Hell- oder Dunkelmodus festlegen.",
 			"ariaLabel": "Designmodus"
 		},
@@ -43,7 +43,7 @@
 		"sectionDescription": "Importiere eine JSON-Palette und nutze sie wie jedes integrierte Theme.",
 		"template": {
 			"label": "Theme-Vorlage",
-			"description": "Basiert auf den hellen und dunklen Standardfarben von Glyph – Hex-Codes und Namen anpassen.",
+			"description": "Basiert auf den hellen und dunklen Standardfarben von Glyph, danach Hex-Codes und Namen anpassen.",
 			"copy": "JSON kopieren",
 			"save": "Datei speichern"
 		},
@@ -61,10 +61,9 @@
 	},
 	"shape": {
 		"sectionTitle": "Form",
-		"sectionDescription": "Wähle, wie abgerundet Panels, Schaltflächen und Fenster in der App aussehen.",
 		"corners": {
 			"label": "Ecken",
-			"description": "Gilt überall — Seitenleisten, Dialoge, Eingaben und Karten.",
+			"description": "Gilt überall, auch für Seitenleisten, Dialoge, Eingaben und Karten.",
 			"ariaLabel": "UI-Form"
 		},
 		"options": {
@@ -84,7 +83,6 @@
 	},
 	"layout": {
 		"sectionTitle": "Layout",
-		"sectionDescription": "Lege fest, wie Navigation und Notizen den Arbeitsbereich teilen.",
 		"folioMode": {
 			"label": "Arbeitsbereichslayout",
 			"description": "Wähle, wie Navigation, Notizenliste und Editor angeordnet sind.",
@@ -106,9 +104,12 @@
 			"ariaLabel": "Standard-Sortierung in Folio"
 		},
 		"taskProgressRings": {
-			"label": "Aufgabenfortschrittsringe",
-			"description": "Ringe für den Aufgabenfortschritt neben Notizen in Seitenleiste, Folio, Aktivität und Datenbank-Boards anzeigen.",
-			"ariaLabel": "Aufgabenfortschrittsringe anzeigen"
+			"label": "Aufgabenfortschritt",
+			"description": "Erledigte und gesamte Aufgaben neben Notizen in Seitenleiste, Folio, Aktivität und Datenbank-Boards anzeigen.",
+			"ariaLabel": "Aufgabenfortschritt anzeigen"
 		}
+	},
+	"appIcon": {
+		"sectionTitle": "App-Symbol"
 	}
 }

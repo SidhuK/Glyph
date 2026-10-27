@@ -113,13 +113,13 @@
 		},
 		"general-language": {
 			"title": "言語",
-			"section": "言語",
+			"section": "言語と地域",
 			"description": "Glyph の表示言語を選びます。",
 			"keywords": ["locale", "翻訳", "i18n", "言語", "language", "translation"]
 		},
 		"general-date-format": {
 			"title": "日付形式",
-			"section": "日付と時刻",
+			"section": "言語と地域",
 			"description": "Glyph 全体での完全な日付の表示方法を選びます。",
 			"keywords": ["日付", "形式", "カレンダー", "US", "European", "Friendly", "ISO", "表示"]
 		},
@@ -157,7 +157,7 @@
 		},
 		"sidebar-calendar": {
 			"title": "サイドバーのカレンダー",
-			"section": "サイドバー",
+			"section": "ナビゲーション",
 			"description": "カレンダーのレイアウト、日の概要、日をクリックしたときの動作を選びます。",
 			"keywords": ["カレンダー", "週", "月", "デイリーノート", "日の概要", "サイドバー"]
 		},
@@ -201,12 +201,12 @@
 		},
 		"typography-interface-font": {
 			"title": "インターフェースフォント",
-			"section": "タイポグラフィ",
+			"section": "インターフェース",
 			"keywords": ["フォント", "ui", "sans", "font"]
 		},
 		"typography-monospace-font": {
 			"title": "等幅フォント",
-			"section": "タイポグラフィ",
+			"section": "インターフェース",
 			"keywords": ["フォント", "コード", "mono", "font", "code"]
 		},
 		"typography-editor-font": {
@@ -226,7 +226,7 @@
 		},
 		"typography-ui-font-size": {
 			"title": "UI フォントサイズ",
-			"section": "タイポグラフィ",
+			"section": "インターフェース",
 			"keywords": ["フォント", "テキスト", "インターフェース", "font", "text", "interface"]
 		},
 		"typography-editor-font-size": {
@@ -409,7 +409,7 @@
 			"keywords": ["repo", "sync", "branch"]
 		},
 		"git-how-it-works": {
-			"title": "How it works",
+			"title": "Remote",
 			"section": "Connection",
 			"description": "Review remote connection details for the current repository.",
 			"keywords": ["remote url", "initialize git", "credentials"]
@@ -456,7 +456,7 @@
 		},
 		"general-editor-table-of-contents": {
 			"title": "目次",
-			"section": "エディタ",
+			"section": "編集",
 			"keywords": ["toc", "アウトライン", "outline", "目次"]
 		},
 		"space-search-index-people-tags": {
@@ -466,27 +466,27 @@
 		},
 		"general-editor-frontmatter": {
 			"title": "エディタで frontmatter を表示",
-			"section": "エディタ",
+			"section": "編集",
 			"keywords": ["プロパティ", "yaml", "メタデータ", "properties", "metadata", "frontmatter"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "カラフルな見出し",
-			"section": "エディタ",
+			"section": "編集",
 			"keywords": ["エディタ", "色", "editor", "color"]
 		},
 		"general-editor-heading-palette": {
 			"title": "見出しパレット",
-			"section": "エディタ",
+			"section": "編集",
 			"keywords": ["見出し", "色", "パレット"]
 		},
 		"general-editor-default-mode": {
 			"title": "デフォルトのエディタモード",
-			"section": "エディタ",
+			"section": "編集",
 			"keywords": ["リッチ", "プレビュー", "markdown"]
 		},
 		"general-editor-focus-mode": {
 			"title": "フォーカスモード",
-			"section": "実験的",
+			"section": "機能",
 			"keywords": ["フォーカス", "段落", "文"]
 		},
 		"appearance-editor-presentation-beautiful-tags": {
@@ -501,22 +501,22 @@
 		},
 		"general-editor-collapsible-headings": {
 			"title": "折りたたみ可能な見出し",
-			"section": "エディタ",
+			"section": "編集",
 			"keywords": ["折りたたみ", "展開", "fold", "collapse", "expand"]
 		},
 		"general-editor-spell-check": {
 			"title": "スペルチェック",
-			"section": "エディタ",
+			"section": "編集",
 			"keywords": ["スペル", "誤字", "辞書", "spelling", "typo", "dictionary"]
 		},
 		"general-editor-raw-live-preview": {
 			"title": "RAWモードのライブMarkdown",
-			"section": "実験的",
+			"section": "機能",
 			"keywords": ["raw", "markdown", "vim", "live", "preview"]
 		},
 		"general-editor-vim-mode": {
 			"title": "Vim モード",
-			"section": "実験的",
+			"section": "機能",
 			"keywords": [
 				"vim",
 				"キーバインド",
@@ -530,12 +530,12 @@
 		},
 		"general-editor-format-bar": {
 			"title": "書式バー",
-			"section": "実験的",
+			"section": "機能",
 			"keywords": ["書式", "バー", "ツールバー", "リッチ", "editor", "toolbar"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
-			"section": "Assistant behavior",
+			"section": "Availability",
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
@@ -555,7 +555,7 @@
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "ノートプレビュー",
-			"section": "実験的",
+			"section": "機能",
 			"keywords": ["peek", "プレビュー", "wiki", "すべてのノート", "arc"]
 		},
 		"general-file-tree-folder-counts": {

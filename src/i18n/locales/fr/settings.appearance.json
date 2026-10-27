@@ -7,7 +7,7 @@
 		"sectionTitle": "Thèmes",
 		"sectionDescription": "Combinez les familles de thèmes clairs et sombres.",
 		"appearance": {
-			"label": "Apparence",
+			"label": "Mode de couleur",
 			"description": "Suivre le système ou forcer Glyph en mode clair ou sombre.",
 			"ariaLabel": "Mode du thème"
 		},
@@ -43,7 +43,7 @@
 		"sectionDescription": "Importez une palette JSON et utilisez-la comme n'importe quel thème intégré.",
 		"template": {
 			"label": "Modèle de thème",
-			"description": "Basé sur les couleurs claires et sombres par défaut de Glyph — modifiez les codes hex et le nom.",
+			"description": "Basé sur les couleurs claires et sombres par défaut de Glyph, modifiez ensuite les codes hex et le nom.",
 			"copy": "Copier le JSON",
 			"save": "Enregistrer le fichier"
 		},
@@ -61,10 +61,9 @@
 	},
 	"shape": {
 		"sectionTitle": "Forme",
-		"sectionDescription": "Choisissez l’arrondi des panneaux, boutons et fenêtres dans l’app.",
 		"corners": {
 			"label": "Coins",
-			"description": "S’applique partout — barres latérales, dialogues, champs et cartes.",
+			"description": "S’applique partout, y compris aux barres latérales, dialogues, champs et cartes.",
 			"ariaLabel": "Forme de l’interface"
 		},
 		"options": {
@@ -84,7 +83,6 @@
 	},
 	"layout": {
 		"sectionTitle": "Disposition",
-		"sectionDescription": "Choisissez comment la navigation et les notes partagent l’espace de travail.",
 		"folioMode": {
 			"label": "Disposition de l’espace de travail",
 			"description": "Choisissez comment la navigation, la liste des notes et l’éditeur sont organisés.",
@@ -106,9 +104,12 @@
 			"ariaLabel": "Tri par défaut de Folio"
 		},
 		"taskProgressRings": {
-			"label": "Anneaux de progression des tâches",
-			"description": "Affiche des anneaux de progression des tâches à côté des notes dans la barre latérale, Folio, Activité et les tableaux de base de données.",
-			"ariaLabel": "Afficher les anneaux de progression des tâches"
+			"label": "Progression des tâches",
+			"description": "Affiche les tâches terminées et le total à côté des notes dans la barre latérale, Folio, Activité et les tableaux de base de données.",
+			"ariaLabel": "Afficher la progression des tâches"
 		}
+	},
+	"appIcon": {
+		"sectionTitle": "Icône de l'app"
 	}
 }

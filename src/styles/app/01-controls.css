@@ -9,7 +9,7 @@ button {
 	height: var(--button-height);
 	padding: 0 var(--space-3);
 	font-family: inherit;
-	font-size: var(--text-sm);
+	font-size: var(--text-base);
 	font-weight: var(--font-medium);
 	line-height: 1;
 	color: var(--text-secondary);
@@ -62,7 +62,7 @@ button:active:not(
 }
 
 button:disabled {
-	color: var(--text-tertiary);
+	color: var(--text-quaternary);
 	cursor: not-allowed;
 	opacity: 0.5;
 	transform: none;

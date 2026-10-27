@@ -1,5 +1,5 @@
 {
-	"sectionTitle": "타이포그래피",
+	"sectionTitle": "인터페이스",
 	"sectionDescription": "인터페이스 서체, 코드 스타일, 읽기 배율을 각각 조정합니다.",
 	"interfaceFont": {
 		"label": "인터페이스 글꼴",
@@ -11,12 +11,12 @@
 	},
 	"headingFontEnabled": {
 		"label": "별도 제목 글꼴",
-		"description": "편집 및 미리보기 모드의 H1-H6에 다른 글꼴을 사용합니다.",
+		"description": "편집 및 미리보기 모드의 H1–H6에 다른 글꼴을 사용합니다.",
 		"ariaLabel": "별도 제목 글꼴"
 	},
 	"headingFont": {
 		"label": "제목 글꼴",
-		"description": "별도 제목 글꼴이 켜져 있을 때 H1-H6에 사용됩니다. 원시 Markdown은 편집기 글꼴을 유지합니다."
+		"description": "별도 제목 글꼴이 켜져 있을 때 H1–H6에 사용됩니다. 원시 Markdown은 편집기 글꼴을 유지합니다."
 	},
 	"monospaceFont": {
 		"label": "고정폭 글꼴",

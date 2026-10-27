@@ -7,7 +7,10 @@
 		"groupLabs": "ラボ",
 		"searchPlaceholder": "設定を検索",
 		"searchAriaLabel": "設定を検索",
-		"clearSearchAriaLabel": "設定の検索をクリア"
+		"clearSearchAriaLabel": "設定の検索をクリア",
+		"searchEmpty": "一致する設定はありません",
+		"sendFeedback": "フィードバックを送信",
+		"buyLicense": "公式ライセンスを購入"
 	},
 	"about": {
 		"developer": {
@@ -16,19 +19,72 @@
 			"bio": "Karat の本職は生物医学者兼研究者です。研究を通じて、Texas A&M University や University of Vermont などに携わってきました。自分自身の課題を解く楽しさからソフトウェアを作っており、Glyph もその一つです。",
 			"github": "GitHub",
 			"twitter": "X / Twitter"
+		},
+		"tagline": {
+			"first": "あなたの思考に必要なのは、",
+			"second": "サーバーではなく居場所です。"
+		},
+		"links": {
+			"ariaLabel": "Glyph のリンク",
+			"website": "Web サイト",
+			"terms": "利用規約",
+			"privacy": "プライバシー"
+		},
+		"errors": {
+			"loadInfoFailed": "アプリ情報を読み込めませんでした。",
+			"checkFailed": "アップデートを確認できませんでした。",
+			"saveChannelFailed": "リリースチャンネルを保存できませんでした。"
+		},
+		"updates": {
+			"sectionTitle": "アップデート",
+			"descriptionLoading": "このビルドで自動アップデートを使えるか確認しています。",
+			"descriptionUnknown": "このビルドで自動アップデートを使えるか判断できませんでした。",
+			"descriptionAuto": "新しいリリースを確認し、Glyph から離れずにインストールします。",
+			"descriptionManual": "コミュニティビルドは手動で更新します。",
+			"upToDate": "すでに最新バージョンです。",
+			"ready": "v{{version}} をダウンロードしました。アップデートボタンをクリックしてインストールしてください。",
+			"licenseStatus": {
+				"label": "ライセンス状態",
+				"description": "このウィンドウでライセンス状態を確認できなかったため、現在アップデート操作は利用できません。",
+				"unknown": "ライセンス状態が不明です"
+			},
+			"appUpdates": {
+				"label": "アプリのアップデート",
+				"description": "すぐに確認し、最新の公開バージョンをバックグラウンドでダウンロードします。インストールはあなたが選んだときだけ行われます。",
+				"check": "アップデートを確認",
+				"checking": "確認中…",
+				"install": "アップデートをインストール",
+				"installVersion": "{{version}} をインストール"
+			},
+			"alpha": {
+				"label": "アルファ版",
+				"description": "アルファビルドをいち早く利用できます。不安定な場合があるため、未完成のリリースを試せる場合にのみオンにしてください。"
+			},
+			"communityBuild": {
+				"label": "コミュニティビルド",
+				"description": "Glyph のコミュニティ版（オープンソース版）を使用しています。公式ライセンスを購入すると、Glyph の開発を支援し、最新のアップデートを自動で受け取れます。"
+			},
+			"status": {
+				"label": "状態",
+				"description": "このウィンドウでの最新のアップデート状況です。"
+			},
+			"changelog": {
+				"label": "変更履歴",
+				"description": "公開されている Glyph の変更履歴をブラウザで開きます。",
+				"view": "変更履歴を表示"
+			}
 		}
 	},
 	"language": {
-		"sectionTitle": "言語",
-		"sectionDescription": "Glyph 全体で使用する言語を選択します。",
 		"label": "言語",
 		"description": "メニュー、設定、ナビゲーションにすぐに適用されます。",
 		"ariaLabel": "言語",
 		"communityNotice": "翻訳はコミュニティによる貢献であり、不完全な場合があります。質問や改善案は <discord>Discord に参加</discord>してください。"
 	},
+	"region": {
+		"sectionTitle": "言語と地域"
+	},
 	"dateTime": {
-		"sectionTitle": "日付と時刻",
-		"sectionDescription": "Glyph 全体での完全な日付の表示方法を選びます。",
 		"dateFormat": {
 			"label": "日付形式",
 			"description": "ノート、メタデータ、データベース、履歴の完全な日付にすぐ反映されます。",
@@ -44,7 +100,7 @@
 		}
 	},
 	"experimental": {
-		"sectionTitle": "実験的",
+		"sectionTitle": "機能",
 		"sectionDescription": "まだ作り込みが足りない実験的な機能です。今後の Glyph のバージョンで変更または削除されることがあります。",
 		"noteSidePeek": {
 			"label": "ノートプレビュー",
@@ -53,8 +109,7 @@
 		}
 	},
 	"editor": {
-		"sectionTitle": "エディタ",
-		"sectionDescription": "Glyph 内の編集動作とノート構造のコントロールです。",
+		"sectionTitle": "編集",
 		"defaultEditorMode": {
 			"label": "デフォルトのエディタモード",
 			"description": "ノートを開くときのデフォルトモード：編集用のリッチ、読み取り専用のプレビュー、またはプレーンMarkdownのRaw。",
@@ -130,7 +185,6 @@
 	},
 	"fileTree": {
 		"sectionTitle": "ファイルツリー",
-		"sectionDescription": "サイドバーのファイルツリーを設定します。",
 		"folderCounts": {
 			"label": "フォルダのファイル数を表示",
 			"description": "ファイルツリーの各フォルダ行の末尾に、再帰的なファイル合計を表示します。",
@@ -168,7 +222,6 @@
 	},
 	"editorPresentation": {
 		"sectionTitle": "エディタの表示",
-		"sectionDescription": "編集中のノートの見た目を選びます。",
 		"beautifulTags": {
 			"label": "Beautiful Tags",
 			"description": "タグ向けの実験的な Beautiful Tags 表示を有効にします。",
@@ -195,6 +248,75 @@
 			"browse": "参照",
 			"clear": "テンプレートフォルダを解除",
 			"found_other": "{{count}} 件のテンプレート"
+		}
+	},
+	"license": {
+		"sectionTitle": "ライセンス",
+		"status": {
+			"licensed": "ライセンス済み",
+			"trialActive": "試用中",
+			"trialExpired": "試用期間終了",
+			"communityBuild": "コミュニティビルド"
+		},
+		"trialStatus": {
+			"label": "試用状態",
+			"description": "このデバイスでの現在の試用期間の残り時間です。"
+		},
+		"activated": "アクティベート日",
+		"licenseKey": "ライセンスキー",
+		"storedLocally": "ローカルに保存済み",
+		"officialBuild": {
+			"label": "公式ビルド",
+			"description": "Glyph を自分でダウンロードしてビルドしていただきありがとうございます。コミュニティビルドには自動アップデートが含まれません。最新バージョンを入手するには、ソースを再度ダウンロードしてビルドし直すか、公式のライセンス版を入手して Glyph を支援し、自動アップデートを有効にしてください。"
+		},
+		"buyOfficial": "公式ライセンスを購入",
+		"activate": {
+			"label": "Glyph をアクティベート",
+			"description": "ライセンスキーを入力すると、このデバイスで Glyph を永続的に利用できます。",
+			"action": "アクティベート",
+			"verifying": "確認中…",
+			"buy": "購入"
+		},
+		"help": {
+			"label": "ヘルプ",
+			"description": "ライセンス、紛失したキー、購入に関するお問い合わせ。",
+			"openSupport": "サポートを開く",
+			"removeActivation": "ローカルのアクティベーションを削除"
+		},
+		"errors": {
+			"keyRequired": "ライセンスキーを入力してください。",
+			"activateFailed": "ライセンスをアクティベートできませんでした。",
+			"removeFailed": "ローカルのアクティベーションを削除できませんでした。"
+		},
+		"messages": {
+			"activated": "ライセンスをアクティベートしました。",
+			"removed": "ローカルのアクティベーションを削除しました。"
+		}
+	},
+	"shortcuts": {
+		"searchPlaceholder": "アクション、カテゴリ、ショートカットを検索",
+		"pressShortcut": "ショートカットを押してください…",
+		"recordHint": "ショートカットを記録",
+		"record": "{{action}} のショートカットを変更",
+		"remove": "{{action}} のショートカットを削除",
+		"removeTitle": "ショートカットを削除",
+		"reset": "{{action}} のショートカットをリセット",
+		"resetTitle": "デフォルトに戻す",
+		"errors": {
+			"removeFailed": "ショートカットを削除できませんでした。",
+			"resetFailed": "ショートカットをリセットできませんでした。",
+			"invalid": "無効なショートカットです。",
+			"saveFailed": "ショートカットを保存できませんでした。",
+			"conflict": "{{shortcut}} はすでに {{action}} で使われています。"
+		}
+	},
+	"folderPicker": {
+		"clear": "クリア",
+		"reset": "リセット"
+	},
+	"newNotes": {
+		"defaultFolder": {
+			"description": "新しいノートはこのフォルダに作成されます。"
 		}
 	}
 }

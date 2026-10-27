@@ -3,14 +3,15 @@
 		"title": "Dock icon",
 		"description": "Choose the icon Glyph shows in the Dock while running.",
 		"default": "Automatic (Normal, Dev or Alpha)",
-		"blue-star": "Blue Star",
+		"blue-star": "Blue star",
 		"blue-glyph": "Blue Glyph",
-		"confetti-star": "Confetti Star",
+		"confetti-star": "Confetti star",
 		"blueprint": "Blueprint",
 		"loading": "Loading icons…",
 		"loadError": "Could not load your icon preference. Reopen Appearance to try again.",
 		"saveError": "Could not save or apply the icon.",
-		"retry": "Retry"
+		"retry": "Retry",
+		"sectionTitle": "App icon"
 	},
 	"nav": {
 		"tab": "Appearance",
@@ -20,7 +21,7 @@
 		"sectionTitle": "Themes",
 		"sectionDescription": "Mix and match light and dark theme families.",
 		"appearance": {
-			"label": "Appearance",
+			"label": "Color mode",
 			"description": "Follow your system or lock Glyph to light or dark mode.",
 			"ariaLabel": "Theme mode"
 		},
@@ -56,7 +57,7 @@
 		"sectionDescription": "Import a JSON palette and use it like any built-in theme.",
 		"template": {
 			"label": "Theme template",
-			"description": "Starts from Glyph's default light and dark colors — edit the hex codes and the name.",
+			"description": "Starts from Glyph's default light and dark colors, then edit the hex codes and the name.",
 			"copy": "Copy JSON",
 			"save": "Save file"
 		},
@@ -74,10 +75,9 @@
 	},
 	"shape": {
 		"sectionTitle": "Shape",
-		"sectionDescription": "Choose how rounded panels, buttons, and windows look across the app.",
 		"corners": {
 			"label": "Corners",
-			"description": "Applies everywhere — sidebars, dialogs, inputs, and cards.",
+			"description": "Applies everywhere, including sidebars, dialogs, inputs, and cards.",
 			"ariaLabel": "UI shape"
 		},
 		"options": {
@@ -97,7 +97,6 @@
 	},
 	"layout": {
 		"sectionTitle": "Layout",
-		"sectionDescription": "Choose how navigation and notes share the workspace.",
 		"folioMode": {
 			"label": "Workspace layout",
 			"description": "Choose how navigation, the notes list, and the editor are arranged.",
@@ -119,9 +118,9 @@
 			"ariaLabel": "Default Folio sorting"
 		},
 		"taskProgressRings": {
-			"label": "Task progress rings",
-			"description": "Show task completion rings next to notes in the sidebar, Folio, Activity and database boards.",
-			"ariaLabel": "Show task progress rings"
+			"label": "Task progress",
+			"description": "Show completed and total tasks next to notes in the sidebar, Folio, Activity and database boards.",
+			"ariaLabel": "Show task progress"
 		}
 	}
 }

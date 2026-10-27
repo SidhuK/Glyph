@@ -64,6 +64,8 @@ export interface PaletteResult {
 }
 
 const BROAD_GROUP_LIMIT = 8;
+/** With no query the command palette shows a short list of core commands and recent notes. */
+const EMPTY_QUERY_GROUP_LIMIT = 5;
 /** Content rows are one per occurrence, so this group is a match list, not a
  * note list, and needs room to show several hits from the same note. */
 const CONTENT_GROUP_LIMIT = 50;
@@ -88,19 +90,41 @@ interface BuildPaletteResultsInput {
 	mode: PaletteLaunchMode;
 	spacePath: string | null;
 	templateFolder: string | null;
+	/** The note already on screen is left out of the empty-query recents. */
+	activePath?: string | null;
 	language: string;
 	t: (key: string, options?: Record<string, unknown>) => string;
 	sources: PaletteResultSources;
 }
 
+/** Folder notes live in a folder of the same name; repeating it as the last segment is noise. */
+function noteFolderLabel(path: string, title: string): string {
+	const folder = displayFolderFromPath(path);
+	if (folder === title) return "";
+	const repeated = ` / ${title}`;
+	return folder.endsWith(repeated) ? folder.slice(0, -repeated.length) : folder;
+}
+
+/**
+ * The command palette lists each note once, at its first hit, with a count of the rest. The
+ * search surface keeps one row per occurrence so each can be opened at its own position.
+ */
+function collapseContentMatches(matches: readonly SearchResult[]) {
+	const counts = new Map<string, number>();
+	for (const match of matches) counts.set(match.id, (counts.get(match.id) ?? 0) + 1);
+	const seen = new Set<string>();
+	return matches.flatMap((match) => {
+		if (seen.has(match.id)) return [];
+		seen.add(match.id);
+		return [{ result: match, extraMatches: (counts.get(match.id) ?? 1) - 1 }];
+	});
+}
+
 function displaySettingValue(
 	definition: PaletteSettingDefinition,
-	value: string | number | boolean | null,
+	value: string | number | null,
 	t: BuildPaletteResultsInput["t"],
 ) {
-	if (typeof value === "boolean") {
-		return t(value ? "commandPalette.on" : "commandPalette.off");
-	}
 	if (value === null || value === "") return t("commandPalette.notSet");
 	const option = definition.options?.find((candidate) => candidate.value === value);
 	if (option) return paletteSettingOptionLabel(option);
@@ -112,6 +136,7 @@ export function buildPaletteResults({
 	mode,
 	spacePath,
 	templateFolder,
+	activePath,
 	language,
 	t,
 	sources,
@@ -144,16 +169,18 @@ export function buildPaletteResults({
 				id: `setting:${definition.id}`,
 				kind: "setting",
 				label: entry.title,
-				description: [localizedSettingsTabLabel(entry.tab, language), entry.section]
+				description: [...new Set([localizedSettingsTabLabel(entry.tab, language), entry.section])]
 					.filter(Boolean)
 					.join(" / "),
 				category: t("commandPalette.groups.setting"),
 				keywords: ["settings", entry.description ?? "", ...(entry.keywords ?? [])],
-				defaultVisible: definition.defaultVisible,
+				// Settings only appear once the user types; the toggle itself shows on/off state.
 				rankBoost: definition.scope === "space" && spacePath ? 10 : 0,
 				checked: typeof value === "boolean" ? value : undefined,
 				trailing:
-					definition.control === "action" ? undefined : displaySettingValue(definition, value, t),
+					definition.control === "action" || typeof value === "boolean"
+						? undefined
+						: displaySettingValue(definition, value, t),
 				settingId: definition.id,
 				settingControl: definition.control,
 			});
@@ -162,44 +189,54 @@ export function buildPaletteResults({
 
 	for (const tab of sources.tabs) {
 		if (tab.kind !== "file" || !tab.target) continue;
+		const label = displayNameFromPath(tab.target);
 		candidates.push({
 			id: `open-tab:${tab.id}`,
 			kind: "open-tab",
-			label: displayNameFromPath(tab.target),
-			description: displayFolderFromPath(tab.target),
+			label,
+			description: noteFolderLabel(tab.target, label),
 			category: t("commandPalette.groups.open-tab"),
 			keywords: [tab.target],
-			defaultVisible: true,
+			defaultVisible: mode === "search",
 			rankBoost: 35,
 			previewPath: tab.target,
 			target: tab.id,
 		});
 	}
 
+	const contentSource =
+		mode === "commands"
+			? collapseContentMatches(sources.contentMatches)
+			: sources.contentMatches.map((result) => ({ result, extraMatches: 0 }));
 	const noteSource = query.trim()
 		? [
 				...sources.titleMatches.map((result) => ({
 					result,
 					kind: "note" as const,
+					extraMatches: 0,
 				})),
-				...sources.contentMatches.map((result) => ({
+				...contentSource.map(({ result, extraMatches }) => ({
 					result,
 					kind: "content" as const,
+					extraMatches,
 				})),
 			]
-		: sources.recentFiles.map((file) => {
-				const result: SearchResult = {
-					id: file.path,
-					title: displayNameFromPath(file.path),
-					snippet: "",
-					score: 0,
-				};
-				return { result, kind: "note" as const };
-			});
-	for (const { result, kind } of noteSource) {
+		: sources.recentFiles
+				.filter((file) => file.path !== activePath)
+				.map((file) => {
+					const result: SearchResult = {
+						id: file.path,
+						title: displayNameFromPath(file.path),
+						snippet: "",
+						score: 0,
+					};
+					return { result, kind: "note" as const, extraMatches: 0 };
+				});
+	for (const { result, kind, extraMatches } of noteSource) {
 		const matchIndex = typeof result.match_index === "number" ? result.match_index : undefined;
 		const matchLine = typeof result.line === "number" ? result.line : undefined;
-		const folder = displayFolderFromPath(result.id);
+		const label = result.title || displayNameFromPath(result.id);
+		const folder = noteFolderLabel(result.id, label);
 		const description =
 			kind === "content" && matchLine != null
 				? folder
@@ -212,8 +249,10 @@ export function buildPaletteResults({
 					? `${kind}:${result.id}:${matchIndex}`
 					: `${kind}:${result.id}`,
 			kind,
-			label: result.title || displayNameFromPath(result.id),
+			label,
 			description,
+			trailing:
+				extraMatches > 0 ? t("commandPalette.moreMatches", { count: extraMatches }) : undefined,
 			category: t(`commandPalette.groups.${kind}`),
 			keywords: [result.id, parsedQuery.text],
 			defaultVisible: !query.trim(),
@@ -313,12 +352,21 @@ export function buildPaletteResults({
 					),
 				]
 			: PALETTE_GROUP_ORDER;
+	const emptyQuery = !query.trim();
 	return groupOrder.flatMap((kind) => {
 		const group = byKind.get(kind) ?? [];
-		group.sort((a, b) => b.score - a.score || a.result.label.localeCompare(b.result.label));
+		// With no query, keep source order: commands as registered, recent notes by recency.
+		group.sort(
+			(a, b) =>
+				b.score - a.score || (emptyQuery ? 0 : a.result.label.localeCompare(b.result.label)),
+		);
 		// Only the search surface is a match list; the command palette stays tight.
 		const groupLimit =
-			kind === "content" && mode === "search" ? CONTENT_GROUP_LIMIT : BROAD_GROUP_LIMIT;
+			kind === "content" && mode === "search"
+				? CONTENT_GROUP_LIMIT
+				: emptyQuery && mode === "commands"
+					? EMPTY_QUERY_GROUP_LIMIT
+					: BROAD_GROUP_LIMIT;
 		return group.slice(0, scoped ? undefined : groupLimit).map(({ result }) => result);
 	});
 }

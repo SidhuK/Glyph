@@ -1,33 +1,18 @@
 import type { Editor } from "@tiptap/core";
 import type { ReactNode } from "react";
 import { i18n } from "../../i18n";
-import {
-	Bold,
-	Code,
-	Heading1,
-	Heading2,
-	Heading3,
-	Italic,
-	List,
-	ListChecks,
-	ListOrdered,
-	Quote,
-	Strikethrough,
-	Underline,
-} from "../Icons";
+import { Bold, Heading1, Heading2, Heading3, Italic, Strikethrough, Underline } from "../Icons";
 import { type EditorActionId, executeEditorAction } from "./editorActions";
 import {
 	EDITOR_TEXT_COLORS,
 	type EditorTextColor,
 	getEditorTextColorLabel,
-	getEditorTextColorOption,
 	isEditorTextColor,
 } from "./textColors";
 import {
 	EDITOR_TEXT_HIGHLIGHTS,
 	type EditorTextHighlight,
 	getEditorTextHighlightLabel,
-	getEditorTextHighlightOption,
 	isEditorTextHighlight,
 } from "./textHighlights";
 
@@ -36,6 +21,19 @@ export interface RibbonButtonConfig {
 	isActive?: () => boolean;
 	onClick: () => void;
 	icon: ReactNode;
+}
+
+export interface RibbonSwatchGroup {
+	title: string;
+	activeId: string | null;
+	options: {
+		id: string;
+		label: string;
+		cssVar: string;
+		fallbackHex: string;
+		onSelect: () => void;
+	}[];
+	onClear: () => void;
 }
 
 type RunCommand = (fn: () => void) => void;
@@ -90,15 +88,24 @@ export function getFormatButtons(
 	];
 }
 
-export function getTextColorButton(editor: Editor, runCommand: RunCommand, focusChain: FocusChain) {
-	const activeColor = editor.getAttributes("coloredText").color as EditorTextColor | undefined;
-	const activeOption =
-		activeColor && isEditorTextColor(activeColor) ? getEditorTextColorOption(activeColor) : null;
+export function getActiveTextColor(editor: Editor): EditorTextColor | null {
+	const color: unknown = editor.getAttributes("coloredText").color;
+	return typeof color === "string" && isEditorTextColor(color) ? color : null;
+}
 
+export function getActiveTextHighlight(editor: Editor): EditorTextHighlight | null {
+	const color: unknown = editor.getAttributes("highlightedText").color;
+	return typeof color === "string" && isEditorTextHighlight(color) ? color : null;
+}
+
+export function getTextColorButton(
+	editor: Editor,
+	runCommand: RunCommand,
+	focusChain: FocusChain,
+): RibbonSwatchGroup {
 	return {
 		title: i18n.t("editor:ribbon.textColor"),
-		isActive: () => editor.isActive("coloredText"),
-		activeId: activeOption?.id ?? null,
+		activeId: getActiveTextColor(editor),
 		options: EDITOR_TEXT_COLORS.map((option) => ({
 			id: option.id,
 			label: getEditorTextColorLabel(option.id),
@@ -114,24 +121,16 @@ export function getTextHighlightButton(
 	editor: Editor,
 	runCommand: RunCommand,
 	focusChain: FocusChain,
-) {
-	const activeHighlight = editor.getAttributes("highlightedText").color as
-		| EditorTextHighlight
-		| undefined;
-	const activeOption =
-		activeHighlight && isEditorTextHighlight(activeHighlight)
-			? getEditorTextHighlightOption(activeHighlight)
-			: null;
-
+): RibbonSwatchGroup {
 	return {
 		title: i18n.t("editor:ribbon.textHighlight"),
-		isActive: () => editor.isActive("highlightedText"),
-		activeId: activeOption?.id ?? null,
+		activeId: getActiveTextHighlight(editor),
 		options: EDITOR_TEXT_HIGHLIGHTS.map((option) => ({
 			id: option.id,
 			label: getEditorTextHighlightLabel(option.id),
-			cssVar: option.swatchCssVar,
-			fallbackHex: option.swatchFallback,
+			// The swatch previews the tint the highlight actually applies.
+			cssVar: option.backgroundCssVar,
+			fallbackHex: option.backgroundFallback,
 			onSelect: runEditorAction(`highlight_${option.id}`, editor, runCommand, focusChain),
 		})),
 		onClear: runEditorAction("highlight_clear", editor, runCommand, focusChain),
@@ -161,54 +160,6 @@ export function getHeadingButtons(
 			isActive: () => editor.isActive("heading", { level: 3 }),
 			onClick: runEditorAction("heading_3", editor, runCommand, focusChain),
 			icon: <Heading3 size="var(--icon-md)" />,
-		},
-	];
-}
-
-export function getListButtons(
-	editor: Editor,
-	runCommand: RunCommand,
-	focusChain: FocusChain,
-): RibbonButtonConfig[] {
-	return [
-		{
-			title: i18n.t("editor:ribbon.bulletList"),
-			isActive: () => editor.isActive("bulletList"),
-			onClick: runEditorAction("bullet_list", editor, runCommand, focusChain),
-			icon: <List size="var(--icon-md)" />,
-		},
-		{
-			title: i18n.t("editor:ribbon.numberedList"),
-			isActive: () => editor.isActive("orderedList"),
-			onClick: runEditorAction("numbered_list", editor, runCommand, focusChain),
-			icon: <ListOrdered size="var(--icon-md)" />,
-		},
-		{
-			title: i18n.t("editor:ribbon.taskList"),
-			isActive: () => editor.isActive("taskList"),
-			onClick: runEditorAction("todo_list", editor, runCommand, focusChain),
-			icon: <ListChecks size="var(--icon-md)" />,
-		},
-	];
-}
-
-export function getBlockButtons(
-	editor: Editor,
-	runCommand: RunCommand,
-	focusChain: FocusChain,
-): RibbonButtonConfig[] {
-	return [
-		{
-			title: i18n.t("editor:ribbon.quote"),
-			isActive: () => editor.isActive("blockquote"),
-			onClick: runEditorAction("quote", editor, runCommand, focusChain),
-			icon: <Quote size="var(--icon-md)" />,
-		},
-		{
-			title: i18n.t("editor:ribbon.codeBlock"),
-			isActive: () => editor.isActive("codeBlock"),
-			onClick: runEditorAction("code_block", editor, runCommand, focusChain),
-			icon: <Code size="var(--icon-md)" />,
 		},
 	];
 }

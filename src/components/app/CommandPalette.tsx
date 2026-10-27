@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
-import { StarIcon } from "@hugeicons/core-free-icons";
+import { Bookmark01Icon } from "@hugeicons/core-free-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,7 +20,7 @@ import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
 import { useNotePreview } from "../preview/useNotePreview";
 import { localizeSettingsSearchEntry } from "../settings/settingsSearch";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
-import { CommandList } from "./CommandList";
+import { CommandList, CommandPaletteFooter } from "./CommandList";
 import { PaletteSettingEditor } from "./PaletteSettingEditor";
 import {
 	type Command,
@@ -86,12 +86,14 @@ export function CommandPalette({
 	onCreateFromTemplate,
 }: CommandPaletteProps) {
 	const { t, i18n } = useTranslation("shell");
-	const { rootEntries, childrenByDir, tags, people, ensureTagsFresh } = useFileTreeContext();
+	const { rootEntries, childrenByDir, tags, people, ensureTagsFresh, activeFilePath } =
+		useFileTreeContext();
 	const [query, setQuery] = useState(initialQuery);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [activeSettingId, setActiveSettingId] = useState<string | null>(null);
 	const [activeTemplatePath, setActiveTemplatePath] = useState<string | null>(null);
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const listRef = useRef<HTMLDivElement | null>(null);
 	const restoreFocusRef = useRef<HTMLElement | null>(null);
 	const parsedQuery = useMemo(() => parsePaletteQuery(query), [query]);
 	const normalizedQuery = query.trim();
@@ -174,6 +176,7 @@ export function CommandPalette({
 		mode: initialMode,
 		spacePath,
 		templateFolder,
+		activePath: activeFilePath,
 		language: i18n.language,
 		t,
 		sources: {
@@ -243,7 +246,7 @@ export function CommandPalette({
 	);
 
 	const selectResult = useCallback(
-		(index: number, direction: -1 | 1 = 1) => {
+		(index: number, direction?: -1 | 1) => {
 			const result = results[index];
 			if (!result || result.enabled === false) return;
 			switch (result.kind) {
@@ -301,7 +304,10 @@ export function CommandPalette({
 					setActiveTemplatePath(result.target ?? null);
 					return;
 				case "setting": {
-					if (adjustSetting(index, direction)) return;
+					// Enter and click toggle switches in place; choices open their option list,
+					// while the arrow keys still step through them.
+					const stepsInPlace = result.settingControl !== "choice" || direction !== undefined;
+					if (stepsInPlace && adjustSetting(index, direction ?? 1)) return;
 					const definition = result.settingId
 						? PALETTE_SETTING_BY_ID.get(result.settingId)
 						: undefined;
@@ -418,7 +424,7 @@ export function CommandPalette({
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && closeAndRestoreFocus()}>
 			<DialogContent
 				className={cn(
-					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
+					"commandPalette top-[15vh] translate-y-0 gap-0 border-none bg-transparent p-0 shadow-none",
 					selectedPreviewPath ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
 				)}
 				data-with-preview={selectedPreviewPath ? "true" : "false"}
@@ -496,6 +502,8 @@ export function CommandPalette({
 									onChange={(event) => {
 										setQuery(event.target.value);
 										setSelectedId(null);
+										// A new query selects its first result, which must be in view.
+										listRef.current?.scrollTo({ top: 0 });
 									}}
 									autoCorrect="off"
 									autoCapitalize="off"
@@ -524,7 +532,7 @@ export function CommandPalette({
 												: "commandPalette.saveSearch",
 										)}
 									>
-										<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
+										<HugeiconsIcon icon={Bookmark01Icon} size="var(--icon-md)" />
 									</button>
 								</div>
 							) : null}
@@ -534,6 +542,7 @@ export function CommandPalette({
 							data-with-preview={selectedPreviewPath ? "true" : "false"}
 						>
 							<div
+								ref={listRef}
 								id="command-palette-results"
 								className="commandPaletteList"
 								data-with-preview={selectedPreviewPath ? "true" : "false"}
@@ -574,6 +583,7 @@ export function CommandPalette({
 								</aside>
 							) : null}
 						</div>
+						<CommandPaletteFooter />
 					</>
 				)}
 			</DialogContent>

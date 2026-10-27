@@ -1,98 +1,135 @@
+/* Status reads as one ink with a small colored dot, never a tinted pill. */
 .settingsPill {
-	padding: 3px 8px;
-	border-radius: var(--radius-sm);
-	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
-	background: var(--settings-surface);
-	font-size: calc(var(--text-base) * 0.8);
+	--settings-pill-dot: var(--text-tertiary);
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	color: var(--text-secondary);
-	line-height: 1;
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+.settingsPill::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 6px;
+	height: 6px;
+	border-radius: var(--radius-full);
+	background: var(--settings-pill-dot);
 }
 
 .settingsPillOk {
-	color: color-mix(in srgb, var(--color-green-500) 86%, var(--text-primary));
-	border-color: color-mix(in srgb, var(--color-green-500) 34%, transparent);
-	background: color-mix(in srgb, var(--color-green-500) 10%, transparent);
+	--settings-pill-dot: var(--color-green-500);
 }
 
 .settingsPillWarn {
-	color: color-mix(in srgb, var(--color-yellow-500) 92%, var(--text-primary));
-	border-color: color-mix(in srgb, var(--color-yellow-500) 36%, transparent);
-	background: color-mix(in srgb, var(--color-yellow-500) 12%, transparent);
+	--settings-pill-dot: var(--color-yellow-500);
 }
 
 .settingsPillError {
-	color: color-mix(in srgb, var(--color-red-500) 86%, var(--text-primary));
-	border-color: color-mix(in srgb, var(--color-red-500) 34%, transparent);
-	background: color-mix(in srgb, var(--color-red-500) 10%, transparent);
+	--settings-pill-dot: var(--color-red-500);
 }
 
 .settingsPillInfo {
-	color: color-mix(in srgb, var(--color-blue-600) 84%, var(--text-primary));
-	border-color: color-mix(in srgb, var(--color-blue-500) 34%, transparent);
-	background: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
+	--settings-pill-dot: var(--color-blue-500);
 }
 
+/* Section = title (+ optional description) 8px over its card. */
 .settingsSection {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: 8px;
 }
 
+/* Every section opens with a title (plus an optional description); an aside such as a
+   reset button sits on the title's line at the card's right edge. */
 .settingsSectionHeader {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 12px;
-	padding: 2px 4px 0;
-	width: 70%;
-	margin: 0 auto;
+	padding: 0;
+	width: 100%;
 }
 
 .settingsSectionHeaderCopy {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 2px;
 	min-width: 0;
 }
 
 .settingsCardDescription {
-	font-size: calc(var(--text-base) * 0.85);
-	line-height: 1.4;
+	font-size: var(--text-xs);
+	line-height: 1.45;
 	color: var(--text-secondary);
 	text-wrap: pretty;
 }
 
+/* The inset-grouped card: a hairline outline, a fill level with (dark: a breath above) the
+   page. A one-row section is simply a one-row card. */
 .settingsCard {
-	background: transparent;
-	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
-	border-radius: calc(var(--radius-lg) + 2px);
-	padding: 0;
 	display: flex;
 	flex-direction: column;
-	overflow: hidden;
-	box-shadow: none;
-	width: 70%;
-	margin: 0 auto;
+	width: 100%;
+	padding: 0;
+	overflow: clip;
+	border: 1px solid var(--settings-card-border);
+	border-radius: var(--radius-xl);
+	background: var(--settings-card-bg);
 }
 
-:root.dark .settingsCard {
-	background: var(--bg-tertiary);
-}
-
+/* Same height as the title's line box, so a status or icon button centers on the title. */
 .settingsCardActions {
 	display: inline-flex;
 	align-items: center;
+	flex: 0 0 auto;
 	gap: 8px;
-	flex-wrap: wrap;
+	height: calc(var(--text-base) * 15 / 14 * 1.35);
+}
+
+.settingsCardActions > [data-slot="button"][data-size^="icon"] {
+	width: 26px;
+	height: 26px;
+	min-height: 26px;
+	margin-right: -5px;
+	color: var(--text-secondary);
+}
+
+.settingsCardActions > [data-slot="button"][data-size^="icon"]:hover:not(:disabled) {
+	color: var(--text-primary);
+}
+
+/* A title-line action ("Reset") is the same soft button as row buttons. */
+.settingsCardActions > [data-slot="button"]:not([data-size^="icon"]) {
+	height: var(--settings-control-height);
+	min-height: var(--settings-control-height);
+	padding-inline: 10px;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: var(--settings-pill);
+	box-shadow: none;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
+}
+
+.settingsCardActions > [data-slot="button"]:not([data-size^="icon"]):hover:not(:disabled) {
+	background: var(--settings-pill-hover);
+	color: var(--text-primary);
 }
 
 .settingsCardTitle {
-	font-size: calc(var(--text-base) * 1.1);
+	font-size: calc(var(--text-base) * 15 / 14);
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.02em;
+	letter-spacing: -0.005em;
 	color: var(--text-primary);
-	line-height: 1.2;
+	line-height: 1.35;
 }
 
 .settingsSectionBody {
@@ -101,54 +138,71 @@
 	background: transparent;
 }
 
+/* Rows: 48px with a label only (whatever the control), ~60px with a one-line description. */
 .settingsField {
 	position: relative;
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	justify-content: space-between;
 	flex-wrap: wrap;
-	gap: 14px;
-	min-height: 56px;
-	padding: 16px 18px;
+	gap: 8px 24px;
+	min-height: 48px;
+	padding: 10px var(--settings-row-inset);
 	border: 0;
 	background: transparent;
 }
 
-.settingsFieldInteractive {
-	transition: background-color 140ms ease;
+.settingsField:has(> .settingsFieldCopy > .settingsHelp) {
+	padding-block: 12px;
 }
 
 .settingsFieldInteractive:has(input[type="checkbox"]) {
 	cursor: pointer;
 }
 
-.settingsFieldInteractive:has(input[type="checkbox"]:not(:disabled)):hover {
-	background: color-mix(in srgb, var(--bg-secondary) 38%, transparent);
-}
-
 .settingsFieldInteractive:has(input[type="checkbox"]:disabled) {
 	cursor: not-allowed;
 }
 
+/* Row dividers stop at the card's inner padding instead of running edge to edge. */
 .settingsField::after {
 	content: "";
 	position: absolute;
-	left: 18px;
-	right: 18px;
+	left: var(--settings-row-inset);
+	right: var(--settings-row-inset);
 	bottom: 0;
 	height: 1px;
-	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: var(--border-light);
 }
 
-.settingsCard .settingsField:last-of-type::after {
+/* One rule on every page: a hairline between rows of a card, none after the last row. */
+.settingsCard > .settingsSectionBody > :last-child::after {
 	display: none;
 }
 
+/* Inline notices inside a card keep to the row inset. */
+.settingsSectionBody > .settingsError,
+.settingsSectionBody > .settingsKeySaved {
+	margin: 12px var(--settings-row-inset) 0;
+}
+
+.settingsSectionBody > :is(.settingsError, .settingsKeySaved):last-child {
+	margin-bottom: 12px;
+}
+
+/* Smaller macOS-style switch (34x20) inside settings rows. */
+.settingsField .uiToggle {
+	--ui-toggle-track-width: 34px;
+	--ui-toggle-thumb-translate: 14px;
+}
+
+/* The copy takes whatever the control leaves (row − control − 24px gap). It never drops
+   below 280px: a control too wide for that wraps under the label instead of squeezing it. */
 .settingsFieldCopy {
 	display: flex;
 	flex-direction: column;
-	flex: 1 1 200px;
-	gap: 4px;
+	flex: 1 1 280px;
+	gap: 2px;
 	min-width: 0;
 }
 
@@ -156,10 +210,14 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: flex-end;
-	flex: 1 1 260px;
+	flex: 0 1 auto;
 	min-width: 0;
-	max-width: 360px;
-	width: 100%;
+	max-width: 100%;
+}
+
+/* Text fields have no useful content width, so they get a fixed share of the row. */
+.settingsFieldControl:has(> input, > textarea, > .settingsInline) {
+	flex: 0 1 300px;
 }
 
 .settingsSidebarItemControls {
@@ -178,15 +236,11 @@
 .settingsSidebarItemRow::after {
 	content: "";
 	position: absolute;
-	left: 18px;
-	right: 18px;
+	left: var(--settings-row-inset);
+	right: var(--settings-row-inset);
 	bottom: 0;
 	height: 1px;
-	background: color-mix(in srgb, var(--border-light) 72%, transparent);
-}
-
-.settingsCard .settingsSidebarItemRow:last-of-type::after {
-	display: none;
+	background: var(--border-light);
 }
 
 .settingsSidebarItemRow .settingsSidebarItemField {
@@ -207,21 +261,17 @@
 .settingsSidebarCalendarOptions {
 	display: flex;
 	flex-direction: column;
-	margin: -6px 0 6px 28px;
+	margin: -6px var(--settings-row-inset) 8px;
 }
 
 .settingsSidebarCalendarOptions .settingsField {
 	align-items: center;
 	min-height: 0;
-	padding: 10px 18px;
+	padding: 8px 0;
 }
 
 .settingsSidebarCalendarOptions .settingsField::after {
 	display: none;
-}
-
-.settingsSidebarCalendarOptions .settingsSegmentedTrack {
-	padding: 2px;
 }
 
 .settingsSidebarCalendarOptions .settingsSegmentedOption {
@@ -236,13 +286,17 @@
 	min-width: 0;
 }
 
+/* The handle lives in the card's left gutter and appears on hover, so labels keep the
+   same left edge as every other settings row. */
 .settingsSidebarDragHandle {
+	position: absolute;
+	top: 50%;
+	left: 0;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	flex: 0 0 auto;
-	width: 20px;
-	height: 20px;
+	width: var(--settings-row-inset);
+	height: 24px;
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -251,13 +305,15 @@
 	color: var(--text-tertiary);
 	line-height: 0;
 	cursor: grab;
+	opacity: 0;
+	translate: 0 -50%;
+	transition: opacity var(--transition-fast);
 }
 
-/* Keeps fixed rows (Calendar) aligned with the draggable ones. */
-.settingsSidebarDragSpacer {
-	flex: 0 0 auto;
-	width: 20px;
-	height: 20px;
+.settingsSidebarItemRow:hover .settingsSidebarDragHandle,
+.settingsSidebarItemRow[data-dragging="true"] .settingsSidebarDragHandle,
+.settingsSidebarDragHandle:focus-visible {
+	opacity: 1;
 }
 
 .settingsSidebarDragHandle:hover,
@@ -267,12 +323,11 @@
 
 .settingsSidebarDragHandle:focus-visible {
 	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: 2px;
+	outline-offset: -2px;
 }
 
 .settingsSidebarDragHandle:disabled {
-	cursor: default;
-	opacity: 0.5;
+	visibility: hidden;
 }
 
 .settingsSidebarItemRow[data-dragging="true"] .settingsSidebarDragHandle {
@@ -282,8 +337,12 @@
 .settingsSidebarItemRow[data-dragging="true"]:not([data-dnd-placeholder]) {
 	z-index: 2;
 	pointer-events: none;
-	background: var(--settings-surface);
-	box-shadow: 0 8px 24px color-mix(in srgb, var(--text-primary) 10%, transparent);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+	box-shadow:
+		0 0 0 0.5px var(--border-default),
+		0 2px 6px rgb(0 0 0 / 5%),
+		0 10px 28px rgb(0 0 0 / 7%);
 }
 
 .settingsSidebarItemRow[data-dnd-placeholder] {
@@ -292,39 +351,28 @@
 }
 
 .settingsSidebarItemRow[data-drop-target="true"]:not([data-dragging="true"]) {
-	background: color-mix(in srgb, var(--bg-secondary) 38%, transparent);
+	background: var(--bg-hover);
 }
 
 .settingsFieldControlStacked {
 	flex-direction: column;
 	align-items: stretch;
 	justify-content: flex-start;
-	max-width: none;
 }
 
 .settingsFieldStacked {
-	align-items: flex-start;
+	align-items: center;
 }
 
 .settingsFieldControl > input,
-.settingsFieldControl > .settingsSelectTrigger,
 .settingsFieldControl > textarea,
 .settingsFieldControl .settingsInline > input,
-.settingsFieldControl .settingsInline > .settingsSelectTrigger,
 .settingsFieldControl .settingsInline > textarea {
 	flex: 1 1 220px;
 	min-width: 0;
-	max-width: 360px;
+	max-width: 100%;
 	width: 100%;
-	min-height: 34px;
-}
-
-.settingsField input,
-.settingsField textarea,
-.settingsFieldControl input,
-.settingsFieldControl textarea {
-	background: var(--settings-control-surface);
-	border-color: color-mix(in srgb, var(--border-default) 90%, transparent);
+	min-height: var(--settings-control-height);
 }
 
 .settingsField input:focus-visible,
@@ -334,30 +382,79 @@
 	outline-offset: 2px;
 }
 
+/* Row selects are soft filled "Value ⌄" buttons, the same fill and geometry as the buttons
+   beside them, right-aligned like a toggle. They share one 160px minimum so a column of
+   selects lines up; longer values grow the button. The option icons stay in the popup only. */
 .settingsSelectTrigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	width: 100%;
-	max-width: 360px;
-	height: 34px;
-	padding: 0 10px;
+	max-width: 100%;
+	height: var(--settings-control-height);
+	min-height: var(--settings-control-height);
+	padding: 0 8px 0 10px;
 	border: 0;
 	border-radius: var(--radius-md);
-	background-color: var(--bg-tertiary);
+	background-color: var(--settings-pill);
+	color: var(--text-primary);
+	font: inherit;
 	font-size: var(--text-sm);
+	text-align: start;
+	cursor: default;
+	transition: background-color var(--transition-fast);
 }
 
-:root.dark .settingsSelectTrigger {
-	background-color: color-mix(in srgb, var(--bg-tertiary) 88%, #ffffff);
+.settingsSelectTrigger .glyphSelectChevron {
+	color: var(--text-secondary);
 }
 
+.settingsFieldControl > .settingsSelectTrigger,
+.colorfulHeadingsControls > .settingsSelectTrigger,
+.dailyNotesFolderField > .settingsSelectTrigger {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 160px;
+	max-width: 260px;
+}
+
+.dailyNotesFolderField > .settingsSelectTrigger {
+	align-self: flex-end;
+}
+
+.settingsSelectTrigger .glyphSelectIcon {
+	display: none;
+}
+
+.settingsSelectTrigger:disabled,
+.settingsSelectTrigger[data-disabled] {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.settingsSelectTrigger:not([data-disabled]):hover,
 .settingsSelectTrigger[data-popup-open] {
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	background-color: var(--settings-pill-hover);
 }
 
+.settingsSelectTrigger:focus-visible {
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--text-primary) 14%, transparent);
+}
+
+/* Text fields are soft filled like the buttons: no outline until focused. */
 .settingsPane input,
 .settingsPane textarea {
-	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
+	border: 1px solid transparent;
 	border-radius: var(--radius-md);
+	background: var(--settings-pill);
 	color: var(--text-primary);
+	font-size: var(--text-sm);
+	box-shadow: none;
+}
+
+.settingsField input:not([type="checkbox"], [type="radio"], [type="range"]) {
+	height: var(--settings-control-height);
+	padding-inline: 10px;
 }
 
 .settingsPane input::placeholder,
@@ -370,14 +467,17 @@
 .settingsPane textarea:focus,
 .settingsPane textarea:focus-visible {
 	outline: none;
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border-color: var(--border-default);
+	background: var(--settings-card-bg);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 }
 
 .settingsHelp {
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-xs);
 	line-height: 1.45;
 	color: var(--text-secondary);
 	white-space: normal;
+	text-wrap: pretty;
 }
 
 .settingsInline {
@@ -392,129 +492,6 @@
 	align-items: stretch;
 }
 
-.settingsPeriodNoteGrid {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 10px;
-	padding: 12px 18px 16px;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-}
-
-.settingsPeriodNoteBox {
-	position: relative;
-	overflow: hidden;
-	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
-}
-
-:root.light .settingsPeriodNoteBox {
-	background: var(--bg-primary);
-}
-
-.settingsPeriodNoteBox:has(.settingsFieldInteractive input[type="checkbox"]:not(:disabled)):hover {
-	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
-}
-
-:root.light
-	.settingsPeriodNoteBox:has(
-		.settingsFieldInteractive input[type="checkbox"]:not(:disabled)
-	):hover {
-	background: var(--bg-secondary);
-}
-
-.settingsPeriodNoteBox:has(input[type="checkbox"]:checked) {
-	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
-	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
-}
-
-:root.light .settingsPeriodNoteBox:has(input[type="checkbox"]:checked) {
-	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary));
-}
-
-.settingsPeriodNoteBox .settingsPeriodNoteRow.settingsField {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	flex-wrap: nowrap;
-	align-items: start;
-	justify-content: stretch;
-	min-height: 0;
-	min-width: 0;
-	column-gap: 10px;
-	row-gap: 4px;
-	padding: 12px 14px;
-	background: transparent;
-}
-
-.settingsPeriodNoteBox .settingsFieldInteractive:has(input[type="checkbox"]:not(:disabled)):hover {
-	background: transparent;
-}
-
-.settingsPeriodNoteBox .settingsPeriodNoteRow.settingsField::after {
-	display: none;
-}
-
-.settingsPeriodNoteBox .settingsFieldCopy {
-	grid-column: 1;
-	flex: none;
-	min-width: 0;
-	position: relative;
-	z-index: 1;
-}
-
-.settingsPeriodNoteBox .settingsLabel {
-	font-size: calc(var(--text-base) * 0.95);
-	font-weight: var(--font-medium);
-	letter-spacing: 0;
-	line-height: 1.3;
-	padding-right: 4px;
-}
-
-.settingsPeriodNoteBox .settingsHelp {
-	font-size: calc(var(--text-base) * 0.8);
-	line-height: 1.4;
-}
-
-.settingsPeriodNoteBox .settingsFieldControl,
-.settingsPeriodNoteBox .settingsFieldControlStacked {
-	grid-column: 2;
-	flex: none;
-	align-self: start;
-	justify-content: flex-end;
-	width: auto;
-	max-width: none;
-	position: relative;
-	z-index: 1;
-}
-
-.settingsPeriodNoteMark {
-	position: absolute;
-	right: 6px;
-	bottom: -20px;
-	z-index: 0;
-	font-family: var(--font-sans);
-	font-size: 4.75rem;
-	font-weight: 600;
-	line-height: 1;
-	letter-spacing: -0.08em;
-	color: var(--text-primary);
-	opacity: 0.07;
-	pointer-events: none;
-	user-select: none;
-}
-
-:root.light .settingsPeriodNoteMark {
-	opacity: 0.055;
-}
-
-.settingsPeriodNoteBox:has(input[type="checkbox"]:checked) .settingsPeriodNoteMark {
-	opacity: 0.11;
-}
-
-:root.light .settingsPeriodNoteBox:has(input[type="checkbox"]:checked) .settingsPeriodNoteMark {
-	opacity: 0.08;
-}
-
 .settingsActions {
 	display: inline-flex;
 	align-items: center;
@@ -524,58 +501,71 @@
 	width: 100%;
 }
 
-.settingsFieldControl > [data-slot="button"],
-.settingsActions > [data-slot="button"] {
-	min-height: 32px;
+/* Row buttons are soft filled with no border ("Manage", "Export"); destructive ones are red
+   text on a faint red fill; the single primary action keeps the solid ink fill. */
+:is(.settingsFieldControl, .settingsActions) > [data-slot="button"] {
+	height: var(--settings-control-height);
+	min-height: var(--settings-control-height);
 	border-radius: var(--radius-md);
-	border: 1px solid transparent;
+	border: 0;
+	background: var(--settings-pill);
 	box-shadow: none;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 }
 
-.settingsFieldControl > [data-slot="button"][data-variant="default"],
-.settingsActions > [data-slot="button"][data-variant="default"] {
-	background: var(--text-primary);
-	border-color: var(--text-primary);
-	color: var(--bg-primary);
-}
-
-.settingsFieldControl > [data-slot="button"][data-variant="default"]:hover:not(:disabled),
-.settingsActions > [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--text-primary) 88%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--text-primary) 88%, var(--bg-primary));
-	color: var(--bg-primary);
-}
-
-.settingsFieldControl > [data-slot="button"][data-variant="outline"],
-.settingsActions > [data-slot="button"][data-variant="outline"] {
-	background: var(--settings-control-surface-strong);
-	border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
+:is(.settingsFieldControl, .settingsActions) > [data-slot="button"]:hover:not(:disabled) {
+	background: var(--settings-pill-hover);
 	color: var(--text-primary);
 }
 
-.settingsFieldControl > [data-slot="button"][data-variant="outline"]:hover:not(:disabled),
-.settingsActions > [data-slot="button"][data-variant="outline"]:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--settings-surface) 72%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--border-strong) 88%, transparent);
-	color: var(--text-primary);
+:is(.settingsFieldControl, .settingsActions) > [data-slot="button"]:not([data-size^="icon"]) {
+	padding-inline: 10px;
 }
 
-.settingsFieldControl > [data-slot="button"][data-variant="ghost"],
-.settingsActions > [data-slot="button"][data-variant="ghost"] {
+:is(.settingsFieldControl, .settingsActions) > [data-slot="button"][data-size^="icon"] {
+	width: var(--settings-control-height);
+	padding: 0;
+}
+
+:is(.settingsFieldControl, .settingsActions) > [data-slot="button"][data-variant="default"] {
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+}
+
+:is(.settingsFieldControl, .settingsActions)
+	> [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+:is(.settingsFieldControl, .settingsActions) > [data-slot="button"][data-variant="destructive"] {
+	background: var(--status-danger-bg);
+	color: var(--status-danger-fg);
+}
+
+:is(.settingsFieldControl, .settingsActions)
+	> [data-slot="button"][data-variant="destructive"]:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--status-danger-fg) 18%, transparent);
+	color: var(--status-danger-fg);
+}
+
+:is(.settingsFieldControl, .settingsActions) > [data-slot="button"][data-variant="ghost"] {
 	background: transparent;
 	color: var(--text-secondary);
 }
 
-.settingsFieldControl > [data-slot="button"][data-variant="ghost"]:hover:not(:disabled),
-.settingsActions > [data-slot="button"][data-variant="ghost"]:hover:not(:disabled) {
-	background: var(--settings-surface-soft);
+:is(.settingsFieldControl, .settingsActions)
+	> [data-slot="button"][data-variant="ghost"]:hover:not(:disabled) {
+	background: var(--settings-pill);
 	color: var(--text-primary);
 }
 
 .settingsLabel {
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-semibold);
-	letter-spacing: -0.01em;
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
+	line-height: 1.35;
 	color: var(--text-primary);
 }
 
@@ -590,44 +580,46 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	width: 20px;
+	height: 20px;
 	flex-shrink: 0;
-	border: 1px solid transparent;
+	border: 0;
 	border-radius: var(--radius-md);
 	background: transparent;
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 	line-height: 0;
 	cursor: pointer;
-	transition: all var(--transition-base);
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
 }
 
-.settingsInfoButton:hover {
+.settingsInfoButton:hover,
+.settingsInfoButton[data-popup-open] {
 	color: var(--text-primary);
-	border-color: color-mix(in srgb, var(--border-default) 75%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
+	background: var(--bg-hover);
 }
 
 .settingsInfoButton svg {
 	display: block;
-	width: var(--icon-md);
-	height: var(--icon-md);
+	width: var(--icon-sm);
+	height: var(--icon-sm);
 	color: currentcolor;
 	flex-shrink: 0;
 }
 
 .settingsInfoPopover {
 	width: min(360px, calc(100vw - 32px));
-	padding: 14px;
-	border-radius: var(--radius-md);
-	font-size: calc(var(--text-base) * 0.9);
+	padding: 12px 14px;
+	border-radius: var(--radius-lg);
+	font-size: var(--text-sm);
 	line-height: 1.45;
 	color: var(--text-secondary);
 }
 
 .settingsValue {
 	max-width: 100%;
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	line-height: 1.4;
 	color: var(--text-secondary);
 	overflow: hidden;
@@ -635,17 +627,9 @@
 	overflow-wrap: anywhere;
 }
 
-.settingsPane .uiToggleControl {
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-default) 84%, transparent);
-}
-
-.settingsPane .uiToggleInput:checked ~ .uiToggleControl {
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 42%, transparent);
-}
-
 .settingsEmpty {
 	padding: 0;
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	line-height: 1.45;
 	color: var(--text-tertiary);
 }
@@ -657,7 +641,7 @@
 	border: 1px solid var(--status-danger-border);
 	background: var(--status-danger-bg);
 	color: var(--status-danger-fg);
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: var(--text-sm);
 	line-height: 1.4;
 }
 

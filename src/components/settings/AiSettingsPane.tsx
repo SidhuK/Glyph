@@ -184,8 +184,9 @@ export function AiSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<SettingsSection title="Availability" description="Turn AI tools on or off across Glyph.">
+				<SettingsSection title="Availability">
 					<SettingsRow
+						searchId="ai-features"
 						label="AI features"
 						description="When off, AI panels and AI command-palette actions stay hidden."
 					>
@@ -195,25 +196,9 @@ export function AiSettingsPane() {
 							onCheckedChange={(checked) => void updateAiEnabled(checked)}
 						/>
 					</SettingsRow>
-					{!aiEnabled ? (
+					{aiEnabled ? (
 						<SettingsRow
-							label="Configuration"
-							description="Turn AI back on to manage providers, models, and account access."
-							stacked
-							interactive={false}
-						>
-							<div className="settingsEmpty">
-								AI configuration stays hidden until AI features are enabled.
-							</div>
-						</SettingsRow>
-					) : null}
-				</SettingsSection>
-				{aiEnabled ? (
-					<SettingsSection
-						title="Assistant behavior"
-						description="Choose whether Glyph AI can take actions with tools."
-					>
-						<SettingsRow
+							searchId="ai-assistant-behavior-tools"
 							label="AI chat has access to tools"
 							description="When on, AI can use tools to create and take actions. When off, it stays in chat-only mode."
 						>
@@ -224,8 +209,19 @@ export function AiSettingsPane() {
 								onCheckedChange={aiToolsEnabled.onCheckedChange}
 							/>
 						</SettingsRow>
-					</SettingsSection>
-				) : null}
+					) : (
+						<SettingsRow
+							label="Configuration"
+							description="Turn AI back on to manage providers, models, and account access."
+							stacked
+							interactive={false}
+						>
+							<div className="settingsEmpty">
+								AI configuration stays hidden until AI features are enabled.
+							</div>
+						</SettingsRow>
+					)}
+				</SettingsSection>
 
 				{aiEnabled ? (
 					<AiProfileSections

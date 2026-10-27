@@ -28,10 +28,7 @@ interface SourcePanelProps {
 export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 	const { t } = useTranslation("shell");
 	return (
-		<section className="databaseViewOptionsPanel" aria-label={t("collections.source.title")}>
-			<div className="databaseViewPanelHeader">
-				<span>{t("collections.source.title")}</span>
-			</div>
+		<>
 			<p className="databaseViewPanelHint">{t("collections.source.hint")}</p>
 			<div className="databaseViewPanelStack">
 				<label className="databaseViewField">
@@ -127,6 +124,6 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 					/>
 				</div>
 			</div>
-		</section>
+		</>
 	);
 }

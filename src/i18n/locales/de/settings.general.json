@@ -7,7 +7,10 @@
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Einstellungen durchsuchen",
 		"searchAriaLabel": "Einstellungen durchsuchen",
-		"clearSearchAriaLabel": "Einstellungssuche löschen"
+		"clearSearchAriaLabel": "Einstellungssuche löschen",
+		"searchEmpty": "Keine passenden Einstellungen",
+		"sendFeedback": "Feedback senden",
+		"buyLicense": "Offizielle Lizenz kaufen"
 	},
 	"about": {
 		"developer": {
@@ -16,19 +19,72 @@
 			"bio": "Tagsüber arbeitet Karat als Biomediziner und Forschungswissenschaftler. Seine Forschung hat ihn an Einrichtungen wie die Texas A&M University und die University of Vermont geführt. Er entwickelt Software, weil es ihm Spaß macht, seine eigenen Probleme zu lösen. Glyph ist eines dieser Werkzeuge.",
 			"github": "GitHub",
 			"twitter": "X / Twitter"
+		},
+		"tagline": {
+			"first": "Deine Gedanken verdienen ein Zuhause,",
+			"second": "keinen Server."
+		},
+		"links": {
+			"ariaLabel": "Links zu Glyph",
+			"website": "Website",
+			"terms": "Nutzungsbedingungen",
+			"privacy": "Datenschutz"
+		},
+		"errors": {
+			"loadInfoFailed": "App-Informationen konnten nicht geladen werden.",
+			"checkFailed": "Nach Updates suchen fehlgeschlagen.",
+			"saveChannelFailed": "Release-Kanal konnte nicht gespeichert werden."
+		},
+		"updates": {
+			"sectionTitle": "Updates",
+			"descriptionLoading": "Es wird geprüft, ob dieser Build automatische Updates nutzen kann.",
+			"descriptionUnknown": "Glyph konnte nicht feststellen, ob dieser Build automatische Updates nutzen kann.",
+			"descriptionAuto": "Nach neuen Versionen suchen und sie installieren, ohne Glyph zu verlassen.",
+			"descriptionManual": "Community-Builds werden manuell aktualisiert.",
+			"upToDate": "Du verwendest bereits die neueste Version.",
+			"ready": "v{{version}} ist heruntergeladen und bereit. Klicke auf die Update-Schaltfläche, um sie zu installieren.",
+			"licenseStatus": {
+				"label": "Lizenzstatus",
+				"description": "Glyph konnte den Lizenzstatus in diesem Fenster nicht prüfen, daher sind Update-Aktionen gerade nicht verfügbar.",
+				"unknown": "Lizenzstatus unbekannt"
+			},
+			"appUpdates": {
+				"label": "App-Updates",
+				"description": "Sucht sofort und lädt die neueste veröffentlichte Version im Hintergrund herunter. Installiert wird erst, wenn du es auswählst.",
+				"check": "Nach Updates suchen",
+				"checking": "Wird gesucht…",
+				"install": "Update installieren",
+				"installVersion": "{{version}} installieren"
+			},
+			"alpha": {
+				"label": "Alpha-Versionen",
+				"description": "Erhalte früh Zugriff auf Alpha-Builds. Diese können instabil sein, aktiviere das also nur, wenn du unfertige Versionen testen möchtest."
+			},
+			"communityBuild": {
+				"label": "Community-Build",
+				"description": "Du verwendest die Community- und Open-Source-Version von Glyph. Kaufe eine offizielle Lizenz, um die Entwicklung von Glyph zu unterstützen und Updates automatisch zu erhalten."
+			},
+			"status": {
+				"label": "Status",
+				"description": "Letzte Updater-Aktivität aus diesem Fenster."
+			},
+			"changelog": {
+				"label": "Änderungsprotokoll",
+				"description": "Das veröffentlichte Änderungsprotokoll von Glyph im Browser öffnen.",
+				"view": "Änderungsprotokoll anzeigen"
+			}
 		}
 	},
 	"language": {
-		"sectionTitle": "Sprache",
-		"sectionDescription": "Wähle die Sprache, die in Glyph verwendet wird.",
 		"label": "Sprache",
 		"description": "Gilt sofort für Menüs, Einstellungen und Navigation.",
 		"ariaLabel": "Sprache",
 		"communityNotice": "Übersetzungen stammen aus der Community und können unvollständig sein. Fragen oder Verbesserungen? <discord>Discord beitreten</discord>."
 	},
+	"region": {
+		"sectionTitle": "Sprache & Region"
+	},
 	"dateTime": {
-		"sectionTitle": "Datum & Uhrzeit",
-		"sectionDescription": "Lege fest, wie vollständige Daten in Glyph angezeigt werden.",
 		"dateFormat": {
 			"label": "Datumsformat",
 			"description": "Gilt sofort für vollständige Daten in Notizen, Metadaten, Datenbanken und Verlauf.",
@@ -44,7 +100,7 @@
 		}
 	},
 	"experimental": {
-		"sectionTitle": "Experimentell",
+		"sectionTitle": "Funktionen",
 		"sectionDescription": "Experimentelle Funktionen, die noch nicht ausgereift sind. Eine spätere Glyph-Version kann sie ändern oder entfernen.",
 		"noteSidePeek": {
 			"label": "Notiz-Peek",
@@ -53,8 +109,7 @@
 		}
 	},
 	"editor": {
-		"sectionTitle": "Editor",
-		"sectionDescription": "Steuerung für Bearbeitungsverhalten und Notizstruktur in Glyph.",
+		"sectionTitle": "Bearbeitung",
 		"defaultEditorMode": {
 			"label": "Standard-Editormodus",
 			"description": "Wie Notizen standardmäßig geöffnet werden: Rich zum Bearbeiten, Vorschau als Nur-Lesen-Ansicht oder Raw für reines Markdown.",
@@ -130,7 +185,6 @@
 	},
 	"fileTree": {
 		"sectionTitle": "Dateibaum",
-		"sectionDescription": "Passe den Dateibaum der Seitenleiste an.",
 		"folderCounts": {
 			"label": "Dateianzahl in Ordnern anzeigen",
 			"description": "Am Ende jeder Ordnerzeile im Dateibaum die rekursive Dateigesamtzahl anzeigen.",
@@ -168,7 +222,6 @@
 	},
 	"editorPresentation": {
 		"sectionTitle": "Editor-Darstellung",
-		"sectionDescription": "Wähle, wie Notizen beim Bearbeiten aussehen.",
 		"beautifulTags": {
 			"label": "Schöne Tags",
 			"description": "Die experimentelle Beautiful-Tags-Darstellung für Tags aktivieren.",
@@ -196,6 +249,75 @@
 			"clear": "Vorlagenordner entfernen",
 			"found_one": "{{count}} Vorlage gefunden",
 			"found_other": "{{count}} Vorlagen gefunden"
+		}
+	},
+	"license": {
+		"sectionTitle": "Lizenz",
+		"status": {
+			"licensed": "Lizenziert",
+			"trialActive": "Testphase aktiv",
+			"trialExpired": "Testphase abgelaufen",
+			"communityBuild": "Community-Build"
+		},
+		"trialStatus": {
+			"label": "Testphase",
+			"description": "Verbleibende Zeit der aktuellen Testphase auf diesem Gerät."
+		},
+		"activated": "Aktiviert",
+		"licenseKey": "Lizenzschlüssel",
+		"storedLocally": "Lokal gespeichert",
+		"officialBuild": {
+			"label": "Offizieller Build",
+			"description": "Danke, dass du Glyph selbst heruntergeladen und gebaut hast. Community-Builds enthalten keine automatischen Updates. Lade für die neueste Version den Quellcode erneut herunter und baue ihn neu, oder hol dir den offiziellen lizenzierten Build, um Glyph zu unterstützen und automatische Updates freizuschalten."
+		},
+		"buyOfficial": "Offizielle Lizenz kaufen",
+		"activate": {
+			"label": "Glyph aktivieren",
+			"description": "Gib deinen Lizenzschlüssel ein, um Glyph auf diesem Gerät dauerhaft freizuschalten.",
+			"action": "Aktivieren",
+			"verifying": "Wird geprüft…",
+			"buy": "Kaufen"
+		},
+		"help": {
+			"label": "Hilfe",
+			"description": "Fragen zu Lizenzen, verlorenen Schlüsseln oder Käufen.",
+			"openSupport": "Support öffnen",
+			"removeActivation": "Lokale Aktivierung entfernen"
+		},
+		"errors": {
+			"keyRequired": "Gib einen Lizenzschlüssel ein.",
+			"activateFailed": "Die Lizenz konnte nicht aktiviert werden.",
+			"removeFailed": "Die lokale Aktivierung konnte nicht entfernt werden."
+		},
+		"messages": {
+			"activated": "Lizenz aktiviert.",
+			"removed": "Lokale Aktivierung entfernt."
+		}
+	},
+	"shortcuts": {
+		"searchPlaceholder": "Aktionen, Kategorien oder Kurzbefehle suchen",
+		"pressShortcut": "Kurzbefehl drücken…",
+		"recordHint": "Kurzbefehl aufnehmen",
+		"record": "Kurzbefehl für {{action}} ändern",
+		"remove": "Kurzbefehl für {{action}} entfernen",
+		"removeTitle": "Kurzbefehl entfernen",
+		"reset": "Kurzbefehl für {{action}} zurücksetzen",
+		"resetTitle": "Auf Standard zurücksetzen",
+		"errors": {
+			"removeFailed": "Der Kurzbefehl konnte nicht entfernt werden.",
+			"resetFailed": "Der Kurzbefehl konnte nicht zurückgesetzt werden.",
+			"invalid": "Ungültiger Kurzbefehl.",
+			"saveFailed": "Der Kurzbefehl konnte nicht gespeichert werden.",
+			"conflict": "{{shortcut}} wird bereits von {{action}} verwendet."
+		}
+	},
+	"folderPicker": {
+		"clear": "Leeren",
+		"reset": "Zurücksetzen"
+	},
+	"newNotes": {
+		"defaultFolder": {
+			"description": "Neue Notizen werden in diesem Ordner erstellt."
 		}
 	}
 }

@@ -56,6 +56,9 @@ export function useActivityVirtualization(
 	virtualRows: ActivityVirtualRow[],
 ) {
 	const [paneWidth, setPaneWidth] = useState(0);
+	// The feed sits below the title and heatmap; the virtualizer must know that offset or rows
+	// still on screen are culled as soon as the pane scrolls.
+	const [feedOffset, setFeedOffset] = useState(0);
 	const contentWidth =
 		paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, ACTIVITY_CONTENT_MAX_WIDTH);
 	const minCardWidth = contentWidth <= 640 ? 144 : 160;
@@ -77,6 +80,7 @@ export function useActivityVirtualization(
 		// Selecting a heatmap day swaps the rows, so key measurements by row rather than index.
 		getItemKey: (index) => virtualRows[index]?.id ?? index,
 		getScrollElement: () => paneElement,
+		scrollMargin: feedOffset,
 		// Card rows hold up to a page of cards (~1,500px), so one row of overscan already covers fast scrolls.
 		overscan: 1,
 	});
@@ -84,14 +88,35 @@ export function useActivityVirtualization(
 
 	useEffect(() => {
 		if (!paneElement) return;
+		const measureFeedOffset = () => {
+			const feed = paneElement.querySelector(".activityFeed");
+			if (!feed) return;
+			const paneTop = paneElement.getBoundingClientRect().top;
+			setFeedOffset(Math.round(feed.getBoundingClientRect().top - paneTop + paneElement.scrollTop));
+		};
 		const observer = new ResizeObserver((entries) => {
-			const entry = entries[0];
-			if (!entry) return;
-			setPaneWidth(entry.contentRect.width);
+			const paneEntry = entries.find((entry) => entry.target === paneElement);
+			if (paneEntry) setPaneWidth(paneEntry.contentRect.width);
+			measureFeedOffset();
+		});
+		// Header and feed resizes (heatmap reflow, measured rows) move the feed's offset.
+		const observeChildren = () => {
+			for (const child of paneElement.children) observer.observe(child);
+		};
+		// Children mounted later (the day filter chip, a feed replacing an empty state) move it too.
+		const mutations = new MutationObserver(() => {
+			observeChildren();
+			measureFeedOffset();
 		});
 		observer.observe(paneElement);
+		observeChildren();
+		mutations.observe(paneElement, { childList: true });
 		setPaneWidth(paneElement.clientWidth);
-		return () => observer.disconnect();
+		measureFeedOffset();
+		return () => {
+			observer.disconnect();
+			mutations.disconnect();
+		};
 	}, [paneElement]);
 
 	return { rowVirtualizer, virtualItems };

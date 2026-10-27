@@ -24,7 +24,8 @@ export function buildNativeMenuLabels(): Record<string, string> {
 
 	for (const command of listCommandDefinitions()) {
 		if (!command.menuId) continue;
-		labels[command.menuId] = i18n.t(`commands:commands.${command.id}.label`);
+		// Menu bar items follow macOS title case, so they keep their own key apart from palette labels.
+		labels[command.menuId] = i18n.t(`commands:commands.${command.id}.menuLabel`);
 	}
 
 	// Chrome labels win over command labels for shared IDs (app.about, app.settings).

@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { noteDocumentQueryOptions, setPrefetchedNote } from "../../lib/navigationPrefetch";
 import { queryClient } from "../../lib/queryClient";
@@ -42,15 +41,12 @@ export function useMarkdownDocumentSession({
 	const [text, setText] = useState(() => initialText);
 	const [savedText, setSavedText] = useState(() => initialText);
 	const [saving, setSaving] = useState(false);
-	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
 	const [loadedRelPath, setLoadedRelPath] = useState(relPath);
 	const [rawEditorReady, setRawEditorReady] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
 		initialDoc?.mtime_ms ?? null,
 	);
-	const { flashPulse, clearPulse, resolveLabel } = useEditorSaveIndicator();
-
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
 	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
@@ -147,8 +143,6 @@ export function useMarkdownDocumentSession({
 		setSavedText(cached);
 		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
 		setSaving(false);
-		setAutosaveBusy(false);
-		clearPulse();
 		hasUserEditsRef.current = false;
 		setError(initialError);
 		setEditorMode(resolveEditorModeForNote(cached));
@@ -159,7 +153,6 @@ export function useMarkdownDocumentSession({
 			setPrefetchedNote(relPath, initialDoc);
 		}
 	}, [
-		clearPulse,
 		flushPendingEdits,
 		initialDoc,
 		initialError,
@@ -189,11 +182,9 @@ export function useMarkdownDocumentSession({
 		setSavedText("");
 		setLastSavedMtimeMs(null);
 		setSaving(false);
-		setAutosaveBusy(false);
-		clearPulse();
 		clearMarkdownDocCache();
 		setLoadedRelPath("");
-	}, [clearPulse, spacePath]);
+	}, [spacePath]);
 
 	const loadDoc = useCallback(
 		async (usePrefetch: boolean) => {
@@ -309,7 +300,6 @@ export function useMarkdownDocumentSession({
 					hasUserEditsRef.current = true;
 					autosaveQueuedRef.current = true;
 				}
-				flashPulse("saved");
 			};
 
 			setError("");
@@ -361,7 +351,6 @@ export function useMarkdownDocumentSession({
 						setSavedText(latest.text);
 						setLastSavedMtimeMs(latest.mtime_ms);
 						hasUserEditsRef.current = false;
-						flashPulse("reloaded");
 						return true;
 					}
 					if (choice === overwriteLabel || choice === "No") {
@@ -385,7 +374,7 @@ export function useMarkdownDocumentSession({
 				}
 			}
 		},
-		[flashPulse, isCurrentSession, relPath, replaceText],
+		[isCurrentSession, relPath, replaceText],
 	);
 
 	const onSave = useCallback(async () => {
@@ -416,7 +405,6 @@ export function useMarkdownDocumentSession({
 		if (snapshot === savedTextRef.current) return false;
 
 		autosaveInFlightRef.current = true;
-		setAutosaveBusy(true);
 		const autosave: Promise<boolean> = (async (): Promise<boolean> => {
 			const ok = await persistDoc(path, snapshot, sessionId);
 			if (!isCurrentSession(sessionId)) {
@@ -424,7 +412,6 @@ export function useMarkdownDocumentSession({
 				return ok;
 			}
 			autosaveInFlightRef.current = false;
-			setAutosaveBusy(false);
 			const retryQueued = autosaveQueuedRef.current;
 			autosaveQueuedRef.current = false;
 			if (retryQueued && textRef.current !== snapshot) {
@@ -510,17 +497,6 @@ export function useMarkdownDocumentSession({
 		[],
 	);
 
-	const saveLabel = useMemo(
-		() =>
-			resolveLabel({
-				isDirty,
-				saving,
-				autosaveBusy,
-				hasSavedBefore: lastSavedMtimeMs !== null,
-			}) ?? "Ready",
-		[autosaveBusy, isDirty, lastSavedMtimeMs, resolveLabel, saving],
-	);
-
 	return {
 		error,
 		flushPendingEdits,
@@ -533,7 +509,6 @@ export function useMarkdownDocumentSession({
 		rawEditorRef,
 		runAutosave,
 		saveBeforeExternalMutation,
-		saveLabel,
 		text,
 		textRef,
 		loadedRelPath,

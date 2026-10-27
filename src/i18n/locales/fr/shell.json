@@ -17,7 +17,7 @@
 		"connections": "Connexions",
 		"agent": "Agent",
 		"calendar": "Calendrier",
-		"search": "Recherche / Ouverture rapide",
+		"search": "Recherche",
 		"searchPlaceholder": "Rechercher",
 		"dailyNote": "Note quotidienne",
 		"weeklyNote": "Note hebdomadaire",
@@ -33,11 +33,12 @@
 		"sortNotes": "Trier les notes",
 		"sort": "Trier",
 		"expandAllFolders": "Développer tous les dossiers",
-		"collapseAllFolders": "Réduire tous les dossiers"
+		"collapseAllFolders": "Réduire tous les dossiers",
+		"fileTreeOptions": "Options de l’arborescence"
 	},
 	"sort": {
-		"nameAsc": "Nom A-Z",
-		"nameDesc": "Nom Z-A",
+		"nameAsc": "Nom A–Z",
+		"nameDesc": "Nom Z–A",
 		"modifiedNewest": "Modifiées (plus récentes)",
 		"modifiedOldest": "Modifiées (plus anciennes)",
 		"createdNewest": "Créées (plus récentes)",
@@ -97,8 +98,7 @@
 		"boardCard": {
 			"openNote": "Ouvrir la note",
 			"moveTo": "Déplacer vers {{lane}}",
-			"openHint": "Double-cliquez pour ouvrir la note",
-			"updated": "Modifiée {{date}}"
+			"openHint": "Double-cliquez pour ouvrir la note"
 		},
 		"switch": "Changer de collection",
 		"select": "Sélectionner une collection",
@@ -116,23 +116,33 @@
 		},
 		"viewOptions": {
 			"reset": "Réinitialiser",
-			"presets": "Préréglages"
+			"presets": "Préréglages",
+			"display": "Affichage",
+			"grouping": "Regroupement",
+			"ordering": "Tri",
+			"filter": "Filtre",
+			"none": "Aucun",
+			"filtersApplied": "{{count}} appliqué(s)",
+			"columns": "Colonnes",
+			"cardFields": "Champs de carte",
+			"showAll": "Tout afficher",
+			"groupedBy": "Regroupé selon ce champ",
+			"cardFieldLabels": {
+				"date": "Date",
+				"task_progress": "Progression des tâches",
+				"status": "Statut",
+				"priority": "Priorité",
+				"tags": "Étiquettes"
+			}
 		},
 		"groupBy": {
-			"label": "Groupé par",
-			"title": "Groupé par {{name}}",
-			"choose": "Choisir un champ de regroupement",
 			"none": "Aucun regroupement",
 			"multiLane": "{{name}} (plusieurs colonnes)",
 			"boardHint": "Ajoutez un champ statut, tag ou case à cocher pour créer des colonnes"
 		},
 		"sort": {
-			"title": "Trier par",
-			"presets": "Préréglages de tri",
-			"replaceWithPreset": "Remplacer le tri actuel par {{name}}",
 			"field": "Champ de tri",
 			"direction": "Ordre de tri",
-			"add": "Ajouter un tri",
 			"directions": {
 				"date": {
 					"asc": "Plus ancien - Plus récent",
@@ -153,7 +163,6 @@
 			}
 		},
 		"filter": {
-			"title": "Filtrer par",
 			"hint": "Affinez cette vue par valeurs de colonne. Pour chercher dans le texte des notes, utilisez la recherche de la barre d’outils.",
 			"presets": "Préréglages de filtre",
 			"unsupportedOperator": "Le filtre {{index}} utilise un opérateur non pris en charge. Choisissez un opérateur pris en charge pour retrouver les résultats.",
@@ -219,12 +228,33 @@
 			"emptyTitle": "Ajoutez un champ pour créer des colonnes",
 			"emptyText": "La vue Kanban regroupe les notes en colonnes. Ajoutez à vos notes un champ de statut, de priorité, une case à cocher, un tag ou un champ similaire, puis choisissez-le dans la barre d’outils ci-dessus.",
 			"openViewSettings": "Ouvrir les réglages de la vue",
+			"noPriority": "Aucune priorité",
 			"laneEmpty": {
 				"archived": "Les notes archivées arrivent ici",
 				"done": "Les notes terminées arrivent ici",
 				"unassigned": "Les notes sans valeur apparaissent ici",
 				"default": "Déposez des notes ici ou ajoutez-en une ci-dessous"
 			}
+		},
+		"changeStatus": "Changer le statut",
+		"statusLabel": "Statut",
+		"cell": {
+			"addOrChooseTag": "Ajouter ou choisir un tag",
+			"addOrChooseValue": "Ajouter ou choisir une valeur",
+			"suggestedTags": "Tags suggérés",
+			"suggestedValues": "Valeurs suggérées",
+			"changePriority": "Modifier la priorité",
+			"editTagsHint": "Double-cliquez pour modifier les tags",
+			"editHint": "Double-cliquez pour modifier",
+			"renameNoteHint": "Double-cliquez pour renommer la note"
+		},
+		"tagPicker": {
+			"source": "Source des tags",
+			"selected": "Tag sélectionné",
+			"open": "Ouvrir le sélecteur de tags",
+			"placeholder": "Choisir un tag",
+			"empty": "Aucun tag correspondant.",
+			"search": "Rechercher des tags"
 		}
 	},
 	"tags": {
@@ -327,8 +357,6 @@
 		"noResults": "Aucun résultat",
 		"resultsLabel": "Résultats de la palette",
 		"searchEverything": "Rechercher des notes, commandes, réglages et plus…",
-		"on": "Activé",
-		"off": "Désactivé",
 		"notSet": "Non défini",
 		"spaceRequired": "Ouvrez un espace pour utiliser ce réglage",
 		"settingUpdated": "Réglage mis à jour",
@@ -348,6 +376,12 @@
 		"noTemplates": "Aucun modèle Markdown n'a été trouvé dans le dossier des modèles.",
 		"templateSelectionInvalid": "Choisissez un modèle Markdown dans le dossier de modèles configuré.",
 		"templateSelectionFailed": "Impossible d'ouvrir le sélecteur de modèles",
+		"moreMatches": "+{{count}} de plus",
+		"footer": {
+			"navigate": "Naviguer",
+			"open": "Ouvrir",
+			"close": "Fermer"
+		},
 		"groups": {
 			"command": "Commandes",
 			"setting": "Réglages",
@@ -385,7 +419,12 @@
 	},
 	"tabs": {
 		"allNotes": "Toutes les notes",
-		"collections": "Collections"
+		"collections": "Collections",
+		"goBack": "Précédent",
+		"goForward": "Suivant",
+		"closeNamed": "Fermer {{label}}",
+		"renameNamed": "Renommer {{name}}",
+		"renameCurrent": "Renommer le fichier actuel"
 	},
 	"ai": {
 		"toolFailed": "Échec de {{tool}}",
@@ -542,6 +581,13 @@
 				"local_wins": "Le local l’emporte",
 				"remote_wins": "Le distant l’emporte"
 			}
-		}
+		},
+		"sync": "Synchroniser maintenant",
+		"resumeAutoSync": "Reprendre la synchronisation automatique",
+		"remote": "Dépôt distant",
+		"actions": "Actions"
+	},
+	"activity": {
+		"noPreviewYet": "Pas encore d’aperçu"
 	}
 }

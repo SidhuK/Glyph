@@ -1,9 +1,10 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    FLOATING TABLE OF CONTENTS
    ───────────────────────────────────────────────────────────────────────────── */
+/* Pinned to the pane's right edge, away from the text column, so it reads as window chrome. */
 .floatingToc {
 	position: absolute;
-	right: 16px;
+	right: 24px;
 	top: 50%;
 	transform: translateY(-50%);
 	z-index: 14;
@@ -50,7 +51,7 @@
 	height: 2px;
 	min-width: 4px;
 	border-radius: var(--radius-2);
-	background: color-mix(in srgb, var(--text-tertiary) 44%, transparent);
+	background: color-mix(in srgb, var(--text-tertiary) 22%, transparent);
 	transform-origin: right center;
 	transition:
 		background-color 140ms ease,
@@ -58,9 +59,18 @@
 		transform 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* Barely there at rest (active mark included) so it never reads as a stray artifact; it firms up
+   while the pointer or focus is on it. */
 .floatingTocMark[data-active="true"] .floatingTocDash {
-	background: color-mix(in srgb, var(--interactive-accent) 68%, var(--text-tertiary));
-	opacity: 0.95;
+	background: color-mix(in srgb, var(--text-tertiary) 35%, transparent);
+}
+
+.floatingTocRail:is(:hover, :focus-within) .floatingTocDash {
+	background: color-mix(in srgb, var(--text-tertiary) 52%, transparent);
+}
+
+.floatingTocRail:is(:hover, :focus-within) .floatingTocMark[data-active="true"] .floatingTocDash {
+	background: var(--text-secondary);
 }
 
 .floatingTocMark[data-wave="peak"] .floatingTocDash {
@@ -84,12 +94,12 @@
 	scrollbar-width: none;
 	display: flex;
 	flex-direction: column;
-	gap: 1px;
-	padding: 9px 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-radius: calc(var(--radius-md) + 4px);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
-	box-shadow: var(--shadow-overlay);
+	gap: 0;
+	padding: 6px 12px;
+	border: 0;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
+	box-shadow: var(--floating-surface-shadow);
 	pointer-events: auto;
 	transform: translateY(-50%);
 }
@@ -104,12 +114,10 @@
 	display: flex;
 	align-items: baseline;
 	gap: 8px;
-	padding-top: 3px;
-	padding-right: 6px;
-	padding-bottom: 3px;
-	border-radius: var(--radius-sm);
+	padding-top: 5px;
+	padding-bottom: 5px;
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--floating-row-font-size);
 	line-height: 1.35;
 	transition: color 140ms ease;
 }
@@ -123,7 +131,8 @@
 
 .floatingTocOutlineItem[data-active="true"] {
 	background: transparent;
-	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
 }
 
 .floatingTocOutlineText {
@@ -134,11 +143,13 @@
 	white-space: nowrap;
 }
 
-.floatingTocOutlineLevel {
+.floatingTocOutlineLevel,
+.floatingTocPreviewLevel {
 	flex: 0 0 auto;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.66);
-	font-weight: var(--font-medium);
+	font-size: var(--floating-label-font-size);
+	font-weight: var(--font-normal);
+	font-variant-numeric: tabular-nums;
 	letter-spacing: 0;
 }
 
@@ -153,13 +164,13 @@
 	cursor: pointer;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	padding: 13px 16px 14px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-radius: calc(var(--radius-md) + 4px);
-	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	gap: 4px;
+	padding: 12px 14px;
+	border: 0;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
 	color: var(--text-primary);
-	box-shadow: var(--shadow-overlay);
+	box-shadow: var(--floating-surface-shadow);
 	pointer-events: auto;
 	transform: translateY(-50%);
 }
@@ -167,7 +178,7 @@
 .floatingTocPreview:hover,
 .floatingTocPreview:focus-visible,
 .floatingTocPreview:active {
-	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	background: var(--floating-surface-bg);
 	color: var(--text-primary);
 	outline: none;
 }
@@ -182,9 +193,9 @@
 .floatingTocPreviewTitle {
 	min-width: 0;
 	flex: 1 1 auto;
-	font-size: calc(var(--text-base) * 0.92);
+	font-size: var(--text-base);
 	font-weight: var(--font-semibold);
-	line-height: 1.25;
+	line-height: 1.3;
 	color: var(--text-primary);
 	text-wrap: balance;
 	overflow: hidden;
@@ -193,22 +204,14 @@
 	-webkit-line-clamp: 2;
 }
 
-.floatingTocPreviewLevel {
-	flex: 0 0 auto;
-	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.66);
-	font-weight: var(--font-medium);
-	letter-spacing: 0;
-}
-
 .floatingTocPreviewText {
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 3;
 	overflow: hidden;
 	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.78);
-	line-height: 1.42;
+	font-size: var(--floating-label-font-size);
+	line-height: 1.45;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */

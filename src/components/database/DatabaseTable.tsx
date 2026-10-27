@@ -8,23 +8,30 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import {
 	type DatabaseRowGroup,
 	boardCreateValue,
 	boardDropValue,
 	createDatabaseRowGroups,
+	isMultiValueBoardColumn,
 	moveBoardCardToLane,
 } from "../../lib/database/board";
+import { databaseColumnLabel, isDateColumn } from "../../lib/database/columns";
 import { databaseCellValueFromRow } from "../../lib/database/config";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow, DatabaseSort } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
 import { ChevronDown, ChevronUp } from "../Icons";
 import { type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/shadcn/table";
+import {
+	type DatabaseLaneKind,
+	DatabaseLaneIcon,
+	databaseLaneDisplayLabel,
+} from "./DatabaseBoardViews";
 import { DatabaseCell } from "./DatabaseCell";
 import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
 import { DatabaseTableDraggableRow, DatabaseTableGroupHeader } from "./DatabaseTableViews";
@@ -69,8 +76,25 @@ interface DatabaseTableProps {
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
 const EMPTY_CARD_ORDER: Record<string, string[]> = {};
-const DATABASE_TABLE_ROW_HEIGHT = 46;
-const DATABASE_TABLE_GROUP_ROW_HEIGHT = 44;
+const DATABASE_TABLE_ROW_HEIGHT = 36;
+const DATABASE_TABLE_GROUP_ROW_HEIGHT = 36;
+/** Linear list: status is a fixed icon slot ahead of the title, the title grows to fill the row
+    (its size is only the flex basis), and every other column packs against the trailing edge. */
+const DATABASE_TABLE_COLUMN_SIZE_LIMITS = {
+	title: { minSize: 240, maxSize: 560 },
+	status: { minSize: 40, maxSize: 40 },
+	other: { minSize: 80, maxSize: 360 },
+} as const;
+
+function isStatusColumn(column: DatabaseColumn): boolean {
+	return column.type === "property" && column.property_kind === "status";
+}
+
+function columnSizeLimits(column: DatabaseColumn) {
+	if (column.type === "title") return DATABASE_TABLE_COLUMN_SIZE_LIMITS.title;
+	if (isStatusColumn(column)) return DATABASE_TABLE_COLUMN_SIZE_LIMITS.status;
+	return DATABASE_TABLE_COLUMN_SIZE_LIMITS.other;
+}
 
 type DatabaseDisplayItem =
 	| {
@@ -218,6 +242,7 @@ export function DatabaseTable({
 	isLoadingMoreRows = false,
 	onLoadMoreRows,
 }: DatabaseTableProps) {
+	const { t } = useTranslation("shell");
 	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [moveError, setMoveError] = useState("");
@@ -240,9 +265,25 @@ export function DatabaseTable({
 		return next;
 	}, [laneColors]);
 
+	// Grouped rows already sit under a header naming the value, so a single-value grouped-by
+	// column would only repeat it on every row; the board hides it on cards for the same reason.
+	// Multi-value columns (tags) stay: a row is grouped by its first value only. Status leads the
+	// row like Linear's status icon, ahead of the title it describes.
+	const displayColumns = useMemo(() => {
+		const shown =
+			groupColumn && !isMultiValueBoardColumn(groupColumn)
+				? columns.filter((column) => column.id !== groupColumn.id || column.type === "title")
+				: columns;
+		if (!shown.some((column) => column.type === "title")) return shown;
+		return [
+			...shown.filter((column) => isStatusColumn(column)),
+			...shown.filter((column) => !isStatusColumn(column)),
+		];
+	}, [columns, groupColumn]);
+
 	const columnValueOptions = useMemo<Record<string, string[]>>(() => {
 		const next: Record<string, string[]> = {};
-		for (const column of columns) {
+		for (const column of displayColumns) {
 			const values: string[] = [];
 			for (const row of rows) {
 				const cell = databaseCellValueFromRow(row, column);
@@ -254,31 +295,59 @@ export function DatabaseTable({
 			next[column.id] = uniqueOptionValues(values);
 		}
 		return next;
-	}, [columns, rows]);
+	}, [displayColumns, rows]);
+	const columnPlacementById = useMemo(
+		() =>
+			new Map(
+				displayColumns.map((column) => [
+					column.id,
+					column.type === "title" ? "title" : isStatusColumn(column) ? "status" : "trailing",
+				]),
+			),
+		[displayColumns],
+	);
+	const columnPlacement = (columnId: string) => columnPlacementById.get(columnId) ?? "trailing";
+	const hasStatusColumn = displayColumns.some(isStatusColumn);
+	const dateColumnIds = useMemo(
+		() => new Set(displayColumns.filter(isDateColumn).map((column) => column.id)),
+		[displayColumns],
+	);
 
 	const tableColumns = useMemo<ColumnDef<DatabaseRow>[]>(
 		() =>
-			columns.map((column) => ({
+			displayColumns.map((column) => ({
 				id: column.id,
-				header: () => (
-					<div className="databaseHeaderControls">
-						<DatabaseColumnIconPicker
-							column={column}
-							className="databaseHeaderIconPicker"
-							onChange={(iconName) => onChangeColumnIcon(column.id, iconName)}
-						/>
+				enableResizing: !isStatusColumn(column),
+				header: () =>
+					isStatusColumn(column) ? (
 						<button
 							type="button"
 							className="databaseHeaderButton"
+							aria-label={databaseColumnLabel(column)}
+							title={databaseColumnLabel(column)}
 							onClick={() => onToggleSort(column)}
 						>
-							<span className="databaseHeaderLabel">
-								<span className="databaseHeaderText">{column.label}</span>
-								<SortIndicator activeSort={activeSort} columnId={column.id} />
-							</span>
+							<SortIndicator activeSort={activeSort} columnId={column.id} />
 						</button>
-					</div>
-				),
+					) : (
+						<div className="databaseHeaderControls">
+							<DatabaseColumnIconPicker
+								column={column}
+								className="databaseHeaderIconPicker"
+								onChange={(iconName) => onChangeColumnIcon(column.id, iconName)}
+							/>
+							<button
+								type="button"
+								className="databaseHeaderButton"
+								onClick={() => onToggleSort(column)}
+							>
+								<span className="databaseHeaderLabel">
+									<span className="databaseHeaderText">{databaseColumnLabel(column)}</span>
+									<SortIndicator activeSort={activeSort} columnId={column.id} />
+								</span>
+							</button>
+						</div>
+					),
 				cell: ({ row }) => (
 					<DatabaseCell
 						row={row.original}
@@ -294,11 +363,12 @@ export function DatabaseTable({
 					/>
 				),
 				size: column.width ?? 180,
+				...columnSizeLimits(column),
 			})),
 		[
 			activeSort,
 			columnValueOptions,
-			columns,
+			displayColumns,
 			onChangeColumnIcon,
 			onOpenRow,
 			onRenameTitle,
@@ -318,10 +388,6 @@ export function DatabaseTable({
 		getCoreRowModel: getCoreRowModel(),
 		enableColumnResizing: true,
 		columnResizeMode: "onChange",
-		defaultColumn: {
-			minSize: 120,
-			maxSize: 900,
-		},
 	});
 
 	const commitColumnResize = useCallback(
@@ -355,6 +421,14 @@ export function DatabaseTable({
 	const displayRows = table.getRowModel().rows;
 	const visibleColumnCount = table.getVisibleLeafColumns().length || 1;
 	const hasGroups = groupColumn != null && rowGroups.length > 0;
+	const groupKind: DatabaseLaneKind =
+		groupColumn?.property_kind === "status"
+			? "status"
+			: groupColumn?.property_kind === "priority"
+				? "priority"
+				: groupColumn?.type === "tags" || groupColumn?.property_kind === "tags"
+					? "tag"
+					: null;
 	const canCreateInGroup = groupColumn != null && onCreateRow != null;
 	const displayItems = useMemo(
 		() => createDatabaseDisplayItems(displayRows, rowGroups, hasGroups),
@@ -493,6 +567,7 @@ export function DatabaseTable({
 									minWidth: header.getSize(),
 								}}
 								className="databaseHeadCell"
+								data-column-placement={columnPlacement(header.column.id)}
 								aria-sort={
 									activeSort?.column_id === header.column.id
 										? activeSort.direction === "desc"
@@ -504,21 +579,23 @@ export function DatabaseTable({
 								{header.isPlaceholder
 									? null
 									: flexRender(header.column.columnDef.header, header.getContext())}
-								<div
-									className={`databaseColumnResizeHandle${header.column.getIsResizing() ? " is-resizing" : ""}`}
-									onMouseDown={(event) => {
-										event.preventDefault();
-										event.stopPropagation();
-										setResizingColumnId(header.column.id);
-										header.getResizeHandler()(event);
-									}}
-									onTouchStart={(event) => {
-										event.preventDefault();
-										event.stopPropagation();
-										setResizingColumnId(header.column.id);
-										header.getResizeHandler()(event);
-									}}
-								/>
+								{header.column.getCanResize() ? (
+									<div
+										className={`databaseColumnResizeHandle${header.column.getIsResizing() ? " is-resizing" : ""}`}
+										onMouseDown={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											setResizingColumnId(header.column.id);
+											header.getResizeHandler()(event);
+										}}
+										onTouchStart={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											setResizingColumnId(header.column.id);
+											header.getResizeHandler()(event);
+										}}
+									/>
+								) : null}
 							</TableHead>
 						))}
 					</TableRow>
@@ -540,15 +617,24 @@ export function DatabaseTable({
 								groupColumn?.property_kind === "status"
 									? statusToneStyle(group.label, statusColors)
 									: groupColumn?.property_kind === "priority"
-										? priorityToneStyle(group.label)
+										? undefined
 										: databaseValueToneStyleForColor(group.id, safeLaneColors[group.id]);
 							return (
 								<DatabaseTableGroupHeader
 									key={virtualRow.key}
 									groupId={group.id}
-									label={group.label}
+									label={databaseLaneDisplayLabel(group.label, groupKind, t)}
+									icon={
+										<DatabaseLaneIcon
+											label={group.label}
+											kind={groupKind}
+											className="databaseGroupIcon"
+										/>
+									}
 									rowCount={group.rowCount}
+									countIsPartial={hasMoreRows}
 									visibleColumnCount={visibleColumnCount}
+									hasStatusColumn={hasStatusColumn}
 									style={{
 										...groupToneStyle,
 										height: `${DATABASE_TABLE_GROUP_ROW_HEIGHT}px`,
@@ -577,6 +663,8 @@ export function DatabaseTable({
 									minWidth: cell.column.getSize(),
 								}}
 								className="databaseBodyCell"
+								data-column-placement={columnPlacement(cell.column.id)}
+								data-date-column={dateColumnIds.has(cell.column.id) || undefined}
 							>
 								{flexRender(cell.column.columnDef.cell, cell.getContext())}
 							</TableCell>

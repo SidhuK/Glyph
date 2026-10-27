@@ -84,8 +84,7 @@
 			"modified": "Zmodyfikowano",
 			"created": "Utworzono",
 			"path": "Ścieżka",
-			"size": "Rozmiar",
-			"saveStatus": "Stan zapisu"
+			"size": "Rozmiar"
 		},
 		"contents": {
 			"empty": "Ta notatka nie ma jeszcze nagłówków."
@@ -96,9 +95,15 @@
 			"relationships": "Relacje",
 			"linkedNotes": "Połączone notatki",
 			"noLinkedNotes": "Brak połączonych notatek."
-		}
+		},
+		"panelLabel": "Panel informacji o notatce",
+		"sidebarTabsLabel": "Pasek boczny notatki",
+		"infoTab": "Informacje",
+		"historyTab": "Historia wersji",
+		"close": "Zamknij panel informacji"
 	},
 	"ribbon": {
+		"toolbarLabel": "Formatowanie",
 		"bold": "Pogrubienie",
 		"italic": "Kursywa",
 		"underline": "Podkreślenie",
@@ -111,11 +116,16 @@
 		"heading1": "Nagłówek 1",
 		"heading2": "Nagłówek 2",
 		"heading3": "Nagłówek 3",
-		"bulletList": "Lista wypunktowana",
-		"numberedList": "Lista numerowana",
-		"taskList": "Lista zadań",
-		"quote": "Cytat",
-		"codeBlock": "Blok kodu"
+		"color": "Kolor",
+		"colorSections": {
+			"text": "Tekst",
+			"highlight": "Wyróżnienie"
+		},
+		"link": "Link",
+		"linkUrl": "Adres URL linku",
+		"linkOpenInNewTab": "Otwórz w nowej karcie",
+		"linkRemove": "Usuń",
+		"linkApply": "Zastosuj"
 	},
 	"selectionAi": {
 		"title": "Zapytaj AI o zaznaczenie",

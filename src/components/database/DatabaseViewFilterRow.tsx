@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { DatabaseColumn, DatabaseFilter } from "../../lib/database/types";
-import { ChevronDown, Trash2 } from "../Icons";
+import { Trash2 } from "../Icons";
 import { Input } from "../ui/shadcn/input";
 import { Select, type SelectOption } from "../ui/shadcn/select";
 import { DatabaseTagPicker } from "./DatabaseTagPicker";
@@ -37,6 +37,7 @@ export function FilterRow({
 	const { t } = useTranslation("shell");
 	const selectedColumn = columns.find((column) => column.id === filter.column_id) ?? null;
 	const showsValue = operatorNeedsValue(filter.operator);
+	const usesDateRange = filter.operator === "within_last_7_days";
 	const usesTagPicker = showsValue && isTagFilterColumn(selectedColumn);
 	const position = index + 1;
 	const patchFilter = (patch: (entry: DatabaseFilter) => Partial<DatabaseFilter>) =>
@@ -48,9 +49,9 @@ export function FilterRow({
 		<div className="databaseViewFilterRow">
 			<span className="databaseViewOptionJoiner">
 				{index === 0 ? t("collections.filter.where") : t("collections.filter.and")}
-				<ChevronDown size="var(--icon-sm)" aria-hidden="true" />
 			</span>
 			<Select
+				className="databaseViewFilterField"
 				value={filter.column_id}
 				aria-label={t("collections.filter.fieldAria", { index: position })}
 				options={columnOptions}
@@ -59,6 +60,7 @@ export function FilterRow({
 				}
 			/>
 			<Select
+				className="databaseViewFilterOperator"
 				value={filter.operator}
 				aria-label={t("collections.filter.operatorAria", { index: position })}
 				options={operatorOptions(t, selectedColumn, filter.operator)}
@@ -69,36 +71,40 @@ export function FilterRow({
 					}))
 				}
 			/>
-			{filter.operator === "within_last_7_days" ? (
-				<Select
-					value={filter.value_text ?? DEFAULT_DATE_RANGE}
-					aria-label={t("collections.filter.dateRangeAria", { index: position })}
-					options={dateRangeOptions(t)}
-					onValueChange={(valueText) =>
-						patchFilter(() => ({ value_text: valueText, value_list: [] }))
-					}
-				/>
-			) : usesTagPicker ? (
-				<DatabaseTagPicker
-					value={filter.value_text ?? ""}
-					label={t("collections.filter.tagLabel")}
-					description={t("collections.filter.tagDescription")}
-					placeholder={t("collections.filter.tagPlaceholder")}
-					onChange={(value) => patchFilter(() => ({ value_text: value, value_list: [value] }))}
-				/>
-			) : showsValue ? (
-				<Input
-					className="databaseViewFilterValue"
-					value={filter.value_text ?? ""}
-					placeholder={t("collections.filter.valuePlaceholder")}
-					onChange={(event) =>
-						patchFilter(() => ({ value_text: event.target.value, value_list: [] }))
-					}
-				/>
+			{usesDateRange || showsValue ? (
+				<div className="databaseViewFilterValueSlot">
+					{usesDateRange ? (
+						<Select
+							value={filter.value_text ?? DEFAULT_DATE_RANGE}
+							aria-label={t("collections.filter.dateRangeAria", { index: position })}
+							options={dateRangeOptions(t)}
+							onValueChange={(valueText) =>
+								patchFilter(() => ({ value_text: valueText, value_list: [] }))
+							}
+						/>
+					) : usesTagPicker ? (
+						<DatabaseTagPicker
+							value={filter.value_text ?? ""}
+							label={t("collections.filter.tagLabel")}
+							description={t("collections.filter.tagDescription")}
+							placeholder={t("collections.filter.tagPlaceholder")}
+							onChange={(value) => patchFilter(() => ({ value_text: value, value_list: [value] }))}
+						/>
+					) : (
+						<Input
+							className="databaseViewFilterValue"
+							value={filter.value_text ?? ""}
+							placeholder={t("collections.filter.valuePlaceholder")}
+							onChange={(event) =>
+								patchFilter(() => ({ value_text: event.target.value, value_list: [] }))
+							}
+						/>
+					)}
+				</div>
 			) : null}
 			<button
 				type="button"
-				className="databaseViewIconButton"
+				className="databaseViewIconButton databaseViewFilterRemove"
 				onClick={() =>
 					void updateFilters(
 						(filters) => filters.filter((_, i) => i !== index),
@@ -108,7 +114,7 @@ export function FilterRow({
 				title={t("collections.filter.remove")}
 				aria-label={t("collections.filter.remove")}
 			>
-				<Trash2 size="var(--icon-lg)" />
+				<Trash2 size="var(--icon-md)" />
 			</button>
 		</div>
 	);

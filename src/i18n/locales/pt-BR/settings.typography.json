@@ -1,5 +1,5 @@
 {
-	"sectionTitle": "Tipografia",
+	"sectionTitle": "Interface",
 	"sectionDescription": "Ajuste independentemente o tipo da interface, o estilo do código e a escala de leitura.",
 	"interfaceFont": {
 		"label": "Fonte da interface",
@@ -11,12 +11,12 @@
 	},
 	"headingFontEnabled": {
 		"label": "Fonte separada para títulos",
-		"description": "Use uma fonte diferente para H1-H6 nos modos de edição e visualização.",
+		"description": "Use uma fonte diferente para H1–H6 nos modos de edição e visualização.",
 		"ariaLabel": "Fonte separada para títulos"
 	},
 	"headingFont": {
 		"label": "Fonte dos títulos",
-		"description": "Usada para H1-H6 quando a fonte separada está ativada. O Markdown bruto mantém a fonte do editor."
+		"description": "Usada para H1–H6 quando a fonte separada está ativada. O Markdown bruto mantém a fonte do editor."
 	},
 	"monospaceFont": {
 		"label": "Fonte monoespaçada",

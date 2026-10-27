@@ -8,8 +8,6 @@ interface EditorTextHighlightOption {
 	label: string;
 	backgroundCssVar: string;
 	backgroundFallback: string;
-	swatchCssVar: string;
-	swatchFallback: string;
 }
 
 export const EDITOR_TEXT_HIGHLIGHTS = [
@@ -18,32 +16,24 @@ export const EDITOR_TEXT_HIGHLIGHTS = [
 		label: "Yellow",
 		backgroundCssVar: "--glyph-inline-highlight-yellow",
 		backgroundFallback: "rgba(240, 180, 41, 0.26)",
-		swatchCssVar: "--status-warning-fg",
-		swatchFallback: "#f0b429",
 	},
 	{
 		id: "blue",
 		label: "Blue",
 		backgroundCssVar: "--glyph-inline-highlight-blue",
 		backgroundFallback: "rgba(59, 155, 220, 0.22)",
-		swatchCssVar: "--status-info-fg",
-		swatchFallback: "#3b9bdc",
 	},
 	{
 		id: "green",
 		label: "Green",
 		backgroundCssVar: "--glyph-inline-highlight-green",
 		backgroundFallback: "rgba(60, 207, 142, 0.24)",
-		swatchCssVar: "--status-success-fg",
-		swatchFallback: "#3ccf8e",
 	},
 	{
 		id: "red",
 		label: "Red",
 		backgroundCssVar: "--glyph-inline-highlight-red",
 		backgroundFallback: "rgba(249, 112, 102, 0.2)",
-		swatchCssVar: "--status-danger-fg",
-		swatchFallback: "#f97066",
 	},
 ] as const satisfies readonly EditorTextHighlightOption[];
 

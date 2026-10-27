@@ -1,11 +1,12 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LibraryIcon, MoreVerticalIcon, StarIcon } from "@hugeicons/core-free-icons";
+import { Database01Icon, MoreHorizontalIcon, StarIcon } from "@hugeicons/core-free-icons";
 import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { UseDatabasesPaneReturn } from "../../hooks/database/useDatabasesPane";
 import type { ActionMenuItem } from "../../lib/database/actionMenuItems";
 import { buildCollectionMenuItems } from "../../lib/database/viewMenuItems";
-import { ChevronDown, ChevronRight } from "../Icons";
+import { onWindowDragMouseDown } from "../../utils/window";
+import { ChevronRight } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { ActionMenuTrigger } from "./ActionMenuTrigger";
@@ -51,8 +52,15 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 
 	const collectionMenuLabel = t(doc.document ? "collections.switch" : "collections.select");
 	const collectionOptionsLabel = t("collections.options");
-	const breadcrumbRoot = doc.collectionFolderBreadcrumb[0]?.label ?? t("sidebar.collections");
 	const isPinned = doc.document?.database.pinned ?? false;
+	const collectionName = (doc.document?.database.name ?? "").trim().toLowerCase();
+	const folderCrumbs = doc.collectionFolderBreadcrumb.slice(1);
+	// A collection named after its source folder would otherwise read "Glyph > Glyph".
+	const visibleFolderCrumbs =
+		collectionName &&
+		folderCrumbs[folderCrumbs.length - 1]?.label.trim().toLowerCase() === collectionName
+			? folderCrumbs.slice(0, -1)
+			: folderCrumbs;
 	const collectionActionMenuItems = useMemo<ActionMenuItem[]>(
 		() => [
 			{
@@ -67,31 +75,22 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 	);
 
 	return (
-		<div className="databasesTopBar">
+		<div className="databasesTopBar" data-tauri-drag-region="" onMouseDown={onWindowDragMouseDown}>
 			<div className="databasesTopBarLeft">
 				<div className="databasesCollectionHeader">
+					{/* The space root says nothing here, so the switcher is just the collection glyph. */}
 					<ActionMenuTrigger
 						items={collectionMenuItems}
 						triggerClassName="databasesCollectionSwitcher"
 						triggerTitle={collectionMenuLabel}
 						triggerAriaLabel={collectionMenuLabel}
 					>
-						<HugeiconsIcon icon={LibraryIcon} size="var(--icon-sm)" />
-						<span className="databasesCollectionSwitcherLabel">{breadcrumbRoot}</span>
-						<ChevronDown size="var(--icon-xs)" />
+						<HugeiconsIcon icon={Database01Icon} size="var(--icon-md)" />
 					</ActionMenuTrigger>
 
-					{doc.document ? (
-						<ChevronRight
-							size="var(--icon-xs)"
-							className="databasesCollectionBreadcrumbSep"
-							aria-hidden
-						/>
-					) : null}
-
-					{doc.collectionFolderBreadcrumb.length > 1 ? (
+					{visibleFolderCrumbs.length > 0 ? (
 						<nav className="databasesCollectionBreadcrumb" aria-label="Collection folder">
-							{doc.collectionFolderBreadcrumb.slice(1).map((part) => (
+							{visibleFolderCrumbs.map((part) => (
 								<span key={part.path} className="databasesCollectionBreadcrumbItem">
 									<span className="databasesCollectionBreadcrumbLabel" title={part.path}>
 										{part.label}
@@ -156,7 +155,7 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 						triggerTitle={collectionOptionsLabel}
 						triggerAriaLabel={collectionOptionsLabel}
 					>
-						<HugeiconsIcon icon={MoreVerticalIcon} size="var(--icon-md)" />
+						<HugeiconsIcon icon={MoreHorizontalIcon} size="var(--icon-md)" />
 					</ActionMenuTrigger>
 				</div>
 			) : null}

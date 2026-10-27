@@ -42,14 +42,14 @@ export function AboutSettingsPane() {
 				setAppInfo(info);
 			} catch (e) {
 				if (!cancelled) {
-					setError(e instanceof Error ? e.message : "Failed to load app info");
+					setError(e instanceof Error ? e.message : t("about.errors.loadInfoFailed"));
 				}
 			}
 		})();
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [t]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -77,14 +77,12 @@ export function AboutSettingsPane() {
 		try {
 			const update = await autoUpdater.checkForUpdates();
 			if (!update) {
-				setUpdateStatus("You're already on the latest version.");
+				setUpdateStatus(t("about.updates.upToDate"));
 				return;
 			}
-			setUpdateStatus(
-				`v${update.version} is downloaded and ready. Click the update button to install it.`,
-			);
+			setUpdateStatus(t("about.updates.ready", { version: update.version }));
 		} catch (e) {
-			setUpdateStatus(e instanceof Error ? e.message : "Failed to check for updates");
+			setUpdateStatus(e instanceof Error ? e.message : t("about.errors.checkFailed"));
 		}
 	};
 	return (
@@ -104,9 +102,9 @@ export function AboutSettingsPane() {
 						{versionLabel ? <span className="aboutVersion">{versionLabel}</span> : null}
 					</h2>
 					<p className="aboutTagline">
-						Your thoughts deserve a home,
+						{t("about.tagline.first")}
 						<br />
-						not a server.
+						{t("about.tagline.second")}
 					</p>
 					<details className="aboutDeveloperDetails">
 						<summary className="aboutAttribution aboutDeveloperSummary">
@@ -144,7 +142,7 @@ export function AboutSettingsPane() {
 							</div>
 						</article>
 					</details>
-					<div className="aboutQuickLinks" aria-label="About links">
+					<div className="aboutQuickLinks" aria-label={t("about.links.ariaLabel")}>
 						<Button
 							type="button"
 							size="sm"
@@ -153,7 +151,7 @@ export function AboutSettingsPane() {
 							onClick={() => void openUrl(GLYPH_LINKS.website)}
 						>
 							<HugeiconsIcon icon={GlobeIcon} size="var(--icon-lg)" />
-							Website
+							{t("about.links.website")}
 						</Button>
 						<Button
 							type="button"
@@ -173,7 +171,7 @@ export function AboutSettingsPane() {
 							onClick={() => void openUrl(GLYPH_LINKS.terms)}
 						>
 							<HugeiconsIcon icon={File01Icon} size="var(--icon-lg)" />
-							Terms
+							{t("about.links.terms")}
 						</Button>
 						<Button
 							type="button"
@@ -183,37 +181,37 @@ export function AboutSettingsPane() {
 							onClick={() => void openUrl(GLYPH_LINKS.privacy)}
 						>
 							<HugeiconsIcon icon={Shield01Icon} size="var(--icon-lg)" />
-							Privacy
+							{t("about.links.privacy")}
 						</Button>
 					</div>
 				</section>
 
 				<SettingsSection
-					title="Updates"
+					title={t("about.updates.sectionTitle")}
 					description={
 						licenseLoading
-							? "Checking whether this build can use automatic updates."
+							? t("about.updates.descriptionLoading")
 							: !licenseStatus
-								? "Glyph could not determine whether this build can use automatic updates."
+								? t("about.updates.descriptionUnknown")
 								: licenseStatus?.can_auto_update
-									? "Check for new releases and install them without leaving Glyph."
-									: "Community builds are updated manually."
+									? t("about.updates.descriptionAuto")
+									: t("about.updates.descriptionManual")
 					}
 				>
 					{licenseLoading ? null : !licenseStatus ? (
 						<SettingsRow
-							label="License status"
-							description="Glyph could not verify the current license state in this window, so update actions are unavailable right now."
+							label={t("about.updates.licenseStatus.label")}
+							description={t("about.updates.licenseStatus.description")}
 							stacked
 							interactive={false}
 						>
-							<p className="settingsHint">Unknown license status</p>
+							<p className="settingsHint">{t("about.updates.licenseStatus.unknown")}</p>
 						</SettingsRow>
 					) : licenseStatus.can_auto_update ? (
 						<>
 							<SettingsRow
-								label="App updates"
-								description="Checks immediately and downloads the latest published version in the background. Installation only happens when you choose it."
+								label={t("about.updates.appUpdates.label")}
+								description={t("about.updates.appUpdates.description")}
 							>
 								<div className="settingsActions">
 									<Button
@@ -222,7 +220,9 @@ export function AboutSettingsPane() {
 										disabled={autoUpdater.isChecking}
 										onClick={() => void handleCheckForUpdates()}
 									>
-										{autoUpdater.isChecking ? "Checking…" : "Check for Updates"}
+										{autoUpdater.isChecking
+											? t("about.updates.appUpdates.checking")
+											: t("about.updates.appUpdates.check")}
 									</Button>
 									{autoUpdater.updateReady ? (
 										<Button
@@ -232,20 +232,22 @@ export function AboutSettingsPane() {
 											onClick={autoUpdater.installAndRelaunch}
 										>
 											{autoUpdater.updateVersion
-												? `Install ${autoUpdater.updateVersion}`
-												: "Install Update"}
+												? t("about.updates.appUpdates.installVersion", {
+														version: autoUpdater.updateVersion,
+													})
+												: t("about.updates.appUpdates.install")}
 										</Button>
 									) : null}
 								</div>
 							</SettingsRow>
 							<SettingsRow
-								label="Alpha releases"
-								description="Get early access to alpha builds. These may be unstable, so only turn this on if you’re comfortable testing unfinished releases."
+								label={t("about.updates.alpha.label")}
+								description={t("about.updates.alpha.description")}
 							>
 								<SettingsToggle
 									checked={releaseChannelState === "alpha"}
 									disabled={isSavingReleaseChannel}
-									ariaLabel="Alpha releases"
+									ariaLabel={t("about.updates.alpha.label")}
 									onCheckedChange={(checked) => {
 										const previous = releaseChannelState;
 										const nextChannel: ReleaseChannel = checked ? "alpha" : "stable";
@@ -259,7 +261,9 @@ export function AboutSettingsPane() {
 											.catch((cause) => {
 												setReleaseChannelState(previous);
 												setError(
-													cause instanceof Error ? cause.message : "Failed to save release channel",
+													cause instanceof Error
+														? cause.message
+														: t("about.errors.saveChannelFailed"),
 												);
 											})
 											.finally(() => {
@@ -271,8 +275,8 @@ export function AboutSettingsPane() {
 						</>
 					) : (
 						<SettingsRow
-							label="Community build"
-							description="You’re using the Community and Open Source version of Glyph. Purchase an official license to support Glyph’s development and receive the latest updates automatically."
+							label={t("about.updates.communityBuild.label")}
+							description={t("about.updates.communityBuild.description")}
 							stacked
 							interactive={false}
 						>
@@ -282,15 +286,15 @@ export function AboutSettingsPane() {
 									size="sm"
 									onClick={() => void openUrl(licenseStatus.purchase_url)}
 								>
-									Buy Official License
+									{t("license.buyOfficial")}
 								</Button>
 							</div>
 						</SettingsRow>
 					)}
 					{!licenseLoading && licenseStatus?.can_auto_update && updateStatus ? (
 						<SettingsRow
-							label="Status"
-							description="Latest updater activity from this window."
+							label={t("about.updates.status.label")}
+							description={t("about.updates.status.description")}
 							stacked
 							interactive={false}
 						>
@@ -298,8 +302,8 @@ export function AboutSettingsPane() {
 						</SettingsRow>
 					) : null}
 					<SettingsRow
-						label="Changelog"
-						description="Open the published Glyph changelog in your browser."
+						label={t("about.updates.changelog.label")}
+						description={t("about.updates.changelog.description")}
 					>
 						<div className="settingsActions">
 							<Button
@@ -309,16 +313,13 @@ export function AboutSettingsPane() {
 								onClick={() => void openUrl(GLYPH_LINKS.changelog)}
 							>
 								<HugeiconsIcon icon={ListViewIcon} size="var(--icon-md)" />
-								View Changelog
+								{t("about.updates.changelog.view")}
 							</Button>
 						</div>
 					</SettingsRow>
 				</SettingsSection>
 
-				<SettingsSection
-					title={t("about.developerMode.sectionTitle")}
-					description={t("about.developerMode.sectionDescription")}
-				>
+				<SettingsSection title={t("about.developerMode.sectionTitle")}>
 					{developerMode.save.error ? (
 						<div className="settingsError">{extractErrorMessage(developerMode.save.error)}</div>
 					) : null}

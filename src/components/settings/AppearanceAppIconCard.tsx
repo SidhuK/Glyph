@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { DURABLE_SETTINGS, loadSettings } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { Button } from "../ui/shadcn/button";
-import { SettingsRow } from "./SettingsScaffold";
+import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 const ICONS = ["default", "blue-star", "blue-glyph", "confetti-star", "blueprint"] as const;
 const QUERY_KEY = ["appearance-app-icon"] as const;
@@ -26,7 +26,7 @@ export function AppearanceAppIconCard() {
 	});
 
 	return (
-		<div className="settingsCard">
+		<SettingsSection title={t("appIcon.sectionTitle")}>
 			<SettingsRow
 				label={t("appIcon.title")}
 				description={t("appIcon.description")}
@@ -40,7 +40,7 @@ export function AppearanceAppIconCard() {
 				) : query.data ? (
 					<fieldset
 						disabled={mutation.isPending}
-						className="m-0 flex min-w-0 flex-wrap justify-end gap-2 border-0 p-0"
+						className="appIconPicker m-0 flex min-w-0 flex-nowrap justify-end gap-2 border-0 p-0"
 						aria-label={t("appIcon.title")}
 					>
 						{ICONS.map((icon) => (
@@ -58,19 +58,14 @@ export function AppearanceAppIconCard() {
 									aria-label={t(`appIcon.${icon}`)}
 									className="peer sr-only"
 								/>
-								<span className="relative flex size-12 items-center justify-center rounded-xl border border-[var(--border-light)] bg-[var(--bg-primary)] transition-colors peer-checked:border-[var(--text-primary)] peer-checked:ring-1 peer-checked:ring-[var(--text-primary)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-[var(--text-primary)] peer-disabled:cursor-wait peer-disabled:opacity-50">
+								<span className="appIconPickerTile flex size-9 items-center justify-center rounded-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--text-primary)] peer-disabled:cursor-wait peer-disabled:opacity-50">
 									<img
 										src={icon === "default" ? "/glyph-app-icon.png" : `/app-icons/${icon}.png`}
 										alt=""
-										width={40}
-										height={40}
-										className="size-10 object-contain"
+										width={32}
+										height={32}
+										className="size-8 object-contain"
 									/>
-									{icon === "default" && import.meta.env.DEV && (
-										<span className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1 py-0.5 text-[8px] leading-none font-semibold text-white">
-											{t("menu:app.devBadge")}
-										</span>
-									)}
 								</span>
 							</label>
 						))}
@@ -93,6 +88,6 @@ export function AppearanceAppIconCard() {
 					</div>
 				)}
 			</SettingsRow>
-		</div>
+		</SettingsSection>
 	);
 }

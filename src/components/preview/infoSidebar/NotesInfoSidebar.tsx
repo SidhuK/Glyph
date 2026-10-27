@@ -1,11 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	Analytics01Icon,
-	BadgeInfoIcon,
-	GitBranchIcon,
-	LeftToRightListBulletIcon,
-	LinkBackwardIcon,
-} from "@hugeicons/core-free-icons";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -32,13 +26,9 @@ import type { UnlinkedMentionsSectionProps } from "./UnlinkedMentionsSection";
 
 type InfoSidebarTab = "info" | "history";
 
-const INFO_SUB_TABS = [
-	{ id: "stats", icon: Analytics01Icon },
-	{ id: "contents", icon: LeftToRightListBulletIcon },
-	{ id: "backlinks", icon: LinkBackwardIcon },
-] as const;
+const INFO_SUB_TABS = ["stats", "contents", "backlinks"] as const;
 
-type InfoSubTab = (typeof INFO_SUB_TABS)[number]["id"];
+type InfoSubTab = (typeof INFO_SUB_TABS)[number];
 
 interface NotesInfoSidebarProps {
 	open: boolean;
@@ -63,7 +53,6 @@ interface NotesInfoSidebarProps {
 	lastSavedMtimeMs: number | null;
 	lineCount: number;
 	utf8SizeBytes: number;
-	saveLabel: string;
 	gitSyncStatus?: GitSyncStatus | null;
 	selectedGitCommitHash?: string | null;
 	onSelectGitDiff?: (diff: GitCommitDiff) => void;
@@ -89,7 +78,6 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	lastSavedMtimeMs,
 	lineCount,
 	utf8SizeBytes,
-	saveLabel,
 	gitSyncStatus = null,
 	selectedGitCommitHash = null,
 	onSelectGitDiff,
@@ -123,7 +111,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	if (!open || hasError) return null;
 
 	const sidebar = (
-		<aside className="notesInfoSidebarPanel" aria-label="Note info panel">
+		<aside className="notesInfoSidebarPanel" aria-label={t("infoSidebar.panelLabel")}>
 			<div
 				className="markdownEditorInfoHeader drag"
 				data-tauri-drag-region
@@ -132,7 +120,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 				<div
 					className="markdownEditorInfoTabs"
 					role="tablist"
-					aria-label="Note sidebar"
+					aria-label={t("infoSidebar.sidebarTabsLabel")}
 					data-window-drag-ignore
 				>
 					<button
@@ -143,8 +131,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						data-active={activeTab === "info" ? "true" : undefined}
 						onClick={() => setActiveTab("info")}
 					>
-						<HugeiconsIcon icon={BadgeInfoIcon} size="var(--icon-sm)" />
-						Info
+						{t("infoSidebar.infoTab")}
 					</button>
 					{hasGitHistoryTab ? (
 						<button
@@ -155,8 +142,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 							data-active={activeTab === "history" ? "true" : undefined}
 							onClick={() => setActiveTab("history")}
 						>
-							<HugeiconsIcon icon={GitBranchIcon} size="var(--icon-sm)" />
-							Version history
+							{t("infoSidebar.historyTab")}
 						</button>
 					) : null}
 				</div>
@@ -164,10 +150,10 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 					type="button"
 					className="markdownEditorInfoClose"
 					onClick={onClose}
-					aria-label="Close info panel"
-					title="Close info panel"
+					aria-label={t("infoSidebar.close")}
+					title={t("infoSidebar.close")}
 				>
-					<span aria-hidden>×</span>
+					<HugeiconsIcon icon={Cancel01Icon} size="var(--icon-md)" />
 				</button>
 			</div>
 			<div className="markdownEditorInfoBody">
@@ -187,17 +173,15 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						>
 							{INFO_SUB_TABS.map((tab) => (
 								<button
-									key={tab.id}
+									key={tab}
 									type="button"
 									className="markdownEditorInfoSubTab"
 									role="tab"
-									aria-selected={activeSubTab === tab.id}
-									data-active={activeSubTab === tab.id ? "true" : undefined}
-									onClick={() => setActiveSubTab(tab.id)}
-									title={t(`infoSidebar.tabs.${tab.id}`)}
+									aria-selected={activeSubTab === tab}
+									data-active={activeSubTab === tab ? "true" : undefined}
+									onClick={() => setActiveSubTab(tab)}
 								>
-									<HugeiconsIcon icon={tab.icon} size="var(--icon-sm)" aria-hidden="true" />
-									<span>{t(`infoSidebar.tabs.${tab.id}`)}</span>
+									{t(`infoSidebar.tabs.${tab}`)}
 								</button>
 							))}
 						</div>
@@ -213,7 +197,6 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						lastSavedMtimeMs={lastSavedMtimeMs}
 						lineCount={lineCount}
 						utf8SizeBytes={utf8SizeBytes}
-						saveLabel={saveLabel}
 					/>
 				) : null}
 

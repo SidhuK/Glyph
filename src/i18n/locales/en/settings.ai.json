@@ -1,12 +1,11 @@
 {
 	"chatNaming": {
-		"label": "Chat Naming Model",
+		"label": "Chat naming model",
 		"description": "Name chats from the conversation after each reply. Uses this agent and account only, with one extra model request.",
 		"sameModel": "Same as chat model"
 	},
 	"connection": {
 		"sectionTitle": "Connection",
-		"sectionDescription": "Choose how Glyph connects to AI, then configure the provider and model.",
 		"type": {
 			"label": "Connection type",
 			"description": "Use an installed agent, a private model on this Mac, or a provider API.",
@@ -38,8 +37,6 @@
 		"description": "Glyph fetches available models for the selected provider when credentials allow it.",
 		"placeholder": "Select a model...",
 		"connecting": "Connecting...",
-		"count_one": "{{count}} model",
-		"count_other": "{{count}} models",
 		"needsApiKey": "Save an API key to load models for this provider.",
 		"retry": "Retry",
 		"empty": "No models available"
@@ -48,7 +45,17 @@
 		"label": "Reasoning level",
 		"description": "Available when the current model exposes effort levels.",
 		"placeholder": "e.g. low, medium, high",
-		"manualHint": "This model did not publish reasoning options; enter effort manually."
+		"manualHint": "This model did not publish reasoning options; enter effort manually.",
+		"levels": {
+			"none": "None",
+			"minimal": "Minimal",
+			"low": "Low",
+			"medium": "Medium",
+			"high": "High",
+			"xhigh": "Extra high",
+			"max": "Max",
+			"off": "Off"
+		}
 	},
 	"baseUrl": {
 		"label": "Base URL",

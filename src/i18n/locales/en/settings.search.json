@@ -78,7 +78,7 @@
 	"entries": {
 		"appearance-app-icon": {
 			"title": "Dock icon",
-			"section": "Appearance",
+			"section": "App icon",
 			"description": "Choose the icon Glyph shows in the Dock while running.",
 			"keywords": [
 				"app",
@@ -137,13 +137,13 @@
 		},
 		"general-language": {
 			"title": "Language",
-			"section": "Language",
+			"section": "Language & region",
 			"description": "Choose the display language for Glyph.",
 			"keywords": ["locale", "translation", "i18n", "language"]
 		},
 		"general-date-format": {
 			"title": "Date format",
-			"section": "Date & time",
+			"section": "Language & region",
 			"description": "Choose how complete dates are displayed across Glyph.",
 			"keywords": [
 				"date",
@@ -171,7 +171,7 @@
 			]
 		},
 		"appearance-theme-mode": {
-			"title": "Select Theme",
+			"title": "Select theme",
 			"section": "Themes",
 			"description": "Choose system, light, or dark mode.",
 			"keywords": ["mode", "system", "light", "dark"]
@@ -225,18 +225,18 @@
 		},
 		"sidebar-calendar": {
 			"title": "Sidebar calendar",
-			"section": "Sidebar",
+			"section": "Navigation",
 			"description": "Choose the calendar layout, day summary and what clicking a day does.",
 			"keywords": ["calendar", "week", "month", "daily note", "day summary", "sidebar"]
 		},
 		"typography-interface-font": {
 			"title": "Interface font",
-			"section": "Typography",
+			"section": "Interface",
 			"keywords": ["font", "ui", "sans"]
 		},
 		"typography-monospace-font": {
 			"title": "Monospace font",
-			"section": "Typography",
+			"section": "Interface",
 			"keywords": ["font", "code", "mono"]
 		},
 		"typography-editor-font": {
@@ -256,7 +256,7 @@
 		},
 		"typography-ui-font-size": {
 			"title": "UI font size",
-			"section": "Typography",
+			"section": "Interface",
 			"keywords": ["font", "text", "interface"]
 		},
 		"typography-editor-font-size": {
@@ -265,14 +265,14 @@
 			"keywords": ["font", "text", "notes"]
 		},
 		"shortcuts-customize": {
-			"title": "Customize Shortcuts",
-			"section": "Customize Shortcuts",
+			"title": "Customize shortcuts",
+			"section": "Customize shortcuts",
 			"description": "Edit keyboard shortcuts.",
 			"keywords": ["hotkeys", "keybindings", "commands"]
 		},
 		"shortcuts-search": {
 			"title": "Search actions, categories, or shortcuts",
-			"section": "Customize Shortcuts",
+			"section": "Customize shortcuts",
 			"description": "Filter shortcuts by action, category, binding, or description.",
 			"keywords": ["filter", "find shortcuts", "shortcut search"]
 		},
@@ -292,8 +292,8 @@
 			"keywords": ["find", "quick search", "command palette"]
 		},
 		"shortcuts-file-operations": {
-			"title": "File Operations shortcuts",
-			"section": "File Operations",
+			"title": "File operations shortcuts",
+			"section": "File operations",
 			"keywords": ["file", "folder", "rename", "delete"]
 		},
 		"shortcuts-tabs": {
@@ -338,7 +338,7 @@
 			"keywords": ["provider", "model", "assistant"]
 		},
 		"ai-chat-naming-model": {
-			"title": "Chat Naming Model",
+			"title": "Chat naming model",
 			"section": "Connection",
 			"keywords": ["rename", "title", "chat", "naming", "agent", "model"]
 		},
@@ -359,41 +359,41 @@
 		},
 		"ai-api-key": {
 			"title": "Set key",
-			"section": "API Key",
+			"section": "API key",
 			"keywords": ["secret", "token", "credential", "update key"]
 		},
 		"space-daily-notes-folder": {
 			"title": "Folder",
-			"section": "Daily Notes",
+			"section": "Daily notes",
 			"description": "Choose where daily notes are created.",
 			"keywords": ["journal", "today", "date"]
 		},
 		"space-weekly-notes": {
 			"title": "Weekly notes",
-			"section": "Daily Notes",
+			"section": "Daily notes",
 			"description": "One note for this ISO week.",
 			"keywords": ["weekly", "iso week", "period notes"]
 		},
 		"space-monthly-notes": {
 			"title": "Monthly notes",
-			"section": "Daily Notes",
+			"section": "Daily notes",
 			"description": "One note for this month.",
 			"keywords": ["monthly", "period notes"]
 		},
 		"space-quarterly-notes": {
 			"title": "Quarterly notes",
-			"section": "Daily Notes",
+			"section": "Daily notes",
 			"description": "One note for this quarter.",
 			"keywords": ["quarterly", "period notes"]
 		},
 		"space-quick-notes-folder": {
 			"title": "Folder",
-			"section": "Quick Notes",
+			"section": "Quick notes",
 			"description": "Choose where quick notes are saved.",
 			"keywords": ["capture", "inbox"]
 		},
 		"space-archive-enabled": {
-			"title": "Enable Archive",
+			"title": "Enable archive",
 			"section": "Archive",
 			"description": "Enable archiving notes in this space.",
 			"keywords": ["archive", "archiving", "enable"]
@@ -442,7 +442,7 @@
 		},
 		"space-search-index-status": {
 			"title": "Status",
-			"section": "Search Index",
+			"section": "Search index",
 			"keywords": ["index", "rebuild", "search"]
 		},
 		"git-availability": {
@@ -456,7 +456,7 @@
 			"keywords": ["repo", "sync", "branch"]
 		},
 		"git-how-it-works": {
-			"title": "How it works",
+			"title": "Remote",
 			"section": "Connection",
 			"description": "Review remote connection details for the current repository.",
 			"keywords": ["remote url", "initialize git", "credentials"]
@@ -488,7 +488,7 @@
 		},
 		"git-conflict-policy": {
 			"title": "Policy",
-			"section": "Conflict Resolution",
+			"section": "Conflict resolution",
 			"keywords": ["merge", "conflict"]
 		},
 		"git-include-templates": {
@@ -508,36 +508,36 @@
 		},
 		"general-editor-table-of-contents": {
 			"title": "Table of contents",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["toc", "outline"]
 		},
 		"space-search-index-people-tags": {
 			"title": "People mentions as tags",
-			"section": "Search Index",
+			"section": "Search index",
 			"keywords": ["mentions", "people", "tags"]
 		},
 		"general-editor-frontmatter": {
 			"title": "Show frontmatter in editor",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["properties", "yaml", "metadata"]
 		},
 		"general-editor-heading-prefixes": {
 			"title": "Heading prefixes",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["heading", "h1", "h2", "h3", "label"]
 		},
 		"general-editor-colorful-headings": {
 			"title": "Colorful headings",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["editor", "color"]
 		},
 		"general-editor-heading-palette": {
 			"title": "Heading palette",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["heading", "color", "palette"]
 		},
 		"appearance-editor-presentation-beautiful-tags": {
-			"title": "Beautiful Tags",
+			"title": "Beautiful tags",
 			"section": "Editor presentation",
 			"keywords": ["tags", "editor"]
 		},
@@ -548,52 +548,52 @@
 		},
 		"general-editor-collapsible-headings": {
 			"title": "Collapsible headings",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["fold", "collapse", "expand"]
 		},
 		"general-editor-collapsible-lists": {
 			"title": "Collapsible lists",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["fold", "collapse", "expand", "bullet", "task", "ordered"]
 		},
 		"general-editor-spell-check": {
 			"title": "Spell check",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["spelling", "typo", "dictionary"]
 		},
 		"general-editor-default-mode": {
 			"title": "Default editor mode",
-			"section": "Editor",
+			"section": "Editing",
 			"keywords": ["rich", "preview", "raw", "markdown"]
 		},
 		"general-editor-raw-live-preview": {
-			"title": "Live Markdown in RAW mode",
-			"section": "Experimental",
+			"title": "Live Markdown in raw mode",
+			"section": "Features",
 			"keywords": ["raw", "markdown", "vim", "live", "preview"]
 		},
 		"general-editor-vim-mode": {
-			"title": "Vim Mode",
-			"section": "Experimental",
+			"title": "Vim mode",
+			"section": "Features",
 			"keywords": ["vim", "raw", "markdown", "keybindings", "keyboard"]
 		},
 		"general-editor-format-bar": {
 			"title": "Formatting bar",
-			"section": "Experimental",
+			"section": "Features",
 			"keywords": ["format", "toolbar", "ribbon", "rich", "editor", "hide"]
 		},
 		"general-editor-zen-mode": {
 			"title": "Zen mode",
-			"section": "Experimental",
+			"section": "Features",
 			"keywords": ["focus", "distraction", "minimal", "sidebar", "tabs", "editor"]
 		},
 		"general-editor-focus-mode": {
 			"title": "Focus mode",
-			"section": "Experimental",
+			"section": "Features",
 			"keywords": ["focus", "paragraph", "sentence", "writing"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",
-			"section": "Assistant behavior",
+			"section": "Availability",
 			"keywords": ["assistant", "tool calls"]
 		},
 		"appearance-layout-folio-mode": {
@@ -613,7 +613,7 @@
 		},
 		"appearance-layout-note-side-peek": {
 			"title": "Note peek",
-			"section": "Experimental",
+			"section": "Features",
 			"keywords": ["peek", "preview", "wiki", "all notes", "arc"]
 		},
 		"general-file-tree-folder-counts": {

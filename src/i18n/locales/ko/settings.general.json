@@ -7,7 +7,10 @@
 		"groupLabs": "랩",
 		"searchPlaceholder": "설정 검색",
 		"searchAriaLabel": "설정 검색",
-		"clearSearchAriaLabel": "설정 검색 지우기"
+		"clearSearchAriaLabel": "설정 검색 지우기",
+		"searchEmpty": "일치하는 설정이 없습니다",
+		"sendFeedback": "피드백 보내기",
+		"buyLicense": "공식 라이선스 구매"
 	},
 	"about": {
 		"developer": {
@@ -16,19 +19,72 @@
 			"bio": "Karat의 본업은 생의학자이자 연구 과학자입니다. 연구를 통해 Texas A&M University와 University of Vermont 같은 곳들과 인연을 맺었습니다. 자신의 문제를 해결하는 재미로 소프트웨어를 만들며, Glyph도 그렇게 만든 도구 중 하나입니다.",
 			"github": "GitHub",
 			"twitter": "X / Twitter"
+		},
+		"tagline": {
+			"first": "당신의 생각에는 서버가 아니라",
+			"second": "머물 곳이 필요합니다."
+		},
+		"links": {
+			"ariaLabel": "Glyph 링크",
+			"website": "웹사이트",
+			"terms": "이용약관",
+			"privacy": "개인정보"
+		},
+		"errors": {
+			"loadInfoFailed": "앱 정보를 불러올 수 없습니다.",
+			"checkFailed": "업데이트를 확인할 수 없습니다.",
+			"saveChannelFailed": "릴리스 채널을 저장할 수 없습니다."
+		},
+		"updates": {
+			"sectionTitle": "업데이트",
+			"descriptionLoading": "이 빌드에서 자동 업데이트를 사용할 수 있는지 확인하는 중입니다.",
+			"descriptionUnknown": "이 빌드에서 자동 업데이트를 사용할 수 있는지 확인하지 못했습니다.",
+			"descriptionAuto": "새 릴리스를 확인하고 Glyph를 떠나지 않고 설치합니다.",
+			"descriptionManual": "커뮤니티 빌드는 직접 업데이트합니다.",
+			"upToDate": "이미 최신 버전입니다.",
+			"ready": "v{{version}}이(가) 다운로드되어 준비되었습니다. 업데이트 버튼을 클릭해 설치하세요.",
+			"licenseStatus": {
+				"label": "라이선스 상태",
+				"description": "이 창에서 현재 라이선스 상태를 확인하지 못해 지금은 업데이트를 사용할 수 없습니다.",
+				"unknown": "알 수 없는 라이선스 상태"
+			},
+			"appUpdates": {
+				"label": "앱 업데이트",
+				"description": "즉시 확인하고 최신 버전을 백그라운드에서 다운로드합니다. 설치는 직접 선택할 때만 진행됩니다.",
+				"check": "업데이트 확인",
+				"checking": "확인 중…",
+				"install": "업데이트 설치",
+				"installVersion": "{{version}} 설치"
+			},
+			"alpha": {
+				"label": "알파 릴리스",
+				"description": "알파 빌드를 먼저 사용해 보세요. 불안정할 수 있으니 완성되지 않은 릴리스를 테스트해도 괜찮을 때만 켜세요."
+			},
+			"communityBuild": {
+				"label": "커뮤니티 빌드",
+				"description": "Glyph의 커뮤니티 및 오픈 소스 버전을 사용 중입니다. 공식 라이선스를 구매하면 Glyph 개발을 지원하고 최신 업데이트를 자동으로 받을 수 있습니다."
+			},
+			"status": {
+				"label": "상태",
+				"description": "이 창의 최근 업데이트 활동입니다."
+			},
+			"changelog": {
+				"label": "변경 사항",
+				"description": "게시된 Glyph 변경 사항을 브라우저에서 엽니다.",
+				"view": "변경 사항 보기"
+			}
 		}
 	},
 	"language": {
-		"sectionTitle": "언어",
-		"sectionDescription": "Glyph 전반에서 사용할 언어를 선택합니다.",
 		"label": "언어",
 		"description": "메뉴, 설정, 탐색에 즉시 적용됩니다.",
 		"ariaLabel": "언어",
 		"communityNotice": "번역은 커뮤니티 기여이며 불완전할 수 있습니다. 질문이나 개선 사항이 있나요? <discord>Discord 참여</discord>."
 	},
+	"region": {
+		"sectionTitle": "언어 및 지역"
+	},
 	"dateTime": {
-		"sectionTitle": "날짜 및 시간",
-		"sectionDescription": "Glyph 전체에서 완전한 날짜가 표시되는 방식을 선택합니다.",
 		"dateFormat": {
 			"label": "날짜 형식",
 			"description": "노트, 메타데이터, 데이터베이스, 기록의 완전한 날짜에 즉시 적용됩니다.",
@@ -44,7 +100,7 @@
 		}
 	},
 	"experimental": {
-		"sectionTitle": "실험적",
+		"sectionTitle": "기능",
 		"sectionDescription": "아직 다듬어지지 않은 실험적 기능입니다. 이후 Glyph 버전에서 바뀌거나 제거될 수 있습니다.",
 		"noteSidePeek": {
 			"label": "노트 피크",
@@ -53,8 +109,7 @@
 		}
 	},
 	"editor": {
-		"sectionTitle": "편집기",
-		"sectionDescription": "Glyph 내 편집 동작과 노트 구조에 대한 제어입니다.",
+		"sectionTitle": "편집",
 		"defaultEditorMode": {
 			"label": "기본 편집기 모드",
 			"description": "노트를 열 때 기본 모드: 편집용 리치, 읽기 전용 미리보기 또는 일반 Markdown용 Raw.",
@@ -87,7 +142,7 @@
 		},
 		"colorfulHeadings": {
 			"label": "컬러풀 제목",
-			"description": "노트 편집 시 H1-H6에 선택한 색상 팔레트를 사용합니다.",
+			"description": "노트 편집 시 H1–H6에 선택한 색상 팔레트를 사용합니다.",
 			"ariaLabel": "컬러풀 제목",
 			"palette": {
 				"label": "제목 팔레트",
@@ -130,7 +185,6 @@
 	},
 	"fileTree": {
 		"sectionTitle": "파일 트리",
-		"sectionDescription": "사이드바 파일 트리를 설정합니다.",
 		"folderCounts": {
 			"label": "폴더 파일 수 표시",
 			"description": "파일 트리의 각 폴더 행 끝에 재귀적 파일 합계를 표시합니다.",
@@ -168,7 +222,6 @@
 	},
 	"editorPresentation": {
 		"sectionTitle": "편집기 표시",
-		"sectionDescription": "편집 중 노트의 모습을 선택합니다.",
 		"beautifulTags": {
 			"label": "Beautiful Tags",
 			"description": "태그를 위한 실험적 Beautiful Tags 표시를 사용합니다.",
@@ -195,6 +248,75 @@
 			"browse": "찾아보기",
 			"clear": "템플릿 폴더 해제",
 			"found_other": "템플릿 {{count}}개 찾음"
+		}
+	},
+	"license": {
+		"sectionTitle": "라이선스",
+		"status": {
+			"licensed": "라이선스 있음",
+			"trialActive": "체험 중",
+			"trialExpired": "체험 만료",
+			"communityBuild": "커뮤니티 빌드"
+		},
+		"trialStatus": {
+			"label": "체험 상태",
+			"description": "이 기기에서 남은 체험 기간입니다."
+		},
+		"activated": "활성화 날짜",
+		"licenseKey": "라이선스 키",
+		"storedLocally": "로컬에 저장됨",
+		"officialBuild": {
+			"label": "공식 빌드",
+			"description": "Glyph를 직접 다운로드하고 빌드해 주셔서 감사합니다. 커뮤니티 빌드에는 자동 업데이트가 포함되지 않습니다. 최신 버전을 받으려면 소스를 다시 다운로드해 빌드하거나, 공식 라이선스 빌드로 Glyph를 지원하고 자동 업데이트를 사용하세요."
+		},
+		"buyOfficial": "공식 라이선스 구매",
+		"activate": {
+			"label": "Glyph 활성화",
+			"description": "라이선스 키를 입력하면 이 기기에서 Glyph를 영구적으로 사용할 수 있습니다.",
+			"action": "활성화",
+			"verifying": "확인 중…",
+			"buy": "구매"
+		},
+		"help": {
+			"label": "도움말",
+			"description": "라이선스, 분실한 키, 구매 관련 문의.",
+			"openSupport": "지원 열기",
+			"removeActivation": "로컬 활성화 제거"
+		},
+		"errors": {
+			"keyRequired": "라이선스 키를 입력하세요.",
+			"activateFailed": "라이선스를 활성화할 수 없습니다.",
+			"removeFailed": "로컬 활성화를 제거할 수 없습니다."
+		},
+		"messages": {
+			"activated": "라이선스가 활성화되었습니다.",
+			"removed": "로컬 활성화가 제거되었습니다."
+		}
+	},
+	"shortcuts": {
+		"searchPlaceholder": "작업, 카테고리 또는 단축키 검색",
+		"pressShortcut": "단축키를 누르세요…",
+		"recordHint": "단축키 기록",
+		"record": "{{action}} 단축키 변경",
+		"remove": "{{action}} 단축키 제거",
+		"removeTitle": "단축키 제거",
+		"reset": "{{action}} 단축키 재설정",
+		"resetTitle": "기본값으로 재설정",
+		"errors": {
+			"removeFailed": "단축키를 제거할 수 없습니다.",
+			"resetFailed": "단축키를 재설정할 수 없습니다.",
+			"invalid": "잘못된 단축키입니다.",
+			"saveFailed": "단축키를 저장할 수 없습니다.",
+			"conflict": "{{shortcut}}은(는) 이미 {{action}}에서 사용 중입니다."
+		}
+	},
+	"folderPicker": {
+		"clear": "지우기",
+		"reset": "재설정"
+	},
+	"newNotes": {
+		"defaultFolder": {
+			"description": "새 노트는 이 폴더에 만들어집니다."
 		}
 	}
 }

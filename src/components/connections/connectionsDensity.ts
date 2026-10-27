@@ -63,6 +63,14 @@ interface SpaceSigmaTier {
 	minCameraRatio: number;
 }
 
+/** Minimum gap between the graph (labels included) and every edge of the viewport. */
+export const SPACE_GRAPH_EDGE_PADDING_PX = 48;
+/**
+ * Room reserved past the community arcs for one line of ring label. Labels are horizontal, so
+ * the binding (vertical) edge only needs their height; side labels have the wide margins.
+ */
+const RING_LABEL_ALLOWANCE_PX = 16;
+
 const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 	{
 		minNodes: 5_000,
@@ -158,7 +166,7 @@ export function sigmaSettingsForVariant(
 		defaultEdgeType: "line",
 		minCameraRatio: sigmaTier.minCameraRatio,
 		maxCameraRatio: 2.1,
-		stagePadding: sigmaTier.stagePadding,
+		stagePadding: sigmaTier.stagePadding + RING_LABEL_ALLOWANCE_PX + SPACE_GRAPH_EDGE_PADDING_PX,
 		zoomingRatio: 1.6,
 		zIndex: true,
 		allowInvalidContainer: false,

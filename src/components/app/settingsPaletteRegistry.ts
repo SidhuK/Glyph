@@ -42,7 +42,6 @@ export interface PaletteSettingDefinition {
 	tab: SettingsTab;
 	scope: "application" | "space";
 	control: PaletteSettingControl;
-	defaultVisible?: boolean;
 	min?: number;
 	max?: number;
 	options?: readonly PaletteSettingOption[];
@@ -120,7 +119,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.theme),
 		control: "choice",
-		defaultVisible: true,
 		options: [
 			{ value: "system", label: "System" },
 			{ value: "light", label: "Light" },
@@ -176,7 +174,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.aiEnabled),
 		control: "toggle",
-		defaultVisible: true,
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.aiAssistantMode),
@@ -242,7 +239,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.showToc),
 		control: "toggle",
-		defaultVisible: true,
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorShowFrontmatterInEditor),
@@ -288,7 +284,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorSpellCheck),
 		control: "toggle",
-		defaultVisible: true,
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.editorDefaultEditorMode),
@@ -341,7 +336,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.folioMode),
 		control: "toggle",
-		defaultVisible: true,
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.folioSortMode),
@@ -363,7 +357,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.fileTreeSortMode),
 		control: "choice",
-		defaultVisible: true,
 		options: fileTreeSortOptions,
 	},
 	{

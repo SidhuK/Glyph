@@ -30,20 +30,30 @@ import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 function formatBinding(binding: Shortcut | null) {
-	return binding ? formatShortcutForPlatform(binding) : "Disabled";
+	return binding ? formatShortcutForPlatform(binding) : "";
 }
 
 function hasPressedModifier(shortcut: Shortcut | null) {
 	return Boolean(shortcut?.meta || shortcut?.ctrl || shortcut?.alt || shortcut?.shift);
 }
 
-function formatRecordingPrompt(draft: Shortcut | null) {
-	if (!draft || !hasPressedModifier(draft)) return "Press shortcut...";
+function formatRecordingModifiers(draft: Shortcut | null) {
+	if (!draft || !hasPressedModifier(draft)) return null;
 	const parts = formatShortcutPartsForPlatform({
 		...draft,
 		key: "",
 	}).filter(Boolean);
-	return `${parts.join("")}...`;
+	return `${parts.join("")}…`;
+}
+
+function ShortcutKeys({ parts }: { parts: string[] }) {
+	return (
+		<span className="shortcutKeys">
+			{parts.map((part, index) => (
+				<kbd key={`${part}-${index}`}>{part}</kbd>
+			))}
+		</span>
+	);
 }
 
 interface ShortcutCaptureEvent {
@@ -59,6 +69,7 @@ interface ShortcutCaptureEvent {
 
 export function ShortcutsSettingsPane() {
 	const { t } = useTranslation("commands");
+	const { t: tShortcuts } = useTranslation("settings.general", { keyPrefix: "shortcuts" });
 	const { actionsWithBindings, bindings } = useShortcutBindings();
 	const [filter, setFilter] = useState("");
 	const [recordingActionId, setRecordingActionId] = useState<string | null>(null);
@@ -99,7 +110,7 @@ export function ShortcutsSettingsPane() {
 		try {
 			await setShortcutBinding(actionId, null);
 		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : "Failed to disable shortcut.");
+			setError(cause instanceof Error ? cause.message : tShortcuts("errors.removeFailed"));
 		} finally {
 			setBusyActionId(null);
 		}
@@ -111,7 +122,7 @@ export function ShortcutsSettingsPane() {
 		try {
 			await resetShortcutBinding(actionId);
 		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : "Failed to reset shortcut.");
+			setError(cause instanceof Error ? cause.message : tShortcuts("errors.resetFailed"));
 		} finally {
 			setBusyActionId(null);
 			setRecordingActionId((current) => (current === actionId ? null : current));
@@ -135,16 +146,17 @@ export function ShortcutsSettingsPane() {
 			}
 			const validation = validateConfigurableShortcut(nextBinding);
 			if (!validation.valid) {
-				setError(validation.reason ?? "Invalid shortcut.");
+				setError(validation.reason ?? tShortcuts("errors.invalid"));
 				return;
 			}
 			const conflictId = findShortcutConflict(nextBinding, bindings as ShortcutBindings, actionId);
 			if (conflictId) {
 				const conflict = getShortcutActionDefinition(conflictId);
 				setError(
-					`${formatShortcutForPlatform(nextBinding)} is already used by ${
-						conflict ? t(`commands.${conflictId}.label`) : conflictId
-					}.`,
+					tShortcuts("errors.conflict", {
+						shortcut: formatShortcutForPlatform(nextBinding),
+						action: conflict ? t(`commands.${conflictId}.label`) : conflictId,
+					}),
 				);
 				return;
 			}
@@ -154,12 +166,12 @@ export function ShortcutsSettingsPane() {
 				setRecordingActionId(null);
 				setRecordingDraft(null);
 			} catch (cause) {
-				setError(cause instanceof Error ? cause.message : "Failed to save shortcut.");
+				setError(cause instanceof Error ? cause.message : tShortcuts("errors.saveFailed"));
 			} finally {
 				setBusyActionId(null);
 			}
 		},
-		[bindings, t],
+		[bindings, t, tShortcuts],
 	);
 
 	const handleRecordKeyUp = useCallback(
@@ -208,7 +220,8 @@ export function ShortcutsSettingsPane() {
 						type="search"
 						value={filter}
 						onChange={(event) => setFilter(event.target.value)}
-						placeholder="Search actions, categories, or shortcuts"
+						placeholder={tShortcuts("searchPlaceholder")}
+						aria-label={tShortcuts("searchPlaceholder")}
 					/>
 					{error ? <div className="shortcutError">{error}</div> : null}
 				</div>
@@ -217,19 +230,54 @@ export function ShortcutsSettingsPane() {
 						{categoryActions.map((action) => {
 							const isRecording = recordingActionId === action.id;
 							const isBusy = busyActionId === action.id;
+							const label = t(`commands.${action.id}.label`);
+							const isDefault =
+								formatBinding(action.binding) === formatBinding(action.defaultBinding);
 							return (
 								<SettingsRow
 									key={action.id}
-									label={t(`commands.${action.id}.label`)}
+									label={label}
 									description={t(`commands.${action.id}.description`)}
-									stacked
+									interactive={false}
+									className="shortcutField"
 								>
 									<div className="shortcutBindingRow">
+										<div className="shortcutBindingActions">
+											{action.binding ? (
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon-sm"
+													className="shortcutActionButton"
+													disabled={isBusy}
+													onClick={() => void handleDisable(action.id)}
+													aria-label={tShortcuts("remove", { action: label })}
+													title={tShortcuts("removeTitle")}
+												>
+													<Trash2 size="var(--icon-md)" />
+												</Button>
+											) : null}
+											{isDefault ? null : (
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon-sm"
+													className="shortcutActionButton"
+													disabled={isBusy}
+													onClick={() => void handleReset(action.id)}
+													aria-label={tShortcuts("reset", { action: label })}
+													title={tShortcuts("resetTitle")}
+												>
+													<HugeiconsIcon icon={ReloadIcon} size="var(--icon-md)" />
+												</Button>
+											)}
+										</div>
 										<button
 											type="button"
 											className={
 												isRecording ? "shortcutRecordButton is-recording" : "shortcutRecordButton"
 											}
+											aria-label={tShortcuts("record", { action: label })}
 											onClick={() => {
 												setError("");
 												setRecordingDraft(null);
@@ -239,36 +287,16 @@ export function ShortcutsSettingsPane() {
 											}}
 											disabled={isBusy}
 										>
-											{isRecording
-												? formatRecordingPrompt(recordingDraft)
-												: formatBinding(action.binding)}
+											{isRecording ? (
+												(formatRecordingModifiers(recordingDraft) ?? tShortcuts("pressShortcut"))
+											) : action.binding ? (
+												<ShortcutKeys parts={formatShortcutPartsForPlatform(action.binding)} />
+											) : (
+												<span className="shortcutUnassigned" aria-hidden="true">
+													{tShortcuts("recordHint")}
+												</span>
+											)}
 										</button>
-										<div className="shortcutBindingActions">
-											<Button
-												type="button"
-												variant="outline"
-												size="sm"
-												className="shortcutActionButton"
-												disabled={isBusy}
-												onClick={() => void handleDisable(action.id)}
-												aria-label="Disable shortcut"
-												title="Disable shortcut"
-											>
-												<Trash2 size="var(--icon-md)" />
-											</Button>
-											<Button
-												type="button"
-												variant="outline"
-												size="sm"
-												className="shortcutActionButton"
-												disabled={isBusy}
-												onClick={() => void handleReset(action.id)}
-												aria-label="Reset shortcut"
-												title="Reset shortcut"
-											>
-												<HugeiconsIcon icon={ReloadIcon} size="var(--icon-md)" />
-											</Button>
-										</div>
 									</div>
 								</SettingsRow>
 							);
