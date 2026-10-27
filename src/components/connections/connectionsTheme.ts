@@ -1,73 +1,97 @@
 import type { ConnectionsGraphVariant } from "./connectionsGraph";
-import {
-	CONNECTIONS_COMMUNITY_HUE_VARIABLES,
-	type ConnectionsCommunityTone,
-} from "./connectionsCommunities";
 
-/** Community edges keep only this much of their hue; the rest is the grey edge ink. */
-const COMMUNITY_EDGE_HUE_WEIGHT = 0.35;
-/** The hovered or selected node's label steps up to this weight. */
-export const FOCUS_LABEL_WEIGHT = "500";
-/** Space-graph nodes grow by this factor while focused. */
-export const SPACE_FOCUS_NODE_SCALE = 1.15;
-
+/** Opaque inks: sigma's WebGL programs ignore alpha, so translucent tokens are flattened onto the page. */
 export interface ConnectionsPalette {
-	accent: string;
-	/** Graph surface; translucent looks are mixed into it because sigma's WebGL blend ignores alpha. */
 	background: string;
 	text: string;
-	/** Resting label ink; labels switch to `text` only while hovered or selected. */
 	textSecondary: string;
-	note: string;
-	tag: string;
-	/** Indexed by `ConnectionsCommunityHue`. */
-	communities: readonly string[];
-	/** Community hues pulled toward the grey edge ink, indexed like `communities`. */
-	communityEdges: readonly string[];
-	communityNeutral: string;
-	edgeDefault: string;
-	edgeInternal: string;
-	faded: string;
-	labelBackground: string;
-	labelBorder: string;
-	hoverHalo: string;
-	hoverHaloSoft: string;
+	textTertiary: string;
+	accent: string;
 }
 
 export interface ConnectionsFocusState {
 	hoveredNode: string | null;
-	neighborIds: Set<string> | null;
+	/** Hovered node plus its neighbours. */
+	hoverIds: Set<string> | null;
 	selectedNodeId: string | null;
 	searchMatchIds: Set<string> | null;
-	/** Community tone of the hovered or selected space-graph node; null for local graphs. */
-	focusTone: ConnectionsCommunityTone | null;
+	pathIds: Set<string> | null;
+	/** Unordered `connectionsPairKey` of each consecutive path step. */
+	pathPairs: Set<string> | null;
+	hiddenCommunities: ReadonlySet<number>;
+	showUnlinked: boolean;
+	/** True once the camera is zoomed past the dot-label threshold. */
+	dotLabels: boolean;
+}
+
+/**
+ * Highest focus wins: a path of two or more notes, then the hovered or selected neighbourhood
+ * ("lens"), then search matches.
+ */
+export type ConnectionsFocusMode = "path" | "lens" | "search" | "rest";
+
+export function connectionsFocusMode(focus: ConnectionsFocusState): ConnectionsFocusMode {
+	if ((focus.pathIds?.size ?? 0) >= 2) return "path";
+	if (focus.hoveredNode !== null || focus.selectedNodeId !== null) return "lens";
+	return focus.searchMatchIds ? "search" : "rest";
 }
 
 export interface ConnectionsDisplayState {
 	nodeSizeScale: number;
 	linkOpacity: number;
 	linkThicknessScale: number;
-	/** 0 draws straight chords, 1 routes edges fully through community bundle points. */
-	edgeBundling: number;
+	/** 0 draws straight links, 1 the strongest curve. */
+	curvature: number;
 }
 
-const sigmaColorContext = document.createElement("canvas").getContext("2d");
+type Rgba = readonly [red: number, green: number, blue: number, alpha: number];
 
-function sigmaCompatibleColor(value: string, fallback: string) {
-	const context = sigmaColorContext;
-	if (!context) return fallback;
+const colorContext = document.createElement("canvas").getContext("2d");
 
-	context.canvas.width = 1;
-	context.canvas.height = 1;
-	context.clearRect(0, 0, 1, 1);
-	context.fillStyle = fallback;
-	context.fillStyle = value;
-	context.fillRect(0, 0, 1, 1);
+function parseColor(value: string): Rgba | null {
+	const match = value.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)$/i);
+	if (!match) return null;
+	return [Number(match[1]), Number(match[2]), Number(match[3]), Number(match[4] ?? 1)];
+}
 
-	const [red, green, blue, alphaByte] = context.getImageData(0, 0, 1, 1).data;
-	if (alphaByte === 255) return `rgb(${red}, ${green}, ${blue})`;
-	const alpha = Math.round((alphaByte / 255) * 1000) / 1000;
-	return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+function canvasColor(value: string, fallback: string) {
+	if (!colorContext) return fallback;
+	colorContext.canvas.width = 1;
+	colorContext.canvas.height = 1;
+	colorContext.clearRect(0, 0, 1, 1);
+	colorContext.fillStyle = fallback;
+	colorContext.fillStyle = value;
+	colorContext.fillRect(0, 0, 1, 1);
+	const [red, green, blue, alpha] = colorContext.getImageData(0, 0, 1, 1).data;
+	return `rgba(${red}, ${green}, ${blue}, ${Math.round((alpha / 255) * 1000) / 1000})`;
+}
+
+/** Blends `color` over `base`; weight 1 keeps `color`, 0 returns `base`. */
+export function mixColors(color: string, base: string, weight: number) {
+	const from = parseColor(color);
+	const to = parseColor(base);
+	if (!from || !to) return color;
+	const amount = Math.min(1, Math.max(0, weight)) * from[3];
+	const channel = (index: number) => Math.round(from[index] * amount + to[index] * (1 - amount));
+	return `rgb(${channel(0)}, ${channel(1)}, ${channel(2)})`;
+}
+
+/** Blends toward the palette background, cached per palette; reducers run on every refresh. */
+export function createConnectionsToner() {
+	let palette: ConnectionsPalette | null = null;
+	const cache = new Map<string, string>();
+	return (current: ConnectionsPalette, color: string, weight: number) => {
+		if (current !== palette) {
+			palette = current;
+			cache.clear();
+		}
+		const key = `${color}|${weight}`;
+		const cached = cache.get(key);
+		if (cached) return cached;
+		const mixed = mixColors(color, current.background, weight);
+		cache.set(key, mixed);
+		return mixed;
+	};
 }
 
 function cssColor(element: HTMLElement, name: string, fallback: string) {
@@ -76,7 +100,25 @@ function cssColor(element: HTMLElement, name: string, fallback: string) {
 	element.appendChild(probe);
 	const color = getComputedStyle(probe).color.trim();
 	probe.remove();
-	return sigmaCompatibleColor(color || fallback, fallback);
+	return canvasColor(color || fallback, fallback);
+}
+
+export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPalette {
+	const background = mixColors(
+		cssColor(container, "--bg-primary", "#ffffff"),
+		"rgb(255, 255, 255)",
+		1,
+	);
+	const flat = (name: string, fallback: string) =>
+		mixColors(cssColor(container, name, fallback), background, 1);
+	const text = flat("--text-primary", "#1f2328");
+	return {
+		background,
+		text,
+		textSecondary: flat("--text-secondary", "#59636e"),
+		textTertiary: flat("--text-tertiary", "#8c959f"),
+		accent: flat("--interactive-accent", "#1f2328"),
+	};
 }
 
 /** Resolves a UI type-scale token to pixels so labels follow the user's UI font size. */
@@ -91,74 +133,4 @@ export function resolveConnectionsLabelSize(
 	const size = Number.parseFloat(getComputedStyle(probe).fontSize);
 	probe.remove();
 	return Number.isFinite(size) && size > 0 ? size : fallback;
-}
-
-function parseRgb(color: string): [number, number, number] | null {
-	const rgb = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i);
-	if (!rgb) return null;
-	return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
-}
-
-function mixRgb(color: string, base: string, weight: number) {
-	const from = parseRgb(color);
-	const to = parseRgb(base);
-	if (!from || !to) return color;
-	const [red, green, blue] = from.map((channel, index) =>
-		Math.round(channel * weight + (to[index] ?? channel) * (1 - weight)),
-	);
-	return `rgb(${red}, ${green}, ${blue})`;
-}
-
-export function withAlpha(color: string, alpha: number) {
-	const clamped = Math.min(1, Math.max(0, alpha));
-	const rgb = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i);
-	if (!rgb) return color;
-	return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${Math.round(clamped * 1000) / 1000})`;
-}
-
-export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPalette {
-	const accent = cssColor(container, "--interactive-accent", "#888888");
-	const background = cssColor(container, "--bg-primary", "#ffffff");
-	const text = cssColor(container, "--text-primary", "#1f2328");
-	const textSecondary = cssColor(container, "--text-secondary", "#59636e");
-	const note = cssColor(container, "--local-connections-note-bg", "#4269d0");
-	const tag = cssColor(container, "--local-connections-tag-node", "#a463f2");
-	const communities = CONNECTIONS_COMMUNITY_HUE_VARIABLES.map((variable) =>
-		cssColor(container, variable, note),
-	);
-	const communityNeutral = cssColor(container, "--connections-community-neutral", "#9498a0");
-	const edgeDefault = cssColor(container, "--local-connections-edge", "#6e737b");
-	const edgeMuted = cssColor(container, "--local-connections-edge-muted", "#9aa0a8");
-	const faded = cssColor(container, "--local-connections-node-faded", "#d4d6da");
-	const labelBackground = cssColor(
-		container,
-		"--local-connections-label-bg",
-		"rgba(255, 255, 255, 0.86)",
-	);
-	const labelBorder = cssColor(
-		container,
-		"--local-connections-label-border",
-		"rgba(148, 163, 184, 0.38)",
-	);
-
-	return {
-		accent,
-		background,
-		text,
-		textSecondary,
-		note,
-		tag,
-		communities,
-		communityEdges: communities.map((color) =>
-			mixRgb(color, edgeDefault, COMMUNITY_EDGE_HUE_WEIGHT),
-		),
-		communityNeutral,
-		edgeDefault,
-		edgeInternal: edgeMuted,
-		faded,
-		labelBackground,
-		labelBorder,
-		hoverHalo: withAlpha(accent, 0.28),
-		hoverHaloSoft: withAlpha(accent, 0.12),
-	};
 }

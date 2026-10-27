@@ -1,93 +1,57 @@
-import { type RefObject, useEffect, useRef } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import Sigma from "sigma";
-import { connectionsLabelVisibility } from "../../lib/connectionsGraphOptions";
+import { drawConnectionsNodeHover, drawConnectionsNodeLabel } from "./connectionsCanvas";
+import { drawConnectionsCaptions } from "./connectionsCaptions";
 import {
-	drawBundledConnectionsEdges,
-	drawConnectionsNodeHover,
-	drawConnectionsNodeLabel,
-} from "./connectionsCanvas";
-import { sigmaSettingsForVariant } from "./connectionsDensity";
+	connectionsDotLabelRatio,
+	connectionsLabelGrid,
+	sigmaSettingsForVariant,
+} from "./connectionsDensity";
 import type {
-	ConnectionsEdgeAttributes,
 	ConnectionsGraph,
 	ConnectionsGraphVariant,
 	ConnectionsSigma,
 } from "./connectionsGraph";
 import {
-	type ConnectionsRingFrame,
-	connectionsRingFrame,
-	drawConnectionsCommunityArcs,
-} from "./connectionsRing";
-import { buildEdgeReducer, buildNodeReducer, isLabeledHub } from "./connectionsReducers";
+	type ConnectionsMountState,
+	type ConnectionsOverlayApi,
+	type ConnectionsOverlaySession,
+	connectionsZoomPercent,
+	createConnectionsOverlay,
+	initialConnectionsFocus,
+	seedConnectionsFocus,
+} from "./connectionsOverlay";
+import {
+	type ConnectionsPointerCallbacks,
+	bindConnectionsPointer,
+} from "./connectionsInteractions";
+import { buildEdgeReducer, buildNodeReducer } from "./connectionsReducers";
 import {
 	type ConnectionsDisplayState,
-	type ConnectionsFocusState,
-	type ConnectionsPalette,
-	SPACE_FOCUS_NODE_SCALE,
-	FOCUS_LABEL_WEIGHT,
 	resolveConnectionsLabelSize,
 	resolveConnectionsPalette,
 } from "./connectionsTheme";
-import { drawConnectionsUnlinkedBand } from "./connectionsUnlinkedBand";
 
-interface UseSigmaConnectionsOptions {
+export type { ConnectionsOverlayApi } from "./connectionsOverlay";
+
+interface UseSigmaConnectionsOptions extends ConnectionsPointerCallbacks {
 	graph: ConnectionsGraph | null;
 	containerRef: RefObject<HTMLDivElement | null>;
 	variant: ConnectionsGraphVariant;
 	enabled: boolean;
 	display: ConnectionsDisplayState;
 	labelZoomThreshold: number;
+	/** View state applied whenever a renderer mounts; later changes go through the overlay API. */
 	searchMatchIds?: ReadonlySet<string> | null;
-	onNoteOpen?: (nodeId: string) => void;
-	onTagActivate?: (tagId: string, label: string) => void;
+	selectedNodeId?: string | null;
+	path?: readonly string[] | null;
+	hiddenCommunities?: ReadonlySet<number>;
+	showUnlinked?: boolean;
 }
 
-export interface ConnectionsOverlayApi {
-	setSearchMatches: (matchIds: ReadonlySet<string> | null) => void;
-	setDisplay: (display: ConnectionsDisplayState) => void;
-	setLabelZoomThreshold: (value: number) => void;
-}
-
-const labelMeasureContext = document.createElement("canvas").getContext("2d");
-
-function neighborIdsForNode(graph: ConnectionsGraph, nodeId: string | null) {
-	if (!nodeId) return null;
-	const neighbors = new Set(graph.neighbors(nodeId));
-	neighbors.add(nodeId);
-	return neighbors;
-}
-
-function focusToneForNode(graph: ConnectionsGraph, nodeId: string | null) {
-	if (!nodeId || !graph.hasNode(nodeId)) return null;
-	const community = graph.getNodeAttribute(nodeId, "community");
-	return community.kind === "member" ? community.tone : null;
-}
-
-function isEdgeConnectedToFocus(focusId: string | null, source: string, target: string) {
-	if (!focusId) return false;
-	return source === focusId || target === focusId;
-}
-
-function maxBaseNodeSize(graph: ConnectionsGraph) {
-	let maximum = 0;
-	graph.forEachNode((_node, data) => {
-		maximum = Math.max(maximum, data.size);
-	});
-	return maximum;
-}
-
-function fitGraphToViewport(renderer: ConnectionsSigma) {
-	const { width, height } = renderer.getDimensions();
-	if (width <= 0 || height <= 0) return;
-
-	renderer.getCamera().setState({
-		x: 0.5,
-		y: 0.5,
-		ratio: 1,
-		angle: 0,
-	});
-	renderer.refresh();
-}
+/** Cluster captions sit this many pixels below the UI label size. */
+const CAPTION_SIZE_OFFSET_PX = 1.5;
+const NO_HIDDEN_COMMUNITIES: ReadonlySet<number> = new Set();
 
 export function useSigmaConnections({
 	graph,
@@ -97,313 +61,145 @@ export function useSigmaConnections({
 	display,
 	labelZoomThreshold,
 	searchMatchIds = null,
-	onNoteOpen,
-	onTagActivate,
+	selectedNodeId = null,
+	path = null,
+	hiddenCommunities = NO_HIDDEN_COMMUNITIES,
+	showUnlinked = false,
+	...callbacks
 }: UseSigmaConnectionsOptions): RefObject<ConnectionsOverlayApi> {
-	const focusRef = useRef<ConnectionsFocusState>({
-		hoveredNode: null,
-		neighborIds: null,
-		selectedNodeId: null,
-		searchMatchIds: null,
-		focusTone: null,
-	});
+	const focusRef = useRef(initialConnectionsFocus());
 	const displayRef = useRef(display);
 	displayRef.current = display;
 	const labelZoomRef = useRef(labelZoomThreshold);
 	labelZoomRef.current = labelZoomThreshold;
-	const searchMatchIdsRef = useRef(searchMatchIds);
-	searchMatchIdsRef.current = searchMatchIds;
-	const onNoteOpenRef = useRef(onNoteOpen);
-	onNoteOpenRef.current = onNoteOpen;
-	const onTagActivateRef = useRef(onTagActivate);
-	onTagActivateRef.current = onTagActivate;
-	const paletteRef = useRef<ConnectionsPalette | null>(null);
-	const refreshScheduledRef = useRef(false);
-	const overlayRef = useRef<ConnectionsOverlayApi>({
-		setSearchMatches: () => {},
-		setDisplay: () => {},
-		setLabelZoomThreshold: () => {},
-	});
+	const mountState = { searchMatchIds, selectedNodeId, path, hiddenCommunities, showUnlinked };
+	const mountStateRef = useRef<ConnectionsMountState>(mountState);
+	mountStateRef.current = mountState;
+	const callbacksRef = useRef(callbacks);
+	callbacksRef.current = callbacks;
+	const sessionRef = useRef<ConnectionsOverlaySession | null>(null);
+	const [overlayRef] = useState(() => ({
+		current: createConnectionsOverlay(focusRef.current, displayRef, labelZoomRef, sessionRef),
+	}));
 
 	useEffect(() => {
 		if (!enabled || !graph || graph.order === 0) return;
 		const container = containerRef.current;
 		if (!container) return;
 
+		const focus = focusRef.current;
 		let disposed = false;
 		let renderer: ConnectionsSigma | null = null;
 		let resizeObserver: ResizeObserver | null = null;
 		let themeObserver: MutationObserver | null = null;
-		let fitFrame = 0;
-
-		const cleanup = () => {
-			disposed = true;
-			if (fitFrame) window.cancelAnimationFrame(fitFrame);
-			themeObserver?.disconnect();
-			resizeObserver?.disconnect();
-			renderer?.kill();
-			focusRef.current.hoveredNode = null;
-			focusRef.current.neighborIds = null;
-			focusRef.current.selectedNodeId = null;
-			focusRef.current.focusTone = null;
-			overlayRef.current = {
-				setSearchMatches: () => {},
-				setDisplay: () => {},
-				setLabelZoomThreshold: () => {},
-			};
-		};
+		let setupFrame = 0;
+		let refreshFrame = 0;
 
 		const setup = () => {
 			if (disposed) return;
 			if (container.clientWidth <= 0 || container.clientHeight <= 0) {
-				fitFrame = window.requestAnimationFrame(setup);
+				setupFrame = window.requestAnimationFrame(setup);
 				return;
 			}
 
-			const palette = resolveConnectionsPalette(container);
-			paletteRef.current = palette;
-
-			const focusState = focusRef.current;
-			let draggedNode: string | null = null;
-			let didDrag = false;
-
-			const scheduleRefresh = (activeRenderer: ConnectionsSigma) => {
-				if (refreshScheduledRef.current) return;
-				refreshScheduledRef.current = true;
-				window.requestAnimationFrame(() => {
-					refreshScheduledRef.current = false;
-					if (disposed) return;
-					activeRenderer.refresh({ skipIndexation: true });
-				});
-			};
-
-			const setFocus = (activeRenderer: ConnectionsSigma, next: Partial<ConnectionsFocusState>) => {
-				if (next.hoveredNode !== undefined) {
-					focusState.hoveredNode = next.hoveredNode;
-				}
-				if (next.selectedNodeId !== undefined) {
-					focusState.selectedNodeId = next.selectedNodeId;
-				}
-				if (next.searchMatchIds !== undefined) {
-					focusState.searchMatchIds = next.searchMatchIds;
-				}
-				const focusId = focusState.selectedNodeId ?? focusState.hoveredNode;
-				focusState.neighborIds = neighborIdsForNode(graph, focusId);
-				focusState.focusTone = focusToneForNode(graph, focusId);
-				scheduleRefresh(activeRenderer);
-			};
-
-			const sigmaSettings = sigmaSettingsForVariant(variant, graph.size, graph.order);
-			const labelFont = getComputedStyle(container).fontFamily;
-			const nodeReducer = buildNodeReducer(
-				() => paletteRef.current ?? palette,
-				variant,
-				() => focusState,
-				() => displayRef.current,
-			);
-			const edgeReducer = buildEdgeReducer(
-				() => paletteRef.current ?? palette,
-				() => focusState,
-				() => displayRef.current,
-				(source, target) =>
-					isEdgeConnectedToFocus(
-						focusState.selectedNodeId ?? focusState.hoveredNode,
-						source,
-						target,
-					),
-			);
-			const resolveEdgeStyle = (
-				edge: string,
-				data: ConnectionsEdgeAttributes,
-				source: string,
-				target: string,
-			) => edgeReducer(edge, data, source, target);
-
-			const baseNodeSize = maxBaseNodeSize(graph);
-			const hubIds = graph.filterNodes((_node, attributes) => isLabeledHub(attributes));
-			// Rebuilt before every space-graph render so labels claim space within one frame.
-			let ringFrame: ConnectionsRingFrame | null = null;
-			const measureRingFrame = (target: ConnectionsSigma) => {
-				if (!labelMeasureContext) return null;
-				const fontSize = target.getSetting("labelSize");
-				const labelFont = target.getSetting("labelFont");
-				return connectionsRingFrame(target, graph, labelMeasureContext, {
-					maxNodeSize: baseNodeSize * displayRef.current.nodeSizeScale * SPACE_FOCUS_NODE_SCALE,
-					fontSize,
-					font: `${target.getSetting("labelWeight")} ${fontSize}px ${labelFont}`,
-					focusFont: `${FOCUS_LABEL_WEIGHT} ${fontSize}px ${labelFont}`,
-					focusId: focusState.selectedNodeId ?? focusState.hoveredNode,
-					hubIds,
-				});
-			};
+			let palette = resolveConnectionsPalette(container);
+			let font = getComputedStyle(container).fontFamily;
+			let dotRatio = connectionsDotLabelRatio(variant, labelZoomRef.current);
+			seedConnectionsFocus(focus, mountStateRef.current);
+			focus.dotLabels = dotRatio >= 1;
+			const getPalette = () => palette;
+			const getFocus = () => focus;
+			const getDisplay = () => displayRef.current;
 
 			const activeRenderer: ConnectionsSigma = new Sigma(graph, container, {
-				...sigmaSettings,
-				...(variant === "space" ? connectionsLabelVisibility(labelZoomRef.current) : {}),
+				...sigmaSettingsForVariant(variant, graph.size, graph.order, labelZoomRef.current),
 				labelColor: { color: palette.textSecondary },
-				labelFont,
+				labelFont: font,
 				labelSize: resolveConnectionsLabelSize(container, variant),
 				labelWeight: "400",
-				defaultDrawNodeLabel: (context, data, labelSettings) =>
-					drawConnectionsNodeLabel(
-						context,
-						data,
-						labelSettings,
-						paletteRef.current ?? palette,
-						variant,
-						ringFrame,
-					),
-				defaultDrawNodeHover: (context, data) =>
-					drawConnectionsNodeHover(context, data, paletteRef.current ?? palette, variant),
-				nodeReducer: (node, data) =>
-					nodeReducer(node, {
-						...data,
-						x: graph.getNodeAttribute(node, "x"),
-						y: graph.getNodeAttribute(node, "y"),
-					}),
-				edgeReducer: (edge, data) => {
-					if (variant === "space") return { hidden: true };
-					const source = graph.source(edge);
-					const target = graph.target(edge);
-					return resolveEdgeStyle(edge, data, source, target);
-				},
+				defaultDrawNodeLabel: (context, data, settings) =>
+					drawConnectionsNodeLabel(context, data, settings, palette),
+				defaultDrawNodeHover: (context, data, settings) =>
+					drawConnectionsNodeHover(context, data, settings, palette),
+				nodeReducer: buildNodeReducer(graph, getPalette, getFocus, getDisplay),
+				edgeReducer: buildEdgeReducer(graph, getPalette, getFocus, getDisplay),
 			});
 			renderer = activeRenderer;
+			const camera = activeRenderer.getCamera();
+
+			// Hover and overlay changes can land several times a frame; repaint once per frame.
+			const scheduleRefresh = () => {
+				if (refreshFrame) return;
+				refreshFrame = window.requestAnimationFrame(() => {
+					refreshFrame = 0;
+					if (!disposed) activeRenderer.refresh({ skipIndexation: true });
+				});
+			};
+
+			sessionRef.current = {
+				camera,
+				refresh: scheduleRefresh,
+				applyLabelZoomThreshold: (value) => {
+					dotRatio = connectionsDotLabelRatio(variant, value);
+					focus.dotLabels = camera.ratio <= dotRatio;
+					if (variant === "space") activeRenderer.setSettings(connectionsLabelGrid(value));
+					scheduleRefresh();
+				},
+			};
 
 			if (variant === "space") {
-				activeRenderer.on("beforeRender", () => {
-					ringFrame = measureRingFrame(activeRenderer);
+				const labelsContext = activeRenderer.getCanvases().labels.getContext("2d");
+				activeRenderer.on("afterRender", () => {
+					if (!labelsContext) return;
+					const size = activeRenderer.getSetting("labelSize") - CAPTION_SIZE_OFFSET_PX;
+					drawConnectionsCaptions(
+						labelsContext,
+						activeRenderer,
+						graph,
+						{ palette, font, size },
+						focus,
+					);
 				});
-				const bundledEdgesCanvas = activeRenderer.createCanvas("bundledEdges", {
-					afterLayer: "edges",
-					style: {
-						left: "0",
-						pointerEvents: "none",
-						top: "0",
-					},
-				});
-				const bundledEdgesContext = bundledEdgesCanvas.getContext("2d");
-				if (bundledEdgesContext) {
-					activeRenderer.on("afterRender", () => {
-						drawBundledConnectionsEdges({
-							canvas: bundledEdgesCanvas,
-							context: bundledEdgesContext,
-							renderer: activeRenderer,
-							graph,
-							bundling: displayRef.current.edgeBundling,
-							resolveStyle: resolveEdgeStyle,
-						});
-						if (!ringFrame) return;
-						drawConnectionsCommunityArcs(
-							bundledEdgesContext,
-							activeRenderer,
-							graph,
-							paletteRef.current ?? palette,
-							ringFrame.ring,
-						);
-						drawConnectionsUnlinkedBand(
-							bundledEdgesContext,
-							activeRenderer,
-							graph,
-							paletteRef.current ?? palette,
-							ringFrame.ring,
-						);
-					});
-				}
 			}
 
-			const fitToView = () => {
-				if (disposed) return;
-				fitGraphToViewport(activeRenderer);
-			};
-
-			fitToView();
-			fitFrame = window.requestAnimationFrame(fitToView);
-
-			overlayRef.current = {
-				setSearchMatches: (matchIds) => {
-					setFocus(activeRenderer, {
-						searchMatchIds: matchIds ? new Set(matchIds) : null,
-					});
-				},
-				setDisplay: (nextDisplay) => {
-					displayRef.current = nextDisplay;
-					scheduleRefresh(activeRenderer);
-				},
-				setLabelZoomThreshold: (value) => {
-					activeRenderer.setSettings(connectionsLabelVisibility(value));
-					scheduleRefresh(activeRenderer);
-				},
-			};
-
-			overlayRef.current.setSearchMatches(searchMatchIdsRef.current);
-
-			activeRenderer.on("enterNode", ({ node }) => {
-				setFocus(activeRenderer, { hoveredNode: node });
-			});
-			activeRenderer.on("leaveNode", () => {
-				if (focusState.selectedNodeId) return;
-				setFocus(activeRenderer, { hoveredNode: null });
-			});
-			activeRenderer.on("clickNode", ({ node }) => {
-				if (didDrag) return;
-				const shouldOpen = focusState.selectedNodeId === node;
-				setFocus(activeRenderer, {
-					selectedNodeId: node,
-					hoveredNode: node,
-				});
-				if (!shouldOpen) return;
-				const kind = graph.getNodeAttribute(node, "kind");
-				if (kind === "tag") {
-					onTagActivateRef.current?.(node, graph.getNodeAttribute(node, "label"));
-					return;
+			let zoomPercent = connectionsZoomPercent(camera.ratio);
+			callbacksRef.current.onZoomChange?.(zoomPercent);
+			camera.on("updated", (state) => {
+				const nextPercent = connectionsZoomPercent(state.ratio);
+				if (nextPercent !== zoomPercent) {
+					zoomPercent = nextPercent;
+					callbacksRef.current.onZoomChange?.(nextPercent);
 				}
-				onNoteOpenRef.current?.(node);
-			});
-			activeRenderer.on("clickStage", () => {
-				setFocus(activeRenderer, { hoveredNode: null, selectedNodeId: null });
-			});
-
-			activeRenderer.on("downNode", ({ node }) => {
-				if (variant === "space") return;
-				if (graph.getNodeAttribute(node, "isCenter")) return;
-				draggedNode = node;
-				didDrag = false;
-				activeRenderer.getCamera().disable();
+				const dotLabels = state.ratio <= dotRatio;
+				if (dotLabels === focus.dotLabels) return;
+				focus.dotLabels = dotLabels;
+				scheduleRefresh();
 			});
 
-			const mouseCaptor = activeRenderer.getMouseCaptor();
-			const handleMouseMove = (coords: { x: number; y: number }) => {
-				if (!draggedNode) return;
-				didDrag = true;
-				const position = activeRenderer.viewportToGraph(coords);
-				graph.setNodeAttribute(draggedNode, "x", position.x);
-				graph.setNodeAttribute(draggedNode, "y", position.y);
-			};
-			const handleMouseUp = () => {
-				if (!draggedNode) return;
-				draggedNode = null;
-				activeRenderer.getCamera().enable();
-			};
-
-			mouseCaptor.on("mousemovebody", handleMouseMove);
-			mouseCaptor.on("mouseup", handleMouseUp);
+			bindConnectionsPointer({
+				renderer: activeRenderer,
+				graph,
+				variant,
+				focus,
+				refresh: scheduleRefresh,
+				getCallbacks: () => callbacksRef.current,
+			});
 
 			resizeObserver = new ResizeObserver(() => {
 				activeRenderer.resize();
-				fitToView();
+				scheduleRefresh();
 			});
 			resizeObserver.observe(container);
 
 			themeObserver = new MutationObserver(() => {
-				const nextPalette = resolveConnectionsPalette(container);
-				paletteRef.current = nextPalette;
+				palette = resolveConnectionsPalette(container);
+				font = getComputedStyle(container).fontFamily;
 				activeRenderer.setSettings({
-					labelColor: { color: nextPalette.textSecondary },
-					labelFont: getComputedStyle(container).fontFamily,
+					labelColor: { color: palette.textSecondary },
+					labelFont: font,
 					labelSize: resolveConnectionsLabelSize(container, variant),
 				});
-				scheduleRefresh(activeRenderer);
+				scheduleRefresh();
 			});
 			themeObserver.observe(document.documentElement, {
 				attributeFilter: ["class", "data-light-theme", "data-dark-theme", "style"],
@@ -413,7 +209,17 @@ export function useSigmaConnections({
 
 		setup();
 
-		return cleanup;
+		return () => {
+			disposed = true;
+			if (setupFrame) window.cancelAnimationFrame(setupFrame);
+			if (refreshFrame) window.cancelAnimationFrame(refreshFrame);
+			themeObserver?.disconnect();
+			resizeObserver?.disconnect();
+			renderer?.kill();
+			sessionRef.current = null;
+			focus.hoveredNode = null;
+			focus.hoverIds = null;
+		};
 	}, [containerRef, enabled, graph, variant]);
 
 	return overlayRef;

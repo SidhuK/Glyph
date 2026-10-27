@@ -1,174 +1,117 @@
-import type { ConnectionsGraphVariant } from "./connectionsGraph";
+import { createEdgeCurveProgram } from "@sigma/edge-curve";
+import type {
+	ConnectionsEdgeAttributes,
+	ConnectionsGraphAttributes,
+	ConnectionsGraphVariant,
+	ConnectionsNodeAttributes,
+} from "./connectionsGraph";
 
-export const LOCAL_CENTER_NODE_SIZE = 14;
-export const LOCAL_FOCUS_NODE_SIZE = 18;
+const ConnectionsCurveProgram = createEdgeCurveProgram<
+	ConnectionsNodeAttributes,
+	ConnectionsEdgeAttributes,
+	ConnectionsGraphAttributes
+>();
 
-type SpaceNodeSizeRange = readonly [min: number, max: number];
-
-interface SpaceDensityTier {
-	minNodes: number;
-	noteSize: SpaceNodeSizeRange;
-	tagSize: SpaceNodeSizeRange;
+interface CountTier {
+	readonly min: number;
+	readonly scale: number;
 }
 
-const SPACE_NODE_DENSITY_TIERS: readonly SpaceDensityTier[] = [
-	{
-		minNodes: 10_000,
-		noteSize: [0.5, 2.4],
-		tagSize: [0.7, 2.8],
-	},
-	{
-		minNodes: 5_000,
-		noteSize: [0.7, 3.2],
-		tagSize: [0.9, 3.6],
-	},
-	{
-		minNodes: 2_000,
-		noteSize: [1, 4.8],
-		tagSize: [1.2, 5.2],
-	},
-	{
-		minNodes: 1_000,
-		noteSize: [1.6, 7],
-		tagSize: [1.8, 6.2],
-	},
-	{
-		minNodes: 400,
-		noteSize: [2.4, 11],
-		tagSize: [2.6, 8],
-	},
-	{
-		minNodes: 0,
-		noteSize: [3.2, 14],
-		tagSize: [3.4, 9],
-	},
+const SPACE_NODE_SCALE_TIERS: readonly CountTier[] = [
+	{ min: 10_000, scale: 0.6 },
+	{ min: 5_000, scale: 0.7 },
+	{ min: 2_000, scale: 0.8 },
+	{ min: 1_000, scale: 0.9 },
 ];
 
-interface SpaceEdgeScaleTier {
-	minEdges: number;
-	scale: number;
-}
-
-const SPACE_EDGE_SCALE_TIERS: readonly SpaceEdgeScaleTier[] = [
-	{ minEdges: 10_000, scale: 0.62 },
-	{ minEdges: 5_000, scale: 0.72 },
-	{ minEdges: 2_000, scale: 0.82 },
-	{ minEdges: 1_000, scale: 0.9 },
-	{ minEdges: 400, scale: 0.96 },
+const SPACE_EDGE_SCALE_TIERS: readonly CountTier[] = [
+	{ min: 10_000, scale: 0.62 },
+	{ min: 5_000, scale: 0.72 },
+	{ min: 2_000, scale: 0.82 },
+	{ min: 1_000, scale: 0.9 },
+	{ min: 400, scale: 0.96 },
 ];
 
-interface SpaceSigmaTier {
-	minNodes: number;
-	stagePadding: number;
-	minCameraRatio: number;
+/** Past this many nodes, labels and edges drop out while the camera moves to keep panning smooth. */
+const LARGE_GRAPH_NODES = 2_000;
+const LARGE_GRAPH_EDGES = 5_000;
+
+function tierScale(tiers: readonly CountTier[], count: number) {
+	return tiers.find((tier) => count >= tier.min)?.scale ?? 1;
 }
 
-/** Minimum gap between the graph (labels included) and every edge of the viewport. */
-export const SPACE_GRAPH_EDGE_PADDING_PX = 48;
-/**
- * Room reserved past the community arcs for one line of ring label. Labels are horizontal, so
- * the binding (vertical) edge only needs their height; side labels have the wide margins.
- */
-const RING_LABEL_ALLOWANCE_PX = 16;
-
-const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
-	{
-		minNodes: 5_000,
-		stagePadding: 36,
-		minCameraRatio: 0.05,
-	},
-	{
-		minNodes: 1_000,
-		stagePadding: 40,
-		minCameraRatio: 0.18,
-	},
-	{
-		minNodes: 150,
-		stagePadding: 48,
-		minCameraRatio: 0.18,
-	},
-	{
-		minNodes: 0,
-		stagePadding: 56,
-		minCameraRatio: 0.18,
-	},
-];
-
-const LOCAL_SIGMA = {
-	labelDensity: 1.1,
-	labelGridCellSize: 88,
-	labelRenderedSizeThreshold: 0,
-	stagePadding: 72,
-	minEdgeThickness: 0.85,
-	minCameraRatio: 0.35,
-	maxCameraRatio: 2.2,
-	zoomingRatio: 1.7,
-};
-
-function tierForCount<T extends { minNodes: number }>(tiers: readonly T[], count: number) {
-	return tiers.find((tier) => count >= tier.minNodes) ?? tiers[tiers.length - 1];
+export function spaceNodeSizeScale(nodeCount: number) {
+	return tierScale(SPACE_NODE_SCALE_TIERS, nodeCount);
 }
 
-interface ConnectionsDensityProfile {
-	noteSizeRange: SpaceNodeSizeRange;
-	tagSizeRange: SpaceNodeSizeRange;
-	edgeScale: number;
+export function connectionsEdgeScale(edgeCount: number) {
+	return tierScale(SPACE_EDGE_SCALE_TIERS, edgeCount);
 }
 
-export function spaceConnectionsDensityProfile(
-	nodeCount: number,
-	edgeCount: number,
-): ConnectionsDensityProfile {
-	const nodeTier = tierForCount(SPACE_NODE_DENSITY_TIERS, nodeCount);
-
+/** Maps the 0–100 label slider onto sigma's label grid; higher values show more titles at rest. */
+export function connectionsLabelGrid(labelZoomThreshold: number) {
+	const t = Math.min(100, Math.max(0, labelZoomThreshold)) / 100;
 	return {
-		noteSizeRange: nodeTier.noteSize,
-		tagSizeRange: nodeTier.tagSize,
-		edgeScale: SPACE_EDGE_SCALE_TIERS.find((tier) => edgeCount >= tier.minEdges)?.scale ?? 1,
+		labelDensity: 0.6 + t * 3,
+		labelGridCellSize: Math.round(180 - t * 100),
+		labelRenderedSizeThreshold: 0,
 	};
 }
+
+/**
+ * Camera ratio below which leaf ("dot") labels join the label grid. Zero never reveals them;
+ * local graphs are small enough to label everything at rest.
+ */
+export function connectionsDotLabelRatio(
+	variant: ConnectionsGraphVariant,
+	labelZoomThreshold: number,
+) {
+	if (variant === "local") return Number.POSITIVE_INFINITY;
+	if (labelZoomThreshold <= 0) return 0;
+	return 0.35 + (Math.min(100, labelZoomThreshold) / 100) * 0.6;
+}
+
+const SHARED_SIGMA = {
+	renderLabels: true,
+	renderEdgeLabels: false,
+	enableEdgeEvents: false,
+	defaultNodeType: "circle",
+	defaultEdgeType: "curved",
+	edgeProgramClasses: { curved: ConnectionsCurveProgram },
+	zIndex: true,
+	allowInvalidContainer: false,
+};
 
 export function sigmaSettingsForVariant(
 	variant: ConnectionsGraphVariant,
 	edgeCount: number,
-	nodeCount = 0,
+	nodeCount: number,
+	labelZoomThreshold: number,
 ) {
 	if (variant === "local") {
 		return {
-			renderLabels: true,
-			renderEdgeLabels: false,
-			enableEdgeEvents: false,
-			hideLabelsOnMove: true,
-			hideEdgesOnMove: edgeCount > 5000,
-			labelDensity: LOCAL_SIGMA.labelDensity,
-			labelGridCellSize: LOCAL_SIGMA.labelGridCellSize,
-			labelRenderedSizeThreshold: LOCAL_SIGMA.labelRenderedSizeThreshold,
-			defaultNodeType: "circle",
-			defaultEdgeType: "line",
-			minCameraRatio: LOCAL_SIGMA.minCameraRatio,
-			maxCameraRatio: LOCAL_SIGMA.maxCameraRatio,
-			stagePadding: LOCAL_SIGMA.stagePadding,
-			zoomingRatio: LOCAL_SIGMA.zoomingRatio,
-			minEdgeThickness: LOCAL_SIGMA.minEdgeThickness,
-			zIndex: true,
-			allowInvalidContainer: false,
+			...SHARED_SIGMA,
+			hideLabelsOnMove: false,
+			hideEdgesOnMove: false,
+			labelDensity: 1.1,
+			labelGridCellSize: 88,
+			labelRenderedSizeThreshold: 0,
+			minCameraRatio: 0.35,
+			maxCameraRatio: 2.2,
+			stagePadding: 72,
+			zoomingRatio: 1.7,
 		};
 	}
 
-	const sigmaTier = tierForCount(SPACE_SIGMA_TIERS, nodeCount);
-
 	return {
-		renderLabels: true,
-		renderEdgeLabels: false,
-		enableEdgeEvents: false,
-		hideLabelsOnMove: true,
-		defaultNodeType: "circle",
-		defaultEdgeType: "line",
-		minCameraRatio: sigmaTier.minCameraRatio,
-		maxCameraRatio: 2.1,
-		stagePadding: sigmaTier.stagePadding + RING_LABEL_ALLOWANCE_PX + SPACE_GRAPH_EDGE_PADDING_PX,
-		zoomingRatio: 1.6,
-		zIndex: true,
-		allowInvalidContainer: false,
+		...SHARED_SIGMA,
+		...connectionsLabelGrid(labelZoomThreshold),
+		hideLabelsOnMove: nodeCount > LARGE_GRAPH_NODES,
+		hideEdgesOnMove: edgeCount > LARGE_GRAPH_EDGES,
+		minCameraRatio: nodeCount >= 5_000 ? 0.05 : 0.12,
+		maxCameraRatio: 2,
+		// Room for cluster captions above the top-most cluster and labels to the right of nodes.
+		stagePadding: 72,
+		zoomingRatio: 1.5,
 	};
 }

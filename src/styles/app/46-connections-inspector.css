@@ -1,0 +1,178 @@
+/* Floating cards over the Ink connections graph; the path bar lives in 46-connections-path.css. */
+.connectionsFloat {
+	position: absolute;
+	top: calc(var(--header-height) + 10px);
+	z-index: 5;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
+	backdrop-filter: blur(16px) saturate(1.2);
+	-webkit-backdrop-filter: blur(16px) saturate(1.2);
+	color: var(--text-primary);
+	box-shadow:
+		0 0 0 0.5px var(--border-strong),
+		0 2px 10px rgb(0 0 0 / 6%);
+}
+
+.dark .connectionsFloat {
+	box-shadow:
+		0 0 0 0.5px var(--border-strong),
+		0 8px 24px rgb(0 0 0 / 32%);
+}
+
+.connectionsInspector {
+	right: 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 264px;
+	max-height: calc(100% - var(--header-height) - 80px);
+	padding: 12px 14px;
+	overflow-y: auto;
+}
+
+.connectionsInspectorKicker {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 24px;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+}
+
+.connectionsInspectorDot {
+	flex: none;
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--interactive-accent);
+}
+
+.connectionsInspectorKickerText {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.connectionsInspectorClose {
+	margin-left: auto;
+	color: var(--text-tertiary);
+}
+
+.connectionsInspectorTitle {
+	margin: 0;
+	font-size: var(--text-lg);
+	font-weight: var(--font-semibold);
+	line-height: 1.25;
+	overflow-wrap: anywhere;
+}
+
+/* rtl keeps the file name visible and truncates the folder prefix instead. */
+.connectionsInspectorPath {
+	margin-top: 2px;
+	overflow: hidden;
+	color: var(--text-tertiary);
+	font-size: var(--text-2xs);
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	direction: rtl;
+}
+
+.connectionsInspectorStats {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	margin: 0;
+	border-block: 1px solid var(--border-default);
+
+	& > div {
+		display: flex;
+		flex-direction: column-reverse;
+		padding: 7px 0;
+	}
+
+	& > div + div {
+		padding-left: 10px;
+		border-left: 1px solid var(--border-default);
+	}
+
+	& dd {
+		margin: 0;
+		font-size: var(--text-md);
+		font-weight: var(--font-semibold);
+		font-variant-numeric: tabular-nums;
+	}
+
+	& dt {
+		color: var(--text-tertiary);
+		font-size: var(--text-2xs);
+	}
+}
+
+.connectionsInspectorGroup,
+.connectionsInspectorMore {
+	margin-bottom: 2px;
+	color: var(--text-tertiary);
+	font-size: var(--text-2xs);
+}
+
+.connectionsInspectorMore {
+	margin: 4px 0 0;
+}
+
+.connectionsInspectorList {
+	margin: 0 -6px;
+	padding: 0;
+	list-style: none;
+
+	& button {
+		appearance: none;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		height: 26px;
+		padding: 0 6px;
+		border: 0;
+		border-radius: var(--radius-md);
+		background: transparent;
+		color: var(--text-primary);
+		font-size: var(--text-sm);
+		text-align: left;
+		cursor: pointer;
+	}
+
+	& button:hover {
+		background: var(--bg-hover);
+	}
+
+	& button:focus-visible {
+		outline: 2px solid var(--border-focus);
+		outline-offset: -2px;
+	}
+
+	& em {
+		flex: none;
+		max-width: 45%;
+		margin-left: auto;
+		overflow: hidden;
+		color: var(--text-tertiary);
+		font-size: var(--text-2xs);
+		font-style: normal;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+.connectionsInspectorListLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.connectionsInspectorActions {
+	display: flex;
+	gap: 6px;
+}

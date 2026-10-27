@@ -1,0 +1,167 @@
+.spaceConnectionsOptionsMenu {
+	max-height: min(70vh, 560px);
+	overflow: auto;
+}
+
+.spaceConnectionsOptionRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+	min-height: 30px;
+	padding: 0 8px;
+	font-size: var(--text-sm);
+	color: var(--text-primary);
+}
+
+.spaceConnectionsOptionRow > label {
+	flex: 1 1 auto;
+	min-width: 0;
+	white-space: nowrap;
+}
+
+.spaceConnectionsOptionValue {
+	width: 52px;
+	flex: 0 0 52px;
+	height: 22px;
+	min-height: 22px;
+	padding: 0 4px;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+}
+
+.connectionsClusterChips,
+.connectionsZoomControls {
+	position: absolute;
+	bottom: 14px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	height: 30px;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
+	box-shadow: var(--floating-surface-shadow);
+}
+
+/* Leaves the zoom controls' width (about 124px) plus a 12px gap free on the right. */
+.connectionsClusterChips {
+	left: 14px;
+	max-width: calc(100% - 28px - 124px - 12px);
+	gap: 1px;
+	padding: 0 3px;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.connectionsClusterChip {
+	all: unset;
+	display: inline-flex;
+	flex: 0 1 auto;
+	align-items: center;
+	gap: 5px;
+	min-width: 0;
+	height: 24px;
+	padding: 0 7px;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	cursor: pointer;
+}
+
+.connectionsClusterChip:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.connectionsClusterChip:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: -2px;
+}
+
+.connectionsClusterChipDot {
+	flex: none;
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--text-primary);
+}
+
+.connectionsClusterChipName {
+	min-width: 0;
+	max-width: 120px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.connectionsClusterChipCount {
+	flex: none;
+	color: var(--text-tertiary);
+	font-variant-numeric: tabular-nums;
+}
+
+.connectionsClusterChip[aria-pressed="false"] {
+	color: var(--text-tertiary);
+
+	& .connectionsClusterChipDot {
+		background: transparent;
+		box-shadow: inset 0 0 0 1.5px var(--text-tertiary);
+	}
+}
+
+.connectionsClusterChipMore {
+	flex: none;
+	color: var(--text-tertiary);
+}
+
+.connectionsClusterChipMore[aria-expanded="true"] {
+	background: var(--bg-active);
+	color: var(--text-primary);
+}
+
+.connectionsClusterChipsDivider {
+	flex: none;
+	width: 1px;
+	height: 14px;
+	margin: 0 3px;
+	background: var(--border-default);
+}
+
+.connectionsClusterPopover {
+	width: 240px;
+	max-height: min(60vh, 360px);
+	padding: 4px;
+	overflow-y: auto;
+
+	& [role="group"] {
+		display: flex;
+		flex-direction: column;
+	}
+
+	& .connectionsClusterChip {
+		height: 26px;
+	}
+
+	& .connectionsClusterChipName {
+		flex: 1 1 auto;
+		max-width: none;
+	}
+}
+
+.connectionsZoomControls {
+	right: 14px;
+	gap: 1px;
+	padding: 0 3px;
+}
+
+.connectionsZoomControls > button {
+	color: var(--text-secondary);
+}
+
+.connectionsZoomPercent {
+	width: 40px;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+}

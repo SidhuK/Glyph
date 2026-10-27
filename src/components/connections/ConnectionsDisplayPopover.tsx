@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { ColorsIcon, FilterIcon, ReloadIcon } from "@hugeicons/core-free-icons";
-import type { CSSProperties, ReactElement } from "react";
+import { ReloadIcon, SlidersHorizontalIcon } from "@hugeicons/core-free-icons";
+import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	CONNECTIONS_GRAPH_MIN_CONNECTIONS_MAX,
@@ -9,15 +9,9 @@ import {
 	type ConnectionsGraphOptions,
 	DEFAULT_CONNECTIONS_GRAPH_OPTIONS,
 } from "../../lib/connectionsGraphOptions";
-import { Toggle } from "../base/toggle/toggle";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-
-interface SpaceConnectionsOptionsPopoverProps {
-	options: ConnectionsGraphOptions;
-	onOptionsChange: (options: ConnectionsGraphOptions) => void;
-	trigger: ReactElement;
-}
+import { useConnectionsView } from "./ConnectionsViewContext";
 
 const NATIVE_RANGE_STYLE = {
 	width: 90,
@@ -39,7 +33,7 @@ function clampOption(value: number, min: number, max: number) {
 	return Math.min(max, Math.max(min, Math.round(value)));
 }
 
-function GraphOptionSlider({
+function OptionSlider({
 	id,
 	label,
 	value,
@@ -81,18 +75,22 @@ function GraphOptionSlider({
 	);
 }
 
-export function SpaceConnectionsOptionsPopover({
-	options,
-	onOptionsChange,
-	trigger,
-}: SpaceConnectionsOptionsPopoverProps) {
+export function ConnectionsDisplayPopover() {
 	const { t } = useTranslation("shell");
+	const { options, setOptions } = useConnectionsView();
 	const patch = (partial: Partial<ConnectionsGraphOptions>) =>
-		onOptionsChange({ ...options, ...partial });
+		setOptions({ ...options, ...partial });
 
 	return (
 		<Popover>
-			<PopoverTrigger render={trigger} />
+			<PopoverTrigger
+				render={
+					<Button type="button" size="sm" variant="ghost" static>
+						<HugeiconsIcon icon={SlidersHorizontalIcon} size="var(--icon-sm)" />
+						{t("connections.display")}
+					</Button>
+				}
+			/>
 			<PopoverContent
 				align="end"
 				sideOffset={8}
@@ -100,52 +98,7 @@ export function SpaceConnectionsOptionsPopover({
 				initialFocus={false}
 			>
 				<div className="databaseViewOptionsMenu spaceConnectionsOptionsMenu">
-					<h3 className="spaceConnectionsOptionsHeading">
-						<HugeiconsIcon icon={ColorsIcon} size="var(--icon-sm)" />
-						{t("connections.display")}
-					</h3>
-					<GraphOptionSlider
-						id="connections-node-size"
-						label={t("connections.nodeSize")}
-						value={options.nodeSize}
-						onChange={(nodeSize) => patch({ nodeSize })}
-					/>
-					<GraphOptionSlider
-						id="connections-link-opacity"
-						label={t("connections.linkOpacity")}
-						value={options.linkOpacity}
-						onChange={(linkOpacity) => patch({ linkOpacity })}
-					/>
-					<GraphOptionSlider
-						id="connections-link-thickness"
-						label={t("connections.linkThickness")}
-						value={options.linkThickness}
-						onChange={(linkThickness) => patch({ linkThickness })}
-					/>
-					<GraphOptionSlider
-						id="connections-edge-bundling"
-						label={t("connections.edgeBundling")}
-						value={options.edgeBundling}
-						onChange={(edgeBundling) => patch({ edgeBundling })}
-					/>
-					<GraphOptionSlider
-						id="connections-label-zoom"
-						label={t("connections.labelZoomThreshold")}
-						value={options.labelZoomThreshold}
-						onChange={(labelZoomThreshold) => patch({ labelZoomThreshold })}
-					/>
-					<h3 className="spaceConnectionsOptionsHeading">
-						<HugeiconsIcon icon={FilterIcon} size="var(--icon-sm)" />
-						{t("connections.filters")}
-					</h3>
-					<Toggle
-						checked={options.hideOrphanNodes}
-						onCheckedChange={(hideOrphanNodes) => patch({ hideOrphanNodes })}
-						label={t("connections.hideOrphans")}
-						size="sm"
-						slim
-					/>
-					<GraphOptionSlider
+					<OptionSlider
 						id="connections-min-connections"
 						label={t("connections.minConnections")}
 						value={options.minConnections}
@@ -153,12 +106,42 @@ export function SpaceConnectionsOptionsPopover({
 						max={CONNECTIONS_GRAPH_MIN_CONNECTIONS_MAX}
 						onChange={(minConnections) => patch({ minConnections })}
 					/>
+					<OptionSlider
+						id="connections-node-size"
+						label={t("connections.nodeSize")}
+						value={options.nodeSize}
+						onChange={(nodeSize) => patch({ nodeSize })}
+					/>
+					<OptionSlider
+						id="connections-link-opacity"
+						label={t("connections.linkOpacity")}
+						value={options.linkOpacity}
+						onChange={(linkOpacity) => patch({ linkOpacity })}
+					/>
+					<OptionSlider
+						id="connections-link-thickness"
+						label={t("connections.linkThickness")}
+						value={options.linkThickness}
+						onChange={(linkThickness) => patch({ linkThickness })}
+					/>
+					<OptionSlider
+						id="connections-edge-curvature"
+						label={t("connections.edgeCurvature")}
+						value={options.edgeBundling}
+						onChange={(edgeBundling) => patch({ edgeBundling })}
+					/>
+					<OptionSlider
+						id="connections-label-zoom"
+						label={t("connections.labelZoomThreshold")}
+						value={options.labelZoomThreshold}
+						onChange={(labelZoomThreshold) => patch({ labelZoomThreshold })}
+					/>
 					<Button
 						type="button"
 						size="sm"
 						variant="outline"
 						className="mx-auto mt-1 flex"
-						onClick={() => onOptionsChange(DEFAULT_CONNECTIONS_GRAPH_OPTIONS)}
+						onClick={() => setOptions(DEFAULT_CONNECTIONS_GRAPH_OPTIONS)}
 					>
 						<HugeiconsIcon icon={ReloadIcon} size="var(--icon-sm)" />
 						{t("connections.resetDefaults")}

@@ -1,9 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import {
-	type ConnectionsGraphOptions,
-	connectionsMinimumVisibleDegree,
-} from "../../lib/connectionsGraphOptions";
+import type { ConnectionsGraphOptions } from "../../lib/connectionsGraphOptions";
 import type { SpaceConnections } from "../../lib/tauri";
 import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 import { type ConnectionsGraph, buildSpaceConnectionsGraph } from "./connectionsGraph";
@@ -103,9 +100,8 @@ function spaceConnectionsLayoutFingerprint(payload: SpaceConnections) {
 
 function filterSpaceConnections(
 	payload: SpaceConnections,
-	options: ConnectionsGraphOptions,
+	minimumDegree: number,
 ): SpaceConnections {
-	const minimumDegree = connectionsMinimumVisibleDegree(options);
 	if (minimumDegree <= 0) return payload;
 
 	const degrees = noteLinkDegrees(payload);
@@ -130,9 +126,10 @@ export function useSpaceConnectionsGraph(
 	spacePath: string,
 	options: ConnectionsGraphOptions,
 ) {
+	const { minConnections } = options;
 	const filteredPayload = useMemo(
-		() => (payload ? filterSpaceConnections(payload, options) : null),
-		[options, payload],
+		() => (payload ? filterSpaceConnections(payload, minConnections) : null),
+		[minConnections, payload],
 	);
 	const layoutFingerprint = useMemo(
 		() => (filteredPayload ? spaceConnectionsLayoutFingerprint(filteredPayload) : ""),
