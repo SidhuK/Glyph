@@ -5,7 +5,6 @@ import { useUILayoutContext } from "../../contexts";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
 import { SidebarContent, type SidebarContentProps } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
-import { SidebarSettingsContent } from "./SidebarSettingsContent";
 import { SpaceMenuButton, type SpaceMenuActions } from "./SpaceMenuButton";
 
 interface SidebarProps extends SidebarContentProps, SpaceMenuActions {
@@ -20,7 +19,7 @@ export const Sidebar = memo(function Sidebar({
 	onCloseSpace,
 	...contentProps
 }: SidebarProps) {
-	const { sidebarWidth, settingsMode } = useUILayoutContext();
+	const { sidebarWidth } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
 	const spaceKey = contentProps.spacePath ?? "no-space";
@@ -51,27 +50,17 @@ export const Sidebar = memo(function Sidebar({
 						exit={shouldReduceMotion ? {} : { opacity: 0 }}
 						transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }}
 					>
-						{settingsMode ? (
-							<>
-								<div aria-hidden="true" className="sidebarDragLayer" data-tauri-drag-region />
-								<div className="sidebarHeader" data-tauri-drag-region />
-								<SidebarSettingsContent />
-							</>
-						) : (
-							<>
-								<SidebarHeader>
-									<SpaceMenuButton
-										key={spaceKey}
-										onSelectSpace={onSelectSpace}
-										onOpenSpace={onOpenSpace}
-										onCreateSpace={onCreateSpace}
-										onCloseSpace={onCloseSpace}
-									/>
-								</SidebarHeader>
-								<SidebarContent key={spaceKey} {...contentProps} />
-								<LicenseStatusFooter />
-							</>
-						)}
+						<SidebarHeader>
+							<SpaceMenuButton
+								key={spaceKey}
+								onSelectSpace={onSelectSpace}
+								onOpenSpace={onOpenSpace}
+								onCreateSpace={onCreateSpace}
+								onCloseSpace={onCloseSpace}
+							/>
+						</SidebarHeader>
+						<SidebarContent key={spaceKey} {...contentProps} />
+						<LicenseStatusFooter />
 					</m.div>
 				)}
 			</AnimatePresence>

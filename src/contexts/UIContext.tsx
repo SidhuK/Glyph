@@ -90,7 +90,7 @@ interface UILayoutContextValue {
 	folioNotesWidth: number;
 	setFolioNotesWidth: (width: number) => void;
 	commitFolioNotesWidth: (width: number) => void;
-	settingsMode: boolean;
+	settingsOpen: boolean;
 	settingsTab: SettingsTab;
 	openSettings: (tab?: SettingsTab) => void;
 	closeSettings: () => void;
@@ -131,7 +131,7 @@ type UIState = {
 	folioScope: FolioScope;
 	folioSortMode: FileTreeSortMode;
 	folioNotesWidth: number;
-	settingsMode: boolean;
+	settingsOpen: boolean;
 	settingsTab: SettingsTab;
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
@@ -230,7 +230,7 @@ const initialUIState: UIState = {
 	folioScope: DEFAULT_FOLIO_SCOPE,
 	folioSortMode: DEFAULT_FILE_TREE_SORT_MODE,
 	folioNotesWidth: DEFAULT_FOLIO_NOTES_WIDTH,
-	settingsMode: false,
+	settingsOpen: false,
 	settingsTab: "general" as SettingsTab,
 	aiEnabled: true,
 	aiPanelOpen: false,
@@ -320,12 +320,11 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 		case "openSettings":
 			return {
 				...state,
-				settingsMode: true,
+				settingsOpen: true,
 				settingsTab: action.tab ?? state.settingsTab,
-				sidebarCollapsed: false,
 			};
 		case "closeSettings":
-			return { ...state, settingsMode: false };
+			return { ...state, settingsOpen: false };
 		case "setSettingsTab":
 			return { ...state, settingsTab: action.value };
 		case "onSpacePathChanged":
@@ -418,7 +417,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		folioScope,
 		folioSortMode,
 		folioNotesWidth,
-		settingsMode,
+		settingsOpen,
 		settingsTab,
 		aiEnabled,
 		aiPanelOpen,
@@ -831,7 +830,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			folioNotesWidth,
 			setFolioNotesWidth,
 			commitFolioNotesWidth,
-			settingsMode,
+			settingsOpen,
 			settingsTab,
 			openSettings,
 			closeSettings,
@@ -871,7 +870,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			folioNotesWidth,
 			setFolioNotesWidth,
 			commitFolioNotesWidth,
-			settingsMode,
+			settingsOpen,
 			settingsTab,
 			openSettings,
 			closeSettings,

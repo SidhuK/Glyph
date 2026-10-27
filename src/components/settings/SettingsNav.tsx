@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { ArrowLeft02Icon, ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
+import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,18 +8,18 @@ import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { useLicenseStatus } from "../../lib/license";
 import { cn } from "../../lib/utils";
 import { Search, X } from "../Icons";
-import { SETTINGS_TAB_GROUPS } from "../settings/settingsConfig";
+import { SETTINGS_TAB_GROUPS } from "./settingsConfig";
 import {
 	localizedSettingsTabLabel,
 	scrollToSettingsSearchEntry,
 	searchSettingsEntries,
-} from "../settings/settingsSearch";
-import { useActiveSettingsTab, useDeveloperMode } from "../settings/useDeveloperMode";
+} from "./settingsSearch";
+import { useActiveSettingsTab, useDeveloperMode } from "./useDeveloperMode";
 import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
 
-export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
+export const SettingsNav = memo(function SettingsNav() {
 	const { t: tGeneral, i18n } = useTranslation("settings.general");
-	const { setSettingsTab, closeSettings } = useUILayoutContext();
+	const { setSettingsTab } = useUILayoutContext();
 	const settingsTab = useActiveSettingsTab();
 	const { status: licenseStatus } = useLicenseStatus(false);
 	const { enabled: developerModeEnabled } = useDeveloperMode();
@@ -49,17 +49,6 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 	return (
 		<>
 			<div className="sidebarSection sidebarSectionGrow settingsSidebarNavSection">
-				<div className="settingsSidebarBackRow">
-					<button
-						type="button"
-						className="sidebarQuickActionBtn settingsBackButton"
-						onClick={closeSettings}
-					>
-						<HugeiconsIcon icon={ArrowLeft02Icon} size="var(--icon-md)" />
-						<span className="sidebarQuickActionLabel">Back</span>
-					</button>
-				</div>
-
 				<div className="settingsSidebarSearch">
 					<Search size="var(--icon-md)" className="settingsSidebarSearchIcon" />
 					<input

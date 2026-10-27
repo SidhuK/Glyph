@@ -206,6 +206,7 @@
 	min-width: 0;
 }
 
+/* margin-left: auto keeps a control that wraps under its label flush right. */
 .settingsFieldControl {
 	display: inline-flex;
 	align-items: center;
@@ -213,11 +214,14 @@
 	flex: 0 1 auto;
 	min-width: 0;
 	max-width: 100%;
+	margin-left: auto;
 }
 
-/* Text fields have no useful content width, so they get a fixed share of the row. */
-.settingsFieldControl:has(> input, > textarea, > .settingsInline) {
-	flex: 0 1 300px;
+/* Text fields have no useful content width, so they get a fixed share of the row. Base UI
+   selects, switches and checkboxes render an aria-hidden input beside their trigger; those
+   are not text fields. */
+.settingsFieldControl:has(> input:not([aria-hidden="true"]), > textarea, > .settingsInline) {
+	flex: 0 1 240px;
 }
 
 .settingsSidebarItemControls {

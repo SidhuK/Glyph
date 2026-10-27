@@ -8,6 +8,7 @@
 		"searchPlaceholder": "Search settings",
 		"searchAriaLabel": "Search settings",
 		"clearSearchAriaLabel": "Clear settings search",
+		"closeAriaLabel": "Close settings",
 		"searchEmpty": "No matching settings",
 		"sendFeedback": "Send feedback",
 		"buyLicense": "Buy official license"

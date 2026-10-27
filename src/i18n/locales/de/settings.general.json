@@ -8,6 +8,7 @@
 		"searchPlaceholder": "Einstellungen durchsuchen",
 		"searchAriaLabel": "Einstellungen durchsuchen",
 		"clearSearchAriaLabel": "Einstellungssuche löschen",
+		"closeAriaLabel": "Einstellungen schließen",
 		"searchEmpty": "Keine passenden Einstellungen",
 		"sendFeedback": "Feedback senden",
 		"buyLicense": "Offizielle Lizenz kaufen"
