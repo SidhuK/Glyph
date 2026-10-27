@@ -41,7 +41,7 @@ button.sidebarCreateMenuTrigger:focus-visible {
 	flex: 0 0 auto;
 	width: var(--icon-lg);
 	height: var(--icon-lg);
-	color: var(--text-secondary);
+	color: var(--text-primary);
 }
 
 .sidebarQuickActionBtn:hover > svg {
@@ -193,20 +193,12 @@ button.sidebarCreateMenuTrigger:focus-visible,
 	font-variant-numeric: tabular-nums;
 }
 
-/* Resting rows use secondary ink; hover and the active pill bring them to primary. */
 .sidebarNavBtn {
 	height: 28px;
-	color: var(--text-secondary);
+	color: var(--text-primary);
 }
 
 .sidebarNavBtn > svg {
-	color: var(--text-secondary);
-}
-
-.sidebarNavBtn:hover,
-.sidebarNavBtn:hover > svg,
-.sidebarNavBtn[data-active="true"],
-.sidebarNavBtn[data-active="true"] > svg {
 	color: var(--text-primary);
 }
 

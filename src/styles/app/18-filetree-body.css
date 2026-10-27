@@ -101,34 +101,10 @@
 	border-radius: var(--radius-md);
 }
 
-.fileTreeItem:hover
-	> .fileTreeRowShell
-	> .fileTreeRow:not([data-has-custom-color="true"])
-	.fileTreeName,
-.fileTreeItem.active
-	> .fileTreeRowShell
-	> .fileTreeRow:not([data-has-custom-color="true"])
-	.fileTreeName {
-	color: var(--text-primary);
-}
-
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow {
 	background: var(--bg-active);
 	color: var(--text-primary);
 	border-radius: var(--radius-md);
-}
-
-/* Leading icons (often the user's own pictograms) rest in tertiary ink so the
-   labels lead; hover and the active row lift them to secondary. */
-.fileTreeItem:hover
-	> .fileTreeRowShell
-	> .fileTreeRow:not([data-has-custom-color="true"])
-	:is(.fileTreeIcon, .fileTreeFolderIcon),
-.fileTreeItem.active
-	> .fileTreeRowShell
-	> .fileTreeRow:not([data-has-custom-color="true"])
-	:is(.fileTreeIcon, .fileTreeFolderIcon) {
-	color: var(--text-secondary);
 }
 
 .fileTreeRowShell {
@@ -272,7 +248,7 @@
 	height: var(--icon-lg);
 	justify-content: center;
 	align-items: center;
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	flex-shrink: 0;
 	border-radius: var(--radius-sm);
 	transition: background var(--transition-fast);
@@ -295,13 +271,9 @@
 	width: var(--icon-lg);
 	height: var(--icon-lg);
 	justify-content: center;
-	color: var(--text-tertiary);
+	color: var(--text-primary);
 	flex-shrink: 0;
 	opacity: 1;
-}
-
-.fileTreeFolderIcon {
-	color: var(--text-tertiary);
 }
 
 .fileTreeRow[data-has-custom-color="true"] .fileTreeChevron,
@@ -312,7 +284,7 @@
 
 .fileTreeName {
 	font-size: var(--text-base);
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	line-height: 1.3;
 	white-space: nowrap;
 	overflow: hidden;

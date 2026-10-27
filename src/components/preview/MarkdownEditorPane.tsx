@@ -1,6 +1,6 @@
 import { NoteArchiveAction } from "./NoteArchiveAction";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LayoutAlignRightIcon, SparklesIcon } from "@hugeicons/core-free-icons";
+import { AiBrain04Icon, LayoutAlignRightIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -540,7 +540,7 @@ export function MarkdownEditorPane({
 									title={t("toolbar.aiPanel")}
 									aria-pressed={aiPanelOpen}
 								>
-									<HugeiconsIcon icon={SparklesIcon} size="var(--icon-md)" />
+									<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
 								</button>
 							) : null}
 							<button
