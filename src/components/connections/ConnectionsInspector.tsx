@@ -13,10 +13,13 @@ interface ConnectedNote {
 	readonly cluster: string | null;
 }
 
-function clusterName(graph: ConnectionsGraph, community: number | null): string | null {
+/** The node's cluster name, or null for hubs, which name their own cluster. */
+function clusterName(graph: ConnectionsGraph, id: string): string | null {
+	const community = graph.getNodeAttribute(id, "community");
 	if (community === null) return null;
 	const hubId = graph.getAttribute("communities").find((c) => c.index === community)?.hubId;
-	return hubId && graph.hasNode(hubId) ? graph.getNodeAttribute(hubId, "label") : null;
+	if (!hubId || hubId === id || !graph.hasNode(hubId)) return null;
+	return graph.getNodeAttribute(hubId, "label");
 }
 
 function connectedNotes(graph: ConnectionsGraph, id: string): ConnectedNote[] {
@@ -26,9 +29,7 @@ function connectedNotes(graph: ConnectionsGraph, id: string): ConnectedNote[] {
 		.sort((a, b) => graph.getNodeAttribute(b, "degree") - graph.getNodeAttribute(a, "degree"))
 		.map((neighbor) => {
 			const label = graph.getNodeAttribute(neighbor, "label");
-			const cluster = clusterName(graph, graph.getNodeAttribute(neighbor, "community"));
-			// A cluster is named after its hub, so the hub itself would repeat its own title.
-			return { id: neighbor, label, cluster: cluster === label ? null : cluster };
+			return { id: neighbor, label, cluster: clusterName(graph, neighbor) };
 		});
 }
 
@@ -44,9 +45,7 @@ export function ConnectionsInspector() {
 
 	const node = graph.getNodeAttributes(selectedId);
 	const isTag = node.kind === "tag";
-	const nodeCluster = clusterName(graph, node.community);
-	// Hubs name their own cluster, so the kicker would repeat the title.
-	const cluster = nodeCluster === node.label ? null : nodeCluster;
+	const cluster = clusterName(graph, selectedId);
 	const kicker = isTag ? t("connections.inspector.tag") : cluster;
 	const neighbors = connectedNotes(graph, selectedId);
 	const shown = neighbors.slice(0, MAX_CONNECTED_NOTES);

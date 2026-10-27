@@ -78,9 +78,9 @@ export function bindConnectionsPointer({
 	});
 
 	renderer.on("downNode", ({ node }) => {
+		didDrag = false;
 		if (variant === "space" || graph.getNodeAttribute(node, "isCenter")) return;
 		draggedNode = node;
-		didDrag = false;
 		camera.disable();
 	});
 	const mouseCaptor = renderer.getMouseCaptor();

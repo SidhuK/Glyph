@@ -132,7 +132,7 @@ export function useSigmaConnections({
 				if (refreshFrame) return;
 				refreshFrame = window.requestAnimationFrame(() => {
 					refreshFrame = 0;
-					if (!disposed) activeRenderer.refresh();
+					if (!disposed) activeRenderer.refresh({ skipIndexation: true });
 				});
 			};
 

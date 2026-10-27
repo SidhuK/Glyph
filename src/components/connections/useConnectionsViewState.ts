@@ -14,6 +14,7 @@ interface PathEnds {
 }
 
 const NO_PATH_ENDS: PathEnds = { from: null, to: null };
+const NO_HIDDEN: ReadonlySet<number> = new Set();
 
 function openNote(id: string) {
 	dispatchWikiLinkClick({
@@ -54,7 +55,12 @@ export function useConnectionsViewState({
 	const [selectedState, setSelectedState] = useState<string | null>(null);
 	const [pathMode, setPathModeState] = useState(false);
 	const [pathEnds, setPathEnds] = useState<PathEnds>(NO_PATH_ENDS);
-	const [hiddenCommunities, setHiddenCommunities] = useState<ReadonlySet<number>>(() => new Set());
+	// Community indexes are reassigned on every layout, so hidden clusters only apply to the graph they were hidden in.
+	const [hiddenState, setHiddenState] = useState<{
+		readonly graph: ConnectionsGraph | null;
+		readonly ids: ReadonlySet<number>;
+	}>({ graph: null, ids: NO_HIDDEN });
+	const hiddenCommunities = hiddenState.graph === graph ? hiddenState.ids : NO_HIDDEN;
 	const [showUnlinked, setShowUnlinkedState] = useState(false);
 	const [zoomPercent, setZoomPercent] = useState(100);
 	const [searchQuery, setSearchQueryState] = useState("");
@@ -68,6 +74,10 @@ export function useConnectionsViewState({
 		[graph],
 	);
 	const display = useMemo(() => connectionsDisplayState(options), [options]);
+	const searchMatchIds = useMemo(
+		() => connectionsSearchMatchIds(graph, searchQuery),
+		[graph, searchQuery],
+	);
 
 	const overlay = useSigmaConnections({
 		graph,
@@ -76,7 +86,7 @@ export function useConnectionsViewState({
 		enabled,
 		display,
 		labelZoomThreshold: options.labelZoomThreshold,
-		searchMatchIds: connectionsSearchMatchIds(graph, searchQuery),
+		searchMatchIds,
 		selectedNodeId: selectedId,
 		path,
 		hiddenCommunities,
@@ -139,8 +149,11 @@ export function useConnectionsViewState({
 	function toggleCommunity(index: number) {
 		const next = new Set(hiddenCommunities);
 		if (!next.delete(index)) next.add(index);
-		setHiddenCommunities(next);
+		setHiddenState({ graph, ids: next });
 		overlay.current.setHiddenCommunities(next);
+		if (next.has(index) && path?.some((id) => graph?.getNodeAttribute(id, "community") === index)) {
+			applyPathEnds(NO_PATH_ENDS);
+		}
 		if (
 			selectedId &&
 			next.has(index) &&

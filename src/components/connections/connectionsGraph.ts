@@ -50,6 +50,9 @@ export type ConnectionsSigma = Sigma<
 const TITLE_MIN_DEGREE = 3;
 const REDUCER_COLOR_PLACEHOLDER = "#000000";
 const LOCAL_LAYOUT_ITERATIONS = 120;
+/** Local layout runs on the UI thread; large neighbourhoods get fewer, Barnes-Hut iterations. */
+const LOCAL_LAYOUT_BUDGET = 24_000;
+const LOCAL_BARNES_HUT_ORDER = 500;
 const LOCAL_SEED_RADIUS = 100;
 
 function createGraph(communities: readonly ConnectionsCommunity[]): ConnectionsGraph {
@@ -228,8 +231,14 @@ export function buildLocalConnectionsGraph(payload: LocalNoteConnections): Conne
 
 	if (graph.order > 1) {
 		forceAtlas2.assign(graph, {
-			iterations: LOCAL_LAYOUT_ITERATIONS,
-			settings: forceAtlas2.inferSettings(graph),
+			iterations: Math.max(
+				10,
+				Math.min(LOCAL_LAYOUT_ITERATIONS, Math.round(LOCAL_LAYOUT_BUDGET / graph.order)),
+			),
+			settings: {
+				...forceAtlas2.inferSettings(graph),
+				barnesHutOptimize: graph.order >= LOCAL_BARNES_HUT_ORDER,
+			},
 		});
 	}
 	assignRanks(graph, "local", (_id, attributes) => attributes.isCenter);

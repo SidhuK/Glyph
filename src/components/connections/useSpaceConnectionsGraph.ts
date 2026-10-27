@@ -100,9 +100,8 @@ function spaceConnectionsLayoutFingerprint(payload: SpaceConnections) {
 
 function filterSpaceConnections(
 	payload: SpaceConnections,
-	options: ConnectionsGraphOptions,
+	minimumDegree: number,
 ): SpaceConnections {
-	const minimumDegree = options.minConnections;
 	if (minimumDegree <= 0) return payload;
 
 	const degrees = noteLinkDegrees(payload);
@@ -127,9 +126,10 @@ export function useSpaceConnectionsGraph(
 	spacePath: string,
 	options: ConnectionsGraphOptions,
 ) {
+	const { minConnections } = options;
 	const filteredPayload = useMemo(
-		() => (payload ? filterSpaceConnections(payload, options) : null),
-		[options, payload],
+		() => (payload ? filterSpaceConnections(payload, minConnections) : null),
+		[minConnections, payload],
 	);
 	const layoutFingerprint = useMemo(
 		() => (filteredPayload ? spaceConnectionsLayoutFingerprint(filteredPayload) : ""),
