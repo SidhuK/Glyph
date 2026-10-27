@@ -413,7 +413,7 @@
 			"title": "Connections graph",
 			"section": "Space",
 			"description": "Note size, titles, and filters in the Connections view.",
-			"keywords": ["graph", "links", "titles", "orphans"]
+			"keywords": ["graph", "links", "titles", "clusters", "path"]
 		},
 		"space-template-folder": {
 			"title": "Template folder",

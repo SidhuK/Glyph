@@ -1,0 +1,102 @@
+/* The path bar shown over the Ink connections graph in path mode. */
+.connectionsPathBar {
+	left: 14px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	max-width: calc(100% - 264px - 56px);
+	height: 32px;
+	padding: 0 4px 0 10px;
+	font-size: var(--text-sm);
+	white-space: nowrap;
+}
+
+.connectionsPathBarIcon {
+	flex: none;
+	width: var(--icon-sm);
+	height: var(--icon-sm);
+	color: var(--text-tertiary);
+}
+
+.connectionsPathBarSteps {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.connectionsPathBarStep {
+	appearance: none;
+	display: inline-flex;
+	flex: 0 1 auto;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	max-width: 18ch;
+	height: 24px;
+	padding: 0 5px;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	cursor: pointer;
+}
+
+.connectionsPathBarStep[data-end] {
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+
+	&::before {
+		content: "";
+		flex: none;
+		width: 6px;
+		height: 6px;
+		border-radius: 999px;
+		background: var(--interactive-accent);
+	}
+}
+
+.connectionsPathBarStep:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.connectionsPathBarStep:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: -2px;
+}
+
+.connectionsPathBarStepLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.connectionsPathBarMore {
+	flex: none;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+}
+
+.connectionsPathBarChevron {
+	flex: none;
+	width: 12px;
+	height: 12px;
+	color: var(--text-tertiary);
+}
+
+.connectionsPathBarMeta {
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	text-overflow: ellipsis;
+}
+
+.connectionsPathBarClear {
+	flex: none;
+	color: var(--text-tertiary);
+}

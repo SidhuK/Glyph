@@ -84,28 +84,6 @@ export function LocalNoteConnectionsDialog({
 									onTagActivate={openTagSearch}
 								/>
 							</Suspense>
-							<div className="localNoteConnectionsLegend" aria-label={t("connections.legendAria")}>
-								<span className="localNoteConnectionsLegendItem">
-									<span className="localNoteConnectionsLegendNode is-current" aria-hidden="true" />
-									{t("connections.legendCurrent")}
-								</span>
-								<span className="localNoteConnectionsLegendItem">
-									<span className="localNoteConnectionsLegendNode is-note" aria-hidden="true" />
-									{t("connections.legendNote")}
-								</span>
-								<span className="localNoteConnectionsLegendItem">
-									<span className="localNoteConnectionsLegendNode is-tag" aria-hidden="true" />
-									{t("connections.legendTag")}
-								</span>
-								<span className="localNoteConnectionsLegendItem">
-									<span className="localNoteConnectionsLegendEdge is-link" aria-hidden="true" />
-									{t("connections.legendLink")}
-								</span>
-								<span className="localNoteConnectionsLegendItem">
-									<span className="localNoteConnectionsLegendEdge is-tag-link" aria-hidden="true" />
-									{t("connections.legendTagShare")}
-								</span>
-							</div>
 						</div>
 					)}
 				</div>

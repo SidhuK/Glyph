@@ -1,187 +1,218 @@
 import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
-import { type ConnectionsCommunityTone } from "./connectionsCommunities";
-import { LOCAL_FOCUS_NODE_SIZE } from "./connectionsDensity";
 import type {
 	ConnectionsEdgeAttributes,
-	ConnectionsEdgeTone,
-	ConnectionsGraphVariant,
+	ConnectionsGraph,
 	ConnectionsNodeAttributes,
+	ConnectionsNodeKind,
+	ConnectionsNodeRank,
 } from "./connectionsGraph";
 import {
 	type ConnectionsDisplayState,
+	type ConnectionsFocusMode,
 	type ConnectionsFocusState,
 	type ConnectionsPalette,
-	SPACE_FOCUS_NODE_SCALE,
-	withAlpha,
+	connectionsFocusMode,
+	createConnectionsToner,
 } from "./connectionsTheme";
 
-/** Unfocused edges drop to this share of the link opacity while a node is focused. */
-const FADED_EDGE_ALPHA_SCALE = 0.2;
-const HIGHLIGHTED_EDGE_Z_INDEX = 1;
-/** Space-graph focus edges take the focused community's hue at this alpha and width, not black ink. */
-const FOCUS_EDGE_ALPHA = 0.78;
-const FOCUS_EDGE_SIZE = 1.25;
-/** Space-graph community edges are drawn at this share of the link opacity (~15% by default). */
-const COMMUNITY_EDGE_ALPHA_SCALE = 0.38;
-/**
- * Unlinked notes rest in the page colour (the unlinked band draws them as one quiet mark) but stay
- * hoverable; a hovered or matched one shows in full.
- */
-const ISOLATED_NODE_SIZE_SCALE = 0.45;
-function communityToneColor(tone: ConnectionsCommunityTone, palette: ConnectionsPalette) {
-	switch (tone.kind) {
-		case "hue":
-			return palette.communities[tone.hue];
-		case "neutral":
-			return palette.communityNeutral;
-		default: {
-			const _exhaustive: never = tone;
-			return _exhaustive;
-		}
-	}
+/** Share of ink kept by nodes outside the hovered or selected neighbourhood. */
+export const CONNECTIONS_DIM_WEIGHT = 0.12;
+/** Share of ink kept per focus mode by nodes outside the focus; labels of muted hubs keep a little more. */
+const NODE_MUTE: Record<Exclude<ConnectionsFocusMode, "rest">, number> = {
+	path: 0.1,
+	lens: CONNECTIONS_DIM_WEIGHT,
+	search: 0.3,
+};
+const HUB_LABEL_LIFT = 0.18;
+/** Share of edge rest ink kept per focus mode by edges outside the focus. */
+const EDGE_MUTE: Record<Exclude<ConnectionsFocusMode, "rest">, number> = {
+	path: 0.15,
+	lens: 0.3,
+	search: 0.5,
+};
+/** A hover during an active path lifts its neighbourhood only this far, so the path still leads. */
+const PATH_HOVER_LIFT = 0.4;
+/** Search matches outside the hovered or selected neighbourhood keep this share of the accent. */
+const SEARCH_OUTSIDE_LENS = 0.4;
+/** Link opacity slider share applied to the edge ink. */
+const EDGE_INK_SCALE = 0.5;
+const MAX_CURVATURE = 0.4;
+const SELECTED_NODE_SCALE = 1.3;
+const PATH_EDGE_MIN_SIZE = 2;
+const PATH_EDGE_SCALE = 2;
+
+/** Extra fields the label drawers read alongside sigma's display data. */
+interface ConnectionsNodeDisplay extends Partial<NodeDisplayData> {
+	rank: ConnectionsNodeRank;
+	kind: ConnectionsNodeKind;
+	ink: string;
+	/** Draws the label at title weight. */
+	strong: boolean;
 }
 
-function nodeColorForAttributes(attrs: ConnectionsNodeAttributes, palette: ConnectionsPalette) {
-	if (attrs.isCenter) return palette.accent;
-	if (attrs.kind === "tag") return palette.tag;
-	if (attrs.community.kind === "member") return communityToneColor(attrs.community.tone, palette);
-	return palette.note;
+interface ConnectionsEdgeDisplay extends Partial<EdgeDisplayData> {
+	curvature: number;
 }
 
-export function isLabeledHub({ community }: ConnectionsNodeAttributes) {
-	return community.kind === "member" && community.isHub && community.tone.kind === "hue";
+interface NodeStyle {
+	color: string;
+	ink: string;
+	strong: boolean;
+	labelled: boolean;
+	forceLabel: boolean;
+	zIndex: number;
 }
 
-function isIsolated({ community }: ConnectionsNodeAttributes) {
-	return community.kind === "member" && community.isolated;
+export function connectionsPairKey(a: string, b: string) {
+	return a < b ? `${a}\0${b}` : `${b}\0${a}`;
+}
+
+export function isConnectionsNodeHidden(
+	{ community, unlinked }: ConnectionsNodeAttributes,
+	focus: ConnectionsFocusState,
+) {
+	if (unlinked && !focus.showUnlinked) return true;
+	return community !== null && focus.hiddenCommunities.has(community);
+}
+
+function connectionsDisplayLabel({ kind, label }: ConnectionsNodeAttributes) {
+	return kind === "tag" && !label.startsWith("#") ? `#${label}` : label;
+}
+
+/** Node the hover-or-selection lens centres on; hover temporarily replaces the selection. */
+function lensNode(graph: ConnectionsGraph, focus: ConnectionsFocusState) {
+	const id = focus.hoveredNode ?? focus.selectedNodeId;
+	return id !== null && graph.hasNode(id) ? id : null;
+}
+
+function inNeighbourhood(graph: ConnectionsGraph, center: string | null, node: string) {
+	return center !== null && (center === node || graph.areNeighbors(center, node));
 }
 
 export function buildNodeReducer(
+	graph: ConnectionsGraph,
 	getPalette: () => ConnectionsPalette,
-	variant: ConnectionsGraphVariant,
-	getFocusState: () => ConnectionsFocusState,
-	getDisplayState: () => ConnectionsDisplayState,
+	getFocus: () => ConnectionsFocusState,
+	getDisplay: () => ConnectionsDisplayState,
 ) {
-	return (nodeKey: string, data: ConnectionsNodeAttributes): Partial<NodeDisplayData> => {
+	const tone = createConnectionsToner();
+	return (node: string, data: ConnectionsNodeAttributes): ConnectionsNodeDisplay => {
 		const palette = getPalette();
-		const { hoveredNode, neighborIds, selectedNodeId, searchMatchIds } = getFocusState();
-		const display = getDisplayState();
-		const activeFocusId = selectedNodeId ?? hoveredNode;
-		const activeNeighbors = neighborIds;
-		const searching = searchMatchIds !== null;
-		const isSearchMatch = searching && searchMatchIds.has(nodeKey);
-		const isFocus = activeFocusId === nodeKey;
-		const isNeighbor = activeNeighbors?.has(nodeKey) ?? false;
-		const isFaded = searching ? !isSearchMatch : Boolean(activeFocusId) && !isFocus && !isNeighbor;
-
-		let color = nodeColorForAttributes(data, palette);
-		let label = data.label;
-		let size = data.size * display.nodeSizeScale;
-		let zIndex = isFocus ? 30 : isNeighbor || isSearchMatch ? 20 : 0;
-		let forceLabel: boolean | undefined;
-
-		if (isFaded) {
-			color = palette.faded;
-			label = "";
-			zIndex = 0;
-		} else if (isFocus) {
-			forceLabel = true;
-			size = Math.max(
-				size,
-				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : size * SPACE_FOCUS_NODE_SCALE,
-			);
-			zIndex = 30;
-		} else if (isSearchMatch) {
-			forceLabel = true;
-			zIndex = 20;
-		} else if (activeFocusId && isNeighbor) {
-			forceLabel = true;
-		} else if (data.isCenter || isLabeledHub(data)) {
-			forceLabel = true;
+		const focus = getFocus();
+		const base = { x: data.x, y: data.y, rank: data.rank, kind: data.kind };
+		if (isConnectionsNodeHidden(data, focus)) {
+			return { ...base, hidden: true, ink: palette.text, strong: false };
 		}
 
-		// Unlinked notes recede until hovered, selected, or matched by search.
-		if (isIsolated(data) && !isFocus && !isSearchMatch) {
-			color = palette.background;
-			size *= ISOLATED_NODE_SIZE_SCALE;
-			label = "";
+		const mode = connectionsFocusMode(focus);
+		const resting = data.kind === "tag" ? palette.textSecondary : palette.text;
+		const accent: NodeStyle = {
+			color: palette.accent,
+			ink: palette.accent,
+			strong: true,
+			labelled: true,
+			forceLabel: true,
+			zIndex: 3,
+		};
+		const focused: NodeStyle = {
+			...accent,
+			color: resting,
+			ink: resting,
+			strong: false,
+			zIndex: 2,
+		};
+		const muted = (weight: number, color = palette.text): NodeStyle => ({
+			color: tone(palette, color, weight),
+			ink: tone(palette, palette.text, weight + HUB_LABEL_LIFT),
+			strong: false,
+			labelled: data.rank === "hub",
+			forceLabel: false,
+			zIndex: 0,
+		});
+
+		const selected = focus.selectedNodeId === node;
+		const matched = focus.searchMatchIds?.has(node) ?? false;
+		let highlighted = selected;
+		let style: NodeStyle;
+		if (mode === "path") {
+			const onPath = focus.pathIds?.has(node) ?? false;
+			const lifted = muted(PATH_HOVER_LIFT, resting);
+			highlighted = selected && onPath;
+			if (onPath) style = accent;
+			else if (focus.hoveredNode === node) style = { ...lifted, ink: lifted.color, labelled: true };
+			else if (focus.hoverIds?.has(node)) style = { ...lifted, zIndex: 1 };
+			else style = muted(NODE_MUTE.path);
+		} else if (mode === "lens") {
+			const inLens = inNeighbourhood(graph, lensNode(graph, focus), node);
+			if (selected) style = inLens ? accent : { ...accent, labelled: false, forceLabel: false };
+			else if (matched) style = inLens ? accent : muted(SEARCH_OUTSIDE_LENS, palette.accent);
+			else style = inLens ? focused : muted(NODE_MUTE.lens);
+		} else if (mode === "search") {
+			style = matched ? accent : muted(NODE_MUTE.search);
+		} else {
+			const ink = data.rank === "dot" ? palette.textSecondary : resting;
+			style = {
+				color: data.rank === "dot" && data.kind === "note" ? palette.textTertiary : resting,
+				ink,
+				strong: false,
+				labelled: data.rank !== "dot" || focus.dotLabels,
+				forceLabel: data.rank === "hub",
+				zIndex: 1,
+			};
 		}
 
+		const { labelled, ...rest } = style;
 		return {
-			x: data.x,
-			y: data.y,
-			size,
-			label,
-			color,
-			zIndex,
-			highlighted: isFocus,
-			...(forceLabel ? { forceLabel } : {}),
+			...base,
+			...rest,
+			size: data.size * getDisplay().nodeSizeScale * (highlighted ? SELECTED_NODE_SCALE : 1),
+			label: labelled ? connectionsDisplayLabel(data) : null,
+			highlighted,
 		};
 	};
 }
 
-function edgeColorForTone(tone: ConnectionsEdgeTone, palette: ConnectionsPalette) {
-	switch (tone.kind) {
-		case "default":
-			return palette.edgeDefault;
-		case "accent":
-			return palette.accent;
-		case "internal":
-			return palette.edgeInternal;
-		case "community":
-			return tone.tone.kind === "hue"
-				? (palette.communityEdges[tone.tone.hue] ?? palette.edgeDefault)
-				: palette.edgeDefault;
-		default: {
-			const _exhaustive: never = tone;
-			return _exhaustive;
-		}
-	}
-}
-
 export function buildEdgeReducer(
+	graph: ConnectionsGraph,
 	getPalette: () => ConnectionsPalette,
-	getFocusState: () => ConnectionsFocusState,
-	getDisplayState: () => ConnectionsDisplayState,
-	isEdgeInFocus: (source: string, target: string) => boolean,
+	getFocus: () => ConnectionsFocusState,
+	getDisplay: () => ConnectionsDisplayState,
 ) {
-	return (
-		_edgeKey: string,
-		data: ConnectionsEdgeAttributes,
-		source: string,
-		target: string,
-	): Partial<EdgeDisplayData> => {
+	const tone = createConnectionsToner();
+	return (edge: string, data: ConnectionsEdgeAttributes): ConnectionsEdgeDisplay => {
 		const palette = getPalette();
-		const display = getDisplayState();
-		const { hoveredNode, selectedNodeId, searchMatchIds, focusTone } = getFocusState();
-		const activeFocusId = selectedNodeId ?? hoveredNode;
-		const matchEdge = searchMatchIds?.has(source) && searchMatchIds.has(target);
-		const isHighlighted = searchMatchIds === null && isEdgeInFocus(source, target);
-		const isFaded = searchMatchIds !== null ? !matchEdge : Boolean(activeFocusId) && !isHighlighted;
-		const baseColor = edgeColorForTone(data.tone, palette);
-
-		const alphaScale = data.tone.kind === "community" ? COMMUNITY_EDGE_ALPHA_SCALE : 1;
-		let color = withAlpha(baseColor, display.linkOpacity * alphaScale);
-		let size = data.size * display.linkThicknessScale;
-		let zIndex = 0;
-
-		if (isHighlighted) {
-			color = focusTone
-				? withAlpha(communityToneColor(focusTone, palette), FOCUS_EDGE_ALPHA)
-				: palette.accent;
-			size = focusTone ? FOCUS_EDGE_SIZE : Math.max(size, 1.5);
-			zIndex = HIGHLIGHTED_EDGE_Z_INDEX;
+		const focus = getFocus();
+		const display = getDisplay();
+		const curvature = MAX_CURVATURE * display.curvature;
+		const [source, target] = graph.extremities(edge);
+		if (
+			isConnectionsNodeHidden(graph.getNodeAttributes(source), focus) ||
+			isConnectionsNodeHidden(graph.getNodeAttributes(target), focus)
+		) {
+			return { hidden: true, curvature };
 		}
 
-		if (isFaded) {
-			color = withAlpha(palette.edgeInternal, display.linkOpacity * FADED_EDGE_ALPHA_SCALE);
-			size = Math.max(0.45, size * 0.7);
+		const mode = connectionsFocusMode(focus);
+		const size = data.size * display.linkThicknessScale;
+		const ink = tone(palette, palette.text, display.linkOpacity * EDGE_INK_SCALE);
+		const touches = (id: string | null) => id === source || id === target;
+		if (mode === "path") {
+			if (focus.pathPairs?.has(connectionsPairKey(source, target))) {
+				const pathSize = Math.max(PATH_EDGE_MIN_SIZE, size * PATH_EDGE_SCALE);
+				return { color: palette.accent, size: pathSize, zIndex: 2, curvature };
+			}
+			if (touches(focus.hoveredNode)) {
+				return { color: tone(palette, ink, PATH_HOVER_LIFT), size, zIndex: 1, curvature };
+			}
+		} else if (mode === "lens") {
+			if (touches(lensNode(graph, focus))) {
+				return { color: palette.text, size: Math.max(1, size), zIndex: 1, curvature };
+			}
+		} else if (mode === "rest") {
+			return { color: ink, size, zIndex: 0, curvature };
+		} else if (focus.searchMatchIds?.has(source) && focus.searchMatchIds.has(target)) {
+			return { color: ink, size, zIndex: 1, curvature };
 		}
-
-		return {
-			color,
-			size,
-			zIndex,
-		};
+		return { color: tone(palette, ink, EDGE_MUTE[mode]), size, zIndex: 0, curvature };
 	};
 }

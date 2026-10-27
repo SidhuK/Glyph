@@ -1,9 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import {
-	type ConnectionsGraphOptions,
-	connectionsMinimumVisibleDegree,
-} from "../../lib/connectionsGraphOptions";
+import type { ConnectionsGraphOptions } from "../../lib/connectionsGraphOptions";
 import type { SpaceConnections } from "../../lib/tauri";
 import type { ConnectionsLayoutGraph } from "./connectionsCommunities";
 import { type ConnectionsGraph, buildSpaceConnectionsGraph } from "./connectionsGraph";
@@ -105,7 +102,7 @@ function filterSpaceConnections(
 	payload: SpaceConnections,
 	options: ConnectionsGraphOptions,
 ): SpaceConnections {
-	const minimumDegree = connectionsMinimumVisibleDegree(options);
+	const minimumDegree = options.minConnections;
 	if (minimumDegree <= 0) return payload;
 
 	const degrees = noteLinkDegrees(payload);

@@ -90,6 +90,9 @@ importers:
       '@replit/codemirror-vim':
         specifier: ^6.3.0
         version: 6.3.0(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/view@6.43.6)
+      '@sigma/edge-curve':
+        specifier: ^3.1.0
+        version: 3.1.0(sigma@3.0.3(graphology-types@0.24.8))
       '@tanstack/react-query':
         specifier: ^5.101.2
         version: 5.101.2(react@19.2.7)
@@ -189,6 +192,15 @@ importers:
       graphology-communities-louvain:
         specifier: ^2.0.2
         version: 2.0.2(graphology-types@0.24.8)
+      graphology-layout-forceatlas2:
+        specifier: ^0.10.1
+        version: 0.10.1(graphology-types@0.24.8)
+      graphology-layout-noverlap:
+        specifier: ^0.4.2
+        version: 0.4.2(graphology-types@0.24.8)
+      graphology-shortest-path:
+        specifier: ^2.1.0
+        version: 2.1.0(graphology-types@0.24.8)
       highlight.js:
         specifier: ^11.11.1
         version: 11.11.1
@@ -1470,6 +1482,11 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
+  '@sigma/edge-curve@3.1.0':
+    resolution: {integrity: sha512-OFWkfAXEsm+X8l1K4K49cC0psB0gQ+gqxKA08HG5piNPdzrDZ5gG9Gza6htZ5AirOVwd/4/uq/gPpD5En+H+3Q==}
+    peerDependencies:
+      sigma: '>=3.0.0-beta.10'
+
   '@tailwindcss/node@4.3.2':
     resolution: {integrity: sha512-yWP/sqEcBLaD8JuA6zNwxoYKr75qxTioYwlRwekj5Jr/I5GXnoJfjetH/psLUIv74cYTH2lBUEzBkinthoYcBg==}
 
@@ -2326,6 +2343,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@yomguithereal/helpers@1.1.1':
+    resolution: {integrity: sha512-UYvAq/XCA7xoh1juWDYsq3W0WywOB+pz8cgVnE1b45ZfdMhBvHDrgmSFG3jXeZSr2tMTYLGHFHON+ekG05Jebg==}
+
   '@yuku-codegen/binding-android-arm64@0.9.5':
     resolution: {integrity: sha512-jrOY5WM+AaAqkv51fHP1x28ifto4WgcZVzodLUyMU1jMWn5Sq+VciRdk/n8E0Ey5w4p4cWWE+m5GfXWOYh7Kzw==}
     cpu: [arm64]
@@ -3080,6 +3100,21 @@ packages:
 
   graphology-indices@0.17.0:
     resolution: {integrity: sha512-A7RXuKQvdqSWOpn7ZVQo4S33O0vCfPBnUSf7FwE0zNCasqwZVUaCXePuWo5HBpWw68KJcwObZDHpFk6HKH6MYQ==}
+    peerDependencies:
+      graphology-types: '>=0.20.0'
+
+  graphology-layout-forceatlas2@0.10.1:
+    resolution: {integrity: sha512-ogzBeF1FvWzjkikrIFwxhlZXvD2+wlY54lqhsrWprcdPjopM2J9HoMweUmIgwaTvY4bUYVimpSsOdvDv1gPRFQ==}
+    peerDependencies:
+      graphology-types: '>=0.19.0'
+
+  graphology-layout-noverlap@0.4.2:
+    resolution: {integrity: sha512-13WwZSx96zim6l1dfZONcqLh3oqyRcjIBsqz2c2iJ3ohgs3605IDWjldH41Gnhh462xGB1j6VGmuGhZ2FKISXA==}
+    peerDependencies:
+      graphology-types: '>=0.19.0'
+
+  graphology-shortest-path@2.1.0:
+    resolution: {integrity: sha512-KbT9CTkP/u72vGEJzyRr24xFC7usI9Es3LMmCPHGwQ1KTsoZjxwA9lMKxfU0syvT/w+7fZUdB/Hu2wWYcJBm6Q==}
     peerDependencies:
       graphology-types: '>=0.20.0'
 
@@ -5394,6 +5429,10 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
+  '@sigma/edge-curve@3.1.0(sigma@3.0.3(graphology-types@0.24.8))':
+    dependencies:
+      sigma: 3.0.3(graphology-types@0.24.8)
+
   '@tailwindcss/node@4.3.2':
     dependencies:
       '@jridgewell/remapping': 2.3.5
@@ -6152,6 +6191,8 @@ snapshots:
   '@voidzero-dev/vite-plus-win32-x64-msvc@1.0.0':
     optional: true
 
+  '@yomguithereal/helpers@1.1.1': {}
+
   '@yuku-codegen/binding-android-arm64@0.9.5':
     optional: true
 
@@ -6831,6 +6872,24 @@ snapshots:
 
   graphology-indices@0.17.0(graphology-types@0.24.8):
     dependencies:
+      graphology-types: 0.24.8
+      graphology-utils: 2.5.2(graphology-types@0.24.8)
+      mnemonist: 0.39.8
+
+  graphology-layout-forceatlas2@0.10.1(graphology-types@0.24.8):
+    dependencies:
+      graphology-types: 0.24.8
+      graphology-utils: 2.5.2(graphology-types@0.24.8)
+
+  graphology-layout-noverlap@0.4.2(graphology-types@0.24.8):
+    dependencies:
+      graphology-types: 0.24.8
+      graphology-utils: 2.5.2(graphology-types@0.24.8)
+
+  graphology-shortest-path@2.1.0(graphology-types@0.24.8):
+    dependencies:
+      '@yomguithereal/helpers': 1.1.1
+      graphology-indices: 0.17.0(graphology-types@0.24.8)
       graphology-types: 0.24.8
       graphology-utils: 2.5.2(graphology-types@0.24.8)
       mnemonist: 0.39.8

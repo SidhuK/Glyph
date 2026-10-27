@@ -13,9 +13,9 @@ interface LocalNoteConnectionsViewportProps {
 
 const LOCAL_DISPLAY = {
 	nodeSizeScale: 1,
-	linkOpacity: 1,
+	linkOpacity: 0.45,
 	linkThicknessScale: 1,
-	edgeBundling: 1,
+	curvature: 0.5,
 };
 
 export function LocalNoteConnectionsViewport({

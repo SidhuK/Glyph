@@ -94,28 +94,7 @@ export function connectionsLinkThicknessScale(value: number) {
 	return unitScale(value, 0.5, 1.8);
 }
 
-export function connectionsEdgeBundling(value: number) {
+/** The `edgeBundling` setting: 0 draws straight links, 1 strongly curved ones. */
+export function connectionsLinkCurvature(value: number) {
 	return unitScale(value, 0, 1);
-}
-
-export function connectionsLabelVisibility(value: number) {
-	if (value <= 0) {
-		return {
-			labelDensity: 0,
-			labelGridCellSize: 320,
-			labelRenderedSizeThreshold: Number.POSITIVE_INFINITY,
-		};
-	}
-	const t = Math.min(100, value) / 100;
-	const eased = t * t * t;
-	return {
-		labelDensity: 0.03 + eased * 16,
-		labelGridCellSize: Math.round(320 - t * 288),
-		labelRenderedSizeThreshold: 0,
-	};
-}
-
-export function connectionsMinimumVisibleDegree(options: ConnectionsGraphOptions) {
-	const orphanFloor = options.hideOrphanNodes ? 1 : 0;
-	return Math.max(orphanFloor, options.minConnections);
 }
