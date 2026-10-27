@@ -67,6 +67,7 @@
 			"lines": "Lines",
 			"readingTime": "Read time",
 			"tasks": "Tasks",
+			"tasksDone": "{{completed}} of {{total}} done",
 			"file": "File",
 			"modified": "Modified",
 			"created": "Created",

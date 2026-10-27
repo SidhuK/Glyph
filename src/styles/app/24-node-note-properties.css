@@ -215,6 +215,15 @@
 	cursor: text;
 }
 
+/* Text-only controls, like the Info panel's section tabs: hover darkens the ink, with no
+   global button fill hugging the label. */
+:is(.notePropertyKeyLabel, .notePropertyWikiLinkEdit, .notePropertyStatusTrigger):is(
+	:hover,
+	:active
+) {
+	background: transparent;
+}
+
 .notePropertyKeyPlaceholder {
 	color: var(--text-tertiary);
 }

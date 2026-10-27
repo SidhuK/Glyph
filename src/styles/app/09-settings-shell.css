@@ -30,13 +30,9 @@
 .sidebarQuickActionBtn.settingsBackButton {
 	height: 28px;
 	gap: 8px;
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	font-size: var(--text-base);
 	font-weight: var(--font-normal);
-}
-
-.sidebarQuickActionBtn.settingsBackButton:hover {
-	color: var(--text-primary);
 }
 
 .settingsSidebarSearch {
@@ -231,13 +227,13 @@
 	outline: none;
 }
 
-/* Same row as the main sidebar nav (.sidebarNavBtn): 28px, secondary idle ink, primary active. */
+/* Same row as the main sidebar nav (.sidebarNavBtn): 28px, primary ink. */
 .sidebarQuickActionBtn.settingsTabButton {
 	position: relative;
 	height: 28px;
 	min-height: 28px;
 	padding-inline: 8px;
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	background: transparent;
 	font-size: var(--text-base);
 	font-weight: var(--font-normal);
@@ -255,16 +251,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--text-secondary);
-	flex: 0 0 auto;
-	transition: color var(--transition-base);
-}
-
-.sidebarQuickActionBtn.settingsTabButton:hover,
-.sidebarQuickActionBtn.settingsTabButton:hover .settingsTabIcon,
-.sidebarQuickActionBtn.settingsTabButton[aria-current="page"],
-.settingsTabButton[aria-current="page"] .settingsTabIcon {
 	color: var(--text-primary);
+	flex: 0 0 auto;
 }
 
 .sidebarQuickActionBtn.settingsTabButton[aria-current="page"] {

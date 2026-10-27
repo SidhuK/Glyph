@@ -1,5 +1,10 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { CalendarAdd01Icon, Clock01Icon, Folder01Icon } from "@hugeicons/core-free-icons";
+import {
+	CalendarAdd01Icon,
+	Clock01Icon,
+	File01Icon,
+	Folder01Icon,
+} from "@hugeicons/core-free-icons";
 import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat } from "../../../contexts";
 import {
@@ -63,18 +68,11 @@ export function InfoStatsTab({
 }: InfoStatsTabProps) {
 	const { t } = useTranslation("editor");
 	const dateDisplayFormat = useDateDisplayFormat();
-	const tasksValue =
-		taskSummary.total_count > 0
-			? `${taskSummary.completed_count.toLocaleString()}/${taskSummary.total_count.toLocaleString()}`
-			: "—";
-	// Two even rows of three: document counts, then time, tasks and size.
 	const statCards = [
 		{ key: "words", value: stats.words.toLocaleString() },
 		{ key: "characters", value: stats.characters.toLocaleString() },
 		{ key: "lines", value: (previewContext?.line_count ?? lineCount).toLocaleString() },
 		{ key: "readingTime", value: stats.readingTime },
-		{ key: "tasks", value: tasksValue },
-		{ key: "size", value: formatFileSize(utf8SizeBytes) },
 	] as const;
 	const fileRows = [
 		{
@@ -93,6 +91,7 @@ export function InfoStatsTab({
 			value: formatMetadataDate(previewContext?.created, dateDisplayFormat),
 		},
 		{ key: "path", icon: Folder01Icon, value: relPath },
+		{ key: "size", icon: File01Icon, value: formatFileSize(utf8SizeBytes) },
 	] as const;
 
 	return (
@@ -101,19 +100,23 @@ export function InfoStatsTab({
 				<div className="markdownEditorInfoStatGrid">
 					{statCards.map((card) => (
 						<div key={card.key} className="markdownEditorInfoStatCard">
-							<strong>
-								{card.key === "tasks" && taskSummary.total_count > 0 ? (
-									<TaskProgressIndicator
-										summary={taskSummary}
-										className="markdownEditorInfoStatProgress"
-									/>
-								) : null}
-								{card.value}
-							</strong>
+							<strong>{card.value}</strong>
 							<span>{t(`infoSidebar.stats.${card.key}`)}</span>
 						</div>
 					))}
 				</div>
+				{taskSummary.total_count > 0 ? (
+					<div className="markdownEditorInfoTaskSummary">
+						<TaskProgressIndicator summary={taskSummary} />
+						<span>{t("infoSidebar.stats.tasks")}</span>
+						<strong>
+							{t("infoSidebar.stats.tasksDone", {
+								completed: taskSummary.completed_count.toLocaleString(),
+								total: taskSummary.total_count.toLocaleString(),
+							})}
+						</strong>
+					</div>
+				) : null}
 			</section>
 
 			<section className="markdownEditorInfoSection">

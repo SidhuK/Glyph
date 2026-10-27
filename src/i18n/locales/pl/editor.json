@@ -79,6 +79,7 @@
 			"lines": "Wiersze",
 			"readingTime": "Czas czytania",
 			"tasks": "Zadania",
+			"tasksDone": "Ukończono {{completed}} z {{total}}",
 			"file": "Plik",
 			"modified": "Zmodyfikowano",
 			"created": "Utworzono",
