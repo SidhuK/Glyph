@@ -164,6 +164,7 @@ export function AppShell() {
 		sidebarWidth,
 		setSidebarWidth,
 		zenMode,
+		settingsOpen,
 		openSettings,
 	} = useUILayoutContext();
 	const zenModeRef = useRef(zenMode);
@@ -1296,7 +1297,8 @@ export function AppShell() {
 	);
 
 	useCommandShortcuts({
-		handlers: shortcutHandlers,
+		// The settings dialog owns the keyboard while it is open.
+		handlers: settingsOpen ? [] : shortcutHandlers,
 		paletteOpen,
 		onClosePalette: closePalette,
 	});

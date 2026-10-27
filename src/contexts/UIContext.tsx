@@ -322,7 +322,6 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				...state,
 				settingsOpen: true,
 				settingsTab: action.tab ?? state.settingsTab,
-				sidebarCollapsed: false,
 			};
 		case "closeSettings":
 			return { ...state, settingsOpen: false };
