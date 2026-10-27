@@ -24,7 +24,7 @@ interface RibbonButtonListProps {
 	onPreventMouseDown: (e: React.MouseEvent) => void;
 }
 
-/** Marks and headings the buttons light up for; re-renders the bar when any of them changes. */
+/** Marks, links and headings the buttons light up for; re-renders the bar when any of them changes. */
 function activeFormatKey(editor: Editor): string {
 	if (editor.isDestroyed) return "";
 	return [
@@ -32,6 +32,7 @@ function activeFormatKey(editor: Editor): string {
 		editor.isActive("italic"),
 		editor.isActive("underline"),
 		editor.isActive("strike"),
+		editor.isActive("link"),
 		editor.isActive("heading", { level: 1 }),
 		editor.isActive("heading", { level: 2 }),
 		editor.isActive("heading", { level: 3 }),

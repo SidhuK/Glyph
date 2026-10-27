@@ -257,6 +257,10 @@
 		"sidebarTabsLabel": "Notiz-Seitenleiste",
 		"infoTab": "Info",
 		"historyTab": "Versionsverlauf",
-		"close": "Infobereich schließen"
+		"close": "Infobereich schließen",
+		"stats": {
+			"tasks": "Aufgaben",
+			"tasksDone": "{{completed}} von {{total}} erledigt"
+		}
 	}
 }

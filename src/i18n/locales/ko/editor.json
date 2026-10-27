@@ -257,6 +257,10 @@
 		"sidebarTabsLabel": "노트 사이드바",
 		"infoTab": "정보",
 		"historyTab": "버전 기록",
-		"close": "정보 패널 닫기"
+		"close": "정보 패널 닫기",
+		"stats": {
+			"tasks": "작업",
+			"tasksDone": "{{total}}개 중 {{completed}}개 완료"
+		}
 	}
 }

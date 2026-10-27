@@ -257,6 +257,10 @@
 		"sidebarTabsLabel": "ノートサイドバー",
 		"infoTab": "情報",
 		"historyTab": "バージョン履歴",
-		"close": "情報パネルを閉じる"
+		"close": "情報パネルを閉じる",
+		"stats": {
+			"tasks": "タスク",
+			"tasksDone": "{{total}} 件中 {{completed}} 件完了"
+		}
 	}
 }

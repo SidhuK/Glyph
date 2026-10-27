@@ -257,6 +257,10 @@
 		"sidebarTabsLabel": "Barra lateral de la nota",
 		"infoTab": "Información",
 		"historyTab": "Historial de versiones",
-		"close": "Cerrar panel de información"
+		"close": "Cerrar panel de información",
+		"stats": {
+			"tasks": "Tareas",
+			"tasksDone": "{{completed}} de {{total}} hechas"
+		}
 	}
 }
