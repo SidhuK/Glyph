@@ -8,6 +8,7 @@
 	justify-content: center;
 	padding: var(--space-5);
 	overflow-y: auto;
+	container-type: inline-size;
 }
 
 .mainEmptyBottomBlock {
@@ -97,4 +98,47 @@
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	text-align: center;
+}
+
+/* Glyph.icon layers as a tinted glass watermark that follows the theme text colour. */
+.mainEmptyWatermark {
+	position: relative;
+	width: clamp(112px, min(30cqi, 30vh), 240px);
+	aspect-ratio: 1;
+	/* The artwork sits low on its canvas; lift it to the optical centre. */
+	translate: 0 -6%;
+}
+
+.mainEmptyWatermarkLayer {
+	position: absolute;
+	inset: 0;
+	mask-size: 100% 100%;
+	mask-repeat: no-repeat;
+	background: linear-gradient(
+		to bottom,
+		color-mix(in srgb, var(--text-primary) 7%, transparent),
+		color-mix(in srgb, var(--text-primary) 4%, transparent)
+	);
+}
+
+/* Offsets and opacity are icon.json values over its 1024pt canvas. */
+.mainEmptyWatermarkLayer[data-layer="backSheet"] {
+	translate: -2.34% -2.73%;
+	opacity: 0.6;
+}
+
+.mainEmptyWatermarkLayer[data-layer="asterisk"] {
+	translate: -48.14% 3.06%;
+}
+
+.mainEmptyWatermarkLayer:is(
+	[data-layer="asterisk"],
+	[data-layer="wordmark"],
+	[data-layer="smallAsterisks"]
+) {
+	background: linear-gradient(
+		to bottom,
+		color-mix(in srgb, var(--text-primary) 12%, transparent),
+		color-mix(in srgb, var(--text-primary) 8%, transparent)
+	);
 }

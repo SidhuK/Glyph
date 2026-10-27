@@ -32,6 +32,7 @@ import { useAiPanelSession } from "../ai/aiPanelSession";
 import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
+import { EmptyStateWatermark } from "./EmptyStateWatermark";
 import { SplitEditorLayout } from "./SplitEditorLayout";
 import { WelcomeScreen } from "./WelcomeScreen";
 import type { SplitEditorDragSource, SplitEditorDropTarget } from "./splitEditorDnd";
@@ -293,7 +294,12 @@ export const MainContent = memo(function MainContent({
 					focused={focused}
 					allowWindowDrag={splitLayout.type === "pane"}
 					childrenByDir={childrenByDir}
-					emptyState={<EmptyStateCommandPaletteHint onOpenCommandPalette={onOpenCommandPalette} />}
+					emptyState={
+						<>
+							<EmptyStateWatermark />
+							<EmptyStateCommandPaletteHint onOpenCommandPalette={onOpenCommandPalette} />
+						</>
+					}
 					createMarkdownFileAtPath={fileTree.createMarkdownFileAtPath}
 					onRenameFile={handleRenameFile}
 					onOpenFile={onOpenFile}
