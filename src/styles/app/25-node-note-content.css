@@ -145,11 +145,6 @@
 	pointer-events: none;
 }
 
-/* Links read as links from the underline; the file glyph only added noise to lists. */
-.wikiLink > .wikiLinkIcon {
-	display: none;
-}
-
 .wikiLink::after {
 	content: "";
 	flex: 0 0 auto;
@@ -157,7 +152,7 @@
 	height: 0.72em;
 	margin-left: 1px;
 	background: currentcolor;
-	opacity: 0;
+	opacity: 0.58;
 	transition: opacity 120ms ease;
 	mask: var(--wiki-link-affordance-mask) center / contain no-repeat;
 	-webkit-mask: var(--wiki-link-affordance-mask) center / contain no-repeat;
@@ -459,15 +454,7 @@
 	font-weight: var(--font-medium);
 	font-variant-numeric: tabular-nums;
 	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
-	opacity: 0;
-	transition: opacity var(--transition-base);
 	pointer-events: none;
-}
-
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline
-	:is(h1, h2, h3, h4, h5, h6):hover::before {
-	opacity: 1;
 }
 
 .tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview) .tiptapContentInline h1::before {

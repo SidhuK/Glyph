@@ -7,7 +7,6 @@
 	align-items: center;
 	min-height: 0;
 	overflow-y: auto;
-	/* The title lands on the editor's H1 line (header + 28px). */
 	padding: calc(var(--header-height) + 28px) clamp(40px, 4vw, 56px) clamp(34px, 5vw, 64px);
 	background: var(--bg-primary);
 	gap: 26px;

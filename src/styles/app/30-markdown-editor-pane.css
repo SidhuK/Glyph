@@ -1123,7 +1123,7 @@
 }
 
 .markdownEditorPane .rfNodeNoteEditorBody {
-	padding-top: clamp(4px, 1vh, 24px);
+	padding-top: 9vh;
 }
 
 .markdownEditorPane .rfNodeNoteEditor.rfNodeNoteEditorFlatEdges {
@@ -1136,7 +1136,7 @@
 
 .markdownEditorPane .tiptapContentInline {
 	max-width: var(--editor-readable-content-max-width);
-	padding: 12px var(--editor-readable-content-gutter) 50vh;
+	padding: 18px var(--editor-readable-content-gutter) 50vh;
 }
 
 @media (min-width: 761px) {
