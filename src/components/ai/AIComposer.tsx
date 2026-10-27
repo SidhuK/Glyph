@@ -525,7 +525,7 @@ export function AIComposer({
 				<BorderBeam
 					className="aiComposerBeam"
 					size={beamSize}
-					colorVariant="mono"
+					colorVariant="colorful"
 					theme={isDarkTheme ? "dark" : "light"}
 					strength={beamStrength}
 					duration={isStreamingResponse ? 3.4 : 5.2}
