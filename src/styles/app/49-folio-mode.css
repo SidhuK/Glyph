@@ -260,6 +260,10 @@
 }
 
 .folioNoteTaskProgress {
+	--task-progress-width: var(--icon-lg);
+	--task-progress-height: var(--icon-lg);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
 	flex: 0 0 auto;
 }
 

@@ -9,6 +9,7 @@ import {
 	parseDisplayDateInput,
 } from "../../../lib/dateDisplayFormat";
 import type { NoteTaskSummary, WorkspaceDatabasePreviewContext } from "../../../lib/tauri";
+import { TaskProgressIndicator } from "../../checklists/TaskProgressIndicator";
 
 interface InfoStatsTabProps {
 	relPath: string;
@@ -100,7 +101,15 @@ export function InfoStatsTab({
 				<div className="markdownEditorInfoStatGrid">
 					{statCards.map((card) => (
 						<div key={card.key} className="markdownEditorInfoStatCard">
-							<strong>{card.value}</strong>
+							<strong>
+								{card.key === "tasks" && taskSummary.total_count > 0 ? (
+									<TaskProgressIndicator
+										summary={taskSummary}
+										className="markdownEditorInfoStatProgress"
+									/>
+								) : null}
+								{card.value}
+							</strong>
 							<span>{t(`infoSidebar.stats.${card.key}`)}</span>
 						</div>
 					))}

@@ -202,6 +202,10 @@ button.sidebarCreateMenuTrigger:focus-visible,
 	color: var(--text-primary);
 }
 
+.sidebarNavBtn[data-kind="new-note"] > svg {
+	color: var(--interactive-accent);
+}
+
 .sidebarNavBtn[data-active="true"] {
 	background: var(--bg-active);
 }

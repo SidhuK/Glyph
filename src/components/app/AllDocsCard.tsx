@@ -177,6 +177,9 @@ export function AllDocsCard({
 					{taskSummary && taskCount > 0 ? (
 						<span className="allDocsCardTaskSummary">
 							<TaskProgressComponent summary={taskSummary} className="allDocsCardTaskProgress" />
+							<span className="allDocsCardTaskText">
+								{taskSummary.completed_count}/{taskCount}
+							</span>
 						</span>
 					) : null}
 				</div>

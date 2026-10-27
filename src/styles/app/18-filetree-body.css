@@ -376,6 +376,10 @@
 }
 
 .fileTreeTaskProgress {
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
 	flex-shrink: 0;
 }
 

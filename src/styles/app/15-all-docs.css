@@ -156,12 +156,24 @@
 	display: inline-flex;
 	flex: 0 0 auto;
 	align-items: center;
+	gap: 4px;
+	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	font-variant-numeric: tabular-nums;
+	line-height: 1.25;
 	justify-self: end;
 }
 
-/* Task progress stays the shared neutral fraction; only its size matches the card. */
 .allDocsCardTaskProgress {
-	font-size: var(--text-xs);
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
+}
+
+.allDocsCardTaskText {
+	white-space: nowrap;
 }
 
 @media (max-width: 900px) {

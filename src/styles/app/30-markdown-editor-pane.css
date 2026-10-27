@@ -147,17 +147,39 @@
 	transform: translateX(-50%) translateY(0);
 }
 
-/* Task progress is a plain neutral fraction, so it never reads as a second status icon. */
 .markdownEditorTaskProgress {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	flex: 0 0 auto;
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
-	font-weight: var(--font-normal);
-	font-variant-numeric: tabular-nums;
-	line-height: 1;
-	white-space: nowrap;
+	width: var(--task-progress-width, var(--icon-lg));
+	height: var(--task-progress-height, var(--icon-lg));
+	line-height: 0;
+}
+
+.markdownEditorTaskProgressRing {
+	width: var(--task-progress-ring-size, var(--icon-md));
+	height: var(--task-progress-ring-size, var(--icon-md));
+	flex: 0 0 var(--task-progress-ring-size, var(--icon-md));
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	border: 2px solid var(--task-progress-color);
+	box-sizing: border-box;
+}
+
+.markdownEditorTaskProgressPie {
+	display: block;
+	width: var(--task-progress-pie-size, calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45));
+	height: var(
+		--task-progress-pie-size,
+		calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
+	);
+	flex: 0 0
+		var(--task-progress-pie-size, calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45));
+	border-radius: 50%;
+	transition: background 180ms ease;
 }
 
 .markdownEditorCenter {
@@ -488,6 +510,19 @@
 	letter-spacing: -0.01em;
 	color: var(--text-primary);
 	line-height: 1.2;
+}
+
+.markdownEditorInfoStatCard strong:has(.markdownEditorInfoStatProgress) {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.markdownEditorInfoStatProgress {
+	--task-progress-width: var(--icon-sm);
+	--task-progress-height: var(--icon-sm);
+	--task-progress-ring-size: var(--icon-sm);
+	--task-progress-pie-size: calc(var(--icon-sm) * 0.45);
 }
 
 .markdownEditorInfoStatCard > span {

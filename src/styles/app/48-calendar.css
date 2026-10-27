@@ -2,11 +2,10 @@
 
 .calendarCard {
 	margin-inline: 8px;
-	padding: 10px 0 4px;
-	border: 0;
-	border-top: 1px solid var(--border-light);
-	border-radius: 0;
-	background: transparent;
+	padding: 6px 4px 4px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-xl);
+	background: color-mix(in srgb, var(--text-primary) 2.5%, transparent);
 	user-select: none;
 	-webkit-font-smoothing: antialiased;
 }
@@ -242,13 +241,9 @@ button.calendarMonthTitleButton:hover {
 	background: var(--interactive-accent);
 }
 
-/* Only daily notes get a dot; marking every note turned the grid into texture. */
+/* Days with other notes get a softer accent dot, so daily notes still stand out. */
 .calendarDayMarker[data-tone="note"] {
-	background: transparent;
-}
-
-.calendarDay[data-selected="true"] .calendarDayMarker[data-tone="daily"] {
-	background: var(--interactive-accent);
+	background: color-mix(in srgb, var(--interactive-accent) 55%, transparent);
 }
 
 /* ── Day summary ── */
