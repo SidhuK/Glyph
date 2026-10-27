@@ -806,7 +806,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	return (
 		<div
 			ref={noteEditorHostRef}
-			className={["rfNodeNoteEditor", "rfNodeNoteEditorFlatEdges", "nodrag", "nopan"]
+			className={[
+				"rfNodeNoteEditor",
+				"rfNodeNoteEditorFlatEdges",
+				showEditorFormatBar && liveEditor ? "rfNodeNoteEditorHasRibbon" : "",
+				"nodrag",
+				"nopan",
+			]
 				.filter(Boolean)
 				.join(" ")}
 			onKeyDownCapture={canEdit ? noteFind.handleEditorKeyDownCapture : undefined}

@@ -1,11 +1,8 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { SquareArrowUpRightIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/core";
-import { NodeSelection } from "@tiptap/pm/state";
-import type { EditorState } from "@tiptap/pm/state";
 import { useEditorState } from "@tiptap/react";
-import { BubbleMenu } from "@tiptap/react/menus";
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { RibbonColorPopover } from "./RibbonColorPopover";
 import { RibbonLinkPopover } from "./RibbonLinkPopover";
@@ -27,43 +24,20 @@ interface RibbonButtonListProps {
 	onPreventMouseDown: (e: React.MouseEvent) => void;
 }
 
-/** Wait this long after the selection settles before moving the bar onto it. */
-const FORMAT_BAR_UPDATE_DELAY_MS = 120;
-
-const FORMAT_BAR_GAP_PX = 8;
-
-/** The editor's content box: the text column, without the gutters that hold the heading rail. */
-function textColumnRect(dom: HTMLElement) {
-	const rect = dom.getBoundingClientRect();
-	const style = getComputedStyle(dom);
-	const left = rect.left + Number.parseFloat(style.paddingLeft);
-	const right = rect.right - Number.parseFloat(style.paddingRight);
-	return { x: left, y: rect.top, width: Math.max(0, right - left), height: rect.height };
-}
-
-/**
- * Above the selection, like every macOS format bar: it may cover the line above (even the title),
- * never the selected text or the text below it. TipTap runs flip before offset, so the top padding
- * includes the gap; it only flips below when the editor viewport has no room above. Sideways it
- * stays inside the text column whenever it fits.
- */
-function formatBarPosition(editor: Editor) {
-	return {
-		placement: "top",
-		offset: FORMAT_BAR_GAP_PX,
-		flip: { padding: { top: FORMAT_BAR_GAP_PX + 4 } },
-		shift: () => ({ boundary: textColumnRect(editor.view.dom) }),
-	} as const;
-}
-
-function hasFormattableSelection(state: EditorState): boolean {
-	const { selection } = state;
-	return !selection.empty && !(selection instanceof NodeSelection);
-}
-
-/** Positioning only: whether the bar is actually visible is decided by focus in CSS below. */
-function shouldPlaceFormatBar({ editor, state }: { editor: Editor; state: EditorState }): boolean {
-	return editor.isEditable && hasFormattableSelection(state);
+/** Marks and headings the buttons light up for; re-renders the bar when any of them changes. */
+function activeFormatKey(editor: Editor): string {
+	if (editor.isDestroyed) return "";
+	return [
+		editor.isActive("bold"),
+		editor.isActive("italic"),
+		editor.isActive("underline"),
+		editor.isActive("strike"),
+		editor.isActive("heading", { level: 1 }),
+		editor.isActive("heading", { level: 2 }),
+		editor.isActive("heading", { level: 3 }),
+	]
+		.map((active) => (active ? "1" : "0"))
+		.join("");
 }
 
 const RibbonButtonList = memo(function RibbonButtonList({
@@ -88,8 +62,8 @@ const RibbonButtonList = memo(function RibbonButtonList({
 });
 
 /**
- * Selection format bar: inline marks, colour, link and headings, anchored above the selection.
- * Lists and blocks stay on the slash menu and markdown shortcuts.
+ * Format bar pinned to the bottom of the editor while the "Show format bar" setting is on:
+ * inline marks, link, colour and headings. Lists and blocks stay on the slash menu and markdown shortcuts.
  */
 export const EditorRibbon = memo(function EditorRibbon({
 	editor,
@@ -97,15 +71,8 @@ export const EditorRibbon = memo(function EditorRibbon({
 	onExtractSelectionToNote,
 }: EditorRibbonProps) {
 	const { t } = useTranslation("editor");
-	// Hover, focus and open popovers keep the bar up in CSS once the editor loses focus.
-	const hasTextSelection = useEditorState({
-		editor,
-		selector: ({ editor: instance }) =>
-			!instance.isDestroyed && instance.isFocused && hasFormattableSelection(instance.state),
-	});
+	useEditorState({ editor, selector: ({ editor: instance }) => activeFormatKey(instance) });
 	const focusChain = () => editor.chain().focus(undefined, { scrollIntoView: false });
-	// A stable object: BubbleMenu re-dispatches its options whenever their identity changes.
-	const position = useMemo(() => formatBarPosition(editor), [editor]);
 
 	const preventMouseDown = (e: React.MouseEvent) => e.preventDefault();
 
@@ -121,14 +88,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 	};
 
 	return (
-		<BubbleMenu
-			editor={editor}
-			className="rfNodeNoteEditorRibbonAnchor"
-			data-visible={hasTextSelection ? "true" : undefined}
-			updateDelay={FORMAT_BAR_UPDATE_DELAY_MS}
-			shouldShow={shouldPlaceFormatBar}
-			options={position}
-		>
+		<div className="rfNodeNoteEditorRibbonAnchor">
 			<div
 				className="rfNodeNoteEditorRibbon nodrag nopan nowheel"
 				role="toolbar"
@@ -177,6 +137,6 @@ export const EditorRibbon = memo(function EditorRibbon({
 					</>
 				) : null}
 			</div>
-		</BubbleMenu>
+		</div>
 	);
 });
