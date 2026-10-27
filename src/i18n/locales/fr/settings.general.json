@@ -8,6 +8,7 @@
 		"searchPlaceholder": "Rechercher dans les réglages",
 		"searchAriaLabel": "Rechercher dans les réglages",
 		"clearSearchAriaLabel": "Effacer la recherche des réglages",
+		"closeAriaLabel": "Fermer les réglages",
 		"searchEmpty": "Aucun réglage correspondant",
 		"sendFeedback": "Envoyer un avis",
 		"buyLicense": "Acheter une licence officielle"

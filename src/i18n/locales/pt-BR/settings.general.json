@@ -8,6 +8,7 @@
 		"searchPlaceholder": "Buscar configurações",
 		"searchAriaLabel": "Buscar configurações",
 		"clearSearchAriaLabel": "Limpar busca de configurações",
+		"closeAriaLabel": "Fechar configurações",
 		"searchEmpty": "Nenhuma configuração correspondente",
 		"sendFeedback": "Enviar feedback",
 		"buyLicense": "Comprar licença oficial"

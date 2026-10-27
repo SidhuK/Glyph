@@ -69,6 +69,7 @@ import {
 } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
+import { SettingsDialog } from "../settings/SettingsDialog";
 import { CalendarPaletteController, preloadCalendarPalette } from "./CalendarPaletteController";
 import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
@@ -162,10 +163,8 @@ export function AppShell() {
 		settingsSpacePath,
 		sidebarWidth,
 		setSidebarWidth,
-		settingsMode,
 		zenMode,
 		openSettings,
-		closeSettings,
 	} = useUILayoutContext();
 	const zenModeRef = useRef(zenMode);
 	zenModeRef.current = zenMode;
@@ -1250,20 +1249,6 @@ export function AppShell() {
 	const shortcutHandlers = useMemo(
 		() => [
 			{
-				id: "close-settings",
-				shortcut: { key: "Escape" },
-				enabled: settingsMode,
-				action: closeSettings,
-				allowInEditable: true,
-			},
-			{
-				id: "back-from-settings",
-				shortcut: { meta: true, key: "[" },
-				enabled: settingsMode,
-				action: closeSettings,
-				allowInEditable: true,
-			},
-			{
 				id: "open-command-palette",
 				shortcut: getBinding("open-command-palette"),
 				action: openCommandPalette,
@@ -1301,13 +1286,11 @@ export function AppShell() {
 		],
 		[
 			activateTabByIndex,
-			closeSettings,
 			commands,
 			getBinding,
 			handleCloseTabOrWindow,
 			openCommandPalette,
 			openSearchPalette,
-			settingsMode,
 			tabs,
 		],
 	);
@@ -1352,7 +1335,7 @@ export function AppShell() {
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
-			{(!zenMode || settingsMode) && sidebarCollapsed ? (
+			{!zenMode && sidebarCollapsed ? (
 				<div className="sidebarCollapsedToggle">
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}
@@ -1361,7 +1344,7 @@ export function AppShell() {
 					/>
 				</div>
 			) : null}
-			{!zenMode || settingsMode ? (
+			{!zenMode ? (
 				<>
 					<Sidebar
 						onSelectSpace={handleSelectSpace}
@@ -1511,6 +1494,7 @@ export function AppShell() {
 					/>
 				</>
 			) : null}
+			<SettingsDialog />
 		</div>
 	);
 }

@@ -31,8 +31,6 @@ import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { useAiPanelSession } from "../ai/aiPanelSession";
 import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
-import { localizedSettingsTabLabel } from "../settings/settingsSearch";
-import { useActiveSettingsTab } from "../settings/useDeveloperMode";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
 import { SplitEditorLayout } from "./SplitEditorLayout";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -40,11 +38,6 @@ import type { SplitEditorDragSource, SplitEditorDropTarget } from "./splitEditor
 import type { WorkspaceEditorPane } from "./useTabManager";
 
 const DAILY_NOTES_SETUP_TOAST_ID = "daily-notes-setup";
-const SettingsTabContent = lazy(() =>
-	import("../settings/SettingsTabContent").then((module) => ({
-		default: module.SettingsTabContent,
-	})),
-);
 const NoteSidePeek = lazy(() =>
 	import("../preview/NoteSidePeek").then((module) => ({
 		default: module.NoteSidePeek,
@@ -194,8 +187,7 @@ export const MainContent = memo(function MainContent({
 	onOpenPeekedNote,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
-	const { folioMode, settingsMode, zenMode } = useUILayoutContext();
-	const settingsTab = useActiveSettingsTab();
+	const { folioMode, zenMode } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { keepMounted: aiPanelKeepMounted } = useAiPanelSession();
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
@@ -205,7 +197,7 @@ export const MainContent = memo(function MainContent({
 	const aiSidebarVisible = !zenMode && aiEnabled && aiPanelOpen && !infoSidebarOpen;
 	const aiSidebarMounted = aiSidebarVisible || aiPanelKeepMounted;
 	const rightSidebarOpen =
-		Boolean(spacePath) && !settingsMode && (aiSidebarVisible || (!zenMode && infoSidebarOpen));
+		Boolean(spacePath) && (aiSidebarVisible || (!zenMode && infoSidebarOpen));
 	const infoSidebarResize = useResizablePanel({
 		min: 260,
 		max: 620,
@@ -267,8 +259,6 @@ export const MainContent = memo(function MainContent({
 		[infoSidebarResize, rightSidebarOpen],
 	);
 
-	const { i18n } = useTranslation();
-	const settingsPanelTitle = localizedSettingsTabLabel(settingsTab, i18n.language);
 	const handleRenameFile = useCallback(
 		(path: string, nextName: string) => fileTree.onRenameDir(path, nextName, "file"),
 		[fileTree.onRenameDir],
@@ -385,26 +375,6 @@ export const MainContent = memo(function MainContent({
 			</div>
 		</>
 	);
-
-	if (settingsMode) {
-		return (
-			<>
-				<main className="mainArea">
-					<div className="settingsTabPanel">
-						<header className="settingsPanelHeader">
-							<div className="settingsPanelTitleRow">
-								<h2 className="settingsPanelTitle">{settingsPanelTitle}</h2>
-							</div>
-						</header>
-						<Suspense fallback={null}>
-							<SettingsTabContent key={spacePath ?? "no-space"} tab={settingsTab} />
-						</Suspense>
-					</div>
-				</main>
-				{aiPanelKeepMounted ? rightSidebarSurface : null}
-			</>
-		);
-	}
 
 	if (!spacePath) {
 		if (!settingsLoaded) return <main className="mainArea" />;

@@ -8,6 +8,7 @@
 		"searchPlaceholder": "Buscar ajustes",
 		"searchAriaLabel": "Buscar ajustes",
 		"clearSearchAriaLabel": "Borrar búsqueda de ajustes",
+		"closeAriaLabel": "Cerrar ajustes",
 		"searchEmpty": "No hay ajustes que coincidan",
 		"sendFeedback": "Enviar comentarios",
 		"buyLicense": "Comprar licencia oficial"

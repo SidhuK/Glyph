@@ -8,6 +8,7 @@
 		"searchPlaceholder": "設定を検索",
 		"searchAriaLabel": "設定を検索",
 		"clearSearchAriaLabel": "設定の検索をクリア",
+		"closeAriaLabel": "設定を閉じる",
 		"searchEmpty": "一致する設定はありません",
 		"sendFeedback": "フィードバックを送信",
 		"buyLicense": "公式ライセンスを購入"
