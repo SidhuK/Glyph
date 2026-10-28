@@ -9,6 +9,7 @@
 		"shortcuts": "Skróty",
 		"ai": "AI",
 		"space": "Przestrzeń",
+		"attachments": "Załączniki",
 		"git": "Synchronizacja Git",
 		"about": "O programie"
 	},
@@ -57,6 +58,11 @@
 			"title": "Ustawienia przestrzeni",
 			"description": "Otwórz ustawienia przestrzeni.",
 			"keywords": ["Przestrzeń"]
+		},
+		"attachments": {
+			"title": "Ustawienia załączników",
+			"description": "Otwórz ustawienia załączników.",
+			"keywords": ["Załączniki"]
 		},
 		"git": {
 			"title": "Ustawienia synchronizacji Git",
@@ -366,6 +372,12 @@
 			"title": "Lokalizacja",
 			"section": "Załączniki",
 			"keywords": ["zasoby", "pliki", "obrazy", "folder"]
+		},
+		"attachments-browser": {
+			"title": "Nieużywane załączniki",
+			"section": "Miejsce na dysku",
+			"description": "Znajdź nieużywane załączniki i przenieś je do Kosza.",
+			"keywords": ["załączniki", "nieużywane", "osierocone", "porządki", "obrazy", "kosz"]
 		},
 		"space-connections-graph": {
 			"title": "Graf połączeń",

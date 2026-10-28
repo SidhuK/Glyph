@@ -9,6 +9,7 @@
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
+		"attachments": "添付ファイル",
 		"git": "Git Sync",
 		"about": "About"
 	},
@@ -57,6 +58,11 @@
 			"title": "Space settings",
 			"description": "Open Space settings.",
 			"keywords": ["Space"]
+		},
+		"attachments": {
+			"title": "添付ファイルの設定",
+			"description": "添付ファイルの設定を開きます。",
+			"keywords": ["添付ファイル"]
 		},
 		"git": {
 			"title": "Git Sync settings",
@@ -361,6 +367,12 @@
 			"title": "Location",
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
+		},
+		"attachments-browser": {
+			"title": "未使用の添付ファイル",
+			"section": "ストレージ",
+			"description": "使われていない添付ファイルを見つけてゴミ箱に移動します。",
+			"keywords": ["添付ファイル", "未使用", "孤立", "整理", "画像", "ゴミ箱"]
 		},
 		"space-connections-graph": {
 			"title": "コネクションのグラフ",

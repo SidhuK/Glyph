@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	AiBrain04Icon,
 	Archive02Icon,
+	Attachment01Icon,
 	CommandIcon,
 	GitBranchIcon,
 	PencilEdit02Icon,
@@ -24,6 +25,7 @@ export type SettingsTab =
 	| "shortcuts"
 	| "ai"
 	| "space"
+	| "attachments"
 	| "git"
 	| "about"
 	| "developer"
@@ -86,6 +88,10 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 			{
 				id: "space",
 				renderIcon: () => <FolderOpen size="var(--icon-md)" />,
+			},
+			{
+				id: "attachments",
+				renderIcon: () => <HugeiconsIcon icon={Attachment01Icon} size="var(--icon-md)" />,
 			},
 			{
 				id: "git",

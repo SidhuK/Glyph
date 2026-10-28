@@ -9,6 +9,7 @@
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
+		"attachments": "Anhänge",
 		"git": "Git Sync",
 		"about": "About"
 	},
@@ -57,6 +58,11 @@
 			"title": "Space settings",
 			"description": "Open Space settings.",
 			"keywords": ["Space"]
+		},
+		"attachments": {
+			"title": "Anhang-Einstellungen",
+			"description": "Anhang-Einstellungen öffnen.",
+			"keywords": ["Anhänge"]
 		},
 		"git": {
 			"title": "Git Sync settings",
@@ -360,6 +366,12 @@
 			"title": "Location",
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
+		},
+		"attachments-browser": {
+			"title": "Ungenutzte Anhänge",
+			"section": "Speicher",
+			"description": "Finde ungenutzte Anhänge und lege sie in den Papierkorb.",
+			"keywords": ["Anhänge", "ungenutzt", "verwaist", "aufräumen", "Bilder", "Papierkorb"]
 		},
 		"space-connections-graph": {
 			"title": "Verbindungsgraph",

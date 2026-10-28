@@ -9,6 +9,7 @@
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
+		"attachments": "Adjuntos",
 		"git": "Git Sync",
 		"about": "About"
 	},
@@ -57,6 +58,11 @@
 			"title": "Space settings",
 			"description": "Open Space settings.",
 			"keywords": ["Space"]
+		},
+		"attachments": {
+			"title": "Ajustes de adjuntos",
+			"description": "Abrir los ajustes de adjuntos.",
+			"keywords": ["Adjuntos"]
 		},
 		"git": {
 			"title": "Git Sync settings",
@@ -370,6 +376,12 @@
 			"title": "Location",
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
+		},
+		"attachments-browser": {
+			"title": "Adjuntos sin usar",
+			"section": "Almacenamiento",
+			"description": "Encuentra adjuntos sin usar y muévelos a la Papelera.",
+			"keywords": ["adjuntos", "sin usar", "huérfanos", "limpiar", "imágenes", "papelera"]
 		},
 		"space-connections-graph": {
 			"title": "Grafo de conexiones",

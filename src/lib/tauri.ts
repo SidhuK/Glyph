@@ -55,7 +55,6 @@ export interface AttachmentEntry {
 
 export interface AttachmentScan {
 	attachments: AttachmentEntry[];
-	note_count: number;
 }
 
 export type AttachmentTrashSkip =

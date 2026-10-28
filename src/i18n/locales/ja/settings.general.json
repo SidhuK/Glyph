@@ -319,5 +319,61 @@
 		"defaultFolder": {
 			"description": "新しいノートはこのフォルダに作成されます。"
 		}
+	},
+	"attachments": {
+		"storageTitle": "ストレージ",
+		"filesTitle": "ファイル",
+		"rescan": "再スキャン",
+		"scanning": "スキャン中…",
+		"noSpace": "スペースを開くと、その添付ファイルを参照できます。",
+		"summary": {
+			"reclaimable": "を解放できます",
+			"facts": "{{total}} 件中 {{unused}} 件の添付ファイルがどのノートからもリンクされていません。",
+			"clear": "すべての添付ファイルが使用されています"
+		},
+		"usageFilter": "添付ファイルを表示",
+		"usage": {
+			"unused": "未使用",
+			"all": "すべて"
+		},
+		"searchPlaceholder": "名前またはフォルダで絞り込む",
+		"sortLabel": "添付ファイルを並べ替え",
+		"sort": {
+			"size": "サイズの大きい順",
+			"name": "名前順"
+		},
+		"selectAllUnused": "未使用をすべて選択",
+		"columns": {
+			"name": "添付ファイル",
+			"size": "サイズ"
+		},
+		"clearSelection": "選択解除",
+		"selectedSummary_other": "{{count}} 件選択 · {{size}}",
+		"moveToTrash": "ゴミ箱に入れる",
+		"selectFile": "{{name}} を選択",
+		"spaceRoot": "スペースの最上位",
+		"usedIn_other": "{{count}} 件のノート",
+		"referencedBy": "参照しているノート",
+		"open": "開く",
+		"openFile": "{{name}} を開く",
+		"reveal": "Finderで表示",
+		"revealFile": "{{name}} をFinderで表示",
+		"emptyUnused": "未使用の添付ファイルはありません。",
+		"emptyFiltered": "この条件に一致する添付ファイルはありません。",
+		"footnote": "ノートのリンク、埋め込み、HTML、フロントマターのいずれかでファイル名が使われていれば、そのファイルは使用中とみなされます。",
+		"confirm": {
+			"title_other": "{{count}} 件の添付ファイルをゴミ箱に入れますか？",
+			"description": "{{size}} が解放されます。Glyph は移動前にもう一度確認し、現在ノートからリンクされているファイルは残します。ゴミ箱のファイルはFinderから元に戻せます。",
+			"more_other": "ほか {{count}} 件",
+			"cancel": "キャンセル",
+			"action": "ゴミ箱に入れる"
+		},
+		"result": {
+			"trashed_other": "{{count}} 件の添付ファイルをゴミ箱に入れました。",
+			"skipped_other": "{{count}} 件のファイルを残しました：",
+			"skippedItem": "{{path}} · {{reason}}",
+			"missing": "このスペースにもうありません",
+			"referenced": "現在ノートからリンクされています"
+		}
 	}
 }

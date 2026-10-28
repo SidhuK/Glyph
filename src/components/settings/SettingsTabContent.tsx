@@ -2,6 +2,7 @@ import { type ReactNode, Suspense, lazy } from "react";
 import { AboutSettingsPane } from "./AboutSettingsPane";
 import { AiSettingsPane } from "./AiSettingsPane";
 import { AppearanceSettingsPane } from "./AppearanceSettingsPane";
+import { AttachmentBrowser } from "./attachments/AttachmentBrowser";
 import { DeveloperSettingsPane } from "./DeveloperSettingsPane";
 import { EditorSettingsPane } from "./EditorSettingsPane";
 import { ExperimentalSettingsPane } from "./ExperimentalSettingsPane";
@@ -40,6 +41,14 @@ export function SettingsTabContent({ tab }: { tab: SettingsTab }): ReactNode {
 			return <AiSettingsPane />;
 		case "space":
 			return <SpaceSettingsPane />;
+		case "attachments":
+			return (
+				<div className="settingsPane">
+					<div className="settingsGrid">
+						<AttachmentBrowser />
+					</div>
+				</div>
+			);
 		case "git":
 			return <GitSettingsPane />;
 		case "about":

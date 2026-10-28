@@ -6,9 +6,9 @@ export function AttachmentTrashOutcome({ result }: { result: AttachmentTrashResu
 	const skipReason = (skip: AttachmentTrashSkip): string => {
 		switch (skip.kind) {
 			case "missing":
-				return t("developer.attachments.result.missing");
+				return t("attachments.result.missing");
 			case "referenced":
-				return t("developer.attachments.result.referenced");
+				return t("attachments.result.referenced");
 			case "failed":
 				return skip.message;
 			default: {
@@ -21,17 +21,17 @@ export function AttachmentTrashOutcome({ result }: { result: AttachmentTrashResu
 	return (
 		<div className="attachmentOutcome" role="status">
 			{result.trashed.length > 0 ? (
-				<div className="settingsKeySaved attachmentOutcomeSuccess">
-					{t("developer.attachments.result.trashed", { count: result.trashed.length })}
+				<div className="settingsKeySaved">
+					{t("attachments.result.trashed", { count: result.trashed.length })}
 				</div>
 			) : null}
 			{result.skipped.length > 0 ? (
 				<div className="settingsError">
-					<div>{t("developer.attachments.result.skipped", { count: result.skipped.length })}</div>
+					<div>{t("attachments.result.skipped", { count: result.skipped.length })}</div>
 					<ul className="attachmentOutcomeList">
 						{result.skipped.map((skip) => (
 							<li key={skip.path}>
-								{t("developer.attachments.result.skippedItem", {
+								{t("attachments.result.skippedItem", {
 									path: skip.path,
 									reason: skipReason(skip),
 								})}

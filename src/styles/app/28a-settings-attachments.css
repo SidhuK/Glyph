@@ -1,26 +1,20 @@
-/* The browser keeps to the card's row inset; list rows overhang it by 8px so hover fills
-   breathe. */
-.attachmentBrowser {
-	--attachment-rule: var(--border-light);
-	--attachment-gutter: 0px;
-	padding-inline: var(--settings-row-inset, 16px);
-	--attachment-row-inset: 8px;
-	--attachment-size-col: 76px;
-	--attachment-actions-col: 60px;
-	display: flex;
-	flex-direction: column;
-}
-
+/* Storage card: one padded band on the card's row inset. */
 .attachmentBand {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
-	padding: 18px var(--attachment-gutter);
+	padding: 16px var(--settings-row-inset, 16px);
 }
 
-.attachmentBandToolbar {
-	padding-block: 12px;
-	border-top: 1px solid var(--attachment-rule);
+/* Files card: toolbar, list header and rows keep to the row inset; rows overhang it by 8px
+   so hover fills breathe. */
+.attachmentBrowser {
+	--attachment-row-inset: 8px;
+	--attachment-size-col: 76px;
+	--attachment-actions-col: 56px;
+	display: flex;
+	flex-direction: column;
+	padding: 0 var(--settings-row-inset, 16px) 8px;
 }
 
 /* Summary */
@@ -28,70 +22,43 @@
 .attachmentSummary {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 4px;
 }
 
 .attachmentSummaryHeadline {
 	display: flex;
 	align-items: baseline;
-	gap: 8px;
+	gap: 6px;
 }
 
 .attachmentSummaryFigure {
-	font-size: var(--text-3xl);
+	font-size: var(--text-xl);
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.03em;
+	letter-spacing: -0.012em;
 	font-variant-numeric: tabular-nums;
-	line-height: 1;
+	line-height: 1.2;
 	color: var(--text-primary);
 }
 
 .attachmentSummaryTitle {
-	font-size: var(--text-base);
-	font-weight: var(--font-medium);
+	font-size: var(--text-sm);
 	color: var(--text-secondary);
 }
 
-.attachmentSummary[data-state="clear"] .attachmentSummaryHeadline {
-	align-items: center;
-	color: var(--status-success-fg);
-}
-
-.attachmentSummary[data-state="clear"] .attachmentSummaryTitle {
-	font-size: var(--text-base);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.attachmentSummaryMeter {
-	position: relative;
-	height: 6px;
-	overflow: hidden;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--text-primary) 8%, transparent);
-}
-
-.attachmentSummaryMeter span {
-	position: absolute;
-	inset: 0 auto 0 0;
-	border-radius: inherit;
-	background: var(--color-yellow-500);
-	transition: width 320ms cubic-bezier(0.19, 1, 0.22, 1);
-}
-
 .attachmentSummaryFacts {
-	font-size: var(--text-sm);
+	font-size: var(--text-xs);
 	line-height: 1.45;
 	font-variant-numeric: tabular-nums;
 	color: var(--text-secondary);
 }
 
-/* Toolbar */
+/* Toolbar: tabs, search and selects on one 28px line. */
 
 .attachmentToolbar {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	padding-block: 12px;
 }
 
 .attachmentTabs {
@@ -100,51 +67,42 @@
 	gap: 2px;
 }
 
-/* Base button rules already supply flex layout, border, cursor and color. */
+/* Same shape as the info panel tabs. Base button rules supply flex layout and cursor. */
 .attachmentTab {
 	gap: 6px;
-	height: 28px;
-	padding: 0 10px;
+	height: 26px;
+	padding: 0 8px;
+	border: 0;
 	border-radius: var(--radius-md);
+	background: transparent;
 	color: var(--text-secondary);
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 }
 
-.attachmentTab:hover {
+.attachmentTab:hover:not([data-active]) {
 	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
-.attachmentTab.is-active {
+.attachmentTab[data-active] {
 	background: var(--bg-active);
 	color: var(--text-primary);
 }
 
-.attachmentTabCount {
-	font-size: var(--text-xs);
-	font-variant-numeric: tabular-nums;
-	color: var(--text-tertiary);
-}
-
-.attachmentTab.is-active .attachmentTabCount {
-	color: var(--text-secondary);
-}
-
+/* A settings text field with a leading icon; the wrapper takes the field's fill and focus. */
 .attachmentSearch {
 	flex: 1;
 	min-width: 120px;
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	height: var(--settings-control-height, 32px);
-	padding: 0 12px;
-	border-radius: var(--radius-md);
+	height: var(--settings-control-height, 28px);
+	padding: 0 10px;
 	border: 1px solid transparent;
+	border-radius: var(--radius-md);
 	background: var(--settings-pill, var(--bg-hover));
 	color: var(--text-tertiary);
-	transition:
-		border-color var(--transition-base),
-		box-shadow var(--transition-base);
 }
 
 .attachmentSearch:focus-within {
@@ -153,41 +111,23 @@
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 }
 
-.attachmentSearch input {
+.settingsPane .attachmentSearch input,
+.settingsPane .attachmentSearch input:hover,
+.settingsPane .attachmentSearch input:focus,
+.settingsPane .attachmentSearch input:focus-visible {
 	flex: 1;
 	min-width: 0;
-	border: 0;
-	outline: none;
-	background: transparent;
-	font-size: var(--text-sm);
-	color: var(--text-primary);
-}
-
-/* The wrapper draws the focus ring; drop the global input chrome so it isn't doubled. */
-.attachmentSearch input,
-.attachmentSearch input:hover,
-.attachmentSearch input:focus,
-.attachmentSearch input:focus-visible {
 	height: 100%;
 	padding: 0;
 	border: 0;
-	background: transparent;
 	outline: none;
+	background: transparent;
 	box-shadow: none;
 }
 
-.attachmentSearch input::placeholder {
-	color: var(--text-placeholder);
-}
-
-.attachmentSelect {
-	flex-shrink: 0;
-	height: var(--settings-control-height, 32px);
-	padding-inline: 14px 10px;
-	border-color: transparent;
-	border-radius: var(--radius-md);
-	background: var(--settings-pill, var(--bg-hover));
-	font-size: var(--text-sm);
+.settingsSelectTrigger.attachmentSelect {
+	flex: 0 0 auto;
+	width: auto;
 }
 
 /* List header doubles as the selection action bar. */
@@ -196,23 +136,17 @@
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	min-height: 36px;
+	height: 36px;
 	margin-inline: calc(var(--attachment-row-inset) * -1);
 	padding: 0 var(--attachment-row-inset);
-	border-block: 1px solid var(--attachment-rule);
-	background: transparent;
+	border-top: 1px solid var(--border-light);
 	font-size: var(--text-xs);
-	font-weight: var(--font-semibold);
-	color: var(--text-secondary);
-	transition:
-		background var(--transition-base),
-		color var(--transition-base);
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
 }
 
 .attachmentListHeader[data-active] {
-	background: var(--bg-hover);
 	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
 	font-variant-numeric: tabular-nums;
 	color: var(--text-primary);
 }
@@ -230,22 +164,18 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	padding-block: 4px;
+}
+
+/* One 28px button shape, as everywhere else in settings. */
+.attachmentListHeaderActions > [data-slot="button"] {
+	height: var(--settings-control-height, 28px);
+	padding-inline: 10px;
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 }
 
 .attachmentListHeader > .attachmentColumnSize {
 	margin-right: var(--attachment-actions-col);
-}
-
-.attachmentColumnIcon {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	color: var(--text-tertiary);
-}
-
-.attachmentColumnSize.attachmentColumnIcon {
-	justify-content: flex-end;
 }
 
 .attachmentColumnSize {
@@ -255,11 +185,11 @@
 	font-variant-numeric: tabular-nums;
 }
 
-/* Rows */
+/* Rows: no hairlines, a rounded fill on hover and selection. */
 
 .attachmentList {
 	margin-inline: calc(var(--attachment-row-inset) * -1);
-	max-height: 480px;
+	max-height: 520px;
 	overflow-y: auto;
 	overscroll-behavior: contain;
 }
@@ -282,7 +212,7 @@
 	gap: 10px;
 	height: 100%;
 	padding: 0 var(--attachment-row-inset);
-	border-bottom: 1px solid var(--attachment-rule);
+	border-radius: var(--radius-md);
 	transition: background var(--transition-fast, 120ms);
 }
 
@@ -314,16 +244,16 @@
 
 .attachmentThumb {
 	flex-shrink: 0;
-	width: 38px;
-	height: 38px;
+	width: 36px;
+	height: 36px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	border: 1px solid var(--border-light);
 	border-radius: var(--radius-md);
-	background: var(--bg-secondary);
-	color: var(--text-secondary);
+	background: var(--bg-hover);
+	box-shadow: inset 0 0 0 1px var(--border-light);
+	color: var(--text-tertiary);
 }
 
 .attachmentThumb img {
@@ -337,7 +267,7 @@
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 3px;
+	gap: 2px;
 }
 
 .attachmentRowName {
@@ -345,7 +275,6 @@
 	min-width: 0;
 	white-space: nowrap;
 	font-size: var(--text-sm);
-	font-weight: var(--font-normal);
 	color: var(--text-primary);
 }
 
@@ -358,7 +287,7 @@
 .attachmentRowPath {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
 	min-width: 0;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
@@ -371,36 +300,20 @@
 	white-space: nowrap;
 }
 
-.attachmentUnusedMark,
+/* Reads as part of the path line; the fill only shows on hover or while open. */
 .attachmentUsedTrigger {
 	flex-shrink: 0;
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
 	font-size: inherit;
-	font-weight: var(--font-medium);
-}
-
-.attachmentUnusedMark {
-	color: var(--text-secondary);
-}
-
-.attachmentUnusedMark::before {
-	content: "";
-	width: 6px;
-	height: 6px;
-	border-radius: 999px;
-	background: var(--color-yellow-500);
-}
-
-/* Reset the global button chrome (fixed height, grey hover box) so the trigger
-   sits inline with the folder text as a compact pill. */
-.attachmentUsedTrigger {
+	font-weight: inherit;
 	height: auto;
-	margin: -2px 0;
-	padding: 2px 6px;
+	margin: -2px -4px;
+	padding: 2px 4px;
+	border: 0;
 	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+	background: transparent;
+	color: var(--text-tertiary);
 	line-height: inherit;
 }
 
@@ -417,7 +330,7 @@
 
 .attachmentRow > .attachmentColumnSize {
 	font-size: var(--text-xs);
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 }
 
 .attachmentRowActions {
@@ -428,6 +341,14 @@
 	width: var(--attachment-actions-col);
 	opacity: 0;
 	transition: opacity var(--transition-base);
+}
+
+.attachmentRowActions > [data-slot="button"] {
+	color: var(--text-secondary);
+}
+
+.attachmentRowActions > [data-slot="button"]:hover {
+	color: var(--text-primary);
 }
 
 .attachmentRow:hover .attachmentRowActions,
@@ -443,8 +364,8 @@
 .attachmentUsedTitle {
 	margin-bottom: 8px;
 	font-size: var(--text-xs);
-	font-weight: var(--font-semibold);
-	color: var(--text-secondary);
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
 }
 
 .attachmentUsedList {
@@ -466,24 +387,15 @@
 	color: var(--text-primary);
 }
 
-/* Empty, footnote, outcome */
+/* Empty, outcome */
 
 .attachmentEmpty {
-	padding: 32px var(--attachment-gutter, 0px);
+	padding: 24px 0;
 	text-align: center;
 }
 
-.attachmentFootnote {
-	margin: 0;
-	padding: 12px var(--attachment-gutter);
-	border-top: 1px solid var(--attachment-rule);
-	font-size: var(--text-xs);
-	line-height: 1.45;
-	color: var(--text-tertiary);
-}
-
-.attachmentList + .attachmentFootnote {
-	border-top: 0;
+.settingsSectionBody > .attachmentEmpty {
+	padding-inline: var(--settings-row-inset, 16px);
 }
 
 .attachmentOutcome {
@@ -492,7 +404,7 @@
 	gap: 8px;
 }
 
-.attachmentOutcomeSuccess {
+.attachmentOutcome > .settingsKeySaved {
 	margin-top: 0;
 	text-align: left;
 }
@@ -513,9 +425,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.attachmentSpin,
-	.attachmentSummaryMeter span {
+	.attachmentSpin {
 		animation: none;
-		transition: none;
 	}
 }

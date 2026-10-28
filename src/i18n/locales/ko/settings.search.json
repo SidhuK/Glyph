@@ -9,6 +9,7 @@
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
+		"attachments": "첨부 파일",
 		"git": "Git Sync",
 		"about": "About"
 	},
@@ -57,6 +58,11 @@
 			"title": "Space settings",
 			"description": "Open Space settings.",
 			"keywords": ["Space"]
+		},
+		"attachments": {
+			"title": "첨부 파일 설정",
+			"description": "첨부 파일 설정을 엽니다.",
+			"keywords": ["첨부 파일"]
 		},
 		"git": {
 			"title": "Git Sync settings",
@@ -342,6 +348,12 @@
 			"title": "Location",
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
+		},
+		"attachments-browser": {
+			"title": "미사용 첨부 파일",
+			"section": "저장 공간",
+			"description": "사용하지 않는 첨부 파일을 찾아 휴지통으로 이동합니다.",
+			"keywords": ["첨부 파일", "미사용", "고립", "정리", "이미지", "휴지통"]
 		},
 		"space-connections-graph": {
 			"title": "연결 그래프",

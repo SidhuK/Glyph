@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import type { AttachmentEntry, AttachmentKind } from "../../../lib/tauri";
+import type { AttachmentEntry } from "../../../lib/tauri";
 
 export type AttachmentUsageFilter = "unused" | "all";
-export type AttachmentKindFilter = AttachmentKind | "any";
 export type AttachmentSort = "size" | "name";
 
 export interface AttachmentTotals {
@@ -22,35 +21,23 @@ export function isUnused(entry: AttachmentEntry): boolean {
 
 export function useAttachmentFilters(attachments: readonly AttachmentEntry[]) {
 	const [usage, setUsage] = useState<AttachmentUsageFilter>("unused");
-	const [kindChoice, setKind] = useState<AttachmentKindFilter>("any");
 	const [sort, setSort] = useState<AttachmentSort>("size");
 	const [query, setQuery] = useState("");
 	const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
 
 	const unused = useMemo(() => attachments.filter(isUnused), [attachments]);
 
-	const kinds = useMemo(() => {
-		const present = new Set<AttachmentKind>();
-		for (const entry of attachments) present.add(entry.kind);
-		return [...present];
-	}, [attachments]);
-	// A rescan can remove the chosen type (and hide its selector), so fall back
-	// to all types rather than leave an empty list with no way out.
-	const kind = kindChoice === "any" || kinds.includes(kindChoice) ? kindChoice : "any";
-
 	const visible = useMemo(() => {
 		const needle = query.trim().toLowerCase();
 		const filtered = (usage === "unused" ? unused : attachments).filter(
-			(entry) =>
-				(kind === "any" || entry.kind === kind) &&
-				(needle.length === 0 || entry.rel_path.toLowerCase().includes(needle)),
+			(entry) => needle.length === 0 || entry.rel_path.toLowerCase().includes(needle),
 		);
 		return sort === "size"
 			? filtered.sort((a, b) => b.size - a.size)
 			: filtered.sort(
 					(a, b) => a.name.localeCompare(b.name) || a.rel_path.localeCompare(b.rel_path),
 				);
-	}, [attachments, unused, usage, kind, sort, query]);
+	}, [attachments, unused, usage, sort, query]);
 
 	// Only unused files that are still on screen can be trashed, so a rescan or a
 	// filter change never leaves hidden or newly referenced files selected.
@@ -79,9 +66,6 @@ export function useAttachmentFilters(attachments: readonly AttachmentEntry[]) {
 	return {
 		usage,
 		setUsage,
-		kind,
-		setKind,
-		kinds,
 		sort,
 		setSort,
 		query,

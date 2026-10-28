@@ -51,7 +51,6 @@ pub struct AttachmentEntry {
 #[derive(Serialize)]
 pub struct AttachmentScan {
     pub attachments: Vec<AttachmentEntry>,
-    pub note_count: usize,
 }
 
 fn attachment_kind(ext: &str) -> Option<AttachmentKind> {
@@ -236,8 +235,5 @@ pub fn scan_attachments(root: &Path) -> Result<AttachmentScan, String> {
             attachment.referenced_by.clone_from(notes);
         }
     }
-    Ok(AttachmentScan {
-        attachments,
-        note_count: notes.len(),
-    })
+    Ok(AttachmentScan { attachments })
 }

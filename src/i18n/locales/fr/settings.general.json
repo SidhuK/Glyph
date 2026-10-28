@@ -325,5 +325,67 @@
 			"saveFailed": "Impossible d’enregistrer le raccourci.",
 			"conflict": "{{shortcut}} est déjà utilisé par {{action}}."
 		}
+	},
+	"attachments": {
+		"storageTitle": "Stockage",
+		"filesTitle": "Fichiers",
+		"rescan": "Analyser à nouveau",
+		"scanning": "Analyse…",
+		"noSpace": "Ouvrez un espace pour parcourir ses pièces jointes.",
+		"summary": {
+			"reclaimable": "peuvent être libérés",
+			"facts": "{{unused}} pièces jointes sur {{total}} ne sont liées à aucune note.",
+			"clear": "Toutes les pièces jointes sont utilisées"
+		},
+		"usageFilter": "Afficher les pièces jointes",
+		"usage": {
+			"unused": "Inutilisées",
+			"all": "Toutes"
+		},
+		"searchPlaceholder": "Filtrer par nom ou dossier",
+		"sortLabel": "Trier les pièces jointes",
+		"sort": {
+			"size": "Plus volumineuses d'abord",
+			"name": "Par nom"
+		},
+		"selectAllUnused": "Sélectionner toutes les inutilisées",
+		"columns": {
+			"name": "Pièce jointe",
+			"size": "Taille"
+		},
+		"clearSelection": "Effacer",
+		"selectedSummary_one": "1 sélectionnée · {{size}}",
+		"selectedSummary_other": "{{count}} sélectionnées · {{size}}",
+		"moveToTrash": "Placer dans la Corbeille",
+		"selectFile": "Sélectionner {{name}}",
+		"spaceRoot": "Racine de l'espace",
+		"usedIn_one": "Dans 1 note",
+		"usedIn_other": "Dans {{count}} notes",
+		"referencedBy": "Utilisée dans",
+		"open": "Ouvrir",
+		"openFile": "Ouvrir {{name}}",
+		"reveal": "Afficher dans le Finder",
+		"revealFile": "Afficher {{name}} dans le Finder",
+		"emptyUnused": "Aucune pièce jointe inutilisée.",
+		"emptyFiltered": "Aucune pièce jointe ne correspond à ces filtres.",
+		"footnote": "Un fichier est considéré comme utilisé dès qu'une note mentionne son nom, dans un lien, une intégration, du HTML ou le frontmatter.",
+		"confirm": {
+			"title_one": "Placer 1 pièce jointe dans la Corbeille ?",
+			"title_other": "Placer {{count}} pièces jointes dans la Corbeille ?",
+			"description": "Cela libère {{size}}. Glyph vérifie d'abord à nouveau et conserve tout fichier qu'une note lie désormais. Vous pouvez récupérer les fichiers depuis la Corbeille dans le Finder.",
+			"more_one": "et 1 autre",
+			"more_other": "et {{count}} autres",
+			"cancel": "Annuler",
+			"action": "Placer dans la Corbeille"
+		},
+		"result": {
+			"trashed_one": "1 pièce jointe placée dans la Corbeille.",
+			"trashed_other": "{{count}} pièces jointes placées dans la Corbeille.",
+			"skipped_one": "1 fichier conservé :",
+			"skipped_other": "{{count}} fichiers conservés :",
+			"skippedItem": "{{path}} · {{reason}}",
+			"missing": "n'est plus dans cet espace",
+			"referenced": "désormais lié depuis une note"
+		}
 	}
 }

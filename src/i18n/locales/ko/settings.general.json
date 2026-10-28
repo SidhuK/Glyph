@@ -319,5 +319,61 @@
 		"defaultFolder": {
 			"description": "새 노트는 이 폴더에 만들어집니다."
 		}
+	},
+	"attachments": {
+		"storageTitle": "저장 공간",
+		"filesTitle": "파일",
+		"rescan": "다시 검사",
+		"scanning": "검사 중…",
+		"noSpace": "스페이스를 열면 첨부 파일을 둘러볼 수 있습니다.",
+		"summary": {
+			"reclaimable": "확보 가능",
+			"facts": "첨부 파일 {{total}}개 중 {{unused}}개는 어떤 노트에서도 링크되지 않았습니다.",
+			"clear": "모든 첨부 파일이 사용 중입니다"
+		},
+		"usageFilter": "첨부 파일 표시",
+		"usage": {
+			"unused": "미사용",
+			"all": "전체"
+		},
+		"searchPlaceholder": "이름 또는 폴더로 필터링",
+		"sortLabel": "첨부 파일 정렬",
+		"sort": {
+			"size": "큰 파일 먼저",
+			"name": "이름순"
+		},
+		"selectAllUnused": "미사용 모두 선택",
+		"columns": {
+			"name": "첨부 파일",
+			"size": "크기"
+		},
+		"clearSelection": "선택 해제",
+		"selectedSummary_other": "{{count}}개 선택됨 · {{size}}",
+		"moveToTrash": "휴지통으로 이동",
+		"selectFile": "{{name}} 선택",
+		"spaceRoot": "스페이스 최상위",
+		"usedIn_other": "노트 {{count}}개",
+		"referencedBy": "사용 중인 노트",
+		"open": "열기",
+		"openFile": "{{name}} 열기",
+		"reveal": "Finder에서 보기",
+		"revealFile": "Finder에서 {{name}} 보기",
+		"emptyUnused": "미사용 첨부 파일이 없습니다.",
+		"emptyFiltered": "이 필터와 일치하는 첨부 파일이 없습니다.",
+		"footnote": "노트의 링크, 임베드, HTML, 프론트매터 중 어디에서든 파일 이름이 언급되면 사용 중인 파일로 간주됩니다.",
+		"confirm": {
+			"title_other": "첨부 파일 {{count}}개를 휴지통으로 이동할까요?",
+			"description": "{{size}}가 확보됩니다. Glyph는 이동 전에 다시 확인하고 지금 노트에서 링크된 파일은 유지합니다. 휴지통의 파일은 Finder에서 되돌릴 수 있습니다.",
+			"more_other": "외 {{count}}개",
+			"cancel": "취소",
+			"action": "휴지통으로 이동"
+		},
+		"result": {
+			"trashed_other": "첨부 파일 {{count}}개를 휴지통으로 이동했습니다.",
+			"skipped_other": "파일 {{count}}개를 유지했습니다:",
+			"skippedItem": "{{path}} · {{reason}}",
+			"missing": "더 이상 이 스페이스에 없음",
+			"referenced": "이제 노트에서 링크됨"
+		}
 	}
 }

@@ -9,6 +9,7 @@
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
+		"attachments": "Attachments",
 		"git": "Git Sync",
 		"about": "About",
 		"developer": "Developer"
@@ -59,6 +60,11 @@
 			"description": "Open Space settings.",
 			"keywords": ["Space"]
 		},
+		"attachments": {
+			"title": "Attachment settings",
+			"description": "Open Attachments settings.",
+			"keywords": ["Attachments"]
+		},
 		"git": {
 			"title": "Git Sync settings",
 			"description": "Open Git Sync settings.",
@@ -71,8 +77,8 @@
 		},
 		"developer": {
 			"title": "Developer settings",
-			"description": "Advanced tools like the attachment browser and diagnostic logging.",
-			"keywords": ["Developer", "advanced", "attachments", "logs", "diagnostics"]
+			"description": "Advanced tools like diagnostic logging.",
+			"keywords": ["Developer", "advanced", "logs", "diagnostics"]
 		}
 	},
 	"entries": {
@@ -409,6 +415,12 @@
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
 		},
+		"attachments-browser": {
+			"title": "Unused attachments",
+			"section": "Storage",
+			"description": "Find unused attachments and move them to the Trash.",
+			"keywords": ["attachments", "unused", "orphaned", "clean up", "images", "trash"]
+		},
 		"space-connections-graph": {
 			"title": "Connections graph",
 			"section": "Space",
@@ -690,12 +702,6 @@
 			"section": "Advanced",
 			"description": "Show the Developer tab with advanced tools.",
 			"keywords": ["advanced", "developer", "power user"]
-		},
-		"developer-attachment-browser": {
-			"title": "Attachment browser",
-			"section": "Attachment browser",
-			"description": "Find unused attachments and move them to the Trash.",
-			"keywords": ["attachments", "unused", "orphaned", "clean up", "images", "trash"]
 		},
 		"developer-diagnostic-logging": {
 			"title": "Diagnostic logging",

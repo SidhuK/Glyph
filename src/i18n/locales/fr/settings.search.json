@@ -9,6 +9,7 @@
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
+		"attachments": "Pièces jointes",
 		"git": "Git Sync",
 		"about": "About"
 	},
@@ -57,6 +58,11 @@
 			"title": "Space settings",
 			"description": "Open Space settings.",
 			"keywords": ["Space"]
+		},
+		"attachments": {
+			"title": "Réglages des pièces jointes",
+			"description": "Ouvrir les réglages des pièces jointes.",
+			"keywords": ["Pièces jointes"]
 		},
 		"git": {
 			"title": "Git Sync settings",
@@ -374,6 +380,12 @@
 			"title": "Location",
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
+		},
+		"attachments-browser": {
+			"title": "Pièces jointes inutilisées",
+			"section": "Stockage",
+			"description": "Trouvez les pièces jointes inutilisées et placez-les dans la Corbeille.",
+			"keywords": ["pièces jointes", "inutilisées", "orphelines", "nettoyer", "images", "corbeille"]
 		},
 		"space-connections-graph": {
 			"title": "Graphe des connexions",
