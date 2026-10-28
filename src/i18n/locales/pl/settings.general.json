@@ -332,5 +332,79 @@
 		"defaultFolder": {
 			"description": "Nowe notatki są tworzone w tym folderze."
 		}
+	},
+	"attachments": {
+		"storageTitle": "Miejsce na dysku",
+		"filesTitle": "Pliki",
+		"rescan": "Skanuj ponownie",
+		"scanning": "Skanowanie…",
+		"noSpace": "Otwórz przestrzeń, aby przeglądać jej załączniki.",
+		"summary": {
+			"reclaimable": "można zwolnić",
+			"facts": "{{unused}} z {{total}} załączników nie jest linkowanych z żadnej notatki.",
+			"clear": "Wszystkie załączniki są używane"
+		},
+		"usageFilter": "Pokaż załączniki",
+		"usage": {
+			"unused": "Nieużywane",
+			"all": "Wszystkie"
+		},
+		"searchPlaceholder": "Filtruj po nazwie lub folderze",
+		"sortLabel": "Sortuj załączniki",
+		"sort": {
+			"size": "Największe najpierw",
+			"name": "Według nazwy"
+		},
+		"selectAllUnused": "Zaznacz wszystkie nieużywane",
+		"columns": {
+			"name": "Załącznik",
+			"size": "Rozmiar"
+		},
+		"clearSelection": "Wyczyść",
+		"selectedSummary_one": "Zaznaczono 1 · {{size}}",
+		"selectedSummary_few": "Zaznaczono {{count}} · {{size}}",
+		"selectedSummary_many": "Zaznaczono {{count}} · {{size}}",
+		"selectedSummary_other": "Zaznaczono {{count}} · {{size}}",
+		"moveToTrash": "Przenieś do Kosza",
+		"selectFile": "Zaznacz {{name}}",
+		"spaceRoot": "Główny folder przestrzeni",
+		"usedIn_one": "W 1 notatce",
+		"usedIn_few": "W {{count}} notatkach",
+		"usedIn_many": "W {{count}} notatkach",
+		"usedIn_other": "W {{count}} notatkach",
+		"referencedBy": "Używany w",
+		"open": "Otwórz",
+		"openFile": "Otwórz {{name}}",
+		"reveal": "Pokaż w Finderze",
+		"revealFile": "Pokaż {{name}} w Finderze",
+		"emptyUnused": "Brak nieużywanych załączników.",
+		"emptyFiltered": "Żaden załącznik nie pasuje do tych filtrów.",
+		"footnote": "Plik jest uznawany za używany, gdy dowolna notatka wspomina jego nazwę: w linku, osadzeniu, HTML lub frontmatterze.",
+		"confirm": {
+			"title_one": "Przenieść 1 załącznik do Kosza?",
+			"title_few": "Przenieść {{count}} załączniki do Kosza?",
+			"title_many": "Przenieść {{count}} załączników do Kosza?",
+			"title_other": "Przenieść {{count}} załącznika do Kosza?",
+			"description": "Zwolni to {{size}}. Glyph najpierw sprawdzi ponownie i zachowa każdy plik, do którego teraz linkuje notatka. Pliki możesz przywrócić z Kosza w Finderze.",
+			"more_one": "i 1 więcej",
+			"more_few": "i {{count}} więcej",
+			"more_many": "i {{count}} więcej",
+			"more_other": "i {{count}} więcej",
+			"cancel": "Anuluj",
+			"action": "Przenieś do Kosza"
+		},
+		"result": {
+			"trashed_one": "Przeniesiono 1 załącznik do Kosza.",
+			"trashed_few": "Przeniesiono {{count}} załączniki do Kosza.",
+			"trashed_many": "Przeniesiono {{count}} załączników do Kosza.",
+			"trashed_other": "Przeniesiono {{count}} załącznika do Kosza.",
+			"skipped_one": "Zachowano 1 plik:",
+			"skipped_few": "Zachowano {{count}} pliki:",
+			"skipped_many": "Zachowano {{count}} plików:",
+			"skipped_other": "Zachowano {{count}} pliku:",
+			"skippedItem": "{{path}} · {{reason}}",
+			"missing": "nie ma go już w tej przestrzeni",
+			"referenced": "teraz linkowany z notatki"
+		}
 	}
 }

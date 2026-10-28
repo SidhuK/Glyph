@@ -320,5 +320,67 @@
 		"defaultFolder": {
 			"description": "Las notas nuevas se crean en esta carpeta."
 		}
+	},
+	"attachments": {
+		"storageTitle": "Almacenamiento",
+		"filesTitle": "Archivos",
+		"rescan": "Volver a analizar",
+		"scanning": "Analizando…",
+		"noSpace": "Abre un espacio para explorar sus adjuntos.",
+		"summary": {
+			"reclaimable": "se pueden liberar",
+			"facts": "{{unused}} de {{total}} adjuntos no están enlazados desde ninguna nota.",
+			"clear": "Todos los adjuntos están en uso"
+		},
+		"usageFilter": "Mostrar adjuntos",
+		"usage": {
+			"unused": "Sin usar",
+			"all": "Todos"
+		},
+		"searchPlaceholder": "Filtrar por nombre o carpeta",
+		"sortLabel": "Ordenar adjuntos",
+		"sort": {
+			"size": "Más grandes primero",
+			"name": "Por nombre"
+		},
+		"selectAllUnused": "Seleccionar todos los no usados",
+		"columns": {
+			"name": "Adjunto",
+			"size": "Tamaño"
+		},
+		"clearSelection": "Borrar",
+		"selectedSummary_one": "1 seleccionado · {{size}}",
+		"selectedSummary_other": "{{count}} seleccionados · {{size}}",
+		"moveToTrash": "Mover a la Papelera",
+		"selectFile": "Seleccionar {{name}}",
+		"spaceRoot": "Raíz del espacio",
+		"usedIn_one": "En 1 nota",
+		"usedIn_other": "En {{count}} notas",
+		"referencedBy": "Usado en",
+		"open": "Abrir",
+		"openFile": "Abrir {{name}}",
+		"reveal": "Mostrar en Finder",
+		"revealFile": "Mostrar {{name}} en Finder",
+		"emptyUnused": "No hay adjuntos sin usar.",
+		"emptyFiltered": "Ningún adjunto coincide con estos filtros.",
+		"footnote": "Un archivo cuenta como usado cuando alguna nota menciona su nombre, en un enlace, una inserción, HTML o el frontmatter.",
+		"confirm": {
+			"title_one": "¿Mover 1 adjunto a la Papelera?",
+			"title_other": "¿Mover {{count}} adjuntos a la Papelera?",
+			"description": "Esto libera {{size}}. Glyph vuelve a comprobar antes y conserva cualquier archivo al que una nota enlace ahora. Puedes recuperar archivos de la Papelera en Finder.",
+			"more_one": "y 1 más",
+			"more_other": "y {{count}} más",
+			"cancel": "Cancelar",
+			"action": "Mover a la Papelera"
+		},
+		"result": {
+			"trashed_one": "Se movió 1 adjunto a la Papelera.",
+			"trashed_other": "Se movieron {{count}} adjuntos a la Papelera.",
+			"skipped_one": "Se conservó 1 archivo:",
+			"skipped_other": "Se conservaron {{count}} archivos:",
+			"skippedItem": "{{path}} · {{reason}}",
+			"missing": "ya no está en este espacio",
+			"referenced": "ahora está enlazado desde una nota"
+		}
 	}
 }

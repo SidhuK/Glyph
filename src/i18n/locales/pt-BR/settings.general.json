@@ -320,5 +320,67 @@
 		"defaultFolder": {
 			"description": "Novas notas são criadas nesta pasta."
 		}
+	},
+	"attachments": {
+		"storageTitle": "Armazenamento",
+		"filesTitle": "Arquivos",
+		"rescan": "Verificar novamente",
+		"scanning": "Verificando…",
+		"noSpace": "Abra um espaço para navegar pelos anexos dele.",
+		"summary": {
+			"reclaimable": "podem ser liberados",
+			"facts": "{{unused}} de {{total}} anexos não têm link em nenhuma nota.",
+			"clear": "Todos os anexos estão em uso"
+		},
+		"usageFilter": "Mostrar anexos",
+		"usage": {
+			"unused": "Não usados",
+			"all": "Todos"
+		},
+		"searchPlaceholder": "Filtrar por nome ou pasta",
+		"sortLabel": "Ordenar anexos",
+		"sort": {
+			"size": "Maiores primeiro",
+			"name": "Por nome"
+		},
+		"selectAllUnused": "Selecionar todos os não usados",
+		"columns": {
+			"name": "Anexo",
+			"size": "Tamanho"
+		},
+		"clearSelection": "Limpar",
+		"selectedSummary_one": "1 selecionado · {{size}}",
+		"selectedSummary_other": "{{count}} selecionados · {{size}}",
+		"moveToTrash": "Mover para o Lixo",
+		"selectFile": "Selecionar {{name}}",
+		"spaceRoot": "Raiz do espaço",
+		"usedIn_one": "Em 1 nota",
+		"usedIn_other": "Em {{count}} notas",
+		"referencedBy": "Usado em",
+		"open": "Abrir",
+		"openFile": "Abrir {{name}}",
+		"reveal": "Mostrar no Finder",
+		"revealFile": "Mostrar {{name}} no Finder",
+		"emptyUnused": "Nenhum anexo não usado.",
+		"emptyFiltered": "Nenhum anexo corresponde a estes filtros.",
+		"footnote": "Um arquivo conta como usado quando alguma nota menciona o nome dele, em um link, incorporação, HTML ou frontmatter.",
+		"confirm": {
+			"title_one": "Mover 1 anexo para o Lixo?",
+			"title_other": "Mover {{count}} anexos para o Lixo?",
+			"description": "Isso libera {{size}}. O Glyph verifica de novo antes e mantém qualquer arquivo que uma nota passe a referenciar. Você pode recuperar arquivos do Lixo no Finder.",
+			"more_one": "e mais 1",
+			"more_other": "e mais {{count}}",
+			"cancel": "Cancelar",
+			"action": "Mover para o Lixo"
+		},
+		"result": {
+			"trashed_one": "1 anexo movido para o Lixo.",
+			"trashed_other": "{{count}} anexos movidos para o Lixo.",
+			"skipped_one": "1 arquivo mantido:",
+			"skipped_other": "{{count}} arquivos mantidos:",
+			"skippedItem": "{{path}} · {{reason}}",
+			"missing": "não está mais neste espaço",
+			"referenced": "agora tem link em uma nota"
+		}
 	}
 }

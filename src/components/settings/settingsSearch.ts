@@ -75,6 +75,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "space-default-new-note-folder", tab: "space" },
 	{ id: "space-archive-enabled", tab: "space" },
 	{ id: "space-attachments-location", tab: "space" },
+	{ id: "attachments-browser", tab: "attachments" },
 	{ id: "space-connections-graph", tab: "space" },
 	{ id: "space-template-folder", tab: "space" },
 	{ id: "space-default-daily-template", tab: "space" },
@@ -130,7 +131,6 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "about-update-status", tab: "about" },
 	{ id: "about-changelog", tab: "about" },
 	{ id: "about-developer-mode", tab: "about" },
-	{ id: "developer-attachment-browser", tab: "developer" },
 	{ id: "developer-diagnostic-logging", tab: "developer" },
 ];
 

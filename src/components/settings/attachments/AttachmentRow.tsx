@@ -1,4 +1,4 @@
-import { FolderOpenIcon, LinkSquare01Icon, Note01Icon } from "@hugeicons/core-free-icons";
+import { FolderOpenIcon, LinkSquare01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,8 +12,6 @@ import type { AttachmentFileAction } from "./useAttachmentScan";
 interface AttachmentRowProps {
 	entry: AttachmentEntry;
 	selected: boolean;
-	/** Status is noise when every visible row is unused, so the Unused tab hides it. */
-	showStatus: boolean;
 	onToggle: (path: string) => void;
 	onFileAction: (action: AttachmentFileAction) => void;
 }
@@ -23,11 +21,10 @@ function UsedInPopover({ notes }: { notes: readonly string[] }) {
 	return (
 		<Popover>
 			<PopoverTrigger render={<button type="button" className="attachmentUsedTrigger" />}>
-				<HugeiconsIcon icon={Note01Icon} size="var(--icon-xs)" aria-hidden="true" />
-				{t("developer.attachments.usedIn", { count: notes.length })}
+				{t("attachments.usedIn", { count: notes.length })}
 			</PopoverTrigger>
 			<PopoverContent align="start" className="attachmentUsedPopover">
-				<div className="attachmentUsedTitle">{t("developer.attachments.referencedBy")}</div>
+				<div className="attachmentUsedTitle">{t("attachments.referencedBy")}</div>
 				<ul className="attachmentUsedList">
 					{notes.map((note) => (
 						<li key={note} title={note}>
@@ -43,13 +40,12 @@ function UsedInPopover({ notes }: { notes: readonly string[] }) {
 export const AttachmentRow = memo(function AttachmentRow({
 	entry,
 	selected,
-	showStatus,
 	onToggle,
 	onFileAction,
 }: AttachmentRowProps) {
 	const { t, i18n } = useTranslation("settings.general");
 	const unused = isUnused(entry);
-	const folder = parentFolder(entry.rel_path) || t("developer.attachments.spaceRoot");
+	const folder = parentFolder(entry.rel_path) || t("attachments.spaceRoot");
 	// Truncate only the stem so the extension stays visible on long hashed names.
 	const dot = entry.name.lastIndexOf(".");
 	const stem = dot > 0 ? entry.name.slice(0, dot) : entry.name;
@@ -61,7 +57,7 @@ export const AttachmentRow = memo(function AttachmentRow({
 				{hasThumbnail(entry.kind, extension) ? (
 					<img src={spaceAssetUrl(entry.rel_path)} alt="" loading="lazy" decoding="async" />
 				) : (
-					<HugeiconsIcon icon={attachmentKindIcon(entry.kind)} size="var(--icon-md)" />
+					<HugeiconsIcon icon={attachmentKindIcon(entry.kind)} size="var(--icon-sm)" />
 				)}
 			</span>
 			<span className="attachmentRowCopy">
@@ -71,10 +67,12 @@ export const AttachmentRow = memo(function AttachmentRow({
 				</span>
 				<span className="attachmentRowPath">
 					<span className="attachmentRowFolder">{folder}</span>
-					{showStatus && unused ? (
-						<span className="attachmentUnusedMark">{t("developer.attachments.unusedBadge")}</span>
-					) : null}
-					{unused ? null : <UsedInPopover notes={entry.referenced_by} />}
+					{unused ? null : (
+						<>
+							<span aria-hidden="true">·</span>
+							<UsedInPopover notes={entry.referenced_by} />
+						</>
+					)}
 				</span>
 			</span>
 		</>
@@ -88,7 +86,7 @@ export const AttachmentRow = memo(function AttachmentRow({
 						type="checkbox"
 						checked={selected}
 						onChange={() => onToggle(entry.rel_path)}
-						aria-label={t("developer.attachments.selectFile", { name: entry.name })}
+						aria-label={t("attachments.selectFile", { name: entry.name })}
 					/>
 					{body}
 				</label>
@@ -104,8 +102,8 @@ export const AttachmentRow = memo(function AttachmentRow({
 					type="button"
 					variant="ghost"
 					size="icon-xs"
-					title={t("developer.attachments.open")}
-					aria-label={t("developer.attachments.openFile", { name: entry.name })}
+					title={t("attachments.open")}
+					aria-label={t("attachments.openFile", { name: entry.name })}
 					onClick={() => onFileAction({ kind: "open", path: entry.rel_path })}
 				>
 					<HugeiconsIcon icon={LinkSquare01Icon} />
@@ -114,8 +112,8 @@ export const AttachmentRow = memo(function AttachmentRow({
 					type="button"
 					variant="ghost"
 					size="icon-xs"
-					title={t("developer.attachments.reveal")}
-					aria-label={t("developer.attachments.revealFile", { name: entry.name })}
+					title={t("attachments.reveal")}
+					aria-label={t("attachments.revealFile", { name: entry.name })}
 					onClick={() => onFileAction({ kind: "reveal", path: entry.rel_path })}
 				>
 					<HugeiconsIcon icon={FolderOpenIcon} />

@@ -9,6 +9,7 @@
 		"shortcuts": "Shortcuts",
 		"ai": "AI",
 		"space": "Space",
+		"attachments": "Anexos",
 		"git": "Git Sync",
 		"about": "About"
 	},
@@ -57,6 +58,11 @@
 			"title": "Space settings",
 			"description": "Open Space settings.",
 			"keywords": ["Space"]
+		},
+		"attachments": {
+			"title": "Ajustes de anexos",
+			"description": "Abrir os ajustes de anexos.",
+			"keywords": ["Anexos"]
 		},
 		"git": {
 			"title": "Git Sync settings",
@@ -362,6 +368,12 @@
 			"title": "Location",
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
+		},
+		"attachments-browser": {
+			"title": "Anexos não usados",
+			"section": "Armazenamento",
+			"description": "Encontre anexos não usados e mova-os para o Lixo.",
+			"keywords": ["anexos", "não usados", "órfãos", "limpar", "imagens", "lixo"]
 		},
 		"space-connections-graph": {
 			"title": "Grafo de conexões",

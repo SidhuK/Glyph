@@ -23,26 +23,25 @@ export function AttachmentBrowser() {
 	const { spacePath, scan, trash, fileAction } = useAttachmentScan();
 	const filters = useAttachmentFilters(scan.data?.attachments ?? NO_ATTACHMENTS);
 	const error = scan.error ?? trash.error ?? fileAction.error;
-	const filtersActive = filters.query.trim() !== "" || filters.kind !== "any";
 
 	const confirmTrash = async () => {
 		const selected = filters.selected;
 		const listed = selected.slice(0, TRASH_PREVIEW_LIMIT).map((entry) => entry.name);
 		const hidden = selected.length - listed.length;
-		if (hidden > 0) listed.push(t("developer.attachments.confirm.more", { count: hidden }));
+		if (hidden > 0) listed.push(t("attachments.confirm.more", { count: hidden }));
 		const { confirm } = await import("@tauri-apps/plugin-dialog");
 		const confirmed = await confirm(
 			[
-				t("developer.attachments.confirm.description", {
+				t("attachments.confirm.description", {
 					size: formatBytes(filters.selectedTotals.bytes, i18n.language),
 				}),
 				listed.join("\n"),
 			].join("\n\n"),
 			{
-				title: t("developer.attachments.confirm.title", { count: selected.length }),
+				title: t("attachments.confirm.title", { count: selected.length }),
 				kind: "warning",
-				okLabel: t("developer.attachments.confirm.action"),
-				cancelLabel: t("developer.attachments.confirm.cancel"),
+				okLabel: t("attachments.confirm.action"),
+				cancelLabel: t("attachments.confirm.cancel"),
 			},
 		);
 		if (!confirmed) return;
@@ -52,9 +51,15 @@ export function AttachmentBrowser() {
 		);
 	};
 
-	const rescanLabel = scan.isFetching
-		? t("developer.attachments.scanning")
-		: t("developer.attachments.rescan");
+	if (spacePath === null) {
+		return (
+			<SettingsSection title={t("attachments.storageTitle")}>
+				<p className="settingsEmpty attachmentEmpty">{t("attachments.noSpace")}</p>
+			</SettingsSection>
+		);
+	}
+
+	const rescanLabel = scan.isFetching ? t("attachments.scanning") : t("attachments.rescan");
 	const rescanButton = (
 		<Button
 			type="button"
@@ -70,69 +75,50 @@ export function AttachmentBrowser() {
 		>
 			<HugeiconsIcon
 				icon={ArrowReloadHorizontalIcon}
-				size="var(--icon-lg)"
+				size="var(--icon-md)"
 				className={scan.isFetching ? "attachmentSpin" : undefined}
 			/>
 		</Button>
 	);
 
 	return (
-		<SettingsSection
-			title={t("developer.attachments.title")}
-			description={t("developer.attachments.description")}
-			aside={spacePath === null ? null : rescanButton}
-		>
-			{spacePath === null ? (
-				<p className="settingsEmpty attachmentEmpty">{t("developer.attachments.noSpace")}</p>
-			) : (
+		<>
+			<SettingsSection title={t("attachments.storageTitle")} aside={rescanButton}>
+				<div className="attachmentBand">
+					{scan.data ? (
+						<AttachmentSummary all={filters.allTotals} unused={filters.unusedTotals} />
+					) : (
+						<p className="settingsEmpty">{t("attachments.scanning")}</p>
+					)}
+					{error ? <div className="settingsError">{extractErrorMessage(error)}</div> : null}
+					{trash.data ? <AttachmentTrashOutcome result={trash.data} /> : null}
+				</div>
+			</SettingsSection>
+
+			<SettingsSection title={t("attachments.filesTitle")} description={t("attachments.footnote")}>
 				<div className="attachmentBrowser">
-					<div className="attachmentBand">
-						{scan.data ? (
-							<AttachmentSummary
-								all={filters.allTotals}
-								unused={filters.unusedTotals}
-								noteCount={scan.data.note_count}
-							/>
-						) : (
-							<div className="attachmentSummary">
-								<span className="attachmentSummaryTitle">
-									{t("developer.attachments.scanning")}
-								</span>
-							</div>
-						)}
-						{error ? <div className="settingsError">{extractErrorMessage(error)}</div> : null}
-						{trash.data ? <AttachmentTrashOutcome result={trash.data} /> : null}
-					</div>
-
-					<div className="attachmentBand attachmentBandToolbar">
-						<AttachmentToolbar filters={filters} />
-					</div>
-
+					<AttachmentToolbar filters={filters} />
 					<AttachmentListHeader
 						filters={filters}
 						trashPending={trash.isPending}
 						onTrash={() => void confirmTrash()}
 					/>
-
 					{scan.isPending ? null : filters.visible.length === 0 ? (
 						<p className="settingsEmpty attachmentEmpty">
-							{filters.usage === "unused" && !filtersActive
-								? t("developer.attachments.emptyUnused")
-								: t("developer.attachments.emptyFiltered")}
+							{filters.usage === "unused" && filters.query.trim() === ""
+								? t("attachments.emptyUnused")
+								: t("attachments.emptyFiltered")}
 						</p>
 					) : (
 						<AttachmentList
 							entries={filters.visible}
 							selectedPaths={filters.selectedPaths}
-							showStatus={filters.usage === "all"}
 							onToggle={filters.toggle}
 							onFileAction={fileAction.mutate}
 						/>
 					)}
-
-					<p className="attachmentFootnote">{t("developer.attachments.footnote")}</p>
 				</div>
-			)}
-		</SettingsSection>
+			</SettingsSection>
+		</>
 	);
 }

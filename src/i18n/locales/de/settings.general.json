@@ -320,5 +320,67 @@
 		"defaultFolder": {
 			"description": "Neue Notizen werden in diesem Ordner erstellt."
 		}
+	},
+	"attachments": {
+		"storageTitle": "Speicher",
+		"filesTitle": "Dateien",
+		"rescan": "Erneut prüfen",
+		"scanning": "Wird geprüft …",
+		"noSpace": "Öffne einen Space, um seine Anhänge zu durchsuchen.",
+		"summary": {
+			"reclaimable": "können freigegeben werden",
+			"facts": "{{unused}} von {{total}} Anhängen sind mit keiner Notiz verlinkt.",
+			"clear": "Alle Anhänge werden verwendet"
+		},
+		"usageFilter": "Anhänge anzeigen",
+		"usage": {
+			"unused": "Ungenutzt",
+			"all": "Alle"
+		},
+		"searchPlaceholder": "Nach Name oder Ordner filtern",
+		"sortLabel": "Anhänge sortieren",
+		"sort": {
+			"size": "Größte zuerst",
+			"name": "Nach Name"
+		},
+		"selectAllUnused": "Alle ungenutzten auswählen",
+		"columns": {
+			"name": "Anhang",
+			"size": "Größe"
+		},
+		"clearSelection": "Aufheben",
+		"selectedSummary_one": "1 ausgewählt · {{size}}",
+		"selectedSummary_other": "{{count}} ausgewählt · {{size}}",
+		"moveToTrash": "In den Papierkorb legen",
+		"selectFile": "{{name}} auswählen",
+		"spaceRoot": "Oberste Ebene des Space",
+		"usedIn_one": "In 1 Notiz",
+		"usedIn_other": "In {{count}} Notizen",
+		"referencedBy": "Verwendet in",
+		"open": "Öffnen",
+		"openFile": "{{name}} öffnen",
+		"reveal": "Im Finder anzeigen",
+		"revealFile": "{{name}} im Finder anzeigen",
+		"emptyUnused": "Keine ungenutzten Anhänge.",
+		"emptyFiltered": "Keine Anhänge entsprechen diesen Filtern.",
+		"footnote": "Eine Datei gilt als verwendet, wenn eine Notiz ihren Dateinamen erwähnt – in einem Link, einer Einbettung, HTML oder Frontmatter.",
+		"confirm": {
+			"title_one": "1 Anhang in den Papierkorb legen?",
+			"title_other": "{{count}} Anhänge in den Papierkorb legen?",
+			"description": "Dadurch werden {{size}} frei. Glyph prüft vorher erneut und behält jede Datei, auf die jetzt eine Notiz verlinkt. Im Finder kannst du Dateien aus dem Papierkorb zurücklegen.",
+			"more_one": "und 1 weiterer",
+			"more_other": "und {{count}} weitere",
+			"cancel": "Abbrechen",
+			"action": "In den Papierkorb legen"
+		},
+		"result": {
+			"trashed_one": "1 Anhang in den Papierkorb gelegt.",
+			"trashed_other": "{{count}} Anhänge in den Papierkorb gelegt.",
+			"skipped_one": "1 Datei behalten:",
+			"skipped_other": "{{count}} Dateien behalten:",
+			"skippedItem": "{{path}} · {{reason}}",
+			"missing": "nicht mehr in diesem Space",
+			"referenced": "jetzt mit einer Notiz verlinkt"
+		}
 	}
 }

@@ -4,12 +4,11 @@ import type { AttachmentEntry } from "../../../lib/tauri";
 import { AttachmentRow } from "./AttachmentRow";
 import type { AttachmentFileAction } from "./useAttachmentScan";
 
-const ATTACHMENT_ROW_HEIGHT = 60;
+const ATTACHMENT_ROW_HEIGHT = 52;
 
 interface AttachmentListProps {
 	entries: readonly AttachmentEntry[];
 	selectedPaths: ReadonlySet<string>;
-	showStatus: boolean;
 	onToggle: (path: string) => void;
 	onFileAction: (action: AttachmentFileAction) => void;
 }
@@ -17,7 +16,6 @@ interface AttachmentListProps {
 export function AttachmentList({
 	entries,
 	selectedPaths,
-	showStatus,
 	onToggle,
 	onFileAction,
 }: AttachmentListProps) {
@@ -45,7 +43,6 @@ export function AttachmentList({
 							<AttachmentRow
 								entry={entry}
 								selected={selectedPaths.has(entry.rel_path)}
-								showStatus={showStatus}
 								onToggle={onToggle}
 								onFileAction={onFileAction}
 							/>
