@@ -13,6 +13,7 @@
 /* ── Pop-up surface ── */
 
 .calendarPalette {
+	grid-template-columns: minmax(0, 1fr);
 	width: min(320px, calc(100vw - 48px));
 	padding: 12px 10px 10px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
