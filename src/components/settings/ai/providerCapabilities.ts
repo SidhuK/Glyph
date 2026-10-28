@@ -4,7 +4,6 @@ const PROVIDERS_WITHOUT_API_KEY = new Set<AiProviderKind>([
 	"ollama",
 	"llama_cpp",
 	"codex_chatgpt",
-	"amp",
 	"claude_code",
 	"cursor",
 	"grok",

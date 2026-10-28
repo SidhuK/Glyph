@@ -1,5 +1,4 @@
 import openaiLightThemeLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
-import ampLogoUrl from "../../assets/provider-logos/amp.svg?url";
 import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
 import codexLogoUrl from "../../assets/provider-logos/codex-color.svg?url";
 import cursorDarkThemeLogoUrl from "../../assets/provider-logos/cursor-dark.svg?url";
@@ -40,7 +39,6 @@ export const providerLogoMeta: Record<
 		src: codexLogoUrl,
 		label: "Codex (ChatGPT)",
 	},
-	amp: { src: ampLogoUrl, label: "Amp" },
 	claude_code: { src: anthropicLogoUrl, label: "Claude Code" },
 	cursor: {
 		src: cursorLightThemeLogoUrl,

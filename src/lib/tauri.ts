@@ -782,7 +782,6 @@ export type AiProviderKind =
 	| "ollama"
 	| "llama_cpp"
 	| "codex_chatgpt"
-	| "amp"
 	| "claude_code"
 	| "cursor"
 	| "grok"

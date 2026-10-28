@@ -16,7 +16,6 @@ pub fn capabilities(provider: &AiProviderKind) -> ProviderCapabilities {
         | AiProviderKind::Ollama
         | AiProviderKind::LlamaCpp
         | AiProviderKind::CodexChatgpt
-        | AiProviderKind::Amp
         | AiProviderKind::ClaudeCode
         | AiProviderKind::Cursor
         | AiProviderKind::Grok

@@ -444,7 +444,6 @@ pub async fn ai_models_list(
         AiProviderKind::Anthropic => list_anthropic(&client, &profile, &api_key).await,
         AiProviderKind::Gemini => list_gemini(&client, &profile, &api_key).await,
         AiProviderKind::CodexChatgpt => list_codex_models(app).await,
-        AiProviderKind::Amp => Ok(crate::ai_amp::list_models()),
         AiProviderKind::ClaudeCode => crate::ai_claude_code::list_models(&space_root, &profile),
         AiProviderKind::Cursor => crate::ai_cursor::list_models(&profile).await,
         AiProviderKind::Grok => crate::ai_grok::list_models(&profile).await,
