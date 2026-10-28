@@ -30,7 +30,6 @@ const CONNECTION_OPTIONS = [
 			{ value: "cursor", label: "Cursor" },
 			{ value: "grok", label: "Grok" },
 			{ value: "claude_code", label: "Claude Code" },
-			{ value: "amp", label: "Amp" },
 			{ value: "opencode", label: "OpenCode" },
 			{ value: "pi", label: "PI" },
 		],

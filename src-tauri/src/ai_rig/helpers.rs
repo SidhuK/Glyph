@@ -33,7 +33,6 @@ pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
         AiProviderKind::Ollama => "http://localhost:11434",
         AiProviderKind::LlamaCpp => "http://localhost:8080/v1",
         AiProviderKind::CodexChatgpt => "https://developers.openai.com/codex/app-server/",
-        AiProviderKind::Amp => "https://ampcode.com/",
         AiProviderKind::ClaudeCode => "https://code.claude.com/",
         AiProviderKind::Cursor => "https://cursor.com/",
         AiProviderKind::Grok => "https://x.ai/cli",

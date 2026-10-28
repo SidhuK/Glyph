@@ -368,7 +368,6 @@ pub async fn run_with_rig(
             }
         }
         AiProviderKind::CodexChatgpt
-        | AiProviderKind::Amp
         | AiProviderKind::ClaudeCode
         | AiProviderKind::Cursor
         | AiProviderKind::Grok
@@ -662,9 +661,6 @@ pub async fn generate_chat_title(
                 return Err("Chat naming cancelled".to_string());
             }
             title
-        }
-        AiProviderKind::Amp => {
-            return Ok("Amp Chat".to_string());
         }
         AiProviderKind::Grok => {
             return Ok("Grok Chat".to_string());

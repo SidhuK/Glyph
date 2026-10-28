@@ -226,7 +226,6 @@ pub async fn ai_chat_start(
         && !matches!(
             profile.provider,
             super::types::AiProviderKind::CodexChatgpt
-                | super::types::AiProviderKind::Amp
                 | super::types::AiProviderKind::ClaudeCode
                 | super::types::AiProviderKind::Cursor
                 | super::types::AiProviderKind::Grok
@@ -401,12 +400,6 @@ pub async fn run_request(
     }
     if matches!(profile.provider, super::types::AiProviderKind::Opencode) {
         return crate::ai_opencode::run_with_opencode(
-            cancel, app, job_id, profile, system, messages, mode, space_root,
-        )
-        .await;
-    }
-    if matches!(profile.provider, super::types::AiProviderKind::Amp) {
-        return crate::ai_amp::run_with_amp(
             cancel, app, job_id, profile, system, messages, mode, space_root,
         )
         .await;

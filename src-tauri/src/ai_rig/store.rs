@@ -8,10 +8,21 @@ use super::types::{AiProfile, AiProviderKind};
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct AiStore {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_known_profiles")]
     pub profiles: Vec<AiProfile>,
     #[serde(default)]
     pub active_profile_id: Option<String>,
+}
+
+fn deserialize_known_profiles<'de, D>(deserializer: D) -> Result<Vec<AiProfile>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let values = Vec::<serde_json::Value>::deserialize(deserializer)?;
+    Ok(values
+        .into_iter()
+        .filter_map(|value| serde_json::from_value(value).ok())
+        .collect())
 }
 
 pub fn store_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -66,7 +77,6 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
             true,
         ),
         (AiProviderKind::CodexChatgpt, "codex", None, false),
-        (AiProviderKind::Amp, "smart", None, false),
         (AiProviderKind::ClaudeCode, "default", None, false),
         (AiProviderKind::Cursor, "auto", None, false),
         (AiProviderKind::Grok, "grok-build", None, false),
