@@ -171,25 +171,30 @@ fn validate_commit_hash(commit: &str) -> Result<(), String> {
 
 fn parse_history_commits(raw: &str) -> Vec<GitHistoryCommit> {
     let mut commits = Vec::new();
-    let mut current: Option<GitHistoryCommit> = None;
+    // `git log -z` NUL-terminates headers and numstat paths and never quotes paths.
+    let mut fields = raw.split('\0').map(|field| field.trim_start_matches('\n'));
 
-    for line in raw.lines() {
-        if let Some(commit_line) = line.strip_prefix('\u{1e}') {
-            if let Some(commit) = current.take() {
-                commits.push(commit);
-            }
-            current = parse_history_commit_line(commit_line);
+    while let Some(field) = fields.next() {
+        if let Some(commit_line) = field.strip_prefix('\u{1e}') {
+            commits.extend(parse_history_commit_line(commit_line));
             continue;
         }
 
-        let Some(commit) = current.as_mut() else {
+        let Some(commit) = commits.last_mut() else {
             continue;
         };
-        let Some((added, deleted, rel_path)) = parse_numstat_line(line) else {
+        let Some((added, deleted, rel_path)) = parse_numstat_field(field) else {
             continue;
+        };
+        // A rename leaves the path empty and follows with the old and new paths.
+        let rel_path = if rel_path.is_empty() {
+            fields.next();
+            fields.next().unwrap_or_default()
+        } else {
+            rel_path
         };
         if commit.rel_path.is_empty() {
-            commit.rel_path = normalize_numstat_path(&rel_path);
+            commit.rel_path = rel_path.to_string();
         }
         let modified = added.min(deleted);
         commit.modified_count = commit.modified_count.saturating_add(modified);
@@ -199,10 +204,6 @@ fn parse_history_commits(raw: &str) -> Vec<GitHistoryCommit> {
         commit.deleted_count = commit
             .deleted_count
             .saturating_add(deleted.saturating_sub(modified));
-    }
-
-    if let Some(commit) = current {
-        commits.push(commit);
     }
 
     commits
@@ -234,23 +235,10 @@ fn parse_history_commit_line(line: &str) -> Option<GitHistoryCommit> {
     })
 }
 
-fn parse_numstat_line(line: &str) -> Option<(u32, u32, String)> {
-    let mut parts = line.split('\t');
+fn parse_numstat_field(field: &str) -> Option<(u32, u32, &str)> {
+    let mut parts = field.splitn(3, '\t');
     let added = parts.next()?.parse::<u32>().ok()?;
     let deleted = parts.next()?.parse::<u32>().ok()?;
-    let rel_path = parts.next()?.to_string();
+    let rel_path = parts.next()?;
     Some((added, deleted, rel_path))
-}
-
-fn normalize_numstat_path(path: &str) -> String {
-    let Some((prefix, renamed_to)) = path.rsplit_once(" => ") else {
-        return path.to_string();
-    };
-    let Some((base, _)) = prefix.rsplit_once('{') else {
-        return renamed_to.to_string();
-    };
-    let Some((name, suffix)) = renamed_to.split_once('}') else {
-        return renamed_to.to_string();
-    };
-    format!("{base}{name}{suffix}")
 }

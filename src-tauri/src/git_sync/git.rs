@@ -497,6 +497,7 @@ pub fn file_history(space_root: &Path, rel_path: &str, limit: u32) -> Result<Str
         space_root,
         vec![
             "log".to_string(),
+            "-z".to_string(),
             "--follow".to_string(),
             "--date-order".to_string(),
             format!("-n{}", limit.clamp(1, MAX_FILE_HISTORY_LIMIT)),
