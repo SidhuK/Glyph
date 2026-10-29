@@ -1,15 +1,15 @@
 {
-  "version": "0.9.4-alpha.4",
-  "notes": "## What's Changed\n* Fix version history for notes with non-ASCII paths by @SidhuK in https://github.com/SidhuK/Glyph/pull/678\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.4-alpha.3...v0.9.4-alpha.4",
-  "pub_date": "2026-10-29T06:49:13.493Z",
+  "version": "0.9.4",
+  "notes": "## What's Changed\n* Turn sidebar New Note into a split button with create menu by @SidhuK in https://github.com/SidhuK/Glyph/pull/669\n* Polish the UI across the app (council 9/9/9/9) by @SidhuK in https://github.com/SidhuK/Glyph/pull/670\n* Rebuild Connections as an Ink knowledge graph by @SidhuK in https://github.com/SidhuK/Glyph/pull/672\n* Open settings in a modal dialog (#673)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/673\n* Truncate long note titles in the Calendar pop-up by @SidhuK in https://github.com/SidhuK/Glyph/pull/675\n* Remove the Amp provider by @SidhuK in https://github.com/SidhuK/Glyph/pull/676\n* Move the attachment browser into its own Attachments settings tab (#677)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/677\n* Fix version history for notes with non-ASCII paths by @SidhuK in https://github.com/SidhuK/Glyph/pull/678\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.3...v0.9.4",
+  "pub_date": "2026-10-29T10:51:16.056Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHovNTlFdWV6aDk4eVcrYzIva3NOejBxQ3BwdUVlZjRIeUhmUEM2a0tSaXVOZE9JazdkNjBYM1phVDhCTmQ2VGVoNmRlblVGWDc4YnY3T0FxNVUxcEFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjU2NTQ3CWZpbGU6R2x5cGguYXBwLnRhci5negpIOEJHWEZydy9OZXRZb1p0dGMza2FoaU5nWFlCSHBHY05YWG9ZbGZOaWk2S2lnVW9tUmpyL1I1Q01VOTRkYlJ0VENFeDRQWHJ4YWNacGQ2NVVzQVhCUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.4-alpha.4/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDJpSGF1cXBMVzl2c1YwSjJrdEZWTTQxajIwQzlRbnY0bzIrbUNVU3lIK1V5UFp0ZHpUUnVKcC9GMzdSb2lRZEgyMW9CZmU2NzBxRGkraXNsSVhtc3dJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjcxMDY4CWZpbGU6R2x5cGguYXBwLnRhci5negpmbXk3TldzNHY0Wkh3MlB6dytIS0EvRTJGQ3dldjZJVWFtWUxRaWNibzN1VDhEVHVXazFaN2JLeHM3NCtwYm1YWDBCcGdjNGQwKytROHk5endKSHREZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.4/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHovNTlFdWV6aDk4eVcrYzIva3NOejBxQ3BwdUVlZjRIeUhmUEM2a0tSaXVOZE9JazdkNjBYM1phVDhCTmQ2VGVoNmRlblVGWDc4YnY3T0FxNVUxcEFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjU2NTQ3CWZpbGU6R2x5cGguYXBwLnRhci5negpIOEJHWEZydy9OZXRZb1p0dGMza2FoaU5nWFlCSHBHY05YWG9ZbGZOaWk2S2lnVW9tUmpyL1I1Q01VOTRkYlJ0VENFeDRQWHJ4YWNacGQ2NVVzQVhCUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.4-alpha.4/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDJpSGF1cXBMVzl2c1YwSjJrdEZWTTQxajIwQzlRbnY0bzIrbUNVU3lIK1V5UFp0ZHpUUnVKcC9GMzdSb2lRZEgyMW9CZmU2NzBxRGkraXNsSVhtc3dJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjcxMDY4CWZpbGU6R2x5cGguYXBwLnRhci5negpmbXk3TldzNHY0Wkh3MlB6dytIS0EvRTJGQ3dldjZJVWFtWUxRaWNibzN1VDhEVHVXazFaN2JLeHM3NCtwYm1YWDBCcGdjNGQwKytROHk5endKSHREZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.4/Glyph_aarch64.app.tar.gz"
     }
   }
 }
