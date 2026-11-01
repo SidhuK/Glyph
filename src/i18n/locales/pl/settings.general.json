@@ -22,8 +22,8 @@
 			"twitter": "X / Twitter"
 		},
 		"tagline": {
-			"first": "Twoje myśli zasługują na dom,",
-			"second": "nie na serwer."
+			"first": "Notatki, które przetrwają",
+			"second": "aplikację, w której powstały."
 		},
 		"links": {
 			"ariaLabel": "Linki Glyph",
@@ -74,7 +74,11 @@
 				"description": "Otwórz opublikowaną listę zmian Glyph w przeglądarce.",
 				"view": "Pokaż listę zmian"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "Kopiuj wersję",
+		"versionCopied": "Skopiowano wersję",
+		"copyVersionFailed": "Nie udało się skopiować wersji"
 	},
 	"language": {
 		"label": "Język",

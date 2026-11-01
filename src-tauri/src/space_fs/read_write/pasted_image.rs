@@ -22,11 +22,17 @@ pub fn extension_for_mime(mime: &str) -> Option<&'static str> {
     }
 }
 
-fn extension_matches_mime(mime: &str, ext: &str) -> bool {
-    match mime.trim().to_ascii_lowercase().as_str() {
-        "image/jpeg" => ext.eq_ignore_ascii_case("jpg") || ext.eq_ignore_ascii_case("jpeg"),
-        "image/tiff" => ext.eq_ignore_ascii_case("tif") || ext.eq_ignore_ascii_case("tiff"),
-        _ => extension_for_mime(mime).is_some_and(|expected| ext.eq_ignore_ascii_case(expected)),
+pub fn mime_for_extension(ext: &str) -> Option<&'static str> {
+    match ext.trim().to_ascii_lowercase().as_str() {
+        "png" => Some("image/png"),
+        "jpg" | "jpeg" => Some("image/jpeg"),
+        "gif" => Some("image/gif"),
+        "webp" => Some("image/webp"),
+        "svg" => Some("image/svg+xml"),
+        "bmp" => Some("image/bmp"),
+        "avif" => Some("image/avif"),
+        "tif" | "tiff" => Some("image/tiff"),
+        _ => None,
     }
 }
 
@@ -92,7 +98,9 @@ pub fn filename_for_mime(
     let chosen_ext = ext_with_dot
         .strip_prefix('.')
         .filter(|value| !value.is_empty())
-        .filter(|value| extension_matches_mime(mime, value))
+        .filter(|value| {
+            mime_for_extension(value) == Some(mime.trim().to_ascii_lowercase().as_str())
+        })
         .map(|value| value.to_ascii_lowercase())
         .unwrap_or_else(|| ext.to_string());
     Ok(format!("{stem}.{chosen_ext}"))

@@ -1,0 +1,167 @@
+.aboutPane {
+	padding: 0;
+}
+
+.aboutHero {
+	--about-brand: #3d6df2;
+
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-xl);
+	background: var(--bg-secondary);
+}
+
+.aboutHeroBody {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 36px 24px 40px;
+	text-align: center;
+}
+
+.aboutHeroBody::before {
+	position: absolute;
+	z-index: -1;
+	top: -60px;
+	left: 50%;
+	width: 420px;
+	height: 300px;
+	background: radial-gradient(
+		closest-side,
+		color-mix(in srgb, var(--about-brand) 22%, transparent),
+		transparent
+	);
+	content: "";
+	transform: translateX(-50%);
+	pointer-events: none;
+}
+
+.aboutLogo {
+	width: 96px;
+	height: 96px;
+	margin-bottom: 18px;
+	object-fit: contain;
+	filter: drop-shadow(0 8px 22px color-mix(in srgb, var(--about-brand) 30%, transparent));
+}
+
+.aboutAppName {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	color: var(--text-primary);
+	font-size: 34px;
+	font-weight: var(--font-bold);
+	letter-spacing: -0.03em;
+	line-height: 1.1;
+}
+
+.aboutDevBadge {
+	padding: 2px 7px;
+	border: 1px solid color-mix(in srgb, var(--about-brand) 55%, transparent);
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--about-brand) 16%, transparent);
+	color: color-mix(in srgb, var(--about-brand) 70%, var(--text-primary));
+	font-family: var(--font-mono);
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.12em;
+	line-height: 1.4;
+}
+
+.aboutVersionChip {
+	gap: 8px;
+	height: 26px;
+	margin-top: 12px;
+	padding: 0 8px 0 10px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+	color: var(--text-secondary);
+	font-family: var(--font-mono);
+	font-size: var(--text-xs);
+	font-weight: 400;
+}
+
+.aboutVersionChip svg {
+	color: var(--text-tertiary);
+}
+
+.aboutVersionChip:hover {
+	background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+	color: var(--text-primary);
+}
+
+.aboutTagline {
+	margin: 20px 0 0;
+	color: var(--text-secondary);
+	font-size: var(--text-md);
+	font-weight: 400;
+	line-height: 1.45;
+}
+
+.aboutHeroFooter {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 16px;
+	padding: 10px 12px 10px 16px;
+	border-top: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--text-primary) 2.5%, var(--bg-secondary));
+}
+
+.aboutCredit,
+.aboutLink {
+	gap: 6px;
+	height: 28px;
+	padding: 0 8px;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+.aboutCredit,
+.aboutLinkQuiet {
+	color: var(--text-tertiary);
+}
+
+.aboutCredit {
+	gap: 4px;
+	margin-left: -8px;
+}
+
+.aboutCreditName {
+	color: var(--text-primary);
+}
+
+.aboutLinks {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px;
+}
+
+.aboutCredit:hover,
+.aboutCredit[aria-expanded="true"],
+.aboutLink:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.aboutLinksDivider {
+	width: 1px;
+	height: 16px;
+	margin: 0 6px;
+	background: var(--border-default);
+}
+
+@media (max-width: 760px) {
+	.aboutHeroFooter {
+		justify-content: center;
+	}
+}

@@ -116,16 +116,20 @@
 		"heading1": "Nagłówek 1",
 		"heading2": "Nagłówek 2",
 		"heading3": "Nagłówek 3",
-		"color": "Kolor",
-		"colorSections": {
-			"text": "Tekst",
-			"highlight": "Wyróżnienie"
-		},
 		"link": "Link",
 		"linkUrl": "Adres URL linku",
 		"linkOpenInNewTab": "Otwórz w nowej karcie",
 		"linkRemove": "Usuń",
-		"linkApply": "Zastosuj"
+		"linkApply": "Zastosuj",
+		"heading": "Nagłówek",
+		"bodyText": "Tekst główny",
+		"list": "Lista",
+		"highlight": "Wyróżnij",
+		"more": "Więcej",
+		"inlineCode": "Kod w linii",
+		"imageFilter": "Obrazy",
+		"imageFailed": "Nie udało się wstawić obrazu",
+		"imageNeedsNote": "Obrazy można dodawać tylko do notatek w przestrzeni."
 	},
 	"selectionAi": {
 		"title": "Zapytaj AI o zaznaczenie",
@@ -243,6 +247,9 @@
 		},
 		"table": {
 			"title": "Tabela"
+		},
+		"insertImage": {
+			"title": "Obraz"
 		},
 		"tableOfContents": {
 			"title": "Spis treści"

@@ -13,6 +13,7 @@ import {
 	Heading2,
 	Heading3,
 	HighlighterIcon,
+	Image01Icon,
 	InformationCircleIcon,
 	Italic,
 	LeftToRightBlockQuoteIcon,
@@ -49,7 +50,6 @@ interface BuildEditorCommandsOptions {
 	showCollapsibleLists: boolean;
 }
 
-/** Same glyphs as the format bar and slash menu, so a command looks the same everywhere. */
 const EDITOR_ACTION_ICONS: Partial<Record<EditorActionId, IconSvgElement>> = {
 	ai_selection_to_context: SparklesIcon,
 	bold: Bold,
@@ -69,6 +69,7 @@ const EDITOR_ACTION_ICONS: Partial<Record<EditorActionId, IconSvgElement>> = {
 	code_block: SourceCodeIcon,
 	mermaid_chart: FlowchartIcon,
 	table: TableIcon,
+	insert_image: Image01Icon,
 	divider: SeparatorHorizontalIcon,
 	details_block: ListChevronsDownUpIcon,
 	callout_info: InformationCircleIcon,

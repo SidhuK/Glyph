@@ -42,7 +42,6 @@
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 82%, transparent);
 	backdrop-filter: blur(6px);
 	overflow: hidden;
-	/* Right edge on the table's right edge, centred on the column "+" control's line. */
 	transform: translate(-100%, -50%);
 }
 
@@ -139,7 +138,6 @@
 	color: var(--status-danger-fg);
 }
 
-/* Preview/read-only: decoration widget pinned to the code block itself. */
 .codeBlockInlineCopy {
 	position: absolute;
 	top: 4px;
@@ -200,7 +198,6 @@
 }
 
 .mermaidCanvasStage {
-	/* Pele draws no background; this colors slice gaps and knocked-out shapes, so match the frame. */
 	--pele-bg: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
 	--pele-fg: var(--text-primary);
 	--pele-muted: var(--text-secondary);
@@ -211,7 +208,6 @@
 	--pele-accent: var(--interactive-accent);
 	--pele-critical: var(--status-danger-fg);
 	--pele-error: var(--status-danger-fg);
-	/* Must match the fonts renderer.ts passes to Pele for label measurement. */
 	--pele-font: var(--font-sans);
 	--pele-font-mono: var(--font-mono);
 	--pele-radius: var(--radius-sm);
@@ -306,7 +302,6 @@
 }
 
 .mermaidCanvasError {
-	/* Pele syntax errors mark the column with a caret on its own line. */
 	white-space: pre-wrap;
 	text-align: start;
 	font-family: var(--font-mono);
@@ -366,68 +361,6 @@
 .focusedHtmlPreview .htmlEmbedWidget {
 	margin: 0;
 	content-visibility: visible;
-}
-
-.editorColorDropdown,
-.editorLinkPopover {
-	border: 0;
-	border-radius: var(--floating-surface-radius);
-	background: var(--floating-surface-bg);
-	box-shadow: var(--floating-surface-shadow);
-}
-
-.editorColorDropdown {
-	min-width: auto;
-	padding: 4px;
-}
-
-.editorColorGrid {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 2px;
-}
-
-.editorColorSwatchButton {
-	appearance: none;
-	-webkit-appearance: none;
-	width: 28px;
-	height: 28px;
-	padding: 0;
-	border: 0;
-	border-radius: var(--floating-row-radius);
-	background: transparent;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--text-secondary);
-	outline: none;
-	box-shadow: none;
-	transition: background-color var(--transition-fast);
-}
-
-.editorColorSwatchButton:hover,
-.editorColorSwatchButton:focus-visible {
-	background: var(--bg-hover);
-	color: var(--text-primary);
-}
-
-.editorColorSwatchButton.active {
-	background: var(--bg-active);
-	color: var(--text-primary);
-}
-
-/* The fill is the swatch's colour (inline `color`). Highlight tints are faint, so the same colour
-   is stacked again as a ring: solid text colours look unchanged, tints show their hue at 14px. */
-.editorColorSwatch {
-	width: 14px;
-	height: 14px;
-	border-radius: var(--radius-full);
-	background-color: currentColor;
-	box-shadow:
-		inset 0 0 0 1.5px currentColor,
-		inset 0 0 0 1.5px currentColor,
-		inset 0 0 0 0.5px color-mix(in srgb, var(--text-primary) 16%, transparent);
-	flex: 0 0 auto;
 }
 
 .slashCommandMenu {
@@ -572,30 +505,115 @@
 }
 
 .editorLinkPopover {
-	width: 320px;
-	padding: 10px;
+	width: 300px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
+	box-shadow: var(--floating-surface-shadow);
 }
 
-.editorLinkPopoverRow {
+.editorLinkField {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	height: 38px;
+	padding: 0 6px 0 12px;
 }
 
-.editorLinkPopoverCheckbox {
-	display: inline-flex;
+.editorLinkFieldIcon {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.editorLinkField input,
+.editorLinkField input:hover,
+.editorLinkField input:focus {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	outline: none;
+	box-shadow: none;
+	background: transparent;
+	font-size: var(--text-sm);
+}
+
+.editorLinkApply {
+	display: inline-grid;
+	place-items: center;
+	flex: 0 0 auto;
+	width: 26px;
+	height: 26px;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+	transition:
+		background-color var(--transition-base),
+		color var(--transition-base);
+}
+
+.editorLinkApply:hover:not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.editorLinkApply:disabled {
+	color: var(--text-tertiary);
+	opacity: 0.5;
+	cursor: default;
+}
+
+.editorLinkOptions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-height: 36px;
+	padding: 0 6px 0 12px;
+	border-top: 1px solid var(--border-default);
+}
+
+.editorLinkTargetToggle.uiToggle {
+	--ui-toggle-track-width: 26px;
+	--ui-toggle-track-height: 16px;
+	--ui-toggle-thumb-size: 12px;
+	--ui-toggle-thumb-translate: 10px;
+
+	flex: 1 1 auto;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
 	align-items: center;
 	gap: 8px;
-	margin-top: 8px;
+}
+
+.editorLinkTargetToggle .uiToggleControl {
+	margin-top: 0;
+}
+
+.editorLinkTargetToggle .uiToggleLabel {
 	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	color: var(--text-secondary);
 }
 
-.editorLinkPopoverActions {
-	margin-top: 10px;
-	display: flex;
-	justify-content: space-between;
-	gap: 8px;
+.editorLinkRemove {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	height: 24px;
+	padding: 0 8px;
+	border-radius: var(--radius-sm);
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	transition:
+		background-color var(--transition-base),
+		color var(--transition-base);
+}
+
+.editorLinkRemove:hover {
+	background: var(--status-danger-bg);
+	color: var(--status-danger-fg);
 }
 
 .editorLinkDialog {

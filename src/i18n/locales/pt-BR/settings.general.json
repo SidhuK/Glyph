@@ -22,8 +22,8 @@
 			"twitter": "X / Twitter"
 		},
 		"tagline": {
-			"first": "Seus pensamentos merecem um lar,",
-			"second": "não um servidor."
+			"first": "Notas que sobrevivem ao app",
+			"second": "em que você as escreveu."
 		},
 		"links": {
 			"ariaLabel": "Links do Glyph",
@@ -74,7 +74,11 @@
 				"description": "Abra no navegador o registro de alterações publicado do Glyph.",
 				"view": "Ver registro de alterações"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "Copiar versão",
+		"versionCopied": "Versão copiada",
+		"copyVersionFailed": "Não foi possível copiar a versão"
 	},
 	"language": {
 		"label": "Idioma",

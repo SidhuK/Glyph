@@ -1,4 +1,4 @@
-import type { AnyExtension, JSONContent } from "@tiptap/core";
+import type { AnyExtension, Editor, JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { useEditor } from "@tiptap/react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
@@ -12,6 +12,7 @@ import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
 import { handleTagDecorationMouseDown } from "../extensions/tagDecorations";
 import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
+import { pickImages } from "../pickImages";
 import {
 	normalizeBody,
 	postprocessMarkdownFromEditor,
@@ -274,18 +275,13 @@ function restoreSelectionSnapshot(
 			editor.view.focus();
 			return true;
 		}
-	} catch {
-		// Fall back to a collapsed selection below.
-	}
+	} catch {}
 	try {
 		if (editor.commands.setTextSelection(range.from)) {
 			editor.view.focus();
 			return true;
 		}
-	} catch {
-		// If neither selection can be represented in the new document, leave the
-		// editor unfocused instead of letting the browser choose an end position.
-	}
+	} catch {}
 	return false;
 }
 
@@ -355,8 +351,6 @@ export function useNoteEditor({
 		listCollapseSaveRef.current = listCollapseSaveRef.current.then(() =>
 			invoke("list_collapse_state_set", { path, branches }).catch((error) => {
 				const message = error instanceof Error ? error.message : String(error);
-				// Auxiliary windows without a private space session inherit main;
-				// if even that is unavailable, collapse is session-only — no toast.
 				if (message.startsWith("no space session for window")) return;
 				console.error("Failed to save list collapse state", error);
 				toast.error(i18n.t("editor:listCollapse.saveFailed"), {
@@ -365,6 +359,26 @@ export function useNoteEditor({
 			}),
 		);
 	}, []);
+	const handlePickImages = useCallback(
+		(instance: Editor) => {
+			const sourcePath = relPathRef.current;
+			if (!sourcePath) {
+				toast.error(i18n.t("editor:ribbon.imageNeedsNote"));
+				return;
+			}
+			pickImages({
+				editor: instance,
+				sourcePath,
+				targetDir: resolveAttachmentTargetDir(
+					attachmentStorageModeRef.current,
+					attachmentFolderRef.current,
+					sourcePath,
+				),
+				isCurrent: () => editorRef.current === instance && relPathRef.current === sourcePath,
+			});
+		},
+		[attachmentFolderRef, attachmentStorageModeRef],
+	);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
@@ -377,6 +391,7 @@ export function useNoteEditor({
 				enableFocusMode,
 				onListCollapseToggle: handleListCollapseChange,
 				onMathEditRequest,
+				onPickImages: handlePickImages,
 				onTemplateInsertRequest,
 				placeholder,
 			}),
@@ -385,6 +400,7 @@ export function useNoteEditor({
 			enableMarkdownLinkAutocomplete,
 			enableFocusMode,
 			handleListCollapseChange,
+			handlePickImages,
 			mode,
 			onMathEditRequest,
 			onTemplateInsertRequest,
@@ -456,9 +472,6 @@ export function useNoteEditor({
 				relPath: relPathRef.current,
 			};
 			clearScheduledMarkdownSync();
-			// No requestAnimationFrame hop here: macOS suspends rAF callbacks for
-			// occluded windows, which would strand the pending sync (and the text
-			// it carries) until the window is next painted.
 			markdownSyncTimeoutRef.current = window.setTimeout(() => {
 				markdownSyncTimeoutRef.current = null;
 				flushMarkdownSync();
@@ -468,8 +481,6 @@ export function useNoteEditor({
 	);
 
 	useLayoutEffect(() => {
-		// These values mirror useEditor's recreation dependencies below. Flush
-		// before TipTap destroys an instance so its debounced edits are retained.
 		void additionalExtensions;
 		void peopleMentionsEnabled;
 		void enableMarkdownLinkAutocomplete;
@@ -508,7 +519,6 @@ export function useNoteEditor({
 					class: "tiptapContentInline",
 				},
 				clipboardTextSerializer: (slice, view) => {
-					// "" falls through to TipTap's default plain-text serializer.
 					const cellText = cellSelectionClipboardText(slice, view.state);
 					if (cellText !== null) return cellText;
 					const instance = editorRef.current;
@@ -770,7 +780,6 @@ export function useNoteEditor({
 					return;
 				}
 				const message = error instanceof Error ? error.message : String(error);
-				// No space session means collapse state simply isn't available here.
 				if (message.startsWith("no space session for window")) return;
 				console.error("Failed to load list collapse state", error);
 				toast.error(i18n.t("editor:listCollapse.loadFailed"), {

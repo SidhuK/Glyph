@@ -22,8 +22,8 @@
 			"twitter": "X / Twitter"
 		},
 		"tagline": {
-			"first": "Vos pensées méritent un foyer,",
-			"second": "pas un serveur."
+			"first": "Des notes qui survivent à l'app",
+			"second": "dans laquelle vous les avez écrites."
 		},
 		"links": {
 			"ariaLabel": "Liens Glyph",
@@ -74,7 +74,11 @@
 				"description": "Ouvrir le journal des modifications de Glyph dans votre navigateur.",
 				"view": "Voir le journal des modifications"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "Copier la version",
+		"versionCopied": "Version copiée",
+		"copyVersionFailed": "Impossible de copier la version"
 	},
 	"newNotes": {
 		"sectionTitle": "Nouvelles notes",

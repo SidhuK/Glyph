@@ -22,8 +22,8 @@
 			"twitter": "X / Twitter"
 		},
 		"tagline": {
-			"first": "당신의 생각에는 서버가 아니라",
-			"second": "머물 곳이 필요합니다."
+			"first": "작성한 앱보다",
+			"second": "오래 남는 노트."
 		},
 		"links": {
 			"ariaLabel": "Glyph 링크",
@@ -74,7 +74,11 @@
 				"description": "게시된 Glyph 변경 사항을 브라우저에서 엽니다.",
 				"view": "변경 사항 보기"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "버전 복사",
+		"versionCopied": "버전을 복사했습니다",
+		"copyVersionFailed": "버전을 복사할 수 없습니다"
 	},
 	"language": {
 		"label": "언어",

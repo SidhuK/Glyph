@@ -7,6 +7,7 @@ use tracing::warn;
 use crate::paths;
 use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
+use crate::space_fs::read_write::pasted_image::mime_for_extension;
 
 pub fn handle<R: Runtime>(
     ctx: UriSchemeContext<'_, R>,
@@ -85,7 +86,7 @@ fn read_space_image_limited(
 ) -> Option<(&'static str, Vec<u8>)> {
     deny_hidden_rel_path(rel).ok()?;
     let ext = rel.extension()?.to_str()?.to_ascii_lowercase();
-    let mime = mime_for_image_ext(&ext)?;
+    let mime = mime_for_extension(&ext)?;
     let abs = paths::join_under(root, rel).ok()?;
     let canonical_path = abs.canonicalize().ok()?;
     if !canonical_path.starts_with(root) {
@@ -142,20 +143,6 @@ fn hex_value(byte: u8) -> Option<u8> {
         b'0'..=b'9' => Some(byte - b'0'),
         b'a'..=b'f' => Some(byte - b'a' + 10),
         b'A'..=b'F' => Some(byte - b'A' + 10),
-        _ => None,
-    }
-}
-
-fn mime_for_image_ext(ext: &str) -> Option<&'static str> {
-    match ext {
-        "png" => Some("image/png"),
-        "jpg" | "jpeg" => Some("image/jpeg"),
-        "webp" => Some("image/webp"),
-        "gif" => Some("image/gif"),
-        "svg" => Some("image/svg+xml"),
-        "bmp" => Some("image/bmp"),
-        "avif" => Some("image/avif"),
-        "tif" | "tiff" => Some("image/tiff"),
         _ => None,
     }
 }

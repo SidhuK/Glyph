@@ -25,6 +25,7 @@ const BASE_EDITOR_ACTION_IDS = [
 	"code_block",
 	"mermaid_chart",
 	"table",
+	"insert_image",
 	"divider",
 	"details_block",
 	"callout_info",
@@ -147,6 +148,8 @@ export function executeEditorAction({
 				.run();
 		case "table":
 			return chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+		case "insert_image":
+			return chain.pickImages().run();
 		case "divider":
 			return chain.setHorizontalRule().run();
 		case "details_block":

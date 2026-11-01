@@ -23,16 +23,20 @@
 		"heading1": "Encabezado 1",
 		"heading2": "Encabezado 2",
 		"heading3": "Encabezado 3",
-		"color": "Color",
-		"colorSections": {
-			"text": "Texto",
-			"highlight": "Resaltado"
-		},
 		"link": "Enlace",
 		"linkUrl": "URL del enlace",
 		"linkOpenInNewTab": "Abrir en una pestaña nueva",
 		"linkRemove": "Quitar",
-		"linkApply": "Aplicar"
+		"linkApply": "Aplicar",
+		"heading": "Encabezado",
+		"bodyText": "Texto normal",
+		"list": "Lista",
+		"highlight": "Resaltar",
+		"more": "Más",
+		"inlineCode": "Código en línea",
+		"imageFilter": "Imágenes",
+		"imageFailed": "No se pudo insertar la imagen",
+		"imageNeedsNote": "Solo se pueden añadir imágenes a notas dentro de un espacio."
 	},
 	"selectionAi": {
 		"title": "Preguntar a la IA sobre la selección",
@@ -150,6 +154,9 @@
 		},
 		"table": {
 			"title": "Tabla"
+		},
+		"insertImage": {
+			"title": "Imagen"
 		},
 		"tableOfContents": {
 			"title": "Tabla de contenidos"

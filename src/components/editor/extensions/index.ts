@@ -1,4 +1,4 @@
-import { type AnyExtension, Extension } from "@tiptap/core";
+import { type AnyExtension, type Editor, Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
@@ -28,6 +28,7 @@ import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
 import { HtmlCommentBlock, HtmlCommentInline } from "./htmlComment";
 import { HtmlEmbedPreview } from "./htmlEmbedPreview";
+import { ImagePicker } from "./imagePicker";
 import { InlineTableOfContents } from "./inlineTableOfContents";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
@@ -370,8 +371,6 @@ const TaskListMarkdownShortcut = Extension.create({
 						const match = text.match(/^\[([ xX])\]\s*(.*)$/);
 						if (!match) return;
 
-						// Resolve inside the paragraph node (not at its boundary) so depth
-						// points at paragraph > listItem > bulletList correctly.
 						const $pos = newState.doc.resolve(pos + 1);
 						const listItemDepth = $pos.depth - 1;
 						const listDepth = $pos.depth - 2;
@@ -581,6 +580,7 @@ interface CreateEditorExtensionsOptions {
 	onMathEditRequest?: (request: MathEditRequest) => void;
 	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
 	onListCollapseToggle?: (branches: string[]) => void;
+	onPickImages?: (editor: Editor) => void;
 }
 
 export function createEditorExtensions(options?: CreateEditorExtensionsOptions) {
@@ -598,6 +598,7 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		onMathEditRequest,
 		onTemplateInsertRequest,
 		onListCollapseToggle,
+		onPickImages,
 	} = options ?? {};
 	const headingCollapse = onListCollapseToggle
 		? HeadingCollapse.configure({ onListCollapseToggle })
@@ -623,6 +624,7 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		TaskList,
 		TaskItem.configure({ nested: true }),
 		NoteSearch,
+		ImagePicker.configure({ onPickImages: enableEditingExtensions ? onPickImages : undefined }),
 		...(enableEditingExtensions
 			? [
 					TaskListMarkdownShortcut,

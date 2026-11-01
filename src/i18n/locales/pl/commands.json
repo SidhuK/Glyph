@@ -514,6 +514,11 @@
 			"menuLabel": "Tabela",
 			"description": "Wstaw tabelę Markdown."
 		},
+		"insert_image": {
+			"label": "Wstaw obraz",
+			"menuLabel": "Wstaw obraz…",
+			"description": "Wstaw obraz z pliku."
+		},
 		"todo_list": {
 			"label": "Lista zadań",
 			"menuLabel": "Lista zadań",

@@ -26,13 +26,15 @@
 @import "./styles/app/28a-settings-attachments.css";
 @import "./styles/app/29-settings-ai.css";
 @import "./styles/app/11-settings-misc.css";
-@import "./styles/app/12-editor-shell.css";
+@import "./styles/app/11a-settings-about.css";
+@import "./styles/app/11b-settings-about-developer.css";
 @import "./styles/app/13-tags.css";
 @import "./styles/app/13a-appearance-picker.css";
 
 @import "./styles/app/18-filetree-body.css";
 @import "./styles/app/19-code-highlighting.css";
 @import "./styles/app/23-node-note-editor-a.css";
+@import "./styles/app/23-editor-ribbon.css";
 @import "./styles/app/23-raw-markdown-editor.css";
 @import "./styles/app/24-node-note-properties.css";
 @import "./styles/app/25-node-note-content.css";
@@ -63,11 +65,6 @@
 @import "./styles/app/47-quick-search.css";
 @import "./styles/app/47-external-markdown.css";
 
-/* Shadow reset: Intentionally disables Tailwind's default shadows.
-   The app uses custom shadow variables (--shadow-sm, --shadow-md, etc.)
-   defined in primitives.css for consistent theming across light/dark modes.
-   This prevents Tailwind's default shadow values from conflicting with
-   the design system's shadow tokens. Focus rings remain intact via ring classes. */
 .shadow,
 .shadow-xs,
 .shadow-sm,
