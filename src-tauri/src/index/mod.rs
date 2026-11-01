@@ -25,4 +25,4 @@ pub(crate) use indexer::TempSpace;
 pub use indexer::{
     index_note, people_mentions_as_tags_enabled, remove_note, set_people_mentions_as_tags_enabled,
 };
-pub(crate) use indexer::{index_note_with_conn, remove_note_with_conn};
+pub(crate) use indexer::{index_note_with_conn, remove_note_with_conn, sync};

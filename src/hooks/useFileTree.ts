@@ -3,6 +3,7 @@ import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { promptCreateFolderName } from "../lib/promptCreateFolderName";
+import type { TreeRefresh } from "../lib/spaceChange";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
@@ -14,6 +15,7 @@ import { useRecentFiles } from "./useRecentFiles";
 
 export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
+	refreshLoadedDirs: (refresh: TreeRefresh) => Promise<void>;
 	toggleDir: (dirPath: string) => void;
 	expandAllDirs: () => Promise<void>;
 	collapseAllDirs: () => void;
@@ -92,24 +94,16 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[updateExpandedDirs],
 	);
 
-	const hasCollapsedAncestor = useCallback((dirPath: string) => {
-		if (!dirPath) return false;
-		const expanded = expandedDirsRef.current;
-		let current = parentDir(dirPath);
-		while (current) {
-			if (!expanded.has(current)) return true;
-			current = parentDir(current);
-		}
-		return false;
-	}, []);
-
-	const evictCollapsedDirState = useCallback(
-		(dirPath: string) => {
+	// Drops cached children under dirPath (and dirPath itself when it no longer exists).
+	const evictDirState = useCallback(
+		(dirPath: string, includeSelf: boolean) => {
+			const isEvicted = (key: string) =>
+				key.startsWith(`${dirPath}/`) || (includeSelf && key === dirPath);
 			updateChildrenByDir((prev) => {
 				let changed = false;
 				const next: Record<string, FsEntry[] | undefined> = {};
 				for (const [key, value] of Object.entries(prev)) {
-					if (key.startsWith(`${dirPath}/`)) {
+					if (isEvicted(key)) {
 						changed = true;
 						continue;
 					}
@@ -118,12 +112,10 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return changed ? next : prev;
 			});
 			loadedDirsRef.current = new Set(
-				Array.from(loadedDirsRef.current).filter((key) => !key.startsWith(`${dirPath}/`)),
+				Array.from(loadedDirsRef.current).filter((key) => !isEvicted(key)),
 			);
 			for (const key of loadRequestVersionRef.current.keys()) {
-				if (key.startsWith(`${dirPath}/`)) {
-					loadRequestVersionRef.current.delete(key);
-				}
+				if (isEvicted(key)) loadRequestVersionRef.current.delete(key);
 			}
 		},
 		[updateChildrenByDir],
@@ -131,7 +123,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const loadDir = useCallback(
 		async (dirPath: string, force = false) => {
-			if (force && hasCollapsedAncestor(dirPath)) return;
 			if (!force && loadedDirsRef.current.has(dirPath)) return;
 			const nextVersion = (loadRequestVersionRef.current.get(dirPath) ?? 0) + 1;
 			loadRequestVersionRef.current.set(dirPath, nextVersion);
@@ -151,7 +142,43 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			}
 			loadedDirsRef.current.add(dirPath);
 		},
-		[hasCollapsedAncestor, updateChildrenByDir, updateRootEntries],
+		[updateChildrenByDir, updateRootEntries],
+	);
+
+	// The root is always on screen (FileTreeContext loads it without loadDir). Other cached
+	// dirs are exactly the visible ones (collapse evicts descendants), whether they appear
+	// through expansion, a focused folder view or the folio space container.
+	// A removed dir that reappears (e.g. Finder "Put Back") starts collapsed and uncached.
+	const forgetRemovedDirs = useCallback(
+		(removed: readonly string[]) => {
+			if (removed.length === 0) return;
+			for (const removedPath of removed) evictDirState(removedPath, true);
+			const isRemoved = (dirPath: string) =>
+				removed.some((path) => dirPath === path || dirPath.startsWith(`${path}/`));
+			updateExpandedDirsAndRef((prev) =>
+				[...prev].some(isRemoved) ? new Set([...prev].filter((dir) => !isRemoved(dir))) : prev,
+			);
+		},
+		[evictDirState, updateExpandedDirsAndRef],
+	);
+
+	const refreshLoadedDirs = useCallback(
+		async ({ dirs, removed, all }: TreeRefresh) => {
+			forgetRemovedDirs([...removed]);
+			const targets = all ? ["", ...loadedDirsRef.current] : [...dirs];
+			const loaded = [...new Set(targets)].filter(
+				(dirPath) => dirPath === "" || loadedDirsRef.current.has(dirPath),
+			);
+			// A cached subfolder that can no longer be listed is gone from disk.
+			await Promise.all(
+				loaded.map((dirPath) =>
+					dirPath
+						? loadDir(dirPath, true).catch(() => forgetRemovedDirs([dirPath]))
+						: loadDir(dirPath, true),
+				),
+			);
+		},
+		[forgetRemovedDirs, loadDir],
 	);
 
 	const toggleDir = useCallback(
@@ -172,12 +199,12 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return next;
 			});
 			if (wasExpanded) {
-				evictCollapsedDirState(dirPath);
+				evictDirState(dirPath, false);
 			} else {
 				void loadDir(dirPath);
 			}
 		},
-		[evictCollapsedDirState, loadDir, updateExpandedDirsAndRef],
+		[evictDirState, loadDir, updateExpandedDirsAndRef],
 	);
 
 	const expandAllDirs = useCallback(async () => {
@@ -322,6 +349,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	return {
 		loadDir,
+		refreshLoadedDirs,
 		toggleDir,
 		expandAllDirs,
 		collapseAllDirs,

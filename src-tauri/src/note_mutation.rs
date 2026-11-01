@@ -225,6 +225,23 @@ fn mark_if_indexed(recent: &RecentLocalChanges, rel_path: &str, ok: bool) {
     }
 }
 
+/// Indexed note ids equal to `rel_path` or nested under it as a directory.
+pub(crate) fn indexed_ids_at_or_under(
+    conn: &rusqlite::Connection,
+    rel_path: &str,
+) -> Result<Vec<String>, String> {
+    // Compare prefixes exactly: LIKE ignores ASCII case, which matters on
+    // case-sensitive volumes where `Projects/` and `projects/` can coexist.
+    let mut stmt = conn
+        .prepare("SELECT id FROM notes WHERE id = ?1 OR substr(id, 1, length(?2)) = ?2")
+        .map_err(|e| e.to_string())?;
+    let prefix = dir_prefix(rel_path);
+    let rows = stmt
+        .query_map([rel_path, prefix.as_str()], |row| row.get::<_, String>(0))
+        .map_err(|e| e.to_string())?;
+    rows.collect::<Result<_, _>>().map_err(|e| e.to_string())
+}
+
 pub fn unindex_path(
     root: &Path,
     rel_path: &str,
@@ -234,17 +251,13 @@ pub fn unindex_path(
 ) {
     if is_dir {
         if let Ok(conn) = index::open_db(root) {
-            if let Ok(mut stmt) =
-                conn.prepare("SELECT id FROM notes WHERE id = ? OR id LIKE ? ESCAPE '\\'")
-            {
-                let pattern = like_descendants_pattern(rel_path);
-                if let Ok(rows) =
-                    stmt.query_map([rel_path, pattern.as_str()], |row| row.get::<_, String>(0))
-                {
-                    for note_id in rows.filter_map(|row| row.ok()) {
-                        mark_if_indexed(recent, &note_id, index::remove_note(root, &note_id).is_ok());
-                    }
-                }
+            let note_ids = indexed_ids_at_or_under(&conn, rel_path).unwrap_or_else(|error| {
+                tracing::warn!(path = %rel_path, %error, "could not list notes under removed folder");
+                Vec::new()
+            });
+            for note_id in note_ids {
+                let removed = index::remove_note_with_conn(&conn, &note_id).is_ok();
+                mark_if_indexed(recent, &note_id, removed);
             }
         }
         mark_recent_local_change(recent, rel_path);
