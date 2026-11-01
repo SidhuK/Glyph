@@ -502,15 +502,6 @@
 		"loadError": "Impossible d’ouvrir le canevas : {{message}}",
 		"saveError": "Impossible d’enregistrer le canevas : {{message}}"
 	},
-	"spaceSwitcher": {
-		"label": "Espace actuel : {{name}}",
-		"openSpace": "Ouvrir un espace…",
-		"createSpace": "Créer un espace…",
-		"changeIcon": "Changer l'icône…",
-		"closeSpace": "Fermer l'espace",
-		"chooseIcon": "Choisir une icône d'espace",
-		"actionFailed": "Impossible de terminer l'action sur l'espace"
-	},
 	"appearancePicker": {
 		"searchPlaceholder": "Rechercher des icônes",
 		"searchEmojiPlaceholder": "Rechercher un emoji",

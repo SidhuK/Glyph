@@ -500,15 +500,6 @@
 		"loadError": "Zeichenfläche konnte nicht geöffnet werden: {{message}}",
 		"saveError": "Zeichenfläche konnte nicht gespeichert werden: {{message}}"
 	},
-	"spaceSwitcher": {
-		"label": "Aktueller Space: {{name}}",
-		"openSpace": "Space öffnen…",
-		"createSpace": "Space erstellen…",
-		"changeIcon": "Symbol ändern…",
-		"closeSpace": "Space schließen",
-		"chooseIcon": "Space-Symbol auswählen",
-		"actionFailed": "Die Space-Aktion konnte nicht abgeschlossen werden"
-	},
 	"appearancePicker": {
 		"searchPlaceholder": "Symbole suchen",
 		"searchEmojiPlaceholder": "Emoji suchen",

@@ -595,15 +595,6 @@
 		"loadError": "Could not open canvas: {{message}}",
 		"saveError": "Could not save canvas: {{message}}"
 	},
-	"spaceSwitcher": {
-		"label": "Current space: {{name}}",
-		"openSpace": "Open space…",
-		"createSpace": "Create space…",
-		"changeIcon": "Change icon…",
-		"closeSpace": "Close space",
-		"chooseIcon": "Choose a space icon",
-		"actionFailed": "Could not complete the space action"
-	},
 	"tasks": {
 		"searchPlaceholder": "Filter tasks",
 		"scope": "Show tasks from",

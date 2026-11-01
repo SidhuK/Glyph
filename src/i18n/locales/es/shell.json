@@ -500,15 +500,6 @@
 		"loadError": "No se pudo abrir el lienzo: {{message}}",
 		"saveError": "No se pudo guardar el lienzo: {{message}}"
 	},
-	"spaceSwitcher": {
-		"label": "Espacio actual: {{name}}",
-		"openSpace": "Abrir espacio…",
-		"createSpace": "Crear espacio…",
-		"changeIcon": "Cambiar icono…",
-		"closeSpace": "Cerrar espacio",
-		"chooseIcon": "Elegir icono del espacio",
-		"actionFailed": "No se pudo completar la acción del espacio"
-	},
 	"appearancePicker": {
 		"searchPlaceholder": "Buscar iconos",
 		"searchEmojiPlaceholder": "Buscar emoji",
