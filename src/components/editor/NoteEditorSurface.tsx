@@ -5,6 +5,8 @@ import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { TableInlineControls } from "./TableInlineControls";
+import { TableCopyControl } from "./table/TableCopyControl";
+import { useTableCopyControl } from "./table/useTableCopyControl";
 import {
 	type SupportedCodeBlockLanguage,
 	getCodeBlockLanguageOptions,
@@ -50,6 +52,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	codeBlock,
 }: NoteEditorSurfaceProps) {
 	const { t } = useTranslation("editor");
+	const tableCopy = useTableCopyControl(editor, mode === "rich" && canEdit);
 	const languageOptions = getCodeBlockLanguageOptions();
 	const hostClassName = [
 		"tiptapHostInline",
@@ -67,11 +70,15 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 			className={hostClassName}
 			data-colorful-headings={mode === "rich" && colorfulHeadings ? "true" : undefined}
 			data-heading-prefixes={mode === "rich" && showHeadingPrefixes ? "true" : undefined}
+			onMouseMove={tableCopy.onHostMouseMove}
+			onMouseLeave={tableCopy.onHostMouseLeave}
 		>
 			<EditorContent editor={editor} />
 			{canEdit && editor && hostNode && rolloverTaskActions ? (
 				<RolloverTaskActions actions={rolloverTaskActions} editor={editor} host={hostNode} />
 			) : null}
+			{/* Rendered first so the column "+" control stays on top where they overlap. */}
+			{tableCopy.control ? <TableCopyControl {...tableCopy.control} /> : null}
 			{canEdit && tableControls ? <TableInlineControls {...tableControls} /> : null}
 			{canEdit && codeBlock.selected ? (
 				<div

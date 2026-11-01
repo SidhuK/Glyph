@@ -230,6 +230,28 @@
 			"title": "Limpar realce"
 		}
 	},
+	"tableControls": {
+		"rowOptions": "Opções da linha",
+		"columnOptions": "Opções da coluna",
+		"addRowAbove": "Adicionar linha acima",
+		"addRowBelow": "Adicionar linha abaixo",
+		"deleteRow": "Excluir linha",
+		"moveRowUp": "Mover linha para cima",
+		"moveRowDown": "Mover linha para baixo",
+		"addColumnLeft": "Adicionar coluna à esquerda",
+		"addColumnRight": "Adicionar coluna à direita",
+		"deleteColumn": "Excluir coluna",
+		"moveColumnLeft": "Mover coluna para a esquerda",
+		"moveColumnRight": "Mover coluna para a direita",
+		"unavailable": "A tabela mudou. Abra o menu novamente e tente outra vez.",
+		"copyTable": "Copiar tabela",
+		"copyOptions": "Mais opções de cópia",
+		"copyAsMarkdown": "Copiar como Markdown",
+		"copyAsCsv": "Copiar como CSV",
+		"copyAsTsv": "Copiar como texto simples (separado por tabulações)",
+		"copied": "Tabela copiada",
+		"copyFailed": "Não foi possível copiar a tabela"
+	},
 	"sidePeek": {
 		"dialogLabel": "Peek da nota",
 		"open": "Abrir nota",

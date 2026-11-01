@@ -230,6 +230,28 @@
 			"title": "강조 지우기"
 		}
 	},
+	"tableControls": {
+		"rowOptions": "행 옵션",
+		"columnOptions": "열 옵션",
+		"addRowAbove": "위에 행 추가",
+		"addRowBelow": "아래에 행 추가",
+		"deleteRow": "행 삭제",
+		"moveRowUp": "행 위로 이동",
+		"moveRowDown": "행 아래로 이동",
+		"addColumnLeft": "왼쪽에 열 추가",
+		"addColumnRight": "오른쪽에 열 추가",
+		"deleteColumn": "열 삭제",
+		"moveColumnLeft": "열 왼쪽으로 이동",
+		"moveColumnRight": "열 오른쪽으로 이동",
+		"unavailable": "표가 변경되었습니다. 메뉴를 다시 열고 다시 시도하세요.",
+		"copyTable": "표 복사",
+		"copyOptions": "추가 복사 옵션",
+		"copyAsMarkdown": "Markdown으로 복사",
+		"copyAsCsv": "CSV로 복사",
+		"copyAsTsv": "일반 텍스트(탭으로 구분)로 복사",
+		"copied": "표를 복사했습니다",
+		"copyFailed": "표를 복사할 수 없습니다"
+	},
 	"sidePeek": {
 		"dialogLabel": "노트 피크",
 		"open": "노트 열기",

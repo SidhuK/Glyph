@@ -31,6 +31,48 @@
 	box-shadow: 0 0 0 1px var(--border-default);
 }
 
+.tableCopyControl {
+	position: absolute;
+	z-index: 15;
+	display: inline-flex;
+	align-items: stretch;
+	height: 20px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 82%, transparent);
+	backdrop-filter: blur(6px);
+	overflow: hidden;
+	/* Right edge on the table's right edge, centred on the column "+" control's line. */
+	transform: translate(-100%, -50%);
+}
+
+.tableCopyBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 100%;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	color: color-mix(in srgb, var(--text-tertiary) 92%, transparent);
+	transition:
+		background-color var(--transition-fast),
+		color var(--transition-fast);
+}
+
+.tableCopyBtn.is-options {
+	width: 16px;
+	box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border-light) 82%, transparent);
+}
+
+.tableCopyBtn:hover,
+.tableCopyBtn[data-popup-open] {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
 .codeBlockInlineControls {
 	position: absolute;
 	z-index: 15;
