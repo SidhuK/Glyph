@@ -22,10 +22,6 @@ interface EditorRibbonProps {
 	onExtractSelectionToNote?: () => void;
 }
 
-/**
- * Format bar pinned to the bottom of the editor while the "Show format bar" setting is on.
- * Groups: block type, inline marks, inserts, then a ⋮ menu for everything else.
- */
 export const EditorRibbon = memo(function EditorRibbon({
 	editor,
 	canEdit,

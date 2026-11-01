@@ -27,7 +27,6 @@ const ACTIVE_NODES_AND_MARKS = [
 	"codeBlock",
 ] as const;
 
-/** Everything the format bar lights up for; the bar re-renders when this key changes. */
 export function activeFormatKey(editor: Editor): string {
 	if (editor.isDestroyed) return "";
 	const flags = ACTIVE_NODES_AND_MARKS.map((name) => (editor.isActive(name) ? "1" : "0")).join("");

@@ -4,14 +4,12 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke, spaceAssetUrl } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 
-/** Matches the types `space_import_images` accepts. */
 const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "avif", "tif", "tiff"];
 
 interface PickImagesOptions {
 	editor: Editor;
 	sourcePath: string;
 	targetDir: string;
-	/** False once the editor has moved on to another note while the panel was open. */
 	isCurrent: () => boolean;
 }
 
@@ -46,7 +44,6 @@ async function importPickedImages({ editor, sourcePath, targetDir, isCurrent }: 
 		.run();
 }
 
-/** Lets the user pick image files and inserts them at the selection, saved as note attachments. */
 export function pickImages(options: PickImagesOptions): void {
 	void importPickedImages(options).catch((error: unknown) => {
 		toast.error(i18n.t("editor:ribbon.imageFailed"), {

@@ -1,6 +1,3 @@
-/* ─── Editor format bar ─── */
-
-/* Centred along the bottom edge of the editor; the body pads its end so the bar never covers text. */
 .rfNodeNoteEditorRibbonAnchor {
 	position: absolute;
 	right: 12px;
@@ -23,7 +20,6 @@
 	}
 }
 
-/* Same floating surface as menus and popovers; groups are set apart by space, not rules. */
 .rfNodeNoteEditorRibbon {
 	--ribbon-ink: color-mix(in srgb, var(--text-primary) 80%, transparent);
 	--ribbon-hover: color-mix(in srgb, var(--text-primary) 7%, transparent);
@@ -91,7 +87,6 @@
 	cursor: not-allowed;
 }
 
-/* Heading and list triggers: the glyph plus a small chevron that says "opens a menu". */
 .rfNodeNoteEditorRibbon .ribbonMenuBtn {
 	width: auto;
 	padding: 0 4px 0 6px;
@@ -101,7 +96,6 @@
 	opacity: 0.7;
 }
 
-/* The highlighter's ink: a short bar in the colour a one-click highlight applies. */
 .ribbonSwatchBar {
 	position: absolute;
 	bottom: 3px;
@@ -112,7 +106,6 @@
 	transform: translateX(-50%);
 }
 
-/* Colour rows in the ⋮ menu preview the letter the way the note will show it. */
 .ribbonSwatchGlyph {
 	display: inline-flex;
 	align-items: center;

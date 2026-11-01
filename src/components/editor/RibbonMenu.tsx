@@ -31,7 +31,6 @@ interface RibbonMenuProps {
 	canEdit: boolean;
 }
 
-/** Icon-plus-chevron trigger that opens a short list of block types above the bar. */
 export function RibbonMenu({ menu, ctx, canEdit }: RibbonMenuProps) {
 	return (
 		<DropdownMenu onOpenChange={refocusEditorOnDismiss(ctx)}>

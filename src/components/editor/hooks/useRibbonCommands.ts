@@ -127,7 +127,6 @@ export function useRibbonCommands({
 			const handled = executeEditorAction({
 				action,
 				editor,
-				// Only link edits act on the whole link; inserts go at the caret instead of replacing it.
 				chain: action.startsWith("link_") ? chain.extendMarkRange("link") : chain,
 				onOpenLinkDialog,
 				onSendSelectionToAi,

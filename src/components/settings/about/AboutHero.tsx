@@ -12,12 +12,10 @@ import { AboutDeveloperCard } from "./AboutDeveloperCard";
 const DEV_NAME_SUFFIX = " Dev";
 const DEVELOPER_CARD_ID = "about-developer-card";
 
-/** Icon, name, version and tagline on a card, with credits and links along its foot. */
 export function AboutHero({ appInfo }: { appInfo: AppInfo | null }) {
 	const { t } = useTranslation("settings.general");
 	const [showDeveloper, setShowDeveloper] = useState(false);
 	const fullName = appInfo?.name ?? "Glyph";
-	// Dev builds ship as "Glyph Dev"; show the brand name and say "dev" with a badge instead.
 	const isDevBuild = fullName.endsWith(DEV_NAME_SUFFIX);
 	const name = isDevBuild ? fullName.slice(0, -DEV_NAME_SUFFIX.length) : fullName;
 	const version = appInfo?.version ?? "";

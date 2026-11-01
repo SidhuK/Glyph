@@ -134,7 +134,6 @@ pub async fn space_save_pasted_image(
     .map_err(|e| e.to_string())?
 }
 
-/// Checks and names one picked file from its metadata, without reading it.
 fn check_picked_image(file_path: &str) -> Result<String, String> {
     let path = Path::new(file_path);
     if !path.is_absolute() {
@@ -155,9 +154,6 @@ fn check_picked_image(file_path: &str) -> Result<String, String> {
     asset_file_name(mime, path.file_name().and_then(|name| name.to_str()))
 }
 
-/// Copies images picked in the open panel into the note's attachment folder, in pick order.
-/// Every pick is checked first, so a missing or unsupported file leaves no partial copies
-/// behind. Files are then read and saved one at a time to keep memory flat for large batches.
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_import_images(
     window: WebviewWindow,

@@ -36,7 +36,6 @@ export interface RibbonButtonConfig {
 	icon: IconSvgElement;
 	isActive?: () => boolean;
 	onClick: () => void;
-	/** CSS colour for a small bar under the icon. */
 	swatch?: string;
 }
 
@@ -137,7 +136,6 @@ export function getListMenu(ctx: RibbonCommandContext): RibbonMenuConfig {
 	};
 }
 
-/** The yellow highlight is a tint of this token, so the bar shows the same yellow at full strength. */
 const HIGHLIGHTER_SWATCH = "var(--status-warning-fg)";
 
 export function getFormatButtons(ctx: RibbonCommandContext): RibbonButtonConfig[] {
@@ -151,7 +149,6 @@ export function getFormatButtons(ctx: RibbonCommandContext): RibbonButtonConfig[
 			icon: HighlighterIcon,
 			isActive: isHighlighted,
 			swatch: HIGHLIGHTER_SWATCH,
-			// One click marks with the colour plain `==text==` saves as; the ⋮ menu has the rest.
 			onClick: () =>
 				runAction(
 					ctx,
@@ -168,7 +165,6 @@ export function getInsertButtons(ctx: RibbonCommandContext): RibbonButtonConfig[
 	];
 }
 
-/** Rows of the ⋮ menu, in sections. */
 export function getOverflowSections(ctx: RibbonCommandContext): RibbonButtonConfig[][] {
 	const { editor } = ctx;
 	return [
@@ -222,7 +218,6 @@ export function getTextHighlightGroup(ctx: RibbonCommandContext): RibbonSwatchGr
 		options: EDITOR_TEXT_HIGHLIGHTS.map((option) => ({
 			id: option.id,
 			label: getEditorTextHighlightLabel(option.id),
-			// The swatch previews the tint the highlight actually applies.
 			cssVar: option.backgroundCssVar,
 			fallbackHex: option.backgroundFallback,
 			onSelect: runAction(ctx, `highlight_${option.id}`),

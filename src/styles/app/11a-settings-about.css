@@ -1,10 +1,7 @@
-/* ─── Settings: About ─── */
-
 .aboutPane {
 	padding: 0;
 }
 
-/* The app icon's own blue, used only for the glow and the dev badge so they match the icon. */
 .aboutHero {
 	--about-brand: #3d6df2;
 
@@ -25,7 +22,6 @@
 	text-align: center;
 }
 
-/* Soft halo behind the icon, fading out well before the card edges. */
 .aboutHeroBody::before {
 	position: absolute;
 	z-index: -1;
@@ -43,7 +39,6 @@
 	pointer-events: none;
 }
 
-/* drop-shadow follows the icon's own outline, so no box shows around its transparent edges. */
 .aboutLogo {
 	width: 96px;
 	height: 96px;

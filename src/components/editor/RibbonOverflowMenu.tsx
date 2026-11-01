@@ -35,7 +35,6 @@ interface SwatchSubmenuProps {
 	group: RibbonSwatchGroup;
 	icon: IconSvgElement;
 	clearIcon: IconSvgElement;
-	/** Text colours tint the letter; highlights tint behind it, as they do in the note. */
 	paint: "text" | "background";
 }
 
@@ -79,7 +78,6 @@ interface RibbonOverflowMenuProps {
 	onExtractSelectionToNote?: () => void;
 }
 
-/** ⋮ menu: less frequent marks and blocks, colours, and selection actions. */
 export function RibbonOverflowMenu({
 	ctx,
 	canEdit,
