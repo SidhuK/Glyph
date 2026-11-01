@@ -14,6 +14,7 @@ import { useRecentFiles } from "./useRecentFiles";
 
 export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
+	refreshLoadedDirs: (dirPaths: Iterable<string>, removedPaths: Iterable<string>) => Promise<void>;
 	toggleDir: (dirPath: string) => void;
 	expandAllDirs: () => Promise<void>;
 	collapseAllDirs: () => void;
@@ -92,24 +93,16 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[updateExpandedDirs],
 	);
 
-	const hasCollapsedAncestor = useCallback((dirPath: string) => {
-		if (!dirPath) return false;
-		const expanded = expandedDirsRef.current;
-		let current = parentDir(dirPath);
-		while (current) {
-			if (!expanded.has(current)) return true;
-			current = parentDir(current);
-		}
-		return false;
-	}, []);
-
-	const evictCollapsedDirState = useCallback(
-		(dirPath: string) => {
+	// Drops cached children under dirPath (and dirPath itself when it no longer exists).
+	const evictDirState = useCallback(
+		(dirPath: string, includeSelf: boolean) => {
+			const isEvicted = (key: string) =>
+				key.startsWith(`${dirPath}/`) || (includeSelf && key === dirPath);
 			updateChildrenByDir((prev) => {
 				let changed = false;
 				const next: Record<string, FsEntry[] | undefined> = {};
 				for (const [key, value] of Object.entries(prev)) {
-					if (key.startsWith(`${dirPath}/`)) {
+					if (isEvicted(key)) {
 						changed = true;
 						continue;
 					}
@@ -118,12 +111,10 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return changed ? next : prev;
 			});
 			loadedDirsRef.current = new Set(
-				Array.from(loadedDirsRef.current).filter((key) => !key.startsWith(`${dirPath}/`)),
+				Array.from(loadedDirsRef.current).filter((key) => !isEvicted(key)),
 			);
 			for (const key of loadRequestVersionRef.current.keys()) {
-				if (key.startsWith(`${dirPath}/`)) {
-					loadRequestVersionRef.current.delete(key);
-				}
+				if (isEvicted(key)) loadRequestVersionRef.current.delete(key);
 			}
 		},
 		[updateChildrenByDir],
@@ -131,7 +122,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const loadDir = useCallback(
 		async (dirPath: string, force = false) => {
-			if (force && hasCollapsedAncestor(dirPath)) return;
 			if (!force && loadedDirsRef.current.has(dirPath)) return;
 			const nextVersion = (loadRequestVersionRef.current.get(dirPath) ?? 0) + 1;
 			loadRequestVersionRef.current.set(dirPath, nextVersion);
@@ -151,7 +141,21 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			}
 			loadedDirsRef.current.add(dirPath);
 		},
-		[hasCollapsedAncestor, updateChildrenByDir, updateRootEntries],
+		[updateChildrenByDir, updateRootEntries],
+	);
+
+	// The root is always on screen (FileTreeContext loads it without loadDir). Other cached
+	// dirs are exactly the visible ones (collapse evicts descendants), whether they appear
+	// through expansion, a focused folder view or the folio space container.
+	const refreshLoadedDirs = useCallback(
+		async (dirPaths: Iterable<string>, removedPaths: Iterable<string>) => {
+			for (const removedPath of removedPaths) evictDirState(removedPath, true);
+			const loaded = [...dirPaths].filter(
+				(dirPath) => dirPath === "" || loadedDirsRef.current.has(dirPath),
+			);
+			await Promise.all(loaded.map((dirPath) => loadDir(dirPath, true)));
+		},
+		[evictDirState, loadDir],
 	);
 
 	const toggleDir = useCallback(
@@ -172,12 +176,12 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return next;
 			});
 			if (wasExpanded) {
-				evictCollapsedDirState(dirPath);
+				evictDirState(dirPath, false);
 			} else {
 				void loadDir(dirPath);
 			}
 		},
-		[evictCollapsedDirState, loadDir, updateExpandedDirsAndRef],
+		[evictDirState, loadDir, updateExpandedDirsAndRef],
 	);
 
 	const expandAllDirs = useCallback(async () => {
@@ -322,6 +326,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	return {
 		loadDir,
+		refreshLoadedDirs,
 		toggleDir,
 		expandAllDirs,
 		collapseAllDirs,

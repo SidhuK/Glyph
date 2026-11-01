@@ -39,8 +39,7 @@ export type SpaceChange =
 
 export interface SpaceChangeHost {
 	spacePath: string | null;
-	expandedDirs: ReadonlySet<string>;
-	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
+	refreshLoadedDirs: (dirPaths: Iterable<string>, removedPaths: Iterable<string>) => Promise<void>;
 	closeTabsForPathRemoval: (path: string, recursive: boolean) => void;
 	renameTabsForPath: (fromPath: string, toPath: string, recursive: boolean) => void;
 	renamePinnedPath: (fromPath: string, toPath: string) => Promise<void>;
@@ -71,15 +70,22 @@ export function subscribeOpenNoteContent(fn: (path: string) => void): () => void
 	};
 }
 
-function addReloadDirs(
-	dirs: Set<string>,
-	relPath: string,
-	current: SpaceChangeHost,
-	includeSelf: boolean,
-): void {
-	dirs.add("");
-	dirs.add(parentDir(relPath));
-	if (includeSelf && current.expandedDirs.has(relPath)) dirs.add(relPath);
+interface TreeRefresh {
+	dirs: Set<string>;
+	removed: Set<string>;
+}
+
+function createTreeRefresh(): TreeRefresh {
+	return { dirs: new Set(), removed: new Set() };
+}
+
+// The host refreshes only dirs it has cached, so a path that is not a loaded dir is a
+// no-op. Removed paths are evicted from its cache instead of being refreshed.
+function addTreeChange(tree: TreeRefresh, relPath: string, removed: boolean): void {
+	tree.dirs.add("");
+	tree.dirs.add(parentDir(relPath));
+	if (removed) tree.removed.add(relPath);
+	else tree.dirs.add(relPath);
 }
 
 function invalidatePath(path: string, removed: boolean): void {
@@ -95,8 +101,8 @@ function invalidatePath(path: string, removed: boolean): void {
 
 // Space-wide lists are refetched once per batch; per-change calls would cancel and
 // restart every mounted list (and all its loaded pages) once for each changed note.
-function invalidateSpaceWide(current: SpaceChangeHost, dirs: ReadonlySet<string>): void {
-	for (const dir of dirs) void current.loadDir(dir, true);
+function invalidateSpaceWide(current: SpaceChangeHost, tree: TreeRefresh): void {
+	void current.refreshLoadedDirs(tree.dirs, tree.removed);
 	void current.refreshTags();
 	void queryClient.invalidateQueries({ queryKey: ["navigation", "archived-paths"] });
 	void queryClient.invalidateQueries({ queryKey: ["navigation", "search"] });
@@ -119,15 +125,15 @@ async function syncRecentFilesForPathChange(
 export function applySpaceChange(change: SpaceChange): void {
 	const current = host;
 	if (!current) return;
-	const dirs = new Set<string>();
-	if (applyChange(change, current, dirs)) invalidateSpaceWide(current, dirs);
+	const tree = createTreeRefresh();
+	if (applyChange(change, current, tree)) invalidateSpaceWide(current, tree);
 }
 
-function applyChange(change: SpaceChange, current: SpaceChangeHost, dirs: Set<string>): boolean {
+function applyChange(change: SpaceChange, current: SpaceChangeHost, tree: TreeRefresh): boolean {
 	if (!current.spacePath || change.space_path !== current.spacePath) return false;
 	if (change.kind === "batch") {
 		let applied = false;
-		for (const child of change.changes) applied = applyChange(child, current, dirs) || applied;
+		for (const child of change.changes) applied = applyChange(child, current, tree) || applied;
 		return applied;
 	}
 	// Embeds resolve targets by name, so any structural change can retarget them.
@@ -149,8 +155,8 @@ function applyChange(change: SpaceChange, current: SpaceChangeHost, dirs: Set<st
 	if (change.kind === "rename") {
 		const from = normalizeRelPath(change.from_path);
 		const to = normalizeRelPath(change.to_path);
-		addReloadDirs(dirs, from, current, false);
-		addReloadDirs(dirs, to, current, true);
+		addTreeChange(tree, from, true);
+		addTreeChange(tree, to, false);
 		current.renameTabsForPath(from, to, change.recursive);
 		void current.renamePinnedPath(from, to);
 		void current.renameSidebarFolderPath(from, to, change.recursive);
@@ -167,7 +173,7 @@ function applyChange(change: SpaceChange, current: SpaceChangeHost, dirs: Set<st
 		return true;
 	}
 	const path = normalizeRelPath(change.rel_path);
-	addReloadDirs(dirs, path, current, change.kind !== "remove");
+	addTreeChange(tree, path, change.kind === "remove");
 	if (change.kind === "remove") {
 		current.closeTabsForPathRemoval(path, change.recursive);
 		void current.deletePinnedPath(path);
@@ -215,10 +221,10 @@ export function useSpaceChangePropagation(nextHost: SpaceChangeHost): void {
 		const queued = [...queueRef.current.values()];
 		queueRef.current.clear();
 		if (!current) return;
-		const dirs = new Set<string>();
+		const tree = createTreeRefresh();
 		let applied = false;
-		for (const change of queued) applied = applyChange(change, current, dirs) || applied;
-		if (applied) invalidateSpaceWide(current, dirs);
+		for (const change of queued) applied = applyChange(change, current, tree) || applied;
+		if (applied) invalidateSpaceWide(current, tree);
 	}, []);
 
 	const enqueue = useCallback(

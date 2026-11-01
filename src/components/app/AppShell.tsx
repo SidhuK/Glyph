@@ -926,8 +926,7 @@ export function AppShell() {
 	const spaceChangeHost = useMemo(
 		() => ({
 			spacePath,
-			expandedDirs,
-			loadDir: fileTree.loadDir,
+			refreshLoadedDirs: fileTree.refreshLoadedDirs,
 			closeTabsForPathRemoval,
 			renameTabsForPath,
 			renamePinnedPath,
@@ -938,8 +937,7 @@ export function AppShell() {
 		}),
 		[
 			spacePath,
-			expandedDirs,
-			fileTree.loadDir,
+			fileTree.refreshLoadedDirs,
 			closeTabsForPathRemoval,
 			renameTabsForPath,
 			renamePinnedPath,

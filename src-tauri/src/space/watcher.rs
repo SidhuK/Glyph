@@ -1,84 +1,45 @@
-use notify::event::{EventKind, ModifyKind, RemoveKind};
+use notify::event::{EventKind, ModifyKind};
 use notify::Watcher;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc as std_mpsc;
+use std::time::{Duration, Instant};
 
-use crate::note_mutation::{emit_changed, SpaceChange};
+use crate::note_mutation::{emit_changed, indexed_ids_at_or_under, SpaceChange};
 use crate::{index, paths, utils};
 
 use super::state::{has_recent_local_change, RecentLocalChanges};
 
-const DEBOUNCE_MS: u64 = 100;
-const INDEX_OPEN_RETRY_MS: u64 = 1_000;
+const DEBOUNCE: Duration = Duration::from_millis(100);
+const INDEX_OPEN_RETRY: Duration = Duration::from_secs(1);
 
-fn dir_prefix(rel_path: &str) -> String {
-    if rel_path.ends_with('/') {
-        rel_path.to_string()
-    } else {
-        format!("{rel_path}/")
-    }
+/// FSEvents reports each side of a rename (including a Finder move to the Trash)
+/// as its own single-path event and coalesces flags per path, so event kinds are
+/// only hints. The index thread decides what happened from the disk once a batch
+/// settles.
+enum Signal {
+    /// `structural` is set when the path may have appeared or disappeared.
+    Path { rel: String, structural: bool },
+    /// The kernel dropped events, so the whole space must be reconciled.
+    Rescan,
 }
 
-fn markdown_rels_under(root: &Path, abs_dir: &Path) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut stack = vec![abs_dir.to_path_buf()];
-    while let Some(dir) = stack.pop() {
-        let Ok(entries) = std::fs::read_dir(&dir) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let path = entry.path();
-            let Ok(meta) = entry.metadata() else {
-                continue;
-            };
-            if meta.is_dir() {
-                if path
-                    .file_name()
-                    .and_then(|name| name.to_str())
-                    .is_some_and(|name| name.starts_with('.'))
-                {
-                    continue;
-                }
-                stack.push(path);
-                continue;
-            }
-            if !utils::is_markdown_path(&path) {
-                continue;
-            }
-            if let Some(rel) = rel_under_root(root, &path) {
-                out.push(rel);
-            }
-        }
-    }
-    out
+#[derive(Default)]
+struct Batch {
+    paths: HashMap<String, bool>,
+    rescan: bool,
 }
 
-fn queue_rename_reindex(
-    idx_tx: &std_mpsc::Sender<(String, bool, bool)>,
-    root: &Path,
-    from: &str,
-    to: &str,
-    to_abs: &Path,
-    recursive: bool,
-) {
-    if recursive {
-        let from_prefix = dir_prefix(from);
-        let to_prefix = dir_prefix(to);
-        for rel in markdown_rels_under(root, to_abs) {
-            let Some(suffix) = rel.strip_prefix(&to_prefix) else {
-                continue;
-            };
-            let _ = idx_tx.send((format!("{from_prefix}{suffix}"), true, false));
-            let _ = idx_tx.send((rel, false, false));
+impl Batch {
+    fn add(&mut self, signal: Signal) {
+        match signal {
+            Signal::Path { rel, structural } => *self.paths.entry(rel).or_default() |= structural,
+            Signal::Rescan => self.rescan = true,
         }
-        return;
     }
-    if utils::is_markdown_path(Path::new(from)) {
-        let _ = idx_tx.send((from.to_string(), true, false));
-    }
-    if utils::is_markdown_path(to_abs) {
-        let _ = idx_tx.send((to.to_string(), false, false));
+
+    fn is_empty(&self) -> bool {
+        self.paths.is_empty() && !self.rescan
     }
 }
 
@@ -95,168 +56,183 @@ fn rel_under_root(root: &Path, path: &Path) -> Option<String> {
     Some(rel_s)
 }
 
+fn index_markdown(conn: &rusqlite::Connection, rel: &str, abs: &Path) -> Result<(), String> {
+    let markdown = std::fs::read_to_string(abs).map_err(|error| error.to_string())?;
+    index::index_note_with_conn(conn, rel, &markdown, abs)
+}
+
+/// Whether a non-hidden markdown file exists anywhere under `dir`; stops at the first.
+fn holds_markdown(dir: &Path) -> bool {
+    let mut stack = vec![dir.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            if entry.file_name().to_string_lossy().starts_with('.') {
+                continue;
+            }
+            let path = entry.path();
+            match entry.file_type() {
+                Ok(kind) if kind.is_dir() => stack.push(path),
+                Ok(kind) if kind.is_file() && utils::is_markdown_path(&path) => return true,
+                _ => {}
+            }
+        }
+    }
+    false
+}
+
+/// Drops the note at `rel`, or every note under it when `rel` was a directory.
+fn unindex_vanished(conn: &rusqlite::Connection, rel: &str) -> Result<(), String> {
+    for note_id in indexed_ids_at_or_under(conn, rel)? {
+        index::remove_note_with_conn(conn, &note_id)?;
+    }
+    Ok(())
+}
+
+fn apply_batch(
+    conn: rusqlite::Connection,
+    root: &Path,
+    space_path: &str,
+    batch: Batch,
+) -> Vec<SpaceChange> {
+    let mut changes = Vec::new();
+    let mut needs_sync = batch.rescan;
+    for (rel, structural) in batch.paths {
+        let Ok(abs) = paths::join_under(root, Path::new(&rel)) else {
+            continue;
+        };
+        match std::fs::metadata(&abs) {
+            Ok(meta) if meta.is_dir() => {
+                // Directory metadata churns whenever a child changes, and the child
+                // reports itself. A directory moved in may carry notes FSEvents never
+                // lists individually, so reconcile the index when it holds any.
+                if structural {
+                    needs_sync |= holds_markdown(&abs);
+                    changes.push(SpaceChange::create(space_path, rel));
+                }
+            }
+            Ok(_) => {
+                if utils::is_markdown_path(&abs) {
+                    if let Err(error) = index_markdown(&conn, &rel, &abs) {
+                        tracing::warn!(note_id = %rel, %error, "could not index external change");
+                    }
+                    changes.push(SpaceChange::content(space_path, rel));
+                } else if structural {
+                    changes.push(SpaceChange::create(space_path, rel));
+                } else {
+                    changes.push(SpaceChange::content(space_path, rel));
+                }
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                if let Err(error) = unindex_vanished(&conn, &rel) {
+                    tracing::warn!(path = %rel, %error, "could not unindex external removal");
+                }
+                // The path may have been a file or a directory; recursive covers both.
+                changes.push(SpaceChange::remove(space_path, rel, true));
+            }
+            Err(error) => tracing::warn!(path = %rel, %error, "could not stat external change"),
+        }
+    }
+    drop(conn);
+    if needs_sync {
+        if let Err(error) = index::sync(root, |_, _| {}) {
+            tracing::warn!(%error, "could not reconcile note index after external change");
+        }
+    }
+    if batch.rescan {
+        // An empty path marks the space root: reload the tree and every list.
+        changes.push(SpaceChange::create(space_path, ""));
+    }
+    changes
+}
+
+fn run_index_thread(
+    rx: std_mpsc::Receiver<Signal>,
+    app: tauri::AppHandle,
+    root: PathBuf,
+    window_label: String,
+) {
+    let space_path = root.to_string_lossy().to_string();
+    let mut batch = Batch::default();
+    loop {
+        if batch.is_empty() {
+            let Ok(signal) = rx.recv() else {
+                return;
+            };
+            batch.add(signal);
+        }
+
+        let deadline = Instant::now() + DEBOUNCE;
+        while let Some(remaining) = deadline.checked_duration_since(Instant::now()) {
+            match rx.recv_timeout(remaining) {
+                Ok(signal) => batch.add(signal),
+                Err(_) => break,
+            }
+        }
+
+        let conn = match index::open_db(&root) {
+            Ok(conn) => conn,
+            Err(error) => {
+                tracing::warn!(%error, "could not open note index for watcher batch");
+                std::thread::sleep(INDEX_OPEN_RETRY);
+                continue;
+            }
+        };
+        let changes = apply_batch(conn, &root, &space_path, std::mem::take(&mut batch));
+        if !changes.is_empty() {
+            emit_changed(
+                &app,
+                &window_label,
+                &SpaceChange::batch(&space_path, changes),
+            );
+        }
+    }
+}
+
 pub fn create_notes_watcher(
     app: tauri::AppHandle,
     root: PathBuf,
     window_label: String,
     recent_local_changes: RecentLocalChanges,
 ) -> Result<notify::RecommendedWatcher, String> {
-    let (idx_tx, idx_rx) = std_mpsc::channel::<(String, bool, bool)>();
+    let (tx, rx) = std_mpsc::channel::<Signal>();
+    let index_root = root.clone();
+    std::thread::spawn(move || run_index_thread(rx, app, index_root, window_label));
 
-    let root_idx = root.clone();
-    let index_app = app.clone();
-    let index_window_label = window_label.clone();
-    let index_space_path = root.to_string_lossy().to_string();
-    std::thread::spawn(move || {
-        let debounce = std::time::Duration::from_millis(DEBOUNCE_MS);
-        let mut pending = HashMap::new();
-        loop {
-            if pending.is_empty() {
-                let Ok((rel, remove, emit)) = idx_rx.recv() else {
-                    return;
-                };
-                pending.insert(rel, (remove, emit));
-            }
-
-            let deadline = std::time::Instant::now() + debounce;
-            loop {
-                let remaining = deadline.saturating_duration_since(std::time::Instant::now());
-                if remaining.is_zero() {
-                    break;
-                }
-                match idx_rx.recv_timeout(remaining) {
-                    Ok((rel, remove, emit)) => {
-                        pending.insert(rel, (remove, emit));
-                    }
-                    Err(std_mpsc::RecvTimeoutError::Timeout) => break,
-                    Err(std_mpsc::RecvTimeoutError::Disconnected) => break,
-                }
-            }
-
-            let conn = match index::open_db(&root_idx) {
-                Ok(conn) => conn,
-                Err(error) => {
-                    tracing::warn!(%error, "could not open note index for watcher batch");
-                    std::thread::sleep(std::time::Duration::from_millis(INDEX_OPEN_RETRY_MS));
-                    continue;
-                }
-            };
-            let mut changes = Vec::new();
-            for (rel_s, (is_remove, emit)) in std::mem::take(&mut pending) {
-                let result = if is_remove {
-                    index::remove_note_with_conn(&conn, &rel_s)
-                } else {
-                    let abs = match paths::join_under(&root_idx, Path::new(&rel_s)) {
-                        Ok(abs) => abs,
-                        Err(_) => continue,
-                    };
-                    if let Ok(markdown) = std::fs::read_to_string(&abs) {
-                        index::index_note_with_conn(&conn, &rel_s, &markdown, &abs)
-                    } else {
-                        continue;
-                    }
-                };
-                if result.is_ok() && emit {
-                    changes.push(if is_remove {
-                        SpaceChange::remove(&index_space_path, rel_s, false)
-                    } else {
-                        SpaceChange::content(&index_space_path, rel_s)
-                    });
-                }
-            }
-
-            if !changes.is_empty() {
-                emit_changed(
-                    &index_app,
-                    &index_window_label,
-                    &SpaceChange::batch(&index_space_path, changes),
-                );
-            }
-        }
-    });
-
-    let app2 = app.clone();
-    let root2 = root.clone();
-    let space_path = root.to_string_lossy().to_string();
-
-    let watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
+    let watch_root = root.clone();
+    let mut watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
         let event = match res {
-            Ok(e) => e,
-            Err(_) => return,
-        };
-
-        if let EventKind::Modify(ModifyKind::Name(_)) = event.kind {
-            if event.paths.len() >= 2 {
-                let Some(from) = rel_under_root(&root2, &event.paths[0]) else {
-                    return;
-                };
-                let Some(to) = rel_under_root(&root2, &event.paths[1]) else {
-                    return;
-                };
-                if has_recent_local_change(&recent_local_changes, &from)
-                    && has_recent_local_change(&recent_local_changes, &to)
-                {
-                    return;
-                }
-                let recursive = event.paths[1].is_dir();
-                queue_rename_reindex(
-                    &idx_tx,
-                    &root2,
-                    &from,
-                    &to,
-                    &event.paths[1],
-                    recursive,
-                );
-                emit_changed(
-                    &app2,
-                    &window_label,
-                    &SpaceChange::rename(&space_path, from, to, recursive),
-                );
+            Ok(event) => event,
+            Err(error) => {
+                tracing::warn!(%error, "space watcher error");
                 return;
             }
-        }
-
-        let is_remove = matches!(event.kind, EventKind::Remove(_));
-        let is_create = matches!(event.kind, EventKind::Create(_));
-        let is_modify = matches!(event.kind, EventKind::Modify(_));
-        if !(is_remove || is_create || is_modify) {
+        };
+        if event.need_rescan() {
+            let _ = tx.send(Signal::Rescan);
             return;
         }
-
-        for path in event.paths {
-            let Some(rel_s) = rel_under_root(&root2, &path) else {
+        let structural = match event.kind {
+            EventKind::Create(_)
+            | EventKind::Remove(_)
+            | EventKind::Modify(ModifyKind::Name(_)) => true,
+            EventKind::Modify(_) => false,
+            _ => return,
+        };
+        for path in &event.paths {
+            let Some(rel) = rel_under_root(&watch_root, path) else {
                 continue;
             };
-
-            if has_recent_local_change(&recent_local_changes, &rel_s) {
+            if has_recent_local_change(&recent_local_changes, &rel) {
                 continue;
             }
-
-            let is_md = utils::is_markdown_path(&path);
-            if is_md {
-                let _ = idx_tx.send((rel_s, is_remove, true));
-                continue;
-            }
-
-            let recursive = match event.kind {
-                EventKind::Remove(RemoveKind::Folder) => true,
-                EventKind::Remove(RemoveKind::File) => false,
-                EventKind::Remove(_) => true,
-                _ => path.is_dir(),
-            };
-            let change = if is_remove {
-                SpaceChange::remove(&space_path, rel_s, recursive)
-            } else if is_create {
-                SpaceChange::create(&space_path, rel_s)
-            } else {
-                SpaceChange::content(&space_path, rel_s)
-            };
-            emit_changed(&app2, &window_label, &change);
+            let _ = tx.send(Signal::Path { rel, structural });
         }
     })
     .map_err(|e| e.to_string())?;
 
-    let mut watcher = watcher;
     watcher
         .watch(&root, notify::RecursiveMode::Recursive)
         .map_err(|e: notify::Error| e.to_string())?;
