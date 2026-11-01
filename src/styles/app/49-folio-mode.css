@@ -20,18 +20,17 @@
 
 .folioNotesHeader {
 	flex: 0 0 auto;
-	padding: 10px 14px;
-	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 52%, transparent);
+	padding: 10px 12px 8px;
 }
 
 .appShell.appShellSidebarCollapsed .folioNotesHeader {
-	padding-left: max(14px, var(--collapsed-sidebar-top-reserve));
+	padding-left: max(12px, var(--collapsed-sidebar-top-reserve));
 }
 
 .folioNotesControls {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 4px;
 }
 
 .folioNotesSearch {
@@ -40,13 +39,27 @@
 	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	padding: 0 9px;
-	border: 1px solid var(--border-light);
+	gap: 6px;
+	padding: 0 6px 0 9px;
+	border: 1px solid transparent;
 	border-radius: var(--radius-md);
-	background: var(--bg-primary);
+	background: color-mix(in srgb, var(--text-primary) 5%, transparent);
 	color: var(--text-tertiary);
 	cursor: text;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease,
+		color 140ms ease;
+}
+
+.folioNotesSearch:hover {
+	background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+}
+
+.folioNotesSearch:focus-within {
+	border-color: var(--border-focus);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
 }
 
 .folioNotesSearch svg {
@@ -67,8 +80,12 @@
 	caret-color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-secondary));
 	color: var(--text-primary);
 	font: inherit;
-	font-size: var(--text-base);
+	font-size: var(--text-sm);
 	line-height: 18px;
+}
+
+.folioNotesSearch input::placeholder {
+	color: var(--text-placeholder);
 }
 
 .folioNotesSearch input:focus,
@@ -78,18 +95,38 @@
 	box-shadow: none;
 }
 
+.folioNotesSearchClear {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+}
+
+.folioNotesSearchClear:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
 .folioNotesSort {
 	flex: 0 0 auto;
-	width: 30px;
+	width: 28px;
 	height: 28px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: 0;
-	border: 1px solid var(--border-light);
+	border: 1px solid transparent;
 	border-radius: var(--radius-md);
-	background: var(--bg-primary);
+	background: transparent;
 	color: var(--text-secondary);
+	transition: background-color 140ms ease;
 }
 
 .folioNotesSort svg {
@@ -98,8 +135,9 @@
 }
 
 .folioNotesSort:hover,
-.folioNotesSort:active {
-	background: var(--bg-primary);
+.folioNotesSort:active,
+.folioNotesSort[data-popup-open] {
+	background: var(--bg-hover);
 }
 
 .folioNotesSort:hover svg,
@@ -107,8 +145,7 @@
 	color: var(--text-secondary);
 }
 
-.folioNotesSort:focus-visible,
-.folioNotesSort[data-popup-open] {
+.folioNotesSort:focus-visible {
 	border-color: var(--border-focus);
 	outline: none;
 }

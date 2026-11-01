@@ -589,7 +589,7 @@ export const DURABLE_SETTINGS = {
 	}),
 	folioMode: booleanSetting({
 		key: "ui.folioMode",
-		defaultValue: false,
+		defaultValue: true,
 		discovery: searchable("appearance-layout-folio-mode"),
 		read: (settings) => settings.ui.folioMode,
 		change: (value) => ({ ui: { folioMode: value } }),

@@ -45,6 +45,7 @@
 	"folio": {
 		"listAria": "Notizenliste",
 		"filter": "Notizen filtern",
+		"clearFilter": "Filter löschen",
 		"justNow": "Gerade eben",
 		"noDate": "Kein Datum",
 		"noPreview": "Keine Vorschau",

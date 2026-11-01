@@ -226,7 +226,7 @@ const initialUIState: UIState = {
 	settingsSpacePath: null,
 	showToc: true,
 	zenMode: false,
-	folioMode: false,
+	folioMode: DURABLE_SETTINGS.folioMode.defaultValue,
 	folioScope: DEFAULT_FOLIO_SCOPE,
 	folioSortMode: DEFAULT_FILE_TREE_SORT_MODE,
 	folioNotesWidth: DEFAULT_FOLIO_NOTES_WIDTH,

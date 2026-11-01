@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	ArrangeByLettersAZIcon,
 	Calendar03Icon,
+	Cancel01Icon,
 	Clock01Icon,
 	SearchIcon,
 } from "@hugeicons/core-free-icons";
@@ -34,15 +35,34 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 		<header className="folioNotesHeader">
 			<div className="folioNotesControls">
 				<label className="folioNotesSearch">
-					<HugeiconsIcon icon={SearchIcon} size="var(--icon-md)" />
+					<HugeiconsIcon icon={SearchIcon} size="var(--icon-sm)" />
 					<input
 						type="text"
 						inputMode="search"
 						value={searchQuery}
 						placeholder={t("folio.filter")}
 						aria-label={t("folio.filter")}
+						spellCheck={false}
+						autoComplete="off"
+						onKeyDown={(event) => {
+							if (event.key !== "Escape" || !searchQuery) return;
+							event.preventDefault();
+							onSearchQueryChange("");
+						}}
 						onChange={(event) => onSearchQueryChange(event.currentTarget.value)}
 					/>
+					{searchQuery ? (
+						<button
+							type="button"
+							className="folioNotesSearchClear"
+							onMouseDown={(event) => event.preventDefault()}
+							onClick={() => onSearchQueryChange("")}
+							title={t("folio.clearFilter")}
+							aria-label={t("folio.clearFilter")}
+						>
+							<HugeiconsIcon icon={Cancel01Icon} size="var(--icon-xs)" />
+						</button>
+					) : null}
 				</label>
 				<FileTreeSortMenu
 					sortMode={sortMode}
