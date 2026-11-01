@@ -42,7 +42,6 @@
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 82%, transparent);
 	backdrop-filter: blur(6px);
 	overflow: hidden;
-	/* Right edge on the table's right edge, centred on the column "+" control's line. */
 	transform: translate(-100%, -50%);
 }
 
@@ -139,7 +138,6 @@
 	color: var(--status-danger-fg);
 }
 
-/* Preview/read-only: decoration widget pinned to the code block itself. */
 .codeBlockInlineCopy {
 	position: absolute;
 	top: 4px;
@@ -200,7 +198,6 @@
 }
 
 .mermaidCanvasStage {
-	/* Pele draws no background; this colors slice gaps and knocked-out shapes, so match the frame. */
 	--pele-bg: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
 	--pele-fg: var(--text-primary);
 	--pele-muted: var(--text-secondary);
@@ -211,7 +208,6 @@
 	--pele-accent: var(--interactive-accent);
 	--pele-critical: var(--status-danger-fg);
 	--pele-error: var(--status-danger-fg);
-	/* Must match the fonts renderer.ts passes to Pele for label measurement. */
 	--pele-font: var(--font-sans);
 	--pele-font-mono: var(--font-mono);
 	--pele-radius: var(--radius-sm);
@@ -306,7 +302,6 @@
 }
 
 .mermaidCanvasError {
-	/* Pele syntax errors mark the column with a caret on its own line. */
 	white-space: pre-wrap;
 	text-align: start;
 	font-family: var(--font-mono);

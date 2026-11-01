@@ -367,11 +367,8 @@ export interface SearchResult {
 	title: string;
 	snippet: string;
 	score: number;
-	/** 0-based body occurrence index for jump-to-match. Absent on note-level rows. */
 	match_index?: number | null;
-	/** The literal text `match_index` counts, with search operators parsed off. */
 	match_query?: string | null;
-	/** 1-based line number in the note's source markdown. */
 	line?: number | null;
 }
 
@@ -516,14 +513,12 @@ export interface TagRefactorFailure {
 		| "changed_since_preview"
 		| "not_in_preview"
 		| "io";
-	/** Underlying error text, only for `io`. */
 	detail: string | null;
 }
 
 export interface TagRefactorPlan {
 	notes: { path: string; mtime_ms: number; inline_count: number; frontmatter_count: number }[];
 	descendant_tags: string[];
-	/** Target tags that already exist, so applying merges into them. */
 	conflicts: string[];
 	failures: TagRefactorFailure[];
 }
@@ -574,7 +569,6 @@ export interface TaskToggleRequest {
 	note_path: string;
 	etag: string;
 	checked: boolean;
-	/** Targets by offset plus raw text from `tasks_list`; Rust verifies both. */
 	items: { start: number; text: string }[];
 }
 
@@ -985,13 +979,11 @@ interface TauriCommands {
 	list_collapse_state_set: CommandDef<{ path: string; branches: string[] }, void>;
 	tag_appearance_list: CommandDef<void, Record<string, TagAppearance>>;
 	tag_appearance_set: CommandDef<{ tag: string; icon?: string | null }, TagAppearance | null>;
-	/** `to: null` deletes the tag; renaming onto an existing tag merges. */
 	tag_refactor_plan: CommandDef<{ from: string; to: string | null }, TagRefactorPlan>;
 	tag_refactor_apply: CommandDef<
 		{
 			from: string;
 			to: string | null;
-			/** The previewed notes; any that changed on disk since are skipped. */
 			notes: { path: string; mtime_ms: number }[];
 			expected_space: string;
 		},

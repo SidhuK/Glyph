@@ -50,7 +50,6 @@ interface BuildEditorCommandsOptions {
 	showCollapsibleLists: boolean;
 }
 
-/** Same glyphs as the format bar and slash menu, so a command looks the same everywhere. */
 const EDITOR_ACTION_ICONS: Partial<Record<EditorActionId, IconSvgElement>> = {
 	ai_selection_to_context: SparklesIcon,
 	bold: Bold,

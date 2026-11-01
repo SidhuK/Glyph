@@ -10,16 +10,13 @@ interface UseRibbonCommandsOptions {
 	canEdit: boolean;
 	mode: string;
 	tiptapHostRef: { readonly current: HTMLDivElement | null };
-	/** State node (the same value passed through tiptapHostRef) needed for the focus-tracking effect. */
 	tiptapHostNode: HTMLDivElement | null;
-	/** Callback to open the link dialog with initial href/target from the editor selection */
 	onOpenLinkDialog: (href: string, target: "_self" | "_blank") => void;
 	onSendSelectionToAi?: () => void;
 	onTriggerExtractToNote?: () => void;
 	onRegisterCalloutInserter?: (inserter: ((type: string) => void) | null) => void;
 }
 
-/** @internal Shared reference used to route editor menu actions to the focused editor instance. */
 let lastFocusedNoteEditorHost: HTMLDivElement | null = null;
 
 function createPlainTextPasteContent(text: string): JSONContent[] {
@@ -51,12 +48,6 @@ function createPlainTextPasteContent(text: string): JSONContent[] {
 	return paragraphs;
 }
 
-/**
- * Sets up the global editor menu action listener (keyboard shortcuts, slash commands)
- * and delegates editor action dispatch to executeEditorAction.
- *
- * Also registers the callout inserter for the note editor.
- */
 export function useRibbonCommands({
 	editor,
 	canEdit,
@@ -185,7 +176,6 @@ export function useRibbonCommands({
 		return () => onRegisterCalloutInserter(null);
 	}, [editor, mode, onRegisterCalloutInserter, tiptapHostRef]);
 
-	// Track focus within this editor host to route global keyboard shortcuts correctly
 	useEffect(() => {
 		const host = tiptapHostNode;
 		if (!host) return;
@@ -196,8 +186,6 @@ export function useRibbonCommands({
 			const currentHost = host;
 			window.setTimeout(() => {
 				const activeElement = document.activeElement;
-				// Palette editor actions run before focus is restored, so retain the
-				// editor that opened the palette until its command has been dispatched.
 				if (activeElement instanceof HTMLElement && activeElement.closest(".commandPalette")) {
 					return;
 				}

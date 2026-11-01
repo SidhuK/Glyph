@@ -45,8 +45,6 @@
 	width: auto;
 }
 
-/* A chosen folder (or status) is plain text beside its buttons, one step above the quiet
-   Clear button, so it never reads as a control or a placeholder; "Not configured" is tertiary. */
 .dailyNotesFolderPath {
 	flex: 0 1 auto;
 	min-width: 0;
@@ -174,12 +172,9 @@
 	align-items: center;
 	justify-content: flex-end;
 	gap: 4px;
-	/* The keys end on the column edge like toggles; only the hover chip overhangs it. */
 	margin-right: -8px;
 }
 
-/* The binding reads as small tertiary keycaps; the button only looks like a control on
-   hover or while recording. */
 .shortcutRecordButton {
 	display: inline-flex;
 	align-items: center;
@@ -220,7 +215,6 @@
 	min-width: 18px;
 	height: 18px;
 	padding: 0 4px;
-	/* Same keycap as the command palette footer (.commandPaletteKeycap). */
 	border: 1px solid var(--border-default);
 	border-radius: var(--radius-sm);
 	background: transparent;
@@ -237,7 +231,6 @@
 	color: var(--text-secondary);
 }
 
-/* An unassigned action shows nothing at rest; hovering or focusing its row offers to record. */
 .shortcutUnassigned {
 	color: var(--text-tertiary);
 	opacity: 0;

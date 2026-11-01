@@ -184,7 +184,6 @@ struct AppCommandPayload {
 #[derive(Default)]
 struct PendingMenuCommands {
     commands: Vec<AppCommandPayload>,
-    /// Collection ids from Quick Search, replayed as `app:open_collection`.
     collections: Vec<String>,
     shell_ready: bool,
 }
@@ -195,9 +194,6 @@ struct MenuState {
     show_markdown_menu: Mutex<bool>,
     menu_shortcuts: Mutex<HashMap<String, Option<String>>>,
     menu_labels: Mutex<HashMap<String, String>>,
-    /// Commands that arrive before the shell event listener is ready. The shell
-    /// drains them once that listener has registered; see
-    /// `menu_take_pending_commands`.
     pending_commands: Mutex<PendingMenuCommands>,
     weekly_notes: Mutex<bool>,
     monthly_notes: Mutex<bool>,
@@ -972,7 +968,6 @@ fn focused_editor_window(app: &tauri::AppHandle) -> Option<(String, tauri::Webvi
     })
 }
 
-/// Returns the main window and whether it was created by this call.
 fn main_window(app: &tauri::AppHandle) -> Result<(tauri::WebviewWindow, bool), String> {
     let _guard = MAIN_WINDOW_LOCK
         .lock()
@@ -1010,20 +1005,14 @@ fn main_window(app: &tauri::AppHandle) -> Result<(tauri::WebviewWindow, bool), S
     Ok((window, true))
 }
 
-/// How long a freshly created main window may stay hidden waiting for the
-/// frontend's first paint before it is shown anyway.
 const MAIN_WINDOW_FIRST_PAINT_TIMEOUT: Duration = Duration::from_millis(1500);
 
-/// Whether the current main window has been revealed since it was created, so
-/// the first-paint fallback never re-shows a window the user has since closed.
 static MAIN_WINDOW_REVEALED: AtomicBool = AtomicBool::new(false);
 
 pub(crate) fn show_main_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
     let (window, created) = main_window(app)?;
     if created {
         MAIN_WINDOW_REVEALED.store(false, Ordering::SeqCst);
-        // The frontend calls `show_main_window` after its first paint so the
-        // traffic lights and content appear together; this is the fallback.
         std::thread::spawn(move || {
             std::thread::sleep(MAIN_WINDOW_FIRST_PAINT_TIMEOUT);
             if MAIN_WINDOW_REVEALED.swap(true, Ordering::SeqCst) {
@@ -1047,8 +1036,6 @@ fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
     show_main_window_for_app(&app)
 }
 
-/// Plain-text pasteboard read for "Paste without Formatting".
-/// Kept as an invoke (not a menu event payload) so the editor owns insertion.
 #[tauri::command]
 fn read_clipboard_plain_text() -> Option<String> {
     #[cfg(target_os = "macos")]
@@ -1075,12 +1062,6 @@ fn has_external_markdown_windows(app: &tauri::AppHandle) -> bool {
         .any(|label| external_markdown::is_external_markdown_window(label))
 }
 
-/// Handle OS-opened URLs. Returns true when the open was satisfied by an
-/// external markdown window, so the main window may stay hidden on cold start.
-///
-/// `glyph://` is deliberately not handled here: the deep-link plugin hooks the
-/// same `RunEvent::Opened` and forwards it to `on_open_url`, so branching on it
-/// in both places would dispatch every deeplink twice.
 fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) -> bool {
     for url in urls {
         if url.scheme() != "file" {
@@ -1201,11 +1182,6 @@ fn set_period_note_menu_enabled(
     apply_period_note_menu_enabled(&app)
 }
 
-/// Drain menu commands queued before the main shell registered its listener,
-/// then allow future commands to be emitted directly.
-///
-/// Queued Quick Search collection opens are emitted here as well; the shell
-/// registers its `app:open_collection` listener before the menu listener.
 #[tauri::command]
 fn menu_take_pending_commands(
     app: tauri::AppHandle,
@@ -1429,7 +1405,6 @@ fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Res
     let is_floating = is_floating_window_label(window.label());
     let apply = |theme: Option<&str>| -> Result<(), String> {
         if is_floating {
-            // Keep the floating card's larger corner radius when theme re-applies.
             apply_floating_window_vibrancy(&window)
         } else {
             apply_main_window_vibrancy(&window, theme)
@@ -1459,8 +1434,6 @@ fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Res
         "none" | "" => {
             window.set_theme(None).map_err(|error| error.to_string())?;
             if is_floating {
-                // Floating panels are always frosted cards, even when the main
-                // window turns vibrancy off.
                 apply_floating_window_vibrancy(&window)
             } else {
                 clear_main_window_vibrancy(&window)
@@ -1477,8 +1450,6 @@ pub fn run() {
     #[cfg(target_os = "macos")]
     macos_webkit_defaults::configure_continuous_spell_checking();
 
-    // Single-instance must be registered first so deep links launched as a
-    // second process are forwarded to the running app (Windows/Linux).
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             if let Err(error) = show_main_window_for_app(app) {
@@ -1526,8 +1497,6 @@ pub fn run() {
                 dispatch_menu_command_to_main(app, "export-note-docx");
             }
             "file.close_tab" => {
-                // External markdown windows close themselves via Close Tab;
-                // the main window owns tab management everywhere else.
                 if let Some((label, _window)) = focused_editor_window(app) {
                     if external_markdown::is_external_markdown_window(&label) {
                         let _ = app.emit_to(
@@ -1544,8 +1513,6 @@ pub fn run() {
             }
             #[cfg(target_os = "macos")]
             "edit.paste_without_formatting" => {
-                // Editor surfaces live in the main, quick note, and external markdown
-                // windows, so paste targets whichever one is focused.
                 if let Some((label, _window)) = focused_editor_window(app) {
                     let _ = app.emit_to(
                         label,
@@ -1586,8 +1553,6 @@ pub fn run() {
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 let handle = app.handle().clone();
-                // The plugin forwards every `RunEvent::Opened` URL on macOS,
-                // including `file://`, so filter by scheme here.
                 app.deep_link().on_open_url(move |event| {
                     for url in event.urls() {
                         if url.scheme() == "glyph" {
@@ -1599,8 +1564,6 @@ pub fn run() {
                         }
                     }
                 });
-                // On Windows/Linux the plugin emits the cold-start URL during
-                // its own init, before the listener above exists.
                 deeplink::consume_startup_url(app.handle());
             }
 
@@ -1620,7 +1583,6 @@ pub fn run() {
                         api.prevent_close();
                         let _ = window.hide();
                     }
-                    // Spotlight-style: Quick Search dismisses itself once focus leaves.
                     WindowEvent::Focused(false) if window.label() == QUICK_SEARCH_WINDOW_LABEL => {
                         if let Err(error) = window.hide() {
                             warn!("Failed to hide quick search on blur: {error}");
