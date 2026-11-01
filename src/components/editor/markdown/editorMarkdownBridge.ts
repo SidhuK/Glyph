@@ -167,6 +167,10 @@ export function preprocessMarkdownForEditor(markdown: string): string {
 	);
 }
 
+export function normalizeBody(markdown: string): string {
+	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
+}
+
 export function postprocessMarkdownFromEditor(markdown: string): string {
 	return postprocessEscapedDollars(
 		postprocessInlineTocMarkers(

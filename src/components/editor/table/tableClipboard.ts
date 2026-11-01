@@ -2,7 +2,7 @@ import type { Editor } from "@tiptap/core";
 import type { Node as ProseMirrorNode, Slice } from "@tiptap/pm/model";
 import type { EditorState } from "@tiptap/pm/state";
 import { CellSelection } from "@tiptap/pm/tables";
-import { postprocessMarkdownFromEditor } from "../markdown/editorMarkdownBridge";
+import { blocksToMarkdown } from "../markdown/selectionMarkdown";
 import { type TableGrid, tableToGrid } from "./tableGrid";
 
 export type TableCopyFormat = "rich" | "markdown" | "csv" | "tsv";
@@ -54,18 +54,16 @@ export function tableGridToHtml(grid: TableGrid): string {
 }
 
 export function tableToMarkdown(editor: Editor, table: ProseMirrorNode): string {
-	if (!editor.markdown) throw new Error("Markdown serializer is unavailable.");
-	const markdown = editor.markdown.serialize({ type: "doc", content: [table.toJSON()] });
-	return postprocessMarkdownFromEditor(markdown).trim();
+	return blocksToMarkdown(editor, [table.toJSON()]);
 }
 
 /**
  * Plain text for ⌘C on a cell selection: tab-separated, so it pastes into
- * spreadsheets as a grid. Returns "" for other selections, which makes
- * ProseMirror fall through to TipTap's default text serializer.
+ * spreadsheets as a grid. Returns null for other selections, which the editor
+ * copies as markdown instead.
  */
-export function cellSelectionClipboardText(slice: Slice, state: EditorState): string {
-	if (!(state.selection instanceof CellSelection)) return "";
+export function cellSelectionClipboardText(slice: Slice, state: EditorState): string | null {
+	if (!(state.selection instanceof CellSelection)) return null;
 	const first = slice.content.firstChild;
 	const table =
 		first?.type.name === "table" ? first : state.schema.nodes.table?.create(null, slice.content);
