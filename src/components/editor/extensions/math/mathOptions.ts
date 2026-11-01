@@ -44,7 +44,9 @@ export const GLYPH_KATEX_OPTIONS = {
 
 // TipTap math attributes may contain soft line breaks. They remain inline
 // Markdown until a blank line, so retain them across Edit -> Raw -> Edit.
-const INLINE_MATH_RE = /^\$(?!\$)(?!\s)((?:\\.|[^$\\])+?)(?<!\s)\$(?!\$)/;
+// A closing `$` followed by a digit is currency (`$5-$10`), and math never spans a
+// backtick, so a code span after a price stays code.
+const INLINE_MATH_RE = /^\$(?!\$)(?!\s)((?:\\.|[^$\\`])+?)(?<!\s)\$(?![$\d])/;
 const INLINE_DISPLAY_MATH_RE = /^\$\$[\t ]*((?:\\.|[^$\\\n])+?)[\t ]*\$\$(?!\$)/;
 const BLOCK_MATH_RE = /^\$\$[\t ]*\n([\s\S]*?)\n\$\$(?:[\t ]*(?:\n|$))/;
 
