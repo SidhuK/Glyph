@@ -148,17 +148,23 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	// The root is always on screen (FileTreeContext loads it without loadDir). Other cached
 	// dirs are exactly the visible ones (collapse evicts descendants), whether they appear
 	// through expansion, a focused folder view or the folio space container.
+	// A removed dir that reappears (e.g. Finder "Put Back") starts collapsed and uncached.
+	const forgetRemovedDirs = useCallback(
+		(removed: readonly string[]) => {
+			if (removed.length === 0) return;
+			for (const removedPath of removed) evictDirState(removedPath, true);
+			const isRemoved = (dirPath: string) =>
+				removed.some((path) => dirPath === path || dirPath.startsWith(`${path}/`));
+			updateExpandedDirsAndRef((prev) =>
+				[...prev].some(isRemoved) ? new Set([...prev].filter((dir) => !isRemoved(dir))) : prev,
+			);
+		},
+		[evictDirState, updateExpandedDirsAndRef],
+	);
+
 	const refreshLoadedDirs = useCallback(
 		async ({ dirs, removed, all }: TreeRefresh) => {
-			for (const removedPath of removed) evictDirState(removedPath, true);
-			if (removed.size > 0) {
-				// A removed dir that reappears (e.g. Finder "Put Back") starts collapsed.
-				const isRemoved = (dirPath: string) =>
-					[...removed].some((path) => dirPath === path || dirPath.startsWith(`${path}/`));
-				updateExpandedDirsAndRef((prev) =>
-					[...prev].some(isRemoved) ? new Set([...prev].filter((dir) => !isRemoved(dir))) : prev,
-				);
-			}
+			forgetRemovedDirs([...removed]);
 			const targets = all ? ["", ...loadedDirsRef.current] : [...dirs];
 			const loaded = [...new Set(targets)].filter(
 				(dirPath) => dirPath === "" || loadedDirsRef.current.has(dirPath),
@@ -167,12 +173,12 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			await Promise.all(
 				loaded.map((dirPath) =>
 					dirPath
-						? loadDir(dirPath, true).catch(() => evictDirState(dirPath, true))
+						? loadDir(dirPath, true).catch(() => forgetRemovedDirs([dirPath]))
 						: loadDir(dirPath, true),
 				),
 			);
 		},
-		[evictDirState, loadDir, updateExpandedDirsAndRef],
+		[forgetRemovedDirs, loadDir],
 	);
 
 	const toggleDir = useCallback(
