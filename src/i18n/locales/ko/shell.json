@@ -498,15 +498,6 @@
 		"loadError": "캔버스를 열 수 없습니다: {{message}}",
 		"saveError": "캔버스를 저장할 수 없습니다: {{message}}"
 	},
-	"spaceSwitcher": {
-		"label": "현재 스페이스: {{name}}",
-		"openSpace": "스페이스 열기…",
-		"createSpace": "스페이스 만들기…",
-		"changeIcon": "아이콘 변경…",
-		"closeSpace": "스페이스 닫기",
-		"chooseIcon": "스페이스 아이콘 선택",
-		"actionFailed": "스페이스 작업을 완료할 수 없습니다"
-	},
 	"appearancePicker": {
 		"searchPlaceholder": "아이콘 검색",
 		"searchEmojiPlaceholder": "이모지 검색",

@@ -500,15 +500,6 @@
 		"loadError": "Não foi possível abrir a tela: {{message}}",
 		"saveError": "Não foi possível salvar a tela: {{message}}"
 	},
-	"spaceSwitcher": {
-		"label": "Espaço atual: {{name}}",
-		"openSpace": "Abrir espaço…",
-		"createSpace": "Criar espaço…",
-		"changeIcon": "Alterar ícone…",
-		"closeSpace": "Fechar espaço",
-		"chooseIcon": "Escolher ícone do espaço",
-		"actionFailed": "Não foi possível concluir a ação do espaço"
-	},
 	"appearancePicker": {
 		"searchPlaceholder": "Buscar ícones",
 		"searchEmojiPlaceholder": "Buscar emoji",

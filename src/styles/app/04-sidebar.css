@@ -66,8 +66,7 @@
 	-webkit-app-region: drag;
 }
 
-/* One row from the traffic lights to the right edge: the update pill stays on
-   the left, the space menu button is pushed right and truncates first. */
+/* One row from the traffic lights to the right edge, holding the update pill. */
 .sidebarActions {
 	display: flex;
 	align-items: center;
@@ -78,100 +77,6 @@
 	right: 10px;
 	transform: translateY(-50%);
 	z-index: 30;
-}
-
-/* Inherits the global button reset, hover and pressed fills from 01-controls.css. */
-.spaceMenuButton {
-	gap: 6px;
-	min-width: 0;
-	height: 24px;
-	margin-left: auto;
-	padding: 0 6px 0 5px;
-	border-radius: var(--radius-8);
-	color: var(--text-primary);
-	transition:
-		background var(--transition-fast),
-		transform var(--transition-fast);
-	-webkit-app-region: no-drag;
-}
-
-.spaceMenuButton[data-popup-open] {
-	background: var(--bg-hover);
-	color: var(--text-primary);
-}
-
-.spaceMenuButton[aria-disabled="true"] {
-	background: transparent;
-	cursor: default;
-}
-
-.spaceMenuButton:active:not([aria-disabled="true"]) {
-	transform: scale(0.98);
-}
-
-.spaceMenuButton:focus-visible {
-	outline-offset: 1px;
-}
-
-.spaceMenuButtonIcon,
-.spaceMenuButtonChevron {
-	flex: 0 0 auto;
-}
-
-/* Built-in icons are tinted; emoji keep their own colour. */
-.spaceMenuButtonIcon {
-	color: var(--text-secondary);
-}
-
-.spaceMenuButtonName {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	line-height: 1.25;
-}
-
-/* UnfoldMore draws in the middle third of its box; 16px gives a ~12px glyph. */
-svg.spaceMenuButtonChevron {
-	width: 16px;
-	height: 16px;
-}
-
-.spaceMenuButtonChevron {
-	margin-left: -1px;
-	color: var(--text-tertiary);
-	transition: opacity var(--transition-fast);
-}
-
-.spaceMenuButton[aria-disabled="true"] .spaceMenuButtonChevron {
-	opacity: 0.4;
-}
-
-.spaceMenuButton[aria-disabled="true"] .spaceMenuButtonIcon {
-	animation: spaceMenuButtonPulse 650ms ease-in-out infinite alternate;
-}
-
-@keyframes spaceMenuButtonPulse {
-	from {
-		opacity: 0.45;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.spaceMenuButton,
-	.spaceMenuButtonChevron {
-		transition: none;
-	}
-
-	.spaceMenuButton:active:not([aria-disabled="true"]) {
-		transform: none;
-	}
-
-	.spaceMenuButton[aria-disabled="true"] .spaceMenuButtonIcon {
-		animation: none;
-	}
 }
 
 .windowChromeUpdateButton {

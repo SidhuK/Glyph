@@ -1,9 +1,8 @@
-import type { ReactNode } from "react";
 import { useUpdaterContext } from "../../contexts";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 
-export function SidebarHeader({ children }: { children?: ReactNode }) {
+export function SidebarHeader() {
 	const autoUpdater = useUpdaterContext();
 
 	return (
@@ -21,7 +20,6 @@ export function SidebarHeader({ children }: { children?: ReactNode }) {
 						updateVersion={autoUpdater.updateVersion}
 						onInstallUpdate={autoUpdater.installAndRelaunch}
 					/>
-					{children}
 				</div>
 			</div>
 		</>

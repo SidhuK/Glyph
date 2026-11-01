@@ -117,11 +117,6 @@ svg.glyphMenuItemIcon {
 	background: var(--border-light);
 }
 
-/* Space switcher specifics. */
-.spaceMenuPopup {
-	min-width: 236px;
-}
-
 /* Hand-rolled popups share the menu surface: TipTap suggestion menus (wiki-link,
    tag, person, markdown-link, slash), the property wiki-link list, the AI composer
    panels and the command palette. They paint their own active rows, so their fill

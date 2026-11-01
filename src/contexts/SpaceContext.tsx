@@ -19,13 +19,6 @@ import {
 	removeRegisteredSpacePath,
 	setCurrentSpacePath,
 } from "../lib/settings";
-import {
-	buildSpaceDefinitions,
-	loadSpaceIconOverrides,
-	type SpaceDefinition,
-	type SpaceIconOverrides,
-	writeSpaceIconOverride,
-} from "../lib/spaceRegistry";
 import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { toast } from "../lib/toast";
@@ -34,8 +27,6 @@ interface SpaceContextValue {
 	setError: (error: string) => void;
 	spacePath: string | null;
 	welcomeNotePath: string | null;
-	spaces: SpaceDefinition[];
-	switchingSpacePath: string | null;
 	isIndexing: boolean;
 	settingsLoaded: boolean;
 	consumeWelcomeNotePath: () => void;
@@ -45,7 +36,6 @@ interface SpaceContextValue {
 	/** Resolves to whether the space is now open. */
 	onOpenSpaceAtPath: (path: string) => Promise<boolean>;
 	onCreateSpace: () => Promise<void>;
-	setSpaceIcon: (path: string, iconName: string | null) => Promise<void>;
 	closeSpace: () => Promise<void>;
 }
 
@@ -89,8 +79,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [spacePath, setSpacePath] = useState<string | null>(null);
 	const [welcomeNotePath, setWelcomeNotePath] = useState<string | null>(null);
 	const [spacePaths, setSpacePaths] = useState<string[]>([]);
-	const [spaceIconOverrides, setSpaceIconOverrides] = useState<SpaceIconOverrides>({});
-	const [switchingSpacePath, setSwitchingSpacePath] = useState<string | null>(null);
 	const [isIndexing, setIsIndexing] = useState(false);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 	const isOpeningSpaceRef = useRef(false);
@@ -120,49 +108,32 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const refreshSpaceRegistry = useCallback(
 		async ({ currentSpacePath }: { currentSpacePath?: string | null } = {}) => {
 			const refreshId = ++registryRefreshIdRef.current;
-			const [registeredPaths, iconOverrides] = await Promise.all([
-				loadRegisteredSpacePaths(),
-				loadSpaceIconOverrides(),
-			]);
+			const registeredPaths = await loadRegisteredSpacePaths();
 			if (refreshId !== registryRefreshIdRef.current) return;
 			const activePath =
 				currentSpacePath === undefined ? currentSpacePathRef.current : currentSpacePath;
 			setSpacePaths(normalizeSpacePaths(registeredPaths, activePath));
-			setSpaceIconOverrides(iconOverrides);
 		},
 		[],
 	);
 
-	useTauriEvent("space:registry_updated", (payload) => {
-		switch (payload.kind) {
-			case "icons":
-			case "paths":
-				void refreshSpaceRegistry().catch((error) => {
-					console.warn("Failed to refresh the space registry", error);
-				});
-				return;
-			default: {
-				const exhaustive: never = payload;
-				return exhaustive;
-			}
-		}
+	useTauriEvent("space:registry_updated", () => {
+		void refreshSpaceRegistry().catch((error) => {
+			console.warn("Failed to refresh the space registry", error);
+		});
 	});
 
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
 			try {
-				const [settings, iconOverrides] = await Promise.all([
-					loadSettings(),
-					loadSpaceIconOverrides(),
-				]);
+				const settings = await loadSettings();
 				if (cancelled) return;
 				const savedSpacePath =
 					settings.currentSpacePath && settings.recentSpaces.includes(settings.currentSpacePath)
 						? settings.currentSpacePath
 						: null;
 				setSpacePaths(normalizeSpacePaths(settings.recentSpaces, savedSpacePath));
-				setSpaceIconOverrides(iconOverrides);
 				try {
 					await invoke("index_set_people_mentions_as_tags_enabled", {
 						enabled: settings.editor.enablePeopleMentionsAsTags,
@@ -246,7 +217,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		async (path: string, mode: "open" | "create"): Promise<boolean> => {
 			if (isOpeningSpaceRef.current) return false;
 			isOpeningSpaceRef.current = true;
-			setSwitchingSpacePath(path);
 			try {
 				if (path === currentSpacePathRef.current) return true;
 				const spaceInfo =
@@ -271,19 +241,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				return false;
 			} finally {
 				isOpeningSpaceRef.current = false;
-				setSwitchingSpacePath(null);
-			}
-		},
-		[refreshSpaceRegistry],
-	);
-
-	const setSpaceIcon = useCallback(
-		async (path: string, iconName: string | null) => {
-			try {
-				await writeSpaceIconOverride(path, iconName);
-				await refreshSpaceRegistry();
-			} catch (err) {
-				setError(extractErrorMessage(err));
 			}
 		},
 		[refreshSpaceRegistry],
@@ -326,18 +283,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		if (path) await applySpaceSelection(path, "create");
 	}, [applySpaceSelection]);
 
-	const spaces = useMemo(
-		() => buildSpaceDefinitions(spacePaths, spaceIconOverrides),
-		[spaceIconOverrides, spacePaths],
-	);
-
 	const value = useMemo<SpaceContextValue>(
 		() => ({
 			setError,
 			spacePath,
 			welcomeNotePath,
-			spaces,
-			switchingSpacePath,
 			isIndexing,
 			settingsLoaded,
 			consumeWelcomeNotePath,
@@ -346,14 +296,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			onOpenSpace,
 			onOpenSpaceAtPath,
 			onCreateSpace,
-			setSpaceIcon,
 			closeSpace,
 		}),
 		[
 			spacePath,
 			welcomeNotePath,
-			spaces,
-			switchingSpacePath,
 			isIndexing,
 			settingsLoaded,
 			consumeWelcomeNotePath,
@@ -362,7 +309,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			onOpenSpace,
 			onOpenSpaceAtPath,
 			onCreateSpace,
-			setSpaceIcon,
 			closeSpace,
 		],
 	);

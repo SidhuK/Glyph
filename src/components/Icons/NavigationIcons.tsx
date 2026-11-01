@@ -10,7 +10,6 @@ import {
 	LayoutAlignLeftIcon,
 	Search as SearchIcon,
 	Settings01Icon,
-	UnfoldMoreIcon,
 } from "@hugeicons/core-free-icons";
 import type { ComponentProps } from "react";
 
@@ -37,10 +36,6 @@ export const ChevronUp = (props: IconProps) => (
 );
 export const ChevronDown = (props: IconProps) => (
 	<HugeiconsIcon icon={ArrowDown} {...withDefaultIconSize(props)} />
-);
-/** Stacked up/down chevrons used by macOS pop-up buttons. */
-export const ChevronsUpDown = (props: IconProps) => (
-	<HugeiconsIcon icon={UnfoldMoreIcon} {...withDefaultIconSize(props)} />
 );
 export const FolderOpen = (props: IconProps) => (
 	<HugeiconsIcon icon={Archive04Icon} {...withDefaultIconSize(props)} />

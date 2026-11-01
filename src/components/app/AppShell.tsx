@@ -1349,10 +1349,6 @@ export function AppShell() {
 			{!zenMode ? (
 				<>
 					<Sidebar
-						onSelectSpace={handleSelectSpace}
-						onOpenSpace={handleOpenSpace}
-						onCreateSpace={handleCreateSpace}
-						onCloseSpace={handleCloseSpace}
 						onSelectDir={setActiveDirPath}
 						onOpenFile={(p) => void openWorkspaceFile(p)}
 						onNewNote={() => void createNoteInSelectedFolder()}

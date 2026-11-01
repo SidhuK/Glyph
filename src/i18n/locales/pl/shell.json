@@ -548,15 +548,6 @@
 		"loadError": "Nie można otworzyć płótna: {{message}}",
 		"saveError": "Nie można zapisać płótna: {{message}}"
 	},
-	"spaceSwitcher": {
-		"label": "Bieżąca przestrzeń: {{name}}",
-		"openSpace": "Otwórz przestrzeń…",
-		"createSpace": "Utwórz przestrzeń…",
-		"changeIcon": "Zmień ikonę…",
-		"closeSpace": "Zamknij przestrzeń",
-		"chooseIcon": "Wybierz ikonę przestrzeni",
-		"actionFailed": "Nie udało się wykonać działania na przestrzeni"
-	},
 	"appearancePicker": {
 		"searchPlaceholder": "Szukaj ikon",
 		"searchEmojiPlaceholder": "Szukaj emoji",

@@ -5,20 +5,12 @@ import { useUILayoutContext } from "../../contexts";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
 import { SidebarContent, type SidebarContentProps } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
-import { SpaceMenuButton, type SpaceMenuActions } from "./SpaceMenuButton";
 
-interface SidebarProps extends SidebarContentProps, SpaceMenuActions {
+interface SidebarProps extends SidebarContentProps {
 	sidebarCollapsed: boolean;
 }
 
-export const Sidebar = memo(function Sidebar({
-	sidebarCollapsed,
-	onSelectSpace,
-	onOpenSpace,
-	onCreateSpace,
-	onCloseSpace,
-	...contentProps
-}: SidebarProps) {
+export const Sidebar = memo(function Sidebar({ sidebarCollapsed, ...contentProps }: SidebarProps) {
 	const { sidebarWidth } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
@@ -50,15 +42,7 @@ export const Sidebar = memo(function Sidebar({
 						exit={shouldReduceMotion ? {} : { opacity: 0 }}
 						transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }}
 					>
-						<SidebarHeader>
-							<SpaceMenuButton
-								key={spaceKey}
-								onSelectSpace={onSelectSpace}
-								onOpenSpace={onOpenSpace}
-								onCreateSpace={onCreateSpace}
-								onCloseSpace={onCloseSpace}
-							/>
-						</SidebarHeader>
+						<SidebarHeader />
 						<SidebarContent key={spaceKey} {...contentProps} />
 						<LicenseStatusFooter />
 					</m.div>

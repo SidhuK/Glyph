@@ -41,7 +41,7 @@ type TauriEventMap = {
 		error?: string;
 	};
 	"space:fs_changed": import("./spaceChange").SpaceChange;
-	"space:registry_updated": import("./spaceRegistry").SpaceRegistryUpdatedPayload;
+	"space:registry_updated": undefined;
 	"index:progress": import("./tauri").IndexProgress;
 	"settings:updated": SettingsUpdatedPayload;
 };
