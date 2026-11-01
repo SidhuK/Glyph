@@ -74,7 +74,11 @@
 				"description": "Das veröffentlichte Änderungsprotokoll von Glyph im Browser öffnen.",
 				"view": "Änderungsprotokoll anzeigen"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "Version kopieren",
+		"versionCopied": "Version kopiert",
+		"copyVersionFailed": "Version konnte nicht kopiert werden"
 	},
 	"language": {
 		"label": "Sprache",

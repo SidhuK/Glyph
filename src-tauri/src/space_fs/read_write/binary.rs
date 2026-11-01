@@ -1,12 +1,14 @@
 use base64::Engine;
 use serde::Serialize;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::{State, WebviewWindow};
 
 use crate::space::SpaceState;
 
 use super::super::helpers::deny_hidden_rel_path;
-use super::pasted_image::{extension_for_mime, filename_for_mime, write_or_reuse_asset};
+use super::pasted_image::{
+    extension_for_mime, filename_for_mime, mime_for_extension, write_or_reuse_asset,
+};
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -80,6 +82,38 @@ fn parse_data_url(data_url: &str) -> Result<(String, Vec<u8>), String> {
     Ok((mime, bytes))
 }
 
+fn asset_file_name(mime: &str, original_filename: Option<&str>) -> Result<String, String> {
+    let ext = extension_for_mime(mime).ok_or_else(|| format!("unsupported image type: {mime}"))?;
+    filename_for_mime(original_filename, mime, ext)
+}
+
+fn save_image_asset(
+    root: &Path,
+    source_rel: &Path,
+    target_rel: &Path,
+    asset_file_name: &str,
+    bytes: &[u8],
+) -> Result<SavedPastedImage, String> {
+    let asset_rel = write_or_reuse_asset(root, target_rel, asset_file_name, bytes)?;
+
+    let asset_rel_string = asset_rel.to_string_lossy().replace('\\', "/");
+    let source_dir = parent_dir(&source_rel.to_string_lossy());
+    let href = relative_path(&source_dir, &asset_rel_string);
+
+    Ok(SavedPastedImage {
+        asset_rel_path: asset_rel_string,
+        href,
+    })
+}
+
+fn checked_rel_paths(source_path: &str, target_dir: &str) -> Result<(PathBuf, PathBuf), String> {
+    let source_rel = PathBuf::from(normalize_rel_path(source_path));
+    let target_rel = PathBuf::from(normalize_rel_path(target_dir));
+    deny_hidden_rel_path(&source_rel)?;
+    deny_hidden_rel_path(&target_rel)?;
+    Ok((source_rel, target_rel))
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_save_pasted_image(
     window: WebviewWindow,
@@ -91,26 +125,57 @@ pub async fn space_save_pasted_image(
 ) -> Result<SavedPastedImage, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<SavedPastedImage, String> {
-        let source_rel = PathBuf::from(normalize_rel_path(&source_path));
-        let target_rel = PathBuf::from(normalize_rel_path(&target_dir));
-        deny_hidden_rel_path(&source_rel)?;
-        deny_hidden_rel_path(&target_rel)?;
-
+        let (source_rel, target_rel) = checked_rel_paths(&source_path, &target_dir)?;
         let (mime, bytes) = parse_data_url(&data_url)?;
-        let ext = extension_for_mime(&mime)
-            .ok_or_else(|| format!("unsupported pasted image type: {mime}"))?;
+        let file_name = asset_file_name(&mime, original_filename.as_deref())?;
+        save_image_asset(&root, &source_rel, &target_rel, &file_name, &bytes)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
 
-        let asset_file_name = filename_for_mime(original_filename.as_deref(), &mime, ext)?;
-        let asset_rel = write_or_reuse_asset(&root, &target_rel, &asset_file_name, &bytes)?;
+/// Reads and names one picked file without writing anything.
+fn read_picked_image(file_path: &str) -> Result<(String, Vec<u8>), String> {
+    let path = Path::new(file_path);
+    if !path.is_absolute() {
+        return Err(format!("image path must be absolute: {file_path}"));
+    }
+    let mime = path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .and_then(mime_for_extension)
+        .ok_or_else(|| format!("unsupported image type: {file_path}"))?;
+    let bytes = std::fs::read(path).map_err(|e| format!("{file_path}: {e}"))?;
+    if bytes.is_empty() {
+        return Err(format!("image is empty: {file_path}"));
+    }
+    let file_name = asset_file_name(mime, path.file_name().and_then(|name| name.to_str()))?;
+    Ok((file_name, bytes))
+}
 
-        let asset_rel_string = asset_rel.to_string_lossy().replace('\\', "/");
-        let source_dir = parent_dir(&source_rel.to_string_lossy());
-        let href = relative_path(&source_dir, &asset_rel_string);
-
-        Ok(SavedPastedImage {
-            asset_rel_path: asset_rel_string,
-            href,
-        })
+/// Copies images picked in the open panel into the note's attachment folder, in pick order.
+/// Every file is read and checked first, so one bad pick leaves no partial copies behind.
+#[tauri::command(rename_all = "snake_case")]
+pub async fn space_import_images(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    source_path: String,
+    target_dir: String,
+    file_paths: Vec<String>,
+) -> Result<Vec<SavedPastedImage>, String> {
+    let root = state.root_for_window(&window)?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SavedPastedImage>, String> {
+        let (source_rel, target_rel) = checked_rel_paths(&source_path, &target_dir)?;
+        let picked = file_paths
+            .iter()
+            .map(|file_path| read_picked_image(file_path))
+            .collect::<Result<Vec<_>, String>>()?;
+        picked
+            .iter()
+            .map(|(file_name, bytes)| {
+                save_image_asset(&root, &source_rel, &target_rel, file_name, bytes)
+            })
+            .collect()
     })
     .await
     .map_err(|e| e.to_string())?

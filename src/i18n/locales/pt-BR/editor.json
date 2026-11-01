@@ -23,16 +23,20 @@
 		"heading1": "Título 1",
 		"heading2": "Título 2",
 		"heading3": "Título 3",
-		"color": "Cor",
-		"colorSections": {
-			"text": "Texto",
-			"highlight": "Destaque"
-		},
 		"link": "Link",
 		"linkUrl": "URL do link",
 		"linkOpenInNewTab": "Abrir em nova aba",
 		"linkRemove": "Remover",
-		"linkApply": "Aplicar"
+		"linkApply": "Aplicar",
+		"heading": "Título",
+		"bodyText": "Texto do corpo",
+		"list": "Lista",
+		"highlight": "Destacar",
+		"more": "Mais",
+		"inlineCode": "Código embutido",
+		"imageFilter": "Imagens",
+		"imageFailed": "Não foi possível inserir a imagem",
+		"imageNeedsNote": "Imagens só podem ser adicionadas a notas dentro de um espaço."
 	},
 	"selectionAi": {
 		"title": "Perguntar à IA sobre a seleção",
@@ -150,6 +154,9 @@
 		},
 		"table": {
 			"title": "Tabela"
+		},
+		"insertImage": {
+			"title": "Imagem"
 		},
 		"tableOfContents": {
 			"title": "Sumário"

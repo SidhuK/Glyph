@@ -504,6 +504,11 @@
 			"menuLabel": "Tabelle",
 			"description": "Eine Markdown-Tabelle einfügen."
 		},
+		"insert_image": {
+			"label": "Bild einfügen",
+			"menuLabel": "Bild einfügen…",
+			"description": "Ein Bild aus einer Datei einfügen."
+		},
 		"todo_list": {
 			"label": "Aufgabenliste",
 			"menuLabel": "Aufgabenliste",

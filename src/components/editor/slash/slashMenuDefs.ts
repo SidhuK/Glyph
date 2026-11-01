@@ -14,6 +14,7 @@ import {
 	HeadingIcon,
 	HighlighterIcon,
 	HtmlFiveIcon,
+	Image01Icon,
 	InformationCircleIcon,
 	LeftToRightBlockQuoteIcon,
 	LeftToRightListBulletIcon,
@@ -145,6 +146,12 @@ export const SLASH_MENU: (SlashCommandDef | SlashCommandGroupDef)[] = [
 		icon: TableIcon,
 		keywords: ["table", "columns", "rows", "grid"],
 		action: "table",
+	}),
+	actionCommand({
+		id: "insertImage",
+		icon: Image01Icon,
+		keywords: ["image", "picture", "photo", "attachment", "upload"],
+		action: "insert_image",
 	}),
 	{
 		groupId: "blocks",

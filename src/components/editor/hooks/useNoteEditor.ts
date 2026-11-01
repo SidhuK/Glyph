@@ -1,4 +1,4 @@
-import type { AnyExtension, JSONContent } from "@tiptap/core";
+import type { AnyExtension, Editor, JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { useEditor } from "@tiptap/react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
@@ -12,6 +12,7 @@ import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
 import { handleTagDecorationMouseDown } from "../extensions/tagDecorations";
 import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
+import { pickImages } from "../pickImages";
 import {
 	normalizeBody,
 	postprocessMarkdownFromEditor,
@@ -365,6 +366,26 @@ export function useNoteEditor({
 			}),
 		);
 	}, []);
+	const handlePickImages = useCallback(
+		(instance: Editor) => {
+			const sourcePath = relPathRef.current;
+			if (!sourcePath) {
+				toast.error(i18n.t("editor:ribbon.imageNeedsNote"));
+				return;
+			}
+			pickImages({
+				editor: instance,
+				sourcePath,
+				targetDir: resolveAttachmentTargetDir(
+					attachmentStorageModeRef.current,
+					attachmentFolderRef.current,
+					sourcePath,
+				),
+				isCurrent: () => editorRef.current === instance && relPathRef.current === sourcePath,
+			});
+		},
+		[attachmentFolderRef, attachmentStorageModeRef],
+	);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
@@ -377,6 +398,7 @@ export function useNoteEditor({
 				enableFocusMode,
 				onListCollapseToggle: handleListCollapseChange,
 				onMathEditRequest,
+				onPickImages: handlePickImages,
 				onTemplateInsertRequest,
 				placeholder,
 			}),
@@ -385,6 +407,7 @@ export function useNoteEditor({
 			enableMarkdownLinkAutocomplete,
 			enableFocusMode,
 			handleListCollapseChange,
+			handlePickImages,
 			mode,
 			onMathEditRequest,
 			onTemplateInsertRequest,

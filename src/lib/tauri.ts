@@ -1043,6 +1043,14 @@ interface TauriCommands {
 		},
 		SavedPastedImage
 	>;
+	space_import_images: CommandDef<
+		{
+			source_path: string;
+			target_dir: string;
+			file_paths: string[];
+		},
+		SavedPastedImage[]
+	>;
 	space_import_paths: CommandDef<
 		{
 			source_paths: string[];

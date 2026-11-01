@@ -74,7 +74,11 @@
 				"description": "Abra no navegador o registro de alterações publicado do Glyph.",
 				"view": "Ver registro de alterações"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "Copiar versão",
+		"versionCopied": "Versão copiada",
+		"copyVersionFailed": "Não foi possível copiar a versão"
 	},
 	"language": {
 		"label": "Idioma",

@@ -74,7 +74,11 @@
 				"description": "公開されている Glyph の変更履歴をブラウザで開きます。",
 				"view": "変更履歴を表示"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "バージョンをコピー",
+		"versionCopied": "バージョンをコピーしました",
+		"copyVersionFailed": "バージョンをコピーできませんでした"
 	},
 	"language": {
 		"label": "言語",

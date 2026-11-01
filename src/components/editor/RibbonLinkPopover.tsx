@@ -1,27 +1,21 @@
-import type { Editor } from "@tiptap/core";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link2, X } from "../Icons";
+import { Link2 } from "@hugeicons/core-free-icons";
+import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { RibbonIcon, preventMouseDown } from "./RibbonButton";
 import { applyEditorLink, removeEditorLink } from "./linkCommands";
+import type { RibbonCommandContext } from "./ribbonButtonConfigs";
 
 interface RibbonLinkPopoverProps {
-	editor: Editor;
+	ctx: RibbonCommandContext;
 	canEdit: boolean;
-	runCommand: (fn: () => void) => void;
-	focusChain: () => ReturnType<Editor["chain"]>;
-	preventMouseDown: (e: React.MouseEvent) => void;
 }
 
-export function RibbonLinkPopover({
-	editor,
-	canEdit,
-	runCommand,
-	focusChain,
-	preventMouseDown,
-}: RibbonLinkPopoverProps) {
+export function RibbonLinkPopover({ ctx, canEdit }: RibbonLinkPopoverProps) {
+	const { editor, runCommand, focusChain } = ctx;
 	const { t } = useTranslation("editor");
 	const [linkOpen, setLinkOpen] = useState(false);
 	const [linkHref, setLinkHref] = useState("");
@@ -76,7 +70,7 @@ export function RibbonLinkPopover({
 					/>
 				}
 			>
-				<Link2 size="var(--icon-md)" />
+				<RibbonIcon icon={Link2} />
 			</PopoverTrigger>
 			<PopoverContent className="editorLinkPopover" align="start" side="top" initialFocus={false}>
 				<div className="editorLinkPopoverRow">

@@ -104,16 +104,20 @@
 		"heading1": "Heading 1",
 		"heading2": "Heading 2",
 		"heading3": "Heading 3",
-		"color": "Color",
-		"colorSections": {
-			"text": "Text",
-			"highlight": "Highlight"
-		},
 		"link": "Link",
 		"linkUrl": "Link URL",
 		"linkOpenInNewTab": "Open in new tab",
 		"linkRemove": "Remove",
-		"linkApply": "Apply"
+		"linkApply": "Apply",
+		"heading": "Heading",
+		"bodyText": "Body text",
+		"list": "List",
+		"highlight": "Highlight",
+		"more": "More",
+		"inlineCode": "Inline code",
+		"imageFilter": "Images",
+		"imageFailed": "Couldn't insert image",
+		"imageNeedsNote": "Images can only be added to notes inside a space."
 	},
 	"selectionAi": {
 		"title": "Ask AI about selection",
@@ -231,6 +235,9 @@
 		},
 		"table": {
 			"title": "Table"
+		},
+		"insertImage": {
+			"title": "Image"
 		},
 		"tableOfContents": {
 			"title": "Table of contents"

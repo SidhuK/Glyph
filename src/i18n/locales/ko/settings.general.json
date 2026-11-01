@@ -74,7 +74,11 @@
 				"description": "게시된 Glyph 변경 사항을 브라우저에서 엽니다.",
 				"view": "변경 사항 보기"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "버전 복사",
+		"versionCopied": "버전을 복사했습니다",
+		"copyVersionFailed": "버전을 복사할 수 없습니다"
 	},
 	"language": {
 		"label": "언어",

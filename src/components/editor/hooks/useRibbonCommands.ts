@@ -123,10 +123,12 @@ export function useRibbonCommands({
 				return;
 			}
 
+			const chain = editor.chain().focus(null, { scrollIntoView: false });
 			const handled = executeEditorAction({
 				action,
 				editor,
-				chain: editor.chain().focus(null, { scrollIntoView: false }).extendMarkRange("link"),
+				// Only link edits act on the whole link; inserts go at the caret instead of replacing it.
+				chain: action.startsWith("link_") ? chain.extendMarkRange("link") : chain,
 				onOpenLinkDialog,
 				onSendSelectionToAi,
 				onTriggerExtractToNote,

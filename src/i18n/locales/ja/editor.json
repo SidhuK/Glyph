@@ -23,16 +23,20 @@
 		"heading1": "見出し 1",
 		"heading2": "見出し 2",
 		"heading3": "見出し 3",
-		"color": "色",
-		"colorSections": {
-			"text": "文字",
-			"highlight": "ハイライト"
-		},
 		"link": "リンク",
 		"linkUrl": "リンク URL",
 		"linkOpenInNewTab": "新しいタブで開く",
 		"linkRemove": "削除",
-		"linkApply": "適用"
+		"linkApply": "適用",
+		"heading": "見出し",
+		"bodyText": "本文",
+		"list": "リスト",
+		"highlight": "ハイライト",
+		"more": "その他",
+		"inlineCode": "インラインコード",
+		"imageFilter": "画像",
+		"imageFailed": "画像を挿入できませんでした",
+		"imageNeedsNote": "画像はスペース内のメモにのみ追加できます。"
 	},
 	"selectionAi": {
 		"title": "選択範囲について AI に質問",
@@ -150,6 +154,9 @@
 		},
 		"table": {
 			"title": "表"
+		},
+		"insertImage": {
+			"title": "画像"
 		},
 		"tableOfContents": {
 			"title": "目次"

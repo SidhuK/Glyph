@@ -23,16 +23,20 @@
 		"heading1": "Titre 1",
 		"heading2": "Titre 2",
 		"heading3": "Titre 3",
-		"color": "Couleur",
-		"colorSections": {
-			"text": "Texte",
-			"highlight": "Surlignage"
-		},
 		"link": "Lien",
 		"linkUrl": "URL du lien",
 		"linkOpenInNewTab": "Ouvrir dans un nouvel onglet",
 		"linkRemove": "Supprimer",
-		"linkApply": "Appliquer"
+		"linkApply": "Appliquer",
+		"heading": "Titre",
+		"bodyText": "Texte normal",
+		"list": "Liste",
+		"highlight": "Surligner",
+		"more": "Plus",
+		"inlineCode": "Code en ligne",
+		"imageFilter": "Images",
+		"imageFailed": "Impossible d'insérer l'image",
+		"imageNeedsNote": "Les images ne peuvent être ajoutées qu'aux notes d'un espace."
 	},
 	"selectionAi": {
 		"title": "Interroger l’IA sur la sélection",
@@ -150,6 +154,9 @@
 		},
 		"table": {
 			"title": "Tableau"
+		},
+		"insertImage": {
+			"title": "Image"
 		},
 		"tableOfContents": {
 			"title": "Table des matières"

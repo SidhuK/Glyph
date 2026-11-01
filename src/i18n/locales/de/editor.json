@@ -23,16 +23,20 @@
 		"heading1": "Überschrift 1",
 		"heading2": "Überschrift 2",
 		"heading3": "Überschrift 3",
-		"color": "Farbe",
-		"colorSections": {
-			"text": "Text",
-			"highlight": "Hervorhebung"
-		},
 		"link": "Link",
 		"linkUrl": "Link-URL",
 		"linkOpenInNewTab": "In neuem Tab öffnen",
 		"linkRemove": "Entfernen",
-		"linkApply": "Anwenden"
+		"linkApply": "Anwenden",
+		"heading": "Überschrift",
+		"bodyText": "Fließtext",
+		"list": "Liste",
+		"highlight": "Hervorheben",
+		"more": "Mehr",
+		"inlineCode": "Inline-Code",
+		"imageFilter": "Bilder",
+		"imageFailed": "Bild konnte nicht eingefügt werden",
+		"imageNeedsNote": "Bilder können nur zu Notizen in einem Space hinzugefügt werden."
 	},
 	"selectionAi": {
 		"title": "KI zur Auswahl fragen",
@@ -150,6 +154,9 @@
 		},
 		"table": {
 			"title": "Tabelle"
+		},
+		"insertImage": {
+			"title": "Bild"
 		},
 		"tableOfContents": {
 			"title": "Inhaltsverzeichnis"

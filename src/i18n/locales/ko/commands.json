@@ -504,6 +504,11 @@
 			"menuLabel": "표",
 			"description": "Markdown 표를 삽입합니다."
 		},
+		"insert_image": {
+			"label": "이미지 삽입",
+			"menuLabel": "이미지 삽입…",
+			"description": "파일에서 이미지를 삽입합니다."
+		},
 		"todo_list": {
 			"label": "할 일 목록",
 			"menuLabel": "할 일 목록",

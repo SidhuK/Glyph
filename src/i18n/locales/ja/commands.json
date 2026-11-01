@@ -504,6 +504,11 @@
 			"menuLabel": "表",
 			"description": "Markdown の表を挿入します。"
 		},
+		"insert_image": {
+			"label": "画像を挿入",
+			"menuLabel": "画像を挿入…",
+			"description": "ファイルから画像を挿入します。"
+		},
 		"todo_list": {
 			"label": "To-do リスト",
 			"menuLabel": "To-do リスト",

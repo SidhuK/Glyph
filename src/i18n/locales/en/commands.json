@@ -540,6 +540,11 @@
 			"menuLabel": "Table",
 			"description": "Insert a markdown table."
 		},
+		"insert_image": {
+			"label": "Insert image",
+			"menuLabel": "Insert Image…",
+			"description": "Insert an image from a file."
+		},
 		"todo_list": {
 			"label": "To-do List",
 			"menuLabel": "To-do List",

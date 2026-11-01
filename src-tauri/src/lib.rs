@@ -601,6 +601,10 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let editor_table =
         menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.table", true, None)?;
+    let editor_insert_image = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.insert_image",
+        true,
+        None,
+    )?;
     let editor_divider =
         menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.divider", true, None)?;
     let editor_details_block = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.details_block",
@@ -793,6 +797,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &editor_code_block,
             &editor_mermaid_chart,
             &editor_table,
+            &editor_insert_image,
             &editor_divider,
             &editor_details_block,
             &PredefinedMenuItem::separator(app)?,
@@ -1805,6 +1810,7 @@ pub fn run() {
             space_fs::read_write::preview::space_read_text_preview,
             space_fs::read_write::preview::space_read_text_previews_batch,
             space_fs::read_write::binary::space_save_pasted_image,
+            space_fs::read_write::binary::space_import_images,
             space_fs::read_write::import::space_import_paths,
             space_fs::read_write::text::space_write_text,
             space_fs::read_write::text::space_link_unlinked_mentions,

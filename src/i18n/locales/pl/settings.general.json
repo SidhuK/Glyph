@@ -74,7 +74,11 @@
 				"description": "Otwórz opublikowaną listę zmian Glyph w przeglądarce.",
 				"view": "Pokaż listę zmian"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "Kopiuj wersję",
+		"versionCopied": "Skopiowano wersję",
+		"copyVersionFailed": "Nie udało się skopiować wersji"
 	},
 	"language": {
 		"label": "Język",

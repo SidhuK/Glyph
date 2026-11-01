@@ -368,66 +368,11 @@
 	content-visibility: visible;
 }
 
-.editorColorDropdown,
 .editorLinkPopover {
 	border: 0;
 	border-radius: var(--floating-surface-radius);
 	background: var(--floating-surface-bg);
 	box-shadow: var(--floating-surface-shadow);
-}
-
-.editorColorDropdown {
-	min-width: auto;
-	padding: 4px;
-}
-
-.editorColorGrid {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 2px;
-}
-
-.editorColorSwatchButton {
-	appearance: none;
-	-webkit-appearance: none;
-	width: 28px;
-	height: 28px;
-	padding: 0;
-	border: 0;
-	border-radius: var(--floating-row-radius);
-	background: transparent;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--text-secondary);
-	outline: none;
-	box-shadow: none;
-	transition: background-color var(--transition-fast);
-}
-
-.editorColorSwatchButton:hover,
-.editorColorSwatchButton:focus-visible {
-	background: var(--bg-hover);
-	color: var(--text-primary);
-}
-
-.editorColorSwatchButton.active {
-	background: var(--bg-active);
-	color: var(--text-primary);
-}
-
-/* The fill is the swatch's colour (inline `color`). Highlight tints are faint, so the same colour
-   is stacked again as a ring: solid text colours look unchanged, tints show their hue at 14px. */
-.editorColorSwatch {
-	width: 14px;
-	height: 14px;
-	border-radius: var(--radius-full);
-	background-color: currentColor;
-	box-shadow:
-		inset 0 0 0 1.5px currentColor,
-		inset 0 0 0 1.5px currentColor,
-		inset 0 0 0 0.5px color-mix(in srgb, var(--text-primary) 16%, transparent);
-	flex: 0 0 auto;
 }
 
 .slashCommandMenu {

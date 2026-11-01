@@ -28,8 +28,8 @@
 			"ariaLabel": "Advanced settings"
 		},
 		"tagline": {
-			"first": "Your thoughts deserve a home,",
-			"second": "not a server."
+			"first": "Notes that outlast the app",
+			"second": "you wrote them in."
 		},
 		"links": {
 			"ariaLabel": "About links",
@@ -80,7 +80,11 @@
 				"description": "Open the published Glyph changelog in your browser.",
 				"view": "View changelog"
 			}
-		}
+		},
+		"devBadge": "DEV",
+		"copyVersion": "Copy version",
+		"versionCopied": "Version copied",
+		"copyVersionFailed": "Couldn't copy the version"
 	},
 	"developer": {
 		"diagnostics": {

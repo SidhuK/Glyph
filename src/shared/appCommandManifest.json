@@ -1344,6 +1344,17 @@
 			"commandPalette": true,
 			"menuId": "editor.table"
 		},
+		"insert_image": {
+			"id": "insert_image",
+			"label": "Insert Image",
+			"description": "Insert an image from a file.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.insert_image"
+		},
 		"todo_list": {
 			"id": "todo_list",
 			"label": "To-do List",

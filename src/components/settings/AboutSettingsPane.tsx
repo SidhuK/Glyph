@@ -1,15 +1,8 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	DiscordIcon,
-	File01Icon,
-	GlobeIcon,
-	ListViewIcon,
-	Shield01Icon,
-} from "@hugeicons/core-free-icons";
+import { ListViewIcon } from "@hugeicons/core-free-icons";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import karatPortrait from "../../assets/karat-sidhu-blueprint.webp";
 import { useUpdaterContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -20,6 +13,7 @@ import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
+import { AboutHero } from "./about/AboutHero";
 import { useDeveloperMode } from "./useDeveloperMode";
 
 export function AboutSettingsPane() {
@@ -65,11 +59,6 @@ export function AboutSettingsPane() {
 		};
 	}, []);
 
-	const versionLabel = useMemo(() => {
-		if (!appInfo?.version) return "";
-		return `v${appInfo.version}`;
-	}, [appInfo?.version]);
-
 	const handleCheckForUpdates = async () => {
 		if (!licenseStatus?.can_auto_update) return;
 		if (autoUpdater.isChecking) return;
@@ -90,101 +79,7 @@ export function AboutSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<section className="aboutHero" aria-labelledby="about-title">
-					<img
-						src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
-						alt=""
-						className="aboutLogo"
-						aria-hidden="true"
-					/>
-					<h2 id="about-title" className="aboutAppName">
-						{appInfo?.name ?? "Glyph"}
-						{versionLabel ? <span className="aboutVersion">{versionLabel}</span> : null}
-					</h2>
-					<p className="aboutTagline">
-						{t("about.tagline.first")}
-						<br />
-						{t("about.tagline.second")}
-					</p>
-					<details className="aboutDeveloperDetails">
-						<summary className="aboutAttribution aboutDeveloperSummary">
-							{t("about.developer.madeBy")} <span className="settingsInlineLink">Karat Sidhu</span>
-						</summary>
-						<article className="aboutDeveloperCard">
-							<div className="aboutDeveloperPortrait">
-								<span className="aboutDeveloperMark" aria-hidden="true">
-									KS / 01
-								</span>
-								<img src={karatPortrait} alt="" />
-							</div>
-							<div className="aboutDeveloperStory">
-								<p className="aboutDeveloperEyebrow">{t("about.developer.eyebrow")}</p>
-								<h3>Karat Sidhu</h3>
-								<p className="aboutDeveloperBio">{t("about.developer.bio")}</p>
-								<div className="aboutDeveloperLinks">
-									<button
-										type="button"
-										className="aboutDeveloperLink"
-										onClick={() => void openUrl(GLYPH_LINKS.github)}
-									>
-										{t("about.developer.github")}
-										<span aria-hidden="true">↗</span>
-									</button>
-									<button
-										type="button"
-										className="aboutDeveloperLink"
-										onClick={() => void openUrl(GLYPH_LINKS.x)}
-									>
-										{t("about.developer.twitter")}
-										<span aria-hidden="true">↗</span>
-									</button>
-								</div>
-							</div>
-						</article>
-					</details>
-					<div className="aboutQuickLinks" aria-label={t("about.links.ariaLabel")}>
-						<Button
-							type="button"
-							size="sm"
-							variant="outline"
-							className="aboutLinkButton"
-							onClick={() => void openUrl(GLYPH_LINKS.website)}
-						>
-							<HugeiconsIcon icon={GlobeIcon} size="var(--icon-lg)" />
-							{t("about.links.website")}
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant="outline"
-							className="aboutLinkButton"
-							onClick={() => void openUrl(GLYPH_LINKS.discord)}
-						>
-							<HugeiconsIcon icon={DiscordIcon} size="var(--icon-lg)" />
-							Discord
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant="outline"
-							className="aboutLinkButton"
-							onClick={() => void openUrl(GLYPH_LINKS.terms)}
-						>
-							<HugeiconsIcon icon={File01Icon} size="var(--icon-lg)" />
-							{t("about.links.terms")}
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant="outline"
-							className="aboutLinkButton"
-							onClick={() => void openUrl(GLYPH_LINKS.privacy)}
-						>
-							<HugeiconsIcon icon={Shield01Icon} size="var(--icon-lg)" />
-							{t("about.links.privacy")}
-						</Button>
-					</div>
-				</section>
+				<AboutHero appInfo={appInfo} />
 
 				<SettingsSection
 					title={t("about.updates.sectionTitle")}
