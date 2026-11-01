@@ -113,10 +113,10 @@ const DURABLE_SETTING_CASES = [
 		name: "Folio Mode",
 		storeKey: "ui.folioMode",
 		read: (settings: AppSettings) => settings.ui.folioMode,
-		defaultValue: false,
-		storedValue: true,
+		defaultValue: true,
+		storedValue: false,
 		writeKey: "folioMode",
-		writes: [{ value: true, payload: { ui: { folioMode: true } } }],
+		writes: [{ value: false, payload: { ui: { folioMode: false } } }],
 	},
 	{
 		name: "task progress rings",

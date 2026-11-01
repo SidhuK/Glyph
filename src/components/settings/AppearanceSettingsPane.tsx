@@ -39,7 +39,11 @@ export function AppearanceSettingsPane() {
 	const { t } = useTranslation("settings.appearance");
 	const [customThemes, setCustomThemesState] = useState<CustomTheme[]>([]);
 	const [error, setError] = useState("");
-	const folioMode = useSettingsBoolean(false, DURABLE_SETTINGS.folioMode.write, setError);
+	const folioMode = useSettingsBoolean(
+		DURABLE_SETTINGS.folioMode.defaultValue,
+		DURABLE_SETTINGS.folioMode.write,
+		setError,
+	);
 	const folioSortMode = useSettingsValue<FileTreeSortMode>(
 		DEFAULT_FILE_TREE_SORT_MODE,
 		DURABLE_SETTINGS.folioSortMode.write,

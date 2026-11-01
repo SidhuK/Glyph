@@ -2,10 +2,11 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	ArrangeByLettersAZIcon,
 	Calendar03Icon,
+	Cancel01Icon,
 	Clock01Icon,
 	SearchIcon,
 } from "@hugeicons/core-free-icons";
-import { memo } from "react";
+import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { FileTreeSortMode } from "../../lib/settings";
 import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
@@ -24,6 +25,7 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 	onSortModeChange,
 }: FolioScopeHeaderProps) {
 	const { t } = useTranslation("shell");
+	const searchInputRef = useRef<HTMLInputElement>(null);
 	const sortIcon = sortMode.startsWith("name-")
 		? ArrangeByLettersAZIcon
 		: sortMode.startsWith("created-")
@@ -34,15 +36,43 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 		<header className="folioNotesHeader">
 			<div className="folioNotesControls">
 				<label className="folioNotesSearch">
-					<HugeiconsIcon icon={SearchIcon} size="var(--icon-md)" />
+					<HugeiconsIcon icon={SearchIcon} size="var(--icon-sm)" />
 					<input
+						ref={searchInputRef}
 						type="text"
 						inputMode="search"
 						value={searchQuery}
 						placeholder={t("folio.filter")}
 						aria-label={t("folio.filter")}
+						spellCheck={false}
+						autoComplete="off"
+						onKeyDown={(event) => {
+							if (event.nativeEvent.isComposing || event.key !== "Escape" || !searchQuery) return;
+							event.preventDefault();
+							onSearchQueryChange("");
+						}}
 						onChange={(event) => onSearchQueryChange(event.currentTarget.value)}
 					/>
+					{searchQuery ? (
+						<button
+							type="button"
+							className="folioNotesSearchClear"
+							onMouseDown={(event) => event.preventDefault()}
+							onKeyDown={(event) => {
+								// Keep Enter/Delete away from the list pane's note shortcuts.
+								if (event.key === "Escape" || event.metaKey || event.ctrlKey) return;
+								event.stopPropagation();
+							}}
+							onClick={() => {
+								searchInputRef.current?.focus();
+								onSearchQueryChange("");
+							}}
+							title={t("folio.clearFilter")}
+							aria-label={t("folio.clearFilter")}
+						>
+							<HugeiconsIcon icon={Cancel01Icon} size="var(--icon-xs)" />
+						</button>
+					) : null}
 				</label>
 				<FileTreeSortMenu
 					sortMode={sortMode}

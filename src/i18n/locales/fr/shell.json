@@ -47,6 +47,7 @@
 	"folio": {
 		"listAria": "Liste des notes",
 		"filter": "Filtrer les notes",
+		"clearFilter": "Effacer le filtre",
 		"justNow": "À l'instant",
 		"noDate": "Aucune date",
 		"noPreview": "Aucun aperçu",
