@@ -87,9 +87,13 @@ function textblockHtml(block: ProseMirrorNode): string {
 function cellHtml(cell: ProseMirrorNode): string {
 	const blocks: string[] = [];
 	cell.descendants((node) => {
-		if (!node.isTextblock) return true;
-		blocks.push(textblockHtml(node));
-		return false;
+		if (node.isTextblock) {
+			blocks.push(textblockHtml(node));
+			return false;
+		}
+		// Block leaves such as images carry their label in attributes.
+		if (node.isLeaf) blocks.push(escapeHtml(leafText(node)));
+		return true;
 	});
 	return blocks.join("<br>");
 }

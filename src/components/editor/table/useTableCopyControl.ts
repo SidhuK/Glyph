@@ -8,6 +8,9 @@ import { type TableCopyFormat, copyTableToClipboard } from "./tableClipboard";
 
 /** Keeps the control alive while the pointer crosses the gap above the table to reach it. */
 const TABLE_COPY_HOVER_SLOP_PX = 36;
+/** Matches the column control in useTableInlineControls so both sit on one line. */
+const TABLE_COPY_CONTROL_OFFSET_PX = 20;
+const TABLE_COPY_CONTROL_EDGE_PADDING_PX = 10;
 
 interface HoveredTable {
 	element: HTMLElement;
@@ -67,7 +70,14 @@ export function useTableCopyControl(editor: Editor | null, enabled: boolean) {
 				return;
 			}
 			const offset = getOffsetWithinAncestor(element, host);
-			const next = { element, right: offset.left + element.offsetWidth, top: offset.top };
+			const next = {
+				element,
+				right: offset.left + element.offsetWidth,
+				top: Math.max(
+					TABLE_COPY_CONTROL_EDGE_PADDING_PX,
+					offset.top - TABLE_COPY_CONTROL_OFFSET_PX,
+				),
+			};
 			setHovered((current) =>
 				current?.element === next.element &&
 				current.right === next.right &&

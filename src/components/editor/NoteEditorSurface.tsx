@@ -77,8 +77,9 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 			{canEdit && editor && hostNode && rolloverTaskActions ? (
 				<RolloverTaskActions actions={rolloverTaskActions} editor={editor} host={hostNode} />
 			) : null}
-			{canEdit && tableControls ? <TableInlineControls {...tableControls} /> : null}
+			{/* Rendered first so the column "+" control stays on top where they overlap. */}
 			{tableCopy.control ? <TableCopyControl {...tableCopy.control} /> : null}
+			{canEdit && tableControls ? <TableInlineControls {...tableControls} /> : null}
 			{canEdit && codeBlock.selected ? (
 				<div
 					className="codeBlockInlineControls"

@@ -42,9 +42,8 @@
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 82%, transparent);
 	backdrop-filter: blur(6px);
 	overflow: hidden;
-	/* Anchored at the table's top-right corner, centred on the same line as the
-	   column "+" control (TABLE_INLINE_CONTROL_OFFSET_PX above the table). */
-	transform: translate(-100%, calc(-50% - 20px));
+	/* Right edge on the table's right edge, centred on the column "+" control's line. */
+	transform: translate(-100%, -50%);
 }
 
 .tableCopyBtn {
