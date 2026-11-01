@@ -134,8 +134,8 @@ pub async fn space_save_pasted_image(
     .map_err(|e| e.to_string())?
 }
 
-/// Reads and names one picked file without writing anything.
-fn read_picked_image(file_path: &str) -> Result<(String, Vec<u8>), String> {
+/// Checks and names one picked file from its metadata, without reading it.
+fn check_picked_image(file_path: &str) -> Result<String, String> {
     let path = Path::new(file_path);
     if !path.is_absolute() {
         return Err(format!("image path must be absolute: {file_path}"));
@@ -145,16 +145,19 @@ fn read_picked_image(file_path: &str) -> Result<(String, Vec<u8>), String> {
         .and_then(|ext| ext.to_str())
         .and_then(mime_for_extension)
         .ok_or_else(|| format!("unsupported image type: {file_path}"))?;
-    let bytes = std::fs::read(path).map_err(|e| format!("{file_path}: {e}"))?;
-    if bytes.is_empty() {
+    let metadata = std::fs::metadata(path).map_err(|e| format!("{file_path}: {e}"))?;
+    if !metadata.is_file() {
+        return Err(format!("image must be a regular file: {file_path}"));
+    }
+    if metadata.len() == 0 {
         return Err(format!("image is empty: {file_path}"));
     }
-    let file_name = asset_file_name(mime, path.file_name().and_then(|name| name.to_str()))?;
-    Ok((file_name, bytes))
+    asset_file_name(mime, path.file_name().and_then(|name| name.to_str()))
 }
 
 /// Copies images picked in the open panel into the note's attachment folder, in pick order.
-/// Every file is read and checked first, so one bad pick leaves no partial copies behind.
+/// Every pick is checked first, so a missing or unsupported file leaves no partial copies
+/// behind. Files are then read and saved one at a time to keep memory flat for large batches.
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_import_images(
     window: WebviewWindow,
@@ -166,14 +169,16 @@ pub async fn space_import_images(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SavedPastedImage>, String> {
         let (source_rel, target_rel) = checked_rel_paths(&source_path, &target_dir)?;
-        let picked = file_paths
+        let file_names = file_paths
             .iter()
-            .map(|file_path| read_picked_image(file_path))
+            .map(|file_path| check_picked_image(file_path))
             .collect::<Result<Vec<_>, String>>()?;
-        picked
+        file_paths
             .iter()
-            .map(|(file_name, bytes)| {
-                save_image_asset(&root, &source_rel, &target_rel, file_name, bytes)
+            .zip(file_names)
+            .map(|(file_path, file_name)| {
+                let bytes = std::fs::read(file_path).map_err(|e| format!("{file_path}: {e}"))?;
+                save_image_asset(&root, &source_rel, &target_rel, &file_name, &bytes)
             })
             .collect()
     })
