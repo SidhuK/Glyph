@@ -533,6 +533,13 @@
 	overflow-x: auto;
 }
 
+.aiMessageMarkdown .aiMessageMarkdownContent .katex-display {
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-inline: contain;
+}
+
 .aiPendingHeader,
 .aiActivity {
 	display: inline-flex;

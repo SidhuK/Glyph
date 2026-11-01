@@ -9,6 +9,9 @@ import { latexLanguage } from "codemirror-lang-latex";
 
 const DOLLAR = "$".charCodeAt(0);
 const BACKSLASH = "\\".charCodeAt(0);
+const BACKTICK = "`".charCodeAt(0);
+const DIGIT_ZERO = "0".charCodeAt(0);
+const DIGIT_NINE = "9".charCodeAt(0);
 
 export const markdownMathExtension: MarkdownExtension = {
 	defineNodes: [
@@ -28,9 +31,14 @@ export const markdownMathExtension: MarkdownExtension = {
 				if (first < 0 || /\s/.test(String.fromCharCode(first))) return -1;
 				let cursor = pos + 1;
 				for (; cursor < context.end; cursor += 1) {
-					if (context.char(cursor) !== DOLLAR) continue;
+					const char = context.char(cursor);
+					// Mirrors INLINE_MATH_RE: math never spans a code span, and a closing `$`
+					// before a digit is currency (`$5-$10`).
+					if (char === BACKTICK && context.char(cursor - 1) !== BACKSLASH) return -1;
+					if (char !== DOLLAR) continue;
 					if (context.char(cursor - 1) === BACKSLASH) continue;
-					if (context.char(cursor + 1) === DOLLAR) return -1;
+					const after = context.char(cursor + 1);
+					if (after === DOLLAR || (after >= DIGIT_ZERO && after <= DIGIT_NINE)) return -1;
 					if (/\s/.test(String.fromCharCode(context.char(cursor - 1)))) {
 						return -1;
 					}
