@@ -120,7 +120,9 @@ export const MarkdownImageLivePreview = Extension.create({
 						const caretInside = selFrom < end && selTo > start;
 
 						if (node.type === image) {
-							if (!caretInside || !selectionChanged) return false;
+							// Only the image itself, so a range that spans it (select-all, copy) keeps it intact.
+							const selectsImage = selFrom >= start && selTo <= end && selFrom < selTo;
+							if (!selectsImage || !selectionChanged) return false;
 							if (oldState.doc.nodeAt(pos)?.type !== image) return false;
 							const markdown = buildImageMarkdown(node.attrs);
 							if (!markdown) return false;

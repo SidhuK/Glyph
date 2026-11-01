@@ -13,9 +13,11 @@ import type { MathEditRequest } from "../extensions/math/mathOptions";
 import { handleTagDecorationMouseDown } from "../extensions/tagDecorations";
 import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
 import {
+	normalizeBody,
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
 } from "../markdown/editorMarkdownBridge";
+import { sliceToMarkdown } from "../markdown/selectionMarkdown";
 import type { TemplateInsertRequest } from "../slash/slashMenuItems";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { applyEditorSpellCheck } from "./useEditorSpellCheck";
@@ -26,10 +28,6 @@ import { useNoteEditorSettings } from "./useNoteEditorSettings";
 const PASTE_FAILURE_PREFIX = "Image paste failed";
 const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
 const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
-
-function normalizeBody(markdown: string): string {
-	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
-}
 
 function getClipboardHtml(event: ClipboardEvent): string {
 	return event.clipboardData?.getData("text/html") ?? "";
@@ -509,7 +507,12 @@ export function useNoteEditor({
 				attributes: {
 					class: "tiptapContentInline",
 				},
-				clipboardTextSerializer: (slice, view) => cellSelectionClipboardText(slice, view.state),
+				clipboardTextSerializer: (slice, view) => {
+					const cellText = cellSelectionClipboardText(slice, view.state);
+					if (cellText) return cellText;
+					const instance = editorRef.current;
+					return instance ? sliceToMarkdown(instance, slice) : "";
+				},
 				handleDOMEvents: {
 					mousedown: (_view, event): boolean => {
 						if (!(event instanceof MouseEvent)) return false;

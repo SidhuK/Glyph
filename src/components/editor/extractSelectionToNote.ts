@@ -1,5 +1,5 @@
-import type { Editor, JSONContent } from "@tiptap/core";
-import { postprocessMarkdownFromEditor } from "./markdown/editorMarkdownBridge";
+import type { Editor } from "@tiptap/core";
+import { sliceToMarkdown } from "./markdown/selectionMarkdown";
 
 interface ExtractSelectionDraft {
 	markdown: string;
@@ -197,19 +197,13 @@ export function rewriteRelativeMarkdownLinks(
 	);
 }
 
-function normalizeSelectedMarkdown(markdown: string): string {
-	return postprocessMarkdownFromEditor(markdown).replace(/^\n+/, "").replace(/\n+$/, "");
-}
-
 export function buildExtractSelectionDraft(editor: Editor): ExtractSelectionDraft | null {
 	if (!editor.markdown) return null;
 	const { selection } = editor.state;
 	if (selection.empty) return null;
 	const slice = selection.content();
-	const content = slice.content.toJSON() as JSONContent[] | null;
-	if (!content?.length) return null;
-	const rawMarkdown = editor.markdown.serialize(content);
-	const markdown = normalizeSelectedMarkdown(rawMarkdown);
+	if (!slice.content.size) return null;
+	const markdown = sliceToMarkdown(editor, slice);
 	const text = slice.content.textBetween(0, slice.content.size, "\n").trim();
 	if (!markdown.trim() && !text) return null;
 	return {
