@@ -98,7 +98,9 @@ pub fn filename_for_mime(
     let chosen_ext = ext_with_dot
         .strip_prefix('.')
         .filter(|value| !value.is_empty())
-        .filter(|value| mime_for_extension(value) == Some(mime.trim().to_ascii_lowercase().as_str()))
+        .filter(|value| {
+            mime_for_extension(value) == Some(mime.trim().to_ascii_lowercase().as_str())
+        })
         .map(|value| value.to_ascii_lowercase())
         .unwrap_or_else(|| ext.to_string());
     Ok(format!("{stem}.{chosen_ext}"))
