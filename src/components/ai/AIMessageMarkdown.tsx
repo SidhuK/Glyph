@@ -9,6 +9,7 @@ import {
 	loadGrammar,
 	resolveGrammarName,
 } from "../../lib/highlightGrammars";
+import { mathMarkedExtensions } from "../editor/extensions/math/mathMarked";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 
 interface AIMessageMarkdownProps {
@@ -23,7 +24,7 @@ type CopyButtonElement = HTMLButtonElement & {
 const CODE_BLOCK_PROCESSED_ATTR = "data-ai-code-block-enhanced";
 const UNPROCESSED_CODE_BLOCK_SELECTOR = `pre:not([${CODE_BLOCK_PROCESSED_ATTR}])`;
 const COPY_RESET_MS = 1500;
-const aiMarked = new Marked();
+const aiMarked = new Marked({ extensions: mathMarkedExtensions });
 
 // Grammars load lazily via ensureGrammar; aliases are just a name map and are
 // safe to register before the grammars they point at.
