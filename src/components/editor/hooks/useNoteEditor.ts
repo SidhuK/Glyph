@@ -20,6 +20,7 @@ import type { TemplateInsertRequest } from "../slash/slashMenuItems";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { applyEditorSpellCheck } from "./useEditorSpellCheck";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
+import { cellSelectionClipboardText } from "../table/tableClipboard";
 import { useNoteEditorSettings } from "./useNoteEditorSettings";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
@@ -508,6 +509,7 @@ export function useNoteEditor({
 				attributes: {
 					class: "tiptapContentInline",
 				},
+				clipboardTextSerializer: (slice, view) => cellSelectionClipboardText(slice, view.state),
 				handleDOMEvents: {
 					mousedown: (_view, event): boolean => {
 						if (!(event instanceof MouseEvent)) return false;

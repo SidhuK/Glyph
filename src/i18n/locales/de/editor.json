@@ -230,6 +230,28 @@
 			"title": "Hervorhebung entfernen"
 		}
 	},
+	"tableControls": {
+		"rowOptions": "Zeilenoptionen",
+		"columnOptions": "Spaltenoptionen",
+		"addRowAbove": "Zeile oberhalb einfügen",
+		"addRowBelow": "Zeile unterhalb einfügen",
+		"deleteRow": "Zeile löschen",
+		"moveRowUp": "Zeile nach oben verschieben",
+		"moveRowDown": "Zeile nach unten verschieben",
+		"addColumnLeft": "Spalte links einfügen",
+		"addColumnRight": "Spalte rechts einfügen",
+		"deleteColumn": "Spalte löschen",
+		"moveColumnLeft": "Spalte nach links verschieben",
+		"moveColumnRight": "Spalte nach rechts verschieben",
+		"unavailable": "Die Tabelle hat sich geändert. Öffne das Menü erneut und versuche es noch einmal.",
+		"copyTable": "Tabelle kopieren",
+		"copyOptions": "Weitere Kopieroptionen",
+		"copyAsMarkdown": "Als Markdown kopieren",
+		"copyAsCsv": "Als CSV kopieren",
+		"copyAsTsv": "Als Klartext kopieren (tabulatorgetrennt)",
+		"copied": "Tabelle kopiert",
+		"copyFailed": "Tabelle konnte nicht kopiert werden"
+	},
 	"sidePeek": {
 		"dialogLabel": "Notiz-Peek",
 		"open": "Notiz öffnen",

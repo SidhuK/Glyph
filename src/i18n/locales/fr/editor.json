@@ -230,6 +230,28 @@
 			"title": "Effacer le surlignage"
 		}
 	},
+	"tableControls": {
+		"rowOptions": "Options de ligne",
+		"columnOptions": "Options de colonne",
+		"addRowAbove": "Ajouter une ligne au-dessus",
+		"addRowBelow": "Ajouter une ligne en dessous",
+		"deleteRow": "Supprimer la ligne",
+		"moveRowUp": "Monter la ligne",
+		"moveRowDown": "Descendre la ligne",
+		"addColumnLeft": "Ajouter une colonne à gauche",
+		"addColumnRight": "Ajouter une colonne à droite",
+		"deleteColumn": "Supprimer la colonne",
+		"moveColumnLeft": "Déplacer la colonne à gauche",
+		"moveColumnRight": "Déplacer la colonne à droite",
+		"unavailable": "Le tableau a changé. Rouvrez le menu et réessayez.",
+		"copyTable": "Copier le tableau",
+		"copyOptions": "Plus d’options de copie",
+		"copyAsMarkdown": "Copier en Markdown",
+		"copyAsCsv": "Copier en CSV",
+		"copyAsTsv": "Copier en texte brut (séparé par des tabulations)",
+		"copied": "Tableau copié",
+		"copyFailed": "Impossible de copier le tableau"
+	},
 	"sidePeek": {
 		"dialogLabel": "Aperçu de note",
 		"open": "Ouvrir la note",

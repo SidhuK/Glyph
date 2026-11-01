@@ -230,6 +230,28 @@
 			"title": "ハイライトをクリア"
 		}
 	},
+	"tableControls": {
+		"rowOptions": "行のオプション",
+		"columnOptions": "列のオプション",
+		"addRowAbove": "上に行を追加",
+		"addRowBelow": "下に行を追加",
+		"deleteRow": "行を削除",
+		"moveRowUp": "行を上に移動",
+		"moveRowDown": "行を下に移動",
+		"addColumnLeft": "左に列を追加",
+		"addColumnRight": "右に列を追加",
+		"deleteColumn": "列を削除",
+		"moveColumnLeft": "列を左に移動",
+		"moveColumnRight": "列を右に移動",
+		"unavailable": "表が変更されました。メニューを開き直してもう一度お試しください。",
+		"copyTable": "表をコピー",
+		"copyOptions": "その他のコピーオプション",
+		"copyAsMarkdown": "Markdownとしてコピー",
+		"copyAsCsv": "CSVとしてコピー",
+		"copyAsTsv": "プレーンテキスト（タブ区切り）としてコピー",
+		"copied": "表をコピーしました",
+		"copyFailed": "表をコピーできませんでした"
+	},
 	"sidePeek": {
 		"dialogLabel": "ノートのプレビュー",
 		"open": "ノートを開く",

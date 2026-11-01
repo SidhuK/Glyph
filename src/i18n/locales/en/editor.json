@@ -324,7 +324,14 @@
 		"deleteColumn": "Delete column",
 		"moveColumnLeft": "Move column left",
 		"moveColumnRight": "Move column right",
-		"unavailable": "The table changed. Open the menu again and retry."
+		"unavailable": "The table changed. Open the menu again and retry.",
+		"copyTable": "Copy table",
+		"copyOptions": "More copy options",
+		"copyAsMarkdown": "Copy as Markdown",
+		"copyAsCsv": "Copy as CSV",
+		"copyAsTsv": "Copy as plain text (tab-separated)",
+		"copied": "Copied table",
+		"copyFailed": "Couldn't copy the table"
 	},
 	"sidePeek": {
 		"dialogLabel": "Note peek",
