@@ -1,6 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import type { IconSvgElement } from "@hugeicons/react";
-import type { MenuRootChangeEventDetails } from "@base-ui/react/menu";
 import type { RibbonButtonConfig, RibbonCommandContext } from "./ribbonButtonConfigs";
 
 const RIBBON_ICON_STROKE = 1.9;
@@ -21,7 +20,7 @@ export function preventMouseDown(event: React.MouseEvent) {
 }
 
 export function refocusEditorOnDismiss(ctx: RibbonCommandContext) {
-	return (open: boolean, details: MenuRootChangeEventDetails) => {
+	return (open: boolean, details: { reason: string }) => {
 		if (open) return;
 		if (details.reason === "escape-key" || details.reason === "trigger-press") {
 			ctx.focusChain().run();

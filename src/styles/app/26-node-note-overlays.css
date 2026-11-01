@@ -363,13 +363,6 @@
 	content-visibility: visible;
 }
 
-.editorLinkPopover {
-	border: 0;
-	border-radius: var(--floating-surface-radius);
-	background: var(--floating-surface-bg);
-	box-shadow: var(--floating-surface-shadow);
-}
-
 .slashCommandMenu {
 	position: fixed;
 	width: 240px;
@@ -512,30 +505,115 @@
 }
 
 .editorLinkPopover {
-	width: 320px;
-	padding: 10px;
+	width: 300px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
+	box-shadow: var(--floating-surface-shadow);
 }
 
-.editorLinkPopoverRow {
+.editorLinkField {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	height: 38px;
+	padding: 0 6px 0 12px;
 }
 
-.editorLinkPopoverCheckbox {
-	display: inline-flex;
+.editorLinkFieldIcon {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.editorLinkField input,
+.editorLinkField input:hover,
+.editorLinkField input:focus {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	outline: none;
+	box-shadow: none;
+	background: transparent;
+	font-size: var(--text-sm);
+}
+
+.editorLinkApply {
+	display: inline-grid;
+	place-items: center;
+	flex: 0 0 auto;
+	width: 26px;
+	height: 26px;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+	transition:
+		background-color var(--transition-base),
+		color var(--transition-base);
+}
+
+.editorLinkApply:hover:not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.editorLinkApply:disabled {
+	color: var(--text-tertiary);
+	opacity: 0.5;
+	cursor: default;
+}
+
+.editorLinkOptions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-height: 36px;
+	padding: 0 6px 0 12px;
+	border-top: 1px solid var(--border-default);
+}
+
+.editorLinkTargetToggle.uiToggle {
+	--ui-toggle-track-width: 26px;
+	--ui-toggle-track-height: 16px;
+	--ui-toggle-thumb-size: 12px;
+	--ui-toggle-thumb-translate: 10px;
+
+	flex: 1 1 auto;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
 	align-items: center;
 	gap: 8px;
-	margin-top: 8px;
+}
+
+.editorLinkTargetToggle .uiToggleControl {
+	margin-top: 0;
+}
+
+.editorLinkTargetToggle .uiToggleLabel {
 	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	color: var(--text-secondary);
 }
 
-.editorLinkPopoverActions {
-	margin-top: 10px;
-	display: flex;
-	justify-content: space-between;
-	gap: 8px;
+.editorLinkRemove {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	height: 24px;
+	padding: 0 8px;
+	border-radius: var(--radius-sm);
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	transition:
+		background-color var(--transition-base),
+		color var(--transition-base);
+}
+
+.editorLinkRemove:hover {
+	background: var(--status-danger-bg);
+	color: var(--status-danger-fg);
 }
 
 .editorLinkDialog {
