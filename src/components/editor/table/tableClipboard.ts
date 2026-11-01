@@ -59,11 +59,11 @@ export function tableToMarkdown(editor: Editor, table: ProseMirrorNode): string 
 
 /**
  * Plain text for ⌘C on a cell selection: tab-separated, so it pastes into
- * spreadsheets as a grid. Returns "" for other selections, which the editor
+ * spreadsheets as a grid. Returns null for other selections, which the editor
  * copies as markdown instead.
  */
-export function cellSelectionClipboardText(slice: Slice, state: EditorState): string {
-	if (!(state.selection instanceof CellSelection)) return "";
+export function cellSelectionClipboardText(slice: Slice, state: EditorState): string | null {
+	if (!(state.selection instanceof CellSelection)) return null;
 	const first = slice.content.firstChild;
 	const table =
 		first?.type.name === "table" ? first : state.schema.nodes.table?.create(null, slice.content);

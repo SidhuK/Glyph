@@ -1,6 +1,7 @@
 import type { Editor, JSONContent } from "@tiptap/core";
 import type { Fragment, Node as ProseMirrorNode, Slice } from "@tiptap/pm/model";
 import { stripHtmlEmbedRawSentinel } from "../../../lib/htmlEmbed";
+import { postprocessEscapedDollars } from "../extensions/math/mathOptions";
 import { normalizeBody, postprocessMarkdownFromEditor } from "./editorMarkdownBridge";
 
 /**
@@ -36,7 +37,9 @@ export function sliceToMarkdown(editor: Editor, slice: Slice): string {
 		const blocks: JSONContent[] | null = slice.content.toJSON();
 		return blocks ? blocksToMarkdown(editor, blocks) : "";
 	}
-	if (textblock.type.spec.code) return stripHtmlEmbedRawSentinel(textblock.textContent);
+	if (textblock.type.spec.code) {
+		return postprocessEscapedDollars(stripHtmlEmbedRawSentinel(textblock.textContent));
+	}
 	const inline: JSONContent[] | null = textblock.content.toJSON();
 	return inline ? blocksToMarkdown(editor, [{ type: "paragraph", content: inline }]) : "";
 }

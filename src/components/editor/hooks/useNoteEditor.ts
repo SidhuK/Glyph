@@ -508,10 +508,12 @@ export function useNoteEditor({
 					class: "tiptapContentInline",
 				},
 				clipboardTextSerializer: (slice, view) => {
+					// "" falls through to TipTap's default plain-text serializer.
 					const cellText = cellSelectionClipboardText(slice, view.state);
-					if (cellText) return cellText;
+					if (cellText !== null) return cellText;
 					const instance = editorRef.current;
-					return instance ? sliceToMarkdown(instance, slice) : "";
+					if (modeRef.current !== "rich" || !instance) return "";
+					return sliceToMarkdown(instance, slice);
 				},
 				handleDOMEvents: {
 					mousedown: (_view, event): boolean => {
