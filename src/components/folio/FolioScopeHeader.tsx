@@ -6,7 +6,7 @@ import {
 	Clock01Icon,
 	SearchIcon,
 } from "@hugeicons/core-free-icons";
-import { memo } from "react";
+import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { FileTreeSortMode } from "../../lib/settings";
 import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
@@ -25,6 +25,7 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 	onSortModeChange,
 }: FolioScopeHeaderProps) {
 	const { t } = useTranslation("shell");
+	const searchInputRef = useRef<HTMLInputElement>(null);
 	const sortIcon = sortMode.startsWith("name-")
 		? ArrangeByLettersAZIcon
 		: sortMode.startsWith("created-")
@@ -37,6 +38,7 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 				<label className="folioNotesSearch">
 					<HugeiconsIcon icon={SearchIcon} size="var(--icon-sm)" />
 					<input
+						ref={searchInputRef}
 						type="text"
 						inputMode="search"
 						value={searchQuery}
@@ -45,7 +47,7 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 						spellCheck={false}
 						autoComplete="off"
 						onKeyDown={(event) => {
-							if (event.key !== "Escape" || !searchQuery) return;
+							if (event.nativeEvent.isComposing || event.key !== "Escape" || !searchQuery) return;
 							event.preventDefault();
 							onSearchQueryChange("");
 						}}
@@ -56,7 +58,15 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 							type="button"
 							className="folioNotesSearchClear"
 							onMouseDown={(event) => event.preventDefault()}
-							onClick={() => onSearchQueryChange("")}
+							onKeyDown={(event) => {
+								// Keep Enter/Delete away from the list pane's note shortcuts.
+								if (event.key === "Escape" || event.metaKey || event.ctrlKey) return;
+								event.stopPropagation();
+							}}
+							onClick={() => {
+								searchInputRef.current?.focus();
+								onSearchQueryChange("");
+							}}
 							title={t("folio.clearFilter")}
 							aria-label={t("folio.clearFilter")}
 						>
