@@ -230,12 +230,14 @@ pub(crate) fn indexed_ids_at_or_under(
     conn: &rusqlite::Connection,
     rel_path: &str,
 ) -> Result<Vec<String>, String> {
+    // Compare prefixes exactly: LIKE ignores ASCII case, which matters on
+    // case-sensitive volumes where `Projects/` and `projects/` can coexist.
     let mut stmt = conn
-        .prepare("SELECT id FROM notes WHERE id = ? OR id LIKE ? ESCAPE '\\'")
+        .prepare("SELECT id FROM notes WHERE id = ?1 OR substr(id, 1, length(?2)) = ?2")
         .map_err(|e| e.to_string())?;
-    let pattern = like_descendants_pattern(rel_path);
+    let prefix = dir_prefix(rel_path);
     let rows = stmt
-        .query_map([rel_path, pattern.as_str()], |row| row.get::<_, String>(0))
+        .query_map([rel_path, prefix.as_str()], |row| row.get::<_, String>(0))
         .map_err(|e| e.to_string())?;
     rows.collect::<Result<_, _>>().map_err(|e| e.to_string())
 }
@@ -249,7 +251,11 @@ pub fn unindex_path(
 ) {
     if is_dir {
         if let Ok(conn) = index::open_db(root) {
-            for note_id in indexed_ids_at_or_under(&conn, rel_path).unwrap_or_default() {
+            let note_ids = indexed_ids_at_or_under(&conn, rel_path).unwrap_or_else(|error| {
+                tracing::warn!(path = %rel_path, %error, "could not list notes under removed folder");
+                Vec::new()
+            });
+            for note_id in note_ids {
                 let removed = index::remove_note_with_conn(&conn, &note_id).is_ok();
                 mark_if_indexed(recent, &note_id, removed);
             }

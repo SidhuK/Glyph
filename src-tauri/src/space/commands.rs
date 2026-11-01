@@ -39,6 +39,7 @@ fn install_window_session(
         root.clone(),
         window_label.clone(),
         recent_local_changes.clone(),
+        state.note_mutation_mutex(),
     )?;
     state.set_window_session(window_label, root, watcher, recent_local_changes)
 }

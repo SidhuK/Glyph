@@ -3,6 +3,7 @@ import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { promptCreateFolderName } from "../lib/promptCreateFolderName";
+import type { TreeRefresh } from "../lib/spaceChange";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
@@ -14,7 +15,7 @@ import { useRecentFiles } from "./useRecentFiles";
 
 export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
-	refreshLoadedDirs: (dirPaths: Iterable<string>, removedPaths: Iterable<string>) => Promise<void>;
+	refreshLoadedDirs: (refresh: TreeRefresh) => Promise<void>;
 	toggleDir: (dirPath: string) => void;
 	expandAllDirs: () => Promise<void>;
 	collapseAllDirs: () => void;
@@ -148,14 +149,30 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	// dirs are exactly the visible ones (collapse evicts descendants), whether they appear
 	// through expansion, a focused folder view or the folio space container.
 	const refreshLoadedDirs = useCallback(
-		async (dirPaths: Iterable<string>, removedPaths: Iterable<string>) => {
-			for (const removedPath of removedPaths) evictDirState(removedPath, true);
-			const loaded = [...dirPaths].filter(
+		async ({ dirs, removed, all }: TreeRefresh) => {
+			for (const removedPath of removed) evictDirState(removedPath, true);
+			if (removed.size > 0) {
+				// A removed dir that reappears (e.g. Finder "Put Back") starts collapsed.
+				const isRemoved = (dirPath: string) =>
+					[...removed].some((path) => dirPath === path || dirPath.startsWith(`${path}/`));
+				updateExpandedDirsAndRef((prev) =>
+					[...prev].some(isRemoved) ? new Set([...prev].filter((dir) => !isRemoved(dir))) : prev,
+				);
+			}
+			const targets = all ? ["", ...loadedDirsRef.current] : [...dirs];
+			const loaded = [...new Set(targets)].filter(
 				(dirPath) => dirPath === "" || loadedDirsRef.current.has(dirPath),
 			);
-			await Promise.all(loaded.map((dirPath) => loadDir(dirPath, true)));
+			// A cached subfolder that can no longer be listed is gone from disk.
+			await Promise.all(
+				loaded.map((dirPath) =>
+					dirPath
+						? loadDir(dirPath, true).catch(() => evictDirState(dirPath, true))
+						: loadDir(dirPath, true),
+				),
+			);
 		},
-		[evictDirState, loadDir],
+		[evictDirState, loadDir, updateExpandedDirsAndRef],
 	);
 
 	const toggleDir = useCallback(

@@ -3,6 +3,7 @@ use notify::Watcher;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc as std_mpsc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use crate::note_mutation::{emit_changed, indexed_ids_at_or_under, SpaceChange};
@@ -61,14 +62,18 @@ fn index_markdown(conn: &rusqlite::Connection, rel: &str, abs: &Path) -> Result<
     index::index_note_with_conn(conn, rel, &markdown, abs)
 }
 
-/// Whether a non-hidden markdown file exists anywhere under `dir`; stops at the first.
+/// Whether a non-hidden markdown file may exist under `dir`; stops at the first.
+/// An unreadable entry counts as a yes, since the follow-up sync is idempotent.
 fn holds_markdown(dir: &Path) -> bool {
     let mut stack = vec![dir.to_path_buf()];
     while let Some(dir) = stack.pop() {
         let Ok(entries) = std::fs::read_dir(&dir) else {
-            continue;
+            return true;
         };
-        for entry in entries.flatten() {
+        for entry in entries {
+            let Ok(entry) = entry else {
+                return true;
+            };
             if entry.file_name().to_string_lossy().starts_with('.') {
                 continue;
             }
@@ -76,7 +81,8 @@ fn holds_markdown(dir: &Path) -> bool {
             match entry.file_type() {
                 Ok(kind) if kind.is_dir() => stack.push(path),
                 Ok(kind) if kind.is_file() && utils::is_markdown_path(&path) => return true,
-                _ => {}
+                Ok(_) => {}
+                Err(_) => return true,
             }
         }
     }
@@ -85,10 +91,14 @@ fn holds_markdown(dir: &Path) -> bool {
 
 /// Drops the note at `rel`, or every note under it when `rel` was a directory.
 fn unindex_vanished(conn: &rusqlite::Connection, rel: &str) -> Result<(), String> {
+    let mut first_error = None;
     for note_id in indexed_ids_at_or_under(conn, rel)? {
-        index::remove_note_with_conn(conn, &note_id)?;
+        if let Err(error) = index::remove_note_with_conn(conn, &note_id) {
+            tracing::warn!(%note_id, %error, "could not unindex removed note");
+            first_error.get_or_insert(error);
+        }
     }
-    Ok(())
+    first_error.map_or(Ok(()), Err)
 }
 
 fn apply_batch(
@@ -153,6 +163,7 @@ fn run_index_thread(
     app: tauri::AppHandle,
     root: PathBuf,
     window_label: String,
+    note_mutation_mutex: Arc<Mutex<()>>,
 ) {
     let space_path = root.to_string_lossy().to_string();
     let mut batch = Batch::default();
@@ -168,19 +179,28 @@ fn run_index_thread(
         while let Some(remaining) = deadline.checked_duration_since(Instant::now()) {
             match rx.recv_timeout(remaining) {
                 Ok(signal) => batch.add(signal),
-                Err(_) => break,
+                Err(std_mpsc::RecvTimeoutError::Timeout) => break,
+                // The watcher was dropped with its space session.
+                Err(std_mpsc::RecvTimeoutError::Disconnected) => return,
             }
         }
 
+        // In-app mutations (imports especially) write files and the index in steps;
+        // waiting for them means the batch sees their final disk state.
+        let guard = note_mutation_mutex
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let conn = match index::open_db(&root) {
             Ok(conn) => conn,
             Err(error) => {
+                drop(guard);
                 tracing::warn!(%error, "could not open note index for watcher batch");
                 std::thread::sleep(INDEX_OPEN_RETRY);
                 continue;
             }
         };
         let changes = apply_batch(conn, &root, &space_path, std::mem::take(&mut batch));
+        drop(guard);
         if !changes.is_empty() {
             emit_changed(
                 &app,
@@ -196,10 +216,13 @@ pub fn create_notes_watcher(
     root: PathBuf,
     window_label: String,
     recent_local_changes: RecentLocalChanges,
+    note_mutation_mutex: Arc<Mutex<()>>,
 ) -> Result<notify::RecommendedWatcher, String> {
     let (tx, rx) = std_mpsc::channel::<Signal>();
     let index_root = root.clone();
-    std::thread::spawn(move || run_index_thread(rx, app, index_root, window_label));
+    std::thread::spawn(move || {
+        run_index_thread(rx, app, index_root, window_label, note_mutation_mutex)
+    });
 
     let watch_root = root.clone();
     let mut watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {

@@ -39,7 +39,7 @@ export type SpaceChange =
 
 export interface SpaceChangeHost {
 	spacePath: string | null;
-	refreshLoadedDirs: (dirPaths: Iterable<string>, removedPaths: Iterable<string>) => Promise<void>;
+	refreshLoadedDirs: (refresh: TreeRefresh) => Promise<void>;
 	closeTabsForPathRemoval: (path: string, recursive: boolean) => void;
 	renameTabsForPath: (fromPath: string, toPath: string, recursive: boolean) => void;
 	renamePinnedPath: (fromPath: string, toPath: string) => Promise<void>;
@@ -70,13 +70,15 @@ export function subscribeOpenNoteContent(fn: (path: string) => void): () => void
 	};
 }
 
-interface TreeRefresh {
+export interface TreeRefresh {
 	dirs: Set<string>;
 	removed: Set<string>;
+	/** The watcher missed events, so every cached dir may be stale. */
+	all: boolean;
 }
 
 function createTreeRefresh(): TreeRefresh {
-	return { dirs: new Set(), removed: new Set() };
+	return { dirs: new Set(), removed: new Set(), all: false };
 }
 
 // The host refreshes only dirs it has cached, so a path that is not a loaded dir is a
@@ -102,7 +104,7 @@ function invalidatePath(path: string, removed: boolean): void {
 // Space-wide lists are refetched once per batch; per-change calls would cancel and
 // restart every mounted list (and all its loaded pages) once for each changed note.
 function invalidateSpaceWide(current: SpaceChangeHost, tree: TreeRefresh): void {
-	void current.refreshLoadedDirs(tree.dirs, tree.removed);
+	void current.refreshLoadedDirs(tree);
 	void current.refreshTags();
 	void queryClient.invalidateQueries({ queryKey: ["navigation", "archived-paths"] });
 	void queryClient.invalidateQueries({ queryKey: ["navigation", "search"] });
@@ -173,6 +175,12 @@ function applyChange(change: SpaceChange, current: SpaceChangeHost, tree: TreeRe
 		return true;
 	}
 	const path = normalizeRelPath(change.rel_path);
+	// An empty path is the space root: the watcher rescanned after dropped events.
+	if (!path) {
+		tree.all = true;
+		void queryClient.invalidateQueries({ queryKey: navigationQueryKeys.noteScans() });
+		return true;
+	}
 	addTreeChange(tree, path, change.kind === "remove");
 	if (change.kind === "remove") {
 		current.closeTabsForPathRemoval(path, change.recursive);
