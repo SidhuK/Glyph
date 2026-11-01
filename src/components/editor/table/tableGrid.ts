@@ -92,7 +92,8 @@ function cellHtml(cell: ProseMirrorNode): string {
 			return false;
 		}
 		// Block leaves such as images carry their label in attributes.
-		if (node.isLeaf) blocks.push(escapeHtml(leafText(node)));
+		const label = node.isLeaf ? leafText(node) : "";
+		if (label) blocks.push(escapeHtml(label));
 		return true;
 	});
 	return blocks.join("<br>");
