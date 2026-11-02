@@ -13,8 +13,8 @@ import {
 export function AppearanceThemeCard() {
 	const { t } = useTranslation("settings.appearance");
 	const settings = useAppearanceSettingsQuery();
-	const themeMode = useSettingWrite(DURABLE_SETTINGS.theme.write);
-	const translucentApp = useSettingWrite(DURABLE_SETTINGS.translucentApp.write);
+	const themeMode = useSettingWrite(DURABLE_SETTINGS.theme);
+	const translucentApp = useSettingWrite(DURABLE_SETTINGS.translucentApp);
 	const error = settings.error ?? themeMode.error ?? translucentApp.error;
 
 	return (

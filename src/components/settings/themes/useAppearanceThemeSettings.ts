@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { loadSettings } from "../../../lib/settings";
+import type { ApplicationSettingDefinition } from "../../../lib/settings/definitions";
 import { SETTINGS_QUERY_KEY } from "../../../lib/settingsStore";
 
 /** Shared settings snapshot; `settings:updated` invalidates it, so every section stays in sync. */
@@ -10,11 +11,17 @@ export function useAppearanceSettingsQuery() {
 	});
 }
 
-/** Persists one setting. While pending, `variables` is the optimistic value to render. */
-export function useSettingWrite<T>(write: (value: T) => Promise<void>) {
+/**
+ * Persists one setting. Writes share a scope per key so they run in order and the last pick wins.
+ * While pending, `variables` is the optimistic value to render.
+ */
+export function useSettingWrite<T>(
+	setting: Pick<ApplicationSettingDefinition<T>, "key" | "write">,
+) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: write,
+		mutationFn: setting.write,
+		scope: { id: `setting:${setting.key}` },
 		onSettled: () => queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY }),
 	});
 }

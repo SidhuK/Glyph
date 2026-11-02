@@ -73,7 +73,7 @@ function ThemeChoiceSection({
 
 export function LightThemeSection() {
 	const settings = useAppearanceSettingsQuery();
-	const select = useSettingWrite(DURABLE_SETTINGS.lightThemeId.write);
+	const select = useSettingWrite(DURABLE_SETTINGS.lightThemeId);
 	return (
 		<ThemeChoiceSection
 			mode="light"
@@ -87,7 +87,7 @@ export function LightThemeSection() {
 
 export function DarkThemeSection() {
 	const settings = useAppearanceSettingsQuery();
-	const select = useSettingWrite(DURABLE_SETTINGS.darkThemeId.write);
+	const select = useSettingWrite(DURABLE_SETTINGS.darkThemeId);
 	return (
 		<ThemeChoiceSection
 			mode="dark"

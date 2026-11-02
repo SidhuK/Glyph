@@ -8,7 +8,6 @@ import { StatusPropertyPill } from "../../status/StatusPropertyPill";
 import type { EditorTextColor } from "../textColors";
 import { TextPropertyValueField } from "./TextPropertyValueField";
 import { WikiLinkedText } from "./WikiLinkedText";
-import { databaseValueToneStyleForColor } from "../../../lib/database/palette";
 import { buildTagSuggestions, formatPropertyDate, formatTagLabel, tagColorFromName } from "./utils";
 
 interface NotePropertyValueFieldProps {
@@ -75,7 +74,6 @@ export function NotePropertyValueField({
 								key={`${property.key || rowId}-${valueIndex}-${value}`}
 								className="notePropertyPill"
 								data-tag-color={tagColorFromName(value)}
-								style={databaseValueToneStyleForColor(value, null)}
 							>
 								{value.startsWith("#") ? value.slice(1) : value}
 							</span>
@@ -184,7 +182,6 @@ export function NotePropertyValueField({
 								type="button"
 								className="notePropertyToken"
 								data-tag-color={tagColorFromName(value)}
-								style={databaseValueToneStyleForColor(value, null)}
 								onClick={() => onRemoveTag(index, value)}
 								title={`Remove ${label}`}
 								aria-label={`Remove ${label}`}

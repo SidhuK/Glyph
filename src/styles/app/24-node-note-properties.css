@@ -509,8 +509,8 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	width: 6px;
 	height: 6px;
 	border-radius: 999px;
-	/* Same tone as the tag's dot in collections, pulled toward the neutral ink. */
-	background: color-mix(in srgb, var(--database-tone) 50%, var(--text-tertiary));
+	/* The tag's palette slot, pulled toward the neutral ink. */
+	background: color-mix(in srgb, var(--tag-pill-color) 50%, var(--text-tertiary));
 }
 
 /* Status and priority keep a hint of their tone on the icon, pulled toward the neutral ink. */

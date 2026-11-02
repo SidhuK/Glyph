@@ -15,6 +15,12 @@ export function AppearanceCustomThemesCard() {
 	const copyTemplate = useCopyThemeTemplate();
 	const saveTemplate = useSaveThemeTemplate();
 	const error = importTheme.error ?? copyTemplate.error ?? saveTemplate.error;
+	// Each action clears the others' errors so the alert always describes the latest attempt.
+	const resetErrors = () => {
+		importTheme.reset();
+		copyTemplate.reset();
+		saveTemplate.reset();
+	};
 
 	return (
 		<SettingsSection
@@ -38,7 +44,10 @@ export function AppearanceCustomThemesCard() {
 					type="button"
 					variant="outline"
 					disabled={importTheme.isPending}
-					onClick={() => importTheme.mutate()}
+					onClick={() => {
+						resetErrors();
+						importTheme.mutate();
+					}}
 				>
 					{t("customThemes.import.action")}
 				</Button>
@@ -50,14 +59,24 @@ export function AppearanceCustomThemesCard() {
 				interactive={false}
 			>
 				<div className="settingsActions">
-					<Button type="button" variant="outline" onClick={() => copyTemplate.mutate()}>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => {
+							resetErrors();
+							copyTemplate.mutate();
+						}}
+					>
 						{t("customThemes.template.copy")}
 					</Button>
 					<Button
 						type="button"
 						variant="outline"
 						disabled={saveTemplate.isPending}
-						onClick={() => saveTemplate.mutate()}
+						onClick={() => {
+							resetErrors();
+							saveTemplate.mutate();
+						}}
 					>
 						{t("customThemes.template.save")}
 					</Button>

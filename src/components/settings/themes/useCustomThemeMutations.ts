@@ -17,6 +17,9 @@ import {
 
 const JSON_FILTERS = [{ name: "JSON", extensions: ["json"] }];
 
+/** Import and removal rewrite the whole list, so they run one at a time. */
+const CUSTOM_THEMES_SCOPE = { id: "settings:custom-themes" } as const;
+
 function useInvalidateSettings() {
 	const queryClient = useQueryClient();
 	return () => queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY });
@@ -38,6 +41,7 @@ export function useRemoveCustomTheme() {
 				ui.customThemes.filter((theme) => customThemeId(theme.name) !== id),
 			);
 		},
+		scope: CUSTOM_THEMES_SCOPE,
 		onSettled: invalidate,
 	});
 }
@@ -67,6 +71,7 @@ export function useImportCustomTheme() {
 			}
 			await DURABLE_SETTINGS.customThemes.write([...ui.customThemes, theme]);
 		},
+		scope: CUSTOM_THEMES_SCOPE,
 		onSettled: invalidate,
 	});
 }
