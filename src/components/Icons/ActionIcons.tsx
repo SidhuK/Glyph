@@ -5,10 +5,8 @@ import {
 	Close,
 	Copy01Icon,
 	Delete,
-	Download04Icon,
 	Save as SaveIcon,
 	ShuffleIcon,
-	Upload04Icon,
 } from "@hugeicons/core-free-icons";
 import { type IconProps, withDefaultIconSize } from "./NavigationIcons";
 
@@ -29,12 +27,6 @@ export const Save = (props: IconProps) => (
 );
 export const Copy = (props: IconProps) => (
 	<HugeiconsIcon icon={Copy01Icon} {...withDefaultIconSize(props)} />
-);
-export const Download = (props: IconProps) => (
-	<HugeiconsIcon icon={Download04Icon} {...withDefaultIconSize(props)} />
-);
-export const Upload = (props: IconProps) => (
-	<HugeiconsIcon icon={Upload04Icon} {...withDefaultIconSize(props)} />
 );
 export const X = (props: IconProps) => (
 	<HugeiconsIcon icon={Close} {...withDefaultIconSize(props)} />

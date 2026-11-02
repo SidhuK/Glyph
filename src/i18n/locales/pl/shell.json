@@ -71,8 +71,6 @@
 		"pin": "Przypnij",
 		"searchView": "Przeszukaj kolekcję",
 		"unpin": "Odepnij",
-		"unpinNamed": "Odepnij {{name}}",
-		"unpinFailed": "Nie można odpiąć kolekcji",
 		"laneRenameTitle": "Zmień nazwę kolumny",
 		"laneRenameScope_one": "Aktualizuje 1 kartę w tym widoku, w tym karty jeszcze niewczytane. Karty ukryte przez filtry lub wyszukiwanie zachowują swoją wartość.",
 		"laneRenameScope_few": "Aktualizuje {{count}} karty w tym widoku, w tym karty jeszcze niewczytane. Karty ukryte przez filtry lub wyszukiwanie zachowują swoją wartość.",

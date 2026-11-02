@@ -24,7 +24,8 @@ import {
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "./lib/appearance";
-import { type CustomTheme, applyCustomThemes, normalizeCustomThemes } from "./lib/customThemes";
+import { applyCustomThemes } from "./lib/customThemeCss";
+import { type CustomTheme, normalizeCustomThemes } from "./lib/customThemes";
 import { installDiagnosticsForwarding } from "./lib/diagnostics";
 import { isEditorViewMode, setCachedDefaultEditorViewMode } from "./lib/editorMode";
 import { applyEditorHeadingPalette, isHeadingPaletteId } from "./lib/headingPalettes";

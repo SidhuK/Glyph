@@ -1,0 +1,288 @@
+/* Theme cards (Settings → Appearance → Light theme / Dark theme). Each swatch is an
+   .appearanceThemePreview scope, so every color inside it is that theme's own token. The
+   frame, selection ring, name and "…" button sit outside the scope and use the app's colors. */
+
+.settingsCardTitleSuffix {
+	font-weight: var(--font-normal);
+	color: var(--text-tertiary);
+}
+
+.themeCardRow {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+/* One row, scrolled sideways. The edge fade stays inside the row inset, so cards at rest
+   (and their selection rings) are never dimmed; only overflowing cards fade out. */
+.themeCardScroller {
+	--theme-card-fade: 10px;
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding: 14px var(--settings-row-inset) 10px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x proximity;
+	scroll-padding-inline: var(--settings-row-inset);
+	scrollbar-color: transparent transparent;
+	mask-image: linear-gradient(
+		to right,
+		transparent,
+		#000 var(--theme-card-fade),
+		#000 calc(100% - var(--theme-card-fade)),
+		transparent
+	);
+}
+
+.themeCardScroller::-webkit-scrollbar {
+	height: 8px;
+}
+
+.themeCardScroller::-webkit-scrollbar-thumb {
+	background: transparent;
+}
+
+.themeCardScroller:hover {
+	scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.themeCardScroller:hover::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-thumb);
+	background-clip: padding-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.themeCardScroller {
+		scroll-behavior: smooth;
+	}
+}
+
+.themeCardGroup {
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.themeCardGroupCaption {
+	padding-inline: 2px;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	line-height: 15px;
+	color: var(--text-tertiary);
+	white-space: nowrap;
+}
+
+.themeCardGroupCards {
+	display: flex;
+	gap: 14px;
+}
+
+/* A hairline between groups, centred on the swatches (caption 15px + 8px gap above). */
+.themeCardGroupSeparator {
+	flex: none;
+	width: 1px;
+	height: 52px;
+	margin-top: calc(15px + 8px + 15px);
+	background: var(--border-light);
+}
+
+.themeCard {
+	position: relative;
+	flex: none;
+	width: 144px;
+	scroll-snap-align: start;
+}
+
+.themeCardLabel {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 7px;
+	cursor: pointer;
+}
+
+.themeCardFrame {
+	display: block;
+	width: 100%;
+	border-radius: var(--radius-lg);
+	outline: 0 solid transparent;
+	outline-offset: 2px;
+}
+
+.themeCardLabel:hover .themeCardInput:not(:checked) + .themeCardFrame {
+	outline: 1.5px solid var(--border-default);
+}
+
+.themeCardInput:checked + .themeCardFrame {
+	outline: 2.5px solid var(--settings-selection-ring);
+}
+
+.themeCardInput:focus-visible + .themeCardFrame {
+	outline: 2.5px solid var(--text-primary);
+}
+
+.themeCardSwatch {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 11px;
+	height: 82px;
+	padding: 0 13px;
+	overflow: hidden;
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+}
+
+.themeCardSwatchTop {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.themeCardSample {
+	font-size: 22px;
+	font-weight: var(--font-semibold);
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--text-primary);
+}
+
+.themeCardLink {
+	margin-left: auto;
+	padding: 4px 5px;
+	border-radius: var(--radius-sm);
+	background: var(--bg-secondary);
+	color: var(--link-color);
+	font-family: var(--font-mono);
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.themeCardAccent {
+	flex: none;
+	width: 9px;
+	height: 20px;
+	border-radius: var(--radius-full);
+	background: var(--interactive-accent);
+}
+
+.themeCardDots {
+	display: flex;
+}
+
+.themeCardDot {
+	flex: none;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--text-primary);
+	box-shadow: 0 0 0 1.5px var(--bg-primary);
+}
+
+.themeCardDot + .themeCardDot {
+	margin-left: -3px;
+}
+
+.themeCardDot[data-tone="red"] {
+	background: var(--palette-red);
+}
+
+.themeCardDot[data-tone="orange"] {
+	background: var(--palette-orange);
+}
+
+.themeCardDot[data-tone="yellow"] {
+	background: var(--palette-yellow);
+}
+
+.themeCardDot[data-tone="green"] {
+	background: var(--palette-green);
+}
+
+.themeCardDot[data-tone="cyan"] {
+	background: var(--palette-cyan);
+}
+
+.themeCardDot[data-tone="blue"] {
+	background: var(--palette-blue);
+}
+
+.themeCardDot[data-tone="purple"] {
+	background: var(--palette-purple);
+}
+
+.themeCardDot[data-tone="gray"] {
+	background: var(--palette-gray);
+}
+
+.themeCardName {
+	max-width: 100%;
+	overflow: hidden;
+	font-size: var(--text-sm);
+	line-height: 1.3;
+	color: var(--text-secondary);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.themeCardInput:checked ~ .themeCardName {
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+/* Custom themes only: an options button over the swatch's top-right corner. */
+.themeCardMenuTrigger {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+	box-shadow:
+		0 0 0 0.5px var(--border-default),
+		0 1px 3px rgb(0 0 0 / 10%);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity var(--transition-fast);
+}
+
+.themeCard:is(:hover, :focus-within) .themeCardMenuTrigger,
+.themeCardMenuTrigger[data-popup-open] {
+	opacity: 1;
+}
+
+.themeCardMenuTrigger:hover {
+	color: var(--text-primary);
+}
+
+.themeCardMenuTrigger:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 1px;
+}
+
+.themeCardMenuTrigger:disabled {
+	cursor: wait;
+	opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.themeCardMenuTrigger {
+		transition: none;
+	}
+}

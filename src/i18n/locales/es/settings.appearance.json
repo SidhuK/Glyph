@@ -1,11 +1,6 @@
 {
-	"nav": {
-		"tab": "Apariencia",
-		"panelTitle": "Apariencia"
-	},
 	"theme": {
-		"sectionTitle": "Temas",
-		"sectionDescription": "Combina familias de temas claros y oscuros.",
+		"sectionTitle": "Apariencia",
 		"appearance": {
 			"label": "Modo de color",
 			"description": "Sigue el sistema o fija Glyph en modo claro u oscuro.",
@@ -30,13 +25,17 @@
 			"ariaLabel": "Barra lateral translúcida"
 		}
 	},
-	"lightTheme": {
-		"label": "Claro",
-		"hint": "Elige la paleta que Glyph usa en modo claro."
-	},
-	"darkTheme": {
-		"label": "Oscuro",
-		"hint": "Elige la paleta que Glyph usa en modo oscuro."
+	"themeCards": {
+		"light": "Tema claro",
+		"dark": "Tema oscuro",
+		"activeSuffix": "— Activo",
+		"groups": {
+			"default": "Predeterminado",
+			"builtIn": "Integrados",
+			"custom": "Personalizados"
+		},
+		"optionsAriaLabel": "Opciones de {{name}}",
+		"remove": "Eliminar"
 	},
 	"customThemes": {
 		"sectionTitle": "Temas personalizados",
@@ -53,11 +52,17 @@
 			"action": "Elegir archivo",
 			"helpAriaLabel": "Acerca de la importación de temas"
 		},
-		"installedDescription": "Disponible en los selectores de tema claro y oscuro.",
-		"removeAriaLabel": "Eliminar {{name}}",
 		"nameTaken": "Ya existe un tema llamado «{{name}}». Elige otro nombre.",
 		"saveDialogTitle": "Guardar plantilla de tema",
-		"importDialogTitle": "Importar JSON de tema"
+		"importDialogTitle": "Importar JSON de tema",
+		"errors": {
+			"notObject": "El archivo de tema debe contener un objeto JSON.",
+			"legacyVersion": "Este archivo de tema usa un formato anterior. Guarda la nueva plantilla y copia tus colores en ella.",
+			"unsupportedVersion": "El archivo de tema debe indicar \"version\": {{version}}.",
+			"invalidName": "«name» debe tener entre 1 y {{max}} caracteres e incluir una letra o un número.",
+			"missingGroup": "Al archivo de tema le faltan los colores de «{{path}}».",
+			"invalidColor": "«{{path}}» debe ser un color hexadecimal como #1A2B3C."
+		}
 	},
 	"shape": {
 		"sectionTitle": "Forma",

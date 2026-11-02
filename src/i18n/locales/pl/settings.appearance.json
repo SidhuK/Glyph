@@ -1,11 +1,6 @@
 {
-	"nav": {
-		"tab": "Wygląd",
-		"panelTitle": "Wygląd"
-	},
 	"theme": {
-		"sectionTitle": "Motyw",
-		"sectionDescription": "Wybierz motyw programu Glyph.",
+		"sectionTitle": "Wygląd",
 		"appearance": {
 			"label": "Tryb kolorów",
 			"description": "Dopasuj do systemu lub zablokuj program Glyph w trybie jasnym lub ciemnym.",
@@ -30,13 +25,17 @@
 			"ariaLabel": "Półprzezroczysty pasek boczny"
 		}
 	},
-	"lightTheme": {
-		"label": "Jasny",
-		"hint": "Wybierz paletę używaną przez Glyph w trybie jasnym."
-	},
-	"darkTheme": {
-		"label": "Ciemny",
-		"hint": "Wybierz paletę używaną przez Glyph w trybie ciemnym."
+	"themeCards": {
+		"light": "Motyw jasny",
+		"dark": "Motyw ciemny",
+		"activeSuffix": "— Aktywny",
+		"groups": {
+			"default": "Domyślny",
+			"builtIn": "Wbudowane",
+			"custom": "Własne"
+		},
+		"optionsAriaLabel": "Opcje dla {{name}}",
+		"remove": "Usuń"
 	},
 	"customThemes": {
 		"sectionTitle": "Niestandardowe motywy",
@@ -53,11 +52,17 @@
 			"action": "Wybierz plik",
 			"helpAriaLabel": "Informacje o importowaniu motywów"
 		},
-		"installedDescription": "Dostępne w selektorach jasnego i ciemnego motywu.",
-		"removeAriaLabel": "Usuń {{name}}",
 		"nameTaken": "Motyw o nazwie „{{name}}” już istnieje. Wybierz inną nazwę.",
 		"saveDialogTitle": "Zapisz szablon motywu",
-		"importDialogTitle": "Importuj plik JSON motywu"
+		"importDialogTitle": "Importuj plik JSON motywu",
+		"errors": {
+			"notObject": "Plik motywu musi zawierać obiekt JSON.",
+			"legacyVersion": "Ten plik motywu używa starszego formatu. Zapisz nowy szablon i przenieś do niego swoje kolory.",
+			"unsupportedVersion": "Plik motywu musi ustawiać \"version\": {{version}}.",
+			"invalidName": "„name” musi mieć od 1 do {{max}} znaków i zawierać literę lub cyfrę.",
+			"missingGroup": "W pliku motywu brakuje kolorów „{{path}}”.",
+			"invalidColor": "„{{path}}” musi być kolorem szesnastkowym, np. #1A2B3C."
+		}
 	},
 	"shape": {
 		"sectionTitle": "Kształt",

@@ -97,7 +97,7 @@
 
 .markdownEditorToolbarBtn:focus-visible,
 .markdownEditorModeBtn:focus-visible {
-	outline: 2px solid var(--focus);
+	outline: 2px solid var(--border-focus);
 	outline-offset: 2px;
 }
 
@@ -397,7 +397,7 @@
 }
 
 .markdownEditorInfoClose:focus-visible {
-	outline: 2px solid var(--focus);
+	outline: 2px solid var(--border-focus);
 	outline-offset: 2px;
 }
 
@@ -466,7 +466,7 @@
 
 .markdownEditorInfoTab:focus-visible,
 .markdownEditorInfoSubTab:focus-visible {
-	outline: 2px solid var(--focus);
+	outline: 2px solid var(--border-focus);
 	outline-offset: 1px;
 }
 
@@ -629,7 +629,7 @@
 }
 
 .gitHistoryItem:focus-visible {
-	outline: 2px solid var(--focus);
+	outline: 2px solid var(--border-focus);
 	outline-offset: 1px;
 }
 
@@ -872,7 +872,7 @@
 }
 
 .markdownEditorInfoOutlineItem:focus-visible {
-	outline: 2px solid var(--focus);
+	outline: 2px solid var(--border-focus);
 	outline-offset: -2px;
 }
 
@@ -948,7 +948,7 @@
 .unlinkedMentionsLinkAll:focus-visible,
 .unlinkedMentionLink:focus-visible,
 .unlinkedMentionSource:focus-visible {
-	outline: 2px solid var(--focus);
+	outline: 2px solid var(--border-focus);
 	outline-offset: 1px;
 }
 

@@ -158,26 +158,26 @@
 			"keywords": ["캘린더", "주", "월", "데일리 노트", "하루 요약", "사이드바"]
 		},
 		"appearance-theme-mode": {
-			"title": "테마 선택",
-			"section": "테마",
+			"title": "색상 모드",
+			"section": "모양",
 			"description": "시스템, 라이트 또는 다크 모드를 선택합니다.",
 			"keywords": ["모드", "시스템", "라이트", "다크", "mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
-			"title": "라이트",
-			"section": "테마",
+			"title": "라이트 테마",
+			"section": "모양",
 			"description": "라이트 모드에서 Glyph가 사용하는 팔레트를 선택합니다.",
 			"keywords": ["테마", "색상", "라이트", "theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "다크",
-			"section": "테마",
+			"title": "다크 테마",
+			"section": "모양",
 			"description": "다크 모드에서 Glyph가 사용하는 팔레트를 선택합니다.",
 			"keywords": ["테마", "색상", "다크", "theme", "color", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "반투명 사이드바",
-			"section": "테마",
+			"section": "모양",
 			"keywords": ["창", "유리", "블러", "반투명", "window", "glass", "blur", "translucent"]
 		},
 		"appearance-custom-themes": {
@@ -620,6 +620,5 @@
 			"description": "Open the published Glyph changelog.",
 			"keywords": ["release notes", "version", "updates"]
 		}
-	},
-	"categoryPrefix": "설정 > {{tab}}"
+	}
 }

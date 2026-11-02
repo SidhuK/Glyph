@@ -6,27 +6,16 @@
 	--color-gray-800: #37352f;
 	--color-gray-900: #1f1f1f;
 
-	--color-blue-100: #d3ebfa;
 	--color-blue-200: #a8d8f5;
 	--color-blue-300: #6ab9eb;
-	--color-blue-400: #3b9bdc;
 	--color-blue-500: #2383c6;
 	--color-blue-600: #1a6ba4;
 	--color-blue-700: #155580;
 
-	--color-red-100: #fce8e8;
 	--color-red-500: #e03e3e;
-	--color-red-600: #c73838;
-	--color-green-100: #e6f6e9;
 	--color-green-500: #0f7b0f;
 	--color-yellow-500: #dfab01;
-	--color-blue-dark-400: #4aa3ff;
-	--color-green-dark-400: #62d49a;
-	--color-green-dark-500: #3ccf8e;
-	--color-yellow-dark-400: #f0c240;
 	--color-orange-dark-400: #f0a030;
-	--color-red-dark-300: #ff6b6b;
-	--color-red-dark-400: #ff7a74;
 
 	--font-sans: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
 	--font-editor: var(--font-sans);
@@ -88,7 +77,6 @@
 	--radius-round: 9999px;
 
 	--radius-2xs: var(--radius-2);
-	--radius-xs: var(--radius-3);
 	--radius-sm: var(--radius-4);
 	--radius-md: var(--radius-6);
 	--radius-lg: var(--radius-10);
@@ -96,12 +84,6 @@
 	--radius-2xl: var(--radius-18);
 	--radius-3xl: var(--radius-24);
 	--radius-full: var(--radius-round);
-
-	--shadow-sm: none;
-	--shadow-lg: none;
-	--shadow-xl: none;
-	--shadow-float: none;
-	--shadow-overlay: 0 12px 32px rgb(0 0 0 / 13%);
 
 	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
 	--transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);

@@ -1,11 +1,6 @@
 {
-	"nav": {
-		"tab": "外観",
-		"panelTitle": "外観"
-	},
 	"theme": {
-		"sectionTitle": "テーマ",
-		"sectionDescription": "ライトとダークのテーマファミリーを組み合わせます。",
+		"sectionTitle": "外観",
 		"appearance": {
 			"label": "カラーモード",
 			"description": "システムに合わせるか、Glyph をライトまたはダークに固定します。",
@@ -30,13 +25,17 @@
 			"ariaLabel": "半透明サイドバー"
 		}
 	},
-	"lightTheme": {
-		"label": "ライト",
-		"hint": "ライトモードで Glyph が使うパレットを選びます。"
-	},
-	"darkTheme": {
-		"label": "ダーク",
-		"hint": "ダークモードで Glyph が使うパレットを選びます。"
+	"themeCards": {
+		"light": "ライトテーマ",
+		"dark": "ダークテーマ",
+		"activeSuffix": "— 使用中",
+		"groups": {
+			"default": "デフォルト",
+			"builtIn": "内蔵",
+			"custom": "カスタム"
+		},
+		"optionsAriaLabel": "{{name}} のオプション",
+		"remove": "削除"
 	},
 	"customThemes": {
 		"sectionTitle": "カスタムテーマ",
@@ -53,11 +52,17 @@
 			"action": "ファイルを選択",
 			"helpAriaLabel": "テーマのインポートについて"
 		},
-		"installedDescription": "ライトとダークのテーマ選択に表示されます。",
-		"removeAriaLabel": "{{name}} を削除",
 		"nameTaken": "「{{name}}」というテーマは既にあります。別の名前を指定してください。",
 		"saveDialogTitle": "テーマテンプレートを保存",
-		"importDialogTitle": "テーマ JSON をインポート"
+		"importDialogTitle": "テーマ JSON をインポート",
+		"errors": {
+			"notObject": "テーマファイルには JSON オブジェクトが必要です。",
+			"legacyVersion": "このテーマファイルは古い形式です。新しいテンプレートを保存し、色をコピーしてください。",
+			"unsupportedVersion": "テーマファイルには \"version\": {{version}} を指定してください。",
+			"invalidName": "「name」は 1〜{{max}} 文字で、文字か数字を含める必要があります。",
+			"missingGroup": "テーマファイルに「{{path}}」の色がありません。",
+			"invalidColor": "「{{path}}」は #1A2B3C のような16進カラーで指定してください。"
+		}
 	},
 	"shape": {
 		"sectionTitle": "形状",

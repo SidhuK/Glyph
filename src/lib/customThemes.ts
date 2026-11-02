@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import type { UiThemeOption } from "./uiThemes";
 
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
@@ -12,16 +13,18 @@ function normalizeHexColor(value: string): string | null {
 	return `#${r}${r}${g}${g}${b}${b}`.toUpperCase();
 }
 
-export const CUSTOM_THEME_ID_PREFIX = "custom:";
+const CUSTOM_THEME_VERSION = 2;
+const CUSTOM_THEME_ID_PREFIX = "custom:";
 export const CUSTOM_THEME_STYLE_ELEMENT_ID = "glyphCustomThemes";
-export const MAX_CUSTOM_THEME_NAME_LENGTH = 40;
+const MAX_CUSTOM_THEME_NAME_LENGTH = 40;
 
 export type CustomUiThemeId = `${typeof CUSTOM_THEME_ID_PREFIX}${string}`;
 
-/** Editable slots exposed in the exported JSON, in template order. */
-export const CUSTOM_THEME_TOKENS = [
+/** Editable per-mode slots exposed in the exported JSON, in template order. */
+const CUSTOM_THEME_TOKENS = [
 	"background",
 	"surface",
+	"sidebar",
 	"elevated",
 	"canvas",
 	"foreground",
@@ -29,46 +32,96 @@ export const CUSTOM_THEME_TOKENS = [
 	"accent",
 	"accentHover",
 	"link",
+	"selection",
+	"success",
+	"warning",
+	"info",
 	"danger",
 ] as const;
 
-export type CustomThemeToken = (typeof CUSTOM_THEME_TOKENS)[number];
-export type CustomThemePalette = Record<CustomThemeToken, string>;
+/** The signature palette every theme exposes as `--palette-<slot>`. */
+export const CUSTOM_THEME_PALETTE_SLOTS = [
+	"red",
+	"orange",
+	"yellow",
+	"green",
+	"cyan",
+	"blue",
+	"purple",
+	"gray",
+] as const;
+
+type CustomThemeToken = (typeof CUSTOM_THEME_TOKENS)[number];
+type CustomThemePaletteSlot = (typeof CUSTOM_THEME_PALETTE_SLOTS)[number];
+type CustomThemeSwatches = Record<CustomThemePaletteSlot, string>;
+export type CustomThemeColors = Record<CustomThemeToken, string> & {
+	palette: CustomThemeSwatches;
+};
 
 export interface CustomTheme {
-	version: 1;
+	version: typeof CUSTOM_THEME_VERSION;
 	name: string;
-	light: CustomThemePalette;
-	dark: CustomThemePalette;
+	light: CustomThemeColors;
+	dark: CustomThemeColors;
 }
 
-/** Mirrors the shipped Glyph light/dark palettes so edits start from real values. */
-export const CUSTOM_THEME_TEMPLATE: CustomTheme = {
-	version: 1,
+/** Mirrors the shipped Glyph light/dark themes so edits start from real values. */
+const CUSTOM_THEME_TEMPLATE: CustomTheme = {
+	version: CUSTOM_THEME_VERSION,
 	name: "My Theme",
 	light: {
 		background: "#FFFFFF",
 		surface: "#F7F6F3",
+		sidebar: "#F7F6F3",
 		elevated: "#F1F1EF",
 		canvas: "#F5F5F4",
 		foreground: "#37352F",
 		border: "#E3E2DE",
 		accent: "#37352F",
 		accentHover: "#1F1F1F",
-		link: "#2563EB",
-		danger: "#DC2626",
+		link: "#1A6BA4",
+		selection: "#2383E2",
+		success: "#5B7F12",
+		warning: "#A16207",
+		info: "#3B5BDB",
+		danger: "#C2413B",
+		palette: {
+			red: "#C2413B",
+			orange: "#C2570C",
+			yellow: "#A16207",
+			green: "#5B7F12",
+			cyan: "#0284C7",
+			blue: "#3B5BDB",
+			purple: "#7C3AED",
+			gray: "#78756D",
+		},
 	},
 	dark: {
-		background: "#191919",
-		surface: "#252525",
-		elevated: "#2F2F2F",
-		canvas: "#141414",
-		foreground: "#E8E8E8",
-		border: "#333333",
-		accent: "#E8E8E8",
-		accentHover: "#FFFFFF",
-		link: "#93C5FD",
-		danger: "#EF4444",
+		background: "#212121",
+		surface: "#171717",
+		sidebar: "#171717",
+		elevated: "#2B2B2B",
+		canvas: "#171717",
+		foreground: "#DCDCDC",
+		border: "#383838",
+		accent: "#DCDCDC",
+		accentHover: "#F0F0F0",
+		link: "#6AB9EB",
+		selection: "#2383E2",
+		success: "#A3E635",
+		warning: "#FACC15",
+		info: "#8B9DFF",
+		danger: "#F87171",
+		palette: {
+			red: "#F87171",
+			orange: "#FB923C",
+			yellow: "#FACC15",
+			green: "#A3E635",
+			cyan: "#38BDF8",
+			blue: "#8B9DFF",
+			purple: "#C084FC",
+			gray: "#A3A3A3",
+		},
 	},
 };
 
@@ -90,47 +143,86 @@ export function customThemeId(name: string): CustomUiThemeId {
 	return `${CUSTOM_THEME_ID_PREFIX}${customThemeSlug(name)}`;
 }
 
-function parsePalette(value: unknown, mode: "light" | "dark"): CustomThemePalette {
-	if (!value || typeof value !== "object") {
-		throw new Error(`Missing "${mode}" colors`);
-	}
-	const source = value as Record<string, unknown>;
-	const palette = {} as CustomThemePalette;
-	for (const token of CUSTOM_THEME_TOKENS) {
-		const raw = source[token];
+function parseError(key: string, values?: Record<string, string | number>): Error {
+	return new Error(i18n.t(`settings.appearance:customThemes.errors.${key}`, values));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function readRecord(source: Record<string, unknown>, key: string, path: string) {
+	const value = source[key];
+	if (!isRecord(value)) throw parseError("missingGroup", { path });
+	return value;
+}
+
+function hexReader(source: Record<string, unknown>, prefix: string) {
+	return (key: string): string => {
+		const raw = source[key];
 		const hex = typeof raw === "string" ? normalizeHexColor(raw) : null;
-		if (!hex) {
-			throw new Error(`"${mode}.${token}" must be a hex color like #1A2B3C`);
-		}
-		palette[token] = hex;
-	}
-	return palette;
+		if (!hex) throw parseError("invalidColor", { path: `${prefix}.${key}` });
+		return hex;
+	};
+}
+
+function parseSwatches(source: Record<string, unknown>, prefix: string): CustomThemeSwatches {
+	const hex = hexReader(source, prefix);
+	return {
+		red: hex("red"),
+		orange: hex("orange"),
+		yellow: hex("yellow"),
+		green: hex("green"),
+		cyan: hex("cyan"),
+		blue: hex("blue"),
+		purple: hex("purple"),
+		gray: hex("gray"),
+	};
+}
+
+function parseColors(theme: Record<string, unknown>, mode: "light" | "dark"): CustomThemeColors {
+	const source = readRecord(theme, mode, mode);
+	const hex = hexReader(source, mode);
+	return {
+		background: hex("background"),
+		surface: hex("surface"),
+		sidebar: hex("sidebar"),
+		elevated: hex("elevated"),
+		canvas: hex("canvas"),
+		foreground: hex("foreground"),
+		border: hex("border"),
+		accent: hex("accent"),
+		accentHover: hex("accentHover"),
+		link: hex("link"),
+		selection: hex("selection"),
+		success: hex("success"),
+		warning: hex("warning"),
+		info: hex("info"),
+		danger: hex("danger"),
+		palette: parseSwatches(readRecord(source, "palette", `${mode}.palette`), `${mode}.palette`),
+	};
 }
 
 /** Validates untrusted JSON (file import or persisted settings) into a theme. */
 export function parseCustomTheme(value: unknown): CustomTheme {
-	if (!value || typeof value !== "object") {
-		throw new Error("Theme file must contain a JSON object");
+	if (!isRecord(value)) throw parseError("notObject");
+	if (value.version === 1) throw parseError("legacyVersion");
+	if (value.version !== CUSTOM_THEME_VERSION) {
+		throw parseError("unsupportedVersion", { version: CUSTOM_THEME_VERSION });
 	}
-	const source = value as Partial<CustomTheme>;
-	if (source.version !== 1) {
-		throw new Error('Theme file must set "version": 1');
-	}
-	const name = typeof source.name === "string" ? source.name.trim() : "";
-	if (!name || name.length > MAX_CUSTOM_THEME_NAME_LENGTH) {
-		throw new Error(`"name" must be 1-${MAX_CUSTOM_THEME_NAME_LENGTH} characters`);
-	}
-	if (!customThemeSlug(name)) {
-		throw new Error('"name" must contain letters or numbers');
+	const name = typeof value.name === "string" ? value.name.trim() : "";
+	if (!name || name.length > MAX_CUSTOM_THEME_NAME_LENGTH || !customThemeSlug(name)) {
+		throw parseError("invalidName", { max: MAX_CUSTOM_THEME_NAME_LENGTH });
 	}
 	return {
-		version: 1,
+		version: CUSTOM_THEME_VERSION,
 		name,
-		light: parsePalette(source.light, "light"),
-		dark: parsePalette(source.dark, "dark"),
+		light: parseColors(value, "light"),
+		dark: parseColors(value, "dark"),
 	};
 }
 
+/** Load-time normalization: unreadable or older-format entries are dropped. */
 export function normalizeCustomThemes(value: unknown): CustomTheme[] {
 	if (!Array.isArray(value)) return [];
 	const byId = new Map<string, CustomTheme>();
@@ -139,82 +231,13 @@ export function normalizeCustomThemes(value: unknown): CustomTheme[] {
 			const theme = parseCustomTheme(entry);
 			byId.set(customThemeId(theme.name), theme);
 		} catch {
-			// drop unreadable entries instead of breaking appearance settings
+			// persisted v1 or corrupt entries are dropped; imports surface the parse error instead
 		}
 	}
 	return [...byId.values()];
 }
 
-function mix(color: string, percent: number, into: string): string {
-	return `color-mix(in srgb, ${color} ${percent}%, ${into})`;
-}
-
-/** Full variable set for one mode: explicit tokens plus values derived from them. */
-function paletteVariables(palette: CustomThemePalette): Array<[string, string]> {
-	const { background, surface, elevated, canvas, foreground, border } = palette;
-	const { accent, accentHover, link, danger } = palette;
-	return [
-		["--bg-primary", background],
-		["--bg-secondary", surface],
-		["--bg-sidebar", surface],
-		["--bg-tertiary", elevated],
-		["--bg-canvas", canvas],
-		["--bg-hover", mix(foreground, 8, "transparent")],
-		["--bg-active", mix(foreground, 14, "transparent")],
-		["--interactive-hover", mix(foreground, 8, "transparent")],
-		["--text-primary", foreground],
-		["--text-secondary", mix(foreground, 68, background)],
-		["--text-tertiary", mix(foreground, 45, background)],
-		["--text-placeholder", mix(foreground, 35, background)],
-		["--text-inverse", background],
-		["--text-accent", accent],
-		["--text-error", danger],
-		["--border-default", border],
-		["--border-light", mix(border, 55, "transparent")],
-		["--border-strong", mix(border, 60, foreground)],
-		["--border-focus", mix(accent, 45, "transparent")],
-		["--interactive-accent", accent],
-		["--interactive-accent-hover", accentHover],
-		["--accent-color", accent],
-		["--link-color", link],
-		["--link-color-hover", mix(link, 80, foreground)],
-		["--selection-bg-muted", mix(accent, 14, "transparent")],
-		["--scrollbar-thumb", mix(foreground, 16, "transparent")],
-		["--scrollbar-thumb-hover", mix(foreground, 28, "transparent")],
-		["--glass-bg", mix(background, 82, "transparent")],
-		["--feedback-error-bg", mix(danger, 14, background)],
-		["--status-danger-fg", danger],
-		["--status-danger-bg", mix(danger, 12, "transparent")],
-		["--status-danger-border", mix(danger, 36, "transparent")],
-	];
-}
-
-function themeRule(theme: CustomTheme, mode: "light" | "dark"): string {
-	const id = customThemeId(theme.name);
-	const declarations = paletteVariables(theme[mode])
-		.map(([property, value]) => `\t${property}: ${value};`)
-		.join("\n");
-	return `:where(:root, .appearanceThemePreview).${mode}[data-${mode}-theme="${id}"] {\n${declarations}\n}`;
-}
-
-export function buildCustomThemeCss(themes: readonly CustomTheme[]): string {
-	return themes
-		.flatMap((theme) => [themeRule(theme, "light"), themeRule(theme, "dark")])
-		.join("\n\n");
-}
-
-/** Keeps a single stylesheet in sync with the persisted custom themes. */
-export function applyCustomThemes(themes: readonly CustomTheme[]): void {
-	const existing = document.getElementById(CUSTOM_THEME_STYLE_ELEMENT_ID);
-	const style =
-		existing instanceof HTMLStyleElement
-			? existing
-			: document.head.appendChild(document.createElement("style"));
-	style.id = CUSTOM_THEME_STYLE_ELEMENT_ID;
-	style.textContent = buildCustomThemeCss(themes);
-}
-
-export function customThemeOption(theme: CustomTheme): UiThemeOption<CustomUiThemeId> {
+function customThemeOption(theme: CustomTheme): UiThemeOption<CustomUiThemeId> {
 	return {
 		id: customThemeId(theme.name),
 		label: theme.name,

@@ -167,26 +167,26 @@
 			"keywords": ["kalender", "woche", "monat", "tagesnotiz", "tagesübersicht", "seitenleiste"]
 		},
 		"appearance-theme-mode": {
-			"title": "Design auswählen",
-			"section": "Designs",
+			"title": "Farbmodus",
+			"section": "Darstellung",
 			"description": "System-, Hell- oder Dunkelmodus wählen.",
 			"keywords": ["modus", "system", "hell", "dunkel", "mode", "light", "dark"]
 		},
 		"appearance-light-theme": {
-			"title": "Hell",
-			"section": "Designs",
+			"title": "Helles Design",
+			"section": "Darstellung",
 			"description": "Die Palette wählen, die Glyph im Hellmodus verwendet.",
 			"keywords": ["design", "farbe", "hell", "theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "Dunkel",
-			"section": "Designs",
+			"title": "Dunkles Design",
+			"section": "Darstellung",
 			"description": "Die Palette wählen, die Glyph im Dunkelmodus verwendet.",
 			"keywords": ["design", "farbe", "dunkel", "theme", "color", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "Durchscheinende Seitenleiste",
-			"section": "Designs",
+			"section": "Darstellung",
 			"keywords": [
 				"fenster",
 				"glas",
@@ -647,6 +647,5 @@
 			"description": "Open the published Glyph changelog.",
 			"keywords": ["release notes", "version", "updates"]
 		}
-	},
-	"categoryPrefix": "Einstellungen > {{tab}}"
+	}
 }

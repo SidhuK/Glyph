@@ -7,11 +7,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 
 interface SettingsSectionProps {
 	title: string;
+	/** Muted text after the title, e.g. "— Active". */
+	titleSuffix?: ReactNode;
 	description?: ReactNode;
 	children: ReactNode;
 	className?: string;
 	id?: string;
 	aside?: ReactNode;
+	searchId?: string;
 }
 
 interface SettingsRowProps {
@@ -36,21 +39,27 @@ interface SettingsToggleProps {
 
 export function SettingsSection({
 	title,
+	titleSuffix,
 	description,
 	children,
 	className,
 	id,
 	aside,
+	searchId,
 }: SettingsSectionProps) {
 	return (
 		<section
 			id={id}
 			className={cn("settingsSection", className)}
 			data-settings-section-title={title}
+			data-settings-search-id={searchId}
 		>
 			<div className="settingsSectionHeader">
 				<div className="settingsSectionHeaderCopy">
-					<div className="settingsCardTitle">{title}</div>
+					<div className="settingsCardTitle">
+						{title}
+						{titleSuffix ? <span className="settingsCardTitleSuffix"> {titleSuffix}</span> : null}
+					</div>
 					{description ? <div className="settingsCardDescription">{description}</div> : null}
 				</div>
 				{aside ? <div className="settingsCardActions">{aside}</div> : null}

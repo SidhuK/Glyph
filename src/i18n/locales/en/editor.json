@@ -154,7 +154,6 @@
 		"copy": "Copy code",
 		"copied": "Copied code",
 		"copyFailed": "Failed to copy code",
-		"editCode": "Edit code",
 		"editMermaid": "Edit Mermaid code",
 		"mermaidRenderFailed": "Unable to render Mermaid diagram.",
 		"mermaidEmpty": "Add Mermaid source to preview this diagram.",
@@ -344,7 +343,6 @@
 		"dialogLabel": "Note peek",
 		"open": "Open note",
 		"close": "Close peek",
-		"loading": "Loading note…",
 		"empty": "This note is empty."
 	},
 	"linkPreview": {

@@ -19,10 +19,11 @@ import {
 	type PaletteSettingControl,
 	type PaletteSettingDefinition,
 	paletteSettingOptionLabel,
+	paletteSettingOptions,
 } from "./settingsPaletteRegistry";
 import type { WorkspaceTab } from "./useTabManager";
 
-export const PALETTE_GROUP_ORDER = [
+const PALETTE_GROUP_ORDER = [
 	"command",
 	"setting",
 	"open-tab",
@@ -123,10 +124,13 @@ function collapseContentMatches(matches: readonly SearchResult[]) {
 function displaySettingValue(
 	definition: PaletteSettingDefinition,
 	value: string | number | null,
+	settings: AppSettings | undefined,
 	t: BuildPaletteResultsInput["t"],
 ) {
 	if (value === null || value === "") return t("commandPalette.notSet");
-	const option = definition.options?.find((candidate) => candidate.value === value);
+	const option = paletteSettingOptions(definition, settings).find(
+		(candidate) => candidate.value === value,
+	);
 	if (option) return paletteSettingOptionLabel(option);
 	return String(value);
 }
@@ -180,7 +184,7 @@ export function buildPaletteResults({
 				trailing:
 					definition.control === "action" || typeof value === "boolean"
 						? undefined
-						: displaySettingValue(definition, value, t),
+						: displaySettingValue(definition, value, sources.settings, t),
 				settingId: definition.id,
 				settingControl: definition.control,
 			});

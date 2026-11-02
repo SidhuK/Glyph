@@ -71,8 +71,6 @@
 		"pin": "Fijar colección",
 		"searchView": "Buscar en la colección",
 		"unpin": "Desfijar colección",
-		"unpinNamed": "Desfijar {{name}}",
-		"unpinFailed": "No se pudo desfijar la colección",
 		"laneRenameTitle": "Cambiar nombre de la columna",
 		"laneRenameScope_one": "Actualiza 1 tarjeta en esta vista, incluidas las que aún no se han cargado. Las tarjetas ocultas por filtros o búsqueda conservan su valor.",
 		"laneRenameScope_other": "Actualiza {{count}} tarjetas en esta vista, incluidas las que aún no se han cargado. Las tarjetas ocultas por filtros o búsqueda conservan su valor.",

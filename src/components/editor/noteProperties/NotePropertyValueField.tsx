@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import { useDateDisplayFormat } from "../../../contexts";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
@@ -10,7 +9,7 @@ import type { EditorTextColor } from "../textColors";
 import { TextPropertyValueField } from "./TextPropertyValueField";
 import { WikiLinkedText } from "./WikiLinkedText";
 import { databaseValueToneStyleForColor } from "../../../lib/database/palette";
-import { buildTagSuggestions, formatPropertyDate, formatTagLabel, tagHueFromName } from "./utils";
+import { buildTagSuggestions, formatPropertyDate, formatTagLabel, tagColorFromName } from "./utils";
 
 interface NotePropertyValueFieldProps {
 	rowId: string;
@@ -71,15 +70,12 @@ export function NotePropertyValueField({
 			return (
 				<div className="notePropertyPills">
 					{property.value_list.map((value, valueIndex) => {
-						const hue = tagHueFromName(value);
 						return (
 							<span
 								key={`${property.key || rowId}-${valueIndex}-${value}`}
 								className="notePropertyPill"
-								style={{
-									...databaseValueToneStyleForColor(value, null),
-									...({ "--tag-pill-hue": `${hue}` } as CSSProperties),
-								}}
+								data-tag-color={tagColorFromName(value)}
+								style={databaseValueToneStyleForColor(value, null)}
 							>
 								{value.startsWith("#") ? value.slice(1) : value}
 							</span>
@@ -181,17 +177,14 @@ export function NotePropertyValueField({
 					}}
 				>
 					{property.value_list.map((value, valueIndex) => {
-						const hue = tagHueFromName(value);
 						const label = value.startsWith("#") ? value.slice(1) : value;
 						return (
 							<button
 								key={`${property.key || rowId}-${valueIndex}-${value}`}
 								type="button"
 								className="notePropertyToken"
-								style={{
-									...databaseValueToneStyleForColor(value, null),
-									...({ "--tag-pill-hue": `${hue}` } as CSSProperties),
-								}}
+								data-tag-color={tagColorFromName(value)}
+								style={databaseValueToneStyleForColor(value, null)}
 								onClick={() => onRemoveTag(index, value)}
 								title={`Remove ${label}`}
 								aria-label={`Remove ${label}`}

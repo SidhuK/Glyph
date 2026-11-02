@@ -73,7 +73,6 @@
 		"copy": "Copiar código",
 		"copied": "Código copiado",
 		"copyFailed": "No se pudo copiar el código",
-		"editCode": "Editar código",
 		"editMermaid": "Editar código Mermaid",
 		"mermaidRenderFailed": "No se puede renderizar el diagrama Mermaid.",
 		"mermaidEmpty": "Añade código Mermaid para previsualizar este diagrama.",
@@ -263,7 +262,6 @@
 		"dialogLabel": "Vista de nota",
 		"open": "Abrir nota",
 		"close": "Cerrar vista",
-		"loading": "Cargando nota…",
 		"empty": "Esta nota está vacía."
 	},
 	"linkPreview": {

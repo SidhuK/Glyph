@@ -95,19 +95,6 @@ export function isShortcutMatch(event: KeyboardEvent, shortcut: Shortcut): boole
 	);
 }
 
-export function getShortcutTooltip(shortcut: Shortcut): string {
-	const parts: string[] = [];
-	const normalized = normalizeShortcut(shortcut);
-
-	if (normalized.meta) parts.push("⌘");
-	if (normalized.ctrl) parts.push("⌃");
-	if (normalized.alt) parts.push("⌥");
-	if (normalized.shift) parts.push("⇧");
-	parts.push(normalized.key.length === 1 ? normalized.key.toUpperCase() : normalized.key);
-
-	return parts.join("");
-}
-
 function toTauriKey(key: string): string | null {
 	const normalized = normalizeShortcutKey(key);
 	const aliasMap: Record<string, string> = {

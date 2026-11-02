@@ -1,7 +1,5 @@
 {
 	"nav": {
-		"tab": "General",
-		"panelTitle": "General",
 		"groupApplication": "Application",
 		"groupWorkspace": "Workspace",
 		"groupLabs": "Labs",
@@ -192,7 +190,6 @@
 	},
 	"language": {
 		"label": "Language",
-		"description": "Applies immediately to menus, settings, and navigation.",
 		"ariaLabel": "Language",
 		"communityNotice": "Translations are community-contributed and may be incomplete. Questions or improvements? <discord>Join Discord</discord>."
 	},
@@ -272,6 +269,7 @@
 			"palette": {
 				"label": "Heading palette",
 				"options": {
+					"theme": "Theme colors",
 					"classy": "Classy",
 					"seaside": "Seaside",
 					"woodland": "Woodland",

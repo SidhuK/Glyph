@@ -5,7 +5,7 @@ const DATABASE_TONES = [
 	"var(--color-blue-500)",
 	"var(--color-orange-dark-400)",
 	"var(--color-green-500)",
-	"var(--color-purple-500)",
+	"var(--palette-purple)",
 	"var(--color-yellow-500)",
 	"var(--color-red-500)",
 ] as const;

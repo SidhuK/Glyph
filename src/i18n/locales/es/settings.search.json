@@ -177,26 +177,26 @@
 			"keywords": ["calendario", "semana", "mes", "nota diaria", "resumen del día", "barra lateral"]
 		},
 		"appearance-theme-mode": {
-			"title": "Seleccionar tema",
-			"section": "Temas",
+			"title": "Modo de color",
+			"section": "Apariencia",
 			"description": "Elige modo sistema, claro u oscuro.",
 			"keywords": ["modo", "sistema", "claro", "oscuro", "mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
-			"title": "Claro",
-			"section": "Temas",
+			"title": "Tema claro",
+			"section": "Apariencia",
 			"description": "Elige la paleta que Glyph usa en modo claro.",
 			"keywords": ["tema", "color", "claro", "theme", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "Oscuro",
-			"section": "Temas",
+			"title": "Tema oscuro",
+			"section": "Apariencia",
 			"description": "Elige la paleta que Glyph usa en modo oscuro.",
 			"keywords": ["tema", "color", "oscuro", "theme", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "Barra lateral translúcida",
-			"section": "Temas",
+			"section": "Apariencia",
 			"keywords": [
 				"ventana",
 				"cristal",
@@ -665,6 +665,5 @@
 			"description": "Open the published Glyph changelog.",
 			"keywords": ["release notes", "version", "updates"]
 		}
-	},
-	"categoryPrefix": "Ajustes > {{tab}}"
+	}
 }

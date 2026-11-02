@@ -90,25 +90,6 @@
 	flex: 1 1 auto;
 }
 
-.appearanceThemeBadge {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	width: 22px;
-	height: 22px;
-	min-width: 22px;
-	padding: 0;
-	border-radius: var(--radius-sm);
-	border: 1px solid var(--border-light);
-	background: var(--bg-secondary);
-	color: var(--text-primary);
-	font-size: var(--text-xs);
-	font-weight: var(--font-semibold);
-	letter-spacing: -0.04em;
-	line-height: 1;
-}
-
 .appearanceThemeDropdownHeader {
 	padding: 6px 8px 8px;
 	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);

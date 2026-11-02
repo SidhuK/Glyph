@@ -1,5 +1,6 @@
 import { i18n } from "../../i18n";
 import { LANGUAGE_OPTIONS } from "../../i18n/locales";
+import { customThemeOptions } from "../../lib/customThemes";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import { HEADING_PALETTE_OPTIONS } from "../../lib/headingPalettes";
 import {
@@ -20,7 +21,7 @@ import type {
 	SpaceSettingDefinition,
 } from "../../lib/settings/definitions";
 import { invoke } from "../../lib/tauri";
-import { DARK_THEME_OPTIONS, LIGHT_THEME_OPTIONS } from "../../lib/uiThemes";
+import { DARK_THEME_OPTIONS, LIGHT_THEME_OPTIONS, type UiThemeOption } from "../../lib/uiThemes";
 import type { SettingsTab } from "../settings/settingsConfig";
 import { SETTINGS_SEARCH_ENTRIES } from "../settings/settingsSearch";
 
@@ -44,9 +45,20 @@ export interface PaletteSettingDefinition {
 	control: PaletteSettingControl;
 	min?: number;
 	max?: number;
-	options?: readonly PaletteSettingOption[];
+	/** Static choices, or choices that depend on loaded settings (e.g. installed custom themes). */
+	options?:
+		| readonly PaletteSettingOption[]
+		| ((settings: AppSettings | undefined) => readonly PaletteSettingOption[]);
 	read: (settings: AppSettings) => PaletteSettingValue;
 	write: (value: PaletteSettingValue, spacePath: string | null) => Promise<void>;
+}
+
+export function paletteSettingOptions(
+	definition: PaletteSettingDefinition,
+	settings: AppSettings | undefined,
+): readonly PaletteSettingOption[] {
+	const { options } = definition;
+	return typeof options === "function" ? options(settings) : (options ?? []);
 }
 
 type EditablePaletteSettingDefinition = Omit<PaletteSettingDefinition, "tab">;
@@ -93,6 +105,16 @@ function bindSpaceSetting<Value extends PaletteSettingValue>(
 	};
 }
 
+/** Built-in presets followed by the user's installed custom themes. */
+function themeChoiceOptions(
+	builtIns: readonly UiThemeOption<string>[],
+	settings: AppSettings | undefined,
+): PaletteSettingOption[] {
+	return [...builtIns, ...customThemeOptions(settings?.ui.customThemes ?? [])].map(
+		({ id, label }) => ({ value: id, label }),
+	);
+}
+
 const fileTreeSortOptions = FILE_TREE_SORT_MODES.map((mode) => ({
 	value: mode,
 	label: () => fileTreeSortLabel(mode),
@@ -119,21 +141,20 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.theme),
 		control: "choice",
-		options: [
-			{ value: "system", label: "System" },
-			{ value: "light", label: "Light" },
-			{ value: "dark", label: "Dark" },
-		],
+		options: (["system", "light", "dark"] as const).map((mode) => ({
+			value: mode,
+			label: () => i18n.t(`settings.appearance:theme.modes.${mode}.label`),
+		})),
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.lightThemeId),
 		control: "choice",
-		options: LIGHT_THEME_OPTIONS.map(({ id, label }) => ({ value: id, label })),
+		options: (settings) => themeChoiceOptions(LIGHT_THEME_OPTIONS, settings),
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.darkThemeId),
 		control: "choice",
-		options: DARK_THEME_OPTIONS.map(({ id, label }) => ({ value: id, label })),
+		options: (settings) => themeChoiceOptions(DARK_THEME_OPTIONS, settings),
 	},
 	{
 		...bindApplicationSetting(DURABLE_SETTINGS.translucentApp),

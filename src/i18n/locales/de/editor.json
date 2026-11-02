@@ -73,7 +73,6 @@
 		"copy": "Code kopieren",
 		"copied": "Code kopiert",
 		"copyFailed": "Code konnte nicht kopiert werden",
-		"editCode": "Code bearbeiten",
 		"editMermaid": "Mermaid-Code bearbeiten",
 		"mermaidRenderFailed": "Mermaid-Diagramm konnte nicht gerendert werden.",
 		"mermaidEmpty": "Füge Mermaid-Code hinzu, um eine Vorschau dieses Diagramms zu sehen.",
@@ -263,7 +262,6 @@
 		"dialogLabel": "Notiz-Peek",
 		"open": "Notiz öffnen",
 		"close": "Peek schließen",
-		"loading": "Notiz wird geladen…",
 		"empty": "Diese Notiz ist leer."
 	},
 	"linkPreview": {

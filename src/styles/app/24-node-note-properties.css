@@ -271,7 +271,7 @@ input.notePropertyFieldInput {
 }
 
 .notePropertyDateButton:focus-visible {
-	outline: 2px solid var(--focus);
+	outline: 2px solid var(--border-focus);
 	outline-offset: 1px;
 	border-radius: var(--radius-4);
 }
@@ -426,8 +426,37 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	min-height: 26px;
 }
 
+/* Tags take a stable slot from the active theme's palette (see tagColorFromName). */
+:is(.notePropertyPill, .notePropertyToken)[data-tag-color="red"] {
+	--tag-pill-color: var(--palette-red);
+}
+
+:is(.notePropertyPill, .notePropertyToken)[data-tag-color="orange"] {
+	--tag-pill-color: var(--palette-orange);
+}
+
+:is(.notePropertyPill, .notePropertyToken)[data-tag-color="yellow"] {
+	--tag-pill-color: var(--palette-yellow);
+}
+
+:is(.notePropertyPill, .notePropertyToken)[data-tag-color="green"] {
+	--tag-pill-color: var(--palette-green);
+}
+
+:is(.notePropertyPill, .notePropertyToken)[data-tag-color="cyan"] {
+	--tag-pill-color: var(--palette-cyan);
+}
+
+:is(.notePropertyPill, .notePropertyToken)[data-tag-color="blue"] {
+	--tag-pill-color: var(--palette-blue);
+}
+
+:is(.notePropertyPill, .notePropertyToken)[data-tag-color="purple"] {
+	--tag-pill-color: var(--palette-purple);
+}
+
 .notePropertyPill {
-	--tag-pill-hue: 0;
+	--tag-pill-color: var(--palette-gray, var(--text-secondary));
 
 	display: inline-flex;
 	align-items: center;
@@ -436,8 +465,8 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	padding: 0 8px;
 	border: 0;
 	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, hsl(var(--tag-pill-hue) 70% 45%) 10%, var(--bg-secondary));
-	color: color-mix(in srgb, hsl(var(--tag-pill-hue) 70% 40%) 70%, var(--text-primary));
+	background: color-mix(in srgb, var(--tag-pill-color) 10%, var(--bg-secondary));
+	color: color-mix(in srgb, var(--tag-pill-color) 70%, var(--text-primary));
 	font-family: var(--font-sans);
 	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
@@ -611,7 +640,7 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 }
 
 .notePropertyToken {
-	--tag-pill-hue: 0;
+	--tag-pill-color: var(--palette-gray, var(--text-secondary));
 
 	display: inline-flex;
 	align-items: center;
@@ -621,8 +650,8 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	padding: 0 8px;
 	border: 0;
 	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, hsl(var(--tag-pill-hue) 70% 45%) 10%, var(--bg-secondary));
-	color: color-mix(in srgb, hsl(var(--tag-pill-hue) 70% 40%) 70%, var(--text-primary));
+	background: color-mix(in srgb, var(--tag-pill-color) 10%, var(--bg-secondary));
+	color: color-mix(in srgb, var(--tag-pill-color) 70%, var(--text-primary));
 	font-family: var(--font-sans);
 	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
@@ -636,8 +665,8 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 
 .notePropertyToken:hover,
 .notePropertyToken:focus-visible {
-	background: color-mix(in srgb, hsl(var(--tag-pill-hue) 70% 45%) 16%, var(--bg-secondary));
-	color: color-mix(in srgb, hsl(var(--tag-pill-hue) 70% 40%) 78%, var(--text-primary));
+	background: color-mix(in srgb, var(--tag-pill-color) 16%, var(--bg-secondary));
+	color: color-mix(in srgb, var(--tag-pill-color) 78%, var(--text-primary));
 }
 
 .notePropertyToken > span {

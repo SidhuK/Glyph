@@ -517,13 +517,15 @@
 }
 
 .rfNodeNoteEditorRaw .cm-raw-code-line {
+	/* Theme palette, matching the rich editor's code blocks. Operators and punctuation
+	   are everywhere, so meta only leans toward cyan. */
 	--raw-code-comment: var(--text-tertiary);
-	--raw-code-keyword: var(--interactive-accent);
-	--raw-code-string: var(--color-green-500);
-	--raw-code-number: var(--color-yellow-500);
-	--raw-code-title: var(--color-blue-600);
-	--raw-code-meta: color-mix(in srgb, var(--text-secondary) 84%, var(--interactive-accent));
-	--raw-code-variable: var(--color-red-500);
+	--raw-code-keyword: var(--palette-purple);
+	--raw-code-string: var(--palette-green);
+	--raw-code-number: var(--palette-orange);
+	--raw-code-title: var(--palette-blue);
+	--raw-code-meta: color-mix(in srgb, var(--palette-cyan) 55%, var(--text-secondary));
+	--raw-code-variable: var(--palette-red);
 
 	padding-right: var(--space-3);
 	padding-left: var(--space-3);
@@ -531,13 +533,6 @@
 	font-size: 0.9em;
 	font-variant-ligatures: none;
 	line-height: 1.62;
-}
-
-:root.dark .rfNodeNoteEditorRaw .cm-raw-code-line {
-	--raw-code-string: var(--color-green-dark-400);
-	--raw-code-number: var(--color-yellow-dark-400);
-	--raw-code-title: var(--color-blue-dark-400);
-	--raw-code-variable: var(--color-red-dark-300);
 }
 
 .rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-comment {

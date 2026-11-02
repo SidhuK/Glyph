@@ -1,7 +1,5 @@
 {
 	"nav": {
-		"tab": "일반",
-		"panelTitle": "일반",
 		"groupApplication": "애플리케이션",
 		"groupWorkspace": "워크스페이스",
 		"groupLabs": "랩",
@@ -82,7 +80,6 @@
 	},
 	"language": {
 		"label": "언어",
-		"description": "메뉴, 설정, 탐색에 즉시 적용됩니다.",
 		"ariaLabel": "언어",
 		"communityNotice": "번역은 커뮤니티 기여이며 불완전할 수 있습니다. 질문이나 개선 사항이 있나요? <discord>Discord 참여</discord>."
 	},
@@ -152,6 +149,7 @@
 			"palette": {
 				"label": "제목 팔레트",
 				"options": {
+					"theme": "테마 색상",
 					"classy": "클래시",
 					"seaside": "해변",
 					"woodland": "숲",

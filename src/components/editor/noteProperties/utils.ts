@@ -17,12 +17,18 @@ export function humanizePropertyKey(key: string): string {
 	return key.replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function tagHueFromName(name: string): number {
+/** Theme palette slots tags rotate through; gray is left out so every tag reads as colored. */
+const TAG_COLOR_SLOTS = ["red", "orange", "yellow", "green", "cyan", "blue", "purple"] as const;
+
+type TagColorSlot = (typeof TAG_COLOR_SLOTS)[number];
+
+/** Stable per-name pick of a theme palette slot, so tag colors follow the active theme. */
+export function tagColorFromName(name: string): TagColorSlot {
 	let hash = 0;
 	for (let i = 0; i < name.length; i++) {
 		hash = name.charCodeAt(i) + ((hash << 5) - hash);
 	}
-	return Math.abs(hash) % 360;
+	return TAG_COLOR_SLOTS[Math.abs(hash) % TAG_COLOR_SLOTS.length];
 }
 
 export function formatPropertyDate(

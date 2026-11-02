@@ -1,22 +1,25 @@
+/* Syntax colors come from the theme's signature palette, so a Dracula code block reads
+   like Dracula and a Solarized one like Solarized. */
 .tiptapContentInline pre {
 	--code-token-comment: var(--text-tertiary);
-	--code-token-keyword: var(--interactive-accent);
-	--code-token-string: var(--color-green-500);
-	--code-token-number: var(--color-yellow-500);
-	--code-token-title: var(--color-blue-600);
-	--code-token-meta: color-mix(in srgb, var(--text-secondary) 84%, var(--interactive-accent));
-	--code-token-variable: var(--color-red-500);
+	--code-token-keyword: var(--palette-purple);
+	--code-token-string: var(--palette-green);
+	--code-token-number: var(--palette-orange);
+	--code-token-title: var(--palette-blue);
+	--code-token-type: var(--palette-yellow);
+	--code-token-meta: var(--palette-cyan);
+	--code-token-variable: var(--palette-red);
 }
 
 .tiptapContentInline pre .hljs-comment,
 .tiptapContentInline pre .hljs-quote {
 	color: var(--code-token-comment);
+	font-style: italic;
 }
 
 .tiptapContentInline pre .hljs-keyword,
 .tiptapContentInline pre .hljs-selector-tag,
-.tiptapContentInline pre .hljs-literal,
-.tiptapContentInline pre .hljs-built_in {
+.tiptapContentInline pre .hljs-doctag {
 	color: var(--code-token-keyword);
 }
 
@@ -27,32 +30,33 @@
 }
 
 .tiptapContentInline pre .hljs-number,
+.tiptapContentInline pre .hljs-literal,
 .tiptapContentInline pre .hljs-symbol,
 .tiptapContentInline pre .hljs-bullet {
 	color: var(--code-token-number);
 }
 
 .tiptapContentInline pre .hljs-title,
-.tiptapContentInline pre .hljs-section,
-.tiptapContentInline pre .hljs-type,
-.tiptapContentInline pre .hljs-attr {
+.tiptapContentInline pre .hljs-section {
 	color: var(--code-token-title);
 }
 
+.tiptapContentInline pre .hljs-type,
+.tiptapContentInline pre .hljs-built_in,
+.tiptapContentInline pre .hljs-title.class_ {
+	color: var(--code-token-type);
+}
+
 .tiptapContentInline pre .hljs-meta,
+.tiptapContentInline pre .hljs-attr,
+.tiptapContentInline pre .hljs-attribute,
 .tiptapContentInline pre .hljs-operator {
 	color: var(--code-token-meta);
 }
 
 .tiptapContentInline pre .hljs-variable,
 .tiptapContentInline pre .hljs-template-variable,
+.tiptapContentInline pre .hljs-name,
 .tiptapContentInline pre .hljs-deletion {
 	color: var(--code-token-variable);
-}
-
-:root.dark .tiptapContentInline pre {
-	--code-token-string: var(--color-green-dark-400);
-	--code-token-number: var(--color-yellow-dark-400);
-	--code-token-title: var(--color-blue-dark-400);
-	--code-token-variable: var(--color-red-dark-300);
 }
