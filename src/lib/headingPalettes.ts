@@ -1,4 +1,15 @@
+/** Pulls each palette hue slightly toward the text color so yellows stay readable as headings. */
+function themeHeadingColor(slot: string) {
+	return `color-mix(in srgb, var(--palette-${slot}) 85%, var(--text-primary))`;
+}
+
+/** Follows the active theme's signature palette, so headings recolor with the theme. */
+const THEME_HEADING_COLORS = ["red", "orange", "yellow", "green", "blue", "purple"].map(
+	themeHeadingColor,
+);
+
 export const HEADING_PALETTE_OPTIONS = [
+	{ id: "theme", light: THEME_HEADING_COLORS, dark: THEME_HEADING_COLORS },
 	{
 		id: "classy",
 		light: ["#be3d61", "#a45f12", "#267d4c", "#2a74c9", "#7a57d1", "#9b5b2f"],

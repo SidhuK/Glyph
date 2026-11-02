@@ -175,26 +175,26 @@
 			]
 		},
 		"appearance-theme-mode": {
-			"title": "Sélectionner le thème",
-			"section": "Thèmes",
+			"title": "Mode de couleur",
+			"section": "Apparence",
 			"description": "Choisir le mode système, clair ou sombre.",
 			"keywords": ["mode", "système", "clair", "sombre", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
-			"title": "Clair",
-			"section": "Thèmes",
+			"title": "Thème clair",
+			"section": "Apparence",
 			"description": "Choisir la palette utilisée par Glyph en mode clair.",
 			"keywords": ["thème", "couleur", "clair", "theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "Sombre",
-			"section": "Thèmes",
+			"title": "Thème sombre",
+			"section": "Apparence",
 			"description": "Choisir la palette utilisée par Glyph en mode sombre.",
 			"keywords": ["thème", "couleur", "sombre", "theme", "color", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "Barre latérale translucide",
-			"section": "Thèmes",
+			"section": "Apparence",
 			"keywords": [
 				"fenêtre",
 				"verre",
@@ -669,6 +669,5 @@
 			"description": "Open the published Glyph changelog.",
 			"keywords": ["release notes", "version", "updates"]
 		}
-	},
-	"categoryPrefix": "Réglages > {{tab}}"
+	}
 }

@@ -1,11 +1,6 @@
 {
-	"nav": {
-		"tab": "Apparence",
-		"panelTitle": "Apparence"
-	},
 	"theme": {
-		"sectionTitle": "Thèmes",
-		"sectionDescription": "Combinez les familles de thèmes clairs et sombres.",
+		"sectionTitle": "Apparence",
 		"appearance": {
 			"label": "Mode de couleur",
 			"description": "Suivre le système ou forcer Glyph en mode clair ou sombre.",
@@ -30,13 +25,17 @@
 			"ariaLabel": "Barre latérale translucide"
 		}
 	},
-	"lightTheme": {
-		"label": "Clair",
-		"hint": "Choisissez la palette utilisée par Glyph en mode clair."
-	},
-	"darkTheme": {
-		"label": "Sombre",
-		"hint": "Choisissez la palette utilisée par Glyph en mode sombre."
+	"themeCards": {
+		"light": "Thème clair",
+		"dark": "Thème sombre",
+		"activeSuffix": "— Actif",
+		"groups": {
+			"default": "Par défaut",
+			"builtIn": "Intégrés",
+			"custom": "Personnalisés"
+		},
+		"optionsAriaLabel": "Options pour {{name}}",
+		"remove": "Supprimer"
 	},
 	"customThemes": {
 		"sectionTitle": "Thèmes personnalisés",
@@ -53,11 +52,17 @@
 			"action": "Choisir un fichier",
 			"helpAriaLabel": "À propos de l'importation de thèmes"
 		},
-		"installedDescription": "Disponible dans les sélecteurs de thème clair et sombre.",
-		"removeAriaLabel": "Supprimer {{name}}",
 		"nameTaken": "Un thème nommé « {{name}} » existe déjà. Choisissez un autre nom.",
 		"saveDialogTitle": "Enregistrer le modèle de thème",
-		"importDialogTitle": "Importer un JSON de thème"
+		"importDialogTitle": "Importer un JSON de thème",
+		"errors": {
+			"notObject": "Le fichier de thème doit contenir un objet JSON.",
+			"legacyVersion": "Ce fichier de thème utilise un ancien format. Enregistrez le nouveau modèle et recopiez-y vos couleurs.",
+			"unsupportedVersion": "Le fichier de thème doit définir \"version\": {{version}}.",
+			"invalidName": "« name » doit comporter de 1 à {{max}} caractères, dont au moins une lettre ou un chiffre.",
+			"missingGroup": "Il manque les couleurs « {{path}} » dans le fichier de thème.",
+			"invalidColor": "« {{path}} » doit être une couleur hexadécimale comme #1A2B3C."
+		}
 	},
 	"shape": {
 		"sectionTitle": "Forme",

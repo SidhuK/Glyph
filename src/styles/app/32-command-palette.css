@@ -607,7 +607,7 @@
 	border: 0;
 	border-radius: var(--radius-md);
 	background: var(--interactive-accent);
-	color: var(--text-on-accent);
+	color: var(--text-inverse);
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 }
@@ -619,7 +619,7 @@
 .commandPaletteSettingError {
 	margin: 4px 3px 8px;
 	padding: 0 10px;
-	color: var(--danger);
+	color: var(--text-error);
 	font-size: var(--text-sm);
 }
 

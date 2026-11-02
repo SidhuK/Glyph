@@ -31,7 +31,7 @@ import {
 	stepPaletteOption,
 } from "./commandPaletteHelpers";
 import { buildPaletteResults } from "./paletteResults";
-import { PALETTE_SETTING_BY_ID } from "./settingsPaletteRegistry";
+import { PALETTE_SETTING_BY_ID, paletteSettingOptions } from "./settingsPaletteRegistry";
 import { useCommandSearch } from "./useCommandSearch";
 import { usePaletteSettings } from "./usePaletteSettings";
 import type { WorkspaceTab } from "./useTabManager";
@@ -234,7 +234,11 @@ export function CommandPalette({
 				return true;
 			}
 			if (definition.control === "choice") {
-				const nextValue = stepPaletteOption(definition.options ?? [], current ?? null, direction);
+				const nextValue = stepPaletteOption(
+					paletteSettingOptions(definition, settings),
+					current ?? null,
+					direction,
+				);
 				if (nextValue !== null) {
 					updateSetting({ definition, value: nextValue });
 					return true;
@@ -438,6 +442,7 @@ export function CommandPalette({
 						key={activeSetting.id}
 						entry={activeSettingEntry}
 						definition={activeSetting}
+						settings={settings}
 						value={activeSettingValue}
 						folders={folders}
 						pending={settingPending}

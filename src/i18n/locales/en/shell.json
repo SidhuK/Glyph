@@ -83,8 +83,6 @@
 		"pin": "Pin collection",
 		"searchView": "Search collection",
 		"unpin": "Unpin collection",
-		"unpinNamed": "Unpin {{name}}",
-		"unpinFailed": "Could not unpin collection",
 		"laneRenameTitle": "Rename lane",
 		"laneRenameScope_one": "Updates 1 card in this view, including cards not loaded yet. Cards hidden by filters or search keep their value.",
 		"laneRenameScope_other": "Updates {{count}} cards in this view, including cards not loaded yet. Cards hidden by filters or search keep their value.",

@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { AppSettings } from "../../lib/settings";
 import type { SettingsSearchEntry } from "../settings/settingsSearch";
 import {
 	type PaletteSettingDefinition,
 	type PaletteSettingOption,
 	paletteSettingOptionLabel,
+	paletteSettingOptions,
 } from "./settingsPaletteRegistry";
 
 interface PaletteSettingEditorProps {
 	entry: SettingsSearchEntry;
 	definition: PaletteSettingDefinition;
+	settings: AppSettings | undefined;
 	value: string | number | boolean | null;
 	folders: readonly string[];
 	pending: boolean;
@@ -26,6 +29,7 @@ function displayValue(value: string | number | boolean | null) {
 export function PaletteSettingEditor({
 	entry,
 	definition,
+	settings,
 	value,
 	folders,
 	pending,
@@ -44,7 +48,8 @@ export function PaletteSettingEditor({
 		value: folder,
 		label: folder || t("commandPalette.spaceRoot"),
 	}));
-	const options = definition.control === "path" ? pathOptions : (definition.options ?? []);
+	const options =
+		definition.control === "path" ? pathOptions : paletteSettingOptions(definition, settings);
 	const visibleOptions =
 		definition.control === "path" && pathQuery.trim()
 			? options.filter((option) =>

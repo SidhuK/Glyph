@@ -1,7 +1,5 @@
 {
 	"nav": {
-		"tab": "Général",
-		"panelTitle": "Général",
 		"groupApplication": "Application",
 		"groupWorkspace": "Espace de travail",
 		"groupLabs": "Labs",
@@ -96,7 +94,6 @@
 	},
 	"language": {
 		"label": "Langue",
-		"description": "S’applique immédiatement aux menus, réglages et navigation.",
 		"ariaLabel": "Langue",
 		"communityNotice": "Les traductions sont fournies par la communauté et peuvent être incomplètes. Des questions ou des améliorations ? <discord>Rejoindre Discord</discord>."
 	},
@@ -166,6 +163,7 @@
 			"palette": {
 				"label": "Palette des titres",
 				"options": {
+					"theme": "Couleurs du thème",
 					"classy": "Élégante",
 					"seaside": "Bord de mer",
 					"woodland": "Sous-bois",

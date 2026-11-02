@@ -1,11 +1,6 @@
 {
-	"nav": {
-		"tab": "Aparência",
-		"panelTitle": "Aparência"
-	},
 	"theme": {
-		"sectionTitle": "Temas",
-		"sectionDescription": "Combine famílias de temas claros e escuros.",
+		"sectionTitle": "Aparência",
 		"appearance": {
 			"label": "Modo de cor",
 			"description": "Seguir o sistema ou fixar o Glyph no modo claro ou escuro.",
@@ -30,13 +25,17 @@
 			"ariaLabel": "Barra lateral translúcida"
 		}
 	},
-	"lightTheme": {
-		"label": "Claro",
-		"hint": "Escolha a paleta que o Glyph usa no modo claro."
-	},
-	"darkTheme": {
-		"label": "Escuro",
-		"hint": "Escolha a paleta que o Glyph usa no modo escuro."
+	"themeCards": {
+		"light": "Tema claro",
+		"dark": "Tema escuro",
+		"activeSuffix": "— Ativo",
+		"groups": {
+			"default": "Padrão",
+			"builtIn": "Integrados",
+			"custom": "Personalizados"
+		},
+		"optionsAriaLabel": "Opções de {{name}}",
+		"remove": "Remover"
 	},
 	"customThemes": {
 		"sectionTitle": "Temas personalizados",
@@ -53,11 +52,17 @@
 			"action": "Escolher arquivo",
 			"helpAriaLabel": "Sobre a importação de temas"
 		},
-		"installedDescription": "Disponível nos seletores de tema claro e escuro.",
-		"removeAriaLabel": "Remover {{name}}",
 		"nameTaken": "Já existe um tema chamado \"{{name}}\". Escolha outro nome.",
 		"saveDialogTitle": "Salvar modelo de tema",
-		"importDialogTitle": "Importar JSON do tema"
+		"importDialogTitle": "Importar JSON do tema",
+		"errors": {
+			"notObject": "O arquivo de tema precisa conter um objeto JSON.",
+			"legacyVersion": "Este arquivo de tema usa um formato antigo. Salve o novo modelo e copie suas cores para ele.",
+			"unsupportedVersion": "O arquivo de tema precisa definir \"version\": {{version}}.",
+			"invalidName": "\"name\" precisa ter de 1 a {{max}} caracteres e incluir uma letra ou um número.",
+			"missingGroup": "Faltam as cores de \"{{path}}\" no arquivo de tema.",
+			"invalidColor": "\"{{path}}\" precisa ser uma cor hexadecimal como #1A2B3C."
+		}
 	},
 	"shape": {
 		"sectionTitle": "Forma",

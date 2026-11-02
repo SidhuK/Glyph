@@ -7,7 +7,6 @@ import {
 	ArrowUpRight01Icon,
 	Calendar03Icon,
 	CommandIcon,
-	LayoutAlignLeftIcon,
 	Search as SearchIcon,
 	Settings01Icon,
 } from "@hugeicons/core-free-icons";
@@ -39,9 +38,6 @@ export const ChevronDown = (props: IconProps) => (
 );
 export const FolderOpen = (props: IconProps) => (
 	<HugeiconsIcon icon={Archive04Icon} {...withDefaultIconSize(props)} />
-);
-export const LayoutAlignLeft = (props: IconProps) => (
-	<HugeiconsIcon icon={LayoutAlignLeftIcon} {...withDefaultIconSize(props)} />
 );
 export const Settings = (props: IconProps) => (
 	<HugeiconsIcon icon={Settings01Icon} {...withDefaultIconSize(props)} />

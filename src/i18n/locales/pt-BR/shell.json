@@ -71,8 +71,6 @@
 		"pin": "Fixar coleção",
 		"searchView": "Pesquisar na coleção",
 		"unpin": "Desafixar coleção",
-		"unpinNamed": "Desafixar {{name}}",
-		"unpinFailed": "Não foi possível desafixar a coleção",
 		"laneRenameTitle": "Renomear coluna",
 		"laneRenameScope_one": "Atualiza 1 cartão nesta visualização, incluindo cartões ainda não carregados. Cartões ocultos por filtros ou pesquisa mantêm seu valor.",
 		"laneRenameScope_other": "Atualiza {{count}} cartões nesta visualização, incluindo cartões ainda não carregados. Cartões ocultos por filtros ou pesquisa mantêm seu valor.",

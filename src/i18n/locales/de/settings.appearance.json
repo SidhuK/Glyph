@@ -1,11 +1,6 @@
 {
-	"nav": {
-		"tab": "Darstellung",
-		"panelTitle": "Darstellung"
-	},
 	"theme": {
-		"sectionTitle": "Designs",
-		"sectionDescription": "Helle und dunkle Designfamilien kombinieren.",
+		"sectionTitle": "Darstellung",
 		"appearance": {
 			"label": "Farbmodus",
 			"description": "Dem System folgen oder Glyph auf Hell- oder Dunkelmodus festlegen.",
@@ -30,13 +25,17 @@
 			"ariaLabel": "Durchscheinende Seitenleiste"
 		}
 	},
-	"lightTheme": {
-		"label": "Hell",
-		"hint": "Wähle die Palette, die Glyph im Hellmodus verwendet."
-	},
-	"darkTheme": {
-		"label": "Dunkel",
-		"hint": "Wähle die Palette, die Glyph im Dunkelmodus verwendet."
+	"themeCards": {
+		"light": "Helles Design",
+		"dark": "Dunkles Design",
+		"activeSuffix": "— Aktiv",
+		"groups": {
+			"default": "Standard",
+			"builtIn": "Integriert",
+			"custom": "Eigene"
+		},
+		"optionsAriaLabel": "Optionen für {{name}}",
+		"remove": "Entfernen"
 	},
 	"customThemes": {
 		"sectionTitle": "Eigene Themes",
@@ -53,11 +52,17 @@
 			"action": "Datei wählen",
 			"helpAriaLabel": "Über den Theme-Import"
 		},
-		"installedDescription": "Verfügbar in der hellen und dunklen Theme-Auswahl.",
-		"removeAriaLabel": "{{name}} entfernen",
 		"nameTaken": "Ein Theme namens „{{name}}“ existiert bereits. Wähle einen anderen Namen.",
 		"saveDialogTitle": "Theme-Vorlage speichern",
-		"importDialogTitle": "Theme-JSON importieren"
+		"importDialogTitle": "Theme-JSON importieren",
+		"errors": {
+			"notObject": "Die Theme-Datei muss ein JSON-Objekt enthalten.",
+			"legacyVersion": "Diese Theme-Datei verwendet ein älteres Format. Speichere die neue Vorlage und übertrage deine Farben.",
+			"unsupportedVersion": "Die Theme-Datei muss \"version\": {{version}} festlegen.",
+			"invalidName": "„name“ muss 1–{{max}} Zeichen lang sein und einen Buchstaben oder eine Ziffer enthalten.",
+			"missingGroup": "In der Theme-Datei fehlen die Farben für „{{path}}“.",
+			"invalidColor": "„{{path}}“ muss eine Hex-Farbe wie #1A2B3C sein."
+		}
 	},
 	"shape": {
 		"sectionTitle": "Form",

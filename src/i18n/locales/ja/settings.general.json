@@ -1,7 +1,5 @@
 {
 	"nav": {
-		"tab": "一般",
-		"panelTitle": "一般",
 		"groupApplication": "アプリケーション",
 		"groupWorkspace": "ワークスペース",
 		"groupLabs": "ラボ",
@@ -82,7 +80,6 @@
 	},
 	"language": {
 		"label": "言語",
-		"description": "メニュー、設定、ナビゲーションにすぐに適用されます。",
 		"ariaLabel": "言語",
 		"communityNotice": "翻訳はコミュニティによる貢献であり、不完全な場合があります。質問や改善案は <discord>Discord に参加</discord>してください。"
 	},
@@ -152,6 +149,7 @@
 			"palette": {
 				"label": "見出しパレット",
 				"options": {
+					"theme": "テーマの色",
 					"classy": "クラッシー",
 					"seaside": "シーサイド",
 					"woodland": "ウッドランド",

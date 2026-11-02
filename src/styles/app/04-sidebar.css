@@ -42,7 +42,9 @@
 	min-height: 0;
 	overflow: visible;
 	position: relative;
-	background: transparent;
+	/* A light wash of the theme's sidebar color, so each theme still reads through the
+	   window vibrancy instead of every translucent sidebar looking the same. */
+	background: color-mix(in srgb, var(--bg-sidebar) 42%, transparent);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	/* border intentionally removed */
@@ -360,7 +362,13 @@ button.sidebarViewMenuTrigger[data-popup-open] {
 	cursor: col-resize;
 	user-select: none;
 	-webkit-user-select: none;
-	background: transparent;
+	/* Only the 4px layout gap between the overlapping margins carries the sidebar wash. */
+	background: linear-gradient(
+		to right,
+		transparent 2px,
+		color-mix(in srgb, var(--bg-sidebar) 42%, transparent) 2px calc(100% - 2px),
+		transparent calc(100% - 2px)
+	);
 	transition: none;
 
 	/* Expanded hit area for easier dragging */

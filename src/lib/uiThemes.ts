@@ -11,20 +11,24 @@ export const LIGHT_THEME_OPTIONS = [
 		label: "Glyph",
 	},
 	{
-		id: "ayu-light",
-		label: "Ayu",
+		id: "alucard",
+		label: "Alucard",
 	},
 	{
 		id: "catppuccin-latte",
 		label: "Catppuccin Latte",
 	},
 	{
-		id: "claude-light",
-		label: "Claude",
+		id: "dayfox",
+		label: "Dayfox",
 	},
 	{
-		id: "codex-light",
-		label: "Codex",
+		id: "ef-arbutus",
+		label: "Arbutus",
+	},
+	{
+		id: "ef-elea-light",
+		label: "Elea Light",
 	},
 	{
 		id: "everforest-light",
@@ -35,10 +39,6 @@ export const LIGHT_THEME_OPTIONS = [
 		label: "Flexoki Light",
 	},
 	{
-		id: "github-light",
-		label: "GitHub",
-	},
-	{
 		id: "gruvbox-light",
 		label: "Gruvbox",
 	},
@@ -47,24 +47,24 @@ export const LIGHT_THEME_OPTIONS = [
 		label: "Horizon Light",
 	},
 	{
-		id: "linear-light",
-		label: "Linear",
+		id: "kanagawa-lotus",
+		label: "Kanagawa Lotus",
 	},
 	{
-		id: "nord-light",
-		label: "Nord Light",
+		id: "melange-light",
+		label: "Melange Light",
 	},
 	{
-		id: "notion",
-		label: "Notion",
+		id: "modus-operandi-tinted",
+		label: "Modus Operandi Tinted",
 	},
 	{
-		id: "one-light",
-		label: "One Light",
+		id: "noctis-lilac",
+		label: "Noctis Lilac",
 	},
 	{
-		id: "raycast-light",
-		label: "Raycast",
+		id: "papercolor-light",
+		label: "PaperColor",
 	},
 	{
 		id: "rose-pine-dawn",
@@ -79,8 +79,8 @@ export const LIGHT_THEME_OPTIONS = [
 		label: "Tokyo Night Day",
 	},
 	{
-		id: "xcode-light",
-		label: "Xcode",
+		id: "zenbones-light",
+		label: "Zenbones",
 	},
 ] as const satisfies readonly UiThemeOption<string>[];
 
@@ -98,12 +98,8 @@ export const DARK_THEME_OPTIONS = [
 		label: "Catppuccin Mocha",
 	},
 	{
-		id: "claude-dark",
-		label: "Claude",
-	},
-	{
-		id: "codex-dark",
-		label: "Codex",
+		id: "cobalt2",
+		label: "Cobalt2",
 	},
 	{
 		id: "dracula",
@@ -118,32 +114,32 @@ export const DARK_THEME_OPTIONS = [
 		label: "Flexoki Dark",
 	},
 	{
-		id: "github-dark",
-		label: "GitHub Dark",
-	},
-	{
 		id: "gruvbox-dark",
 		label: "Gruvbox Dark",
 	},
 	{
-		id: "monokai",
-		label: "Monokai",
+		id: "horizon-dark",
+		label: "Horizon",
 	},
 	{
-		id: "night-owl",
-		label: "Night Owl",
+		id: "kanagawa-wave",
+		label: "Kanagawa Wave",
+	},
+	{
+		id: "melange-dark",
+		label: "Melange",
+	},
+	{
+		id: "moonfly",
+		label: "Moonfly",
 	},
 	{
 		id: "nord-dark",
 		label: "Nord Dark",
 	},
 	{
-		id: "one-dark",
-		label: "One Dark",
-	},
-	{
-		id: "raycast-dark",
-		label: "Raycast",
+		id: "poimandres",
+		label: "Poimandres",
 	},
 	{
 		id: "rose-pine-moon",
@@ -154,21 +150,33 @@ export const DARK_THEME_OPTIONS = [
 		label: "Solarized Dark",
 	},
 	{
-		id: "tokyo-night",
-		label: "Tokyo Night",
+		id: "synthwave-84",
+		label: "SynthWave '84",
 	},
 	{
-		id: "xcode-dark",
-		label: "Xcode",
+		id: "terafox",
+		label: "Terafox",
+	},
+	{
+		id: "tokyo-night",
+		label: "Tokyo Night",
 	},
 	{
 		id: "vesper",
 		label: "Vesper",
 	},
+	{
+		id: "vitesse-dark",
+		label: "Vitesse Dark",
+	},
+	{
+		id: "zenburn",
+		label: "Zenburn",
+	},
 ] as const satisfies readonly UiThemeOption<string>[];
 
-export type UiBuiltInLightThemeId = (typeof LIGHT_THEME_OPTIONS)[number]["id"];
-export type UiBuiltInDarkThemeId = (typeof DARK_THEME_OPTIONS)[number]["id"];
+type UiBuiltInLightThemeId = (typeof LIGHT_THEME_OPTIONS)[number]["id"];
+type UiBuiltInDarkThemeId = (typeof DARK_THEME_OPTIONS)[number]["id"];
 export type UiLightThemeId = UiBuiltInLightThemeId | CustomUiThemeId;
 export type UiDarkThemeId = UiBuiltInDarkThemeId | CustomUiThemeId;
 
@@ -177,14 +185,6 @@ export const GLYPH_DEFAULT_DARK_THEME_ID: UiDarkThemeId = "glyph-default-dark";
 
 const LIGHT_THEME_IDS = new Set<string>(LIGHT_THEME_OPTIONS.map((option) => option.id));
 const DARK_THEME_IDS = new Set<string>(DARK_THEME_OPTIONS.map((option) => option.id));
-const LIGHT_THEME_MAP = new Map<UiLightThemeId, UiThemeOption<UiLightThemeId>>(
-	LIGHT_THEME_OPTIONS.map((option) => [option.id, option]),
-);
-const DARK_THEME_MAP = new Map<UiDarkThemeId, UiThemeOption<UiDarkThemeId>>(
-	DARK_THEME_OPTIONS.map((option) => [option.id, option]),
-);
-const DEFAULT_LIGHT_THEME_OPTION = LIGHT_THEME_OPTIONS[0];
-const DEFAULT_DARK_THEME_OPTION = DARK_THEME_OPTIONS[0];
 
 export function asUiLightThemeId(value: unknown): UiLightThemeId {
 	return isUiLightThemeId(value) ? value : GLYPH_DEFAULT_LIGHT_THEME_ID;
@@ -192,14 +192,6 @@ export function asUiLightThemeId(value: unknown): UiLightThemeId {
 
 export function asUiDarkThemeId(value: unknown): UiDarkThemeId {
 	return isUiDarkThemeId(value) ? value : GLYPH_DEFAULT_DARK_THEME_ID;
-}
-
-export function getUiLightThemeOption(themeId: UiLightThemeId): UiThemeOption<UiLightThemeId> {
-	return LIGHT_THEME_MAP.get(themeId) ?? DEFAULT_LIGHT_THEME_OPTION;
-}
-
-export function getUiDarkThemeOption(themeId: UiDarkThemeId): UiThemeOption<UiDarkThemeId> {
-	return DARK_THEME_MAP.get(themeId) ?? DEFAULT_DARK_THEME_OPTION;
 }
 
 export function isUiLightThemeId(value: unknown): value is UiLightThemeId {

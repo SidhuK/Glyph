@@ -182,26 +182,26 @@
 			]
 		},
 		"appearance-theme-mode": {
-			"title": "Wybierz motyw",
-			"section": "Motyw",
+			"title": "Tryb kolorów",
+			"section": "Wygląd",
 			"description": "Wybierz tryb systemowy, jasny lub ciemny.",
 			"keywords": ["tryb", "systemowy", "jasny", "ciemny"]
 		},
 		"appearance-light-theme": {
-			"title": "Gotowy zestaw",
-			"section": "Jasny motyw",
+			"title": "Motyw jasny",
+			"section": "Wygląd",
 			"description": "Wybierz paletę używaną przez Glyph w trybie jasnym.",
 			"keywords": ["motyw", "kolor", "jasny"]
 		},
 		"appearance-dark-theme": {
-			"title": "Gotowy zestaw",
-			"section": "Ciemny motyw",
+			"title": "Motyw ciemny",
+			"section": "Wygląd",
 			"description": "Wybierz paletę używaną przez Glyph w trybie ciemnym.",
 			"keywords": ["motyw", "kolor", "ciemny"]
 		},
 		"appearance-translucent-app": {
 			"title": "Półprzezroczysty pasek boczny",
-			"section": "Motyw",
+			"section": "Wygląd",
 			"keywords": ["okno", "szkło", "rozmycie", "przezroczysty"]
 		},
 		"appearance-custom-themes": {
@@ -652,6 +652,5 @@
 			"description": "Otwórz opublikowaną listę zmian programu Glyph.",
 			"keywords": ["informacje o wydaniu", "wersja", "aktualizacje"]
 		}
-	},
-	"categoryPrefix": "Ustawienia > {{tab}}"
+	}
 }

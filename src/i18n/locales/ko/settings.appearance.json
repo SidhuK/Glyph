@@ -1,11 +1,6 @@
 {
-	"nav": {
-		"tab": "모양",
-		"panelTitle": "모양"
-	},
 	"theme": {
-		"sectionTitle": "테마",
-		"sectionDescription": "라이트와 다크 테마 패밀리를 조합합니다.",
+		"sectionTitle": "모양",
 		"appearance": {
 			"label": "색상 모드",
 			"description": "시스템을 따르거나 Glyph를 라이트 또는 다크 모드로 고정합니다.",
@@ -30,13 +25,17 @@
 			"ariaLabel": "반투명 사이드바"
 		}
 	},
-	"lightTheme": {
-		"label": "라이트",
-		"hint": "라이트 모드에서 Glyph가 사용하는 팔레트를 선택합니다."
-	},
-	"darkTheme": {
-		"label": "다크",
-		"hint": "다크 모드에서 Glyph가 사용하는 팔레트를 선택합니다."
+	"themeCards": {
+		"light": "라이트 테마",
+		"dark": "다크 테마",
+		"activeSuffix": "— 사용 중",
+		"groups": {
+			"default": "기본",
+			"builtIn": "기본 제공",
+			"custom": "사용자 지정"
+		},
+		"optionsAriaLabel": "{{name}} 옵션",
+		"remove": "삭제"
 	},
 	"customThemes": {
 		"sectionTitle": "사용자 지정 테마",
@@ -53,11 +52,17 @@
 			"action": "파일 선택",
 			"helpAriaLabel": "테마 가져오기 정보"
 		},
-		"installedDescription": "라이트 및 다크 테마 선택기에 표시됩니다.",
-		"removeAriaLabel": "{{name}} 삭제",
 		"nameTaken": "이름이 \"{{name}}\"인 테마가 이미 있습니다. 다른 이름을 사용하세요.",
 		"saveDialogTitle": "테마 템플릿 저장",
-		"importDialogTitle": "테마 JSON 가져오기"
+		"importDialogTitle": "테마 JSON 가져오기",
+		"errors": {
+			"notObject": "테마 파일에는 JSON 객체가 있어야 합니다.",
+			"legacyVersion": "이 테마 파일은 이전 형식입니다. 새 템플릿을 저장하고 색상을 옮겨 주세요.",
+			"unsupportedVersion": "테마 파일에 \"version\": {{version}}을(를) 지정해야 합니다.",
+			"invalidName": "\"name\"은 1~{{max}}자이며 문자나 숫자를 포함해야 합니다.",
+			"missingGroup": "테마 파일에 \"{{path}}\" 색상이 없습니다.",
+			"invalidColor": "\"{{path}}\"은(는) #1A2B3C 같은 16진수 색상이어야 합니다."
+		}
 	},
 	"shape": {
 		"sectionTitle": "형태",

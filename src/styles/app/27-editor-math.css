@@ -88,7 +88,7 @@
 }
 
 .latexSourceEditor .cm-focused {
-	outline: 2px solid var(--focus);
+	outline: 2px solid var(--border-focus);
 	outline-offset: -2px;
 }
 

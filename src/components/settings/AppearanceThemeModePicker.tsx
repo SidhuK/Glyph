@@ -6,7 +6,7 @@ import { getThemeModeOptions } from "./themeModeOptions";
 
 interface AppearanceThemeModePickerProps {
 	themeMode: ThemeMode;
-	onThemeModeChange: (mode: ThemeMode) => Promise<void>;
+	onThemeModeChange: (mode: ThemeMode) => void;
 }
 
 export function AppearanceThemeModePicker({
@@ -19,7 +19,7 @@ export function AppearanceThemeModePicker({
 			ariaLabel={t("theme.appearance.ariaLabel")}
 			value={themeMode}
 			options={getThemeModeOptions()}
-			onChange={(next) => void onThemeModeChange(next)}
+			onChange={(next) => onThemeModeChange(next)}
 			renderPreview={(value) => <AppearancePreviewFrame mode={value} />}
 			getDataAttributes={(value) => ({
 				"data-theme-mode-preview": value,

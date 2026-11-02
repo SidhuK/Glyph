@@ -466,7 +466,7 @@
 }
 
 .folioNotesResizeHandle:hover::before {
-	background: color-mix(in srgb, var(--border-medium) 64%, transparent);
+	background: color-mix(in srgb, var(--border-strong) 64%, transparent);
 }
 
 .folioEditorHost {

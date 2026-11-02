@@ -73,7 +73,6 @@
 		"copy": "코드 복사",
 		"copied": "코드 복사됨",
 		"copyFailed": "코드 복사 실패",
-		"editCode": "코드 편집",
 		"editMermaid": "Mermaid 코드 편집",
 		"mermaidRenderFailed": "Mermaid 다이어그램을 렌더링할 수 없습니다.",
 		"mermaidEmpty": "이 다이어그램을 미리 보려면 Mermaid 코드를 추가하세요.",
@@ -263,7 +262,6 @@
 		"dialogLabel": "노트 피크",
 		"open": "노트 열기",
 		"close": "피크 닫기",
-		"loading": "노트를 불러오는 중…",
 		"empty": "이 노트는 비어 있습니다."
 	},
 	"linkPreview": {

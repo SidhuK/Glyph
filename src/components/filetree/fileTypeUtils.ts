@@ -44,7 +44,7 @@ export function getFileTypeInfo(relPath: string, isMarkdown: boolean): FileTypeI
 		return { Icon: FileImage, color: "var(--color-green-500)", label: ext };
 	}
 	if (["mp4", "avi", "mov", "webm", "mkv"].includes(ext)) {
-		return { Icon: Film, color: "var(--color-purple-500)", label: "video" };
+		return { Icon: Film, color: "var(--palette-purple)", label: "video" };
 	}
 	if (["mp3", "wav", "ogg", "flac", "m4a"].includes(ext)) {
 		return { Icon: Music, color: "var(--color-yellow-500)", label: "audio" };
@@ -79,7 +79,7 @@ export function getFileTypeInfo(relPath: string, isMarkdown: boolean): FileTypeI
 	if (["ppt", "pptx", "key"].includes(ext)) {
 		return {
 			Icon: FilePpt,
-			color: "var(--color-purple-500)",
+			color: "var(--palette-purple)",
 			label: "presentation",
 		};
 	}
@@ -96,10 +96,10 @@ export function getFileTypeInfo(relPath: string, isMarkdown: boolean): FileTypeI
 		return { Icon: Database, color: "var(--text-accent)", label: "database" };
 	}
 	if (["exe", "bin", "app", "deb", "rpm"].includes(ext)) {
-		return { Icon: Cpu, color: "var(--color-purple-500)", label: "executable" };
+		return { Icon: Cpu, color: "var(--palette-purple)", label: "executable" };
 	}
 	if (["psd", "ai", "sketch", "fig"].includes(ext)) {
-		return { Icon: Palette, color: "var(--color-purple-500)", label: "design" };
+		return { Icon: Palette, color: "var(--palette-purple)", label: "design" };
 	}
 	if (["lock", "key", "pem", "crt", "p12"].includes(ext)) {
 		return { Icon: Hash, color: "var(--text-error)", label: "security" };

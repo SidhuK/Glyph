@@ -13,13 +13,8 @@
 		"retry": "Retry",
 		"sectionTitle": "App icon"
 	},
-	"nav": {
-		"tab": "Appearance",
-		"panelTitle": "Appearance"
-	},
 	"theme": {
-		"sectionTitle": "Themes",
-		"sectionDescription": "Mix and match light and dark theme families.",
+		"sectionTitle": "Appearance",
 		"appearance": {
 			"label": "Color mode",
 			"description": "Follow your system or lock Glyph to light or dark mode.",
@@ -44,13 +39,17 @@
 			"ariaLabel": "Translucent sidebar"
 		}
 	},
-	"lightTheme": {
-		"label": "Light",
-		"hint": "Pick the palette Glyph uses in light mode."
-	},
-	"darkTheme": {
-		"label": "Dark",
-		"hint": "Pick the palette Glyph uses in dark mode."
+	"themeCards": {
+		"light": "Light theme",
+		"dark": "Dark theme",
+		"activeSuffix": "— Active",
+		"groups": {
+			"default": "Default",
+			"builtIn": "Built-in",
+			"custom": "Custom"
+		},
+		"optionsAriaLabel": "Options for {{name}}",
+		"remove": "Remove"
 	},
 	"customThemes": {
 		"sectionTitle": "Custom themes",
@@ -67,11 +66,17 @@
 			"action": "Choose file",
 			"helpAriaLabel": "About importing themes"
 		},
-		"installedDescription": "Available in the light and dark theme pickers.",
-		"removeAriaLabel": "Remove {{name}}",
 		"nameTaken": "A theme named \"{{name}}\" already exists. Pick a different name.",
 		"saveDialogTitle": "Save theme template",
-		"importDialogTitle": "Import theme JSON"
+		"importDialogTitle": "Import theme JSON",
+		"errors": {
+			"notObject": "The theme file must contain a JSON object.",
+			"legacyVersion": "This theme file uses an older format. Save the new template and copy your colors into it.",
+			"unsupportedVersion": "The theme file must set \"version\": {{version}}.",
+			"invalidName": "\"name\" must be 1–{{max}} characters and include a letter or number.",
+			"missingGroup": "The theme file is missing the \"{{path}}\" colors.",
+			"invalidColor": "\"{{path}}\" must be a hex color like #1A2B3C."
+		}
 	},
 	"shape": {
 		"sectionTitle": "Shape",

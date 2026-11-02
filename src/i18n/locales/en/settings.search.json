@@ -177,26 +177,26 @@
 			]
 		},
 		"appearance-theme-mode": {
-			"title": "Select theme",
-			"section": "Themes",
+			"title": "Color mode",
+			"section": "Appearance",
 			"description": "Choose system, light, or dark mode.",
 			"keywords": ["mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
-			"title": "Light",
-			"section": "Themes",
+			"title": "Light theme",
+			"section": "Appearance",
 			"description": "Choose the palette Glyph uses in light mode.",
 			"keywords": ["theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "Dark",
-			"section": "Themes",
+			"title": "Dark theme",
+			"section": "Appearance",
 			"description": "Choose the palette Glyph uses in dark mode.",
 			"keywords": ["theme", "color", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "Translucent sidebar",
-			"section": "Themes",
+			"section": "Appearance",
 			"keywords": ["window", "glass", "blur", "translucent"]
 		},
 		"appearance-custom-themes": {
@@ -709,6 +709,5 @@
 			"description": "Record logs on this Mac and export them for a bug report.",
 			"keywords": ["logs", "logging", "diagnostics", "crash", "bug report", "debug", "export"]
 		}
-	},
-	"categoryPrefix": "Settings > {{tab}}"
+	}
 }

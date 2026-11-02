@@ -29,7 +29,7 @@ import { NoteThumbnail } from "../NoteThumbnail";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
-import { tagHueFromName } from "../editor/noteProperties/utils";
+import { tagColorFromName } from "../editor/noteProperties/utils";
 import { buildFileTreeFileNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import {
 	FILE_TREE_ENTRY_SENSORS,
@@ -377,7 +377,7 @@ export const FolioNoteListItem = memo(
 								className="folioNoteTag"
 								style={{
 									color: "var(--text-primary)",
-									background: `color-mix(in srgb, hsl(${tagHueFromName(tag)} 55% 50%) 18%, transparent)`,
+									background: `color-mix(in srgb, var(--palette-${tagColorFromName(tag)}) 18%, transparent)`,
 								}}
 								title={formatDatabaseTagLabel(tag)}
 							>

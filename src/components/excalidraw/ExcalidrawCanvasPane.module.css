@@ -15,10 +15,10 @@
 	left: 50%;
 	transform: translateX(-50%);
 	padding: 7px 12px;
-	border: 1px solid var(--border-primary);
+	border: 1px solid var(--border-default);
 	border-radius: 8px;
 	background: var(--bg-primary);
-	box-shadow: var(--shadow-md);
+	box-shadow: var(--shadow-float);
 	pointer-events: none;
 }
 

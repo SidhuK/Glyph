@@ -168,26 +168,26 @@
 			"keywords": ["カレンダー", "週", "月", "デイリーノート", "日の概要", "サイドバー"]
 		},
 		"appearance-theme-mode": {
-			"title": "テーマを選択",
-			"section": "テーマ",
+			"title": "カラーモード",
+			"section": "外観",
 			"description": "システム、ライト、ダークモードを選びます。",
 			"keywords": ["モード", "システム", "ライト", "ダーク", "mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
-			"title": "ライト",
-			"section": "テーマ",
+			"title": "ライトテーマ",
+			"section": "外観",
 			"description": "ライトモードで Glyph が使うパレットを選びます。",
 			"keywords": ["テーマ", "色", "ライト", "theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "ダーク",
-			"section": "テーマ",
+			"title": "ダークテーマ",
+			"section": "外観",
 			"description": "ダークモードで Glyph が使うパレットを選びます。",
 			"keywords": ["テーマ", "色", "ダーク", "theme", "color", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "半透明サイドバー",
-			"section": "テーマ",
+			"section": "外観",
 			"keywords": [
 				"ウィンドウ",
 				"ガラス",
@@ -648,6 +648,5 @@
 			"description": "Open the published Glyph changelog.",
 			"keywords": ["release notes", "version", "updates"]
 		}
-	},
-	"categoryPrefix": "設定 > {{tab}}"
+	}
 }

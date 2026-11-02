@@ -166,7 +166,6 @@
 		"copy": "Kopiuj kod",
 		"copied": "Skopiowano kod",
 		"copyFailed": "Nie udało się skopiować kodu",
-		"editCode": "Edytuj kod",
 		"editMermaid": "Edytuj kod Mermaid",
 		"mermaidRenderFailed": "Nie można wyrenderować diagramu Mermaid.",
 		"mermaidEmpty": "Dodaj kod Mermaid, aby wyświetlić podgląd diagramu.",
@@ -356,7 +355,6 @@
 		"dialogLabel": "Podgląd notatki",
 		"open": "Otwórz notatkę",
 		"close": "Zamknij podgląd",
-		"loading": "Wczytywanie notatki…",
 		"empty": "Ta notatka jest pusta."
 	},
 	"linkPreview": {
