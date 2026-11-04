@@ -15,6 +15,7 @@ import { decorateRecognizedTable } from "./tableDecorations";
 const CALLOUT_PATTERN = /^\s*>\s*\[!([\w-]+)\][+-]?/i;
 const FRONTMATTER_KEY_PATTERN = /^(\s*)([A-Za-z_][\w .-]*?)(\s*:)(?=\s|$)(\s*)/;
 const FRONTMATTER_LIST_PATTERN = /^(\s*)(-)(\s+)/;
+const FRONTMATTER_BLOCK_SCALAR_PATTERN = /^[|>][+-]?[1-9]?[+-]?\s*(?:#.*)?$/;
 
 function normalizedCalloutKind(kind: string): string {
 	const normalized = kind.toLowerCase();
@@ -53,8 +54,17 @@ function decorateFrontmatter(
 	const document = view.state.doc;
 	const end = findFrontmatterEnd(document);
 	if (!end) return;
+	let blockScalarIndent: number | null = null;
 	for (let lineNumber = 1; lineNumber <= end; lineNumber += 1) {
 		const line = document.line(lineNumber);
+		const indent = line.text.length - line.text.trimStart().length;
+		const inBlockScalar =
+			blockScalarIndent !== null && (line.text.trim() === "" || indent > blockScalarIndent);
+		if (!inBlockScalar) blockScalarIndent = null;
+		const key = inBlockScalar ? null : line.text.match(FRONTMATTER_KEY_PATTERN);
+		if (key && FRONTMATTER_BLOCK_SCALAR_PATTERN.test(line.text.slice(key[0].length))) {
+			blockScalarIndent = indent;
+		}
 		if (line.to < visibleFrom || line.from > visibleTo) continue;
 		const delimiter = line.text.trim() === "---";
 		addLineDecoration(
@@ -71,8 +81,7 @@ function decorateFrontmatter(
 			);
 			continue;
 		}
-		const key = line.text.match(FRONTMATTER_KEY_PATTERN);
-		const list = line.text.match(FRONTMATTER_LIST_PATTERN);
+		const list = inBlockScalar ? null : line.text.match(FRONTMATTER_LIST_PATTERN);
 		if (key) {
 			const keyFrom = line.from + (key[1]?.length ?? 0);
 			const keyTo = keyFrom + (key[2]?.length ?? 0);
