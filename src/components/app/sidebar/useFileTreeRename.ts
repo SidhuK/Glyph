@@ -2,21 +2,32 @@ import { FILE_TREE_START_RENAME_EVENT } from "@/lib/appEvents";
 import { scheduleScrollFileTreePathIntoView } from "@/lib/fileTreeScroll";
 import { useCallback, useEffect, useState } from "react";
 import type { SidebarContentProps } from "./sidebarContentProps";
+import { useSidebarRail } from "./sidebarRailContext";
 
 /** Inline rename state for the file tree, including the rename that follows a new note. */
 export function useFileTreeRename(
 	onRenameDir: SidebarContentProps["onRenameDir"],
 	onOpenFile: SidebarContentProps["onOpenFile"],
 ) {
+	const { rail } = useSidebarRail();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(null);
 
-	const handleStartRename = useCallback((path: string) => {
-		const nextPath = path.trim();
-		if (!nextPath) return;
-		setRenamingPath(nextPath);
-		setPendingNewNotePath(nextPath);
-	}, []);
+	const handleStartRename = useCallback(
+		(path: string) => {
+			const nextPath = path.trim();
+			if (!nextPath) return;
+			// The rail has no visible file tree to rename in, so a new note opens right away.
+			// Duplicate and Rename expand the sidebar before they ask for a rename.
+			if (rail) {
+				onOpenFile(nextPath);
+				return;
+			}
+			setRenamingPath(nextPath);
+			setPendingNewNotePath(nextPath);
+		},
+		[onOpenFile, rail],
+	);
 
 	useEffect(() => {
 		const handleStartRenameEvent = (event: Event) => {

@@ -22,12 +22,23 @@ function keepsFlyoutOpen(
 	return portal !== null && !portal.contains(host);
 }
 
+/** Moves the library body and tells its scroll panels to re-read their offset: a moved node
+ * comes back scrolled to the top without a scroll event, which would leave the file tree's
+ * virtualizer drawing rows for the old offset. */
+function moveLibraryBody(host: HTMLElement, target: HTMLElement) {
+	target.appendChild(host);
+	for (const panel of host.querySelectorAll(".sidebarViewPanel")) {
+		panel.dispatchEvent(new Event("scroll"));
+	}
+}
+
 /**
  * The library body (view strip and panels) lives in one DOM node for the sidebar's
  * lifetime. The expanded sidebar's slot holds it, and in the rail the flyout adopts it
  * while open. The panes render once through a portal into this node, so opening the flyout
- * moves the existing file tree (virtualizer, rename, drag and drop, expanded folders and
- * scroll) instead of mounting and fetching for a second copy.
+ * moves the existing file tree (virtualizer, rename, drag and drop and expanded folders)
+ * instead of mounting and fetching for a second copy. Scroll position isn't kept across a
+ * move.
  */
 export function useSidebarLibraryFlyout(rail: boolean) {
 	const [host] = useState(() => {
@@ -48,7 +59,7 @@ export function useSidebarLibraryFlyout(rail: boolean) {
 	const attachSlot = useCallback(
 		(node: HTMLDivElement | null) => {
 			slotRef.current = node;
-			if (node && !flyoutBodyRef.current) node.appendChild(host);
+			if (node && !flyoutBodyRef.current) moveLibraryBody(host, node);
 		},
 		[host],
 	);
@@ -56,10 +67,10 @@ export function useSidebarLibraryFlyout(rail: boolean) {
 		(node: HTMLDivElement | null) => {
 			if (!node) return undefined;
 			flyoutBodyRef.current = node;
-			node.appendChild(host);
+			moveLibraryBody(host, node);
 			return () => {
 				flyoutBodyRef.current = null;
-				slotRef.current?.appendChild(host);
+				if (slotRef.current) moveLibraryBody(host, slotRef.current);
 			};
 		},
 		[host],

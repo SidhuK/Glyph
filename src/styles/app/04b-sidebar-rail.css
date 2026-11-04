@@ -97,6 +97,17 @@ button.sidebarToggleButton:disabled {
 
 /* ── Rows ─────────────────────────────────────────────────────────────────── */
 
+/* Rail rows never shrink, so on a short window the rail scrolls instead of clipping its last
+   icons. */
+.sidebar[data-state="rail"] .sidebarSectionContent {
+	overflow-y: auto;
+	scrollbar-width: none;
+}
+
+.sidebar[data-state="rail"] .sidebarSectionContent::-webkit-scrollbar {
+	display: none;
+}
+
 .sidebar[data-state="rail"] .sidebarTopNavigation {
 	padding-top: 4px;
 }
