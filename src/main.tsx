@@ -335,7 +335,11 @@ async function loadWindowRoot(): Promise<React.ReactNode> {
 	if (isExternalMarkdownWindow) {
 		const { ExternalMarkdownWindow } =
 			await import("./components/external-markdown/ExternalMarkdownWindow");
-		return <ExternalMarkdownWindow />;
+		return (
+			<QueryClientProvider client={queryClient}>
+				<ExternalMarkdownWindow />
+			</QueryClientProvider>
+		);
 	}
 	const { default: App } = await import("./App");
 	return <App />;
