@@ -1,15 +1,15 @@
 {
-  "version": "0.9.5-alpha.2",
-  "notes": "## What's Changed\n* Give every theme a signature palette and redesign theme settings as cards (#686)[Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/686\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.5-alpha.1...v0.9.5-alpha.2",
-  "pub_date": "2026-11-02T05:25:42.046Z",
+  "version": "0.9.5-alpha.3",
+  "notes": "## What's Changed\n* Open editor suggestion menus only when the editor is focused by @SidhuK in https://github.com/SidhuK/Glyph/pull/687\n* Fix external Markdown window crash in RAW mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/688\n* Keep raw mode frontmatter from rendering as a setext heading by @SidhuK in https://github.com/SidhuK/Glyph/pull/690\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.5-alpha.2...v0.9.5-alpha.3",
+  "pub_date": "2026-11-04T12:02:07.463Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDh0U1JSaFA5R0JlNnRQb2h5STR4VTdlckE3SzBveURVdHh5MDlnbnkxSVYvSE9SdEZ2MTdWcjk2RTRnZWpLSVFHZDJGWUU0Z1ZsYlNvQTJtUit4RHdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTk3MTM1CWZpbGU6R2x5cGguYXBwLnRhci5negpwVXEvZnpkKzZuQ3hxek43aGJUVjVCRHE2bWFlZ2pXNGZEMkxpYW9VaUNVSGk1MUc0ODMwQkdaZHBRUFhCQWsrdDhuYnU5Vmx2S1RvT3c2NVNTL0JBQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.5-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdxOTJ2SFhCYzhQU0tEZE8zR0VCTnI5YWJrTTdPcUsvdU0xWW9kS3ZWOXhMOEV4NVFha3FEdk9zYlkvbGhtOUpNMlV3M0t2cWI3T09jV3lhMTJhM0E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNzkzNzE5CWZpbGU6R2x5cGguYXBwLnRhci5negp5K3ZUMXFwYklOeDVEY1Z1clZiWkVmeng0VGJFVTJyVkRNT1lqbVptTXZhQmhicXVocWw0ZXVaT2RBQks1MnVRa3JBQksySE43M1U1R1JLb3lOWFFEdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.5-alpha.3/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDh0U1JSaFA5R0JlNnRQb2h5STR4VTdlckE3SzBveURVdHh5MDlnbnkxSVYvSE9SdEZ2MTdWcjk2RTRnZWpLSVFHZDJGWUU0Z1ZsYlNvQTJtUit4RHdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTk3MTM1CWZpbGU6R2x5cGguYXBwLnRhci5negpwVXEvZnpkKzZuQ3hxek43aGJUVjVCRHE2bWFlZ2pXNGZEMkxpYW9VaUNVSGk1MUc0ODMwQkdaZHBRUFhCQWsrdDhuYnU5Vmx2S1RvT3c2NVNTL0JBQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.5-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdxOTJ2SFhCYzhQU0tEZE8zR0VCTnI5YWJrTTdPcUsvdU0xWW9kS3ZWOXhMOEV4NVFha3FEdk9zYlkvbGhtOUpNMlV3M0t2cWI3T09jV3lhMTJhM0E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNzkzNzE5CWZpbGU6R2x5cGguYXBwLnRhci5negp5K3ZUMXFwYklOeDVEY1Z1clZiWkVmeng0VGJFVTJyVkRNT1lqbVptTXZhQmhicXVocWw0ZXVaT2RBQks1MnVRa3JBQksySE43M1U1R1JLb3lOWFFEdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.5-alpha.3/Glyph_aarch64.app.tar.gz"
     }
   }
 }
