@@ -13,21 +13,12 @@ export function useFileTreeRename(
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(null);
 
-	const handleStartRename = useCallback(
-		(path: string) => {
-			const nextPath = path.trim();
-			if (!nextPath) return;
-			// The rail has no visible file tree to rename in, so a new note opens right away.
-			// Duplicate and Rename expand the sidebar before they ask for a rename.
-			if (rail) {
-				onOpenFile(nextPath);
-				return;
-			}
-			setRenamingPath(nextPath);
-			setPendingNewNotePath(nextPath);
-		},
-		[onOpenFile, rail],
-	);
+	const handleStartRename = useCallback((path: string) => {
+		const nextPath = path.trim();
+		if (!nextPath) return;
+		setRenamingPath(nextPath);
+		setPendingNewNotePath(nextPath);
+	}, []);
 
 	useEffect(() => {
 		const handleStartRenameEvent = (event: Event) => {
@@ -36,11 +27,17 @@ export function useFileTreeRename(
 			if (typeof detail !== "object" || detail === null || !("path" in detail)) return;
 			const path = detail.path;
 			if (typeof path !== "string" || !path) return;
+			// A new note in the rail has no visible file tree to be renamed in, so it opens right
+			// away. Rename and Duplicate in the flyout's tree call handleStartRename directly.
+			if (rail) {
+				onOpenFile(path);
+				return;
+			}
 			handleStartRename(path);
 		};
 		window.addEventListener(FILE_TREE_START_RENAME_EVENT, handleStartRenameEvent);
 		return () => window.removeEventListener(FILE_TREE_START_RENAME_EVENT, handleStartRenameEvent);
-	}, [handleStartRename]);
+	}, [handleStartRename, onOpenFile, rail]);
 
 	useEffect(() => {
 		if (!renamingPath) return;
