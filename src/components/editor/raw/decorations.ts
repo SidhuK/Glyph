@@ -13,7 +13,7 @@ import { addLiveSyntaxDecoration, rawMarkdownLivePreview } from "./livePresentat
 import { decorateRecognizedTable } from "./tableDecorations";
 
 const CALLOUT_PATTERN = /^\s*>\s*\[!([\w-]+)\][+-]?/i;
-const FRONTMATTER_KEY_PATTERN = /^(\s*)([A-Za-z_][\w.-]*)(\s*:)(\s*)/;
+const FRONTMATTER_KEY_PATTERN = /^(\s*)([A-Za-z_][\w .-]*?)(\s*:)(?=\s|$)(\s*)/;
 const FRONTMATTER_LIST_PATTERN = /^(\s*)(-)(\s+)/;
 
 function normalizedCalloutKind(kind: string): string {
