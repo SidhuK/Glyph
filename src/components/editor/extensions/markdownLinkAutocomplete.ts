@@ -36,6 +36,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 				editor: this.editor,
 				pluginKey: MD_LINK_SUGGESTION_KEY,
 				char: "](",
+				shouldShow: ({ editor }) => editor.view.hasFocus(),
 				allowedPrefixes: null,
 				startOfLine: false,
 				items: ({ query }) => getItems(query),

@@ -79,6 +79,7 @@ export const PersonAutocomplete = Extension.create({
 				editor: this.editor,
 				pluginKey: PERSON_SUGGESTION_KEY,
 				char: "@",
+				shouldShow: ({ editor }) => editor.view.hasFocus(),
 				startOfLine: false,
 				allowedPrefixes: [" ", "\t", "\n", "(", "[", "{"],
 				allow: ({ state, range }) => {

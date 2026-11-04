@@ -84,6 +84,7 @@ export const TagAutocomplete = Extension.create({
 				editor: this.editor,
 				pluginKey: TAG_SUGGESTION_KEY,
 				char: "#",
+				shouldShow: ({ editor }) => editor.view.hasFocus(),
 				startOfLine: false,
 				allowSpaces: false,
 				allowedPrefixes: [" ", "\t", "\n", "(", "[", "{", '"', "'"],

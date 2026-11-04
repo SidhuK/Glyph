@@ -343,6 +343,7 @@ export const WikiLink = Node.create({
 				editor: this.editor,
 				pluginKey: WIKI_LINK_SUGGESTION_KEY,
 				char: "[[",
+				shouldShow: ({ editor }) => editor.view.hasFocus(),
 				allowSpaces: true,
 				allowedPrefixes: null,
 				startOfLine: false,

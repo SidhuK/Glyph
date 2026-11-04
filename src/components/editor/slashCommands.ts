@@ -23,6 +23,7 @@ export const SlashCommand = Extension.create({
 			onTemplateInsertRequest: null as ((request: TemplateInsertRequest) => void) | null,
 			suggestion: {
 				char: "/",
+				shouldShow: ({ editor }: { editor: Editor }) => editor.view.hasFocus(),
 				startOfLine: false,
 				allowSpaces: true,
 				allow: ({ state }: { state: EditorState }) => {
