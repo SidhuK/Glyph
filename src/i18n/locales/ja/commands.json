@@ -533,7 +533,7 @@
 		},
 		"toggle-sidebar": {
 			"label": "サイドバーの表示切替",
-			"description": "ファイルツリーサイドバーの表示／非表示を切り替えます。"
+			"description": "サイドバーをアイコンだけの列に折りたたむか、再び展開します。"
 		},
 		"underline": {
 			"label": "下線",

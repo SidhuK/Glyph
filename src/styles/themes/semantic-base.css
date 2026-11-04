@@ -2,6 +2,8 @@
 	--pill-radius: var(--radius-10);
 
 	--sidebar-width: 260px;
+	--sidebar-rail-width: 76px;
+	--sidebar-header-button-size: 28px;
 	--header-height: 48px;
 	--button-height: 32px;
 	--button-height-sm: 26px;

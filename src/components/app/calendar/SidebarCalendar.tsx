@@ -8,6 +8,7 @@ import { DURABLE_SETTINGS } from "../../../lib/settings/definitions";
 import type { SidebarCalendarLayout } from "../../../lib/settings/model";
 import { toast } from "../../../lib/toast";
 import { CalendarView } from "./CalendarView";
+import { SidebarCalendarRailButton } from "./SidebarCalendarRailButton";
 import type { OpenPeriodNoteAtDate } from "./useCalendarView";
 
 interface SidebarCalendarProps {
@@ -15,7 +16,8 @@ interface SidebarCalendarProps {
 	onOpenFile: (relPath: string) => void;
 }
 
-/** Calendar section pinned below the sidebar's file tree. */
+/** Calendar section pinned below the sidebar's file tree, plus its rail date tile. Both stay
+ * mounted so the strip keeps its week and selection across rail toggles. */
 export function SidebarCalendar({ onOpenPeriodNoteAtDate, onOpenFile }: SidebarCalendarProps) {
 	const { t } = useTranslation("shell");
 	const { sidebarCalendar: settings, setSidebarCalendar, sidebarVisibility } = useUILayoutContext();
@@ -52,23 +54,26 @@ export function SidebarCalendar({ onOpenPeriodNoteAtDate, onOpenFile }: SidebarC
 	};
 
 	return (
-		<section
-			className="sidebarCalendar"
-			aria-label={t("sidebar.calendar")}
-			onContextMenu={handleContextMenu}
-		>
-			<CalendarView
-				layout={settings.layout}
-				dayClick={settings.dayClick}
-				showDaySummary={settings.showDaySummary}
-				onOpenPeriodNoteAtDate={onOpenPeriodNoteAtDate}
-				onOpenNote={onOpenFile}
-				onShowMonth={() => setLayout.mutate("month")}
-				collapse={{
-					collapsed: settings.collapsed,
-					onCollapsedChange: (collapsed) => setCollapsed.mutate(collapsed),
-				}}
-			/>
-		</section>
+		<>
+			<section
+				className="sidebarCalendar"
+				aria-label={t("sidebar.calendar")}
+				onContextMenu={handleContextMenu}
+			>
+				<CalendarView
+					layout={settings.layout}
+					dayClick={settings.dayClick}
+					showDaySummary={settings.showDaySummary}
+					onOpenPeriodNoteAtDate={onOpenPeriodNoteAtDate}
+					onOpenNote={onOpenFile}
+					onShowMonth={() => setLayout.mutate("month")}
+					collapse={{
+						collapsed: settings.collapsed,
+						onCollapsedChange: (collapsed) => setCollapsed.mutate(collapsed),
+					}}
+				/>
+			</section>
+			<SidebarCalendarRailButton onOpenPeriodNoteAtDate={onOpenPeriodNoteAtDate} />
+		</>
 	);
 }

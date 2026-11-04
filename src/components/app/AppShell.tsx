@@ -20,7 +20,6 @@ import {
 	useGitSyncContext,
 	useSpace,
 	useUILayoutContext,
-	useUpdaterContext,
 } from "../../contexts";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDeeplinkDispatch } from "../../hooks/useDeeplinkDispatch";
@@ -60,6 +59,7 @@ import { TASKS_TAB_ID } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate, selectTemplateFile } from "../../lib/templates";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { toast } from "../../lib/toast";
 import {
 	isMarkdownPath,
@@ -73,8 +73,6 @@ import { SettingsDialog } from "../settings/SettingsDialog";
 import { CalendarPaletteController, preloadCalendarPalette } from "./CalendarPaletteController";
 import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
-import { Sidebar } from "./Sidebar";
-import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import {
 	loadActivityTimelinePane,
 	loadDatabasesPane,
@@ -84,6 +82,7 @@ import { useAppCommands } from "./useAppCommands";
 import { useDocumentExport } from "./useDocumentExport";
 import { useTabManager } from "./useTabManager";
 import { useWorkspaceLinkEvents } from "./useWorkspaceLinkEvents";
+import { Sidebar } from "./sidebar/Sidebar";
 import { useWorkspaceSession } from "./useWorkspaceSession";
 
 const loadCommandPalette = () =>
@@ -197,7 +196,6 @@ export function AppShell() {
 	const [resumeLastSession, setResumeLastSession] = useState<boolean | null>(null);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
-	const autoUpdater = useUpdaterContext();
 	const [sidebarAutoCollapsed, setSidebarAutoCollapsed] = useState(() =>
 		typeof window === "undefined" ? false : window.innerWidth <= SIDEBAR_AUTO_COLLAPSE_WIDTH,
 	);
@@ -209,6 +207,10 @@ export function AppShell() {
 			setSidebarCollapsedState(collapsed);
 		},
 		[setSidebarCollapsedState, sidebarAutoCollapsed],
+	);
+	const toggleSidebar = useCallback(
+		() => setSidebarCollapsed(!sidebarCollapsed),
+		[setSidebarCollapsed, sidebarCollapsed],
 	);
 	const gitSync = useGitSyncContext();
 	const lastGitSyncStatusRef = useRef<{
@@ -899,8 +901,10 @@ export function AppShell() {
 
 	const handleRevealSpaceFromMenu = useCallback(() => {
 		if (!spacePath) return;
-		void openPath(spacePath);
-	}, [spacePath]);
+		openPath(spacePath).catch((error: unknown) => {
+			toast.error(t("workspace.revealFailed"), { description: extractErrorMessage(error) });
+		});
+	}, [spacePath, t]);
 
 	const handleOpenSpaceSettings = useCallback(() => {
 		openSettings("space");
@@ -1232,10 +1236,9 @@ export function AppShell() {
 		setAiPanelOpen,
 		setMovePickerSourcePath,
 		setTagPickerAction,
-		setSidebarCollapsed,
 		showCollapsibleHeadings,
 		showCollapsibleLists,
-		sidebarCollapsed,
+		toggleSidebar,
 		spacePath,
 		tabsLength: tabs.length,
 		tagPickerAction,
@@ -1323,7 +1326,6 @@ export function AppShell() {
 		<div
 			className={cn(
 				"appShell",
-				sidebarCollapsed && "appShellSidebarCollapsed",
 				folioMode && "appShellFolioMode",
 				rightSidebarOpen && "appShellRightSidebarOpen",
 			)}
@@ -1335,15 +1337,6 @@ export function AppShell() {
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
-			{!zenMode && sidebarCollapsed ? (
-				<div className="sidebarCollapsedToggle">
-					<WindowChromeUpdateButton
-						updateReady={autoUpdater.updateReady}
-						updateVersion={autoUpdater.updateVersion}
-						onInstallUpdate={autoUpdater.installAndRelaunch}
-					/>
-				</div>
-			) : null}
 			{!zenMode ? (
 				<>
 					<Sidebar
@@ -1370,6 +1363,8 @@ export function AppShell() {
 						onCollapseAllDirs={fileTree.collapseAllDirs}
 						onSelectTag={(t) => openTagSearchPalette(t)}
 						sidebarCollapsed={sidebarCollapsed}
+						toggleLocked={sidebarAutoCollapsed}
+						onToggleSidebar={toggleSidebar}
 						spacePath={spacePath}
 						onOpenAllDocs={openAllDocsTab}
 						onOpenTasks={openTasksTab}

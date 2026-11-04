@@ -34,7 +34,10 @@
 		"sort": "Trier",
 		"expandAllFolders": "Développer tous les dossiers",
 		"collapseAllFolders": "Réduire tous les dossiers",
-		"fileTreeOptions": "Options de l’arborescence"
+		"fileTreeOptions": "Options de l’arborescence",
+		"library": "Bibliothèque",
+		"fileTreeSortUpdateFailed": "Impossible de mettre à jour le tri de l’arborescence",
+		"tagIconUpdateFailed": "Impossible de mettre à jour l’icône de l’étiquette"
 	},
 	"sort": {
 		"nameAsc": "Nom A–Z",
@@ -552,7 +555,18 @@
 		"openFailed": "Impossible d’ouvrir dans Glyph : {{message}}",
 		"hideFailed": "Impossible de fermer la recherche rapide : {{message}}"
 	},
+	"workspace": {
+		"openSpace": "Ouvrir un espace",
+		"openAnotherSpace": "Ouvrir un autre espace",
+		"switchSaveFailed": "Impossible d’enregistrer l’espace actuel. Veuillez réessayer.",
+		"revealFailed": "Impossible d’afficher l’espace dans le Finder"
+	},
+	"sidebarSpace": {
+		"noSpaceTitle": "Aucun espace ouvert",
+		"noSpaceHint": "Ouvrez ou créez un espace pour commencer."
+	},
 	"sidebarCalendar": {
+		"openToday": "Ouvrir la note du jour, {{date}}",
 		"menu": {
 			"showWeekStrip": "Afficher la bande de la semaine",
 			"showMonth": "Afficher le mois entier",

@@ -32,7 +32,10 @@
 		"sort": "정렬",
 		"expandAllFolders": "모든 폴더 펼치기",
 		"collapseAllFolders": "모든 폴더 접기",
-		"fileTreeOptions": "파일 트리 옵션"
+		"fileTreeOptions": "파일 트리 옵션",
+		"library": "라이브러리",
+		"fileTreeSortUpdateFailed": "파일 트리 정렬을 업데이트할 수 없습니다",
+		"tagIconUpdateFailed": "태그 아이콘을 업데이트할 수 없습니다"
 	},
 	"sort": {
 		"nameAsc": "이름 A–Z",
@@ -548,7 +551,18 @@
 		"openFailed": "Glyph에서 열 수 없습니다: {{message}}",
 		"hideFailed": "빠른 검색을 닫을 수 없습니다: {{message}}"
 	},
+	"workspace": {
+		"openSpace": "스페이스 열기",
+		"openAnotherSpace": "다른 스페이스 열기",
+		"switchSaveFailed": "현재 스페이스를 저장하지 못했습니다. 다시 시도해 주세요.",
+		"revealFailed": "Finder에서 스페이스를 표시하지 못했습니다"
+	},
+	"sidebarSpace": {
+		"noSpaceTitle": "열린 스페이스 없음",
+		"noSpaceHint": "시작하려면 스페이스를 열거나 만드세요."
+	},
 	"sidebarCalendar": {
+		"openToday": "오늘의 데일리 노트 열기, {{date}}",
 		"menu": {
 			"showWeekStrip": "주간 스트립 보기",
 			"showMonth": "한 달 전체 보기",

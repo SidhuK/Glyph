@@ -32,7 +32,10 @@
 		"sort": "Sortuj",
 		"expandAllFolders": "Rozwiń wszystkie foldery",
 		"collapseAllFolders": "Zwiń wszystkie foldery",
-		"fileTreeOptions": "Opcje drzewa plików"
+		"fileTreeOptions": "Opcje drzewa plików",
+		"library": "Biblioteka",
+		"fileTreeSortUpdateFailed": "Nie udało się zaktualizować sortowania drzewa plików",
+		"tagIconUpdateFailed": "Nie udało się zaktualizować ikony tagu"
 	},
 	"sort": {
 		"nameAsc": "Nazwa A–Z",
@@ -465,6 +468,7 @@
 		"renameCurrent": "Zmień nazwę bieżącego pliku"
 	},
 	"workspace": {
+		"revealFailed": "Nie udało się pokazać przestrzeni w Finderze",
 		"openSpace": "Otwórz przestrzeń",
 		"openAnotherSpace": "Otwórz inną przestrzeń",
 		"switchSaveFailed": "Nie udało się zapisać bieżącej przestrzeni. Spróbuj ponownie."
@@ -598,7 +602,12 @@
 		"openFailed": "Nie udało się otworzyć w Glyph: {{message}}",
 		"hideFailed": "Nie udało się zamknąć szybkiego wyszukiwania: {{message}}"
 	},
+	"sidebarSpace": {
+		"noSpaceTitle": "Brak otwartej przestrzeni",
+		"noSpaceHint": "Otwórz lub utwórz przestrzeń, aby zacząć."
+	},
 	"sidebarCalendar": {
+		"openToday": "Otwórz dzisiejszą notatkę dzienną, {{date}}",
 		"menu": {
 			"showWeekStrip": "Pokaż pasek tygodnia",
 			"showMonth": "Pokaż cały miesiąc",

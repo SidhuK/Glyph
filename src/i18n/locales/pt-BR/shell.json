@@ -32,7 +32,10 @@
 		"sort": "Ordenar",
 		"expandAllFolders": "Expandir todas as pastas",
 		"collapseAllFolders": "Recolher todas as pastas",
-		"fileTreeOptions": "Opções da árvore de arquivos"
+		"fileTreeOptions": "Opções da árvore de arquivos",
+		"library": "Biblioteca",
+		"fileTreeSortUpdateFailed": "Não foi possível atualizar a ordenação da árvore de arquivos",
+		"tagIconUpdateFailed": "Não foi possível atualizar o ícone da tag"
 	},
 	"sort": {
 		"nameAsc": "Nome A–Z",
@@ -550,7 +553,18 @@
 		"openFailed": "Não foi possível abrir no Glyph: {{message}}",
 		"hideFailed": "Não foi possível fechar a busca rápida: {{message}}"
 	},
+	"workspace": {
+		"openSpace": "Abrir espaço",
+		"openAnotherSpace": "Abrir outro espaço",
+		"switchSaveFailed": "Não foi possível salvar o espaço atual. Tente novamente.",
+		"revealFailed": "Não foi possível mostrar o espaço no Finder"
+	},
+	"sidebarSpace": {
+		"noSpaceTitle": "Nenhum espaço aberto",
+		"noSpaceHint": "Abra ou crie um espaço para começar."
+	},
 	"sidebarCalendar": {
+		"openToday": "Abrir a nota diária de hoje, {{date}}",
 		"menu": {
 			"showWeekStrip": "Mostrar faixa da semana",
 			"showMonth": "Mostrar mês inteiro",

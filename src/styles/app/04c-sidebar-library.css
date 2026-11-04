@@ -1,0 +1,72 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   SIDEBAR LIBRARY - the library body's placement, the rail's library stack and
+   flyout. The body (.sidebarLibraryBody: view strip and
+   panels) is one node that the expanded slot or the flyout holds (SidebarLibrary.tsx).
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* The library wrapper, slot and body are plain flex columns, so the expanded sidebar lays
+   out the view strip and panels as it would without them. */
+.sidebarLibrary,
+.sidebarLibrarySlot,
+.sidebarLibraryBody {
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebar[data-state="rail"] .sidebarLibrarySlot {
+	display: none;
+}
+
+/* ── Rail stack ───────────────────────────────────────────────────────────── */
+
+.sidebarLibraryRail {
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+}
+
+.sidebarLibraryRailBtn > :is(svg, .appearanceEmoji) {
+	flex: 0 0 auto;
+	color: var(--text-secondary);
+}
+
+.sidebarLibraryRailBtn[data-active="true"] > :is(svg, .appearanceEmoji) {
+	color: var(--text-primary);
+}
+
+/* ── Flyout ───────────────────────────────────────────────────────────────── */
+
+.sidebarRailFlyoutPositioner {
+	z-index: 40;
+	outline: none;
+}
+
+.sidebarRailFlyout {
+	display: flex;
+	flex-direction: column;
+	width: var(--sidebar-width);
+	max-width: calc(100vw - var(--sidebar-rail-width) - 16px);
+	max-height: min(560px, var(--available-height));
+	padding: 8px 0 6px;
+	overflow: hidden;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
+	box-shadow: var(--floating-surface-shadow);
+	color: var(--text-primary);
+	font-size: var(--text-base);
+	outline: none;
+}
+
+.sidebarRailFlyoutBody {
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebarRailFlyout .sidebarViewTabsRow {
+	margin-bottom: 4px;
+}

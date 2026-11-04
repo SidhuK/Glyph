@@ -21,14 +21,10 @@ import {
 import type { IconSvgElement } from "@hugeicons/react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useUILayoutContext } from "../../contexts";
-import {
-	type PeriodKind,
-	type PeriodNotesEnabled,
-	isPeriodNoteEnabled,
-} from "../../lib/periodNotes";
-import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import type { Shortcut } from "../../lib/shortcuts/types";
+import { useUILayoutContext } from "@/contexts";
+import { type PeriodKind, type PeriodNotesEnabled, isPeriodNoteEnabled } from "@/lib/periodNotes";
+import { formatShortcutForPlatform } from "@/lib/shortcuts/platform";
+import type { Shortcut } from "@/lib/shortcuts/types";
 
 const PERIOD_ITEMS = [
 	{

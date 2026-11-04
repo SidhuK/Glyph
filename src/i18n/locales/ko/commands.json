@@ -533,7 +533,7 @@
 		},
 		"toggle-sidebar": {
 			"label": "사이드바 전환",
-			"description": "파일 트리 사이드바를 표시하거나 숨깁니다."
+			"description": "사이드바를 아이콘 열로 접거나 다시 펼칩니다."
 		},
 		"underline": {
 			"label": "밑줄",

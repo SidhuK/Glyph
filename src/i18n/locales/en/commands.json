@@ -573,7 +573,7 @@
 		},
 		"toggle-sidebar": {
 			"label": "Toggle sidebar",
-			"description": "Show or hide the file tree sidebar."
+			"description": "Collapse the sidebar to an icon rail, or expand it again."
 		},
 		"underline": {
 			"label": "Underline",

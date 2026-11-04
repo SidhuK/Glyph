@@ -42,6 +42,9 @@
 		"expandAllFolders": "Expand all folders",
 		"collapseAllFolders": "Collapse all folders",
 		"fileTreeOptions": "File tree options",
+		"library": "Library",
+		"fileTreeSortUpdateFailed": "Could not update file tree sorting",
+		"tagIconUpdateFailed": "Could not update tag icon",
 		"inbox": "Inbox",
 		"archive": "Archive",
 		"tasks": "Tasks"
@@ -475,6 +478,7 @@
 		"showInFinderFailed": "Could not show file in Finder"
 	},
 	"workspace": {
+		"revealFailed": "Could not show the space in Finder",
 		"openSpace": "Open space",
 		"openAnotherSpace": "Open another space",
 		"switchSaveFailed": "The current space could not be saved. Please try again."
@@ -738,7 +742,12 @@
 		"openFailed": "Could not open in Glyph: {{message}}",
 		"hideFailed": "Could not close quick search: {{message}}"
 	},
+	"sidebarSpace": {
+		"noSpaceTitle": "No space open",
+		"noSpaceHint": "Open or create a space to get started."
+	},
 	"sidebarCalendar": {
+		"openToday": "Open today’s daily note, {{date}}",
 		"menu": {
 			"showWeekStrip": "Show week strip",
 			"showMonth": "Show full month",

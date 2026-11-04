@@ -32,7 +32,10 @@
 		"sort": "Sortieren",
 		"expandAllFolders": "Alle Ordner ausklappen",
 		"collapseAllFolders": "Alle Ordner einklappen",
-		"fileTreeOptions": "Dateibaum-Optionen"
+		"fileTreeOptions": "Dateibaum-Optionen",
+		"library": "Bibliothek",
+		"fileTreeSortUpdateFailed": "Sortierung des Dateibaums konnte nicht aktualisiert werden",
+		"tagIconUpdateFailed": "Tag-Symbol konnte nicht aktualisiert werden"
 	},
 	"sort": {
 		"nameAsc": "Name A–Z",
@@ -550,7 +553,18 @@
 		"openFailed": "Konnte nicht in Glyph geöffnet werden: {{message}}",
 		"hideFailed": "Schnellsuche konnte nicht geschlossen werden: {{message}}"
 	},
+	"workspace": {
+		"openSpace": "Space öffnen",
+		"openAnotherSpace": "Anderen Space öffnen",
+		"switchSaveFailed": "Der aktuelle Space konnte nicht gespeichert werden. Bitte versuche es erneut.",
+		"revealFailed": "Der Space konnte nicht im Finder angezeigt werden"
+	},
+	"sidebarSpace": {
+		"noSpaceTitle": "Kein Space geöffnet",
+		"noSpaceHint": "Öffne oder erstelle einen Space, um loszulegen."
+	},
 	"sidebarCalendar": {
+		"openToday": "Heutige Tagesnotiz öffnen, {{date}}",
 		"menu": {
 			"showWeekStrip": "Wochenleiste anzeigen",
 			"showMonth": "Ganzen Monat anzeigen",

@@ -4,7 +4,6 @@
 .appShell {
 	--window-control-toggle-offset: 78px;
 	--window-control-toggle-top: calc((var(--header-height) + 6px) / 2);
-	--collapsed-sidebar-top-reserve: calc(var(--window-control-toggle-offset) + 38px);
 
 	isolation: isolate;
 	display: flex;
@@ -225,45 +224,4 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 	right: 0;
 	height: 14px;
 	z-index: 1;
-}
-
-.sidebarCollapsedToggle {
-	position: absolute;
-	top: var(--window-control-toggle-top);
-	left: var(--window-control-toggle-offset);
-	transform: translateY(-50%);
-	z-index: 3;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-}
-
-.appShell.appShellSidebarCollapsed .mainArea {
-	margin-left: 0;
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
-}
-
-@media (max-width: 760px) {
-	.appShell .sidebar {
-		width: 0 !important;
-		min-width: 0;
-		border: 0;
-		overflow: hidden;
-	}
-
-	.appShell .sidebarContentRoot {
-		display: none;
-	}
-
-	.appShell .sidebarResizeHandle {
-		width: 0;
-		margin-left: 0;
-		margin-right: 0;
-		pointer-events: none;
-	}
-
-	.appShell .mainArea {
-		border-left-width: 0;
-	}
 }

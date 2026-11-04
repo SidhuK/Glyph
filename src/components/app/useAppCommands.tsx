@@ -136,10 +136,9 @@ interface UseAppCommandsDeps {
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
 	setMovePickerSourcePath: (path: string | null) => void;
 	setTagPickerAction: (action: TagRefactorAction | null) => void;
-	setSidebarCollapsed: (collapsed: boolean) => void;
 	showCollapsibleHeadings: boolean;
 	showCollapsibleLists: boolean;
-	sidebarCollapsed: boolean;
+	toggleSidebar: () => void;
 	spacePath: string | null;
 	tabsLength: number;
 	tagPickerAction: TagRefactorAction | null;
@@ -300,10 +299,9 @@ export function useAppCommands({
 	setAiPanelOpen,
 	setMovePickerSourcePath,
 	setTagPickerAction,
-	setSidebarCollapsed,
 	showCollapsibleHeadings,
 	showCollapsibleLists,
-	sidebarCollapsed,
+	toggleSidebar,
 	spacePath,
 	tabsLength,
 	tagPickerAction,
@@ -695,7 +693,7 @@ export function useAppCommands({
 				id: "toggle-sidebar",
 				icon: <HugeiconsIcon icon={SidebarLeftIcon} size="var(--icon-lg)" />,
 				shortcut: { meta: true, shift: true, key: "b" },
-				action: () => setSidebarCollapsed(!sidebarCollapsed),
+				action: toggleSidebar,
 			},
 			{
 				id: "buy-glyph-license",
@@ -795,8 +793,7 @@ export function useAppCommands({
 		handleCreateFromTemplateFromMenu,
 		setAiPanelOpen,
 		togglePinnedFile,
-		setSidebarCollapsed,
-		sidebarCollapsed,
+		toggleSidebar,
 		showCollapsibleHeadings,
 		showCollapsibleLists,
 		spacePath,

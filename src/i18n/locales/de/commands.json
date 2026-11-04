@@ -533,7 +533,7 @@
 		},
 		"toggle-sidebar": {
 			"label": "Seitenleiste umschalten",
-			"description": "Die Dateibaum-Seitenleiste ein- oder ausblenden."
+			"description": "Die Seitenleiste auf eine Symbolspalte einklappen oder wieder ausklappen."
 		},
 		"underline": {
 			"label": "Unterstrichen",

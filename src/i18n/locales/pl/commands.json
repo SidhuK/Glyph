@@ -547,7 +547,7 @@
 		},
 		"toggle-sidebar": {
 			"label": "Przełącz pasek boczny",
-			"description": "Pokaż lub ukryj pasek boczny drzewa plików."
+			"description": "Zwiń pasek boczny do kolumny ikon lub rozwiń go ponownie."
 		},
 		"underline": {
 			"label": "Podkreślenie",

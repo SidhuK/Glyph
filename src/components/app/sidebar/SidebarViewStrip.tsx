@@ -11,12 +11,12 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
-import type { FileTreeSortMode } from "../../lib/settings";
-import type { FileTreeAppearance } from "../../lib/tauri";
-import { basename } from "../../utils/path";
-import { AppearanceIcon } from "../AppearanceIcon";
-import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
-import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
+import type { FileTreeSortMode } from "@/lib/settings";
+import type { FileTreeAppearance } from "@/lib/tauri";
+import { basename } from "@/utils/path";
+import { AppearanceIcon } from "@/components/AppearanceIcon";
+import { FileTreeSortMenu } from "@/components/filetree/FileTreeSortMenu";
+import { Highlight, HighlightItem } from "@/components/ui/shadcn/highlight";
 
 export type SidebarView =
 	| { kind: "files" }
@@ -27,12 +27,26 @@ export type SidebarView =
 
 export type SidebarViewKind = Exclude<SidebarView["kind"], "folder">;
 
-const SIDEBAR_VIEW_TABS = [
+export const SIDEBAR_VIEW_TABS = [
 	{ kind: "files", icon: Folder01Icon, labelKey: "sidebar.files" },
 	{ kind: "pinned", icon: PinIcon, labelKey: "sidebar.pinned" },
 	{ kind: "tags", icon: Tag01Icon, labelKey: "tags.header" },
 	{ kind: "recents", icon: HistoryIcon, labelKey: "sidebar.recents" },
 ] as const;
+
+/** Whether two views are the same view (and, for quick folders, the same folder). */
+export function isSameSidebarView(left: SidebarView, right: SidebarView): boolean {
+	if (left.kind === "folder") return right.kind === "folder" && left.path === right.path;
+	return left.kind === right.kind;
+}
+
+/** The view's name: a quick folder's basename, or the tab label. */
+export function useSidebarViewTitle(view: SidebarView): string {
+	const { t } = useTranslation("shell");
+	if (view.kind === "folder") return basename(view.path);
+	const tab = SIDEBAR_VIEW_TABS.find((candidate) => candidate.kind === view.kind);
+	return t(tab?.labelKey ?? "sidebar.files");
+}
 
 interface SidebarViewStripProps {
 	view: SidebarView;
@@ -64,10 +78,7 @@ export function SidebarViewStrip({
 	const { t } = useTranslation("shell");
 	const activeFolderPath = view.kind === "folder" ? view.path : null;
 	const activeTabValue = activeFolderPath === null ? view.kind : `folder:${activeFolderPath}`;
-	const activeTab = SIDEBAR_VIEW_TABS.find((tab) => tab.kind === view.kind);
-	const title = activeFolderPath
-		? basename(activeFolderPath)
-		: t(activeTab?.labelKey ?? "sidebar.files");
+	const title = useSidebarViewTitle(view);
 	const showsFileTree = view.kind === "files" || view.kind === "folder";
 	const tabsLabel = SIDEBAR_VIEW_TABS.map((tab) => t(tab.labelKey)).join(" / ");
 

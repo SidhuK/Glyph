@@ -23,10 +23,6 @@
 	padding: 10px 12px 8px;
 }
 
-.appShell.appShellSidebarCollapsed .folioNotesHeader {
-	padding-left: max(12px, var(--collapsed-sidebar-top-reserve));
-}
-
 .folioNotesControls {
 	display: flex;
 	align-items: center;

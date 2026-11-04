@@ -32,7 +32,10 @@
 		"sort": "並べ替え",
 		"expandAllFolders": "すべてのフォルダを展開",
 		"collapseAllFolders": "すべてのフォルダを折りたたむ",
-		"fileTreeOptions": "ファイルツリーのオプション"
+		"fileTreeOptions": "ファイルツリーのオプション",
+		"library": "ライブラリ",
+		"fileTreeSortUpdateFailed": "ファイルツリーの並べ替えを更新できませんでした",
+		"tagIconUpdateFailed": "タグのアイコンを更新できませんでした"
 	},
 	"sort": {
 		"nameAsc": "名前 A–Z",
@@ -548,7 +551,18 @@
 		"openFailed": "Glyph で開けませんでした: {{message}}",
 		"hideFailed": "クイック検索を閉じられませんでした: {{message}}"
 	},
+	"workspace": {
+		"openSpace": "スペースを開く",
+		"openAnotherSpace": "別のスペースを開く",
+		"switchSaveFailed": "現在のスペースを保存できませんでした。もう一度お試しください。",
+		"revealFailed": "スペースを Finder に表示できませんでした"
+	},
+	"sidebarSpace": {
+		"noSpaceTitle": "スペースが開かれていません",
+		"noSpaceHint": "スペースを開くか作成して始めましょう。"
+	},
 	"sidebarCalendar": {
+		"openToday": "今日のデイリーノートを開く（{{date}}）",
 		"menu": {
 			"showWeekStrip": "週の帯を表示",
 			"showMonth": "月全体を表示",

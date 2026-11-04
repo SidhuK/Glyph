@@ -40,10 +40,6 @@
 	background: var(--bg-primary);
 }
 
-.appShell.appShellSidebarCollapsed .mainTabsBar {
-	--main-tabs-left-reserve: max(var(--space-3), var(--collapsed-sidebar-top-reserve));
-}
-
 .mainTabsBar[data-empty-state="true"] {
 	background: var(--bg-canvas, var(--bg-primary));
 }

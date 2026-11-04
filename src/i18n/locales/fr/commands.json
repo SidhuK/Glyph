@@ -533,7 +533,7 @@
 		},
 		"toggle-sidebar": {
 			"label": "Afficher/masquer la barre latérale",
-			"description": "Afficher ou masquer la barre latérale de l’arborescence des fichiers."
+			"description": "Réduire la barre latérale à une colonne d’icônes, ou la développer à nouveau."
 		},
 		"underline": {
 			"label": "Souligné",

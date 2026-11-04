@@ -533,7 +533,7 @@
 		},
 		"toggle-sidebar": {
 			"label": "Alternar barra lateral",
-			"description": "Mostrar ou ocultar a barra lateral da árvore de arquivos."
+			"description": "Recolher a barra lateral para uma coluna de ícones ou expandi-la novamente."
 		},
 		"underline": {
 			"label": "Sublinhado",

@@ -1,0 +1,228 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   SIDEBAR RAIL - the collapsed icon rail.
+   Sidebar.tsx sets .sidebar[data-state="rail" | "expanded"] and keeps the content mounted
+   in both states. Apart from the header toggle, every rule here is scoped to the rail; the
+   expanded sidebar renders with the styles in 04-sidebar.css and 35-sidebar-nav.css.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Rail-only elements: the group dividers and the calendar icon stay hidden until it. */
+.sidebarGroupDivider,
+.sidebarCalendarRail {
+	display: none;
+}
+
+/* Rows are bigger in the rail, with every icon centred on it
+   (row inset + start padding + half the icon = half the rail width, 10 + 19 + 9 = 38). */
+.sidebar[data-state="rail"] {
+	--sidebar-row-height: 36px;
+	--sidebar-icon-size: 18px;
+	--sidebar-search-icon-size: 18px;
+	--sidebar-row-inset: 10px;
+	--sidebar-row-padding-start: 19px;
+	--sidebar-row-gap: 14px;
+
+	min-width: 0;
+	overflow-x: clip;
+	overflow-y: visible;
+}
+
+/* ── Header toggle: at the row's end when expanded, on the icon column in the rail ── */
+
+button.sidebarToggleButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 var(--sidebar-header-button-size);
+	width: var(--sidebar-header-button-size);
+	height: var(--sidebar-header-button-size);
+	margin-left: auto;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	-webkit-app-region: no-drag;
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
+}
+
+button.sidebarToggleButton:hover:not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+button.sidebarToggleButton:focus-visible {
+	outline: 1.5px solid color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	outline-offset: 0;
+}
+
+/* Narrow windows hold the sidebar in the rail. */
+button.sidebarToggleButton:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+
+/* ── Rail header: the toggle and update pill stack under the traffic lights ── */
+
+.sidebar[data-state="rail"] .sidebarHeader {
+	height: auto;
+	padding-top: calc(var(--window-control-toggle-top) + 14px);
+	padding-bottom: 6px;
+}
+
+.sidebar[data-state="rail"] .sidebarActions {
+	position: static;
+	flex-direction: column;
+	width: var(--sidebar-header-button-size);
+	margin-left: calc(var(--sidebar-rail-width) / 2 - var(--sidebar-header-button-size) / 2);
+	transform: none;
+}
+
+.sidebar[data-state="rail"] button.sidebarToggleButton {
+	order: -1;
+	margin-left: 0;
+}
+
+.sidebar[data-state="rail"] .windowChromeUpdateButton {
+	justify-content: center;
+	width: var(--sidebar-header-button-size);
+	padding: 0;
+}
+
+.sidebar[data-state="rail"] .windowChromeUpdateButton > span {
+	display: none;
+}
+
+/* ── Rows ─────────────────────────────────────────────────────────────────── */
+
+.sidebar[data-state="rail"] .sidebarTopNavigation {
+	padding-top: 4px;
+}
+
+.sidebar[data-state="rail"] .sidebarNavRow {
+	gap: 0;
+}
+
+.sidebar[data-state="rail"] .sidebarNavBtn {
+	flex: 0 0 auto;
+	gap: var(--sidebar-row-gap);
+	width: auto;
+	height: var(--sidebar-row-height);
+	min-height: 0;
+	margin-inline: var(--sidebar-row-inset);
+	padding: 0 0 0 var(--sidebar-row-padding-start);
+	border-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.sidebar[data-state="rail"] .sidebarNavBtn > svg {
+	width: var(--sidebar-icon-size);
+	height: var(--sidebar-icon-size);
+}
+
+.sidebar[data-state="rail"] .sidebarGroupDivider {
+	display: block;
+	flex: none;
+	height: 0;
+	margin: 9px 18px;
+	border: 0;
+	border-top: 1px solid var(--border-light);
+}
+
+/* A divider never ends its group list, e.g. when the calendar is hidden. */
+.sidebar[data-state="rail"] .sidebarGroupDivider:last-child {
+	display: none;
+}
+
+/* Only icons show in the rail. Labels, counts and shortcuts leave the layout, since
+   anything still taking width overflows the row and shifts its icon off the column. */
+.sidebar[data-state="rail"]
+	:is(
+		.sidebarQuickActionLabel,
+		.sidebarQuickActionCount,
+		.sidebarQuickActionShortcut,
+		.sidebarSearchBarLabel,
+		.sidebarSearchBarShortcut
+	) {
+	display: none;
+}
+
+/* New note keeps only its icon; the chevron menu waits for the expanded sidebar. */
+.sidebar[data-state="rail"] .sidebarCreateRow {
+	flex: 0 0 auto;
+	width: auto;
+	height: var(--sidebar-row-height);
+	margin-inline: var(--sidebar-row-inset);
+	border-radius: var(--radius-10);
+}
+
+.sidebar[data-state="rail"] .sidebarCreateRow .sidebarNewNoteBtn {
+	flex: 1 1 auto;
+	margin-inline: 0;
+	border-radius: var(--radius-10);
+}
+
+.sidebar[data-state="rail"] :is(.sidebarCreateDivider, button.sidebarCreateMenuTrigger) {
+	display: none;
+}
+
+.sidebar[data-state="rail"] .sidebarCreateRow:not(:has(.sidebarNewNoteBtn)) {
+	display: none;
+}
+
+/* Search drops its field look and becomes an icon row like the rest of the rail. */
+.sidebar[data-state="rail"] .sidebarSearchBar {
+	flex: 0 0 auto;
+	justify-content: flex-start;
+	width: auto;
+	height: var(--sidebar-row-height);
+	min-height: 0;
+	margin: 0 var(--sidebar-row-inset);
+	padding: 0 0 0 var(--sidebar-row-padding-start);
+	border: 0;
+	background: transparent;
+	overflow: hidden;
+}
+
+.sidebar[data-state="rail"] .sidebarSearchBar:hover {
+	background: var(--bg-hover);
+}
+
+.sidebar[data-state="rail"] .sidebarSearchBarIcon {
+	width: var(--sidebar-search-icon-size);
+	height: var(--sidebar-search-icon-size);
+	color: var(--text-primary);
+}
+
+/* ── Calendar, footer and empty state ─────────────────────────────────────── */
+
+.sidebar[data-state="rail"] .sidebarCalendar {
+	display: none;
+}
+
+.sidebar[data-state="rail"] .sidebarCalendarRail {
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebar[data-state="rail"] .licenseSidebarFooter {
+	display: none;
+}
+
+.sidebar[data-state="rail"] .sidebarEmpty {
+	visibility: hidden;
+}
+
+/* The rail has a fixed width, so its resize handle only carries the sidebar wash. */
+.sidebar[data-state="rail"] + .sidebarResizeHandle {
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	button.sidebarToggleButton {
+		transition: none;
+	}
+}

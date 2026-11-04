@@ -35,11 +35,4 @@
 	box-shadow: none;
 }
 
-.appShell.appShellSidebarCollapsed .sidebarResizeHandle {
-	width: 0;
-	margin-left: 0;
-	margin-right: 0;
-	pointer-events: none;
-}
-
 /* ── Empty State ─────────────────────────────────────────────────────────── */

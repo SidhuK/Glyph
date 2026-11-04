@@ -40,16 +40,6 @@
 	}
 }
 
-.appShell.appShellSidebarCollapsed
-	.canvasPaneHost[data-databases="true"]:has(.mainTabNavControls):not(
-		:has(.mainTabsStrip, .mainTabActiveTitle, .mainTabActiveTitleInput)
-	)
-	.databasesTopBar {
-	--databases-top-bar-nav-reserve: calc(
-		max(var(--space-3), var(--collapsed-sidebar-top-reserve)) - 16px + 56px + 8px
-	);
-}
-
 .databasesTopBarLeft {
 	display: flex;
 	flex-direction: row;
