@@ -9,7 +9,8 @@ cd "$repo_root"
 # shellcheck disable=SC1091
 source "$HOME/.config/vite-plus/env"
 export PATH="$HOME/.cargo/bin:$PATH"
-export DISPLAY="${DISPLAY:-:99}"
+# Always the preview display, even when the caller has another DISPLAY set.
+export DISPLAY=:99
 # WebKitGTK renders blank windows on Xvfb without a GPU unless compositing is off.
 export WEBKIT_DISABLE_COMPOSITING_MODE=1
 vnc_port=5901

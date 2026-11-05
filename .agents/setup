@@ -65,10 +65,10 @@ done_step
 
 step "Rust toolchain"
 if [[ ! -x "$HOME/.cargo/bin/rustup" ]]; then
-	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
-		sh -s -- -y --profile minimal --component clippy,rustfmt
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
 fi
 export PATH="$HOME/.cargo/bin:$PATH"
+rustup component add clippy rustfmt
 rustc --version
 cargo fetch --manifest-path src-tauri/Cargo.toml --locked
 done_step
@@ -76,19 +76,25 @@ done_step
 step "Orb agent guidance"
 guidance="$HOME/.config/amp/AGENTS.md"
 marker="# Glyph orb notes"
+end_marker="<!-- end Glyph orb notes -->"
 mkdir -p "$(dirname "$guidance")"
 touch "$guidance"
-# Replace notes written by earlier versions of this script so existing orbs
-# pick up changes.
-awk -v marker="$marker" '$0 == marker { skip = 1; next } skip && /^# / { skip = 0 } !skip' \
-	"$guidance" >"$guidance.tmp"
+# Replace the notes this script wrote before, keeping everything around them.
+# Notes from older versions have no end marker and end at the next heading.
+awk -v marker="$marker" -v end_marker="$end_marker" '
+	$0 == marker { skip = 1; next }
+	skip && $0 == end_marker { skip = 0; next }
+	skip && /^# / { skip = 0 }
+	!skip
+' "$guidance" >"$guidance.tmp"
 mv "$guidance.tmp" "$guidance"
 cat >>"$guidance" <<'NOTES'
 # Glyph orb notes
 
 - This orb is Linux. `vp`, Node.js, pnpm and Rust are installed, so `vp check`, `vp test`, `vp build`, `cargo check`, `cargo clippy` and `cargo test` all work. Code behind `cfg(target_os = "macos")` is not compiled here; say so when you change it.
 - To see the real app, run `amp orb services ensure`. It starts `.agents/visual-service`, which runs `pnpm tauri dev` on virtual display `:99` with a seeded sample space at `~/glyph-sample-space`, and serves the display through the "Glyph (Linux preview)" portal. The first Rust build takes a few minutes. Restart the service after Rust changes; frontend changes hot-reload.
-- `.agents/capture-screenshot [out.png]` and `.agents/capture-recording [seconds] [out.mp4]` capture the Glyph window and wait for it to appear. Drive the app with `DISPLAY=:99 xdotool mousemove --window "$(.agents/wait-for-visual-window)" X Y click 1` (window-relative coordinates from a screenshot), `xdotool type` and `xdotool key`. Shortcuts use Ctrl, not Cmd.
+- `.agents/capture-screenshot [out.png]` and `.agents/capture-recording [seconds] [out.mp4]` capture the main Glyph window and wait for it to appear; set `GLYPH_WINDOW` to a title regex such as `'Quick Note'` or `'Quick Search'` to target another window. Drive the app with `DISPLAY=:99 xdotool mousemove --window "$(.agents/wait-for-visual-window)" X Y click 1` (window-relative coordinates from a screenshot), `xdotool type` and `xdotool key`. Native menu shortcuts use Ctrl in place of Cmd. Shortcuts handled inside the webview, such as Cmd+K for the command palette, check the Cmd key, which the preview cannot send; click through the UI instead.
 - The preview uses WebKitGTK on Linux: there is no vibrancy, macOS title bar, macOS menu bar or dock. Say so when a change depends on those.
+<!-- end Glyph orb notes -->
 NOTES
 done_step
