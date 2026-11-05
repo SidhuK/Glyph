@@ -15,8 +15,10 @@ export const EMPTY_EXCALIDRAW_DOCUMENT = `${JSON.stringify(
 	2,
 )}\n`;
 
+export const EXCALIDRAW_DOCUMENT_QUERY_ROOT = ["excalidraw-document"] as const;
+
 export function excalidrawDocumentQueryKey(spacePath: string | null, relPath: string) {
-	return ["excalidraw-document", spacePath, relPath] as const;
+	return [...EXCALIDRAW_DOCUMENT_QUERY_ROOT, spacePath, relPath] as const;
 }
 
 interface GlyphNoteCardData {
@@ -86,7 +88,9 @@ function parseAgentCanvasNode(value: unknown): AgentCanvasNode | null {
 		typeof value.label !== "string" ||
 		(value.notePath !== null && typeof value.notePath !== "string") ||
 		typeof value.x !== "number" ||
-		typeof value.y !== "number"
+		typeof value.y !== "number" ||
+		!Number.isFinite(value.x) ||
+		!Number.isFinite(value.y)
 	) {
 		return null;
 	}

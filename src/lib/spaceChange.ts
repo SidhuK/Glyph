@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { isExcalidrawPath, normalizeRelPath, parentDir } from "../utils/path";
 import { invalidateCalendarPrefetch } from "./calendarActivity";
+import { EXCALIDRAW_DOCUMENT_QUERY_ROOT } from "./excalidrawDocument";
 import {
 	invalidateAllDocsPrefetch,
 	invalidateDatabasePrefetch,
@@ -102,7 +103,7 @@ function invalidatePath(path: string, removed: boolean): void {
 	// Open canvases keep their scene forever, so an outside write (an AI agent, git) must refetch.
 	if (!removed && isExcalidrawPath(path)) {
 		void queryClient.invalidateQueries({
-			queryKey: ["excalidraw-document"],
+			queryKey: EXCALIDRAW_DOCUMENT_QUERY_ROOT,
 			predicate: ({ queryKey }) => queryKey[2] === path,
 		});
 	}
@@ -186,6 +187,10 @@ function applyChange(change: SpaceChange, current: SpaceChangeHost, tree: TreeRe
 	if (!path) {
 		tree.all = true;
 		void queryClient.invalidateQueries({ queryKey: navigationQueryKeys.noteScans() });
+		void queryClient.invalidateQueries({
+			queryKey: EXCALIDRAW_DOCUMENT_QUERY_ROOT,
+			predicate: ({ queryKey }) => queryKey[1] === change.space_path,
+		});
 		return true;
 	}
 	addTreeChange(tree, path, change.kind === "remove");

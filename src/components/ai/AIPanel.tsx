@@ -22,7 +22,7 @@ import {
 import { canvasSystemPrompt, messageText, parseAddTrigger } from "./aiPanelConstants";
 import { setActiveAiHistoryJobId, useAiPanelSession } from "./aiPanelSession";
 import { useAiActions } from "./hooks/useAiActions";
-import { useAIConversation } from "./hooks/useRigChat";
+import { type UIMessage, useAIConversation } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
 import { useAiHistory, useRestoredAiChat } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
@@ -129,7 +129,7 @@ export function AIPanel(props: AIPanelProps) {
 				)));
 	const activeProvider = profiles.activeProfile?.provider;
 	const sendWithCurrentContext = useCallback(
-		async (text: string) => {
+		async (text: string, thread: UIMessage[]) => {
 			const trimmed = text.trim();
 			const sanitized = stripChipMarkers(trimmed).trim();
 			if (!sanitized || !profiles.activeProfileId) return false;
@@ -151,7 +151,7 @@ export function AIPanel(props: AIPanelProps) {
 						mode: aiAssistantMode,
 						context: built.payload || undefined,
 						context_manifest: built.manifest ?? undefined,
-						system_prompt: canvasSystemPrompt(sanitized, chat.messages),
+						system_prompt: canvasSystemPrompt(sanitized, thread),
 						audit: true,
 					},
 				},
@@ -491,7 +491,9 @@ export function AIPanel(props: AIPanelProps) {
 								variant="outline"
 								size="sm"
 								disabled={toolEvents.isAwaitingResponse}
-								onClick={() => void sendWithCurrentContext(t("selectionAi.summarizePrompt"))}
+								onClick={() =>
+									void sendWithCurrentContext(t("selectionAi.summarizePrompt"), chat.messages)
+								}
 							>
 								{t("selectionAi.summarize")}
 							</Button>
@@ -500,7 +502,9 @@ export function AIPanel(props: AIPanelProps) {
 								variant="outline"
 								size="sm"
 								disabled={toolEvents.isAwaitingResponse}
-								onClick={() => void sendWithCurrentContext(t("selectionAi.rephrasePrompt"))}
+								onClick={() =>
+									void sendWithCurrentContext(t("selectionAi.rephrasePrompt"), chat.messages)
+								}
 							>
 								{t("selectionAi.rephrase")}
 							</Button>

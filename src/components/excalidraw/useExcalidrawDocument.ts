@@ -67,5 +67,10 @@ export function useCanvasSaveMutation(relPath: string) {
 				(current) => current && { ...current, diskEtag: result.etag },
 			);
 		},
+		// A read skipped while this save ran may have missed an outside write, so recheck the disk.
+		// Don't return the promise: the mutation would stay pending and the read would skip again.
+		onSettled: () => {
+			void queryClient.invalidateQueries({ queryKey });
+		},
 	});
 }
