@@ -3,7 +3,9 @@
 
 use std::collections::HashMap;
 use std::sync::Mutex;
-use tauri::{Emitter, Manager, State, TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
+use tauri::{Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tracing::warn;
 
@@ -55,14 +57,19 @@ fn floating_window(
     );
     let builder = match kind {
         // Starts compact; the webview grows the window to fit what is typed.
-        FloatingWindow::QuickNote => builder
-            .title("Quick Note")
-            .inner_size(680.0, 240.0)
-            .min_inner_size(420.0, 180.0)
-            .resizable(true)
-            .decorations(true)
-            .title_bar_style(TitleBarStyle::Overlay)
-            .hidden_title(true),
+        FloatingWindow::QuickNote => {
+            let builder = builder
+                .title("Quick Note")
+                .inner_size(680.0, 240.0)
+                .min_inner_size(420.0, 180.0)
+                .resizable(true)
+                .decorations(true);
+            #[cfg(target_os = "macos")]
+            let builder = builder
+                .title_bar_style(TitleBarStyle::Overlay)
+                .hidden_title(true);
+            builder
+        }
         // Borderless so it reads as the command palette, not a document window.
         FloatingWindow::QuickSearch => builder
             .title("Quick Search")

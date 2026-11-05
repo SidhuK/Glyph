@@ -1062,6 +1062,7 @@ fn has_external_markdown_windows(app: &tauri::AppHandle) -> bool {
         .any(|label| external_markdown::is_external_markdown_window(label))
 }
 
+#[cfg(target_os = "macos")]
 fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) -> bool {
     for url in urls {
         if url.scheme() != "file" {
@@ -1818,6 +1819,7 @@ pub fn run() {
                 RunEvent::Exit => {
                     window_geometry::flush_host_window_geometry(app_handle);
                 }
+                #[cfg(target_os = "macos")]
                 RunEvent::Opened { urls } => {
                     let received_file_open = handle_opened_urls(app_handle, urls);
                     if initial_launch_pending {
