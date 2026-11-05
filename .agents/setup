@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Prepares an Amp orb for Glyph's frontend toolchain: global Vite+ (`vp`), which
+# provides the Node.js version from .node-version and pnpm from packageManager,
+# plus node_modules from pnpm-lock.yaml. Mirrors the frontend job in
+# .github/workflows/pr-checks.yml. Rust is skipped: the Tauri backend only
+# builds on macOS.
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+step() {
+	printf '\n==> %s\n' "$1"
+	SECONDS=0
+}
+done_step() { printf '    done in %ss\n' "$SECONDS"; }
+
+vp_version="$(sed -n 's/^  vite-plus: *//p' pnpm-workspace.yaml)"
+vp_bin="$HOME/.local/share/vite-plus/bin/vp"
+
+step "Vite+ $vp_version"
+if [[ -x "$vp_bin" ]] && "$vp_bin" --version 2>/dev/null | grep -Fqx "vp v$vp_version"; then
+	echo "    already installed"
+else
+	# VP_NODE_MANAGER and CI skip the installer's interactive prompts. The
+	# installer adds its env line to ~/.bashrc, ~/.bash_profile and ~/.profile
+	# once, so login shells for Amp and orb services get vp, node and pnpm.
+	installer="$(mktemp)"
+	curl -fsSL https://vite.plus -o "$installer"
+	VP_VERSION="$vp_version" VP_NODE_MANAGER=yes CI=1 bash "$installer" </dev/null
+	rm -f -- "$installer"
+fi
+done_step
+
+# The installer cannot change this running script's environment.
+# shellcheck disable=SC1091
+source "$HOME/.config/vite-plus/env"
+
+step "Node.js $(cat .node-version) and pnpm"
+node --version
+pnpm --version
+done_step
+
+step "vp install --frozen-lockfile"
+vp install --frozen-lockfile
+done_step
+
+step "Orb agent guidance"
+guidance="$HOME/.config/amp/AGENTS.md"
+marker="# Glyph orb notes"
+mkdir -p "$(dirname "$guidance")"
+if ! grep -Fqx "$marker" "$guidance" 2>/dev/null; then
+	cat >>"$guidance" <<'EOF'
+
+# Glyph orb notes
+
+- This orb is Linux. `vp`, Node.js and pnpm are installed and node_modules is ready, so `vp check`, `vp test` and `vp build` work.
+- There is no Rust toolchain. The Tauri backend in `src-tauri/` targets macOS only and does not compile on Linux, even when cross-checking for `aarch64-apple-darwin`. Skip `cargo check`, `cargo clippy` and `cargo test` and say that Rust changes were not compiled.
+EOF
+fi
+done_step
