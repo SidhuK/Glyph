@@ -32,7 +32,7 @@ export type UIMessageContextItem = AiMessageContextItem;
 
 export interface UIMessage {
 	id: string;
-	role: "system" | "user" | "assistant";
+	role: "user" | "assistant";
 	parts: UIMessagePart[];
 	context?: UIMessageContextItem[];
 }

@@ -80,7 +80,15 @@ fn write_chat_history(params: &AuditLogParams<'_>, response: &str, created_at_ms
         Err(_) => return,
     };
 
-    let mut messages = params.request.messages.clone();
+    // System messages (such as the /canvas prompt) belong to one request. Storing them would
+    // replay them on every later turn of a restored chat.
+    let mut messages: Vec<AiMessage> = params
+        .request
+        .messages
+        .iter()
+        .filter(|message| message.role != "system")
+        .cloned()
+        .collect();
     if !response.trim().is_empty() {
         messages.push(AiMessage {
             role: "assistant".to_string(),

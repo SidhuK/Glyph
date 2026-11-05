@@ -19,7 +19,8 @@ function toUIMessages(jobId: string, messages: AiChatHistoryDetail["messages"]):
 	const out: UIMessage[] = [];
 	for (let i = 0; i < messages.length; i += 1) {
 		const msg = messages[i];
-		if (!msg.content.trim()) continue;
+		// System prompts are per request, never part of the visible thread.
+		if (msg.role === "system" || !msg.content.trim()) continue;
 		out.push({
 			id: `${jobId}:${i}`,
 			role: msg.role,

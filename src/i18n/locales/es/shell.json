@@ -497,6 +497,7 @@
 	"canvas": {
 		"dropNote": "Suelta la nota para añadirla al lienzo",
 		"loadError": "No se pudo abrir el lienzo: {{message}}",
+		"invalidAgentCanvas": "el bloque glyphCanvas tiene un nodo o una conexión no válidos",
 		"saveError": "No se pudo guardar el lienzo: {{message}}"
 	},
 	"appearancePicker": {

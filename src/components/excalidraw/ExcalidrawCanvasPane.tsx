@@ -3,29 +3,29 @@ import {
 	CaptureUpdateAction,
 	Excalidraw,
 	convertToExcalidrawElements,
-	loadFromBlob,
 	serializeAsJSON,
 	viewportCoordsToSceneCoords,
 } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSpace } from "../../contexts";
 import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
-	agentCanvasSkeletons,
+	InvalidAgentCanvasError,
 	noteCardSkeleton,
 	notePathFromExcalidrawElement,
 } from "../../lib/excalidrawDocument";
-import type { TextFileDoc } from "../../lib/tauri";
-import { invoke } from "../../lib/tauri";
 import { isMarkdownPath } from "../../utils/path";
 import { FILE_TREE_ENTRY_TYPE } from "../filetree/fileTreeDnd";
 import { CanvasSaveQueue } from "./CanvasSaveQueue";
 import styles from "./ExcalidrawCanvasPane.module.css";
+import {
+	type LoadedCanvasDocument,
+	useCanvasSaveMutation,
+	useExcalidrawDocumentQuery,
+} from "./useExcalidrawDocument";
 
 const CANVAS_DROP_COLLISION_PRIORITY = 3;
 
@@ -37,24 +37,7 @@ interface ExcalidrawCanvasPaneProps {
 }
 
 export function ExcalidrawCanvasPane(props: ExcalidrawCanvasPaneProps) {
-	const { spacePath } = useSpace();
-	const documentQuery = useQuery({
-		queryKey: ["excalidraw-document", spacePath, props.relPath],
-		queryFn: async () => {
-			const document = await invoke("space_read_text", { path: props.relPath });
-			const agentSkeletons = agentCanvasSkeletons(document.text);
-			const scene = agentSkeletons
-				? {
-						elements: convertToExcalidrawElements(agentSkeletons),
-						appState: { viewBackgroundColor: "#ffffff" },
-						files: {},
-					}
-				: await loadFromBlob(new Blob([document.text], { type: "application/json" }), null, null);
-			return { document, scene };
-		},
-		staleTime: Number.POSITIVE_INFINITY,
-		gcTime: 0,
-	});
+	const documentQuery = useExcalidrawDocumentQuery(props.relPath);
 
 	if (documentQuery.isPending) {
 		return <div className={styles.root} aria-busy="true" />;
@@ -62,29 +45,26 @@ export function ExcalidrawCanvasPane(props: ExcalidrawCanvasPaneProps) {
 	if (documentQuery.isError) {
 		return <CanvasLoadError error={documentQuery.error} />;
 	}
-	return <LoadedExcalidrawCanvas {...props} loaded={documentQuery.data} />;
+	return (
+		<LoadedExcalidrawCanvas
+			key={documentQuery.data.revision}
+			{...props}
+			loaded={documentQuery.data}
+		/>
+	);
 }
 
 function CanvasLoadError({ error }: { error: unknown }) {
 	const { t } = useTranslation("shell");
+	const message =
+		error instanceof InvalidAgentCanvasError
+			? t("canvas.invalidAgentCanvas")
+			: extractErrorMessage(error);
 	return (
 		<div className={styles.root} role="alert">
-			<div className={styles.error}>
-				{t("canvas.loadError", { message: extractErrorMessage(error) })}
-			</div>
+			<div className={styles.error}>{t("canvas.loadError", { message })}</div>
 		</div>
 	);
-}
-
-interface LoadedCanvasDocument {
-	document: TextFileDoc;
-	scene:
-		| Awaited<ReturnType<typeof loadFromBlob>>
-		| {
-				elements: ReturnType<typeof convertToExcalidrawElements>;
-				appState: { viewBackgroundColor: string };
-				files: Record<string, never>;
-		  };
 }
 
 function LoadedExcalidrawCanvas({
@@ -98,14 +78,7 @@ function LoadedExcalidrawCanvas({
 	const dark = useIsDarkTheme();
 	const [saveError, setSaveError] = useState<string | null>(null);
 	const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
-	const saveMutation = useMutation({
-		mutationFn: ({ text, baseMtimeMs }: { text: string; baseMtimeMs: number }) =>
-			invoke("space_write_text", {
-				path: relPath,
-				text,
-				base_mtime_ms: baseMtimeMs,
-			}),
-	});
+	const saveMutation = useCanvasSaveMutation(relPath);
 	const mutationRef = useRef(saveMutation);
 	mutationRef.current = saveMutation;
 	const saveQueue = useMemo(

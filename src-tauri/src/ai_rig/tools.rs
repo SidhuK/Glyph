@@ -741,7 +741,13 @@ pub struct CreateCanvasTool {
 pub struct CanvasNodeArgs {
     id: String,
     label: String,
+    /// Matches the compact canvas format the /canvas prompt documents.
+    #[serde(rename = "notePath")]
     note_path: Option<String>,
+    /// Top-left x of the 280x112 node card. Set x and y on every node, or on none for a grid.
+    x: Option<f64>,
+    /// Top-left y of the 280x112 node card.
+    y: Option<f64>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -759,6 +765,13 @@ pub struct CreateCanvasArgs {
     overwrite: bool,
 }
 
+/// Grid slot for automatic layout: 3 columns of 280x112 cards with the prompt's 140 px gaps.
+fn grid_position(index: usize) -> (f64, f64) {
+    let column = (index % 3) as f64;
+    let row = (index / 3) as f64;
+    (80.0 + column * 420.0, 80.0 + row * 252.0)
+}
+
 impl Tool for CreateCanvasTool {
     const NAME: &'static str = "create_canvas";
     type Args = CreateCanvasArgs;
@@ -768,7 +781,7 @@ impl Tool for CreateCanvasTool {
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         tool_definition::<CreateCanvasArgs>(
             Self::NAME,
-            "Create a .excalidraw mind-map canvas. Nodes are laid out automatically. Set note_path to a space-relative Markdown path to create an openable note card; use null for a plain card. Edges connect node ids.",
+            "Create a .excalidraw mind-map canvas. Each node is a 280x112 card at its x/y top-left corner; give every node x and y, or none of them for a grid layout. Set notePath to a space-relative Markdown path to create an openable note card; use null for a plain card. Edges connect node ids.",
         )
     }
 
@@ -784,6 +797,14 @@ impl Tool for CreateCanvasTool {
             if args.nodes.len() > 100 || args.edges.len() > 200 {
                 return Ok(err_payload("canvas is limited to 100 nodes and 200 edges"));
             }
+            // Mixing placed and grid nodes could stack a grid card on top of a placed one.
+            let placed = args.nodes.iter().filter(|node| node.x.is_some()).count();
+            let has_y = args.nodes.iter().filter(|node| node.y.is_some()).count();
+            if placed != has_y || (placed != 0 && placed != args.nodes.len()) {
+                return Ok(err_payload(
+                    "set x and y on every node, or on none for automatic layout",
+                ));
+            }
             let mut node_ids = HashSet::new();
             for node in &mut args.nodes {
                 if node.id.trim().is_empty() || node.label.trim().is_empty() {
@@ -798,7 +819,7 @@ impl Tool for CreateCanvasTool {
                 if let Some(note_path) = &mut node.note_path {
                     let normalized = normalize_rel_path(note_path)?;
                     if !utils::is_markdown_path(Path::new(&normalized)) {
-                        return Ok(err_payload("note_path must point to a Markdown file"));
+                        return Ok(err_payload("notePath must point to a Markdown file"));
                     }
                     *note_path = normalized;
                 }
@@ -822,14 +843,13 @@ impl Tool for CreateCanvasTool {
                 .into_iter()
                 .enumerate()
                 .map(|(index, node)| {
-                    let column = index % 3;
-                    let row = index / 3;
+                    let (x, y) = node.x.zip(node.y).unwrap_or_else(|| grid_position(index));
                     json!({
                         "id": node.id,
                         "label": node.label,
                         "notePath": node.note_path,
-                        "x": 80 + column * 380,
-                        "y": 80 + row * 220,
+                        "x": x,
+                        "y": y,
                     })
                 })
                 .collect::<Vec<_>>();

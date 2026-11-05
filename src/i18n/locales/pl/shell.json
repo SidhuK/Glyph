@@ -545,6 +545,7 @@
 	"canvas": {
 		"dropNote": "Upuść notatkę, aby dodać ją do płótna",
 		"loadError": "Nie można otworzyć płótna: {{message}}",
+		"invalidAgentCanvas": "blok glyphCanvas zawiera nieprawidłowy węzeł lub krawędź",
 		"saveError": "Nie można zapisać płótna: {{message}}"
 	},
 	"appearancePicker": {

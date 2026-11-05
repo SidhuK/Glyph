@@ -43,7 +43,10 @@ export function useAiActions(chat: Chat) {
 	}, []);
 
 	const createRetryHandler = useCallback(
-		(sendWithCurrentContext: (text: string) => Promise<boolean>, payloadError: string) =>
+		(
+			sendWithCurrentContext: (text: string, thread: UIMessage[]) => Promise<boolean>,
+			payloadError: string,
+		) =>
 			async (assistantIndex: number) => {
 				if (chat.status === "streaming") return;
 				setAssistantActionError("");
@@ -63,8 +66,9 @@ export function useAiActions(chat: Chat) {
 					setAssistantActionError("No matching user prompt found for retry.");
 					return;
 				}
-				chat.setMessages(chat.messages.slice(0, userIndex));
-				const ok = await sendWithCurrentContext(userText);
+				const retained = chat.messages.slice(0, userIndex);
+				chat.setMessages(retained);
+				const ok = await sendWithCurrentContext(userText, retained);
 				if (!ok) {
 					setAssistantActionError(payloadError || "Retry failed due to missing AI context.");
 				}
