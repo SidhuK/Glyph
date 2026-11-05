@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Prints the X window id of Glyph's main window once it is visible on the
+# virtual display. Usage: wait-for-visual-window [timeout-seconds]
+set -euo pipefail
+
+export DISPLAY="${DISPLAY:-:99}"
+deadline=$((SECONDS + ${1:-600}))
+
+while ((SECONDS < deadline)); do
+	window="$(xdotool search --onlyvisible --name '^Glyph$' 2>/dev/null | tail -1 || true)"
+	if [[ -n "$window" ]]; then
+		printf '%s\n' "$window"
+		exit 0
+	fi
+	sleep 0.25
+done
+
+echo "Glyph window did not appear on $DISPLAY within ${1:-600}s." >&2
+exit 1

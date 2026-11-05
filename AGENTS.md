@@ -14,7 +14,9 @@ cd src-tauri && cargo check    # Typecheck Rust
 cd src-tauri && cargo clippy   # Lint Rust
 ```
 
-Never run `vp dev` or `vp run tauri dev`, and don't drive the app with computer-use, browser or simulator tools. The user runs dev.
+On the user's Mac, never run `vp dev` or `vp run tauri dev`, and don't drive the app with computer-use, browser or simulator tools. The user runs dev there.
+
+In Amp orbs, verify UI changes in the real app on a virtual Linux display: `amp orb services ensure` starts `.agents/visual-service`, and the orb notes describe the capture and input scripts. Check behaviour through files on disk, logs or tests where you can, and use screenshots for visual judgement. Take one final screenshot per affected state, and record video only when motion or interaction is under review. After two failed clicks or captures, stop guessing coordinates and diagnose the problem instead.
 
 Before pushing to main, and only when the user asks you to push:
 
@@ -31,6 +33,7 @@ vp check && vp test && vp build && cd src-tauri && cargo check && cargo test
 
 ## Rust and Tauri invariants
 
+- Keep the backend compiling on Linux so orb previews build: put macOS-only APIs (AppKit, `title_bar_style`, `RunEvent::Opened` and similar) behind `#[cfg(target_os = "macos")]`.
 - New Tauri command: implement it under `src-tauri/src/`, register it in `lib.rs`, and add its types to `TauriCommands` in `src/lib/tauri.ts`.
 - Wrap blocking work (filesystem walks, SQLite, git subprocesses) in `tauri::async_runtime::spawn_blocking`. Never block the async runtime.
 - Resolve the space per window with `space_state.root_for_window(&window)`. There is no single global active space.
