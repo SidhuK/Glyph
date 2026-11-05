@@ -592,6 +592,7 @@
 	"canvas": {
 		"dropNote": "Drop note to add it to the canvas",
 		"loadError": "Could not open canvas: {{message}}",
+		"invalidAgentCanvas": "its glyphCanvas block has an invalid node or edge",
 		"saveError": "Could not save canvas: {{message}}"
 	},
 	"tasks": {

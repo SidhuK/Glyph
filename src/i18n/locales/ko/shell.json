@@ -495,6 +495,7 @@
 	"canvas": {
 		"dropNote": "노트를 놓아 캔버스에 추가",
 		"loadError": "캔버스를 열 수 없습니다: {{message}}",
+		"invalidAgentCanvas": "glyphCanvas 블록에 잘못된 노드나 연결선이 있습니다",
 		"saveError": "캔버스를 저장할 수 없습니다: {{message}}"
 	},
 	"appearancePicker": {

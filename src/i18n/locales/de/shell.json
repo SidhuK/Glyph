@@ -497,6 +497,7 @@
 	"canvas": {
 		"dropNote": "Notiz ablegen, um sie zur Zeichenfläche hinzuzufügen",
 		"loadError": "Zeichenfläche konnte nicht geöffnet werden: {{message}}",
+		"invalidAgentCanvas": "der glyphCanvas-Block enthält einen ungültigen Knoten oder eine ungültige Kante",
 		"saveError": "Zeichenfläche konnte nicht gespeichert werden: {{message}}"
 	},
 	"appearancePicker": {

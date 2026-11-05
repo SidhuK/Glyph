@@ -33,9 +33,12 @@ For a canvas made of labeled nodes and arrows, prefer this compact format. Glyph
   }
 }
 - Every node needs a unique string id, label, numeric x and y coordinates, and notePath. Use null when the node does not link to a note.
+- Each node renders as a fixed 280x112 px card, and x and y are its top-left corner.
 - notePath must be a relative path to an existing Markdown file. Do not use .. segments or absolute paths.
-- Every edge needs valid from and to node ids and a label, which may be null.
-- Use descriptive ids. Leave at least 140 px between node bounds and lay out the main reading direction left to right or top to bottom.
+- Every edge needs from and to values that match node ids, and a label, which may be null.
+- Glyph refuses to open a compact canvas with any invalid node or edge, so check every field before writing.
+- Use descriptive ids. Leave at least 140 px between cards: node origins at least 420 px apart horizontally or 252 px apart vertically. Lay out the main reading direction left to right or top to bottom.
+- If a create_canvas tool is available, use it to write a new compact canvas. Otherwise write the JSON with your file editing tools.
 
 Use full Excalidraw JSON when the compact format cannot express the requested diagram. A full file has this wrapper:
 {
@@ -64,11 +67,20 @@ Working method
 
 Do not create a generator script as a substitute for editing the canvas. Do not overwrite unrelated elements. If the user did not name a target canvas and context does not identify one, ask which .excalidraw file to create or edit.`;
 
-export function isCanvasCommand(text: string): boolean {
+function isCanvasCommand(text: string): boolean {
 	const trimmed = text.trimStart();
-	if (!trimmed.startsWith(CANVAS_COMMAND)) return false;
+	// The slash menu matches case-insensitively, so sending must too.
+	if (trimmed.slice(0, CANVAS_COMMAND.length).toLowerCase() !== CANVAS_COMMAND) return false;
 	const remainder = trimmed.slice(CANVAS_COMMAND.length);
 	return remainder.length === 0 || LEADING_WHITESPACE_PATTERN.test(remainder);
+}
+
+/** A chat that started with /canvas keeps the canvas prompt on every later turn. */
+export function canvasSystemPrompt(text: string, thread: UIMessage[]): string | undefined {
+	const usesCanvas =
+		isCanvasCommand(text) ||
+		thread.some((message) => message.role === "user" && isCanvasCommand(messageText(message)));
+	return usesCanvas ? CANVAS_SYSTEM_PROMPT : undefined;
 }
 
 export function isCanvasCommandQuery(input: string): boolean {

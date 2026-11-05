@@ -499,6 +499,7 @@
 	"canvas": {
 		"dropNote": "Déposez la note pour l’ajouter au canevas",
 		"loadError": "Impossible d’ouvrir le canevas : {{message}}",
+		"invalidAgentCanvas": "le bloc glyphCanvas contient un nœud ou un lien non valide",
 		"saveError": "Impossible d’enregistrer le canevas : {{message}}"
 	},
 	"appearancePicker": {

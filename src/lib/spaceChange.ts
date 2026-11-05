@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { normalizeRelPath, parentDir } from "../utils/path";
+import { isExcalidrawPath, normalizeRelPath, parentDir } from "../utils/path";
 import { invalidateCalendarPrefetch } from "./calendarActivity";
 import {
 	invalidateAllDocsPrefetch,
@@ -99,6 +99,13 @@ function invalidatePath(path: string, removed: boolean): void {
 			(queryKey[2] === path || queryKey[2].startsWith(`${path}/`)),
 	});
 	for (const fn of previewInvalidators) fn(path, removed);
+	// Open canvases keep their scene forever, so an outside write (an AI agent, git) must refetch.
+	if (!removed && isExcalidrawPath(path)) {
+		void queryClient.invalidateQueries({
+			queryKey: ["excalidraw-document"],
+			predicate: ({ queryKey }) => queryKey[2] === path,
+		});
+	}
 }
 
 // Space-wide lists are refetched once per batch; per-change calls would cancel and

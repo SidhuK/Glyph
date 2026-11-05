@@ -15,6 +15,10 @@ export const EMPTY_EXCALIDRAW_DOCUMENT = `${JSON.stringify(
 	2,
 )}\n`;
 
+export function excalidrawDocumentQueryKey(spacePath: string | null, relPath: string) {
+	return ["excalidraw-document", spacePath, relPath] as const;
+}
+
 interface GlyphNoteCardData {
 	kind: "glyph-note";
 	path: string;
@@ -114,6 +118,19 @@ function parseAgentCanvasEdge(value: unknown): AgentCanvasEdge | null {
 	return { from: value.from, to: value.to, label: value.label };
 }
 
+/** The file has a `glyphCanvas` block that Glyph cannot expand without dropping parts of it. */
+export class InvalidAgentCanvasError extends Error {
+	constructor() {
+		super("Invalid glyphCanvas data");
+		this.name = "InvalidAgentCanvasError";
+	}
+}
+
+/**
+ * Expands the compact agent format. Returns null when the file is not in that format and
+ * throws when it is but some node or edge is invalid: the first autosave rewrites the file
+ * as full Excalidraw JSON, so loading a partial scene would delete the invalid parts.
+ */
 export function agentCanvasSkeletons(text: string): ExcalidrawElementSkeleton[] | null {
 	let parsed: unknown;
 	try {
@@ -121,18 +138,29 @@ export function agentCanvasSkeletons(text: string): ExcalidrawElementSkeleton[] 
 	} catch {
 		return null;
 	}
-	if (!isRecord(parsed) || !isRecord(parsed.glyphCanvas)) return null;
+	if (!isRecord(parsed) || !("glyphCanvas" in parsed)) return null;
 	const canvas = parsed.glyphCanvas;
-	if (canvas.version !== 1 || !Array.isArray(canvas.nodes) || !Array.isArray(canvas.edges)) {
-		return null;
+	if (
+		!isRecord(canvas) ||
+		canvas.version !== 1 ||
+		!Array.isArray(canvas.nodes) ||
+		!Array.isArray(canvas.edges)
+	) {
+		throw new InvalidAgentCanvasError();
 	}
 	const nodes = canvas.nodes.map(parseAgentCanvasNode);
 	const edges = canvas.edges.map(parseAgentCanvasEdge);
-	if (nodes.some((node) => node === null) || edges.some((edge) => edge === null)) return null;
 	const validNodes = nodes.filter((node): node is AgentCanvasNode => node !== null);
 	const validEdges = edges.filter((edge): edge is AgentCanvasEdge => edge !== null);
 	const nodeIds = new Set(validNodes.map((node) => node.id));
-	if (nodeIds.size !== validNodes.length) return null;
+	if (
+		validNodes.length !== nodes.length ||
+		validEdges.length !== edges.length ||
+		nodeIds.size !== validNodes.length ||
+		validEdges.some((edge) => !nodeIds.has(edge.from) || !nodeIds.has(edge.to))
+	) {
+		throw new InvalidAgentCanvasError();
+	}
 
 	const nodeSkeletons = validNodes.map((node): ExcalidrawElementSkeleton => {
 		const noteData = node.notePath
@@ -154,18 +182,13 @@ export function agentCanvasSkeletons(text: string): ExcalidrawElementSkeleton[] 
 			label: { text: node.label, fontSize: 18, textAlign: "center", verticalAlign: "middle" },
 		};
 	});
-	const edgeSkeletons = validEdges.flatMap((edge): ExcalidrawElementSkeleton[] => {
-		if (!nodeIds.has(edge.from) || !nodeIds.has(edge.to)) return [];
-		return [
-			{
-				type: "arrow",
-				x: 0,
-				y: 0,
-				start: { id: edge.from },
-				end: { id: edge.to },
-				label: edge.label ? { text: edge.label, fontSize: 16 } : undefined,
-			},
-		];
-	});
+	const edgeSkeletons = validEdges.map((edge): ExcalidrawElementSkeleton => ({
+		type: "arrow",
+		x: 0,
+		y: 0,
+		start: { id: edge.from },
+		end: { id: edge.to },
+		label: edge.label ? { text: edge.label, fontSize: 16 } : undefined,
+	}));
 	return [...edgeSkeletons, ...nodeSkeletons];
 }

@@ -497,6 +497,7 @@
 	"canvas": {
 		"dropNote": "Solte a nota para adicioná-la à tela",
 		"loadError": "Não foi possível abrir a tela: {{message}}",
+		"invalidAgentCanvas": "o bloco glyphCanvas tem um nó ou uma conexão inválidos",
 		"saveError": "Não foi possível salvar a tela: {{message}}"
 	},
 	"appearancePicker": {
