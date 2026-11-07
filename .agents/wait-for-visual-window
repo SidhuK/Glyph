@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Prints the X window id of Glyph's main window once it is visible on the
+# virtual display. Usage: wait-for-visual-window [timeout-seconds]
+# Set GLYPH_WINDOW to a title regex for another window, such as 'Quick Note'.
+set -euo pipefail
+
+export DISPLAY=:99
+if ! xdotool getdisplaygeometry >/dev/null 2>&1; then
+	echo "Cannot open X display $DISPLAY; start it with 'amp orb services ensure'." >&2
+	exit 1
+fi
+deadline=$((SECONDS + ${1:-600}))
+
+while ((SECONDS < deadline)); do
+	window="$(xdotool search --onlyvisible --name "${GLYPH_WINDOW:-^Glyph\$}" 2>/dev/null | tail -1 || true)"
+	if [[ -n "$window" ]]; then
+		printf '%s\n' "$window"
+		exit 0
+	fi
+	sleep 0.25
+done
+
+echo "Window ${GLYPH_WINDOW:-^Glyph\$} did not appear on $DISPLAY within ${1:-600}s." >&2
+exit 1

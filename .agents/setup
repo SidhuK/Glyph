@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# Prepares an Amp orb for Glyph's frontend toolchain: global Vite+ (`vp`), which
-# provides the Node.js version from .node-version and pnpm from packageManager,
-# plus node_modules from pnpm-lock.yaml. Mirrors the frontend job in
-# .github/workflows/pr-checks.yml. Rust is skipped: the Tauri backend only
-# builds on macOS.
+# Prepares an Amp orb for Glyph: global Vite+ (`vp`), which provides the
+# Node.js version from .node-version and pnpm from packageManager, node_modules
+# from pnpm-lock.yaml, and a Linux Rust/WebKitGTK toolchain plus a virtual
+# display so .agents/visual-service can run the real app for previews.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -45,17 +44,57 @@ step "vp install --frozen-lockfile"
 vp install --frozen-lockfile
 done_step
 
+step "Linux desktop and Tauri system packages"
+packages=(
+	build-essential dbus-x11 ffmpeg imagemagick libayatana-appindicator3-dev
+	libgtk-3-dev librsvg2-dev libssl-dev libwebkit2gtk-4.1-dev novnc openbox
+	patchelf pkg-config websockify wmctrl x11-utils x11vnc xdotool xvfb
+)
+missing=()
+for package in "${packages[@]}"; do
+	dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -q 'install ok installed' ||
+		missing+=("$package")
+done
+if ((${#missing[@]})); then
+	sudo apt-get update -qq
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends "${missing[@]}"
+else
+	echo "    already installed"
+fi
+done_step
+
+step "Rust toolchain"
+if [[ ! -x "$HOME/.cargo/bin/rustup" ]]; then
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+fi
+export PATH="$HOME/.cargo/bin:$PATH"
+rustup component add clippy rustfmt
+rustc --version
+cargo fetch --manifest-path src-tauri/Cargo.toml --locked
+done_step
+
 step "Orb agent guidance"
 guidance="$HOME/.config/amp/AGENTS.md"
 marker="# Glyph orb notes"
+end_marker="<!-- end Glyph orb notes -->"
 mkdir -p "$(dirname "$guidance")"
-if ! grep -Fqx "$marker" "$guidance" 2>/dev/null; then
-	cat >>"$guidance" <<'EOF'
-
+touch "$guidance"
+# Replace the notes this script wrote before, keeping everything around them.
+# Notes from older versions have no end marker and end at the next heading.
+awk -v marker="$marker" -v end_marker="$end_marker" '
+	$0 == marker { skip = 1; next }
+	skip && $0 == end_marker { skip = 0; next }
+	skip && /^# / { skip = 0 }
+	!skip
+' "$guidance" >"$guidance.tmp"
+mv "$guidance.tmp" "$guidance"
+cat >>"$guidance" <<'NOTES'
 # Glyph orb notes
 
-- This orb is Linux. `vp`, Node.js and pnpm are installed and node_modules is ready, so `vp check`, `vp test` and `vp build` work.
-- There is no Rust toolchain. The Tauri backend in `src-tauri/` targets macOS only and does not compile on Linux, even when cross-checking for `aarch64-apple-darwin`. Skip `cargo check`, `cargo clippy` and `cargo test` and say that Rust changes were not compiled.
-EOF
-fi
+- This orb is Linux. `vp`, Node.js, pnpm and Rust are installed, so `vp check`, `vp test`, `vp build`, `cargo check`, `cargo clippy` and `cargo test` all work. Code behind `cfg(target_os = "macos")` is not compiled here; say so when you change it.
+- To see the real app, run `amp orb services ensure`. It starts `.agents/visual-service`, which runs `pnpm tauri dev` on virtual display `:99` with a seeded sample space at `~/glyph-sample-space`, and serves the display through the "Glyph (Linux preview)" portal. The first Rust build takes a few minutes. Restart the service after Rust changes; frontend changes hot-reload.
+- `.agents/capture-screenshot [out.png]` and `.agents/capture-recording [seconds] [out.mp4]` capture the main Glyph window and wait for it to appear; set `GLYPH_WINDOW` to a title regex such as `'Quick Note'` or `'Quick Search'` to target another window. Drive the app with `DISPLAY=:99 xdotool mousemove --window "$(.agents/wait-for-visual-window)" X Y click 1` (window-relative coordinates from a screenshot), `xdotool type` and `xdotool key`. Native menu shortcuts use Ctrl in place of Cmd. Shortcuts handled inside the webview, such as Cmd+K for the command palette, check the Cmd key, which the preview cannot send; click through the UI instead.
+- The preview uses WebKitGTK on Linux: there is no vibrancy, macOS title bar, macOS menu bar or dock. Say so when a change depends on those.
+<!-- end Glyph orb notes -->
+NOTES
 done_step

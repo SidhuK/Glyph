@@ -25,7 +25,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.amp/
+.amp/*
+!.amp/services.yaml
 .pi/
 .sc/
 plans/

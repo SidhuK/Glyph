@@ -1,0 +1,6 @@
+services:
+  visual:
+    command: .agents/visual-service
+    portal:
+      title: Glyph (Linux preview)
+      description: The real Glyph app, Rust backend included, running on a virtual Linux desktop. Click and type as usual.

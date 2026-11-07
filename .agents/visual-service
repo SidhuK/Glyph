@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Runs the real Glyph app (`pnpm tauri dev`) on a virtual X display and serves
+# that display through noVNC on $PORT, so the Amp portal shows the live app.
+# Declared in .amp/services.yaml; start it with `amp orb services ensure`.
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+# shellcheck disable=SC1091
+source "$HOME/.config/vite-plus/env"
+export PATH="$HOME/.cargo/bin:$PATH"
+# Always the preview display, even when the caller has another DISPLAY set.
+export DISPLAY=:99
+# WebKitGTK renders blank windows on Xvfb without a GPU unless compositing is off.
+export WEBKIT_DISABLE_COMPOSITING_MODE=1
+vnc_port=5901
+
+: "${PORT:?Amp must provide PORT}"
+
+pids=()
+cleanup() {
+	trap - EXIT INT TERM
+	if ((${#pids[@]})); then
+		kill "${pids[@]}" 2>/dev/null || true
+		wait "${pids[@]}" 2>/dev/null || true
+	fi
+}
+trap cleanup EXIT INT TERM
+
+rm -f "/tmp/.X${DISPLAY#:}-lock" "/tmp/.X11-unix/X${DISPLAY#:}"
+Xvfb "$DISPLAY" -screen 0 1440x900x24 -nolisten tcp &
+pids+=("$!")
+for _ in {1..50}; do
+	xdpyinfo -display "$DISPLAY" >/dev/null 2>&1 && break
+	sleep 0.1
+done
+xdpyinfo -display "$DISPLAY" >/dev/null
+
+openbox &
+pids+=("$!")
+
+# Seed a sample space on first run so the app opens straight into notes
+# instead of the native folder picker.
+sample_space="$HOME/glyph-sample-space"
+settings_file="$HOME/.local/share/com.karatsidhu.glyph.dev/settings.json"
+if [[ ! -e "$settings_file" ]]; then
+	mkdir -p "$sample_space/Projects" "$(dirname "$settings_file")"
+	cat >"$sample_space/Welcome.md" <<'MD'
+# Welcome
+
+This sample space lets agents preview Glyph in an orb.
+
+- [ ] Try the editor
+- [x] Open the sample space
+
+See [[Projects/Roadmap]] for a linked note. #sample
+MD
+	cat >"$sample_space/Projects/Roadmap.md" <<'MD'
+# Roadmap
+
+| Quarter | Goal |
+| --- | --- |
+| Q1 | Ship the visual preview loop |
+| Q2 | Polish the editor |
+
+> Linked from [[Welcome]].
+MD
+	printf '{"space.currentPath":"%s","space.recent":["%s"]}\n' \
+		"$sample_space" "$sample_space" >"$settings_file"
+fi
+
+# --no-watch keeps Rust from rebuilding on every save; Vite still hot-reloads
+# the frontend. Restart the service after Rust changes.
+dbus-launch --exit-with-session pnpm tauri dev --no-watch &
+pids+=("$!")
+
+(
+	if window="$(.agents/wait-for-visual-window 600)"; then
+		wmctrl -ir "$window" -b add,maximized_vert,maximized_horz
+	fi
+) &
+
+x11vnc -display "$DISPLAY" -localhost -forever -shared -nopw -noxdamage -quiet \
+	-rfbport "$vnc_port" -rfbportv6 "$vnc_port" &
+pids+=("$!")
+
+web_root="${TMPDIR:-/tmp}/glyph-novnc"
+mkdir -p "$web_root"
+ln -sfn /usr/share/novnc/core "$web_root/core"
+ln -sfn /usr/share/novnc/vendor "$web_root/vendor"
+cp .agents/visual-portal.html "$web_root/index.html"
+websockify --web="$web_root" "$PORT" "127.0.0.1:$vnc_port" &
+pids+=("$!")
+
+wait -n "${pids[@]}"

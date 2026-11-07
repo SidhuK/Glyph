@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Records the Glyph window to MP4. Usage: capture-recording [seconds] [output.mp4]
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+export DISPLAY=:99
+
+duration="${1:-10}"
+output="${2:-.amp/in/artifacts/glyph-$(date +%Y%m%d-%H%M%S).mp4}"
+mkdir -p "$(dirname "$output")"
+window="$(.agents/wait-for-visual-window "${GLYPH_VISUAL_TIMEOUT:-600}")"
+ffmpeg -loglevel warning -y -f x11grab -framerate 30 -window_id "$window" \
+	-i "$DISPLAY" -t "$duration" -vf 'crop=trunc(iw/2)*2:trunc(ih/2)*2' \
+	-c:v libx264 -preset veryfast -pix_fmt yuv420p "$output"
+printf '%s\n' "$output"

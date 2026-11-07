@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Glyph (Linux preview)</title>
+		<style>
+			html, body, #screen {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				overflow: hidden;
+				background: #111318;
+			}
+
+			#status {
+				position: fixed;
+				z-index: 1;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				color: #f4f5f7;
+				font: 16px/1.5 system-ui, sans-serif;
+				text-align: center;
+			}
+
+			#view-mode {
+				position: fixed;
+				z-index: 2;
+				top: max(12px, env(safe-area-inset-top));
+				right: max(12px, env(safe-area-inset-right));
+				padding: 8px 12px;
+				border: 1px solid #666b75;
+				border-radius: 8px;
+				color: #f4f5f7;
+				background: rgb(17 19 24 / 85%);
+				font: 14px system-ui, sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="status">Connecting to the Glyph desktop…</div>
+		<button id="view-mode" type="button">Actual size</button>
+		<div id="screen"></div>
+		<script type="module">
+			import RFB from './core/rfb.js';
+
+			const status = document.getElementById('status');
+			const viewMode = document.getElementById('view-mode');
+			const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
+			const rfb = new RFB(
+				document.getElementById('screen'),
+				`${scheme}://${location.host}/websockify`,
+			);
+			rfb.scaleViewport = true;
+			rfb.resizeSession = false;
+			rfb.focusOnClick = true;
+			rfb.addEventListener('connect', () => status.hidden = true);
+			rfb.addEventListener('disconnect', (event) => {
+				status.hidden = false;
+				status.textContent = event.detail.clean
+					? 'The Glyph desktop disconnected. Reload to reconnect.'
+					: 'Could not connect to the Glyph desktop. Reload to retry.';
+			});
+			rfb.addEventListener('securityfailure', () => {
+				status.hidden = false;
+				status.textContent = 'The Glyph desktop rejected the connection.';
+			});
+			viewMode.addEventListener('click', () => {
+				const fit = !rfb.scaleViewport;
+				rfb.scaleViewport = fit;
+				rfb.clipViewport = !fit;
+				rfb.dragViewport = !fit;
+				viewMode.textContent = fit ? 'Actual size' : 'Fit screen';
+			});
+		</script>
+	</body>
+</html>

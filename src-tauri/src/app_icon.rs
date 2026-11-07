@@ -1,6 +1,9 @@
+#[cfg(target_os = "macos")]
 use objc2_app_kit::{NSApplication, NSImage};
+#[cfg(target_os = "macos")]
 use objc2_foundation::{MainThreadMarker, NSData};
 use serde::Deserialize;
+#[cfg(target_os = "macos")]
 use tauri::Manager;
 use tauri_plugin_store::StoreExt;
 
@@ -18,6 +21,7 @@ pub enum AppIcon {
     Blueprint,
 }
 
+#[cfg(target_os = "macos")]
 fn apply(app: &tauri::AppHandle, icon: AppIcon) -> Result<(), String> {
     let mtm = MainThreadMarker::new().ok_or("app icon must be set on the main thread")?;
     let bytes: Option<&[u8]> = match icon {
@@ -43,6 +47,17 @@ fn apply(app: &tauri::AppHandle, icon: AppIcon) -> Result<(), String> {
     apply_badge(app, icon)
 }
 
+// Linux builds exist only for orb previews, which have no dock icon or badge.
+#[cfg(not(target_os = "macos"))]
+fn apply(_app: &tauri::AppHandle, _icon: AppIcon) -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn apply_badge(_app: &tauri::AppHandle, _icon: AppIcon) -> Result<(), String> {
+    Ok(())
+}
+
 fn saved_icon(app: &tauri::AppHandle) -> Result<AppIcon, String> {
     let store = app.store("settings.json").map_err(|error| error.to_string())?;
     let icon = store
@@ -52,6 +67,7 @@ fn saved_icon(app: &tauri::AppHandle) -> Result<AppIcon, String> {
     Ok(icon)
 }
 
+#[cfg(target_os = "macos")]
 fn apply_badge(app: &tauri::AppHandle, icon: AppIcon) -> Result<(), String> {
     let key = match icon {
         AppIcon::Default if tauri::is_dev() => Some("app.devBadge"),
