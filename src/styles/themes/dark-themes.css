@@ -55,24 +55,24 @@
 	--shadow-overlay: 0 12px 32px rgb(0 0 0 / 36%);
 }
 
-/* Glyph: the charcoal base with an ink-teal accent. Success runs lime so it never reads
-   as the accent; cyan leans sky for the same reason. */
+/* Glyph: the charcoal base with an iris-blue accent. Palette blue leans indigo and cyan
+   stays true cyan so neither reads as the accent. */
 :where(:root, .appearanceThemePreview).dark:not([data-dark-theme]),
 :where(:root, .appearanceThemePreview).dark[data-dark-theme="glyph-default-dark"] {
-	--border-focus: rgba(94, 234, 212, 0.4);
-	--interactive-accent: #5eead4;
-	--interactive-accent-hover: #99f6e4;
-	--accent-color: #5eead4;
-	--text-selection: rgba(94, 234, 212, 0.26);
-	--link-color: #5eead4;
-	--link-color-hover: #99f6e4;
-	--selection-bg-muted: rgba(94, 234, 212, 0.07);
+	--border-focus: rgba(142, 162, 255, 0.4);
+	--interactive-accent: #8ea2ff;
+	--interactive-accent-hover: #b4c0ff;
+	--accent-color: #8ea2ff;
+	--text-selection: rgba(142, 162, 255, 0.26);
+	--link-color: #8ea2ff;
+	--link-color-hover: #b4c0ff;
+	--selection-bg-muted: rgba(142, 162, 255, 0.07);
 	--palette-red: #f87171;
 	--palette-orange: #fb923c;
 	--palette-yellow: #facc15;
 	--palette-green: #a3e635;
-	--palette-cyan: #38bdf8;
-	--palette-blue: #8b9dff;
+	--palette-cyan: #22d3ee;
+	--palette-blue: #a5a0ff;
 	--palette-purple: #c084fc;
 	--palette-gray: #a3a3a3;
 }

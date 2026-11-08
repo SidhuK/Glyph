@@ -1,7 +1,7 @@
 :where(:root, .appearanceThemePreview).light:not([data-light-theme]),
 :where(:root, .appearanceThemePreview).light[data-light-theme="glyph-default"] {
-	/* White surfaces, soft warm-gray chrome and Notion-style ink, with an ink-teal accent.
-	   Success runs yellow-green so it never reads as the accent; cyan leans sky. */
+	/* White surfaces, soft warm-gray chrome and Notion-style ink, with an iris-blue accent.
+	   Palette blue leans indigo and cyan stays true cyan so neither reads as the accent. */
 	--bg-primary: #ffffff;
 	--bg-secondary: #f7f6f3;
 	--bg-tertiary: #f1f1ef;
@@ -20,23 +20,23 @@
 	--border-light: rgba(55, 53, 47, 0.08);
 	--border-default: rgba(55, 53, 47, 0.12);
 	--border-strong: rgba(55, 53, 47, 0.2);
-	--border-focus: rgba(15, 118, 110, 0.4);
+	--border-focus: rgba(59, 91, 219, 0.4);
 
 	--interactive-hover: rgba(55, 53, 47, 0.06);
-	--interactive-accent: #0f766e;
-	--interactive-accent-hover: #115e59;
-	--accent-color: #0f766e;
-	--link-color: #0f766e;
-	--link-color-hover: #115e59;
-	--text-selection: rgba(15, 118, 110, 0.2);
-	--selection-bg-muted: rgba(15, 118, 110, 0.07);
+	--interactive-accent: #3b5bdb;
+	--interactive-accent-hover: #2f4ac0;
+	--accent-color: #3b5bdb;
+	--link-color: #3b5bdb;
+	--link-color-hover: #2f4ac0;
+	--text-selection: rgba(59, 91, 219, 0.18);
+	--selection-bg-muted: rgba(59, 91, 219, 0.07);
 
 	--palette-red: #c2413b;
 	--palette-orange: #c2570c;
 	--palette-yellow: #a16207;
 	--palette-green: #5b7f12;
-	--palette-cyan: #0284c7;
-	--palette-blue: #3b5bdb;
+	--palette-cyan: #0e7490;
+	--palette-blue: #5145cd;
 	--palette-purple: #7c3aed;
 	--palette-gray: #78756d;
 
