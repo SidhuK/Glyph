@@ -1,15 +1,15 @@
 {
-  "version": "0.9.5-alpha.3",
-  "notes": "## What's Changed\n* Open editor suggestion menus only when the editor is focused by @SidhuK in https://github.com/SidhuK/Glyph/pull/687\n* Fix external Markdown window crash in RAW mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/688\n* Keep raw mode frontmatter from rendering as a setext heading by @SidhuK in https://github.com/SidhuK/Glyph/pull/690\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.5-alpha.2...v0.9.5-alpha.3",
-  "pub_date": "2026-11-04T12:02:07.463Z",
+  "version": "0.9.5-alpha.4",
+  "notes": "## What's Changed\n* Fix /canvas command: stale canvases, leaked prompts and format drift by @SidhuK in https://github.com/SidhuK/Glyph/pull/693\n* Run the real app in Amp orbs for visual verification by @SidhuK in https://github.com/SidhuK/Glyph/pull/694\n* Switch the Glyph theme accent from ink-teal to iris blue by @SidhuK in https://github.com/SidhuK/Glyph/pull/695\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.5-alpha.3...v0.9.5-alpha.4",
+  "pub_date": "2026-11-08T02:30:07.016Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdxOTJ2SFhCYzhQU0tEZE8zR0VCTnI5YWJrTTdPcUsvdU0xWW9kS3ZWOXhMOEV4NVFha3FEdk9zYlkvbGhtOUpNMlV3M0t2cWI3T09jV3lhMTJhM0E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNzkzNzE5CWZpbGU6R2x5cGguYXBwLnRhci5negp5K3ZUMXFwYklOeDVEY1Z1clZiWkVmeng0VGJFVTJyVkRNT1lqbVptTXZhQmhicXVocWw0ZXVaT2RBQks1MnVRa3JBQksySE43M1U1R1JLb3lOWFFEdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.5-alpha.3/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDdPVUpMWm9UeVZsK0x4bG9qMm1qZHBLZ251UDZ6VDlwNjdzOUZTWDZEaE95cHlJTkVyWjZtTm81UGFGQlJtNDRmcUYwNlIwOUNyNm1ZR2NnRytvcHdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MTA1MDAxCWZpbGU6R2x5cGguYXBwLnRhci5negppdmtaaEdESGs3ajBMNC9QdXdEbDVlNmhGNmp4cXpJRklVTE4vdkpxT2h5eUdLdFNoazBoNWE1UXZjT0txTjdmd0NURGdxT1BKdGlrbE9kai9rOG9EZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.5-alpha.4/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdxOTJ2SFhCYzhQU0tEZE8zR0VCTnI5YWJrTTdPcUsvdU0xWW9kS3ZWOXhMOEV4NVFha3FEdk9zYlkvbGhtOUpNMlV3M0t2cWI3T09jV3lhMTJhM0E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNzkzNzE5CWZpbGU6R2x5cGguYXBwLnRhci5negp5K3ZUMXFwYklOeDVEY1Z1clZiWkVmeng0VGJFVTJyVkRNT1lqbVptTXZhQmhicXVocWw0ZXVaT2RBQks1MnVRa3JBQksySE43M1U1R1JLb3lOWFFEdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.5-alpha.3/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDdPVUpMWm9UeVZsK0x4bG9qMm1qZHBLZ251UDZ6VDlwNjdzOUZTWDZEaE95cHlJTkVyWjZtTm81UGFGQlJtNDRmcUYwNlIwOUNyNm1ZR2NnRytvcHdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MTA1MDAxCWZpbGU6R2x5cGguYXBwLnRhci5negppdmtaaEdESGs3ajBMNC9QdXdEbDVlNmhGNmp4cXpJRklVTE4vdkpxT2h5eUdLdFNoazBoNWE1UXZjT0txTjdmd0NURGdxT1BKdGlrbE9kai9rOG9EZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.5-alpha.4/Glyph_aarch64.app.tar.gz"
     }
   }
 }
