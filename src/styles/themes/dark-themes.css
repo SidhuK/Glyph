@@ -59,7 +59,7 @@
    stays true cyan so neither reads as the accent. */
 :where(:root, .appearanceThemePreview).dark:not([data-dark-theme]),
 :where(:root, .appearanceThemePreview).dark[data-dark-theme="glyph-default-dark"] {
-	--border-focus: rgba(142, 162, 255, 0.4);
+	--border-focus: rgba(142, 162, 255, 0.6);
 	--interactive-accent: #8ea2ff;
 	--interactive-accent-hover: #b4c0ff;
 	--accent-color: #8ea2ff;
