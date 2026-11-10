@@ -46,17 +46,14 @@ function missingQueryKey(targets: readonly string[]): MissingQueryKey {
 	return [...MISSING_QUERY_ROOT, targets];
 }
 
-// One batch call per set of link targets; the embed batch resolves each target the same way
-// the click handler does and reports the ones with no note.
+// One batch call per set of link targets; it resolves each target the same way the click
+// handler does and returns the ones with no file, without reading any note contents.
 function missingQuery(
 	targets: readonly string[],
 ): QueryObserverOptions<string[], Error, string[], string[], MissingQueryKey> {
 	return {
 		queryKey: missingQueryKey(targets),
-		queryFn: async (): Promise<string[]> => {
-			const documents = await invoke("space_read_wiki_embeds_batch", { targets: [...targets] });
-			return documents.flatMap((doc) => (doc.kind === "missing" ? [doc.target] : []));
-		},
+		queryFn: () => invoke("space_missing_wikilinks_batch", { targets: [...targets] }),
 		enabled: targets.length > 0,
 		retry: false,
 		placeholderData: keepPreviousData,
@@ -114,7 +111,12 @@ export function createWikiLinkResolutionPlugin(): Plugin<DecorationSet> {
 			});
 			// A link only changes state when a note with its name appears or one it found goes away.
 			const unregister = registerPreviewInvalidator((path, removed) => {
-				if (!isMarkdownPath(path)) return;
+				if (!isMarkdownPath(path)) {
+					// A folder rename or removal moves every note inside it.
+					if (!/\.[^/]+$/.test(path))
+						void queryClient.invalidateQueries({ queryKey: MISSING_QUERY_ROOT });
+					return;
+				}
 				const name = noteName(path);
 				const affected = targets.some(
 					(target) => noteName(target) === name && missing.has(target) !== removed,

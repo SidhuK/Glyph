@@ -52,7 +52,12 @@ const PROPERTY_NAME_ICONS: Partial<Record<string, PropertyIcon>> = {
 };
 
 export function propertyIcon(key: string, kind: PropertyKind): PropertyIcon {
-	return PROPERTY_NAME_ICONS[key.trim().toLowerCase()] ?? PROPERTY_KIND_ICONS[kind];
+	const normalizedKey = key.trim().toLowerCase();
+	return (
+		(Object.prototype.hasOwnProperty.call(PROPERTY_NAME_ICONS, normalizedKey)
+			? PROPERTY_NAME_ICONS[normalizedKey]
+			: undefined) ?? PROPERTY_KIND_ICONS[kind]
+	);
 }
 
 export function isPropertyKind(kind: string): kind is PropertyKind {

@@ -194,9 +194,11 @@
 /* #tag: the shared chip fill, ink, radius and weight in the tag's palette tone
    ([data-chip-tone], 13-tags.css). It stays inline at the body size so it never changes the
    line pitch; the padding only paints. */
-.tiptapContentInline .tagToken {
+.tiptapContentInline .tagToken:not([data-chip-tone]) {
 	--chip-tone: var(--palette-gray, var(--text-secondary));
+}
 
+.tiptapContentInline .tagToken {
 	display: inline;
 	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
 	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));

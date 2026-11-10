@@ -165,8 +165,10 @@ export function useFolioNotes(
 	);
 	const fetchNextPage = useCallback(async () => {
 		const result = await notesQuery.fetchNextPage();
-		return result.data?.pages[loadedPageCount]?.items ?? [];
-	}, [loadedPageCount, notesQuery.fetchNextPage]);
+		return (result.data?.pages[loadedPageCount]?.items ?? []).filter(
+			(item) => !isInTemplatesFolder(item.note_path, hiddenTemplateFolder),
+		);
+	}, [hiddenTemplateFolder, loadedPageCount, notesQuery.fetchNextPage]);
 
 	return {
 		notes: items,

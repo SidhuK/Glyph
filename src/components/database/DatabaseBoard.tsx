@@ -496,7 +496,7 @@ export function DatabaseBoard({
 							<div ref={loadMoreRef} className="databaseBoardLoadMoreSentinel" aria-hidden="true" />
 						) : null}
 					</div>
-					{canScrollNext ? (
+					{canScrollNext && lanes.length > 1 ? (
 						<DatabaseBoardScrollNext
 							boardScrollRef={boardScrollRef}
 							reduceMotion={shouldReduceMotion}

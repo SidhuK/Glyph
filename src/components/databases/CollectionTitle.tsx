@@ -33,7 +33,7 @@ export function CollectionTitle({ document: doc }: CollectionTitleProps) {
 					doc.commitDatabaseRename();
 				}}
 				onKeyDown={(event) => {
-					if (event.key === "Enter") {
+					if (event.key === "Enter" && !event.nativeEvent.isComposing) {
 						event.preventDefault();
 						skipNextBlurCommitRef.current = true;
 						doc.commitDatabaseRename();
