@@ -1,0 +1,127 @@
+/* Version history: the timeline of saved versions in the note sidebar. */
+
+/* Sidebar timeline */
+
+.gitHistoryPanel {
+	padding-top: 8px;
+}
+
+.gitHistoryTimeline {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+/* The rail the version dots sit on. */
+.gitHistoryTimeline::before {
+	content: "";
+	position: absolute;
+	left: 13px;
+	top: 16px;
+	bottom: 14px;
+	width: 1px;
+	background: var(--border-default);
+}
+
+.gitHistoryDay {
+	padding: 12px 8px 4px 28px;
+	color: var(--text-secondary);
+	font-size: var(--text-2xs);
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
+}
+
+.gitHistoryRow {
+	position: relative;
+	display: block;
+	width: 100%;
+	height: auto;
+	padding: 6px 8px 6px 28px;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 120ms ease;
+}
+
+.gitHistoryRow::before {
+	content: "";
+	position: absolute;
+	left: 11px;
+	top: 12px;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--text-primary) 45%, var(--bg-primary));
+}
+
+.gitHistoryRow[aria-pressed="true"]::before {
+	background: var(--accent-color);
+}
+
+/* The current note is a ring, so it reads as "now" rather than as a saved version. */
+.gitHistoryRow[data-current]::before {
+	left: 10px;
+	top: 11px;
+	width: 7px;
+	height: 7px;
+	background: var(--bg-primary);
+	box-shadow: inset 0 0 0 1.5px var(--accent-color);
+}
+
+.gitHistoryRow:hover {
+	background: color-mix(in srgb, var(--bg-hover) 68%, transparent);
+}
+
+.gitHistoryRow:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 1px;
+}
+
+.gitHistoryRow[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--accent-color) 7%, var(--bg-hover));
+}
+
+.gitHistorySubject {
+	display: -webkit-box;
+	overflow: hidden;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.3;
+	white-space: normal;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.gitHistoryRow[data-quiet] .gitHistorySubject {
+	color: var(--text-secondary);
+	font-weight: var(--font-normal);
+}
+
+.gitHistoryMeta {
+	display: flex;
+	gap: 8px;
+	margin-top: 2px;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	line-height: 1.3;
+	font-variant-numeric: tabular-nums;
+}
+
+.gitHistoryStats {
+	display: inline-flex;
+	gap: 6px;
+	font-weight: var(--font-medium);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.gitHistoryStatAdd {
+	color: color-mix(in srgb, var(--status-success-fg) 82%, var(--text-primary));
+}
+
+.gitHistoryStatDelete {
+	color: color-mix(in srgb, var(--status-danger-fg) 84%, var(--text-primary));
+}

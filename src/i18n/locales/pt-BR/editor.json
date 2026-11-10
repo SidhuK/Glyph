@@ -294,6 +294,31 @@
 			"tasksDone": "{{completed}} de {{total}} concluídas",
 			"fileModified": "Arquivo modificado",
 			"fileCreated": "Arquivo criado"
+		},
+		"history": {
+			"today": "Hoje",
+			"yesterday": "Ontem",
+			"currentNote": "Nota atual",
+			"lastSynced": "Última sincronização {{when}}",
+			"restoredFrom": "Restaurada de {{when}}",
+			"loading": "Carregando versões",
+			"empty": "Ainda não há versões salvas.",
+			"untitled": "Versão sem título",
+			"opening": "Abrindo…",
+			"viewLabel": "Visualização da versão",
+			"changes": "Alterações",
+			"thisVersion": "Esta versão",
+			"restore": "Restaurar",
+			"restored": "Restaurada",
+			"undo": "Desfazer",
+			"backToEditor": "Voltar ao editor",
+			"unchangedLines_one": "{{count}} linha sem alterações",
+			"unchangedLines_other": "{{count}} linhas sem alterações",
+			"createdNote": "Esta versão criou a nota.",
+			"noChanges": "Esta versão não alterou a nota.",
+			"loadingVersion": "Carregando esta versão",
+			"restoreUnsaved": "Não foi possível salvar suas edições atuais, então nada foi restaurado.",
+			"undoChanged": "A nota mudou depois da restauração, então não é possível desfazer."
 		}
 	}
 }

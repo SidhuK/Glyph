@@ -1,9 +1,20 @@
 // @vitest-environment jsdom
 
-import { type ReactNode, act } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { type ComponentProps, type ReactNode, act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { MarkdownEditorPane } from "./MarkdownEditorPane";
+import { MarkdownEditorPane as Pane } from "./MarkdownEditorPane";
+
+const queryClient = new QueryClient();
+
+function MarkdownEditorPane(props: ComponentProps<typeof Pane>) {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<Pane {...props} />
+		</QueryClientProvider>
+	);
+}
 
 const { noteInlineEditorMock, localNoteConnectionsDialogMock, invokeMock } = vi.hoisted(() => ({
 	noteInlineEditorMock: vi.fn(),

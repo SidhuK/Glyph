@@ -27,7 +27,13 @@ pub enum RepoInspection {
     },
 }
 
-fn run_command(mut command: Command) -> Result<(bool, String, String), String> {
+fn run_command(command: Command) -> Result<(bool, String, String), String> {
+    let (success, stdout, stderr) = run_command_raw(command)?;
+    Ok((success, String::from_utf8_lossy(&stdout).trim().to_string(), stderr))
+}
+
+/// Like `run_command`, but keeps stdout byte-for-byte (no trimming).
+fn run_command_raw(mut command: Command) -> Result<(bool, Vec<u8>, String), String> {
     let mut child = command
         .env("GIT_TERMINAL_PROMPT", "0")
         .env("GCM_INTERACTIVE", "never")
@@ -89,7 +95,7 @@ fn run_command(mut command: Command) -> Result<(bool, String, String), String> {
         .map_err(|_| "git stderr reader panicked".to_string())?;
     Ok((
         status.success(),
-        String::from_utf8_lossy(&stdout).trim().to_string(),
+        stdout,
         String::from_utf8_lossy(&stderr).trim().to_string(),
     ))
 }
@@ -519,12 +525,34 @@ pub fn commit_file_diff(space_root: &Path, commit: &str, rel_path: &str) -> Resu
             "--find-renames".to_string(),
             "--patch".to_string(),
             "--no-color".to_string(),
-            "--unified=3".to_string(),
+            // The whole note is context: the reader needs every line to know which ones sit in a
+            // code block, and folds the unchanged runs itself.
+            "--unified=1000000".to_string(),
             commit.to_string(),
             "--".to_string(),
             rel_path.to_string(),
         ],
     )
+}
+
+/// The note's full text as stored in `commit`, with whitespace preserved.
+pub fn file_at_commit(space_root: &Path, commit: &str, rel_path: &str) -> Result<String, String> {
+    let (success, stdout, stderr) = run_command_raw({
+        let mut command = Command::new("git");
+        command
+            .current_dir(space_root)
+            .args(["show", "--no-ext-diff", "--no-textconv"])
+            .arg(format!("{commit}:{rel_path}"));
+        command
+    })?;
+    if !success {
+        return Err(if stderr.is_empty() {
+            "git command failed".to_string()
+        } else {
+            stderr
+        });
+    }
+    String::from_utf8(stdout).map_err(|_| "this version of the note is not valid UTF-8".to_string())
 }
 
 #[cfg(test)]

@@ -294,6 +294,31 @@
 			"tasksDone": "{{completed}} von {{total}} erledigt",
 			"fileModified": "Datei geändert",
 			"fileCreated": "Datei erstellt"
+		},
+		"history": {
+			"today": "Heute",
+			"yesterday": "Gestern",
+			"currentNote": "Aktuelle Notiz",
+			"lastSynced": "Zuletzt synchronisiert {{when}}",
+			"restoredFrom": "Wiederhergestellt von {{when}}",
+			"loading": "Versionen werden geladen",
+			"empty": "Noch keine gespeicherten Versionen.",
+			"untitled": "Unbenannte Version",
+			"opening": "Wird geöffnet …",
+			"viewLabel": "Versionsansicht",
+			"changes": "Änderungen",
+			"thisVersion": "Diese Version",
+			"restore": "Wiederherstellen",
+			"restored": "Wiederhergestellt",
+			"undo": "Rückgängig",
+			"backToEditor": "Zurück zum Editor",
+			"unchangedLines_one": "{{count}} unveränderte Zeile",
+			"unchangedLines_other": "{{count}} unveränderte Zeilen",
+			"createdNote": "Mit dieser Version wurde die Notiz erstellt.",
+			"noChanges": "Diese Version hat die Notiz nicht geändert.",
+			"loadingVersion": "Diese Version wird geladen",
+			"restoreUnsaved": "Deine aktuellen Änderungen konnten nicht gespeichert werden, daher wurde nichts wiederhergestellt.",
+			"undoChanged": "Die Notiz wurde nach der Wiederherstellung geändert, daher kann sie nicht rückgängig gemacht werden."
 		}
 	}
 }

@@ -1797,6 +1797,7 @@ pub fn run() {
             git_sync::commands::git_sync_commit_message_prompt,
             git_sync::commands::git_history_list,
             git_sync::commands::git_history_diff,
+            git_sync::commands::git_history_note_text,
             space::commands::space_create,
             space::commands::space_open,
             space::commands::space_get_current,

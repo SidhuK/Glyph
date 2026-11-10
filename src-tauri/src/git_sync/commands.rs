@@ -136,6 +136,30 @@ pub async fn git_history_diff(
     .map_err(|error| error.to_string())?
 }
 
+/// The note's text as it was saved in `commit`, for previewing or restoring that version.
+#[tauri::command]
+pub async fn git_history_note_text(
+    window: WebviewWindow,
+    space_state: State<'_, SpaceState>,
+    path: String,
+    commit: GitHistoryCommit,
+) -> Result<String, String> {
+    let space_root = space_state.root_for_window(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let rel_path = validate_space_rel_path(&space_root, &path)?;
+        ensure_repo_at_space_root(&space_root)?;
+        validate_commit_hash(&commit.hash)?;
+        let commit_path = if commit.rel_path.is_empty() {
+            rel_path
+        } else {
+            validate_space_rel_path(&space_root, &commit.rel_path)?
+        };
+        super::git::file_at_commit(&space_root, &commit.hash, &commit_path)
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
 fn ensure_repo_at_space_root(space_root: &std::path::Path) -> Result<(), String> {
     match super::git::inspect_repo(space_root)? {
         super::git::RepoInspection::AtRoot { .. } => Ok(()),

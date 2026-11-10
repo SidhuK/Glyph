@@ -294,6 +294,30 @@
 			"tasksDone": "{{total}} 件中 {{completed}} 件完了",
 			"fileModified": "ファイルの更新日",
 			"fileCreated": "ファイルの作成日"
+		},
+		"history": {
+			"today": "今日",
+			"yesterday": "昨日",
+			"currentNote": "現在のノート",
+			"lastSynced": "最終同期: {{when}}",
+			"restoredFrom": "{{when}} の版から復元",
+			"loading": "バージョンを読み込み中",
+			"empty": "保存されたバージョンはまだありません。",
+			"untitled": "無題のバージョン",
+			"opening": "開いています…",
+			"viewLabel": "バージョンの表示",
+			"changes": "変更点",
+			"thisVersion": "このバージョン",
+			"restore": "復元",
+			"restored": "復元しました",
+			"undo": "元に戻す",
+			"backToEditor": "エディタに戻る",
+			"unchangedLines_other": "変更のない {{count}} 行",
+			"createdNote": "このバージョンでノートが作成されました。",
+			"noChanges": "このバージョンではノートは変更されていません。",
+			"loadingVersion": "このバージョンを読み込み中",
+			"restoreUnsaved": "現在の編集内容を保存できなかったため、復元は行われませんでした。",
+			"undoChanged": "復元後にノートが変更されたため、元に戻せません。"
 		}
 	}
 }

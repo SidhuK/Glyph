@@ -1,62 +1,33 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
-import { useDateDisplayFormat } from "../../contexts";
-import {
-	type DateDisplayFormat,
-	formatDisplayDate,
-	formatLocalClockTime,
-	parseDisplayDateInput,
-} from "../../lib/dateDisplayFormat";
+import { Fragment, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useGitSyncContext } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type GitCommitDiff, type GitHistoryCommit, invoke } from "../../lib/tauri";
-import { cn } from "../../lib/utils";
+import { GitChangeStats, useGitHistoryDates } from "./gitHistoryShared";
+
+/** Commit subject Glyph writes for automatic syncs; those rows read quieter than named saves. */
+const AUTO_SYNC_SUBJECT = "Glyph sync";
 
 interface GitHistorySidebarProps {
 	open: boolean;
 	relPath: string | null;
 	selectedCommitHash?: string | null;
-	onSelectDiff: (diff: GitCommitDiff) => void;
-}
-
-function formatCommitDate(timestampMs: number, dateFormat: DateDisplayFormat): string {
-	if (!timestampMs) return "";
-	const date = parseDisplayDateInput(timestampMs);
-	if (!date) return "";
-	return formatDisplayDate(date, dateFormat, {
-		time: formatLocalClockTime(date),
-	});
-}
-
-function formatCommitAge(timestampMs: number): string {
-	if (!timestampMs) return "";
-	const elapsedMinutes = Math.max(0, Math.floor((Date.now() - timestampMs) / 60_000));
-	if (elapsedMinutes < 1) return "now";
-	if (elapsedMinutes < 60) return `${elapsedMinutes}m`;
-
-	const elapsedHours = Math.floor(elapsedMinutes / 60);
-	if (elapsedHours < 24) return `${elapsedHours}h`;
-
-	const elapsedDays = Math.floor(elapsedHours / 24);
-	if (elapsedDays < 7) return `${elapsedDays}d`;
-	if (elapsedDays < 30) return `${Math.floor(elapsedDays / 7)}w`;
-	if (elapsedDays < 365) return `${Math.floor(elapsedDays / 30)}mo`;
-	return `${Math.floor(elapsedDays / 365)}y`;
-}
-
-function changeCounts(commit: GitHistoryCommit) {
-	return {
-		added: commit.added_count + commit.modified_count,
-		deleted: commit.deleted_count + commit.modified_count,
-	};
+	/** The version the current note was just restored from, if any. */
+	restoredCommit?: GitHistoryCommit | null;
+	onSelectDiff: (diff: GitCommitDiff | null) => void;
 }
 
 export function GitHistorySidebar({
 	open,
 	relPath,
 	selectedCommitHash = null,
+	restoredCommit = null,
 	onSelectDiff,
 }: GitHistorySidebarProps) {
-	const dateDisplayFormat = useDateDisplayFormat();
+	const { t } = useTranslation("editor");
+	const dates = useGitHistoryDates();
+	const { status } = useGitSyncContext();
 	const latestDiffRequestId = useRef(0);
 	useEffect(
 		() => () => {
@@ -84,70 +55,69 @@ export function GitHistorySidebar({
 	});
 	const commits = historyQuery.data ?? [];
 	const error = historyQuery.error ?? diffMutation.error;
+	const lastSyncedAt = status?.last_success_at_ms ?? null;
+	const currentNoteMeta = restoredCommit
+		? t("infoSidebar.history.restoredFrom", {
+				when: dates.dayAndTime(restoredCommit.timestamp_ms),
+			})
+		: lastSyncedAt
+			? t("infoSidebar.history.lastSynced", { when: dates.relative(lastSyncedAt) })
+			: "";
+	const showCurrentNote = () => {
+		latestDiffRequestId.current += 1;
+		diffMutation.reset();
+		onSelectDiff(null);
+	};
 
 	return (
 		<section className="markdownEditorInfoSection gitHistoryPanel">
-			<header className="gitHistoryHeader">
-				<strong>Previous saves</strong>
-				<span>Select a version to review its changes.</span>
-			</header>
-			<div className="gitHistoryBody">
-				{historyQuery.isLoading ? (
-					<div className="markdownEditorInfoEmpty">Loading versions</div>
-				) : null}
-				{error ? <div className="markdownEditorInfoEmpty">{extractErrorMessage(error)}</div> : null}
-				{!historyQuery.isLoading && !error && commits.length === 0 ? (
-					<div className="markdownEditorInfoEmpty">No saved versions yet.</div>
-				) : null}
-				{commits.length ? (
-					<ol className="gitHistoryList">
-						{commits.map((commit) => {
-							const isSelected = selectedCommitHash === commit.hash;
-							const isLoading =
-								diffMutation.isPending && diffMutation.variables?.hash === commit.hash;
-							const changes = changeCounts(commit);
-							return (
-								<li className="gitHistoryEntry" key={commit.hash}>
-									<button
-										type="button"
-										className={cn("gitHistoryItem", isSelected && "gitHistoryItemSelected")}
-										onClick={() => diffMutation.mutate(commit)}
-										aria-pressed={isSelected}
-									>
-										<span className="gitHistoryContent">
-											<span className="gitHistorySubject">
-												{commit.subject || "Untitled version"}
-											</span>
-											<span className="gitHistoryAside">
-												{!isLoading && (changes.added > 0 || changes.deleted > 0) ? (
-													<span className="gitHistoryStats">
-														{changes.added > 0 ? (
-															<span className="gitHistoryStat gitHistoryStatAdd">
-																+{changes.added.toLocaleString()}
-															</span>
-														) : null}
-														{changes.deleted > 0 ? (
-															<span className="gitHistoryStat gitHistoryStatDelete">
-																-{changes.deleted.toLocaleString()}
-															</span>
-														) : null}
-													</span>
-												) : null}
-												<span
-													className="gitHistoryMeta"
-													title={formatCommitDate(commit.timestamp_ms, dateDisplayFormat)}
-												>
-													{isLoading ? "Opening…" : formatCommitAge(commit.timestamp_ms)}
-												</span>
-											</span>
-										</span>
-									</button>
-								</li>
-							);
-						})}
-					</ol>
-				) : null}
+			{error ? <div className="markdownEditorInfoEmpty">{extractErrorMessage(error)}</div> : null}
+			<div className="gitHistoryTimeline">
+				<button
+					type="button"
+					className="gitHistoryRow"
+					data-current="true"
+					aria-pressed={selectedCommitHash === null}
+					onClick={showCurrentNote}
+				>
+					<span className="gitHistorySubject">{t("infoSidebar.history.currentNote")}</span>
+					{currentNoteMeta ? <span className="gitHistoryMeta">{currentNoteMeta}</span> : null}
+				</button>
+				{commits.map((commit, index) => {
+					const day = dates.day(commit.timestamp_ms);
+					const startsDay = index === 0 || day !== dates.day(commits[index - 1].timestamp_ms);
+					const isOpening = diffMutation.isPending && diffMutation.variables?.hash === commit.hash;
+					return (
+						<Fragment key={commit.hash}>
+							{startsDay && day ? <div className="gitHistoryDay">{day}</div> : null}
+							<button
+								type="button"
+								className="gitHistoryRow"
+								data-quiet={commit.subject === AUTO_SYNC_SUBJECT ? "true" : undefined}
+								aria-pressed={selectedCommitHash === commit.hash}
+								title={dates.full(commit.timestamp_ms)}
+								onClick={() => diffMutation.mutate(commit)}
+							>
+								<span className="gitHistorySubject">
+									{commit.subject || t("infoSidebar.history.untitled")}
+								</span>
+								<span className="gitHistoryMeta">
+									<span>
+										{isOpening ? t("infoSidebar.history.opening") : dates.time(commit.timestamp_ms)}
+									</span>
+									<GitChangeStats commit={commit} />
+								</span>
+							</button>
+						</Fragment>
+					);
+				})}
 			</div>
+			{historyQuery.isLoading ? (
+				<div className="markdownEditorInfoEmpty">{t("infoSidebar.history.loading")}</div>
+			) : null}
+			{!historyQuery.isLoading && !error && commits.length === 0 ? (
+				<div className="markdownEditorInfoEmpty">{t("infoSidebar.history.empty")}</div>
+			) : null}
 		</section>
 	);
 }

@@ -37,7 +37,8 @@ import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
 import { DailyNoteRollover } from "../editor/rollover/DailyNoteRollover";
 import type { ExtractToNoteActions, NoteInlineEditorMode } from "../editor/types";
-import { GitDiffView } from "./GitDiffView";
+import { GitVersionView } from "./GitVersionView";
+import { useGitVersionRestore } from "./useGitVersionRestore";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { MarkdownFloatingToc } from "./MarkdownFloatingToc";
 import { NotesInfoSidebar } from "./infoSidebar/NotesInfoSidebar";
@@ -265,6 +266,12 @@ export function MarkdownEditorPane({
 		onLinked: handleUnlinkedMentionsLinked,
 	});
 	infoPanelOpenRef.current = infoPanelOpen;
+	const gitVersionRestore = useGitVersionRestore(relPath, saveBeforeExternalMutation);
+	const handleSelectGitDiff = (diff: GitCommitDiff | null) => {
+		// Each version opens at its top, not where the last one was scrolled to.
+		contentScrollRef.current?.scrollTo({ top: 0 });
+		onGitDiffChange?.(diff);
+	};
 
 	useEffect(() => {
 		if (hasSupportedGit) return;
@@ -568,7 +575,12 @@ export function MarkdownEditorPane({
 				<div ref={contentScrollRef} className="filePreviewTextWrap markdownEditorContent">
 					<div className="markdownEditorCenter">
 						{gitDiff ? (
-							<GitDiffView diff={gitDiff} onBack={() => onGitDiffChange?.(null)} />
+							<GitVersionView
+								diff={gitDiff}
+								relPath={relPath}
+								restore={gitVersionRestore}
+								onClose={() => onGitDiffChange?.(null)}
+							/>
 						) : (
 							<DailyNoteRollover
 								mode={mode}
@@ -638,7 +650,8 @@ export function MarkdownEditorPane({
 						utf8SizeBytes={utf8SizeBytes}
 						gitSyncStatus={gitSyncStatus}
 						selectedGitCommitHash={gitDiff?.commit.hash ?? null}
-						onSelectGitDiff={onGitDiffChange ?? undefined}
+						restoredGitCommit={gitVersionRestore.restoredCommit}
+						onSelectGitDiff={onGitDiffChange ? handleSelectGitDiff : undefined}
 						onClose={closeInfoPanel}
 					/>
 					<LinkedNotePreviewSheet />
