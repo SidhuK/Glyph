@@ -118,35 +118,33 @@ svg.glyphMenuItemIcon {
 }
 
 /* Hand-rolled popups share the menu surface: TipTap suggestion menus (wiki-link,
-   tag, person, markdown-link, slash), the property wiki-link list, the AI composer
-   panels and the command palette. They paint their own active rows, so their fill
-   sits on .active / [data-selected] rather than [data-highlighted]. Command palette
-   results are the exception: a gliding highlight paints their selection. */
-.wikiLinkSuggestionMenu,
-.slashCommandMenu,
-.aiAddPanel,
-.aiSlashCommandMenu,
-.commandPalette {
-	border: 0;
-	border-radius: var(--floating-surface-radius);
-	background: var(--floating-surface-bg);
-	box-shadow: var(--floating-surface-shadow);
-}
-
+   tag, person, markdown-link, slash), the property wiki-link list and the AI composer
+   panels. They paint their own active rows, so their fill sits on .active /
+   [data-selected] rather than [data-highlighted]. The command palette is a modal sheet
+   (32-command-palette.css) and a gliding highlight paints its selection. */
 .wikiLinkSuggestionMenu,
 .slashCommandMenu,
 .aiAddPanel,
 .aiSlashCommandMenu {
+	border: 0;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
+	box-shadow: var(--floating-surface-shadow);
 	padding: 4px;
 }
 
 .wikiLinkSuggestionItem,
 .slashCommandItem,
 .aiAddPanelItem,
-.aiSlashCommandItem,
+.aiSlashCommandItem {
+	border-radius: var(--floating-row-radius);
+	transition: none;
+}
+
+/* The palette sheet (14px) has a 6px list gutter, so its rows nest concentrically at 8px. */
 .commandPaletteItem,
 .commandPaletteBreadcrumb {
-	border-radius: var(--floating-row-radius);
+	border-radius: var(--card-radius);
 	transition: none;
 }
 
@@ -163,9 +161,11 @@ svg.glyphMenuItemIcon {
 	background: var(--bg-hover);
 }
 
+/* The cursor marks the row ↩ opens, so it carries the same on-state fill as Settings and
+   the sidebar rather than the faint hover wash. */
 .commandPaletteHighlight {
-	border-radius: var(--floating-row-radius);
-	background: var(--bg-hover);
+	border-radius: var(--card-radius);
+	background: var(--state-on);
 }
 
 /* Gliding highlight (components/ui/shadcn/highlight.tsx): these rules only anchor the
@@ -179,8 +179,9 @@ svg.glyphMenuItemIcon {
 	pointer-events: none;
 }
 
-/* Select (components/ui/shadcn/select.tsx). The trigger defaults to the compact bordered
-   control; call sites resize or restyle it. The popup is the shared menu surface. */
+/* Select (components/ui/shadcn/select.tsx). The trigger is the filled secondary control,
+   the same recipe as the search field beside it; call sites resize or restyle it. The popup is
+   the shared menu surface. */
 .glyphSelectTrigger {
 	display: inline-flex;
 	align-items: center;
@@ -188,29 +189,30 @@ svg.glyphMenuItemIcon {
 	gap: 6px;
 	min-width: 0;
 	max-width: 100%;
-	height: var(--database-control-height);
+	height: var(--search-field-height);
 	padding: 0 8px 0 10px;
-	border: 1px solid var(--database-control-border);
-	border-radius: var(--database-control-radius);
-	background: var(--database-control-background);
-	color: var(--text-primary);
+	border: 1px solid transparent;
+	border-radius: var(--search-field-radius);
+	background: var(--search-field-bg);
+	color: var(--text-secondary);
 	font: inherit;
 	font-size: var(--text-sm);
 	text-align: start;
 	cursor: default;
 	outline: none;
 	transition:
-		border-color 140ms ease,
+		background-color 140ms ease,
+		color 140ms ease,
 		box-shadow 140ms ease;
 }
 
 .glyphSelectTrigger:not([data-disabled]):hover,
 .glyphSelectTrigger[data-popup-open] {
-	border-color: var(--border-default);
+	background: var(--bg-active);
+	color: var(--text-primary);
 }
 
 .glyphSelectTrigger:focus-visible {
-	border-color: var(--border-default);
 	box-shadow: 0 0 0 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 

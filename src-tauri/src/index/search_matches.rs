@@ -7,6 +7,8 @@ const MAX_MATCHES_PER_NOTE: usize = 40;
 /// Reading note files is the cost here, so only the strongest hits are expanded.
 const MAX_EXPANDED_NOTES: usize = 60;
 const SNIPPET_RADIUS_CHARS: usize = 42;
+/// How far a snippet edge may move to land on a word boundary.
+const SNIPPET_WORD_SLACK_CHARS: usize = 12;
 const SNIPPET_ESCAPE: char = '\u{001b}';
 const SNIPPET_HIGHLIGHT_START: char = '\u{001c}';
 const SNIPPET_HIGHLIGHT_END: char = '\u{001d}';
@@ -220,22 +222,63 @@ fn step_forward(text: &str, mut index: usize, count: usize) -> usize {
     index
 }
 
+fn starts_word(text: &str, index: usize) -> bool {
+    text[..index]
+        .chars()
+        .next_back()
+        .is_none_or(char::is_whitespace)
+}
+
+fn ends_word(text: &str, index: usize) -> bool {
+    text[index..].chars().next().is_none_or(char::is_whitespace)
+}
+
+/// Move a snippet's start onto a word start: back to the previous whitespace when
+/// one is near, else forward past the cut word (never past the match at `limit`).
+fn word_start(text: &str, from: usize, limit: usize) -> usize {
+    if starts_word(text, from) {
+        return from;
+    }
+    let mut index = from;
+    for _ in 0..SNIPPET_WORD_SLACK_CHARS {
+        index = step_back(text, index, 1);
+        if starts_word(text, index) {
+            return index;
+        }
+    }
+    text[from..limit]
+        .char_indices()
+        .find(|(_, ch)| ch.is_whitespace())
+        .map_or(from, |(offset, ch)| from + offset + ch.len_utf8())
+}
+
+/// Pull a snippet's end back to the last word end after the match at `floor`.
+fn word_end(text: &str, to: usize, floor: usize) -> usize {
+    if ends_word(text, to) {
+        return to;
+    }
+    text[floor..to]
+        .rfind(char::is_whitespace)
+        .map_or(to, |offset| floor + offset)
+}
+
 /// One-line preview with escaped source text and explicit highlight markers for
-/// the palette renderer (see `HighlightedSnippet` in `CommandList.tsx`).
+/// the palette renderer (see `PaletteSnippet` in `CommandPaletteSnippet.tsx`).
+/// Both edges land on word boundaries, and `…` marks only text that was dropped.
 fn snippet_around(text: &str, start: usize, end: usize) -> String {
-    let from = step_back(text, start, SNIPPET_RADIUS_CHARS);
-    let to = step_forward(text, end, SNIPPET_RADIUS_CHARS);
+    let from = word_start(text, step_back(text, start, SNIPPET_RADIUS_CHARS), start);
+    let to = word_end(text, step_forward(text, end, SNIPPET_RADIUS_CHARS), end);
 
     let mut out = String::new();
-    if from > 0 {
+    if !text[..from].trim().is_empty() {
         out.push('…');
     }
-    push_flattened(&mut out, &text[from..start]);
+    push_flattened(&mut out, text[from..start].trim_start());
     out.push(SNIPPET_HIGHLIGHT_START);
     push_flattened(&mut out, &text[start..end]);
     out.push(SNIPPET_HIGHLIGHT_END);
-    push_flattened(&mut out, &text[end..to]);
-    if to < text.len() {
+    push_flattened(&mut out, text[end..to].trim_end());
+    if !text[to..].trim().is_empty() {
         out.push('…');
     }
     out
@@ -321,6 +364,27 @@ mod tests {
             "{SNIPPET_HIGHLIGHT_START}deadline{SNIPPET_HIGHLIGHT_END}"
         )));
         assert!(!snippet.contains('\n'));
+    }
+
+    #[test]
+    fn snippet_edges_land_on_word_boundaries() {
+        let text = format!("{} needle {}", "lorem ipsum ".repeat(8), "dolor sit ".repeat(8));
+        let start = text.find("needle").unwrap();
+        let snippet = snippet_around(&text, start, start + "needle".len());
+        let inner = snippet.trim_start_matches('…').trim_end_matches('…');
+        assert!(snippet.starts_with('…') && snippet.ends_with('…'));
+        assert!(inner.starts_with("lorem ") || inner.starts_with("ipsum "));
+        assert!(inner.ends_with("dolor") || inner.ends_with("sit"));
+    }
+
+    #[test]
+    fn snippet_skips_the_ellipsis_when_only_whitespace_was_dropped() {
+        // 43 chars before the match: the 42-char radius drops only the first newline.
+        let text = format!("\n\n\n{}needle tail", "word ".repeat(8));
+        let start = text.find("needle").unwrap();
+        let snippet = snippet_around(&text, start, start + "needle".len());
+        assert!(!snippet.starts_with('…'));
+        assert!(!snippet.ends_with('…'));
     }
 
     #[test]

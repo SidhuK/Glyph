@@ -3,7 +3,7 @@ import { type KeyboardEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke, type QuickSearchTarget } from "../../lib/tauri";
-import { CommandList } from "../app/CommandList";
+import { CommandList, paletteOptionId } from "../app/CommandList";
 import { buildSearchQuery, movePaletteSelection } from "../app/commandPaletteHelpers";
 import type { PaletteResult } from "../app/paletteResults";
 import { useQuickSearchResults } from "./useQuickSearchResults";
@@ -96,7 +96,9 @@ export function QuickSearchPanel({ spacePath }: { spacePath: string }) {
 						aria-label={t("quickSearch.title")}
 						aria-controls={RESULTS_ID}
 						aria-expanded="true"
-						aria-activedescendant={selectedResult?.id}
+						aria-activedescendant={
+							selectedResult ? paletteOptionId(RESULTS_ID, selectedIndex) : undefined
+						}
 						placeholder={t("quickSearch.placeholder")}
 						value={query}
 						onChange={(event) => changeQuery(event.target.value)}
@@ -109,7 +111,7 @@ export function QuickSearchPanel({ spacePath }: { spacePath: string }) {
 				{alert ? <p role="alert">{alert}</p> : null}
 			</div>
 			<div className="commandPaletteBody">
-				<div id={RESULTS_ID} className="commandPaletteList">
+				<div className="commandPaletteList">
 					{query.trim() ? (
 						<output className="sr-only" aria-live="polite">
 							{isSearching
@@ -118,6 +120,7 @@ export function QuickSearchPanel({ spacePath }: { spacePath: string }) {
 						</output>
 					) : null}
 					<CommandList
+						id={RESULTS_ID}
 						results={results}
 						selectedIndex={selectedIndex}
 						onSetSelectedIndex={(index) => setSelectedId(results[index]?.id ?? null)}

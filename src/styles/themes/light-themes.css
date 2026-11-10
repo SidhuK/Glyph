@@ -12,8 +12,8 @@
 
 	--text-primary: #37352f;
 	--text-secondary: rgba(55, 53, 47, 0.72);
-	--text-tertiary: rgba(55, 53, 47, 0.61);
-	--text-placeholder: rgba(55, 53, 47, 0.35);
+	--text-tertiary: rgba(55, 53, 47, 0.68);
+	--text-placeholder: rgba(55, 53, 47, 0.45);
 	--text-inverse: #ffffff;
 	--text-accent: #37352f;
 
@@ -28,6 +28,7 @@
 	--accent-color: #3b5bdb;
 	--link-color: #3b5bdb;
 	--link-color-hover: #2f4ac0;
+	--glyph-inline-highlight-yellow: rgb(250 204 21 / 0.34);
 	--text-selection: rgba(59, 91, 219, 0.18);
 	--selection-bg-muted: rgba(59, 91, 219, 0.07);
 
@@ -36,7 +37,7 @@
 	--palette-yellow: #a16207;
 	--palette-green: #5b7f12;
 	--palette-cyan: #0e7490;
-	--palette-blue: #5145cd;
+	--palette-blue: #1f5fa8;
 	--palette-purple: #7c3aed;
 	--palette-gray: #78756d;
 

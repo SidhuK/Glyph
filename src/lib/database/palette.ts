@@ -22,29 +22,24 @@ function normalizeToneSeed(seed: string): string {
 	return seed.trim().toLowerCase().replace(/^#+/, "");
 }
 
-function databaseToneStyle(seed: string): CSSProperties {
-	const tone = DATABASE_TONES[hashSeed(normalizeToneSeed(seed)) % DATABASE_TONES.length];
-	return {
-		"--database-tone": tone,
-	} as CSSProperties;
+function databaseToneStyle(tone: string): CSSProperties {
+	const style: CSSProperties & { "--database-tone": string } = { "--database-tone": tone };
+	return style;
 }
 
-function databaseToneStyleForColor(
-	color: EditorTextColor | null | undefined,
-	seed: string,
-): CSSProperties {
-	if (color) {
-		const { cssVar, fallbackHex } = getEditorTextColorOption(color);
-		return {
-			"--database-tone": `var(${cssVar}, ${fallbackHex})`,
-		} as CSSProperties;
-	}
-	return databaseToneStyle(seed);
-}
+/** The tone for values that carry no colour of their own, such as a custom status. */
+export const DATABASE_NEUTRAL_TONE_STYLE = databaseToneStyle("var(--text-tertiary)");
 
+/** A value's tone: the colour picked for it, else a stable hash of the value. */
 export function databaseValueToneStyleForColor(
 	value: string,
 	color: EditorTextColor | null | undefined,
 ): CSSProperties {
-	return databaseToneStyleForColor(color, value);
+	if (color) {
+		const { cssVar, fallbackHex } = getEditorTextColorOption(color);
+		return databaseToneStyle(`var(${cssVar}, ${fallbackHex})`);
+	}
+	return databaseToneStyle(
+		DATABASE_TONES[hashSeed(normalizeToneSeed(value)) % DATABASE_TONES.length],
+	);
 }

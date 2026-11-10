@@ -1,11 +1,14 @@
 /* Calendar card shared by the sidebar section and the Calendar pop-up. */
 
 .calendarCard {
+	--calendar-day-size: 1.5rem;
 	margin-inline: 8px;
-	padding: 6px 4px 4px;
+	/* The header row's half-leading makes up the difference, so the month title and the
+	   last row of days sit the same distance from the border. */
+	padding: 4px 4px 10px;
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-xl);
-	background: color-mix(in srgb, var(--text-primary) 2.5%, transparent);
+	background: var(--bg-tertiary);
 	user-select: none;
 	-webkit-font-smoothing: antialiased;
 }
@@ -35,12 +38,14 @@
 
 /* ── Month row ── */
 
+/* Percent padding resolves against the grid's width: the title starts at the first day
+   circle's left edge and the last 20px control centres on the last column. */
 .calendarMonthHeader {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 2px;
-	padding: 0 2px 0 8px;
+	padding: 0 calc(100% / 14 - 10px) 0 calc((100% / 7 - var(--calendar-day-size)) / 2);
 }
 
 .calendarMonthTitle {
@@ -183,8 +188,8 @@ button.calendarMonthTitleButton:hover {
 	align-items: center;
 	justify-content: center;
 	/* Fixed square so the global button height can't stretch it into an oval. */
-	width: 24px;
-	height: 24px;
+	width: var(--calendar-day-size);
+	height: var(--calendar-day-size);
 	padding: 0;
 	border: 0;
 	border-radius: var(--radius-full);
@@ -203,48 +208,39 @@ button.calendarMonthTitleButton:hover {
 	background: var(--bg-hover);
 }
 
-.calendarDay[data-weekend="true"]:not(
-		[data-outside="true"],
-		[data-selected="true"],
-		[data-today="true"]
-	) {
-	color: var(--text-secondary);
-}
-
 .calendarDay[data-outside="true"] {
-	color: color-mix(in srgb, var(--text-tertiary) 75%, transparent);
-}
-
-.calendarDay[data-today="true"]:not([data-selected="true"]) {
-	color: var(--interactive-accent);
-	font-weight: var(--font-semibold);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+	color: var(--text-tertiary);
 }
 
 .calendarDay[data-selected="true"] {
-	background: var(--bg-active);
+	background: var(--state-on);
 	color: var(--text-primary);
 	font-weight: var(--font-semibold);
+}
+
+/* Today keeps its accent ink when it is also the selected day. */
+.calendarDay[data-today="true"] {
+	color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+}
+
+.calendarDay[data-today="true"]:not([data-selected="true"]) {
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 45%, transparent);
 }
 
 .calendarDayMarker {
 	position: absolute;
 	bottom: 1px;
 	left: 50%;
-	width: 3px;
-	height: 3px;
+	width: 4px;
+	height: 4px;
 	transform: translateX(-50%);
 	border-radius: var(--radius-full);
 	background: transparent;
 }
 
-.calendarDayMarker[data-tone="daily"] {
+.calendarDayMarker:is([data-tone="daily"], [data-tone="note"]) {
 	background: var(--interactive-accent);
-}
-
-/* Days with other notes get a softer accent dot, so daily notes still stand out. */
-.calendarDayMarker[data-tone="note"] {
-	background: color-mix(in srgb, var(--interactive-accent) 55%, transparent);
 }
 
 /* ── Day summary ── */

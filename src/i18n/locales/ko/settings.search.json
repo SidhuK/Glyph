@@ -159,7 +159,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "색상 모드",
-			"section": "모양",
+			"section": "모드",
 			"description": "시스템, 라이트 또는 다크 모드를 선택합니다.",
 			"keywords": ["모드", "시스템", "라이트", "다크", "mode", "system", "light", "dark"]
 		},
@@ -177,7 +177,7 @@
 		},
 		"appearance-translucent-app": {
 			"title": "반투명 사이드바",
-			"section": "모양",
+			"section": "모드",
 			"keywords": ["창", "유리", "블러", "반투명", "window", "glass", "blur", "translucent"]
 		},
 		"appearance-custom-themes": {

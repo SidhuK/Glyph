@@ -103,31 +103,31 @@
 .aiComposerBeam,
 .aiComposerInputShell {
 	position: relative;
-	border-radius: var(--radius-lg);
+	border-radius: var(--card-radius);
 }
 
 .aiComposerBeam {
 	width: 100%;
 }
 
+/* The shared card recipe: a hairline ring, no shadow (it is not a floating layer). */
 .aiComposerInputShell {
 	display: flex;
 	flex-direction: column;
 	background: var(--bg-primary);
-	border: 1px solid var(--border-default);
-	box-shadow: 0 2px 6px rgb(0 0 0 / 4%);
-	transition: border-color var(--transition-fast);
+	box-shadow: var(--card-ring);
+	transition: box-shadow var(--transition-fast);
 }
 
 .aiComposerInputShell:focus-within {
-	border-color: var(--border-strong);
+	box-shadow: inset 0 0 0 1px var(--border-strong);
 }
 
 .aiComposerInput {
 	min-height: 48px;
 	max-height: 140px;
 	overflow-y: auto;
-	padding: 10px 12px;
+	padding: 11px 13px;
 	font-size: var(--text-base);
 	color: var(--text-primary);
 	line-height: var(--leading-relaxed);
@@ -140,7 +140,7 @@
 
 .aiComposerInput:empty::before {
 	content: attr(data-placeholder);
-	color: var(--text-placeholder);
+	color: var(--text-tertiary);
 	pointer-events: none;
 }
 
@@ -285,8 +285,10 @@
 	opacity: 0.4;
 }
 
+/* The ring takes no space, so these insets include its 1px: the left one puts the @ glyph on
+   the placeholder column. */
 .aiComposerBar {
-	padding: 0 8px 8px;
+	padding: 0 9px 9px 5px;
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -317,9 +319,13 @@
 	gap: 6px;
 }
 
-button.aiComposerSend {
-	height: 28px;
+/* Send and Stop share one 28px circle so the control keeps its shape between states. */
+button.aiComposerSend,
+.aiComposerStop {
 	width: 28px;
+	height: 28px;
+	flex: 0 0 auto;
+	border-radius: var(--radius-full);
 	background: var(--interactive-accent);
 	color: var(--text-inverse);
 	box-shadow: none;
@@ -330,21 +336,19 @@ button.aiComposerSend:hover:not(:disabled) {
 	color: var(--text-inverse);
 }
 
+/* Nothing to send: a quiet well, not an accent button that looks pressable. */
 button.aiComposerSend:disabled {
 	opacity: 1;
+	background: var(--bg-active);
+	color: var(--text-quaternary);
 	cursor: not-allowed;
 }
 
 .aiComposerStop {
-	width: 26px;
-	height: 26px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--radius-full);
 	border: 0;
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
 }
 
 .aiComposerStop:hover {

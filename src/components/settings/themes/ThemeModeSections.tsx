@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { useIsDarkTheme } from "../../../hooks/useIsDarkTheme";
 import { type CustomUiThemeId, customThemeOptions } from "../../../lib/customThemes";
 import { extractErrorMessage } from "../../../lib/errorUtils";
 import { DURABLE_SETTINGS } from "../../../lib/settings";
@@ -37,19 +36,13 @@ function ThemeChoiceSection({
 	selectError,
 }: ThemeChoiceSectionProps) {
 	const { t } = useTranslation("settings.appearance");
-	const isDark = useIsDarkTheme();
 	const settings = useAppearanceSettingsQuery();
 	const remove = useRemoveCustomTheme();
 	const title = t(`themeCards.${mode}`);
-	const active = (mode === "dark") === isDark;
 	const error = settings.error ?? selectError ?? remove.error;
 
 	return (
-		<SettingsSection
-			title={title}
-			titleSuffix={active ? t("themeCards.activeSuffix") : undefined}
-			searchId={`appearance-${mode}-theme`}
-		>
+		<SettingsSection title={title} searchId={`appearance-${mode}-theme`}>
 			{settings.data ? (
 				<ThemeCardRow
 					mode={mode}

@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
 import { m, useReducedMotion } from "motion/react";
 import { Fragment, memo, useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { type OrbState, ThinkingOrb } from "thinking-orbs";
 import { isMarkdownPath } from "../../utils/path";
-import { ChevronDown, File, Files, FolderOpen, RefreshCw, Save } from "../Icons";
+import { ChevronDown, Copy, File, FolderOpen, RefreshCw, Save } from "../Icons";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import { AIActivityTimeline, type AIActivityTimelineEvent } from "./AIActivityTimeline";
@@ -18,7 +19,7 @@ interface AIChatThreadProps {
 	chatStatus: RigChatStatus;
 	phaseStatusText: string;
 	activityState: OrbState;
-	showIdleActivity: boolean;
+	showDraftActivity: boolean;
 	activityTimeline: AIActivityTimelineEvent[];
 	onCopy: (text: string) => void;
 	onSave: (text: string) => void;
@@ -145,6 +146,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 	onSave,
 	onRetry,
 }: AIChatMessageBodyProps) {
+	const { t } = useTranslation("shell");
 	return (
 		<>
 			{isPendingAssistant ? (
@@ -188,10 +190,10 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 			{isFailedAssistant ? (
 				<div className="aiInlineError">
 					<span className="aiInlineErrorDot" />
-					<span className="aiInlineErrorText">Response failed</span>
+					<span className="aiInlineErrorText">{t("ai.thread.responseFailed")}</span>
 					<button type="button" className="aiInlineRetryBtn" onClick={() => onRetry(index)}>
 						<RefreshCw size="var(--icon-xs)" />
-						<span>Retry</span>
+						<span>{t("ai.thread.retry")}</span>
 					</button>
 				</div>
 			) : null}
@@ -203,10 +205,10 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						size="icon-sm"
 						className="aiAssistantActionBtn aiAssistantActionIconBtn"
 						onClick={() => onCopy(text)}
-						title="Copy response"
-						aria-label="Copy response"
+						title={t("ai.thread.copyResponse")}
+						aria-label={t("ai.thread.copyResponse")}
 					>
-						<Files size="var(--icon-sm)" />
+						<Copy size="var(--icon-sm)" />
 					</Button>
 					<Button
 						type="button"
@@ -214,8 +216,8 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						size="icon-sm"
 						className="aiAssistantActionBtn aiAssistantActionIconBtn"
 						onClick={() => onSave(text)}
-						title="Save response to file"
-						aria-label="Save response to file"
+						title={t("ai.thread.saveResponse")}
+						aria-label={t("ai.thread.saveResponse")}
 					>
 						<Save size="var(--icon-sm)" />
 					</Button>
@@ -225,8 +227,8 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						size="icon-sm"
 						className="aiAssistantActionBtn aiAssistantActionIconBtn"
 						onClick={() => onRetry(index)}
-						title="Retry this response"
-						aria-label="Retry response"
+						title={t("ai.thread.retryResponse")}
+						aria-label={t("ai.thread.retryResponse")}
 						disabled={chatStatus === "streaming"}
 					>
 						<RefreshCw size="var(--icon-sm)" />
@@ -244,12 +246,13 @@ export function AIChatThread({
 	chatStatus,
 	phaseStatusText,
 	activityState,
-	showIdleActivity,
+	showDraftActivity,
 	activityTimeline,
 	onCopy,
 	onSave,
 	onRetry,
 }: AIChatThreadProps) {
+	const { t } = useTranslation("shell");
 	const shouldReduceMotion = useReducedMotion();
 	const citations = useMemo(() => extractCitations(activityTimeline), [activityTimeline]);
 	const [citationsOpen, setCitationsOpen] = useState(false);
@@ -265,17 +268,17 @@ export function AIChatThread({
 		<>
 			{messages.length === 0 ? (
 				<div className="aiChatEmpty">
-					{showIdleActivity ? (
+					{showDraftActivity ? (
 						<ThinkingOrb
 							className="aiChatEmptyActivity"
 							state="shaping"
 							size={20}
-							aria-label="Shaping your thought"
+							aria-label={t("ai.thread.shaping")}
 						/>
 					) : null}
-					<div className="aiChatEmptyTitle">Talk to your notes</div>
+					<div className="aiChatEmptyTitle">{t("ai.thread.emptyTitle")}</div>
 					<div className="aiChatEmptyMeta">
-						Ask naturally, or use <code>@</code> to add notes and folders to the conversation
+						<Trans ns="shell" i18nKey="ai.thread.emptyHint" components={{ code: <code /> }} />
 					</div>
 				</div>
 			) : null}
@@ -323,7 +326,7 @@ export function AIChatThread({
 							!isChatMode &&
 							index === messages.length - 1 &&
 							citations.length > 0 ? (
-								<div className="aiFootnoteRefs" aria-label="Footnote citations">
+								<div className="aiFootnoteRefs" aria-label={t("ai.thread.footnotes")}>
 									{citations.map((item, citationIndex) => (
 										<button
 											key={item.path}
@@ -347,14 +350,14 @@ export function AIChatThread({
 							!isChatMode &&
 							index === messages.length - 1 &&
 							citations.length > 0 ? (
-								<div className="aiCitations" aria-label="Citations">
+								<div className="aiCitations" aria-label={t("ai.thread.citations")}>
 									<button
 										type="button"
 										className="aiCitationsToggle"
 										onClick={() => setCitationsOpen((prev) => !prev)}
 										aria-expanded={citationsOpen}
 									>
-										<span>Cited Notes</span>
+										<span>{t("ai.thread.citedNotes")}</span>
 										<span className={cn("aiCitationsChevron", citationsOpen && "open")} aria-hidden>
 											<ChevronDown size="var(--icon-sm)" />
 										</span>
@@ -396,16 +399,6 @@ export function AIChatThread({
 					</Fragment>
 				);
 			})}
-			{messages.length > 0 && showIdleActivity ? (
-				<m.div
-					className="aiIdleAssistant"
-					initial={shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.98 }}
-					animate={{ opacity: 1, y: 0, scale: 1 }}
-					transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.18, ease: "easeOut" }}
-				>
-					<ThinkingOrb state="shaping" size={20} aria-label="Shaping your thought" />
-				</m.div>
-			) : null}
 		</>
 	);
 }

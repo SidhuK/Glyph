@@ -20,8 +20,10 @@ import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
 import { useNotePreview } from "../preview/useNotePreview";
 import { localizeSettingsSearchEntry } from "../settings/settingsSearch";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
-import { CommandList, CommandPaletteFooter } from "./CommandList";
+import { CommandList, paletteOptionId } from "./CommandList";
+import { CommandPaletteFooter } from "./CommandPaletteFooter";
 import { PaletteSettingEditor } from "./PaletteSettingEditor";
+import { PaletteTemplateAction } from "./PaletteTemplateAction";
 import {
 	type Command,
 	type PaletteLaunchMode,
@@ -37,6 +39,8 @@ import { usePaletteSettings } from "./usePaletteSettings";
 import type { WorkspaceTab } from "./useTabManager";
 
 export type { Command } from "./commandPaletteHelpers";
+
+const RESULTS_ID = "command-palette-results";
 
 interface CommandPaletteProps {
 	open: boolean;
@@ -428,7 +432,7 @@ export function CommandPalette({
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && closeAndRestoreFocus()}>
 			<DialogContent
 				className={cn(
-					"commandPalette top-[15vh] translate-y-0 gap-0 border-none bg-transparent p-0 shadow-none",
+					"commandPalette top-[round(15vh,1px)] translate-y-0 gap-0 border-none bg-transparent p-0 shadow-none",
 					selectedPreviewPath ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
 				)}
 				data-with-preview={selectedPreviewPath ? "true" : "false"}
@@ -454,43 +458,17 @@ export function CommandPalette({
 						onChange={(value) => updateSetting({ definition: activeSetting, value })}
 					/>
 				) : activeTemplate ? (
-					<div
-						className="commandPaletteSettingEditor"
-						onKeyDown={(event) => {
-							if (event.key !== "Escape" && event.key !== "ArrowLeft") return;
-							event.preventDefault();
-							event.stopPropagation();
-							setActiveTemplatePath(null);
+					<PaletteTemplateAction
+						template={activeTemplate}
+						onBack={() => setActiveTemplatePath(null)}
+						onCreate={() => {
+							closeAndRestoreFocus();
+							onCreateFromTemplate({
+								relPath: activeTemplate.relPath,
+								label: activeTemplate.name,
+							});
 						}}
-					>
-						<button
-							type="button"
-							className="commandPaletteBreadcrumb"
-							onClick={() => setActiveTemplatePath(null)}
-						>
-							<span className="commandPaletteBackIcon" aria-hidden="true">
-								←
-							</span>
-							<span>{t("commandPalette.templateBreadcrumb")}</span>
-						</button>
-						<div className="commandPaletteTemplateAction">
-							<strong>{activeTemplate.name.replace(/\.md$/i, "")}</strong>
-							<span>{activeTemplate.relPath}</span>
-							<button
-								type="button"
-								className="commandPaletteSettingSave"
-								onClick={() => {
-									closeAndRestoreFocus();
-									onCreateFromTemplate({
-										relPath: activeTemplate.relPath,
-										label: activeTemplate.name,
-									});
-								}}
-							>
-								{t("commandPalette.createFromTemplate")}
-							</button>
-						</div>
-					</div>
+					/>
 				) : (
 					<>
 						<div className="commandPaletteHeader">
@@ -499,9 +477,11 @@ export function CommandPalette({
 									ref={inputRef}
 									className="commandPaletteInput"
 									role="combobox"
-									aria-controls="command-palette-results"
+									aria-controls={RESULTS_ID}
 									aria-expanded="true"
-									aria-activedescendant={selectedResult?.id}
+									aria-activedescendant={
+										selectedResult ? paletteOptionId(RESULTS_ID, resolvedSelectedIndex) : undefined
+									}
 									placeholder={t("commandPalette.searchEverything")}
 									value={query}
 									onChange={(event) => {
@@ -548,7 +528,6 @@ export function CommandPalette({
 						>
 							<div
 								ref={listRef}
-								id="command-palette-results"
 								className="commandPaletteList"
 								data-with-preview={selectedPreviewPath ? "true" : "false"}
 							>
@@ -570,6 +549,7 @@ export function CommandPalette({
 									<SecretPaletteReveal />
 								) : (
 									<CommandList
+										id={RESULTS_ID}
 										results={results}
 										selectedIndex={resolvedSelectedIndex}
 										onSetSelectedIndex={(index) => setSelectedId(results[index]?.id ?? null)}
@@ -588,7 +568,9 @@ export function CommandPalette({
 								</aside>
 							) : null}
 						</div>
-						<CommandPaletteFooter />
+						<CommandPaletteFooter
+							selectedResult={isSecretPalettePhrase ? undefined : selectedResult}
+						/>
 					</>
 				)}
 			</DialogContent>

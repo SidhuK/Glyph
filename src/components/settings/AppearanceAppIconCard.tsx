@@ -58,7 +58,7 @@ export function AppearanceAppIconCard() {
 									aria-label={t(`appIcon.${icon}`)}
 									className="peer sr-only"
 								/>
-								<span className="appIconPickerTile flex size-9 items-center justify-center rounded-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--text-primary)] peer-disabled:cursor-wait peer-disabled:opacity-50">
+								<span className="appIconPickerTile flex size-9 items-center justify-center peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--text-primary)] peer-disabled:cursor-wait peer-disabled:opacity-50">
 									<img
 										src={icon === "default" ? "/glyph-app-icon.png" : `/app-icons/${icon}.png`}
 										alt=""

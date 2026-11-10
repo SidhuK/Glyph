@@ -73,7 +73,7 @@ export function NotePropertyValueField({
 							<span
 								key={`${property.key || rowId}-${valueIndex}-${value}`}
 								className="notePropertyPill"
-								data-tag-color={tagColorFromName(value)}
+								data-chip-tone={tagColorFromName(value)}
 							>
 								{value.startsWith("#") ? value.slice(1) : value}
 							</span>
@@ -181,7 +181,7 @@ export function NotePropertyValueField({
 								key={`${property.key || rowId}-${valueIndex}-${value}`}
 								type="button"
 								className="notePropertyToken"
-								data-tag-color={tagColorFromName(value)}
+								data-chip-tone={tagColorFromName(value)}
 								onClick={() => onRemoveTag(index, value)}
 								title={`Remove ${label}`}
 								aria-label={`Remove ${label}`}

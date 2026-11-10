@@ -1,6 +1,7 @@
 import { m } from "motion/react";
 import type { KeyboardEvent } from "react";
 import { useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Code, List } from "../../Icons";
 import { springPresets } from "../../ui/animations";
 
@@ -15,6 +16,7 @@ export function NotePropertiesToolbar({
 	canShowProperties,
 	onModeChange,
 }: NotePropertiesToolbarProps) {
+	const { t } = useTranslation("editor");
 	const propertiesButtonRef = useRef<HTMLButtonElement | null>(null);
 	const rawButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -62,7 +64,7 @@ export function NotePropertiesToolbar({
 
 	return (
 		<div className="notePropertiesToolbar">
-			<div className="notePropertiesToolbarLabel">Properties</div>
+			<div className="notePropertiesToolbarLabel">{t("properties.label")}</div>
 			<div className="notePropertiesModeSwitch" role="tablist" aria-label="Frontmatter mode">
 				<m.button
 					ref={propertiesButtonRef}

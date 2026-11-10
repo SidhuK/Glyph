@@ -14,7 +14,7 @@
 		"sectionTitle": "App icon"
 	},
 	"theme": {
-		"sectionTitle": "Appearance",
+		"sectionTitle": "Mode",
 		"appearance": {
 			"label": "Color mode",
 			"description": "Follow your system or lock Glyph to light or dark mode.",
@@ -42,7 +42,6 @@
 	"themeCards": {
 		"light": "Light theme",
 		"dark": "Dark theme",
-		"activeSuffix": "— Active",
 		"groups": {
 			"default": "Default",
 			"builtIn": "Built-in",

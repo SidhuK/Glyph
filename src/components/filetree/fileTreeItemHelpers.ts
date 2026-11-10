@@ -31,7 +31,8 @@ export function buildRowStyle(
 	toneSeed?: string,
 	color?: EditorTextColor | null,
 ): CSSProperties {
-	const paddingLeft = 8 + depth * 10;
+	// Each level steps one icon plus the row gap, so a child's icon sits under its parent's label.
+	const paddingLeft = `calc(8px + ${depth} * (var(--icon-lg) + 8px))`;
 	const toneStyle =
 		toneSeed && color ? databaseValueToneStyleForColor(toneSeed, color) : ({} as CSSProperties);
 	return {

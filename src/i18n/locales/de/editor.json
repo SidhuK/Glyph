@@ -279,6 +279,10 @@
 			"priority": "Priorität"
 		}
 	},
+	"properties": {
+		"label": "Eigenschaften",
+		"add": "Eigenschaft hinzufügen"
+	},
 	"infoSidebar": {
 		"panelLabel": "Notiz-Infobereich",
 		"sidebarTabsLabel": "Notiz-Seitenleiste",
@@ -287,7 +291,9 @@
 		"close": "Infobereich schließen",
 		"stats": {
 			"tasks": "Aufgaben",
-			"tasksDone": "{{completed}} von {{total}} erledigt"
+			"tasksDone": "{{completed}} von {{total}} erledigt",
+			"fileModified": "Datei geändert",
+			"fileCreated": "Datei erstellt"
 		}
 	}
 }

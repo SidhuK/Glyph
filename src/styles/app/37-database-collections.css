@@ -69,9 +69,11 @@
 	max-width: 100%;
 }
 
+/* Crumbs and their › separators share one flex gap, so each chevron sits centred. */
 .databasesCollectionBreadcrumb {
 	display: flex;
 	align-items: center;
+	gap: 8px;
 	flex: 0 1 auto;
 	min-width: 0;
 	overflow: hidden;
@@ -81,22 +83,13 @@
 	color: var(--text-tertiary);
 }
 
-.databasesCollectionBreadcrumbItem {
-	display: inline-flex;
-	align-items: center;
-	min-width: 0;
-	flex: 0 1 auto;
-}
-
 .databasesCollectionBreadcrumbSep {
 	flex-shrink: 0;
-	/* The title input after it brings its own 7px (padding + border), so only the left side
-	   needs space for the chevron to sit evenly, like the note breadcrumb. */
-	margin: 0 0 0 6px;
 	color: var(--text-tertiary);
 }
 
 .databasesCollectionBreadcrumbLabel {
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -150,24 +143,32 @@
 	background: var(--bg-hover);
 }
 
+/* The collection's page title, above its view tabs. */
+.databasesTitleRow {
+	display: flex;
+	min-width: 0;
+	padding: 8px 16px 0;
+}
+
+/* The app's page-title recipe (--text-xl/600, as on All notes and Settings). The input's
+   padding and border hang left so its text starts on the 16px page column with the tabs. */
 .databasesCollectionTitleInput {
 	box-sizing: border-box;
 	display: inline-block;
 	width: auto;
 	min-width: 0;
-	max-width: min(440px, 44vw);
-	flex: 0 0 auto;
+	max-width: 100%;
+	flex: 0 1 auto;
 	height: auto;
-	min-height: 28px;
-	margin: 0;
+	margin: 0 0 0 -7px;
 	padding: 2px 6px;
 	border: 1px solid transparent;
 	border-radius: var(--radius-md);
 	background: transparent;
-	/* Same type as the note view's current breadcrumb item (.mainTabsBreadcrumbButton). */
-	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
-	line-height: 1.35;
+	font-size: var(--text-xl);
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.015em;
+	line-height: 1.2;
 	color: var(--text-primary);
 	transition:
 		background-color 140ms ease,
@@ -221,9 +222,5 @@ button.databasesCollectionSwitcher:is(:hover, :focus-visible, [data-popup-open])
 @media (max-width: 760px) {
 	.databasesCollectionBreadcrumb {
 		display: none;
-	}
-
-	.databasesCollectionTitleInput {
-		max-width: 38vw;
 	}
 }

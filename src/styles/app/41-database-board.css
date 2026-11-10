@@ -15,11 +15,14 @@
 }
 
 /* Linear board: lanes sit straight on the page surface, so nothing changes tone under the
-   view bar; light cards hold their edge with a hairline ring, dark cards with a lifted fill. */
+   view bar; cards hold their edge with --card-ring, dark cards also with a lifted fill. */
 .databaseBoardShell {
 	--database-board-canvas: var(--bg-primary);
-	--database-board-edge-fade: 40px;
+	--database-board-inset: 16px;
+	--database-board-lane-gap: 24px;
+	--database-board-edge-fade: 56px;
 
+	position: relative;
 	flex: 1;
 	min-height: 0;
 	display: flex;
@@ -31,6 +34,7 @@
 }
 
 .databaseBoardHorizontal {
+	container-type: inline-size;
 	flex: 1 1 auto;
 	min-width: 0;
 	min-height: 0;
@@ -95,47 +99,122 @@
 	line-height: 1.35;
 }
 
+/* Lanes are sized so whole lanes fill the board: as many 280px+ lanes as fit beside the
+   left inset and the trailing fade, sharing the width between them. The lane after the last
+   whole one starts one gap past it, exactly where the fade turns opaque, so no sliver of a
+   lane (or its cover) ever peeks in at rest. */
 .databaseBoardScroller {
+	--database-board-lanes: 1;
+	--database-board-lane-width: max(
+		280px,
+		calc(
+			(100cqi - var(--database-board-inset) - var(--database-board-edge-fade) -
+					(var(--database-board-lanes) - 1) * var(--database-board-lane-gap)) /
+				var(--database-board-lanes)
+		)
+	);
+
 	display: flex;
-	gap: 12px;
+	gap: var(--database-board-lane-gap);
 	width: max-content;
 	min-width: 100%;
 	min-height: 100%;
 	height: auto;
-	padding: 4px 0 0 16px;
+	padding: 4px 0 0 var(--database-board-inset);
 	align-items: stretch;
+}
+
+/* n lanes fit once the board is inset + fade + n x 280 + (n - 1) x gap wide. */
+@container (min-width: 656px) {
+	.databaseBoardScroller {
+		--database-board-lanes: 2;
+	}
+}
+
+@container (min-width: 960px) {
+	.databaseBoardScroller {
+		--database-board-lanes: 3;
+	}
+}
+
+@container (min-width: 1264px) {
+	.databaseBoardScroller {
+		--database-board-lanes: 4;
+	}
+}
+
+@container (min-width: 1568px) {
+	.databaseBoardScroller {
+		--database-board-lanes: 5;
+	}
+}
+
+@container (min-width: 1872px) {
+	.databaseBoardScroller {
+		--database-board-lanes: 6;
+	}
+}
+
+@container (min-width: 2176px) {
+	.databaseBoardScroller {
+		--database-board-lanes: 7;
+	}
 }
 
 /* Lanes past the window edge fade out instead of ending in a hard clip. The fade is the board's
    trailing spacer and sticks to the viewport edge, so the last lane is fully clear once scrolled
-   to the end, and it stays under the scrollbar. Its last stretch is solid canvas, so a lane edge
-   (or a bright card cover) peeking in by a few pixels never shows as a sliver. */
+   to the end, and it stays under the scrollbar. It turns opaque one lane gap in, so a lane
+   edge or a dark card cover behind it is hidden, never drawn as a bar. */
 .databaseBoardScroller::after {
 	content: "";
 	position: sticky;
 	right: 0;
 	z-index: 4;
 	flex: 0 0 var(--database-board-edge-fade);
-	margin-left: -12px;
+	margin-left: calc(-1 * var(--database-board-lane-gap));
 	background: linear-gradient(
 		to right,
 		color-mix(in srgb, var(--database-board-canvas) 0%, transparent),
-		color-mix(in srgb, var(--database-board-canvas) 80%, transparent) 40%,
-		var(--database-board-canvas) 62%
+		var(--database-board-canvas) var(--database-board-lane-gap)
 	);
 	pointer-events: none;
+}
+
+/* The explicit cue for more lanes: a chevron over the trailing fade, on the lane-header row. */
+.databaseBoardScrollNext {
+	position: absolute;
+	top: 10px;
+	right: calc((var(--database-board-edge-fade) - 28px) / 2);
+	z-index: 5;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: var(--bg-primary);
+	box-shadow: var(--card-ring);
+	color: var(--text-secondary);
+	cursor: pointer;
+}
+
+.databaseBoardScrollNext:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .databaseBoardLane {
 	--database-tone: var(--color-blue-500);
 
 	display: flex;
-	flex: 0 0 300px;
+	flex: 0 0 var(--database-board-lane-width);
 	flex-direction: column;
-	width: 300px;
+	width: var(--database-board-lane-width);
 	overflow: visible;
 	scroll-snap-align: start;
-	scroll-margin-left: 16px;
+	scroll-margin-left: var(--database-board-inset);
 	border: 0;
 	border-radius: var(--radius-8);
 	background: transparent;
@@ -161,8 +240,10 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-2);
+	/* The 12px start puts the lane icon on the card text column; the end keeps the menu glyph
+	   on the card's right inset. */
 	min-height: 40px;
-	padding: 6px 2px 6px 4px;
+	padding: 6px 5px 6px 12px;
 	border-bottom: none;
 	background: linear-gradient(
 		to bottom,
@@ -205,7 +286,6 @@
 }
 
 .databaseBoardLaneHandle,
-.databaseBoardLaneAddCardButton,
 .databaseBoardLaneAddRow,
 .databaseBoardCard {
 	transition:
@@ -215,8 +295,7 @@
 		opacity 120ms ease;
 }
 
-.databaseBoardLaneHandle,
-.databaseBoardLaneAddCardButton {
+.databaseBoardLaneHandle {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -233,10 +312,6 @@
 	cursor: default;
 }
 
-.databaseBoardLaneAddCardButton {
-	cursor: pointer;
-}
-
 /* Linear: lane actions only appear while the lane is hovered, focused, or its menu is open. */
 .databaseBoardLaneHeaderActions {
 	opacity: 0;
@@ -248,13 +323,11 @@
 	opacity: 1;
 }
 
-.databaseBoardLane:is(:hover, :focus-within)
-	:where(.databaseBoardLaneHandle, .databaseBoardLaneAddCardButton) {
+.databaseBoardLane:is(:hover, :focus-within) .databaseBoardLaneHandle {
 	color: var(--text-tertiary);
 }
 
-.databaseBoardLaneHandle:is(:hover, [data-popup-open]):not(:disabled),
-.databaseBoardLaneAddCardButton:hover {
+.databaseBoardLaneHandle:is(:hover, [data-popup-open]):not(:disabled) {
 	background: var(--bg-hover);
 	color: var(--text-primary);
 }
@@ -263,9 +336,10 @@
 	display: none;
 }
 
+/* Lane titles lead the card titles under them: same size, one weight heavier. */
 .databaseBoardLaneTitle {
 	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 	text-transform: none;
 	line-height: 1.2;
@@ -277,10 +351,6 @@
 .databaseBoardLaneTitleIcon {
 	flex: 0 0 auto;
 	color: var(--database-tone);
-}
-
-.databaseBoardLaneTitleIcon.is-neutral {
-	color: var(--text-secondary);
 }
 
 .databaseBoardLaneTitleIcon.is-dot {
@@ -323,23 +393,26 @@
 	flex: 1 0 auto;
 	flex-direction: column;
 	gap: 8px;
-	padding: 2px 0 48px;
+	padding: 4px 0 48px;
 	min-height: calc(100% - 40px);
 	overflow: visible;
 }
 
+/* The lane's one add control: a "+ New" row on the card text column, one card gap below. */
 .databaseBoardLaneAddRow {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
+	gap: 6px;
 	width: 100%;
 	height: 32px;
 	flex: 0 0 auto;
-	padding: 0;
+	padding: 0 12px;
 	border: 0;
-	border-radius: var(--radius-8);
+	border-radius: var(--card-radius);
 	background: transparent;
 	color: var(--text-tertiary);
+	font-size: var(--text-sm);
 	cursor: pointer;
 	opacity: 0;
 }
@@ -385,14 +458,13 @@
 	min-width: 0;
 	height: auto;
 	flex: 0 0 auto;
+	position: relative;
 	gap: 0;
 	padding: 0;
 	border: 0;
-	border-radius: var(--radius-8);
+	border-radius: var(--card-radius);
 	background: var(--bg-primary);
-	box-shadow:
-		0 0 0 1px var(--border-light),
-		0 1px 2px rgb(0 0 0 / 4%);
+	box-shadow: none;
 	color: inherit;
 	cursor: default;
 	font: inherit;
@@ -406,20 +478,24 @@
 	-webkit-user-drag: none;
 }
 
-.databaseBoardCard:hover {
-	box-shadow:
-		0 0 0 1px var(--border-default),
-		0 1px 2px rgb(0 0 0 / 4%);
+/* The card ring is drawn over the card so a cover image can't paint across it; resting cards
+   cast no shadow (shadows are for floating layers such as a dragged card). */
+.databaseBoardCard::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	box-shadow: var(--card-ring);
+	pointer-events: none;
 }
 
-/* Dark cards lift off the canvas with a lighter fill and a ring that reads at a glance. */
+.databaseBoardCard:hover::after {
+	box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+/* Dark cards also lift off the canvas with a lighter fill. */
 .dark .databaseBoardCard {
 	background: color-mix(in srgb, var(--text-primary) 5%, var(--bg-primary));
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 10%, transparent);
-}
-
-.dark .databaseBoardCard:hover {
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 18%, transparent);
 }
 
 .databaseBoardCard[data-dragging="true"]:not([data-dnd-placeholder]),
@@ -440,14 +516,12 @@
 }
 
 .databaseBoardCard[data-drop-target="true"] {
-	box-shadow:
-		0 0 0 1px var(--border-light),
-		0 -2px 0 0 var(--interactive-accent);
+	box-shadow: 0 -2px 0 0 var(--interactive-accent);
 }
 
 .databaseBoardCard[data-state="selected"],
 .databaseBoardCard[data-state="selected"]:hover {
-	box-shadow: 0 0 0 1.5px var(--border-strong);
+	box-shadow: var(--state-selected-ring);
 }
 
 /* Every card top-aligns, so titles share a baseline across lanes whether or not chips follow. */
@@ -459,6 +533,12 @@
 	gap: 8px;
 	min-width: 0;
 	padding: 12px;
+}
+
+/* A title-only card (no cover, no chips) drops to a compact ~36px row. */
+.databaseBoardCard:not(:has(.databaseBoardCardChips, .databaseBoardCardThumbnail))
+	.databaseBoardCardMain {
+	padding-block: 8px;
 }
 
 .databaseBoardCardTitleRow {
@@ -492,12 +572,12 @@
 	text-wrap: pretty;
 }
 
+/* A note's appearance icon sits in the meta slot, so titles keep one text column. */
 .databaseBoardCardTitleIcon {
 	display: inline-flex;
+	flex: 0 0 auto;
 	width: var(--icon-md);
-	margin-right: 6px;
 	color: var(--database-note-appearance-color, var(--text-tertiary));
-	vertical-align: -2px;
 }
 
 .databaseBoardCardThumbnail {
@@ -545,25 +625,35 @@
 	overflow: hidden;
 }
 
-/* Card chips: one neutral outline style; colour stays on the icon or dot. */
+/* Card and table chips use the app's one chip (--chip-*): status and priority are neutral chips
+   whose icon carries the colour; tags take their palette slot through [data-chip-tone]
+   (13-tags.css), as in the note list; "+N" is the same neutral count chip as the list's. */
 .databaseBoardCardStatus.propertyValueText,
-.databaseBoardTag {
+.databaseBoardTag,
+.databaseCellPill {
 	display: inline-flex;
 	align-items: center;
 	flex: 0 0 auto;
-	gap: 5px;
-	min-height: 20px;
+	gap: 4px;
+	height: var(--chip-height);
+	min-height: 0;
 	max-width: 100%;
-	padding: 0 8px 0 6px;
+	padding: 0 var(--chip-padding-x);
 	border: 0;
-	border-radius: 999px;
-	background: transparent;
-	box-shadow: inset 0 0 0 1px var(--border-default);
-	font-size: var(--text-xs);
-	font-weight: var(--font-normal);
-	line-height: 1.2;
+	border-radius: var(--chip-radius);
+	background: var(--bg-tertiary);
+	box-shadow: none;
+	font-size: var(--chip-font-size);
+	font-weight: var(--chip-font-weight);
+	line-height: var(--chip-height);
 	color: var(--text-secondary);
 	white-space: nowrap;
+}
+
+.databaseBoardTag[data-chip-tone],
+.databaseCellPill[data-chip-tone] {
+	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));
+	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
 }
 
 .databaseBoardCardStatus .propertyValueTextIcon {
@@ -573,35 +663,47 @@
 	color: var(--database-tone, currentcolor);
 }
 
-.databaseBoardCardStatus.is-priority .propertyValueTextIcon {
+.databaseBoardTag,
+.databaseCellPill {
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
+:is(.databaseBoardTag, .databaseCellPill) .databaseTagPillIcon {
 	color: currentcolor;
 }
 
-.databaseBoardTag {
-	--database-tone: var(--text-tertiary);
-
-	flex: 0 1 auto;
-	min-width: 0;
-	padding-left: 7px;
-}
-
-.databaseBoardTagLabel {
+.databaseBoardTagLabel,
+.databaseCellPillLabel {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.databaseBoardTag.is-muted {
+.databaseBoardTag.is-count,
+.databaseCellPill.is-count {
 	flex: 0 0 auto;
-	padding-inline: 2px;
-	box-shadow: none;
-	color: var(--text-tertiary);
 	font-variant-numeric: tabular-nums;
 }
 
 .databaseTagPillIcon {
 	flex: 0 0 auto;
 	color: var(--text-tertiary);
+}
+
+/* Priority bars: the level's bars in strong ink, the rest faint. */
+.databasePriorityBars {
+	flex: 0 0 auto;
+	width: var(--icon-md);
+	height: var(--icon-md);
+}
+
+.databasePriorityBar {
+	fill: var(--text-quaternary);
+}
+
+.databasePriorityBar[data-active="true"] {
+	fill: var(--text-secondary);
 }
 
 .databaseBoardCardTimestamp {
@@ -627,7 +729,7 @@
 	padding: 24px;
 	text-align: center;
 	border: 1px dashed var(--border-light);
-	border-radius: var(--radius-xl);
+	border-radius: var(--group-radius);
 	background: var(--bg-primary);
 }
 

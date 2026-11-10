@@ -63,7 +63,18 @@
 }
 
 /* Image tiles read like ChatGPT's Mode tiles: no fill behind the option; the chosen
-   preview gets one soft ring (shared with the dock icon picker), hover a hairline one. */
+   preview gets --state-selected-ring (shared by every picker), hover a hairline one. The
+   option's bottom padding matches the label's line slack, so tile top and label bottom sit
+   16px from the row edges, and the track pulls the 4px option padding out at the right so
+   the last tile ends on the row inset with the toggles above and below. */
+.settingsSegmentedTrack:has(.settingsAppearancePreview, .aiConnectionPreview) {
+	margin-right: -4px;
+}
+
+.settingsSegmentedOption:has(.settingsAppearancePreview, .aiConnectionPreview) {
+	padding-bottom: 1px;
+}
+
 .settingsSegmentedOption:has(.settingsAppearancePreview, .aiConnectionPreview):hover,
 .settingsSegmentedOption:has(
 		.settingsAppearancePreview,
@@ -74,14 +85,14 @@
 
 .settingsSegmentedOption[aria-pressed="true"]
 	:is(.settingsAppearancePreview, .aiConnectionPreview) {
-	outline: 1.5px solid var(--settings-selection-ring);
-	outline-offset: 2px;
+	box-shadow: var(--state-selected-ring);
 }
 
 .settingsSegmentedOption:hover:not([aria-pressed="true"])
 	:is(.settingsAppearancePreview, .aiConnectionPreview) {
-	outline: 1.5px solid var(--border-default);
-	outline-offset: 2px;
+	box-shadow:
+		0 0 0 1.5px var(--bg-primary),
+		0 0 0 3px var(--border-default);
 }
 
 /* AI connection tiles are the same 68x46 box as the Color mode previews: every tile has a

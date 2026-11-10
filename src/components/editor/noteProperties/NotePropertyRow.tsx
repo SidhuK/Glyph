@@ -63,6 +63,7 @@ export function NotePropertyRow({
 			<div className="notePropertyIdentity">
 				<PropertyKindBadge
 					kind={property.kind}
+					propertyKey={property.key}
 					interactive={!readOnly}
 					onSelect={(kind) => onUpdate(index, { kind })}
 				/>

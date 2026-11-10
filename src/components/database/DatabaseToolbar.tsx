@@ -5,7 +5,7 @@ import type {
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
-import { Search, X } from "../Icons";
+import { Plus, Search, X } from "../Icons";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseViewOptionsPopover } from "./DatabaseViewOptionsPopover";
 
@@ -19,6 +19,7 @@ interface DatabaseToolbarProps {
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
 	viewOptionsOpen?: boolean;
 	onViewOptionsOpenChange?: (open: boolean) => void;
+	onCreateNote: () => void;
 	className?: string;
 }
 
@@ -34,6 +35,7 @@ export function DatabaseToolbar({
 	onChangeConfig,
 	viewOptionsOpen,
 	onViewOptionsOpenChange,
+	onCreateNote,
 	className,
 }: DatabaseToolbarProps) {
 	const { t } = useTranslation("shell");
@@ -117,6 +119,15 @@ export function DatabaseToolbar({
 						onChange: onGroupColumnIdChange,
 					}}
 				/>
+				<button
+					type="button"
+					className="databaseToolbarChip databaseToolbarNewNote"
+					onClick={onCreateNote}
+					title={t("sidebar.newNote")}
+				>
+					<Plus size="var(--icon-sm)" aria-hidden="true" />
+					<span>{t("collections.newNote")}</span>
+				</button>
 			</div>
 		</div>
 	);

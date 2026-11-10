@@ -75,7 +75,7 @@
 	border: 0;
 	border-radius: var(--radius-md);
 	background: transparent;
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 	line-height: 0;
 	cursor: pointer;
 	transition:
@@ -84,15 +84,16 @@
 }
 
 .markdownEditorToolbarBtn:hover,
-.markdownEditorToolbarBtn[data-active="true"],
-.markdownEditorModeBtn:hover,
-.markdownEditorModeBtn[aria-pressed="true"] {
+.markdownEditorModeBtn:hover {
 	color: var(--text-primary);
 	background: var(--bg-hover);
 }
 
+/* An open panel or the chosen mode is "on", not hovered: the shared toggle state. */
+.markdownEditorToolbarBtn[data-active="true"],
 .markdownEditorModeBubble .markdownEditorModeBtn[aria-pressed="true"] {
-	background: var(--bg-active);
+	color: var(--text-primary);
+	background: var(--state-on);
 }
 
 .markdownEditorToolbarBtn:focus-visible,
@@ -342,6 +343,11 @@
 	font-size: var(--text-base);
 }
 
+/* The editor | inspector seam carries a real pane divider, not the faint card hairline. */
+.notesInfoSidebarHost[data-open="true"] {
+	border-left-color: var(--border-default);
+}
+
 .notesInfoSidebarPanel {
 	width: 100%;
 	height: 100%;
@@ -353,14 +359,16 @@
 }
 
 /* No rule below: the editor column has none, so the top band reads as one row across the window.
-   The host's 8px top padding plus half of 42px puts the tabs on the traffic-light line, and
-   the 8px left inset plus the tab's own 8px padding puts the first label on the body's edge. */
+   The host has no top padding, so half this height centres the tabs on the traffic-light line at
+   any UI size, level with the chat panel's header. The 8px left inset plus the tab's own 8px
+   padding puts the first label on the body's edge; the 16px right inset puts the close button on
+   the body's right edge. */
 .markdownEditorInfoHeader {
 	position: sticky;
 	top: 0;
 	z-index: 2;
-	min-height: 42px;
-	padding: 0 8px;
+	min-height: calc(var(--window-control-toggle-top, 29px) * 2);
+	padding: 0 16px 0 8px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -382,7 +390,7 @@
 	padding: 0;
 	border: none;
 	background: transparent;
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 	line-height: 0;
 	border-radius: var(--radius-md);
 	cursor: pointer;
@@ -405,7 +413,7 @@
    var(--bg-active) under the active tab, var(--bg-hover) on hover. */
 .markdownEditorInfoTab {
 	min-width: 0;
-	height: 26px;
+	height: calc(var(--text-sm) * 2);
 	padding: 0 8px;
 	border: 0;
 	border-radius: var(--radius-md);
@@ -430,21 +438,24 @@
 
 .markdownEditorInfoTab[data-active="true"] {
 	color: var(--text-primary);
-	background: var(--bg-active);
+	background: var(--state-on);
 }
 
 /* Stats / Contents / Backlinks switch a section, not the panel, so they rank below the panel
-   tabs: plain text, no fill, on the body's 16px text edge. */
+   tabs and no higher than the section labels: caption text, no fill, an underline when active,
+   on the body's 16px text edge. */
 .markdownEditorInfoSubTab {
 	min-width: 0;
-	height: 24px;
-	padding: 0;
+	height: auto;
+	padding: 2px 0 5px;
 	border: 0;
+	border-radius: 0;
 	background: transparent;
 	color: var(--text-tertiary);
-	font-size: var(--text-sm);
+	font-size: var(--text-2xs);
 	font-weight: var(--font-medium);
-	line-height: 1;
+	letter-spacing: 0.01em;
+	line-height: 1.2;
 	white-space: nowrap;
 	cursor: pointer;
 	transition: color var(--transition-fast);
@@ -462,6 +473,7 @@
 
 .markdownEditorInfoSubTab[data-active="true"] {
 	color: var(--text-primary);
+	box-shadow: inset 0 -1.5px 0 currentcolor;
 }
 
 .markdownEditorInfoTab:focus-visible,
@@ -473,8 +485,17 @@
 .notesInfoSidebarPanel {
 	--info-surface: color-mix(in srgb, var(--bg-tertiary) 42%, transparent);
 	--info-surface-border: var(--border-light);
-	--info-label-column: 112px;
-	--info-row-height: 32px;
+	/* 112px and 32px at the default UI size; they scale with the UI text. */
+	--info-label-column: calc(var(--text-base) * 8);
+	--info-row-height: calc(var(--text-base) * 32 / 14);
+	/* Icon slot, its gap to the label and the column gap match .notePropertyRow. */
+	--info-icon-slot: 18px;
+	--info-icon-gap: 8px;
+	--info-column-gap: 12px;
+	/* One header row for every section label, the Properties toolbar included. */
+	--info-section-header-height: calc(var(--text-base) * 2);
+	/* Rules between sections sit 12px from the content on both sides. */
+	--info-rule-space: 12px;
 }
 
 .markdownEditorInfoTabs,
@@ -486,16 +507,17 @@
 
 .markdownEditorInfoSubTabs {
 	gap: 16px;
-	margin: 4px 0 0;
-	padding-top: 8px;
+	margin: var(--info-rule-space) 0 0;
+	padding-top: calc(var(--info-rule-space) - 2px);
 	border-top: 1px solid var(--border-light);
 }
 
-/* Two even rows of three numbers; no tiles. Starts on the same edge as the section headings. */
+/* Two rows of two numbers: the first column on the body's edge, the second on the value
+   column the property and file rows share. */
 .markdownEditorInfoStatGrid {
 	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 14px 12px;
+	grid-template-columns: var(--info-label-column) minmax(0, 1fr);
+	gap: 12px var(--info-column-gap);
 	padding: 6px 0 4px;
 }
 
@@ -510,32 +532,33 @@
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	font-size: var(--text-md);
-	font-weight: var(--font-medium);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
 	font-variant-numeric: tabular-nums;
-	letter-spacing: -0.01em;
 	color: var(--text-primary);
-	line-height: 1.2;
+	line-height: 1.3;
 }
 
 .markdownEditorInfoStatCard > span {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	font-size: var(--text-xs);
+	font-size: var(--text-2xs);
 	color: var(--text-tertiary);
 	line-height: 1.2;
 }
 
+/* An inset card that bleeds 8px past the body so its ring, label and count land on the icon,
+   label and right-edge columns of the rows around it. */
 .markdownEditorInfoTaskSummary {
+	--task-progress-width: var(--info-icon-slot);
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	min-height: 38px;
-	margin-top: 10px;
-	padding: 8px 12px;
-	border-radius: var(--radius-lg);
-	background: var(--info-surface);
+	gap: var(--info-icon-gap);
+	margin: 10px -8px 0;
+	padding: 8px;
+	border-radius: var(--radius-md);
+	background: var(--bg-tertiary);
 	font-size: var(--text-sm);
 	line-height: 1.3;
 	color: var(--text-secondary);
@@ -720,21 +743,39 @@
 	opacity: 1;
 }
 
+/* The same rule as above the sub-tabs, 12px clear on both sides: the label row's own
+   half-leading makes up the rest below it. */
 .markdownEditorInfoSection + .markdownEditorInfoSection {
-	padding-top: 12px;
+	margin-top: calc(var(--info-rule-space) - 10px);
+	padding-top: calc(
+		var(--info-rule-space) - (var(--info-section-header-height) - var(--text-2xs)) / 2
+	);
+	border-top: 1px solid var(--border-light);
 }
 
 .markdownEditorInfoSectionFrontmatter {
 	padding-top: 2px;
-	padding-bottom: 8px;
+	padding-bottom: 0;
+}
+
+/* One section label: caption, semibold, secondary ink, on a fixed header row so every section
+   (Properties included) starts its first row the same distance below the label. */
+.markdownEditorInfoSectionLabel,
+.notePropertiesToolbarLabel {
+	font-family: var(--font-sans);
+	font-size: var(--text-2xs);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.01em;
+	text-transform: none;
+	color: var(--text-secondary);
+	line-height: 1.2;
 }
 
 .markdownEditorInfoSectionLabel {
+	display: flex;
+	align-items: center;
+	min-height: var(--info-section-header-height);
 	margin: 0 0 4px;
-	font-size: var(--text-xs);
-	font-weight: var(--font-medium);
-	color: var(--text-secondary);
-	line-height: 1.15;
 }
 
 .markdownEditorInfoValue {
@@ -751,7 +792,7 @@
 	display: grid;
 	grid-template-columns: var(--info-label-column) minmax(0, 1fr);
 	align-items: center;
-	gap: 12px;
+	gap: var(--info-column-gap);
 	min-height: var(--info-row-height);
 	font-size: var(--text-sm);
 	line-height: 1.3;
@@ -763,15 +804,15 @@
 	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: var(--info-icon-gap);
 	overflow: hidden;
 	color: var(--text-secondary);
 	white-space: nowrap;
 }
 
 .markdownEditorInfoRowIcon {
-	width: 18px;
-	flex: 0 0 18px;
+	width: var(--info-icon-slot);
+	flex: 0 0 var(--info-icon-slot);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;

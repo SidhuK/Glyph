@@ -106,13 +106,20 @@
 	--ai-mode-accent: var(--ai-accent-create);
 }
 
+/* 4px inset plus each button's 8px padding puts the label and the icon glyphs on the body's
+   12px column. */
 .aiPanelHeader {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 8px 12px;
+	padding: 0 4px;
 	flex-shrink: 0;
 	user-select: none;
+}
+
+/* The host has no top padding, so half this height centres the row on the traffic-light line. */
+.aiPanel[data-ai-surface="sidebar"] .aiPanelHeader {
+	min-height: calc(var(--window-control-toggle-top) * 2);
 }
 
 .aiPanelHeaderLeft {
@@ -292,6 +299,7 @@
 	margin-top: 8px;
 }
 
+/* The top fade marks the scroll edge under the header; at rest it only covers the padding. */
 .aiChatThread {
 	flex: 1;
 	min-height: 0;
@@ -301,6 +309,7 @@
 	flex-direction: column;
 	gap: 8px;
 	scrollbar-width: thin;
+	mask-image: linear-gradient(to bottom, transparent, #000 var(--scroll-fade-size));
 }
 
 .aiChatEmpty {
@@ -364,14 +373,6 @@
 	color: var(--text-primary);
 }
 
-.aiIdleAssistant {
-	align-self: flex-start;
-	display: inline-flex;
-	align-items: center;
-	min-height: 20px;
-	padding-top: 4px;
-}
-
 .aiChatContent {
 	white-space: pre-wrap;
 	word-break: normal;
@@ -404,8 +405,10 @@
 	white-space: nowrap;
 }
 
+/* Pulled out by the buttons' inset so the first glyph sits on the text column. */
 .aiAssistantActions {
 	margin-top: 4px;
+	margin-left: -8px;
 	display: flex;
 	flex-wrap: nowrap;
 	gap: 2px;
@@ -531,6 +534,47 @@
 .aiMessageMarkdown .aiMessageMarkdownContent pre {
 	max-width: 100%;
 	overflow-x: auto;
+}
+
+/* Chat answers are narrow, so tables size to their content and scroll sideways instead of
+   squeezing every column to a word or two. The block box is the scroll wrapper and carries
+   the card ring; cells draw only the inner grid lines. */
+.aiMessageMarkdown .aiMessageMarkdownContent table {
+	display: block;
+	width: fit-content;
+	max-width: 100%;
+	overflow-x: auto;
+	table-layout: auto;
+	border-collapse: separate;
+	border-spacing: 0;
+	margin: 8px 0;
+	font-size: var(--text-xs);
+	line-height: var(--leading-normal);
+	background: transparent;
+	box-shadow: var(--card-ring);
+	border-radius: var(--card-radius);
+}
+
+.aiMessageMarkdown .aiMessageMarkdownContent :is(th, td) {
+	min-width: 6em;
+	padding: 4px 8px;
+	border: 0;
+	border-right: 1px solid var(--border-default);
+	border-bottom: 1px solid var(--border-default);
+	overflow-wrap: normal;
+	background: transparent;
+}
+
+.aiMessageMarkdown .aiMessageMarkdownContent th {
+	background: var(--bg-hover);
+}
+
+.aiMessageMarkdown .aiMessageMarkdownContent tr > :last-child {
+	border-right: 0;
+}
+
+.aiMessageMarkdown .aiMessageMarkdownContent tbody tr:last-child > * {
+	border-bottom: 0;
 }
 
 .aiMessageMarkdown .aiMessageMarkdownContent .katex-display {

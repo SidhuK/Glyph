@@ -23,7 +23,6 @@ export function createPropertyColumn(property: DatabasePropertyOption): Database
 			type: "property",
 			property_kind: property.kind,
 		}),
-		width: 180,
 		visible: true,
 		property_key: property.key,
 		property_kind: property.kind,

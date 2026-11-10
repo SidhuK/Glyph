@@ -22,11 +22,14 @@ const TAG_COLOR_SLOTS = ["red", "orange", "yellow", "green", "cyan", "blue", "pu
 
 type TagColorSlot = (typeof TAG_COLOR_SLOTS)[number];
 
-/** Stable per-name pick of a theme palette slot, so tag colors follow the active theme. */
+/** Stable per-name pick of a theme palette slot, so tag colors follow the active theme. The
+ * name is hashed without its "#" and case, so `#Testing` in the editor, `testing` in
+ * frontmatter and the index's form all get one colour. */
 export function tagColorFromName(name: string): TagColorSlot {
+	const key = name.trim().replace(/^#+/, "").toLowerCase();
 	let hash = 0;
-	for (let i = 0; i < name.length; i++) {
-		hash = name.charCodeAt(i) + ((hash << 5) - hash);
+	for (let i = 0; i < key.length; i++) {
+		hash = key.charCodeAt(i) + ((hash << 5) - hash);
 	}
 	return TAG_COLOR_SLOTS[Math.abs(hash) % TAG_COLOR_SLOTS.length];
 }

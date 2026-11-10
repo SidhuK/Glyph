@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { titleFromPath } from "../AllDocsCard";
+import { noteDisplayTitle } from "../allDocsPreviewLines";
 import { type ActivityDay, sortedDayNotes } from "./activityDays";
 
 const PREVIEW_TITLE_LIMIT = 3;
@@ -28,7 +28,7 @@ export function ActivityHeatmapDayPreview({ day, dateLabel }: ActivityHeatmapDay
 			{notes.length > 0 ? (
 				<ul className="activityHeatmapPreviewNotes">
 					{notes.slice(0, PREVIEW_TITLE_LIMIT).map(({ note }) => (
-						<li key={note.note_path}>{note.title.trim() || titleFromPath(note.note_path)}</li>
+						<li key={note.note_path}>{noteDisplayTitle(note)}</li>
 					))}
 					{notes.length > PREVIEW_TITLE_LIMIT ? (
 						<li className="activityHeatmapPreviewMore">

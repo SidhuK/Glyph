@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
@@ -11,7 +11,6 @@ import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { statusLabel } from "../../lib/statusProperties";
 import {
 	DEFAULT_TAG_ICON_NAME,
 	resolveTagIconName,
@@ -23,21 +22,24 @@ import {
 	WikiLinkSuggestionList,
 	useWikiLinkAutocomplete,
 } from "../editor/hooks/useWikiLinkAutocomplete";
-import { normalizeTagDraftPrefix, normalizeTagToken } from "../editor/noteProperties/utils";
+import {
+	normalizeTagDraftPrefix,
+	normalizeTagToken,
+	tagColorFromName,
+} from "../editor/noteProperties/utils";
 import type { EditorTextColor } from "../editor/textColors";
-import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
 import { PropertyOptionPicker } from "../status/PropertyOptionPicker";
-import { StatusPropertyPill } from "../status/StatusPropertyPill";
 import { Input } from "../ui/shadcn/input";
+import { type DatabaseDisplayPill, ResponsivePillList } from "./DatabaseCellPills";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import {
 	DatabaseNoteAppearanceIcon,
 	databaseNoteAppearanceStyle,
 } from "./DatabaseNoteAppearanceIcon";
+import { DatabaseOptionCell } from "./DatabaseOptionCell";
 import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
-const DATABASE_CELL_PILL_GAP = 4;
 const DATABASE_CELL_TAG_SUGGESTION_LIMIT = 8;
 
 interface DatabaseCellProps {
@@ -55,158 +57,6 @@ interface DatabaseCellProps {
 		column: DatabaseColumn,
 		nextValue: ReturnType<typeof databaseCellValueFromRow>,
 	) => Promise<void>;
-}
-
-interface DatabaseDisplayPill {
-	key: string;
-	label: string;
-	kind?: "tag";
-	iconName?: string;
-	title?: string;
-}
-
-function DatabaseDisplayPillContent({ item }: { item: DatabaseDisplayPill }) {
-	return (
-		<>
-			{item.kind !== "tag" ? null : item.iconName ? (
-				<DatabaseColumnIcon
-					iconName={item.iconName}
-					className="databaseTagPillIcon"
-					size="var(--icon-xs)"
-				/>
-			) : (
-				<span
-					className="databaseTagDot"
-					style={databaseValueToneStyleForColor(item.label, null)}
-					aria-hidden="true"
-				/>
-			)}
-			{item.label}
-		</>
-	);
-}
-
-function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
-	const containerRef = useRef<HTMLDivElement | null>(null);
-	const itemMeasureRefs = useRef<Array<HTMLSpanElement | null>>([]);
-	const moreMeasureRefs = useRef<Array<HTMLSpanElement | null>>([]);
-	const [visibleCount, setVisibleCount] = useState(() => items.length);
-
-	const renderPill = (item: DatabaseDisplayPill) => (
-		<span key={item.key} className="databaseCellPill" title={item.title}>
-			<DatabaseDisplayPillContent item={item} />
-		</span>
-	);
-
-	useLayoutEffect(() => {
-		const container = containerRef.current;
-		if (!container) return;
-		itemMeasureRefs.current = itemMeasureRefs.current.slice(0, items.length);
-		moreMeasureRefs.current = moreMeasureRefs.current.slice(0, items.length);
-
-		const measure = () => {
-			const containerWidth = container.clientWidth;
-			if (!Number.isFinite(containerWidth) || containerWidth <= 0) {
-				setVisibleCount(items.length);
-				return;
-			}
-
-			const itemWidths = items.map((_, index) => {
-				const element = itemMeasureRefs.current[index];
-				return element ? element.getBoundingClientRect().width : 0;
-			});
-			const moreWidths = Array.from({ length: items.length }, (_, index) => {
-				const element = moreMeasureRefs.current[index];
-				return element ? element.getBoundingClientRect().width : 0;
-			});
-
-			let nextVisibleCount = 0;
-			for (let candidate = items.length; candidate >= 0; candidate -= 1) {
-				const hiddenCount = items.length - candidate;
-				let totalWidth = 0;
-				if (candidate > 0) {
-					for (let index = 0; index < candidate; index += 1) {
-						totalWidth += itemWidths[index] ?? 0;
-					}
-					totalWidth += (candidate - 1) * DATABASE_CELL_PILL_GAP;
-				}
-				if (hiddenCount > 0) {
-					if (candidate > 0) {
-						totalWidth += DATABASE_CELL_PILL_GAP;
-					}
-					totalWidth += moreWidths[hiddenCount - 1] ?? 0;
-				}
-				if (totalWidth <= containerWidth + 0.5) {
-					nextVisibleCount = candidate;
-					break;
-				}
-			}
-			if (items.length > 0 && nextVisibleCount === 0) {
-				nextVisibleCount = 1;
-			}
-			setVisibleCount((current) => (current === nextVisibleCount ? current : nextVisibleCount));
-		};
-
-		const observer = new ResizeObserver(() => {
-			measure();
-		});
-		observer.observe(container);
-		measure();
-
-		return () => {
-			observer.disconnect();
-		};
-	}, [items]);
-
-	useLayoutEffect(() => {
-		if (items.length <= 2) {
-			setVisibleCount(items.length);
-			return;
-		}
-		setVisibleCount((current) => Math.min(Math.max(current, 1), items.length));
-	}, [items.length]);
-
-	if (items.length <= 2) {
-		return <div className="databaseCellPills">{items.map(renderPill)}</div>;
-	}
-
-	const visibleItems = items.slice(0, visibleCount);
-	const hiddenCount = Math.max(0, items.length - visibleCount);
-
-	return (
-		<>
-			<div ref={containerRef} className="databaseCellPills">
-				{visibleItems.map(renderPill)}
-				{hiddenCount > 0 ? (
-					<span className="databaseCellPill databaseCellPillMore">+{hiddenCount}</span>
-				) : null}
-			</div>
-			<div className="databaseCellPillsMeasure" aria-hidden="true">
-				{items.map((item, index) => (
-					<span
-						key={`measure:${item.key}`}
-						ref={(element) => {
-							itemMeasureRefs.current[index] = element;
-						}}
-						className="databaseCellPill"
-					>
-						<DatabaseDisplayPillContent item={item} />
-					</span>
-				))}
-				{Array.from({ length: items.length }, (_, index) => (
-					<span
-						key={`measure-more:${index + 1}`}
-						ref={(element) => {
-							moreMeasureRefs.current[index] = element;
-						}}
-						className="databaseCellPill databaseCellPillMore"
-					>
-						+{index + 1}
-					</span>
-				))}
-			</div>
-		</>
-	);
 }
 
 const EMPTY_LANE_COLORS: Record<string, EditorTextColor> = {};
@@ -530,7 +380,7 @@ function DatabaseCellEditor({
 							onClick={() => {
 								void removeTag(value).catch(handleTagSaveError);
 							}}
-							title={`Remove ${formatDatabaseTagLabel(value)}`}
+							title={t("collections.cell.removeValue", { value: formatDatabaseTagLabel(value) })}
 						>
 							<DatabaseColumnIcon
 								iconName={iconNameForTag(value)}
@@ -708,7 +558,7 @@ function DatabaseCellEditor({
 							onClick={() => {
 								void removeListValue(value).catch(handleTagSaveError);
 							}}
-							title={`Remove ${value}`}
+							title={t("collections.cell.removeValue", { value })}
 						>
 							<span>{value}</span>
 							<X size="var(--icon-xs)" />
@@ -908,7 +758,6 @@ export function DatabaseCell({
 	const noteAppearance = itemAppearance[row.note_path] ?? null;
 	const noteAppearanceStyle = databaseNoteAppearanceStyle(row.note_path, noteAppearance);
 	const [editing, setEditing] = useState(false);
-	const [saveError, setSaveError] = useState("");
 	const isDateValue = cellValue.kind === "datetime" || cellValue.kind === "date";
 	const fullDateText =
 		cellValue.kind === "datetime"
@@ -927,7 +776,7 @@ export function DatabaseCell({
 		if (cellValue.kind !== "tags") return [];
 		return cellValue.value_list.map((value) => ({
 			key: `${column.id}:${value}`,
-			kind: "tag",
+			chipTone: tagColorFromName(value),
 			iconName: beautifulTags
 				? resolveTagIconName(value, tagIconOverrides, beautifulTags)
 				: undefined,
@@ -1019,94 +868,25 @@ export function DatabaseCell({
 				</button>
 			);
 		}
-		if (cellValue.kind === "status") {
-			const currentValue = cellValue.value_text ?? "";
-			// A missing status isn't a to-do; it only shows on row hover so it can still be set.
-			const emptyStatusClass = currentValue.trim() ? "" : " is-empty-status";
-			if (editable) {
-				return (
-					<div className="databaseTagEditor">
-						<PropertyOptionPicker
-							kind="status"
-							value={currentValue}
-							valueOptions={valueOptions}
-							colors={statusColors}
-							triggerClassName={`databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger${emptyStatusClass}`}
-							triggerTitle={displayText || t("collections.changeStatus")}
-							triggerAriaLabel={statusLabel(currentValue || "not_started")}
-							stopTriggerClickPropagation
-							onTriggerClick={handleSelectRow}
-							onChange={(value) => {
-								setSaveError("");
-								return onSave(row.note_path, column, {
-									kind: "status",
-									value_text: value,
-									value_bool: null,
-									value_list: [],
-								});
-							}}
-							onError={(error) => setSaveError(extractErrorMessage(error))}
-							onColorChange={onStatusColorChange}
-						/>
-						{saveError ? <div className="databaseCellError">{saveError}</div> : null}
-					</div>
-				);
-			}
+		if (cellValue.kind === "status" || cellValue.kind === "priority") {
+			const kind = cellValue.kind;
 			return (
-				<button
-					type="button"
-					className={`databaseCellButton is-pill-list${emptyStatusClass}`}
-					onClick={(event) => {
-						handleSelectRow();
-						event.stopPropagation();
-					}}
-					title={displayText || t("collections.statusLabel")}
-					aria-label={statusLabel(currentValue || "not_started")}
-				>
-					<StatusPropertyPill value={currentValue || "not_started"} colors={statusColors} />
-				</button>
-			);
-		}
-		if (cellValue.kind === "priority") {
-			const currentValue = cellValue.value_text ?? "";
-			if (editable) {
-				return (
-					<div className="databaseTagEditor">
-						<PropertyOptionPicker
-							kind="priority"
-							value={currentValue}
-							valueOptions={valueOptions}
-							triggerClassName="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
-							triggerTitle={displayText || t("collections.cell.changePriority")}
-							stopTriggerClickPropagation
-							onTriggerClick={handleSelectRow}
-							onChange={(value) => {
-								setSaveError("");
-								return onSave(row.note_path, column, {
-									kind: "priority",
-									value_text: value,
-									value_bool: null,
-									value_list: [],
-								});
-							}}
-							onError={(error) => setSaveError(extractErrorMessage(error))}
-						/>
-						{saveError ? <div className="databaseCellError">{saveError}</div> : null}
-					</div>
-				);
-			}
-			return (
-				<button
-					type="button"
-					className="databaseCellButton is-pill-list"
-					onClick={(event) => {
-						handleSelectRow();
-						event.stopPropagation();
-					}}
-					title={displayText || "Priority"}
-				>
-					<PriorityPropertyPill value={currentValue || "no"} />
-				</button>
+				<DatabaseOptionCell
+					kind={kind}
+					value={cellValue.value_text ?? ""}
+					valueOptions={valueOptions}
+					statusColors={statusColors}
+					onStatusColorChange={onStatusColorChange}
+					onSelectRow={handleSelectRow}
+					onChange={(value) =>
+						onSave(row.note_path, column, {
+							kind,
+							value_text: value,
+							value_bool: null,
+							value_list: [],
+						})
+					}
+				/>
 			);
 		}
 		if (column.type === "title") {
@@ -1154,6 +934,7 @@ export function DatabaseCell({
 			<button
 				type="button"
 				className="databaseCellButton"
+				data-date={isDateValue || undefined}
 				onDoubleClick={() => {
 					if (editable) setEditing(true);
 				}}

@@ -43,6 +43,8 @@ export interface PaletteResult {
 	kind: PaletteResultKind;
 	label: string;
 	description?: string;
+	/** Full folder path when `description` shows only its leaf. */
+	descriptionTooltip?: string;
 	category: string;
 	keywords: readonly string[];
 	enabled?: boolean;
@@ -58,7 +60,7 @@ export interface PaletteResult {
 	matchIndex?: number;
 	/** Query text to open find-in-note for. */
 	searchQuery?: string;
-	/** 1-based line number for display. */
+	/** 1-based line number of a body match, shown in its own column. */
 	matchLine?: number;
 	settingId?: string;
 	settingControl?: PaletteSettingControl;
@@ -98,12 +100,16 @@ interface BuildPaletteResultsInput {
 	sources: PaletteResultSources;
 }
 
-/** Folder notes live in a folder of the same name; repeating it as the last segment is noise. */
-function noteFolderLabel(path: string, title: string): string {
+/**
+ * Rows show the note's leaf folder, with the full path as its tooltip. Folder notes live in a
+ * folder of the same name; repeating it as the last segment is noise.
+ */
+function noteFolder(path: string, title: string) {
 	const folder = displayFolderFromPath(path);
-	if (folder === title) return "";
 	const repeated = ` / ${title}`;
-	return folder.endsWith(repeated) ? folder.slice(0, -repeated.length) : folder;
+	const full =
+		folder === title ? "" : folder.endsWith(repeated) ? folder.slice(0, -repeated.length) : folder;
+	return { description: full.split(" / ").pop() ?? "", descriptionTooltip: full || undefined };
 }
 
 /**
@@ -198,7 +204,7 @@ export function buildPaletteResults({
 			id: `open-tab:${tab.id}`,
 			kind: "open-tab",
 			label,
-			description: noteFolderLabel(tab.target, label),
+			...noteFolder(tab.target, label),
 			category: t("commandPalette.groups.open-tab"),
 			keywords: [tab.target],
 			defaultVisible: mode === "search",
@@ -240,13 +246,6 @@ export function buildPaletteResults({
 		const matchIndex = typeof result.match_index === "number" ? result.match_index : undefined;
 		const matchLine = typeof result.line === "number" ? result.line : undefined;
 		const label = result.title || displayNameFromPath(result.id);
-		const folder = noteFolderLabel(result.id, label);
-		const description =
-			kind === "content" && matchLine != null
-				? folder
-					? `${folder} · L${matchLine}`
-					: `L${matchLine}`
-				: folder;
 		candidates.push({
 			id:
 				kind === "content" && matchIndex != null
@@ -254,7 +253,7 @@ export function buildPaletteResults({
 					: `${kind}:${result.id}`,
 			kind,
 			label,
-			description,
+			...noteFolder(result.id, label),
 			trailing:
 				extraMatches > 0 ? t("commandPalette.moreMatches", { count: extraMatches }) : undefined,
 			category: t(`commandPalette.groups.${kind}`),
@@ -265,7 +264,7 @@ export function buildPaletteResults({
 			target: result.id,
 			snippet: kind === "content" ? result.snippet : undefined,
 			matchIndex,
-			matchLine,
+			matchLine: kind === "content" ? matchLine : undefined,
 			// The backend owns query parsing, so it reports the literal text its
 			// match index counts; reparsing here would drift on quotes and operators.
 			searchQuery: result.match_query ?? undefined,

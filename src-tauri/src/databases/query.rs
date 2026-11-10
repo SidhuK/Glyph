@@ -8,6 +8,7 @@ use crate::paths;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::filter::row_matches_filters;
+use super::sort_rank::{priority_rank, status_rank};
 use super::source::{source_ids, SourceIds};
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseDefinition, DatabaseDocument,
@@ -42,6 +43,7 @@ impl RowFields {
     }
 }
 
+/// Columns carry no width until the user resizes one; the table sizes them by kind.
 pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
     vec![
         DatabaseColumn {
@@ -49,7 +51,7 @@ pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
             column_type: "title".to_string(),
             label: "Title".to_string(),
             icon: Some("document".to_string()),
-            width: Some(320),
+            width: None,
             visible: true,
             property_key: None,
             property_kind: None,
@@ -59,7 +61,7 @@ pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
             column_type: "path".to_string(),
             label: "Path".to_string(),
             icon: Some("link".to_string()),
-            width: Some(260),
+            width: None,
             visible: true,
             property_key: None,
             property_kind: None,
@@ -69,7 +71,7 @@ pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
             column_type: "folder".to_string(),
             label: "Folder".to_string(),
             icon: Some("folder".to_string()),
-            width: Some(220),
+            width: None,
             visible: true,
             property_key: None,
             property_kind: None,
@@ -79,7 +81,7 @@ pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
             column_type: "created".to_string(),
             label: "Created".to_string(),
             icon: Some("calendar".to_string()),
-            width: Some(180),
+            width: None,
             visible: true,
             property_key: None,
             property_kind: None,
@@ -89,7 +91,7 @@ pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
             column_type: "updated".to_string(),
             label: "Updated".to_string(),
             icon: Some("clock".to_string()),
-            width: Some(180),
+            width: None,
             visible: true,
             property_key: None,
             property_kind: None,
@@ -99,7 +101,7 @@ pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
             column_type: "tags".to_string(),
             label: "Tags".to_string(),
             icon: Some("tag".to_string()),
-            width: Some(220),
+            width: None,
             visible: true,
             property_key: None,
             property_kind: None,
@@ -109,7 +111,7 @@ pub(crate) fn built_in_columns() -> Vec<DatabaseColumn> {
             column_type: "linked_notes".to_string(),
             label: "Linked Notes".to_string(),
             icon: Some("link".to_string()),
-            width: Some(220),
+            width: None,
             visible: true,
             property_key: None,
             property_kind: Some("relation".to_string()),
@@ -131,7 +133,7 @@ fn field_catalog(
             column_type: "property".to_string(),
             label: field.label.clone(),
             icon: None,
-            width: Some(180),
+            width: None,
             visible: false,
             property_key: field.property_key.clone(),
             property_kind: Some(field.kind.clone()),
@@ -331,6 +333,31 @@ fn compare_text_cells(left: &str, right: &str, descending: bool) -> std::cmp::Or
     }
 }
 
+/// Orders by workflow rank (status or priority). Custom values follow every known one and
+/// blanks come last, in either direction; equal ranks fall back to the text.
+fn compare_ranked_cells(
+    left: &str,
+    right: &str,
+    rank: fn(&str) -> Option<usize>,
+    descending: bool,
+) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    let text_order = || normalize_text(left).cmp(&normalize_text(right));
+    match (rank(left), rank(right)) {
+        (Some(left_rank), Some(right_rank)) => {
+            order_for_direction(left_rank.cmp(&right_rank).then_with(text_order), descending)
+        }
+        (Some(_), None) => Ordering::Less,
+        (None, Some(_)) => Ordering::Greater,
+        (None, None) => match (left.trim().is_empty(), right.trim().is_empty()) {
+            (false, false) => order_for_direction(text_order(), descending),
+            (false, true) => Ordering::Less,
+            (true, false) => Ordering::Greater,
+            (true, true) => Ordering::Equal,
+        },
+    }
+}
+
 fn compare_rows(
     left: &DatabaseRow,
     right: &DatabaseRow,
@@ -339,7 +366,23 @@ fn compare_rows(
 ) -> std::cmp::Ordering {
     let left_cell = cell_value_from_row(left, column);
     let right_cell = cell_value_from_row(right, column);
-    match left_cell.kind.as_str() {
+    let sort_kind = match column.property_kind.as_deref() {
+        Some(kind @ ("status" | "priority")) if column.column_type == "property" => kind,
+        _ => left_cell.kind.as_str(),
+    };
+    match sort_kind {
+        "status" => compare_ranked_cells(
+            &string_cell(&left_cell),
+            &string_cell(&right_cell),
+            status_rank,
+            descending,
+        ),
+        "priority" => compare_ranked_cells(
+            &string_cell(&left_cell),
+            &string_cell(&right_cell),
+            priority_rank,
+            descending,
+        ),
         "date" => {
             let left_date = left_cell
                 .value_text
@@ -748,8 +791,8 @@ pub fn read_note_markdown(root: &Path, path: &str) -> Result<String, String> {
 mod tests {
     use std::collections::BTreeMap;
 
-    use super::super::types::{DatabaseCellValue, DatabaseRow};
-    use super::row_matches_search;
+    use super::super::types::{DatabaseCellValue, DatabaseColumn, DatabaseRow};
+    use super::{compare_rows, row_matches_search};
 
     fn sample_row(tags: Vec<&str>) -> DatabaseRow {
         DatabaseRow {
@@ -803,5 +846,82 @@ mod tests {
         );
 
         assert!(row_matches_search(&row, "review product"));
+    }
+
+    fn property_column(key: &str, kind: &str) -> DatabaseColumn {
+        DatabaseColumn {
+            id: format!("property:{key}"),
+            column_type: "property".to_string(),
+            label: key.to_string(),
+            icon: None,
+            width: None,
+            visible: true,
+            property_key: Some(key.to_string()),
+            property_kind: Some(kind.to_string()),
+        }
+    }
+
+    fn rows_with(key: &str, values: &[&str]) -> Vec<DatabaseRow> {
+        values
+            .iter()
+            .enumerate()
+            .map(|(index, value)| {
+                let mut row = sample_row(Vec::new());
+                row.note_path = format!("notes/{index}.md");
+                if !value.is_empty() {
+                    row.properties.insert(
+                        key.to_string(),
+                        DatabaseCellValue {
+                            // The index may type a status value as plain text.
+                            kind: "text".to_string(),
+                            value_text: Some((*value).to_string()),
+                            value_bool: None,
+                            value_list: Vec::new(),
+                        },
+                    );
+                }
+                row
+            })
+            .collect()
+    }
+
+    fn sorted_values(key: &str, kind: &str, values: &[&str], descending: bool) -> Vec<String> {
+        let column = property_column(key, kind);
+        let mut rows = rows_with(key, values);
+        rows.sort_by(|left, right| compare_rows(left, right, &column, descending));
+        rows.into_iter()
+            .map(|row| {
+                row.properties
+                    .get(key)
+                    .and_then(|cell| cell.value_text.clone())
+                    .unwrap_or_default()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn status_sorts_by_workflow_with_custom_and_blank_last() {
+        let values = ["Done", "", "idea", "Todo", "active", "Backlog", "in_review"];
+        assert_eq!(
+            sorted_values("status", "status", &values, false),
+            ["Backlog", "Todo", "active", "in_review", "Done", "idea", ""]
+        );
+        assert_eq!(
+            sorted_values("status", "status", &values, true),
+            ["Done", "in_review", "active", "Todo", "Backlog", "idea", ""]
+        );
+    }
+
+    #[test]
+    fn priority_sorts_by_urgency_with_custom_and_blank_last() {
+        let values = ["No", "High", "", "Low", "urgent", "Medium"];
+        assert_eq!(
+            sorted_values("priority", "priority", &values, false),
+            ["No", "Low", "Medium", "High", "urgent", ""]
+        );
+        assert_eq!(
+            sorted_values("priority", "priority", &values, true),
+            ["High", "Medium", "Low", "No", "urgent", ""]
+        );
     }
 }

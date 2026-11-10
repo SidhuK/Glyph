@@ -9,21 +9,20 @@
 	--settings-column: 720px;
 	--settings-row-inset: 16px;
 	--settings-card-bg: var(--bg-primary);
-	--settings-card-border: var(--border-light);
+	--settings-card-border: var(--border-default);
 	--settings-control-height: 28px;
 	--settings-pill: var(--bg-hover);
 	--settings-pill-hover: var(--bg-active);
-	--settings-selection-ring: color-mix(in srgb, var(--accent-color) 55%, transparent);
 }
 
 :root.dark .settingsTabPanel {
 	--settings-card-bg: color-mix(in srgb, var(--text-primary) 2.5%, var(--bg-primary));
-	--settings-card-border: var(--border-light);
 	--settings-pill: var(--bg-active);
 	--settings-pill-hover: color-mix(in srgb, var(--text-primary) 14%, transparent);
 }
 
-/* A centered sheet over the workspace: tab nav on the left, the selected pane on the right. */
+/* A centered sheet over the workspace: tab nav on the left, the selected pane on the right.
+   Radii nest inward: sheet 14, cards 10, swatches and pickers 6. */
 .settingsDialog {
 	display: grid;
 	grid-template-columns: 200px minmax(0, 1fr);
@@ -34,18 +33,9 @@
 	gap: 0;
 	overflow: hidden;
 	border: 0;
-	border-radius: var(--radius-lg);
+	border-radius: var(--sheet-radius);
 	background: var(--bg-primary);
-	box-shadow:
-		0 0 0 0.5px var(--border-strong),
-		0 2px 6px rgb(0 0 0 / 5%),
-		0 10px 28px rgb(0 0 0 / 7%);
-}
-
-/* A light blur keeps the workspace legible behind the sheet without competing with it. */
-[data-slot="dialog-overlay"]:has(~ .settingsDialog) {
-	backdrop-filter: blur(4px);
-	-webkit-backdrop-filter: blur(4px);
+	box-shadow: var(--sheet-shadow);
 }
 
 .settingsDialogNav {
@@ -57,10 +47,12 @@
 	border-right: 0.5px solid var(--border-light);
 }
 
+/* Search field, page title and close button share one line 34px below the sheet's top edge;
+   the close glyph stays inside the 28px content gutter. */
 .settingsDialogClose {
 	position: absolute;
-	top: 12px;
-	right: 12px;
+	top: 20px;
+	right: 20px;
 	z-index: 2;
 	display: grid;
 	place-items: center;
@@ -98,17 +90,17 @@
 	position: absolute;
 	left: 16px;
 	pointer-events: none;
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 }
 
 .settingsSidebarSearchInput {
 	width: 100%;
 	min-width: 0;
-	height: 28px;
+	height: var(--search-field-height);
 	padding: 2px 30px 2px 30px;
 	border: 1px solid transparent;
-	border-radius: var(--radius-md);
-	background: var(--bg-hover);
+	border-radius: var(--search-field-radius);
+	background: var(--search-field-bg);
 	color: var(--text-primary);
 	font-size: var(--text-sm);
 	line-height: 1;
@@ -125,7 +117,8 @@
 }
 
 .settingsSidebarSearchInput:focus {
-	background: var(--bg-active);
+	border-color: var(--border-focus);
+	background: var(--bg-primary);
 }
 
 .settingsSidebarSearchClear {
@@ -329,7 +322,7 @@
 
 .settingsSidebarTabsHighlight {
 	border-radius: var(--radius-8);
-	background: var(--bg-active);
+	background: var(--state-on);
 }
 
 .settingsSidebarFooter {
@@ -354,8 +347,16 @@
 	display: flex;
 	flex-direction: column;
 	gap: 24px;
-	padding: 32px 28px 48px;
+	padding: 22px 28px 48px;
 	background: var(--bg-primary);
+	/* Content scrolling past either edge fades out instead of being cut at the sheet's edge. */
+	mask-image: linear-gradient(
+		to bottom,
+		transparent,
+		#000 var(--scroll-fade-size),
+		#000 calc(100% - 24px),
+		transparent
+	);
 }
 
 .settingsPanelHeader {
@@ -374,12 +375,13 @@
 	display: none;
 }
 
-/* Page title: 22px semibold, one clear step above the 15px semibold section titles. */
+/* Page title: the app's one page-title recipe (--text-xl/600, as on All notes and a
+   collection), a clear step above the --text-base/600 section titles. */
 .settingsPanelTitle {
 	margin: 0;
-	font-size: calc(var(--text-base) * 22 / 14);
+	font-size: var(--text-xl);
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.012em;
+	letter-spacing: -0.015em;
 	color: var(--text-primary);
 	line-height: 1.2;
 }

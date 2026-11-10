@@ -3,7 +3,6 @@ import type { CSSProperties } from "react";
 export interface PriorityOption {
 	id: "no" | "low" | "medium" | "high";
 	label: string;
-	iconKey: "no" | "low" | "medium" | "high";
 	aliases: readonly string[];
 }
 
@@ -17,25 +16,21 @@ const PRIORITY_OPTIONS = [
 	{
 		id: "no",
 		label: "No",
-		iconKey: "no",
 		aliases: ["no", "none", "false"],
 	},
 	{
 		id: "low",
 		label: "Low",
-		iconKey: "low",
 		aliases: ["low"],
 	},
 	{
 		id: "medium",
 		label: "Medium",
-		iconKey: "medium",
 		aliases: ["medium", "med"],
 	},
 	{
 		id: "high",
 		label: "High",
-		iconKey: "high",
 		aliases: ["high"],
 	},
 ] as const satisfies readonly PriorityOption[];
@@ -65,7 +60,8 @@ export function priorityOptionFromValue(value: string | null | undefined): Prior
 	return priorityId ? (PRIORITY_BY_ID.get(priorityId) ?? null) : null;
 }
 
-/** Urgency rank: high = 3 … no = 0; custom or unknown values rank below every built-in. */
+/** Urgency rank: high = 3 … no = 0; custom or unknown values rank below every built-in.
+    src-tauri/src/databases/sort_rank.rs mirrors it for sorting. */
 export function priorityRank(value: string | null | undefined): number {
 	const priorityId = priorityIdFromValue(value);
 	return PRIORITY_OPTIONS.findIndex((option) => option.id === priorityId);

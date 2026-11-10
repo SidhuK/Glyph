@@ -1,6 +1,6 @@
 {
 	"theme": {
-		"sectionTitle": "모양",
+		"sectionTitle": "모드",
 		"appearance": {
 			"label": "색상 모드",
 			"description": "시스템을 따르거나 Glyph를 라이트 또는 다크 모드로 고정합니다.",
@@ -28,7 +28,6 @@
 	"themeCards": {
 		"light": "라이트 테마",
 		"dark": "다크 테마",
-		"activeSuffix": "— 사용 중",
 		"groups": {
 			"default": "기본",
 			"builtIn": "기본 제공",

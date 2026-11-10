@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import type { AllDocsPage } from "../../lib/navigationPrefetch";
 import type { FileTreeSortMode } from "../../lib/settings/model";
+import { isInTemplatesFolder } from "../../lib/templates";
 import type { AllDocsItem, FsEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { basename, displayNameFromPath, normalizeRelPath } from "../../utils/path";
@@ -114,9 +115,12 @@ export function useFolioNotes(
 	sortMode: FileTreeSortMode,
 	query: string,
 	pinnedPaths: string[],
+	templateFolder: string | null,
 ) {
 	const folderPrefix =
 		scope.kind === "folder" ? normalizeRelPath(scope.folderPrefix) || null : null;
+	// Templates only show when their folder is browsed; All notes, tags and people skip them.
+	const hiddenTemplateFolder = scope.kind === "folder" ? null : templateFolder;
 	const includesNonMarkdownFiles = scope.kind !== "tag" && scope.kind !== "person";
 
 	const notesQuery = useInfiniteQuery({
@@ -145,8 +149,14 @@ export function useFolioNotes(
 				notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
 				includesNonMarkdownFiles ? (filesQuery.data?.files ?? []) : [],
 				query,
-			),
-		[filesQuery.data?.files, includesNonMarkdownFiles, notesQuery.data?.pages, query],
+			).filter((item) => !isInTemplatesFolder(item.note_path, hiddenTemplateFolder)),
+		[
+			filesQuery.data?.files,
+			hiddenTemplateFolder,
+			includesNonMarkdownFiles,
+			notesQuery.data?.pages,
+			query,
+		],
 	);
 	const loadedPageCount = notesQuery.data?.pages.length ?? 0;
 	const contentUpdatedAtMs = Math.max(

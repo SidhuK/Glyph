@@ -7,10 +7,14 @@ import {
 	allDocsListQueryOptions,
 	allDocsPagesQueryOptions,
 } from "../../../lib/navigationPrefetch";
+import { isInTemplatesFolder } from "../../../lib/templates";
+import type { AllDocsItem } from "../../../lib/tauri";
 import { buildActivityDays, daysNewestFirst } from "./activityDays";
 
 interface ActivityTimelineDataInput {
 	dailyNotesFolder: string | null;
+	/** Templates are scaffolding, not activity: they stay out of the feed and the heatmap. */
+	templateFolder: string | null;
 	folder: string | null;
 	archived: boolean;
 	enabled: boolean;
@@ -19,8 +23,13 @@ interface ActivityTimelineDataInput {
 	selectedDayKey: string | null;
 }
 
+function withoutTemplates(notes: AllDocsItem[] | undefined, templateFolder: string | null) {
+	return (notes ?? []).filter((note) => !isInTemplatesFolder(note.note_path, templateFolder));
+}
+
 export function useActivityTimelineData({
 	dailyNotesFolder,
+	templateFolder,
 	folder,
 	archived,
 	enabled,
@@ -48,10 +57,18 @@ export function useActivityTimelineData({
 		enabled: enabled && timeline,
 	});
 	const feedNotes = useMemo(
-		() => notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
-		[notesQuery.data],
+		() =>
+			withoutTemplates(
+				notesQuery.data?.pages.flatMap((page) => page.items),
+				templateFolder,
+			),
+		[notesQuery.data, templateFolder],
 	);
-	const heatmapNotes = heatmapNotesQuery.data ?? feedNotes;
+	const heatmapNotes = useMemo(
+		() =>
+			heatmapNotesQuery.data ? withoutTemplates(heatmapNotesQuery.data, templateFolder) : feedNotes,
+		[heatmapNotesQuery.data, templateFolder, feedNotes],
+	);
 	const heatmapDays = useMemo(
 		() => buildActivityDays(timeline ? heatmapNotes : [], dailyNotesFolder),
 		[heatmapNotes, dailyNotesFolder, timeline],

@@ -191,15 +191,23 @@
 	text-decoration-color: color-mix(in srgb, var(--text-tertiary) 42%, transparent);
 }
 
+/* #tag: the shared chip fill, ink, radius and weight in the tag's palette tone
+   ([data-chip-tone], 13-tags.css). It stays inline at the body size so it never changes the
+   line pitch; the padding only paints. */
 .tiptapContentInline .tagToken {
-	display: inline-block;
-	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-primary));
-	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-secondary));
+	--chip-tone: var(--palette-gray, var(--text-secondary));
+
+	display: inline;
+	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
+	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));
 	border: 0;
-	border-radius: var(--radius-4);
-	padding: 1px 7px;
-	font-weight: var(--font-semibold);
-	line-height: 1.35;
+	border-radius: var(--chip-radius);
+	padding: 0.1em var(--chip-padding-x);
+	font-weight: var(--chip-font-weight);
+	line-height: 1;
+	vertical-align: baseline;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
 	box-shadow: none;
 	cursor: pointer;
 	transition:
@@ -208,8 +216,8 @@
 }
 
 .tiptapContentInline .tagToken:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 17%, var(--bg-secondary));
-	color: color-mix(in srgb, var(--interactive-accent) 80%, var(--text-primary));
+	background: color-mix(in srgb, var(--chip-tone) 18%, var(--bg-primary));
+	color: color-mix(in srgb, var(--chip-tone) 78%, var(--text-primary));
 }
 
 .tiptapContentInline .footnoteRef {
@@ -331,13 +339,16 @@
 	margin-top: 0;
 }
 
+/* About twice the space above a heading as below it, so it groups with its own text. */
 .tiptapContentInline :is(p, ul, ol, blockquote, pre, table) + :is(h1, h2, h3, h4, h5, h6) {
-	margin-top: calc(var(--space-5) + 2px);
+	margin-top: var(--space-8);
 }
 
+/* The large H1's side bearing pushes its first glyph off the text column. */
 .tiptapContentInline h1 {
+	margin-left: -0.03em;
 	font-size: var(--editor-h1-font-size);
-	font-weight: var(--font-semibold);
+	font-weight: var(--font-bold);
 	line-height: 1.2;
 	letter-spacing: -0.022em;
 }
@@ -350,6 +361,7 @@
 
 .tiptapContentInline h3 {
 	font-size: var(--editor-h3-font-size);
+	font-weight: var(--font-semibold);
 	line-height: 1.36;
 }
 
@@ -697,12 +709,19 @@
 	--callout-accent: var(--callout-tip);
 }
 
+/* Inline code: a smaller mono run on the inset-card fill. line-height 1 keeps the mono
+   font's taller metrics inside the line box, so the line pitch holds. */
 .tiptapContentInline code {
-	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
-	padding: 2px 5px;
+	background: var(--bg-tertiary);
+	padding: 0.1em 0.3em;
 	border-radius: var(--radius-sm);
-	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	border: 0;
 	font-family: var(--font-mono);
+	font-size: 0.9em;
+	line-height: 1;
+	vertical-align: baseline;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
 }
 
 .tiptapContentInline span[data-glyph-color="gray"] {
@@ -749,6 +768,8 @@
 	background: transparent;
 	padding: 0;
 	border: none;
+	font-size: inherit;
+	line-height: inherit;
 }
 
 .tiptapContentInline hr {
@@ -761,6 +782,11 @@
 .tiptapContentInline ol {
 	margin: 0 0 var(--space-3);
 	padding-left: var(--space-5);
+}
+
+/* The disc's left edge lands on the text column; the item text sits one marker width in. */
+.tiptapContentInline ul:not([data-type="taskList"]) {
+	padding-left: 1.05em;
 }
 
 .tiptapContentInline ul {

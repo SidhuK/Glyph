@@ -1,6 +1,6 @@
 {
 	"theme": {
-		"sectionTitle": "Wygląd",
+		"sectionTitle": "Tryb",
 		"appearance": {
 			"label": "Tryb kolorów",
 			"description": "Dopasuj do systemu lub zablokuj program Glyph w trybie jasnym lub ciemnym.",
@@ -28,7 +28,6 @@
 	"themeCards": {
 		"light": "Motyw jasny",
 		"dark": "Motyw ciemny",
-		"activeSuffix": "— Aktywny",
 		"groups": {
 			"default": "Domyślny",
 			"builtIn": "Wbudowane",

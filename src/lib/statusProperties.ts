@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { EditorTextColor } from "../components/editor/textColors";
-import { databaseValueToneStyleForColor } from "./database/palette";
+import { DATABASE_NEUTRAL_TONE_STYLE, databaseValueToneStyleForColor } from "./database/palette";
 
 export interface StatusOption {
 	id: string;
@@ -32,7 +32,7 @@ const STATUS_OPTIONS = [
 		id: "in_progress",
 		label: "In progress",
 		color: "blue",
-		aliases: ["in progress", "in-progress", "progress", "doing", "wip"],
+		aliases: ["in progress", "in-progress", "progress", "doing", "wip", "active"],
 	},
 	{
 		id: "in_review",
@@ -119,6 +119,7 @@ const STATUS_OPTIONS = [
 const STATUS_BY_ID: Map<string, StatusOption> = new Map(
 	STATUS_OPTIONS.map((option) => [option.id, option]),
 );
+/** Workflow order; src-tauri/src/databases/sort_rank.rs mirrors it (and the aliases) for sorting. */
 const STATUS_PICKER_ORDER = [
 	"backlog",
 	"todo",
@@ -162,13 +163,13 @@ export function statusToneStyle(
 	colors: Record<string, EditorTextColor> = {},
 ): CSSProperties {
 	const option = statusOptionFromValue(value);
-	const fallbackValue = (value ?? "").trim();
 	const colorKey = statusColorKey(value);
-	const toneSeed = option?.id ?? fallbackValue;
-	return databaseValueToneStyleForColor(
-		toneSeed,
-		(colorKey ? colors[colorKey] : null) ?? option?.color ?? null,
-	);
+	const color = (colorKey ? colors[colorKey] : null) ?? option?.color ?? null;
+	// Only the built-in workflow states carry a tone; a custom status stays neutral unless the
+	// user picked a colour for it.
+	return color
+		? databaseValueToneStyleForColor(colorKey ?? "", color)
+		: DATABASE_NEUTRAL_TONE_STYLE;
 }
 
 export function statusTextStyle(

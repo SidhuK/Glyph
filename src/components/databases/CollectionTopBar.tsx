@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Database01Icon, MoreHorizontalIcon, StarIcon } from "@hugeicons/core-free-icons";
-import { useMemo, useRef } from "react";
+import { Fragment, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { UseDatabasesPaneReturn } from "../../hooks/database/useDatabasesPane";
 import type { ActionMenuItem } from "../../lib/database/actionMenuItems";
@@ -8,30 +8,22 @@ import { buildCollectionMenuItems } from "../../lib/database/viewMenuItems";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronRight } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import { Input } from "../ui/shadcn/input";
 import { ActionMenuTrigger } from "./ActionMenuTrigger";
 
 interface CollectionTopBarProps {
 	document: Pick<
 		UseDatabasesPaneReturn["document"],
-		| "document"
-		| "nameDraft"
-		| "setNameDraft"
-		| "collectionFolderBreadcrumb"
-		| "setDatabasePinned"
-		| "commitDatabaseRename"
-		| "handleDeleteDatabase"
+		"document" | "collectionFolderBreadcrumb" | "setDatabasePinned" | "handleDeleteDatabase"
 	>;
 	selection: Pick<
 		UseDatabasesPaneReturn["selection"],
 		"summaries" | "selectedDatabaseId" | "setSelectedDatabaseId" | "openCreateCollectionDialog"
 	>;
-	views: Pick<UseDatabasesPaneReturn["views"], "activeConfig">;
 }
 
-export function CollectionTopBar({ document: doc, selection, views }: CollectionTopBarProps) {
+/** The window-chrome row: collection switcher and folder path; the title sits above the tabs. */
+export function CollectionTopBar({ document: doc, selection }: CollectionTopBarProps) {
 	const { t } = useTranslation("shell");
-	const skipNextBlurCommitRef = useRef(false);
 	const collectionMenuItems = useMemo(
 		() =>
 			buildCollectionMenuItems(
@@ -55,7 +47,7 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 	const isPinned = doc.document?.database.pinned ?? false;
 	const collectionName = (doc.document?.database.name ?? "").trim().toLowerCase();
 	const folderCrumbs = doc.collectionFolderBreadcrumb.slice(1);
-	// A collection named after its source folder would otherwise read "Glyph > Glyph".
+	// A collection named after its source folder would otherwise repeat its title as a crumb.
 	const visibleFolderCrumbs =
 		collectionName &&
 		folderCrumbs[folderCrumbs.length - 1]?.label.trim().toLowerCase() === collectionName
@@ -89,47 +81,25 @@ export function CollectionTopBar({ document: doc, selection, views }: Collection
 					</ActionMenuTrigger>
 
 					{visibleFolderCrumbs.length > 0 ? (
-						<nav className="databasesCollectionBreadcrumb" aria-label="Collection folder">
-							{visibleFolderCrumbs.map((part) => (
-								<span key={part.path} className="databasesCollectionBreadcrumbItem">
+						<nav
+							className="databasesCollectionBreadcrumb"
+							aria-label={t("collections.folderBreadcrumb")}
+						>
+							{visibleFolderCrumbs.map((part, index) => (
+								<Fragment key={part.path}>
+									{index > 0 ? (
+										<ChevronRight
+											size="var(--icon-xs)"
+											className="databasesCollectionBreadcrumbSep"
+											aria-hidden
+										/>
+									) : null}
 									<span className="databasesCollectionBreadcrumbLabel" title={part.path}>
 										{part.label}
 									</span>
-									<ChevronRight
-										size="var(--icon-xs)"
-										className="databasesCollectionBreadcrumbSep"
-										aria-hidden
-									/>
-								</span>
+								</Fragment>
 							))}
 						</nav>
-					) : null}
-
-					{doc.document && views.activeConfig ? (
-						<Input
-							value={doc.nameDraft}
-							className="plainTextInput databasesCollectionTitleInput"
-							aria-label="Collection name"
-							style={{
-								width: `${Math.min(Math.max(doc.nameDraft.trim().length + 1, 10), 36)}ch`,
-							}}
-							onChange={(event) => doc.setNameDraft(event.target.value)}
-							onBlur={() => {
-								if (skipNextBlurCommitRef.current) {
-									skipNextBlurCommitRef.current = false;
-									return;
-								}
-								doc.commitDatabaseRename();
-							}}
-							onKeyDown={(event) => {
-								if (event.key === "Enter") {
-									event.preventDefault();
-									skipNextBlurCommitRef.current = true;
-									doc.commitDatabaseRename();
-									(event.target as HTMLInputElement).blur();
-								}
-							}}
-						/>
 					) : null}
 				</div>
 			</div>

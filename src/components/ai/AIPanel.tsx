@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
-import { ChatAdd01Icon, Logout05Icon } from "@hugeicons/core-free-icons";
+import { ChatAdd01Icon, LayoutAlignRightIcon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
@@ -46,6 +46,7 @@ function stripChipMarkers(text: string): string {
 
 export function AIPanel(props: AIPanelProps) {
 	const { t } = useTranslation("editor");
+	const { t: tShell } = useTranslation("shell");
 	const { aiAssistantMode } = useAISidebarContext();
 	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -120,13 +121,8 @@ export function AIPanel(props: AIPanelProps) {
 		!toolEvents.isAwaitingResponse &&
 		Boolean(stripChipMarkers(input).trim()) &&
 		Boolean(profiles.activeProfileId);
-	const showIdleActivity =
-		!toolEvents.isAwaitingResponse &&
-		(Boolean(stripChipMarkers(input).trim()) ||
-			(chat.status === "ready" &&
-				chat.messages.some(
-					(message) => message.role === "assistant" && Boolean(messageText(message).trim()),
-				)));
+	const showDraftActivity =
+		!toolEvents.isAwaitingResponse && Boolean(stripChipMarkers(input).trim());
 	const activeProvider = profiles.activeProfile?.provider;
 	const sendWithCurrentContext = useCallback(
 		async (text: string, thread: UIMessage[]) => {
@@ -366,9 +362,9 @@ export function AIPanel(props: AIPanelProps) {
 						className={cn("aiPanelHistoryButton", historyExpanded && "aiPanelHistoryButton-active")}
 						aria-pressed={historyExpanded}
 						onClick={() => setHistoryExpanded((prev) => !prev)}
-						title="Recent chats"
+						title={tShell("ai.panel.recentChats")}
 					>
-						Recent chats
+						{tShell("ai.panel.recentChats")}
 					</button>
 				</div>
 				<div className="aiPanelHeaderRight">
@@ -377,9 +373,9 @@ export function AIPanel(props: AIPanelProps) {
 						variant="ghost"
 						size="icon-sm"
 						data-action="new-chat"
-						aria-label="New chat"
+						aria-label={tShell("ai.panel.newChat")}
 						onClick={handleNewChat}
-						title="New chat"
+						title={tShell("ai.panel.newChat")}
 						disabled={chat.status === "streaming"}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
@@ -390,9 +386,9 @@ export function AIPanel(props: AIPanelProps) {
 						variant="ghost"
 						size="icon-sm"
 						data-action="settings"
-						aria-label="Settings"
+						aria-label={tShell("ai.panel.settings")}
 						onClick={() => openSettings("ai")}
-						title="Settings"
+						title={tShell("ai.panel.settings")}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
 						<SettingsIcon size="var(--icon-sm)" />
@@ -403,12 +399,12 @@ export function AIPanel(props: AIPanelProps) {
 							variant="ghost"
 							size="icon-sm"
 							data-action="minimize"
-							aria-label="Minimize"
+							aria-label={tShell("ai.panel.close")}
 							onClick={props.onClose}
-							title="Minimize"
+							title={tShell("ai.panel.close")}
 							onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 						>
-							<HugeiconsIcon icon={Logout05Icon} size="var(--icon-sm)" />
+							<HugeiconsIcon icon={LayoutAlignRightIcon} size="var(--icon-sm)" />
 						</Button>
 					) : null}
 				</div>
@@ -428,7 +424,7 @@ export function AIPanel(props: AIPanelProps) {
 						chatStatus={chat.status}
 						phaseStatusText={toolEvents.phaseStatusText}
 						activityState={toolEvents.activityState}
-						showIdleActivity={showIdleActivity}
+						showDraftActivity={showDraftActivity}
 						activityTimeline={toolEvents.activityTimeline}
 						onCopy={(t) => void actions.handleCopyAssistantResponse(t)}
 						onSave={(t) => void actions.handleSaveAssistantResponse(t)}
@@ -445,8 +441,8 @@ export function AIPanel(props: AIPanelProps) {
 							const el = threadRef.current;
 							if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
 						}}
-						aria-label="Scroll to bottom"
-						title="Scroll to latest"
+						aria-label={tShell("ai.panel.scrollToLatest")}
+						title={tShell("ai.panel.scrollToLatest")}
 					>
 						<ChevronDown size="var(--icon-md)" />
 					</Button>

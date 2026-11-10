@@ -170,7 +170,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Modo de cor",
-			"section": "Aparência",
+			"section": "Modo",
 			"description": "Escolha o modo sistema, claro ou escuro.",
 			"keywords": ["modo", "sistema", "claro", "escuro", "mode", "system", "light", "dark"]
 		},
@@ -188,7 +188,7 @@
 		},
 		"appearance-translucent-app": {
 			"title": "Barra lateral translúcida",
-			"section": "Aparência",
+			"section": "Modo",
 			"keywords": [
 				"janela",
 				"vidro",

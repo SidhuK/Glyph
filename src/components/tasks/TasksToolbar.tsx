@@ -1,36 +1,42 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
-	ArrowShrinkIcon,
-	CheckListIcon,
-	ExpandParagraphIcon,
-	NoteIcon,
+	ClockArrowDownIcon,
 	SearchIcon,
+	SortingAZ01Icon,
+	SortingNineOneIcon,
+	UnfoldLessIcon,
+	UnfoldMoreIcon,
 } from "@hugeicons/core-free-icons";
 import { useTranslation } from "react-i18next";
 import { Button } from "../ui/shadcn/button";
+import { Select, SelectIcon } from "../ui/shadcn/select";
+import type { TaskSortMode } from "./buildTaskRows";
 import { TasksScopeSelects, type TasksScopeSelectsProps } from "./TasksScopeSelects";
 
 interface TasksToolbarProps extends TasksScopeSelectsProps {
 	search: string;
 	onSearchChange: (value: string) => void;
+	sort: TaskSortMode;
+	onSortChange: (sort: TaskSortMode) => void;
 	openTasks: number;
 	notes: number;
-	onCollapseAll: () => void;
-	onExpandAll: () => void;
+	anyExpanded: boolean;
+	onToggleAll: () => void;
 }
 
 export function TasksToolbar({
 	search,
 	onSearchChange,
+	sort,
+	onSortChange,
 	openTasks,
 	notes,
-	onCollapseAll,
-	onExpandAll,
+	anyExpanded,
+	onToggleAll,
 	...scopeProps
 }: TasksToolbarProps) {
 	const { t } = useTranslation("shell");
-	const openLabel = t("tasks.openTasks", { count: openTasks });
-	const notesLabel = t("tasks.noteCount", { count: notes });
+	const toggleLabel = t(anyExpanded ? "tasks.collapseAll" : "tasks.expandAll");
 	return (
 		<div className="tasksToolbar">
 			<label className="folioNotesSearch tasksSearch">
@@ -51,42 +57,48 @@ export function TasksToolbar({
 				/>
 			</label>
 			<TasksScopeSelects {...scopeProps} />
+			<Select
+				className="tasksScopeSelect"
+				aria-label={t("tasks.sort")}
+				value={sort}
+				options={[
+					{
+						value: "recent",
+						label: t("tasks.sortRecent"),
+						icon: <SelectIcon icon={ClockArrowDownIcon} />,
+					},
+					{
+						value: "open",
+						label: t("tasks.sortMostOpen"),
+						icon: <SelectIcon icon={SortingNineOneIcon} />,
+					},
+					{
+						value: "title",
+						label: t("tasks.sortTitle"),
+						icon: <SelectIcon icon={SortingAZ01Icon} />,
+					},
+				]}
+				onValueChange={onSortChange}
+			/>
 			<div className="tasksToolbarEnd">
 				{notes > 0 ? (
-					<>
-						<span className="activityDayCounts tasksStat" title={openLabel}>
-							<HugeiconsIcon icon={CheckListIcon} size="var(--icon-sm)" aria-hidden="true" />
-							<span aria-hidden="true">{openTasks}</span>
-							<span className="sr-only">{openLabel}</span>
-						</span>
-						<span className="activityDayCounts tasksStat" title={notesLabel}>
-							<HugeiconsIcon icon={NoteIcon} size="var(--icon-sm)" aria-hidden="true" />
-							<span aria-hidden="true">{notes}</span>
-							<span className="sr-only">{notesLabel}</span>
-						</span>
-					</>
+					<p className="activityHeatmapSummary tasksSummary">
+						{`${t("tasks.openTasks", { count: openTasks })} · ${t("tasks.noteCount", { count: notes })}`}
+					</p>
 				) : null}
 				<Button
 					type="button"
 					variant="ghost"
 					size="icon-xs"
-					title={t("tasks.collapseAll")}
-					aria-label={t("tasks.collapseAll")}
+					title={toggleLabel}
+					aria-label={toggleLabel}
 					disabled={!notes}
-					onClick={onCollapseAll}
+					onClick={onToggleAll}
 				>
-					<HugeiconsIcon icon={ArrowShrinkIcon} size="var(--icon-sm)" />
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-xs"
-					title={t("tasks.expandAll")}
-					aria-label={t("tasks.expandAll")}
-					disabled={!notes}
-					onClick={onExpandAll}
-				>
-					<HugeiconsIcon icon={ExpandParagraphIcon} size="var(--icon-sm)" />
+					<HugeiconsIcon
+						icon={anyExpanded ? UnfoldLessIcon : UnfoldMoreIcon}
+						size="var(--icon-sm)"
+					/>
 				</Button>
 			</div>
 		</div>

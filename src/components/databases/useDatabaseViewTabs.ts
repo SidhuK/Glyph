@@ -153,15 +153,26 @@ export function useDatabaseViewTabs({
 	const handleCreateView = useCallback(async () => {
 		const templateView = document.database.views[0];
 		if (!templateView) return;
-		const nextName = `View ${document.database.views.length + 1}`;
-		const nextView = createDefaultDatabaseView(nextName, templateView);
+		// New views are named after their layout ("Board 2", "Table 2"); existing names stay as saved.
+		const layoutNameKey =
+			templateView.layout === "board"
+				? "collections.viewMenu.defaultBoardName"
+				: "collections.viewMenu.defaultTableName";
+		const takenNames = new Set(document.database.views.map((view) => view.name));
+		let nameNumber =
+			document.database.views.filter((view) => view.layout === templateView.layout).length + 1;
+		while (takenNames.has(t(layoutNameKey, { number: nameNumber }))) nameNumber += 1;
+		const nextView = createDefaultDatabaseView(
+			t(layoutNameKey, { number: nameNumber }),
+			templateView,
+		);
 		await saveDatabase({
 			...document.database,
 			views: [...document.database.views, nextView],
 		});
 		clearError();
 		setSelectedViewId(nextView.id);
-	}, [clearError, document, saveDatabase, setSelectedViewId]);
+	}, [clearError, document, saveDatabase, setSelectedViewId, t]);
 
 	const handleRenameFromMenu = useCallback(() => {
 		onBeginRenameFromMenu?.();
@@ -172,16 +183,12 @@ export function useDatabaseViewTabs({
 		() =>
 			buildViewMenuItems(t, activeView.layout, viewCount, {
 				onSelectLayout: handleSelectViewLayout,
-				onCreate: () => {
-					void handleCreateView().catch(() => undefined);
-				},
 				onRename: handleRenameFromMenu,
 				onDelete: handleDeleteActiveView,
 			}),
 		[
 			activeView.layout,
 			handleDeleteActiveView,
-			handleCreateView,
 			handleRenameFromMenu,
 			handleSelectViewLayout,
 			t,
@@ -199,6 +206,7 @@ export function useDatabaseViewTabs({
 		setViewNameDraft,
 		setRenamingViewId,
 		handleViewTabKeyDown,
+		handleCreateView,
 		viewActionMenuItems,
 	};
 }

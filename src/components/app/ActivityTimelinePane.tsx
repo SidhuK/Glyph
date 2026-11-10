@@ -1,11 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	Archive04Icon,
-	Calendar03Icon,
-	Cancel01Icon,
-	InboxIcon,
-	NoteIcon,
-} from "@hugeicons/core-free-icons";
+import { Calendar03Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useReducedMotion } from "motion/react";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,6 +27,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	const { spacePath } = useSpace();
 	const {
 		dailyNotesFolder,
+		templateFolder,
 		defaultNewNoteFolder,
 		settingsSpacePath,
 		openSettings,
@@ -50,6 +45,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	const { feedNotes, notesQuery, taskSummariesByPath, heatmapDays, selectedDay, feedDays, today } =
 		useActivityTimelineData({
 			dailyNotesFolder,
+			templateFolder,
 			folder,
 			archived: kind === "archive",
 			enabled: Boolean(spacePath) && !needsSetup,
@@ -73,7 +69,6 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 		return (
 			<section className="activityTimelinePane">
 				<h1 className="activityTimelineTitle">
-					{kind === "inbox" ? <HugeiconsIcon icon={InboxIcon} size="var(--icon-2xl)" /> : null}
 					{t(kind === "archive" ? "sidebar.archive" : "sidebar.inbox")}
 				</h1>
 				<Button className="self-start" variant="ghost" onClick={() => openSettings("space")}>
@@ -104,11 +99,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 		<section ref={setPaneElement} className="activityTimelinePane">
 			<header className="activityTimelineHeader">
 				<h1 className="activityTimelineTitle">
-					<HugeiconsIcon
-						icon={kind === "inbox" ? InboxIcon : kind === "archive" ? Archive04Icon : NoteIcon}
-						size="var(--icon-2xl)"
-					/>
-					<span>{t(kind === "all" ? "sidebar.allNotes" : `sidebar.${kind}`)}</span>
+					{t(kind === "all" ? "sidebar.allNotes" : `sidebar.${kind}`)}
 				</h1>
 			</header>
 			{kind === "all" ? (

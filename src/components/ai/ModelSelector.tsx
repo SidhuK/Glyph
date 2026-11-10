@@ -21,7 +21,12 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 import styles from "./ModelSelector.module.css";
-import { ProviderLogo, providerLogoMap, resolveLogoProvider } from "./modelSelectorConstants";
+import {
+	ProviderLogo,
+	formatModelId,
+	providerLogoMap,
+	resolveLogoProvider,
+} from "./modelSelectorConstants";
 
 interface ModelSelectorProps {
 	profileId: string | null;
@@ -44,7 +49,13 @@ export function ModelSelector({ profileId, value, onChange, provider }: ModelSel
 	});
 	const models = modelsQuery.data;
 	const selectedModel = models?.find((model) => model.id === value);
-	const displayLabel = selectedModel?.name || value || t("ai.modelSelector.label");
+	// Some providers list the raw id as the name, and the list only loads with the menu open.
+	const displayLabel =
+		selectedModel?.name && selectedModel.name !== value
+			? selectedModel.name
+			: value
+				? formatModelId(value)
+				: t("ai.modelSelector.label");
 	const selectLabel = t("ai.modelSelector.select");
 	const logoProvider = resolveLogoProvider(provider, selectedModel?.name);
 	const providerTitle = logoProvider

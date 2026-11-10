@@ -9,15 +9,15 @@ import { useTranslation } from "react-i18next";
 import type { DatabaseBoardLane } from "../../lib/database/board";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseRow } from "../../lib/database/types";
-import { priorityOptionFromValue } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
 import { Plus } from "../Icons";
 import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../editor/textColors";
-import { priorityPropertyIconForValue } from "../status/PriorityPropertyPill";
 import { springPresets } from "../ui/animations";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { DatabaseBoardLaneMenu } from "./DatabaseBoardLaneMenu";
+import { DatabasePriorityBars } from "../status/DatabasePriorityBars";
 import { StatusRingIcon } from "../status/StatusRingIcon";
+import { priorityDisplayLabel, statusDisplayLabel } from "../status/propertyOptionLabels";
 
 const DATABASE_BOARD_CARD_SENSORS = [
 	PointerSensor.configure({
@@ -37,15 +37,15 @@ function boardCardDragId(notePath: string, laneId: string): string {
 
 export type DatabaseLaneKind = "status" | "priority" | "tag" | null;
 
-/** The explicit "No" priority reads as "No priority", like other lane labels that stand alone. */
+/** Lane and group labels: built-in statuses and priorities in the UI language ("No" priority
+    reads as "No priority"); everything else as stored. */
 export function databaseLaneDisplayLabel(
 	label: string,
 	kind: DatabaseLaneKind,
 	t: TFunction<"shell">,
 ): string {
-	if (kind === "priority" && priorityOptionFromValue(label)?.id === "no") {
-		return t("collections.board.noPriority");
-	}
+	if (kind === "status") return statusDisplayLabel(label, t) || label;
+	if (kind === "priority") return priorityDisplayLabel(label, t) || label;
 	return label;
 }
 
@@ -60,10 +60,11 @@ export function DatabaseLaneIcon({
 }) {
 	if (!kind) return <span className={`${className} is-dot`} aria-hidden="true" />;
 	if (kind === "status") return <StatusRingIcon value={label} className={className} />;
+	if (kind === "priority") return <DatabasePriorityBars value={label} className={className} />;
 	return (
 		<HugeiconsIcon
-			icon={kind === "priority" ? priorityPropertyIconForValue(label) : Tag01Icon}
-			className={kind === "priority" ? `${className} is-neutral` : className}
+			icon={Tag01Icon}
+			className={className}
 			size="var(--icon-sm)"
 			aria-hidden="true"
 		/>
@@ -207,17 +208,6 @@ export function DatabaseBoardLaneView({
 					</span>
 				</div>
 				<div className="databaseBoardLaneHeaderActions">
-					{onAddCard ? (
-						<button
-							type="button"
-							className="databaseBoardLaneAddCardButton"
-							onClick={onAddCard}
-							aria-label={t("collections.laneMenu.addNote", { lane: lane.label })}
-							title={t("collections.laneMenu.addNote", { lane: lane.label })}
-						>
-							<Plus size="var(--icon-md)" aria-hidden="true" />
-						</button>
-					) : null}
 					<DatabaseBoardLaneMenu
 						lane={lane}
 						reorderableLanes={reorderableLanes}
@@ -241,6 +231,7 @@ export function DatabaseBoardLaneView({
 						})}
 					>
 						<Plus size="var(--icon-sm)" aria-hidden="true" />
+						<span>{t("collections.board.newCard")}</span>
 					</button>
 				) : null}
 			</div>

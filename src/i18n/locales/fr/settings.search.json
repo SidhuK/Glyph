@@ -176,7 +176,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Mode de couleur",
-			"section": "Apparence",
+			"section": "Mode",
 			"description": "Choisir le mode système, clair ou sombre.",
 			"keywords": ["mode", "système", "clair", "sombre", "system", "light", "dark"]
 		},
@@ -194,7 +194,7 @@
 		},
 		"appearance-translucent-app": {
 			"title": "Barre latérale translucide",
-			"section": "Apparence",
+			"section": "Mode",
 			"keywords": [
 				"fenêtre",
 				"verre",

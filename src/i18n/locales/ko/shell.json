@@ -1,4 +1,8 @@
 {
+	"linkRewrite": {
+		"incomplete": "이름 변경 또는 이동은 완료되었지만 일부 링크를 업데이트하지 못했습니다",
+		"skipped": "다음 파일을 읽거나 쓸 수 없습니다. 링크를 직접 업데이트해야 할 수 있습니다:\n{{paths}}"
+	},
 	"sidebar": {
 		"collapse": "사이드바 접기",
 		"expand": "사이드바 펼치기",
@@ -9,6 +13,8 @@
 		"fromTemplate": "템플릿에서",
 		"createSection": "만들기",
 		"periodicNotesSection": "주기 노트",
+		"newNoteInFolder": "{{folder}}에 새 노트 만들기",
+		"newNoteInRoot": "스페이스 루트에 새 노트 만들기",
 		"pinned": "고정됨",
 		"allNotes": "모든 노트",
 		"collections": "컬렉션",
@@ -28,11 +34,17 @@
 		"recents": "최근 항목",
 		"noPinnedFiles": "고정된 파일이 없습니다.",
 		"noRecentFiles": "최근 파일이 없습니다.",
+		"openFolderTab": "{{folder}} 열기",
+		"removeFolderTab": "빠른 폴더에서 {{folder}} 제거",
+		"folderTabUpdateFailed": "빠른 폴더를 업데이트하지 못했습니다",
 		"sortNotes": "노트 정렬",
 		"sort": "정렬",
 		"expandAllFolders": "모든 폴더 펼치기",
 		"collapseAllFolders": "모든 폴더 접기",
-		"fileTreeOptions": "파일 트리 옵션"
+		"fileTreeOptions": "파일 트리 옵션",
+		"inbox": "인박스",
+		"archive": "보관함",
+		"tasks": "작업"
 	},
 	"sort": {
 		"nameAsc": "이름 A–Z",
@@ -68,6 +80,8 @@
 		"clearSearch": "검색 지우기",
 		"delete": "컬렉션 삭제",
 		"options": "컬렉션 옵션",
+		"nameLabel": "컬렉션 이름",
+		"folderBreadcrumb": "컬렉션 폴더",
 		"pin": "컬렉션 고정",
 		"searchView": "컬렉션 검색",
 		"unpin": "컬렉션 고정 해제",
@@ -94,7 +108,10 @@
 		"boardCard": {
 			"openNote": "노트 열기",
 			"moveTo": "{{lane}}(으)로 이동",
-			"openHint": "두 번 클릭하여 노트 열기"
+			"openHint": "두 번 클릭하여 노트 열기",
+			"tagTooltip": "태그: {{value}}",
+			"statusTooltip": "상태: {{value}}",
+			"priorityTooltip": "우선순위: {{value}}"
 		},
 		"switch": "컬렉션 전환",
 		"select": "컬렉션 선택",
@@ -108,7 +125,9 @@
 			"options": "보기 옵션",
 			"optionsFor": "{{name}} 보기 옵션",
 			"tabs": "컬렉션 보기",
-			"name": "보기 이름"
+			"name": "보기 이름",
+			"defaultBoardName": "보드 {{number}}",
+			"defaultTableName": "표 {{number}}"
 		},
 		"viewOptions": {
 			"reset": "초기화",
@@ -224,7 +243,8 @@
 			"emptyTitle": "필드를 추가해 보드 레인 만들기",
 			"emptyText": "보드 보기는 노트를 레인으로 묶습니다. 노트에 상태, 우선순위, 체크박스, 태그 같은 필드를 추가한 다음 위쪽 도구 막대에서 선택하세요.",
 			"openViewSettings": "보기 설정 열기",
-			"noPriority": "우선순위 없음",
+			"newCard": "새로 만들기",
+			"scrollNext": "다음 레인 보기",
 			"laneEmpty": {
 				"archived": "보관된 노트가 여기에 표시됩니다",
 				"done": "완료된 노트가 여기에 표시됩니다",
@@ -242,7 +262,8 @@
 			"changePriority": "우선순위 변경",
 			"editTagsHint": "두 번 클릭하여 태그 편집",
 			"editHint": "두 번 클릭하여 편집",
-			"renameNoteHint": "두 번 클릭하여 노트 이름 변경"
+			"renameNoteHint": "두 번 클릭하여 노트 이름 변경",
+			"removeValue": "{{value}} 제거"
 		},
 		"tagPicker": {
 			"source": "태그 소스",
@@ -251,7 +272,28 @@
 			"placeholder": "태그 선택",
 			"empty": "일치하는 태그가 없습니다.",
 			"search": "태그 검색"
-		}
+		},
+		"status": {
+			"backlog": "백로그",
+			"todo": "할 일",
+			"in_progress": "진행 중",
+			"in_review": "검토 중",
+			"blocked": "차단됨",
+			"waiting": "대기 중",
+			"done": "완료",
+			"canceled": "취소됨",
+			"archived": "보관됨"
+		},
+		"priority": {
+			"no": "우선순위 없음",
+			"low": "낮음",
+			"medium": "보통",
+			"high": "높음"
+		},
+		"table": {
+			"empty": "일치하는 노트가 없습니다"
+		},
+		"newNote": "새로 만들기"
 	},
 	"tags": {
 		"header": "태그",
@@ -321,9 +363,13 @@
 			"title": "파일 모양 선택",
 			"updateFailed": "파일 모양을 업데이트할 수 없습니다"
 		},
+		"addFolderTab": "빠른 폴더에 추가",
+		"removeFolderTab": "빠른 폴더에서 제거",
 		"addFile": "파일 추가",
 		"createFromTemplate": "템플릿에서 만들기",
 		"addFolder": "폴더 추가",
+		"importFilesHere": "여기로 파일 가져오기…",
+		"importFolderHere": "여기로 폴더 가져오기…",
 		"deleteFile": "파일 삭제",
 		"deleteFolder": "폴더 삭제",
 		"copyDeeplink": "딥링크 복사",
@@ -336,6 +382,19 @@
 		"spaceNotFound": "해당 스페이스를 찾을 수 없습니다.",
 		"noteNotFound": "해당 노트를 찾을 수 없습니다.",
 		"noteNotMarkdown": "이 링크는 마크다운 노트를 가리키지 않습니다."
+	},
+	"import": {
+		"filesTitle": "파일 가져오기",
+		"folderTitle": "폴더 가져오기",
+		"markdownFilter": "Markdown 파일",
+		"conflictTitle": "항목이 이미 있습니다",
+		"conflictMessage_other": "이 폴더에 이미 {{count}}개 항목이 있습니다. 선택한 작업을 충돌 항목에 적용합니다.",
+		"keepBoth": "둘 다 유지",
+		"replace": "바꾸기",
+		"skip": "건너뛰기",
+		"errorTitle": "가져오기 실패",
+		"success_other": "파일 {{count}}개를 가져왔습니다.",
+		"noneImported": "가져온 파일이 없습니다."
 	},
 	"emptyState": {
 		"commandPalettePrompt": "<shortcut/>을 눌러 시작하세요",
@@ -376,7 +435,10 @@
 		"footer": {
 			"navigate": "이동",
 			"open": "열기",
-			"close": "닫기"
+			"close": "닫기",
+			"change": "변경",
+			"options": "옵션",
+			"toggle": "전환"
 		},
 		"groups": {
 			"command": "명령",
@@ -389,7 +451,8 @@
 			"person": "사람",
 			"database": "컬렉션 및 데이터베이스",
 			"template": "템플릿"
-		}
+		},
+		"lineNumber": "{{line}}행"
 	},
 	"calendar": {
 		"title": "캘린더",
@@ -416,6 +479,13 @@
 	"tabs": {
 		"allNotes": "모든 노트",
 		"collections": "컬렉션",
+		"pinTab": "활성 탭 고정",
+		"unpinTab": "활성 탭 고정 해제",
+		"unpinNamed": "{{label}} 고정 해제",
+		"newTab": "새 탭",
+		"untitled": "제목 없음",
+		"openBlankTab": "빈 탭 열기",
+		"showAllTabs": "모든 탭 보기",
 		"goBack": "뒤로",
 		"goForward": "앞으로",
 		"closeNamed": "{{label}} 닫기",
@@ -438,6 +508,39 @@
 			"loadFailed": "모델을 불러올 수 없습니다",
 			"empty": "사용 가능한 모델이 없습니다",
 			"retry": "다시 시도"
+		},
+		"panel": {
+			"recentChats": "최근 채팅",
+			"newChat": "새 채팅",
+			"settings": "AI 설정",
+			"close": "AI 패널 닫기",
+			"scrollToLatest": "최신으로 스크롤",
+			"untitledChat": "제목 없는 채팅",
+			"noHistory": "아직 채팅 기록이 없습니다"
+		},
+		"thread": {
+			"emptyTitle": "노트와 대화하기",
+			"emptyHint": "자연스럽게 질문하거나 <code>@</code>로 노트와 폴더를 대화에 추가하세요",
+			"shaping": "생각을 정리하는 중",
+			"responseFailed": "응답 실패",
+			"retry": "다시 시도",
+			"retryResponse": "응답 다시 생성",
+			"copyResponse": "응답 복사",
+			"saveResponse": "응답을 파일로 저장",
+			"citations": "인용",
+			"footnotes": "각주 인용",
+			"citedNotes": "인용된 노트"
+		},
+		"composer": {
+			"placeholder": "노트에 대해 질문 · @로 컨텍스트 추가",
+			"message": "메시지",
+			"mention": "@로 노트 추가",
+			"send": "보내기",
+			"stop": "중지",
+			"searchContext": "파일 및 폴더 검색…",
+			"searchHint": "입력하여 파일 및 폴더 검색",
+			"noResults": "결과 없음",
+			"space": "스페이스"
 		}
 	},
 	"connections": {
@@ -497,6 +600,45 @@
 		"loadError": "캔버스를 열 수 없습니다: {{message}}",
 		"invalidAgentCanvas": "glyphCanvas 블록에 잘못된 노드나 연결선이 있습니다",
 		"saveError": "캔버스를 저장할 수 없습니다: {{message}}"
+	},
+	"tasks": {
+		"searchPlaceholder": "작업 필터",
+		"scope": "작업 표시 범위",
+		"scopeAll": "모든 노트",
+		"scopeFolder": "폴더",
+		"scopeTag": "태그",
+		"folder": "폴더",
+		"allFolders": "모든 폴더",
+		"foldersLoadFailed": "폴더를 불러오지 못했습니다: {{message}}",
+		"retry": "다시 시도",
+		"tag": "태그",
+		"allTags": "모든 태그",
+		"empty": "열린 작업이 없습니다. 노트에 작성한 체크리스트 항목이 여기에 표시됩니다.",
+		"emptyScope": "이 폴더나 태그에 열린 작업이 없습니다.",
+		"emptySearch": "검색과 일치하는 열린 작업이 없습니다.",
+		"clearSearch": "검색 지우기",
+		"showAllNotes": "모든 노트 보기",
+		"openTasks_other": "열린 작업 {{count}}개",
+		"noteCount_other": "노트 {{count}}개",
+		"collapseAll": "모두 접기",
+		"groupStateSaveFailed": "펼친 노트 상태를 저장하지 못했습니다",
+		"expandAll": "모두 펼치기",
+		"collapseNote": "{{title}} 접기",
+		"expandNote": "{{title}} 펼치기",
+		"loadError": "작업을 불러오지 못했습니다: {{message}}",
+		"markDone": "\"{{task}}\" 완료로 표시",
+		"markNotDone": "\"{{task}}\" 미완료로 표시",
+		"openNote": "{{title}} 열기",
+		"progress": "작업 {{total}}개 중 {{completed}}개 완료",
+		"fraction": "{{completed}}/{{total}}",
+		"toggleFailed": "작업을 업데이트하지 못했습니다",
+		"conflictChanged": "목록을 불러온 뒤 노트가 변경되었습니다. 다시 시도하세요.",
+		"conflictRolledOver": "이 작업은 다른 노트로 이월되었습니다.",
+		"indexFailed": "작업은 저장되었지만 검색 색인을 업데이트하지 못했습니다.",
+		"sort": "작업 정렬 기준",
+		"sortRecent": "최근 편집순",
+		"sortMostOpen": "열린 작업 많은 순",
+		"sortTitle": "제목"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "아이콘 검색",
@@ -560,8 +702,30 @@
 		"expand": "캘린더 펼치기"
 	},
 	"breadcrumbs": {
+		"label": "현재 파일 경로",
 		"space": "스페이스",
-		"emptyFolder": "빈 폴더"
+		"browse": "{{name}} 둘러보기",
+		"emptyFolder": "빈 폴더",
+		"loading": "불러오는 중…",
+		"moreItems": "+{{count}}개 더",
+		"showHidden": "숨겨진 경로 항목 보기",
+		"hiddenItems_other": "숨겨진 경로 항목 {{count}}개",
+		"revealInFileTree": "파일 트리에서 보기",
+		"showInFinderFailed": "Finder에서 파일을 보여주지 못했습니다"
+	},
+	"workspace": {
+		"openSpace": "스페이스 열기",
+		"openAnotherSpace": "다른 스페이스 열기",
+		"switchSaveFailed": "현재 스페이스를 저장하지 못했습니다. 다시 시도하세요."
+	},
+	"documentExport": {
+		"untitled": "제목 없음",
+		"docxDialogTitle": "노트를 Word로 내보내기",
+		"docxFormat": "Word 문서",
+		"docxComplete": "노트를 Word로 내보냈습니다.",
+		"pdfFailed": "노트를 PDF로 내보내지 못했습니다",
+		"docxFailed": "노트를 Word로 내보내지 못했습니다",
+		"tryAgain": "잠시 후 다시 시도하세요."
 	},
 	"quickNoteTarget": {
 		"today": "오늘의 빠른 노트",
@@ -570,6 +734,10 @@
 		"resetToToday": "오늘의 빠른 메모로 재설정"
 	},
 	"gitSync": {
+		"commitTitle": "Git과 동기화",
+		"commitDescription": "이 수동 동기화로 만들어지는 로컬 커밋에 메시지를 추가할 수 있습니다(선택 사항).",
+		"commitMessagePlaceholder": "선택 사항. 기본값: Glyph sync",
+		"cancel": "취소",
 		"interval": {
 			"label": "간격",
 			"description": "Glyph가 예약 동기화를 실행하는 주기입니다.",
@@ -588,11 +756,57 @@
 			}
 		},
 		"sync": "지금 동기화",
+		"manualCommitMessages": "수동 커밋 메시지",
+		"manualCommitMessagesDescription": "수동 동기화할 때마다 메시지를 묻습니다. 끄면 Glyph는 \"Glyph sync\"를 사용합니다.",
 		"resumeAutoSync": "자동 동기화 재개",
 		"remote": "원격",
 		"actions": "작업"
 	},
 	"activity": {
+		"recentActivity": "최근 노트 활동",
+		"daySummary_other": "{{date}} 노트 {{count}}개",
+		"today": "오늘",
+		"yesterday": "어제",
+		"noteCount_other": "노트 {{count}}개",
+		"summaryHint": "노트 생성일과 마지막 편집일을 포함합니다.",
+		"less": "적음",
+		"more": "많음",
+		"pastYear": "지난 1년",
+		"previousPeriod": "이전 연도",
+		"nextPeriod": "다음 연도",
+		"notesCount_other": "노트 {{count}}개 생성 또는 편집",
+		"activeDays_other": "활동한 날 {{count}}일",
+		"noActivityInPeriod": "이 기간에 생성되거나 편집된 노트가 없습니다",
+		"createdCount_other": "{{count}}개 생성",
+		"editedCount_other": "{{count}}개 편집",
+		"noActivityOnDay": "노트 없음",
+		"moreNotes_other": "{{count}}개 더",
+		"selectDayHint": "클릭하여 이 노트 보기",
+		"showAllNotes": "모든 노트 보기",
+		"empty": "아직 활동이 없습니다. 노트를 만들거나 편집하면 타임라인이 시작됩니다.",
+		"loadError": "활동을 불러오지 못했습니다: {{message}}",
+		"loadOlder": "이전 노트 불러오기",
+		"loadingOlder": "불러오는 중…",
 		"noPreviewYet": "아직 미리보기가 없습니다"
+	},
+	"noteCollections": {
+		"loading": "노트를 불러오는 중…",
+		"noFiles": "파일이 없습니다.",
+		"enableArchive": "스페이스 설정에서 보관함 켜기",
+		"configureInbox": "인박스 설정",
+		"archive": "보관",
+		"unarchive": "보관 해제",
+		"archived": "보관됨",
+		"archivedTooltip": "보관됨. 클릭하여 보관을 해제합니다.",
+		"undo": "실행 취소",
+		"archivedCount_other": "노트 {{count}}개를 보관했습니다",
+		"restoredCount_other": "노트 {{count}}개의 보관을 해제했습니다",
+		"partialFailure": "일부 노트를 업데이트하지 못했습니다",
+		"actionFailed": "노트를 업데이트하지 못했습니다",
+		"unsaved": "계속하기 전에 대기 중인 편집 내용을 저장하세요.",
+		"spaceChanged": "열린 스페이스가 변경되었습니다. 다시 시도하세요.",
+		"retry": "다시 시도",
+		"inboxEmpty": "인박스가 비어 있습니다.",
+		"archiveEmpty": "보관된 노트가 없습니다."
 	}
 }

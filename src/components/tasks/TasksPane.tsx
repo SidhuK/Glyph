@@ -1,5 +1,3 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { CheckListIcon } from "@hugeicons/core-free-icons";
 import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
@@ -8,6 +6,7 @@ import { CanvasPaneAwait } from "../app/CanvasPaneAwait";
 import { dispatchInternalAnchorClick } from "../editor/markdown/editorEvents";
 import { requestHeadingNavigation, slugifyHeading } from "../editor/markdown/headingAnchor";
 import { Button } from "../ui/shadcn/button";
+import type { TaskSortMode } from "./buildTaskRows";
 import { TasksList } from "./TasksList";
 import type { TaskScopeKind } from "./TasksScopeSelects";
 import { TasksToolbar } from "./TasksToolbar";
@@ -31,9 +30,10 @@ export const TasksPane = memo(function TasksPane({ onOpenFile }: TasksPaneProps)
 	const [scopeKind, setScopeKind] = useState<TaskScopeKind>("all");
 	const [folder, setFolder] = useState("");
 	const [tag, setTag] = useState("");
+	const [sort, setSort] = useState<TaskSortMode>("recent");
 	const scope = toTaskScope(scopeKind, folder, tag);
 	const needle = search.trim().toLowerCase();
-	const view = useTasksView(spacePath, scope, needle);
+	const view = useTasksView(spacePath, scope, needle, sort);
 	const { flushNow, clearTimer } = view.completion;
 	// React 19 ref cleanup: stop the hold timer when the pane unmounts.
 	const attachPane = useCallback(
@@ -85,10 +85,7 @@ export const TasksPane = memo(function TasksPane({ onOpenFile }: TasksPaneProps)
 	return (
 		<section ref={attachPane} className="activityTimelinePane tasksPane">
 			<header className="activityTimelineHeader">
-				<h1 className="activityTimelineTitle">
-					<HugeiconsIcon icon={CheckListIcon} size="var(--icon-2xl)" />
-					<span>{t("sidebar.tasks")}</span>
-				</h1>
+				<h1 className="activityTimelineTitle">{t("sidebar.tasks")}</h1>
 			</header>
 			<TasksToolbar
 				spacePath={spacePath}
@@ -100,10 +97,12 @@ export const TasksPane = memo(function TasksPane({ onOpenFile }: TasksPaneProps)
 				onFolderChange={(value) => changeScope(() => setFolder(value))}
 				tag={tag}
 				onTagChange={(value) => changeScope(() => setTag(value))}
+				sort={sort}
+				onSortChange={(value) => changeScope(() => setSort(value))}
 				openTasks={view.openTasks}
 				notes={view.notes}
-				onCollapseAll={view.collapseAll}
-				onExpandAll={view.expandAll}
+				anyExpanded={view.anyExpanded}
+				onToggleAll={view.toggleAll}
 			/>
 			{view.query.error ? (
 				<div className="databaseLoadingState tasksState">

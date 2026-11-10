@@ -1,12 +1,12 @@
 /* ── Appearance picker (icons, emoji, colors) ── */
 
+/* The sheet radius, shadow and surface come from .commandPalette (32-command-palette.css). */
 .commandPalette.appearancePickerDialog {
 	width: min(440px, calc(100vw - 48px));
 	height: min(75vh, 620px);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	border-radius: var(--radius-2xl);
 }
 
 .appearancePickerHeader {

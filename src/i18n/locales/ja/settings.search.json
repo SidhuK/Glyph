@@ -169,7 +169,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "カラーモード",
-			"section": "外観",
+			"section": "モード",
 			"description": "システム、ライト、ダークモードを選びます。",
 			"keywords": ["モード", "システム", "ライト", "ダーク", "mode", "system", "light", "dark"]
 		},
@@ -187,7 +187,7 @@
 		},
 		"appearance-translucent-app": {
 			"title": "半透明サイドバー",
-			"section": "外観",
+			"section": "モード",
 			"keywords": [
 				"ウィンドウ",
 				"ガラス",

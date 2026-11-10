@@ -5,6 +5,8 @@
 	/* Pads the checkbox label out to a 24px pointer target. */
 	--task-hit-pad: calc((24px - var(--task-checkbox-size)) / 2);
 	--tasks-chevron-gutter: 26px;
+	/* Note rows: a 20px title line centred between hairlines, 45px in all. */
+	--tasks-note-pad: 12px;
 	--task-indent-step: 1.1em;
 	--tasks-row-hover: var(--bg-hover);
 	--tasks-meta: var(--text-tertiary);
@@ -25,14 +27,15 @@
 	gap: var(--space-2);
 }
 
+/* Sized like the note list's filter, so the selects sit beside it instead of being pushed out. */
 .tasksToolbar .tasksSearch {
-	flex: 1 1 220px;
-	height: 28px;
+	flex: 0 1 280px;
+	height: var(--search-field-height);
 }
 
+/* The filled select recipe comes from .glyphSelectTrigger (04a-menu.css). */
 .tasksToolbar .tasksScopeSelect {
 	max-width: 260px;
-	height: 28px;
 	flex: 0 1 auto;
 }
 
@@ -44,18 +47,17 @@
 	font-size: var(--text-base);
 }
 
+/* The fold toggle's glyph, not its button, ends on the list's right edge. */
 .tasksToolbarEnd {
 	display: flex;
 	align-items: center;
 	gap: var(--space-2);
-	margin-inline-start: auto;
+	margin-inline: auto -6px;
 }
 
-/* Type and colour come from .activityDayCounts. */
-.tasksStat {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-1);
+/* Type and colour come from .activityHeatmapSummary. */
+.tasksSummary {
+	margin: 0;
 	white-space: nowrap;
 }
 
@@ -71,10 +73,12 @@
 	font-size: var(--text-sm);
 }
 
-/* List (layout from .activityFeed.is-virtualized / .activityVirtualRow) */
-.tasksList {
+/* List (layout from .activityFeed.is-virtualized / .activityVirtualRow). Tasks has no day rail,
+   so the rows share the title's column and the chevrons hang in the pane's gutter. */
+.activityFeed.tasksList {
+	--activity-rail-offset: 0px;
 	/* Absorb the first note header's top padding, whatever row filtering leaves first. */
-	margin-top: calc(var(--space-5) * -1);
+	margin-top: calc(var(--tasks-note-pad) * -1);
 }
 
 /* Shared: undo the global button rule (fixed height, nowrap, padding, hover fill). */
@@ -95,8 +99,13 @@
 	display: flex;
 	align-items: center;
 	gap: var(--space-2);
-	padding: var(--space-5) 0 var(--space-2);
+	padding: var(--tasks-note-pad) 0;
 	border-bottom: 1px solid var(--border-light);
+}
+
+/* An expanded group's tasks end without a rule, so the next note keeps a group gap. */
+.tasksNoteRow[data-after-expanded="true"] {
+	padding-top: var(--space-5);
 }
 
 .tasksChevron {
@@ -144,7 +153,7 @@
 	color: var(--text-primary);
 	font-size: var(--text-base);
 	font-weight: var(--font-semibold);
-	line-height: 1.32;
+	line-height: 20px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
@@ -182,6 +191,11 @@
 	text-overflow: ellipsis;
 }
 
+.tasksNoteBreadcrumbEllipsis {
+	flex: 0 0 auto;
+	color: var(--text-placeholder);
+}
+
 /* Progress bar + done/total fraction */
 .tasksProgress {
 	display: inline-flex;
@@ -197,19 +211,25 @@
 	height: 4px;
 	overflow: hidden;
 	border-radius: var(--radius-full);
-	background: var(--bg-active);
+	background: var(--bg-hover);
 }
 
+/* Width, not scaleX, so the same-hue edge isn't stretched. The edge keeps light ramp colours
+   (yellow, lime) from reading lighter than the empty track. */
 .tasksProgressFill {
 	display: block;
-	width: 100%;
+	width: calc(var(--tasks-progress) * 100%);
 	height: 100%;
+	border-radius: inherit;
 	background: var(--tasks-progress-color);
-	transform: scaleX(var(--tasks-progress));
-	transform-origin: left;
+	box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tasks-progress-color) 70%, #000);
 	transition:
-		transform 240ms cubic-bezier(0.2, 0, 0, 1),
+		width 240ms cubic-bezier(0.2, 0, 0, 1),
 		background-color 240ms ease;
+}
+
+.dark .tasksProgressFill {
+	box-shadow: none;
 }
 
 .tasksProgressLabel {

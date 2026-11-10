@@ -5,7 +5,7 @@ import { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import type { DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
-import { Table } from "../Icons";
+import { Plus, Table } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { ActionMenuTrigger } from "./ActionMenuTrigger";
 import { useDatabaseViewTabs } from "./useDatabaseViewTabs";
@@ -44,6 +44,7 @@ export function DatabaseViewTabs({
 		setViewNameDraft,
 		setRenamingViewId,
 		handleViewTabKeyDown,
+		handleCreateView,
 		viewActionMenuItems,
 	} = useDatabaseViewTabs({
 		document,
@@ -147,6 +148,15 @@ export function DatabaseViewTabs({
 				})}
 			</div>
 			<div className="databasesViewTabsActions">
+				<button
+					type="button"
+					className="databaseToolbarChip databasesAddViewButton"
+					onClick={() => void handleCreateView().catch(() => undefined)}
+					title={t("collections.addView")}
+					aria-label={t("collections.addView")}
+				>
+					<Plus size="var(--icon-md)" aria-hidden="true" />
+				</button>
 				<ActionMenuTrigger
 					items={viewActionMenuItems}
 					triggerClassName="databasesViewTabMenu databaseToolbarChip"

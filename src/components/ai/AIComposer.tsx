@@ -15,7 +15,6 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
-import { APP_TAGLINE } from "../../lib/copy";
 import { normalizeRelPath } from "../../utils/path";
 import { File, Plus, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -248,9 +247,6 @@ export function AIComposer({
 	const { t } = useTranslation("shell");
 	const canvasCommandMenuId = useId();
 	const canvasCommandOptionId = `${canvasCommandMenuId}-option`;
-	const hasDraftText = Boolean(input.replace(CHIP_RE, "").trim());
-	const beamSize = isStreamingResponse ? "pulse-inner" : "md";
-	const beamStrength = isStreamingResponse ? 0.3 : hasDraftText ? 0.28 : 0.7;
 	const showCanvasCommand = isCanvasCommandQuery(input) && !isAwaitingResponse;
 
 	const selectCanvasCommand = useCallback(() => {
@@ -464,7 +460,7 @@ export function AIComposer({
 					<input
 						type="search"
 						className="aiAddPanelInput"
-						placeholder="Search files & folders…"
+						placeholder={t("ai.composer.searchContext")}
 						value={panelQuery}
 						onChange={(e) => {
 							if (!addPanelOpen) setAddPanelOpen(true);
@@ -483,12 +479,12 @@ export function AIComposer({
 									className="aiAddPanelItem"
 									onClick={() => onAddContext(item.kind, item.path)}
 								>
-									<span>{item.label || "Space"}</span>
+									<span>{item.label || t("ai.composer.space")}</span>
 								</button>
 							))
 						) : (
 							<div className="aiAddPanelEmpty">
-								{panelQuery.trim() ? "No results" : "Type to search files & folders"}
+								{panelQuery.trim() ? t("ai.composer.noResults") : t("ai.composer.searchHint")}
 							</div>
 						)}
 					</div>
@@ -522,13 +518,15 @@ export function AIComposer({
 						</button>
 					</div>
 				) : null}
+				{/* The beam shows only while a reply streams; at rest the composer has no glow. */}
 				<BorderBeam
 					className="aiComposerBeam"
-					size={beamSize}
+					size="pulse-inner"
 					colorVariant="colorful"
 					theme={isDarkTheme ? "dark" : "light"}
-					strength={beamStrength}
-					duration={isStreamingResponse ? 3.4 : 5.2}
+					strength={0.3}
+					duration={3.4}
+					active={isStreamingResponse}
 				>
 					<div className="aiComposerInputShell">
 						<div
@@ -539,12 +537,12 @@ export function AIComposer({
 							role="textbox"
 							tabIndex={0}
 							aria-multiline="true"
-							aria-label="Message"
+							aria-label={t("ai.composer.message")}
 							aria-autocomplete="list"
 							aria-controls={showCanvasCommand ? canvasCommandMenuId : undefined}
 							aria-expanded={showCanvasCommand}
 							aria-activedescendant={showCanvasCommand ? canvasCommandOptionId : undefined}
-							data-placeholder={activeFilePath ? undefined : APP_TAGLINE}
+							data-placeholder={activeFilePath ? undefined : t("ai.composer.placeholder")}
 							spellCheck
 							onInput={handleInput}
 							onPaste={handlePaste}
@@ -559,8 +557,8 @@ export function AIComposer({
 										variant="ghost"
 										size="icon-sm"
 										className="aiComposerMentionButton"
-										aria-label="Add note with @"
-										title="Add note with @"
+										aria-label={t("ai.composer.mention")}
+										title={t("ai.composer.mention")}
 										onClick={handleInsertMentionTrigger}
 										disabled={isAwaitingResponse}
 									>
@@ -582,8 +580,8 @@ export function AIComposer({
 									type="button"
 									className="aiComposerStop"
 									onClick={onStop}
-									aria-label="Stop"
-									title="Stop"
+									aria-label={t("ai.composer.stop")}
+									title={t("ai.composer.stop")}
 								>
 									<HugeiconsIcon icon={StopIcon} size="var(--icon-md)" />
 								</button>
@@ -595,8 +593,8 @@ export function AIComposer({
 									className="aiComposerSend"
 									disabled={!canSend}
 									onClick={onSend}
-									aria-label="Send"
-									title="Send"
+									aria-label={t("ai.composer.send")}
+									title={t("ai.composer.send")}
 								>
 									<HugeiconsIcon icon={ArrowUp02Icon} size="var(--icon-md)" />
 								</Button>
