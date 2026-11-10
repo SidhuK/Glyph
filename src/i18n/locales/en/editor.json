@@ -88,7 +88,32 @@
 		"sidebarTabsLabel": "Note sidebar",
 		"infoTab": "Info",
 		"historyTab": "Version history",
-		"close": "Close info panel"
+		"close": "Close info panel",
+		"history": {
+			"today": "Today",
+			"yesterday": "Yesterday",
+			"currentNote": "Current note",
+			"lastSynced": "Last synced {{when}}",
+			"restoredFrom": "Restored from {{when}}",
+			"loading": "Loading versions",
+			"empty": "No saved versions yet.",
+			"untitled": "Untitled version",
+			"opening": "Opening…",
+			"viewLabel": "Version view",
+			"changes": "Changes",
+			"thisVersion": "This version",
+			"restore": "Restore",
+			"restored": "Restored",
+			"undo": "Undo",
+			"backToEditor": "Back to editor",
+			"unchangedLines_one": "{{count}} unchanged line",
+			"unchangedLines_other": "{{count}} unchanged lines",
+			"createdNote": "This version created the note.",
+			"noChanges": "This version did not change the note.",
+			"loadingVersion": "Loading this version",
+			"restoreUnsaved": "Your current edits could not be saved, so nothing was restored.",
+			"undoChanged": "The note changed after the restore, so the restore can't be undone."
+		}
 	},
 	"ribbon": {
 		"toolbarLabel": "Formatting",

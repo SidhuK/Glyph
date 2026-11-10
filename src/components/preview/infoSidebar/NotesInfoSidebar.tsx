@@ -7,6 +7,7 @@ import { canShowGitHistory } from "../../../lib/gitSyncUi";
 import type { RelationshipGroup } from "../../../lib/relationships";
 import type {
 	GitCommitDiff,
+	GitHistoryCommit,
 	GitSyncStatus,
 	NoteTaskSummary,
 	WorkspaceDatabasePreviewContext,
@@ -55,7 +56,8 @@ interface NotesInfoSidebarProps {
 	utf8SizeBytes: number;
 	gitSyncStatus?: GitSyncStatus | null;
 	selectedGitCommitHash?: string | null;
-	onSelectGitDiff?: (diff: GitCommitDiff) => void;
+	restoredGitCommit?: GitHistoryCommit | null;
+	onSelectGitDiff?: (diff: GitCommitDiff | null) => void;
 	onClose: () => void;
 }
 
@@ -80,6 +82,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	utf8SizeBytes,
 	gitSyncStatus = null,
 	selectedGitCommitHash = null,
+	restoredGitCommit = null,
 	onSelectGitDiff,
 	onClose,
 }: NotesInfoSidebarProps) {
@@ -224,6 +227,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						open={open}
 						relPath={relPath}
 						selectedCommitHash={selectedGitCommitHash}
+						restoredCommit={restoredGitCommit}
 						onSelectDiff={onSelectGitDiff}
 					/>
 				) : null}

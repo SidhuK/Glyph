@@ -294,6 +294,31 @@
 			"tasksDone": "{{completed}} sur {{total}} terminées",
 			"fileModified": "Fichier modifié",
 			"fileCreated": "Fichier créé"
+		},
+		"history": {
+			"today": "Aujourd’hui",
+			"yesterday": "Hier",
+			"currentNote": "Note actuelle",
+			"lastSynced": "Dernière synchronisation {{when}}",
+			"restoredFrom": "Restaurée depuis {{when}}",
+			"loading": "Chargement des versions",
+			"empty": "Aucune version enregistrée pour l’instant.",
+			"untitled": "Version sans titre",
+			"opening": "Ouverture…",
+			"viewLabel": "Affichage de la version",
+			"changes": "Modifications",
+			"thisVersion": "Cette version",
+			"restore": "Restaurer",
+			"restored": "Restaurée",
+			"undo": "Annuler",
+			"backToEditor": "Retour à l’éditeur",
+			"unchangedLines_one": "{{count}} ligne inchangée",
+			"unchangedLines_other": "{{count}} lignes inchangées",
+			"createdNote": "Cette version a créé la note.",
+			"noChanges": "Cette version n’a pas modifié la note.",
+			"loadingVersion": "Chargement de cette version",
+			"restoreUnsaved": "Vos modifications en cours n’ont pas pu être enregistrées, donc rien n’a été restauré.",
+			"undoChanged": "La note a changé après la restauration, elle ne peut donc pas être annulée."
 		}
 	}
 }

@@ -1264,6 +1264,7 @@ interface TauriCommands {
 	>;
 	git_history_list: CommandDef<{ path: string; limit?: number | null }, GitHistoryCommit[]>;
 	git_history_diff: CommandDef<{ path: string; commit: GitHistoryCommit }, GitCommitDiff>;
+	git_history_note_text: CommandDef<{ path: string; commit: GitHistoryCommit }, string>;
 
 	ai_profiles_list: CommandDef<void, AiProfile[]>;
 	ai_active_profile_get: CommandDef<void, string | null>;
