@@ -228,15 +228,12 @@ function EditorPaneContent({
 	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
 	const { spacePath } = useSpace();
 	// A version belongs to the note it was opened from, so it closes when the tab shows another note.
-	const [gitDiffState, setGitDiffState] = useState<{
-		path: string;
-		diff: GitCommitDiff;
-	} | null>(null);
-	const gitDiff = gitDiffState?.path === viewerPath ? gitDiffState.diff : null;
-	const setGitDiff = useCallback(
-		(diff: GitCommitDiff | null) => setGitDiffState(diff ? { path: viewerPath, diff } : null),
-		[viewerPath],
-	);
+	const [gitDiff, setGitDiff] = useState<GitCommitDiff | null>(null);
+	const [gitDiffPath, setGitDiffPath] = useState(viewerPath);
+	if (gitDiffPath !== viewerPath) {
+		setGitDiffPath(viewerPath);
+		setGitDiff(null);
+	}
 	const handleDirtyChange = useCallback(
 		(dirty: boolean) =>
 			setDirtyByPath((previous) =>

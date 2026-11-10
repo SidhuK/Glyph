@@ -1,3 +1,10 @@
+import {
+	createMarkdownFenceTracker,
+	isInsideMarkdownCodeFence,
+	type MarkdownFenceTracker,
+	updateMarkdownFenceTracker,
+} from "../components/editor/markdown/markdownFence";
+
 /**
  * Turns git's unified diff for one note into rows the version history view can draw as
  * the rendered note: markdown blocks marked added, removed or changed in place.
@@ -43,19 +50,19 @@ const MAX_WORD_DIFF_CELLS = 250_000;
 /** Share of a changed line that must survive for it to read as an edit, not a replacement. */
 const MIN_PAIR_SIMILARITY = 0.4;
 
-const HUNK_HEADER = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/;
+/** Unchanged lines kept on each side of a change; longer unchanged runs fold. */
+const CONTEXT_LINES = 3;
 const HEADING = /^(#{1,6})\s+/;
 const LIST_ITEM = /^(\s*)(?:([-*+])|(\d+)[.)])\s+(?:\[([ xX])\]\s+)?/;
 const TABLE_DIVIDER = /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
-const FENCE = /^\s*(```|~~~)/;
 
 function splitTableCells(line: string): string[] {
 	const inner = line.trim().replace(/^\|/, "").replace(/\|$/, "");
 	return inner.split(/(?<!\\)\|/).map((cell) => cell.trim());
 }
 
-function parseLine(line: string, inCode: boolean): ParsedLine {
-	if (inCode || FENCE.test(line)) {
+function parseLine(line: string, code: boolean): ParsedLine {
+	if (code) {
 		return { block: { type: "code" }, prefix: "```", cells: [line] };
 	}
 	const heading = HEADING.exec(line);
@@ -85,8 +92,11 @@ function parseLine(line: string, inCode: boolean): ParsedLine {
 	return { block: { type: "text" }, prefix: "", cells: [line] };
 }
 
+/** Words in any script; CJK text has no spaces, so each of its characters is a token. */
+const TOKEN = /\s+|(?:(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}])[\p{L}\p{M}\p{N}_])+|\S/gu;
+
 function tokenize(text: string): string[] {
-	return text.match(/\s+|\w+|[^\s\w]/gu) ?? [];
+	return text.match(TOKEN) ?? [];
 }
 
 /** Word-level diff of one line, or null when the lines are too long to compare. */
@@ -165,15 +175,39 @@ function plainRow(kind: "context" | "add" | "delete", line: ParsedLine): NoteDif
 	return { kind, block: line.block, cells: line.cells.map((text) => [{ kind: segment, text }]) };
 }
 
+/**
+ * Reads a diff that carries the whole note as context, so a line's place inside or outside a
+ * code block is always known.
+ */
 export function parseNoteDiff(diff: string): NoteDiff {
 	const rows: NoteDiffRow[] = [];
 	let created = false;
 	let inHunk = false;
-	let inCode = false;
-	let nextNewLine = 1;
+	// The note before and after the commit open and close code blocks independently.
+	const before = createMarkdownFenceTracker();
+	const after = createMarkdownFenceTracker();
+	let changed = false;
 	let removed: ParsedLine[] = [];
 	let added: ParsedLine[] = [];
+	let unchanged: (ParsedLine | null)[] = [];
 
+	const pushContext = (lines: (ParsedLine | null)[]) => {
+		for (const line of lines) if (line) rows.push(plainRow("context", line));
+	};
+	/** `last` marks the run after the final change, which has no change below to lead into. */
+	const flushUnchanged = (last: boolean) => {
+		const head = changed ? CONTEXT_LINES : 0;
+		const tail = last ? 0 : CONTEXT_LINES;
+		const folded = unchanged.length - head - tail;
+		if (folded > 0) {
+			pushContext(unchanged.slice(0, head));
+			rows.push({ kind: "fold", count: folded });
+			pushContext(unchanged.slice(unchanged.length - tail));
+		} else {
+			pushContext(unchanged);
+		}
+		unchanged = [];
+	};
 	const flushChanges = () => {
 		const paired =
 			removed.length === added.length
@@ -188,26 +222,18 @@ export function parseNoteDiff(diff: string): NoteDiff {
 		removed = [];
 		added = [];
 	};
-	const parse = (text: string): ParsedLine | null => {
-		const fence = FENCE.test(text);
-		const line = parseLine(text, inCode);
-		if (fence) inCode = !inCode;
+	const parse = (text: string, side: MarkdownFenceTracker): ParsedLine | null => {
+		const code = updateMarkdownFenceTracker(text, side) || isInsideMarkdownCodeFence(side);
+		const line = parseLine(text, code);
+		if (code) return line;
 		// Blank lines and table dividers carry no content once the note is rendered.
-		if (!fence && !inCode && (text.trim() === "" || TABLE_DIVIDER.test(text))) return null;
-		return line;
+		const divider = text.includes("|") && TABLE_DIVIDER.test(text);
+		return text.trim() === "" || divider ? null : line;
 	};
 
 	for (const line of diff.split("\n")) {
-		const hunk = HUNK_HEADER.exec(line);
-		if (hunk) {
-			flushChanges();
+		if (line.startsWith("@@")) {
 			inHunk = true;
-			inCode = false;
-			const count = hunk[2] === undefined ? 1 : Number(hunk[2]);
-			// A hunk that only removes lines names the line before it.
-			const start = count === 0 ? Number(hunk[1]) + 1 : Number(hunk[1]);
-			if (start > nextNewLine) rows.push({ kind: "fold", count: start - nextNewLine });
-			nextNewLine = start + count;
 			continue;
 		}
 		if (!inHunk) {
@@ -215,21 +241,19 @@ export function parseNoteDiff(diff: string): NoteDiff {
 			continue;
 		}
 		const text = line.slice(1);
-		if (line.startsWith("-")) {
-			// Removed lines never open a fence for the lines that follow in the new note.
-			const fenceBefore: boolean = inCode;
-			const parsed = parse(text);
-			inCode = fenceBefore;
-			if (parsed) removed.push(parsed);
-		} else if (line.startsWith("+")) {
-			const parsed = parse(text);
-			if (parsed) added.push(parsed);
-		} else if (line.startsWith(" ")) {
+		if (line.startsWith(" ")) {
 			flushChanges();
-			const parsed = parse(text);
-			if (parsed) rows.push(plainRow("context", parsed));
+			updateMarkdownFenceTracker(text, before);
+			unchanged.push(parse(text, after));
+			continue;
 		}
+		if (!line.startsWith("-") && !line.startsWith("+")) continue;
+		flushUnchanged(false);
+		changed = true;
+		const parsed = line.startsWith("-") ? parse(text, before) : parse(text, after);
+		if (parsed) (line.startsWith("-") ? removed : added).push(parsed);
 	}
 	flushChanges();
+	flushUnchanged(true);
 	return { created, rows };
 }

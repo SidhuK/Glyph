@@ -65,6 +65,7 @@ export function GitHistorySidebar({
 			: "";
 	const showCurrentNote = () => {
 		latestDiffRequestId.current += 1;
+		diffMutation.reset();
 		onSelectDiff(null);
 	};
 

@@ -1,0 +1,144 @@
+/* Version history: a saved version's changes and its full text, drawn as the note. */
+
+.gitVersionBody {
+	padding: 10px 0 80px;
+}
+
+.gitVersionNotice {
+	padding: 8px var(--git-version-gutter);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+}
+
+.gitVersionFold {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px var(--git-version-gutter);
+	color: var(--text-tertiary);
+	font-size: var(--text-2xs);
+	white-space: nowrap;
+}
+
+.gitVersionFold::before,
+.gitVersionFold::after {
+	content: "";
+	height: 1px;
+	flex: 1;
+	background: var(--border-light);
+}
+
+/* One markdown block of the note; the gutter column carries the + / − mark. */
+.gitVersionBlock {
+	display: grid;
+	grid-template-columns: var(--git-version-gutter) minmax(0, 1fr);
+	padding: 2px var(--git-version-gutter) 2px 0;
+	line-height: 1.55;
+}
+
+.gitVersionMark {
+	padding-right: 8px;
+	font-family: var(--font-mono);
+	font-size: var(--text-xs);
+	line-height: 22px;
+	text-align: right;
+	user-select: none;
+}
+
+.gitVersionBlockContent {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.gitVersionBlock[data-kind="add"] {
+	background: var(--status-success-bg);
+}
+
+.gitVersionBlock[data-kind="add"] .gitVersionMark {
+	color: color-mix(in srgb, var(--status-success-fg) 82%, var(--text-primary));
+}
+
+.gitVersionBlock[data-kind="delete"] {
+	background: var(--status-danger-bg);
+	color: color-mix(in srgb, var(--status-danger-fg) 70%, var(--text-primary));
+}
+
+.gitVersionBlock[data-kind="delete"] .gitVersionBlockContent {
+	text-decoration: line-through;
+	text-decoration-color: color-mix(in srgb, var(--status-danger-fg) 50%, transparent);
+}
+
+.gitVersionBlock[data-block="heading"] .gitVersionBlockContent {
+	padding-top: 6px;
+	font-size: var(--text-md);
+	font-weight: var(--font-semibold);
+	line-height: 1.35;
+}
+
+.gitVersionBlock[data-block="heading"][data-level="1"] .gitVersionBlockContent {
+	font-size: var(--text-xl);
+}
+
+.gitVersionBlock[data-block="item"] .gitVersionBlockContent {
+	display: grid;
+	grid-template-columns: 20px minmax(0, 1fr);
+}
+
+.gitVersionItemMarker {
+	color: var(--text-tertiary);
+}
+
+.gitVersionBlock[data-block="row"] .gitVersionBlockContent {
+	display: grid;
+	gap: 12px;
+	padding: 3px 0;
+	border-bottom: 1px solid var(--border-light);
+	font-size: var(--text-sm);
+}
+
+.gitVersionBlock[data-block="quote"] .gitVersionBlockContent {
+	padding-left: 12px;
+	border-left: 2px solid var(--border-default);
+	color: var(--text-secondary);
+}
+
+.gitVersionBlock[data-block="code"] .gitVersionBlockContent {
+	font-family: var(--font-mono);
+	font-size: var(--text-xs);
+	white-space: pre-wrap;
+}
+
+.gitVersionBlock code {
+	padding: 1px 4px;
+	border-radius: var(--radius-sm);
+	background: var(--bg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 0.86em;
+}
+
+.gitVersionLink {
+	color: var(--accent-color);
+}
+
+.gitVersionBlock ins {
+	padding: 0 2px;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--status-success-fg) 24%, transparent);
+	text-decoration: none;
+}
+
+.gitVersionBlock del {
+	padding: 0 2px;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--status-danger-fg) 20%, transparent);
+	text-decoration-color: color-mix(in srgb, var(--status-danger-fg) 60%, transparent);
+}
+
+/* "This version" reuses the note renderer without the editor's page padding. */
+.markdownEditorPane .gitVersionNote .rfNodeNoteEditorBody {
+	padding-top: 0;
+}
+
+.markdownEditorPane .gitVersionNote .tiptapContentInline {
+	padding-bottom: 80px;
+}

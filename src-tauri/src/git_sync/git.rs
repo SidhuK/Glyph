@@ -525,7 +525,9 @@ pub fn commit_file_diff(space_root: &Path, commit: &str, rel_path: &str) -> Resu
             "--find-renames".to_string(),
             "--patch".to_string(),
             "--no-color".to_string(),
-            "--unified=3".to_string(),
+            // The whole note is context: the reader needs every line to know which ones sit in a
+            // code block, and folds the unchanged runs itself.
+            "--unified=1000000".to_string(),
             commit.to_string(),
             "--".to_string(),
             rel_path.to_string(),

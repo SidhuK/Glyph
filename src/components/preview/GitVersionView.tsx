@@ -2,8 +2,9 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/shadcn/toggle-group";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { parseNoteDiff } from "../../lib/noteDiff";
 import { type GitCommitDiff, invoke } from "../../lib/tauri";
@@ -27,12 +28,14 @@ export function GitVersionView({ diff, relPath, restore, onClose }: GitVersionVi
 	const dates = useGitHistoryDates();
 	const [mode, setMode] = useState<VersionMode>("changes");
 	const { commit } = diff;
+	const { spacePath } = useSpace();
 	const versionQuery = useQuery({
-		queryKey: ["git", "history", "text", relPath, commit.hash],
+		queryKey: ["git", "history", "text", spacePath, relPath, commit.rel_path, commit.hash],
 		queryFn: () => invoke("git_history_note_text", { path: relPath, commit }),
 		enabled: mode === "version",
 		staleTime: Number.POSITIVE_INFINITY,
 	});
+	const noteDiff = useMemo(() => parseNoteDiff(diff.diff), [diff.diff]);
 	const isRestored = restore.restoredCommit?.hash === commit.hash;
 
 	return (
@@ -94,7 +97,7 @@ export function GitVersionView({ diff, relPath, restore, onClose }: GitVersionVi
 			</header>
 			{mode === "changes" ? (
 				<section className="gitVersionBody" aria-label={t("infoSidebar.history.changes")}>
-					<GitVersionChanges diff={parseNoteDiff(diff.diff)} />
+					<GitVersionChanges diff={noteDiff} />
 				</section>
 			) : (
 				<section className="gitVersionNote" aria-label={t("infoSidebar.history.thisVersion")}>
