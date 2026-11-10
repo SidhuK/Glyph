@@ -1,6 +1,6 @@
 {
 	"theme": {
-		"sectionTitle": "外観",
+		"sectionTitle": "モード",
 		"appearance": {
 			"label": "カラーモード",
 			"description": "システムに合わせるか、Glyph をライトまたはダークに固定します。",
@@ -28,7 +28,6 @@
 	"themeCards": {
 		"light": "ライトテーマ",
 		"dark": "ダークテーマ",
-		"activeSuffix": "— 使用中",
 		"groups": {
 			"default": "デフォルト",
 			"builtIn": "内蔵",

@@ -265,6 +265,8 @@ export const SidebarContent = memo(function SidebarContent({
 	const { openTagMenu } = useTagRefactor();
 	const {
 		folioMode,
+		folioScope,
+		defaultNewNoteFolder,
 		periodNotesEnabled,
 		sidebarOrder,
 		setFolioScope,
@@ -272,6 +274,12 @@ export const SidebarContent = memo(function SidebarContent({
 		archiveEnabled,
 		settingsSpacePath,
 	} = useUILayoutContext();
+	// Files › Inbox and the Inbox row are one place, so selecting either lights the row.
+	const inboxFolderSelected =
+		folioMode &&
+		settingsSpacePath === spacePath &&
+		folioScope.kind === "folder" &&
+		folioScope.folderPrefix === defaultNewNoteFolder;
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(null);
 	const [sidebarView, setSidebarView] = useState<SidebarView>({
@@ -577,7 +585,7 @@ export const SidebarContent = memo(function SidebarContent({
 									label={t("sidebar.inbox")}
 									icon={InboxIcon}
 									onClick={onOpenInbox}
-									active={activeTopSection === "inbox"}
+									active={activeTopSection === "inbox" || inboxFolderSelected}
 								/>
 							) : null}
 							{sidebarVisibility.archive && archiveEnabled && settingsSpacePath === spacePath ? (

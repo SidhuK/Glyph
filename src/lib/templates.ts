@@ -82,6 +82,13 @@ function getSpaceName(spaceRootPath: string | null | undefined): string {
 	return parts[parts.length - 1] ?? "";
 }
 
+/** Whether a note sits in the templates folder. A root templates folder ("") marks nothing,
+    since hiding it would hide every note. */
+export function isInTemplatesFolder(path: string, templatesFolder: string | null): boolean {
+	const folder = normalizeRelPath(templatesFolder ?? "");
+	return folder !== "" && normalizeRelPath(path).startsWith(`${folder}/`);
+}
+
 export function listTemplates(folder: string): Promise<TemplateEntry[]> {
 	return invoke("space_list_markdown_files", {
 		dir: folder,

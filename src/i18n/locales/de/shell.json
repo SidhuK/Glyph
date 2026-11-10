@@ -1,4 +1,8 @@
 {
+	"linkRewrite": {
+		"incomplete": "Umbenennen oder Verschieben abgeschlossen, aber einige Links konnten nicht aktualisiert werden",
+		"skipped": "Diese Dateien konnten nicht gelesen oder geschrieben werden. Ihre Links müssen eventuell manuell aktualisiert werden:\n{{paths}}"
+	},
 	"sidebar": {
 		"collapse": "Seitenleiste einklappen",
 		"expand": "Seitenleiste ausklappen",
@@ -9,6 +13,8 @@
 		"fromTemplate": "Aus Vorlage",
 		"createSection": "Erstellen",
 		"periodicNotesSection": "Periodische Notizen",
+		"newNoteInFolder": "Neue Notiz in {{folder}} erstellen",
+		"newNoteInRoot": "Neue Notiz im Stammordner des Space erstellen",
 		"pinned": "Angeheftet",
 		"allNotes": "Alle Notizen",
 		"collections": "Sammlungen",
@@ -28,11 +34,17 @@
 		"recents": "Zuletzt",
 		"noPinnedFiles": "Noch keine angehefteten Dateien.",
 		"noRecentFiles": "Keine kürzlich geöffneten Dateien.",
+		"openFolderTab": "{{folder}} öffnen",
+		"removeFolderTab": "{{folder}} aus den Schnellordnern entfernen",
+		"folderTabUpdateFailed": "Schnellordner konnten nicht aktualisiert werden",
 		"sortNotes": "Notizen sortieren",
 		"sort": "Sortieren",
 		"expandAllFolders": "Alle Ordner ausklappen",
 		"collapseAllFolders": "Alle Ordner einklappen",
-		"fileTreeOptions": "Dateibaum-Optionen"
+		"fileTreeOptions": "Dateibaum-Optionen",
+		"inbox": "Eingang",
+		"archive": "Archiv",
+		"tasks": "Aufgaben"
 	},
 	"sort": {
 		"nameAsc": "Name A–Z",
@@ -68,6 +80,8 @@
 		"clearSearch": "Suche löschen",
 		"delete": "Sammlung löschen",
 		"options": "Sammlungsoptionen",
+		"nameLabel": "Name der Sammlung",
+		"folderBreadcrumb": "Ordner der Sammlung",
 		"pin": "Sammlung anheften",
 		"searchView": "Sammlung durchsuchen",
 		"unpin": "Sammlung lösen",
@@ -95,7 +109,10 @@
 		"boardCard": {
 			"openNote": "Notiz öffnen",
 			"moveTo": "Nach {{lane}} verschieben",
-			"openHint": "Doppelklicken, um die Notiz zu öffnen"
+			"openHint": "Doppelklicken, um die Notiz zu öffnen",
+			"tagTooltip": "Tag: {{value}}",
+			"statusTooltip": "Status: {{value}}",
+			"priorityTooltip": "Priorität: {{value}}"
 		},
 		"switch": "Sammlung wechseln",
 		"select": "Sammlung auswählen",
@@ -109,7 +126,9 @@
 			"options": "Ansichtsoptionen",
 			"optionsFor": "Ansichtsoptionen für {{name}}",
 			"tabs": "Sammlungsansichten",
-			"name": "Name der Ansicht"
+			"name": "Name der Ansicht",
+			"defaultBoardName": "Board {{number}}",
+			"defaultTableName": "Tabelle {{number}}"
 		},
 		"viewOptions": {
 			"reset": "Zurücksetzen",
@@ -225,7 +244,8 @@
 			"emptyTitle": "Füge ein Feld hinzu, um Board-Spalten zu erstellen",
 			"emptyText": "Die Board-Ansicht gruppiert Notizen in Spalten. Füge deinen Notizen ein Feld wie Status, Priorität, Checkbox oder Tag hinzu und wähle es dann oben in der Werkzeugleiste aus.",
 			"openViewSettings": "Ansichtseinstellungen öffnen",
-			"noPriority": "Keine Priorität",
+			"newCard": "Neu",
+			"scrollNext": "Nächste Spalten zeigen",
 			"laneEmpty": {
 				"archived": "Archivierte Notizen landen hier",
 				"done": "Erledigte Notizen landen hier",
@@ -243,7 +263,8 @@
 			"changePriority": "Priorität ändern",
 			"editTagsHint": "Doppelklicken, um Tags zu bearbeiten",
 			"editHint": "Doppelklicken zum Bearbeiten",
-			"renameNoteHint": "Doppelklicken, um die Notiz umzubenennen"
+			"renameNoteHint": "Doppelklicken, um die Notiz umzubenennen",
+			"removeValue": "{{value}} entfernen"
 		},
 		"tagPicker": {
 			"source": "Tag-Quelle",
@@ -252,7 +273,28 @@
 			"placeholder": "Tag auswählen",
 			"empty": "Keine passenden Tags gefunden.",
 			"search": "Tags durchsuchen"
-		}
+		},
+		"status": {
+			"backlog": "Backlog",
+			"todo": "Zu erledigen",
+			"in_progress": "In Arbeit",
+			"in_review": "In Prüfung",
+			"blocked": "Blockiert",
+			"waiting": "Wartend",
+			"done": "Erledigt",
+			"canceled": "Abgebrochen",
+			"archived": "Archiviert"
+		},
+		"priority": {
+			"no": "Keine Priorität",
+			"low": "Niedrig",
+			"medium": "Mittel",
+			"high": "Hoch"
+		},
+		"table": {
+			"empty": "Keine passenden Notizen"
+		},
+		"newNote": "Neu"
 	},
 	"tags": {
 		"header": "Tags",
@@ -322,9 +364,13 @@
 			"title": "Dateidarstellung auswählen",
 			"updateFailed": "Dateidarstellung konnte nicht aktualisiert werden"
 		},
+		"addFolderTab": "Zu Schnellordnern hinzufügen",
+		"removeFolderTab": "Aus Schnellordnern entfernen",
 		"addFile": "Datei hinzufügen",
 		"createFromTemplate": "Aus Vorlage erstellen",
 		"addFolder": "Ordner hinzufügen",
+		"importFilesHere": "Dateien hierher importieren…",
+		"importFolderHere": "Ordner hierher importieren…",
 		"deleteFile": "Datei löschen",
 		"deleteFolder": "Ordner löschen",
 		"copyDeeplink": "Deeplink kopieren",
@@ -337,6 +383,21 @@
 		"spaceNotFound": "Dieser Space wurde nicht gefunden.",
 		"noteNotFound": "Diese Notiz wurde nicht gefunden.",
 		"noteNotMarkdown": "Dieser Link verweist nicht auf eine Markdown-Notiz."
+	},
+	"import": {
+		"filesTitle": "Dateien importieren",
+		"folderTitle": "Ordner importieren",
+		"markdownFilter": "Markdown-Dateien",
+		"conflictTitle": "Elemente existieren bereits",
+		"conflictMessage_one": "1 Element existiert bereits in diesem Ordner. Wende die gewählte Aktion auf diesen Konflikt an.",
+		"conflictMessage_other": "{{count}} Elemente existieren bereits in diesem Ordner. Wende die gewählte Aktion auf alle Konflikte an.",
+		"keepBoth": "Beide behalten",
+		"replace": "Ersetzen",
+		"skip": "Überspringen",
+		"errorTitle": "Import fehlgeschlagen",
+		"success_one": "1 Datei importiert.",
+		"success_other": "{{count}} Dateien importiert.",
+		"noneImported": "Es wurden keine Dateien importiert."
 	},
 	"emptyState": {
 		"commandPalettePrompt": "Drücke <shortcut/>, um loszulegen",
@@ -377,7 +438,10 @@
 		"footer": {
 			"navigate": "Navigieren",
 			"open": "Öffnen",
-			"close": "Schließen"
+			"close": "Schließen",
+			"change": "Ändern",
+			"options": "Optionen",
+			"toggle": "Umschalten"
 		},
 		"groups": {
 			"command": "Befehle",
@@ -390,7 +454,8 @@
 			"person": "Personen",
 			"database": "Sammlungen und Datenbanken",
 			"template": "Vorlagen"
-		}
+		},
+		"lineNumber": "Z. {{line}}"
 	},
 	"calendar": {
 		"title": "Kalender",
@@ -417,6 +482,13 @@
 	"tabs": {
 		"allNotes": "Alle Notizen",
 		"collections": "Sammlungen",
+		"pinTab": "Aktiven Tab anheften",
+		"unpinTab": "Aktiven Tab lösen",
+		"unpinNamed": "{{label}} lösen",
+		"newTab": "Neuer Tab",
+		"untitled": "Ohne Titel",
+		"openBlankTab": "Leeren Tab öffnen",
+		"showAllTabs": "Alle Tabs anzeigen",
 		"goBack": "Zurück",
 		"goForward": "Vorwärts",
 		"closeNamed": "{{label}} schließen",
@@ -439,6 +511,39 @@
 			"loadFailed": "Modelle konnten nicht geladen werden",
 			"empty": "Keine Modelle verfügbar",
 			"retry": "Erneut versuchen"
+		},
+		"panel": {
+			"recentChats": "Letzte Chats",
+			"newChat": "Neuer Chat",
+			"settings": "KI-Einstellungen",
+			"close": "KI-Bereich schließen",
+			"scrollToLatest": "Zum Neuesten scrollen",
+			"untitledChat": "Unbenannter Chat",
+			"noHistory": "Noch keine Chats"
+		},
+		"thread": {
+			"emptyTitle": "Sprich mit deinen Notizen",
+			"emptyHint": "Frag ganz natürlich oder füge mit <code>@</code> Notizen und Ordner zum Gespräch hinzu",
+			"shaping": "Dein Gedanke nimmt Form an",
+			"responseFailed": "Antwort fehlgeschlagen",
+			"retry": "Erneut versuchen",
+			"retryResponse": "Antwort erneut erzeugen",
+			"copyResponse": "Antwort kopieren",
+			"saveResponse": "Antwort als Datei speichern",
+			"citations": "Quellen",
+			"footnotes": "Fußnotenverweise",
+			"citedNotes": "Zitierte Notizen"
+		},
+		"composer": {
+			"placeholder": "Frag zu deinen Notizen · @ für Kontext",
+			"message": "Nachricht",
+			"mention": "Notiz mit @ hinzufügen",
+			"send": "Senden",
+			"stop": "Stoppen",
+			"searchContext": "Dateien & Ordner durchsuchen…",
+			"searchHint": "Tippe, um Dateien & Ordner zu suchen",
+			"noResults": "Keine Ergebnisse",
+			"space": "Space"
 		}
 	},
 	"connections": {
@@ -499,6 +604,47 @@
 		"loadError": "Zeichenfläche konnte nicht geöffnet werden: {{message}}",
 		"invalidAgentCanvas": "der glyphCanvas-Block enthält einen ungültigen Knoten oder eine ungültige Kante",
 		"saveError": "Zeichenfläche konnte nicht gespeichert werden: {{message}}"
+	},
+	"tasks": {
+		"searchPlaceholder": "Aufgaben filtern",
+		"scope": "Aufgaben anzeigen aus",
+		"scopeAll": "Alle Notizen",
+		"scopeFolder": "Ordner",
+		"scopeTag": "Tag",
+		"folder": "Ordner",
+		"allFolders": "Alle Ordner",
+		"foldersLoadFailed": "Ordner konnten nicht geladen werden: {{message}}",
+		"retry": "Erneut versuchen",
+		"tag": "Tag",
+		"allTags": "Alle Tags",
+		"empty": "Keine offenen Aufgaben. Checklistenpunkte aus deinen Notizen erscheinen hier.",
+		"emptyScope": "Keine offenen Aufgaben in diesem Ordner oder Tag.",
+		"emptySearch": "Keine offenen Aufgaben passen zu deiner Suche.",
+		"clearSearch": "Suche löschen",
+		"showAllNotes": "Alle Notizen anzeigen",
+		"openTasks_one": "{{count}} offene Aufgabe",
+		"openTasks_other": "{{count}} offene Aufgaben",
+		"noteCount_one": "{{count}} Notiz",
+		"noteCount_other": "{{count}} Notizen",
+		"collapseAll": "Alle einklappen",
+		"groupStateSaveFailed": "Aufgeklappte Notizen konnten nicht gespeichert werden",
+		"expandAll": "Alle ausklappen",
+		"collapseNote": "{{title}} einklappen",
+		"expandNote": "{{title}} ausklappen",
+		"loadError": "Aufgaben konnten nicht geladen werden: {{message}}",
+		"markDone": "„{{task}}“ als erledigt markieren",
+		"markNotDone": "„{{task}}“ als nicht erledigt markieren",
+		"openNote": "{{title}} öffnen",
+		"progress": "{{completed}} von {{total}} Aufgaben erledigt",
+		"fraction": "{{completed}}/{{total}}",
+		"toggleFailed": "Die Aufgabe konnte nicht aktualisiert werden",
+		"conflictChanged": "Die Notiz hat sich seit dem Laden der Liste geändert. Versuche es erneut.",
+		"conflictRolledOver": "Diese Aufgabe wurde in eine andere Notiz übertragen.",
+		"indexFailed": "Aufgabe gespeichert, aber der Suchindex konnte nicht aktualisiert werden.",
+		"sort": "Aufgaben sortieren nach",
+		"sortRecent": "Zuletzt bearbeitet",
+		"sortMostOpen": "Meiste offene Aufgaben",
+		"sortTitle": "Titel"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Symbole suchen",
@@ -562,8 +708,31 @@
 		"expand": "Kalender ausklappen"
 	},
 	"breadcrumbs": {
+		"label": "Aktueller Dateipfad",
 		"space": "Space",
-		"emptyFolder": "Leerer Ordner"
+		"browse": "{{name}} durchsuchen",
+		"emptyFolder": "Leerer Ordner",
+		"loading": "Wird geladen…",
+		"moreItems": "+{{count}} weitere",
+		"showHidden": "Ausgeblendete Pfadelemente anzeigen",
+		"hiddenItems_one": "1 ausgeblendetes Pfadelement",
+		"hiddenItems_other": "{{count}} ausgeblendete Pfadelemente",
+		"revealInFileTree": "Im Dateibaum anzeigen",
+		"showInFinderFailed": "Datei konnte nicht im Finder angezeigt werden"
+	},
+	"workspace": {
+		"openSpace": "Space öffnen",
+		"openAnotherSpace": "Anderen Space öffnen",
+		"switchSaveFailed": "Der aktuelle Space konnte nicht gespeichert werden. Bitte versuche es erneut."
+	},
+	"documentExport": {
+		"untitled": "Ohne Titel",
+		"docxDialogTitle": "Notiz als Word exportieren",
+		"docxFormat": "Word-Dokument",
+		"docxComplete": "Notiz als Word exportiert.",
+		"pdfFailed": "Die Notiz konnte nicht als PDF exportiert werden",
+		"docxFailed": "Die Notiz konnte nicht als Word exportiert werden",
+		"tryAgain": "Versuche es gleich noch einmal."
 	},
 	"quickNoteTarget": {
 		"today": "Heutige Schnellnotiz",
@@ -572,6 +741,10 @@
 		"resetToToday": "Auf die heutige Schnellnotiz zurücksetzen"
 	},
 	"gitSync": {
+		"commitTitle": "Mit Git synchronisieren",
+		"commitDescription": "Füge optional eine Nachricht zum lokalen Commit dieser manuellen Synchronisierung hinzu.",
+		"commitMessagePlaceholder": "Optional. Standard: Glyph sync",
+		"cancel": "Abbrechen",
 		"interval": {
 			"label": "Intervall",
 			"description": "Wie oft Glyph geplante Synchronisierungen ausführt.",
@@ -591,11 +764,66 @@
 			}
 		},
 		"sync": "Jetzt synchronisieren",
+		"manualCommitMessages": "Commit-Nachrichten bei manueller Synchronisierung",
+		"manualCommitMessagesDescription": "Vor jeder manuellen Synchronisierung nach einer Nachricht fragen. Wenn aus, verwendet Glyph „Glyph sync“.",
 		"resumeAutoSync": "Automatische Synchronisierung fortsetzen",
 		"remote": "Remote",
 		"actions": "Aktionen"
 	},
 	"activity": {
+		"recentActivity": "Letzte Notizaktivität",
+		"daySummary_one": "{{count}} Notiz am {{date}}",
+		"daySummary_other": "{{count}} Notizen am {{date}}",
+		"today": "Heute",
+		"yesterday": "Gestern",
+		"noteCount_one": "{{count}} Notiz",
+		"noteCount_other": "{{count}} Notizen",
+		"summaryHint": "Umfasst Erstellungsdaten und letzte Bearbeitungsdaten von Notizen.",
+		"less": "Weniger",
+		"more": "Mehr",
+		"pastYear": "Letztes Jahr",
+		"previousPeriod": "Vorheriges Jahr",
+		"nextPeriod": "Nächstes Jahr",
+		"notesCount_one": "{{count}} Notiz erstellt oder bearbeitet",
+		"notesCount_other": "{{count}} Notizen erstellt oder bearbeitet",
+		"activeDays_one": "{{count}} aktiver Tag",
+		"activeDays_other": "{{count}} aktive Tage",
+		"noActivityInPeriod": "In diesem Zeitraum wurden keine Notizen erstellt oder bearbeitet",
+		"createdCount_one": "{{count}} erstellt",
+		"createdCount_other": "{{count}} erstellt",
+		"editedCount_one": "{{count}} bearbeitet",
+		"editedCount_other": "{{count}} bearbeitet",
+		"noActivityOnDay": "Keine Notizen",
+		"moreNotes_one": "{{count}} weitere",
+		"moreNotes_other": "{{count}} weitere",
+		"selectDayHint": "Klicken, um diese Notizen anzuzeigen",
+		"showAllNotes": "Alle Notizen anzeigen",
+		"empty": "Noch keine Aktivität. Erstelle oder bearbeite eine Notiz, um die Zeitleiste zu starten.",
+		"loadError": "Aktivität konnte nicht geladen werden: {{message}}",
+		"loadOlder": "Ältere Notizen laden",
+		"loadingOlder": "Wird geladen…",
 		"noPreviewYet": "Noch keine Vorschau"
+	},
+	"noteCollections": {
+		"loading": "Notizen werden geladen…",
+		"noFiles": "Keine Dateien gefunden.",
+		"enableArchive": "Archiv in den Space-Einstellungen aktivieren",
+		"configureInbox": "Eingang einrichten",
+		"archive": "Archivieren",
+		"unarchive": "Wiederherstellen",
+		"archived": "Archiviert",
+		"archivedTooltip": "Archiviert. Klicken zum Wiederherstellen.",
+		"undo": "Rückgängig",
+		"archivedCount_one": "{{count}} Notiz archiviert",
+		"archivedCount_other": "{{count}} Notizen archiviert",
+		"restoredCount_one": "{{count}} Notiz wiederhergestellt",
+		"restoredCount_other": "{{count}} Notizen wiederhergestellt",
+		"partialFailure": "Einige Notizen konnten nicht aktualisiert werden",
+		"actionFailed": "Notizen konnten nicht aktualisiert werden",
+		"unsaved": "Speichere deine ausstehenden Änderungen, bevor du fortfährst.",
+		"spaceChanged": "Der geöffnete Space hat sich geändert. Versuche es erneut.",
+		"retry": "Erneut versuchen",
+		"inboxEmpty": "Dein Eingang ist leer.",
+		"archiveEmpty": "Keine archivierten Notizen."
 	}
 }

@@ -279,6 +279,10 @@
 			"priority": "優先度"
 		}
 	},
+	"properties": {
+		"label": "プロパティ",
+		"add": "プロパティを追加"
+	},
 	"infoSidebar": {
 		"panelLabel": "ノート情報パネル",
 		"sidebarTabsLabel": "ノートサイドバー",
@@ -287,7 +291,9 @@
 		"close": "情報パネルを閉じる",
 		"stats": {
 			"tasks": "タスク",
-			"tasksDone": "{{total}} 件中 {{completed}} 件完了"
+			"tasksDone": "{{total}} 件中 {{completed}} 件完了",
+			"fileModified": "ファイルの更新日",
+			"fileCreated": "ファイルの作成日"
 		}
 	}
 }

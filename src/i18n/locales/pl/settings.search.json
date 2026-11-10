@@ -183,7 +183,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Tryb kolorów",
-			"section": "Wygląd",
+			"section": "Tryb",
 			"description": "Wybierz tryb systemowy, jasny lub ciemny.",
 			"keywords": ["tryb", "systemowy", "jasny", "ciemny"]
 		},
@@ -201,7 +201,7 @@
 		},
 		"appearance-translucent-app": {
 			"title": "Półprzezroczysty pasek boczny",
-			"section": "Wygląd",
+			"section": "Tryb",
 			"keywords": ["okno", "szkło", "rozmycie", "przezroczysty"]
 		},
 		"appearance-custom-themes": {

@@ -279,6 +279,10 @@
 			"priority": "Prioridad"
 		}
 	},
+	"properties": {
+		"label": "Propiedades",
+		"add": "Añadir propiedad"
+	},
 	"infoSidebar": {
 		"panelLabel": "Panel de información de la nota",
 		"sidebarTabsLabel": "Barra lateral de la nota",
@@ -287,7 +291,9 @@
 		"close": "Cerrar panel de información",
 		"stats": {
 			"tasks": "Tareas",
-			"tasksDone": "{{completed}} de {{total}} hechas"
+			"tasksDone": "{{completed}} de {{total}} hechas",
+			"fileModified": "Archivo modificado",
+			"fileCreated": "Archivo creado"
 		}
 	}
 }

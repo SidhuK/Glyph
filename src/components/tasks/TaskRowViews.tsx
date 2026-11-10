@@ -38,10 +38,14 @@ export function TaskNoteRow({
 	context: TaskRowContext;
 }) {
 	const { t } = useTranslation("shell");
-	const { group, openCount, collapsed } = row;
+	const { group, openCount, collapsed, afterExpanded } = row;
 	const title = noteTitle(group);
 	return (
-		<div className="tasksNoteRow" data-collapsed={collapsed ? "true" : undefined}>
+		<div
+			className="tasksNoteRow"
+			data-collapsed={collapsed ? "true" : undefined}
+			data-after-expanded={afterExpanded ? "true" : undefined}
+		>
 			{context.needle ? (
 				// Search shows matches inside every group, so there is nothing to toggle; keep the gutter.
 				<span className="tasksChevron" aria-hidden="true" />

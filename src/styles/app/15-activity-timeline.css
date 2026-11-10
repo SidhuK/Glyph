@@ -10,16 +10,16 @@
 	padding: calc(var(--header-height) + 28px) clamp(40px, 4vw, 56px) clamp(34px, 5vw, 64px);
 	background: var(--bg-primary);
 	gap: 26px;
+	/* Rows fade out at the window's bottom edge instead of being cut mid-glyph. */
+	mask-image: linear-gradient(to top, transparent, #000 var(--scroll-fade-size));
 }
 
 .activityTimelineHeader {
 	width: var(--activity-content-width);
 }
 
+/* The page title recipe: --text-xl, semibold, primary ink, no icon. */
 .activityTimelineTitle {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
 	font-size: var(--text-xl);
 	line-height: 1.2;
 	letter-spacing: -0.015em;
@@ -28,22 +28,23 @@
 	text-wrap: balance;
 }
 
-.activityTimelineTitle svg {
-	flex: 0 0 auto;
-	color: var(--text-secondary);
-}
-
 .activityHeatmapBlock {
 	--activity-heatmap-gap: 3px;
 	/* Empty days barely lift off the page so only active days read, not the grid. */
 	--activity-heatmap-level-0: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
 	--activity-heatmap-ink: var(--interactive-accent);
-	/* Evenly spaced ink shares for levels 1-4. The top step stops near half ink in both themes, so
-	   the busiest days stay lighter than the page title instead of reading as solid blocks. */
-	--activity-heatmap-step-1: 11.25%;
-	--activity-heatmap-step-2: 22.5%;
-	--activity-heatmap-step-3: 33.75%;
-	--activity-heatmap-step-4: 45%;
+	/* Ink shares for levels 1-4, mixed in oklab so every level stays on the accent's hue. The
+	   first step clears the empty cell and the top step reaches 3:1 against the page. */
+	--activity-heatmap-step-1: 16%;
+	--activity-heatmap-step-2: 32%;
+	--activity-heatmap-step-3: 50%;
+	--activity-heatmap-step-4: 70%;
+	/* Whole pixels, so every column and gap is the same width. The legend uses the same cell. */
+	--activity-heatmap-cell: clamp(
+		10px,
+		round(down, calc((100cqi - 44px) / 53 - var(--activity-heatmap-gap)), 1px),
+		15px
+	);
 
 	display: flex;
 	width: var(--activity-content-width);
@@ -55,10 +56,6 @@
 
 .dark .activityHeatmapBlock {
 	--activity-heatmap-level-0: color-mix(in srgb, var(--text-primary) 5%, var(--bg-primary));
-	--activity-heatmap-step-1: 12.5%;
-	--activity-heatmap-step-2: 25%;
-	--activity-heatmap-step-3: 37.5%;
-	--activity-heatmap-step-4: 50%;
 }
 
 .activityHeatmapToolbar {
@@ -76,11 +73,13 @@
 	font-variant-numeric: tabular-nums;
 }
 
+/* The next chevron's glyph, not its button, ends on the grid's right edge. */
 .activityHeatmapPeriod {
 	display: inline-flex;
 	flex: 0 0 auto;
 	align-items: center;
 	gap: 2px;
+	margin-right: -6px;
 }
 
 .activityHeatmapPeriod .calendarNavButton:disabled {
@@ -102,12 +101,6 @@
 /* Row-reverse anchors overflow at the end, so narrow panes open scrolled to today. The grid's
    ring padding hangs outside the block, so the last week ends on the timeline's right edge. */
 .activityHeatmapScroller {
-	--activity-heatmap-cell: clamp(
-		10px,
-		calc((100cqi - 44px) / 53 - var(--activity-heatmap-gap)),
-		15px
-	);
-
 	display: flex;
 	flex-direction: row-reverse;
 	margin-inline: -3px;
@@ -170,8 +163,11 @@
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 40%, transparent);
 }
 
+/* Today is an offset neutral ring, the selection ring's geometry, so its fill stays readable. */
 .activityHeatmapCell[data-today="true"] {
-	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text-primary) 60%, transparent);
+	box-shadow:
+		0 0 0 1.5px var(--bg-primary),
+		0 0 0 2.5px var(--text-secondary);
 }
 
 .activityHeatmapCell[aria-selected="true"] {
@@ -190,7 +186,7 @@
 .activityHeatmapCell[data-level="1"],
 .activityHeatmapLegendCell[data-level="1"] {
 	background: color-mix(
-		in oklch,
+		in oklab,
 		var(--activity-heatmap-ink) var(--activity-heatmap-step-1),
 		var(--activity-heatmap-level-0)
 	);
@@ -199,7 +195,7 @@
 .activityHeatmapCell[data-level="2"],
 .activityHeatmapLegendCell[data-level="2"] {
 	background: color-mix(
-		in oklch,
+		in oklab,
 		var(--activity-heatmap-ink) var(--activity-heatmap-step-2),
 		var(--activity-heatmap-level-0)
 	);
@@ -208,7 +204,7 @@
 .activityHeatmapCell[data-level="3"],
 .activityHeatmapLegendCell[data-level="3"] {
 	background: color-mix(
-		in oklch,
+		in oklab,
 		var(--activity-heatmap-ink) var(--activity-heatmap-step-3),
 		var(--activity-heatmap-level-0)
 	);
@@ -217,7 +213,7 @@
 .activityHeatmapCell[data-level="4"],
 .activityHeatmapLegendCell[data-level="4"] {
 	background: color-mix(
-		in oklch,
+		in oklab,
 		var(--activity-heatmap-ink) var(--activity-heatmap-step-4),
 		var(--activity-heatmap-level-0)
 	);
@@ -234,8 +230,8 @@
 }
 
 .activityHeatmapLegendCell {
-	width: 11px;
-	height: 11px;
+	width: var(--activity-heatmap-cell);
+	height: var(--activity-heatmap-cell);
 }
 
 .activityHeatmapPreview {
@@ -382,18 +378,19 @@
 	left: 11px;
 	bottom: -32px;
 	width: 1px;
-	background: var(--border-light);
+	background: var(--border-default);
 }
 
+/* A 6px dot centred on the rail; today's is primary ink. */
 .activityDayRail::after {
 	content: "";
 	position: absolute;
-	top: 8px;
-	left: 8px;
-	width: 7px;
-	height: 7px;
+	top: 8.5px;
+	left: 8.5px;
+	width: 6px;
+	height: 6px;
 	border-radius: 50%;
-	background: var(--border-strong);
+	background: var(--text-tertiary);
 }
 
 .activityVirtualRow:last-child .activityDayRail::before {
@@ -480,7 +477,7 @@
 	}
 
 	.activityDayRail::after {
-		left: 5px;
+		left: 5.5px;
 	}
 
 	.activityDayHeader {

@@ -1083,6 +1083,7 @@ interface TauriCommands {
 			| { kind: "error"; target: string; message: string }
 		)[]
 	>;
+	space_missing_wikilinks_batch: CommandDef<{ targets: string[] }, string[]>;
 	space_resolve_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_image_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_markdown_link: CommandDef<{ href: string; sourcePath: string }, string | null>;

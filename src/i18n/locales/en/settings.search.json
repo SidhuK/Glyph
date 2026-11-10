@@ -178,7 +178,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Color mode",
-			"section": "Appearance",
+			"section": "Mode",
 			"description": "Choose system, light, or dark mode.",
 			"keywords": ["mode", "system", "light", "dark"]
 		},
@@ -196,7 +196,7 @@
 		},
 		"appearance-translucent-app": {
 			"title": "Translucent sidebar",
-			"section": "Appearance",
+			"section": "Mode",
 			"keywords": ["window", "glass", "blur", "translucent"]
 		},
 		"appearance-custom-themes": {

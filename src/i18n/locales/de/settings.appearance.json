@@ -1,6 +1,6 @@
 {
 	"theme": {
-		"sectionTitle": "Darstellung",
+		"sectionTitle": "Modus",
 		"appearance": {
 			"label": "Farbmodus",
 			"description": "Dem System folgen oder Glyph auf Hell- oder Dunkelmodus festlegen.",
@@ -28,7 +28,6 @@
 	"themeCards": {
 		"light": "Helles Design",
 		"dark": "Dunkles Design",
-		"activeSuffix": "— Aktiv",
 		"groups": {
 			"default": "Standard",
 			"builtIn": "Integriert",

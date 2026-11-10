@@ -7,7 +7,7 @@ import type { TaskRow } from "./buildTaskRows";
 /** Narrowest fraction column, in `ch` (fits "0/1"). */
 const MIN_FRACTION_CH = 3;
 
-const ROW_ESTIMATES = { note: 48, heading: 26, task: 28 } satisfies Record<TaskRow["kind"], number>;
+const ROW_ESTIMATES = { note: 45, heading: 26, task: 28 } satisfies Record<TaskRow["kind"], number>;
 
 interface TasksListProps {
 	rows: TaskRow[];

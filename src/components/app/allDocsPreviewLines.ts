@@ -18,6 +18,33 @@ function plainText(markdown: string): string {
 	return normalizeInlineMarkdown(markdown.replace(MARKDOWN_ESCAPE, "$1"));
 }
 
+const TEMPLATE_PLACEHOLDER = /\{\{[^}]*\}\}/g;
+const NON_WORD = /[\p{Extended_Pictographic}\p{P}\p{S}\p{M}\p{Cf}\s]+/gu;
+
+/** Lowercase words only: no emoji (or their joiners and selectors), `{{…}}` placeholders,
+    punctuation or extra spaces. */
+function comparableText(text: string): string {
+	return text.replace(TEMPLATE_PLACEHOLDER, " ").replace(NON_WORD, " ").trim().toLowerCase();
+}
+
+export function titleFromPath(notePath: string): string {
+	const fileName = notePath.split("/").pop() ?? notePath;
+	return fileName.replace(/\.md$/i, "");
+}
+
+/** A frontmatter title wins; a title that is only the file name gives way to a leading H1,
+    which keeps characters the file name had to sanitise. */
+export function noteDisplayTitle(note: { note_path: string; title: string; preview: string }) {
+	const indexedTitle = note.title.trim();
+	const fileTitle = titleFromPath(note.note_path);
+	if (indexedTitle && indexedTitle !== fileTitle) return indexedTitle;
+	const heading = note.preview
+		.trimStart()
+		.split("\n", 1)[0]
+		?.match(/^#\s+(.+)$/)?.[1];
+	return (heading && plainText(heading)) || indexedTitle || fileTitle;
+}
+
 function pushPreviewLine(parsed: PreviewLine[], kind: PreviewLineKind, markdown: string) {
 	const text = plainText(markdown);
 	if (text) parsed.push({ key: `${kind}:${parsed.length}:${text}`, kind, text });
@@ -27,7 +54,7 @@ function pushPreviewLine(parsed: PreviewLine[], kind: PreviewLineKind, markdown:
 export function previewLines(preview: string, title: string): PreviewLine[] {
 	const lines = preview.replace(/\r\n?/g, "\n").split("\n");
 	const parsed: PreviewLine[] = [];
-	const normalizedTitle = plainText(title).toLowerCase();
+	const comparableTitle = comparableText(plainText(title));
 	let inFence = false;
 	let inComment = false;
 
@@ -91,5 +118,15 @@ export function previewLines(preview: string, title: string): PreviewLine[] {
 		pushPreviewLine(parsed, "body", line);
 	}
 
-	return parsed.filter((line) => !(normalizedTitle && line.text.toLowerCase() === normalizedTitle));
+	if (!comparableTitle) return parsed;
+	return parsed.filter((line, index) => {
+		const text = comparableText(line.text);
+		if (text === comparableTitle) return false;
+		// A leading heading that restates the title, longer or cut short, is the title again.
+		return !(
+			index === 0 &&
+			line.kind === "heading" &&
+			(text.startsWith(`${comparableTitle} `) || comparableTitle.startsWith(`${text} `))
+		);
+	});
 }

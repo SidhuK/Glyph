@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import { getProviderLogoSrc } from "./providerLogos";
 import type { useAiHistory } from "./useAiHistory";
@@ -10,11 +11,12 @@ interface AIHistoryPanelProps {
 
 export function AIHistoryPanel({ history, onLoadHistory }: AIHistoryPanelProps) {
 	const isDark = useIsDarkTheme();
+	const { t } = useTranslation("shell");
 
 	return (
 		<div className="aiHistory">
 			<div className="aiHistoryHeader">
-				<span>Recent chats</span>
+				<span>{t("ai.panel.recentChats")}</span>
 			</div>
 			<div className="aiHistoryList">
 				{history.summaries.length > 0 ? (
@@ -26,7 +28,7 @@ export function AIHistoryPanel({ history, onLoadHistory }: AIHistoryPanelProps) 
 							onClick={() => onLoadHistory(item.job_id)}
 							disabled={history.loadingJobId === item.job_id}
 						>
-							<div className="aiHistoryItemTitle">{item.title || "Untitled chat"}</div>
+							<div className="aiHistoryItemTitle">{item.title || t("ai.panel.untitledChat")}</div>
 							{item.provider ? (
 								<img
 									className="aiHistoryProviderIcon"
@@ -38,7 +40,7 @@ export function AIHistoryPanel({ history, onLoadHistory }: AIHistoryPanelProps) 
 						</button>
 					))
 				) : history.listLoading ? null : (
-					<div className="aiHistoryEmpty">No chat history yet</div>
+					<div className="aiHistoryEmpty">{t("ai.panel.noHistory")}</div>
 				)}
 			</div>
 		</div>

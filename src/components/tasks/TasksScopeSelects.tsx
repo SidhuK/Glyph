@@ -1,4 +1,4 @@
-import { Folder01Icon, InboxIcon, Tag01Icon } from "@hugeicons/core-free-icons";
+import { Files02Icon, Folder01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -62,7 +62,7 @@ export function TasksScopeSelects({
 				aria-label={t("tasks.scope")}
 				value={scopeKind}
 				options={[
-					{ value: "all", label: t("tasks.scopeAll"), icon: <SelectIcon icon={InboxIcon} /> },
+					{ value: "all", label: t("tasks.scopeAll"), icon: <SelectIcon icon={Files02Icon} /> },
 					{
 						value: "folder",
 						label: t("tasks.scopeFolder"),

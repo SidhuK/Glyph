@@ -34,18 +34,19 @@
 	--editor-inline-font-size: var(--editor-font-size);
 	--editor-raw-font-size: var(--editor-font-size);
 	--editor-h1-font-size: calc(var(--editor-font-size) * 1.85);
-	--editor-h2-font-size: calc(var(--editor-font-size) * 1.3);
-	--editor-h3-font-size: calc(var(--editor-font-size) * 1.1);
+	--editor-h2-font-size: calc(var(--editor-font-size) * 1.45);
+	--editor-h3-font-size: calc(var(--editor-font-size) * 1.2);
 	--editor-h4-font-size: var(--editor-font-size);
 	--editor-h5-font-size: calc(var(--editor-font-size) * 0.9);
 	--editor-h6-font-size: calc(var(--editor-font-size) * 0.9);
-	--icon-xs: calc(var(--text-base) * 0.8);
-	--icon-sm: calc(var(--text-base) * 0.9);
-	--icon-md: var(--text-base);
-	--icon-lg: calc(var(--text-base) * 1.1);
-	--icon-xl: calc(var(--text-base) * 1.3);
-	--icon-2xl: calc(var(--text-base) * 1.7);
-	--icon-3xl: calc(var(--text-base) * 2.3);
+	/* Whole pixels at every UI base, so 1.5px strokes on the 24 grid land on the pixel grid. */
+	--icon-xs: round(calc(var(--text-base) * 0.8), 1px);
+	--icon-sm: round(calc(var(--text-base) * 0.9), 1px);
+	--icon-md: round(var(--text-base), 1px);
+	--icon-lg: round(calc(var(--text-base) * 8 / 7), 1px);
+	--icon-xl: round(calc(var(--text-base) * 9 / 7), 1px);
+	--icon-2xl: round(calc(var(--text-base) * 1.7), 1px);
+	--icon-3xl: round(calc(var(--text-base) * 2.3), 1px);
 
 	--leading-snug: 1.35;
 	--leading-normal: 1.5;

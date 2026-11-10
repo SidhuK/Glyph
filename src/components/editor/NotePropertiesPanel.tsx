@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useStatusPropertyColors } from "../../hooks/useStatusPropertyColors";
 import type { NoteProperty, TagCount } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
@@ -36,6 +37,7 @@ export function NotePropertiesPanel({
 	onChange,
 	onErrorChange,
 }: NotePropertiesPanelProps) {
+	const { t } = useTranslation("editor");
 	const [mode, setMode] = useState<"properties" | "raw">("properties");
 	const [editorState, setEditorState] = useState<NotePropertiesEditorState>({
 		properties: [],
@@ -263,8 +265,10 @@ export function NotePropertiesPanel({
 									)
 								}
 							>
-								<Plus size="var(--icon-sm)" />
-								Add property
+								<span className="notePropertyAddIcon" aria-hidden="true">
+									<Plus size="var(--icon-sm)" />
+								</span>
+								{t("properties.add")}
 							</Button>
 						</div>
 					) : null}

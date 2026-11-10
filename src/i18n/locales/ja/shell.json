@@ -1,4 +1,8 @@
 {
+	"linkRewrite": {
+		"incomplete": "名前の変更または移動は完了しましたが、一部のリンクを更新できませんでした",
+		"skipped": "これらのファイルを読み書きできませんでした。リンクを手動で更新する必要があるかもしれません:\n{{paths}}"
+	},
 	"sidebar": {
 		"collapse": "サイドバーを折りたたむ",
 		"expand": "サイドバーを展開",
@@ -9,6 +13,8 @@
 		"fromTemplate": "テンプレートから",
 		"createSection": "作成",
 		"periodicNotesSection": "定期ノート",
+		"newNoteInFolder": "{{folder}} に新規ノートを作成",
+		"newNoteInRoot": "スペースのルートに新規ノートを作成",
 		"pinned": "ピン留め",
 		"allNotes": "すべてのノート",
 		"collections": "コレクション",
@@ -28,11 +34,17 @@
 		"recents": "最近使った項目",
 		"noPinnedFiles": "ピン留めされたファイルはありません。",
 		"noRecentFiles": "最近使ったファイルはありません。",
+		"openFolderTab": "{{folder}} を開く",
+		"removeFolderTab": "{{folder}} をクイックフォルダから削除",
+		"folderTabUpdateFailed": "クイックフォルダを更新できませんでした",
 		"sortNotes": "ノートを並べ替え",
 		"sort": "並べ替え",
 		"expandAllFolders": "すべてのフォルダを展開",
 		"collapseAllFolders": "すべてのフォルダを折りたたむ",
-		"fileTreeOptions": "ファイルツリーのオプション"
+		"fileTreeOptions": "ファイルツリーのオプション",
+		"inbox": "インボックス",
+		"archive": "アーカイブ",
+		"tasks": "タスク"
 	},
 	"sort": {
 		"nameAsc": "名前 A–Z",
@@ -68,6 +80,8 @@
 		"clearSearch": "検索をクリア",
 		"delete": "コレクションを削除",
 		"options": "コレクションのオプション",
+		"nameLabel": "コレクション名",
+		"folderBreadcrumb": "コレクションのフォルダ",
 		"pin": "コレクションをピン留め",
 		"searchView": "コレクションを検索",
 		"unpin": "コレクションのピン留めを解除",
@@ -94,7 +108,10 @@
 		"boardCard": {
 			"openNote": "ノートを開く",
 			"moveTo": "{{lane}} に移動",
-			"openHint": "ダブルクリックでノートを開く"
+			"openHint": "ダブルクリックでノートを開く",
+			"tagTooltip": "タグ: {{value}}",
+			"statusTooltip": "ステータス: {{value}}",
+			"priorityTooltip": "優先度: {{value}}"
 		},
 		"switch": "コレクションを切り替え",
 		"select": "コレクションを選択",
@@ -108,7 +125,9 @@
 			"options": "ビューのオプション",
 			"optionsFor": "{{name}} のビューオプション",
 			"tabs": "コレクションのビュー",
-			"name": "ビュー名"
+			"name": "ビュー名",
+			"defaultBoardName": "ボード {{number}}",
+			"defaultTableName": "テーブル {{number}}"
 		},
 		"viewOptions": {
 			"reset": "リセット",
@@ -224,7 +243,8 @@
 			"emptyTitle": "フィールドを追加してボードのレーンを作成",
 			"emptyText": "ボードビューはノートをレーンにまとめます。ステータス、優先度、チェックボックス、タグなどのフィールドをノートに追加し、上のツールバーで選択してください。",
 			"openViewSettings": "ビューの設定を開く",
-			"noPriority": "優先度なし",
+			"newCard": "新規",
+			"scrollNext": "次のレーンを表示",
 			"laneEmpty": {
 				"archived": "アーカイブしたノートはここに入ります",
 				"done": "完了したノートはここに入ります",
@@ -242,7 +262,8 @@
 			"changePriority": "優先度を変更",
 			"editTagsHint": "ダブルクリックでタグを編集",
 			"editHint": "ダブルクリックで編集",
-			"renameNoteHint": "ダブルクリックでノート名を変更"
+			"renameNoteHint": "ダブルクリックでノート名を変更",
+			"removeValue": "{{value}} を削除"
 		},
 		"tagPicker": {
 			"source": "タグのソース",
@@ -251,7 +272,28 @@
 			"placeholder": "タグを選択",
 			"empty": "一致するタグがありません。",
 			"search": "タグを検索"
-		}
+		},
+		"status": {
+			"backlog": "バックログ",
+			"todo": "未着手",
+			"in_progress": "進行中",
+			"in_review": "レビュー中",
+			"blocked": "ブロック中",
+			"waiting": "保留中",
+			"done": "完了",
+			"canceled": "キャンセル",
+			"archived": "アーカイブ済み"
+		},
+		"priority": {
+			"no": "優先度なし",
+			"low": "低",
+			"medium": "中",
+			"high": "高"
+		},
+		"table": {
+			"empty": "一致するノートはありません"
+		},
+		"newNote": "新規"
 	},
 	"tags": {
 		"header": "タグ",
@@ -321,9 +363,13 @@
 			"title": "ファイルの外観を選択",
 			"updateFailed": "ファイルの外観を更新できませんでした"
 		},
+		"addFolderTab": "クイックフォルダに追加",
+		"removeFolderTab": "クイックフォルダから削除",
 		"addFile": "ファイルを追加",
 		"createFromTemplate": "テンプレートから作成",
 		"addFolder": "フォルダを追加",
+		"importFilesHere": "ここにファイルを読み込む…",
+		"importFolderHere": "ここにフォルダを読み込む…",
 		"deleteFile": "ファイルを削除",
 		"deleteFolder": "フォルダを削除",
 		"copyDeeplink": "ディープリンクをコピー",
@@ -336,6 +382,19 @@
 		"spaceNotFound": "そのスペースが見つかりませんでした。",
 		"noteNotFound": "そのノートが見つかりませんでした。",
 		"noteNotMarkdown": "このリンクは Markdown ノートを指していません。"
+	},
+	"import": {
+		"filesTitle": "ファイルを読み込む",
+		"folderTitle": "フォルダを読み込む",
+		"markdownFilter": "Markdown ファイル",
+		"conflictTitle": "項目はすでに存在します",
+		"conflictMessage_other": "このフォルダにはすでに {{count}} 件の項目があります。選択した操作を競合に適用します。",
+		"keepBoth": "両方を残す",
+		"replace": "置き換える",
+		"skip": "スキップ",
+		"errorTitle": "読み込みに失敗しました",
+		"success_other": "{{count}} 件のファイルを読み込みました。",
+		"noneImported": "読み込まれたファイルはありません。"
 	},
 	"emptyState": {
 		"commandPalettePrompt": "<shortcut/>を押して始めましょう",
@@ -376,7 +435,10 @@
 		"footer": {
 			"navigate": "移動",
 			"open": "開く",
-			"close": "閉じる"
+			"close": "閉じる",
+			"change": "変更",
+			"options": "オプション",
+			"toggle": "切り替え"
 		},
 		"groups": {
 			"command": "コマンド",
@@ -389,7 +451,8 @@
 			"person": "人物",
 			"database": "コレクションとデータベース",
 			"template": "テンプレート"
-		}
+		},
+		"lineNumber": "{{line}}行"
 	},
 	"calendar": {
 		"title": "カレンダー",
@@ -416,6 +479,13 @@
 	"tabs": {
 		"allNotes": "すべてのノート",
 		"collections": "コレクション",
+		"pinTab": "アクティブなタブを固定",
+		"unpinTab": "アクティブなタブの固定を解除",
+		"unpinNamed": "{{label}} の固定を解除",
+		"newTab": "新規タブ",
+		"untitled": "無題",
+		"openBlankTab": "空白のタブを開く",
+		"showAllTabs": "すべてのタブを表示",
 		"goBack": "戻る",
 		"goForward": "進む",
 		"closeNamed": "{{label}} を閉じる",
@@ -438,6 +508,39 @@
 			"loadFailed": "モデルを読み込めませんでした",
 			"empty": "利用可能なモデルがありません",
 			"retry": "再試行"
+		},
+		"panel": {
+			"recentChats": "最近のチャット",
+			"newChat": "新しいチャット",
+			"settings": "AI 設定",
+			"close": "AI パネルを閉じる",
+			"scrollToLatest": "最新までスクロール",
+			"untitledChat": "無題のチャット",
+			"noHistory": "チャット履歴はまだありません"
+		},
+		"thread": {
+			"emptyTitle": "ノートと話そう",
+			"emptyHint": "自然に質問するか、<code>@</code> でノートやフォルダを会話に追加できます",
+			"shaping": "考えをまとめています",
+			"responseFailed": "応答に失敗しました",
+			"retry": "再試行",
+			"retryResponse": "応答を再生成",
+			"copyResponse": "応答をコピー",
+			"saveResponse": "応答をファイルに保存",
+			"citations": "引用",
+			"footnotes": "脚注の引用",
+			"citedNotes": "引用したノート"
+		},
+		"composer": {
+			"placeholder": "ノートについて質問 · @ でコンテキストを追加",
+			"message": "メッセージ",
+			"mention": "@ でノートを追加",
+			"send": "送信",
+			"stop": "停止",
+			"searchContext": "ファイルとフォルダを検索…",
+			"searchHint": "入力してファイルとフォルダを検索",
+			"noResults": "結果なし",
+			"space": "スペース"
 		}
 	},
 	"connections": {
@@ -497,6 +600,45 @@
 		"loadError": "キャンバスを開けませんでした: {{message}}",
 		"invalidAgentCanvas": "glyphCanvas ブロックに無効なノードまたはエッジがあります",
 		"saveError": "キャンバスを保存できませんでした: {{message}}"
+	},
+	"tasks": {
+		"searchPlaceholder": "タスクを絞り込む",
+		"scope": "タスクの表示対象",
+		"scopeAll": "すべてのノート",
+		"scopeFolder": "フォルダ",
+		"scopeTag": "タグ",
+		"folder": "フォルダ",
+		"allFolders": "すべてのフォルダ",
+		"foldersLoadFailed": "フォルダを読み込めませんでした: {{message}}",
+		"retry": "再試行",
+		"tag": "タグ",
+		"allTags": "すべてのタグ",
+		"empty": "未完了のタスクはありません。ノートに書いたチェックリスト項目がここに表示されます。",
+		"emptyScope": "このフォルダまたはタグに未完了のタスクはありません。",
+		"emptySearch": "検索に一致する未完了のタスクはありません。",
+		"clearSearch": "検索をクリア",
+		"showAllNotes": "すべてのノートを表示",
+		"openTasks_other": "未完了のタスク {{count}} 件",
+		"noteCount_other": "{{count}} 件のノート",
+		"collapseAll": "すべて折りたたむ",
+		"groupStateSaveFailed": "展開したノートの状態を保存できませんでした",
+		"expandAll": "すべて展開",
+		"collapseNote": "{{title}} を折りたたむ",
+		"expandNote": "{{title}} を展開",
+		"loadError": "タスクを読み込めませんでした: {{message}}",
+		"markDone": "「{{task}}」を完了にする",
+		"markNotDone": "「{{task}}」を未完了にする",
+		"openNote": "{{title}} を開く",
+		"progress": "{{total}} 件中 {{completed}} 件のタスクが完了",
+		"fraction": "{{completed}}/{{total}}",
+		"toggleFailed": "タスクを更新できませんでした",
+		"conflictChanged": "リストの読み込み後にノートが変更されました。もう一度お試しください。",
+		"conflictRolledOver": "このタスクは別のノートに繰り越されました。",
+		"indexFailed": "タスクは保存されましたが、検索インデックスを更新できませんでした。",
+		"sort": "タスクの並べ替え",
+		"sortRecent": "最近編集した順",
+		"sortMostOpen": "未完了の多い順",
+		"sortTitle": "タイトル"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "アイコンを検索",
@@ -560,8 +702,30 @@
 		"expand": "カレンダーを展開"
 	},
 	"breadcrumbs": {
+		"label": "現在のファイルパス",
 		"space": "スペース",
-		"emptyFolder": "空のフォルダ"
+		"browse": "{{name}} を表示",
+		"emptyFolder": "空のフォルダ",
+		"loading": "読み込み中…",
+		"moreItems": "ほか {{count}} 件",
+		"showHidden": "非表示のパス項目を表示",
+		"hiddenItems_other": "非表示のパス項目 {{count}} 件",
+		"revealInFileTree": "ファイルツリーで表示",
+		"showInFinderFailed": "Finder でファイルを表示できませんでした"
+	},
+	"workspace": {
+		"openSpace": "スペースを開く",
+		"openAnotherSpace": "別のスペースを開く",
+		"switchSaveFailed": "現在のスペースを保存できませんでした。もう一度お試しください。"
+	},
+	"documentExport": {
+		"untitled": "無題",
+		"docxDialogTitle": "ノートを Word として書き出す",
+		"docxFormat": "Word 文書",
+		"docxComplete": "ノートを Word として書き出しました。",
+		"pdfFailed": "ノートを PDF として書き出せませんでした",
+		"docxFailed": "ノートを Word として書き出せませんでした",
+		"tryAgain": "しばらくしてからもう一度お試しください。"
 	},
 	"quickNoteTarget": {
 		"today": "今日のクイックノート",
@@ -570,6 +734,10 @@
 		"resetToToday": "今日のクイックノートに戻す"
 	},
 	"gitSync": {
+		"commitTitle": "Git と同期",
+		"commitDescription": "この手動同期で作成されるローカルコミットに、必要に応じてメッセージを追加できます。",
+		"commitMessagePlaceholder": "任意。既定値は Glyph sync",
+		"cancel": "キャンセル",
 		"interval": {
 			"label": "間隔",
 			"description": "Glyph が定期同期を実行する頻度です。",
@@ -588,11 +756,57 @@
 			}
 		},
 		"sync": "今すぐ同期",
+		"manualCommitMessages": "手動コミットメッセージ",
+		"manualCommitMessagesDescription": "手動同期のたびにメッセージを確認します。オフのときは「Glyph sync」を使用します。",
 		"resumeAutoSync": "自動同期を再開",
 		"remote": "リモート",
 		"actions": "操作"
 	},
 	"activity": {
+		"recentActivity": "最近のノートアクティビティ",
+		"daySummary_other": "{{date}} のノート {{count}} 件",
+		"today": "今日",
+		"yesterday": "昨日",
+		"noteCount_other": "{{count}} 件のノート",
+		"summaryHint": "ノートの作成日と最終編集日を含みます。",
+		"less": "少ない",
+		"more": "多い",
+		"pastYear": "過去 1 年",
+		"previousPeriod": "前の年",
+		"nextPeriod": "次の年",
+		"notesCount_other": "{{count}} 件のノートを作成または編集",
+		"activeDays_other": "アクティブな日 {{count}} 日",
+		"noActivityInPeriod": "この期間に作成または編集されたノートはありません",
+		"createdCount_other": "{{count}} 件作成",
+		"editedCount_other": "{{count}} 件編集",
+		"noActivityOnDay": "ノートなし",
+		"moreNotes_other": "ほか {{count}} 件",
+		"selectDayHint": "クリックしてこれらのノートを表示",
+		"showAllNotes": "すべてのノートを表示",
+		"empty": "まだアクティビティはありません。ノートを作成または編集するとタイムラインが始まります。",
+		"loadError": "アクティビティを読み込めませんでした: {{message}}",
+		"loadOlder": "以前のノートを読み込む",
+		"loadingOlder": "読み込み中…",
 		"noPreviewYet": "プレビューはまだありません"
+	},
+	"noteCollections": {
+		"loading": "ノートを読み込み中…",
+		"noFiles": "ファイルが見つかりません。",
+		"enableArchive": "スペース設定でアーカイブを有効にする",
+		"configureInbox": "インボックスを設定",
+		"archive": "アーカイブ",
+		"unarchive": "アーカイブを解除",
+		"archived": "アーカイブ済み",
+		"archivedTooltip": "アーカイブ済み。クリックで解除します。",
+		"undo": "元に戻す",
+		"archivedCount_other": "{{count}} 件のノートをアーカイブしました",
+		"restoredCount_other": "{{count}} 件のノートのアーカイブを解除しました",
+		"partialFailure": "一部のノートを更新できませんでした",
+		"actionFailed": "ノートを更新できませんでした",
+		"unsaved": "続行する前に保留中の編集を保存してください。",
+		"spaceChanged": "開いているスペースが変わりました。もう一度お試しください。",
+		"retry": "再試行",
+		"inboxEmpty": "インボックスは空です。",
+		"archiveEmpty": "アーカイブされたノートはありません。"
 	}
 }

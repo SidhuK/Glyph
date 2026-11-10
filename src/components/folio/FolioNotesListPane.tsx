@@ -41,6 +41,8 @@ interface FolioNotesListPaneProps {
 
 const FOLIO_NOTE_ROW_ESTIMATE = 100;
 const FOLIO_FILE_ROW_ESTIMATE = 42;
+/** Matches --scroll-fade-size: the list's top fade covers this blank band until it scrolls. */
+const FOLIO_LIST_TOP_FADE = 12;
 const FOLIO_RELATIVE_TIME_REFRESH_MS = 60_000;
 
 function sqliteNoCase(value: string): string {
@@ -129,7 +131,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onDuplicateFile,
 }: FolioNotesListPaneProps) {
 	const { t } = useTranslation("shell");
-	const { folioScope, folioSortMode, setFolioScope, setFolioSortMode } = useUILayoutContext();
+	const { folioScope, folioSortMode, setFolioScope, setFolioSortMode, templateFolder } =
+		useUILayoutContext();
 	const { itemAppearance, pinnedFiles, setActiveDirPath, setItemAppearance, togglePinnedFile } =
 		useFileTreeContext();
 	const [searchQuery, setSearchQuery] = useState("");
@@ -153,7 +156,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		isFetchingNextPage,
 		isLoading,
 		fetchNextPage,
-	} = useFolioNotes(folioScope, folioSortMode, deferredSearchQuery, pinnedFiles);
+	} = useFolioNotes(folioScope, folioSortMode, deferredSearchQuery, pinnedFiles, templateFolder);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
@@ -192,6 +195,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		getScrollElement: () => listRef.current,
 		getItemKey: (index) => sortedNotes[index]?.note_path ?? index,
+		paddingStart: FOLIO_LIST_TOP_FADE,
+		scrollPaddingStart: FOLIO_LIST_TOP_FADE,
 		overscan: 4,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();

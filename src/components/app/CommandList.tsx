@@ -1,101 +1,37 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	File02Icon,
-	Folder01Icon,
-	Layout01Icon,
-	TableIcon,
-	Tag01Icon,
-	UserIcon,
-} from "@hugeicons/core-free-icons";
-import { Fragment, useCallback } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	formatShortcutForPlatform,
-	formatShortcutPartsForPlatform,
-} from "../../lib/shortcuts/platform";
 import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
-import { PaletteSnippet } from "./CommandPaletteSnippet";
+import { CommandListRowContent } from "./CommandListRow";
 import type { PaletteResult, PaletteResultKind } from "./paletteResults";
-import { getPaletteSettingIcon } from "./settingsPaletteIcons";
 
 interface CommandListProps {
+	/** DOM id of the listbox; the combobox input points at it with aria-controls. */
+	id: string;
 	results: PaletteResult[];
 	selectedIndex: number;
 	onSetSelectedIndex: (index: number) => void;
 	onSelectResult: (index: number) => void;
 }
 
-/** Notes, open tabs and content matches share the plain document glyph. */
-function resultIconFor(result: PaletteResult) {
-	switch (result.kind) {
-		case "setting":
-			return getPaletteSettingIcon(result.settingId);
-		case "folder":
-			return Folder01Icon;
-		case "tag":
-			return Tag01Icon;
-		case "person":
-			return UserIcon;
-		case "database":
-			return TableIcon;
-		case "template":
-			return Layout01Icon;
-		default:
-			return File02Icon;
-	}
+/** DOM id of a result row, for the combobox's aria-activedescendant. */
+export function paletteOptionId(listId: string, index: number) {
+	return `${listId}-option-${index}`;
 }
 
-function ResultIcon({ result }: { result: PaletteResult }) {
-	if (result.kind === "command") return result.command?.icon ?? null;
-	return <HugeiconsIcon icon={resultIconFor(result)} size="var(--icon-lg)" />;
-}
-
-function Shortcut({ result }: { result: PaletteResult }) {
-	const shortcut = result.command?.shortcut;
-	if (!shortcut) return null;
-	return (
-		<span className="commandPaletteShortcut" aria-label={formatShortcutForPlatform(shortcut)}>
-			<kbd>
-				<span className="commandPaletteShortcutCombo">
-					{formatShortcutPartsForPlatform(shortcut).map((part) => (
-						<span key={`${result.id}-${part}`} className="commandPaletteShortcutPart">
-							{part}
-						</span>
-					))}
-				</span>
-			</kbd>
-		</span>
-	);
-}
-
-const FOOTER_HINTS = [
-	{ keys: ["↑", "↓"], label: "navigate" },
-	{ keys: ["↵"], label: "open" },
-	{ keys: ["esc"], label: "close" },
-] as const;
-
-/** Keyboard hints under the results, like the native launcher palettes. */
-export function CommandPaletteFooter() {
-	const { t } = useTranslation("shell");
-	return (
-		<div className="commandPaletteFooter">
-			{FOOTER_HINTS.map((hint) => (
-				<span key={hint.label} className="commandPaletteFooterHint">
-					<span className="commandPaletteFooterKeys">
-						{hint.keys.map((key) => (
-							<kbd key={key} className="commandPaletteKeycap">
-								{key}
-							</kbd>
-						))}
-					</span>
-					{t(`commandPalette.footer.${hint.label}`)}
-				</span>
-			))}
-		</div>
-	);
+/** Consecutive results of one kind form a labelled group. */
+function groupResults(results: readonly PaletteResult[]) {
+	const groups: { kind: PaletteResultKind; rows: { result: PaletteResult; index: number }[] }[] =
+		[];
+	results.forEach((result, index) => {
+		const last = groups[groups.length - 1];
+		if (last?.kind === result.kind) last.rows.push({ result, index });
+		else groups.push({ kind: result.kind, rows: [{ result, index }] });
+	});
+	return groups;
 }
 
 export function CommandList({
+	id,
 	results,
 	selectedIndex,
 	onSetSelectedIndex,
@@ -107,89 +43,56 @@ export function CommandList({
 		[],
 	);
 	if (!results.length) {
-		return <div className="commandPaletteEmpty">{t("commandPalette.noResults")}</div>;
+		return (
+			<div id={id} className="commandPaletteEmpty">
+				{t("commandPalette.noResults")}
+			</div>
+		);
 	}
 
-	let previousKind: PaletteResultKind | null = null;
 	return (
-		<div aria-label={t("commandPalette.resultsLabel")}>
+		<div id={id} role="listbox" aria-label={t("commandPalette.resultsLabel")}>
 			<Highlight value={results[selectedIndex]?.id ?? null} className="commandPaletteHighlight">
-				{results.map((result, index) => {
-					const showGroup = result.kind !== previousKind;
-					previousKind = result.kind;
-					const selected = index === selectedIndex;
+				{groupResults(results).map(({ kind, rows }) => {
+					// buildPaletteResults emits each kind as one contiguous group.
+					const labelId = `${id}-group-${kind}`;
 					return (
-						<Fragment key={result.id}>
-							{showGroup ? (
-								<div className="commandPaletteGroupLabel">
-									{t(`commandPalette.groups.${result.kind}`)}
-								</div>
-							) : null}
-							<HighlightItem value={result.id}>
-								<button
-									ref={selected ? scrollSelectedIntoView : undefined}
-									id={result.id}
-									type="button"
-									aria-current={selected}
-									aria-pressed={result.checked}
-									className="commandPaletteItem commandPaletteUniversalRow"
-									data-kind={result.kind}
-									data-control={result.settingControl}
-									disabled={result.enabled === false}
-									onMouseEnter={() => onSetSelectedIndex(index)}
-									onMouseDown={(event) => {
-										event.preventDefault();
-									}}
-									onClick={() => onSelectResult(index)}
-								>
-									<span className="commandPaletteItemMain">
-										<span className="commandPaletteItemIcon" aria-hidden="true">
-											<ResultIcon result={result} />
-										</span>
-										<span className="commandPaletteUniversalContent">
-											<span className="commandPaletteResultHead">
-												<span className="commandPaletteResultLine">
-													<span className="commandPaletteResultTitle">{result.label}</span>
-													{result.description ? (
-														<>
-															<span className="commandPaletteResultLineSep" aria-hidden="true">
-																·
-															</span>
-															<span className="commandPaletteResultPath" title={result.description}>
-																{result.description}
-															</span>
-														</>
-													) : null}
-												</span>
-												{typeof result.checked !== "boolean" && result.trailing ? (
-													<span className="commandPaletteResultValue" title={result.trailing}>
-														{result.trailing}
-													</span>
-												) : null}
-											</span>
-											{result.snippet ? (
-												<span className="commandPaletteResultSnippet">
-													<PaletteSnippet snippet={result.snippet} />
-												</span>
-											) : null}
-										</span>
-									</span>
-									{typeof result.checked === "boolean" ? (
-										<span className="commandPaletteInlineSettingValue">
-											<span
-												className="commandPaletteInlineToggle"
-												data-checked={result.checked}
-												aria-hidden="true"
-											>
-												<span />
-											</span>
-										</span>
-									) : result.trailing ? null : (
-										<Shortcut result={result} />
-									)}
-								</button>
-							</HighlightItem>
-						</Fragment>
+						<div key={kind} role="group" aria-labelledby={labelId} className="commandPaletteGroup">
+							<div id={labelId} className="commandPaletteGroupLabel">
+								{t(`commandPalette.groups.${kind}`)}
+							</div>
+							{rows.map(({ result, index }) => {
+								const selected = index === selectedIndex;
+								return (
+									<HighlightItem key={result.id} value={result.id}>
+										<button
+											ref={selected ? scrollSelectedIntoView : undefined}
+											id={paletteOptionId(id, index)}
+											type="button"
+											role="option"
+											tabIndex={-1}
+											aria-selected={selected}
+											aria-checked={result.checked}
+											className="commandPaletteItem commandPaletteUniversalRow"
+											data-kind={result.kind}
+											data-control={result.settingControl}
+											disabled={result.enabled === false}
+											// Pointer movement only: rows scrolled under a resting pointer by ↑/↓
+											// must not take the selection back.
+											onPointerMove={() => {
+												if (!selected) onSetSelectedIndex(index);
+											}}
+											onMouseDown={(event) => {
+												event.preventDefault();
+											}}
+											onClick={() => onSelectResult(index)}
+										>
+											<CommandListRowContent result={result} />
+										</button>
+									</HighlightItem>
+								);
+							})}
+						</div>
 					);
 				})}
 			</Highlight>

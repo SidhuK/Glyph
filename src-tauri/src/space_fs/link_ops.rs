@@ -379,6 +379,32 @@ pub async fn space_read_wiki_embeds_batch(
     Ok(documents)
 }
 
+/// The targets among `targets` that resolve to no file, without reading any note contents.
+#[tauri::command]
+pub async fn space_missing_wikilinks_batch(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    targets: Vec<String>,
+) -> Result<Vec<String>, String> {
+    let root = state.root_for_window(&window)?;
+    let read_root = root.clone();
+    let missing = tauri::async_runtime::spawn_blocking(move || {
+        let entries = list_files(&read_root, false, 80_000)?;
+        Ok::<_, String>(
+            targets
+                .into_iter()
+                .filter(|target| resolve_standard_wikilink_target(&entries, target).is_none())
+                .collect::<Vec<_>>(),
+        )
+    })
+    .await
+    .map_err(|error| error.to_string())??;
+    if state.root_for_window(&window)? != root {
+        return Err("The active space changed while resolving links.".to_string());
+    }
+    Ok(missing)
+}
+
 #[tauri::command]
 pub async fn space_resolve_wikilink(
     window: WebviewWindow,

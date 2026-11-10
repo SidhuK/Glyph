@@ -4,14 +4,26 @@
 	max-width: none;
 }
 
-/* Dock icons take the image tiles' selection style: no fill, a hairline ring on hover and
-   the soft selection ring 2px outside the chosen icon. */
+/* The icon artwork sits ~6px inside its tile, so the row pulls it out to put the last
+   glyph's edge on the 16px row inset, the same column as toggles and preview tiles. */
+.appIconPicker {
+	margin-right: -6px;
+}
+
+/* Dock icons share every picker's selection: no fill, a hairline ring on hover and
+   --state-selected-ring around the chosen icon. */
+.appIconPickerTile {
+	border-radius: var(--radius-md);
+}
+
 .appIconPicker label:hover input:not(:checked) + .appIconPickerTile {
-	outline: 1.5px solid var(--border-default);
+	box-shadow:
+		0 0 0 1.5px var(--bg-primary),
+		0 0 0 3px var(--border-default);
 }
 
 .appIconPicker input:checked + .appIconPickerTile {
-	outline: 1.5px solid var(--settings-selection-ring);
+	box-shadow: var(--state-selected-ring);
 }
 
 .appearanceThemeDropdownOption {

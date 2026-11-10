@@ -69,8 +69,8 @@
 			"tasks": "Tasks",
 			"tasksDone": "{{completed}} of {{total}} done",
 			"file": "File",
-			"modified": "Modified",
-			"created": "Created",
+			"fileModified": "File modified",
+			"fileCreated": "File created",
 			"path": "Path",
 			"size": "Size"
 		},
@@ -359,5 +359,9 @@
 			"status": "Status",
 			"priority": "Priority"
 		}
+	},
+	"properties": {
+		"label": "Properties",
+		"add": "Add property"
 	}
 }

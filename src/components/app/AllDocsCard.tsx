@@ -15,12 +15,12 @@ import {
 } from "../database/DatabaseNoteAppearanceIcon";
 import type { springPresets } from "../ui/animations";
 import { NoteThumbnail } from "../NoteThumbnail";
-import { type PreviewLine, previewLines } from "./allDocsPreviewLines";
-
-export function titleFromPath(notePath: string): string {
-	const fileName = notePath.split("/").pop() ?? notePath;
-	return fileName.replace(/\.md$/i, "");
-}
+import {
+	type PreviewLine,
+	noteDisplayTitle,
+	previewLines,
+	titleFromPath,
+} from "./allDocsPreviewLines";
 
 export interface AllDocsCardProps {
 	notePath: string;
@@ -64,7 +64,7 @@ export function prepareAllDocsCardProps({
 	selectNote,
 	onOpenFile,
 }: PrepareAllDocsCardPropsArgs): PreparedAllDocsCardProps {
-	const noteTitle = note.title.trim() || titleFromPath(note.note_path);
+	const noteTitle = noteDisplayTitle(note);
 	const taskSummary = taskSummariesByPath[note.note_path] ?? undefined;
 	return {
 		notePath: note.note_path,
@@ -159,11 +159,15 @@ export function AllDocsCard({
 							delay: Math.min(animationIndex * 0.02, 0.18),
 						}
 			}
-			title="Double-click to open note"
+			title={t("collections.boardCard.openHint")}
 		>
 			<div className="allDocsCardSurface">
 				<div className="allDocsCardTop">
-					<span className="allDocsCardTitle" title={title} style={noteAppearanceStyle}>
+					<span
+						className="allDocsCardTitle"
+						title={titleFromPath(notePath)}
+						style={noteAppearanceStyle}
+					>
 						{noteAppearance?.icon ? (
 							<DatabaseNoteAppearanceIcon
 								notePath={notePath}

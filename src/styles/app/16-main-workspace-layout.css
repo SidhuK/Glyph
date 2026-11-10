@@ -130,7 +130,8 @@
 .notesInfoSidebarHost[data-open="true"] {
 	flex-basis: var(--markdown-info-sidebar-width, 340px);
 	width: var(--markdown-info-sidebar-width, 340px);
-	padding: 8px 0 0 0;
+	/* No top padding: the panel headers own the band and centre on the traffic-light line. */
+	padding: 0;
 	border-left: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	backdrop-filter: none;

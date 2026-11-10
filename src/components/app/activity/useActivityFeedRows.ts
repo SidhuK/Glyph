@@ -20,6 +20,8 @@ export type ActivityVirtualRow =
 	  };
 
 const ACTIVITY_CONTENT_MAX_WIDTH = 860;
+/** Matches --all-docs-card-gap, the grid gap on both axes. */
+const ACTIVITY_CARD_GAP = 12;
 
 export function useActivityRows(
 	feedDays: ActivityDay[],
@@ -62,7 +64,7 @@ export function useActivityVirtualization(
 	const contentWidth =
 		paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, ACTIVITY_CONTENT_MAX_WIDTH);
 	const minCardWidth = contentWidth <= 640 ? 144 : 160;
-	const gap = 14;
+	const gap = ACTIVITY_CARD_GAP;
 	const columnCount = Math.max(1, Math.floor((contentWidth + gap) / (minCardWidth + gap)));
 	const width = (contentWidth - gap * (columnCount - 1)) / columnCount;
 	const minHeight = contentWidth <= 640 ? 176 : 184;

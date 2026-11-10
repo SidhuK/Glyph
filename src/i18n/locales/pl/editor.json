@@ -81,8 +81,8 @@
 			"tasks": "Zadania",
 			"tasksDone": "Ukończono {{completed}} z {{total}}",
 			"file": "Plik",
-			"modified": "Zmodyfikowano",
-			"created": "Utworzono",
+			"fileModified": "Plik zmodyfikowany",
+			"fileCreated": "Plik utworzony",
 			"path": "Ścieżka",
 			"size": "Rozmiar"
 		},
@@ -371,5 +371,9 @@
 			"status": "Status",
 			"priority": "Priorytet"
 		}
+	},
+	"properties": {
+		"label": "Właściwości",
+		"add": "Dodaj właściwość"
 	}
 }

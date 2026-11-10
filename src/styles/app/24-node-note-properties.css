@@ -43,23 +43,16 @@
 	font-family: var(--font-sans);
 }
 
+/* The label's type is shared with the Info panel's section labels (.markdownEditorInfoSectionLabel);
+   the row height matches theirs so every section starts its rows the same distance down. */
 .notePropertiesToolbar {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 10px;
+	min-height: var(--info-section-header-height, calc(var(--text-base) * 2));
 	padding-bottom: 0;
 	font-family: var(--font-sans);
-}
-
-.notePropertiesToolbarLabel {
-	font-size: var(--text-xs);
-	font-weight: var(--font-medium);
-	letter-spacing: 0;
-	text-transform: none;
-	color: var(--text-secondary);
-	font-family: var(--font-sans);
-	line-height: 1.15;
 }
 
 /* Two quiet icon buttons: idle in tertiary ink, the active mode in primary ink on a soft fill. */
@@ -110,7 +103,7 @@
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
-	background: var(--bg-active);
+	background: var(--state-on);
 }
 
 .notePropertiesModePill > *:not(.notePropertiesModePillBg) {
@@ -137,24 +130,35 @@
 	padding-top: 4px;
 }
 
+/* Cells sit at the top of the row, so a label beside wrapped chips stays on the first line;
+   each cell's first line is 28px tall and the 2px padding keeps single-line rows 32px. */
 .notePropertyRow {
 	position: relative;
 	display: grid;
 	grid-template-columns: var(--info-label-column, 112px) minmax(0, 1fr);
-	align-items: center;
-	gap: 12px;
+	align-items: start;
+	gap: var(--info-column-gap, 12px);
 	min-height: 32px;
-	padding: 0 24px 0 0;
+	padding: 2px 24px 2px 0;
 	transition: background var(--transition-fast);
 }
 
 .notePropertyRow .notePropertyIdentity {
-	gap: 8px;
+	gap: var(--info-icon-gap, 8px);
+	min-height: 28px;
+}
+
+.notePropertyRow .notePropertyValueWrap {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	min-height: 28px;
 }
 
 .notePropertyRow .notePropertyKindBadge {
 	padding: 0;
-	width: 18px;
+	width: var(--info-icon-slot, 18px);
 	justify-content: center;
 }
 
@@ -352,7 +356,7 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	display: flex;
 	align-items: center;
 	gap: 2px;
-	min-height: 30px;
+	min-height: 28px;
 }
 
 .notePropertyWikiLinkEdit {
@@ -418,58 +422,33 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	outline-offset: 1px;
 }
 
+/* The first chip line is centred in the row's 28px first line (see .notePropertyRow). */
 .notePropertyPills {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
 	align-items: center;
-	min-height: 26px;
+	min-height: 28px;
+	padding-block: calc((28px - var(--chip-height)) / 2);
 }
 
-/* Tags take a stable slot from the active theme's palette (see tagColorFromName). */
-:is(.notePropertyPill, .notePropertyToken)[data-tag-color="red"] {
-	--tag-pill-color: var(--palette-red);
-}
-
-:is(.notePropertyPill, .notePropertyToken)[data-tag-color="orange"] {
-	--tag-pill-color: var(--palette-orange);
-}
-
-:is(.notePropertyPill, .notePropertyToken)[data-tag-color="yellow"] {
-	--tag-pill-color: var(--palette-yellow);
-}
-
-:is(.notePropertyPill, .notePropertyToken)[data-tag-color="green"] {
-	--tag-pill-color: var(--palette-green);
-}
-
-:is(.notePropertyPill, .notePropertyToken)[data-tag-color="cyan"] {
-	--tag-pill-color: var(--palette-cyan);
-}
-
-:is(.notePropertyPill, .notePropertyToken)[data-tag-color="blue"] {
-	--tag-pill-color: var(--palette-blue);
-}
-
-:is(.notePropertyPill, .notePropertyToken)[data-tag-color="purple"] {
-	--tag-pill-color: var(--palette-purple);
-}
-
+/* Tag chips: the shared chip shape, toned by the tag's palette slot ([data-chip-tone],
+   13-tags.css), so a tag looks the same in the note list, the editor and here. */
 .notePropertyPill {
-	--tag-pill-color: var(--palette-gray, var(--text-secondary));
+	--chip-tone: var(--palette-gray, var(--text-secondary));
 
 	display: inline-flex;
 	align-items: center;
-	height: 22px;
+	height: var(--chip-height);
 	max-width: 100%;
-	padding: 0 8px;
+	padding: 0 var(--chip-padding-x);
 	border: 0;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--tag-pill-color) 10%, var(--bg-secondary));
-	color: color-mix(in srgb, var(--tag-pill-color) 70%, var(--text-primary));
+	border-radius: var(--chip-radius);
+	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));
+	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
 	font-family: var(--font-sans);
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
+	font-size: var(--chip-font-size);
+	font-weight: var(--chip-font-weight);
 	line-height: 1;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -490,43 +469,34 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	line-height: 1;
 }
 
-/* Note properties keep the tone on the icon only, so the panel reads as one ink. */
+/* Note properties keep the tone on the marker only, so the panel reads as one ink. */
 .notePropertyRow .propertyValueText > span {
 	color: var(--text-primary);
 	font-weight: var(--font-normal);
 }
 
-.notePropertyRow :is(.notePropertyToken, .notePropertyPill) {
-	gap: 6px;
-	background: var(--bg-hover);
-	color: var(--text-primary);
-	font-weight: var(--font-normal);
+/* Priority keeps a hint of its tone on the icon, pulled toward the neutral ink. */
+.notePropertyRow .propertyValueTextIcon {
+	color: color-mix(in srgb, currentcolor 50%, var(--text-tertiary));
 }
 
-.notePropertyRow :is(.notePropertyToken, .notePropertyPill)::before {
+/* Status is a 6px filled dot in its tone: rings are reserved for task progress. */
+.notePropertyRow .propertyValueText[data-property-kind="status"] > svg {
+	display: none;
+}
+
+.notePropertyRow .propertyValueText[data-property-kind="status"]::before {
 	content: "";
 	flex: 0 0 6px;
 	width: 6px;
 	height: 6px;
-	border-radius: 999px;
-	/* The tag's palette slot, pulled toward the neutral ink. */
-	background: color-mix(in srgb, var(--tag-pill-color) 50%, var(--text-tertiary));
-}
-
-/* Status and priority keep a hint of their tone on the icon, pulled toward the neutral ink. */
-.notePropertyRow .propertyValueTextIcon {
-	color: color-mix(in srgb, currentcolor 50%, var(--text-tertiary));
+	border-radius: 50%;
+	background: var(--database-tone, var(--text-tertiary));
 }
 
 .notePropertyRow .notePropertyTagInput {
 	flex-basis: 24px;
 	min-width: 24px;
-}
-
-.notePropertyRow .notePropertyToken:hover,
-.notePropertyRow .notePropertyToken:focus-visible {
-	background: var(--bg-active);
-	color: var(--text-primary);
 }
 
 /* The remove icon takes no space until the chip is hovered. */
@@ -585,26 +555,18 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	max-width: 100%;
 }
 
+/* The value keeps its natural width inside the cell-wide trigger and only truncates when the
+   column is narrower than it. */
 .databaseStatusTrigger .propertyValueText {
 	min-width: 0;
-	width: 100%;
+	width: auto;
 }
 
 .databaseStatusTrigger .propertyValueText > span {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	flex: 1 1 auto;
-}
-
-.databaseCellButton.is-pill-list .propertyValueText {
-	width: 100%;
-	min-width: 0;
-}
-
-.databaseCellButton.is-pill-list .propertyValueText > span {
-	flex: 1 1 auto;
-	min-width: 0;
+	flex: 0 1 auto;
 }
 
 .notePropertyStatusTrigger:hover .propertyValueText,
@@ -640,21 +602,21 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 }
 
 .notePropertyToken {
-	--tag-pill-color: var(--palette-gray, var(--text-secondary));
+	--chip-tone: var(--palette-gray, var(--text-secondary));
 
 	display: inline-flex;
 	align-items: center;
 	gap: 3px;
 	max-width: 100%;
-	height: 22px;
-	padding: 0 8px;
+	height: var(--chip-height);
+	padding: 0 var(--chip-padding-x);
 	border: 0;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--tag-pill-color) 10%, var(--bg-secondary));
-	color: color-mix(in srgb, var(--tag-pill-color) 70%, var(--text-primary));
+	border-radius: var(--chip-radius);
+	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));
+	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
 	font-family: var(--font-sans);
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
+	font-size: var(--chip-font-size);
+	font-weight: var(--chip-font-weight);
 	line-height: 1;
 	cursor: pointer;
 	box-shadow: none;
@@ -665,8 +627,8 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 
 .notePropertyToken:hover,
 .notePropertyToken:focus-visible {
-	background: color-mix(in srgb, var(--tag-pill-color) 16%, var(--bg-secondary));
-	color: color-mix(in srgb, var(--tag-pill-color) 78%, var(--text-primary));
+	background: color-mix(in srgb, var(--chip-tone) 18%, var(--bg-primary));
+	color: color-mix(in srgb, var(--chip-tone) 78%, var(--text-primary));
 }
 
 .notePropertyToken > span {
@@ -690,14 +652,15 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	opacity: 1;
 }
 
+/* The 1px border plus padding centre the first chip line in the row's 28px first line. */
 .notePropertyTagField {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 4px;
-	min-height: 26px;
+	min-height: 28px;
 	width: 100%;
-	padding: 1px 0;
+	padding: calc((28px - var(--chip-height)) / 2 - 1px) 0;
 	border: 1px solid transparent;
 	border-radius: var(--radius-md);
 	background: transparent;
@@ -786,17 +749,26 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 	align-self: flex-start;
 }
 
+/* The + sits in the rows' 18px icon slot and the label on their label column. */
 .notePropertyAddButton {
 	position: relative;
 	z-index: 1;
 	align-self: flex-start;
-	gap: 4px;
+	gap: var(--info-icon-gap, 8px);
 	min-height: 18px;
 	padding: 0;
 	border-radius: var(--radius-full);
 	background: transparent;
 	color: var(--text-tertiary);
-	font-size: var(--text-xs);
+	font-size: var(--text-sm);
+}
+
+.notePropertyAddIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 var(--info-icon-slot, 18px);
+	width: var(--info-icon-slot, 18px);
 }
 
 .notePropertyAddButton:hover,

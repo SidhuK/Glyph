@@ -1,6 +1,6 @@
 {
 	"theme": {
-		"sectionTitle": "Apariencia",
+		"sectionTitle": "Modo",
 		"appearance": {
 			"label": "Modo de color",
 			"description": "Sigue el sistema o fija Glyph en modo claro u oscuro.",
@@ -28,7 +28,6 @@
 	"themeCards": {
 		"light": "Tema claro",
 		"dark": "Tema oscuro",
-		"activeSuffix": "— Activo",
 		"groups": {
 			"default": "Predeterminado",
 			"builtIn": "Integrados",

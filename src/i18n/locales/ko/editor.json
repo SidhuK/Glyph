@@ -279,6 +279,10 @@
 			"priority": "우선순위"
 		}
 	},
+	"properties": {
+		"label": "속성",
+		"add": "속성 추가"
+	},
 	"infoSidebar": {
 		"panelLabel": "노트 정보 패널",
 		"sidebarTabsLabel": "노트 사이드바",
@@ -287,7 +291,9 @@
 		"close": "정보 패널 닫기",
 		"stats": {
 			"tasks": "작업",
-			"tasksDone": "{{total}}개 중 {{completed}}개 완료"
+			"tasksDone": "{{total}}개 중 {{completed}}개 완료",
+			"fileModified": "파일 수정일",
+			"fileCreated": "파일 생성일"
 		}
 	}
 }

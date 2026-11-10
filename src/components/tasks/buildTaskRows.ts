@@ -7,11 +7,32 @@ export function noteTitle(group: TaskNoteGroup): string {
 	return group.title || displayNameFromPath(group.note_path);
 }
 
+export type TaskSortMode = "recent" | "open" | "title";
+
+/** Groups in the chosen order. The server already sends them most recently edited first. */
+export function sortTaskGroups(
+	groups: readonly TaskNoteGroup[],
+	mode: TaskSortMode,
+): readonly TaskNoteGroup[] {
+	if (mode === "recent") return groups;
+	const sorted = [...groups];
+	if (mode === "open") return sorted.sort((a, b) => b.items.length - a.items.length);
+	return sorted.sort((a, b) => noteTitle(a).localeCompare(noteTitle(b)));
+}
+
 /** Deepest visual nesting level; deeper tasks render at this level. */
 const MAX_TASK_DEPTH = 4;
 
 export type TaskRow =
-	| { kind: "note"; id: string; group: TaskNoteGroup; openCount: number; collapsed: boolean }
+	| {
+			kind: "note";
+			id: string;
+			group: TaskNoteGroup;
+			openCount: number;
+			collapsed: boolean;
+			/** Follows an expanded group's tasks, so it keeps a group gap above its title. */
+			afterExpanded: boolean;
+	  }
 	| { kind: "heading"; id: string; text: string }
 	| {
 			kind: "task";
@@ -125,6 +146,7 @@ export function buildTaskRows(
 			group,
 			openCount,
 			collapsed: isCollapsed,
+			afterExpanded: rows.length > 0 && rows[rows.length - 1].kind !== "note",
 		});
 		if (isCollapsed) continue;
 		let heading: string | null = null;

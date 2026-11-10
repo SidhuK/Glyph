@@ -12,6 +12,14 @@
 	--editor-readable-content-max-width: var(--readable-content-max-width);
 	--editor-readable-content-gutter: var(--readable-content-gutter);
 	--editor-readable-content-gutter-compact: var(--readable-content-gutter-compact);
+
+	/* Chip: one shape for tags and link chips in the note list, editor and inspector.
+	   Tone fills are color-mix(--chip-tone 12%, --bg-primary), ink color-mix(--chip-tone 70%, --text-primary). */
+	--chip-height: calc(var(--text-base) * 20 / 14);
+	--chip-padding-x: 6px;
+	--chip-radius: var(--radius-sm);
+	--chip-font-size: var(--text-2xs);
+	--chip-font-weight: var(--font-medium);
 }
 
 /* Light base: the fallback for every light theme, custom ones included. It also matches
@@ -29,9 +37,9 @@
 
 	--text-primary: var(--color-gray-800);
 	--text-secondary: rgba(55, 53, 47, 0.72);
-	/* Tertiary carries real metadata (dates, counts, hints), so it stays near 3.6:1. */
-	--text-tertiary: rgba(55, 53, 47, 0.61);
-	--text-placeholder: rgba(55, 53, 47, 0.35);
+	/* Tertiary carries real metadata (dates, counts, hints), so it stays near 4.5:1. */
+	--text-tertiary: rgba(55, 53, 47, 0.68);
+	--text-placeholder: rgba(55, 53, 47, 0.45);
 	--text-inverse: var(--color-white);
 	--text-accent: var(--color-gray-800);
 	--pill-contrast-fg: #111111;
@@ -77,11 +85,34 @@
 	--shadow-lg: none;
 	--shadow-float: none;
 	--shadow-overlay: 0 12px 32px rgb(0 0 0 / 13%);
+
+	/* Centred modal sheets (Settings, command palette, appearance picker): one ring and
+	   shadow recipe, over one backdrop scrim. */
+	--sheet-shadow:
+		0 0 0 0.5px var(--border-strong), 0 2px 6px rgb(0 0 0 / 5%), 0 10px 28px rgb(0 0 0 / 7%);
+	--scrim: rgb(0 0 0 / 18%);
 }
 
 /* Mode-agnostic derivations. Declared per element (not inherited from :root) so each
    theme preview resolves them against its own palette and surfaces. */
 :where(:root, .appearanceThemePreview) {
+	/* Two state tokens: --state-on for tabs, toggles and nav rows; --state-selected for
+	   the selected item in a list. */
+	--state-on: var(--bg-active);
+	--state-selected: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+	/* One selection ring for pickers, swatches and cards: a background gap, then accent. */
+	--state-selected-ring: 0 0 0 1.5px var(--bg-primary), 0 0 0 3px var(--interactive-accent);
+	/* One card recipe: a hairline ring and a radius ladder (card < group < sheet). */
+	--card-ring: inset 0 0 0 1px var(--border-default);
+	--card-radius: var(--radius-8);
+	--group-radius: var(--radius-10);
+	--sheet-radius: var(--radius-14);
+	/* One search field: 28px, filled, tertiary icon. */
+	--search-field-height: 28px;
+	--search-field-radius: var(--radius-6);
+	--search-field-bg: var(--bg-hover);
+	/* Top/bottom scroll-edge fades for scrolled panes. */
+	--scroll-fade-size: 12px;
 	--editor-body-color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
 	/* Disabled controls, strikethrough and decorative separators only; never real information. */
 	--text-quaternary: var(--text-placeholder);

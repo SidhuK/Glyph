@@ -1,4 +1,8 @@
 {
+	"linkRewrite": {
+		"incomplete": "Renommage ou déplacement terminé, mais certains liens n’ont pas pu être mis à jour",
+		"skipped": "Impossible de lire ou d’écrire ces fichiers. Leurs liens devront peut-être être mis à jour à la main :\n{{paths}}"
+	},
 	"sidebar": {
 		"collapse": "Réduire la barre latérale",
 		"expand": "Développer la barre latérale",
@@ -30,11 +34,17 @@
 		"recents": "Récents",
 		"noPinnedFiles": "Aucun fichier épinglé.",
 		"noRecentFiles": "Aucun fichier récent.",
+		"openFolderTab": "Ouvrir {{folder}}",
+		"removeFolderTab": "Retirer {{folder}} des dossiers rapides",
+		"folderTabUpdateFailed": "Impossible de mettre à jour les dossiers rapides",
 		"sortNotes": "Trier les notes",
 		"sort": "Trier",
 		"expandAllFolders": "Développer tous les dossiers",
 		"collapseAllFolders": "Réduire tous les dossiers",
-		"fileTreeOptions": "Options de l’arborescence"
+		"fileTreeOptions": "Options de l’arborescence",
+		"inbox": "Boîte de réception",
+		"archive": "Archives",
+		"tasks": "Tâches"
 	},
 	"sort": {
 		"nameAsc": "Nom A–Z",
@@ -70,6 +80,8 @@
 		"clearSearch": "Effacer la recherche",
 		"delete": "Supprimer la collection",
 		"options": "Options de la collection",
+		"nameLabel": "Nom de la collection",
+		"folderBreadcrumb": "Dossier de la collection",
 		"pin": "Épingler la collection",
 		"searchView": "Rechercher dans la collection",
 		"unpin": "Désépingler la collection",
@@ -97,7 +109,10 @@
 		"boardCard": {
 			"openNote": "Ouvrir la note",
 			"moveTo": "Déplacer vers {{lane}}",
-			"openHint": "Double-cliquez pour ouvrir la note"
+			"openHint": "Double-cliquez pour ouvrir la note",
+			"tagTooltip": "Étiquette : {{value}}",
+			"statusTooltip": "Statut : {{value}}",
+			"priorityTooltip": "Priorité : {{value}}"
 		},
 		"switch": "Changer de collection",
 		"select": "Sélectionner une collection",
@@ -111,7 +126,9 @@
 			"options": "Options de la vue",
 			"optionsFor": "Options de la vue {{name}}",
 			"tabs": "Vues de la collection",
-			"name": "Nom de la vue"
+			"name": "Nom de la vue",
+			"defaultBoardName": "Kanban {{number}}",
+			"defaultTableName": "Tableau {{number}}"
 		},
 		"viewOptions": {
 			"reset": "Réinitialiser",
@@ -227,7 +244,8 @@
 			"emptyTitle": "Ajoutez un champ pour créer des colonnes",
 			"emptyText": "La vue Kanban regroupe les notes en colonnes. Ajoutez à vos notes un champ de statut, de priorité, une case à cocher, un tag ou un champ similaire, puis choisissez-le dans la barre d’outils ci-dessus.",
 			"openViewSettings": "Ouvrir les réglages de la vue",
-			"noPriority": "Aucune priorité",
+			"newCard": "Nouvelle",
+			"scrollNext": "Afficher les colonnes suivantes",
 			"laneEmpty": {
 				"archived": "Les notes archivées arrivent ici",
 				"done": "Les notes terminées arrivent ici",
@@ -245,7 +263,8 @@
 			"changePriority": "Modifier la priorité",
 			"editTagsHint": "Double-cliquez pour modifier les tags",
 			"editHint": "Double-cliquez pour modifier",
-			"renameNoteHint": "Double-cliquez pour renommer la note"
+			"renameNoteHint": "Double-cliquez pour renommer la note",
+			"removeValue": "Retirer {{value}}"
 		},
 		"tagPicker": {
 			"source": "Source des tags",
@@ -254,7 +273,28 @@
 			"placeholder": "Choisir un tag",
 			"empty": "Aucun tag correspondant.",
 			"search": "Rechercher des tags"
-		}
+		},
+		"status": {
+			"backlog": "Backlog",
+			"todo": "À faire",
+			"in_progress": "En cours",
+			"in_review": "En revue",
+			"blocked": "Bloqué",
+			"waiting": "En attente",
+			"done": "Terminé",
+			"canceled": "Annulé",
+			"archived": "Archivé"
+		},
+		"priority": {
+			"no": "Aucune priorité",
+			"low": "Basse",
+			"medium": "Moyenne",
+			"high": "Haute"
+		},
+		"table": {
+			"empty": "Aucune note correspondante"
+		},
+		"newNote": "Nouvelle"
 	},
 	"tags": {
 		"header": "Étiquettes",
@@ -324,9 +364,13 @@
 			"title": "Choisir l’apparence du fichier",
 			"updateFailed": "Impossible de modifier l’apparence du fichier"
 		},
+		"addFolderTab": "Ajouter aux dossiers rapides",
+		"removeFolderTab": "Retirer des dossiers rapides",
 		"addFile": "Ajouter un fichier",
 		"createFromTemplate": "Créer à partir d’un modèle",
 		"addFolder": "Ajouter un dossier",
+		"importFilesHere": "Importer des fichiers ici…",
+		"importFolderHere": "Importer un dossier ici…",
 		"deleteFile": "Supprimer le fichier",
 		"deleteFolder": "Supprimer le dossier",
 		"copyDeeplink": "Copier le lien profond",
@@ -339,6 +383,21 @@
 		"spaceNotFound": "Cet espace est introuvable.",
 		"noteNotFound": "Cette note est introuvable.",
 		"noteNotMarkdown": "Ce lien ne pointe pas vers une note Markdown."
+	},
+	"import": {
+		"filesTitle": "Importer des fichiers",
+		"folderTitle": "Importer un dossier",
+		"markdownFilter": "Fichiers Markdown",
+		"conflictTitle": "Des éléments existent déjà",
+		"conflictMessage_one": "1 élément existe déjà dans ce dossier. Appliquez l’action choisie à ce conflit.",
+		"conflictMessage_other": "{{count}} éléments existent déjà dans ce dossier. Appliquez l’action choisie à tous les conflits.",
+		"keepBoth": "Garder les deux",
+		"replace": "Remplacer",
+		"skip": "Ignorer",
+		"errorTitle": "Échec de l’importation",
+		"success_one": "1 fichier importé.",
+		"success_other": "{{count}} fichiers importés.",
+		"noneImported": "Aucun fichier n’a été importé."
 	},
 	"emptyState": {
 		"commandPalettePrompt": "Appuyez sur <shortcut/> pour commencer",
@@ -379,7 +438,10 @@
 		"footer": {
 			"navigate": "Naviguer",
 			"open": "Ouvrir",
-			"close": "Fermer"
+			"close": "Fermer",
+			"change": "Modifier",
+			"options": "Options",
+			"toggle": "Basculer"
 		},
 		"groups": {
 			"command": "Commandes",
@@ -392,7 +454,8 @@
 			"person": "Personnes",
 			"database": "Collections et bases de données",
 			"template": "Modèles"
-		}
+		},
+		"lineNumber": "L{{line}}"
 	},
 	"calendar": {
 		"title": "Calendrier",
@@ -419,6 +482,13 @@
 	"tabs": {
 		"allNotes": "Toutes les notes",
 		"collections": "Collections",
+		"pinTab": "Épingler l’onglet actif",
+		"unpinTab": "Désépingler l’onglet actif",
+		"unpinNamed": "Désépingler {{label}}",
+		"newTab": "Nouvel onglet",
+		"untitled": "Sans titre",
+		"openBlankTab": "Ouvrir un onglet vide",
+		"showAllTabs": "Afficher tous les onglets",
 		"goBack": "Précédent",
 		"goForward": "Suivant",
 		"closeNamed": "Fermer {{label}}",
@@ -441,6 +511,39 @@
 			"loadFailed": "Impossible de charger les modèles",
 			"empty": "Aucun modèle disponible",
 			"retry": "Réessayer"
+		},
+		"panel": {
+			"recentChats": "Discussions récentes",
+			"newChat": "Nouvelle discussion",
+			"settings": "Réglages de l’IA",
+			"close": "Fermer le panneau IA",
+			"scrollToLatest": "Aller au plus récent",
+			"untitledChat": "Discussion sans titre",
+			"noHistory": "Aucun historique de discussion"
+		},
+		"thread": {
+			"emptyTitle": "Parlez à vos notes",
+			"emptyHint": "Posez vos questions naturellement, ou utilisez <code>@</code> pour ajouter des notes et des dossiers à la conversation",
+			"shaping": "Votre idée prend forme",
+			"responseFailed": "La réponse a échoué",
+			"retry": "Réessayer",
+			"retryResponse": "Régénérer la réponse",
+			"copyResponse": "Copier la réponse",
+			"saveResponse": "Enregistrer la réponse dans un fichier",
+			"citations": "Citations",
+			"footnotes": "Renvois en note",
+			"citedNotes": "Notes citées"
+		},
+		"composer": {
+			"placeholder": "Interrogez vos notes · @ pour ajouter du contexte",
+			"message": "Message",
+			"mention": "Ajouter une note avec @",
+			"send": "Envoyer",
+			"stop": "Arrêter",
+			"searchContext": "Rechercher des fichiers et dossiers…",
+			"searchHint": "Tapez pour rechercher des fichiers et dossiers",
+			"noResults": "Aucun résultat",
+			"space": "Espace"
 		}
 	},
 	"connections": {
@@ -501,6 +604,47 @@
 		"loadError": "Impossible d’ouvrir le canevas : {{message}}",
 		"invalidAgentCanvas": "le bloc glyphCanvas contient un nœud ou un lien non valide",
 		"saveError": "Impossible d’enregistrer le canevas : {{message}}"
+	},
+	"tasks": {
+		"searchPlaceholder": "Filtrer les tâches",
+		"scope": "Afficher les tâches de",
+		"scopeAll": "Toutes les notes",
+		"scopeFolder": "Dossier",
+		"scopeTag": "Tag",
+		"folder": "Dossier",
+		"allFolders": "Tous les dossiers",
+		"foldersLoadFailed": "Impossible de charger les dossiers : {{message}}",
+		"retry": "Réessayer",
+		"tag": "Tag",
+		"allTags": "Tous les tags",
+		"empty": "Aucune tâche ouverte. Les cases à cocher de vos notes apparaissent ici.",
+		"emptyScope": "Aucune tâche ouverte dans ce dossier ou ce tag.",
+		"emptySearch": "Aucune tâche ouverte ne correspond à votre recherche.",
+		"clearSearch": "Effacer la recherche",
+		"showAllNotes": "Afficher toutes les notes",
+		"openTasks_one": "{{count}} tâche ouverte",
+		"openTasks_other": "{{count}} tâches ouvertes",
+		"noteCount_one": "{{count}} note",
+		"noteCount_other": "{{count}} notes",
+		"collapseAll": "Tout replier",
+		"groupStateSaveFailed": "Impossible d’enregistrer les notes dépliées",
+		"expandAll": "Tout déplier",
+		"collapseNote": "Replier {{title}}",
+		"expandNote": "Déplier {{title}}",
+		"loadError": "Impossible de charger les tâches : {{message}}",
+		"markDone": "Marquer « {{task}} » comme terminée",
+		"markNotDone": "Marquer « {{task}} » comme non terminée",
+		"openNote": "Ouvrir {{title}}",
+		"progress": "{{completed}} tâches terminées sur {{total}}",
+		"fraction": "{{completed}}/{{total}}",
+		"toggleFailed": "Impossible de mettre à jour la tâche",
+		"conflictChanged": "La note a changé depuis le chargement de la liste. Réessayez.",
+		"conflictRolledOver": "Cette tâche a été reportée dans une autre note.",
+		"indexFailed": "Tâche enregistrée, mais l’index de recherche n’a pas pu être mis à jour.",
+		"sort": "Trier les tâches par",
+		"sortRecent": "Modifiées récemment",
+		"sortMostOpen": "Le plus de tâches ouvertes",
+		"sortTitle": "Titre"
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Rechercher des icônes",
@@ -564,8 +708,31 @@
 		"expand": "Développer le calendrier"
 	},
 	"breadcrumbs": {
+		"label": "Chemin du fichier actuel",
 		"space": "Espace",
-		"emptyFolder": "Dossier vide"
+		"browse": "Parcourir {{name}}",
+		"emptyFolder": "Dossier vide",
+		"loading": "Chargement…",
+		"moreItems": "+{{count}} de plus",
+		"showHidden": "Afficher les éléments masqués du chemin",
+		"hiddenItems_one": "1 élément masqué du chemin",
+		"hiddenItems_other": "{{count}} éléments masqués du chemin",
+		"revealInFileTree": "Afficher dans l’arborescence",
+		"showInFinderFailed": "Impossible d’afficher le fichier dans le Finder"
+	},
+	"workspace": {
+		"openSpace": "Ouvrir un espace",
+		"openAnotherSpace": "Ouvrir un autre espace",
+		"switchSaveFailed": "Impossible d’enregistrer l’espace actuel. Veuillez réessayer."
+	},
+	"documentExport": {
+		"untitled": "Sans titre",
+		"docxDialogTitle": "Exporter la note au format Word",
+		"docxFormat": "Document Word",
+		"docxComplete": "Note exportée au format Word.",
+		"pdfFailed": "Impossible d’exporter la note en PDF",
+		"docxFailed": "Impossible d’exporter la note au format Word",
+		"tryAgain": "Réessayez dans un instant."
 	},
 	"quickNoteTarget": {
 		"today": "Note rapide du jour",
@@ -574,6 +741,10 @@
 		"resetToToday": "Revenir à la note rapide du jour"
 	},
 	"gitSync": {
+		"commitTitle": "Synchroniser avec Git",
+		"commitDescription": "Ajoutez éventuellement un message au commit local créé par cette synchronisation manuelle.",
+		"commitMessagePlaceholder": "Facultatif. Par défaut : Glyph sync",
+		"cancel": "Annuler",
 		"interval": {
 			"label": "Intervalle",
 			"description": "Fréquence des synchronisations planifiées de Glyph.",
@@ -593,11 +764,66 @@
 			}
 		},
 		"sync": "Synchroniser maintenant",
+		"manualCommitMessages": "Messages de commit manuels",
+		"manualCommitMessagesDescription": "Demander un message avant chaque synchronisation manuelle. Sinon, Glyph utilise « Glyph sync ».",
 		"resumeAutoSync": "Reprendre la synchronisation automatique",
 		"remote": "Dépôt distant",
 		"actions": "Actions"
 	},
 	"activity": {
+		"recentActivity": "Activité récente des notes",
+		"daySummary_one": "{{count}} note le {{date}}",
+		"daySummary_other": "{{count}} notes le {{date}}",
+		"today": "Aujourd’hui",
+		"yesterday": "Hier",
+		"noteCount_one": "{{count}} note",
+		"noteCount_other": "{{count}} notes",
+		"summaryHint": "Inclut les dates de création et de dernière modification des notes.",
+		"less": "Moins",
+		"more": "Plus",
+		"pastYear": "Année écoulée",
+		"previousPeriod": "Année précédente",
+		"nextPeriod": "Année suivante",
+		"notesCount_one": "{{count}} note créée ou modifiée",
+		"notesCount_other": "{{count}} notes créées ou modifiées",
+		"activeDays_one": "{{count}} jour actif",
+		"activeDays_other": "{{count}} jours actifs",
+		"noActivityInPeriod": "Aucune note créée ou modifiée sur cette période",
+		"createdCount_one": "{{count}} créée",
+		"createdCount_other": "{{count}} créées",
+		"editedCount_one": "{{count}} modifiée",
+		"editedCount_other": "{{count}} modifiées",
+		"noActivityOnDay": "Aucune note",
+		"moreNotes_one": "{{count}} de plus",
+		"moreNotes_other": "{{count}} de plus",
+		"selectDayHint": "Cliquez pour afficher ces notes",
+		"showAllNotes": "Afficher toutes les notes",
+		"empty": "Aucune activité pour l’instant. Créez ou modifiez une note pour démarrer la chronologie.",
+		"loadError": "Impossible de charger l’activité : {{message}}",
+		"loadOlder": "Charger des notes plus anciennes",
+		"loadingOlder": "Chargement…",
 		"noPreviewYet": "Pas encore d’aperçu"
+	},
+	"noteCollections": {
+		"loading": "Chargement des notes…",
+		"noFiles": "Aucun fichier trouvé.",
+		"enableArchive": "Activer les archives dans les réglages de l’espace",
+		"configureInbox": "Configurer la boîte de réception",
+		"archive": "Archiver",
+		"unarchive": "Désarchiver",
+		"archived": "Archivée",
+		"archivedTooltip": "Archivée. Cliquez pour désarchiver.",
+		"undo": "Annuler",
+		"archivedCount_one": "{{count}} note archivée",
+		"archivedCount_other": "{{count}} notes archivées",
+		"restoredCount_one": "{{count}} note désarchivée",
+		"restoredCount_other": "{{count}} notes désarchivées",
+		"partialFailure": "Certaines notes n’ont pas pu être mises à jour",
+		"actionFailed": "Impossible de mettre à jour les notes",
+		"unsaved": "Enregistrez vos modifications en attente avant de continuer.",
+		"spaceChanged": "L’espace ouvert a changé. Réessayez.",
+		"retry": "Réessayer",
+		"inboxEmpty": "Votre boîte de réception est vide.",
+		"archiveEmpty": "Aucune note archivée."
 	}
 }

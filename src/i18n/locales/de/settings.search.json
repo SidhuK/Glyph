@@ -168,7 +168,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Farbmodus",
-			"section": "Darstellung",
+			"section": "Modus",
 			"description": "System-, Hell- oder Dunkelmodus wählen.",
 			"keywords": ["modus", "system", "hell", "dunkel", "mode", "light", "dark"]
 		},
@@ -186,7 +186,7 @@
 		},
 		"appearance-translucent-app": {
 			"title": "Durchscheinende Seitenleiste",
-			"section": "Darstellung",
+			"section": "Modus",
 			"keywords": [
 				"fenster",
 				"glas",

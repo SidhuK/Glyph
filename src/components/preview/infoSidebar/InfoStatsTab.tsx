@@ -76,7 +76,7 @@ export function InfoStatsTab({
 	] as const;
 	const fileRows = [
 		{
-			key: "modified",
+			key: "fileModified",
 			icon: Clock01Icon,
 			value: formatMetadataDate(
 				lastSavedMtimeMs
@@ -86,7 +86,7 @@ export function InfoStatsTab({
 			),
 		},
 		{
-			key: "created",
+			key: "fileCreated",
 			icon: CalendarAdd01Icon,
 			value: formatMetadataDate(previewContext?.created, dateDisplayFormat),
 		},

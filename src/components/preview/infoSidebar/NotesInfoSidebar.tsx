@@ -153,7 +153,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 					aria-label={t("infoSidebar.close")}
 					title={t("infoSidebar.close")}
 				>
-					<HugeiconsIcon icon={Cancel01Icon} size="var(--icon-md)" />
+					<HugeiconsIcon icon={Cancel01Icon} size="var(--icon-lg)" />
 				</button>
 			</div>
 			<div className="markdownEditorInfoBody">

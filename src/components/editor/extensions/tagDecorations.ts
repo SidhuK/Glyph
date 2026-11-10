@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 import { Decoration } from "@tiptap/pm/view";
-import { INLINE_TAG_PATTERN } from "../noteProperties/utils";
+import { INLINE_TAG_PATTERN, tagColorFromName } from "../noteProperties/utils";
 import {
 	type TextNodeDecorationContext,
 	createIncrementalTextDecorationPlugin,
@@ -36,6 +36,7 @@ function collectTagDecorations(
 			Decoration.inline(from, to, {
 				class: "tagToken",
 				"data-tag": tag,
+				"data-chip-tone": tagColorFromName(tag),
 			}),
 		);
 	}

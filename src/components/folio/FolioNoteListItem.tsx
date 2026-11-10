@@ -26,6 +26,7 @@ import { invoke } from "../../lib/tauri";
 import { basename, displayNameFromPath, parentDir, splitEditableFileName } from "../../utils/path";
 import { InlineRenameInput } from "../InlineRenameInput";
 import { NoteThumbnail } from "../NoteThumbnail";
+import { noteDisplayTitle } from "../app/allDocsPreviewLines";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
@@ -74,6 +75,8 @@ const WEEK_MS = 7 * DAY_MS;
 const MONTH_MS = 30 * DAY_MS;
 const CALENDAR_DATE_THRESHOLD_MS = 3 * MONTH_MS;
 const compactRelativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();
+/** `![[file]]` and `![alt](src)` embeds, which carry no preview text of their own. */
+const MARKDOWN_EMBED_PATTERN = /!\[\[[^\]]*\]\]|!\[[^\]]*\]\((?:[^()\\]|\\.)*\)/g;
 
 function compactRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
 	const existing = compactRelativeTimeFormatters.get(locale);
@@ -130,14 +133,14 @@ function previewText(preview: string, title: string, emptyLabel: string): string
 	const previewLines: string[] = [];
 
 	for (const rawLine of lines) {
-		const line = rawLine.trim();
+		const line = rawLine.replace(MARKDOWN_EMBED_PATTERN, "").trim();
 		if (!line || /^#\s+/.test(line)) continue;
 
 		const withoutMarkdownPrefix = line
 			.replace(/^#{2,6}\s+/, "")
 			.replace(/^>\s?/, "")
-			.replace(/^(?:[-*+]|\d+\.)\s+/, "")
-			.replace(/^\[(?: |x|X)\]\s+/, "");
+			.replace(/^(?:[-*+]|\d+\.)(?:\s+|$)/, "")
+			.replace(/^\[(?: |x|X)\](?:\s+|$)/, "");
 		const normalized = normalizeInlineMarkdown(withoutMarkdownPrefix);
 		if (!normalized) continue;
 
@@ -205,7 +208,7 @@ export const FolioNoteListItem = memo(
 		const { i18n, t } = useTranslation("shell");
 		const dateDisplayFormat = useDateDisplayFormat();
 		const untitledLabel = t("folio.untitled");
-		const title = note.title.trim() || displayNameFromPath(note.note_path) || untitledLabel;
+		const title = noteDisplayTitle(note) || untitledLabel;
 		const isMarkdown = note.is_markdown;
 		const { spacePath } = useSpace();
 		const { getEditorState, saveCurrentEditor } = useEditorContext();
@@ -355,7 +358,24 @@ export const FolioNoteListItem = memo(
 					<span className="folioNoteDates" title={updatedTitle}>
 						{updated}
 					</span>
-					{firstUrl ? (
+					{/* Tags, else the first link, else the folder: one kind of detail per row. */}
+					{visibleTags.length > 0 ? (
+						<>
+							{visibleTags.map((tag) => (
+								<span
+									key={tag}
+									className="folioNoteTag"
+									data-chip-tone={tagColorFromName(tag)}
+									title={formatDatabaseTagLabel(tag)}
+								>
+									{formatDatabaseTagLabel(tag)}
+								</span>
+							))}
+							{hiddenTagCount > 0 ? (
+								<span className="folioNoteTag folioNoteTagCount">+{hiddenTagCount}</span>
+							) : null}
+						</>
+					) : firstUrl ? (
 						<a
 							href={firstUrl}
 							className="folioNoteTag folioNoteUrl"
@@ -369,25 +389,9 @@ export const FolioNoteListItem = memo(
 							<HugeiconsIcon icon={Link01Icon} size="var(--icon-xs)" aria-hidden="true" />
 							{firstUrlLabel}
 						</a>
-					) : null}
-					{visibleTags.length > 0 ? (
-						visibleTags.map((tag) => (
-							<span
-								key={tag}
-								className="folioNoteTag"
-								style={{
-									color: "var(--text-primary)",
-									background: `color-mix(in srgb, var(--palette-${tagColorFromName(tag)}) 18%, transparent)`,
-								}}
-								title={formatDatabaseTagLabel(tag)}
-							>
-								{formatDatabaseTagLabel(tag)}
-							</span>
-						))
-					) : firstUrl ? null : (
+					) : (
 						<span className="folioNoteFolder">{folder || t("folio.noFolder")}</span>
 					)}
-					{hiddenTagCount > 0 ? <span className="folioNoteTag">+{hiddenTagCount}</span> : null}
 				</span>
 				<span className="folioNotePreview">{preview}</span>
 				<NoteThumbnail

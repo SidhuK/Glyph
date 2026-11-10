@@ -69,29 +69,29 @@
 	gap: 4px;
 }
 
+/* The app's one search field (Filter notes, Search settings): filled, no outline at rest. */
 .databaseToolbarSearch {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 	width: min(200px, 24vw);
 	min-width: 132px;
-	height: 28px;
+	height: var(--search-field-height);
 	padding: 0 8px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-md);
-	background: var(--bg-primary);
+	border: 1px solid transparent;
+	border-radius: var(--search-field-radius);
+	background: var(--search-field-bg);
 	color: var(--text-tertiary);
 	margin-right: 8px;
 	cursor: text;
-	transition: border-color 140ms ease;
-}
-
-.databaseToolbarSearch:hover {
-	border-color: var(--border-default);
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
 }
 
 .databaseToolbarSearch:focus-within {
 	border-color: var(--border-focus);
+	background: var(--bg-primary);
 	color: var(--text-secondary);
 }
 
@@ -156,15 +156,18 @@
 	color: var(--text-primary);
 }
 
-/* Linear's "Display" control: one quiet outlined ghost button holding grouping, filters and sort. */
+/* Linear's "Display" control: one secondary button holding grouping, filters and sort, filled
+   like the search field beside it. */
 button.databaseToolbarChip.databaseViewOptionsTrigger {
 	width: auto;
-	height: 28px;
-	min-height: 28px;
+	height: var(--search-field-height);
+	min-height: var(--search-field-height);
 	gap: 6px;
 	margin-left: 0;
 	padding: 0 10px 0 8px;
-	border-color: var(--border-light);
+	border-color: transparent;
+	border-radius: var(--search-field-radius);
+	background: var(--search-field-bg);
 	color: var(--text-secondary);
 	font-size: var(--text-sm);
 	font-weight: var(--font-normal);
@@ -172,19 +175,32 @@ button.databaseToolbarChip.databaseViewOptionsTrigger {
 
 button.databaseToolbarChip.databaseViewOptionsTrigger:hover,
 button.databaseToolbarChip.databaseViewOptionsTrigger[data-popup-open] {
-	border-color: var(--border-default);
-	background: var(--bg-hover);
+	background: var(--bg-active);
 	color: var(--text-primary);
+}
+
+/* New note sits after Display on the same filled 28px recipe, in primary ink as the view's
+   main action. */
+button.databaseToolbarChip.databaseToolbarNewNote {
+	height: var(--search-field-height);
+	min-height: var(--search-field-height);
+	gap: 6px;
+	padding: 0 10px 0 8px;
+	border-radius: var(--search-field-radius);
+	background: var(--search-field-bg);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+button.databaseToolbarChip.databaseToolbarNewNote:hover {
+	background: var(--bg-active);
 }
 
 /* One focus ring (the global outline) and only for keyboard focus; the Button primitive's
    3px box-shadow ring would otherwise stack on top of it. */
 button.databaseToolbarChip:focus-visible {
 	box-shadow: none;
-}
-
-button.databaseToolbarChip.databaseViewOptionsTrigger:focus-visible {
-	border-color: var(--border-default);
 }
 
 button.databaseToolbarChip[data-popup-open]:not(:focus-visible) {

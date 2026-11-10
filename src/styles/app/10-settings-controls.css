@@ -72,7 +72,8 @@
 }
 
 /* The inset-grouped card: a hairline outline, a fill level with (dark: a breath above) the
-   page. A one-row section is simply a one-row card. */
+   page. A one-row section is simply a one-row card. The outline is the --card-ring colour
+   drawn as a border, because a highlighted row's fill would paint over an inset ring. */
 .settingsCard {
 	display: flex;
 	flex-direction: column;
@@ -80,7 +81,7 @@
 	padding: 0;
 	overflow: clip;
 	border: 1px solid var(--settings-card-border);
-	border-radius: var(--radius-xl);
+	border-radius: var(--group-radius);
 	background: var(--settings-card-bg);
 }
 
@@ -90,7 +91,7 @@
 	align-items: center;
 	flex: 0 0 auto;
 	gap: 8px;
-	height: calc(var(--text-base) * 15 / 14 * 1.35);
+	height: calc(var(--text-base) * 1.35);
 }
 
 .settingsCardActions > [data-slot="button"][data-size^="icon"] {
@@ -125,9 +126,8 @@
 }
 
 .settingsCardTitle {
-	font-size: calc(var(--text-base) * 15 / 14);
+	font-size: var(--text-base);
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.005em;
 	color: var(--text-primary);
 	line-height: 1.35;
 }

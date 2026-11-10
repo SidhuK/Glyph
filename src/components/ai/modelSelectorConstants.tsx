@@ -32,6 +32,30 @@ export function resolveLogoProvider(
 	return guessOpenRouterProvider(modelName) ?? provider;
 }
 
+const MODEL_ID_DATE_SUFFIX_RE = /[-@](?:\d{8}|\d{4}-\d{2}-\d{2}|latest)$/i;
+const MODEL_ID_ACRONYMS = new Set(["gpt", "ai", "llm", "vl"]);
+
+/** Turns a raw model id ("claude-opus-5-5", "gpt-4o-mini-2024-07-18") into a readable name. */
+export function formatModelId(id: string): string {
+	const base = (id.split("/").pop() ?? id).replace(MODEL_ID_DATE_SUFFIX_RE, "");
+	const words: string[] = [];
+	for (const token of base.split(/[-_:\s]+/).filter(Boolean)) {
+		const previous = words[words.length - 1];
+		if (/^\d+$/.test(token) && previous && /^\d+(\.\d+)*$/.test(previous)) {
+			words[words.length - 1] = `${previous}.${token}`;
+		} else if (MODEL_ID_ACRONYMS.has(token.toLowerCase())) {
+			words.push(token.toUpperCase());
+		} else if (/^\d+(\.\d+)?[bkm]$/i.test(token)) {
+			words.push(token.toUpperCase());
+		} else if (/^[a-z]{2,}/i.test(token)) {
+			words.push(token.charAt(0).toUpperCase() + token.slice(1));
+		} else {
+			words.push(token);
+		}
+	}
+	return words.join(" ") || id;
+}
+
 export function truncateLabel(name: string, max = 30): string {
 	if (name.length <= max) return name;
 	const visibleChars = max === 30 ? 27 : max - 1;

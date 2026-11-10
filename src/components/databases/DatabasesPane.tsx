@@ -17,6 +17,7 @@ import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
 import { Button } from "../ui/shadcn/button";
+import { CollectionTitle } from "./CollectionTitle";
 import { CollectionTopBar } from "./CollectionTopBar";
 import { CreateCollectionDialog } from "./CreateCollectionDialog";
 import { DatabaseViewTabs } from "./DatabaseViewTabs";
@@ -58,10 +59,11 @@ function DatabasesPaneContent({
 
 	return (
 		<div className="databaseHostPane">
-			<CollectionTopBar document={doc} selection={selection} views={views} />
+			<CollectionTopBar document={doc} selection={selection} />
 
 			{activeCollection ? (
 				<>
+					<CollectionTitle document={doc} />
 					<div className="databasesViewBar">
 						<div className="databasesViewBarPrimary">
 							<DatabaseViewTabs
@@ -74,16 +76,6 @@ function DatabasesPaneContent({
 								patchActiveView={views.patchActiveView}
 								reduceMotion={reduceMotion}
 							/>
-							<button
-								type="button"
-								className="databaseToolbarChip databasesNewNoteButton"
-								data-kind="new-note"
-								onClick={() => void actions.handleCreateRow()}
-								title={t("sidebar.newNote")}
-								aria-label={t("sidebar.newNote")}
-							>
-								<Plus size="var(--icon-md)" aria-hidden="true" />
-							</button>
 						</div>
 						<DatabaseToolbar
 							className="databaseToolbarInline"
@@ -96,6 +88,7 @@ function DatabasesPaneContent({
 							onChangeConfig={views.handleSaveConfig}
 							viewOptionsOpen={views.viewOptionsOpen}
 							onViewOptionsOpenChange={views.setViewOptionsOpen}
+							onCreateNote={() => void actions.handleCreateRow()}
 						/>
 					</div>
 					{ui.error ? <div className="databaseNotice databaseNoticeError">{ui.error}</div> : null}

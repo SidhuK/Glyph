@@ -14,6 +14,7 @@ import { suggestWikiLinkItems } from "../markdown/wikiLinkHeadingSuggest";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 import { createWikiEmbedView } from "./wikiEmbedView";
+import { createWikiLinkResolutionPlugin } from "./wikiLinkResolution";
 
 const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
 const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
@@ -339,6 +340,7 @@ export const WikiLink = Node.create({
 	},
 	addProseMirrorPlugins() {
 		return [
+			createWikiLinkResolutionPlugin(),
 			Suggestion<EditorLinkSuggestion>({
 				editor: this.editor,
 				pluginKey: WIKI_LINK_SUGGESTION_KEY,

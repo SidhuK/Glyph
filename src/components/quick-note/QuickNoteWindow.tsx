@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { dispatchEditorMenuAction } from "../../lib/appEvents";
 import { isMissingFileError } from "../../lib/fsErrors";
 import { loadSettings } from "../../lib/settings";
+import { KEY_GLYPHS } from "../../lib/shortcuts/platform";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords } from "../../lib/textStats";
@@ -346,7 +347,7 @@ export function QuickNoteWindow() {
 								<kbd>
 									<span className="commandPaletteShortcutCombo">
 										<span className="commandPaletteShortcutPart">{shortcutModifierLabel}</span>
-										<span className="commandPaletteShortcutPart">↵</span>
+										<span className="commandPaletteShortcutPart">{KEY_GLYPHS.Enter}</span>
 									</span>
 								</kbd>
 							</span>

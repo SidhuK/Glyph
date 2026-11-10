@@ -50,7 +50,7 @@
 
 .triggerIcon {
 	flex-shrink: 0;
-	color: var(--text-tertiary);
+	color: inherit;
 }
 
 .menuLogo {

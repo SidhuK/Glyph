@@ -24,9 +24,10 @@ interface StatusRingIconProps {
 	className?: string;
 }
 
-/** Linear-style ring status glyph; colour comes from `currentColor`. */
+/** Linear-style ring status glyph; colour comes from `currentColor`. A custom status that maps
+    to no workflow state draws the neutral dashed ring, so it never reads as a real state. */
 export function StatusRingIcon({ value, className }: StatusRingIconProps) {
-	const statusId = statusOptionFromValue(value)?.id ?? "todo";
+	const statusId = statusOptionFromValue(value)?.id ?? "backlog";
 	const pieFraction = STATUS_PIE_FRACTION[statusId];
 	const filled = statusId === "done" || statusId === "canceled" || statusId === "archived";
 

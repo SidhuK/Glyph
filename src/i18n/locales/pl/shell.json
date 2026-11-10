@@ -1,4 +1,8 @@
 {
+	"linkRewrite": {
+		"incomplete": "Zmiana nazwy lub przeniesienie zakończone, ale nie udało się zaktualizować niektórych linków",
+		"skipped": "Nie udało się odczytać ani zapisać tych plików. Ich linki mogą wymagać ręcznej aktualizacji:\n{{paths}}"
+	},
 	"sidebar": {
 		"collapse": "Zwiń pasek boczny",
 		"expand": "Rozwiń pasek boczny",
@@ -9,6 +13,8 @@
 		"fromTemplate": "Z szablonu",
 		"createSection": "Utwórz",
 		"periodicNotesSection": "Notatki okresowe",
+		"newNoteInFolder": "Utwórz nową notatkę w {{folder}}",
+		"newNoteInRoot": "Utwórz nową notatkę w katalogu głównym przestrzeni",
 		"pinned": "Przypięte",
 		"allNotes": "Wszystkie",
 		"collections": "Kolekcje",
@@ -28,11 +34,17 @@
 		"recents": "Ostatnie",
 		"noPinnedFiles": "Brak przypiętych plików.",
 		"noRecentFiles": "Brak ostatnio otwieranych plików.",
+		"openFolderTab": "Otwórz {{folder}}",
+		"removeFolderTab": "Usuń {{folder}} z szybkich folderów",
+		"folderTabUpdateFailed": "Nie udało się zaktualizować szybkich folderów",
 		"sortNotes": "Sortuj",
 		"sort": "Sortuj",
 		"expandAllFolders": "Rozwiń wszystkie foldery",
 		"collapseAllFolders": "Zwiń wszystkie foldery",
-		"fileTreeOptions": "Opcje drzewa plików"
+		"fileTreeOptions": "Opcje drzewa plików",
+		"inbox": "Skrzynka",
+		"archive": "Archiwum",
+		"tasks": "Zadania"
 	},
 	"sort": {
 		"nameAsc": "Nazwa A–Z",
@@ -68,6 +80,8 @@
 		"clearSearch": "Wyczyść wyszukiwanie",
 		"delete": "Usuń kolekcję",
 		"options": "Opcje kolekcji",
+		"nameLabel": "Nazwa kolekcji",
+		"folderBreadcrumb": "Folder kolekcji",
 		"pin": "Przypnij",
 		"searchView": "Przeszukaj kolekcję",
 		"unpin": "Odepnij",
@@ -99,7 +113,10 @@
 		"boardCard": {
 			"openNote": "Otwórz notatkę",
 			"moveTo": "Przenieś do {{lane}}",
-			"openHint": "Kliknij dwukrotnie, aby otworzyć notatkę"
+			"openHint": "Kliknij dwukrotnie, aby otworzyć notatkę",
+			"tagTooltip": "Tag: {{value}}",
+			"statusTooltip": "Status: {{value}}",
+			"priorityTooltip": "Priorytet: {{value}}"
 		},
 		"switch": "Przełącz kolekcję",
 		"select": "Wybierz kolekcję",
@@ -113,7 +130,9 @@
 			"options": "Opcje widoku",
 			"optionsFor": "Opcje widoku {{name}}",
 			"tabs": "Widoki kolekcji",
-			"name": "Nazwa widoku"
+			"name": "Nazwa widoku",
+			"defaultBoardName": "Tablica {{number}}",
+			"defaultTableName": "Tabela {{number}}"
 		},
 		"viewOptions": {
 			"reset": "Resetuj",
@@ -229,7 +248,8 @@
 			"emptyTitle": "Dodaj pole, aby utworzyć kolumny tablicy",
 			"emptyText": "Widok tablicy grupuje notatki w kolumny. Dodaj do notatek pole statusu, priorytetu, pola wyboru, tagu lub podobne, a potem wybierz je na pasku narzędzi powyżej.",
 			"openViewSettings": "Otwórz ustawienia widoku",
-			"noPriority": "Brak priorytetu",
+			"newCard": "Nowa",
+			"scrollNext": "Pokaż kolejne kolumny",
 			"laneEmpty": {
 				"archived": "Tu trafiają zarchiwizowane notatki",
 				"done": "Tu trafiają ukończone notatki",
@@ -247,7 +267,8 @@
 			"changePriority": "Zmień priorytet",
 			"editTagsHint": "Kliknij dwukrotnie, aby edytować tagi",
 			"editHint": "Kliknij dwukrotnie, aby edytować",
-			"renameNoteHint": "Kliknij dwukrotnie, aby zmienić nazwę notatki"
+			"renameNoteHint": "Kliknij dwukrotnie, aby zmienić nazwę notatki",
+			"removeValue": "Usuń {{value}}"
 		},
 		"tagPicker": {
 			"source": "Źródło tagów",
@@ -256,7 +277,28 @@
 			"placeholder": "Wybierz tag",
 			"empty": "Nie znaleziono pasujących tagów.",
 			"search": "Szukaj tagów"
-		}
+		},
+		"status": {
+			"backlog": "Zaległe",
+			"todo": "Do zrobienia",
+			"in_progress": "W toku",
+			"in_review": "W przeglądzie",
+			"blocked": "Zablokowane",
+			"waiting": "Oczekujące",
+			"done": "Gotowe",
+			"canceled": "Anulowane",
+			"archived": "Zarchiwizowane"
+		},
+		"priority": {
+			"no": "Brak priorytetu",
+			"low": "Niski",
+			"medium": "Średni",
+			"high": "Wysoki"
+		},
+		"table": {
+			"empty": "Brak pasujących notatek"
+		},
+		"newNote": "Nowa"
 	},
 	"tags": {
 		"header": "Tagi",
@@ -336,6 +378,8 @@
 			"title": "Wybierz wygląd pliku",
 			"updateFailed": "Nie udało się zmienić wyglądu pliku"
 		},
+		"addFolderTab": "Dodaj do szybkich folderów",
+		"removeFolderTab": "Usuń z szybkich folderów",
 		"addFile": "Dodaj plik",
 		"createFromTemplate": "Utwórz z szablonu",
 		"addFolder": "Dodaj folder",
@@ -415,7 +459,10 @@
 		"footer": {
 			"navigate": "Nawiguj",
 			"open": "Otwórz",
-			"close": "Zamknij"
+			"close": "Zamknij",
+			"change": "Zmień",
+			"options": "Opcje",
+			"toggle": "Przełącz"
 		},
 		"groups": {
 			"command": "Polecenia",
@@ -428,7 +475,8 @@
 			"person": "Ludzie",
 			"database": "Kolekcje i bazy danych",
 			"template": "Szablony"
-		}
+		},
+		"lineNumber": "w. {{line}}"
 	},
 	"calendar": {
 		"title": "Kalendarz",
@@ -458,6 +506,10 @@
 		"pinTab": "Przypnij",
 		"unpinTab": "Odepnij",
 		"unpinNamed": "Odepnij {{label}}",
+		"newTab": "Nowa karta",
+		"untitled": "Bez tytułu",
+		"openBlankTab": "Otwórz pustą kartę",
+		"showAllTabs": "Pokaż wszystkie karty",
 		"goBack": "Wstecz",
 		"goForward": "Dalej",
 		"closeNamed": "Zamknij {{label}}",
@@ -468,6 +520,15 @@
 		"openSpace": "Otwórz przestrzeń",
 		"openAnotherSpace": "Otwórz inną przestrzeń",
 		"switchSaveFailed": "Nie udało się zapisać bieżącej przestrzeni. Spróbuj ponownie."
+	},
+	"documentExport": {
+		"untitled": "Bez tytułu",
+		"docxDialogTitle": "Eksportuj notatkę do Worda",
+		"docxFormat": "Dokument Word",
+		"docxComplete": "Wyeksportowano notatkę do Worda.",
+		"pdfFailed": "Nie udało się wyeksportować notatki do PDF",
+		"docxFailed": "Nie udało się wyeksportować notatki do Worda",
+		"tryAgain": "Spróbuj ponownie za chwilę."
 	},
 	"ai": {
 		"toolFailed": "Narzędzie {{tool}} nie powiodło się",
@@ -485,6 +546,39 @@
 			"loadFailed": "Nie udało się wczytać modeli",
 			"empty": "Brak dostępnych modeli",
 			"retry": "Spróbuj ponownie"
+		},
+		"panel": {
+			"recentChats": "Ostatnie czaty",
+			"newChat": "Nowy czat",
+			"settings": "Ustawienia AI",
+			"close": "Zamknij panel AI",
+			"scrollToLatest": "Przewiń do najnowszych",
+			"untitledChat": "Czat bez tytułu",
+			"noHistory": "Brak historii czatów"
+		},
+		"thread": {
+			"emptyTitle": "Porozmawiaj ze swoimi notatkami",
+			"emptyHint": "Pytaj naturalnie albo użyj <code>@</code>, aby dodać notatki i foldery do rozmowy",
+			"shaping": "Kształtowanie myśli",
+			"responseFailed": "Odpowiedź nie powiodła się",
+			"retry": "Spróbuj ponownie",
+			"retryResponse": "Wygeneruj odpowiedź ponownie",
+			"copyResponse": "Kopiuj odpowiedź",
+			"saveResponse": "Zapisz odpowiedź do pliku",
+			"citations": "Cytowania",
+			"footnotes": "Przypisy",
+			"citedNotes": "Cytowane notatki"
+		},
+		"composer": {
+			"placeholder": "Zapytaj o swoje notatki · @, aby dodać kontekst",
+			"message": "Wiadomość",
+			"mention": "Dodaj notatkę przez @",
+			"send": "Wyślij",
+			"stop": "Zatrzymaj",
+			"searchContext": "Szukaj plików i folderów…",
+			"searchHint": "Zacznij pisać, aby szukać plików i folderów",
+			"noResults": "Brak wyników",
+			"space": "Przestrzeń"
 		}
 	},
 	"connections": {
@@ -548,6 +642,51 @@
 		"invalidAgentCanvas": "blok glyphCanvas zawiera nieprawidłowy węzeł lub krawędź",
 		"saveError": "Nie można zapisać płótna: {{message}}"
 	},
+	"tasks": {
+		"searchPlaceholder": "Filtruj zadania",
+		"scope": "Pokaż zadania z",
+		"scopeAll": "Wszystkie notatki",
+		"scopeFolder": "Folder",
+		"scopeTag": "Tag",
+		"folder": "Folder",
+		"allFolders": "Wszystkie foldery",
+		"foldersLoadFailed": "Nie udało się wczytać folderów: {{message}}",
+		"retry": "Ponów",
+		"tag": "Tag",
+		"allTags": "Wszystkie tagi",
+		"empty": "Brak otwartych zadań. Pozycje list kontrolnych z Twoich notatek pojawią się tutaj.",
+		"emptyScope": "Brak otwartych zadań w tym folderze lub tagu.",
+		"emptySearch": "Żadne otwarte zadanie nie pasuje do wyszukiwania.",
+		"clearSearch": "Wyczyść wyszukiwanie",
+		"showAllNotes": "Pokaż wszystkie notatki",
+		"openTasks_one": "{{count}} otwarte zadanie",
+		"openTasks_few": "{{count}} otwarte zadania",
+		"openTasks_many": "{{count}} otwartych zadań",
+		"openTasks_other": "{{count}} otwartego zadania",
+		"noteCount_one": "{{count}} notatka",
+		"noteCount_few": "{{count}} notatki",
+		"noteCount_many": "{{count}} notatek",
+		"noteCount_other": "{{count}} notatki",
+		"collapseAll": "Zwiń wszystko",
+		"groupStateSaveFailed": "Nie udało się zapisać, które notatki są rozwinięte",
+		"expandAll": "Rozwiń wszystko",
+		"collapseNote": "Zwiń {{title}}",
+		"expandNote": "Rozwiń {{title}}",
+		"loadError": "Nie udało się wczytać zadań: {{message}}",
+		"markDone": "Oznacz „{{task}}” jako wykonane",
+		"markNotDone": "Oznacz „{{task}}” jako niewykonane",
+		"openNote": "Otwórz {{title}}",
+		"progress": "Ukończono {{completed}} z {{total}} zadań",
+		"fraction": "{{completed}}/{{total}}",
+		"toggleFailed": "Nie udało się zaktualizować zadania",
+		"conflictChanged": "Notatka zmieniła się od wczytania listy. Spróbuj ponownie.",
+		"conflictRolledOver": "To zadanie zostało przeniesione do innej notatki.",
+		"indexFailed": "Zadanie zapisano, ale nie udało się zaktualizować indeksu wyszukiwania.",
+		"sort": "Sortuj zadania według",
+		"sortRecent": "Ostatnio edytowane",
+		"sortMostOpen": "Najwięcej otwartych zadań",
+		"sortTitle": "Tytuł"
+	},
 	"appearancePicker": {
 		"searchPlaceholder": "Szukaj ikon",
 		"searchEmojiPlaceholder": "Szukaj emoji",
@@ -610,8 +749,19 @@
 		"expand": "Rozwiń kalendarz"
 	},
 	"breadcrumbs": {
+		"label": "Ścieżka bieżącego pliku",
 		"space": "Przestrzeń",
-		"emptyFolder": "Pusty folder"
+		"browse": "Przeglądaj {{name}}",
+		"emptyFolder": "Pusty folder",
+		"loading": "Wczytywanie…",
+		"moreItems": "+{{count}} więcej",
+		"showHidden": "Pokaż ukryte elementy ścieżki",
+		"hiddenItems_one": "1 ukryty element ścieżki",
+		"hiddenItems_few": "{{count}} ukryte elementy ścieżki",
+		"hiddenItems_many": "{{count}} ukrytych elementów ścieżki",
+		"hiddenItems_other": "{{count}} ukrytego elementu ścieżki",
+		"revealInFileTree": "Pokaż w drzewie plików",
+		"showInFinderFailed": "Nie udało się pokazać pliku w Finderze"
 	},
 	"quickNoteTarget": {
 		"today": "Dzisiejsza szybka notatka",
@@ -620,6 +770,10 @@
 		"resetToToday": "Przywróć dzisiejszą szybką notatkę"
 	},
 	"gitSync": {
+		"commitTitle": "Synchronizuj z Git",
+		"commitDescription": "Opcjonalnie dodaj wiadomość do lokalnego commita tworzonego przez tę ręczną synchronizację.",
+		"commitMessagePlaceholder": "Opcjonalnie. Domyślnie: Glyph sync",
+		"cancel": "Anuluj",
 		"interval": {
 			"label": "Interwał",
 			"description": "Jak często Glyph uruchamia zaplanowane synchronizacje.",
@@ -641,11 +795,84 @@
 			}
 		},
 		"sync": "Synchronizuj teraz",
+		"manualCommitMessages": "Wiadomości commitów przy ręcznej synchronizacji",
+		"manualCommitMessagesDescription": "Pytaj o wiadomość przed każdą ręczną synchronizacją. Gdy wyłączone, Glyph używa „Glyph sync”.",
 		"resumeAutoSync": "Wznów automatyczną synchronizację",
 		"remote": "Zdalne repozytorium",
 		"actions": "Działania"
 	},
 	"activity": {
+		"recentActivity": "Ostatnia aktywność notatek",
+		"daySummary_one": "{{count}} notatka, {{date}}",
+		"daySummary_few": "{{count}} notatki, {{date}}",
+		"daySummary_many": "{{count}} notatek, {{date}}",
+		"daySummary_other": "{{count}} notatki, {{date}}",
+		"today": "Dzisiaj",
+		"yesterday": "Wczoraj",
+		"noteCount_one": "{{count}} notatka",
+		"noteCount_few": "{{count}} notatki",
+		"noteCount_many": "{{count}} notatek",
+		"noteCount_other": "{{count}} notatki",
+		"summaryHint": "Obejmuje daty utworzenia i ostatniej edycji notatek.",
+		"less": "Mniej",
+		"more": "Więcej",
+		"pastYear": "Ostatni rok",
+		"previousPeriod": "Poprzedni rok",
+		"nextPeriod": "Następny rok",
+		"notesCount_one": "{{count}} notatka utworzona lub edytowana",
+		"notesCount_few": "{{count}} notatki utworzone lub edytowane",
+		"notesCount_many": "{{count}} notatek utworzonych lub edytowanych",
+		"notesCount_other": "{{count}} notatki utworzonej lub edytowanej",
+		"activeDays_one": "{{count}} aktywny dzień",
+		"activeDays_few": "{{count}} aktywne dni",
+		"activeDays_many": "{{count}} aktywnych dni",
+		"activeDays_other": "{{count}} aktywnego dnia",
+		"noActivityInPeriod": "W tym okresie nie utworzono ani nie edytowano notatek",
+		"createdCount_one": "{{count}} utworzona",
+		"createdCount_few": "{{count}} utworzone",
+		"createdCount_many": "{{count}} utworzonych",
+		"createdCount_other": "{{count}} utworzonej",
+		"editedCount_one": "{{count}} edytowana",
+		"editedCount_few": "{{count}} edytowane",
+		"editedCount_many": "{{count}} edytowanych",
+		"editedCount_other": "{{count}} edytowanej",
+		"noActivityOnDay": "Brak notatek",
+		"moreNotes_one": "{{count}} więcej",
+		"moreNotes_few": "{{count}} więcej",
+		"moreNotes_many": "{{count}} więcej",
+		"moreNotes_other": "{{count}} więcej",
+		"selectDayHint": "Kliknij, aby pokazać te notatki",
+		"showAllNotes": "Pokaż wszystkie notatki",
+		"empty": "Brak aktywności. Utwórz lub edytuj notatkę, aby rozpocząć oś czasu.",
+		"loadError": "Nie udało się wczytać aktywności: {{message}}",
+		"loadOlder": "Wczytaj starsze notatki",
+		"loadingOlder": "Wczytywanie…",
 		"noPreviewYet": "Brak podglądu"
+	},
+	"noteCollections": {
+		"loading": "Wczytywanie notatek…",
+		"noFiles": "Nie znaleziono plików.",
+		"enableArchive": "Włącz archiwum w ustawieniach przestrzeni",
+		"configureInbox": "Skonfiguruj skrzynkę",
+		"archive": "Archiwizuj",
+		"unarchive": "Przywróć z archiwum",
+		"archived": "Zarchiwizowana",
+		"archivedTooltip": "Zarchiwizowana. Kliknij, aby przywrócić.",
+		"undo": "Cofnij",
+		"archivedCount_one": "Zarchiwizowano {{count}} notatkę",
+		"archivedCount_few": "Zarchiwizowano {{count}} notatki",
+		"archivedCount_many": "Zarchiwizowano {{count}} notatek",
+		"archivedCount_other": "Zarchiwizowano {{count}} notatki",
+		"restoredCount_one": "Przywrócono {{count}} notatkę z archiwum",
+		"restoredCount_few": "Przywrócono {{count}} notatki z archiwum",
+		"restoredCount_many": "Przywrócono {{count}} notatek z archiwum",
+		"restoredCount_other": "Przywrócono {{count}} notatki z archiwum",
+		"partialFailure": "Nie udało się zaktualizować niektórych notatek",
+		"actionFailed": "Nie udało się zaktualizować notatek",
+		"unsaved": "Zapisz oczekujące zmiany przed kontynuowaniem.",
+		"spaceChanged": "Otwarta przestrzeń się zmieniła. Spróbuj ponownie.",
+		"retry": "Ponów",
+		"inboxEmpty": "Twoja skrzynka jest pusta.",
+		"archiveEmpty": "Brak zarchiwizowanych notatek."
 	}
 }

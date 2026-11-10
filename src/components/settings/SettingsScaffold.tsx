@@ -7,8 +7,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 
 interface SettingsSectionProps {
 	title: string;
-	/** Muted text after the title, e.g. "— Active". */
-	titleSuffix?: ReactNode;
 	description?: ReactNode;
 	children: ReactNode;
 	className?: string;
@@ -39,7 +37,6 @@ interface SettingsToggleProps {
 
 export function SettingsSection({
 	title,
-	titleSuffix,
 	description,
 	children,
 	className,
@@ -56,10 +53,7 @@ export function SettingsSection({
 		>
 			<div className="settingsSectionHeader">
 				<div className="settingsSectionHeaderCopy">
-					<div className="settingsCardTitle">
-						{title}
-						{titleSuffix ? <span className="settingsCardTitleSuffix"> {titleSuffix}</span> : null}
-					</div>
+					<div className="settingsCardTitle">{title}</div>
 					{description ? <div className="settingsCardDescription">{description}</div> : null}
 				</div>
 				{aside ? <div className="settingsCardActions">{aside}</div> : null}

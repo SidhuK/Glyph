@@ -1,20 +1,20 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	AiBrain04Icon,
-	Archive02Icon,
 	Attachment01Icon,
+	CodeSquareIcon,
 	CommandIcon,
+	CubeIcon,
 	GitBranchIcon,
+	InformationCircleIcon,
 	PencilEdit02Icon,
 	Settings01Icon,
 	SidebarLeftIcon,
-	SourceCodeIcon,
 	Sun03Icon,
 	TestTubeIcon,
 	TextFontIcon,
 } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
-import { FolderOpen } from "../Icons/NavigationIcons";
 
 export type SettingsTab =
 	| "general"
@@ -73,11 +73,11 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 			},
 			{
 				id: "about",
-				renderIcon: () => <HugeiconsIcon icon={Archive02Icon} size="var(--icon-md)" />,
+				renderIcon: () => <HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-md)" />,
 			},
 			{
 				id: "developer",
-				renderIcon: () => <HugeiconsIcon icon={SourceCodeIcon} size="var(--icon-md)" />,
+				renderIcon: () => <HugeiconsIcon icon={CodeSquareIcon} size="var(--icon-md)" />,
 			},
 		],
 	},
@@ -87,7 +87,7 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 		tabs: [
 			{
 				id: "space",
-				renderIcon: () => <FolderOpen size="var(--icon-md)" />,
+				renderIcon: () => <HugeiconsIcon icon={CubeIcon} size="var(--icon-md)" />,
 			},
 			{
 				id: "attachments",

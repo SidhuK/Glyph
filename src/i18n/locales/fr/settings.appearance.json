@@ -1,6 +1,6 @@
 {
 	"theme": {
-		"sectionTitle": "Apparence",
+		"sectionTitle": "Mode",
 		"appearance": {
 			"label": "Mode de couleur",
 			"description": "Suivre le système ou forcer Glyph en mode clair ou sombre.",
@@ -28,7 +28,6 @@
 	"themeCards": {
 		"light": "Thème clair",
 		"dark": "Thème sombre",
-		"activeSuffix": "— Actif",
 		"groups": {
 			"default": "Par défaut",
 			"builtIn": "Intégrés",

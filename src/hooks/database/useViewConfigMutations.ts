@@ -9,7 +9,7 @@ import {
 import type { DatabaseColumn, DatabaseConfig, WorkspaceDatabaseDocument } from "../../lib/tauri";
 import type { DatabaseBoardHandlers, SaveDatabase } from "./types";
 
-const MIN_DATABASE_COLUMN_WIDTH = 120;
+const MIN_DATABASE_COLUMN_WIDTH = 64;
 const MAX_DATABASE_COLUMN_WIDTH = 900;
 
 interface UseViewConfigMutationsOptions {

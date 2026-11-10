@@ -18,13 +18,11 @@ import {
 	isMultiValueBoardColumn,
 	moveBoardCardToLane,
 } from "../../lib/database/board";
-import { databaseColumnLabel, isDateColumn } from "../../lib/database/columns";
 import { databaseCellValueFromRow } from "../../lib/database/config";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow, DatabaseSort } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { statusToneStyle } from "../../lib/statusProperties";
-import { ChevronDown, ChevronUp } from "../Icons";
 import { type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/shadcn/table";
 import {
@@ -33,8 +31,9 @@ import {
 	databaseLaneDisplayLabel,
 } from "./DatabaseBoardViews";
 import { DatabaseCell } from "./DatabaseCell";
-import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
+import { DatabaseTableHeaderContent } from "./DatabaseTableHeaderContent";
 import { DatabaseTableDraggableRow, DatabaseTableGroupHeader } from "./DatabaseTableViews";
+import { columnSizeLimits, isStatusColumn, tableColumnSize } from "./databaseTableColumns";
 
 interface DatabaseTableProps {
 	rows: DatabaseRow[];
@@ -78,22 +77,13 @@ const EMPTY_LANE_COLORS: Record<string, string> = {};
 const EMPTY_CARD_ORDER: Record<string, string[]> = {};
 const DATABASE_TABLE_ROW_HEIGHT = 36;
 const DATABASE_TABLE_GROUP_ROW_HEIGHT = 36;
-/** Linear list: status is a fixed icon slot ahead of the title, the title grows to fill the row
-    (its size is only the flex basis), and every other column packs against the trailing edge. */
-const DATABASE_TABLE_COLUMN_SIZE_LIMITS = {
-	title: { minSize: 240, maxSize: 560 },
-	status: { minSize: 40, maxSize: 40 },
-	other: { minSize: 80, maxSize: 360 },
-} as const;
-
-function isStatusColumn(column: DatabaseColumn): boolean {
-	return column.type === "property" && column.property_kind === "status";
-}
-
-function columnSizeLimits(column: DatabaseColumn) {
-	if (column.type === "title") return DATABASE_TABLE_COLUMN_SIZE_LIMITS.title;
-	if (isStatusColumn(column)) return DATABASE_TABLE_COLUMN_SIZE_LIMITS.status;
-	return DATABASE_TABLE_COLUMN_SIZE_LIMITS.other;
+/** Whether the table runs past the shell: sideways at all, and past its trailing edge. */
+function horizontalOverflow(shell: HTMLElement) {
+	const overflowX = shell.scrollWidth > shell.clientWidth + 1;
+	return {
+		overflowX,
+		overflowEnd: overflowX && shell.scrollLeft + shell.clientWidth < shell.scrollWidth - 1,
+	};
 }
 
 type DatabaseDisplayItem =
@@ -200,25 +190,6 @@ function createDatabaseDisplayItems(
 	]);
 }
 
-function SortIndicator({
-	activeSort,
-	columnId,
-}: {
-	activeSort: DatabaseSort | null;
-	columnId: string;
-}) {
-	if (!activeSort || activeSort.column_id !== columnId) return null;
-	return (
-		<span className="databaseHeaderSortIcon" aria-hidden="true">
-			{activeSort.direction === "desc" ? (
-				<ChevronDown size="var(--icon-sm)" />
-			) : (
-				<ChevronUp size="var(--icon-sm)" />
-			)}
-		</span>
-	);
-}
-
 export function DatabaseTable({
 	rows,
 	columns,
@@ -245,11 +216,37 @@ export function DatabaseTable({
 	const { t } = useTranslation("shell");
 	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
 	const [isScrolled, setIsScrolled] = useState(false);
+	const [overflow, setOverflow] = useState({ overflowX: false, overflowEnd: false });
 	const [moveError, setMoveError] = useState("");
 	const [optimisticCardOrder, setOptimisticCardOrder] = useState<Record<string, string[]> | null>(
 		null,
 	);
-	const tableContainerRef = useRef<HTMLDivElement>(null);
+	const tableContainerRef = useRef<HTMLDivElement | null>(null);
+	const syncOverflow = useCallback((shell: HTMLElement) => {
+		const next = horizontalOverflow(shell);
+		setOverflow((current) =>
+			current.overflowX === next.overflowX && current.overflowEnd === next.overflowEnd
+				? current
+				: next,
+		);
+	}, []);
+	// Watches the shell and the header row (as wide as the columns) so the trailing fade follows
+	// window and column resizes as well as scrolling.
+	const tableShellRef = useCallback(
+		(shell: HTMLDivElement | null) => {
+			tableContainerRef.current = shell;
+			if (!shell) return;
+			const observer = new ResizeObserver(() => syncOverflow(shell));
+			observer.observe(shell);
+			const headerRow = shell.querySelector(".databaseHeaderRow");
+			if (headerRow) observer.observe(headerRow);
+			return () => {
+				observer.disconnect();
+				tableContainerRef.current = null;
+			};
+		},
+		[syncOverflow],
+	);
 	const suppressClickRef = useRef(false);
 	const displayedCardOrder = optimisticCardOrder ?? cardOrderByGroup;
 	const displayedCardOrderRef = useRef(displayedCardOrder);
@@ -308,46 +305,20 @@ export function DatabaseTable({
 	);
 	const columnPlacement = (columnId: string) => columnPlacementById.get(columnId) ?? "trailing";
 	const hasStatusColumn = displayColumns.some(isStatusColumn);
-	const dateColumnIds = useMemo(
-		() => new Set(displayColumns.filter(isDateColumn).map((column) => column.id)),
-		[displayColumns],
-	);
 
 	const tableColumns = useMemo<ColumnDef<DatabaseRow>[]>(
 		() =>
 			displayColumns.map((column) => ({
 				id: column.id,
 				enableResizing: !isStatusColumn(column),
-				header: () =>
-					isStatusColumn(column) ? (
-						<button
-							type="button"
-							className="databaseHeaderButton"
-							aria-label={databaseColumnLabel(column)}
-							title={databaseColumnLabel(column)}
-							onClick={() => onToggleSort(column)}
-						>
-							<SortIndicator activeSort={activeSort} columnId={column.id} />
-						</button>
-					) : (
-						<div className="databaseHeaderControls">
-							<DatabaseColumnIconPicker
-								column={column}
-								className="databaseHeaderIconPicker"
-								onChange={(iconName) => onChangeColumnIcon(column.id, iconName)}
-							/>
-							<button
-								type="button"
-								className="databaseHeaderButton"
-								onClick={() => onToggleSort(column)}
-							>
-								<span className="databaseHeaderLabel">
-									<span className="databaseHeaderText">{databaseColumnLabel(column)}</span>
-									<SortIndicator activeSort={activeSort} columnId={column.id} />
-								</span>
-							</button>
-						</div>
-					),
+				header: () => (
+					<DatabaseTableHeaderContent
+						column={column}
+						activeSort={activeSort}
+						onToggleSort={onToggleSort}
+						onChangeColumnIcon={onChangeColumnIcon}
+					/>
+				),
 				cell: ({ row }) => (
 					<DatabaseCell
 						row={row.original}
@@ -362,7 +333,7 @@ export function DatabaseTable({
 						valueOptions={columnValueOptions[column.id] ?? []}
 					/>
 				),
-				size: column.width ?? 180,
+				size: tableColumnSize(column),
 				...columnSizeLimits(column),
 			})),
 		[
@@ -459,7 +430,8 @@ export function DatabaseTable({
 		if (activeResizingColumnId) return;
 		commitColumnResize(resizingColumnId);
 		setResizingColumnId(null);
-	}, [activeResizingColumnId, commitColumnResize, resizingColumnId]);
+		if (tableContainerRef.current) syncOverflow(tableContainerRef.current);
+	}, [activeResizingColumnId, commitColumnResize, resizingColumnId, syncOverflow]);
 
 	const commitCardOrder = useCallback(
 		async (nextOrder: Record<string, string[]>) => {
@@ -664,7 +636,6 @@ export function DatabaseTable({
 								}}
 								className="databaseBodyCell"
 								data-column-placement={columnPlacement(cell.column.id)}
-								data-date-column={dateColumnIds.has(cell.column.id) || undefined}
 							>
 								{flexRender(cell.column.columnDef.cell, cell.getContext())}
 							</TableCell>
@@ -717,7 +688,7 @@ export function DatabaseTable({
 				) : (
 					<TableRow>
 						<TableCell colSpan={visibleColumnCount} className="databaseEmptyCell">
-							No matching notes
+							{t("collections.table.empty")}
 						</TableCell>
 					</TableRow>
 				)}
@@ -727,9 +698,12 @@ export function DatabaseTable({
 
 	return (
 		<div
-			ref={tableContainerRef}
-			className={`databaseTableShell${activeResizingColumnId ? " is-resizing" : ""}${isScrolled ? " is-scrolled" : ""}`}
-			onScroll={(event) => setIsScrolled(event.currentTarget.scrollTop > 0)}
+			ref={tableShellRef}
+			className={`databaseTableShell${activeResizingColumnId ? " is-resizing" : ""}${isScrolled ? " is-scrolled" : ""}${overflow.overflowX ? " has-overflow-x" : ""}${overflow.overflowEnd ? " has-overflow-end" : ""}`}
+			onScroll={(event) => {
+				setIsScrolled(event.currentTarget.scrollTop > 0);
+				syncOverflow(event.currentTarget);
+			}}
 		>
 			{moveError ? <div className="databaseBoardError">{moveError}</div> : null}
 			{hasGroups && !activeSort ? (

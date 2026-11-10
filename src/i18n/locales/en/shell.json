@@ -80,6 +80,8 @@
 		"clearSearch": "Clear search",
 		"delete": "Delete collection",
 		"options": "Collection options",
+		"nameLabel": "Collection name",
+		"folderBreadcrumb": "Collection folder",
 		"pin": "Pin collection",
 		"searchView": "Search collection",
 		"unpin": "Unpin collection",
@@ -107,7 +109,10 @@
 		"boardCard": {
 			"openNote": "Open note",
 			"moveTo": "Move to {{lane}}",
-			"openHint": "Double-click to open note"
+			"openHint": "Double-click to open note",
+			"tagTooltip": "Tag: {{value}}",
+			"statusTooltip": "Status: {{value}}",
+			"priorityTooltip": "Priority: {{value}}"
 		},
 		"switch": "Switch collection",
 		"select": "Select collection",
@@ -121,7 +126,9 @@
 			"options": "View options",
 			"optionsFor": "View options for {{name}}",
 			"tabs": "Collection views",
-			"name": "View name"
+			"name": "View name",
+			"defaultBoardName": "Board {{number}}",
+			"defaultTableName": "Table {{number}}"
 		},
 		"viewOptions": {
 			"reset": "Reset",
@@ -237,7 +244,8 @@
 			"emptyTitle": "Add a field to create board lanes",
 			"emptyText": "Board view groups notes into lanes. Add a status, priority, checkbox, tag, or similar field to your notes, then pick it in the toolbar above.",
 			"openViewSettings": "Open view settings",
-			"noPriority": "No priority",
+			"newCard": "New",
+			"scrollNext": "Show next lanes",
 			"laneEmpty": {
 				"archived": "Archived notes go here",
 				"done": "Done notes land here",
@@ -255,7 +263,8 @@
 			"changePriority": "Change priority",
 			"editTagsHint": "Double-click to edit tags",
 			"editHint": "Double-click to edit",
-			"renameNoteHint": "Double-click to rename note"
+			"renameNoteHint": "Double-click to rename note",
+			"removeValue": "Remove {{value}}"
 		},
 		"tagPicker": {
 			"source": "Tag source",
@@ -264,7 +273,28 @@
 			"placeholder": "Choose a tag",
 			"empty": "No matching tags found.",
 			"search": "Search tags"
-		}
+		},
+		"status": {
+			"backlog": "Backlog",
+			"todo": "Todo",
+			"in_progress": "In progress",
+			"in_review": "In review",
+			"blocked": "Blocked",
+			"waiting": "Waiting",
+			"done": "Done",
+			"canceled": "Canceled",
+			"archived": "Archived"
+		},
+		"priority": {
+			"no": "No priority",
+			"low": "Low",
+			"medium": "Medium",
+			"high": "High"
+		},
+		"table": {
+			"empty": "No matching notes"
+		},
+		"newNote": "New"
 	},
 	"tags": {
 		"header": "Tags",
@@ -408,7 +438,10 @@
 		"footer": {
 			"navigate": "Navigate",
 			"open": "Open",
-			"close": "Close"
+			"close": "Close",
+			"change": "Change",
+			"options": "Options",
+			"toggle": "Toggle"
 		},
 		"groups": {
 			"command": "Commands",
@@ -421,7 +454,8 @@
 			"person": "People",
 			"database": "Collections and databases",
 			"template": "Templates"
-		}
+		},
+		"lineNumber": "L{{line}}"
 	},
 	"calendar": {
 		"title": "Calendar",
@@ -534,6 +568,39 @@
 			"loadFailed": "Could not load models",
 			"empty": "No models available",
 			"retry": "Retry"
+		},
+		"panel": {
+			"recentChats": "Recent chats",
+			"newChat": "New chat",
+			"settings": "AI settings",
+			"close": "Close AI panel",
+			"scrollToLatest": "Scroll to latest",
+			"untitledChat": "Untitled chat",
+			"noHistory": "No chat history yet"
+		},
+		"thread": {
+			"emptyTitle": "Talk to your notes",
+			"emptyHint": "Ask naturally, or use <code>@</code> to add notes and folders to the conversation",
+			"shaping": "Shaping your thought",
+			"responseFailed": "Response failed",
+			"retry": "Retry",
+			"retryResponse": "Retry response",
+			"copyResponse": "Copy response",
+			"saveResponse": "Save response to file",
+			"citations": "Citations",
+			"footnotes": "Footnote citations",
+			"citedNotes": "Cited notes"
+		},
+		"composer": {
+			"placeholder": "Ask about your notes · @ to add context",
+			"message": "Message",
+			"mention": "Add a note with @",
+			"send": "Send",
+			"stop": "Stop",
+			"searchContext": "Search files & folders…",
+			"searchHint": "Type to search files & folders",
+			"noResults": "No results",
+			"space": "Space"
 		}
 	},
 	"connections": {
@@ -630,7 +697,11 @@
 		"toggleFailed": "Could not update the task",
 		"conflictChanged": "The note changed since the list loaded. Try again.",
 		"conflictRolledOver": "This task was rolled over to another note.",
-		"indexFailed": "Task saved, but the search index could not be updated."
+		"indexFailed": "Task saved, but the search index could not be updated.",
+		"sort": "Sort tasks by",
+		"sortRecent": "Recently edited",
+		"sortMostOpen": "Most open tasks",
+		"sortTitle": "Title"
 	},
 	"activity": {
 		"recentActivity": "Recent note activity",

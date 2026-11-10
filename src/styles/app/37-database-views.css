@@ -24,6 +24,9 @@
 	min-width: 0;
 	max-width: min(500px, 46vw);
 	flex: 0 1 auto;
+	/* The first tab's 8px padding hangs into the gutter, so its icon starts on the 16px page
+	   column with the title above and the lanes below. */
+	margin-left: -8px;
 	padding: 0;
 	border-radius: var(--database-radius-lg);
 	background: transparent;
@@ -52,8 +55,8 @@ button.databasesViewTab {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	/* One tab metric app-wide: Info panel tabs and the sidebar view switcher use 26px / 8px too. */
-	height: 26px;
+	/* 28px, the same height as Search collection and Display beside it. */
+	height: 28px;
 	padding: 0 8px;
 	border: none;
 	border-radius: var(--radius-md);
@@ -93,7 +96,7 @@ button.databasesViewTab:focus-visible {
 	inset: 0;
 	box-sizing: border-box;
 	border-radius: inherit;
-	background: var(--bg-active);
+	background: var(--state-on);
 }
 
 button.databasesViewTab > *:not(.databasesViewTabBg) {
@@ -147,7 +150,7 @@ button.databasesViewTabMenu {
 	transition: opacity 140ms ease;
 }
 
-/* The view menu only shows while the tab strip is in use, so it never floats idle between the
+/* The view menu only shows while the tab strip is in use, so it never floats idle after the
    tabs and "+". It keeps its slot so nothing shifts when it appears. */
 .databasesViewTabsCluster:is(:hover, :focus-within) button.databasesViewTabMenu,
 button.databasesViewTabMenu[data-popup-open] {
@@ -181,13 +184,19 @@ button.databasesViewTabMenu[data-popup-open] {
 	flex: 0 0 auto;
 }
 
-button.databaseToolbarChip.databasesNewNoteButton {
+/* "+" after the tabs adds a view, as in any tab strip; New note lives on the toolbar. */
+button.databaseToolbarChip.databasesAddViewButton {
 	flex: 0 0 auto;
 	width: 28px;
 	height: 28px;
 	min-height: 28px;
-	margin-left: 4px;
+	margin-left: 2px;
 	padding: 0;
+	color: var(--text-tertiary);
+}
+
+button.databaseToolbarChip.databasesAddViewButton:hover {
+	color: var(--text-primary);
 }
 
 @media (max-width: 980px) {

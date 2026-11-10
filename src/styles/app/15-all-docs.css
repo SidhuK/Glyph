@@ -42,8 +42,9 @@
 	color: inherit;
 }
 
-/* Cards match board cards: page-coloured surface, one hairline ring. Every text card is at least
-   one title line plus four preview lines tall; cards in a row stretch to the tallest card. */
+/* The shared card recipe: page-coloured surface, --card-ring, --card-radius. The ring is inset,
+   so the clear space between cards is the grid gap on both axes. Every text card is at least one
+   title line plus four preview lines tall; cards in a row stretch to the tallest card. */
 .allDocsCardSurface {
 	--all-docs-title-line: calc(var(--text-base) * 1.35);
 	--all-docs-preview-line: calc(var(--text-sm) * 1.45);
@@ -56,20 +57,19 @@
 	min-width: 0;
 	min-height: calc(26px + var(--all-docs-title-line) + 8px + var(--all-docs-preview-line) * 4);
 	padding: 12px 14px 14px;
-	border-radius: var(--radius-8);
+	border-radius: var(--card-radius);
 	background: var(--bg-primary);
-	box-shadow: 0 0 0 1px var(--border-light);
+	box-shadow: var(--card-ring);
 	overflow: hidden;
 	transition: box-shadow 120ms ease;
 }
 
 .dark .allDocsCardSurface {
 	background: color-mix(in srgb, var(--text-primary) 4%, var(--bg-primary));
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 10%, transparent);
 }
 
 .allDocsCard:hover .allDocsCardSurface {
-	box-shadow: 0 0 0 1px var(--border-default);
+	box-shadow: inset 0 0 0 1px var(--border-strong);
 }
 
 .allDocsCard[data-state="selected"] .allDocsCardSurface {
@@ -111,12 +111,14 @@
 	vertical-align: -2px;
 }
 
+/* A short thumbnail with a hairline edge, anchored to the image's top so a screenshot keeps its
+   headline. With it the preview drops to one line, so image cards land near text-card height. */
 .allDocsCardThumbnail {
 	flex: 0 0 auto;
 	display: block;
-	height: 96px;
+	height: 64px;
 	overflow: hidden;
-	border: 0;
+	border: 1px solid var(--border-light);
 	border-radius: var(--radius-md);
 	background: var(--bg-secondary);
 }
@@ -126,10 +128,16 @@
 	height: 100%;
 	display: block;
 	object-fit: cover;
+	object-position: top center;
 }
 
-/* Previews are plain secondary text clamped to four whole lines (the clamp counts across the line
-   blocks) and end in an ellipsis. No heading weight, rules or quote bars. */
+.allDocsCardSurface:has(.allDocsCardThumbnail) .allDocsCardPreview {
+	-webkit-line-clamp: 1;
+}
+
+/* Previews are secondary text clamped to four whole lines (the clamp counts across the line
+   blocks) and end in an ellipsis. Headings stay on the body size, in primary ink at medium
+   weight; no rules or quote bars. */
 .allDocsCardPreview {
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
@@ -141,6 +149,11 @@
 	line-height: var(--all-docs-preview-line);
 	overflow-wrap: anywhere;
 	white-space: normal;
+}
+
+.allDocsCardPreviewLine.is-heading {
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
 }
 
 .allDocsCardPreviewLine.is-quote,

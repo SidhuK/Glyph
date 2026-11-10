@@ -13,17 +13,25 @@ import {
 	PROPERTY_KIND_ICONS,
 	type PropertyKind,
 	isPropertyKind,
+	propertyIcon,
 } from "./constants";
 
 interface PropertyKindBadgeProps {
 	kind: string;
+	/** The property's name: known keys (title, aliases, created, status) show their own glyph. */
+	propertyKey?: string;
 	interactive?: boolean;
 	onSelect?: (kind: PropertyKind) => void;
 }
 
-export function PropertyKindBadge({ kind, interactive = false, onSelect }: PropertyKindBadgeProps) {
+export function PropertyKindBadge({
+	kind,
+	propertyKey = "",
+	interactive = false,
+	onSelect,
+}: PropertyKindBadgeProps) {
 	const resolvedKind = isPropertyKind(kind) ? kind : "text";
-	const icon = PROPERTY_KIND_ICONS[resolvedKind];
+	const icon = propertyIcon(propertyKey, resolvedKind);
 	const { t } = useTranslation("editor");
 
 	if (interactive) {
