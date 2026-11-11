@@ -54,7 +54,8 @@ function titleFromDraft(text: string): string {
 	const title = firstLine
 		.replace(/^\s*(?:#{1,6}\s+|[-*+]\s+(?:\[[ xX]\]\s+)?|>\s*|\d+[.)]\s+)/, "")
 		.replace(/[/\\:]/g, "-")
-		// A leading dot would make a hidden file, which the space refuses to write.
+		// The extension is added on save, and a leading dot would make a hidden file the space refuses.
+		.replace(/\.md\s*$/i, "")
 		.replace(/^[\s.]+/, "")
 		.trim()
 		.slice(0, MAX_TITLE_LENGTH)
