@@ -71,25 +71,25 @@ export function ConnectionsInspector() {
 			className="connectionsFloat connectionsInspector"
 			aria-label={t("connections.inspector.aria")}
 		>
-			<div className="connectionsInspectorKicker">
+			<div>
 				{kicker ? (
-					<>
+					<div className="connectionsInspectorKicker">
 						<span className="connectionsInspectorDot" aria-hidden="true" />
 						<span className="connectionsInspectorKickerText">{kicker}</span>
-					</>
+					</div>
 				) : null}
-				<Button
-					variant="ghost"
-					size="icon-xs"
-					className="connectionsInspectorClose"
-					aria-label={t("connections.inspector.close")}
-					onClick={() => selectNode(null)}
-				>
-					<HugeiconsIcon icon={Close} />
-				</Button>
-			</div>
-			<div>
-				<h2 className="connectionsInspectorTitle">{isTag ? `#${node.label}` : node.label}</h2>
+				<div className="connectionsInspectorTitleRow">
+					<h2 className="connectionsInspectorTitle">{isTag ? `#${node.label}` : node.label}</h2>
+					<Button
+						variant="ghost"
+						size="icon-xs"
+						className="connectionsInspectorClose"
+						aria-label={t("connections.inspector.close")}
+						onClick={() => selectNode(null)}
+					>
+						<HugeiconsIcon icon={Close} />
+					</Button>
+				</div>
 				{isTag ? null : (
 					<div className="connectionsInspectorPath" title={selectedId}>
 						<span dir="ltr">{selectedId}</span>
@@ -125,10 +125,15 @@ export function ConnectionsInspector() {
 				</div>
 			) : null}
 			<div className="connectionsInspectorActions">
-				<Button size="xs" onClick={() => openNode(selectedId)}>
+				<Button size="xs" className="connectionsInspectorOpen" onClick={() => openNode(selectedId)}>
 					{t("connections.inspector.openNote")}
 				</Button>
-				<Button variant="outline" size="xs" onClick={() => startPath(selectedId)}>
+				<Button
+					variant="outline"
+					size="xs"
+					className="connectionsInspectorPathStart"
+					onClick={() => startPath(selectedId)}
+				>
 					<HugeiconsIcon icon={Route01Icon} />
 					{t("connections.inspector.pathFromHere")}
 				</Button>

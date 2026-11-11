@@ -663,32 +663,59 @@
 	color: var(--text-secondary);
 }
 
+/* Callouts: a kind icon and a body-size title in the callout colour, on a tint of the page
+   (so in dark mode they lift off it) with a faint ring. Body text stays primary ink. */
 .tiptapContentInline blockquote.callout {
+	--callout-tint: 7%;
+	--callout-icon: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='12'%20cy='12'%20r='9'/%3E%3Cpath%20d='M12%2011v5M12%208h.01'/%3E%3C/svg%3E");
+	position: relative;
+	padding: var(--space-3);
 	background: color-mix(
 		in srgb,
-		var(--callout-accent, var(--interactive-accent)) 6%,
-		var(--bg-secondary)
+		var(--callout-accent, var(--interactive-accent)) var(--callout-tint),
+		var(--bg-primary)
 	);
-	padding: var(--space-3);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--callout-accent, var(--interactive-accent)) 16%, transparent);
 	color: var(--text-primary);
 }
 
-.tiptapContentInline blockquote.callout > p:first-child {
+:root.dark .tiptapContentInline blockquote.callout {
+	--callout-tint: 11%;
+}
+
+/* The `[!kind] Title` line: the title is drawn from the marker instead. */
+.tiptapContentInline blockquote.callout .calloutMarker {
 	display: none;
 }
 
 .tiptapContentInline blockquote.callout::before {
 	content: attr(data-callout-title);
 	display: block;
-	font-size: var(--text-xs);
-	font-weight: var(--font-semibold);
-	/* The faint tint alone can't say "warning" vs "tip"; the small label carries the colour. */
+	margin-bottom: var(--space-1);
+	padding-left: 1.5em;
 	color: var(--callout-accent, var(--text-secondary));
-	margin-bottom: var(--space-2);
+	font-weight: var(--font-semibold);
+}
+
+/* The kind icon, centred on the title's first line. */
+.tiptapContentInline blockquote.callout::after {
+	content: "";
+	position: absolute;
+	top: calc(var(--space-3) + 0.3em);
+	top: calc(var(--space-3) + (1lh - 1.1em) / 2);
+	left: var(--space-3);
+	width: 1.1em;
+	height: 1.1em;
+	background: var(--callout-accent, var(--interactive-accent));
+	mask: var(--callout-icon) center / contain no-repeat;
+	-webkit-mask: var(--callout-icon) center / contain no-repeat;
+	pointer-events: none;
 }
 
 .tiptapContentInline blockquote.callout[data-callout="note"] {
 	--callout-accent: color-mix(in srgb, var(--interactive-accent) 85%, var(--text-primary));
+	--callout-icon: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M4%2020h4L18.5%209.5a2.12%202.12%200%200%200-3-3L5%2017v3Z'/%3E%3Cpath%20d='m13.5%208.5%202%202'/%3E%3C/svg%3E");
 }
 
 .tiptapContentInline blockquote.callout[data-callout="info"] {
@@ -697,18 +724,22 @@
 
 .tiptapContentInline blockquote.callout[data-callout="tip"] {
 	--callout-accent: var(--callout-tip);
+	--callout-icon: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9%2018h6M10%2021h4'/%3E%3Cpath%20d='M12%203a6%206%200%200%200-3.6%2010.8c.7.5%201.1%201.3%201.1%202.2h5c0-.9.4-1.7%201.1-2.2A6%206%200%200%200%2012%203Z'/%3E%3C/svg%3E");
 }
 
 .tiptapContentInline blockquote.callout[data-callout="warning"] {
 	--callout-accent: var(--callout-warning);
+	--callout-icon: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M10.3%204.3%202.6%2018a2%202%200%200%200%201.7%203h15.4a2%202%200%200%200%201.7-3L13.7%204.3a2%202%200%200%200-3.4%200Z'/%3E%3Cpath%20d='M12%209.5v4M12%2017h.01'/%3E%3C/svg%3E");
 }
 
 .tiptapContentInline blockquote.callout[data-callout="error"] {
 	--callout-accent: var(--callout-error);
+	--callout-icon: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='12'%20cy='12'%20r='9'/%3E%3Cpath%20d='m9%209%206%206M15%209l-6%206'/%3E%3C/svg%3E");
 }
 
 .tiptapContentInline blockquote.callout[data-callout="success"] {
 	--callout-accent: var(--callout-tip);
+	--callout-icon: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='12'%20cy='12'%20r='9'/%3E%3Cpath%20d='m8%2012.5%202.5%202.5L16%209.5'/%3E%3C/svg%3E");
 }
 
 /* Inline code: a smaller mono run on the inset-card fill. line-height 1 keeps the mono
@@ -758,12 +789,31 @@
 	color: var(--glyph-inline-color-red);
 }
 
+/* Code at code size: 0.875em with tighter leading, so a typical line fits the column and
+   the block reads as code rather than airy prose. */
 .tiptapContentInline pre {
 	position: relative;
-	background: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
+	background: var(--bg-inset);
 	padding: var(--space-6) var(--space-4) var(--space-4);
 	border-radius: var(--radius-lg);
+	font-size: 0.875em;
+	line-height: 1.55;
 	overflow: auto;
+}
+
+/* The language rests as a quiet label in the top padding. The picker that replaces it
+   while the caret is in the block draws the same text at the same spot. */
+.tiptapContentInline pre[data-language-label]::before {
+	content: attr(data-language-label);
+	position: absolute;
+	top: 4px;
+	left: 15px;
+	color: var(--text-tertiary);
+	font-family: var(--font-sans);
+	font-size: var(--text-2xs);
+	line-height: 18px;
+	pointer-events: none;
+	user-select: none;
 }
 
 .tiptapContentInline pre code {
@@ -825,21 +875,27 @@
 	width: 100%;
 	max-width: 100%;
 	table-layout: fixed;
+	/* Separate borders keep the rounded frame (collapsed tables drop border-radius), so each
+	   cell draws only its right and bottom rule and every interior line is one pixel. The
+	   first column and row add the left and top of the frame. */
 	border-collapse: separate;
 	border-spacing: 0;
 	margin: 12px 0;
 	background: color-mix(in srgb, var(--bg-secondary) 34%, var(--bg-primary));
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-light) 86%, transparent);
-	border-radius: calc(var(--radius-lg) - 2px);
+	--table-radius: calc(var(--radius-lg) - 2px);
+	border-radius: var(--table-radius);
 }
 
 .tiptapContentInline th,
 .tiptapContentInline td {
-	border: 1px solid var(--border-light);
+	border: 0 solid var(--border-light);
+	border-right-width: 1px;
+	border-bottom-width: 1px;
 	padding: 8px 10px;
 	vertical-align: top;
 	min-width: 0;
 	overflow-wrap: anywhere;
+	font-variant-numeric: tabular-nums;
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	transition:
 		background-color var(--transition-fast),
@@ -847,10 +903,43 @@
 		border-color var(--transition-fast);
 }
 
+/* Cell borders draw the frame, since cell fills would cover a ring painted on the table.
+   Rows sit in one tbody in the editor, and under a thead in rendered embeds. */
+.tiptapContentInline tr > :first-child {
+	border-left-width: 1px;
+}
+
+/* Corner cells follow the frame's radius so their fills and rules curve with it. */
+.tiptapContentInline table > :is(thead, tbody:not(thead ~ tbody)) > tr:first-child {
+	& > * {
+		border-top-width: 1px;
+	}
+
+	& > :first-child {
+		border-top-left-radius: var(--table-radius);
+	}
+
+	& > :last-child {
+		border-top-right-radius: var(--table-radius);
+	}
+}
+
+.tiptapContentInline table > :last-child > tr:last-child {
+	& > :first-child {
+		border-bottom-left-radius: var(--table-radius);
+	}
+
+	& > :last-child {
+		border-bottom-right-radius: var(--table-radius);
+	}
+}
+
+/* Headers start-align like their cells; the browser default centres them. */
 .tiptapContentInline th {
-	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+	background: var(--bg-inset);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
+	text-align: start;
 }
 
 .tiptapContentInline th > p,

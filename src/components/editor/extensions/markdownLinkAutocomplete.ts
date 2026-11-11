@@ -2,6 +2,7 @@ import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
 import { type EditorLinkSuggestion, suggestMarkdownLinks } from "../../../lib/linkSuggestions";
+import { linkSuggestionRow } from "../suggestions/linkSuggestionRow";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const MD_LINK_SUGGESTION_KEY = new PluginKey("markdown-link-suggestion");
@@ -63,9 +64,10 @@ export const MarkdownLinkAutocomplete = Extension.create({
 					createTipTapTextSuggestionMenu<EditorLinkSuggestion>({
 						menuClassName: "wikiLinkSuggestionMenu",
 						lockEditorScroll: false,
-						itemContent: (item) => ({
-							title: item.title,
-							description: item.insertText,
+						// The hint is the relative path that will be inserted, not just the folder.
+						itemContent: (item, query) => ({
+							...linkSuggestionRow(item, query),
+							hint: item.insertText,
 						}),
 					}),
 			}),

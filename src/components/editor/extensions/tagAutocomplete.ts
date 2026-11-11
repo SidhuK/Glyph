@@ -106,9 +106,7 @@ export const TagAutocomplete = Extension.create({
 						menuClassName: "wikiLinkSuggestionMenu",
 						itemContent: (item) => ({
 							title: `#${item.tag}`,
-							description: item.isNew
-								? "Create tag"
-								: `${item.count} note${item.count === 1 ? "" : "s"}`,
+							hint: item.isNew ? "Create tag" : `${item.count} note${item.count === 1 ? "" : "s"}`,
 						}),
 					}),
 			}),

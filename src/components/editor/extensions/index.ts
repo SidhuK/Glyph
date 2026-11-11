@@ -11,6 +11,7 @@ import StarterKit from "@tiptap/starter-kit";
 import type { TemplateInsertRequest } from "../slash/slashMenuItems";
 import { SlashCommand } from "../slashCommands";
 import { AsteriskDividerBloom } from "./asteriskDividerBloom";
+import { CalloutDecorations } from "./calloutDecorations";
 import {
 	type ChangedRange,
 	changedRangesFromTransactions,
@@ -40,131 +41,6 @@ import { PersonAutocomplete } from "./personAutocomplete";
 import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
-
-function parseCalloutMarker(text: string): { kind: string; title: string } | null {
-	const trimmed = text.trim();
-	if (!trimmed.startsWith("[!")) return null;
-	const match = trimmed.match(/^\[!([A-Za-z_-]+)\]\s*(.*)$/);
-	if (!match) return null;
-	const rawKind = (match[1] ?? "note").toLowerCase();
-	const kind = rawKind === "warn" ? "warning" : rawKind;
-	const rawTitle = (match[2] ?? "").trim();
-	const title = rawTitle || `${kind.slice(0, 1).toUpperCase()}${kind.slice(1)}`;
-	return { kind, title };
-}
-
-const CalloutDecorations = Extension.create({
-	name: "callout-decorations",
-	addOptions() {
-		return {
-			enableShortcutTransform: true,
-		};
-	},
-	addProseMirrorPlugins() {
-		const key = new PluginKey<DecorationSet>("callout-decorations");
-		const plugins = [
-			...(this.options.enableShortcutTransform
-				? [
-						new Plugin({
-							key: new PluginKey("callout-shortcut-transform"),
-							appendTransaction(transactions, _oldState, newState) {
-								if (!transactions.some((tr) => tr.docChanged)) return null;
-
-								const blockquote = newState.schema.nodes.blockquote;
-								const paragraph = newState.schema.nodes.paragraph;
-								const textNode = newState.schema.text.bind(newState.schema);
-								if (!blockquote || !paragraph) return null;
-
-								const replacements: Array<{
-									pos: number;
-									size: number;
-									marker: string;
-								}> = [];
-
-								visitChangedNodes(transactions, newState, (node, pos) => {
-									if (node.type !== paragraph || node.childCount !== 1) return;
-									const text = node.textContent ?? "";
-									const match = text.match(/^\s*>\s*\[!([A-Za-z_-]+)\]\s*(.*)$/);
-									if (!match) return;
-									const rawKind = (match[1] ?? "note").toLowerCase();
-									const kind = rawKind === "warn" ? "warning" : rawKind;
-									const tail = (match[2] ?? "").trim();
-									const marker = tail.length ? `[!${kind}] ${tail}` : `[!${kind}]`;
-									replacements.push({ pos, size: node.nodeSize, marker });
-								});
-
-								if (!replacements.length) return null;
-
-								let tr = newState.tr;
-								for (let i = replacements.length - 1; i >= 0; i -= 1) {
-									const replacement = replacements[i];
-									const calloutNode = blockquote.create(
-										null,
-										[
-											paragraph.create(
-												null,
-												replacement.marker ? textNode(replacement.marker) : null,
-											),
-											paragraph.create(),
-										].filter(Boolean),
-									);
-									tr = tr.replaceWith(
-										replacement.pos,
-										replacement.pos + replacement.size,
-										calloutNode,
-									);
-								}
-
-								return tr.docChanged ? tr : null;
-							},
-						}),
-					]
-				: []),
-			new Plugin<DecorationSet>({
-				key,
-				state: {
-					init: (_config, state) => buildCalloutDecorations(state.doc),
-					apply(tr, decorations) {
-						if (!tr.docChanged) return decorations;
-						return buildCalloutDecorations(tr.doc);
-					},
-				},
-				props: {
-					decorations(state) {
-						return key.getState(state) ?? DecorationSet.empty;
-					},
-				},
-			}),
-		];
-		return plugins;
-	},
-});
-
-function buildCalloutDecorations(doc: ProseMirrorNode): DecorationSet {
-	const decorations: Decoration[] = [];
-	doc.descendants((node, pos) => {
-		const decoration = calloutDecorationForNode(node, pos);
-		if (decoration) decorations.push(decoration);
-	});
-	return decorations.length ? DecorationSet.create(doc, decorations) : DecorationSet.empty;
-}
-
-function calloutDecorationForNode(node: ProseMirrorNode, pos: number): Decoration | null {
-	if (node.type.name !== "blockquote") return null;
-	let parsed: { kind: string; title: string } | null = null;
-	for (let i = 0; i < node.childCount; i += 1) {
-		const child = node.child(i);
-		const text = child.textContent ?? "";
-		parsed = parseCalloutMarker(text);
-		if (parsed) break;
-	}
-	if (!parsed) return null;
-	return Decoration.node(pos, pos + node.nodeSize, {
-		class: `callout callout-${parsed.kind}`,
-		"data-callout": parsed.kind,
-		"data-callout-title": parsed.title,
-	});
-}
 
 const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
 

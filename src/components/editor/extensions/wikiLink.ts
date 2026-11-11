@@ -12,6 +12,12 @@ import {
 } from "../markdown/wikiLinkCodec";
 import { suggestWikiLinkItems } from "../markdown/wikiLinkHeadingSuggest";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
+import { i18n } from "../../../i18n";
+import {
+	type WikiLinkMenuItem,
+	wikiLinkMenuRow,
+	withCreateRow,
+} from "../suggestions/linkSuggestionRow";
 import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 import { createWikiEmbedView } from "./wikiEmbedView";
 import { createWikiLinkResolutionPlugin } from "./wikiLinkResolution";
@@ -129,10 +135,10 @@ function commitWikiLinkQuery(
 }
 
 function acceptWikiLinkSuggestion(
-	item: EditorLinkSuggestion,
-	props: SuggestionProps<EditorLinkSuggestion>,
+	item: WikiLinkMenuItem,
+	props: SuggestionProps<WikiLinkMenuItem>,
 ): void {
-	if (item.kind === "heading") {
+	if (item.kind === "heading" || item.kind === "create") {
 		props.command(item);
 		return;
 	}
@@ -341,7 +347,7 @@ export const WikiLink = Node.create({
 	addProseMirrorPlugins() {
 		return [
 			createWikiLinkResolutionPlugin(),
-			Suggestion<EditorLinkSuggestion>({
+			Suggestion<WikiLinkMenuItem>({
 				editor: this.editor,
 				pluginKey: WIKI_LINK_SUGGESTION_KEY,
 				char: "[[",
@@ -360,23 +366,26 @@ export const WikiLink = Node.create({
 				},
 				items: async ({ editor, query }) => {
 					const asEmbed = isEmbedSuggestionContextFromQuery(editor, query);
-					return suggestWikiLinkItems({
+					const items = await suggestWikiLinkItems({
 						query,
 						embedOnly: asEmbed,
 						limit: this.options.suggestionLimit,
 					});
+					return withCreateRow(items, query, asEmbed);
 				},
 				command: ({ editor, range, props }) => {
 					const asEmbed = isEmbedSuggestionContext(editor, range.from);
+					if (props.kind === "create") {
+						commitWikiLinkQuery(editor, range, props.query, asEmbed);
+						return;
+					}
 					insertWikiLinkNode(editor, range, props.insertText, asEmbed);
 				},
 				render: () =>
-					createTipTapTextSuggestionMenu<EditorLinkSuggestion>({
+					createTipTapTextSuggestionMenu<WikiLinkMenuItem>({
 						menuClassName: "wikiLinkSuggestionMenu",
-						itemContent: (item) => ({
-							title: item.title,
-							description: item.kind === "heading" ? `#${item.slug}` : item.path,
-						}),
+						itemContent: wikiLinkMenuRow,
+						footer: () => i18n.t("editor:linkSuggest.footer"),
 						onTab: acceptWikiLinkSuggestion,
 						onEmptyEnter: (props) =>
 							commitWikiLinkQuery(

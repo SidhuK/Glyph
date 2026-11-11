@@ -89,7 +89,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					}}
 				>
 					<select
-						className="codeBlockLanguageSelect mono"
+						className="codeBlockLanguageSelect"
 						value={codeBlock.language ?? "plaintext"}
 						onChange={(event) => {
 							const option = languageOptions.find(

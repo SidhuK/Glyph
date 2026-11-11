@@ -320,5 +320,9 @@
 			"restoreUnsaved": "Deine aktuellen Änderungen konnten nicht gespeichert werden, daher wurde nichts wiederhergestellt.",
 			"undoChanged": "Die Notiz wurde nach der Wiederherstellung geändert, daher kann sie nicht rückgängig gemacht werden."
 		}
+	},
+	"linkSuggest": {
+		"create": "„{{name}}“ erstellen",
+		"footer": "# für eine Überschrift, | für einen Alias"
 	}
 }

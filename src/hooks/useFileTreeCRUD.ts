@@ -18,6 +18,7 @@ import {
 	compareEntries,
 	normalizeEntry,
 	rewritePrefix,
+	uniqueSiblingFileName,
 	withInsertedEntry,
 } from "./fileTreeHelpers";
 
@@ -186,7 +187,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			setError("");
 			try {
 				const siblings = await invoke("space_list_dir", dirPath ? { dir: dirPath } : {});
-				const siblingNames = new Set(siblings.map((entry) => entry.name.toLowerCase()));
 				// The extension is added below, and a leading dot would make a hidden file the space refuses.
 				const baseName =
 					title
@@ -195,14 +195,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						.replace(/\.md$/i, "")
 						.replace(/^[\s.]+/, "")
 						.trim() || "Untitled";
-				let fileName = `${baseName}.md`;
-				if (siblingNames.has(fileName.toLowerCase())) {
-					let suffix = 2;
-					while (siblingNames.has(`${baseName} ${suffix}.md`.toLowerCase())) {
-						suffix += 1;
-					}
-					fileName = `${baseName} ${suffix}.md`;
-				}
+				const fileName = uniqueSiblingFileName(siblings, baseName, "md");
 				const markdownRel = dirPath ? `${dirPath}/${fileName}` : fileName;
 				const createdPath = await createMarkdownFileAtPath({
 					path: markdownRel,
@@ -231,13 +224,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			setError("");
 			try {
 				const siblings = await invoke("space_list_dir", dirPath ? { dir: dirPath } : {});
-				const siblingNames = new Set(siblings.map((entry) => entry.name.toLowerCase()));
-				let fileName = "Untitled.excalidraw";
-				if (siblingNames.has(fileName.toLowerCase())) {
-					let suffix = 2;
-					while (siblingNames.has(`untitled ${suffix}.excalidraw`)) suffix += 1;
-					fileName = `Untitled ${suffix}.excalidraw`;
-				}
+				// Named like a note, so it doesn't sit as a bare "Untitled" beside titled notes.
+				const fileName = uniqueSiblingFileName(siblings, "Untitled canvas", "excalidraw");
 				const canvasPath = dirPath ? `${dirPath}/${fileName}` : fileName;
 				await invoke("space_write_text", {
 					path: canvasPath,

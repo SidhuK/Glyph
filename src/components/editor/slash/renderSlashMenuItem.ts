@@ -1,6 +1,6 @@
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { hugeiconMarkup } from "../hugeiconMarkup";
-import type { SlashIcon, SlashMenuItem } from "./slashMenuItems";
+import type { SlashIcon, SlashMenuItem, SlashTone } from "./slashMenuItems";
 
 const iconMarkupCache = new Map<SlashIcon, string>();
 
@@ -20,17 +20,75 @@ function span(className: string, text?: string): HTMLSpanElement {
 	return element;
 }
 
-function iconTile(item: SlashMenuItem): HTMLSpanElement {
+function iconTile(icon: SlashIcon | string, tone?: SlashTone): HTMLSpanElement {
 	const tile = span("slashCommandIcon");
-	if (typeof item.icon === "string") {
-		tile.textContent = item.icon;
+	if (typeof icon === "string") {
+		tile.textContent = icon;
 		tile.dataset.glyph = "";
 	} else {
-		tile.innerHTML = iconMarkup(item.icon);
+		tile.innerHTML = iconMarkup(icon);
 	}
-	if (item.tone?.color) tile.style.setProperty("--slash-tone", item.tone.color);
-	if (item.tone?.background) tile.style.setProperty("--slash-tone-bg", item.tone.background);
+	if (tone?.color) tile.style.setProperty("--slash-tone", tone.color);
+	if (tone?.background) tile.style.setProperty("--slash-tone-bg", tone.background);
 	return tile;
+}
+
+/** The title, with the first run of the typed text in bold. */
+function titleSpan(title: string, match: string | undefined): HTMLSpanElement {
+	const element = span("slashCommandTitle");
+	const needle = match?.trim().toLowerCase() ?? "";
+	const start = needle ? title.toLowerCase().indexOf(needle) : -1;
+	if (start < 0) {
+		element.textContent = title;
+		return element;
+	}
+	const end = start + needle.length;
+	const strong = document.createElement("strong");
+	strong.textContent = title.slice(start, end);
+	element.append(title.slice(0, start), strong, title.slice(end));
+	return element;
+}
+
+export interface MenuRowContent {
+	icon?: SlashIcon | string;
+	tone?: SlashTone;
+	title: string;
+	/** Typed text to embolden in the title. */
+	match?: string;
+	/** Trailing hint in tertiary ink: a folder, a count or a Markdown shortcut. */
+	hint?: string;
+	/** Sets the hint in the monospace face, for Markdown the user can type instead. */
+	hintIsShortcut?: boolean;
+	hasSubmenu?: boolean;
+}
+
+/** One row of the insert menus (slash, wiki-link, tag, mention): icon, title, trailing hint. */
+export function renderMenuRow(
+	content: MenuRowContent,
+	{ isActive, onSelect }: { isActive: boolean; onSelect: () => void },
+): HTMLButtonElement {
+	const button = document.createElement("button");
+	button.type = "button";
+	button.className = "slashCommandItem";
+	button.classList.toggle("active", isActive);
+	if (content.icon !== undefined) button.append(iconTile(content.icon, content.tone));
+	button.append(titleSpan(content.title, content.match));
+
+	if (content.hasSubmenu) {
+		const chevron = span("slashCommandChevron");
+		chevron.innerHTML = iconMarkup(ArrowRight01Icon);
+		button.append(chevron);
+	} else if (content.hint) {
+		const hint = span("slashCommandMeta", content.hint);
+		if (content.hintIsShortcut) hint.dataset.shortcut = "";
+		button.append(hint);
+	}
+
+	button.addEventListener("mousedown", (event) => {
+		event.preventDefault();
+		onSelect();
+	});
+	return button;
 }
 
 export function renderSlashMenuItem({
@@ -42,24 +100,18 @@ export function renderSlashMenuItem({
 	isActive: boolean;
 	select: (item: SlashMenuItem) => void;
 }): HTMLElement {
-	const button = document.createElement("button");
-	button.type = "button";
-	button.className = "slashCommandItem";
-	button.classList.toggle("active", isActive);
-
-	button.append(iconTile(item), span("slashCommandTitle", item.title));
-
-	if ("children" in item) {
-		const chevron = span("slashCommandChevron");
-		chevron.innerHTML = iconMarkup(ArrowRight01Icon);
-		button.append(chevron);
-	} else if (item.groupTitle) {
-		button.append(span("slashCommandMeta", item.groupTitle));
-	}
-
-	button.addEventListener("mousedown", (event) => {
-		event.preventDefault();
-		select(item);
-	});
-	return button;
+	const isGroup = "children" in item;
+	// A Markdown shortcut says more than repeating the group name, like a macOS key equivalent.
+	const shortcut = isGroup ? undefined : item.shortcut;
+	return renderMenuRow(
+		{
+			icon: item.icon,
+			tone: item.tone,
+			title: item.title,
+			hint: shortcut ?? (isGroup ? undefined : item.groupTitle),
+			hintIsShortcut: shortcut !== undefined,
+			hasSubmenu: isGroup,
+		},
+		{ isActive, onSelect: () => select(item) },
+	);
 }

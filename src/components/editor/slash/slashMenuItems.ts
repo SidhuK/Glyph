@@ -23,6 +23,8 @@ export interface SlashCommandDef {
 	icon: SlashIcon | string;
 	tone?: SlashTone;
 	keywords: string[];
+	/** The Markdown that makes the same block as you type, shown as the row's hint. */
+	shortcut?: string;
 	command: (ctx: {
 		editor: Editor;
 		onMathEditRequest?: (request: MathEditRequest) => void;

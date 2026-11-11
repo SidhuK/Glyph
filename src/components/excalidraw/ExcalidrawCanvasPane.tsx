@@ -21,6 +21,7 @@ import { isMarkdownPath } from "../../utils/path";
 import { FILE_TREE_ENTRY_TYPE } from "../filetree/fileTreeDnd";
 import { CanvasSaveQueue } from "./CanvasSaveQueue";
 import styles from "./ExcalidrawCanvasPane.module.css";
+import { useCanvasPanningHint } from "./useCanvasPanningHint";
 import {
 	type LoadedCanvasDocument,
 	useCanvasSaveMutation,
@@ -77,6 +78,7 @@ function LoadedExcalidrawCanvas({
 	const { t } = useTranslation("shell");
 	const dark = useIsDarkTheme();
 	const [saveError, setSaveError] = useState<string | null>(null);
+	const { panningHintHidden, onSceneChange } = useCanvasPanningHint();
 	const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
 	const saveMutation = useCanvasSaveMutation(relPath);
 	const mutationRef = useRef(saveMutation);
@@ -156,7 +158,11 @@ function LoadedExcalidrawCanvas({
 	useDragDropMonitor(dragDropHandlers);
 
 	return (
-		<div ref={setRootRef} className={styles.root}>
+		<div
+			ref={setRootRef}
+			className={styles.root}
+			data-panning-hint-hidden={panningHintHidden || undefined}
+		>
 			<Excalidraw
 				initialData={loaded.scene}
 				excalidrawAPI={(api) => {
@@ -169,7 +175,8 @@ function LoadedExcalidrawCanvas({
 				UIOptions={{
 					canvasActions: { loadScene: false, saveToActiveFile: false },
 				}}
-				onChange={() => {
+				onChange={(elements, appState) => {
+					onSceneChange(elements, appState);
 					setSaveError(null);
 					saveQueue.enqueue();
 				}}

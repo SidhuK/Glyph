@@ -632,6 +632,7 @@ function DatabaseCellEditor({
 						activeIndex={linkedNoteListAutocomplete.activeIndex}
 						className="databaseWikiLinkSuggestions"
 						onSelect={linkedNoteListAutocomplete.select}
+						onHighlight={linkedNoteListAutocomplete.highlight}
 					/>
 				) : valueSuggestions.length > 0 ? (
 					<div className="notePropertySuggestions databaseTagSuggestions">
@@ -710,6 +711,7 @@ function DatabaseCellEditor({
 					activeIndex={wikiLinkAutocomplete.activeIndex}
 					className="databaseWikiLinkSuggestions"
 					onSelect={wikiLinkAutocomplete.select}
+					onHighlight={wikiLinkAutocomplete.highlight}
 				/>
 			) : textSuggestions.length > 0 ? (
 				<div className="notePropertySuggestions databaseTagSuggestions">

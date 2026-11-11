@@ -103,7 +103,7 @@ export const PersonAutocomplete = Extension.create({
 						resetSelectionOnUpdate: true,
 						itemContent: (item) => ({
 							title: `@${item.handle}`,
-							description: item.isNew
+							hint: item.isNew
 								? "Create mention"
 								: `${item.count ?? 0} note${item.count === 1 ? "" : "s"}`,
 						}),
