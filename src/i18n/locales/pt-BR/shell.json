@@ -412,7 +412,6 @@
 		"saveSearchFailed": "Não foi possível salvar a pesquisa",
 		"searching": "Buscando…",
 		"results": "{{count}} resultados",
-		"noResults": "Nenhum resultado",
 		"resultsLabel": "Resultados da paleta",
 		"searchEverything": "Pesquisar notas, comandos, configurações e mais…",
 		"notSet": "Não definido",
@@ -420,7 +419,7 @@
 		"settingUpdated": "Configuração atualizada",
 		"settingUpdateFailed": "Não foi possível atualizar a configuração",
 		"invalidSettingValue": "O valor da configuração é inválido",
-		"settingsBreadcrumb": "Configurações / {{section}} / {{title}}",
+		"settingsBreadcrumb": "{{pane}} › {{title}}",
 		"clearValue": "Limpar valor",
 		"searchFolders": "Pesquisar pastas…",
 		"spaceRoot": "Raiz do espaço",
@@ -441,7 +440,21 @@
 			"close": "Fechar",
 			"change": "Alterar",
 			"options": "Opções",
-			"toggle": "Alternar"
+			"toggle": "Alternar",
+			"switchTab": "Ir para a aba",
+			"run": "Executar",
+			"clear": "Limpar",
+			"showNotes": "Mostrar notas",
+			"create": "Criar",
+			"search": "Pesquisar",
+			"allResults": "Todos os resultados",
+			"choose": "Escolher",
+			"apply": "Aplicar",
+			"back": "Voltar",
+			"moveHere": "Mover para cá",
+			"cancel": "Cancelar",
+			"openInGlyph": "Abrir no Glyph",
+			"dismiss": "Dispensar"
 		},
 		"groups": {
 			"command": "Comandos",
@@ -453,9 +466,39 @@
 			"tag": "Tags",
 			"person": "Pessoas",
 			"database": "Coleções e bancos de dados",
-			"template": "Modelos"
+			"template": "Modelos",
+			"recent": "Recentes"
 		},
-		"lineNumber": "L{{line}}"
+		"lineNumber": "L{{line}}",
+		"openTab": "Aba aberta",
+		"previewEdited": "Editada {{when}}",
+		"previewMatches_one": "{{count}} correspondência",
+		"previewMatches_other": "{{count}} correspondências",
+		"commandKind": "Comando",
+		"shortcut": "Atalho",
+		"editShortcut": "Editar em Configurações › Atalhos",
+		"removeScope": "Remover escopo",
+		"searchFailed": "A pesquisa falhou. Verifique a consulta e tente novamente.",
+		"noResultsHint": "Nenhuma nota, comando ou configuração corresponde. Tente menos letras ou comece com > para comandos.",
+		"noScopedResults": "Nada corresponde em {{scope}}.",
+		"createNote": "Criar nota “{{title}}”",
+		"searchNoteText": "Pesquisar “{{query}}” no texto das notas",
+		"scopePlaceholder": {
+			"commands": "Pesquisar comandos",
+			"settings": "Pesquisar configurações",
+			"folders": "Pesquisar pastas",
+			"tags": "Pesquisar tags",
+			"people": "Pesquisar pessoas",
+			"templates": "Pesquisar modelos"
+		},
+		"noteCount_one": "{{count}} nota",
+		"noteCount_other": "{{count}} notas",
+		"moveToken": "Mover “{{title}}”",
+		"moveTo": "Mover para",
+		"currentLocation": "Local atual",
+		"current": "Atual",
+		"newFolder": "Nova pasta…",
+		"moveFoldersFailed": "Não foi possível listar as pastas."
 	},
 	"calendar": {
 		"title": "Calendário",
@@ -695,7 +738,8 @@
 		"placeholder": "Pesquise notas, tags e coleções…",
 		"noSpace": "Abra um espaço no Glyph para pesquisá-lo.",
 		"openFailed": "Não foi possível abrir no Glyph: {{message}}",
-		"hideFailed": "Não foi possível fechar a busca rápida: {{message}}"
+		"hideFailed": "Não foi possível fechar a busca rápida: {{message}}",
+		"noResults": "Nenhuma nota, tag ou coleção corresponde."
 	},
 	"sidebarCalendar": {
 		"menu": {
@@ -825,5 +869,22 @@
 		"retry": "Tentar novamente",
 		"inboxEmpty": "Sua caixa de entrada está vazia.",
 		"archiveEmpty": "Nenhuma nota arquivada."
+	},
+	"quickNoteWindow": {
+		"placeholder": "Escreva uma nota rápida ou pressione / para comandos",
+		"modeLabel": "Destino da nota",
+		"append": "Acrescentar",
+		"newNote": "Nova nota",
+		"appendsTo": "Acrescenta a {{path}}",
+		"createsFile": "Cria {{path}}",
+		"createsIn": "Cria uma nova nota em {{folder}}",
+		"cancel": "Cancelar",
+		"save": "Salvar",
+		"saving": "Salvando…",
+		"savedTo": "Salvo em {{name}}",
+		"words_one": "{{count}} palavra",
+		"words_other": "{{count}} palavras",
+		"characters_one": "{{count}} caractere",
+		"characters_other": "{{count}} caracteres"
 	}
 }

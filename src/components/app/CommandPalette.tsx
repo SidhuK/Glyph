@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
-import { Bookmark01Icon } from "@hugeicons/core-free-icons";
+import { Bookmark01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,6 +14,7 @@ import {
 import { invoke } from "../../lib/tauri";
 import { listTemplates } from "../../lib/templates";
 import { toast } from "../../lib/toast";
+import { displayNameFromPath } from "../../utils/path";
 import { SecretPaletteReveal } from "../easter-eggs/secret-palette/SecretPaletteReveal";
 import { NotePreviewContent } from "../preview/NotePreviewContent";
 import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
@@ -21,7 +22,8 @@ import { useNotePreview } from "../preview/useNotePreview";
 import { localizeSettingsSearchEntry } from "../settings/settingsSearch";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList, paletteOptionId } from "./CommandList";
-import { CommandPaletteFooter } from "./CommandPaletteFooter";
+import { CommandPaletteEditorFooter, CommandPaletteFooter } from "./CommandPaletteFooter";
+import { PaletteCommandDetails } from "./PaletteCommandDetails";
 import { PaletteSettingEditor } from "./PaletteSettingEditor";
 import { PaletteTemplateAction } from "./PaletteTemplateAction";
 import {
@@ -29,9 +31,13 @@ import {
 	type PaletteLaunchMode,
 	buildSearchQuery,
 	movePaletteSelection,
+	type PaletteQueryScope,
 	parsePaletteQuery,
+	splitScopePrefix,
 	stepPaletteOption,
 } from "./commandPaletteHelpers";
+import { buildMoveResults, moveFoldersFromEntries } from "./movePickerResults";
+import { noResultActions } from "./paletteResultGroups";
 import { buildPaletteResults } from "./paletteResults";
 import { PALETTE_SETTING_BY_ID, paletteSettingOptions } from "./settingsPaletteRegistry";
 import { useCommandSearch } from "./useCommandSearch";
@@ -41,6 +47,16 @@ import type { WorkspaceTab } from "./useTabManager";
 export type { Command } from "./commandPaletteHelpers";
 
 const RESULTS_ID = "command-palette-results";
+
+/** The group whose label names each scope's token. */
+const SCOPE_GROUP: Record<Exclude<PaletteQueryScope, "all">, string> = {
+	commands: "command",
+	settings: "setting",
+	folders: "folder",
+	tags: "tag",
+	people: "person",
+	templates: "template",
+};
 
 interface CommandPaletteProps {
 	open: boolean;
@@ -56,6 +72,12 @@ interface CommandPaletteProps {
 	onOpenDatabase: (id: string) => void;
 	templateFolder: string | null;
 	onCreateFromTemplate: (template: { relPath: string; label: string }) => void;
+	onCreateNote: (title: string) => void;
+	onEditShortcuts: () => void;
+	/** The note the "move" mode relocates. */
+	moveSourcePath: string | null;
+	onMove: (sourcePath: string, directory: string) => void;
+	onMoveToNewFolder: (sourcePath: string) => void;
 }
 
 function flattenFolders(
@@ -88,6 +110,11 @@ export function CommandPalette({
 	onOpenDatabase,
 	templateFolder,
 	onCreateFromTemplate,
+	onCreateNote,
+	onEditShortcuts,
+	moveSourcePath,
+	onMove,
+	onMoveToNewFolder,
 }: CommandPaletteProps) {
 	const { t, i18n } = useTranslation("shell");
 	const { rootEntries, childrenByDir, tags, people, ensureTagsFresh, activeFilePath } =
@@ -100,6 +127,10 @@ export function CommandPalette({
 	const listRef = useRef<HTMLDivElement | null>(null);
 	const restoreFocusRef = useRef<HTMLElement | null>(null);
 	const parsedQuery = useMemo(() => parsePaletteQuery(query), [query]);
+	// Moving a note filters folders by plain text, so no prefix opens a scope there.
+	const moveSource = initialMode === "move" ? moveSourcePath : null;
+	const scopeInput = moveSource ? { prefix: "", rest: query } : splitScopePrefix(query);
+	const scope = moveSource || parsedQuery.scope === "all" ? null : parsedQuery.scope;
 	const normalizedQuery = query.trim();
 	const normalizedSecretQuery = normalizedQuery.toLowerCase();
 	const isSecretPalettePhrase = normalizedSecretQuery === "glyphglyph";
@@ -123,9 +154,13 @@ export function CommandPalette({
 		window.requestAnimationFrame(() => restoreFocusRef.current?.focus());
 	}, [onClose]);
 
+	// A bare "#" or "@" has nothing to search for yet; the tag and people lists cover it.
 	const searchEnabled =
 		!isSecretPalettePhrase &&
-		(parsedQuery.scope === "all" || parsedQuery.scope === "tags" || parsedQuery.scope === "people");
+		!moveSource &&
+		(parsedQuery.scope === "all" ||
+			((parsedQuery.scope === "tags" || parsedQuery.scope === "people") &&
+				Boolean(parsedQuery.text)));
 	const searchQuery =
 		parsedQuery.scope === "tags" || parsedQuery.scope === "people"
 			? parsedQuery.raw
@@ -175,7 +210,7 @@ export function CommandPalette({
 		() => flattenFolders(rootEntries, childrenByDir),
 		[rootEntries, childrenByDir],
 	);
-	const results = buildPaletteResults({
+	const matchedResults = buildPaletteResults({
 		query,
 		mode: initialMode,
 		spacePath,
@@ -199,6 +234,34 @@ export function CommandPalette({
 		},
 	});
 
+	const moveFolders = useQuery({
+		queryKey: ["command-palette-move-folders", spacePath],
+		// Folders come from their own listing so a space full of files can't crowd them out;
+		// the full listing only supplies note counts.
+		queryFn: async () => {
+			const [dirs, entries] = await Promise.all([
+				invoke("space_list_dir", { recursive: true, directories_only: true, limit: 5000 }),
+				invoke("space_list_dir", { recursive: true, limit: 50_000 }),
+			]);
+			return moveFoldersFromEntries([...dirs, ...entries]);
+		},
+		enabled: open && Boolean(moveSource && spacePath),
+		// Folders change outside the palette, so each move starts from a fresh listing.
+		staleTime: 0,
+	});
+	// Once the search settles empty, offer the next step instead of a dead end.
+	const results = moveSource
+		? buildMoveResults({
+				query,
+				sourcePath: moveSource,
+				folders: moveFolders.data ?? [],
+				spacePath,
+				t,
+			})
+		: matchedResults.length || isSearching
+			? matchedResults
+			: noResultActions(parsedQuery, spacePath, t);
+
 	const resolvedSelectedIndex = useMemo(() => {
 		if (!results.length) return 0;
 		const preservedIndex = selectedId
@@ -216,6 +279,13 @@ export function CommandPalette({
 		!isSecretPalettePhrase && initialMode === "search"
 			? (selectedResult?.previewPath ?? null)
 			: null;
+	// Commands describe themselves in the side pane, so ">" keeps the sheet at full width.
+	const showCommandDetails =
+		!isSecretPalettePhrase &&
+		initialMode === "search" &&
+		!selectedPreviewPath &&
+		(selectedResult?.kind === "command" || parsedQuery.scope === "commands");
+	const withSidePane = Boolean(selectedPreviewPath) || showCommandDetails;
 	const notePreview = useNotePreview(selectedPreviewPath, {
 		delayMs: NOTE_PREVIEW_OPEN_DELAY_MS,
 	});
@@ -266,6 +336,11 @@ export function CommandPalette({
 				case "content":
 					if (!result.target) return;
 					closeAndRestoreFocus();
+					// A title match has no position to jump to, so an open note just regains its tab.
+					if (result.kind === "note" && result.openTabId) {
+						onActivateTab(result.openTabId);
+						return;
+					}
 					onSelectSearchResult(result.target, {
 						query: result.searchQuery,
 						matchIndex: result.matchIndex,
@@ -311,6 +386,22 @@ export function CommandPalette({
 				case "template":
 					setActiveTemplatePath(result.target ?? null);
 					return;
+				case "destination":
+					if (!moveSource) return;
+					closeAndRestoreFocus();
+					if (result.actionId === "create-folder") onMoveToNewFolder(moveSource);
+					else if (result.target !== undefined) onMove(moveSource, result.target);
+					return;
+				case "action":
+					if (!result.target) return;
+					if (result.actionId === "create-note") {
+						closeAndRestoreFocus();
+						onCreateNote(result.target);
+						return;
+					}
+					setQuery(result.target);
+					setSelectedId(null);
+					return;
 				case "setting": {
 					// Enter and click toggle switches in place; choices open their option list,
 					// while the arrow keys still step through them.
@@ -331,6 +422,10 @@ export function CommandPalette({
 			onActivateTab,
 			onRevealFolder,
 			onOpenDatabase,
+			onCreateNote,
+			moveSource,
+			onMove,
+			onMoveToNewFolder,
 			adjustSetting,
 			settings,
 		],
@@ -359,6 +454,18 @@ export function CommandPalette({
 				selectResult(resolvedSelectedIndex);
 				return;
 			}
+			// ⌫ at the start of the input removes the scope token, keeping what was typed after it.
+			if (
+				event.key === "Backspace" &&
+				scopeInput.prefix &&
+				inputRef.current?.selectionStart === 0 &&
+				inputRef.current.selectionEnd === 0
+			) {
+				event.preventDefault();
+				setQuery(scopeInput.rest);
+				setSelectedId(null);
+				return;
+			}
 			if (
 				event.key === " " &&
 				!query &&
@@ -383,8 +490,9 @@ export function CommandPalette({
 			if (event.key === "Escape") {
 				event.preventDefault();
 				event.stopPropagation();
+				// Text typed after a scope clears first; the scope goes on the next Esc.
 				if (query) {
-					setQuery("");
+					setQuery(scopeInput.rest.trim() ? scopeInput.prefix : "");
 					setSelectedId(null);
 				} else {
 					closeAndRestoreFocus();
@@ -396,6 +504,8 @@ export function CommandPalette({
 			resolvedSelectedIndex,
 			selectResult,
 			query,
+			scopeInput.prefix,
+			scopeInput.rest,
 			closeAndRestoreFocus,
 			isSecretPalettePhrase,
 		],
@@ -422,6 +532,9 @@ export function CommandPalette({
 	}, [activeSettingId, activeTemplatePath, open]);
 	const canSaveSearch =
 		!isSecretPalettePhrase &&
+		!moveSource &&
+		// A bare "#" or "@" is not a search worth saving.
+		Boolean(parsedQuery.text) &&
 		(parsedQuery.scope === "all" || parsedQuery.scope === "tags" || parsedQuery.scope === "people");
 	const isCurrentSearchSaved = databaseSummaries.data?.some(
 		(collection) =>
@@ -433,30 +546,33 @@ export function CommandPalette({
 			<DialogContent
 				className={cn(
 					"commandPalette top-[round(15vh,1px)] translate-y-0 gap-0 border-none bg-transparent p-0 shadow-none",
-					selectedPreviewPath ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
+					withSidePane ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
 				)}
-				data-with-preview={selectedPreviewPath ? "true" : "false"}
+				data-with-preview={withSidePane ? "true" : "false"}
 				onKeyDownCapture={activeSetting || activeTemplate ? undefined : handleRootKeyDown}
 				showCloseButton={false}
 			>
 				<DialogTitle className="sr-only">{t("commandPalette.title")}</DialogTitle>
 
 				{activeSetting && activeSettingEntry ? (
-					<PaletteSettingEditor
-						key={activeSetting.id}
-						entry={activeSettingEntry}
-						definition={activeSetting}
-						settings={settings}
-						value={activeSettingValue}
-						folders={folders}
-						pending={settingPending}
-						error={settingError}
-						onBack={() => {
-							setActiveSettingId(null);
-							window.requestAnimationFrame(() => inputRef.current?.focus());
-						}}
-						onChange={(value) => updateSetting({ definition: activeSetting, value })}
-					/>
+					<>
+						<PaletteSettingEditor
+							key={activeSetting.id}
+							entry={activeSettingEntry}
+							definition={activeSetting}
+							settings={settings}
+							value={activeSettingValue}
+							folders={folders}
+							pending={settingPending}
+							error={settingError}
+							onBack={() => {
+								setActiveSettingId(null);
+								window.requestAnimationFrame(() => inputRef.current?.focus());
+							}}
+							onChange={(value) => updateSetting({ definition: activeSetting, value })}
+						/>
+						<CommandPaletteEditorFooter control={activeSetting.control} />
+					</>
 				) : activeTemplate ? (
 					<PaletteTemplateAction
 						template={activeTemplate}
@@ -473,6 +589,31 @@ export function CommandPalette({
 					<>
 						<div className="commandPaletteHeader">
 							<div className="commandPaletteInputWrapper">
+								{moveSource ? (
+									<span
+										className="commandPaletteScopeToken commandPaletteMoveToken"
+										title={moveSource}
+									>
+										{t("commandPalette.moveToken", { title: displayNameFromPath(moveSource) })}
+									</span>
+								) : null}
+								{scope ? (
+									<span className="commandPaletteScopeToken">
+										{t(`commandPalette.groups.${SCOPE_GROUP[scope]}`)}
+										<button
+											type="button"
+											className="commandPaletteScopeTokenRemove"
+											aria-label={t("commandPalette.removeScope")}
+											onMouseDown={(event) => event.preventDefault()}
+											onClick={() => {
+												setQuery(scopeInput.rest);
+												setSelectedId(null);
+											}}
+										>
+											<HugeiconsIcon icon={Cancel01Icon} size="var(--icon-xs)" />
+										</button>
+									</span>
+								) : null}
 								<input
 									ref={inputRef}
 									className="commandPaletteInput"
@@ -482,10 +623,16 @@ export function CommandPalette({
 									aria-activedescendant={
 										selectedResult ? paletteOptionId(RESULTS_ID, resolvedSelectedIndex) : undefined
 									}
-									placeholder={t("commandPalette.searchEverything")}
-									value={query}
+									placeholder={
+										moveSource
+											? t("commandPalette.scopePlaceholder.folders")
+											: scope
+												? t(`commandPalette.scopePlaceholder.${scope}`)
+												: t("commandPalette.searchEverything")
+									}
+									value={scope ? scopeInput.rest : query}
 									onChange={(event) => {
-										setQuery(event.target.value);
+										setQuery(scopeInput.prefix + event.target.value);
 										setSelectedId(null);
 										// A new query selects its first result, which must be in view.
 										listRef.current?.scrollTo({ top: 0 });
@@ -495,7 +642,16 @@ export function CommandPalette({
 									spellCheck={false}
 								/>
 							</div>
-							{searchError ? <p role="alert">{String(searchError)}</p> : null}
+							{moveFolders.error ? (
+								<p role="alert" className="commandPaletteSearchError">
+									{t("commandPalette.moveFoldersFailed")}
+								</p>
+							) : null}
+							{searchError ? (
+								<p role="alert" className="commandPaletteSearchError">
+									{t("commandPalette.searchFailed")}
+								</p>
+							) : null}
 							{normalizedQuery && canSaveSearch ? (
 								<div className="commandSearchActions">
 									<button
@@ -522,14 +678,11 @@ export function CommandPalette({
 								</div>
 							) : null}
 						</div>
-						<div
-							className="commandPaletteBody"
-							data-with-preview={selectedPreviewPath ? "true" : "false"}
-						>
+						<div className="commandPaletteBody" data-with-preview={withSidePane ? "true" : "false"}>
 							<div
 								ref={listRef}
 								className="commandPaletteList"
-								data-with-preview={selectedPreviewPath ? "true" : "false"}
+								data-with-preview={withSidePane ? "true" : "false"}
 							>
 								{query.trim() ? (
 									<output className="sr-only" aria-live="polite">
@@ -554,6 +707,15 @@ export function CommandPalette({
 										selectedIndex={resolvedSelectedIndex}
 										onSetSelectedIndex={(index) => setSelectedId(results[index]?.id ?? null)}
 										onSelectResult={selectResult}
+										emptyHint={
+											isSearching
+												? t("commandPalette.searching")
+												: scope
+													? t("commandPalette.noScopedResults", {
+															scope: t(`commandPalette.groups.${SCOPE_GROUP[scope]}`),
+														})
+													: t("commandPalette.noResultsHint")
+										}
 									/>
 								)}
 							</div>
@@ -563,13 +725,37 @@ export function CommandPalette({
 									aria-label={t("commandPalette.notePreview")}
 								>
 									<div className="linkedNotePreviewBody">
-										{notePreview ? <NotePreviewContent {...notePreview} /> : null}
+										{notePreview ? (
+											<NotePreviewContent
+												{...notePreview}
+												highlightQuery={selectedResult?.searchQuery ?? parsedQuery.text}
+												matchCount={selectedResult?.matchCount}
+												showMeta
+											/>
+										) : null}
 									</div>
+								</aside>
+							) : null}
+							{showCommandDetails ? (
+								<aside
+									className="commandPalettePreview"
+									aria-label={t("commandPalette.commandKind")}
+								>
+									<PaletteCommandDetails
+										command={selectedResult?.command}
+										onEditShortcut={() => {
+											onClose();
+											onEditShortcuts();
+										}}
+									/>
 								</aside>
 							) : null}
 						</div>
 						<CommandPaletteFooter
 							selectedResult={isSecretPalettePhrase ? undefined : selectedResult}
+							escapeLabel={query ? "clear" : moveSource ? "cancel" : "close"}
+							showScopes={!scope && !moveSource}
+							canRemoveScope={Boolean(scope) && !scopeInput.rest}
 						/>
 					</>
 				)}

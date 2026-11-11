@@ -412,7 +412,6 @@
 		"saveSearchFailed": "Could not save search",
 		"searching": "Searching...",
 		"results": "{{count}} results",
-		"noResults": "No results",
 		"resultsLabel": "Palette results",
 		"searchEverything": "Search notes, commands, settings, and more…",
 		"notSet": "Not set",
@@ -420,7 +419,7 @@
 		"settingUpdated": "Setting updated",
 		"settingUpdateFailed": "Could not update setting",
 		"invalidSettingValue": "The setting value is invalid",
-		"settingsBreadcrumb": "Settings / {{section}} / {{title}}",
+		"settingsBreadcrumb": "{{pane}} › {{title}}",
 		"clearValue": "Clear value",
 		"searchFolders": "Search folders…",
 		"spaceRoot": "Space root",
@@ -441,7 +440,21 @@
 			"close": "Close",
 			"change": "Change",
 			"options": "Options",
-			"toggle": "Toggle"
+			"toggle": "Toggle",
+			"switchTab": "Switch to tab",
+			"run": "Run",
+			"clear": "Clear",
+			"showNotes": "Show notes",
+			"create": "Create",
+			"search": "Search",
+			"allResults": "All results",
+			"choose": "Choose",
+			"apply": "Apply",
+			"back": "Back",
+			"moveHere": "Move here",
+			"cancel": "Cancel",
+			"openInGlyph": "Open in Glyph",
+			"dismiss": "Dismiss"
 		},
 		"groups": {
 			"command": "Commands",
@@ -453,9 +466,39 @@
 			"tag": "Tags",
 			"person": "People",
 			"database": "Collections and databases",
-			"template": "Templates"
+			"template": "Templates",
+			"recent": "Recent"
 		},
-		"lineNumber": "L{{line}}"
+		"lineNumber": "L{{line}}",
+		"openTab": "Open tab",
+		"previewEdited": "Edited {{when}}",
+		"previewMatches_one": "{{count}} match",
+		"previewMatches_other": "{{count}} matches",
+		"commandKind": "Command",
+		"shortcut": "Shortcut",
+		"editShortcut": "Edit in Settings › Shortcuts",
+		"removeScope": "Remove scope",
+		"searchFailed": "Search failed. Check the query and try again.",
+		"noResultsHint": "No notes, commands or settings match. Try fewer letters, or start with > for commands.",
+		"noScopedResults": "Nothing in {{scope}} matches.",
+		"createNote": "Create note “{{title}}”",
+		"searchNoteText": "Search note text for “{{query}}”",
+		"scopePlaceholder": {
+			"commands": "Search commands",
+			"settings": "Search settings",
+			"folders": "Search folders",
+			"tags": "Search tags",
+			"people": "Search people",
+			"templates": "Search templates"
+		},
+		"noteCount_one": "{{count}} note",
+		"noteCount_other": "{{count}} notes",
+		"moveToken": "Move “{{title}}”",
+		"moveTo": "Move to",
+		"currentLocation": "Current location",
+		"current": "Current",
+		"newFolder": "New folder…",
+		"moveFoldersFailed": "Could not list folders."
 	},
 	"calendar": {
 		"title": "Calendar",
@@ -808,7 +851,8 @@
 		"placeholder": "Search notes, tags, and collections…",
 		"noSpace": "Open a space in Glyph to search it.",
 		"openFailed": "Could not open in Glyph: {{message}}",
-		"hideFailed": "Could not close quick search: {{message}}"
+		"hideFailed": "Could not close quick search: {{message}}",
+		"noResults": "No matching notes, tags or collections."
 	},
 	"sidebarCalendar": {
 		"menu": {
@@ -825,5 +869,22 @@
 		"browse": "Change destination: browse {{name}}",
 		"label": "Quick note destination",
 		"resetToToday": "Reset to today's quick note"
+	},
+	"quickNoteWindow": {
+		"placeholder": "Write a quick note or press / for commands",
+		"modeLabel": "Where the note goes",
+		"append": "Append",
+		"newNote": "New note",
+		"appendsTo": "Appends to {{path}}",
+		"createsFile": "Creates {{path}}",
+		"createsIn": "Creates a new note in {{folder}}",
+		"cancel": "Cancel",
+		"save": "Save",
+		"saving": "Saving…",
+		"savedTo": "Saved to {{name}}",
+		"words_one": "{{count}} word",
+		"words_other": "{{count}} words",
+		"characters_one": "{{count}} character",
+		"characters_other": "{{count}} characters"
 	}
 }

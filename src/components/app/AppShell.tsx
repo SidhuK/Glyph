@@ -82,6 +82,7 @@ import {
 } from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
 import { useDocumentExport } from "./useDocumentExport";
+import type { PaletteLaunchMode } from "./commandPaletteHelpers";
 import { useTabManager } from "./useTabManager";
 import { useWorkspaceLinkEvents } from "./useWorkspaceLinkEvents";
 import { useWorkspaceSession } from "./useWorkspaceSession";
@@ -178,13 +179,12 @@ export function AppShell() {
 		getCurrentMarkdown,
 	});
 
-	const [paletteLaunchMode, setPaletteLaunchMode] = useState<"commands" | "search">("commands");
+	const [paletteLaunchMode, setPaletteLaunchMode] = useState<PaletteLaunchMode>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [databasesOpenRequest, setDatabasesOpenRequest] = useState(INITIAL_DATABASES_OPEN_REQUEST);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] = useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<string | null>(null);
 	const [tagPickerAction, setTagPickerAction] = useState<TagRefactorAction | null>(null);
-	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
 	const [calendarOpen, setCalendarOpen] = useState(false);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
@@ -755,10 +755,8 @@ export function AppShell() {
 		[dailyNotesFolder, openOrCreatePeriodNote, periodNotesEnabled, setError],
 	);
 
-	const moveTargetDirsRequestIdRef = useRef(0);
-
 	const openPalette = useCallback(
-		(mode: "commands" | "search", query = "") => {
+		(mode: PaletteLaunchMode, query = "") => {
 			if (zenModeRef.current) return;
 			setPaletteLaunchMode(mode);
 			setPaletteInitialQuery(query);
@@ -780,35 +778,10 @@ export function AppShell() {
 	});
 
 	const closePalette = useCallback(() => {
-		moveTargetDirsRequestIdRef.current += 1;
 		setPaletteOpen(false);
 		setMovePickerSourcePath(null);
 		setTagPickerAction(null);
-		setMoveTargetDirs([]);
 	}, [setPaletteOpen]);
-	const refreshMoveTargetDirs = useCallback(async (sourcePath: string) => {
-		const requestId = ++moveTargetDirsRequestIdRef.current;
-		setMoveTargetDirs([]);
-		try {
-			const entries = await invoke("space_list_dir", {
-				recursive: true,
-				directories_only: true,
-				limit: 5000,
-			});
-			if (moveTargetDirsRequestIdRef.current !== requestId) return;
-			const fromDir = parentDir(sourcePath);
-			setMoveTargetDirs(
-				entries
-					.map((entry) => entry.rel_path)
-					.filter((dir) => dir !== fromDir)
-					.sort((left, right) => left.localeCompare(right)),
-			);
-		} catch {
-			if (moveTargetDirsRequestIdRef.current === requestId) {
-				setMoveTargetDirs([]);
-			}
-		}
-	}, []);
 
 	useWorkspaceLinkEvents({
 		activeMarkdownTabPath,
@@ -863,10 +836,13 @@ export function AppShell() {
 			? defaultNewNoteFolder
 			: (activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : ""));
 
-	const createNoteInSelectedFolder = useCallback(async () => {
-		if (!spacePath) return null;
-		return fileTree.onNewFileInDir(newNoteFolder);
-	}, [fileTree, newNoteFolder, spacePath]);
+	const createNoteInSelectedFolder = useCallback(
+		async (title?: string) => {
+			if (!spacePath) return null;
+			return fileTree.onNewFileInDir(newNoteFolder, title);
+		},
+		[fileTree, newNoteFolder, spacePath],
+	);
 	const createCanvasInSelectedFolder = useCallback(async () => {
 		if (!spacePath) return null;
 		const path = await fileTree.onNewCanvasInDir(newNoteFolder);
@@ -1204,8 +1180,6 @@ export function AppShell() {
 		handleOpenAiSettings,
 		handleOpenSpaceSettings,
 		handleRevealSpaceFromMenu,
-		movePickerSourcePath,
-		moveTargetDirs,
 		onCreateSpace: handleCreateSpace,
 		onOpenSpace: handleOpenSpace,
 		openAllDocsTab,
@@ -1242,7 +1216,6 @@ export function AppShell() {
 		unpinnedTabsLength: tabs.filter((tab) => !tab.isPinned).length,
 		toggleActiveTabPinned,
 		togglePinnedFile,
-		refreshMoveTargetDirs,
 	});
 
 	const shortcutHandlers = useMemo(
@@ -1298,7 +1271,6 @@ export function AppShell() {
 		// The settings dialog owns the keyboard while it is open.
 		handlers: settingsOpen ? [] : shortcutHandlers,
 		paletteOpen,
-		onClosePalette: closePalette,
 	});
 	useEffect(() => {
 		const accelerators = Object.fromEntries(
@@ -1477,6 +1449,25 @@ export function AppShell() {
 						onOpenDatabase={(id) => openDatabasesTab(id)}
 						templateFolder={templateFolder}
 						onCreateFromTemplate={(template) => void handlePickTemplate(template, "")}
+						onCreateNote={(title) =>
+							void createNoteInSelectedFolder(title).then(async (path) => {
+								if (path) await openWorkspaceFile(path);
+							})
+						}
+						onEditShortcuts={() => openSettings("shortcuts")}
+						moveSourcePath={movePickerSourcePath}
+						onMove={(sourcePath, directory) =>
+							void fileTree.onMovePath(sourcePath, directory).then(async (nextPath) => {
+								if (nextPath) await openWorkspaceFile(nextPath);
+							})
+						}
+						onMoveToNewFolder={(sourcePath) =>
+							void fileTree.requestCreateFolder("").then(async (directory) => {
+								if (directory === null) return;
+								const nextPath = await fileTree.onMovePath(sourcePath, directory);
+								if (nextPath) await openWorkspaceFile(nextPath);
+							})
+						}
 					/>
 				</Suspense>
 			) : null}

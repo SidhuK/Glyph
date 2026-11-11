@@ -42,6 +42,8 @@ export interface NoteInlineEditorProps {
 	interactive?: boolean;
 	/** Whether this editor can receive palette search jumps. */
 	acceptSearchJumps?: boolean;
+	/** Marks every occurrence while the find bar is closed, as in the palette's preview. */
+	highlightQuery?: string;
 	deferHeavyFeatures?: boolean;
 	chrome?: NoteInlineEditorChrome;
 	/** Loads equation extensions even when this surface uses minimal chrome. */

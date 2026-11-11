@@ -13,7 +13,9 @@ export function useQuickSearchResults(query: string, spacePath: string) {
 	const { t, i18n } = useTranslation("shell");
 	const parsedQuery = parsePaletteQuery(query);
 	const referenceScope = parsedQuery.scope === "tags" || parsedQuery.scope === "people";
-	const searchEnabled = parsedQuery.scope === "all" || referenceScope;
+	// A bare "#" or "@" has nothing to search for yet.
+	const searchEnabled =
+		parsedQuery.scope === "all" || (referenceScope && Boolean(parsedQuery.text.trim()));
 	const tagQuery = parsedQuery.text.trim();
 
 	const settings = useQuery({

@@ -409,7 +409,6 @@
 		"saveSearchFailed": "검색을 저장할 수 없습니다",
 		"searching": "검색 중…",
 		"results": "결과 {{count}}개",
-		"noResults": "결과 없음",
 		"resultsLabel": "팔레트 결과",
 		"searchEverything": "노트, 명령, 설정 등을 검색…",
 		"notSet": "설정되지 않음",
@@ -417,7 +416,7 @@
 		"settingUpdated": "설정이 업데이트되었습니다",
 		"settingUpdateFailed": "설정을 업데이트할 수 없습니다",
 		"invalidSettingValue": "설정 값이 올바르지 않습니다",
-		"settingsBreadcrumb": "설정 / {{section}} / {{title}}",
+		"settingsBreadcrumb": "{{pane}} › {{title}}",
 		"clearValue": "값 지우기",
 		"searchFolders": "폴더 검색…",
 		"spaceRoot": "스페이스 루트",
@@ -438,7 +437,21 @@
 			"close": "닫기",
 			"change": "변경",
 			"options": "옵션",
-			"toggle": "전환"
+			"toggle": "전환",
+			"switchTab": "탭으로 전환",
+			"run": "실행",
+			"clear": "지우기",
+			"showNotes": "노트 보기",
+			"create": "만들기",
+			"search": "검색",
+			"allResults": "모든 결과",
+			"choose": "선택",
+			"apply": "적용",
+			"back": "뒤로",
+			"moveHere": "여기로 이동",
+			"cancel": "취소",
+			"openInGlyph": "Glyph에서 열기",
+			"dismiss": "닫기"
 		},
 		"groups": {
 			"command": "명령",
@@ -450,9 +463,37 @@
 			"tag": "태그",
 			"person": "사람",
 			"database": "컬렉션 및 데이터베이스",
-			"template": "템플릿"
+			"template": "템플릿",
+			"recent": "최근"
 		},
-		"lineNumber": "{{line}}행"
+		"lineNumber": "{{line}}행",
+		"openTab": "열린 탭",
+		"previewEdited": "{{when}} 편집됨",
+		"previewMatches_other": "일치 {{count}}개",
+		"commandKind": "명령",
+		"shortcut": "단축키",
+		"editShortcut": "설정 › 단축키에서 편집",
+		"removeScope": "범위 제거",
+		"searchFailed": "검색에 실패했습니다. 검색어를 확인하고 다시 시도하세요.",
+		"noResultsHint": "일치하는 노트, 명령 또는 설정이 없습니다. 글자 수를 줄이거나 명령은 >로 시작하세요.",
+		"noScopedResults": "{{scope}}에서 일치하는 항목이 없습니다.",
+		"createNote": "노트 “{{title}}” 만들기",
+		"searchNoteText": "노트 본문에서 “{{query}}” 검색",
+		"scopePlaceholder": {
+			"commands": "명령 검색",
+			"settings": "설정 검색",
+			"folders": "폴더 검색",
+			"tags": "태그 검색",
+			"people": "사람 검색",
+			"templates": "템플릿 검색"
+		},
+		"noteCount_other": "노트 {{count}}개",
+		"moveToken": "“{{title}}” 이동",
+		"moveTo": "이동할 위치",
+		"currentLocation": "현재 위치",
+		"current": "현재",
+		"newFolder": "새 폴더…",
+		"moveFoldersFailed": "폴더 목록을 불러올 수 없습니다."
 	},
 	"calendar": {
 		"title": "캘린더",
@@ -689,7 +730,8 @@
 		"placeholder": "노트, 태그, 컬렉션 검색…",
 		"noSpace": "검색하려면 Glyph에서 스페이스를 여세요.",
 		"openFailed": "Glyph에서 열 수 없습니다: {{message}}",
-		"hideFailed": "빠른 검색을 닫을 수 없습니다: {{message}}"
+		"hideFailed": "빠른 검색을 닫을 수 없습니다: {{message}}",
+		"noResults": "일치하는 노트, 태그 또는 컬렉션이 없습니다."
 	},
 	"sidebarCalendar": {
 		"menu": {
@@ -808,5 +850,20 @@
 		"retry": "다시 시도",
 		"inboxEmpty": "인박스가 비어 있습니다.",
 		"archiveEmpty": "보관된 노트가 없습니다."
+	},
+	"quickNoteWindow": {
+		"placeholder": "빠른 노트를 쓰거나 /를 눌러 명령 보기",
+		"modeLabel": "노트 저장 위치",
+		"append": "덧붙이기",
+		"newNote": "새 노트",
+		"appendsTo": "{{path}}에 덧붙임",
+		"createsFile": "{{path}} 만들기",
+		"createsIn": "{{folder}}에 새 노트 만들기",
+		"cancel": "취소",
+		"save": "저장",
+		"saving": "저장 중…",
+		"savedTo": "{{name}}에 저장됨",
+		"words_other": "{{count}}단어",
+		"characters_other": "{{count}}자"
 	}
 }

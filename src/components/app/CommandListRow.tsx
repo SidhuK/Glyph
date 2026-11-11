@@ -1,8 +1,13 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
+	ArrowRight01Icon,
+	CommandIcon,
 	File02Icon,
+	FileAddIcon,
 	Folder01Icon,
+	FolderAddIcon,
 	Layout01Icon,
+	Search01Icon,
 	TableIcon,
 	Tag01Icon,
 	UserIcon,
@@ -19,6 +24,8 @@ import { getPaletteSettingIcon } from "./settingsPaletteIcons";
 /** Notes, open tabs and content matches share the plain document glyph. */
 function resultIconFor(result: PaletteResult) {
 	switch (result.kind) {
+		case "command":
+			return CommandIcon;
 		case "setting":
 			return getPaletteSettingIcon(result.settingId);
 		case "folder":
@@ -31,13 +38,17 @@ function resultIconFor(result: PaletteResult) {
 			return TableIcon;
 		case "template":
 			return Layout01Icon;
+		case "action":
+			return result.actionId === "create-note" ? FileAddIcon : Search01Icon;
+		case "destination":
+			return result.actionId === "create-folder" ? FolderAddIcon : Folder01Icon;
 		default:
 			return File02Icon;
 	}
 }
 
 function ResultIcon({ result }: { result: PaletteResult }) {
-	if (result.kind === "command") return result.command?.icon ?? null;
+	if (result.kind === "command" && result.command?.icon) return result.command.icon;
 	return <HugeiconsIcon icon={resultIconFor(result)} size="var(--icon-lg)" />;
 }
 
@@ -93,7 +104,15 @@ export function CommandListRowContent({ result }: { result: PaletteResult }) {
 						</span>
 						{typeof result.checked !== "boolean" && result.trailing ? (
 							<span className="commandPaletteResultValue" title={result.trailing}>
-								{result.trailing}
+								{result.kind === "tag"
+									? t("commandPalette.noteCount", { count: Number(result.trailing) })
+									: result.trailing}
+							</span>
+						) : null}
+						{result.settingControl === "choice" ? (
+							// Opens a list of options, unlike a row that only shows a value.
+							<span className="commandPaletteResultChevron" aria-hidden="true">
+								<HugeiconsIcon icon={ArrowRight01Icon} size="var(--icon-sm)" />
 							</span>
 						) : null}
 					</span>
@@ -117,6 +136,8 @@ export function CommandListRowContent({ result }: { result: PaletteResult }) {
 						<span />
 					</span>
 				</span>
+			) : result.openTabId ? (
+				<span className="commandPaletteResultChip">{t("commandPalette.openTab")}</span>
 			) : result.trailing ? null : (
 				<Shortcut result={result} />
 			)}

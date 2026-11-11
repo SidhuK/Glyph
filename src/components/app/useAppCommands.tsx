@@ -1,6 +1,8 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	AiBrain04Icon,
+	ArrowLeft01Icon,
+	ArrowRight01Icon,
 	ArrowLeft,
 	ArrowRight,
 	Attachment01Icon,
@@ -8,6 +10,7 @@ import {
 	Calendar02Icon,
 	Calendar03Icon,
 	Calendar04Icon,
+	CancelSquareIcon,
 	ChartRelationshipIcon,
 	CheckListIcon,
 	Copy01Icon,
@@ -29,6 +32,7 @@ import {
 	LayoutTopIcon,
 	Link01Icon,
 	Logout05Icon,
+	MultiplicationSignIcon,
 	MoveIcon,
 	PaintBoardIcon,
 	PinIcon,
@@ -63,8 +67,8 @@ import { toast } from "../../lib/toast";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import type { SettingsTab } from "../settings/settingsConfig";
 import type { Command } from "./CommandPalette";
+import type { PaletteLaunchMode } from "./commandPaletteHelpers";
 import { buildEditorCommands } from "./editorCommands";
-import { buildMovePickerCommands } from "./movePickerCommands";
 import { useNoteCollectionCommands } from "./useNoteCollectionCommands";
 import { useTagRefactorCommands } from "./useTagRefactorCommands";
 
@@ -108,8 +112,6 @@ interface UseAppCommandsDeps {
 	handleOpenAiSettings: () => void;
 	handleOpenSpaceSettings: () => void;
 	handleRevealSpaceFromMenu: () => void;
-	movePickerSourcePath: string | null;
-	moveTargetDirs: string[];
 	onCreateSpace: () => void;
 	onOpenSpace: () => void;
 	openAgentView: () => void;
@@ -120,7 +122,7 @@ interface UseAppCommandsDeps {
 	openDatabasesTab: (databaseId?: string | null) => void;
 	openCalendar: () => void;
 	openConnectionsView: () => void;
-	openPalette: (tab: "commands" | "search", query?: string) => void;
+	openPalette: (mode: PaletteLaunchMode, query?: string) => void;
 	openQuickNoteWindow: () => void;
 	openQuickSearchWindow: () => void;
 	openSearchPalette: () => void;
@@ -146,7 +148,6 @@ interface UseAppCommandsDeps {
 	unpinnedTabsLength: number;
 	toggleActiveTabPinned: () => void;
 	togglePinnedFile: (path: string) => Promise<void>;
-	refreshMoveTargetDirs: (sourcePath: string) => Promise<void>;
 }
 
 function buildAiCommands({
@@ -220,6 +221,11 @@ function resolveCommandShortcuts(
 					category: i18n.t(`commands:categories.${definition.category}`, {
 						lng: language,
 					}),
+					categoryId: definition.category,
+					description: i18n.t(`commands:commands.${command.id}.description`, {
+						lng: language,
+						defaultValue: "",
+					}),
 					allowInEditable: definition.allowInEditable,
 					shortcut: definition.defaultBinding ?? command.shortcut,
 				}
@@ -272,8 +278,6 @@ export function useAppCommands({
 	handleOpenAiSettings,
 	handleOpenSpaceSettings,
 	handleRevealSpaceFromMenu,
-	movePickerSourcePath,
-	moveTargetDirs,
 	onCreateSpace,
 	onOpenSpace,
 	openAgentView,
@@ -310,7 +314,6 @@ export function useAppCommands({
 	unpinnedTabsLength,
 	toggleActiveTabPinned,
 	togglePinnedFile,
-	refreshMoveTargetDirs,
 }: UseAppCommandsDeps): Command[] {
 	const { i18n: i18nInstance } = useTranslation();
 	const language = i18nInstance.language;
@@ -324,13 +327,6 @@ export function useAppCommands({
 		openPalette,
 	);
 	return useMemo<Command[]>(() => {
-		const movePickerCommands = buildMovePickerCommands({
-			fileTree,
-			movePickerSourcePath,
-			moveTargetDirs,
-			openWorkspaceFile,
-		});
-		if (movePickerCommands) return movePickerCommands;
 		if (tagRefactorCommands.picker) return tagRefactorCommands.picker;
 		const aiCommands = buildAiCommands({
 			activeMarkdownTabPath,
@@ -419,11 +415,13 @@ export function useAppCommands({
 			})),
 			{
 				id: "close-active-tab",
+				icon: <HugeiconsIcon icon={MultiplicationSignIcon} size="var(--icon-lg)" />,
 				enabled: tabsLength > 0 && !activeTabIsPinned,
 				action: closeActiveTab,
 			},
 			{
 				id: "close-all-tabs",
+				icon: <HugeiconsIcon icon={CancelSquareIcon} size="var(--icon-lg)" />,
 				enabled: unpinnedTabsLength > 0,
 				action: closeAllTabs,
 			},
@@ -438,11 +436,13 @@ export function useAppCommands({
 			},
 			{
 				id: "next-tab",
+				icon: <HugeiconsIcon icon={ArrowRight01Icon} size="var(--icon-lg)" />,
 				enabled: tabsLength > 1,
 				action: activateNextTab,
 			},
 			{
 				id: "previous-tab",
+				icon: <HugeiconsIcon icon={ArrowLeft01Icon} size="var(--icon-lg)" />,
 				enabled: tabsLength > 1,
 				action: activatePreviousTab,
 			},
@@ -594,8 +594,7 @@ export function useAppCommands({
 				action: () => {
 					if (!activeFilePath) return;
 					setMovePickerSourcePath(activeFilePath);
-					void refreshMoveTargetDirs(activeFilePath);
-					openPalette("commands");
+					openPalette("move");
 				},
 			},
 			{
@@ -813,10 +812,7 @@ export function useAppCommands({
 		openWorkspaceFile,
 		gitSync,
 		getBinding,
-		moveTargetDirs,
-		movePickerSourcePath,
 		openSettings,
-		refreshMoveTargetDirs,
 		openPalette,
 		setMovePickerSourcePath,
 		tabsLength,

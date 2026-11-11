@@ -52,27 +52,28 @@ function menuTitleForDir(path: string, rootLabel: string) {
 	return parts[parts.length - 1] ?? rootLabel;
 }
 
+/**
+ * The first crumb's menu already lists the space root, so the trail starts at the first folder
+ * rather than with a separate "Space" crumb.
+ */
 function breadcrumbPartsForTarget(
 	path: string,
 	targetValue: string,
 	todayQuickNotePath: string,
-	labels: { root: string; today: string },
+	todayLabel: string,
 ): BreadcrumbPart[] {
-	return [
-		{ label: labels.root, path: "" },
-		...path
-			.split("/")
-			.filter(Boolean)
-			.map((segment, index, segments): BreadcrumbPart => {
-				const segmentPath = segments.slice(0, index + 1).join("/");
-				const isFile = index === segments.length - 1;
-				let label = isFile ? displayNameFromPath(segment) : segment;
-				if (isFile && targetValue === QUICK_NOTE_TARGET_VALUE && path === todayQuickNotePath) {
-					label = labels.today;
-				}
-				return { label, path: segmentPath };
-			}),
-	];
+	return path
+		.split("/")
+		.filter(Boolean)
+		.map((segment, index, segments): BreadcrumbPart => {
+			const segmentPath = segments.slice(0, index + 1).join("/");
+			const isFile = index === segments.length - 1;
+			let label = isFile ? displayNameFromPath(segment) : segment;
+			if (isFile && targetValue === QUICK_NOTE_TARGET_VALUE && path === todayQuickNotePath) {
+				label = todayLabel;
+			}
+			return { label, path: segmentPath };
+		});
 }
 
 function fileTarget(path: string): QuickNoteTarget {
@@ -199,7 +200,7 @@ export function QuickNoteTargetBreadcrumbs({
 		selectedTarget.path,
 		selectedTarget.value,
 		todayQuickNotePath,
-		{ root: t("breadcrumbs.space"), today: t("quickNoteTarget.today") },
+		t("quickNoteTarget.today"),
 	);
 
 	const loadDir = useCallback(async (dirPath: string) => {

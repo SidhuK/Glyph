@@ -49,12 +49,37 @@
 	min-width: 0;
 }
 
-.quickNoteTargetSummary {
+/* Append to the target, or write the draft to a note of its own. */
+.quickNoteModes {
 	flex: 0 0 auto;
-	color: var(--text-tertiary);
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	border-radius: var(--radius-md);
+	-webkit-app-region: no-drag;
+}
+
+.quickNoteModes [data-slot="toggle-group-item"] {
+	height: 22px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-secondary);
 	font-size: var(--text-xs);
-	font-weight: var(--font-normal);
+	font-weight: var(--font-medium);
 	white-space: nowrap;
+	cursor: pointer;
+}
+
+.quickNoteModes [data-slot="toggle-group-item"]:hover {
+	background: var(--bg-hover);
+}
+
+.quickNoteModes [data-slot="toggle-group-item"][aria-pressed="true"] {
+	background: var(--bg-active);
+	color: var(--text-primary);
 }
 
 .quickNoteTargetResetButton {
@@ -222,6 +247,7 @@
 }
 
 .quickNoteFooterStatus {
+	flex: 1 1 auto;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -237,6 +263,29 @@
 
 .quickNoteFooterError {
 	color: var(--status-danger-fg);
+}
+
+.quickNoteCancelButton {
+	flex: 0 0 auto;
+	min-height: 28px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	cursor: pointer;
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
+}
+
+.quickNoteCancelButton:hover,
+.quickNoteCancelButton:focus-visible {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	outline: none;
 }
 
 .quickNoteSaveButton {
@@ -267,8 +316,10 @@
 	outline-offset: 2px;
 }
 
+/* Neutral, not a faded accent: a washed-out blue reads as pressed or busy. */
 .quickNoteSaveButton:disabled {
-	opacity: 0.5;
+	background: var(--bg-hover);
+	color: var(--text-placeholder);
 	pointer-events: none;
 }
 
@@ -294,16 +345,20 @@
 	color: currentcolor;
 }
 
-.quickNoteSaveButton .commandPaletteShortcut {
-	margin-left: 0;
-}
-
-.quickNoteSaveButton .commandPaletteShortcut kbd {
+/* The one place the shortcut is shown. */
+.quickNoteSaveShortcut {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
 	height: 20px;
-	min-width: 0;
-	padding: 0 4px;
+	padding: 0 5px;
+	border: 0;
 	border-radius: var(--radius-sm);
 	background: color-mix(in srgb, currentcolor 16%, transparent);
 	color: currentcolor;
+	font-family: var(--font-sans);
+	font-size: var(--text-xs);
+	letter-spacing: 1px;
+	white-space: nowrap;
 	box-shadow: none;
 }

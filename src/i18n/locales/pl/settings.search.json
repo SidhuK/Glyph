@@ -339,7 +339,7 @@
 			"keywords": ["sekret", "token", "poświadczenie", "zaktualizuj klucz"]
 		},
 		"space-daily-notes-folder": {
-			"title": "Folder",
+			"title": "Folder notatek dziennych",
 			"section": "Notatki dzienne",
 			"description": "Wybierz miejsce tworzenia notatek dziennych.",
 			"keywords": ["dziennik", "dzisiaj", "data"]
@@ -363,13 +363,13 @@
 			"keywords": ["kwartał"]
 		},
 		"space-quick-notes-folder": {
-			"title": "Folder",
+			"title": "Folder szybkich notatek",
 			"section": "Szybkie notatki",
 			"description": "Wybierz miejsce zapisywania szybkich notatek.",
 			"keywords": ["przechwytywanie", "skrzynka odbiorcza"]
 		},
 		"space-attachments-location": {
-			"title": "Lokalizacja",
+			"title": "Lokalizacja załączników",
 			"section": "Załączniki",
 			"keywords": ["zasoby", "pliki", "obrazy", "folder"]
 		},
@@ -411,7 +411,7 @@
 			"keywords": ["szablony", "notatki kwartalne"]
 		},
 		"space-search-index-status": {
-			"title": "Status",
+			"title": "Status indeksu wyszukiwania",
 			"section": "Indeks wyszukiwania",
 			"keywords": ["indeks", "przebuduj", "szukaj"]
 		},
@@ -641,7 +641,7 @@
 			"keywords": ["licencja", "kompilacja"]
 		},
 		"about-update-status": {
-			"title": "Status",
+			"title": "Status aktualizacji",
 			"section": "Aktualizacje",
 			"description": "Ostatnia aktywność programu aktualizującego z tego okna.",
 			"keywords": ["sprawdzanie", "gotowe", "najnowsza wersja"]

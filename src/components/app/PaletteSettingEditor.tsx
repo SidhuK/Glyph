@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { AppSettings } from "../../lib/settings";
-import type { SettingsSearchEntry } from "../settings/settingsSearch";
+import { type SettingsSearchEntry, localizedSettingsTabLabel } from "../settings/settingsSearch";
 import {
 	type PaletteSettingDefinition,
 	type PaletteSettingOption,
@@ -37,7 +37,7 @@ export function PaletteSettingEditor({
 	onBack,
 	onChange,
 }: PaletteSettingEditorProps) {
-	const { t } = useTranslation("shell");
+	const { t, i18n } = useTranslation("shell");
 	const [draft, setDraft] = useState(() => displayValue(value));
 	const [pathQuery, setPathQuery] = useState("");
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -112,7 +112,7 @@ export function PaletteSettingEditor({
 				</span>
 				<span>
 					{t("commandPalette.settingsBreadcrumb", {
-						section: entry.section ?? entry.title,
+						pane: localizedSettingsTabLabel(entry.tab, i18n.language),
 						title: entry.title,
 					})}
 				</span>

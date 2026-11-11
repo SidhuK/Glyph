@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke, type QuickSearchTarget } from "../../lib/tauri";
 import { CommandList, paletteOptionId } from "../app/CommandList";
+import { CommandPaletteFooter } from "../app/CommandPaletteFooter";
 import { buildSearchQuery, movePaletteSelection } from "../app/commandPaletteHelpers";
 import type { PaletteResult } from "../app/paletteResults";
 import { useQuickSearchResults } from "./useQuickSearchResults";
@@ -46,7 +47,7 @@ export function QuickSearchPanel({ spacePath }: { spacePath: string }) {
 	const alert = openTarget.error
 		? t("quickSearch.openFailed", { message: extractErrorMessage(openTarget.error) })
 		: error
-			? extractErrorMessage(error)
+			? t("commandPalette.searchFailed")
 			: null;
 
 	const changeQuery = (next: string) => {
@@ -120,6 +121,7 @@ export function QuickSearchPanel({ spacePath }: { spacePath: string }) {
 						</output>
 					) : null}
 					<CommandList
+						emptyHint={t("quickSearch.noResults")}
 						id={RESULTS_ID}
 						results={results}
 						selectedIndex={selectedIndex}
@@ -128,6 +130,13 @@ export function QuickSearchPanel({ spacePath }: { spacePath: string }) {
 					/>
 				</div>
 			</div>
+			<CommandPaletteFooter
+				selectedResult={selectedResult}
+				escapeLabel="dismiss"
+				openLabel="openInGlyph"
+				showScopes={false}
+				canRemoveScope={false}
+			/>
 		</>
 	);
 }

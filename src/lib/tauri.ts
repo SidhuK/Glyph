@@ -901,6 +901,7 @@ interface TauriCommands {
 	hide_quick_note_window: CommandDef<void, void>;
 	show_quick_search_window: CommandDef<void, void>;
 	hide_quick_search_window: CommandDef<void, void>;
+	fit_quick_search_window: CommandDef<{ height: number }, void>;
 	quick_search_open_in_main: CommandDef<{ target: QuickSearchTarget }, void>;
 	show_main_window: CommandDef<void, void>;
 	read_clipboard_plain_text: CommandDef<void, string | null>;

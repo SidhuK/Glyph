@@ -412,7 +412,6 @@
 		"saveSearchFailed": "Impossible d’enregistrer la recherche",
 		"searching": "Recherche…",
 		"results": "{{count}} résultats",
-		"noResults": "Aucun résultat",
 		"resultsLabel": "Résultats de la palette",
 		"searchEverything": "Rechercher des notes, commandes, réglages et plus…",
 		"notSet": "Non défini",
@@ -420,7 +419,7 @@
 		"settingUpdated": "Réglage mis à jour",
 		"settingUpdateFailed": "Impossible de mettre à jour le réglage",
 		"invalidSettingValue": "La valeur du réglage est invalide",
-		"settingsBreadcrumb": "Réglages / {{section}} / {{title}}",
+		"settingsBreadcrumb": "{{pane}} › {{title}}",
 		"clearValue": "Effacer la valeur",
 		"searchFolders": "Rechercher des dossiers…",
 		"spaceRoot": "Racine de l’espace",
@@ -441,7 +440,21 @@
 			"close": "Fermer",
 			"change": "Modifier",
 			"options": "Options",
-			"toggle": "Basculer"
+			"toggle": "Basculer",
+			"switchTab": "Aller à l’onglet",
+			"run": "Exécuter",
+			"clear": "Effacer",
+			"showNotes": "Afficher les notes",
+			"create": "Créer",
+			"search": "Rechercher",
+			"allResults": "Tous les résultats",
+			"choose": "Choisir",
+			"apply": "Appliquer",
+			"back": "Retour",
+			"moveHere": "Déplacer ici",
+			"cancel": "Annuler",
+			"openInGlyph": "Ouvrir dans Glyph",
+			"dismiss": "Fermer"
 		},
 		"groups": {
 			"command": "Commandes",
@@ -453,9 +466,39 @@
 			"tag": "Tags",
 			"person": "Personnes",
 			"database": "Collections et bases de données",
-			"template": "Modèles"
+			"template": "Modèles",
+			"recent": "Récents"
 		},
-		"lineNumber": "L{{line}}"
+		"lineNumber": "L{{line}}",
+		"openTab": "Onglet ouvert",
+		"previewEdited": "Modifiée {{when}}",
+		"previewMatches_one": "{{count}} occurrence",
+		"previewMatches_other": "{{count}} occurrences",
+		"commandKind": "Commande",
+		"shortcut": "Raccourci",
+		"editShortcut": "Modifier dans Réglages › Raccourcis",
+		"removeScope": "Retirer la portée",
+		"searchFailed": "La recherche a échoué. Vérifiez la requête et réessayez.",
+		"noResultsHint": "Aucune note, commande ou réglage ne correspond. Essayez moins de lettres, ou commencez par > pour les commandes.",
+		"noScopedResults": "Rien ne correspond dans {{scope}}.",
+		"createNote": "Créer la note « {{title}} »",
+		"searchNoteText": "Rechercher « {{query}} » dans le texte des notes",
+		"scopePlaceholder": {
+			"commands": "Rechercher des commandes",
+			"settings": "Rechercher des réglages",
+			"folders": "Rechercher des dossiers",
+			"tags": "Rechercher des tags",
+			"people": "Rechercher des personnes",
+			"templates": "Rechercher des modèles"
+		},
+		"noteCount_one": "{{count}} note",
+		"noteCount_other": "{{count}} notes",
+		"moveToken": "Déplacer « {{title}} »",
+		"moveTo": "Déplacer vers",
+		"currentLocation": "Emplacement actuel",
+		"current": "Actuel",
+		"newFolder": "Nouveau dossier…",
+		"moveFoldersFailed": "Impossible de lister les dossiers."
 	},
 	"calendar": {
 		"title": "Calendrier",
@@ -695,7 +738,8 @@
 		"placeholder": "Rechercher des notes, des tags et des collections…",
 		"noSpace": "Ouvrez un espace dans Glyph pour y effectuer une recherche.",
 		"openFailed": "Impossible d’ouvrir dans Glyph : {{message}}",
-		"hideFailed": "Impossible de fermer la recherche rapide : {{message}}"
+		"hideFailed": "Impossible de fermer la recherche rapide : {{message}}",
+		"noResults": "Aucune note, aucun tag ni aucune collection ne correspond."
 	},
 	"sidebarCalendar": {
 		"menu": {
@@ -825,5 +869,22 @@
 		"retry": "Réessayer",
 		"inboxEmpty": "Votre boîte de réception est vide.",
 		"archiveEmpty": "Aucune note archivée."
+	},
+	"quickNoteWindow": {
+		"placeholder": "Écrivez une note rapide ou tapez / pour les commandes",
+		"modeLabel": "Destination de la note",
+		"append": "Ajouter",
+		"newNote": "Nouvelle note",
+		"appendsTo": "S’ajoute à {{path}}",
+		"createsFile": "Crée {{path}}",
+		"createsIn": "Crée une nouvelle note dans {{folder}}",
+		"cancel": "Annuler",
+		"save": "Enregistrer",
+		"saving": "Enregistrement…",
+		"savedTo": "Enregistré dans {{name}}",
+		"words_one": "{{count}} mot",
+		"words_other": "{{count}} mots",
+		"characters_one": "{{count}} caractère",
+		"characters_other": "{{count}} caractères"
 	}
 }

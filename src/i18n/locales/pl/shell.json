@@ -433,7 +433,6 @@
 		"results_few": "{{count}} wyniki",
 		"results_many": "{{count}} wyników",
 		"results_other": "{{count}} wyniku",
-		"noResults": "Brak wyników",
 		"resultsLabel": "Wyniki palety",
 		"searchEverything": "Szukaj notatek, poleceń, ustawień i innych elementów…",
 		"notSet": "Nie ustawiono",
@@ -441,7 +440,7 @@
 		"settingUpdated": "Zaktualizowano ustawienie",
 		"settingUpdateFailed": "Nie udało się zaktualizować ustawienia",
 		"invalidSettingValue": "Wartość ustawienia jest nieprawidłowa",
-		"settingsBreadcrumb": "Ustawienia / {{section}} / {{title}}",
+		"settingsBreadcrumb": "{{pane}} › {{title}}",
 		"clearValue": "Wyczyść wartość",
 		"searchFolders": "Szukaj w folderach…",
 		"spaceRoot": "Katalog główny przestrzeni",
@@ -462,7 +461,21 @@
 			"close": "Zamknij",
 			"change": "Zmień",
 			"options": "Opcje",
-			"toggle": "Przełącz"
+			"toggle": "Przełącz",
+			"switchTab": "Przejdź do karty",
+			"run": "Uruchom",
+			"clear": "Wyczyść",
+			"showNotes": "Pokaż notatki",
+			"create": "Utwórz",
+			"search": "Szukaj",
+			"allResults": "Wszystkie wyniki",
+			"choose": "Wybierz",
+			"apply": "Zastosuj",
+			"back": "Wstecz",
+			"moveHere": "Przenieś tutaj",
+			"cancel": "Anuluj",
+			"openInGlyph": "Otwórz w Glyph",
+			"dismiss": "Zamknij"
 		},
 		"groups": {
 			"command": "Polecenia",
@@ -474,9 +487,43 @@
 			"tag": "Tagi",
 			"person": "Ludzie",
 			"database": "Kolekcje i bazy danych",
-			"template": "Szablony"
+			"template": "Szablony",
+			"recent": "Ostatnie"
 		},
-		"lineNumber": "w. {{line}}"
+		"lineNumber": "w. {{line}}",
+		"openTab": "Otwarta karta",
+		"previewEdited": "Edytowano {{when}}",
+		"previewMatches_one": "{{count}} dopasowanie",
+		"previewMatches_few": "{{count}} dopasowania",
+		"previewMatches_many": "{{count}} dopasowań",
+		"previewMatches_other": "{{count}} dopasowania",
+		"commandKind": "Polecenie",
+		"shortcut": "Skrót",
+		"editShortcut": "Edytuj w Ustawienia › Skróty",
+		"removeScope": "Usuń zakres",
+		"searchFailed": "Wyszukiwanie nie powiodło się. Sprawdź zapytanie i spróbuj ponownie.",
+		"noResultsHint": "Brak pasujących notatek, poleceń i ustawień. Wpisz mniej liter lub zacznij od > dla poleceń.",
+		"noScopedResults": "Nic nie pasuje w: {{scope}}.",
+		"createNote": "Utwórz notatkę „{{title}}”",
+		"searchNoteText": "Szukaj „{{query}}” w treści notatek",
+		"scopePlaceholder": {
+			"commands": "Szukaj poleceń",
+			"settings": "Szukaj ustawień",
+			"folders": "Szukaj folderów",
+			"tags": "Szukaj tagów",
+			"people": "Szukaj osób",
+			"templates": "Szukaj szablonów"
+		},
+		"noteCount_one": "{{count}} notatka",
+		"noteCount_few": "{{count}} notatki",
+		"noteCount_many": "{{count}} notatek",
+		"noteCount_other": "{{count}} notatki",
+		"moveToken": "Przenieś „{{title}}”",
+		"moveTo": "Przenieś do",
+		"currentLocation": "Bieżąca lokalizacja",
+		"current": "Bieżący",
+		"newFolder": "Nowy folder…",
+		"moveFoldersFailed": "Nie udało się wczytać folderów."
 	},
 	"calendar": {
 		"title": "Kalendarz",
@@ -736,7 +783,8 @@
 		"placeholder": "Szukaj notatek, tagów i kolekcji…",
 		"noSpace": "Otwórz przestrzeń w Glyph, aby ją przeszukać.",
 		"openFailed": "Nie udało się otworzyć w Glyph: {{message}}",
-		"hideFailed": "Nie udało się zamknąć szybkiego wyszukiwania: {{message}}"
+		"hideFailed": "Nie udało się zamknąć szybkiego wyszukiwania: {{message}}",
+		"noResults": "Brak pasujących notatek, tagów i kolekcji."
 	},
 	"sidebarCalendar": {
 		"menu": {
@@ -874,5 +922,26 @@
 		"retry": "Ponów",
 		"inboxEmpty": "Twoja skrzynka jest pusta.",
 		"archiveEmpty": "Brak zarchiwizowanych notatek."
+	},
+	"quickNoteWindow": {
+		"placeholder": "Napisz szybką notatkę lub naciśnij /, aby zobaczyć polecenia",
+		"modeLabel": "Miejsce zapisu notatki",
+		"append": "Dopisz",
+		"newNote": "Nowa notatka",
+		"appendsTo": "Dopisuje do {{path}}",
+		"createsFile": "Tworzy {{path}}",
+		"createsIn": "Tworzy nową notatkę w {{folder}}",
+		"cancel": "Anuluj",
+		"save": "Zapisz",
+		"saving": "Zapisywanie…",
+		"savedTo": "Zapisano w {{name}}",
+		"words_one": "{{count}} słowo",
+		"words_few": "{{count}} słowa",
+		"words_many": "{{count}} słów",
+		"words_other": "{{count}} słowa",
+		"characters_one": "{{count}} znak",
+		"characters_few": "{{count}} znaki",
+		"characters_many": "{{count}} znaków",
+		"characters_other": "{{count}} znaku"
 	}
 }
