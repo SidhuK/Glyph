@@ -4,6 +4,9 @@ import type { PaletteResult } from "./paletteResults";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
+/** Rows mount without virtualization, so a large space lists its best matches; typing narrows. */
+const MOVE_RESULT_LIMIT = 50;
+
 /** A folder a note can move into, with the notes directly inside it. "" is the space root. */
 export interface MoveFolder {
 	path: string;
@@ -58,7 +61,7 @@ export function buildMoveResults({
 		const notes = t("commandPalette.noteCount", { count: noteCount });
 		return [
 			{
-				id: `destination:${path}`,
+				id: `destination:folder:${path}`,
 				kind: "destination",
 				label,
 				description: isCurrent ? parent : [parent, notes].filter(Boolean).join(" · "),
@@ -73,7 +76,7 @@ export function buildMoveResults({
 		];
 	});
 	const newFolder: PaletteResult = {
-		id: "destination:new-folder",
+		id: "destination:action:create-folder",
 		kind: "destination",
 		label: t("commandPalette.newFolder"),
 		category: moveTo,
@@ -82,7 +85,7 @@ export function buildMoveResults({
 		actionId: "create-folder",
 	};
 	return [
-		...rows.filter((row) => row.enabled !== false),
+		...rows.filter((row) => row.enabled !== false).slice(0, MOVE_RESULT_LIMIT),
 		newFolder,
 		...rows.filter((row) => row.enabled === false),
 	];

@@ -23,6 +23,9 @@ const QUICK_SEARCH_WIDTH: f64 = 560.0;
 const QUICK_SEARCH_INITIAL_HEIGHT: f64 = 120.0;
 const QUICK_SEARCH_MIN_HEIGHT: f64 = 52.0;
 const QUICK_SEARCH_MAX_HEIGHT: f64 = 600.0;
+/// Like Spotlight, the search field sits a fifth of the way down the screen,
+/// leaving room for the list to grow below it.
+const QUICK_SEARCH_TOP_FRACTION: f64 = 0.2;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum FloatingWindow {
@@ -121,10 +124,10 @@ pub(crate) fn apply_floating_window_vibrancy(_window: &tauri::WebviewWindow) -> 
 
 fn show_floating_window(app: &tauri::AppHandle, kind: FloatingWindow) -> Result<(), String> {
     let window = floating_window(app, kind)?;
-    // Quick Note stays where the user parked it; Quick Search re-centers like
-    // Spotlight and asks its UI to reset for a fresh query.
+    // Quick Note stays where the user parked it; Quick Search returns to its
+    // Spotlight position and asks its UI to reset for a fresh query.
     if kind == FloatingWindow::QuickSearch {
-        window.center().map_err(|error| error.to_string())?;
+        place_quick_search_window(&window)?;
     }
     window.show().map_err(|error| error.to_string())?;
     window.unminimize().map_err(|error| error.to_string())?;
@@ -135,6 +138,31 @@ fn show_floating_window(app: &tauri::AppHandle, kind: FloatingWindow) -> Result<
             .map_err(|error| error.to_string())?;
     }
     Ok(())
+}
+
+/// Centers Quick Search horizontally with its top edge at a fixed height, so it
+/// opens in the same place whatever height the previous session left it at.
+fn place_quick_search_window(window: &tauri::WebviewWindow) -> Result<(), String> {
+    let Some(monitor) = window
+        .current_monitor()
+        .map_err(|error| error.to_string())?
+    else {
+        return window.center().map_err(|error| error.to_string());
+    };
+    let area = monitor.work_area();
+    let width = window
+        .outer_size()
+        .map_err(|error| error.to_string())?
+        .width;
+    let x =
+        f64::from(area.position.x) + (f64::from(area.size.width) - f64::from(width)).max(0.0) / 2.0;
+    let y = f64::from(area.position.y) + f64::from(area.size.height) * QUICK_SEARCH_TOP_FRACTION;
+    window
+        .set_position(tauri::PhysicalPosition::new(
+            x.round() as i32,
+            y.round() as i32,
+        ))
+        .map_err(|error| error.to_string())
 }
 
 pub(crate) fn hide_floating_window(
@@ -231,7 +259,8 @@ pub(crate) fn hide_quick_search_window(app: tauri::AppHandle) -> Result<(), Stri
 }
 
 /// Sizes Quick Search to its content, like Spotlight. The top edge stays where it
-/// is, so the list grows and shrinks below the search field.
+/// is, so the list grows and shrinks below the search field, unless that would
+/// push the bottom off the screen.
 #[tauri::command]
 pub(crate) fn fit_quick_search_window(app: tauri::AppHandle, height: f64) -> Result<(), String> {
     if !height.is_finite() {
@@ -240,13 +269,21 @@ pub(crate) fn fit_quick_search_window(app: tauri::AppHandle, height: f64) -> Res
     let Some(window) = app.get_webview_window(QUICK_SEARCH_WINDOW_LABEL) else {
         return Ok(());
     };
-    let position = window.outer_position().map_err(|error| error.to_string())?;
+    let height = height.clamp(QUICK_SEARCH_MIN_HEIGHT, QUICK_SEARCH_MAX_HEIGHT);
+    let mut position = window.outer_position().map_err(|error| error.to_string())?;
     window
-        .set_size(tauri::LogicalSize::new(
-            QUICK_SEARCH_WIDTH,
-            height.clamp(QUICK_SEARCH_MIN_HEIGHT, QUICK_SEARCH_MAX_HEIGHT),
-        ))
+        .set_size(tauri::LogicalSize::new(QUICK_SEARCH_WIDTH, height))
         .map_err(|error| error.to_string())?;
+    if let Some(monitor) = window
+        .current_monitor()
+        .map_err(|error| error.to_string())?
+    {
+        let area = monitor.work_area();
+        let physical_height = (height * monitor.scale_factor()).round() as i32;
+        let bottom = area.position.y.saturating_add_unsigned(area.size.height);
+        let max_top = bottom.saturating_sub(physical_height).max(area.position.y);
+        position.y = position.y.min(max_top);
+    }
     window
         .set_position(position)
         .map_err(|error| error.to_string())

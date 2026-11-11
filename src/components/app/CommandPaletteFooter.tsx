@@ -45,7 +45,10 @@ type OpenLabel = "open" | "openInGlyph";
 
 /** What Enter does for the selected row. */
 function enterLabel(result: PaletteResult | undefined, openLabel: OpenLabel): FooterHint["label"] {
-	if (result?.kind === "open-tab" || result?.openTabId) return "switchTab";
+	// A content match jumps to its position, even when the note is already open.
+	if (result?.kind === "open-tab" || (result?.kind === "note" && result.openTabId)) {
+		return "switchTab";
+	}
 	switch (result?.kind) {
 		case "command":
 			return "run";

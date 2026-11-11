@@ -234,13 +234,22 @@ export function CommandPalette({
 		},
 	});
 
-	// Once the search settles empty, offer the next step instead of a dead end.
 	const moveFolders = useQuery({
 		queryKey: ["command-palette-move-folders", spacePath],
-		queryFn: async () =>
-			moveFoldersFromEntries(await invoke("space_list_dir", { recursive: true, limit: 50_000 })),
+		// Folders come from their own listing so a space full of files can't crowd them out;
+		// the full listing only supplies note counts.
+		queryFn: async () => {
+			const [dirs, entries] = await Promise.all([
+				invoke("space_list_dir", { recursive: true, directories_only: true, limit: 5000 }),
+				invoke("space_list_dir", { recursive: true, limit: 50_000 }),
+			]);
+			return moveFoldersFromEntries([...dirs, ...entries]);
+		},
 		enabled: open && Boolean(moveSource && spacePath),
+		// Folders change outside the palette, so each move starts from a fresh listing.
+		staleTime: 0,
 	});
+	// Once the search settles empty, offer the next step instead of a dead end.
 	const results = moveSource
 		? buildMoveResults({
 				query,
@@ -481,8 +490,9 @@ export function CommandPalette({
 			if (event.key === "Escape") {
 				event.preventDefault();
 				event.stopPropagation();
+				// Text typed after a scope clears first; the scope goes on the next Esc.
 				if (query) {
-					setQuery("");
+					setQuery(scopeInput.rest.trim() ? scopeInput.prefix : "");
 					setSelectedId(null);
 				} else {
 					closeAndRestoreFocus();
@@ -523,6 +533,8 @@ export function CommandPalette({
 	const canSaveSearch =
 		!isSecretPalettePhrase &&
 		!moveSource &&
+		// A bare "#" or "@" is not a search worth saving.
+		Boolean(parsedQuery.text) &&
 		(parsedQuery.scope === "all" || parsedQuery.scope === "tags" || parsedQuery.scope === "people");
 	const isCurrentSearchSaved = databaseSummaries.data?.some(
 		(collection) =>
@@ -578,7 +590,10 @@ export function CommandPalette({
 						<div className="commandPaletteHeader">
 							<div className="commandPaletteInputWrapper">
 								{moveSource ? (
-									<span className="commandPaletteScopeToken">
+									<span
+										className="commandPaletteScopeToken commandPaletteMoveToken"
+										title={moveSource}
+									>
 										{t("commandPalette.moveToken", { title: displayNameFromPath(moveSource) })}
 									</span>
 								) : null}
@@ -693,11 +708,13 @@ export function CommandPalette({
 										onSetSelectedIndex={(index) => setSelectedId(results[index]?.id ?? null)}
 										onSelectResult={selectResult}
 										emptyHint={
-											scope
-												? t("commandPalette.noScopedResults", {
-														scope: t(`commandPalette.groups.${SCOPE_GROUP[scope]}`),
-													})
-												: t("commandPalette.noResultsHint")
+											isSearching
+												? t("commandPalette.searching")
+												: scope
+													? t("commandPalette.noScopedResults", {
+															scope: t(`commandPalette.groups.${SCOPE_GROUP[scope]}`),
+														})
+													: t("commandPalette.noResultsHint")
 										}
 									/>
 								)}

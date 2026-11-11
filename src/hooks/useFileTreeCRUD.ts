@@ -187,7 +187,14 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			try {
 				const siblings = await invoke("space_list_dir", dirPath ? { dir: dirPath } : {});
 				const siblingNames = new Set(siblings.map((entry) => entry.name.toLowerCase()));
-				const baseName = title?.replace(/[/\\:]/g, "-").trim() || "Untitled";
+				// The extension is added below, and a leading dot would make a hidden file the space refuses.
+				const baseName =
+					title
+						?.replace(/[/\\:]/g, "-")
+						.trim()
+						.replace(/\.md$/i, "")
+						.replace(/^[\s.]+/, "")
+						.trim() || "Untitled";
 				let fileName = `${baseName}.md`;
 				if (siblingNames.has(fileName.toLowerCase())) {
 					let suffix = 2;

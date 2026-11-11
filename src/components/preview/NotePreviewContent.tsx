@@ -25,7 +25,8 @@ function NotePreviewMeta({
 	const dates = useGitHistoryDates();
 	const parts = [
 		displayFolderFromPath(relPath) || t("folio.noFolder"),
-		t("commandPalette.previewEdited", { when: dates.relative(mtimeMs) }),
+		// 0 means the time is unknown.
+		mtimeMs > 0 ? t("commandPalette.previewEdited", { when: dates.relative(mtimeMs) }) : null,
 		matchCount ? t("commandPalette.previewMatches", { count: matchCount }) : null,
 	].filter(Boolean);
 	return <div className="notePreviewMeta">{parts.join(" · ")}</div>;

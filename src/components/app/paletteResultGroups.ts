@@ -16,17 +16,20 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
  * One row per note. A title match absorbs the note's open tab and content matches, keeping the
  * first (best) snippet. Without a title match, the note's first content match absorbs the tab
  * and later occurrences keep their own rows so each can still be opened at its position.
+ * `titled` holds only the title rows that stay visible after the group cap, so a note cut from
+ * the title group keeps its content rows. `tabIds` maps every open note to its tab, matched or not.
  */
-export function foldNoteRows(ranked: readonly RankedResult[]): RankedResult[] {
-	const tabIds = new Map<string, string>();
-	const titled = new Set<string>();
+export function foldNoteRows(
+	ranked: readonly RankedResult[],
+	titled: ReadonlySet<string>,
+	tabIds: ReadonlyMap<string, string>,
+): RankedResult[] {
 	const firstContent = new Map<string, PaletteResult>();
 	for (const { result } of ranked) {
 		const path = result.previewPath;
-		if (!path) continue;
-		if (result.kind === "open-tab" && result.target) tabIds.set(path, result.target);
-		if (result.kind === "note") titled.add(path);
-		if (result.kind === "content" && !firstContent.has(path)) firstContent.set(path, result);
+		if (path && result.kind === "content" && !firstContent.has(path)) {
+			firstContent.set(path, result);
+		}
 	}
 	return ranked.flatMap((item) => {
 		const { result } = item;

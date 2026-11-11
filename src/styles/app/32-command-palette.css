@@ -99,6 +99,18 @@
 	white-space: nowrap;
 }
 
+/* A long note title truncates so the search field stays visible beside it. */
+.commandPaletteMoveToken {
+	flex: 0 1 auto;
+	display: block;
+	min-width: 0;
+	max-width: 60%;
+	overflow: hidden;
+	padding-right: 7px;
+	line-height: 22px;
+	text-overflow: ellipsis;
+}
+
 .commandPaletteScopeTokenRemove {
 	width: 18px;
 	height: 18px;

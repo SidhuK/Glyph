@@ -122,7 +122,8 @@ function noteFolder(path: string, title: string, noFolderLabel: string) {
 	const full =
 		folder === title ? "" : folder.endsWith(repeated) ? folder.slice(0, -repeated.length) : folder;
 	return {
-		description: full ? (full.split(" / ").pop() ?? "") : noFolderLabel,
+		// A folder note (Projects/Projects.md) has a folder, just not one worth repeating.
+		description: full ? (full.split(" / ").pop() ?? "") : folder ? "" : noFolderLabel,
 		descriptionTooltip: full || undefined,
 	};
 }
@@ -379,15 +380,40 @@ export function buildPaletteResults({
 		});
 	}
 
-	const ranked = foldNoteRows(
-		candidates
-			.map((result) => ({
-				result,
-				score: rankPaletteResult(result, parsedQuery),
-			}))
-			.filter((item): item is RankedResult => item.score !== null),
-	);
+	const scored = candidates
+		.map((result) => ({ result, score: rankPaletteResult(result, parsedQuery) }))
+		.filter((item): item is RankedResult => item.score !== null);
 	const scoped = parsedQuery.scope !== "all";
+	const emptyQuery = !query.trim();
+	// With no query, keep source order: commands as registered, recent notes by recency.
+	const compareRanked = (a: RankedResult, b: RankedResult) =>
+		b.score - a.score || (emptyQuery ? 0 : a.result.label.localeCompare(b.result.label));
+	// Only the search surface is a match list; the command palette stays tight.
+	const groupLimit = (kind: PaletteResultKind) =>
+		scoped
+			? undefined
+			: kind === "content" && mode === "search"
+				? CONTENT_GROUP_LIMIT
+				: emptyQuery && mode === "commands"
+					? EMPTY_QUERY_GROUP_LIMIT
+					: BROAD_GROUP_LIMIT;
+	// Content rows fold only into title rows that survive the cap, so no note drops out of both.
+	const shownTitles = new Set(
+		scored
+			.filter(({ result }) => result.kind === "note")
+			.sort(compareRanked)
+			.slice(0, groupLimit("note"))
+			.flatMap(({ result }) => result.previewPath ?? []),
+	);
+	const ranked = foldNoteRows(
+		scored,
+		shownTitles,
+		new Map(
+			sources.tabs.flatMap((tab) =>
+				tab.kind === "file" && tab.target ? [[tab.target, tab.id] as const] : [],
+			),
+		),
+	);
 	const byKind = new Map<PaletteResultKind, typeof ranked>();
 	for (const item of ranked) {
 		const group = byKind.get(item.result.kind) ?? [];
@@ -405,23 +431,10 @@ export function buildPaletteResults({
 					),
 				]
 			: PALETTE_GROUP_ORDER;
-	const emptyQuery = !query.trim();
 	return groupOrder.flatMap((kind) => {
-		const group = byKind.get(kind) ?? [];
-		// With no query, keep source order: commands as registered, recent notes by recency.
-		group.sort(
-			(a, b) =>
-				b.score - a.score || (emptyQuery ? 0 : a.result.label.localeCompare(b.result.label)),
-		);
+		const group = (byKind.get(kind) ?? []).sort(compareRanked);
 		const split = splitScopedGroup(group, parsedQuery.scope, language, t);
 		if (split) return split.map(({ result }) => result);
-		// Only the search surface is a match list; the command palette stays tight.
-		const groupLimit =
-			kind === "content" && mode === "search"
-				? CONTENT_GROUP_LIMIT
-				: emptyQuery && mode === "commands"
-					? EMPTY_QUERY_GROUP_LIMIT
-					: BROAD_GROUP_LIMIT;
-		return group.slice(0, scoped ? undefined : groupLimit).map(({ result }) => result);
+		return group.slice(0, groupLimit(kind)).map(({ result }) => result);
 	});
 }
