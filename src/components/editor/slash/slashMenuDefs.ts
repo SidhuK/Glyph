@@ -99,18 +99,21 @@ export const SLASH_MENU: (SlashCommandDef | SlashCommandGroupDef)[] = [
 		children: [
 			actionCommand({
 				id: "heading1",
+				shortcut: "#",
 				icon: Heading1,
 				keywords: ["h1", "header", "title"],
 				action: "heading_1",
 			}),
 			actionCommand({
 				id: "heading2",
+				shortcut: "##",
 				icon: Heading2,
 				keywords: ["h2", "header"],
 				action: "heading_2",
 			}),
 			actionCommand({
 				id: "heading3",
+				shortcut: "###",
 				icon: Heading3,
 				keywords: ["h3", "header"],
 				action: "heading_3",
@@ -123,18 +126,21 @@ export const SLASH_MENU: (SlashCommandDef | SlashCommandGroupDef)[] = [
 		children: [
 			actionCommand({
 				id: "bulletList",
+				shortcut: "-",
 				icon: LeftToRightListBulletIcon,
 				keywords: ["ul", "bullet", "list"],
 				action: "bullet_list",
 			}),
 			actionCommand({
 				id: "numberedList",
+				shortcut: "1.",
 				icon: LeftToRightListNumberIcon,
 				keywords: ["ol", "ordered", "list"],
 				action: "numbered_list",
 			}),
 			actionCommand({
 				id: "todoList",
+				shortcut: "- [ ]",
 				icon: ListChecks,
 				keywords: ["todo", "task", "checklist", "list"],
 				action: "todo_list",
@@ -159,18 +165,21 @@ export const SLASH_MENU: (SlashCommandDef | SlashCommandGroupDef)[] = [
 		children: [
 			actionCommand({
 				id: "quote",
+				shortcut: ">",
 				icon: LeftToRightBlockQuoteIcon,
 				keywords: ["blockquote", "quote"],
 				action: "quote",
 			}),
 			actionCommand({
 				id: "codeBlock",
+				shortcut: "```",
 				icon: SourceCodeIcon,
 				keywords: ["code", "block"],
 				action: "code_block",
 			}),
 			actionCommand({
 				id: "divider",
+				shortcut: "---",
 				icon: SeparatorHorizontalIcon,
 				keywords: ["hr", "divider", "rule"],
 				action: "divider",

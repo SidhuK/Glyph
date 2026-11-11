@@ -177,6 +177,8 @@ export function useInputSuggestionEngine<T>({
 
 	return {
 		activeIndex,
+		/** Moves the selection to a row, as the pointer does, so only one row is ever lit. */
+		highlight: setActiveIndex,
 		close,
 		handleKeyDown,
 		items,

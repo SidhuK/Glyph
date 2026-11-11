@@ -8,6 +8,63 @@
 	overflow: hidden;
 }
 
+/* Excalidraw's own violet, Assistant font and three-layer island shadow become Glyph's
+   accent, font and floating-toolbar surface, so the toolbar reads like the editor ribbon.
+   The dark selector matches Excalidraw's `.excalidraw.theme--dark` so ours still wins. */
+.root :global(.excalidraw),
+.root :global(.excalidraw.theme--dark) {
+	--ui-font: var(--font-sans);
+	--color-primary: var(--interactive-accent);
+	--color-primary-hover: var(--interactive-accent-hover);
+	--color-primary-darker: color-mix(in srgb, var(--interactive-accent) 88%, var(--text-primary));
+	--color-primary-darkest: color-mix(in srgb, var(--interactive-accent) 76%, var(--text-primary));
+	--color-primary-light: color-mix(in srgb, var(--interactive-accent) 14%, var(--bg-primary));
+	--color-primary-light-darker: color-mix(
+		in srgb,
+		var(--interactive-accent) 20%,
+		var(--bg-primary)
+	);
+	--color-brand-hover: var(--interactive-accent-hover);
+	--color-brand-active: var(--color-primary-darker);
+	--color-surface-primary-container: var(--color-primary-light);
+	--color-on-primary-container: var(--interactive-accent);
+	--island-bg-color: var(--bg-primary);
+	--shadow-island: 0 0 0 0.5px var(--border-default), var(--shadow-overlay);
+	--border-radius-lg: var(--radius-md);
+	--button-hover-bg: var(--bg-hover);
+	--button-active-bg: var(--bg-active);
+	--button-border: transparent;
+}
+
+/* The selection box is drawn on the canvas, which reads this variable through
+   getComputedStyle: registering it as a colour hands the canvas a resolved rgb() value. */
+@property --color-selection {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: #6965db;
+}
+
+.root :global(.excalidraw:not(.theme--dark)) {
+	--color-selection: var(--interactive-accent);
+}
+
+/* Dark canvases are drawn through Excalidraw's invert and hue-rotate filter, so the accent is
+   pre-inverted in lightness to come out as itself. */
+@supports (color: hsl(from red h s l)) {
+	.root :global(.excalidraw.theme--dark) {
+		--color-selection: hsl(from var(--interactive-accent) h s calc(100 - l));
+	}
+}
+
+/* The Library button floats like the toolbar instead of sitting in an outlined box. */
+.root :global(.excalidraw .sidebar-trigger:not(.active, :active)) {
+	box-shadow: var(--shadow-island);
+}
+
+.root[data-panning-hint-hidden] :global(.excalidraw .HintViewer) {
+	display: none;
+}
+
 .dropHint,
 .error {
 	position: absolute;

@@ -131,3 +131,13 @@ export function rewritePrefix(path: string, from: string, to: string): string {
 	if (path.startsWith(`${from}/`)) return `${to}${path.slice(from.length)}`;
 	return path;
 }
+
+/** `Base.ext`, or `Base 2.ext`, `Base 3.ext`… when a sibling already has that name. */
+export function uniqueSiblingFileName(siblings: FsEntry[], baseName: string, extension: string) {
+	const taken = new Set(siblings.map((entry) => entry.name.toLowerCase()));
+	let fileName = `${baseName}.${extension}`;
+	for (let suffix = 2; taken.has(fileName.toLowerCase()); suffix += 1) {
+		fileName = `${baseName} ${suffix}.${extension}`;
+	}
+	return fileName;
+}

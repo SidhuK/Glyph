@@ -128,6 +128,7 @@ export function TextPropertyValueField({
 					activeIndex={wikiLinkAutocomplete.activeIndex}
 					className="notePropertyWikiLinkSuggestions"
 					onSelect={wikiLinkAutocomplete.select}
+					onHighlight={wikiLinkAutocomplete.highlight}
 				/>
 			) : null}
 		</div>

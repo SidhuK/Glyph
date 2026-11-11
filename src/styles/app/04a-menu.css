@@ -120,7 +120,8 @@ svg.glyphMenuItemIcon {
 /* Hand-rolled popups share the menu surface: TipTap suggestion menus (wiki-link,
    tag, person, markdown-link, slash), the property wiki-link list and the AI composer
    panels. They paint their own active rows, so their fill sits on .active /
-   [data-selected] rather than [data-highlighted]. The command palette is a modal sheet
+   [data-selected] rather than [data-highlighted]. The pointer moves .active in the
+   suggestion menus, so those rows take no separate hover fill. The command palette is a modal sheet
    (32-command-palette.css) and a gliding highlight paints its selection. */
 .wikiLinkSuggestionMenu,
 .slashCommandMenu,
@@ -148,9 +149,7 @@ svg.glyphMenuItemIcon {
 	transition: none;
 }
 
-.wikiLinkSuggestionItem:hover,
 .wikiLinkSuggestionItem.active,
-.slashCommandItem:hover,
 .slashCommandItem.active,
 .aiAddPanelItem:hover,
 .aiSlashCommandItem,

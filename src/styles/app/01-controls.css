@@ -35,6 +35,8 @@ button:hover:not(
 			.commandPaletteItem,
 			.sidebarViewTab,
 			.settingsTabButton,
+			.slashCommandItem,
+			.wikiLinkSuggestionItem,
 			[data-sileo-toast]
 		)
 	) {
@@ -55,6 +57,8 @@ button:active:not(
 			.commandPaletteItem,
 			.sidebarViewTab,
 			.settingsTabButton,
+			.slashCommandItem,
+			.wikiLinkSuggestionItem,
 			[data-sileo-toast]
 		)
 	) {

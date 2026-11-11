@@ -320,5 +320,9 @@
 			"restoreUnsaved": "Não foi possível salvar suas edições atuais, então nada foi restaurado.",
 			"undoChanged": "A nota mudou depois da restauração, então não é possível desfazer."
 		}
+	},
+	"linkSuggest": {
+		"create": "Criar “{{name}}”",
+		"footer": "Digite # para um título, | para um alias"
 	}
 }

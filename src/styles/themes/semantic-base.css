@@ -102,6 +102,8 @@
 	--state-selected: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 	/* One selection ring for pickers, swatches and cards: a background gap, then accent. */
 	--state-selected-ring: 0 0 0 1.5px var(--bg-primary), 0 0 0 3px var(--interactive-accent);
+	/* One inset surface for code blocks, table headers and embed frames: just off the page. */
+	--bg-inset: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
 	/* One card recipe: a hairline ring and a radius ladder (card < group < sheet). */
 	--card-ring: inset 0 0 0 1px var(--border-default);
 	--card-radius: var(--radius-8);
@@ -143,4 +145,10 @@
 	--glyph-inline-highlight-blue: color-mix(in srgb, var(--palette-blue) 20%, transparent);
 	--glyph-inline-highlight-green: color-mix(in srgb, var(--palette-green) 22%, transparent);
 	--glyph-inline-highlight-red: color-mix(in srgb, var(--palette-red) 18%, transparent);
+}
+
+/* Dark pages sit above a darker sidebar, so the inset lifts toward the ink instead of sinking
+   to the sidebar colour. */
+:where(:root, .appearanceThemePreview).dark {
+	--bg-inset: color-mix(in srgb, var(--bg-primary) 95%, var(--text-primary));
 }

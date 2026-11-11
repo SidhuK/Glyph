@@ -402,5 +402,9 @@
 	"properties": {
 		"label": "Właściwości",
 		"add": "Dodaj właściwość"
+	},
+	"linkSuggest": {
+		"create": "Utwórz „{{name}}”",
+		"footer": "Wpisz # dla nagłówka, | dla aliasu"
 	}
 }

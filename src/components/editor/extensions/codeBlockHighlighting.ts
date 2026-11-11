@@ -1,4 +1,4 @@
-import { type Editor, findChildren, type JSONContent } from "@tiptap/core";
+import { type Attributes, type Editor, findChildren, type JSONContent } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import type { Transaction } from "@tiptap/pm/state";
 import { createLowlight } from "lowlight";
@@ -183,7 +183,29 @@ function codeFenceFor(code: string): string {
 	return "`".repeat(longest + 1);
 }
 
+/** The label a code block rests with: the language's name, or nothing for plain text. */
+function codeBlockLanguageLabel(language: unknown): string | null {
+	if (typeof language !== "string" || !language) return null;
+	const normalized = normalizeCodeBlockLanguage(language);
+	if (normalized === "plaintext") return null;
+	return normalized ? i18n.t(`editor:codeBlock.languages.${normalized}`) : language;
+}
+
 export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.extend({
+	addAttributes() {
+		const parent: Attributes = this.parent?.() ?? {};
+		return {
+			...parent,
+			language: {
+				...parent.language,
+				rendered: true,
+				renderHTML: (attributes: Record<string, unknown>) => {
+					const label = codeBlockLanguageLabel(attributes.language);
+					return label ? { "data-language-label": label } : {};
+				},
+			},
+		};
+	},
 	renderMarkdown(node: JSONContent, h) {
 		const language = node.attrs?.language || "";
 		const code = h.renderChildren(node.content ?? []);

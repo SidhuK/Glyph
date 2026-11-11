@@ -109,11 +109,13 @@ export function WikiLinkSuggestionList({
 	activeIndex,
 	className,
 	onSelect,
+	onHighlight,
 }: {
 	items: EditorLinkSuggestion[];
 	activeIndex: number;
 	className: string;
 	onSelect: (item: EditorLinkSuggestion) => void;
+	onHighlight: (index: number) => void;
 }) {
 	if (items.length === 0) return null;
 	return (
@@ -129,6 +131,11 @@ export function WikiLinkSuggestionList({
 					className={["wikiLinkSuggestionItem", index === activeIndex ? "active" : ""]
 						.filter(Boolean)
 						.join(" ")}
+					onPointerMove={(event) => {
+						// Rows sliding under a still pointer must not steal the keyboard selection.
+						if (event.movementX === 0 && event.movementY === 0) return;
+						if (index !== activeIndex) onHighlight(index);
+					}}
 					onMouseDown={(event) => {
 						event.preventDefault();
 						onSelect(item);

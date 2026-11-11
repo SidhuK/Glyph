@@ -320,5 +320,9 @@
 			"restoreUnsaved": "No se pudieron guardar tus cambios actuales, así que no se restauró nada.",
 			"undoChanged": "La nota cambió después de la restauración, así que no se puede deshacer."
 		}
+	},
+	"linkSuggest": {
+		"create": "Crear «{{name}}»",
+		"footer": "Escribe # para un encabezado, | para un alias"
 	}
 }

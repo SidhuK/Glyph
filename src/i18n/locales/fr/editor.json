@@ -320,5 +320,9 @@
 			"restoreUnsaved": "Vos modifications en cours n’ont pas pu être enregistrées, donc rien n’a été restauré.",
 			"undoChanged": "La note a changé après la restauration, elle ne peut donc pas être annulée."
 		}
+	},
+	"linkSuggest": {
+		"create": "Créer « {{name}} »",
+		"footer": "Tapez # pour un titre, | pour un alias"
 	}
 }

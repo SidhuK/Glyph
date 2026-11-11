@@ -2,6 +2,7 @@ import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import { describe, expect, it } from "vite-plus/test";
+import { calloutDecorationsForNode, parseCalloutMarker } from "../extensions/calloutDecorations";
 import { GlyphMarkdown } from "../extensions/glyphMarkdown";
 import { HtmlCommentBlock, HtmlCommentInline } from "../extensions/htmlComment";
 import { postprocessMarkdownFromEditor, preprocessMarkdownForEditor } from "./editorMarkdownBridge";
@@ -114,6 +115,36 @@ describe("editorMarkdownBridge", () => {
 		const serialized = [String.raw`> \[!NOTE2\]-`, String.raw`> \[!TIP\]+`].join("\n");
 
 		expect(postprocessMarkdownFromEditor(serialized)).toBe("> [!NOTE2]-\n> [!TIP]+");
+	});
+
+	it("reads a callout title from the first line only and hides just that line", () => {
+		const cases = [
+			{
+				markdown: "> [!note] Why this matters\n> Reading comfort wins.",
+				marker: { kind: "note", title: "Why this matters" },
+				hidden: "[!note] Why this matters\n",
+			},
+			{
+				markdown: "> [!tip]\n> Callouts without a title fall back to their type name.",
+				marker: { kind: "tip", title: "Tip" },
+				hidden: "[!tip]\n",
+			},
+			{
+				markdown: "> [!warning] Watch dark mode\n>\n> Use an off-white.",
+				marker: { kind: "warning", title: "Watch dark mode" },
+				hidden: "[!warning] Watch dark mode",
+			},
+		];
+		for (const { markdown, marker, hidden } of cases) {
+			const { doc } = createGlyphMarkdownEditor(markdown).state;
+			const quote = doc.child(0);
+			expect(parseCalloutMarker(quote.child(0).textContent)).toEqual(marker);
+			const markerLine = calloutDecorationsForNode(quote, 0)[1];
+			expect(markerLine).toBeDefined();
+			const from = markerLine?.from ?? 0;
+			const to = markerLine?.to ?? 0;
+			expect(doc.textBetween(from, to, "", "")).toBe(hidden);
+		}
 	});
 
 	it("leaves extra blank lines as normal markdown input", () => {

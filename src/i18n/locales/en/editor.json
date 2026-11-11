@@ -388,5 +388,9 @@
 	"properties": {
 		"label": "Properties",
 		"add": "Add property"
+	},
+	"linkSuggest": {
+		"create": "Create “{{name}}”",
+		"footer": "Type # for a heading, | for an alias"
 	}
 }

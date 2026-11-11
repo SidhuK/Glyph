@@ -5,6 +5,7 @@ import {
 	type SuggestionProps,
 	exitSuggestion,
 } from "@tiptap/suggestion";
+import { type MenuRowContent, renderMenuRow } from "../slash/renderSlashMenuItem";
 import { lockEditorScrollDuringSuggestion } from "../suggestionScroll";
 import { clampSuggestionIndex, nextSuggestionIndex } from "./suggestionEngine";
 import {
@@ -25,6 +26,8 @@ interface RenderTipTapSuggestionItemOptions<T> {
 	index: number;
 	isActive: boolean;
 	select: (item: T) => void;
+	/** The typed query; absent for submenu rows. */
+	query?: string;
 }
 
 interface TipTapSuggestionMenuOptions<T> {
@@ -38,48 +41,15 @@ interface TipTapSuggestionMenuOptions<T> {
 	onEmptyEnter?: (props: SuggestionProps<T>) => boolean;
 	/** Items returned here open in a flyout submenu instead of running the command. */
 	getSubmenuItems?: (item: T) => T[] | undefined;
+	/** A one-line tip under the rows, read when the menu renders so it follows the language. */
+	footer?: () => string;
 }
 
 interface TipTapTextSuggestionMenuOptions<T> extends Omit<
 	TipTapSuggestionMenuOptions<T>,
 	"renderItem"
 > {
-	itemContent: (item: T) => {
-		title: string;
-		description: string;
-	};
-}
-
-function renderTextSuggestionItem<T>({
-	item,
-	isActive,
-	select,
-	itemContent,
-	itemActiveClassName,
-}: RenderTipTapSuggestionItemOptions<T> & {
-	itemContent: TipTapTextSuggestionMenuOptions<T>["itemContent"];
-	itemActiveClassName: string;
-}): HTMLElement {
-	const content = itemContent(item);
-	const button = document.createElement("button");
-	button.type = "button";
-	button.className = "wikiLinkSuggestionItem";
-	button.classList.toggle(itemActiveClassName, isActive);
-
-	const title = document.createElement("span");
-	title.className = "wikiLinkSuggestionTitle";
-	title.textContent = content.title;
-
-	const description = document.createElement("span");
-	description.className = "wikiLinkSuggestionPath";
-	description.textContent = content.description;
-
-	button.append(title, description);
-	button.addEventListener("mousedown", (event) => {
-		event.preventDefault();
-		select(item);
-	});
-	return button;
+	itemContent: (item: T, query: string) => MenuRowContent;
 }
 
 /**
@@ -113,6 +83,7 @@ export function createTipTapSuggestionMenu<T>({
 	onTab,
 	onEmptyEnter,
 	getSubmenuItems,
+	footer,
 }: TipTapSuggestionMenuOptions<T>) {
 	let menu: HTMLDivElement | null = null;
 	let selectedIndex = 0;
@@ -203,6 +174,7 @@ export function createTipTapSuggestionMenu<T>({
 				item,
 				index,
 				isActive: index === selectedIndex,
+				query: props.query,
 				select: (nextItem) => {
 					if (openSubmenu(index, true)) return;
 					if (onTab) {
@@ -212,8 +184,17 @@ export function createTipTapSuggestionMenu<T>({
 					props.command(nextItem);
 				},
 			});
-			if (getSubmenuItems) onPointerHover(element, () => hoverRow(index));
+			// The pointer moves the one selection, so mouse and keyboard never light two rows.
+			onPointerHover(element, () => hoverRow(index));
 			menu.append(element);
+		}
+		// Kept after the rows so row indexes still match the menu's children.
+		const footerText = footer?.();
+		if (footerText) {
+			const footerElement = document.createElement("div");
+			footerElement.className = "suggestionMenuFooter";
+			footerElement.textContent = footerText;
+			menu.append(footerElement);
 		}
 		const rect = props.clientRect?.();
 		if (rect && props.items.length) menuBand = placeMenu(menu, rect);
@@ -320,18 +301,12 @@ export function createTipTapSuggestionMenu<T>({
 
 export function createTipTapTextSuggestionMenu<T>({
 	itemContent,
-	itemActiveClassName = "active",
 	...options
 }: TipTapTextSuggestionMenuOptions<T>) {
 	return createTipTapSuggestionMenu<T>({
 		...options,
-		itemActiveClassName,
-		renderItem: (renderOptions) =>
-			renderTextSuggestionItem({
-				...renderOptions,
-				itemContent,
-				itemActiveClassName,
-			}),
+		renderItem: ({ item, isActive, select, query = "" }) =>
+			renderMenuRow(itemContent(item, query), { isActive, onSelect: () => select(item) }),
 	});
 }
 
