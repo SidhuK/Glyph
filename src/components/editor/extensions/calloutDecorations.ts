@@ -48,8 +48,14 @@ function firstLineEnd(paragraph: ProseMirrorNode): number | null {
  */
 export function calloutDecorationsForNode(node: ProseMirrorNode, pos: number): Decoration[] {
 	if (node.type.name !== "blockquote" || node.childCount === 0) return [];
+	// Only a paragraph can carry the marker: a quote nested first must not be hidden as one.
 	const markerParagraph = node.child(0);
-	const parsed = parseCalloutMarker(markerParagraph.textContent);
+	if (markerParagraph.type.name !== "paragraph") return [];
+	// textContent drops hard breaks, which would run the body into the title line.
+	const markerText = markerParagraph.textBetween(0, markerParagraph.content.size, "", (leaf) =>
+		leaf.type.name === "hardBreak" ? "\n" : leaf.textContent,
+	);
+	const parsed = parseCalloutMarker(markerText);
 	if (!parsed) return [];
 	const paragraphPos = pos + 1;
 	const lineEnd = firstLineEnd(markerParagraph);

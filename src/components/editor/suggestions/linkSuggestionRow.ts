@@ -31,6 +31,13 @@ function linkedName(query: string): string {
 	return splitWikiLinkQuery(query).target.split("|", 1)[0]?.trim() ?? "";
 }
 
+function comparableLinkName(name: string): string {
+	return name
+		.trim()
+		.toLowerCase()
+		.replace(/\.(?:md|markdown)$/, "");
+}
+
 /** Icon, title with the typed text in bold, and the folder (or the note, for a heading). */
 export function linkSuggestionRow(item: EditorLinkSuggestion, query: string): MenuRowContent {
 	if (item.kind === "heading") {
@@ -63,12 +70,15 @@ export function withCreateRow(
 	query: string,
 	asEmbed: boolean,
 ): WikiLinkMenuItem[] {
-	const name = linkedName(query).toLowerCase();
+	const name = comparableLinkName(linkedName(query));
 	if (asEmbed || !name || splitWikiLinkQuery(query).kind !== "file") return items;
+	// A typed `Plan.md` or `Folder/Plan` names an existing note as much as `Plan` does.
 	const exists = items.some(
 		(item) =>
 			item.kind === "file" &&
-			(item.title.toLowerCase() === name || item.insertText.toLowerCase() === name),
+			[item.title, item.insertText, item.path].some(
+				(candidate) => comparableLinkName(candidate) === name,
+			),
 	);
 	return exists ? items : [...items, { kind: "create", query }];
 }

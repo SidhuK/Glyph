@@ -468,10 +468,9 @@
 	font-family: var(--font-mono);
 }
 
-/* A one-line tip under the suggestion rows, pinned while the list scrolls. */
+/* A one-line tip after the suggestion rows. It scrolls with them, so it never covers the
+   row that keyboard navigation scrolls into view. */
 .suggestionMenuFooter {
-	position: sticky;
-	bottom: -4px;
 	margin: 4px -4px -4px;
 	padding: 6px 12px;
 	border-top: 1px solid var(--border-light);
