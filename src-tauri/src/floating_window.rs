@@ -18,6 +18,12 @@ static FLOATING_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 /// Corner radius for the floating cards (CSS + macOS vibrancy).
 const FLOATING_WINDOW_CORNER_RADIUS: f64 = 20.0;
 
+/// Quick Search keeps the palette's width; its height follows the rows it shows.
+const QUICK_SEARCH_WIDTH: f64 = 560.0;
+const QUICK_SEARCH_INITIAL_HEIGHT: f64 = 120.0;
+const QUICK_SEARCH_MIN_HEIGHT: f64 = 52.0;
+const QUICK_SEARCH_MAX_HEIGHT: f64 = 600.0;
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum FloatingWindow {
     QuickNote,
@@ -73,7 +79,7 @@ fn floating_window(
         // Borderless so it reads as the command palette, not a document window.
         FloatingWindow::QuickSearch => builder
             .title("Quick Search")
-            .inner_size(560.0, 440.0)
+            .inner_size(QUICK_SEARCH_WIDTH, QUICK_SEARCH_INITIAL_HEIGHT)
             .resizable(false)
             .decorations(false),
     };
@@ -222,6 +228,28 @@ pub(crate) fn show_quick_search_window(app: tauri::AppHandle) -> Result<(), Stri
 #[tauri::command]
 pub(crate) fn hide_quick_search_window(app: tauri::AppHandle) -> Result<(), String> {
     hide_floating_window(&app, FloatingWindow::QuickSearch)
+}
+
+/// Sizes Quick Search to its content, like Spotlight. The top edge stays where it
+/// is, so the list grows and shrinks below the search field.
+#[tauri::command]
+pub(crate) fn fit_quick_search_window(app: tauri::AppHandle, height: f64) -> Result<(), String> {
+    if !height.is_finite() {
+        return Err("invalid quick search height".to_string());
+    }
+    let Some(window) = app.get_webview_window(QUICK_SEARCH_WINDOW_LABEL) else {
+        return Ok(());
+    };
+    let position = window.outer_position().map_err(|error| error.to_string())?;
+    window
+        .set_size(tauri::LogicalSize::new(
+            QUICK_SEARCH_WIDTH,
+            height.clamp(QUICK_SEARCH_MIN_HEIGHT, QUICK_SEARCH_MAX_HEIGHT),
+        ))
+        .map_err(|error| error.to_string())?;
+    window
+        .set_position(position)
+        .map_err(|error| error.to_string())
 }
 
 #[tauri::command(rename_all = "snake_case")]

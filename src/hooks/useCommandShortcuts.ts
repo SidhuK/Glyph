@@ -12,22 +12,14 @@ interface ShortcutHandler {
 interface UseCommandShortcutsProps {
 	handlers: ShortcutHandler[];
 	paletteOpen: boolean;
-	onClosePalette: () => void;
 }
 
-export function useCommandShortcuts({
-	handlers,
-	paletteOpen,
-	onClosePalette,
-}: UseCommandShortcutsProps) {
+export function useCommandShortcuts({ handlers, paletteOpen }: UseCommandShortcutsProps) {
 	const handlersRef = useRef(handlers);
 	handlersRef.current = handlers;
 
 	const paletteOpenRef = useRef(paletteOpen);
 	paletteOpenRef.current = paletteOpen;
-
-	const closePaletteRef = useRef(onClosePalette);
-	closePaletteRef.current = onClosePalette;
 
 	useEffect(() => {
 		const handleMatchedShortcut = (event: KeyboardEvent, editableOnly: boolean) => {
@@ -48,11 +40,7 @@ export function useCommandShortcuts({
 				target instanceof HTMLElement &&
 				(target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
 
-			if (paletteOpenRef.current && event.key === "Escape") {
-				event.preventDefault();
-				closePaletteRef.current();
-				return;
-			}
+			// The palette owns its keys: its own Esc clears the query before it closes.
 			if (paletteOpenRef.current) return;
 
 			if (inEditableField) {

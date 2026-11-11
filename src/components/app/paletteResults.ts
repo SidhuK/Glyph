@@ -6,6 +6,7 @@ import type {
 	WorkspaceDatabaseSummary,
 } from "../../lib/tauri";
 import type { TemplateEntry } from "../../lib/templates";
+import { formatCompactRelativeTime } from "../../lib/compactRelativeTime";
 import { displayFolderFromPath, displayNameFromPath } from "../../utils/path";
 import { localizeSettingsSearchEntry, localizedSettingsTabLabel } from "../settings/settingsSearch";
 import {
@@ -21,6 +22,7 @@ import {
 	paletteSettingOptionLabel,
 	paletteSettingOptions,
 } from "./settingsPaletteRegistry";
+import { type RankedResult, foldNoteRows, splitScopedGroup } from "./paletteResultGroups";
 import type { WorkspaceTab } from "./useTabManager";
 
 const PALETTE_GROUP_ORDER = [
@@ -34,6 +36,8 @@ const PALETTE_GROUP_ORDER = [
 	"person",
 	"database",
 	"template",
+	"action",
+	"destination",
 ] as const;
 
 export type PaletteResultKind = (typeof PALETTE_GROUP_ORDER)[number];
@@ -62,8 +66,16 @@ export interface PaletteResult {
 	searchQuery?: string;
 	/** 1-based line number of a body match, shown in its own column. */
 	matchLine?: number;
+	/** Content matches the note has in this search, for the preview's metadata line. */
+	matchCount?: number;
+	/** Tab id when the note is already open; the row switches to that tab. */
+	openTabId?: string;
 	settingId?: string;
 	settingControl?: PaletteSettingControl;
+	/** Group header; defaults to the kind's own label. */
+	group?: string;
+	/** What a no-results row does. */
+	actionId?: "create-note" | "search-text" | "create-folder";
 }
 
 const BROAD_GROUP_LIMIT = 8;
@@ -104,12 +116,15 @@ interface BuildPaletteResultsInput {
  * Rows show the note's leaf folder, with the full path as its tooltip. Folder notes live in a
  * folder of the same name; repeating it as the last segment is noise.
  */
-function noteFolder(path: string, title: string) {
+function noteFolder(path: string, title: string, noFolderLabel: string) {
 	const folder = displayFolderFromPath(path);
 	const repeated = ` / ${title}`;
 	const full =
 		folder === title ? "" : folder.endsWith(repeated) ? folder.slice(0, -repeated.length) : folder;
-	return { description: full.split(" / ").pop() ?? "", descriptionTooltip: full || undefined };
+	return {
+		description: full ? (full.split(" / ").pop() ?? "") : noFolderLabel,
+		descriptionTooltip: full || undefined,
+	};
 }
 
 /**
@@ -179,11 +194,15 @@ export function buildPaletteResults({
 				id: `setting:${definition.id}`,
 				kind: "setting",
 				label: entry.title,
-				description: [...new Set([localizedSettingsTabLabel(entry.tab, language), entry.section])]
-					.filter(Boolean)
-					.join(" / "),
+				// The pane name is enough to place a setting; its section stays searchable.
+				description: localizedSettingsTabLabel(entry.tab, language),
 				category: t("commandPalette.groups.setting"),
-				keywords: ["settings", entry.description ?? "", ...(entry.keywords ?? [])],
+				keywords: [
+					"settings",
+					entry.section ?? "",
+					entry.description ?? "",
+					...(entry.keywords ?? []),
+				],
 				// Settings only appear once the user types; the toggle itself shows on/off state.
 				rankBoost: definition.scope === "space" && spacePath ? 10 : 0,
 				checked: typeof value === "boolean" ? value : undefined,
@@ -204,7 +223,7 @@ export function buildPaletteResults({
 			id: `open-tab:${tab.id}`,
 			kind: "open-tab",
 			label,
-			...noteFolder(tab.target, label),
+			...noteFolder(tab.target, label, t("folio.noFolder")),
 			category: t("commandPalette.groups.open-tab"),
 			keywords: [tab.target],
 			defaultVisible: mode === "search",
@@ -218,7 +237,13 @@ export function buildPaletteResults({
 		mode === "commands"
 			? collapseContentMatches(sources.contentMatches)
 			: sources.contentMatches.map((result) => ({ result, extraMatches: 0 }));
-	const noteSource = query.trim()
+	const noteSource: {
+		result: SearchResult;
+		kind: "note" | "content";
+		extraMatches: number;
+		/** Set for recents, which are listed before a query. */
+		openedAt?: number;
+	}[] = query.trim()
 		? [
 				...sources.titleMatches.map((result) => ({
 					result,
@@ -240,9 +265,19 @@ export function buildPaletteResults({
 						snippet: "",
 						score: 0,
 					};
-					return { result, kind: "note" as const, extraMatches: 0 };
+					return {
+						result,
+						kind: "note" as const,
+						extraMatches: 0,
+						openedAt: file.openedAt,
+					};
 				});
-	for (const { result, kind, extraMatches } of noteSource) {
+	const matchCounts = new Map<string, number>();
+	for (const match of sources.contentMatches) {
+		matchCounts.set(match.id, (matchCounts.get(match.id) ?? 0) + 1);
+	}
+	const nowMs = Date.now();
+	for (const { result, kind, extraMatches, openedAt } of noteSource) {
 		const matchIndex = typeof result.match_index === "number" ? result.match_index : undefined;
 		const matchLine = typeof result.line === "number" ? result.line : undefined;
 		const label = result.title || displayNameFromPath(result.id);
@@ -253,9 +288,21 @@ export function buildPaletteResults({
 					: `${kind}:${result.id}`,
 			kind,
 			label,
-			...noteFolder(result.id, label),
+			...noteFolder(result.id, label, t("folio.noFolder")),
 			trailing:
-				extraMatches > 0 ? t("commandPalette.moreMatches", { count: extraMatches }) : undefined,
+				extraMatches > 0
+					? t("commandPalette.moreMatches", { count: extraMatches })
+					: openedAt !== undefined
+						? formatCompactRelativeTime({
+								timestampMs: openedAt,
+								locale: language,
+								nowMs,
+								justNowLabel: t("folio.justNow"),
+								absoluteDate: new Date(openedAt).toLocaleDateString(language),
+							})
+						: undefined,
+			// Before a query the notes are what was opened lately, newest first.
+			group: openedAt !== undefined ? t("commandPalette.groups.recent") : undefined,
 			category: t(`commandPalette.groups.${kind}`),
 			keywords: [result.id, parsedQuery.text],
 			defaultVisible: !query.trim(),
@@ -265,6 +312,7 @@ export function buildPaletteResults({
 			snippet: kind === "content" ? result.snippet : undefined,
 			matchIndex,
 			matchLine: kind === "content" ? matchLine : undefined,
+			matchCount: matchCounts.get(result.id),
 			// The backend owns query parsing, so it reports the literal text its
 			// match index counts; reparsing here would drift on quotes and operators.
 			searchQuery: result.match_query ?? undefined,
@@ -331,12 +379,14 @@ export function buildPaletteResults({
 		});
 	}
 
-	const ranked = candidates
-		.map((result) => ({
-			result,
-			score: rankPaletteResult(result, parsedQuery),
-		}))
-		.filter((item): item is { result: PaletteResult; score: number } => item.score !== null);
+	const ranked = foldNoteRows(
+		candidates
+			.map((result) => ({
+				result,
+				score: rankPaletteResult(result, parsedQuery),
+			}))
+			.filter((item): item is RankedResult => item.score !== null),
+	);
 	const scoped = parsedQuery.scope !== "all";
 	const byKind = new Map<PaletteResultKind, typeof ranked>();
 	for (const item of ranked) {
@@ -363,6 +413,8 @@ export function buildPaletteResults({
 			(a, b) =>
 				b.score - a.score || (emptyQuery ? 0 : a.result.label.localeCompare(b.result.label)),
 		);
+		const split = splitScopedGroup(group, parsedQuery.scope, language, t);
+		if (split) return split.map(({ result }) => result);
 		// Only the search surface is a match list; the command palette stays tight.
 		const groupLimit =
 			kind === "content" && mode === "search"

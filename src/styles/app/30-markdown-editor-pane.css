@@ -860,6 +860,17 @@
 	overscroll-behavior: contain;
 }
 
+/* Folder, edit time and match count above the palette's preview. */
+.notePreviewMeta {
+	margin: 0 0 8px;
+	overflow: hidden;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	line-height: 1.4;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .linkedNotePreviewText {
 	margin: 0;
 	font: inherit;

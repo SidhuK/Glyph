@@ -412,7 +412,6 @@
 		"saveSearchFailed": "Suche konnte nicht gespeichert werden",
 		"searching": "Suche…",
 		"results": "{{count}} Ergebnisse",
-		"noResults": "Keine Ergebnisse",
 		"resultsLabel": "Palettenergebnisse",
 		"searchEverything": "Notizen, Befehle, Einstellungen und mehr durchsuchen…",
 		"notSet": "Nicht festgelegt",
@@ -420,7 +419,7 @@
 		"settingUpdated": "Einstellung aktualisiert",
 		"settingUpdateFailed": "Einstellung konnte nicht aktualisiert werden",
 		"invalidSettingValue": "Der Einstellungswert ist ungültig",
-		"settingsBreadcrumb": "Einstellungen / {{section}} / {{title}}",
+		"settingsBreadcrumb": "{{pane}} › {{title}}",
 		"clearValue": "Wert löschen",
 		"searchFolders": "Ordner durchsuchen…",
 		"spaceRoot": "Space-Stammordner",
@@ -441,7 +440,21 @@
 			"close": "Schließen",
 			"change": "Ändern",
 			"options": "Optionen",
-			"toggle": "Umschalten"
+			"toggle": "Umschalten",
+			"switchTab": "Zum Tab wechseln",
+			"run": "Ausführen",
+			"clear": "Leeren",
+			"showNotes": "Notizen zeigen",
+			"create": "Erstellen",
+			"search": "Suchen",
+			"allResults": "Alle Ergebnisse",
+			"choose": "Auswählen",
+			"apply": "Übernehmen",
+			"back": "Zurück",
+			"moveHere": "Hierher verschieben",
+			"cancel": "Abbrechen",
+			"openInGlyph": "In Glyph öffnen",
+			"dismiss": "Schließen"
 		},
 		"groups": {
 			"command": "Befehle",
@@ -453,9 +466,39 @@
 			"tag": "Tags",
 			"person": "Personen",
 			"database": "Sammlungen und Datenbanken",
-			"template": "Vorlagen"
+			"template": "Vorlagen",
+			"recent": "Zuletzt"
 		},
-		"lineNumber": "Z. {{line}}"
+		"lineNumber": "Z. {{line}}",
+		"openTab": "Offener Tab",
+		"previewEdited": "Bearbeitet {{when}}",
+		"previewMatches_one": "{{count}} Treffer",
+		"previewMatches_other": "{{count}} Treffer",
+		"commandKind": "Befehl",
+		"shortcut": "Kurzbefehl",
+		"editShortcut": "In Einstellungen › Kurzbefehle bearbeiten",
+		"removeScope": "Bereich entfernen",
+		"searchFailed": "Die Suche ist fehlgeschlagen. Prüfe die Anfrage und versuche es erneut.",
+		"noResultsHint": "Keine Notizen, Befehle oder Einstellungen gefunden. Versuche weniger Buchstaben oder beginne mit > für Befehle.",
+		"noScopedResults": "In {{scope}} passt nichts.",
+		"createNote": "Notiz „{{title}}“ erstellen",
+		"searchNoteText": "Notiztext nach „{{query}}“ durchsuchen",
+		"scopePlaceholder": {
+			"commands": "Befehle durchsuchen",
+			"settings": "Einstellungen durchsuchen",
+			"folders": "Ordner durchsuchen",
+			"tags": "Tags durchsuchen",
+			"people": "Personen durchsuchen",
+			"templates": "Vorlagen durchsuchen"
+		},
+		"noteCount_one": "{{count}} Notiz",
+		"noteCount_other": "{{count}} Notizen",
+		"moveToken": "„{{title}}“ verschieben",
+		"moveTo": "Verschieben nach",
+		"currentLocation": "Aktueller Ort",
+		"current": "Aktuell",
+		"newFolder": "Neuer Ordner…",
+		"moveFoldersFailed": "Ordner konnten nicht geladen werden."
 	},
 	"calendar": {
 		"title": "Kalender",
@@ -695,7 +738,8 @@
 		"placeholder": "Notizen, Tags und Sammlungen durchsuchen…",
 		"noSpace": "Öffne einen Bereich in Glyph, um ihn zu durchsuchen.",
 		"openFailed": "Konnte nicht in Glyph geöffnet werden: {{message}}",
-		"hideFailed": "Schnellsuche konnte nicht geschlossen werden: {{message}}"
+		"hideFailed": "Schnellsuche konnte nicht geschlossen werden: {{message}}",
+		"noResults": "Keine passenden Notizen, Tags oder Sammlungen."
 	},
 	"sidebarCalendar": {
 		"menu": {
@@ -825,5 +869,22 @@
 		"retry": "Erneut versuchen",
 		"inboxEmpty": "Dein Eingang ist leer.",
 		"archiveEmpty": "Keine archivierten Notizen."
+	},
+	"quickNoteWindow": {
+		"placeholder": "Schreibe eine schnelle Notiz oder drücke / für Befehle",
+		"modeLabel": "Ziel der Notiz",
+		"append": "Anhängen",
+		"newNote": "Neue Notiz",
+		"appendsTo": "Wird an {{path}} angehängt",
+		"createsFile": "Erstellt {{path}}",
+		"createsIn": "Erstellt eine neue Notiz in {{folder}}",
+		"cancel": "Abbrechen",
+		"save": "Sichern",
+		"saving": "Wird gesichert…",
+		"savedTo": "In {{name}} gesichert",
+		"words_one": "{{count}} Wort",
+		"words_other": "{{count}} Wörter",
+		"characters_one": "{{count}} Zeichen",
+		"characters_other": "{{count}} Zeichen"
 	}
 }

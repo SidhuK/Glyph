@@ -180,19 +180,21 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	);
 
 	const onNewFileInDir = useCallback(
-		async (dirPath: string) => {
+		/** A given title names the file and skips the rename an Untitled note starts with. */
+		async (dirPath: string, title?: string) => {
 			if (!spacePath) return null;
 			setError("");
 			try {
 				const siblings = await invoke("space_list_dir", dirPath ? { dir: dirPath } : {});
 				const siblingNames = new Set(siblings.map((entry) => entry.name.toLowerCase()));
-				let fileName = "Untitled.md";
+				const baseName = title?.replace(/[/\\:]/g, "-").trim() || "Untitled";
+				let fileName = `${baseName}.md`;
 				if (siblingNames.has(fileName.toLowerCase())) {
 					let suffix = 2;
-					while (siblingNames.has(`untitled ${suffix}.md`)) {
+					while (siblingNames.has(`${baseName} ${suffix}.md`.toLowerCase())) {
 						suffix += 1;
 					}
-					fileName = `Untitled ${suffix}.md`;
+					fileName = `${baseName} ${suffix}.md`;
 				}
 				const markdownRel = dirPath ? `${dirPath}/${fileName}` : fileName;
 				const createdPath = await createMarkdownFileAtPath({
@@ -200,7 +202,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					text: "",
 					openParentDir: dirPath,
 				});
-				if (createdPath) {
+				if (createdPath && !title) {
 					dispatchFileTreeStartRename({ path: createdPath });
 				}
 				return createdPath;

@@ -1,18 +1,18 @@
 import { useTranslation } from "react-i18next";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { emitTo } from "@tauri-apps/api/event";
 import type { Editor } from "@tiptap/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { dispatchEditorMenuAction } from "../../lib/appEvents";
-import { isMissingFileError } from "../../lib/fsErrors";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { loadSettings } from "../../lib/settings";
 import { KEY_GLYPHS } from "../../lib/shortcuts/platform";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords } from "../../lib/textStats";
-import { displayNameFromPath } from "../../utils/path";
+import { displayNameFromPath, parentDir } from "../../utils/path";
 import { FileText, Save } from "../Icons";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { createEditorShortcutsExtension } from "../editor/extensions/editorShortcuts";
@@ -21,51 +21,21 @@ import {
 	type QuickNoteTarget,
 	QuickNoteTargetBreadcrumbs,
 } from "./QuickNoteTargetBreadcrumbs";
-import { QUICK_NOTE_TARGET_SUMMARY_KEY, QuickNoteTargetSummary } from "./QuickNoteTargetSummary";
+import {
+	QUICK_NOTE_TARGET_SUMMARY_KEY,
+	QuickNoteDestination,
+	QuickNoteModeControl,
+} from "./QuickNoteTargetSummary";
+import {
+	type QuickNoteMode,
+	appendQuickNoteToPath,
+	createQuickNoteInFolder,
+	quickNotePath,
+} from "./quickNoteSave";
 import { useQuickNoteWindowFrame } from "./useQuickNoteWindowFrame";
 
-const QUICK_NOTE_PLACEHOLDER = "Write a quick note or press / for commands";
 const SAVE_CONFIRMATION_MS = 1600;
 const REFOCUS_DELAY_MS = 20;
-
-function pad(value: number): string {
-	return value.toString().padStart(2, "0");
-}
-
-function dateStamp(date = new Date()): string {
-	return [date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate())].join("-");
-}
-
-function quickNotePath(folder: string): string {
-	const fileName = `${dateStamp()} - Quick Note.md`;
-	return folder ? `${folder}/${fileName}` : fileName;
-}
-
-function appendMarkdown(existing: string, entry: string): string {
-	const trimmedExisting = existing.trimEnd();
-	if (!trimmedExisting) return `${entry}\n`;
-	return `${trimmedExisting}\n\n${entry}\n`;
-}
-
-async function appendQuickNoteToPath(path: string, text: string): Promise<string> {
-	try {
-		const doc = await invoke("space_read_text", { path });
-		await invoke("space_write_text", {
-			path,
-			text: appendMarkdown(doc.text, text.trim()),
-			base_mtime_ms: doc.mtime_ms,
-		});
-		return path;
-	} catch (cause) {
-		if (!isMissingFileError(cause)) throw cause;
-		await invoke("space_write_text", {
-			path,
-			text: `${text.trim()}\n`,
-			base_mtime_ms: null,
-		});
-		return path;
-	}
-}
 
 function quickNoteTarget(folder: string, label: string): QuickNoteTarget {
 	const path = quickNotePath(folder);
@@ -99,14 +69,14 @@ export function QuickNoteWindow() {
 	const [confirmation, setConfirmation] = useState("");
 	const [saving, setSaving] = useState(false);
 	const [targetValue, setTargetValue] = useState(QUICK_NOTE_TARGET_VALUE);
+	const [mode, setMode] = useState<QuickNoteMode>("append");
 	const [editorAreaElement, setEditorAreaElement] = useState<HTMLDivElement | null>(null);
 	const [contentElement, setContentElement] = useState<HTMLElement | null>(null);
 	const editorRef = useRef<Editor | null>(null);
 	const unsubscribeRef = useRef<(() => void) | null>(null);
+	const hideWindow = useMutation({ mutationFn: () => invoke("hide_quick_note_window") });
 	const shortcutsRef = useRef({
-		onEscape: () => {
-			void invoke("hide_quick_note_window");
-		},
+		onEscape: () => hideWindow.mutate(),
 		onSave: () => {},
 	});
 	const confirmationTimerRef = useRef<number | null>(null);
@@ -128,10 +98,7 @@ export function QuickNoteWindow() {
 			label: displayNameFromPath(targetValue),
 		};
 	}, [folder, targetValue, t]);
-	const isMac =
-		navigator.platform.toLowerCase().includes("mac") || navigator.userAgent.includes("Mac");
-	const shortcutLabel = isMac ? "⌘+Enter" : "Ctrl+Enter";
-	const shortcutModifierLabel = isMac ? "⌘" : "Ctrl";
+	const shortcutLabel = `⌘${KEY_GLYPHS.Enter}`;
 	const wordCount = countWords(draft);
 	const charCount = draft.trim().length;
 
@@ -188,12 +155,15 @@ export function QuickNoteWindow() {
 		setSaving(true);
 		setError("");
 		try {
-			const path = await appendQuickNoteToPath(
-				selectedTarget.value === QUICK_NOTE_TARGET_VALUE
-					? quickNotePath(folder)
-					: selectedTarget.path,
-				text,
-			);
+			const path =
+				mode === "new"
+					? await createQuickNoteInFolder(parentDir(selectedTarget.path), text)
+					: await appendQuickNoteToPath(
+							selectedTarget.value === QUICK_NOTE_TARGET_VALUE
+								? quickNotePath(folder)
+								: selectedTarget.path,
+							text,
+						);
 			clearDraft(editorRef.current);
 			setDraft("");
 			setHasText(false);
@@ -221,12 +191,10 @@ export function QuickNoteWindow() {
 		} finally {
 			setSaving(false);
 		}
-	}, [folder, queryClient, readDraft, saving, selectedTarget.path, selectedTarget.value]);
+	}, [folder, mode, queryClient, readDraft, saving, selectedTarget.path, selectedTarget.value]);
 
 	shortcutsRef.current = {
-		onEscape: () => {
-			void invoke("hide_quick_note_window");
-		},
+		onEscape: () => hideWindow.mutate(),
 		onSave: () => {
 			void save();
 		},
@@ -275,15 +243,18 @@ export function QuickNoteWindow() {
 		<div className="quickNoteRoot" data-window-focused={windowFocused ? "true" : "false"}>
 			<header className="quickNoteHeader" data-tauri-drag-region>
 				<div className="quickNoteTargetGroup">
-					<button
-						type="button"
-						className="quickNoteTargetResetButton"
-						aria-label={t("quickNoteTarget.resetToToday")}
-						title={t("quickNoteTarget.today")}
-						onClick={() => chooseTarget(quickNoteTarget(folder, t("quickNoteTarget.today")))}
-					>
-						<FileText size="var(--icon-md)" aria-hidden="true" />
-					</button>
+					{/* Only offered once another note is the target; today's note needs no way back. */}
+					{targetValue === QUICK_NOTE_TARGET_VALUE ? null : (
+						<button
+							type="button"
+							className="quickNoteTargetResetButton"
+							aria-label={t("quickNoteTarget.resetToToday")}
+							title={t("quickNoteTarget.resetToToday")}
+							onClick={() => chooseTarget(quickNoteTarget(folder, t("quickNoteTarget.today")))}
+						>
+							<FileText size="var(--icon-md)" aria-hidden="true" />
+						</button>
+					)}
 					<QuickNoteTargetBreadcrumbs
 						selectedTarget={selectedTarget}
 						quickNotesFolder={folder}
@@ -291,7 +262,14 @@ export function QuickNoteWindow() {
 						onSelectTarget={chooseTarget}
 					/>
 				</div>
-				<QuickNoteTargetSummary path={selectedTarget.path} />
+				<QuickNoteModeControl
+					mode={mode}
+					onChange={(nextMode) => {
+						setMode(nextMode);
+						setConfirmation("");
+						focusEditor(editorRef.current);
+					}}
+				/>
 			</header>
 			<div className="quickNoteEditorArea" ref={setEditorAreaElement}>
 				<NoteInlineEditor
@@ -301,7 +279,7 @@ export function QuickNoteWindow() {
 					chrome="minimal"
 					deferHeavyFeatures
 					additionalExtensions={editorAdditionalExtensions}
-					placeholder={QUICK_NOTE_PLACEHOLDER}
+					placeholder={t("quickNoteWindow.placeholder")}
 					pasteMarkdownBehavior="smart-markdown"
 					onChange={handleDraftChange}
 					onEditorReady={handleEditorReady}
@@ -309,24 +287,33 @@ export function QuickNoteWindow() {
 			</div>
 			<footer className="quickNoteFooter">
 				<div className="quickNoteFooterStatus" aria-live="polite">
-					{error ? (
-						<span className="quickNoteFooterError">{error}</span>
+					{error || hideWindow.error ? (
+						<span className="quickNoteFooterError">
+							{error || extractErrorMessage(hideWindow.error)}
+						</span>
 					) : hasText ? (
 						<span>
-							{wordCount === 1 ? "1 word" : `${wordCount} words`}
+							{t("quickNoteWindow.words", { count: wordCount })}
 							{" · "}
-							{charCount === 1 ? "1 character" : `${charCount} characters`}
+							{t("quickNoteWindow.characters", { count: charCount })}
 						</span>
 					) : (
-						<span className="quickNoteFooterHint">{shortcutLabel} to save · Esc to dismiss</span>
+						<span className="quickNoteFooterHint">
+							<QuickNoteDestination path={selectedTarget.path} mode={mode} />
+						</span>
 					)}
 				</div>
+				<button type="button" className="quickNoteCancelButton" onClick={() => hideWindow.mutate()}>
+					{t("quickNoteWindow.cancel")}
+				</button>
 				<button
 					type="button"
 					className="quickNoteSaveButton"
 					data-state={confirmation ? "saved" : undefined}
-					aria-label={saving ? "Saving quick note" : "Save quick note"}
-					title={saving ? "Saving quick note" : `Save quick note (${shortcutLabel})`}
+					aria-label={saving ? t("quickNoteWindow.saving") : t("quickNoteWindow.save")}
+					title={
+						saving ? t("quickNoteWindow.saving") : `${t("quickNoteWindow.save")} (${shortcutLabel})`
+					}
 					disabled={saving || (!hasText && !confirmation)}
 					onClick={() => void save()}
 				>
@@ -337,20 +324,17 @@ export function QuickNoteWindow() {
 								size="var(--icon-lg)"
 								aria-hidden="true"
 							/>
-							<span className="quickNoteSaveLabel">Saved to {confirmation}</span>
+							<span className="quickNoteSaveLabel">
+								{t("quickNoteWindow.savedTo", { name: confirmation })}
+							</span>
 						</>
 					) : (
 						<>
 							<Save size="var(--icon-lg)" />
-							<span className="quickNoteSaveLabel">Save</span>
-							<span className="commandPaletteShortcut" aria-hidden="true">
-								<kbd>
-									<span className="commandPaletteShortcutCombo">
-										<span className="commandPaletteShortcutPart">{shortcutModifierLabel}</span>
-										<span className="commandPaletteShortcutPart">{KEY_GLYPHS.Enter}</span>
-									</span>
-								</kbd>
-							</span>
+							<span className="quickNoteSaveLabel">{t("quickNoteWindow.save")}</span>
+							<kbd className="quickNoteSaveShortcut" aria-hidden="true">
+								{shortcutLabel}
+							</kbd>
 						</>
 					)}
 				</button>

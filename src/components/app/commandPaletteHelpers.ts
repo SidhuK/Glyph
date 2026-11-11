@@ -10,6 +10,10 @@ export interface Command {
 	labelKey?: string;
 	icon?: ReactNode;
 	category?: string;
+	/** Manifest category, which orders the groups in the commands scope. */
+	categoryId?: string;
+	/** Shown in the palette's side pane when the command is selected. */
+	description?: string;
 	searchTerms?: readonly string[];
 	shortcut?: Shortcut;
 	action: () => void | Promise<void>;
@@ -18,9 +22,10 @@ export interface Command {
 	hideWhenQueryEmpty?: boolean;
 }
 
-export type PaletteLaunchMode = "commands" | "search";
+/** "move" lists folders for the note in `moveSourcePath`. */
+export type PaletteLaunchMode = "commands" | "search" | "move";
 
-type PaletteQueryScope =
+export type PaletteQueryScope =
 	| "all"
 	| "commands"
 	| "settings"
@@ -29,7 +34,7 @@ type PaletteQueryScope =
 	| "people"
 	| "templates";
 
-interface ParsedPaletteQuery {
+export interface ParsedPaletteQuery {
 	raw: string;
 	text: string;
 	scope: PaletteQueryScope;
@@ -50,6 +55,16 @@ function unquote(value: string): string {
 		return trimmed.slice(1, -1);
 	}
 	return trimmed;
+}
+
+/**
+ * Splits a scope prefix ("> ", "#", "settings:") off the typed query, so the palette can show
+ * it as a token and the input holds only the rest.
+ */
+export function splitScopePrefix(raw: string): { prefix: string; rest: string } {
+	const leading = raw.trimStart();
+	const prefix = /^(?:[>#@]|(?:settings|folder|template):)\s*/i.exec(leading)?.[0];
+	return prefix ? { prefix, rest: leading.slice(prefix.length) } : { prefix: "", rest: raw };
 }
 
 export function parsePaletteQuery(raw: string): ParsedPaletteQuery {

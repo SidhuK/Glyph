@@ -409,7 +409,6 @@
 		"saveSearchFailed": "検索を保存できませんでした",
 		"searching": "検索中…",
 		"results": "{{count}} 件の結果",
-		"noResults": "結果がありません",
 		"resultsLabel": "パレットの結果",
 		"searchEverything": "ノート、コマンド、設定などを検索…",
 		"notSet": "未設定",
@@ -417,7 +416,7 @@
 		"settingUpdated": "設定を更新しました",
 		"settingUpdateFailed": "設定を更新できませんでした",
 		"invalidSettingValue": "設定値が無効です",
-		"settingsBreadcrumb": "設定 / {{section}} / {{title}}",
+		"settingsBreadcrumb": "{{pane}} › {{title}}",
 		"clearValue": "値をクリア",
 		"searchFolders": "フォルダーを検索…",
 		"spaceRoot": "スペースのルート",
@@ -438,7 +437,21 @@
 			"close": "閉じる",
 			"change": "変更",
 			"options": "オプション",
-			"toggle": "切り替え"
+			"toggle": "切り替え",
+			"switchTab": "タブに切り替え",
+			"run": "実行",
+			"clear": "クリア",
+			"showNotes": "ノートを表示",
+			"create": "作成",
+			"search": "検索",
+			"allResults": "すべての結果",
+			"choose": "選択",
+			"apply": "適用",
+			"back": "戻る",
+			"moveHere": "ここに移動",
+			"cancel": "キャンセル",
+			"openInGlyph": "Glyph で開く",
+			"dismiss": "閉じる"
 		},
 		"groups": {
 			"command": "コマンド",
@@ -450,9 +463,37 @@
 			"tag": "タグ",
 			"person": "人物",
 			"database": "コレクションとデータベース",
-			"template": "テンプレート"
+			"template": "テンプレート",
+			"recent": "最近"
 		},
-		"lineNumber": "{{line}}行"
+		"lineNumber": "{{line}}行",
+		"openTab": "開いているタブ",
+		"previewEdited": "{{when}}に編集",
+		"previewMatches_other": "{{count}} 件一致",
+		"commandKind": "コマンド",
+		"shortcut": "ショートカット",
+		"editShortcut": "設定 › ショートカットで編集",
+		"removeScope": "範囲を解除",
+		"searchFailed": "検索に失敗しました。クエリを確認してもう一度お試しください。",
+		"noResultsHint": "一致するノート、コマンド、設定はありません。文字数を減らすか、コマンドは > で始めてください。",
+		"noScopedResults": "{{scope}}に一致するものはありません。",
+		"createNote": "ノート「{{title}}」を作成",
+		"searchNoteText": "ノート本文で「{{query}}」を検索",
+		"scopePlaceholder": {
+			"commands": "コマンドを検索",
+			"settings": "設定を検索",
+			"folders": "フォルダを検索",
+			"tags": "タグを検索",
+			"people": "人物を検索",
+			"templates": "テンプレートを検索"
+		},
+		"noteCount_other": "{{count}} 件のノート",
+		"moveToken": "「{{title}}」を移動",
+		"moveTo": "移動先",
+		"currentLocation": "現在の場所",
+		"current": "現在",
+		"newFolder": "新規フォルダ…",
+		"moveFoldersFailed": "フォルダを一覧表示できませんでした。"
 	},
 	"calendar": {
 		"title": "カレンダー",
@@ -689,7 +730,8 @@
 		"placeholder": "ノート、タグ、コレクションを検索…",
 		"noSpace": "検索するには Glyph でスペースを開いてください。",
 		"openFailed": "Glyph で開けませんでした: {{message}}",
-		"hideFailed": "クイック検索を閉じられませんでした: {{message}}"
+		"hideFailed": "クイック検索を閉じられませんでした: {{message}}",
+		"noResults": "一致するノート、タグ、コレクションはありません。"
 	},
 	"sidebarCalendar": {
 		"menu": {
@@ -808,5 +850,20 @@
 		"retry": "再試行",
 		"inboxEmpty": "インボックスは空です。",
 		"archiveEmpty": "アーカイブされたノートはありません。"
+	},
+	"quickNoteWindow": {
+		"placeholder": "クイックノートを書くか、/ でコマンドを表示",
+		"modeLabel": "ノートの保存先",
+		"append": "追記",
+		"newNote": "新規ノート",
+		"appendsTo": "{{path}} に追記",
+		"createsFile": "{{path}} を作成",
+		"createsIn": "{{folder}} に新規ノートを作成",
+		"cancel": "キャンセル",
+		"save": "保存",
+		"saving": "保存中…",
+		"savedTo": "{{name}} に保存しました",
+		"words_other": "{{count}} 語",
+		"characters_other": "{{count}} 文字"
 	}
 }

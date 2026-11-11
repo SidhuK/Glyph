@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat, useEditorContext, useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
+import { formatCompactRelativeTime } from "../../lib/compactRelativeTime";
 import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
@@ -68,64 +69,8 @@ interface FolioNoteListItemProps {
 }
 
 const FOLIO_DRAG_CLICK_DISTANCE_PX = 5;
-const MINUTE_MS = 60 * 1_000;
-const HOUR_MS = 60 * MINUTE_MS;
-const DAY_MS = 24 * HOUR_MS;
-const WEEK_MS = 7 * DAY_MS;
-const MONTH_MS = 30 * DAY_MS;
-const CALENDAR_DATE_THRESHOLD_MS = 3 * MONTH_MS;
-const compactRelativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();
 /** `![[file]]` and `![alt](src)` embeds, which carry no preview text of their own. */
 const MARKDOWN_EMBED_PATTERN = /!\[\[[^\]]*\]\]|!\[[^\]]*\]\((?:[^()\\]|\\.)*\)/g;
-
-function compactRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
-	const existing = compactRelativeTimeFormatters.get(locale);
-	if (existing) return existing;
-	const formatter = new Intl.RelativeTimeFormat(locale, {
-		numeric: "always",
-		style: "narrow",
-	});
-	compactRelativeTimeFormatters.set(locale, formatter);
-	return formatter;
-}
-
-function formatFolioUpdatedTime({
-	value,
-	locale,
-	nowMs,
-	justNowLabel,
-	absoluteDate,
-}: {
-	value: string;
-	locale: string;
-	nowMs: number;
-	justNowLabel: string;
-	absoluteDate: string;
-}): string {
-	const timestamp = Date.parse(value);
-	if (!Number.isFinite(timestamp)) return value;
-
-	const elapsedMs = Math.max(0, nowMs - timestamp);
-	if (elapsedMs < MINUTE_MS) return justNowLabel;
-
-	const formatter = compactRelativeTimeFormatter(locale);
-	if (elapsedMs < HOUR_MS) {
-		return formatter.format(-Math.floor(elapsedMs / MINUTE_MS), "minute");
-	}
-	if (elapsedMs < DAY_MS) {
-		return formatter.format(-Math.floor(elapsedMs / HOUR_MS), "hour");
-	}
-	if (elapsedMs < WEEK_MS) {
-		return formatter.format(-Math.floor(elapsedMs / DAY_MS), "day");
-	}
-	if (elapsedMs < MONTH_MS) {
-		return formatter.format(-Math.floor(elapsedMs / WEEK_MS), "week");
-	}
-	if (elapsedMs < CALENDAR_DATE_THRESHOLD_MS) {
-		return formatter.format(-Math.floor(elapsedMs / MONTH_MS), "month");
-	}
-	return absoluteDate;
-}
 
 function previewText(preview: string, title: string, emptyLabel: string): string {
 	const lowerTitle = title.trim().toLowerCase();
@@ -229,8 +174,8 @@ export const FolioNoteListItem = memo(
 			: undefined;
 		const updatedTitle = isMarkdown ? updatedDate : undefined;
 		const updated = note.updated
-			? formatFolioUpdatedTime({
-					value: note.updated,
+			? formatCompactRelativeTime({
+					timestampMs: Date.parse(note.updated),
 					locale:
 						i18n?.resolvedLanguage ??
 						i18n?.language ??

@@ -315,7 +315,7 @@
 			"keywords": ["secret", "token", "credential", "update key"]
 		},
 		"space-daily-notes-folder": {
-			"title": "Folder",
+			"title": "Daily notes folder",
 			"section": "Daily Notes",
 			"description": "Choose where daily notes are created.",
 			"keywords": ["journal", "today", "date"]
@@ -339,13 +339,13 @@
 			"keywords": ["분기"]
 		},
 		"space-quick-notes-folder": {
-			"title": "Folder",
+			"title": "Quick notes folder",
 			"section": "Quick Notes",
 			"description": "Choose where quick notes are saved.",
 			"keywords": ["capture", "inbox"]
 		},
 		"space-attachments-location": {
-			"title": "Location",
+			"title": "Attachments location",
 			"section": "Attachments",
 			"keywords": ["assets", "files", "images", "folder"]
 		},
@@ -387,7 +387,7 @@
 			"keywords": ["templates", "quarterly notes", "period notes"]
 		},
 		"space-search-index-status": {
-			"title": "Status",
+			"title": "Search index status",
 			"section": "Search Index",
 			"keywords": ["index", "rebuild", "search"]
 		},
@@ -609,7 +609,7 @@
 			"keywords": ["license", "build"]
 		},
 		"about-update-status": {
-			"title": "Status",
+			"title": "Update status",
 			"section": "Updates",
 			"description": "Latest updater activity from this window.",
 			"keywords": ["checking", "ready", "latest version"]

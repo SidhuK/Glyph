@@ -135,7 +135,8 @@ vi.mock("./QuickNoteTargetBreadcrumbs", () => ({
 
 vi.mock("./QuickNoteTargetSummary", () => ({
 	QUICK_NOTE_TARGET_SUMMARY_KEY: "quick-note-target-summary",
-	QuickNoteTargetSummary: () => null,
+	QuickNoteDestination: () => null,
+	QuickNoteModeControl: () => null,
 }));
 
 vi.mock("./useQuickNoteWindowFrame", () => ({

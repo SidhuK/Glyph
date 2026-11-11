@@ -24,7 +24,7 @@ export interface UseFileTreeResult {
 	openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	createMarkdownFileAtPath: (options: CreateMarkdownFileOptions) => Promise<string | null>;
 	onNewFile: () => Promise<string | null>;
-	onNewFileInDir: (dirPath: string) => Promise<string | null>;
+	onNewFileInDir: (dirPath: string, title?: string) => Promise<string | null>;
 	onNewCanvasInDir: (dirPath: string) => Promise<string | null>;
 	requestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;

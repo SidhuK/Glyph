@@ -11,6 +11,21 @@ function focusNode(node: HTMLElement | null) {
 	node?.focus();
 }
 
+/** Reports the panel's height so the native window fits its rows instead of a fixed frame. */
+function fitWindowToContent(node: HTMLDivElement | null) {
+	if (!node) return;
+	let lastHeight = 0;
+	const observer = new ResizeObserver(() => {
+		const height = Math.ceil(node.getBoundingClientRect().height);
+		if (height === lastHeight) return;
+		lastHeight = height;
+		// Cosmetic: a failed resize leaves the previous frame, which still works.
+		void invoke("fit_quick_search_window", { height }).catch(() => {});
+	});
+	observer.observe(node);
+	return () => observer.disconnect();
+}
+
 export function QuickSearchWindow() {
 	const { t } = useTranslation("shell");
 	const queryClient = useQueryClient();
@@ -43,6 +58,7 @@ export function QuickSearchWindow() {
 
 	return (
 		<div
+			ref={fitWindowToContent}
 			className="commandPalette quickSearchRoot"
 			role="dialog"
 			aria-label={t("quickSearch.title")}

@@ -33,6 +33,7 @@ interface UseNoteFindOptions {
 	mode: NoteInlineEditorMode;
 	relPath?: string;
 	acceptSearchJumps: boolean;
+	highlightQuery: string;
 	hostRef: RefObject<HTMLDivElement | null>;
 	rawEditorRef: RefObject<RawMarkdownEditorHandle | null>;
 	tiptapHostRef: RefObject<HTMLDivElement | null>;
@@ -159,6 +160,7 @@ export function useNoteFind({
 	mode,
 	relPath,
 	acceptSearchJumps,
+	highlightQuery,
 	hostRef,
 	rawEditorRef,
 	tiptapHostRef,
@@ -425,14 +427,15 @@ export function useNoteFind({
 		if (!editor || editor.isDestroyed) return;
 		if (mode === "plain") return;
 		if (!findOpen) {
-			editor.commands.setNoteSearch({ query: "", activeIndex: 0 });
+			// No active match: a passive highlight has no current position.
+			editor.commands.setNoteSearch({ query: highlightQuery, activeIndex: -1 });
 			return;
 		}
 		editor.commands.setNoteSearch({
 			query: findQuery,
 			activeIndex: effectiveFindActiveIndex,
 		});
-	}, [editor, effectiveFindActiveIndex, findOpen, findQuery, mode]);
+	}, [editor, effectiveFindActiveIndex, findOpen, findQuery, highlightQuery, mode]);
 
 	useEffect(() => {
 		if (!findOpen || !findQuery || !findMatches.length) return;

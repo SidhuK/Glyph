@@ -11,6 +11,8 @@ interface CommandListProps {
 	selectedIndex: number;
 	onSetSelectedIndex: (index: number) => void;
 	onSelectResult: (index: number) => void;
+	/** Explains an empty search; shown under any no-results action rows. */
+	emptyHint: string;
 }
 
 /** DOM id of a result row, for the combobox's aria-activedescendant. */
@@ -18,14 +20,21 @@ export function paletteOptionId(listId: string, index: number) {
 	return `${listId}-option-${index}`;
 }
 
-/** Consecutive results of one kind form a labelled group. */
+interface ResultGroup {
+	key: string;
+	kind: PaletteResultKind;
+	label?: string;
+	rows: { result: PaletteResult; index: number }[];
+}
+
+/** Consecutive results of one kind (or one named group within it) form a labelled group. */
 function groupResults(results: readonly PaletteResult[]) {
-	const groups: { kind: PaletteResultKind; rows: { result: PaletteResult; index: number }[] }[] =
-		[];
+	const groups: ResultGroup[] = [];
 	results.forEach((result, index) => {
+		const key = `${result.kind}:${result.group ?? ""}`;
 		const last = groups[groups.length - 1];
-		if (last?.kind === result.kind) last.rows.push({ result, index });
-		else groups.push({ kind: result.kind, rows: [{ result, index }] });
+		if (last?.key === key) last.rows.push({ result, index });
+		else groups.push({ key, kind: result.kind, label: result.group, rows: [{ result, index }] });
 	});
 	return groups;
 }
@@ -36,6 +45,7 @@ export function CommandList({
 	selectedIndex,
 	onSetSelectedIndex,
 	onSelectResult,
+	emptyHint,
 }: CommandListProps) {
 	const { t } = useTranslation("shell");
 	const scrollSelectedIntoView = useCallback(
@@ -45,7 +55,7 @@ export function CommandList({
 	if (!results.length) {
 		return (
 			<div id={id} className="commandPaletteEmpty">
-				{t("commandPalette.noResults")}
+				{emptyHint}
 			</div>
 		);
 	}
@@ -53,14 +63,24 @@ export function CommandList({
 	return (
 		<div id={id} role="listbox" aria-label={t("commandPalette.resultsLabel")}>
 			<Highlight value={results[selectedIndex]?.id ?? null} className="commandPaletteHighlight">
-				{groupResults(results).map(({ kind, rows }) => {
-					// buildPaletteResults emits each kind as one contiguous group.
-					const labelId = `${id}-group-${kind}`;
+				{groupResults(results).map(({ key, kind, label, rows }, groupIndex) => {
+					// buildPaletteResults emits each group contiguously.
+					const labelId = `${id}-group-${groupIndex}`;
+					// No-results actions stand alone, with the hint below instead of a header.
+					const isAction = kind === "action";
 					return (
-						<div key={kind} role="group" aria-labelledby={labelId} className="commandPaletteGroup">
-							<div id={labelId} className="commandPaletteGroupLabel">
-								{t(`commandPalette.groups.${kind}`)}
-							</div>
+						<div
+							key={key}
+							role="group"
+							aria-labelledby={isAction ? undefined : labelId}
+							aria-label={isAction ? emptyHint : undefined}
+							className="commandPaletteGroup"
+						>
+							{isAction ? null : (
+								<div id={labelId} className="commandPaletteGroupLabel">
+									{label ?? t(`commandPalette.groups.${kind}`)}
+								</div>
+							)}
 							{rows.map(({ result, index }) => {
 								const selected = index === selectedIndex;
 								return (
@@ -92,6 +112,7 @@ export function CommandList({
 									</HighlightItem>
 								);
 							})}
+							{isAction ? <p className="commandPaletteEmptyHint">{emptyHint}</p> : null}
 						</div>
 					);
 				})}

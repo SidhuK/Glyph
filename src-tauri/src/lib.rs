@@ -1658,6 +1658,7 @@ pub fn run() {
             floating_window::hide_quick_note_window,
             floating_window::show_quick_search_window,
             floating_window::hide_quick_search_window,
+            floating_window::fit_quick_search_window,
             quick_search::quick_search_open_in_main,
             show_main_window,
             read_clipboard_plain_text,
