@@ -41,7 +41,7 @@ vp check && vp test && vp build && cd src-tauri && cargo check && cargo test
 - Write files with `io_atomic::write_atomic()`.
 - Check user-supplied URLs with the SSRF checks in `net.rs`.
 - Any code path that writes a note must reindex it and emit a typed `space:fs_changed` event. The SQLite index is derived and must never go stale after a write.
-- Persisted JSON documents carry a `version` field (currently `1`).
+- Persisted JSON documents carry a `version` field, set from each store's own version constant.
 - Use serde for serialization and tracing for logs.
 
 ## Cross-cutting rules
