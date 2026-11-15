@@ -608,6 +608,12 @@
 			"description": "Otwórz społecznościowy serwer Discord programu Glyph.",
 			"keywords": ["społeczność", "wsparcie", "opinie"]
 		},
+		"about-community-invite": {
+			"title": "Zaproszenie do społeczności",
+			"section": "Społeczność",
+			"description": "Włącz lub wyłącz zaproszenie do GitHuba i Discorda.",
+			"keywords": ["github", "gwiazdka", "discord", "społeczność", "open source", "wsparcie"]
+		},
 		"about-terms": {
 			"title": "Regulamin",
 			"description": "Otwórz stronę regulaminu programu Glyph.",

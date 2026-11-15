@@ -76,7 +76,15 @@
 		"devBadge": "DEV",
 		"copyVersion": "Kopiuj wersję",
 		"versionCopied": "Skopiowano wersję",
-		"copyVersionFailed": "Nie udało się skopiować wersji"
+		"copyVersionFailed": "Nie udało się skopiować wersji",
+		"community": {
+			"sectionTitle": "Społeczność",
+			"description": "Glyph jest open source. Każda gwiazdka i każdy głos na Discordzie pomagają mu rosnąć.",
+			"invite": {
+				"label": "Zaproszenie do społeczności",
+				"description": "Czasem zaproś mnie do dania gwiazdki Glyph i dołączenia do Discorda. Najwyżej dwa razy."
+			}
+		}
 	},
 	"language": {
 		"label": "Język",

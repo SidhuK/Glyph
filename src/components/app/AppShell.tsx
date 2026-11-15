@@ -69,6 +69,7 @@ import {
 } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
+import { CommunityInviteDialog } from "../community/CommunityInviteDialog";
 import { SettingsDialog } from "../settings/SettingsDialog";
 import { CalendarPaletteController, preloadCalendarPalette } from "./CalendarPaletteController";
 import { IndexingNotice } from "./IndexingNotice";
@@ -1482,6 +1483,7 @@ export function AppShell() {
 				</>
 			) : null}
 			<SettingsDialog />
+			{spacePath ? <CommunityInviteDialog /> : null}
 		</div>
 	);
 }

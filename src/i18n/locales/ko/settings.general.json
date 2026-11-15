@@ -76,7 +76,15 @@
 		"devBadge": "DEV",
 		"copyVersion": "버전 복사",
 		"versionCopied": "버전을 복사했습니다",
-		"copyVersionFailed": "버전을 복사할 수 없습니다"
+		"copyVersionFailed": "버전을 복사할 수 없습니다",
+		"community": {
+			"sectionTitle": "커뮤니티",
+			"description": "Glyph는 오픈 소스입니다. 스타 하나, Discord의 목소리 하나가 성장을 돕습니다.",
+			"invite": {
+				"label": "커뮤니티 초대",
+				"description": "가끔 Glyph에 스타를 누르고 Discord에 참여하도록 안내합니다. 최대 두 번까지만."
+			}
+		}
 	},
 	"language": {
 		"label": "언어",

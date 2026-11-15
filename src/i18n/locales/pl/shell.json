@@ -943,5 +943,33 @@
 		"characters_few": "{{count}} znaki",
 		"characters_many": "{{count}} znaków",
 		"characters_other": "{{count}} znaku"
+	},
+	"community": {
+		"eyebrow": "Open source · Tworzony otwarcie",
+		"title": "Glyph rośnie razem ze społecznością",
+		"description": "Glyph jest darmowy, otwartoźródłowy i kształtowany przez osoby, które w nim piszą. Jeśli znalazł miejsce w Twoim dniu, dwa drobne gesty znaczą bardzo wiele.",
+		"github": {
+			"title": "Daj gwiazdkę na GitHubie",
+			"description": "Gwiazdki pomagają kolejnym osobom odkryć Glyph. Wystarczy jedno kliknięcie.",
+			"cta": "Oznacz repozytorium",
+			"doneTitle": "Dziękujemy!",
+			"doneDescription": "Właśnie sprawiłeś, że Glyph łatwiej znaleźć.",
+			"doneCta": "Otwórz GitHub ponownie"
+		},
+		"discord": {
+			"title": "Dołącz do Discorda",
+			"description": "Dziel się pomysłami, szukaj pomocy i głosuj na kolejne funkcje.",
+			"cta": "Przywitaj się",
+			"doneTitle": "Witaj na pokładzie!",
+			"doneDescription": "Nie możemy się doczekać, co zbudujesz.",
+			"doneCta": "Otwórz Discord ponownie"
+		},
+		"later": "Może później",
+		"done": "Gotowe",
+		"dontAskAgain": "Nie pytaj ponownie",
+		"errors": {
+			"openFailed": "Nie udało się otworzyć linku.",
+			"saveFailed": "Nie udało się zapisać wyboru."
+		}
 	}
 }

@@ -1,0 +1,379 @@
+/* Community invite: launch dialog with its orbit hero. Tiles live in 50a-community-tiles.css. */
+
+.communityInvite {
+	--community-star: #f5b84a;
+	--community-discord: #5865f2;
+	/* The orbit plane is a circle squashed and tilted into an ellipse; children undo both. */
+	--community-tilt: -12deg;
+	--community-squash: 0.34;
+	--community-unsquash: 2.9412;
+
+	width: min(540px, calc(100vw - 32px));
+	max-width: none;
+	gap: 0;
+	overflow: hidden;
+	padding: 0;
+	border-color: var(--border-light);
+	border-radius: 20px;
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-overlay);
+}
+
+/* Hero */
+
+.communityHero {
+	position: relative;
+	height: 200px;
+	overflow: hidden;
+	background:
+		radial-gradient(ellipse 70% 90% at 50% 120%, #3a3f9e 0%, transparent 70%),
+		linear-gradient(180deg, #080c22 0%, #141a3f 100%);
+	-webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent);
+	mask-image: linear-gradient(to bottom, #000 72%, transparent);
+}
+
+.communityHeroSky,
+.communityHeroSky::after {
+	position: absolute;
+	inset: 0;
+	background-image:
+		radial-gradient(1.2px 1.2px at 8% 22%, #fff, transparent),
+		radial-gradient(1px 1px at 17% 64%, #fff, transparent),
+		radial-gradient(1.4px 1.4px at 27% 14%, #fff, transparent),
+		radial-gradient(1px 1px at 36% 48%, #fff, transparent),
+		radial-gradient(1.2px 1.2px at 63% 18%, #fff, transparent),
+		radial-gradient(1px 1px at 72% 58%, #fff, transparent),
+		radial-gradient(1.5px 1.5px at 84% 26%, #fff, transparent),
+		radial-gradient(1px 1px at 93% 70%, #fff, transparent);
+	opacity: 0.7;
+}
+
+.communityHeroSky::after {
+	background-image:
+		radial-gradient(1.3px 1.3px at 12% 42%, #fff, transparent),
+		radial-gradient(1px 1px at 22% 82%, #fff, transparent),
+		radial-gradient(1.1px 1.1px at 44% 10%, #fff, transparent),
+		radial-gradient(1.3px 1.3px at 56% 34%, #fff, transparent),
+		radial-gradient(1px 1px at 78% 8%, #fff, transparent),
+		radial-gradient(1.2px 1.2px at 88% 50%, #fff, transparent);
+	content: "";
+	animation: communityTwinkle 3.6s ease-in-out infinite alternate;
+}
+
+.communityHeroAurora::before,
+.communityHeroAurora::after {
+	position: absolute;
+	width: 260px;
+	height: 160px;
+	border-radius: 50%;
+	content: "";
+	filter: blur(44px);
+	opacity: 0.32;
+	transition: opacity 600ms ease;
+}
+
+.communityHeroAurora::before {
+	top: 18px;
+	left: 6%;
+	background: var(--community-star);
+	animation: communityDrift 11s ease-in-out infinite alternate;
+}
+
+.communityHeroAurora::after {
+	top: 40px;
+	right: 4%;
+	background: var(--community-discord);
+	animation: communityDrift 13s ease-in-out -4s infinite alternate-reverse;
+}
+
+.communityHero[data-starred] .communityHeroAurora::before,
+.communityHero[data-joined] .communityHeroAurora::after {
+	opacity: 0.6;
+}
+
+.communityOrbit {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 300px;
+	height: 300px;
+	margin: -150px 0 0 -150px;
+	transform: rotate(var(--community-tilt)) scaleY(var(--community-squash));
+}
+
+.communityOrbitRing {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.communityOrbitRingOuter {
+	width: 290px;
+	height: 290px;
+	border: 2px dashed rgb(255 255 255 / 0.18);
+}
+
+.communityOrbitRingInner {
+	width: 196px;
+	height: 196px;
+	border: 2px solid rgb(255 255 255 / 0.12);
+}
+
+.communityOrbitCore {
+	position: absolute;
+	z-index: 2;
+	top: 50%;
+	left: 50%;
+	width: 68px;
+	height: 68px;
+	margin: -34px 0 0 -34px;
+	object-fit: contain;
+	filter: drop-shadow(0 10px 26px rgb(88 101 242 / 0.55));
+	transform: scaleY(var(--community-unsquash)) rotate(calc(-1 * var(--community-tilt)));
+	animation: communityCoreIn 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.communityOrbitArm {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 0;
+	height: 0;
+	animation:
+		communitySpin var(--orbit-duration) linear var(--orbit-delay) infinite,
+		communityDepth var(--orbit-duration) step-end var(--orbit-delay) infinite;
+}
+
+.communityOrbitArmStar {
+	--orbit-radius: 145px;
+	--orbit-duration: 16s;
+	--orbit-delay: -2s;
+}
+
+.communityOrbitArmDiscord {
+	--orbit-radius: 98px;
+	--orbit-duration: 11s;
+	--orbit-delay: -7s;
+}
+
+.communityOrbitArmMote {
+	--orbit-radius: 145px;
+	--orbit-duration: 16s;
+	--orbit-delay: -10s;
+}
+
+.communitySatellite {
+	position: absolute;
+	top: -17px;
+	left: calc(var(--orbit-radius) - 17px);
+	display: grid;
+	width: 34px;
+	height: 34px;
+	place-items: center;
+	border-radius: 50%;
+	color: #fff;
+	animation: communityCounterSpin var(--orbit-duration) linear var(--orbit-delay) infinite;
+	transition: box-shadow 500ms ease;
+}
+
+.communitySatelliteStar {
+	background: radial-gradient(circle at 35% 30%, #ffe3a3, var(--community-star) 60%, #d98d16);
+	color: #4a2f00;
+	box-shadow: 0 0 14px rgb(245 184 74 / 0.45);
+}
+
+.communitySatelliteDiscord {
+	background: radial-gradient(circle at 35% 30%, #8d97ff, var(--community-discord) 65%);
+	box-shadow: 0 0 14px rgb(88 101 242 / 0.5);
+}
+
+.communitySatelliteMote {
+	top: -4px;
+	left: calc(var(--orbit-radius) - 4px);
+	width: 8px;
+	height: 8px;
+	background: #fff;
+	box-shadow: 0 0 10px 2px rgb(255 255 255 / 0.7);
+}
+
+.communityHero[data-starred] .communitySatelliteStar {
+	box-shadow:
+		0 0 0 4px rgb(245 184 74 / 0.25),
+		0 0 30px 6px rgb(245 184 74 / 0.75);
+}
+
+.communityHero[data-starred] .communitySatelliteStar path {
+	fill: currentColor;
+}
+
+.communityHero[data-joined] .communitySatelliteDiscord {
+	box-shadow:
+		0 0 0 4px rgb(88 101 242 / 0.3),
+		0 0 30px 6px rgb(88 101 242 / 0.8);
+}
+
+/* Copy */
+
+.communityInviteBody {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-top: -14px;
+	padding: 0 24px 6px;
+	text-align: center;
+}
+
+.communityInviteEyebrow {
+	margin: 0 0 8px;
+	background: linear-gradient(90deg, #d99419, var(--community-discord));
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	font-size: 10.5px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	animation: communityRise 500ms ease-out 120ms both;
+}
+
+.communityInviteTitle {
+	color: var(--text-primary);
+	font-size: 21px;
+	font-weight: var(--font-bold);
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+	animation: communityRise 500ms ease-out 180ms both;
+}
+
+.communityInviteDescription {
+	max-width: 410px;
+	margin-top: 8px;
+	color: var(--text-secondary);
+	font-size: 13px;
+	line-height: 1.5;
+	animation: communityRise 500ms ease-out 240ms both;
+}
+
+.communityInvite .communityTiles {
+	width: 100%;
+	margin-top: 20px;
+	animation: communityRise 500ms ease-out 320ms both;
+}
+
+.communityInviteFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 24px 20px;
+}
+
+.communityInviteQuiet {
+	padding: 4px 0;
+	border: 0;
+	background: none;
+	color: var(--text-tertiary);
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.communityInviteQuiet:hover {
+	background: none;
+	color: var(--text-secondary);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+/* Orbit motion */
+
+@keyframes communitySpin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* The front half of the ellipse (0°–180°, lower side) passes in front of the icon. */
+@keyframes communityDepth {
+	0% {
+		z-index: 3;
+	}
+	50% {
+		z-index: 1;
+	}
+}
+
+@keyframes communityCounterSpin {
+	0% {
+		opacity: 1;
+		transform: rotate(0deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(1);
+	}
+	25% {
+		opacity: 1;
+		transform: rotate(-90deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(1.18);
+	}
+	50% {
+		opacity: 0.9;
+		transform: rotate(-180deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(1);
+	}
+	75% {
+		opacity: 0.6;
+		transform: rotate(-270deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(0.78);
+	}
+	100% {
+		opacity: 1;
+		transform: rotate(-360deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(1);
+	}
+}
+
+@keyframes communityCoreIn {
+	from {
+		opacity: 0;
+		transform: scaleY(var(--community-unsquash)) rotate(calc(-1 * var(--community-tilt))) scale(0.6);
+	}
+}
+
+@keyframes communityTwinkle {
+	from {
+		opacity: 0.15;
+	}
+	to {
+		opacity: 0.85;
+	}
+}
+
+@keyframes communityDrift {
+	to {
+		transform: translate(40px, 14px) scale(1.15);
+	}
+}
+
+@keyframes communityRise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.communityInvite *,
+	.communityTiles * {
+		animation-duration: 1ms !important;
+		animation-iteration-count: 1 !important;
+	}
+
+	.communityOrbitArm,
+	.communitySatellite {
+		animation-duration: var(--orbit-duration) !important;
+		animation-iteration-count: infinite !important;
+		animation-play-state: paused !important;
+	}
+}

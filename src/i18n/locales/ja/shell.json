@@ -865,5 +865,33 @@
 		"savedTo": "{{name}} に保存しました",
 		"words_other": "{{count}} 語",
 		"characters_other": "{{count}} 文字"
+	},
+	"community": {
+		"eyebrow": "オープンソース · オープンに開発",
+		"title": "Glyph はコミュニティとともに成長します",
+		"description": "Glyph は無料のオープンソースで、使う人たちによって形づくられています。毎日の中で役立っているなら、ちょっとした応援が大きな力になります。",
+		"github": {
+			"title": "GitHub でスターを付ける",
+			"description": "スターがあると、より多くの人が Glyph を見つけられます。ワンクリックで完了。",
+			"cta": "リポジトリにスター",
+			"doneTitle": "ありがとうございます！",
+			"doneDescription": "Glyph が少し見つけやすくなりました。",
+			"doneCta": "GitHub をもう一度開く"
+		},
+		"discord": {
+			"title": "Discord に参加",
+			"description": "アイデアを共有し、質問し、次の機能に投票しましょう。",
+			"cta": "あいさつする",
+			"doneTitle": "ようこそ！",
+			"doneDescription": "あなたが作るものを楽しみにしています。",
+			"doneCta": "Discord をもう一度開く"
+		},
+		"later": "あとで",
+		"done": "完了",
+		"dontAskAgain": "今後表示しない",
+		"errors": {
+			"openFailed": "リンクを開けませんでした。",
+			"saveFailed": "選択を保存できませんでした。"
+		}
 	}
 }

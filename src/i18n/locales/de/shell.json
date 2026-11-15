@@ -886,5 +886,33 @@
 		"words_other": "{{count}} Wörter",
 		"characters_one": "{{count}} Zeichen",
 		"characters_other": "{{count}} Zeichen"
+	},
+	"community": {
+		"eyebrow": "Open Source · Offen entwickelt",
+		"title": "Glyph wächst mit seiner Community",
+		"description": "Glyph ist kostenlos, quelloffen und wird von den Menschen geprägt, die darin schreiben. Wenn es einen Platz in deinem Alltag gefunden hat, bewirken zwei kleine Gesten viel.",
+		"github": {
+			"title": "Auf GitHub markieren",
+			"description": "Sterne helfen mehr Menschen, Glyph zu entdecken. Ein Klick genügt.",
+			"cta": "Repo mit Stern markieren",
+			"doneTitle": "Danke, Sternengucker!",
+			"doneDescription": "Du hast Glyph gerade ein bisschen leichter auffindbar gemacht.",
+			"doneCta": "GitHub erneut öffnen"
+		},
+		"discord": {
+			"title": "Discord beitreten",
+			"description": "Teile Ideen, hol dir Hilfe und stimme ab, was als Nächstes kommt.",
+			"cta": "Hallo sagen",
+			"doneTitle": "Willkommen an Bord!",
+			"doneDescription": "Wir sind gespannt, was du baust.",
+			"doneCta": "Discord erneut öffnen"
+		},
+		"later": "Vielleicht später",
+		"done": "Fertig",
+		"dontAskAgain": "Nicht mehr fragen",
+		"errors": {
+			"openFailed": "Der Link konnte nicht geöffnet werden.",
+			"saveFailed": "Deine Auswahl konnte nicht gespeichert werden."
+		}
 	}
 }

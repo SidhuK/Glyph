@@ -653,6 +653,12 @@
 			"description": "Open the Glyph community Discord.",
 			"keywords": ["community", "support", "feedback"]
 		},
+		"about-community-invite": {
+			"title": "Community invitation",
+			"section": "Community",
+			"description": "Turn the GitHub star and Discord invitation on or off.",
+			"keywords": ["github", "star", "discord", "community", "open source", "support"]
+		},
 		"about-terms": {
 			"title": "Terms",
 			"description": "Open the Glyph terms page.",

@@ -604,6 +604,12 @@
 			"description": "Open the Glyph community Discord.",
 			"keywords": ["community", "support", "feedback"]
 		},
+		"about-community-invite": {
+			"title": "コミュニティへの招待",
+			"section": "コミュニティ",
+			"description": "GitHub スターと Discord の案内をオン・オフします。",
+			"keywords": ["github", "スター", "discord", "コミュニティ", "オープンソース", "応援"]
+		},
 		"about-terms": {
 			"title": "Terms",
 			"description": "Open the Glyph terms page.",
