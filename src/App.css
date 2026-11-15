@@ -69,8 +69,14 @@
 @import "./styles/app/47-quick-search.css";
 @import "./styles/app/47-external-markdown.css";
 @import "./styles/app/50-community-invite.css";
+@import "./styles/app/50-community-orbit.css";
+@import "./styles/app/50-community-orbit-motion.css";
 @import "./styles/app/50a-community-tiles.css";
+@import "./styles/app/50a-community-burst.css";
 @import "./styles/app/50b-community-howto.css";
+@import "./styles/app/50b-community-howto-content.css";
+@import "./styles/app/50b-community-howto-motion.css";
+@import "./styles/app/50c-community-dialog-tiles.css";
 
 .shadow,
 .shadow-xs,

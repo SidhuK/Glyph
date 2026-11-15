@@ -1,0 +1,77 @@
+/* Show me how: pointer, press and pane keyframes, and their reduced-motion overrides. */
+
+@keyframes communityHowToGlide {
+	0% {
+		opacity: 0;
+		transform: translate(var(--from-x, -80px), var(--from-y, 36px));
+	}
+	10% {
+		opacity: 1;
+	}
+	40%,
+	52%,
+	84% {
+		opacity: 1;
+		transform: none;
+	}
+	46% {
+		transform: scale(0.8);
+	}
+	96%,
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes communityHowToPress {
+	44%,
+	52% {
+		transform: none;
+	}
+	47% {
+		transform: scale(0.93);
+	}
+}
+
+@keyframes communityHowToShow {
+	0%,
+	46%,
+	92%,
+	100% {
+		opacity: 0;
+	}
+	48%,
+	88% {
+		opacity: 1;
+	}
+}
+
+@keyframes communityHowToTagIn {
+	from {
+		opacity: 0;
+		transform: translateY(5px) scale(0.6);
+	}
+}
+
+@keyframes communityHowToMessageIn {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.communityHowTo *,
+	.communityHowToPane {
+		animation: none !important;
+		transition: none !important;
+	}
+
+	.communityHowToPointer {
+		transform: none;
+	}
+
+	.communityHowToCallout {
+		opacity: 1;
+	}
+}
