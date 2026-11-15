@@ -373,6 +373,10 @@
 		animation-iteration-count: 1 !important;
 	}
 
+	.communityTile {
+		transition: none;
+	}
+
 	.communityOrbitArm,
 	.communitySatellite {
 		animation-duration: var(--orbit-duration) !important;

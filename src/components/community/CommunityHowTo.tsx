@@ -93,7 +93,9 @@ export function CommunityHowTo({ show, advancing, starred, joined, onAct }: Comm
 								<>
 									<span className="communityHowToSwap">
 										<span>{starLabel(false)}</span>
-										<span className="communityHowToSwapOn">{starLabel(true)}</span>
+										<span className="communityHowToSwapOn" aria-hidden="true">
+											{starLabel(true)}
+										</span>
 									</span>
 									<DemoPointer />
 									<span className="communityHowToCallout">{t("community.howTo.oneClick")}</span>

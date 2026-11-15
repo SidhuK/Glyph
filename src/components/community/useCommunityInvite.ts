@@ -3,7 +3,8 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { useTranslation } from "react-i18next";
 import {
 	type CommunityAction,
-	loadAndClaimCommunityInvite,
+	claimCommunityInvite,
+	loadCommunityInviteState,
 	recordCommunityAction,
 } from "../../lib/communityInvite";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -13,7 +14,8 @@ import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { SETTINGS_QUERY_KEY } from "../../lib/settingsStore";
 import { toast } from "../../lib/toast";
 
-const COMMUNITY_INVITE_QUERY_KEY = ["community-invite"] as const;
+const COMMUNITY_INVITE_STATE_QUERY_KEY = ["community-invite", "state"] as const;
+const COMMUNITY_INVITE_CLAIM_QUERY_KEY = ["community-invite", "claim"] as const;
 
 export const COMMUNITY_ACTION_URLS: Record<CommunityAction, string> = {
 	starred: GLYPH_LINKS.github,
@@ -21,18 +23,32 @@ export const COMMUNITY_ACTION_URLS: Record<CommunityAction, string> = {
 };
 
 /**
- * Invite state shared by the launch dialog and Settings › About. The query runs
- * once per window (it claims the invite when due), so later reads never re-open it.
+ * Whether the launch dialog is open in this window. The claim runs once per
+ * window and lives in the app-wide query cache, so dismissing it survives the
+ * shell remounting on a space switch.
  */
-export function useCommunityInvite() {
-	const { t } = useTranslation("shell");
+export function useCommunityInviteLaunch() {
 	const queryClient = useQueryClient();
-	const inviteQuery = useQuery({
-		queryKey: COMMUNITY_INVITE_QUERY_KEY,
-		queryFn: loadAndClaimCommunityInvite,
+	const claimQuery = useQuery({
+		queryKey: COMMUNITY_INVITE_CLAIM_QUERY_KEY,
+		queryFn: claimCommunityInvite,
 		staleTime: Number.POSITIVE_INFINITY,
 		gcTime: Number.POSITIVE_INFINITY,
 		retry: false,
+	});
+	return {
+		open: claimQuery.data ?? false,
+		dismiss: () => queryClient.setQueryData(COMMUNITY_INVITE_CLAIM_QUERY_KEY, false),
+	};
+}
+
+/** Invite state shared by the launch dialog and Settings › About. Never claims an invite. */
+export function useCommunityInvite() {
+	const { t } = useTranslation("shell");
+	const queryClient = useQueryClient();
+	const stateQuery = useQuery({
+		queryKey: COMMUNITY_INVITE_STATE_QUERY_KEY,
+		queryFn: loadCommunityInviteState,
 	});
 	const settingsQuery = useQuery({
 		queryKey: SETTINGS_QUERY_KEY,
@@ -44,11 +60,7 @@ export function useCommunityInvite() {
 			await openUrl(COMMUNITY_ACTION_URLS[action]);
 			return recordCommunityAction(action);
 		},
-		onSuccess: (state) => {
-			queryClient.setQueryData(COMMUNITY_INVITE_QUERY_KEY, (previous) =>
-				previous ? { ...previous, state } : previous,
-			);
-		},
+		onSuccess: (state) => queryClient.setQueryData(COMMUNITY_INVITE_STATE_QUERY_KEY, state),
 		onError: (error) =>
 			toast.error(t("community.errors.openFailed"), { description: extractErrorMessage(error) }),
 	});
@@ -59,9 +71,8 @@ export function useCommunityInvite() {
 	});
 
 	return {
-		showOnLaunch: inviteQuery.data?.show ?? false,
-		starred: inviteQuery.data?.state.starred ?? false,
-		joined: inviteQuery.data?.state.joined ?? false,
+		starred: stateQuery.data?.starred ?? false,
+		joined: stateQuery.data?.joined ?? false,
 		enabled:
 			settingsQuery.data?.ui.communityInvite ?? DURABLE_SETTINGS.communityInvite.defaultValue,
 		settingsLoaded: settingsQuery.data !== undefined,

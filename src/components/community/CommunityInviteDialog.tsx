@@ -9,7 +9,7 @@ import { Button } from "../ui/shadcn/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../ui/shadcn/dialog";
 import { CommunityActionTiles } from "./CommunityActionTiles";
 import { CommunityHowTo } from "./CommunityHowTo";
-import { useCommunityInvite } from "./useCommunityInvite";
+import { useCommunityInvite, useCommunityInviteLaunch } from "./useCommunityInvite";
 
 /** Glyph's icon with a GitHub star and a Discord bubble orbiting it on a tilted ring. */
 function CommunityOrbit({ starred, joined }: { starred: boolean; joined: boolean }) {
@@ -47,16 +47,15 @@ function CommunityOrbit({ starred, joined }: { starred: boolean; joined: boolean
 export function CommunityInviteDialog() {
 	const { t } = useTranslation("shell");
 	const invite = useCommunityInvite();
-	const [dismissed, setDismissed] = useState(false);
+	const launch = useCommunityInviteLaunch();
 	const [previewed, setPreviewed] = useState<CommunityAction | null>(null);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
-	const open = invite.showOnLaunch && !dismissed;
 	const anyDone = invite.starred || invite.joined;
 	// Hovering or focusing a tile previews its page; otherwise show the next step to take.
 	const show: CommunityAction = previewed ?? (invite.starred ? "joined" : "starred");
 
 	const stopAsking = () => {
-		setDismissed(true);
+		launch.dismiss();
 		invite.setEnabled.mutate(false, {
 			onError: (error) =>
 				toast.error(t("community.errors.saveFailed"), {
@@ -66,7 +65,7 @@ export function CommunityInviteDialog() {
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={(next) => !next && setDismissed(true)}>
+		<Dialog open={launch.open} onOpenChange={(next) => !next && launch.dismiss()}>
 			<DialogContent
 				className="communityInvite"
 				showCloseButton={false}
@@ -97,7 +96,7 @@ export function CommunityInviteDialog() {
 						type="button"
 						size="sm"
 						variant="outline"
-						onClick={() => setDismissed(true)}
+						onClick={launch.dismiss}
 					>
 						{anyDone ? t("community.done") : t("community.later")}
 					</Button>

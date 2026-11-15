@@ -64,21 +64,28 @@ function updateState(
 	});
 }
 
+/** Reads the invite state without starting the clock or claiming an invite. */
+export async function loadCommunityInviteState(): Promise<CommunityInviteState> {
+	const store = await getSettingsStore();
+	return normalizeCommunityInviteState(
+		await store.get<unknown>(COMMUNITY_INVITE_STATE_KEY),
+		Date.now(),
+	);
+}
+
 /**
- * Loads the invite state, starting the clock on first launch. When the invite
- * is due it is claimed in the same write, so only one window ever shows it.
+ * Starts the clock on first launch and reports whether to show the invite now.
+ * A due invite is claimed in the same write, so only one window ever shows it.
+ * Call this only where the invite will actually be displayed.
  */
-export async function loadAndClaimCommunityInvite(): Promise<{
-	state: CommunityInviteState;
-	show: boolean;
-}> {
+export async function claimCommunityInvite(): Promise<boolean> {
 	const enabled = (await loadSettings()).ui.communityInvite;
 	let show = false;
-	const state = await updateState((current, now) => {
+	await updateState((current, now) => {
 		show = enabled && isCommunityInviteDue(current, now);
 		return show ? { ...current, lastShownAt: now, timesShown: current.timesShown + 1 } : current;
 	});
-	return { state, show };
+	return show;
 }
 
 export function recordCommunityAction(action: CommunityAction): Promise<CommunityInviteState> {

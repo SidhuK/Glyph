@@ -29,21 +29,23 @@ export function CommunityActionTiles({
 	);
 
 	const run = (action: CommunityAction) => {
-		setCelebration((current) => ({ action, id: (current?.id ?? 0) + 1 }));
-		invite.act.mutate(action);
+		// Celebrate only once the link has actually opened.
+		invite.act.mutate(action, {
+			onSuccess: () => setCelebration((current) => ({ action, id: (current?.id ?? 0) + 1 })),
+		});
 	};
 
 	return (
 		<div className={cn("communityTiles", compact && "communityTilesCompact")}>
 			{TILES.map(({ action, kind, icon, brandIcon }) => {
-				const done = invite[action] || (invite.act.isPending && invite.act.variables === action);
+				const done = invite[action];
 				return (
 					<button
 						key={action}
 						type="button"
 						className="communityTile"
 						data-kind={kind}
-						aria-pressed={done}
+						data-done={done || undefined}
 						onClick={() => run(action)}
 						onPointerEnter={() => onPreview?.(action)}
 						onPointerLeave={() => onPreview?.(null)}

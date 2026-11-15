@@ -11,7 +11,7 @@
 
 .communityTile {
 	--tile-brand: var(--community-star);
-	--tile-ink: #b07400;
+	--tile-ink: #8a5a00;
 
 	position: relative;
 	isolation: isolate;
@@ -83,12 +83,12 @@
 	outline-offset: 2px;
 }
 
-.communityTile[aria-pressed="true"] {
+.communityTile[data-done] {
 	border-color: color-mix(in srgb, var(--tile-brand) 60%, var(--border-light));
 	background: color-mix(in srgb, var(--tile-brand) 7%, var(--bg-secondary));
 }
 
-.communityTile[aria-pressed="true"]::before {
+.communityTile[data-done]::before {
 	opacity: 0.24;
 }
 
@@ -114,17 +114,17 @@
 		color 300ms ease;
 }
 
-.communityTile[aria-pressed="true"] .communityTileBadge {
+.communityTile[data-done] .communityTileBadge {
 	background: var(--tile-brand);
 	color: #fff;
 	animation: communityPop 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.communityTile[data-kind="github"][aria-pressed="true"] .communityTileBadge {
+.communityTile[data-kind="github"][data-done] .communityTileBadge {
 	color: #4a2f00;
 }
 
-.communityTile[data-kind="github"][aria-pressed="true"] .communityTileBadge > svg path {
+.communityTile[data-kind="github"][data-done] .communityTileBadge > svg path {
 	fill: currentColor;
 }
 
@@ -157,16 +157,16 @@
 	transition: opacity 200ms ease;
 }
 
-.communityTile[aria-pressed="true"] .communityTileSwitch {
+.communityTile[data-done] .communityTileSwitch {
 	background: var(--tile-brand);
 	box-shadow: none;
 }
 
-.communityTile[aria-pressed="true"] .communityTileSwitchKnob {
+.communityTile[data-done] .communityTileSwitchKnob {
 	transform: translateX(14px);
 }
 
-.communityTile[aria-pressed="true"] .communityTileSwitchKnob svg {
+.communityTile[data-done] .communityTileSwitchKnob svg {
 	opacity: 1;
 }
 
@@ -194,7 +194,7 @@
 	font-weight: var(--font-medium);
 }
 
-.communityTile[aria-pressed="true"] .communityTileCta {
+.communityTile[data-done] .communityTileCta {
 	color: var(--text-tertiary);
 }
 

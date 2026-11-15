@@ -1483,7 +1483,7 @@ export function AppShell() {
 				</>
 			) : null}
 			<SettingsDialog />
-			{spacePath ? <CommunityInviteDialog /> : null}
+			{spacePath && !zenMode ? <CommunityInviteDialog /> : null}
 		</div>
 	);
 }
