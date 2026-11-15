@@ -60,7 +60,11 @@ export function useCommunityInvite() {
 			await openUrl(COMMUNITY_ACTION_URLS[action]);
 			return recordCommunityAction(action);
 		},
-		onSuccess: (state) => queryClient.setQueryData(COMMUNITY_INVITE_STATE_QUERY_KEY, state),
+		onSuccess: async (state) => {
+			// A read that started before the write (e.g. a refocus refetch) must not land after it.
+			await queryClient.cancelQueries({ queryKey: COMMUNITY_INVITE_STATE_QUERY_KEY });
+			queryClient.setQueryData(COMMUNITY_INVITE_STATE_QUERY_KEY, state);
+		},
 		onError: (error) =>
 			toast.error(t("community.errors.openFailed"), { description: extractErrorMessage(error) }),
 	});
