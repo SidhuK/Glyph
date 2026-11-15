@@ -869,7 +869,7 @@
 	"community": {
 		"eyebrow": "오픈 소스 · 공개적으로 개발",
 		"title": "Glyph는 커뮤니티와 함께 성장합니다",
-		"description": "Glyph는 무료 오픈 소스이며, 이를 사용하는 사람들이 함께 만들어 갑니다. 하루에 자리를 잡았다면 작은 응원 두 가지가 큰 힘이 됩니다.",
+		"description": "Glyph는 무료 오픈 소스입니다. 하루에 자리를 잡았다면, 응원하는 방법을 그대로 보여 드릴게요.",
 		"github": {
 			"title": "GitHub에 스타 누르기",
 			"description": "스타는 더 많은 사람이 Glyph를 발견하도록 돕습니다. 클릭 한 번이면 돼요.",
@@ -892,6 +892,18 @@
 		"errors": {
 			"openFailed": "링크를 열 수 없습니다.",
 			"saveFailed": "선택을 저장할 수 없습니다."
+		},
+		"howTo": {
+			"star": "Star",
+			"starred": "Starred",
+			"watch": "Watch",
+			"fork": "Fork",
+			"public": "Public",
+			"oneClick": "클릭 한 번이면 끝.",
+			"thatsYou": "바로 당신!",
+			"invitedTo": "참여 초대를 받았어요",
+			"accept": "초대 수락하기",
+			"welcome": "환영해요! 피자 가져오셨죠?"
 		}
 	}
 }

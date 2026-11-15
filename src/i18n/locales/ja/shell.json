@@ -869,7 +869,7 @@
 	"community": {
 		"eyebrow": "オープンソース · オープンに開発",
 		"title": "Glyph はコミュニティとともに成長します",
-		"description": "Glyph は無料のオープンソースで、使う人たちによって形づくられています。毎日の中で役立っているなら、ちょっとした応援が大きな力になります。",
+		"description": "Glyph は無料のオープンソースです。毎日の中で役立っているなら、応援の方法をそのままお見せします。",
 		"github": {
 			"title": "GitHub でスターを付ける",
 			"description": "スターがあると、より多くの人が Glyph を見つけられます。ワンクリックで完了。",
@@ -892,6 +892,18 @@
 		"errors": {
 			"openFailed": "リンクを開けませんでした。",
 			"saveFailed": "選択を保存できませんでした。"
+		},
+		"howTo": {
+			"star": "Star",
+			"starred": "Starred",
+			"watch": "Watch",
+			"fork": "Fork",
+			"public": "Public",
+			"oneClick": "ワンクリックで完了。",
+			"thatsYou": "あなたです！",
+			"invitedTo": "参加の招待が届いています",
+			"accept": "招待を受ける",
+			"welcome": "ようこそ！ピザを持ってきてくれたかな？"
 		}
 	}
 }

@@ -1,4 +1,5 @@
-/* Community invite: launch dialog with its orbit hero. Tiles live in 50a-community-tiles.css. */
+/* Community invite: launch dialog with its orbit hero. Tiles live in 50a-community-tiles.css,
+   the Show me how preview in 50b-community-howto.css. */
 
 .communityInvite {
 	--community-star: #f5b84a;
@@ -10,8 +11,9 @@
 
 	width: min(540px, calc(100vw - 32px));
 	max-width: none;
+	max-height: calc(100vh - 32px);
 	gap: 0;
-	overflow: hidden;
+	overflow: hidden auto;
 	padding: 0;
 	border-color: var(--border-light);
 	border-radius: 20px;
@@ -23,7 +25,7 @@
 
 .communityHero {
 	position: relative;
-	height: 200px;
+	height: 136px;
 	overflow: hidden;
 	background:
 		radial-gradient(ellipse 70% 90% at 50% 120%, #3a3f9e 0%, transparent 70%),
@@ -98,6 +100,7 @@
 	width: 300px;
 	height: 300px;
 	margin: -150px 0 0 -150px;
+	scale: 0.8;
 	transform: rotate(var(--community-tilt)) scaleY(var(--community-squash));
 }
 
@@ -220,8 +223,8 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	margin-top: -14px;
-	padding: 0 24px 6px;
+	margin-top: -18px;
+	padding: 0 24px 4px;
 	text-align: center;
 }
 
@@ -240,7 +243,7 @@
 
 .communityInviteTitle {
 	color: var(--text-primary);
-	font-size: 21px;
+	font-size: 20px;
 	font-weight: var(--font-bold);
 	letter-spacing: -0.02em;
 	line-height: 1.2;
@@ -248,8 +251,8 @@
 }
 
 .communityInviteDescription {
-	max-width: 410px;
-	margin-top: 8px;
+	max-width: 420px;
+	margin-top: 6px;
 	color: var(--text-secondary);
 	font-size: 13px;
 	line-height: 1.5;
@@ -258,15 +261,15 @@
 
 .communityInvite .communityTiles {
 	width: 100%;
-	margin-top: 20px;
-	animation: communityRise 500ms ease-out 320ms both;
+	margin-top: 10px;
+	animation: communityRise 500ms ease-out 380ms both;
 }
 
 .communityInviteFooter {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 14px 24px 20px;
+	padding: 12px 24px 16px;
 }
 
 .communityInviteQuiet {

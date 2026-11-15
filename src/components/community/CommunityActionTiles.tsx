@@ -4,8 +4,6 @@ import { DiscordIcon, GithubIcon, StarIcon, Tick02Icon } from "@hugeicons/core-f
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CommunityAction } from "../../lib/communityInvite";
-import { extractErrorMessage } from "../../lib/errorUtils";
-import { toast } from "../../lib/toast";
 import { useCommunityInvite } from "./useCommunityInvite";
 
 const SPARK_COUNT = 10;
@@ -16,7 +14,14 @@ const TILES = [
 ] as const;
 
 /** GitHub star and Discord tiles that switch on, with a small celebration, once used. */
-export function CommunityActionTiles({ compact = false }: { compact?: boolean }) {
+export function CommunityActionTiles({
+	compact = false,
+	onPreview,
+}: {
+	compact?: boolean;
+	/** Called with the tile under the pointer or keyboard focus, and null when it leaves. */
+	onPreview?: (action: CommunityAction | null) => void;
+}) {
 	const { t } = useTranslation("shell");
 	const invite = useCommunityInvite();
 	const [celebration, setCelebration] = useState<{ action: CommunityAction; id: number } | null>(
@@ -25,12 +30,7 @@ export function CommunityActionTiles({ compact = false }: { compact?: boolean })
 
 	const run = (action: CommunityAction) => {
 		setCelebration((current) => ({ action, id: (current?.id ?? 0) + 1 }));
-		invite.act.mutate(action, {
-			onError: (error) =>
-				toast.error(t("community.errors.openFailed"), {
-					description: extractErrorMessage(error),
-				}),
-		});
+		invite.act.mutate(action);
 	};
 
 	return (
@@ -45,6 +45,10 @@ export function CommunityActionTiles({ compact = false }: { compact?: boolean })
 						data-kind={kind}
 						aria-pressed={done}
 						onClick={() => run(action)}
+						onPointerEnter={() => onPreview?.(action)}
+						onPointerLeave={() => onPreview?.(null)}
+						onFocus={() => onPreview?.(action)}
+						onBlur={() => onPreview?.(null)}
 					>
 						<span className="communityTileTop">
 							<span className="communityTileBadge" aria-hidden="true">

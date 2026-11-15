@@ -1,12 +1,14 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { DiscordIcon, StarIcon } from "@hugeicons/core-free-icons";
 import { useRef, useState } from "react";
+import type { CommunityAction } from "../../lib/communityInvite";
 import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { toast } from "../../lib/toast";
 import { Button } from "../ui/shadcn/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../ui/shadcn/dialog";
 import { CommunityActionTiles } from "./CommunityActionTiles";
+import { CommunityHowTo } from "./CommunityHowTo";
 import { useCommunityInvite } from "./useCommunityInvite";
 
 /** Glyph's icon with a GitHub star and a Discord bubble orbiting it on a tilted ring. */
@@ -46,9 +48,12 @@ export function CommunityInviteDialog() {
 	const { t } = useTranslation("shell");
 	const invite = useCommunityInvite();
 	const [dismissed, setDismissed] = useState(false);
+	const [previewed, setPreviewed] = useState<CommunityAction | null>(null);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const open = invite.showOnLaunch && !dismissed;
 	const anyDone = invite.starred || invite.joined;
+	// Hovering or focusing a tile previews its page; otherwise show the next step to take.
+	const show: CommunityAction = previewed ?? (invite.starred ? "joined" : "starred");
 
 	const stopAsking = () => {
 		setDismissed(true);
@@ -74,7 +79,14 @@ export function CommunityInviteDialog() {
 					<DialogDescription className="communityInviteDescription">
 						{t("community.description")}
 					</DialogDescription>
-					<CommunityActionTiles />
+					<CommunityHowTo
+						show={show}
+						advancing={previewed === null && invite.starred}
+						starred={invite.starred}
+						joined={invite.joined}
+						onAct={(action) => invite.act.mutate(action)}
+					/>
+					<CommunityActionTiles onPreview={setPreviewed} />
 				</div>
 				<footer className="communityInviteFooter">
 					<button type="button" className="communityInviteQuiet" onClick={stopAsking}>

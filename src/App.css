@@ -70,6 +70,7 @@
 @import "./styles/app/47-external-markdown.css";
 @import "./styles/app/50-community-invite.css";
 @import "./styles/app/50a-community-tiles.css";
+@import "./styles/app/50b-community-howto.css";
 
 .shadow,
 .shadow-xs,

@@ -890,7 +890,7 @@
 	"community": {
 		"eyebrow": "Open source · Construit au grand jour",
 		"title": "Glyph grandit avec sa communauté",
-		"description": "Glyph est gratuit, open source et façonné par celles et ceux qui écrivent dedans. S'il a trouvé sa place dans votre journée, deux petits gestes comptent beaucoup.",
+		"description": "Glyph est gratuit et open source. S'il a trouvé sa place dans votre journée, voici exactement à quoi ressemble votre aide.",
 		"github": {
 			"title": "Ajouter une étoile sur GitHub",
 			"description": "Les étoiles aident plus de monde à découvrir Glyph. Un seul clic suffit.",
@@ -913,6 +913,18 @@
 		"errors": {
 			"openFailed": "Impossible d'ouvrir le lien.",
 			"saveFailed": "Impossible d'enregistrer votre choix."
+		},
+		"howTo": {
+			"star": "Star",
+			"starred": "Starred",
+			"watch": "Watch",
+			"fork": "Fork",
+			"public": "Public",
+			"oneClick": "Un clic. C'est fait.",
+			"thatsYou": "C'est vous !",
+			"invitedTo": "Vous avez été invité à rejoindre",
+			"accept": "Accepter l'invitation",
+			"welcome": "Bienvenue ! On espère que vous avez apporté une pizza."
 		}
 	}
 }
