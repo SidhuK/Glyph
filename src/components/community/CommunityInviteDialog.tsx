@@ -47,7 +47,7 @@ function CommunityOrbit({ starred, joined }: { starred: boolean; joined: boolean
 export function CommunityInviteDialog() {
 	const { t } = useTranslation("shell");
 	const invite = useCommunityInvite();
-	const launch = useCommunityInviteLaunch();
+	const launch = useCommunityInviteLaunch({ claim: true });
 	const [previewed, setPreviewed] = useState<CommunityAction | null>(null);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const anyDone = invite.starred || invite.joined;

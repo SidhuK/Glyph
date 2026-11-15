@@ -13,7 +13,8 @@ export type CommunityAction = "starred" | "joined";
 
 export interface CommunityInviteState {
 	version: typeof COMMUNITY_INVITE_STATE_VERSION;
-	firstSeenAt: number;
+	/** Set the first time a space is open, so the three days count actual use. */
+	firstSeenAt: number | null;
 	lastShownAt: number | null;
 	timesShown: number;
 	starred: boolean;
@@ -28,11 +29,11 @@ function finiteOr<T>(value: unknown, fallback: T): number | T {
 	return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-export function normalizeCommunityInviteState(value: unknown, now: number): CommunityInviteState {
+export function normalizeCommunityInviteState(value: unknown): CommunityInviteState {
 	const record = isRecord(value) && value.version === COMMUNITY_INVITE_STATE_VERSION ? value : {};
 	return {
 		version: COMMUNITY_INVITE_STATE_VERSION,
-		firstSeenAt: finiteOr(record.firstSeenAt, now),
+		firstSeenAt: finiteOr(record.firstSeenAt, null),
 		lastShownAt: finiteOr(record.lastShownAt, null),
 		timesShown: Math.max(0, Math.floor(finiteOr(record.timesShown, 0))),
 		starred: record.starred === true,
@@ -43,7 +44,7 @@ export function normalizeCommunityInviteState(value: unknown, now: number): Comm
 export function isCommunityInviteDue(state: CommunityInviteState, now: number): boolean {
 	if (state.starred && state.joined) return false;
 	if (state.timesShown >= MAX_INVITES) return false;
-	if (now - state.firstSeenAt < FIRST_INVITE_AFTER_MS) return false;
+	if (state.firstSeenAt === null || now - state.firstSeenAt < FIRST_INVITE_AFTER_MS) return false;
 	return state.lastShownAt === null || now - state.lastShownAt >= REPEAT_INVITE_AFTER_MS;
 }
 
@@ -55,7 +56,6 @@ function updateState(
 		const store = await getSettingsStore();
 		const current = normalizeCommunityInviteState(
 			await store.get<unknown>(COMMUNITY_INVITE_STATE_KEY),
-			now,
 		);
 		const next = update(current, now);
 		await store.set(COMMUNITY_INVITE_STATE_KEY, next);
@@ -67,10 +67,7 @@ function updateState(
 /** Reads the invite state without starting the clock or claiming an invite. */
 export async function loadCommunityInviteState(): Promise<CommunityInviteState> {
 	const store = await getSettingsStore();
-	return normalizeCommunityInviteState(
-		await store.get<unknown>(COMMUNITY_INVITE_STATE_KEY),
-		Date.now(),
-	);
+	return normalizeCommunityInviteState(await store.get<unknown>(COMMUNITY_INVITE_STATE_KEY));
 }
 
 /**
@@ -82,8 +79,9 @@ export async function claimCommunityInvite(): Promise<boolean> {
 	const enabled = (await loadSettings()).ui.communityInvite;
 	let show = false;
 	await updateState((current, now) => {
-		show = enabled && isCommunityInviteDue(current, now);
-		return show ? { ...current, lastShownAt: now, timesShown: current.timesShown + 1 } : current;
+		const started = { ...current, firstSeenAt: current.firstSeenAt ?? now };
+		show = enabled && isCommunityInviteDue(started, now);
+		return show ? { ...started, lastShownAt: now, timesShown: started.timesShown + 1 } : started;
 	});
 	return show;
 }

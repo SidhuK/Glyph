@@ -70,6 +70,7 @@ import {
 import { onWindowDragMouseDown } from "../../utils/window";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import { CommunityInviteDialog } from "../community/CommunityInviteDialog";
+import { useCommunityInviteLaunch } from "../community/useCommunityInvite";
 import { SettingsDialog } from "../settings/SettingsDialog";
 import { CalendarPaletteController, preloadCalendarPalette } from "./CalendarPaletteController";
 import { IndexingNotice } from "./IndexingNotice";
@@ -171,6 +172,9 @@ export function AppShell() {
 	} = useUILayoutContext();
 	const zenModeRef = useRef(zenMode);
 	zenModeRef.current = zenMode;
+	const communityInviteMounted = Boolean(spacePath) && !zenMode;
+	const communityInviteOpen =
+		useCommunityInviteLaunch({ claim: false }).open && communityInviteMounted;
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
 	const { getCurrentMarkdown, saveCurrentEditor, saveAllEditors, setCurrentEditorMode } =
 		useEditorContext();
@@ -1269,8 +1273,8 @@ export function AppShell() {
 	);
 
 	useCommandShortcuts({
-		// The settings dialog owns the keyboard while it is open.
-		handlers: settingsOpen ? [] : shortcutHandlers,
+		// The settings dialog and the community invite own the keyboard while open.
+		handlers: settingsOpen || communityInviteOpen ? [] : shortcutHandlers,
 		paletteOpen,
 	});
 	useEffect(() => {
@@ -1483,7 +1487,7 @@ export function AppShell() {
 				</>
 			) : null}
 			<SettingsDialog />
-			{spacePath && !zenMode ? <CommunityInviteDialog /> : null}
+			{communityInviteMounted ? <CommunityInviteDialog /> : null}
 		</div>
 	);
 }
