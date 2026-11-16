@@ -576,6 +576,12 @@
 			"description": "Open the Glyph community Discord.",
 			"keywords": ["community", "support", "feedback"]
 		},
+		"about-community-invite": {
+			"title": "커뮤니티 초대",
+			"section": "커뮤니티",
+			"description": "GitHub 스타와 Discord 초대를 켜거나 끕니다.",
+			"keywords": ["github", "스타", "discord", "커뮤니티", "오픈 소스", "응원"]
+		},
 		"about-terms": {
 			"title": "Terms",
 			"description": "Open the Glyph terms page.",

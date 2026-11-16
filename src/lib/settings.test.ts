@@ -137,6 +137,16 @@ const DURABLE_SETTING_CASES = [
 		writes: [{ value: true, payload: { ui: { resumeLastSession: true } } }],
 	},
 	{
+		name: "community invitation",
+		storeKey: "ui.communityInvite",
+		read: (settings: AppSettings) => settings.ui.communityInvite,
+		defaultValue: true,
+		storedValue: false,
+		invalidStoredValue: "yes",
+		writeKey: "communityInvite",
+		writes: [{ value: false, payload: { ui: { communityInvite: false } } }],
+	},
+	{
 		name: "corner radius style",
 		storeKey: "ui.cornerRadiusStyle",
 		read: (settings: AppSettings) => settings.ui.cornerRadiusStyle,

@@ -1,0 +1,45 @@
+/* Dialog tiles: badge, copy and switch in one row; the preview already shows where each leads. */
+
+.communityInvite .communityTile {
+	display: grid;
+	grid-template-areas:
+		"badge title switch"
+		"badge desc switch";
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	column-gap: 10px;
+	row-gap: 1px;
+	padding: 10px 12px;
+}
+
+.communityInvite .communityTileTop {
+	display: contents;
+}
+
+.communityInvite .communityTileBadge {
+	grid-area: badge;
+	width: 34px;
+	height: 34px;
+	border-radius: 10px;
+}
+
+.communityInvite .communityTileSwitch {
+	grid-area: switch;
+}
+
+.communityInvite .communityTileTitle {
+	grid-area: title;
+	align-self: end;
+	font-size: 13px;
+}
+
+.communityInvite .communityTileDescription {
+	grid-area: desc;
+	align-self: start;
+	font-size: 11.5px;
+	line-height: 1.35;
+}
+
+.communityInvite .communityTileCta {
+	display: none;
+}

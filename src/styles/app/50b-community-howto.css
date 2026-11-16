@@ -1,0 +1,175 @@
+/* "Show me how": miniature GitHub and Discord pages in the community invite, with a pointer that
+   demonstrates the one click each takes. Buttons and pane content are in 50b-community-howto-content.css. */
+
+.communityHowTo {
+	--howto-loop: 4.4s;
+
+	position: relative;
+	width: 100%;
+	height: 104px;
+	margin-top: 14px;
+	overflow: hidden;
+	border-radius: 14px;
+	background:
+		radial-gradient(var(--border-light) 0.9px, transparent 1.3px) 0 0 / 12px 12px,
+		var(--bg-secondary);
+	box-shadow: inset 0 0 0 1px var(--border-light);
+	text-align: left;
+	animation: communityRise 500ms ease-out 300ms both;
+}
+
+.communityHowToPane {
+	/* GitHub's own light palette. */
+	--hw-bg: #fff;
+	--hw-text: #1f2328;
+	--hw-muted: #59636e;
+	--hw-line: #d1d9e0;
+	--hw-subtle: #f6f8fa;
+	--hw-link: #0969da;
+
+	position: absolute;
+	top: 12px;
+	left: 50%;
+	width: min(330px, calc(100% - 28px));
+	overflow: visible;
+	border-radius: 9px;
+	background: var(--hw-bg);
+	box-shadow:
+		0 0 0 1px var(--hw-line),
+		0 12px 24px -14px rgb(0 0 0 / 0.45);
+	color: var(--hw-text);
+	font-size: 10px;
+	line-height: 14px;
+	transform: translateX(-50%);
+	transition:
+		opacity 260ms ease,
+		transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root.dark .communityHowToPane {
+	--hw-bg: #0d1117;
+	--hw-text: #f0f6fc;
+	--hw-muted: #9198a1;
+	--hw-line: #3d444d;
+	--hw-subtle: #151b23;
+	--hw-link: #4493f8;
+}
+
+/* Discord's palettes. */
+.communityHowToPane[data-pane="joined"] {
+	--hw-bg: #fff;
+	--hw-text: #060607;
+	--hw-muted: #5c5e66;
+	--hw-line: rgb(0 0 0 / 0.1);
+	--hw-subtle: #f2f3f5;
+}
+
+:root.dark .communityHowToPane[data-pane="joined"] {
+	--hw-bg: #313338;
+	--hw-text: #f2f3f5;
+	--hw-muted: #b5bac1;
+	--hw-line: rgb(255 255 255 / 0.08);
+	--hw-subtle: #2b2d31;
+}
+
+.communityHowTo[data-show="starred"] [data-pane="joined"] {
+	opacity: 0;
+	pointer-events: none;
+	transform: translate(-50%, 14px) scale(0.96);
+}
+
+.communityHowTo[data-show="joined"] [data-pane="starred"] {
+	opacity: 0;
+	pointer-events: none;
+	transform: translate(-50%, -14px) scale(0.96);
+}
+
+/* After a click, hold the success state for a moment before moving on to the next page. */
+.communityHowTo[data-advancing] .communityHowToPane {
+	transition-delay: 1200ms;
+}
+
+.communityHowToBar {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	height: 20px;
+	padding: 0 8px;
+	border-radius: 9px 9px 0 0;
+	background: var(--hw-subtle);
+	box-shadow: inset 0 -1px var(--hw-line);
+}
+
+.communityHowToBar i {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--hw-line);
+}
+
+.communityHowToBar span {
+	margin: 0 auto;
+	padding: 0 14px;
+	border-radius: 5px;
+	background: var(--hw-bg);
+	color: var(--hw-muted);
+	font-size: 9px;
+	line-height: 14px;
+}
+
+.communityHowToPage {
+	padding: 8px 10px 10px;
+}
+
+.communityHowToRepo {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--hw-muted);
+	font-size: 11px;
+}
+
+.communityHowToRepo b {
+	color: var(--hw-text);
+	font-weight: 600;
+}
+
+.communityHowToOwner {
+	color: var(--hw-link);
+}
+
+.communityHowToPill {
+	margin-left: 2px;
+	padding: 0 6px;
+	border: 1px solid var(--hw-line);
+	border-radius: 999px;
+	font-size: 8.5px;
+	line-height: 13px;
+}
+
+.communityHowToMuted {
+	font-size: 9.5px;
+}
+
+.communityHowToButtons {
+	display: flex;
+	gap: 5px;
+	margin-top: 8px;
+}
+
+.communityHowToButtons > span,
+.communityHowToStar {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	height: 20px;
+	padding: 0 8px;
+	border-radius: 6px;
+	background: var(--hw-subtle);
+	box-shadow: inset 0 0 0 1px var(--hw-line);
+	color: var(--hw-text);
+	font-size: 9.5px;
+	font-weight: 600;
+	line-height: 1;
+	white-space: nowrap;
+}

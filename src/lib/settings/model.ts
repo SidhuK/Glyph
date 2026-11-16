@@ -255,6 +255,7 @@ export interface AppSettings {
 		developerMode: boolean;
 		diagnosticLogging: boolean;
 		resumeLastSession: boolean;
+		communityInvite: boolean;
 		aiAssistantMode: AiAssistantMode;
 		dateDisplayFormat: DateDisplayFormat;
 		sidebarVisibility: SidebarVisibility;

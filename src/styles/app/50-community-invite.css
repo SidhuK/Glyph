@@ -1,0 +1,93 @@
+/* Community invite: the launch dialog frame and its copy. The orbit hero is in
+   50-community-orbit*.css, the tiles in 50a-*, and the Show me how preview in 50b-*. */
+
+.communityInvite {
+	--community-star: #f5b84a;
+	--community-discord: #5865f2;
+	/* The orbit plane is a circle squashed and tilted into an ellipse; children undo both. */
+	--community-tilt: -12deg;
+	--community-squash: 0.34;
+	--community-unsquash: 2.9412;
+
+	width: min(540px, calc(100vw - 32px));
+	max-width: none;
+	max-height: calc(100vh - 32px);
+	gap: 0;
+	overflow: hidden auto;
+	padding: 0;
+	border-color: var(--border-light);
+	border-radius: 20px;
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-overlay);
+}
+
+/* Copy */
+
+.communityInviteBody {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-top: -18px;
+	padding: 0 24px 4px;
+	text-align: center;
+}
+
+.communityInviteEyebrow {
+	margin: 0 0 8px;
+	background: linear-gradient(90deg, #d99419, var(--community-discord));
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	font-size: 10.5px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	animation: communityRise 500ms ease-out 120ms both;
+}
+
+.communityInviteTitle {
+	color: var(--text-primary);
+	font-size: 20px;
+	font-weight: var(--font-bold);
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+	animation: communityRise 500ms ease-out 180ms both;
+}
+
+.communityInviteDescription {
+	max-width: 420px;
+	margin-top: 6px;
+	color: var(--text-secondary);
+	font-size: 13px;
+	line-height: 1.5;
+	animation: communityRise 500ms ease-out 240ms both;
+}
+
+.communityInvite .communityTiles {
+	width: 100%;
+	margin-top: 10px;
+	animation: communityRise 500ms ease-out 380ms both;
+}
+
+.communityInviteFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 24px 16px;
+}
+
+.communityInviteQuiet {
+	padding: 4px 0;
+	border: 0;
+	background: none;
+	color: var(--text-tertiary);
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.communityInviteQuiet:hover {
+	background: none;
+	color: var(--text-secondary);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}

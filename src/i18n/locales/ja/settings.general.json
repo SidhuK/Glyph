@@ -76,7 +76,15 @@
 		"devBadge": "DEV",
 		"copyVersion": "バージョンをコピー",
 		"versionCopied": "バージョンをコピーしました",
-		"copyVersionFailed": "バージョンをコピーできませんでした"
+		"copyVersionFailed": "バージョンをコピーできませんでした",
+		"community": {
+			"sectionTitle": "コミュニティ",
+			"description": "Glyph はオープンソースです。スターも Discord での声も成長の力になります。",
+			"invite": {
+				"label": "コミュニティへの招待",
+				"description": "ときどき Glyph へのスターと Discord への参加を案内します。最大 2 回まで。"
+			}
+		}
 	},
 	"language": {
 		"label": "言語",

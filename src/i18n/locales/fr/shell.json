@@ -886,5 +886,45 @@
 		"words_other": "{{count}} mots",
 		"characters_one": "{{count}} caractère",
 		"characters_other": "{{count}} caractères"
+	},
+	"community": {
+		"eyebrow": "Open source · Construit au grand jour",
+		"title": "Glyph grandit avec sa communauté",
+		"description": "Glyph est open source. S'il a trouvé sa place dans votre journée, voici exactement à quoi ressemble votre aide.",
+		"github": {
+			"title": "Ajouter une étoile sur GitHub",
+			"description": "Les étoiles aident plus de monde à découvrir Glyph. Un seul clic suffit.",
+			"cta": "Étoiler le dépôt",
+			"doneTitle": "Merci, chasseur d'étoiles !",
+			"doneDescription": "Vous venez de rendre Glyph un peu plus facile à trouver.",
+			"doneCta": "Rouvrir GitHub"
+		},
+		"discord": {
+			"title": "Rejoindre le Discord",
+			"description": "Partagez vos idées, obtenez de l'aide et votez pour la suite.",
+			"cta": "Dire bonjour",
+			"doneTitle": "Bienvenue à bord !",
+			"doneDescription": "On a hâte de voir ce que vous construisez.",
+			"doneCta": "Rouvrir Discord"
+		},
+		"later": "Plus tard",
+		"done": "Terminé",
+		"dontAskAgain": "Ne plus demander",
+		"errors": {
+			"openFailed": "Impossible d'ouvrir le lien.",
+			"saveFailed": "Impossible d'enregistrer votre choix."
+		},
+		"howTo": {
+			"star": "Star",
+			"starred": "Starred",
+			"watch": "Watch",
+			"fork": "Fork",
+			"public": "Public",
+			"oneClick": "Un clic. C'est fait.",
+			"thatsYou": "C'est vous !",
+			"invitedTo": "Vous avez été invité à rejoindre",
+			"accept": "Accepter l'invitation",
+			"welcome": "Bienvenue ! On espère que vous avez apporté une pizza."
+		}
 	}
 }

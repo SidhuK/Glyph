@@ -82,7 +82,15 @@
 		"devBadge": "DEV",
 		"copyVersion": "Copy version",
 		"versionCopied": "Version copied",
-		"copyVersionFailed": "Couldn't copy the version"
+		"copyVersionFailed": "Couldn't copy the version",
+		"community": {
+			"sectionTitle": "Community",
+			"description": "Glyph is open source. Every star and every voice on Discord helps it grow.",
+			"invite": {
+				"label": "Community invitation",
+				"description": "Occasionally invite me to star Glyph and join the Discord. Never more than twice."
+			}
+		}
 	},
 	"developer": {
 		"diagnostics": {

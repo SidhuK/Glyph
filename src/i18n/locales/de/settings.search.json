@@ -603,6 +603,12 @@
 			"description": "Open the Glyph community Discord.",
 			"keywords": ["community", "support", "feedback"]
 		},
+		"about-community-invite": {
+			"title": "Community-Einladung",
+			"section": "Community",
+			"description": "Die Einladung zu GitHub-Stern und Discord ein- oder ausschalten.",
+			"keywords": ["github", "stern", "discord", "community", "open source", "unterstützen"]
+		},
 		"about-terms": {
 			"title": "Terms",
 			"description": "Open the Glyph terms page.",

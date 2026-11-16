@@ -7,6 +7,8 @@ import { useUpdaterContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { useLicenseStatus } from "../../lib/license";
+import { CommunityActionTiles } from "../community/CommunityActionTiles";
+import { useCommunityInvite } from "../community/useCommunityInvite";
 import { type ReleaseChannel, loadSettings } from "../../lib/settings";
 import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import type { AppInfo } from "../../lib/tauri";
@@ -21,6 +23,7 @@ export function AboutSettingsPane() {
 	const { status: licenseStatus, loading: licenseLoading } = useLicenseStatus(false);
 	const autoUpdater = useUpdaterContext();
 	const developerMode = useDeveloperMode();
+	const communityInvite = useCommunityInvite();
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [releaseChannelState, setReleaseChannelState] = useState<ReleaseChannel>("stable");
 	const releaseChannelTouchedRef = useRef(false);
@@ -80,6 +83,32 @@ export function AboutSettingsPane() {
 
 			<div className="settingsGrid">
 				<AboutHero appInfo={appInfo} />
+
+				<SettingsSection
+					title={t("about.community.sectionTitle")}
+					description={t("about.community.description")}
+				>
+					<div className="aboutCommunityTiles">
+						<CommunityActionTiles compact />
+					</div>
+					{communityInvite.setEnabled.error ? (
+						<div className="settingsError">
+							{extractErrorMessage(communityInvite.setEnabled.error)}
+						</div>
+					) : null}
+					<SettingsRow
+						label={t("about.community.invite.label")}
+						description={t("about.community.invite.description")}
+						searchId="about-community-invite"
+					>
+						<SettingsToggle
+							checked={communityInvite.enabled}
+							disabled={!communityInvite.settingsLoaded || communityInvite.setEnabled.isPending}
+							ariaLabel={t("about.community.invite.label")}
+							onCheckedChange={(checked) => communityInvite.setEnabled.mutate(checked)}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 
 				<SettingsSection
 					title={t("about.updates.sectionTitle")}

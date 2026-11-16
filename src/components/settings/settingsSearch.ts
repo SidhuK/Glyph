@@ -122,6 +122,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "about-app", tab: "about" },
 	{ id: "about-website", tab: "about" },
 	{ id: "about-discord", tab: "about" },
+	{ id: "about-community-invite", tab: "about" },
 	{ id: "about-terms", tab: "about" },
 	{ id: "about-privacy", tab: "about" },
 	{ id: "about-updates", tab: "about" },

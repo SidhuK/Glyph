@@ -1,0 +1,100 @@
+/* Orbit keyframes, plus the reduced-motion overrides for the whole community invite. */
+
+@keyframes communitySpin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* The front half of the ellipse (0°–180°, lower side) passes in front of the icon. */
+@keyframes communityDepth {
+	0% {
+		z-index: 3;
+	}
+	50% {
+		z-index: 1;
+	}
+}
+
+@keyframes communityCounterSpin {
+	0% {
+		opacity: 1;
+		transform: rotate(0deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(1);
+	}
+	25% {
+		opacity: 1;
+		transform: rotate(-90deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(1.18);
+	}
+	50% {
+		opacity: 0.9;
+		transform: rotate(-180deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(1);
+	}
+	75% {
+		opacity: 0.6;
+		transform: rotate(-270deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(0.78);
+	}
+	100% {
+		opacity: 1;
+		transform: rotate(-360deg) scaleY(var(--community-unsquash))
+			rotate(calc(-1 * var(--community-tilt))) scale(1);
+	}
+}
+
+@keyframes communityCoreIn {
+	from {
+		opacity: 0;
+		transform: scaleY(var(--community-unsquash)) rotate(calc(-1 * var(--community-tilt))) scale(0.6);
+	}
+}
+
+@keyframes communityTwinkle {
+	from {
+		opacity: 0.15;
+	}
+	to {
+		opacity: 0.85;
+	}
+}
+
+@keyframes communityDrift {
+	to {
+		transform: translate(40px, 14px) scale(1.15);
+	}
+}
+
+@keyframes communityRise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.communityInvite *,
+	.communityInvite *::before,
+	.communityInvite *::after,
+	.communityTiles *,
+	.communityTiles *::before,
+	.communityTiles *::after {
+		animation-duration: 1ms !important;
+		animation-iteration-count: 1 !important;
+	}
+
+	.communityTile {
+		transition: none;
+	}
+
+	.communityOrbitArm,
+	.communitySatellite {
+		animation-duration: var(--orbit-duration) !important;
+		animation-iteration-count: infinite !important;
+		animation-play-state: paused !important;
+	}
+}

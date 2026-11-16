@@ -886,5 +886,45 @@
 		"words_other": "{{count}} palabras",
 		"characters_one": "{{count}} carácter",
 		"characters_other": "{{count}} caracteres"
+	},
+	"community": {
+		"eyebrow": "Código abierto · Hecho en abierto",
+		"title": "Glyph crece con su comunidad",
+		"description": "Glyph es de código abierto. Si se ha ganado un sitio en tu día, aquí ves exactamente cómo ayudar.",
+		"github": {
+			"title": "Dale una estrella en GitHub",
+			"description": "Las estrellas ayudan a que más gente descubra Glyph. Solo cuesta un clic.",
+			"cta": "Marcar con estrella",
+			"doneTitle": "¡Gracias, cazaestrellas!",
+			"doneDescription": "Acabas de hacer que Glyph sea un poco más fácil de encontrar.",
+			"doneCta": "Abrir GitHub de nuevo"
+		},
+		"discord": {
+			"title": "Únete al Discord",
+			"description": "Comparte ideas, pide ayuda y vota lo que llega después.",
+			"cta": "Saludar",
+			"doneTitle": "¡Bienvenido a bordo!",
+			"doneDescription": "Tenemos muchas ganas de ver lo que construyes.",
+			"doneCta": "Abrir Discord de nuevo"
+		},
+		"later": "Quizá más tarde",
+		"done": "Listo",
+		"dontAskAgain": "No volver a preguntar",
+		"errors": {
+			"openFailed": "No se pudo abrir el enlace.",
+			"saveFailed": "No se pudo guardar tu elección."
+		},
+		"howTo": {
+			"star": "Star",
+			"starred": "Starred",
+			"watch": "Watch",
+			"fork": "Fork",
+			"public": "Public",
+			"oneClick": "Un clic. Listo.",
+			"thatsYou": "¡Ese eres tú!",
+			"invitedTo": "Te han invitado a unirte a",
+			"accept": "Aceptar invitación",
+			"welcome": "Bienvenido. Esperamos que hayas traído pizza."
+		}
 	}
 }

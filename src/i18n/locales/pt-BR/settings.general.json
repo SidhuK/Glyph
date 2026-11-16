@@ -76,7 +76,15 @@
 		"devBadge": "DEV",
 		"copyVersion": "Copiar versão",
 		"versionCopied": "Versão copiada",
-		"copyVersionFailed": "Não foi possível copiar a versão"
+		"copyVersionFailed": "Não foi possível copiar a versão",
+		"community": {
+			"sectionTitle": "Comunidade",
+			"description": "O Glyph é de código aberto. Cada estrela e cada voz no Discord ajudam ele a crescer.",
+			"invite": {
+				"label": "Convite para a comunidade",
+				"description": "De vez em quando, me convide para dar uma estrela ao Glyph e entrar no Discord. No máximo duas vezes."
+			}
+		}
 	},
 	"language": {
 		"label": "Idioma",

@@ -621,6 +621,12 @@
 			"description": "Open the Glyph community Discord.",
 			"keywords": ["community", "support", "feedback"]
 		},
+		"about-community-invite": {
+			"title": "Invitación a la comunidad",
+			"section": "Comunidad",
+			"description": "Activa o desactiva la invitación a GitHub y Discord.",
+			"keywords": ["github", "estrella", "discord", "comunidad", "código abierto", "apoyar"]
+		},
 		"about-terms": {
 			"title": "Terms",
 			"description": "Open the Glyph terms page.",

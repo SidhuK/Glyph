@@ -645,6 +645,13 @@ export const DURABLE_SETTINGS = {
 		change: (value) => ({ ui: { diagnosticLogging: value } }),
 		afterSave: syncDiagnosticLogging,
 	}),
+	communityInvite: booleanSetting({
+		key: "ui.communityInvite",
+		defaultValue: true,
+		discovery: searchable("about-community-invite"),
+		read: (settings) => settings.ui.communityInvite,
+		change: (value) => ({ ui: { communityInvite: value } }),
+	}),
 	resumeLastSession: booleanSetting({
 		key: "ui.resumeLastSession",
 		defaultValue: false,
