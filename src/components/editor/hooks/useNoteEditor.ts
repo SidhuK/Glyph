@@ -20,7 +20,11 @@ import {
 } from "../markdown/editorMarkdownBridge";
 import { sliceToMarkdown } from "../markdown/selectionMarkdown";
 import type { TemplateInsertRequest } from "../slash/slashMenuItems";
-import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
+import {
+	type NoteInlineEditorMode,
+	type PasteMarkdownBehavior,
+	VIEW_ONLY_TRANSACTION_META,
+} from "../types";
 import { applyEditorSpellCheck } from "./useEditorSpellCheck";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
 import { cellSelectionClipboardText } from "../table/tableClipboard";
@@ -677,10 +681,16 @@ export function useNoteEditor({
 					},
 				},
 			},
-			onTransaction: ({ editor: instance, transaction }) => {
+			onTransaction: ({ editor: instance, transaction, appendedTransactions }) => {
 				if (!transaction.docChanged) return;
 				if (suppressUpdateRef.current) {
 					suppressUpdateRef.current = false;
+					return;
+				}
+				if (
+					transaction.getMeta(VIEW_ONLY_TRANSACTION_META) === true &&
+					!appendedTransactions.some((appended) => appended.docChanged)
+				) {
 					return;
 				}
 				if (modeRef.current !== "rich" || !instance.isEditable) return;

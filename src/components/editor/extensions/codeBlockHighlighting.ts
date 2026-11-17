@@ -3,6 +3,7 @@ import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import type { Transaction } from "@tiptap/pm/state";
 import { createLowlight } from "lowlight";
 import { i18n } from "../../../i18n";
+import { VIEW_ONLY_TRANSACTION_META } from "../types";
 import {
 	GRAMMAR_ALIASES,
 	PLAINTEXT_GRAMMAR,
@@ -77,6 +78,7 @@ function refreshCodeBlockDecorations(editor: Editor) {
 	}
 	if (tr.steps.length > 0) {
 		tr.setMeta("addToHistory", false);
+		tr.setMeta(VIEW_ONLY_TRANSACTION_META, true);
 		editor.view.dispatch(tr);
 	}
 }
