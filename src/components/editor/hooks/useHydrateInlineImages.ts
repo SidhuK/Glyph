@@ -241,6 +241,7 @@ function hydrateImageNodesInDocument(
 			src,
 			originSrc: originalSrc,
 		});
+		tr.setMeta("addToHistory", false);
 		tr.setMeta(VIEW_ONLY_TRANSACTION_META, true);
 		editor.view.dispatch(tr);
 		return;

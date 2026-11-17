@@ -348,11 +348,16 @@ const TaskDetailShortcut = Extension.create({
 
 /**
  * The stock renderer wraps each table in its own newlines on top of the blank
- * line the serializer puts between blocks, so every save grew the gap around
- * a table and two adjacent tables never round-tripped to the same Markdown.
+ * line the serializer puts between top-level blocks, so every save grew the
+ * gap around a table and two adjacent tables never round-tripped to the same
+ * Markdown. Nested content (list items) joins blocks with a single newline, so
+ * tables there keep their own newlines to stay separate.
  */
 const MarkdownTable = Table.extend({
-	renderMarkdown: (node, helpers) => renderTableToMarkdown(node, helpers).replace(/^\n+|\n+$/g, ""),
+	renderMarkdown: (node, helpers, context) => {
+		const markdown = renderTableToMarkdown(node, helpers);
+		return context.parentType === "doc" ? markdown.replace(/^\n+|\n+$/g, "") : markdown;
+	},
 });
 
 const TableEnterNavigation = Extension.create({

@@ -68,6 +68,43 @@ function tableShape(markdown: string) {
 }
 
 describe("Table markdown integration", () => {
+	const TABLE = ["| A   | B   |", "| --- | --- |", "| 1   | 2   |"].join("\n");
+
+	function saveTwice(markdown: string) {
+		const first = createEditor(markdown);
+		const once = first.editor.getMarkdown();
+		first.destroy();
+		const second = createEditor(once);
+		const twice = second.editor.getMarkdown();
+		second.destroy();
+		return { once, twice };
+	}
+
+	it("keeps adjacent top-level tables stable across saves", () => {
+		for (const gap of ["\n\n", "\n\n\n", "\n\n\n\n", "\n\n\n\n\n\n"]) {
+			const { once, twice } = saveTwice(`intro${gap}${TABLE}${gap}${TABLE}${gap}outro`);
+			expect(twice).toBe(once);
+		}
+		expect(saveTwice(`intro\n\n${TABLE}\n\n${TABLE}\n\noutro`).once).toBe(
+			`intro\n\n${TABLE}\n\n${TABLE}\n\noutro`,
+		);
+	});
+
+	it("keeps adjacent tables inside a list item separate", () => {
+		const nested = TABLE.replace(/\n/g, "\n  ");
+		const { once } = saveTwice(`- item\n\n  ${nested}\n\n  ${nested}`);
+		const harness = createEditor(once);
+		try {
+			let tableCount = 0;
+			harness.editor.state.doc.descendants((node) => {
+				if (node.type.name === "table") tableCount += 1;
+			});
+			expect(tableCount).toBe(2);
+		} finally {
+			harness.destroy();
+		}
+	});
+
 	it("round-trips markdown after inserting a row", () => {
 		const input = [
 			"| Name | Role |",

@@ -5,6 +5,7 @@ import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { AttachmentStorageMode } from "../../../lib/settings";
+import { VIEW_ONLY_TRANSACTION_META } from "../types";
 import { useNoteEditor } from "./useNoteEditor";
 
 const {
@@ -505,6 +506,49 @@ describe("useNoteEditor", () => {
 		});
 
 		expect(onChange).toHaveBeenCalledWith("keep this line");
+	});
+
+	it("skips view-only transactions unless an appended transaction changes the doc", async () => {
+		const onChange = vi.fn();
+		mockEditor.getMarkdown.mockReturnValue("re-serialized body");
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} />);
+		});
+
+		const options = getEditorOptions() as {
+			onTransaction?: (payload: {
+				editor: typeof mockEditor;
+				transaction: { docChanged: boolean; getMeta: (key: string) => unknown };
+				appendedTransactions: Array<{ docChanged: boolean }>;
+			}) => void;
+		} | null;
+		const viewOnly = {
+			docChanged: true,
+			getMeta: (key: string) => (key === VIEW_ONLY_TRANSACTION_META ? true : undefined),
+		};
+
+		await act(async () => {
+			options?.onTransaction?.({
+				editor: mockEditor,
+				transaction: viewOnly,
+				appendedTransactions: [],
+			});
+			await flushMarkdownSyncWork();
+		});
+
+		expect(onChange).not.toHaveBeenCalled();
+
+		await act(async () => {
+			options?.onTransaction?.({
+				editor: mockEditor,
+				transaction: viewOnly,
+				appendedTransactions: [{ docChanged: true }],
+			});
+			await flushMarkdownSyncWork();
+		});
+
+		expect(onChange).toHaveBeenCalledWith("re-serialized body");
 	});
 
 	it("flushes pending edits with the previous note context when the path changes", async () => {
