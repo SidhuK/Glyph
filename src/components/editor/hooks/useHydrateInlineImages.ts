@@ -1,6 +1,7 @@
 import type { Editor } from "@tiptap/core";
 import { useEffect } from "react";
 import { invoke, spaceAssetUrl } from "../../../lib/tauri";
+import { VIEW_ONLY_TRANSACTION_META } from "../types";
 
 const INLINE_IMAGE_CACHE_MAX = 64;
 const INLINE_IMAGE_HYDRATION_ROOT_MARGIN = "720px 0px";
@@ -240,6 +241,7 @@ function hydrateImageNodesInDocument(
 			src,
 			originSrc: originalSrc,
 		});
+		tr.setMeta(VIEW_ONLY_TRANSACTION_META, true);
 		editor.view.dispatch(tr);
 		return;
 	}

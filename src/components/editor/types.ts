@@ -8,6 +8,13 @@ export type NoteInlineEditorChrome = "full" | "minimal";
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
 export type RolloverMoveTarget = "today" | "tomorrow";
 
+/**
+ * Transaction meta for background doc updates that only refresh what the
+ * view shows (re-highlighting, resolved image URLs). They change no Markdown,
+ * so they must not sync the note back out or mark it edited.
+ */
+export const VIEW_ONLY_TRANSACTION_META = "glyph:view-only";
+
 /** Position of a task within the editor's unfinished-task list. */
 export interface RolloverTaskPosition {
 	index: number;

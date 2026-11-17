@@ -483,7 +483,8 @@ describe("useNoteEditor", () => {
 		const options = getEditorOptions() as {
 			onTransaction?: (payload: {
 				editor: typeof mockEditor;
-				transaction: { docChanged: boolean };
+				transaction: { docChanged: boolean; getMeta: (key: string) => unknown };
+				appendedTransactions: Array<{ docChanged: boolean }>;
 			}) => void;
 		} | null;
 
@@ -492,7 +493,8 @@ describe("useNoteEditor", () => {
 		await act(async () => {
 			options?.onTransaction?.({
 				editor: mockEditor,
-				transaction: { docChanged: true },
+				transaction: { docChanged: true, getMeta: () => undefined },
+				appendedTransactions: [],
 			});
 		});
 
@@ -523,14 +525,16 @@ describe("useNoteEditor", () => {
 		const options = getEditorOptions() as {
 			onTransaction?: (payload: {
 				editor: typeof mockEditor;
-				transaction: { docChanged: boolean };
+				transaction: { docChanged: boolean; getMeta: (key: string) => unknown };
+				appendedTransactions: Array<{ docChanged: boolean }>;
 			}) => void;
 		} | null;
 
 		await act(async () => {
 			options?.onTransaction?.({
 				editor: mockEditor,
-				transaction: { docChanged: true },
+				transaction: { docChanged: true, getMeta: () => undefined },
+				appendedTransactions: [],
 			});
 		});
 
@@ -567,14 +571,16 @@ describe("useNoteEditor", () => {
 		const initialOptions = getEditorOptions() as {
 			onTransaction?: (payload: {
 				editor: typeof mockEditor;
-				transaction: { docChanged: boolean };
+				transaction: { docChanged: boolean; getMeta: (key: string) => unknown };
+				appendedTransactions: Array<{ docChanged: boolean }>;
 			}) => void;
 		} | null;
 
 		await act(async () => {
 			initialOptions?.onTransaction?.({
 				editor: mockEditor,
-				transaction: { docChanged: true },
+				transaction: { docChanged: true, getMeta: () => undefined },
+				appendedTransactions: [],
 			});
 		});
 

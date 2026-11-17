@@ -1,6 +1,12 @@
 import { type AnyExtension, type Editor, Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
-import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
+import {
+	renderTableToMarkdown,
+	Table,
+	TableCell,
+	TableHeader,
+	TableRow,
+} from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
@@ -340,6 +346,15 @@ const TaskDetailShortcut = Extension.create({
 	},
 });
 
+/**
+ * The stock renderer wraps each table in its own newlines on top of the blank
+ * line the serializer puts between blocks, so every save grew the gap around
+ * a table and two adjacent tables never round-tripped to the same Markdown.
+ */
+const MarkdownTable = Table.extend({
+	renderMarkdown: (node, helpers) => renderTableToMarkdown(node, helpers).replace(/^\n+|\n+$/g, ""),
+});
+
 const TableEnterNavigation = Extension.create({
 	name: "table-enter-navigation",
 	addKeyboardShortcuts() {
@@ -510,7 +525,7 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 					TableEnterNavigation,
 				]
 			: []),
-		Table.configure({ resizable: enableEditingExtensions }),
+		MarkdownTable.configure({ resizable: enableEditingExtensions }),
 		TableRow,
 		TableHeader,
 		TableCell,
