@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Glyph is a macOS-only Tauri app: React/TypeScript frontend in `src/` (`@` maps to `src`), Rust backend in `src-tauri/`. Write code, suggestions and comments for macOS only.
+Glyph is a macOS-only Tauri app: React/TypeScript frontend in `src/` (`@` maps to `src`), Rust backend in `src-tauri/`. Write code and suggestions for macOS only.
 
 ## Commands
 
@@ -62,5 +62,6 @@ vp check && vp test && vp build && cd src-tauri && cargo check && cargo test
 
 ## Change discipline
 
+- Never add code comments. Use names, small functions and types so the code explains itself. If a comment would explain a workaround or a surprise in our own code, fix the code instead. If it would guard a constraint (`do not remove`, `keep in sync with X`), encode that constraint as a type, runtime check or test. The one exception is a short note on something we can't change, such as a macOS or upstream library bug, with a link to it.
 - Prefer fixes that delete or narrow existing code. Add files, commands, shortcuts or abstractions only when the existing code can't support the fix, never as a wrapper around code that should have been narrowed.
 - Keep files around 200 lines. Split into a subfolder when one grows well past that, and extract hooks or subcomponents when a TSX file mixes rendering, state, effects and commands.
