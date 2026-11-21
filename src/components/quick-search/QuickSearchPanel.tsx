@@ -125,7 +125,6 @@ export function QuickSearchPanel({ spacePath }: { spacePath: string }) {
 						id={RESULTS_ID}
 						results={results}
 						selectedIndex={selectedIndex}
-						onSetSelectedIndex={(index) => setSelectedId(results[index]?.id ?? null)}
 						onSelectResult={selectResult}
 					/>
 				</div>

@@ -467,6 +467,7 @@
 			"clear": "Wyczyść",
 			"showNotes": "Pokaż notatki",
 			"create": "Utwórz",
+			"askAi": "Zapytaj AI",
 			"search": "Szukaj",
 			"allResults": "Wszystkie wyniki",
 			"choose": "Wybierz",
@@ -488,7 +489,9 @@
 			"person": "Ludzie",
 			"database": "Kolekcje i bazy danych",
 			"template": "Szablony",
-			"recent": "Ostatnie"
+			"recent": "Ostatnie",
+			"suggested": "Sugerowane",
+			"action": "Akcje"
 		},
 		"lineNumber": "w. {{line}}",
 		"openTab": "Otwarta karta",
@@ -502,10 +505,11 @@
 		"editShortcut": "Edytuj w Ustawienia › Skróty",
 		"removeScope": "Usuń zakres",
 		"searchFailed": "Wyszukiwanie nie powiodło się. Sprawdź zapytanie i spróbuj ponownie.",
-		"noResultsHint": "Brak pasujących notatek, poleceń i ustawień. Wpisz mniej liter lub zacznij od > dla poleceń.",
+		"noResultsFor": "Brak notatek, folderów i poleceń pasujących do „{{query}}”.",
 		"noScopedResults": "Nic nie pasuje w: {{scope}}.",
 		"createNote": "Utwórz notatkę „{{title}}”",
 		"searchNoteText": "Szukaj „{{query}}” w treści notatek",
+		"askAi": "Zapytaj AI o „{{query}}”",
 		"scopePlaceholder": {
 			"commands": "Szukaj poleceń",
 			"settings": "Szukaj ustawień",

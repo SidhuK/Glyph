@@ -446,6 +446,7 @@
 			"clear": "Clear",
 			"showNotes": "Show notes",
 			"create": "Create",
+			"askAi": "Ask AI",
 			"search": "Search",
 			"allResults": "All results",
 			"choose": "Choose",
@@ -467,7 +468,9 @@
 			"person": "People",
 			"database": "Collections and databases",
 			"template": "Templates",
-			"recent": "Recent"
+			"recent": "Recent",
+			"suggested": "Suggested",
+			"action": "Actions"
 		},
 		"lineNumber": "L{{line}}",
 		"openTab": "Open tab",
@@ -479,10 +482,11 @@
 		"editShortcut": "Edit in Settings › Shortcuts",
 		"removeScope": "Remove scope",
 		"searchFailed": "Search failed. Check the query and try again.",
-		"noResultsHint": "No notes, commands or settings match. Try fewer letters, or start with > for commands.",
+		"noResultsFor": "No notes, folders or commands match “{{query}}”.",
 		"noScopedResults": "Nothing in {{scope}} matches.",
 		"createNote": "Create note “{{title}}”",
 		"searchNoteText": "Search note text for “{{query}}”",
+		"askAi": "Ask AI about “{{query}}”",
 		"scopePlaceholder": {
 			"commands": "Search commands",
 			"settings": "Search settings",

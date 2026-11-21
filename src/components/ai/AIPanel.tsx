@@ -17,6 +17,7 @@ import {
 	AI_CONTEXT_ATTACH_EVENT,
 	type AiContextAttachDetail,
 	type AiSelectionContext,
+	consumePendingAiPrompt,
 	consumePendingAiSelectionContext,
 } from "./aiContextEvents";
 import { canvasSystemPrompt, messageText, parseAddTrigger } from "./aiPanelConstants";
@@ -93,11 +94,19 @@ export function AIPanel(props: AIPanelProps) {
 			setSelectionContext(selection);
 			setSelectionMessageBaseline(chat.messages.length);
 		};
+		const draftPrompt = (prompt: string) => {
+			setInput((prev) => (prev.trim() ? `${prev.trimEnd()} ${prompt}` : prompt));
+			window.requestAnimationFrame(() => composerInputRef.current?.focus());
+		};
 		const onAttach = (event: Event) => {
 			const detail = (event as CustomEvent<AiContextAttachDetail>).detail;
 			if (detail?.selection) {
 				consumePendingAiSelectionContext();
 				attachSelection(detail.selection);
+			}
+			if (detail?.prompt) {
+				consumePendingAiPrompt();
+				draftPrompt(detail.prompt);
 			}
 			const paths = detail?.paths ?? [];
 			for (const path of paths) {
@@ -114,6 +123,8 @@ export function AIPanel(props: AIPanelProps) {
 		window.addEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
 		const pendingSelection = consumePendingAiSelectionContext();
 		if (pendingSelection) attachSelection(pendingSelection);
+		const pendingPrompt = consumePendingAiPrompt();
+		if (pendingPrompt) draftPrompt(pendingPrompt);
 		return () => window.removeEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
 	}, [chat.messages.length, context.addContext]);
 

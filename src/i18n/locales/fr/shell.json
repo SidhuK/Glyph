@@ -446,6 +446,7 @@
 			"clear": "Effacer",
 			"showNotes": "Afficher les notes",
 			"create": "Créer",
+			"askAi": "Demander à l’IA",
 			"search": "Rechercher",
 			"allResults": "Tous les résultats",
 			"choose": "Choisir",
@@ -467,7 +468,9 @@
 			"person": "Personnes",
 			"database": "Collections et bases de données",
 			"template": "Modèles",
-			"recent": "Récents"
+			"recent": "Récents",
+			"suggested": "Suggestions",
+			"action": "Actions"
 		},
 		"lineNumber": "L{{line}}",
 		"openTab": "Onglet ouvert",
@@ -479,10 +482,11 @@
 		"editShortcut": "Modifier dans Réglages › Raccourcis",
 		"removeScope": "Retirer la portée",
 		"searchFailed": "La recherche a échoué. Vérifiez la requête et réessayez.",
-		"noResultsHint": "Aucune note, commande ou réglage ne correspond. Essayez moins de lettres, ou commencez par > pour les commandes.",
+		"noResultsFor": "Aucune note, aucun dossier ni aucune commande ne correspond à « {{query}} ».",
 		"noScopedResults": "Rien ne correspond dans {{scope}}.",
 		"createNote": "Créer la note « {{title}} »",
 		"searchNoteText": "Rechercher « {{query}} » dans le texte des notes",
+		"askAi": "Demander à l’IA à propos de « {{query}} »",
 		"scopePlaceholder": {
 			"commands": "Rechercher des commandes",
 			"settings": "Rechercher des réglages",

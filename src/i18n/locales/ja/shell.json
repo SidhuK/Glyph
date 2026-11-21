@@ -443,6 +443,7 @@
 			"clear": "クリア",
 			"showNotes": "ノートを表示",
 			"create": "作成",
+			"askAi": "AI に質問",
 			"search": "検索",
 			"allResults": "すべての結果",
 			"choose": "選択",
@@ -464,7 +465,9 @@
 			"person": "人物",
 			"database": "コレクションとデータベース",
 			"template": "テンプレート",
-			"recent": "最近"
+			"recent": "最近",
+			"suggested": "おすすめ",
+			"action": "アクション"
 		},
 		"lineNumber": "{{line}}行",
 		"openTab": "開いているタブ",
@@ -475,10 +478,11 @@
 		"editShortcut": "設定 › ショートカットで編集",
 		"removeScope": "範囲を解除",
 		"searchFailed": "検索に失敗しました。クエリを確認してもう一度お試しください。",
-		"noResultsHint": "一致するノート、コマンド、設定はありません。文字数を減らすか、コマンドは > で始めてください。",
+		"noResultsFor": "「{{query}}」に一致するノート、フォルダ、コマンドはありません。",
 		"noScopedResults": "{{scope}}に一致するものはありません。",
 		"createNote": "ノート「{{title}}」を作成",
 		"searchNoteText": "ノート本文で「{{query}}」を検索",
+		"askAi": "「{{query}}」について AI に質問",
 		"scopePlaceholder": {
 			"commands": "コマンドを検索",
 			"settings": "設定を検索",

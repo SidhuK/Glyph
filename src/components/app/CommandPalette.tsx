@@ -37,8 +37,8 @@ import {
 	stepPaletteOption,
 } from "./commandPaletteHelpers";
 import { buildMoveResults, moveFoldersFromEntries } from "./movePickerResults";
-import { noResultActions } from "./paletteResultGroups";
-import { buildPaletteResults } from "./paletteResults";
+import { paletteActions } from "./paletteResultGroups";
+import { type PaletteResult, buildPaletteResults } from "./paletteResults";
 import { PALETTE_SETTING_BY_ID, paletteSettingOptions } from "./settingsPaletteRegistry";
 import { useCommandSearch } from "./useCommandSearch";
 import { usePaletteSettings } from "./usePaletteSettings";
@@ -64,6 +64,7 @@ interface CommandPaletteProps {
 	initialQuery?: string;
 	commands: Command[];
 	onClose: () => void;
+	onAskAi?: (prompt: string) => void;
 	spacePath: string | null;
 	tabs: WorkspaceTab[];
 	onActivateTab: (id: string) => void;
@@ -102,6 +103,7 @@ export function CommandPalette({
 	initialQuery = "",
 	commands,
 	onClose,
+	onAskAi,
 	spacePath,
 	tabs,
 	onActivateTab,
@@ -249,7 +251,6 @@ export function CommandPalette({
 		// Folders change outside the palette, so each move starts from a fresh listing.
 		staleTime: 0,
 	});
-	// Once the search settles empty, offer the next step instead of a dead end.
 	const results = moveSource
 		? buildMoveResults({
 				query,
@@ -258,9 +259,20 @@ export function CommandPalette({
 				spacePath,
 				t,
 			})
-		: matchedResults.length || isSearching
+		: isSecretPalettePhrase
 			? matchedResults
-			: noResultActions(parsedQuery, spacePath, t);
+			: [
+					...matchedResults,
+					...paletteActions({
+						parsed: parsedQuery,
+						spacePath,
+						canAskAi: Boolean(onAskAi),
+						hasMatches: matchedResults.length > 0 || isSearching,
+						t,
+					}),
+				];
+	const actionIndex = (actionId: PaletteResult["actionId"]) =>
+		results.findIndex((result) => result.kind === "action" && result.actionId === actionId);
 
 	const resolvedSelectedIndex = useMemo(() => {
 		if (!results.length) return 0;
@@ -399,6 +411,11 @@ export function CommandPalette({
 						onCreateNote(result.target);
 						return;
 					}
+					if (result.actionId === "ask-ai") {
+						closeAndRestoreFocus();
+						onAskAi?.(result.target);
+						return;
+					}
 					setQuery(result.target);
 					setSelectedId(null);
 					return;
@@ -423,6 +440,7 @@ export function CommandPalette({
 			onRevealFolder,
 			onOpenDatabase,
 			onCreateNote,
+			onAskAi,
 			moveSource,
 			onMove,
 			onMoveToNewFolder,
@@ -434,10 +452,23 @@ export function CommandPalette({
 	const handleRootKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLElement>) => {
 			if (event.target !== inputRef.current) return;
-			if (event.nativeEvent.isComposing || event.altKey || event.ctrlKey || event.metaKey) {
+			if (event.nativeEvent.isComposing || event.altKey || event.ctrlKey) return;
+			if (event.metaKey) {
+				const createNoteIndex = actionIndex("create-note");
+				if (event.key !== "Enter" || createNoteIndex < 0) return;
+				event.preventDefault();
+				event.stopPropagation();
+				selectResult(createNoteIndex);
 				return;
 			}
 			if (isSecretPalettePhrase && event.key !== "Escape") return;
+			if (event.key === "Tab" && !event.shiftKey) {
+				const askAiIndex = actionIndex("ask-ai");
+				if (askAiIndex < 0) return;
+				event.preventDefault();
+				selectResult(askAiIndex);
+				return;
+			}
 			if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 				event.preventDefault();
 				if (!results.length) return;
@@ -501,6 +532,7 @@ export function CommandPalette({
 		},
 		[
 			results,
+			actionIndex,
 			resolvedSelectedIndex,
 			selectResult,
 			query,
@@ -546,7 +578,7 @@ export function CommandPalette({
 			<DialogContent
 				className={cn(
 					"commandPalette top-[round(15vh,1px)] translate-y-0 gap-0 border-none bg-transparent p-0 shadow-none",
-					withSidePane ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
+					withSidePane ? "sm:max-w-[840px]" : "sm:max-w-[600px]",
 				)}
 				data-with-preview={withSidePane ? "true" : "false"}
 				onKeyDownCapture={activeSetting || activeTemplate ? undefined : handleRootKeyDown}
@@ -705,8 +737,8 @@ export function CommandPalette({
 										id={RESULTS_ID}
 										results={results}
 										selectedIndex={resolvedSelectedIndex}
-										onSetSelectedIndex={(index) => setSelectedId(results[index]?.id ?? null)}
 										onSelectResult={selectResult}
+										query={parsedQuery.text}
 										emptyHint={
 											isSearching
 												? t("commandPalette.searching")
@@ -714,7 +746,7 @@ export function CommandPalette({
 													? t("commandPalette.noScopedResults", {
 															scope: t(`commandPalette.groups.${SCOPE_GROUP[scope]}`),
 														})
-													: t("commandPalette.noResultsHint")
+													: t("commandPalette.noResultsFor", { query: parsedQuery.text })
 										}
 									/>
 								)}
