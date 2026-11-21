@@ -244,14 +244,14 @@
 			"emptyTitle": "Add a field to create board lanes",
 			"emptyText": "Board view groups notes into lanes. Add a status, priority, checkbox, tag, or similar field to your notes, then pick it in the toolbar above.",
 			"openViewSettings": "Open view settings",
-			"newCard": "New",
 			"scrollNext": "Show next lanes",
 			"laneEmpty": {
 				"archived": "Archived notes go here",
 				"done": "Done notes land here",
 				"unassigned": "Notes without a value appear here",
 				"default": "Drop notes here or add one below"
-			}
+			},
+			"newNote": "New note"
 		},
 		"changeStatus": "Change status",
 		"statusLabel": "Status",
@@ -295,7 +295,22 @@
 			"empty": "No matching notes"
 		},
 		"newNote": "New",
-		"renameHint": "Double-click to rename"
+		"renameHint": "Double-click to rename",
+		"creator": {
+			"title": "See a folder as a board or table",
+			"description": "A collection shows the notes in one folder with their tags, tasks and properties. Your files stay where they are.",
+			"boardHint": "Group by tag or status",
+			"tableHint": "Sortable columns",
+			"folder": "Folder",
+			"foldersIn": "Folders in {{space}}",
+			"createBoard": "Create board",
+			"createTable": "Create table",
+			"creating": "Creating…",
+			"cancel": "Cancel",
+			"noFolders": "Collections show a folder. This space has no folders yet.",
+			"newFolder": "New folder",
+			"loadFoldersFailed": "Couldn't load folders: {{error}}"
+		}
 	},
 	"tags": {
 		"header": "Tags",

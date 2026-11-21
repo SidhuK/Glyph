@@ -244,14 +244,14 @@
 			"emptyTitle": "Ajoutez un champ pour créer des colonnes",
 			"emptyText": "La vue Kanban regroupe les notes en colonnes. Ajoutez à vos notes un champ de statut, de priorité, une case à cocher, un tag ou un champ similaire, puis choisissez-le dans la barre d’outils ci-dessus.",
 			"openViewSettings": "Ouvrir les réglages de la vue",
-			"newCard": "Nouvelle",
 			"scrollNext": "Afficher les colonnes suivantes",
 			"laneEmpty": {
 				"archived": "Les notes archivées arrivent ici",
 				"done": "Les notes terminées arrivent ici",
 				"unassigned": "Les notes sans valeur apparaissent ici",
 				"default": "Déposez des notes ici ou ajoutez-en une ci-dessous"
-			}
+			},
+			"newNote": "Nouvelle note"
 		},
 		"changeStatus": "Changer le statut",
 		"statusLabel": "Statut",
@@ -295,7 +295,22 @@
 			"empty": "Aucune note correspondante"
 		},
 		"newNote": "Nouvelle",
-		"renameHint": "Double-cliquez pour renommer"
+		"renameHint": "Double-cliquez pour renommer",
+		"creator": {
+			"title": "Voir un dossier en kanban ou en tableau",
+			"description": "Une collection affiche les notes d’un dossier avec leurs tags, tâches et propriétés. Vos fichiers restent où ils sont.",
+			"boardHint": "Grouper par tag ou statut",
+			"tableHint": "Colonnes triables",
+			"folder": "Dossier",
+			"foldersIn": "Dossiers dans {{space}}",
+			"createBoard": "Créer le kanban",
+			"createTable": "Créer le tableau",
+			"creating": "Création…",
+			"cancel": "Annuler",
+			"noFolders": "Les collections affichent un dossier. Cet espace n’a pas encore de dossier.",
+			"newFolder": "Nouveau dossier",
+			"loadFoldersFailed": "Impossible de charger les dossiers : {{error}}"
+		}
 	},
 	"tags": {
 		"header": "Étiquettes",

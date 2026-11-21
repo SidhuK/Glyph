@@ -248,14 +248,14 @@
 			"emptyTitle": "Dodaj pole, aby utworzyć kolumny tablicy",
 			"emptyText": "Widok tablicy grupuje notatki w kolumny. Dodaj do notatek pole statusu, priorytetu, pola wyboru, tagu lub podobne, a potem wybierz je na pasku narzędzi powyżej.",
 			"openViewSettings": "Otwórz ustawienia widoku",
-			"newCard": "Nowa",
 			"scrollNext": "Pokaż kolejne kolumny",
 			"laneEmpty": {
 				"archived": "Tu trafiają zarchiwizowane notatki",
 				"done": "Tu trafiają ukończone notatki",
 				"unassigned": "Tu pojawiają się notatki bez wartości",
 				"default": "Upuść tu notatki lub dodaj nową poniżej"
-			}
+			},
+			"newNote": "Nowa notatka"
 		},
 		"changeStatus": "Zmień status",
 		"statusLabel": "Status",
@@ -299,7 +299,22 @@
 			"empty": "Brak pasujących notatek"
 		},
 		"newNote": "Nowa",
-		"renameHint": "Kliknij dwukrotnie, aby zmienić nazwę"
+		"renameHint": "Kliknij dwukrotnie, aby zmienić nazwę",
+		"creator": {
+			"title": "Zobacz folder jako tablicę lub tabelę",
+			"description": "Kolekcja pokazuje notatki z jednego folderu wraz z ich tagami, zadaniami i właściwościami. Twoje pliki zostają tam, gdzie są.",
+			"boardHint": "Grupuj według tagu lub statusu",
+			"tableHint": "Sortowalne kolumny",
+			"folder": "Folder",
+			"foldersIn": "Foldery w {{space}}",
+			"createBoard": "Utwórz tablicę",
+			"createTable": "Utwórz tabelę",
+			"creating": "Tworzenie…",
+			"cancel": "Anuluj",
+			"noFolders": "Kolekcje pokazują folder. Ta przestrzeń nie ma jeszcze folderów.",
+			"newFolder": "Nowy folder",
+			"loadFoldersFailed": "Nie udało się wczytać folderów: {{error}}"
+		}
 	},
 	"tags": {
 		"header": "Tagi",

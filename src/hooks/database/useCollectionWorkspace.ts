@@ -85,7 +85,7 @@ export function useCollectionWorkspace({
 	const [namedDocumentId, setNamedDocumentId] = useState<string | null>(
 		() => initialDocument?.database.id ?? null,
 	);
-	const [createCollectionOpen, setCreateCollectionOpen] = useState(false);
+	const [collectionCreatorOpen, setCollectionCreatorOpen] = useState(false);
 	const [seenRequestKey, setSeenRequestKey] = useState(() => requestKey(databasesOpenRequest));
 
 	const saveQueueRef = useRef(Promise.resolve());
@@ -120,8 +120,8 @@ export function useCollectionWorkspace({
 			setSelectedDatabaseIdState(databasesOpenRequest.databaseId);
 			setSelectedViewIdState(null);
 		}
-		if (databasesOpenRequest.openCreateDialog) {
-			setCreateCollectionOpen(true);
+		if (databasesOpenRequest.openCreator) {
+			setCollectionCreatorOpen(true);
 		}
 	} else if (summariesReady && selectedDatabaseId !== selectedDatabaseIdState) {
 		setSelectedDatabaseIdState(selectedDatabaseId);
@@ -188,12 +188,13 @@ export function useCollectionWorkspace({
 	}, [queryClient]);
 
 	const setSelectedDatabaseId = useCallback((databaseId: string) => {
+		setCollectionCreatorOpen(false);
 		setSelectedDatabaseIdState(databaseId);
 		setSelectedViewIdState(null);
 	}, []);
 
-	const openCreateCollectionDialog = useCallback(() => {
-		setCreateCollectionOpen(true);
+	const openCollectionCreator = useCallback(() => {
+		setCollectionCreatorOpen(true);
 	}, []);
 
 	const saveDatabase = useCallback(
@@ -302,6 +303,7 @@ export function useCollectionWorkspace({
 	const selectCollection = useCallback(
 		async (created: WorkspaceDatabaseDocument) => {
 			clearError();
+			setCollectionCreatorOpen(false);
 			setPrefetchedDatabaseDocument(created.database.id, created);
 			setSelectedDatabaseIdState(created.database.id);
 			setNamedDocumentId(created.database.id);
@@ -328,9 +330,9 @@ export function useCollectionWorkspace({
 		summaries,
 		selectedDatabaseId,
 		setSelectedDatabaseId,
-		createCollectionOpen,
-		setCreateCollectionOpen,
-		openCreateCollectionDialog,
+		collectionCreatorOpen,
+		setCollectionCreatorOpen,
+		openCollectionCreator,
 		document,
 		loading: Boolean(selectedDatabaseId) && documentQuery.isPending,
 		nameDraft,

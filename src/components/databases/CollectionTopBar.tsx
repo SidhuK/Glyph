@@ -17,7 +17,7 @@ interface CollectionTopBarProps {
 	>;
 	selection: Pick<
 		UseDatabasesPaneReturn["selection"],
-		"summaries" | "selectedDatabaseId" | "setSelectedDatabaseId" | "openCreateCollectionDialog"
+		"summaries" | "selectedDatabaseId" | "setSelectedDatabaseId" | "openCollectionCreator"
 	>;
 }
 
@@ -31,11 +31,11 @@ export function CollectionTopBar({ document: doc, selection }: CollectionTopBarP
 				selection.summaries,
 				selection.selectedDatabaseId,
 				selection.setSelectedDatabaseId,
-				selection.openCreateCollectionDialog,
+				selection.openCollectionCreator,
 			),
 		[
 			t,
-			selection.openCreateCollectionDialog,
+			selection.openCollectionCreator,
 			selection.selectedDatabaseId,
 			selection.setSelectedDatabaseId,
 			selection.summaries,

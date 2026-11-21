@@ -17,11 +17,13 @@ use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::query::{load_database_document, query_database_rows, read_note_markdown, row_by_path};
 use super::store::{
-    default_field_value, default_view, find_database_view, list_summaries, load_store, save_store,
+    default_field_value, default_view, find_database_view, is_supported_view_layout,
+    list_summaries, load_store, save_store, FALLBACK_VIEW_NAME,
 };
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition,
     DatabaseDocument, DatabasePreviewContext, DatabaseRow, DatabaseSchemaField, DatabaseSummary,
+    DatabaseViewDefinition,
 };
 
 fn key(name: &str) -> Value {
@@ -128,9 +130,30 @@ fn validate_status_color(color: &str) -> Result<(), String> {
 fn prune_unsupported_database_view_layouts(database: &mut DatabaseDefinition) {
     database
         .views
-        .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
+        .retain(|view| is_supported_view_layout(&view.layout));
     if database.views.is_empty() {
-        database.views.push(default_view("View 1"));
+        database
+            .views
+            .push(default_view(FALLBACK_VIEW_NAME, "board"));
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct NewDatabaseView {
+    name: String,
+    layout: String,
+}
+
+impl NewDatabaseView {
+    fn into_view(self) -> Result<DatabaseViewDefinition, String> {
+        if !is_supported_view_layout(&self.layout) {
+            return Err("unsupported view layout".to_string());
+        }
+        let name = self.name.trim();
+        if name.is_empty() {
+            return Err("view name is required".to_string());
+        }
+        Ok(default_view(name, &self.layout))
     }
 }
 
@@ -575,6 +598,7 @@ pub async fn databases_create(
     folder: Option<String>,
     source: Option<super::types::DatabaseSource>,
     pinned: Option<bool>,
+    first_view: NewDatabaseView,
 ) -> Result<DatabaseDocument, String> {
     let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
@@ -583,6 +607,7 @@ pub async fn databases_create(
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
         let normalized_name = normalize_database_name(&name)?;
+        let first_view = first_view.into_view()?;
         let source = match source {
             Some(source) => normalize_database_source(&root, source)?,
             None => super::types::DatabaseSource {
@@ -615,7 +640,7 @@ pub async fn databases_create(
                 folder: new_note_folder,
             },
             schema: Vec::new(),
-            views: vec![default_view("View 1")],
+            views: vec![first_view],
             created_at: now.clone(),
             updated_at: now,
         };

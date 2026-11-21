@@ -56,7 +56,7 @@ export function buildCollectionMenuItems(
 	summaries: WorkspaceDatabaseSummary[],
 	selectedDatabaseId: string | null,
 	setSelectedDatabaseId: (id: string) => void,
-	openCreateCollectionDialog: () => void,
+	openCollectionCreator: () => void,
 ): ActionMenuItem[] {
 	const items: ActionMenuItem[] = summaries.map((summary) => ({
 		type: "item",
@@ -76,7 +76,7 @@ export function buildCollectionMenuItems(
 		label: t("collections.newCollection"),
 		key: "new-collection",
 		iconKey: "plus",
-		onClick: openCreateCollectionDialog,
+		onClick: openCollectionCreator,
 	});
 
 	return items;

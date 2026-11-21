@@ -244,14 +244,14 @@
 			"emptyTitle": "Adicione um campo para criar colunas no quadro",
 			"emptyText": "A visualização em quadro agrupa as notas em colunas. Adicione às suas notas um campo de status, prioridade, caixa de seleção, tag ou similar e escolha-o na barra de ferramentas acima.",
 			"openViewSettings": "Abrir configurações da visualização",
-			"newCard": "Nova",
 			"scrollNext": "Mostrar próximas colunas",
 			"laneEmpty": {
 				"archived": "As notas arquivadas ficam aqui",
 				"done": "As notas concluídas ficam aqui",
 				"unassigned": "As notas sem valor aparecem aqui",
 				"default": "Solte notas aqui ou adicione uma abaixo"
-			}
+			},
+			"newNote": "Nova nota"
 		},
 		"changeStatus": "Alterar status",
 		"statusLabel": "Status",
@@ -295,7 +295,22 @@
 			"empty": "Nenhuma nota correspondente"
 		},
 		"newNote": "Nova",
-		"renameHint": "Clique duas vezes para renomear"
+		"renameHint": "Clique duas vezes para renomear",
+		"creator": {
+			"title": "Veja uma pasta como quadro ou tabela",
+			"description": "Uma coleção mostra as notas de uma pasta com suas tags, tarefas e propriedades. Seus arquivos ficam onde estão.",
+			"boardHint": "Agrupar por tag ou status",
+			"tableHint": "Colunas ordenáveis",
+			"folder": "Pasta",
+			"foldersIn": "Pastas em {{space}}",
+			"createBoard": "Criar quadro",
+			"createTable": "Criar tabela",
+			"creating": "Criando…",
+			"cancel": "Cancelar",
+			"noFolders": "Coleções mostram uma pasta. Este espaço ainda não tem pastas.",
+			"newFolder": "Nova pasta",
+			"loadFoldersFailed": "Não foi possível carregar as pastas: {{error}}"
+		}
 	},
 	"tags": {
 		"header": "Tags",

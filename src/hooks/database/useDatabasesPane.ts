@@ -73,9 +73,9 @@ export function useDatabasesPane({
 			summaries: workspace.summaries,
 			selectedDatabaseId: workspace.selectedDatabaseId,
 			setSelectedDatabaseId: workspace.setSelectedDatabaseId,
-			createCollectionOpen: workspace.createCollectionOpen,
-			setCreateCollectionOpen: workspace.setCreateCollectionOpen,
-			openCreateCollectionDialog: workspace.openCreateCollectionDialog,
+			collectionCreatorOpen: workspace.collectionCreatorOpen,
+			setCollectionCreatorOpen: workspace.setCollectionCreatorOpen,
+			openCollectionCreator: workspace.openCollectionCreator,
 		},
 		document: {
 			document: workspace.document,

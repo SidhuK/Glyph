@@ -244,14 +244,14 @@
 			"emptyTitle": "Füge ein Feld hinzu, um Board-Spalten zu erstellen",
 			"emptyText": "Die Board-Ansicht gruppiert Notizen in Spalten. Füge deinen Notizen ein Feld wie Status, Priorität, Checkbox oder Tag hinzu und wähle es dann oben in der Werkzeugleiste aus.",
 			"openViewSettings": "Ansichtseinstellungen öffnen",
-			"newCard": "Neu",
 			"scrollNext": "Nächste Spalten zeigen",
 			"laneEmpty": {
 				"archived": "Archivierte Notizen landen hier",
 				"done": "Erledigte Notizen landen hier",
 				"unassigned": "Notizen ohne Wert erscheinen hier",
 				"default": "Notizen hierher ziehen oder unten eine hinzufügen"
-			}
+			},
+			"newNote": "Neue Notiz"
 		},
 		"changeStatus": "Status ändern",
 		"statusLabel": "Status",
@@ -295,7 +295,22 @@
 			"empty": "Keine passenden Notizen"
 		},
 		"newNote": "Neu",
-		"renameHint": "Zum Umbenennen doppelklicken"
+		"renameHint": "Zum Umbenennen doppelklicken",
+		"creator": {
+			"title": "Einen Ordner als Board oder Tabelle sehen",
+			"description": "Eine Sammlung zeigt die Notizen eines Ordners mit ihren Tags, Aufgaben und Eigenschaften. Deine Dateien bleiben, wo sie sind.",
+			"boardHint": "Nach Tag oder Status gruppieren",
+			"tableHint": "Sortierbare Spalten",
+			"folder": "Ordner",
+			"foldersIn": "Ordner in {{space}}",
+			"createBoard": "Board erstellen",
+			"createTable": "Tabelle erstellen",
+			"creating": "Wird erstellt …",
+			"cancel": "Abbrechen",
+			"noFolders": "Sammlungen zeigen einen Ordner. Dieser Space hat noch keine Ordner.",
+			"newFolder": "Neuer Ordner",
+			"loadFoldersFailed": "Ordner konnten nicht geladen werden: {{error}}"
+		}
 	},
 	"tags": {
 		"header": "Tags",

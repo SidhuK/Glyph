@@ -244,14 +244,14 @@
 			"emptyTitle": "Añade un campo para crear columnas en el tablero",
 			"emptyText": "La vista de tablero agrupa las notas en columnas. Añade a tus notas un campo de estado, prioridad, casilla, etiqueta o similar y luego elígelo en la barra de herramientas de arriba.",
 			"openViewSettings": "Abrir ajustes de la vista",
-			"newCard": "Nueva",
 			"scrollNext": "Mostrar las siguientes columnas",
 			"laneEmpty": {
 				"archived": "Aquí van las notas archivadas",
 				"done": "Aquí llegan las notas terminadas",
 				"unassigned": "Aquí aparecen las notas sin valor",
 				"default": "Suelta notas aquí o añade una abajo"
-			}
+			},
+			"newNote": "Nueva nota"
 		},
 		"changeStatus": "Cambiar estado",
 		"statusLabel": "Estado",
@@ -295,7 +295,22 @@
 			"empty": "No hay notas que coincidan"
 		},
 		"newNote": "Nueva",
-		"renameHint": "Haz doble clic para cambiar el nombre"
+		"renameHint": "Haz doble clic para cambiar el nombre",
+		"creator": {
+			"title": "Ver una carpeta como tablero o tabla",
+			"description": "Una colección muestra las notas de una carpeta con sus etiquetas, tareas y propiedades. Tus archivos se quedan donde están.",
+			"boardHint": "Agrupar por etiqueta o estado",
+			"tableHint": "Columnas ordenables",
+			"folder": "Carpeta",
+			"foldersIn": "Carpetas en {{space}}",
+			"createBoard": "Crear tablero",
+			"createTable": "Crear tabla",
+			"creating": "Creando…",
+			"cancel": "Cancelar",
+			"noFolders": "Las colecciones muestran una carpeta. Este espacio aún no tiene carpetas.",
+			"newFolder": "Nueva carpeta",
+			"loadFoldersFailed": "No se pudieron cargar las carpetas: {{error}}"
+		}
 	},
 	"tags": {
 		"header": "Etiquetas",
