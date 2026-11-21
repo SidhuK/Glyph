@@ -51,25 +51,30 @@
 	margin: 24px 0 20px;
 }
 
-.collectionLayoutTile {
+button.collectionLayoutTile {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
+	justify-content: flex-start;
+	gap: 0;
+	height: auto;
 	padding: 10px;
 	border: 0;
 	border-radius: var(--radius-lg);
 	background: var(--bg-primary);
 	box-shadow: 0 0 0 1px var(--border-default);
 	text-align: left;
+	white-space: normal;
 	cursor: pointer;
 	transition: box-shadow 140ms ease;
 }
 
-.collectionLayoutTile:hover {
+button.collectionLayoutTile:is(:hover, :active) {
+	background: var(--bg-primary);
 	box-shadow: 0 0 0 1px var(--border-strong);
 }
 
-.collectionLayoutTile[aria-checked="true"] {
+button.collectionLayoutTile[aria-checked="true"] {
 	box-shadow:
 		0 0 0 1.5px var(--interactive-accent),
 		0 0 0 4px var(--state-selected);
@@ -146,8 +151,9 @@
 	color: var(--text-secondary);
 }
 
-.collectionCreatorFolderTrigger {
+button.collectionCreatorFolderTrigger {
 	display: inline-flex;
+	justify-content: flex-start;
 	align-items: center;
 	gap: 8px;
 	width: 230px;
@@ -162,11 +168,12 @@
 	cursor: default;
 }
 
-.collectionCreatorFolderTrigger:is(:hover, [data-popup-open]) {
+button.collectionCreatorFolderTrigger:is(:hover, :active, [data-popup-open]) {
+	background: var(--bg-primary);
 	box-shadow: inset 0 0 0 1px var(--border-strong);
 }
 
-.collectionCreatorFolderTrigger:focus-visible {
+button.collectionCreatorFolderTrigger:focus-visible {
 	outline: none;
 	box-shadow:
 		inset 0 0 0 1px var(--interactive-accent),
@@ -204,4 +211,39 @@
 .collectionCreatorFolderMenuCount {
 	font-variant-numeric: tabular-nums;
 	color: var(--text-tertiary);
+}
+
+button.collectionCreatorCta {
+	height: 32px;
+	padding: 0 12px;
+	border-radius: var(--radius-md);
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	font-size: var(--text-sm);
+}
+
+button.collectionCreatorCta:hover:not(:disabled) {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+button.collectionCreatorCta:disabled {
+	background: var(--bg-tertiary);
+	color: var(--text-tertiary);
+	opacity: 1;
+}
+
+button.collectionCreatorSecondary {
+	height: 32px;
+	padding: 0 12px;
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	box-shadow: inset 0 0 0 1px var(--border-default);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+}
+
+button.collectionCreatorSecondary:hover:not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }

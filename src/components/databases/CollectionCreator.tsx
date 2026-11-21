@@ -116,7 +116,7 @@ export function CollectionCreator({
 						spaceName={spacePath ? spaceDisplayName(spacePath) : ""}
 						disabled={busy}
 					/>
-					<Button type="submit" size="sm" disabled={busy}>
+					<Button type="submit" size="sm" className="collectionCreatorCta" disabled={busy}>
 						{createCollection.isPending
 							? t("collections.creator.creating")
 							: layout === "board"
@@ -136,6 +136,7 @@ export function CollectionCreator({
 						type="button"
 						size="sm"
 						variant="outline"
+						className="collectionCreatorSecondary"
 						onClick={() => createFolder.mutate()}
 						disabled={busy}
 					>
