@@ -120,6 +120,9 @@ function invalidateSpaceWide(current: SpaceChangeHost, tree: TreeRefresh): void 
 	invalidateCalendarPrefetch();
 	invalidateAllDocsPrefetch();
 	invalidateDatabasePrefetch();
+	void queryClient.invalidateQueries({
+		queryKey: [...navigationQueryKeys.all, "collection-folders"],
+	});
 	void queryClient.invalidateQueries({ queryKey: ["unlinked-mentions"] });
 }
 

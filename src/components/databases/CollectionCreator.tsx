@@ -32,7 +32,6 @@ interface CollectionCreatorProps {
 	onCancel: (() => void) | null;
 }
 
-/** The Collections empty state: pick a layout and a folder, then create. */
 export function CollectionCreator({
 	summaries,
 	onCreated,
@@ -123,11 +122,6 @@ export function CollectionCreator({
 								? t("collections.creator.createBoard")
 								: t("collections.creator.createTable")}
 					</Button>
-					{onCancel ? (
-						<Button type="button" size="sm" variant="ghost" onClick={onCancel} disabled={busy}>
-							{t("collections.creator.cancel")}
-						</Button>
-					) : null}
 				</form>
 			) : foldersQuery.isSuccess ? (
 				<div className="collectionCreatorActions">
@@ -143,6 +137,18 @@ export function CollectionCreator({
 						{t("collections.creator.newFolder")}
 					</Button>
 				</div>
+			) : null}
+			{onCancel ? (
+				<Button
+					type="button"
+					size="sm"
+					variant="ghost"
+					className="collectionCreatorCancel"
+					onClick={onCancel}
+					disabled={busy}
+				>
+					{t("collections.creator.cancel")}
+				</Button>
 			) : null}
 		</div>
 	);

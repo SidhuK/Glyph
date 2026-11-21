@@ -176,7 +176,14 @@ function DatabasesPaneContent({
 						summaries={selection.summaries}
 						onCreated={(created) => void doc.selectCollection(created)}
 						onError={ui.setError}
-						onCancel={activeCollection ? () => selection.setCollectionCreatorOpen(false) : null}
+						onCancel={
+							activeCollection
+								? () => {
+										ui.clearError();
+										selection.setCollectionCreatorOpen(false);
+									}
+								: null
+						}
 					/>
 				</div>
 			) : null}

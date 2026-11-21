@@ -243,3 +243,11 @@ button.collectionCreatorSecondary:hover:not(:disabled) {
 	background: var(--bg-hover);
 	color: var(--text-primary);
 }
+
+button.collectionCreatorCancel {
+	height: 32px;
+	margin-top: 8px;
+	padding: 0 12px;
+	border-radius: var(--radius-md);
+	font-size: var(--text-sm);
+}

@@ -150,9 +150,6 @@
 	padding: 8px 16px 0;
 }
 
-/* The app's page-title recipe (--text-xl/600, as on All notes and Settings). The heading and
-   its rename input share padding and border that hang left so the text starts on the 16px page
-   column with the tabs, and nothing shifts when renaming starts. */
 .databasesCollectionTitle {
 	box-sizing: border-box;
 	display: inline-block;

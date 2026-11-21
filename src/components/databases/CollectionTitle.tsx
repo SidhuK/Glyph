@@ -14,12 +14,17 @@ function titleInputWidth(name: string): string {
 	return `${Math.min(Math.max(name.trim().length + 1, 10), 36)}ch`;
 }
 
-/** The collection's page title above its view tabs; double-click it to rename. */
 export function CollectionTitle({ document: doc }: CollectionTitleProps) {
 	const { t } = useTranslation("shell");
 	const [renaming, setRenaming] = useState(false);
 	const skipNextBlurCommitRef = useRef(false);
 	const savedName = doc.document?.database.name ?? doc.nameDraft;
+
+	const startRename = () => {
+		skipNextBlurCommitRef.current = false;
+		doc.setNameDraft(savedName);
+		setRenaming(true);
+	};
 
 	const finishRename = (commit: boolean) => {
 		skipNextBlurCommitRef.current = true;
@@ -37,10 +42,12 @@ export function CollectionTitle({ document: doc }: CollectionTitleProps) {
 				<h1
 					className="databasesCollectionTitle"
 					title={t("collections.renameHint")}
-					onDoubleClick={() => {
-						skipNextBlurCommitRef.current = false;
-						doc.setNameDraft(savedName);
-						setRenaming(true);
+					tabIndex={0}
+					onDoubleClick={startRename}
+					onKeyDown={(event) => {
+						if (event.key !== "Enter") return;
+						event.preventDefault();
+						startRename();
 					}}
 				>
 					{savedName}

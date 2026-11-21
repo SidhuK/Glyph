@@ -120,9 +120,7 @@ export function useCollectionWorkspace({
 			setSelectedDatabaseIdState(databasesOpenRequest.databaseId);
 			setSelectedViewIdState(null);
 		}
-		if (databasesOpenRequest.openCreator) {
-			setCollectionCreatorOpen(true);
-		}
+		setCollectionCreatorOpen(databasesOpenRequest.openCreator);
 	} else if (summariesReady && selectedDatabaseId !== selectedDatabaseIdState) {
 		setSelectedDatabaseIdState(selectedDatabaseId);
 		setSelectedViewIdState(null);
