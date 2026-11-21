@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LibraryIcon } from "@hugeicons/core-free-icons";
+import { Database01Icon } from "@hugeicons/core-free-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -90,7 +90,7 @@ export function CollectionCreator({
 	return (
 		<div className="collectionCreator">
 			<div className="collectionCreatorIcon" aria-hidden="true">
-				<HugeiconsIcon icon={LibraryIcon} size="var(--icon-lg)" />
+				<HugeiconsIcon icon={Database01Icon} size="var(--icon-3xl)" />
 			</div>
 			<h2 className="collectionCreatorTitle">{t("collections.creator.title")}</h2>
 			<p className="collectionCreatorText">{t("collections.creator.description")}</p>
