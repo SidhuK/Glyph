@@ -100,11 +100,12 @@ export function AIPanel(props: AIPanelProps) {
 		};
 		const onAttach = (event: Event) => {
 			const detail = (event as CustomEvent<AiContextAttachDetail>).detail;
+			if (detail?.prompt && props.surface !== "sidebar") return;
 			if (detail?.selection) {
 				consumePendingAiSelectionContext();
 				attachSelection(detail.selection);
 			}
-			if (detail?.prompt && props.surface === "sidebar") {
+			if (detail?.prompt) {
 				consumePendingAiPrompt();
 				draftPrompt(detail.prompt);
 			}
