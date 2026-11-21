@@ -12,6 +12,7 @@ import {
 	Tag01Icon,
 	UserIcon,
 } from "@hugeicons/core-free-icons";
+import { Fragment, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	formatShortcutForPlatform,
@@ -52,25 +53,77 @@ function ResultIcon({ result }: { result: PaletteResult }) {
 	return <HugeiconsIcon icon={resultIconFor(result)} size="var(--icon-lg)" />;
 }
 
-function Shortcut({ result }: { result: PaletteResult }) {
-	const shortcut = result.command?.shortcut;
-	if (!shortcut) return null;
+function Keycaps({ keys, label }: { keys: readonly string[]; label: string }) {
 	return (
-		<span className="commandPaletteShortcut" aria-label={formatShortcutForPlatform(shortcut)}>
-			<kbd>
-				<span className="commandPaletteShortcutCombo">
-					{formatShortcutPartsForPlatform(shortcut).map((part) => (
-						<span key={`${result.id}-${part}`} className="commandPaletteShortcutPart">
-							{part}
-						</span>
-					))}
-				</span>
-			</kbd>
+		<span className="commandPaletteShortcut" aria-label={label}>
+			{keys.map((key, index) => (
+				<kbd key={`${index}-${key}`} className="commandPaletteKeycap">
+					{key}
+				</kbd>
+			))}
 		</span>
 	);
 }
 
-export function CommandListRowContent({ result }: { result: PaletteResult }) {
+function Shortcut({ result }: { result: PaletteResult }) {
+	if (result.actionKeys) {
+		return <Keycaps keys={result.actionKeys} label={result.actionKeys.join("")} />;
+	}
+	const shortcut = result.command?.shortcut;
+	if (!shortcut) return null;
+	return (
+		<Keycaps
+			keys={formatShortcutPartsForPlatform(shortcut)}
+			label={formatShortcutForPlatform(shortcut)}
+		/>
+	);
+}
+
+const WORD_BOUNDARY = /[\s\-_/.(]/;
+
+function tokenMatchStart(lowerLabel: string, token: string) {
+	const first = lowerLabel.indexOf(token);
+	for (let start = first; start >= 0; start = lowerLabel.indexOf(token, start + 1)) {
+		if (start === 0 || WORD_BOUNDARY.test(lowerLabel[start - 1] ?? "")) return start;
+	}
+	return first;
+}
+
+function labelMatchRanges(label: string, query: string) {
+	const lowerLabel = label.toLowerCase();
+	if (lowerLabel.length !== label.length) return [];
+	const ranges = query
+		.toLowerCase()
+		.split(/\s+/)
+		.filter(Boolean)
+		.flatMap((token) => {
+			const start = tokenMatchStart(lowerLabel, token);
+			return start >= 0 ? [{ start, end: start + token.length }] : [];
+		})
+		.sort((a, b) => a.start - b.start);
+	return ranges.reduce<{ start: number; end: number }[]>((merged, range) => {
+		const last = merged[merged.length - 1];
+		if (last && range.start <= last.end) last.end = Math.max(last.end, range.end);
+		else merged.push({ ...range });
+		return merged;
+	}, []);
+}
+
+function MatchedLabel({ label, query }: { label: string; query: string }) {
+	const ranges = labelMatchRanges(label, query);
+	if (!ranges.length) return label;
+	let cursor = 0;
+	const parts: ReactNode[] = [];
+	for (const { start, end } of ranges) {
+		if (start > cursor) parts.push(<Fragment key={cursor}>{label.slice(cursor, start)}</Fragment>);
+		parts.push(<mark key={start}>{label.slice(start, end)}</mark>);
+		cursor = end;
+	}
+	if (cursor < label.length) parts.push(<Fragment key={cursor}>{label.slice(cursor)}</Fragment>);
+	return parts;
+}
+
+export function CommandListRowContent({ result, query }: { result: PaletteResult; query: string }) {
 	const { t } = useTranslation("shell");
 	return (
 		<>
@@ -81,7 +134,13 @@ export function CommandListRowContent({ result }: { result: PaletteResult }) {
 				<span className="commandPaletteUniversalContent">
 					<span className="commandPaletteResultHead">
 						<span className="commandPaletteResultLine">
-							<span className="commandPaletteResultTitle">{result.label}</span>
+							<span className="commandPaletteResultTitle">
+								{result.kind === "action" ? (
+									result.label
+								) : (
+									<MatchedLabel label={result.label} query={query} />
+								)}
+							</span>
 							{result.description ? (
 								<>
 									<LineSeparator />

@@ -446,6 +446,7 @@
 			"clear": "Borrar",
 			"showNotes": "Ver notas",
 			"create": "Crear",
+			"askAi": "Preguntar a la IA",
 			"search": "Buscar",
 			"allResults": "Todos los resultados",
 			"choose": "Elegir",
@@ -467,7 +468,9 @@
 			"person": "Personas",
 			"database": "Colecciones y bases de datos",
 			"template": "Plantillas",
-			"recent": "Recientes"
+			"recent": "Recientes",
+			"suggested": "Sugerencias",
+			"action": "Acciones"
 		},
 		"lineNumber": "L{{line}}",
 		"openTab": "Pestaña abierta",
@@ -479,10 +482,11 @@
 		"editShortcut": "Editar en Ajustes › Atajos",
 		"removeScope": "Quitar ámbito",
 		"searchFailed": "La búsqueda falló. Revisa la consulta e inténtalo de nuevo.",
-		"noResultsHint": "Ninguna nota, comando o ajuste coincide. Prueba con menos letras o empieza con > para comandos.",
+		"noResultsFor": "Ninguna nota, carpeta o comando coincide con «{{query}}».",
 		"noScopedResults": "Nada coincide en {{scope}}.",
 		"createNote": "Crear nota «{{title}}»",
 		"searchNoteText": "Buscar «{{query}}» en el texto de las notas",
+		"askAi": "Preguntar a la IA sobre «{{query}}»",
 		"scopePlaceholder": {
 			"commands": "Buscar comandos",
 			"settings": "Buscar ajustes",

@@ -160,11 +160,9 @@ svg.glyphMenuItemIcon {
 	background: var(--bg-hover);
 }
 
-/* The cursor marks the row ↩ opens, so it carries the same on-state fill as Settings and
-   the sidebar rather than the faint hover wash. */
 .commandPaletteHighlight {
 	border-radius: var(--card-radius);
-	background: var(--state-on);
+	background: color-mix(in srgb, var(--accent-color) 14%, transparent);
 }
 
 /* Gliding highlight (components/ui/shadcn/highlight.tsx): these rules only anchor the

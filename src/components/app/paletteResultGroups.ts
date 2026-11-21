@@ -1,3 +1,4 @@
+import { KEY_GLYPHS, formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { SHORTCUT_CATEGORIES } from "../../lib/shortcuts/registry";
 import { SETTINGS_TABS } from "../settings/settingsConfig";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
@@ -126,26 +127,44 @@ const NOTELESS_SCOPES = new Set<ParsedPaletteQuery["scope"]>([
 	"templates",
 ]);
 
-/** Next steps when nothing matched: create the note, or widen a scoped query to note text. */
-export function noResultActions(
-	parsed: ParsedPaletteQuery,
-	spacePath: string | null,
-	t: Translate,
-): PaletteResult[] {
+interface PaletteActionsInput {
+	parsed: ParsedPaletteQuery;
+	spacePath: string | null;
+	canAskAi: boolean;
+	hasMatches: boolean;
+	t: Translate;
+}
+
+const CREATE_NOTE_KEYS = formatShortcutPartsForPlatform({ key: "Enter", meta: true });
+
+export function paletteActions({
+	parsed,
+	spacePath,
+	canAskAi,
+	hasMatches,
+	t,
+}: PaletteActionsInput): PaletteResult[] {
 	const text = parsed.text.trim();
 	if (!text || !spacePath) return [];
 	const base = { kind: "action" as const, category: "", keywords: [], target: text };
 	if (parsed.scope === "all") {
-		return [
-			{
-				...base,
-				id: "action:create-note",
-				label: t("commandPalette.createNote", { title: text }),
-				actionId: "create-note",
-			},
-		];
+		const createNote: PaletteResult = {
+			...base,
+			id: "action:create-note",
+			label: t("commandPalette.createNote", { title: text }),
+			actionId: "create-note",
+			actionKeys: hasMatches ? CREATE_NOTE_KEYS : [KEY_GLYPHS.Enter],
+		};
+		const askAi: PaletteResult = {
+			...base,
+			id: "action:ask-ai",
+			label: t("commandPalette.askAi", { query: text }),
+			actionId: "ask-ai",
+			actionKeys: [KEY_GLYPHS.Tab],
+		};
+		return canAskAi ? [createNote, askAi] : [createNote];
 	}
-	if (NOTELESS_SCOPES.has(parsed.scope)) {
+	if (!hasMatches && NOTELESS_SCOPES.has(parsed.scope)) {
 		return [
 			{
 				...base,

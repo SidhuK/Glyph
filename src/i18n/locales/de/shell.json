@@ -446,6 +446,7 @@
 			"clear": "Leeren",
 			"showNotes": "Notizen zeigen",
 			"create": "Erstellen",
+			"askAi": "KI fragen",
 			"search": "Suchen",
 			"allResults": "Alle Ergebnisse",
 			"choose": "Auswählen",
@@ -467,7 +468,9 @@
 			"person": "Personen",
 			"database": "Sammlungen und Datenbanken",
 			"template": "Vorlagen",
-			"recent": "Zuletzt"
+			"recent": "Zuletzt",
+			"suggested": "Vorschläge",
+			"action": "Aktionen"
 		},
 		"lineNumber": "Z. {{line}}",
 		"openTab": "Offener Tab",
@@ -479,10 +482,11 @@
 		"editShortcut": "In Einstellungen › Kurzbefehle bearbeiten",
 		"removeScope": "Bereich entfernen",
 		"searchFailed": "Die Suche ist fehlgeschlagen. Prüfe die Anfrage und versuche es erneut.",
-		"noResultsHint": "Keine Notizen, Befehle oder Einstellungen gefunden. Versuche weniger Buchstaben oder beginne mit > für Befehle.",
+		"noResultsFor": "Keine Notizen, Ordner oder Befehle passen zu „{{query}}“.",
 		"noScopedResults": "In {{scope}} passt nichts.",
 		"createNote": "Notiz „{{title}}“ erstellen",
 		"searchNoteText": "Notiztext nach „{{query}}“ durchsuchen",
+		"askAi": "KI zu „{{query}}“ fragen",
 		"scopePlaceholder": {
 			"commands": "Befehle durchsuchen",
 			"settings": "Einstellungen durchsuchen",

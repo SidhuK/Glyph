@@ -74,13 +74,14 @@ export interface PaletteResult {
 	settingControl?: PaletteSettingControl;
 	/** Group header; defaults to the kind's own label. */
 	group?: string;
-	/** What a no-results row does. */
-	actionId?: "create-note" | "search-text" | "create-folder";
+	/** What an action row does. */
+	actionId?: "create-note" | "ask-ai" | "search-text" | "create-folder";
+	actionKeys?: readonly string[];
 }
 
 const BROAD_GROUP_LIMIT = 8;
-/** With no query the command palette shows a short list of core commands and recent notes. */
-const EMPTY_QUERY_GROUP_LIMIT = 5;
+/** With no query the command palette shows a short list of recent notes and core commands. */
+const EMPTY_QUERY_GROUP_LIMIT = 3;
 /** Content rows are one per occurrence, so this group is a match list, not a
  * note list, and needs room to show several hits from the same note. */
 const CONTENT_GROUP_LIMIT = 50;
@@ -116,14 +117,13 @@ interface BuildPaletteResultsInput {
  * Rows show the note's leaf folder, with the full path as its tooltip. Folder notes live in a
  * folder of the same name; repeating it as the last segment is noise.
  */
-function noteFolder(path: string, title: string, noFolderLabel: string) {
+function noteFolder(path: string, title: string) {
 	const folder = displayFolderFromPath(path);
 	const repeated = ` / ${title}`;
 	const full =
 		folder === title ? "" : folder.endsWith(repeated) ? folder.slice(0, -repeated.length) : folder;
 	return {
-		// A folder note (Projects/Projects.md) has a folder, just not one worth repeating.
-		description: full ? (full.split(" / ").pop() ?? "") : folder ? "" : noFolderLabel,
+		description: full ? (full.split(" / ").pop() ?? "") : "",
 		descriptionTooltip: full || undefined,
 	};
 }
@@ -168,6 +168,7 @@ export function buildPaletteResults({
 	sources,
 }: BuildPaletteResultsInput): PaletteResult[] {
 	const parsedQuery = parsePaletteQuery(query);
+	const emptyQuery = !query.trim();
 	const candidates: PaletteResult[] = [];
 	for (const [index, command] of sources.commands.entries()) {
 		if (command.enabled === false) continue;
@@ -179,6 +180,7 @@ export function buildPaletteResults({
 			keywords: [command.id, ...(command.searchTerms ?? [])],
 			defaultVisible: !command.hideWhenQueryEmpty && index < BROAD_GROUP_LIMIT,
 			rankBoost: mode === "commands" ? 20 : 0,
+			group: emptyQuery ? t("commandPalette.groups.suggested") : undefined,
 			command,
 		});
 	}
@@ -224,7 +226,7 @@ export function buildPaletteResults({
 			id: `open-tab:${tab.id}`,
 			kind: "open-tab",
 			label,
-			...noteFolder(tab.target, label, t("folio.noFolder")),
+			...noteFolder(tab.target, label),
 			category: t("commandPalette.groups.open-tab"),
 			keywords: [tab.target],
 			defaultVisible: mode === "search",
@@ -289,7 +291,7 @@ export function buildPaletteResults({
 					: `${kind}:${result.id}`,
 			kind,
 			label,
-			...noteFolder(result.id, label, t("folio.noFolder")),
+			...noteFolder(result.id, label),
 			trailing:
 				extraMatches > 0
 					? t("commandPalette.moreMatches", { count: extraMatches })
@@ -384,7 +386,6 @@ export function buildPaletteResults({
 		.map((result) => ({ result, score: rankPaletteResult(result, parsedQuery) }))
 		.filter((item): item is RankedResult => item.score !== null);
 	const scoped = parsedQuery.scope !== "all";
-	const emptyQuery = !query.trim();
 	// With no query, keep source order: commands as registered, recent notes by recency.
 	const compareRanked = (a: RankedResult, b: RankedResult) =>
 		b.score - a.score || (emptyQuery ? 0 : a.result.label.localeCompare(b.result.label));
@@ -430,7 +431,9 @@ export function buildPaletteResults({
 						(kind) => kind !== "open-tab" && kind !== "note" && kind !== "content",
 					),
 				]
-			: PALETTE_GROUP_ORDER;
+			: emptyQuery
+				? ["note" as const, ...PALETTE_GROUP_ORDER.filter((kind) => kind !== "note")]
+				: PALETTE_GROUP_ORDER;
 	return groupOrder.flatMap((kind) => {
 		const group = (byKind.get(kind) ?? []).sort(compareRanked);
 		const split = splitScopedGroup(group, parsedQuery.scope, language, t);

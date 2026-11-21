@@ -819,6 +819,14 @@ export function AppShell() {
 		[aiEnabled, setAiPanelOpen],
 	);
 
+	const askAiAbout = useCallback(
+		(prompt: string) => {
+			setAiPanelOpen(true);
+			dispatchAiContextAttach({ prompt });
+		},
+		[setAiPanelOpen],
+	);
+
 	const attachCurrentNoteToAi = useCallback(async () => {
 		if (!activeMarkdownTabPath) {
 			setError("No open markdown note to attach to AI.");
@@ -1434,6 +1442,7 @@ export function AppShell() {
 						initialQuery={paletteInitialQuery}
 						commands={commands}
 						onClose={closePalette}
+						onAskAi={aiEnabled && spacePath ? askAiAbout : undefined}
 						spacePath={spacePath}
 						tabs={tabs}
 						onActivateTab={setActiveTabId}

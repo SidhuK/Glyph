@@ -9,10 +9,10 @@ interface CommandListProps {
 	id: string;
 	results: PaletteResult[];
 	selectedIndex: number;
-	onSetSelectedIndex: (index: number) => void;
 	onSelectResult: (index: number) => void;
-	/** Explains an empty search; shown under any no-results action rows. */
+	/** Explains an empty search; shown above the action rows when nothing else matched. */
 	emptyHint: string;
+	query?: string;
 }
 
 /** DOM id of a result row, for the combobox's aria-activedescendant. */
@@ -43,9 +43,9 @@ export function CommandList({
 	id,
 	results,
 	selectedIndex,
-	onSetSelectedIndex,
 	onSelectResult,
 	emptyHint,
+	query = "",
 }: CommandListProps) {
 	const { t } = useTranslation("shell");
 	const scrollSelectedIntoView = useCallback(
@@ -60,23 +60,22 @@ export function CommandList({
 		);
 	}
 
+	const onlyActions = results.every((result) => result.kind === "action");
+
 	return (
 		<div id={id} role="listbox" aria-label={t("commandPalette.resultsLabel")}>
 			<Highlight value={results[selectedIndex]?.id ?? null} className="commandPaletteHighlight">
 				{groupResults(results).map(({ key, kind, label, rows }, groupIndex) => {
 					// buildPaletteResults emits each group contiguously.
 					const labelId = `${id}-group-${groupIndex}`;
-					// No-results actions stand alone, with the hint below instead of a header.
-					const isAction = kind === "action";
+					const showsEmptyHint = kind === "action" && onlyActions;
 					return (
-						<div
-							key={key}
-							role="group"
-							aria-labelledby={isAction ? undefined : labelId}
-							aria-label={isAction ? emptyHint : undefined}
-							className="commandPaletteGroup"
-						>
-							{isAction ? null : (
+						<div key={key} role="group" aria-labelledby={labelId} className="commandPaletteGroup">
+							{showsEmptyHint ? (
+								<p id={labelId} className="commandPaletteEmptyHint">
+									{emptyHint}
+								</p>
+							) : (
 								<div id={labelId} className="commandPaletteGroupLabel">
 									{label ?? t(`commandPalette.groups.${kind}`)}
 								</div>
@@ -97,22 +96,16 @@ export function CommandList({
 											data-kind={result.kind}
 											data-control={result.settingControl}
 											disabled={result.enabled === false}
-											// Pointer movement only: rows scrolled under a resting pointer by ↑/↓
-											// must not take the selection back.
-											onPointerMove={() => {
-												if (!selected) onSetSelectedIndex(index);
-											}}
 											onMouseDown={(event) => {
 												event.preventDefault();
 											}}
 											onClick={() => onSelectResult(index)}
 										>
-											<CommandListRowContent result={result} />
+											<CommandListRowContent result={result} query={query} />
 										</button>
 									</HighlightItem>
 								);
 							})}
-							{isAction ? <p className="commandPaletteEmptyHint">{emptyHint}</p> : null}
 						</div>
 					);
 				})}

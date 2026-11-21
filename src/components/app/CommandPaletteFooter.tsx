@@ -13,6 +13,7 @@ interface FooterHint {
 		| "run"
 		| "showNotes"
 		| "create"
+		| "askAi"
 		| "search"
 		| "allResults"
 		| "moveHere"
@@ -32,7 +33,6 @@ interface FooterHint {
 const SCOPE_HINTS = [
 	{ prefix: ">", group: "command" },
 	{ prefix: "#", group: "tag" },
-	{ prefix: "@", group: "person" },
 ] as const;
 
 const NAVIGATE: FooterHint = {
@@ -56,7 +56,11 @@ function enterLabel(result: PaletteResult | undefined, openLabel: OpenLabel): Fo
 		case "person":
 			return "showNotes";
 		case "action":
-			return result.actionId === "create-note" ? "create" : "search";
+			return result.actionId === "create-note"
+				? "create"
+				: result.actionId === "ask-ai"
+					? "askAi"
+					: "search";
 		case "destination":
 			return result.actionId === "create-folder" ? "create" : "moveHere";
 		default:

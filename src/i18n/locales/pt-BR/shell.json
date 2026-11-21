@@ -446,6 +446,7 @@
 			"clear": "Limpar",
 			"showNotes": "Mostrar notas",
 			"create": "Criar",
+			"askAi": "Perguntar à IA",
 			"search": "Pesquisar",
 			"allResults": "Todos os resultados",
 			"choose": "Escolher",
@@ -467,7 +468,9 @@
 			"person": "Pessoas",
 			"database": "Coleções e bancos de dados",
 			"template": "Modelos",
-			"recent": "Recentes"
+			"recent": "Recentes",
+			"suggested": "Sugestões",
+			"action": "Ações"
 		},
 		"lineNumber": "L{{line}}",
 		"openTab": "Aba aberta",
@@ -479,10 +482,11 @@
 		"editShortcut": "Editar em Configurações › Atalhos",
 		"removeScope": "Remover escopo",
 		"searchFailed": "A pesquisa falhou. Verifique a consulta e tente novamente.",
-		"noResultsHint": "Nenhuma nota, comando ou configuração corresponde. Tente menos letras ou comece com > para comandos.",
+		"noResultsFor": "Nenhuma nota, pasta ou comando corresponde a “{{query}}”.",
 		"noScopedResults": "Nada corresponde em {{scope}}.",
 		"createNote": "Criar nota “{{title}}”",
 		"searchNoteText": "Pesquisar “{{query}}” no texto das notas",
+		"askAi": "Perguntar à IA sobre “{{query}}”",
 		"scopePlaceholder": {
 			"commands": "Pesquisar comandos",
 			"settings": "Pesquisar configurações",
