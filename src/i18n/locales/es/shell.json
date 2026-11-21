@@ -294,7 +294,8 @@
 		"table": {
 			"empty": "No hay notas que coincidan"
 		},
-		"newNote": "Nueva"
+		"newNote": "Nueva",
+		"renameHint": "Haz doble clic para cambiar el nombre"
 	},
 	"tags": {
 		"header": "Etiquetas",

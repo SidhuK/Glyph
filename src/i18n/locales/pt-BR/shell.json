@@ -294,7 +294,8 @@
 		"table": {
 			"empty": "Nenhuma nota correspondente"
 		},
-		"newNote": "Nova"
+		"newNote": "Nova",
+		"renameHint": "Clique duas vezes para renomear"
 	},
 	"tags": {
 		"header": "Tags",

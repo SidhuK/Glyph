@@ -150,9 +150,10 @@
 	padding: 8px 16px 0;
 }
 
-/* The app's page-title recipe (--text-xl/600, as on All notes and Settings). The input's
-   padding and border hang left so its text starts on the 16px page column with the tabs. */
-.databasesCollectionTitleInput {
+/* The app's page-title recipe (--text-xl/600, as on All notes and Settings). The heading and
+   its rename input share padding and border that hang left so the text starts on the 16px page
+   column with the tabs, and nothing shifts when renaming starts. */
+.databasesCollectionTitle {
 	box-sizing: border-box;
 	display: inline-block;
 	width: auto;
@@ -175,12 +176,16 @@
 		border-color 140ms ease;
 }
 
-.databasesCollectionTitleInput:hover {
-	background: var(--bg-hover);
+h1.databasesCollectionTitle {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: default;
+	user-select: none;
 }
 
-.databasesCollectionTitleInput:focus,
-.databasesCollectionTitleInput:focus-visible {
+.databasesCollectionTitle:focus,
+.databasesCollectionTitle:focus-visible {
 	background: var(--bg-primary);
 	border-color: var(--border-focus);
 	box-shadow: none;

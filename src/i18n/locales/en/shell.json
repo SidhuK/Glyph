@@ -294,7 +294,8 @@
 		"table": {
 			"empty": "No matching notes"
 		},
-		"newNote": "New"
+		"newNote": "New",
+		"renameHint": "Double-click to rename"
 	},
 	"tags": {
 		"header": "Tags",

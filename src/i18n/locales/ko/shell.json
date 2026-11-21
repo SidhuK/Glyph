@@ -293,7 +293,8 @@
 		"table": {
 			"empty": "일치하는 노트가 없습니다"
 		},
-		"newNote": "새로 만들기"
+		"newNote": "새로 만들기",
+		"renameHint": "이름을 바꾸려면 두 번 클릭하세요"
 	},
 	"tags": {
 		"header": "태그",

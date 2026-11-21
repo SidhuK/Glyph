@@ -298,7 +298,8 @@
 		"table": {
 			"empty": "Brak pasujących notatek"
 		},
-		"newNote": "Nowa"
+		"newNote": "Nowa",
+		"renameHint": "Kliknij dwukrotnie, aby zmienić nazwę"
 	},
 	"tags": {
 		"header": "Tagi",

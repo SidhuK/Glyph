@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { UseDatabasesPaneReturn } from "../../hooks/database/useDatabasesPane";
 import { Input } from "../ui/shadcn/input";
@@ -6,38 +6,72 @@ import { Input } from "../ui/shadcn/input";
 interface CollectionTitleProps {
 	document: Pick<
 		UseDatabasesPaneReturn["document"],
-		"nameDraft" | "setNameDraft" | "commitDatabaseRename"
+		"document" | "nameDraft" | "setNameDraft" | "commitDatabaseRename"
 	>;
 }
 
-/** The collection's page title above its view tabs, renamed in place like a note title. */
+function titleInputWidth(name: string): string {
+	return `${Math.min(Math.max(name.trim().length + 1, 10), 36)}ch`;
+}
+
+/** The collection's page title above its view tabs; double-click it to rename. */
 export function CollectionTitle({ document: doc }: CollectionTitleProps) {
 	const { t } = useTranslation("shell");
+	const [renaming, setRenaming] = useState(false);
 	const skipNextBlurCommitRef = useRef(false);
+	const savedName = doc.document?.database.name ?? doc.nameDraft;
+
+	const finishRename = (commit: boolean) => {
+		skipNextBlurCommitRef.current = true;
+		if (commit) {
+			doc.commitDatabaseRename();
+		} else {
+			doc.setNameDraft(savedName);
+		}
+		setRenaming(false);
+	};
+
+	if (!renaming) {
+		return (
+			<div className="databasesTitleRow">
+				<h1
+					className="databasesCollectionTitle"
+					title={t("collections.renameHint")}
+					onDoubleClick={() => {
+						skipNextBlurCommitRef.current = false;
+						doc.setNameDraft(savedName);
+						setRenaming(true);
+					}}
+				>
+					{savedName}
+				</h1>
+			</div>
+		);
+	}
 
 	return (
 		<div className="databasesTitleRow">
 			<Input
+				autoFocus
 				value={doc.nameDraft}
-				className="plainTextInput databasesCollectionTitleInput"
+				className="plainTextInput databasesCollectionTitle"
 				aria-label={t("collections.nameLabel")}
-				style={{
-					width: `${Math.min(Math.max(doc.nameDraft.trim().length + 1, 10), 36)}ch`,
-				}}
+				style={{ width: titleInputWidth(doc.nameDraft) }}
+				onFocus={(event) => event.currentTarget.select()}
 				onChange={(event) => doc.setNameDraft(event.target.value)}
 				onBlur={() => {
-					if (skipNextBlurCommitRef.current) {
-						skipNextBlurCommitRef.current = false;
-						return;
-					}
-					doc.commitDatabaseRename();
+					if (skipNextBlurCommitRef.current) return;
+					finishRename(true);
 				}}
 				onKeyDown={(event) => {
-					if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+					if (event.nativeEvent.isComposing) return;
+					if (event.key === "Enter") {
 						event.preventDefault();
-						skipNextBlurCommitRef.current = true;
-						doc.commitDatabaseRename();
-						event.currentTarget.blur();
+						finishRename(true);
+					}
+					if (event.key === "Escape") {
+						event.preventDefault();
+						finishRename(false);
 					}
 				}}
 			/>

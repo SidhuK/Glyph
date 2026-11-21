@@ -293,7 +293,8 @@
 		"table": {
 			"empty": "一致するノートはありません"
 		},
-		"newNote": "新規"
+		"newNote": "新規",
+		"renameHint": "ダブルクリックして名前を変更"
 	},
 	"tags": {
 		"header": "タグ",

@@ -294,7 +294,8 @@
 		"table": {
 			"empty": "Keine passenden Notizen"
 		},
-		"newNote": "Neu"
+		"newNote": "Neu",
+		"renameHint": "Zum Umbenennen doppelklicken"
 	},
 	"tags": {
 		"header": "Tags",
