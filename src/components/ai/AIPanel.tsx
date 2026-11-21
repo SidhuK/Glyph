@@ -104,7 +104,7 @@ export function AIPanel(props: AIPanelProps) {
 				consumePendingAiSelectionContext();
 				attachSelection(detail.selection);
 			}
-			if (detail?.prompt) {
+			if (detail?.prompt && props.surface === "sidebar") {
 				consumePendingAiPrompt();
 				draftPrompt(detail.prompt);
 			}
@@ -123,10 +123,10 @@ export function AIPanel(props: AIPanelProps) {
 		window.addEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
 		const pendingSelection = consumePendingAiSelectionContext();
 		if (pendingSelection) attachSelection(pendingSelection);
-		const pendingPrompt = consumePendingAiPrompt();
+		const pendingPrompt = props.surface === "sidebar" ? consumePendingAiPrompt() : null;
 		if (pendingPrompt) draftPrompt(pendingPrompt);
 		return () => window.removeEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
-	}, [chat.messages.length, context.addContext]);
+	}, [chat.messages.length, context.addContext, props.surface]);
 
 	const canSend =
 		!toolEvents.isAwaitingResponse &&

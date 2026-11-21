@@ -259,7 +259,7 @@ export function CommandPalette({
 				spacePath,
 				t,
 			})
-		: isSecretPalettePhrase
+		: isSecretPalettePhrase || (isSearching && !matchedResults.length)
 			? matchedResults
 			: [
 					...matchedResults,
@@ -267,7 +267,7 @@ export function CommandPalette({
 						parsed: parsedQuery,
 						spacePath,
 						canAskAi: Boolean(onAskAi),
-						hasMatches: matchedResults.length > 0 || isSearching,
+						hasMatches: matchedResults.length > 0,
 						t,
 					}),
 				];
