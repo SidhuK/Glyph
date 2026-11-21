@@ -21,13 +21,19 @@ fn databases_store_path(space_root: &Path) -> Result<PathBuf, String> {
     Ok(ensure_glyph_dir(space_root)?.join(DATABASES_STORE_FILE))
 }
 
-pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
+pub(crate) const FALLBACK_VIEW_NAME: &str = "Board";
+
+pub(crate) fn is_supported_view_layout(layout: &str) -> bool {
+    matches!(layout, "table" | "board")
+}
+
+pub(crate) fn default_view(name: &str, layout: &str) -> DatabaseViewDefinition {
     let now = now_iso();
     let catalog = super::query::built_in_columns();
     DatabaseViewDefinition {
         id: Uuid::new_v4().to_string(),
         name: name.to_string(),
-        layout: "board".to_string(),
+        layout: layout.to_string(),
         search: String::new(),
         icon: None,
         color: None,
@@ -37,7 +43,7 @@ pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
             .collect(),
         sorts: Vec::new(),
         filters: Vec::new(),
-        grouping: Some(DatabaseViewGrouping {
+        grouping: (layout == "board").then(|| DatabaseViewGrouping {
             column_id: "tags".to_string(),
             ascending: true,
         }),
@@ -161,9 +167,11 @@ fn prune_unsupported_view_layouts(store: &mut DatabaseStore) {
     for database in &mut store.databases {
         database
             .views
-            .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
+            .retain(|view| is_supported_view_layout(&view.layout));
         if database.views.is_empty() {
-            database.views.push(default_view("View 1"));
+            database
+                .views
+                .push(default_view(FALLBACK_VIEW_NAME, "board"));
         }
     }
 }

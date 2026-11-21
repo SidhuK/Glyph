@@ -971,11 +971,11 @@ export function AppShell() {
 		openSpecialTab(AGENT_VIEW_TAB_ID);
 	}, [openSpecialTab, setAiPanelOpen]);
 	const openDatabasesTab = useCallback(
-		(databaseId?: string | null, options?: { openCreateDialog?: boolean }) => {
+		(databaseId?: string | null, options?: { openCreator?: boolean }) => {
 			setDatabasesOpenRequest((current) =>
 				nextDatabasesOpenRequest(current, {
 					databaseId: databaseId ?? null,
-					openCreateDialog: options?.openCreateDialog ?? false,
+					openCreator: options?.openCreator ?? false,
 					paneId: focusedPaneId,
 				}),
 			);
@@ -990,7 +990,7 @@ export function AppShell() {
 		openSpecialTab(SPACE_CONNECTIONS_TAB_ID);
 	}, [openSpecialTab]);
 	const createDatabaseAndOpen = useCallback(() => {
-		openDatabasesTab(null, { openCreateDialog: true });
+		openDatabasesTab(null, { openCreator: true });
 	}, [openDatabasesTab]);
 	const prefetchWorkspaceFile = useCallback((path: string) => {
 		if (!isMarkdownPath(path)) return;

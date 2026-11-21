@@ -1121,6 +1121,7 @@ interface TauriCommands {
 			folder?: string | null;
 			source?: DatabaseSource | null;
 			pinned?: boolean | null;
+			first_view: { name: string; layout: DatabaseConfig["view"]["layout"] };
 		},
 		WorkspaceDatabaseDocument
 	>;

@@ -195,6 +195,7 @@ export function CommandPalette({
 				folder: null,
 				source: { kind: "search", value: trimmed, recursive: false },
 				pinned: true,
+				first_view: { name: t("collections.viewMenu.board"), layout: "board" },
 			});
 		},
 		onSuccess: () => {

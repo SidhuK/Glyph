@@ -1,12 +1,10 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
 import { KeyboardSensor, PointerSensor, useDraggable, useDroppable } from "@dnd-kit/react";
-import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { m } from "motion/react";
 import type { TFunction } from "i18next";
 import { type MouseEvent, type MutableRefObject, type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import type { DatabaseBoardLane } from "../../lib/database/board";
+import { DATABASE_BOARD_EMPTY_LANE_ID, type DatabaseBoardLane } from "../../lib/database/board";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseRow } from "../../lib/database/types";
 import { statusToneStyle } from "../../lib/statusProperties";
@@ -50,25 +48,22 @@ export function databaseLaneDisplayLabel(
 }
 
 export function DatabaseLaneIcon({
+	laneId,
 	label,
 	kind,
 	className,
 }: {
+	laneId: string;
 	label: string;
 	kind: DatabaseLaneKind;
 	className: string;
 }) {
-	if (!kind) return <span className={`${className} is-dot`} aria-hidden="true" />;
+	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID) {
+		return <span className={`${className} is-dot is-hollow`} aria-hidden="true" />;
+	}
 	if (kind === "status") return <StatusRingIcon value={label} className={className} />;
 	if (kind === "priority") return <DatabasePriorityBars value={label} className={className} />;
-	return (
-		<HugeiconsIcon
-			icon={Tag01Icon}
-			className={className}
-			size="var(--icon-sm)"
-			aria-hidden="true"
-		/>
-	);
+	return <span className={`${className} is-dot`} aria-hidden="true" />;
 }
 
 interface DatabaseBoardLaneViewProps {
@@ -122,7 +117,12 @@ export function DatabaseBoardLaneView({
 				: null;
 	const laneTitleContent = (
 		<>
-			<DatabaseLaneIcon label={lane.label} kind={laneKind} className="databaseBoardLaneTitleIcon" />
+			<DatabaseLaneIcon
+				laneId={lane.id}
+				label={lane.label}
+				kind={laneKind}
+				className="databaseBoardLaneTitleIcon"
+			/>
 			<div className="databaseBoardLaneTitle">
 				{databaseLaneDisplayLabel(lane.label, laneKind, t)}
 			</div>
@@ -231,7 +231,7 @@ export function DatabaseBoardLaneView({
 						})}
 					>
 						<Plus size="var(--icon-sm)" aria-hidden="true" />
-						<span>{t("collections.board.newCard")}</span>
+						<span>{t("collections.board.newNote")}</span>
 					</button>
 				) : null}
 			</div>

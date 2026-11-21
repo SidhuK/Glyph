@@ -1,5 +1,3 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LibraryIcon } from "@hugeicons/core-free-icons";
 import { useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { useDatabasesPane } from "../../hooks/database/useDatabasesPane";
@@ -11,15 +9,13 @@ import {
 	EMPTY_BOARD_LANE_ORDER,
 } from "../../lib/database/viewConfig";
 import type { WorkspaceDatabaseDocument } from "../../lib/tauri";
-import { Plus } from "../Icons";
 import { CanvasPaneAwait } from "../app/CanvasPaneAwait";
 import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
-import { Button } from "../ui/shadcn/button";
 import { CollectionTitle } from "./CollectionTitle";
 import { CollectionTopBar } from "./CollectionTopBar";
-import { CreateCollectionDialog } from "./CreateCollectionDialog";
+import { CollectionCreator } from "./CollectionCreator";
 import { DatabaseViewTabs } from "./DatabaseViewTabs";
 
 interface DatabasesPaneProps {
@@ -53,6 +49,8 @@ function DatabasesPaneContent({
 		initialDocument,
 	});
 
+	const showCreator = !activeCollection || selection.collectionCreatorOpen;
+
 	if (doc.loading) {
 		return <CanvasPaneAwait variant="databases" />;
 	}
@@ -61,7 +59,7 @@ function DatabasesPaneContent({
 		<div className="databaseHostPane">
 			<CollectionTopBar document={doc} selection={selection} />
 
-			{activeCollection ? (
+			{activeCollection && !showCreator ? (
 				<>
 					<CollectionTitle document={doc} />
 					<div className="databasesViewBar">
@@ -170,54 +168,25 @@ function DatabasesPaneContent({
 						/>
 					)}
 				</>
-			) : (
+			) : null}
+			{showCreator ? (
 				<div className="databasesEmptyState">
 					{ui.error ? <div className="databaseNotice databaseNoticeError">{ui.error}</div> : null}
-					<HugeiconsIcon icon={LibraryIcon} size="var(--icon-3xl)" />
-					<div className="databasesEmptyTitle">
-						{selection.summaries.length === 0
-							? "Create your first collection"
-							: "Select a collection"}
-					</div>
-					<div className="databasesEmptyText">
-						{selection.summaries.length === 0
-							? "Collections help you see notes from a folder as a table or Kanban board."
-							: "Use Switch collection above to get started."}
-					</div>
-					{selection.summaries.length === 0 ? (
-						<>
-							<ol className="databasesOnboardingSteps">
-								<li>
-									<strong>Choose notes</strong> — pick a folder, tag, or search.
-								</li>
-								<li>
-									<strong>Shape the view</strong> — show columns, filters, and sorting.
-								</li>
-								<li>
-									<strong>Track work</strong> — switch to board view and group by status, tags, or
-									another field.
-								</li>
-							</ol>
-							<Button
-								type="button"
-								size="sm"
-								className="createCollectionCta"
-								onClick={selection.openCreateCollectionDialog}
-							>
-								<Plus size="var(--icon-sm)" />
-								Create Collection
-							</Button>
-						</>
-					) : null}
+					<CollectionCreator
+						summaries={selection.summaries}
+						onCreated={(created) => void doc.selectCollection(created)}
+						onError={ui.setError}
+						onCancel={
+							activeCollection
+								? () => {
+										ui.clearError();
+										selection.setCollectionCreatorOpen(false);
+									}
+								: null
+						}
+					/>
 				</div>
-			)}
-			<CreateCollectionDialog
-				open={selection.createCollectionOpen}
-				onOpenChange={selection.setCreateCollectionOpen}
-				summaries={selection.summaries}
-				onCreated={(created) => void doc.selectCollection(created)}
-				onError={ui.setError}
-			/>
+			) : null}
 		</div>
 	);
 }

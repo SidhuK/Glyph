@@ -243,14 +243,14 @@
 			"emptyTitle": "フィールドを追加してボードのレーンを作成",
 			"emptyText": "ボードビューはノートをレーンにまとめます。ステータス、優先度、チェックボックス、タグなどのフィールドをノートに追加し、上のツールバーで選択してください。",
 			"openViewSettings": "ビューの設定を開く",
-			"newCard": "新規",
 			"scrollNext": "次のレーンを表示",
 			"laneEmpty": {
 				"archived": "アーカイブしたノートはここに入ります",
 				"done": "完了したノートはここに入ります",
 				"unassigned": "値のないノートはここに表示されます",
 				"default": "ここにノートをドロップするか、下で追加します"
-			}
+			},
+			"newNote": "新規ノート"
 		},
 		"changeStatus": "ステータスを変更",
 		"statusLabel": "ステータス",
@@ -293,7 +293,23 @@
 		"table": {
 			"empty": "一致するノートはありません"
 		},
-		"newNote": "新規"
+		"newNote": "新規",
+		"renameHint": "ダブルクリックして名前を変更",
+		"creator": {
+			"title": "フォルダをボードやテーブルで表示",
+			"description": "コレクションは1つのフォルダ内のノートを、タグ・タスク・プロパティとともに表示します。ファイルの場所は変わりません。",
+			"boardHint": "タグまたはステータスでグループ化",
+			"tableHint": "並べ替えできる列",
+			"folder": "フォルダ",
+			"foldersIn": "{{space}} のフォルダ",
+			"createBoard": "ボードを作成",
+			"createTable": "テーブルを作成",
+			"creating": "作成中…",
+			"cancel": "キャンセル",
+			"noFolders": "コレクションはフォルダを表示します。このスペースにはまだフォルダがありません。",
+			"newFolder": "新規フォルダ",
+			"loadFoldersFailed": "フォルダを読み込めませんでした: {{error}}"
+		}
 	},
 	"tags": {
 		"header": "タグ",

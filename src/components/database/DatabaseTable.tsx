@@ -598,6 +598,7 @@ export function DatabaseTable({
 									label={databaseLaneDisplayLabel(group.label, groupKind, t)}
 									icon={
 										<DatabaseLaneIcon
+											laneId={group.id}
 											label={group.label}
 											kind={groupKind}
 											className="databaseGroupIcon"
