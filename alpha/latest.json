@@ -1,15 +1,15 @@
 {
-  "version": "0.9.6",
-  "notes": "## What's Changed\n* Apply design audit I–III fixes by @SidhuK in https://github.com/SidhuK/Glyph/pull/696\n* Redesign note version history by @SidhuK in https://github.com/SidhuK/Glyph/pull/697\n* Polish the command palette, move picker, Quick Search and Quick Note by @SidhuK in https://github.com/SidhuK/Glyph/pull/698\n* Polish canvas notes, Connections inspector, insert menus, code, tables and callouts by @SidhuK in https://github.com/SidhuK/Glyph/pull/699\n* Invite people to star Glyph on GitHub and join the Discord by @SidhuK in https://github.com/SidhuK/Glyph/pull/700\n* Stop notes from showing as edited as soon as they open by @SidhuK in https://github.com/SidhuK/Glyph/pull/701\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.5...v0.9.6",
-  "pub_date": "2026-11-18T06:50:30.210Z",
+  "version": "0.9.7-alpha.1",
+  "notes": "## What's Changed\n* Polish the command palette: Recent first, Create note and Ask AI actions, keycaps by @SidhuK in https://github.com/SidhuK/Glyph/pull/702\n* Collections: create from the empty state, layout-named views, 250 pt board columns by @SidhuK in https://github.com/SidhuK/Glyph/pull/703\n* Connections: one label per note, focus fades, peek cards, legend, empty state by @SidhuK in https://github.com/SidhuK/Glyph/pull/704\n* Settings: squircle nav, in-pane search filtering, lighter grouped cards by @SidhuK in https://github.com/SidhuK/Glyph/pull/705\n* Tags: hairline chips, dimmed paths, new # picker, dot stack in tables by @SidhuK in https://github.com/SidhuK/Glyph/pull/707\n* Folio: scope header, status icons and menu, row actions by @SidhuK in https://github.com/SidhuK/Glyph/pull/708\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.9.6...v0.9.7-alpha.1",
+  "pub_date": "2026-11-22T07:51:26.702Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDYxU1pwRWEzNjgvaHRaeXM4bGdtZ1d4OG9iRnA4emRsTTVQOFZ2azVwNWZiVjNLRTFza1FrVVBiRGZuTyt3cEZmbGEzTzN5dForQkxTMVlvTGovS0E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0OTg0NjIyCWZpbGU6R2x5cGguYXBwLnRhci5negozQVJia0tQYlBjU24rb3FyM3VpNVZaNGZBOXpxd3ZuSFp6NXB2cHNHb2drYWM0b1AvRE5hdUtKQTN0UTR1M3kxTHJHQlAraTI2eEFwcVNtWkhaa0dDUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.6/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCtiMkxMVFdhVm1HU2Q4Znh3bFRQSTZzMUlYTkpuSE04QzBMVDZCbHlhZ3NCa1BZR3g2eStHa0V2Qjl6VkJGV2k2VDVsTWNBUnlGZEZ2UkdVbk0vNlF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MzMzODgxCWZpbGU6R2x5cGguYXBwLnRhci5negpuOWxWZzI4anFXQ0MrOWxKU1h1dFBodDlnYXV6V2FyZ2lPZEJmeWpBZnFVWkxjR0VCNTZBTm0wcDJVOXZWRmNBTi8wc2FPQ2VOMjBIcGlaUU9Ic0ZCdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.7-alpha.1/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDYxU1pwRWEzNjgvaHRaeXM4bGdtZ1d4OG9iRnA4emRsTTVQOFZ2azVwNWZiVjNLRTFza1FrVVBiRGZuTyt3cEZmbGEzTzN5dForQkxTMVlvTGovS0E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0OTg0NjIyCWZpbGU6R2x5cGguYXBwLnRhci5negozQVJia0tQYlBjU24rb3FyM3VpNVZaNGZBOXpxd3ZuSFp6NXB2cHNHb2drYWM0b1AvRE5hdUtKQTN0UTR1M3kxTHJHQlAraTI2eEFwcVNtWkhaa0dDUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.6/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCtiMkxMVFdhVm1HU2Q4Znh3bFRQSTZzMUlYTkpuSE04QzBMVDZCbHlhZ3NCa1BZR3g2eStHa0V2Qjl6VkJGV2k2VDVsTWNBUnlGZEZ2UkdVbk0vNlF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MzMzODgxCWZpbGU6R2x5cGguYXBwLnRhci5negpuOWxWZzI4anFXQ0MrOWxKU1h1dFBodDlnYXV6V2FyZ2lPZEJmeWpBZnFVWkxjR0VCNTZBTm0wcDJVOXZWRmNBTi8wc2FPQ2VOMjBIcGlaUU9Ic0ZCdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.9.7-alpha.1/Glyph_aarch64.app.tar.gz"
     }
   }
 }
