@@ -100,15 +100,7 @@ export function AppearanceSettingsPane() {
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
-				<AppearanceAppIconCard />
 				<AppearanceThemeCard />
-				<LightThemeSection />
-				<DarkThemeSection />
-				<AppearanceCustomThemesCard />
-				<AppearanceCornerRadiusCard
-					cornerRadiusStyle={cornerRadiusStyle}
-					onCornerRadiusStyleChange={onCornerRadiusStyleChange}
-				/>
 				<SettingsSection title={t("layout.sectionTitle")}>
 					<SettingsRow
 						label={t("layout.folioMode.label")}
@@ -152,6 +144,14 @@ export function AppearanceSettingsPane() {
 						/>
 					</SettingsRow>
 				</SettingsSection>
+				<LightThemeSection />
+				<DarkThemeSection />
+				<AppearanceCustomThemesCard />
+				<AppearanceCornerRadiusCard
+					cornerRadiusStyle={cornerRadiusStyle}
+					onCornerRadiusStyleChange={onCornerRadiusStyleChange}
+				/>
+				<AppearanceAppIconCard />
 			</div>
 		</div>
 	);

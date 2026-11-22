@@ -4,6 +4,7 @@ import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import { Toggle } from "../base/toggle/toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { SettingsSearchHighlight } from "./search/SettingsSearchHighlight";
 
 interface SettingsSectionProps {
 	title: string;
@@ -124,7 +125,13 @@ export function SettingsRow({
 			tabIndex={interactive ? 0 : undefined}
 		>
 			<CopyTag className="settingsFieldCopy" htmlFor={htmlFor}>
-				<div className="settingsLabel">{label}</div>
+				<div className="settingsLabel">
+					{typeof label === "string" ? (
+						<SettingsSearchHighlight text={label} searchId={searchId} />
+					) : (
+						label
+					)}
+				</div>
 				{description ? <div className="settingsHelp">{description}</div> : null}
 			</CopyTag>
 			<div className={cn("settingsFieldControl", stacked && "settingsFieldControlStacked")}>

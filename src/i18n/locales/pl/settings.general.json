@@ -2,12 +2,17 @@
 	"nav": {
 		"groupApplication": "Aplikacja",
 		"groupWorkspace": "Przestrzeń robocza",
+		"groupSpace": "Przestrzeń · {{name}}",
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Szukaj w ustawieniach",
 		"searchAriaLabel": "Szukaj w ustawieniach",
 		"clearSearchAriaLabel": "Wyczyść wyszukiwanie ustawień",
 		"closeAriaLabel": "Zamknij ustawienia",
 		"searchEmpty": "Brak pasujących ustawień",
+		"searchResults_one": "{{count}} wynik dla „{{query}}”",
+		"searchResults_few": "{{count}} wyniki dla „{{query}}”",
+		"searchResults_many": "{{count}} wyników dla „{{query}}”",
+		"searchResults_other": "{{count}} wyniku dla „{{query}}”",
 		"sendFeedback": "Wyślij opinię",
 		"buyLicense": "Kup oficjalną licencję"
 	},

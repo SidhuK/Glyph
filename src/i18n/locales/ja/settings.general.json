@@ -2,12 +2,14 @@
 	"nav": {
 		"groupApplication": "アプリケーション",
 		"groupWorkspace": "ワークスペース",
+		"groupSpace": "スペース · {{name}}",
 		"groupLabs": "ラボ",
 		"searchPlaceholder": "設定を検索",
 		"searchAriaLabel": "設定を検索",
 		"clearSearchAriaLabel": "設定の検索をクリア",
 		"closeAriaLabel": "設定を閉じる",
 		"searchEmpty": "一致する設定はありません",
+		"searchResults_other": "「{{query}}」の検索結果 {{count}} 件",
 		"sendFeedback": "フィードバックを送信",
 		"buyLicense": "公式ライセンスを購入"
 	},
