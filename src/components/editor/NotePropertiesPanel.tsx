@@ -49,7 +49,6 @@ export function NotePropertiesPanel({
 	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
 	const lastCommittedFrontmatterRef = useRef<string | null>(null);
 	const propertyRowIdCounterRef = useRef(0);
-	const tagInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 	const parseRequestIdRef = useRef(0);
 	const renderRequestIdRef = useRef(0);
 	const { properties, propertyRowIds, rawDraft } = editorState;
@@ -58,11 +57,6 @@ export function NotePropertiesPanel({
 		setTagDrafts((current) =>
 			Object.fromEntries(
 				nextRowIds.flatMap((rowId) => (rowId in current ? [[rowId, current[rowId] ?? ""]] : [])),
-			),
-		);
-		tagInputRefs.current = Object.fromEntries(
-			nextRowIds.flatMap((rowId) =>
-				rowId in tagInputRefs.current ? [[rowId, tagInputRefs.current[rowId] ?? null]] : [],
 			),
 		);
 	};
@@ -100,7 +94,6 @@ export function NotePropertiesPanel({
 					rawDraft: nextRawDraft,
 				});
 				setTagDrafts({});
-				tagInputRefs.current = {};
 				lastCommittedFrontmatterRef.current = normalizeFrontmatter(frontmatter);
 				onErrorChange?.("");
 			})
@@ -237,17 +230,12 @@ export function NotePropertiesPanel({
 											delete next[removedRowId];
 											return next;
 										});
-										delete tagInputRefs.current[removedRowId];
 									}
 									commitProperties(
 										properties.filter((_, currentIndex) => currentIndex !== propertyIndex),
 										propertyRowIds.filter((_, currentIndex) => currentIndex !== propertyIndex),
 									);
 								}}
-								onSetTagInputRef={(nextRowId, node) => {
-									tagInputRefs.current[nextRowId] = node;
-								}}
-								tagInputRef={tagInputRefs.current[rowId] ?? null}
 							/>
 						);
 					})}

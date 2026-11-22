@@ -281,7 +281,9 @@
 	},
 	"properties": {
 		"label": "속성",
-		"add": "속성 추가"
+		"add": "속성 추가",
+		"addTag": "태그 추가",
+		"removeTag": "{{tag}} 제거"
 	},
 	"infoSidebar": {
 		"panelLabel": "노트 정보 패널",
@@ -323,5 +325,11 @@
 	"linkSuggest": {
 		"create": "“{{name}}” 만들기",
 		"footer": "제목은 #, 별칭은 | 입력"
+	},
+	"tagSuggest": {
+		"create": "태그 만들기",
+		"new": "새 태그",
+		"select": "선택",
+		"insert": "삽입"
 	}
 }

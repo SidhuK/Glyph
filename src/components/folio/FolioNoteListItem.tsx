@@ -29,9 +29,9 @@ import { InlineRenameInput } from "../InlineRenameInput";
 import { NoteThumbnail } from "../NoteThumbnail";
 import { noteDisplayTitle } from "../app/allDocsPreviewLines";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
+import { HairlineTagList } from "../database/HairlineTagList";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
-import { tagColorFromName } from "../editor/noteProperties/utils";
 import { buildFileTreeFileNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import {
 	FILE_TREE_ENTRY_SENSORS,
@@ -69,6 +69,7 @@ interface FolioNoteListItemProps {
 }
 
 const FOLIO_DRAG_CLICK_DISTANCE_PX = 5;
+const FOLIO_VISIBLE_TAG_LIMIT = 2;
 /** `![[file]]` and `![alt](src)` embeds, which carry no preview text of their own. */
 const MARKDOWN_EMBED_PATTERN = /!\[\[[^\]]*\]\]|!\[[^\]]*\]\((?:[^()\\]|\\.)*\)/g;
 
@@ -185,8 +186,6 @@ export const FolioNoteListItem = memo(
 					absoluteDate: updatedDate ?? note.updated,
 				})
 			: t("folio.noDate");
-		const visibleTags = note.tags.slice(0, 2);
-		const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);
 		const folder = parentDir(note.note_path);
 		const firstUrl = useFolioFirstUrl(note);
 		const firstUrlLabel = firstUrl ? urlLabel(firstUrl) : "";
@@ -304,26 +303,16 @@ export const FolioNoteListItem = memo(
 						{updated}
 					</span>
 					{/* Tags, else the first link, else the folder: one kind of detail per row. */}
-					{visibleTags.length > 0 ? (
-						<>
-							{visibleTags.map((tag) => (
-								<span
-									key={tag}
-									className="folioNoteTag"
-									data-chip-tone={tagColorFromName(tag)}
-									title={formatDatabaseTagLabel(tag)}
-								>
-									{formatDatabaseTagLabel(tag)}
-								</span>
-							))}
-							{hiddenTagCount > 0 ? (
-								<span className="folioNoteTag folioNoteTagCount">+{hiddenTagCount}</span>
-							) : null}
-						</>
+					{note.tags.length > 0 ? (
+						<HairlineTagList
+							tags={note.tags}
+							limit={FOLIO_VISIBLE_TAG_LIMIT}
+							titleForTag={formatDatabaseTagLabel}
+						/>
 					) : firstUrl ? (
 						<a
 							href={firstUrl}
-							className="folioNoteTag folioNoteUrl"
+							className="folioNoteUrl"
 							title={firstUrl}
 							onClick={(event) => {
 								event.preventDefault();

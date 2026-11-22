@@ -1,6 +1,4 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import type { tagColorFromName } from "../editor/noteProperties/utils";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 
 const DATABASE_CELL_PILL_GAP = 4;
 
@@ -8,22 +6,11 @@ export interface DatabaseDisplayPill {
 	key: string;
 	label: string;
 	title?: string;
-	/** Tag icon when "beautiful tags" is on. */
-	iconName?: string;
-	/** A tag's palette slot, so it keeps the colour it has in the note list and on the board. */
-	chipTone?: ReturnType<typeof tagColorFromName>;
 }
 
 function DatabaseCellPill({ item }: { item: DatabaseDisplayPill }) {
 	return (
-		<span className="databaseCellPill" data-chip-tone={item.chipTone} title={item.title}>
-			{item.iconName ? (
-				<DatabaseColumnIcon
-					iconName={item.iconName}
-					className="databaseTagPillIcon"
-					size="var(--icon-xs)"
-				/>
-			) : null}
+		<span className="databaseCellPill" title={item.title}>
 			<span className="databaseCellPillLabel">{item.label}</span>
 		</span>
 	);

@@ -387,10 +387,18 @@
 	},
 	"properties": {
 		"label": "Properties",
-		"add": "Add property"
+		"add": "Add property",
+		"addTag": "Add tag",
+		"removeTag": "Remove {{tag}}"
 	},
 	"linkSuggest": {
 		"create": "Create “{{name}}”",
 		"footer": "Type # for a heading, | for an alias"
+	},
+	"tagSuggest": {
+		"create": "Create tag",
+		"new": "new",
+		"select": "Select",
+		"insert": "Insert"
 	}
 }

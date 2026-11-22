@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vite-plus/test";
-import { buildTagSuggestions, normalizeTagDraftPrefix, normalizeTagToken } from "./utils";
+import {
+	buildTagSuggestions,
+	normalizeTagDraftPrefix,
+	normalizeTagToken,
+	splitTagPath,
+} from "./utils";
 
 const availableTags = [
 	{
@@ -33,6 +38,12 @@ const availableTags = [
 ];
 
 describe("tag utils", () => {
+	it("splits a tag into its parent folders and leaf", () => {
+		expect(splitTagPath("#project/glyph")).toEqual({ parent: "project/", leaf: "glyph" });
+		expect(splitTagPath("a/b/c")).toEqual({ parent: "a/b/", leaf: "c" });
+		expect(splitTagPath("#design")).toEqual({ parent: "", leaf: "design" });
+	});
+
 	it("normalizes nested tokens and rejects invalid empty segments", () => {
 		expect(normalizeTagToken("#Work/Today/Further")).toBe("work/today/further");
 		expect(normalizeTagToken("#work//today")).toBeNull();

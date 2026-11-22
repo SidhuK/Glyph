@@ -406,14 +406,47 @@
 	z-index: 30;
 }
 
-/* Cell chips take the board's chip rule (41-database-board.css); here they only keep inside
-   the cell, so a lone chip that is still too wide ellipsizes instead of clipping. */
-.databaseCellPills .databaseCellPill {
-	max-width: 100%;
+.tagDotStack {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	overflow: hidden;
+	color: var(--text-secondary);
+	font-size: var(--chip-font-size);
+	font-weight: var(--chip-font-weight);
+	white-space: nowrap;
+}
+
+.tagDotStackDots {
+	display: inline-flex;
+	flex: 0 0 auto;
+}
+
+.tagDotStackDot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--chip-tone);
+	box-shadow: 0 0 0 1.5px var(--bg-primary);
+}
+
+.tagDotStackDot + .tagDotStackDot {
+	margin-left: -3px;
+}
+
+.tagDotStackNames {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tagDotStackParent {
+	color: var(--text-placeholder);
 }
 
 /* Status and priority keep their tone on the icon only, so the table reads as one ink. */
-:is(.databaseTable, .databaseBoardCard) .propertyValueText > span {
+.databaseTable .propertyValueText > span {
 	color: var(--text-secondary);
 	font-weight: var(--font-normal);
 }

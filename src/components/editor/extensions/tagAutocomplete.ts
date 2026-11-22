@@ -4,15 +4,14 @@ import Suggestion from "@tiptap/suggestion";
 import type { TagCount } from "../../../lib/tauri";
 import { invoke } from "../../../lib/tauri";
 import { normalizeTagDraftPrefix, normalizeTagToken } from "../noteProperties/utils";
-import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
+import {
+	type TagSuggestionItem,
+	renderTagSuggestionRow,
+	tagSuggestionFooter,
+} from "../suggestions/tagSuggestionRow";
+import { createTipTapSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const TAG_SUGGESTION_KEY = new PluginKey("tag-suggestion");
-
-interface TagSuggestionItem {
-	tag: string;
-	count: number;
-	isNew?: boolean;
-}
 
 function rankInlineTag(tag: string, normalizedQuery: string, descendantPrefix: string): number {
 	if (tag === normalizedQuery) return 0;
@@ -69,14 +68,13 @@ export const TagAutocomplete = Extension.create({
 					isNew: false,
 				}));
 			const normalizedTag = normalizeTagToken(normalizedQuery);
-			if (normalizedTag && !matches.some(({ tag }) => tag === normalizedTag)) {
-				matches.unshift({
-					tag: normalizedTag,
-					count: 0,
-					isNew: true,
-				});
+			if (!normalizedTag || matches.some(({ tag }) => tag === normalizedTag)) {
+				return matches.slice(0, this.options.suggestionLimit);
 			}
-			return matches.slice(0, this.options.suggestionLimit);
+			return [
+				{ tag: normalizedTag, count: 0, isNew: true },
+				...matches.slice(0, this.options.suggestionLimit - 1),
+			];
 		};
 
 		return [
@@ -102,12 +100,11 @@ export const TagAutocomplete = Extension.create({
 					editor.chain().focus().deleteRange(range).insertContent(`#${props.tag} `).run();
 				},
 				render: () =>
-					createTipTapTextSuggestionMenu<TagSuggestionItem>({
-						menuClassName: "wikiLinkSuggestionMenu",
-						itemContent: (item) => ({
-							title: `#${item.tag}`,
-							hint: item.isNew ? "Create tag" : `${item.count} note${item.count === 1 ? "" : "s"}`,
-						}),
+					createTipTapSuggestionMenu<TagSuggestionItem>({
+						menuClassName: "wikiLinkSuggestionMenu tagSuggestionMenu",
+						renderItem: ({ item, isActive, select, query = "" }) =>
+							renderTagSuggestionRow(item, query, { isActive, onSelect: () => select(item) }),
+						footer: tagSuggestionFooter,
 					}),
 			}),
 		];

@@ -194,32 +194,52 @@
 /* #tag: the shared chip fill, ink, radius and weight in the tag's palette tone
    ([data-chip-tone], 13-tags.css). It stays inline at the body size so it never changes the
    line pitch; the padding only paints. */
-.tiptapContentInline .tagToken:not([data-chip-tone]) {
-	--chip-tone: var(--palette-gray, var(--text-secondary));
-}
-
 .tiptapContentInline .tagToken {
 	display: inline;
-	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
-	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));
+	color: var(--chip-ink);
+	background: var(--chip-fill);
 	border: 0;
-	border-radius: var(--chip-radius);
-	padding: 0.1em var(--chip-padding-x);
+	padding: 0.1em 0;
 	font-weight: var(--chip-font-weight);
 	line-height: 1;
 	vertical-align: baseline;
 	box-decoration-break: clone;
 	-webkit-box-decoration-break: clone;
-	box-shadow: none;
+	box-shadow:
+		inset 0 1px var(--chip-edge),
+		inset 0 -1px var(--chip-edge);
 	cursor: pointer;
-	transition:
-		background 120ms ease,
-		color 120ms ease;
 }
 
-.tiptapContentInline .tagToken:hover {
-	background: color-mix(in srgb, var(--chip-tone) 18%, var(--bg-primary));
-	color: color-mix(in srgb, var(--chip-tone) 78%, var(--text-primary));
+.tiptapContentInline .tagToken[data-tag-part="hash"] {
+	padding-left: var(--chip-padding-x);
+	padding-right: 1px;
+	border-radius: var(--chip-radius) 0 0 var(--chip-radius);
+	box-shadow:
+		inset 1px 0 var(--chip-edge),
+		inset 0 1px var(--chip-edge),
+		inset 0 -1px var(--chip-edge);
+	color: var(--chip-ink-quiet);
+	font-weight: var(--font-normal);
+}
+
+.tiptapContentInline .tagToken[data-tag-part="folder"] {
+	color: var(--chip-ink-parent);
+}
+
+.tiptapContentInline .tagToken[data-tag-part="slash"] {
+	padding-inline: 1px;
+	color: var(--chip-ink-quiet);
+	font-weight: var(--font-normal);
+}
+
+.tiptapContentInline .tagToken[data-tag-end] {
+	padding-right: var(--chip-padding-x);
+	border-radius: 0 var(--chip-radius) var(--chip-radius) 0;
+	box-shadow:
+		inset -1px 0 var(--chip-edge),
+		inset 0 1px var(--chip-edge),
+		inset 0 -1px var(--chip-edge);
 }
 
 .tiptapContentInline .footnoteRef {

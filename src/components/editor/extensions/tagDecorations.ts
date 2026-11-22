@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 import { Decoration } from "@tiptap/pm/view";
-import { INLINE_TAG_PATTERN, tagColorFromName } from "../noteProperties/utils";
+import { INLINE_TAG_PATTERN, splitTagPath, tagColorFromName } from "../noteProperties/utils";
 import {
 	type TextNodeDecorationContext,
 	createIncrementalTextDecorationPlugin,
@@ -14,6 +14,38 @@ export function handleTagDecorationMouseDown(event: MouseEvent): boolean {
 	if (!target?.closest(TOKEN_SELECTOR)) return false;
 	event.preventDefault();
 	return true;
+}
+
+interface TagPart {
+	part: "hash" | "folder" | "slash" | "leaf";
+	text: string;
+}
+
+function tagParts(tag: string): TagPart[] {
+	const { parent, leaf } = splitTagPath(tag);
+	const parentParts = parent
+		.split(/(\/)/)
+		.filter(Boolean)
+		.map((text): TagPart => ({ part: text === "/" ? "slash" : "folder", text }));
+	const parts: TagPart[] = [{ part: "hash", text: "#" }, ...parentParts];
+	return leaf ? [...parts, { part: "leaf", text: leaf }] : parts;
+}
+
+function tagPartDecorations(from: number, tag: string): Decoration[] {
+	const tone = tagColorFromName(tag);
+	const parts = tagParts(tag);
+	let cursor = from;
+	return parts.map(({ part, text }, index) => {
+		const start = cursor;
+		cursor += text.length;
+		return Decoration.inline(start, cursor, {
+			class: "tagToken",
+			"data-tag": tag,
+			"data-tag-part": part,
+			"data-tag-end": index === parts.length - 1 ? "" : undefined,
+			"data-chip-tone": tone,
+		});
+	});
 }
 
 function collectTagDecorations(
@@ -30,15 +62,7 @@ function collectTagDecorations(
 		const tag = match[2] ?? "";
 		if (!tag) continue;
 		const start = (match.index ?? 0) + leading.length;
-		const from = pos + start;
-		const to = from + 1 + tag.length;
-		decorations.push(
-			Decoration.inline(from, to, {
-				class: "tagToken",
-				"data-tag": tag,
-				"data-chip-tone": tagColorFromName(tag),
-			}),
-		);
+		decorations.push(...tagPartDecorations(pos + start, tag));
 	}
 
 	if (!enablePeopleMentions) return decorations;

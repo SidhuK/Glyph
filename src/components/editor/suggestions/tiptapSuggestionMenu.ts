@@ -42,7 +42,7 @@ interface TipTapSuggestionMenuOptions<T> {
 	/** Items returned here open in a flyout submenu instead of running the command. */
 	getSubmenuItems?: (item: T) => T[] | undefined;
 	/** A one-line tip under the rows, read when the menu renders so it follows the language. */
-	footer?: () => string;
+	footer?: () => string | Node;
 }
 
 interface TipTapTextSuggestionMenuOptions<T> extends Omit<
@@ -193,7 +193,7 @@ export function createTipTapSuggestionMenu<T>({
 		if (footerText) {
 			const footerElement = document.createElement("div");
 			footerElement.className = "suggestionMenuFooter";
-			footerElement.textContent = footerText;
+			footerElement.append(footerText);
 			menu.append(footerElement);
 		}
 		const rect = props.clientRect?.();

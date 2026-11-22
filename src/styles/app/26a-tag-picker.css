@@ -1,0 +1,109 @@
+.tagSuggestionMenu {
+	--chip-ground: transparent;
+}
+
+.tagSuggestionMenu .commandPaletteKeycap {
+	height: 16px;
+	min-width: 16px;
+	padding: 0 3px;
+}
+
+.tagSuggestionItem {
+	position: relative;
+	height: 28px;
+	min-height: 28px;
+	gap: 8px;
+	padding: 0 8px;
+	font-size: var(--floating-row-font-size);
+}
+
+.tagSuggestionItem.active {
+	background: var(--chip-fill);
+	box-shadow: inset 0 0 0 1px var(--chip-edge);
+}
+
+.tagSuggestionItem:not(.active) > .commandPaletteKeycap {
+	display: none;
+}
+
+.tagSuggestionDot {
+	flex: none;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--chip-tone);
+}
+
+.tagSuggestionName {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 1.3;
+}
+
+.tagSuggestionName strong {
+	font-weight: var(--font-semibold);
+}
+
+.tagSuggestionParent {
+	color: var(--text-tertiary);
+}
+
+.tagSuggestionCount {
+	flex: none;
+	color: var(--text-tertiary);
+	font-size: var(--floating-label-font-size);
+	font-variant-numeric: tabular-nums;
+}
+
+.tagSuggestionPlus {
+	flex: none;
+	width: 8px;
+	text-align: center;
+	line-height: 1;
+}
+
+.tagSuggestionPlus,
+.tagSuggestionCreateLabel {
+	color: var(--text-secondary);
+}
+
+.tagSuggestionCreateLabel {
+	flex: none;
+}
+
+.tagSuggestionPreview {
+	flex: 0 1 auto;
+	min-width: 0;
+	height: 18px;
+	margin-right: auto;
+	padding: 0 5px;
+	overflow: hidden;
+	border: 1px dashed color-mix(in srgb, var(--chip-tone) 45%, transparent);
+	border-radius: var(--chip-radius);
+	color: var(--chip-ink);
+	font-size: var(--chip-font-size);
+	font-weight: var(--chip-font-weight);
+	line-height: 16px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tagSuggestionFooter {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	white-space: nowrap;
+}
+
+.tagSuggestionHint {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.tagSuggestionHint:last-child {
+	margin-left: auto;
+}

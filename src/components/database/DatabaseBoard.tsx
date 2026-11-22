@@ -37,7 +37,7 @@ import type { NoteTaskSummary } from "../../lib/tauri";
 import type { EditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
-import { type BoardCardValues, DatabaseBoardCardContent } from "./DatabaseBoardCardContent";
+import { DatabaseBoardCardContent } from "./DatabaseBoardCardContent";
 import { DatabaseBoardScrollNext, useBoardScrollNext } from "./DatabaseBoardScrollNext";
 import { DatabaseBoardCardView, DatabaseBoardLaneView } from "./DatabaseBoardViews";
 
@@ -131,12 +131,8 @@ function boardCardTextPropertyValues(row: DatabaseRow, kind: "status" | "priorit
 	return values;
 }
 
-const NO_CARD_VALUES: BoardCardValues = { shown: [], hiddenCount: 0 };
-
-/** One value per field on a card; the rest collapse into a count chip. */
-function boardCardValues(visible: boolean, values: string[]): BoardCardValues {
-	if (!visible || values.length === 0) return NO_CARD_VALUES;
-	return { shown: values.slice(0, 1), hiddenCount: values.length - 1 };
+function firstCardValue(visible: boolean, values: string[]): string | null {
+	return visible ? (values[0] ?? null) : null;
 }
 
 export function DatabaseBoard({
@@ -453,12 +449,12 @@ export function DatabaseBoard({
 														row={row}
 														title={title}
 														appearance={itemAppearance[row.note_path] ?? null}
-														statuses={boardCardValues(isCardFieldVisible("status"), statusValues)}
-														priorities={boardCardValues(
+														status={firstCardValue(isCardFieldVisible("status"), statusValues)}
+														priority={firstCardValue(
 															isCardFieldVisible("priority"),
 															priorityValues,
 														)}
-														tags={boardCardValues(isCardFieldVisible("tags"), cardTags)}
+														tags={isCardFieldVisible("tags") ? cardTags : []}
 														statusColors={statusColors}
 														iconNameForTag={beautifulTags ? iconNameForTag : null}
 														date={

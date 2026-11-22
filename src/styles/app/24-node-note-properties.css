@@ -435,25 +435,99 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 /* Tag chips: the shared chip shape, toned by the tag's palette slot ([data-chip-tone],
    13-tags.css), so a tag looks the same in the note list, the editor and here. */
 .notePropertyPill {
-	--chip-tone: var(--palette-gray, var(--text-secondary));
-
 	display: inline-flex;
 	align-items: center;
 	height: var(--chip-height);
 	max-width: 100%;
 	padding: 0 var(--chip-padding-x);
-	border: 0;
 	border-radius: var(--chip-radius);
-	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));
-	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
+	background: var(--chip-fill);
+	box-shadow: inset 0 0 0 1px var(--chip-edge);
+	color: var(--chip-ink);
 	font-family: var(--font-sans);
 	font-size: var(--chip-font-size);
 	font-weight: var(--chip-font-weight);
 	line-height: 1;
 	overflow: hidden;
-	text-overflow: ellipsis;
 	white-space: nowrap;
-	box-shadow: none;
+	transition:
+		background 120ms ease,
+		box-shadow 120ms ease;
+}
+
+.notePropertyPill[data-removable]:is(:hover, :focus-within) {
+	padding-right: 3px;
+	background: var(--chip-fill-hover);
+	box-shadow: inset 0 0 0 1px var(--chip-edge-hover);
+}
+
+.tagPathFolder,
+.tagPathLeaf {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tagPathFolder {
+	color: var(--chip-ink-parent);
+}
+
+.tagPathMiddle {
+	flex-shrink: 10000;
+	min-width: 1em;
+}
+
+.tagPathSlash {
+	flex: none;
+	padding: 0 1px;
+	color: var(--chip-ink-quiet);
+	font-weight: var(--font-normal);
+}
+
+button.notePropertyPillRemove {
+	flex: none;
+	display: inline-grid;
+	place-items: center;
+	width: 0;
+	height: 14px;
+	padding: 0;
+	border-radius: 3px;
+	color: var(--chip-ink);
+	opacity: 0;
+	overflow: hidden;
+	transition: none;
+}
+
+.notePropertyPill:is(:hover, :focus-within) > .notePropertyPillRemove {
+	width: 14px;
+	margin-left: 3px;
+	opacity: 1;
+}
+
+.notePropertyPillRemove:is(:hover, :focus-visible) {
+	background: color-mix(in srgb, var(--chip-tone) 14%, transparent);
+	outline: none;
+}
+
+button.notePropertyTagAdd {
+	flex: none;
+	width: var(--chip-height);
+	height: var(--chip-height);
+	padding: 0;
+	border-radius: var(--chip-radius);
+	box-shadow: inset 0 0 0 1px var(--border-default);
+	color: var(--text-tertiary);
+}
+
+.notePropertyTagInput:focus + .notePropertyTagAdd {
+	display: none;
+}
+
+.notePropertyTagInput[data-collapsed]:not(:focus) {
+	flex: 0 0 0;
+	width: 0;
+	min-width: 0;
+	margin-right: -4px;
 }
 
 .propertyValueText {
@@ -497,21 +571,6 @@ input.notePropertyFieldInput[type="date"]::-webkit-datetime-edit-text {
 .notePropertyRow .notePropertyTagInput {
 	flex-basis: 24px;
 	min-width: 24px;
-}
-
-/* The remove icon takes no space until the chip is hovered. */
-.notePropertyRow .notePropertyToken svg {
-	width: 0;
-	margin-left: -6px;
-	transition:
-		opacity 120ms ease,
-		width 120ms ease,
-		margin 120ms ease;
-}
-
-.notePropertyRow .notePropertyToken:is(:hover, :focus-visible) svg {
-	width: 10px;
-	margin-left: 0;
 }
 
 .propertyValueTextIcon {
