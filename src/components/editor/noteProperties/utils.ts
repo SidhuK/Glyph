@@ -94,6 +94,18 @@ export function formatTagLabel(tag: string): string {
 	return tag.startsWith("#") ? tag : `#${tag}`;
 }
 
+export interface TagPath {
+	parent: string;
+	leaf: string;
+}
+
+export function splitTagPath(tag: string): TagPath {
+	const name = tag.replace(/^#+/, "");
+	const slash = name.lastIndexOf("/");
+	if (slash < 0) return { parent: "", leaf: name };
+	return { parent: name.slice(0, slash + 1), leaf: name.slice(slash + 1) };
+}
+
 export function normalizeForKind(property: NoteProperty): NoteProperty {
 	switch (property.kind) {
 		case "checkbox":

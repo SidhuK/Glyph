@@ -1,6 +1,5 @@
 import { useDateDisplayFormat } from "../../../contexts";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
-import { X } from "../../Icons";
 import { Toggle } from "../../base/toggle/toggle";
 import { PriorityPropertyPill } from "../../status/PriorityPropertyPill";
 import { PropertyOptionPicker } from "../../status/PropertyOptionPicker";
@@ -8,9 +7,11 @@ import { StatusPropertyPill } from "../../status/StatusPropertyPill";
 import type { EditorTextColor } from "../textColors";
 import { TextPropertyValueField } from "./TextPropertyValueField";
 import { WikiLinkedText } from "./WikiLinkedText";
-import { buildTagSuggestions, formatPropertyDate, formatTagLabel, tagColorFromName } from "./utils";
+import { NotePropertyTagField } from "./NotePropertyTagField";
+import { TagPill } from "./TagPill";
+import { formatPropertyDate } from "./utils";
 
-interface NotePropertyValueFieldProps {
+export interface NotePropertyValueFieldProps {
 	rowId: string;
 	index: number;
 	property: NoteProperty;
@@ -68,17 +69,9 @@ export function NotePropertyValueField({
 			}
 			return (
 				<div className="notePropertyPills">
-					{property.value_list.map((value, valueIndex) => {
-						return (
-							<span
-								key={`${property.key || rowId}-${valueIndex}-${value}`}
-								className="notePropertyPill"
-								data-chip-tone={tagColorFromName(value)}
-							>
-								{value.startsWith("#") ? value.slice(1) : value}
-							</span>
-						);
-					})}
+					{property.value_list.map((value, valueIndex) => (
+						<TagPill key={`${property.key || rowId}-${valueIndex}-${value}`} tag={value} />
+					))}
 				</div>
 			);
 		}
@@ -162,82 +155,19 @@ export function NotePropertyValueField({
 	}
 
 	if (property.kind === "tags") {
-		const suggestions = buildTagSuggestions(availableTags, property.value_list, tagDraft);
 		return (
-			<>
-				<div
-					role="presentation"
-					className="notePropertyTagField"
-					onMouseDown={(event) => {
-						if (event.target !== event.currentTarget) return;
-						event.preventDefault();
-						tagInputRef?.focus();
-					}}
-				>
-					{property.value_list.map((value, valueIndex) => {
-						const label = value.startsWith("#") ? value.slice(1) : value;
-						return (
-							<button
-								key={`${property.key || rowId}-${valueIndex}-${value}`}
-								type="button"
-								className="notePropertyToken"
-								data-chip-tone={tagColorFromName(value)}
-								onClick={() => onRemoveTag(index, value)}
-								title={`Remove ${label}`}
-								aria-label={`Remove ${label}`}
-							>
-								<span>{label}</span>
-								<X size="var(--icon-xs)" />
-							</button>
-						);
-					})}
-					<input
-						ref={(node) => onSetTagInputRef(rowId, node)}
-						type="text"
-						className="plainTextInput notePropertyTagInput"
-						value={tagDraft}
-						placeholder={property.value_list.length > 0 ? "" : "Add a tag"}
-						aria-label={`${property.key || "Tags"} value`}
-						onChange={(event) => onSetTagDraft(rowId, event.target.value)}
-						onBlur={() => onAddTag(rowId, index, tagDraft)}
-						onKeyDown={(event) => {
-							if (event.key === "Enter" || event.key === ",") {
-								event.preventDefault();
-								onAddTag(rowId, index, tagDraft);
-								return;
-							}
-							if (event.key !== "Backspace" || tagDraft.length > 0) {
-								return;
-							}
-							const lastTag = property.value_list[property.value_list.length - 1];
-							if (!lastTag) return;
-							event.preventDefault();
-							onRemoveTag(index, lastTag);
-						}}
-					/>
-				</div>
-				{suggestions.length > 0 ? (
-					<div className="notePropertySuggestions">
-						<div className="notePropertySuggestionsLabel">Suggested tags</div>
-						<div className="notePropertySuggestionList">
-							{suggestions.map(({ tag, count }) => (
-								<button
-									key={tag}
-									type="button"
-									className="notePropertySuggestionChip"
-									onMouseDown={(event) => {
-										event.preventDefault();
-										onAddTag(rowId, index, tag);
-									}}
-								>
-									<span>{formatTagLabel(tag)}</span>
-									<span className="notePropertySuggestionCount">{count}</span>
-								</button>
-							))}
-						</div>
-					</div>
-				) : null}
-			</>
+			<NotePropertyTagField
+				rowId={rowId}
+				index={index}
+				property={property}
+				availableTags={availableTags}
+				tagDraft={tagDraft}
+				onSetTagDraft={onSetTagDraft}
+				onAddTag={onAddTag}
+				onRemoveTag={onRemoveTag}
+				onSetTagInputRef={onSetTagInputRef}
+				tagInputRef={tagInputRef}
+			/>
 		);
 	}
 

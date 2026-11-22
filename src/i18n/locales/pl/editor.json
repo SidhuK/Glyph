@@ -401,10 +401,18 @@
 	},
 	"properties": {
 		"label": "Właściwości",
-		"add": "Dodaj właściwość"
+		"add": "Dodaj właściwość",
+		"addTag": "Dodaj tag",
+		"removeTag": "Usuń {{tag}}"
 	},
 	"linkSuggest": {
 		"create": "Utwórz „{{name}}”",
 		"footer": "Wpisz # dla nagłówka, | dla aliasu"
+	},
+	"tagSuggest": {
+		"create": "Utwórz tag",
+		"new": "nowy",
+		"select": "Wybierz",
+		"insert": "Wstaw"
 	}
 }

@@ -14,7 +14,7 @@
 	--editor-readable-content-gutter-compact: var(--readable-content-gutter-compact);
 
 	/* Chip: one shape for tags and link chips in the note list, editor and inspector.
-	   Tone fills are color-mix(--chip-tone 12%, --bg-primary), ink color-mix(--chip-tone 70%, --text-primary). */
+	   Tone fill, ink and edge come from the [data-chip-tone] recipe in 13-tags.css. */
 	--chip-height: calc(var(--text-base) * 20 / 14);
 	--chip-padding-x: 6px;
 	--chip-radius: var(--radius-sm);

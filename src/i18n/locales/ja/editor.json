@@ -281,7 +281,9 @@
 	},
 	"properties": {
 		"label": "プロパティ",
-		"add": "プロパティを追加"
+		"add": "プロパティを追加",
+		"addTag": "タグを追加",
+		"removeTag": "{{tag}} を削除"
 	},
 	"infoSidebar": {
 		"panelLabel": "ノート情報パネル",
@@ -323,5 +325,11 @@
 	"linkSuggest": {
 		"create": "「{{name}}」を作成",
 		"footer": "# で見出し、| でエイリアス"
+	},
+	"tagSuggest": {
+		"create": "タグを作成",
+		"new": "新規",
+		"select": "選択",
+		"insert": "挿入"
 	}
 }

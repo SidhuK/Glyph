@@ -281,7 +281,9 @@
 	},
 	"properties": {
 		"label": "Propriétés",
-		"add": "Ajouter une propriété"
+		"add": "Ajouter une propriété",
+		"addTag": "Ajouter un tag",
+		"removeTag": "Retirer {{tag}}"
 	},
 	"infoSidebar": {
 		"panelLabel": "Panneau d’informations de la note",
@@ -324,5 +326,11 @@
 	"linkSuggest": {
 		"create": "Créer « {{name}} »",
 		"footer": "Tapez # pour un titre, | pour un alias"
+	},
+	"tagSuggest": {
+		"create": "Créer un tag",
+		"new": "nouveau",
+		"select": "Sélectionner",
+		"insert": "Insérer"
 	}
 }

@@ -4,31 +4,26 @@ import type { DatabaseRow } from "../../lib/database/types";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { NoteThumbnail } from "../NoteThumbnail";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
-import { tagColorFromName } from "../editor/noteProperties/utils";
 import type { EditorTextColor } from "../editor/textColors";
 import { DatabasePriorityBars } from "../status/DatabasePriorityBars";
 import { StatusRingIcon } from "../status/StatusRingIcon";
 import { priorityDisplayLabel, statusDisplayLabel } from "../status/propertyOptionLabels";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import {
 	DatabaseNoteAppearanceIcon,
 	databaseNoteAppearanceStyle,
 } from "./DatabaseNoteAppearanceIcon";
+import { HairlineTagList } from "./HairlineTagList";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
-/** One field's chips on a card: the values shown plus how many more are hidden. */
-export interface BoardCardValues {
-	shown: string[];
-	hiddenCount: number;
-}
+const BOARD_CARD_TAG_LIMIT = 3;
 
 interface DatabaseBoardCardContentProps {
 	row: DatabaseRow;
 	title: string;
 	appearance: FileTreeAppearance | null;
-	statuses: BoardCardValues;
-	priorities: BoardCardValues;
-	tags: BoardCardValues;
+	status: string | null;
+	priority: string | null;
+	tags: string[];
 	statusColors: Record<string, EditorTextColor>;
 	/** Icon per tag when "beautiful tags" is on; null shows the tag name alone. */
 	iconNameForTag: ((tag: string) => string) | null;
@@ -37,17 +32,13 @@ interface DatabaseBoardCardContentProps {
 	taskSummary: NoteTaskSummary | null;
 }
 
-function CountChip({ count }: { count: number }) {
-	return count > 0 ? <span className="databaseBoardTag is-count">+{count}</span> : null;
-}
-
-/** A board card's body: cover, title with its meta on the right, then one row of chips. */
+/** A board card's body: cover, title with its meta on the right, then one line of tags. */
 export function DatabaseBoardCardContent({
 	row,
 	title,
 	appearance,
-	statuses,
-	priorities,
+	status,
+	priority,
 	tags,
 	statusColors,
 	iconNameForTag,
@@ -56,7 +47,12 @@ export function DatabaseBoardCardContent({
 }: DatabaseBoardCardContentProps) {
 	const { t } = useTranslation("shell");
 	const appearanceStyle = databaseNoteAppearanceStyle(row.note_path, appearance);
-	const hasChips = statuses.shown.length + priorities.shown.length + tags.shown.length > 0;
+	const priorityLabel = priority
+		? t("collections.boardCard.priorityTooltip", { value: priorityDisplayLabel(priority, t) })
+		: "";
+	const statusLabel = status
+		? t("collections.boardCard.statusTooltip", { value: statusDisplayLabel(status, t) })
+		: "";
 
 	return (
 		<>
@@ -67,6 +63,27 @@ export function DatabaseBoardCardContent({
 			/>
 			<div className="databaseBoardCardMain">
 				<div className="databaseBoardCardTitleRow">
+					{priority ? (
+						<span
+							className="databaseBoardCardLead"
+							role="img"
+							aria-label={priorityLabel}
+							title={priorityLabel}
+						>
+							<DatabasePriorityBars value={priority} className="databaseBoardCardLeadIcon" />
+						</span>
+					) : null}
+					{status ? (
+						<span
+							className="databaseBoardCardLead"
+							role="img"
+							aria-label={statusLabel}
+							title={statusLabel}
+							style={statusToneStyle(status, statusColors)}
+						>
+							<StatusRingIcon value={status} className="databaseBoardCardLeadIcon" />
+						</span>
+					) : null}
 					<span className="databaseBoardCardTitle" style={appearanceStyle}>
 						{title}
 					</span>
@@ -94,56 +111,16 @@ export function DatabaseBoardCardContent({
 						</span>
 					) : null}
 				</div>
-				{hasChips ? (
-					<div className="databaseBoardCardChips">
-						{statuses.shown.map((status) => (
-							<span
-								key={`status:${status}`}
-								className="propertyValueText databaseBoardCardStatus"
-								style={statusToneStyle(status, statusColors)}
-								title={t("collections.boardCard.statusTooltip", {
-									value: statusDisplayLabel(status, t),
-								})}
-							>
-								<StatusRingIcon value={status} className="propertyValueTextIcon" />
-								<span>{statusDisplayLabel(status, t)}</span>
-							</span>
-						))}
-						<CountChip count={statuses.hiddenCount} />
-						{priorities.shown.map((priority) => (
-							<span
-								key={`priority:${priority}`}
-								className="propertyValueText databaseBoardCardStatus is-priority"
-								title={t("collections.boardCard.priorityTooltip", {
-									value: priorityDisplayLabel(priority, t),
-								})}
-							>
-								<DatabasePriorityBars value={priority} className="propertyValueTextIcon" />
-								<span>{priorityDisplayLabel(priority, t)}</span>
-							</span>
-						))}
-						<CountChip count={priorities.hiddenCount} />
-						{tags.shown.map((tag) => (
-							<span
-								key={`tag:${tag}`}
-								className="databaseBoardTag"
-								data-chip-tone={tagColorFromName(tag)}
-								title={t("collections.boardCard.tagTooltip", {
-									value: formatDatabaseTagLabel(tag),
-								})}
-							>
-								{iconNameForTag ? (
-									<DatabaseColumnIcon
-										iconName={iconNameForTag(tag)}
-										className="databaseTagPillIcon"
-										size="var(--icon-xs)"
-									/>
-								) : null}
-								<span className="databaseBoardTagLabel">{formatDatabaseTagLabel(tag)}</span>
-							</span>
-						))}
-						<CountChip count={tags.hiddenCount} />
-					</div>
+				{tags.length > 0 ? (
+					<HairlineTagList
+						tags={tags}
+						limit={BOARD_CARD_TAG_LIMIT}
+						iconNameForTag={iconNameForTag}
+						titleForTag={(tag) =>
+							t("collections.boardCard.tagTooltip", { value: formatDatabaseTagLabel(tag) })
+						}
+						className="databaseBoardCardTags"
+					/>
 				) : null}
 			</div>
 		</>

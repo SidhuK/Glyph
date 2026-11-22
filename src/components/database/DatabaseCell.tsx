@@ -22,11 +22,7 @@ import {
 	WikiLinkSuggestionList,
 	useWikiLinkAutocomplete,
 } from "../editor/hooks/useWikiLinkAutocomplete";
-import {
-	normalizeTagDraftPrefix,
-	normalizeTagToken,
-	tagColorFromName,
-} from "../editor/noteProperties/utils";
+import { normalizeTagDraftPrefix, normalizeTagToken } from "../editor/noteProperties/utils";
 import type { EditorTextColor } from "../editor/textColors";
 import { PropertyOptionPicker } from "../status/PropertyOptionPicker";
 import { Input } from "../ui/shadcn/input";
@@ -37,6 +33,7 @@ import {
 	databaseNoteAppearanceStyle,
 } from "./DatabaseNoteAppearanceIcon";
 import { DatabaseOptionCell } from "./DatabaseOptionCell";
+import { TagDotStack } from "./TagDotStack";
 import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
@@ -754,7 +751,7 @@ export function DatabaseCell({
 }: DatabaseCellProps) {
 	const { t, i18n } = useTranslation("shell");
 	const dateDisplayFormat = useDateDisplayFormat();
-	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
+	const { itemAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
 	const cellValue = useMemo(() => databaseCellValueFromRow(row, column), [column, row]);
 	const noteAppearance = itemAppearance[row.note_path] ?? null;
@@ -770,22 +767,6 @@ export function DatabaseCell({
 	const displayText = isDateValue
 		? formatCompactDatabaseDate(cellValue.value_text, i18n.language)
 		: (cellValue.value_text ?? "");
-	const tagIconOverrides = useMemo(
-		() => tagIconOverridesFromAppearance(tagAppearance),
-		[tagAppearance],
-	);
-	const tagPillItems = useMemo<DatabaseDisplayPill[]>(() => {
-		if (cellValue.kind !== "tags") return [];
-		return cellValue.value_list.map((value) => ({
-			key: `${column.id}:${value}`,
-			chipTone: tagColorFromName(value),
-			iconName: beautifulTags
-				? resolveTagIconName(value, tagIconOverrides, beautifulTags)
-				: undefined,
-			label: formatDatabaseTagLabel(value),
-			title: formatDatabaseTagLabel(value),
-		}));
-	}, [beautifulTags, cellValue.kind, cellValue.value_list, column.id, tagIconOverrides]);
 	const listPillItems = useMemo<DatabaseDisplayPill[]>(() => {
 		if (cellValue.kind !== "relation" && cellValue.kind !== "multi_select") {
 			return [];
@@ -847,7 +828,7 @@ export function DatabaseCell({
 					}}
 					title={fullValue || t("collections.cell.editTagsHint")}
 				>
-					<ResponsivePillList items={tagPillItems} />
+					<TagDotStack tags={cellValue.value_list} />
 				</button>
 			);
 		}

@@ -281,7 +281,9 @@
 	},
 	"properties": {
 		"label": "Eigenschaften",
-		"add": "Eigenschaft hinzufügen"
+		"add": "Eigenschaft hinzufügen",
+		"addTag": "Tag hinzufügen",
+		"removeTag": "{{tag}} entfernen"
 	},
 	"infoSidebar": {
 		"panelLabel": "Notiz-Infobereich",
@@ -324,5 +326,11 @@
 	"linkSuggest": {
 		"create": "„{{name}}“ erstellen",
 		"footer": "# für eine Überschrift, | für einen Alias"
+	},
+	"tagSuggest": {
+		"create": "Tag erstellen",
+		"new": "neu",
+		"select": "Auswählen",
+		"insert": "Einfügen"
 	}
 }

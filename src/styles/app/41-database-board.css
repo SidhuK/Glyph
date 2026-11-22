@@ -458,13 +458,13 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	gap: 8px;
+	gap: 5px;
 	min-width: 0;
 	padding: 12px;
 }
 
 /* A title-only card (no cover, no chips) drops to a compact ~36px row. */
-.databaseBoardCard:not(:has(.databaseBoardCardChips, .databaseBoardCardThumbnail))
+.databaseBoardCard:not(:has(.databaseBoardCardTags, .databaseBoardCardThumbnail))
 	.databaseBoardCardMain {
 	padding-block: 8px;
 }
@@ -472,7 +472,7 @@
 .databaseBoardCardTitleRow {
 	display: flex;
 	align-items: flex-start;
-	gap: 8px;
+	gap: 6px;
 	min-width: 0;
 }
 
@@ -544,33 +544,30 @@
 	flex: 0 0 auto;
 }
 
-.databaseBoardCardChips {
-	display: flex;
-	flex-wrap: nowrap;
-	align-items: center;
-	gap: 4px;
-	min-width: 0;
-	overflow: hidden;
-}
-
-/* Card and table chips use the app's one chip (--chip-*): status and priority are neutral chips
-   whose icon carries the colour; tags take their palette slot through [data-chip-tone]
-   (13-tags.css), as in the note list; "+N" is the same neutral count chip as the list's. */
-.databaseBoardCardStatus.propertyValueText,
-.databaseBoardTag,
-.databaseCellPill {
+.databaseBoardCardLead {
 	display: inline-flex;
 	align-items: center;
 	flex: 0 0 auto;
+	height: calc(var(--text-sm) * 1.38);
+	color: var(--database-tone, var(--text-tertiary));
+}
+
+.databaseBoardCardLead .databaseBoardCardLeadIcon {
+	width: var(--icon-xs);
+	height: var(--icon-xs);
+}
+
+.databaseCellPill {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 1 auto;
 	gap: 4px;
 	height: var(--chip-height);
-	min-height: 0;
+	min-width: 0;
 	max-width: 100%;
 	padding: 0 var(--chip-padding-x);
-	border: 0;
 	border-radius: var(--chip-radius);
 	background: var(--bg-tertiary);
-	box-shadow: none;
 	font-size: var(--chip-font-size);
 	font-weight: var(--chip-font-weight);
 	line-height: var(--chip-height);
@@ -578,26 +575,72 @@
 	white-space: nowrap;
 }
 
-.databaseBoardTag[data-chip-tone],
-.databaseCellPill[data-chip-tone] {
-	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));
-	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
-}
-
-.databaseBoardCardStatus .propertyValueTextIcon {
-	width: var(--icon-xs);
-	height: var(--icon-xs);
-	flex-basis: var(--icon-xs);
-	color: var(--database-tone, currentcolor);
-}
-
-.databaseBoardTag,
-.databaseCellPill {
-	flex: 0 1 auto;
+.databaseCellPillLabel {
 	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-:is(.databaseBoardTag, .databaseCellPill) .databaseTagPillIcon {
+.databaseCellPill.is-count {
+	flex: 0 0 auto;
+	font-variant-numeric: tabular-nums;
+}
+
+.hairlineTagList {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.hairlineTag {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	flex: 0 0 auto;
+	min-width: 0;
+	max-width: 100%;
+	height: var(--chip-height);
+	padding: 0 var(--chip-padding-x);
+	border-radius: var(--chip-radius);
+	background: var(--chip-fill);
+	box-shadow: inset 0 0 0 1px var(--chip-edge);
+	color: var(--chip-ink);
+	font-size: var(--chip-font-size);
+	font-weight: var(--chip-font-weight);
+	line-height: var(--chip-height);
+}
+
+.hairlineTag:not(:has(~ .hairlineTag)) {
+	flex: 0 1 auto;
+}
+
+.hairlineTagIcon {
+	flex: 0 0 auto;
+}
+
+.hairlineTagLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.hairlineTagParent {
+	color: var(--chip-ink-parent);
+}
+
+.hairlineTagCount {
+	flex: 0 0 auto;
+	padding: 0 2px;
+	color: var(--text-tertiary);
+	font-size: var(--chip-font-size);
+	font-weight: var(--chip-font-weight);
+	font-variant-numeric: tabular-nums;
+}
+
+.databaseTagPillIcon {
 	color: currentcolor;
 }
 

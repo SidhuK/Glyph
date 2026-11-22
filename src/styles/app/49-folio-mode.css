@@ -344,7 +344,6 @@
 
 .folioNoteMeta {
 	min-width: 0;
-	/* Same title-to-preview distance whether the row holds chips or plain text. */
 	min-height: var(--chip-height);
 	grid-column: 1 / -1;
 	grid-row: 1;
@@ -354,42 +353,17 @@
 	overflow: hidden;
 }
 
-/* Neutral chip (+N); the link chip keeps link ink; tag chips add a tone through
-   [data-chip-tone] (13-tags.css). */
-.folioNoteTag {
-	display: block;
-	flex: 0 1 auto;
-	min-width: 2.5rem;
-	max-width: 7rem;
-	height: var(--chip-height);
-	padding: 0 var(--chip-padding-x);
-	border-radius: var(--chip-radius);
-	background: var(--bg-tertiary);
-	color: var(--text-secondary);
-	font-size: var(--chip-font-size);
-	font-weight: var(--chip-font-weight);
-	line-height: var(--chip-height);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.folioNoteTag[data-chip-tone] {
-	background: color-mix(in srgb, var(--chip-tone) 12%, var(--bg-primary));
-	color: color-mix(in srgb, var(--chip-tone) 70%, var(--text-primary));
-}
-
-.folioNoteTagCount {
-	flex: 0 0 auto;
-	min-width: 0;
-	max-width: none;
-}
-
 .folioNoteUrl {
-	max-width: none;
+	min-width: 0;
+	overflow: hidden;
 	cursor: pointer;
 	color: var(--link-color);
+	font-size: var(--text-2xs);
+	font-weight: var(--font-medium);
+	line-height: 16px;
 	text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .folioNoteUrl > svg {

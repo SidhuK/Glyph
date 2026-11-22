@@ -145,8 +145,8 @@ button.tagsIconPicker {
 }
 
 /* A tag chip's tone: the palette slot tagColorFromName() picks, so one tag keeps one colour
-   wherever it is drawn. Chips mix it into their fill and ink (see --chip-* tokens). The
-   :root prefix lets the slot win over a chip class's own neutral --chip-tone default. */
+   wherever it is drawn. The :root prefix lets the slot win over a chip class's own neutral
+   --chip-tone default. */
 :root [data-chip-tone="red"] {
 	--chip-tone: var(--palette-red);
 }
@@ -173,4 +173,31 @@ button.tagsIconPicker {
 
 :root [data-chip-tone="purple"] {
 	--chip-tone: var(--palette-purple);
+}
+
+[data-chip-tone] {
+	--chip-fill: color-mix(in srgb, var(--chip-tone) 9%, var(--chip-ground, var(--bg-primary)));
+	--chip-fill-hover: color-mix(
+		in srgb,
+		var(--chip-tone) 15%,
+		var(--chip-ground, var(--bg-primary))
+	);
+	--chip-ink: color-mix(in srgb, var(--chip-tone) 74%, var(--text-primary));
+	--chip-ink-parent: color-mix(in srgb, var(--chip-ink) 60%, transparent);
+	--chip-ink-quiet: color-mix(in srgb, var(--chip-ink) 45%, transparent);
+	--chip-edge: color-mix(in srgb, var(--chip-tone) 20%, transparent);
+	--chip-edge-hover: color-mix(in srgb, var(--chip-tone) 34%, transparent);
+}
+
+.dark [data-chip-tone] {
+	--chip-fill: color-mix(in srgb, var(--chip-tone) 20%, var(--chip-ground, var(--bg-primary)));
+	--chip-fill-hover: color-mix(
+		in srgb,
+		var(--chip-tone) 26%,
+		var(--chip-ground, var(--bg-primary))
+	);
+	--chip-ink: color-mix(in srgb, var(--chip-tone) 62%, white);
+	--chip-ink-parent: color-mix(in srgb, var(--chip-ink) 68%, transparent);
+	--chip-edge: color-mix(in srgb, var(--chip-tone) 24%, transparent);
+	--chip-edge-hover: var(--chip-edge);
 }
