@@ -8,6 +8,7 @@
 		"searchAriaLabel": "Buscar configurações",
 		"clearSearchAriaLabel": "Limpar busca de configurações",
 		"closeAriaLabel": "Fechar configurações",
+		"searchEmpty": "Nenhuma configuração correspondente",
 		"searchResults_one": "{{count}} resultado para “{{query}}”",
 		"searchResults_many": "{{count}} resultados para “{{query}}”",
 		"searchResults_other": "{{count}} resultados para “{{query}}”",

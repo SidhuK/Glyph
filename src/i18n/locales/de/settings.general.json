@@ -8,6 +8,7 @@
 		"searchAriaLabel": "Einstellungen durchsuchen",
 		"clearSearchAriaLabel": "Einstellungssuche löschen",
 		"closeAriaLabel": "Einstellungen schließen",
+		"searchEmpty": "Keine passenden Einstellungen",
 		"searchResults_one": "{{count}} Ergebnis für „{{query}}“",
 		"searchResults_other": "{{count}} Ergebnisse für „{{query}}“",
 		"sendFeedback": "Feedback senden",

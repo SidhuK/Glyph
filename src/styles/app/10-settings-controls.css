@@ -39,7 +39,6 @@
 	--settings-pill-dot: var(--color-blue-500);
 }
 
-/* Section = a small grey group label (+ optional description) 6px over its card. */
 .settingsSection {
 	display: flex;
 	flex-direction: column;
@@ -138,7 +137,6 @@
 	background: transparent;
 }
 
-/* Rows: 44pt with a label only (whatever the control), taller with a one-line description. */
 .settingsField {
 	position: relative;
 	display: flex;

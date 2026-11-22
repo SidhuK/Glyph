@@ -2,6 +2,8 @@ import { useTranslation } from "react-i18next";
 import { Search, X } from "../Icons";
 import { useSettingsSearch } from "./search/SettingsSearchContext";
 
+const IME_PROCESS_KEY_CODE = 229;
+
 export function SettingsNavSearchField() {
 	const { t } = useTranslation("settings.general");
 	const { query, inputRef, changeQuery, clearQuery, revealFirstMatch } = useSettingsSearch();
@@ -16,6 +18,7 @@ export function SettingsNavSearchField() {
 				value={query}
 				onChange={(event) => changeQuery(event.target.value)}
 				onKeyDown={(event) => {
+					if (event.nativeEvent.isComposing || event.keyCode === IME_PROCESS_KEY_CODE) return;
 					if (event.key === "Enter") {
 						event.preventDefault();
 						revealFirstMatch();

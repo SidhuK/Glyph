@@ -14,18 +14,6 @@ export interface SettingsPaneFilter {
 	matches: readonly SettingsSearchMatch[];
 }
 
-interface SearchableRow {
-	searchId?: string;
-	title?: string;
-	description?: string;
-	sectionTitle?: string;
-}
-
-interface SearchableSection {
-	searchId?: string;
-	title?: string;
-}
-
 function tabEntryId(tab: SettingsTab) {
 	return `${tab}-settings`;
 }
@@ -53,40 +41,11 @@ export function paneFilterFor(
 	tab: SettingsTab,
 ): SettingsPaneFilter | null {
 	if (!filter) return null;
-	const tabMatches = filter.matches.filter((match) => match.tab === tab);
-	if (tabMatches.some((match) => match.id === tabEntryId(tab))) return null;
+	const tabMatches = filter.matches.filter(
+		(match) => match.tab === tab && match.id !== tabEntryId(tab),
+	);
 	if (tabMatches.length === 0) return null;
 	return { filter, tab, matches: tabMatches };
-}
-
-export function textMatchesTokens(text: string | undefined, tokens: readonly string[]) {
-	if (!text) return false;
-	const haystack = text.toLowerCase();
-	return tokens.every((token) => haystack.includes(token));
-}
-
-export function sectionMatches(pane: SettingsPaneFilter, section: SearchableSection) {
-	return (
-		(section.searchId !== undefined &&
-			pane.matches.some((match) => match.id === section.searchId)) ||
-		(section.title !== undefined && pane.matches.some((match) => match.title === section.title)) ||
-		textMatchesTokens(section.title, pane.filter.tokens)
-	);
-}
-
-export function rowMatches(pane: SettingsPaneFilter, row: SearchableRow) {
-	if (row.searchId !== undefined && pane.matches.some((match) => match.id === row.searchId)) {
-		return true;
-	}
-	const titleMatch = pane.matches.some(
-		(match) =>
-			match.title === row.title &&
-			(match.section === undefined || match.section === row.sectionTitle),
-	);
-	return (
-		titleMatch ||
-		textMatchesTokens(`${row.title ?? ""} ${row.description ?? ""}`, pane.filter.tokens)
-	);
 }
 
 export interface HighlightedText {

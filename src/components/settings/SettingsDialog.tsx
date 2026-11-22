@@ -15,35 +15,47 @@ const SettingsTabContent = lazy(() =>
 );
 
 function isFindShortcut(event: KeyboardEvent) {
-	return event.metaKey && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "f";
+	return (
+		event.metaKey &&
+		!event.ctrlKey &&
+		!event.shiftKey &&
+		!event.altKey &&
+		event.key.toLowerCase() === "f"
+	);
+}
+
+function SettingsSearchSummary() {
+	const { t } = useTranslation("settings.general");
+	const { filter, paneFilter } = useSettingsSearch();
+	if (!filter) return null;
+	if (paneFilter) {
+		return (
+			<span className="settingsPanelSearchSummary" aria-live="polite">
+				{t("nav.searchResults", { count: paneFilter.matches.length, query: filter.query })}
+			</span>
+		);
+	}
+	if (filter.matches.length > 0) return null;
+	return (
+		<span className="settingsPanelSearchSummary" aria-live="polite">
+			{t("nav.searchEmpty")}
+		</span>
+	);
 }
 
 function SettingsPanel({ panelRef }: { panelRef: RefObject<HTMLDivElement | null> }) {
-	const { t, i18n } = useTranslation("settings.general");
+	const { i18n } = useTranslation("settings.general");
 	const { spacePath } = useSpace();
 	const settingsTab = useActiveSettingsTab();
-	const { paneFilter } = useSettingsSearch();
 
 	return (
-		<div
-			ref={panelRef}
-			className="settingsTabPanel"
-			tabIndex={-1}
-			data-settings-searching={paneFilter ? "" : undefined}
-		>
+		<div ref={panelRef} className="settingsTabPanel" tabIndex={-1}>
 			<header className="settingsPanelHeader">
 				<div className="settingsPanelTitleRow">
 					<DialogTitle className="settingsPanelTitle">
 						{localizedSettingsTabLabel(settingsTab, i18n.language)}
 					</DialogTitle>
-					{paneFilter ? (
-						<span className="settingsPanelSearchSummary" aria-live="polite">
-							{t("nav.searchResults", {
-								count: paneFilter.matches.length,
-								query: paneFilter.filter.query,
-							})}
-						</span>
-					) : null}
+					<SettingsSearchSummary />
 				</div>
 			</header>
 			<Suspense fallback={null}>

@@ -83,7 +83,6 @@
 	min-height: 0;
 }
 
-/* Same 28pt filled field as the note-list filter; it stays unfocused until clicked or ⌘F. */
 .settingsSidebarSearch {
 	position: relative;
 	display: flex;
@@ -194,7 +193,6 @@
 	white-space: nowrap;
 }
 
-/* System Settings rows: a 22pt coloured squircle with a white glyph, then the label. */
 .settingsTabButton {
 	--settings-tab-tint: #8e8e93;
 	position: relative;
@@ -339,7 +337,6 @@
 	outline: none;
 }
 
-/* The selected row is a solid accent surface that glides between rows. */
 .settingsSidebarTabsHighlight {
 	border-radius: var(--radius-md);
 	background: var(--interactive-accent);
@@ -403,16 +400,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: 18px;
-}
-
-/* While searching, only matching rows stay; a section with none left disappears. */
-.settingsTabPanel[data-settings-searching] .settingsField[data-search-hidden] {
-	display: none;
-}
-
-.settingsTabPanel[data-settings-searching]
-	.settingsSection:not([data-search-match]):not(:has(.settingsField:not([data-search-hidden]))) {
-	display: none;
 }
 
 .settingsSearchMark {

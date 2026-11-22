@@ -4,15 +4,10 @@ import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import { Toggle } from "../base/toggle/toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import {
-	SectionSearchScopeProvider,
-	SettingsSearchHighlight,
-	useSectionSearchMatch,
-	useSettingsRowHidden,
-} from "./search/SettingsSearchScope";
+import { SettingsSearchHighlight } from "./search/SettingsSearchHighlight";
 
 interface SettingsSectionProps {
-	title?: string;
+	title: string;
 	description?: ReactNode;
 	children: ReactNode;
 	className?: string;
@@ -50,30 +45,22 @@ export function SettingsSection({
 	aside,
 	searchId,
 }: SettingsSectionProps) {
-	const searchMatched = useSectionSearchMatch({ title, searchId });
 	return (
 		<section
 			id={id}
 			className={cn("settingsSection", className)}
 			data-settings-section-title={title}
 			data-settings-search-id={searchId}
-			data-search-match={searchMatched || undefined}
 		>
-			{title || description || aside ? (
-				<div className="settingsSectionHeader">
-					<div className="settingsSectionHeaderCopy">
-						{title ? <div className="settingsCardTitle">{title}</div> : null}
-						{description ? <div className="settingsCardDescription">{description}</div> : null}
-					</div>
-					{aside ? <div className="settingsCardActions">{aside}</div> : null}
+			<div className="settingsSectionHeader">
+				<div className="settingsSectionHeaderCopy">
+					<div className="settingsCardTitle">{title}</div>
+					{description ? <div className="settingsCardDescription">{description}</div> : null}
 				</div>
-			) : null}
+				{aside ? <div className="settingsCardActions">{aside}</div> : null}
+			</div>
 			<div className="settingsCard">
-				<div className="settingsSectionBody">
-					<SectionSearchScopeProvider title={title} matched={searchMatched}>
-						{children}
-					</SectionSearchScopeProvider>
-				</div>
+				<div className="settingsSectionBody">{children}</div>
 			</div>
 		</section>
 	);
@@ -92,11 +79,6 @@ export function SettingsRow({
 }: SettingsRowProps) {
 	const CopyTag = htmlFor ? "label" : "div";
 	const rowTitle = title ?? (typeof label === "string" ? label : undefined);
-	const searchHidden = useSettingsRowHidden({
-		searchId,
-		title: rowTitle,
-		description: typeof description === "string" ? description : undefined,
-	});
 
 	const tryToggleRowCheckbox = (target: EventTarget | null, currentTarget: HTMLDivElement) => {
 		const el = target as HTMLElement | null;
@@ -137,7 +119,6 @@ export function SettingsRow({
 			)}
 			data-settings-row-title={rowTitle}
 			data-settings-search-id={searchId}
-			data-search-hidden={searchHidden || undefined}
 			onClick={handleRowClick}
 			onKeyDown={handleRowKeyDown}
 			role={interactive ? "button" : undefined}
