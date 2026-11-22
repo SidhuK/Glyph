@@ -25,8 +25,6 @@ export interface NotePropertyValueFieldProps {
 	onRemoveTag: (index: number, tag: string) => void;
 	onUpdate: (index: number, patch: Partial<NoteProperty>) => void;
 	onStatusColorChange: (status: string, color: EditorTextColor | null) => void;
-	onSetTagInputRef: (rowId: string, node: HTMLInputElement | null) => void;
-	tagInputRef: HTMLInputElement | null;
 }
 
 export function NotePropertyValueField({
@@ -43,8 +41,6 @@ export function NotePropertyValueField({
 	onRemoveTag,
 	onUpdate,
 	onStatusColorChange,
-	onSetTagInputRef,
-	tagInputRef,
 }: NotePropertyValueFieldProps) {
 	const dateDisplayFormat = useDateDisplayFormat();
 
@@ -165,8 +161,6 @@ export function NotePropertyValueField({
 				onSetTagDraft={onSetTagDraft}
 				onAddTag={onAddTag}
 				onRemoveTag={onRemoveTag}
-				onSetTagInputRef={onSetTagInputRef}
-				tagInputRef={tagInputRef}
 			/>
 		);
 	}

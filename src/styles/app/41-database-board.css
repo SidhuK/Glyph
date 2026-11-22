@@ -599,7 +599,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	flex: 0 0 auto;
+	flex: 0 1 auto;
 	min-width: 0;
 	max-width: 100%;
 	height: var(--chip-height);
@@ -611,10 +611,6 @@
 	font-size: var(--chip-font-size);
 	font-weight: var(--chip-font-weight);
 	line-height: var(--chip-height);
-}
-
-.hairlineTag:not(:has(~ .hairlineTag)) {
-	flex: 0 1 auto;
 }
 
 .hairlineTagIcon {

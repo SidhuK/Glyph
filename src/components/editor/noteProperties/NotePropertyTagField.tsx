@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "../../Icons";
 import type { NotePropertyValueFieldProps } from "./NotePropertyValueField";
@@ -14,8 +15,6 @@ type NotePropertyTagFieldProps = Pick<
 	| "onSetTagDraft"
 	| "onAddTag"
 	| "onRemoveTag"
-	| "onSetTagInputRef"
-	| "tagInputRef"
 >;
 
 export function NotePropertyTagField({
@@ -27,10 +26,9 @@ export function NotePropertyTagField({
 	onSetTagDraft,
 	onAddTag,
 	onRemoveTag,
-	onSetTagInputRef,
-	tagInputRef,
 }: NotePropertyTagFieldProps) {
 	const { t } = useTranslation("editor");
+	const inputRef = useRef<HTMLInputElement>(null);
 	const suggestions = buildTagSuggestions(availableTags, property.value_list, tagDraft);
 	return (
 		<>
@@ -40,7 +38,7 @@ export function NotePropertyTagField({
 				onMouseDown={(event) => {
 					if (event.target !== event.currentTarget) return;
 					event.preventDefault();
-					tagInputRef?.focus();
+					inputRef.current?.focus();
 				}}
 			>
 				{property.value_list.map((value, valueIndex) => (
@@ -51,7 +49,7 @@ export function NotePropertyTagField({
 					/>
 				))}
 				<input
-					ref={(node) => onSetTagInputRef(rowId, node)}
+					ref={inputRef}
 					type="text"
 					className="plainTextInput notePropertyTagInput"
 					value={tagDraft}
@@ -80,7 +78,7 @@ export function NotePropertyTagField({
 						type="button"
 						className="notePropertyTagAdd"
 						aria-label={t("properties.addTag")}
-						onClick={() => tagInputRef?.focus()}
+						onClick={() => inputRef.current?.focus()}
 					>
 						<Plus size="var(--icon-xs)" aria-hidden="true" />
 					</button>

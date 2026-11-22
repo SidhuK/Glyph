@@ -23,8 +23,6 @@ interface NotePropertyRowProps {
 	onUpdate: (index: number, patch: Partial<NoteProperty>) => void;
 	onStatusColorChange: (status: string, color: EditorTextColor | null) => void;
 	onRemove: (index: number) => void;
-	onSetTagInputRef: (rowId: string, node: HTMLInputElement | null) => void;
-	tagInputRef: HTMLInputElement | null;
 }
 
 export function NotePropertyRow({
@@ -42,8 +40,6 @@ export function NotePropertyRow({
 	onUpdate,
 	onStatusColorChange,
 	onRemove,
-	onSetTagInputRef,
-	tagInputRef,
 }: NotePropertyRowProps) {
 	const [keyDraft, setKeyDraft] = useState(property.key);
 	const [editingKey, setEditingKey] = useState(false);
@@ -114,8 +110,6 @@ export function NotePropertyRow({
 					onRemoveTag={onRemoveTag}
 					onUpdate={onUpdate}
 					onStatusColorChange={onStatusColorChange}
-					onSetTagInputRef={onSetTagInputRef}
-					tagInputRef={tagInputRef}
 				/>
 			</div>
 			{!readOnly ? (

@@ -26,20 +26,6 @@
 	display: none;
 }
 
-.tagSuggestionItem[data-new]:not(:first-child) {
-	margin-top: 9px;
-}
-
-.tagSuggestionItem[data-new]:not(:first-child)::before {
-	content: "";
-	position: absolute;
-	top: -5px;
-	right: 8px;
-	left: 8px;
-	height: 1px;
-	background: var(--border-light);
-}
-
 .tagSuggestionDot {
 	flex: none;
 	width: 8px;

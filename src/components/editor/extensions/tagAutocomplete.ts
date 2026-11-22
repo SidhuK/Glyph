@@ -72,8 +72,8 @@ export const TagAutocomplete = Extension.create({
 				return matches.slice(0, this.options.suggestionLimit);
 			}
 			return [
-				...matches.slice(0, this.options.suggestionLimit - 1),
 				{ tag: normalizedTag, count: 0, isNew: true },
+				...matches.slice(0, this.options.suggestionLimit - 1),
 			];
 		};
 
