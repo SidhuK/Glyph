@@ -36,15 +36,24 @@ export function buildSettingsSearchFilter(
 	};
 }
 
+function containsAllTokens(text: string, tokens: readonly string[]) {
+	const lower = text.toLowerCase();
+	return tokens.every((token) => lower.includes(token));
+}
+
 export function paneFilterFor(
 	filter: SettingsSearchFilter | null,
 	tab: SettingsTab,
 ): SettingsPaneFilter | null {
 	if (!filter) return null;
 	const tabLabel = filter.matches.find((match) => match.tab === tab)?.tabLabel.toLowerCase();
-	if (tabLabel && filter.tokens.every((token) => tabLabel.includes(token))) return null;
+	const isPaneNameSearch =
+		tabLabel !== undefined && filter.tokens.every((token) => tabLabel.includes(token));
 	const tabMatches = filter.matches.filter(
-		(match) => match.tab === tab && match.id !== tabEntryId(tab),
+		(match) =>
+			match.tab === tab &&
+			match.id !== tabEntryId(tab) &&
+			(!isPaneNameSearch || containsAllTokens(match.title, filter.tokens)),
 	);
 	if (tabMatches.length === 0) return null;
 	return { filter, tab, matches: tabMatches };
