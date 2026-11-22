@@ -2,12 +2,13 @@
 	"nav": {
 		"groupApplication": "애플리케이션",
 		"groupWorkspace": "워크스페이스",
+		"groupSpace": "스페이스 · {{name}}",
 		"groupLabs": "랩",
 		"searchPlaceholder": "설정 검색",
 		"searchAriaLabel": "설정 검색",
 		"clearSearchAriaLabel": "설정 검색 지우기",
 		"closeAriaLabel": "설정 닫기",
-		"searchEmpty": "일치하는 설정이 없습니다",
+		"searchResults_other": "“{{query}}” 검색 결과 {{count}}개",
 		"sendFeedback": "피드백 보내기",
 		"buyLicense": "공식 라이선스 구매"
 	},

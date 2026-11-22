@@ -2,12 +2,14 @@
 	"nav": {
 		"groupApplication": "Application",
 		"groupWorkspace": "Workspace",
+		"groupSpace": "Space · {{name}}",
 		"groupLabs": "Labs",
 		"searchPlaceholder": "Search settings",
 		"searchAriaLabel": "Search settings",
 		"clearSearchAriaLabel": "Clear settings search",
 		"closeAriaLabel": "Close settings",
-		"searchEmpty": "No matching settings",
+		"searchResults_one": "{{count}} result for “{{query}}”",
+		"searchResults_other": "{{count}} results for “{{query}}”",
 		"sendFeedback": "Send feedback",
 		"buyLicense": "Buy official license"
 	},

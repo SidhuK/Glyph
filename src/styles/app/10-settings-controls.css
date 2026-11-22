@@ -39,11 +39,11 @@
 	--settings-pill-dot: var(--color-blue-500);
 }
 
-/* Section = title (+ optional description) 8px over its card. */
+/* Section = a small grey group label (+ optional description) 6px over its card. */
 .settingsSection {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 6px;
 }
 
 /* Every section opens with a title (plus an optional description); an aside such as a
@@ -53,7 +53,7 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 12px;
-	padding: 0;
+	padding: 0 4px;
 	width: 100%;
 }
 
@@ -126,9 +126,9 @@
 }
 
 .settingsCardTitle {
-	font-size: var(--text-base);
+	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
-	color: var(--text-primary);
+	color: var(--text-tertiary);
 	line-height: 1.35;
 }
 
@@ -138,7 +138,7 @@
 	background: transparent;
 }
 
-/* Rows: 48px with a label only (whatever the control), ~60px with a one-line description. */
+/* Rows: 44pt with a label only (whatever the control), taller with a one-line description. */
 .settingsField {
 	position: relative;
 	display: flex;
@@ -146,14 +146,14 @@
 	justify-content: space-between;
 	flex-wrap: wrap;
 	gap: 8px 24px;
-	min-height: 48px;
-	padding: 10px var(--settings-row-inset);
+	min-height: 44px;
+	padding: 8px var(--settings-row-inset);
 	border: 0;
 	background: transparent;
 }
 
 .settingsField:has(> .settingsFieldCopy > .settingsHelp) {
-	padding-block: 12px;
+	padding-block: 10px;
 }
 
 .settingsFieldInteractive:has(input[type="checkbox"]) {
@@ -479,7 +479,7 @@
 .settingsHelp {
 	font-size: var(--text-xs);
 	line-height: 1.45;
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 	white-space: normal;
 	text-wrap: pretty;
 }

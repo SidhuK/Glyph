@@ -11,7 +11,7 @@ export interface SettingsSearchEntry {
 	keywords?: readonly string[];
 }
 
-interface SettingsSearchMatch extends SettingsSearchEntry {
+export interface SettingsSearchMatch extends SettingsSearchEntry {
 	tabLabel: string;
 }
 
