@@ -67,6 +67,10 @@ vi.mock("../../hooks/useNoteArchive", () => ({
 	useNoteArchive: () => ({ enabled: false, isPending: false, setArchived: vi.fn() }),
 }));
 
+vi.mock("../../hooks/useSetNoteStatus", () => ({
+	useSetNoteStatus: () => vi.fn(),
+}));
+
 vi.mock("../../contexts", () => ({
 	useSpace: () => ({ spacePath: "/space" }),
 	useEditorContext: () => ({

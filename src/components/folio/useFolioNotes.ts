@@ -142,6 +142,34 @@ export function useFolioNotes(
 		queryFn: () => listNonMarkdownFiles(folderPrefix),
 		enabled: includesNonMarkdownFiles,
 	});
+	const noteCountQuery = useQuery({
+		queryKey: [
+			"navigation",
+			"all-docs",
+			"folio-count",
+			...scopeQueryKey(scope),
+			hiddenTemplateFolder,
+		],
+		queryFn: () =>
+			invoke("all_docs_count", {
+				...scopeInvokeArgs(scope),
+				excluded_folder_prefix: hiddenTemplateFolder,
+			}),
+	});
+	const visibleFiles = useMemo(
+		() =>
+			includesNonMarkdownFiles
+				? (filesQuery.data?.files ?? []).filter(
+						(file) => !isInTemplatesFolder(file.note_path, hiddenTemplateFolder),
+					)
+				: [],
+		[filesQuery.data?.files, hiddenTemplateFolder, includesNonMarkdownFiles],
+	);
+	const filesPending = includesNonMarkdownFiles && filesQuery.data === undefined;
+	const totalCount =
+		noteCountQuery.data === undefined || filesPending
+			? null
+			: noteCountQuery.data + visibleFiles.length;
 
 	const items = useMemo(
 		() =>
@@ -172,6 +200,7 @@ export function useFolioNotes(
 
 	return {
 		notes: items,
+		totalCount,
 		contentUpdatedAtMs,
 		filesTruncated: includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
 		error: notesQuery.error ?? (includesNonMarkdownFiles ? filesQuery.error : null),

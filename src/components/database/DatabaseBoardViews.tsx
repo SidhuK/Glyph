@@ -14,7 +14,7 @@ import { springPresets } from "../ui/animations";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { DatabaseBoardLaneMenu } from "./DatabaseBoardLaneMenu";
 import { DatabasePriorityBars } from "../status/DatabasePriorityBars";
-import { StatusRingIcon } from "../status/StatusRingIcon";
+import { StatusIcon } from "../status/StatusIcon";
 import { priorityDisplayLabel, statusDisplayLabel } from "../status/propertyOptionLabels";
 
 const DATABASE_BOARD_CARD_SENSORS = [
@@ -61,7 +61,7 @@ export function DatabaseLaneIcon({
 	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID) {
 		return <span className={`${className} is-dot is-hollow`} aria-hidden="true" />;
 	}
-	if (kind === "status") return <StatusRingIcon value={label} className={className} />;
+	if (kind === "status") return <StatusIcon value={label} className={className} />;
 	if (kind === "priority") return <DatabasePriorityBars value={label} className={className} />;
 	return <span className={`${className} is-dot`} aria-hidden="true" />;
 }

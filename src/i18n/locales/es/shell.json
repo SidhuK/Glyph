@@ -58,6 +58,12 @@
 		"listAria": "Lista de notas",
 		"filter": "Filtrar notas",
 		"clearFilter": "Borrar filtro",
+		"sortBy": {
+			"name": "Nombre",
+			"modified": "Fecha de edición",
+			"created": "Fecha de creación"
+		},
+		"noteActions": "Acciones de la nota",
 		"justNow": "Ahora mismo",
 		"noDate": "Sin fecha",
 		"noPreview": "Sin vista previa",
@@ -380,6 +386,8 @@
 			"title": "Elegir apariencia del archivo",
 			"updateFailed": "No se pudo actualizar la apariencia del archivo"
 		},
+		"status": "Estado",
+		"statusUpdateFailed": "No se pudo actualizar el estado",
 		"addFolderTab": "Añadir a carpetas rápidas",
 		"removeFolderTab": "Quitar de carpetas rápidas",
 		"addFile": "Añadir archivo",

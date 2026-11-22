@@ -58,6 +58,12 @@
 		"listAria": "Lista notatek",
 		"filter": "Filtruj notatki",
 		"clearFilter": "Wyczyść filtr",
+		"sortBy": {
+			"name": "Nazwa",
+			"modified": "Data edycji",
+			"created": "Data utworzenia"
+		},
+		"noteActions": "Działania notatki",
 		"justNow": "Przed chwilą",
 		"noDate": "Brak daty",
 		"noPreview": "Brak podglądu",
@@ -394,6 +400,8 @@
 			"title": "Wybierz wygląd pliku",
 			"updateFailed": "Nie udało się zmienić wyglądu pliku"
 		},
+		"status": "Status",
+		"statusUpdateFailed": "Nie udało się zaktualizować statusu",
 		"addFolderTab": "Dodaj do szybkich folderów",
 		"removeFolderTab": "Usuń z szybkich folderów",
 		"addFile": "Dodaj plik",

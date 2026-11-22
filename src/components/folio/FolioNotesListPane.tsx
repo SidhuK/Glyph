@@ -22,6 +22,7 @@ import { isDeleteKey, isEditableTarget } from "../../utils/keyboard";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
+import { isFolioFilterShortcut } from "./FolioFilterField";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
 import { type FolioItem, useFolioNotes } from "./useFolioNotes";
@@ -148,6 +149,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const navigationQueryIdentityRef = useRef(navigationQueryIdentity);
 	const {
 		notes,
+		totalCount,
 		contentUpdatedAtMs,
 		filesTruncated,
 		error,
@@ -160,6 +162,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
+	const searchInputRef = useRef<HTMLInputElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
 	const { data: clockNowMs } = useQuery({
 		queryKey: ["folio", "relative-time-clock"],
@@ -450,6 +453,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			aria-busy={isLoading || isFetchingNextPage}
 			tabIndex={-1}
 			onKeyDown={(event) => {
+				if (isFolioFilterShortcut(event)) {
+					event.preventDefault();
+					searchInputRef.current?.focus();
+					searchInputRef.current?.select();
+					return;
+				}
 				if (isEditableTarget(event.target)) return;
 				if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 					event.preventDefault();
@@ -504,10 +513,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				onReset={() => updatePickerAppearance({ icon: null, color: null })}
 			/>
 			<FolioScopeHeader
+				count={totalCount}
+				searchInputRef={searchInputRef}
 				searchQuery={searchQuery}
 				sortMode={folioSortMode}
 				onSearchQueryChange={setSearchQuery}
 				onSortModeChange={setFolioSortMode}
+				onNewFileInDir={onNewFileInDir}
 			/>
 			{body}
 		</aside>

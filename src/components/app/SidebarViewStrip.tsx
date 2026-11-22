@@ -146,8 +146,9 @@ export function SidebarViewStrip({
 					onSortModeChange={onSortModeChange}
 					triggerClassName="sidebarViewMenuTrigger"
 					triggerLabel={t("sidebar.fileTreeOptions")}
-					icon={MoreHorizontalIcon}
-					iconSize="var(--icon-md)"
+					triggerContent={
+						<HugeiconsIcon icon={MoreHorizontalIcon} size="var(--icon-md)" aria-hidden="true" />
+					}
 				>
 					<DropdownMenuItem onClick={onExpandAllDirs}>
 						<DropdownMenuItemIcon icon={ExpandParagraphIcon} />

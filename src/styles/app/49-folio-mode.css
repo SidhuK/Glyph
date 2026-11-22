@@ -18,22 +18,53 @@
 	background: var(--bg-primary);
 }
 
-/* The filter field centres on the traffic-light line and its left edge sits on the card edge
-   (the list's 6px inset); the sort button keeps the status-ring column. No bottom padding: the
-   list's top fade band supplies the gap. */
 .folioNotesHeader {
+	--folio-title-row-height: 28px;
 	flex: 0 0 auto;
-	padding: calc(var(--window-control-toggle-top) - var(--search-field-height) / 2) 12px 0 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: calc(var(--window-control-toggle-top) - var(--folio-title-row-height) / 2) 12px 0 6px;
 }
 
-.appShell.appShellSidebarCollapsed .folioNotesHeader {
-	padding-left: max(12px, var(--collapsed-sidebar-top-reserve));
-}
-
-.folioNotesControls {
+.folioNotesTitleRow {
+	height: var(--folio-title-row-height);
+	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: 4px;
+	gap: 2px;
+	padding-left: 14px;
+}
+
+.appShell.appShellSidebarCollapsed .folioNotesTitleRow {
+	padding-left: max(14px, calc(var(--collapsed-sidebar-top-reserve) - 6px));
+}
+
+.folioNotesTitle {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	margin: 0;
+	color: var(--text-primary);
+	font-size: var(--text-md);
+	font-weight: var(--font-semibold);
+	line-height: 1.25;
+}
+
+.folioNotesTitleText {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.folioNotesCount {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	font-weight: var(--font-normal);
+	font-variant-numeric: tabular-nums;
 }
 
 .folioNotesSearch {
@@ -113,11 +144,11 @@
 	color: var(--text-primary);
 }
 
-.folioNotesSort {
+.folioNotesSort,
+.folioNotesNewNote {
 	flex: 0 0 auto;
-	width: 28px;
 	height: 28px;
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	padding: 0;
@@ -128,6 +159,17 @@
 	transition: background-color 140ms ease;
 }
 
+.folioNotesSort {
+	gap: 4px;
+	padding: 0 6px;
+	font-size: var(--text-sm);
+	white-space: nowrap;
+}
+
+.folioNotesNewNote {
+	width: 28px;
+}
+
 .folioNotesSort svg {
 	flex: 0 0 auto;
 	color: var(--text-tertiary);
@@ -135,18 +177,26 @@
 
 .folioNotesSort:hover,
 .folioNotesSort:active,
-.folioNotesSort[data-popup-open] {
+.folioNotesSort[data-popup-open],
+.folioNotesNewNote:hover,
+.folioNotesNewNote:active {
 	background: var(--bg-hover);
 }
 
 .folioNotesSort:hover svg,
-.folioNotesSort[data-popup-open] svg {
-	color: var(--text-secondary);
+.folioNotesSort[data-popup-open] svg,
+.folioNotesNewNote:hover {
+	color: var(--text-primary);
 }
 
-.folioNotesSort:focus-visible {
+.folioNotesSort:focus-visible,
+.folioNotesNewNote:focus-visible {
 	border-color: var(--border-focus);
 	outline: none;
+}
+
+.folioNotesSearchKeycap {
+	flex: 0 0 auto;
 }
 
 /* Rows start below a --scroll-fade-size band (the virtualizer's paddingStart), so the fade only
@@ -250,8 +300,18 @@
 	padding-bottom: 9px;
 }
 
-.folioNoteRow:has(.folioNoteThumbnail) {
-	min-height: 7.5rem;
+.folioNoteRow:has(> .folioNoteThumbnail) {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-auto-rows: auto;
+	align-content: start;
+	column-gap: 12px;
+	row-gap: 4px;
+}
+
+.folioNoteRow:has(> .folioNoteThumbnail) > .folioNoteRowTop,
+.folioNoteRow:has(> .folioNoteThumbnail) > .folioNoteBody {
+	grid-column: 1;
 }
 
 .folioNoteRowTop {
@@ -276,6 +336,71 @@
 
 .folioNotePinIcon {
 	flex: 0 0 auto;
+}
+
+.folioNoteMoreButton {
+	position: absolute;
+	top: 8px;
+	right: 10px;
+	width: 24px;
+	height: 24px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-tertiary);
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		opacity 120ms ease,
+		background-color 120ms ease;
+}
+
+.folioNoteListItem:has(.folioNoteThumbnail) .folioNoteMoreButton {
+	right: calc(10px + 3.5rem + 12px);
+}
+
+.folioNoteListItem:has(.folioNoteRow[data-kind="file"]) .folioNoteMoreButton {
+	top: 9px;
+}
+
+.folioNoteListItem:is(:hover, :focus-within) .folioNoteMoreButton {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.folioNoteMoreButton:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.folioNoteMoreButton:focus-visible {
+	border-color: var(--border-focus);
+	outline: none;
+}
+
+.folioNoteListItem:is(:hover, :focus-within) .folioNoteTaskProgress {
+	visibility: hidden;
+}
+
+.folioNoteListItem:is(:hover, :focus-within) .folioNoteRowTop:not(:has(.folioNoteTaskProgress)),
+.folioNoteListItem:is(:hover, :focus-within) .folioFileLine {
+	padding-right: 22px;
+}
+
+.folioNoteStatus {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	color: var(--database-tone, var(--text-tertiary));
+}
+
+.folioNoteStatusIcon {
+	width: var(--icon-sm);
+	height: var(--icon-sm);
 }
 
 .folioNoteRenameInput {
@@ -304,11 +429,6 @@
 	align-items: start;
 }
 
-.folioNoteBody:has(.folioNoteThumbnail) {
-	grid-template-columns: minmax(0, 1fr) auto;
-	column-gap: 10px;
-}
-
 .folioNotePreview {
 	min-width: 0;
 	grid-column: 1;
@@ -326,9 +446,10 @@
 
 .folioNoteThumbnail {
 	grid-column: 2;
-	grid-row: 2;
-	width: 3.25rem;
-	height: 3.25rem;
+	grid-row: 1 / span 2;
+	align-self: center;
+	width: 3.5rem;
+	height: 3.5rem;
 	overflow: hidden;
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	border-radius: var(--radius-8);

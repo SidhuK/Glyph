@@ -58,6 +58,12 @@
 		"listAria": "Notizenliste",
 		"filter": "Notizen filtern",
 		"clearFilter": "Filter löschen",
+		"sortBy": {
+			"name": "Name",
+			"modified": "Bearbeitungsdatum",
+			"created": "Erstellungsdatum"
+		},
+		"noteActions": "Notizaktionen",
 		"justNow": "Gerade eben",
 		"noDate": "Kein Datum",
 		"noPreview": "Keine Vorschau",
@@ -380,6 +386,8 @@
 			"title": "Dateidarstellung auswählen",
 			"updateFailed": "Dateidarstellung konnte nicht aktualisiert werden"
 		},
+		"status": "Status",
+		"statusUpdateFailed": "Status konnte nicht aktualisiert werden",
 		"addFolderTab": "Zu Schnellordnern hinzufügen",
 		"removeFolderTab": "Aus Schnellordnern entfernen",
 		"addFile": "Datei hinzufügen",

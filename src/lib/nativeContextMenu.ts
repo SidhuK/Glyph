@@ -5,9 +5,11 @@ type TauriMenuItem = NonNullable<MenuOptions["items"]>[number];
 
 export type NativeContextMenuItem =
 	| { type?: "item"; label: string; enabled?: boolean; action: () => void }
+	| { type: "check"; label: string; checked: boolean; action: () => void }
+	| { type: "submenu"; label: string; items: NativeContextMenuItem[] }
 	| { type: "separator" };
 
-interface NativeContextMenuEvent {
+export interface NativeContextMenuEvent {
 	clientX: number;
 	clientY: number;
 	preventDefault: () => void;
@@ -18,6 +20,23 @@ function nativeMenuText(label: string): string {
 	return label.replace(/&/g, "&&");
 }
 
+function toTauriMenuItem(item: NativeContextMenuItem): TauriMenuItem {
+	switch (item.type) {
+		case "separator":
+			return { item: "Separator" };
+		case "check":
+			return { text: nativeMenuText(item.label), checked: item.checked, action: item.action };
+		case "submenu":
+			return { text: nativeMenuText(item.label), items: item.items.map(toTauriMenuItem) };
+		default:
+			return {
+				text: nativeMenuText(item.label),
+				enabled: item.enabled ?? true,
+				action: item.action,
+			};
+	}
+}
+
 export async function showNativeContextMenu(
 	event: NativeContextMenuEvent,
 	items: NativeContextMenuItem[],
@@ -25,16 +44,7 @@ export async function showNativeContextMenu(
 	event.preventDefault();
 	event.stopPropagation();
 
-	const menu = await Menu.new({
-		items: items.map((item): TauriMenuItem => {
-			if (item.type === "separator") return { item: "Separator" };
-			return {
-				text: nativeMenuText(item.label),
-				enabled: item.enabled ?? true,
-				action: item.action,
-			};
-		}),
-	});
+	const menu = await Menu.new({ items: items.map(toTauriMenuItem) });
 
 	try {
 		await menu.popup(new LogicalPosition(event.clientX, event.clientY));
