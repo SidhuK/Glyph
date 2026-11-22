@@ -10,9 +10,12 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { useFileTreeContext, useUILayoutContext } from "../../contexts";
+import { useFileTreeContext, useSpace, useUILayoutContext } from "../../contexts";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
-import { normalizeStatusColors } from "../../hooks/useStatusPropertyColors";
+import {
+	STATUS_PROPERTY_COLORS_QUERY_KEY,
+	normalizeStatusColors,
+} from "../../hooks/useStatusPropertyColors";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
@@ -134,6 +137,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onDuplicateFile,
 }: FolioNotesListPaneProps) {
 	const { t } = useTranslation("shell");
+	const { spacePath } = useSpace();
 	const { folioScope, folioSortMode, setFolioScope, setFolioSortMode, templateFolder } =
 		useUILayoutContext();
 	const { itemAppearance, pinnedFiles, setActiveDirPath, setItemAppearance, togglePinnedFile } =
@@ -174,7 +178,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	});
 	const nowMs = Math.max(clockNowMs, contentUpdatedAtMs);
 	const { data: statusColors = NO_STATUS_COLORS } = useQuery({
-		queryKey: ["status-property-colors"],
+		queryKey: [...STATUS_PROPERTY_COLORS_QUERY_KEY, spacePath],
 		queryFn: async () => normalizeStatusColors(await invoke("databases_status_colors_get")),
 	});
 	const pinnedRanks = useMemo(() => {
@@ -256,6 +260,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			if (!path) return;
 			await onOpenFile(path);
 			if (onRenameFile && (folioScope.kind === "all" || folioScope.kind === "folder")) {
+				setSearchQuery("");
 				setRenamingPath(path);
 			}
 		},
