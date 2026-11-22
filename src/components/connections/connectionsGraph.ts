@@ -6,7 +6,6 @@ import { connectionsEdgeScale, spaceNodeSizeScale } from "./connectionsDensity";
 import type { ConnectionsLayout } from "./connectionsLayout";
 
 export type ConnectionsNodeKind = "note" | "tag";
-/** Hubs always keep their label, titles show at rest when there is room, dots only once zoomed in. */
 export type ConnectionsNodeRank = "hub" | "title" | "dot";
 export type ConnectionsGraphVariant = "space" | "local";
 
@@ -102,20 +101,17 @@ function isNoteLinked(graph: ConnectionsGraph, id: string) {
 	return graph.someNeighbor(id, (_neighbor, attributes) => attributes.kind === "note");
 }
 
-/** Degree counts distinct neighbours; rank, size and `linked` follow once every edge exists. */
 function assignRanks(graph: ConnectionsGraph, variant: ConnectionsGraphVariant) {
 	const sizeScale = variant === "space" ? spaceNodeSizeScale(graph.order) : 1;
+	const noteIds = graph.filterNodes((_id, attributes) => attributes.kind === "note");
 	const restRank: ConnectionsNodeRank =
-		variant === "local" || graph.order <= LABEL_ALL_MAX_NODES ? "title" : "dot";
+		variant === "local" || noteIds.length <= LABEL_ALL_MAX_NODES ? "title" : "dot";
 	const degrees = new Map(graph.mapNodes((id) => [id, graph.neighbors(id).length] as const));
 	const degreeOf = (id: string) => degrees.get(id) ?? 0;
 	const hubIds = new Set(
 		variant === "local"
 			? graph.filterNodes((_id, attributes) => attributes.isCenter)
-			: graph
-					.nodes()
-					.sort((a, b) => degreeOf(b) - degreeOf(a))
-					.slice(0, LABELLED_HUB_COUNT),
+			: noteIds.sort((a, b) => degreeOf(b) - degreeOf(a)).slice(0, LABELLED_HUB_COUNT),
 	);
 	graph.updateEachNodeAttributes((id, attributes) => {
 		const degree = degreeOf(id);

@@ -25,7 +25,6 @@ function truncateLabel(label: string) {
 	return label.length > LABEL_MAX_CHARS ? `${label.slice(0, LABEL_MAX_CHARS - 1)}…` : label;
 }
 
-/** One label per node, centred under it and haloed in the page colour so links never cross the text. */
 export function drawConnectionsNodeLabel(
 	context: CanvasRenderingContext2D,
 	data: NodeLabelData,
@@ -58,7 +57,6 @@ function drawCircle(context: CanvasRenderingContext2D, data: NodeLabelData, radi
 	context.arc(data.x, data.y, radius, 0, Math.PI * 2);
 }
 
-/** The selected node sits in an accent halo; a hovered one gets a grey ring. Sigma repaints the node on top. */
 export function drawConnectionsNodeHover(
 	context: CanvasRenderingContext2D,
 	data: NodeLabelData,

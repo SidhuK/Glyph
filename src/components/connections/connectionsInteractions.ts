@@ -42,10 +42,6 @@ function hoverAt(renderer: ConnectionsSigma, id: string): ConnectionsHover | nul
 	return { id, x, y, radius: renderer.scaleSize(data.size), viewWidth: width, viewHeight: height };
 }
 
-/**
- * Hover only reports the node under the pointer. Without `onNodeClick`, the first click selects and
- * a second click opens; local-graph nodes other than the centre can also be dragged.
- */
 export function bindConnectionsPointer({
 	renderer,
 	graph,

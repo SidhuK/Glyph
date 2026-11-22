@@ -17,10 +17,6 @@ export interface ConnectionsFocusState {
 	dotLabels: boolean;
 }
 
-/**
- * Highest focus wins: a path of two or more notes, then the selected neighbourhood ("lens"), then
- * search matches. Hovering never dims anything.
- */
 export type ConnectionsFocusMode = "path" | "lens" | "search" | "rest";
 
 export function connectionsFocusMode(focus: ConnectionsFocusState): ConnectionsFocusMode {

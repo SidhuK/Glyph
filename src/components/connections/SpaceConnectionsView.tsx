@@ -81,6 +81,7 @@ export function SpaceConnectionsView() {
 			>
 				<div
 					ref={containerRef}
+					tabIndex={-1}
 					className="localNoteConnectionsViewport absolute inset-0"
 					aria-label={t("connections.graphAria")}
 				/>

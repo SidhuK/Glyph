@@ -664,7 +664,8 @@
 			"noLinks": "Sans liens",
 			"notes_one": "{{count}} note",
 			"notes_other": "{{count}} notes",
-			"clickToFocus": "Cliquer pour mettre en avant"
+			"clickToFocus": "Cliquer pour mettre en avant",
+			"previewFailed": "Impossible de charger l’aperçu."
 		},
 		"inspector": {
 			"openNote": "Ouvrir la note",

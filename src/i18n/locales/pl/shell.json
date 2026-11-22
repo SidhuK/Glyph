@@ -711,7 +711,8 @@
 			"notes_few": "{{count}} notatki",
 			"notes_many": "{{count}} notatek",
 			"notes_other": "{{count}} notatki",
-			"clickToFocus": "Kliknij, aby wyróżnić"
+			"clickToFocus": "Kliknij, aby wyróżnić",
+			"previewFailed": "Nie udało się wczytać podglądu."
 		},
 		"inspector": {
 			"openNote": "Otwórz notatkę",

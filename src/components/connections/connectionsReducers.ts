@@ -99,7 +99,8 @@ export function buildNodeReducer(
 				break;
 			case "lens":
 				if (selected) style = accent;
-				else if (inNeighbourhood(graph, focus.selectedNodeId, node)) style = neighbour;
+				else if (inNeighbourhood(graph, focus.selectedNodeId, node))
+					style = matched ? accent : neighbour;
 				else style = faded(matched ? accent : resting);
 				break;
 			case "search":

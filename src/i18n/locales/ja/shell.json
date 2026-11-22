@@ -655,7 +655,8 @@
 			"backlinks_other": "{{count}} 件のバックリンク",
 			"noLinks": "リンクなし",
 			"notes_other": "{{count}} 件のノート",
-			"clickToFocus": "クリックしてフォーカス"
+			"clickToFocus": "クリックしてフォーカス",
+			"previewFailed": "プレビューを読み込めませんでした。"
 		},
 		"inspector": {
 			"openNote": "ノートを開く",

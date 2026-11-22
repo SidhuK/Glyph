@@ -9,7 +9,7 @@ import { useConnectionsNotePreview } from "./useConnectionsNotePreview";
 const HOVER_PEEK_WIDTH_PX = 250;
 const HOVER_PEEK_GAP_PX = 12;
 const HOVER_PEEK_MARGIN_PX = 12;
-const HOVER_PEEK_HEIGHT_PX = 120;
+const HOVER_PEEK_HEIGHT_PX = 160;
 
 function countNotes(graph: ConnectionsGraph, ids: readonly string[]) {
 	return ids.filter((id) => graph.getNodeAttribute(id, "kind") === "note").length;
@@ -44,6 +44,11 @@ export function ConnectionsPeekBody({ id, hint }: { id: string; hint?: string })
 				{isNote || label.startsWith("#") ? label : `#${label}`}
 			</h2>
 			{preview.data ? <p className="connectionsPeekPreview">{preview.data}</p> : null}
+			{preview.isError ? (
+				<p className="connectionsPeekPreview" role="alert">
+					{t("connections.peek.previewFailed")}
+				</p>
+			) : null}
 			<div className="connectionsPeekMeta">
 				{meta.map((item) => (
 					<span key={item}>{item}</span>
@@ -63,6 +68,7 @@ function hoverPeekPosition({ x, y, radius, viewWidth, viewHeight }: ConnectionsH
 		left: Math.max(HOVER_PEEK_MARGIN_PX, left),
 		top: `calc(var(--header-height) + ${top}px)`,
 		width: HOVER_PEEK_WIDTH_PX,
+		maxHeight: HOVER_PEEK_HEIGHT_PX,
 	};
 }
 

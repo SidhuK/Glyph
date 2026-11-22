@@ -664,7 +664,8 @@
 			"noLinks": "Keine Links",
 			"notes_one": "{{count}} Notiz",
 			"notes_other": "{{count}} Notizen",
-			"clickToFocus": "Zum Hervorheben klicken"
+			"clickToFocus": "Zum Hervorheben klicken",
+			"previewFailed": "Vorschau konnte nicht geladen werden."
 		},
 		"inspector": {
 			"openNote": "Notiz öffnen",

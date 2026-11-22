@@ -655,7 +655,8 @@
 			"backlinks_other": "백링크 {{count}}개",
 			"noLinks": "링크 없음",
 			"notes_other": "노트 {{count}}개",
-			"clickToFocus": "클릭해 집중하기"
+			"clickToFocus": "클릭해 집중하기",
+			"previewFailed": "미리보기를 불러오지 못했습니다."
 		},
 		"inspector": {
 			"openNote": "노트 열기",

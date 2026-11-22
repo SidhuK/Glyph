@@ -721,7 +721,8 @@
 			"noLinks": "No links",
 			"notes_one": "{{count}} note",
 			"notes_other": "{{count}} notes",
-			"clickToFocus": "Click to focus"
+			"clickToFocus": "Click to focus",
+			"previewFailed": "Couldn’t load the preview."
 		},
 		"inspector": {
 			"openNote": "Open note",

@@ -664,7 +664,8 @@
 			"noLinks": "Sem links",
 			"notes_one": "{{count}} nota",
 			"notes_other": "{{count}} notas",
-			"clickToFocus": "Clique para focar"
+			"clickToFocus": "Clique para focar",
+			"previewFailed": "Não foi possível carregar a prévia."
 		},
 		"inspector": {
 			"openNote": "Abrir nota",

@@ -664,7 +664,8 @@
 			"noLinks": "Sin enlaces",
 			"notes_one": "{{count}} nota",
 			"notes_other": "{{count}} notas",
-			"clickToFocus": "Clic para enfocar"
+			"clickToFocus": "Clic para enfocar",
+			"previewFailed": "No se pudo cargar la vista previa."
 		},
 		"inspector": {
 			"openNote": "Abrir nota",

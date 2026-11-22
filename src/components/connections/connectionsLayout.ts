@@ -14,22 +14,16 @@ export interface ConnectionsCommunity {
 interface ConnectionsNodePosition {
 	readonly x: number;
 	readonly y: number;
-	/** Index into `ConnectionsLayout.communities`; null for unlinked notes. */
-	readonly community: number | null;
 }
 
 export interface ConnectionsLayout {
 	readonly positions: ReadonlyMap<string, ConnectionsNodePosition>;
-	readonly communities: readonly ConnectionsCommunity[];
-	readonly unlinkedIds: readonly string[];
 }
 
-type SerializedNodePosition = readonly [id: string, x: number, y: number, community: number | null];
+type SerializedNodePosition = readonly [id: string, x: number, y: number];
 
 interface SerializedConnectionsLayout {
 	readonly positions: readonly SerializedNodePosition[];
-	readonly communities: readonly ConnectionsCommunity[];
-	readonly unlinkedIds: readonly string[];
 }
 
 export type ConnectionsLayoutResponse =
@@ -61,7 +55,6 @@ function placeUnlinked(
 		id,
 		left + ((index % columns) + (jitter(id, 3) - 0.5) * UNLINKED_JITTER) * UNLINKED_PITCH,
 		top - (Math.floor(index / columns) + (jitter(id, 4) - 0.5) * UNLINKED_JITTER) * UNLINKED_PITCH,
-		null,
 	]);
 }
 
@@ -72,15 +65,13 @@ export function computeSpaceConnectionsLayout(
 	const positions: SerializedNodePosition[] = layOutClusters(graph, communities);
 	const linked = positions.length > 0 ? bounds(positions.map(([, x, y]) => ({ x, y }))) : null;
 	positions.push(...placeUnlinked(unlinkedIds, linked));
-	return { positions, communities, unlinkedIds };
+	return { positions };
 }
 
 export function deserializeConnectionsLayout(
 	layout: SerializedConnectionsLayout,
 ): ConnectionsLayout {
 	return {
-		positions: new Map(layout.positions.map(([id, x, y, community]) => [id, { x, y, community }])),
-		communities: layout.communities,
-		unlinkedIds: layout.unlinkedIds,
+		positions: new Map(layout.positions.map(([id, x, y]) => [id, { x, y }])),
 	};
 }
