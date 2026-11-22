@@ -38,6 +38,13 @@
 	pointer-events: none;
 }
 
+.connectionsHoverPeek :is(.connectionsPeekTitle, .connectionsPeekPreview) {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
 .connectionsPeekTitle {
 	margin: 0;
 	font-size: var(--text-sm);
