@@ -38,6 +38,7 @@ pub struct AllDocsItem {
     pub created: String,
     pub tags: Vec<String>,
     pub people: Vec<String>,
+    pub status: Option<String>,
 }
 
 fn tokenize_search_query(raw: &str) -> Vec<String> {
@@ -253,6 +254,60 @@ pub fn index_set_people_mentions_as_tags_enabled(enabled: bool) -> Result<(), St
     Ok(())
 }
 
+struct NoteScope {
+    archived: bool,
+    folder_prefix: Option<String>,
+    excluded_folder_prefix: Option<String>,
+    tag: Option<String>,
+    person_tag: Option<String>,
+}
+
+impl NoteScope {
+    fn new(
+        archived: Option<bool>,
+        folder_prefix: Option<String>,
+        excluded_folder_prefix: Option<String>,
+        tag: Option<String>,
+        person: Option<String>,
+    ) -> Self {
+        Self {
+            archived: archived.unwrap_or(false),
+            folder_prefix: normalize_folder_prefix(folder_prefix),
+            excluded_folder_prefix: normalize_folder_prefix(excluded_folder_prefix),
+            tag: tag.as_deref().and_then(normalize_tag),
+            person_tag: person.as_deref().and_then(person_handle_to_tag),
+        }
+    }
+
+    fn push_filters(
+        &self,
+        filters: &mut Vec<&'static str>,
+        params: &mut Vec<rusqlite::types::Value>,
+    ) {
+        filters.push(if self.archived { ARCHIVED_NOTES } else { ACTIVE_NOTES });
+        if let Some(prefix) = self.folder_prefix.as_ref() {
+            filters.push("n.path LIKE ? ESCAPE '\\'");
+            params.push(rusqlite::types::Value::from(format!("{}/%", escape_like(prefix))));
+        }
+        if let Some(prefix) = self.excluded_folder_prefix.as_ref() {
+            filters.push("n.path NOT LIKE ? ESCAPE '\\'");
+            params.push(rusqlite::types::Value::from(format!("{}/%", escape_like(prefix))));
+        }
+        if let Some(tag) = self.tag.as_ref() {
+            filters.push(
+                "EXISTS (SELECT 1 FROM tags filtered_tag WHERE filtered_tag.note_id = n.id AND filtered_tag.tag NOT LIKE 'people/%' AND filtered_tag.tag = ? COLLATE NOCASE)",
+            );
+            params.push(rusqlite::types::Value::from(tag.clone()));
+        }
+        if let Some(person_tag) = self.person_tag.as_ref() {
+            filters.push(
+                "EXISTS (SELECT 1 FROM tags filtered_person WHERE filtered_person.note_id = n.id AND filtered_person.tag = ? COLLATE NOCASE)",
+            );
+            params.push(rusqlite::types::Value::from(person_tag.clone()));
+        }
+    }
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn all_docs_list(
     window: WebviewWindow,
@@ -270,11 +325,7 @@ pub async fn all_docs_list(
     let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(2_000).clamp(1, 5_000) as i64;
     let offset = offset.unwrap_or(0) as i64;
-    let folder_prefix = normalize_folder_prefix(folder_prefix);
-    let tag = tag.as_deref().and_then(normalize_tag);
-    let person_tag = person
-        .as_deref()
-        .and_then(person_handle_to_tag);
+    let scope = NoteScope::new(archived, folder_prefix, None, tag, person);
     let query = query
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty());
@@ -314,30 +365,8 @@ pub async fn all_docs_list(
                  FROM notes n
                  LEFT JOIN pinned_paths pinned ON pinned.path = n.path ",
         );
-        let mut filters = vec![if archived.unwrap_or(false) {
-            ARCHIVED_NOTES
-        } else {
-            ACTIVE_NOTES
-        }];
-        if let Some(prefix) = folder_prefix.as_ref() {
-            filters.push("n.path LIKE ? ESCAPE '\\'");
-            params.push(rusqlite::types::Value::from(format!(
-                "{}/%",
-                escape_like(prefix)
-            )));
-        }
-        if let Some(tag) = tag.as_ref() {
-            filters.push(
-                "EXISTS (SELECT 1 FROM tags filtered_tag WHERE filtered_tag.note_id = n.id AND filtered_tag.tag NOT LIKE 'people/%' AND filtered_tag.tag = ? COLLATE NOCASE)",
-            );
-            params.push(rusqlite::types::Value::from(tag.clone()));
-        }
-        if let Some(person_tag) = person_tag.as_ref() {
-            filters.push(
-                "EXISTS (SELECT 1 FROM tags filtered_person WHERE filtered_person.note_id = n.id AND filtered_person.tag = ? COLLATE NOCASE)",
-            );
-            params.push(rusqlite::types::Value::from(person_tag.clone()));
-        }
+        let mut filters = Vec::new();
+        scope.push_filters(&mut filters, &mut params);
         if let Some(query) = query.as_ref() {
             filters.push(
                 "(n.path LIKE ? ESCAPE '\\' OR n.title LIKE ? ESCAPE '\\' OR n.preview LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM tags filtered_search WHERE filtered_search.note_id = n.id AND filtered_search.tag LIKE ? ESCAPE '\\'))",
@@ -384,7 +413,24 @@ pub async fn all_docs_list(
                  GROUP BY ordered_people.note_id
              )
              SELECT vn.path, vn.title, vn.preview, vn.updated, vn.created,
-                    COALESCE(tag_blob.tags, ''), COALESCE(people_blob.people, '')
+                    COALESCE(tag_blob.tags, ''), COALESCE(people_blob.people, ''),
+                    (
+                        SELECT NULLIF(TRIM(status_property.value_text), '')
+                        FROM note_properties status_property
+                        WHERE status_property.note_id = vn.id
+                          AND status_property.value_type = 'status'
+                          AND (
+                              LOWER(status_property.key) = 'status'
+                              OR TRIM(status_property.value_text) <> ''
+                          )
+                        ORDER BY CASE
+                                     WHEN status_property.key = 'status' THEN 0
+                                     WHEN LOWER(status_property.key) = 'status' THEN 1
+                                     ELSE 2
+                                 END,
+                                 status_property.ordinal
+                        LIMIT 1
+                    )
              FROM visible_notes vn
              LEFT JOIN tag_blob ON tag_blob.note_id = vn.id
              LEFT JOIN people_blob ON people_blob.note_id = vn.id
@@ -420,6 +466,7 @@ pub async fn all_docs_list(
                     .split('\n')
                     .filter_map(people_tag_to_handle)
                     .collect(),
+                status: row.get(7).map_err(|e| e.to_string())?,
             });
         }
         Ok(out)
@@ -433,22 +480,19 @@ pub async fn all_docs_count(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     folder_prefix: Option<String>,
+    excluded_folder_prefix: Option<String>,
+    tag: Option<String>,
+    person: Option<String>,
     archived: Option<bool>,
 ) -> Result<u32, String> {
     let root = state.root_for_window(&window)?;
-    let folder_prefix = normalize_folder_prefix(folder_prefix);
+    let scope = NoteScope::new(archived, folder_prefix, excluded_folder_prefix, tag, person);
     tauri::async_runtime::spawn_blocking(move || -> Result<u32, String> {
         let conn = open_db(&root)?;
-        let archive_filter = if archived.unwrap_or(false) { ARCHIVED_NOTES } else { ACTIVE_NOTES };
-        let mut sql = format!("SELECT COUNT(*) FROM notes n WHERE {archive_filter} ");
-        let mut params: Vec<rusqlite::types::Value> = Vec::new();
-        if let Some(prefix) = folder_prefix.as_ref() {
-            sql.push_str("AND n.path LIKE ? ESCAPE '\\' ");
-            params.push(rusqlite::types::Value::from(format!(
-                "{}/%",
-                escape_like(prefix)
-            )));
-        }
+        let mut filters = Vec::new();
+        let mut params = Vec::new();
+        scope.push_filters(&mut filters, &mut params);
+        let sql = format!("SELECT COUNT(*) FROM notes n WHERE {}", filters.join(" AND "));
         let count: i64 = conn
             .query_row(&sql, rusqlite::params_from_iter(params.iter()), |row| {
                 row.get(0)

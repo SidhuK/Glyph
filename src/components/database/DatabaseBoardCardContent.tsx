@@ -6,7 +6,7 @@ import { NoteThumbnail } from "../NoteThumbnail";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import type { EditorTextColor } from "../editor/textColors";
 import { DatabasePriorityBars } from "../status/DatabasePriorityBars";
-import { StatusRingIcon } from "../status/StatusRingIcon";
+import { StatusIcon } from "../status/StatusIcon";
 import { priorityDisplayLabel, statusDisplayLabel } from "../status/propertyOptionLabels";
 import {
 	DatabaseNoteAppearanceIcon,
@@ -81,7 +81,7 @@ export function DatabaseBoardCardContent({
 							title={statusLabel}
 							style={statusToneStyle(status, statusColors)}
 						>
-							<StatusRingIcon value={status} className="databaseBoardCardLeadIcon" />
+							<StatusIcon value={status} className="databaseBoardCardLeadIcon" />
 						</span>
 					) : null}
 					<span className="databaseBoardCardTitle" style={appearanceStyle}>

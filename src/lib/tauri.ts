@@ -380,6 +380,7 @@ export interface AllDocsItem {
 	created: string;
 	tags: string[];
 	people?: string[];
+	status?: string | null;
 }
 
 export interface CalendarDayActivity {
@@ -1226,7 +1227,16 @@ interface TauriCommands {
 		},
 		AllDocsItem[]
 	>;
-	all_docs_count: CommandDef<{ folder_prefix?: string | null; archived?: boolean }, number>;
+	all_docs_count: CommandDef<
+		{
+			folder_prefix?: string | null;
+			excluded_folder_prefix?: string | null;
+			tag?: string;
+			person?: string;
+			archived?: boolean;
+		},
+		number
+	>;
 	index_calendar_activity: CommandDef<
 		{
 			from_date: string;

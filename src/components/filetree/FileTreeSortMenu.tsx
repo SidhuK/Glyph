@@ -1,4 +1,3 @@
-import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,7 +8,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/shadcn/dropdown-menu";
-import type { IconSvgElement } from "@hugeicons/react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
@@ -20,8 +18,7 @@ interface FileTreeSortMenuProps {
 	sortMode: FileTreeSortMode;
 	onSortModeChange: (sortMode: FileTreeSortMode) => void;
 	triggerClassName: string;
-	icon: IconSvgElement;
-	iconSize: string;
+	triggerContent: ReactNode;
 	/** Names the trigger when the menu holds more than sorting. */
 	triggerLabel?: string;
 	/** Extra items listed under the sort modes, after a separator. */
@@ -36,13 +33,11 @@ function stopMenuKeyPropagation(event: KeyboardEvent) {
 	event.stopPropagation();
 }
 
-/** Icon trigger plus a radio menu of the file tree sort modes. */
 export function FileTreeSortMenu({
 	sortMode,
 	onSortModeChange,
 	triggerClassName,
-	icon,
-	iconSize,
+	triggerContent,
 	triggerLabel,
 	children,
 }: FileTreeSortMenuProps) {
@@ -60,7 +55,7 @@ export function FileTreeSortMenu({
 					/>
 				}
 			>
-				<HugeiconsIcon icon={icon} size={iconSize} aria-hidden="true" />
+				{triggerContent}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" side="bottom" onKeyDown={stopMenuKeyPropagation}>
 				{children ? <DropdownMenuLabel>{t("sidebar.sort")}</DropdownMenuLabel> : null}

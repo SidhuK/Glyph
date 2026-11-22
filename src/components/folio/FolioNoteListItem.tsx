@@ -1,17 +1,10 @@
 import { useNoteArchive } from "../../hooks/useNoteArchive";
+import { useSetNoteStatus } from "../../hooks/useSetNoteStatus";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useDraggable } from "@dnd-kit/react";
 import { Link01Icon, PinIcon } from "@hugeicons/core-free-icons";
-import {
-	type CSSProperties,
-	type MouseEvent,
-	forwardRef,
-	memo,
-	useCallback,
-	useMemo,
-	useRef,
-} from "react";
+import { type CSSProperties, forwardRef, memo, useCallback, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat, useEditorContext, useSpace } from "../../contexts";
@@ -20,7 +13,7 @@ import { formatCompactRelativeTime } from "../../lib/compactRelativeTime";
 import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
-import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { type NativeContextMenuEvent, showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { extractFirstUrl, noteScanQueryOptions } from "../../lib/noteThumbnail";
 import { invoke } from "../../lib/tauri";
@@ -31,13 +24,19 @@ import { noteDisplayTitle } from "../app/allDocsPreviewLines";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { HairlineTagList } from "../database/HairlineTagList";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
-import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
+import {
+	type EditorTextColor,
+	getEditorTextColorOption,
+	isEditorTextColor,
+} from "../editor/textColors";
 import { buildFileTreeFileNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,
 	fileTreeEntryDragId,
 } from "../filetree/fileTreeDnd";
+import { FolioNoteMoreButton } from "./FolioNoteMoreButton";
+import { FolioNoteStatusIcon } from "./FolioNoteStatusIcon";
 import type { FolioItem } from "./useFolioNotes";
 
 interface FolioNoteListItemProps {
@@ -58,6 +57,7 @@ interface FolioNoteListItemProps {
 	onTogglePinned: (path: string) => Promise<void> | void;
 	nowMs: number;
 	taskSummary?: NoteTaskSummary | null;
+	statusColors: Record<string, EditorTextColor>;
 	isRenaming?: boolean;
 	onCommitRename: (path: string, nextName: string) => Promise<boolean> | boolean;
 	onCancelRename: () => void;
@@ -140,6 +140,7 @@ export const FolioNoteListItem = memo(
 			onTogglePinned,
 			nowMs,
 			taskSummary = null,
+			statusColors,
 			isRenaming = false,
 			onCommitRename,
 			onCancelRename,
@@ -233,8 +234,9 @@ export const FolioNoteListItem = memo(
 			await openMarkdownInExternalWindow(note.note_path);
 		}, [getEditorState, note.note_path, saveCurrentEditor]);
 		const archive = useNoteArchive();
+		const setNoteStatus = useSetNoteStatus();
 		const handleContextMenu = useCallback(
-			(event: MouseEvent) => {
+			(event: NativeContextMenuEvent) => {
 				void showNativeContextMenu(
 					event,
 					buildFileTreeFileNativeMenu({
@@ -251,6 +253,8 @@ export const FolioNoteListItem = memo(
 						onDuplicate: () => onDuplicate(note.note_path),
 						onTogglePinned: () => void onTogglePinned(note.note_path),
 						onOpenAppearancePicker: () => onOpenAppearancePicker(note.note_path),
+						status: note.status,
+						onSetStatus: (nextStatus) => setNoteStatus(note.note_path, nextStatus),
 						onNewFile: () => void onNewFileInDir(folder),
 						onCreateFromTemplate: () => void onCreateFromTemplateInDir(folder),
 						onCreateFolder: () => void onRequestCreateFolder(folder),
@@ -265,6 +269,7 @@ export const FolioNoteListItem = memo(
 			},
 			[
 				archive,
+				setNoteStatus,
 				folder,
 				handleOpenInSeparateWindow,
 				handleRevealInFinder,
@@ -297,43 +302,45 @@ export const FolioNoteListItem = memo(
 			</>
 		) : null;
 		const rowDetails = (
-			<div className="folioNoteBody">
-				<span className="folioNoteMeta">
-					<span className="folioNoteDates" title={updatedTitle}>
-						{updated}
+			<>
+				<div className="folioNoteBody">
+					<span className="folioNoteMeta">
+						<span className="folioNoteDates" title={updatedTitle}>
+							{updated}
+						</span>
+						{/* Tags, else the first link, else the folder: one kind of detail per row. */}
+						{note.tags.length > 0 ? (
+							<HairlineTagList
+								tags={note.tags}
+								limit={FOLIO_VISIBLE_TAG_LIMIT}
+								titleForTag={formatDatabaseTagLabel}
+							/>
+						) : firstUrl ? (
+							<a
+								href={firstUrl}
+								className="folioNoteUrl"
+								title={firstUrl}
+								onClick={(event) => {
+									event.preventDefault();
+									event.stopPropagation();
+									void openUrl(firstUrl);
+								}}
+							>
+								<HugeiconsIcon icon={Link01Icon} size="var(--icon-xs)" aria-hidden="true" />
+								{firstUrlLabel}
+							</a>
+						) : (
+							<span className="folioNoteFolder">{folder || t("folio.noFolder")}</span>
+						)}
 					</span>
-					{/* Tags, else the first link, else the folder: one kind of detail per row. */}
-					{note.tags.length > 0 ? (
-						<HairlineTagList
-							tags={note.tags}
-							limit={FOLIO_VISIBLE_TAG_LIMIT}
-							titleForTag={formatDatabaseTagLabel}
-						/>
-					) : firstUrl ? (
-						<a
-							href={firstUrl}
-							className="folioNoteUrl"
-							title={firstUrl}
-							onClick={(event) => {
-								event.preventDefault();
-								event.stopPropagation();
-								void openUrl(firstUrl);
-							}}
-						>
-							<HugeiconsIcon icon={Link01Icon} size="var(--icon-xs)" aria-hidden="true" />
-							{firstUrlLabel}
-						</a>
-					) : (
-						<span className="folioNoteFolder">{folder || t("folio.noFolder")}</span>
-					)}
-				</span>
-				<span className="folioNotePreview">{preview}</span>
+					<span className="folioNotePreview">{preview}</span>
+				</div>
 				<NoteThumbnail
 					notePath={note.note_path}
 					preview={note.preview}
 					className="folioNoteThumbnail"
 				/>
-			</div>
+			</>
 		);
 		const fileDetails = (
 			<span className="folioFileLine">
@@ -364,6 +371,9 @@ export const FolioNoteListItem = memo(
 					>
 						<span className="folioNoteRowTop">
 							{pinIcon}
+							{isMarkdown ? (
+								<FolioNoteStatusIcon status={note.status} colors={statusColors} />
+							) : null}
 							<InlineRenameInput
 								key={`${note.note_path}:${fileStem}`}
 								initialValue={fileStem || displayNameFromPath(note.note_path) || untitledLabel}
@@ -447,6 +457,7 @@ export const FolioNoteListItem = memo(
 							<>
 								<span className="folioNoteRowTop">
 									{pinIcon}
+									<FolioNoteStatusIcon status={note.status} colors={statusColors} />
 									<span className="folioNoteTitle">{title}</span>
 									{taskProgress}
 								</span>
@@ -457,6 +468,7 @@ export const FolioNoteListItem = memo(
 						)}
 					</button>
 				)}
+				{isRenaming ? null : <FolioNoteMoreButton onOpenMenu={handleContextMenu} />}
 			</li>
 		);
 	}),

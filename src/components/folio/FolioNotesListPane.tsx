@@ -10,18 +10,23 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { useFileTreeContext, useUILayoutContext } from "../../contexts";
+import { useFileTreeContext, useSpace, useUILayoutContext } from "../../contexts";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
+import {
+	STATUS_PROPERTY_COLORS_QUERY_KEY,
+	normalizeStatusColors,
+} from "../../hooks/useStatusPropertyColors";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { FileTreeSortMode } from "../../lib/settings";
-import type { FileTreeAppearance } from "../../lib/tauri";
+import { type FileTreeAppearance, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { isDeleteKey, isEditableTarget } from "../../utils/keyboard";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
-import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
+import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../editor/textColors";
+import { isFolioFilterShortcut } from "./FolioFilterField";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
 import { type FolioItem, useFolioNotes } from "./useFolioNotes";
@@ -44,6 +49,7 @@ const FOLIO_FILE_ROW_ESTIMATE = 42;
 /** Matches --scroll-fade-size: the list's top fade covers this blank band until it scrolls. */
 const FOLIO_LIST_TOP_FADE = 12;
 const FOLIO_RELATIVE_TIME_REFRESH_MS = 60_000;
+const NO_STATUS_COLORS: Record<string, EditorTextColor> = {};
 
 function sqliteNoCase(value: string): string {
 	return value.replace(/[A-Z]/g, (character) => character.toLowerCase());
@@ -131,6 +137,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onDuplicateFile,
 }: FolioNotesListPaneProps) {
 	const { t } = useTranslation("shell");
+	const { spacePath } = useSpace();
 	const { folioScope, folioSortMode, setFolioScope, setFolioSortMode, templateFolder } =
 		useUILayoutContext();
 	const { itemAppearance, pinnedFiles, setActiveDirPath, setItemAppearance, togglePinnedFile } =
@@ -148,6 +155,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const navigationQueryIdentityRef = useRef(navigationQueryIdentity);
 	const {
 		notes,
+		totalCount,
 		contentUpdatedAtMs,
 		filesTruncated,
 		error,
@@ -160,6 +168,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
+	const searchInputRef = useRef<HTMLInputElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
 	const { data: clockNowMs } = useQuery({
 		queryKey: ["folio", "relative-time-clock"],
@@ -168,6 +177,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		refetchInterval: FOLIO_RELATIVE_TIME_REFRESH_MS,
 	});
 	const nowMs = Math.max(clockNowMs, contentUpdatedAtMs);
+	const { data: statusColors = NO_STATUS_COLORS } = useQuery({
+		queryKey: [...STATUS_PROPERTY_COLORS_QUERY_KEY, spacePath],
+		queryFn: async () => normalizeStatusColors(await invoke("databases_status_colors_get")),
+	});
 	const pinnedRanks = useMemo(() => {
 		const ranks = new Map<string, number>();
 		pinnedFiles.forEach((path, index) => ranks.set(path, index));
@@ -240,6 +253,18 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			focusPane();
 		},
 		[focusPane, onOpenFile],
+	);
+	const createNote = useCallback(
+		async (dirPath: string) => {
+			const path = await onNewFileInDir(dirPath);
+			if (!path) return;
+			await onOpenFile(path);
+			if (onRenameFile && (folioScope.kind === "all" || folioScope.kind === "folder")) {
+				setSearchQuery("");
+				setRenamingPath(path);
+			}
+		},
+		[folioScope.kind, onNewFileInDir, onOpenFile, onRenameFile],
 	);
 	const openNoteInNewTab = useCallback(
 		(path: string) => {
@@ -431,6 +456,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								onCancelRename={cancelRename}
 								appearance={itemAppearance[note.note_path] ?? null}
 								onOpenAppearancePicker={setAppearancePickerPath}
+								statusColors={statusColors}
 								taskSummary={
 									note.is_markdown ? (taskSummariesByPath?.[note.note_path] ?? null) : null
 								}
@@ -450,6 +476,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			aria-busy={isLoading || isFetchingNextPage}
 			tabIndex={-1}
 			onKeyDown={(event) => {
+				if (isFolioFilterShortcut(event)) {
+					event.preventDefault();
+					searchInputRef.current?.focus();
+					searchInputRef.current?.select();
+					return;
+				}
 				if (isEditableTarget(event.target)) return;
 				if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 					event.preventDefault();
@@ -504,10 +536,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				onReset={() => updatePickerAppearance({ icon: null, color: null })}
 			/>
 			<FolioScopeHeader
+				count={totalCount}
+				searchInputRef={searchInputRef}
 				searchQuery={searchQuery}
 				sortMode={folioSortMode}
 				onSearchQueryChange={setSearchQuery}
 				onSortModeChange={setFolioSortMode}
+				onNewNote={(dirPath) => void createNote(dirPath)}
 			/>
 			{body}
 		</aside>

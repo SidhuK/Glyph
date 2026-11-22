@@ -58,6 +58,12 @@
 		"listAria": "ノート一覧",
 		"filter": "ノートを絞り込む",
 		"clearFilter": "フィルターをクリア",
+		"sortBy": {
+			"name": "名前",
+			"modified": "編集日",
+			"created": "作成日"
+		},
+		"noteActions": "ノートのアクション",
 		"justNow": "たった今",
 		"noDate": "日付なし",
 		"noPreview": "プレビューなし",
@@ -379,6 +385,8 @@
 			"title": "ファイルの外観を選択",
 			"updateFailed": "ファイルの外観を更新できませんでした"
 		},
+		"status": "ステータス",
+		"statusUpdateFailed": "ステータスを更新できませんでした",
 		"addFolderTab": "クイックフォルダに追加",
 		"removeFolderTab": "クイックフォルダから削除",
 		"addFile": "ファイルを追加",

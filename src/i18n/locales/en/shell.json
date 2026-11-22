@@ -58,6 +58,12 @@
 		"listAria": "Notes list",
 		"filter": "Filter notes",
 		"clearFilter": "Clear filter",
+		"sortBy": {
+			"name": "Name",
+			"modified": "Date edited",
+			"created": "Date created"
+		},
+		"noteActions": "Note actions",
 		"justNow": "Just now",
 		"noDate": "No date",
 		"noPreview": "No preview",
@@ -380,6 +386,8 @@
 			"title": "Choose file appearance",
 			"updateFailed": "Could not update file appearance"
 		},
+		"status": "Status",
+		"statusUpdateFailed": "Couldn't update status",
 		"addFolderTab": "Add to quick folders",
 		"removeFolderTab": "Remove from quick folders",
 		"addFile": "Add file",

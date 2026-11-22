@@ -251,7 +251,7 @@
 }
 
 .is-empty-status .propertyValueTextIcon circle {
-	stroke-dasharray: 1.6 1.7;
+	stroke-dasharray: 3 3.3;
 }
 
 .databaseRow:is(:hover, :focus-within) .is-empty-status .propertyValueTextIcon,

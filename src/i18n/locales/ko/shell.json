@@ -58,6 +58,12 @@
 		"listAria": "노트 목록",
 		"filter": "노트 필터링",
 		"clearFilter": "필터 지우기",
+		"sortBy": {
+			"name": "이름",
+			"modified": "편집한 날짜",
+			"created": "생성일"
+		},
+		"noteActions": "노트 작업",
 		"justNow": "방금",
 		"noDate": "날짜 없음",
 		"noPreview": "미리보기 없음",
@@ -379,6 +385,8 @@
 			"title": "파일 모양 선택",
 			"updateFailed": "파일 모양을 업데이트할 수 없습니다"
 		},
+		"status": "상태",
+		"statusUpdateFailed": "상태를 업데이트할 수 없습니다",
 		"addFolderTab": "빠른 폴더에 추가",
 		"removeFolderTab": "빠른 폴더에서 제거",
 		"addFile": "파일 추가",

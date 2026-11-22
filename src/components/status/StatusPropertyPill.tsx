@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { statusTextStyle } from "../../lib/statusProperties";
 import type { EditorTextColor } from "../editor/textColors";
-import { StatusRingIcon } from "./StatusRingIcon";
+import { StatusIcon } from "./StatusIcon";
 import { statusDisplayLabel } from "./propertyOptionLabels";
 
 interface StatusPropertyPillProps {
@@ -21,7 +21,7 @@ export function StatusPropertyPill({ value, colors = {}, className }: StatusProp
 			style={statusTextStyle(value, colors)}
 			title={label}
 		>
-			<StatusRingIcon value={value} className="propertyValueTextIcon" />
+			<StatusIcon value={value} className="propertyValueTextIcon" />
 			<span>{label}</span>
 		</span>
 	);

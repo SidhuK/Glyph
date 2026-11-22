@@ -1,6 +1,7 @@
 import { i18n } from "../../i18n";
 import type { NativeContextMenuItem } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
+import { statusColorKey, statusOptionsWithCustomValues } from "../../lib/statusProperties";
 
 interface FileTreeFileMenuOptions {
 	path: string;
@@ -16,6 +17,8 @@ interface FileTreeFileMenuOptions {
 	onDuplicate: () => void;
 	onTogglePinned: () => void;
 	onOpenAppearancePicker: () => void;
+	status?: string | null;
+	onSetStatus?: (status: string) => void;
 	onNewFile: () => void;
 	onCreateFromTemplate: () => void;
 	onCreateFolder: () => void;
@@ -29,6 +32,23 @@ export function fileTreeAppearanceNativeMenu(
 	return {
 		label: i18n.t("shell:fileTree.iconAndColor"),
 		action: onOpenAppearancePicker,
+	};
+}
+
+function statusNativeMenu(
+	status: string | null,
+	onSetStatus: (status: string) => void,
+): NativeContextMenuItem {
+	const currentKey = statusColorKey(status);
+	return {
+		type: "submenu",
+		label: i18n.t("shell:fileTree.status"),
+		items: statusOptionsWithCustomValues([status]).map((option) => ({
+			type: "check",
+			label: option.custom ? option.label : i18n.t(`shell:collections.status.${option.id}`),
+			checked: statusColorKey(option.label) === currentKey,
+			action: () => onSetStatus(option.label),
+		})),
 	};
 }
 
@@ -46,6 +66,8 @@ export function buildFileTreeFileNativeMenu({
 	onDuplicate,
 	onTogglePinned,
 	onOpenAppearancePicker,
+	status = null,
+	onSetStatus,
 	onNewFile,
 	onCreateFromTemplate,
 	onCreateFolder,
@@ -73,6 +95,7 @@ export function buildFileTreeFileNativeMenu({
 			action: onTogglePinned,
 		},
 		fileTreeAppearanceNativeMenu(onOpenAppearancePicker),
+		...(isMarkdown && onSetStatus ? [statusNativeMenu(status, onSetStatus)] : []),
 		{ type: "separator" },
 		{ label: i18n.t("shell:fileTree.addFile"), action: onNewFile },
 		{ label: i18n.t("shell:fileTree.createFromTemplate"), action: onCreateFromTemplate },

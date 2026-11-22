@@ -3,7 +3,7 @@ import { ArrowDown02Icon, ArrowUp02Icon } from "@hugeicons/core-free-icons";
 import { useTranslation } from "react-i18next";
 import { databaseColumnLabel } from "../../lib/database/columns";
 import type { DatabaseColumn, DatabaseSort } from "../../lib/database/types";
-import { StatusRingIcon } from "../status/StatusRingIcon";
+import { StatusIcon } from "../status/StatusIcon";
 import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
 import { isStatusColumn } from "./databaseTableColumns";
 
@@ -52,7 +52,7 @@ export function DatabaseTableHeaderContent({
 				title={statusName}
 				onClick={() => onToggleSort(column)}
 			>
-				<StatusRingIcon value="todo" className="databaseHeaderStatusIcon" />
+				<StatusIcon value="todo" className="databaseHeaderStatusIcon" />
 				<SortIndicator activeSort={activeSort} columnId={column.id} />
 			</button>
 		);
