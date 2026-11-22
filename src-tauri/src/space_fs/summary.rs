@@ -23,7 +23,7 @@ impl SummaryAccumulator {
                 dir_rel_path: dir_rel_path.to_string_lossy().to_string(),
                 name,
                 total_files_recursive: 0,
-                total_markdown_recursive: 0,
+                total_documents_recursive: 0,
                 truncated: false,
             },
         }
@@ -31,9 +31,13 @@ impl SummaryAccumulator {
 
     fn record_file(&mut self, rel_path: &Path) {
         self.summary.total_files_recursive = self.summary.total_files_recursive.saturating_add(1);
-        if utils::is_markdown_path(rel_path) {
-            self.summary.total_markdown_recursive =
-                self.summary.total_markdown_recursive.saturating_add(1);
+        let is_drawing = rel_path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("excalidraw"));
+        if utils::is_markdown_path(rel_path) || is_drawing {
+            self.summary.total_documents_recursive =
+                self.summary.total_documents_recursive.saturating_add(1);
         }
     }
 }

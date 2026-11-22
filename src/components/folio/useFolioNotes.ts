@@ -166,7 +166,9 @@ export function useFolioNotes(
 	const listedFiles = useMemo(() => {
 		if (!includesNonMarkdownFiles) return [];
 		const files = filesQuery.data?.files ?? [];
-		return showNonMarkdownFiles ? files : files.filter((file) => isExcalidrawPath(file.note_path));
+		return showNonMarkdownFiles === false
+			? files.filter((file) => isExcalidrawPath(file.note_path))
+			: files;
 	}, [filesQuery.data?.files, includesNonMarkdownFiles, showNonMarkdownFiles]);
 	const visibleFiles = useMemo(
 		() => listedFiles.filter((file) => !isInTemplatesFolder(file.note_path, hiddenTemplateFolder)),

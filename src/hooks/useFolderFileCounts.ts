@@ -21,7 +21,7 @@ function countsFromSummaries(
 	for (const summary of summaries) {
 		next[summary.dir_rel_path] = includeNonMarkdown
 			? summary.total_files_recursive
-			: summary.total_markdown_recursive;
+			: summary.total_documents_recursive;
 	}
 	return next;
 }

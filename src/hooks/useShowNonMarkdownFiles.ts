@@ -18,12 +18,14 @@ export function useShowNonMarkdownFiles(): boolean | null {
 		enabled: Boolean(spacePath),
 	});
 
-	useTauriEvent("settings:updated", (payload) => {
+	useTauriEvent("settings:updated", async (payload) => {
 		const next = payload.ui?.showNonMarkdownFiles;
 		if (typeof next !== "boolean" || !payload.spacePath) return;
-		queryClient.setQueryData(showNonMarkdownFilesQueryKey(payload.spacePath), next);
+		const eventQueryKey = showNonMarkdownFilesQueryKey(payload.spacePath);
+		await queryClient.cancelQueries({ queryKey: eventQueryKey });
+		queryClient.setQueryData(eventQueryKey, next);
 	});
 
-	if (!spacePath || query.isError) return SPACE_SETTINGS.showNonMarkdownFiles.defaultValue;
-	return query.data ?? null;
+	if (!spacePath) return SPACE_SETTINGS.showNonMarkdownFiles.defaultValue;
+	return query.data ?? (query.isError ? SPACE_SETTINGS.showNonMarkdownFiles.defaultValue : null);
 }
