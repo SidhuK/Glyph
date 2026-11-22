@@ -174,10 +174,7 @@ export function useFolioNotes(
 	);
 	const filesPending =
 		includesNonMarkdownFiles && (filesQuery.data === undefined || showNonMarkdownFiles === null);
-	const filesTruncated =
-		includesNonMarkdownFiles &&
-		showNonMarkdownFiles === true &&
-		(filesQuery.data?.truncated ?? false);
+	const filesTruncated = includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false);
 	const totalCount =
 		noteCountQuery.data === undefined || filesPending || filesTruncated
 			? null

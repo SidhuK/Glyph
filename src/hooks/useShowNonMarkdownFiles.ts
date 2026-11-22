@@ -8,7 +8,6 @@ function showNonMarkdownFilesQueryKey(spacePath: string | null) {
 	return ["settings", "show-non-markdown-files", spacePath] as const;
 }
 
-/** Per-space visibility of non-Markdown files in the file tree and Folio list; null while loading. */
 export function useShowNonMarkdownFiles(): boolean | null {
 	const { spacePath } = useSpace();
 	const queryClient = useQueryClient();
@@ -25,6 +24,6 @@ export function useShowNonMarkdownFiles(): boolean | null {
 		queryClient.setQueryData(showNonMarkdownFilesQueryKey(payload.spacePath), next);
 	});
 
-	if (!spacePath) return SPACE_SETTINGS.showNonMarkdownFiles.defaultValue;
+	if (!spacePath || query.isError) return SPACE_SETTINGS.showNonMarkdownFiles.defaultValue;
 	return query.data ?? null;
 }
