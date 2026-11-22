@@ -4,7 +4,7 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	max-width: calc(100% - 264px - 56px);
+	max-width: calc(100% - 250px - 56px);
 	height: 32px;
 	padding: 0 4px 0 10px;
 	font-size: var(--text-sm);

@@ -1,9 +1,10 @@
 import { type KeyboardEvent, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
-import { ConnectionsClusterChips } from "./ConnectionsClusterChips";
 import { ConnectionsInspector } from "./ConnectionsInspector";
+import { ConnectionsLegend } from "./ConnectionsLegend";
 import { ConnectionsPathBar } from "./ConnectionsPathBar";
+import { ConnectionsHoverPeek } from "./ConnectionsPeek";
 import {
 	type ConnectionsViewContextValue,
 	ConnectionsViewProvider,
@@ -69,9 +70,7 @@ export function SpaceConnectionsView() {
 	if (!loading && data.error) {
 		return <ConnectionsErrorState error={data.error} onRetry={data.retry} />;
 	}
-	if (!data.dataLoading && (!data.payload || data.payload.nodes.length === 0)) {
-		return <ConnectionsEmptyState />;
-	}
+	const empty = !data.dataLoading && !data.hasLinks;
 	const hasConnected = Boolean(data.filteredPayload && data.filteredPayload.nodes.length > 0);
 
 	return (
@@ -85,17 +84,19 @@ export function SpaceConnectionsView() {
 					className="localNoteConnectionsViewport absolute inset-0"
 					aria-label={t("connections.graphAria")}
 				/>
-				{data.dataLoading ? null : <SpaceConnectionsToolbar />}
+				{data.dataLoading ? null : <SpaceConnectionsToolbar disabled={empty} />}
 				{loading ? <ConnectionsLoadingState arranging={!data.dataLoading} /> : null}
-				{!loading && !hasConnected ? <ConnectionsNoConnectedState /> : null}
-				{!loading && hasConnected ? (
+				{empty ? <ConnectionsEmptyState /> : null}
+				{!loading && !empty && !hasConnected ? <ConnectionsNoConnectedState /> : null}
+				{!loading && !empty && hasConnected ? (
 					<>
 						<ConnectionsPathBar />
 						<ConnectionsInspector />
-						<ConnectionsClusterChips />
-						<ConnectionsZoomControls />
+						<ConnectionsHoverPeek />
+						<ConnectionsLegend />
 					</>
 				) : null}
+				{!loading && (empty || hasConnected) ? <ConnectionsZoomControls disabled={empty} /> : null}
 			</section>
 		</ConnectionsViewProvider>
 	);

@@ -1,6 +1,7 @@
 import { type ReactNode, type RefObject, createContext, useContext } from "react";
 import type { ConnectionsGraphOptions } from "../../lib/connectionsGraphOptions";
 import type { ConnectionsGraph } from "./connectionsGraph";
+import type { ConnectionsHover } from "./connectionsInteractions";
 import type { ConnectionsOverlayApi } from "./useSigmaConnections";
 
 export type ConnectionsPathEnd = "from" | "to";
@@ -21,11 +22,8 @@ export interface ConnectionsViewContextValue {
 	/** Enters path mode with `id` as the start and no end. */
 	readonly startPath: (id: string) => void;
 	readonly clearPath: () => void;
-	readonly hiddenCommunities: ReadonlySet<number>;
-	readonly toggleCommunity: (index: number) => void;
-	readonly showUnlinked: boolean;
-	readonly setShowUnlinked: (show: boolean) => void;
-	readonly unlinkedCount: number;
+	readonly hover: ConnectionsHover | null;
+	readonly hasUnlinked: boolean;
 	readonly zoomPercent: number;
 	readonly overlay: RefObject<ConnectionsOverlayApi>;
 	/** Opens a note, or runs a tag search for a tag. */

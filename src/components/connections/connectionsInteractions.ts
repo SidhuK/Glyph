@@ -5,12 +5,22 @@ import type {
 } from "./connectionsGraph";
 import type { ConnectionsFocusState } from "./connectionsTheme";
 
+export interface ConnectionsHover {
+	readonly id: string;
+	readonly x: number;
+	readonly y: number;
+	readonly radius: number;
+	readonly viewWidth: number;
+	readonly viewHeight: number;
+}
+
 export interface ConnectionsPointerCallbacks {
 	onNoteOpen?: (nodeId: string) => void;
 	onTagActivate?: (tagId: string, label: string) => void;
 	/** When provided, clicks report here instead of selecting and opening nodes. */
 	onNodeClick?: (nodeId: string, modifiers: { shiftKey: boolean; metaKey: boolean }) => void;
 	onStageClick?: () => void;
+	onNodeHover?: (hover: ConnectionsHover | null) => void;
 	/** Camera zoom as a percent of the fitted view (fit = 100). */
 	onZoomChange?: (percent: number) => void;
 }
@@ -24,9 +34,17 @@ interface ConnectionsPointerOptions {
 	readonly getCallbacks: () => ConnectionsPointerCallbacks;
 }
 
+function hoverAt(renderer: ConnectionsSigma, id: string): ConnectionsHover | null {
+	const data = renderer.getNodeDisplayData(id);
+	if (!data) return null;
+	const { x, y } = renderer.framedGraphToViewport(data);
+	const { width, height } = renderer.getDimensions();
+	return { id, x, y, radius: renderer.scaleSize(data.size), viewWidth: width, viewHeight: height };
+}
+
 /**
- * Hover focuses a node's neighbourhood. Without `onNodeClick`, the first click selects and a second
- * click opens; local-graph nodes other than the centre can also be dragged.
+ * Hover only reports the node under the pointer. Without `onNodeClick`, the first click selects and
+ * a second click opens; local-graph nodes other than the centre can also be dragged.
  */
 export function bindConnectionsPointer({
 	renderer,
@@ -38,17 +56,21 @@ export function bindConnectionsPointer({
 }: ConnectionsPointerOptions) {
 	let draggedNode: string | null = null;
 	let didDrag = false;
+	let hoveredNode: string | null = null;
 	const camera = renderer.getCamera();
+	const reportHover = () =>
+		getCallbacks().onNodeHover?.(hoveredNode ? hoverAt(renderer, hoveredNode) : null);
 
 	renderer.on("enterNode", ({ node }) => {
-		focus.hoveredNode = node;
-		focus.hoverIds = new Set([node, ...graph.neighbors(node)]);
-		refresh();
+		hoveredNode = node;
+		reportHover();
 	});
 	renderer.on("leaveNode", () => {
-		focus.hoveredNode = null;
-		focus.hoverIds = null;
-		refresh();
+		hoveredNode = null;
+		reportHover();
+	});
+	camera.on("updated", () => {
+		if (hoveredNode) reportHover();
 	});
 	renderer.on("clickNode", ({ node, event }) => {
 		if (didDrag) return;

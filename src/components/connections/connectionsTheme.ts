@@ -1,5 +1,3 @@
-import type { ConnectionsGraphVariant } from "./connectionsGraph";
-
 /** Opaque inks: sigma's WebGL programs ignore alpha, so translucent tokens are flattened onto the page. */
 export interface ConnectionsPalette {
 	background: string;
@@ -10,29 +8,24 @@ export interface ConnectionsPalette {
 }
 
 export interface ConnectionsFocusState {
-	hoveredNode: string | null;
-	/** Hovered node plus its neighbours. */
-	hoverIds: Set<string> | null;
 	selectedNodeId: string | null;
 	searchMatchIds: Set<string> | null;
 	pathIds: Set<string> | null;
 	/** Unordered `connectionsPairKey` of each consecutive path step. */
 	pathPairs: Set<string> | null;
-	hiddenCommunities: ReadonlySet<number>;
-	showUnlinked: boolean;
 	/** True once the camera is zoomed past the dot-label threshold. */
 	dotLabels: boolean;
 }
 
 /**
- * Highest focus wins: a path of two or more notes, then the hovered or selected neighbourhood
- * ("lens"), then search matches.
+ * Highest focus wins: a path of two or more notes, then the selected neighbourhood ("lens"), then
+ * search matches. Hovering never dims anything.
  */
 export type ConnectionsFocusMode = "path" | "lens" | "search" | "rest";
 
 export function connectionsFocusMode(focus: ConnectionsFocusState): ConnectionsFocusMode {
 	if ((focus.pathIds?.size ?? 0) >= 2) return "path";
-	if (focus.hoveredNode !== null || focus.selectedNodeId !== null) return "lens";
+	if (focus.selectedNodeId !== null) return "lens";
 	return focus.searchMatchIds ? "search" : "rest";
 }
 
@@ -121,16 +114,15 @@ export function resolveConnectionsPalette(container: HTMLElement): ConnectionsPa
 	};
 }
 
-/** Resolves a UI type-scale token to pixels so labels follow the user's UI font size. */
-export function resolveConnectionsLabelSize(
-	container: HTMLElement,
-	variant: ConnectionsGraphVariant,
-) {
-	const [token, fallback] = variant === "local" ? ["--text-xs", 12] : ["--text-2xs", 11];
+const LABEL_SIZE_TOKEN = "--text-xs";
+const LABEL_SIZE_FALLBACK_PX = 12;
+
+/** Resolves the UI type-scale token to pixels so labels follow the user's UI font size. */
+export function resolveConnectionsLabelSize(container: HTMLElement) {
 	const probe = document.createElement("span");
-	probe.style.cssText = `font-size: ${fallback}px; font-size: var(${token});`;
+	probe.style.cssText = `font-size: ${LABEL_SIZE_FALLBACK_PX}px; font-size: var(${LABEL_SIZE_TOKEN});`;
 	container.appendChild(probe);
 	const size = Number.parseFloat(getComputedStyle(probe).fontSize);
 	probe.remove();
-	return Number.isFinite(size) && size > 0 ? size : fallback;
+	return Number.isFinite(size) && size > 0 ? size : LABEL_SIZE_FALLBACK_PX;
 }

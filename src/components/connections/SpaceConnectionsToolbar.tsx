@@ -7,7 +7,7 @@ import { Input } from "../ui/shadcn/input";
 import { ConnectionsDisplayPopover } from "./ConnectionsDisplayPopover";
 import { useConnectionsView } from "./ConnectionsViewContext";
 
-export function SpaceConnectionsToolbar() {
+export function SpaceConnectionsToolbar({ disabled }: { disabled: boolean }) {
 	const { t } = useTranslation("shell");
 	const { pathMode, setPathMode, searchQuery, setSearchQuery, searchInputRef } =
 		useConnectionsView();
@@ -29,13 +29,14 @@ export function SpaceConnectionsToolbar() {
 					/>
 					<Input
 						ref={searchInputRef}
+						disabled={disabled}
 						value={searchQuery}
 						onChange={(event) => setSearchQuery(event.target.value)}
 						placeholder={t("connections.searchPlaceholder")}
 						aria-label={t("connections.searchAria")}
 						className="spaceConnectionsSearchInput"
 					/>
-					{searchQuery ? null : (
+					{searchQuery || disabled ? null : (
 						<kbd className="spaceConnectionsSearchHint" aria-hidden="true">
 							⌘F
 						</kbd>
@@ -46,6 +47,7 @@ export function SpaceConnectionsToolbar() {
 					size="sm"
 					variant="ghost"
 					static
+					disabled={disabled}
 					aria-label={t("connections.pathAria")}
 					aria-pressed={pathMode}
 					onClick={() => setPathMode(!pathMode)}
@@ -53,7 +55,7 @@ export function SpaceConnectionsToolbar() {
 					<HugeiconsIcon icon={Route01Icon} size="var(--icon-sm)" />
 					{t("connections.path")}
 				</Button>
-				<ConnectionsDisplayPopover />
+				<ConnectionsDisplayPopover disabled={disabled} />
 			</div>
 		</div>
 	);

@@ -4,17 +4,23 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../ui/shadcn/button";
 import { useConnectionsView } from "./ConnectionsViewContext";
 
-export function ConnectionsZoomControls() {
+export function ConnectionsZoomControls({ disabled }: { disabled: boolean }) {
 	const { t } = useTranslation("shell");
 	const { overlay, zoomPercent } = useConnectionsView();
 
 	return (
-		<div className="connectionsZoomControls" role="group" aria-label={t("connections.zoomLevel")}>
+		<div
+			className="connectionsZoomControls"
+			data-disabled={disabled ? "" : undefined}
+			role="group"
+			aria-label={t("connections.zoomLevel")}
+		>
 			<Button
 				type="button"
 				size="icon-xs"
 				variant="ghost"
 				static
+				disabled={disabled}
 				aria-label={t("connections.zoomOut")}
 				onClick={() => overlay.current.zoomOut()}
 			>
@@ -26,6 +32,7 @@ export function ConnectionsZoomControls() {
 				size="icon-xs"
 				variant="ghost"
 				static
+				disabled={disabled}
 				aria-label={t("connections.zoomIn")}
 				onClick={() => overlay.current.zoomIn()}
 			>
@@ -36,6 +43,7 @@ export function ConnectionsZoomControls() {
 				size="icon-xs"
 				variant="ghost"
 				static
+				disabled={disabled}
 				aria-label={t("connections.zoomFit")}
 				onClick={() => overlay.current.fitView()}
 			>

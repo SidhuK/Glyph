@@ -3,6 +3,7 @@ import type { ConnectionsGraphOptions } from "../../lib/connectionsGraphOptions"
 import { dispatchTagClick, dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
 import type { ConnectionsPathEnd, ConnectionsViewContextValue } from "./ConnectionsViewContext";
 import type { ConnectionsGraph } from "./connectionsGraph";
+import type { ConnectionsHover } from "./connectionsInteractions";
 import { findConnectionsPath } from "./connectionsPath";
 import { connectionsSearchMatchIds } from "./connectionsSearch";
 import { connectionsDisplayState } from "./useConnectionsSettings";
@@ -14,7 +15,6 @@ interface PathEnds {
 }
 
 const NO_PATH_ENDS: PathEnds = { from: null, to: null };
-const NO_HIDDEN: ReadonlySet<number> = new Set();
 
 function openNote(id: string) {
 	dispatchWikiLinkClick({
@@ -55,22 +55,17 @@ export function useConnectionsViewState({
 	const [selectedState, setSelectedState] = useState<string | null>(null);
 	const [pathMode, setPathModeState] = useState(false);
 	const [pathEnds, setPathEnds] = useState<PathEnds>(NO_PATH_ENDS);
-	// Community indexes are reassigned on every layout, so hidden clusters only apply to the graph they were hidden in.
-	const [hiddenState, setHiddenState] = useState<{
-		readonly graph: ConnectionsGraph | null;
-		readonly ids: ReadonlySet<number>;
-	}>({ graph: null, ids: NO_HIDDEN });
-	const hiddenCommunities = hiddenState.graph === graph ? hiddenState.ids : NO_HIDDEN;
-	const [showUnlinked, setShowUnlinkedState] = useState(false);
+	const [hoverState, setHover] = useState<ConnectionsHover | null>(null);
 	const [zoomPercent, setZoomPercent] = useState(100);
 	const [searchQuery, setSearchQueryState] = useState("");
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
 
 	const inGraph = (id: string | null) => (id && graph?.hasNode(id) ? id : null);
 	const selectedId = inGraph(selectedState);
+	const hover = hoverState && inGraph(hoverState.id) ? hoverState : null;
 	const path = useMemo(() => routeBetween(graph, pathEnds), [graph, pathEnds]);
-	const unlinkedCount = useMemo(
-		() => (graph ? graph.filterNodes((_id, attributes) => attributes.unlinked).length : 0),
+	const hasUnlinked = useMemo(
+		() => Boolean(graph?.someNode((_id, attributes) => !attributes.linked)),
 		[graph],
 	);
 	const display = useMemo(() => connectionsDisplayState(options), [options]);
@@ -89,10 +84,9 @@ export function useConnectionsViewState({
 		searchMatchIds,
 		selectedNodeId: selectedId,
 		path,
-		hiddenCommunities,
-		showUnlinked,
 		onNodeClick: (id, modifiers) => handleNodeClick(id, modifiers),
 		onStageClick: () => selectNode(null),
+		onNodeHover: setHover,
 		onZoomChange: setZoomPercent,
 	});
 
@@ -146,29 +140,6 @@ export function useConnectionsViewState({
 		selectNode(id);
 	}
 
-	function toggleCommunity(index: number) {
-		const next = new Set(hiddenCommunities);
-		if (!next.delete(index)) next.add(index);
-		setHiddenState({ graph, ids: next });
-		overlay.current.setHiddenCommunities(next);
-		if (next.has(index) && path?.some((id) => graph?.getNodeAttribute(id, "community") === index)) {
-			applyPathEnds(NO_PATH_ENDS);
-		}
-		if (
-			selectedId &&
-			next.has(index) &&
-			graph?.getNodeAttribute(selectedId, "community") === index
-		) {
-			selectNode(null);
-		}
-	}
-
-	function setShowUnlinked(show: boolean) {
-		setShowUnlinkedState(show);
-		overlay.current.setShowUnlinked(show);
-		if (!show && selectedId && graph?.getNodeAttribute(selectedId, "unlinked")) selectNode(null);
-	}
-
 	function setSearchQuery(query: string) {
 		setSearchQueryState(query);
 		overlay.current.setSearchMatches(connectionsSearchMatchIds(graph, query));
@@ -192,11 +163,8 @@ export function useConnectionsViewState({
 		setPathEnd,
 		startPath,
 		clearPath: () => applyPathEnds(NO_PATH_ENDS),
-		hiddenCommunities,
-		toggleCommunity,
-		showUnlinked,
-		setShowUnlinked,
-		unlinkedCount,
+		hover,
+		hasUnlinked,
 		zoomPercent,
 		overlay,
 		openNode,

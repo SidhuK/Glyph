@@ -1,15 +1,13 @@
 import { createEdgeCurveProgram } from "@sigma/edge-curve";
 import type {
 	ConnectionsEdgeAttributes,
-	ConnectionsGraphAttributes,
 	ConnectionsGraphVariant,
 	ConnectionsNodeAttributes,
 } from "./connectionsGraph";
 
 const ConnectionsCurveProgram = createEdgeCurveProgram<
 	ConnectionsNodeAttributes,
-	ConnectionsEdgeAttributes,
-	ConnectionsGraphAttributes
+	ConnectionsEdgeAttributes
 >();
 
 interface CountTier {
@@ -110,8 +108,7 @@ export function sigmaSettingsForVariant(
 		hideEdgesOnMove: edgeCount > LARGE_GRAPH_EDGES,
 		minCameraRatio: nodeCount >= 5_000 ? 0.05 : 0.12,
 		maxCameraRatio: 2,
-		// Room for cluster captions above the top-most cluster and labels to the right of nodes.
-		stagePadding: 72,
+		stagePadding: 40,
 		zoomingRatio: 1.5,
 	};
 }

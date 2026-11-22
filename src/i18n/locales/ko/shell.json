@@ -609,7 +609,8 @@
 		"arranging": "연결을 배치하는 중…",
 		"loadFailed": "연결을 불러올 수 없습니다: {{error}}",
 		"retry": "다시 시도",
-		"empty": "이 스페이스에는 아직 노트가 없습니다.",
+		"emptyTitle": "아직 연결이 없습니다",
+		"emptyBody": "노트에 [[를 입력해 다른 노트와 연결하세요. 연결된 노트가 여기에 표시됩니다.",
 		"noConnected": "이 스페이스에는 연결된 노트가 없습니다.",
 		"graphAria": "스페이스 연결",
 		"localTitle": "연결된 노트",
@@ -632,10 +633,6 @@
 		"edgeCurvature": "링크 곡률",
 		"labelZoomThreshold": "제목 표시",
 		"minConnections": "최소 연결 수",
-		"unlinked": "연결 없음",
-		"clustersAria": "클러스터",
-		"toggleCluster": "{{name}} 표시 또는 숨기기",
-		"showAllClusters": "모든 클러스터 보기",
 		"zoomIn": "확대",
 		"zoomOut": "축소",
 		"zoomFit": "화면에 맞추기",
@@ -644,15 +641,26 @@
 		"largeGraphTitle": "큰 연결 그래프",
 		"largeGraphBody": "이 스페이스에는 노트가 {{count}}개 있습니다. 전체 그래프를 만드는 데 시간이 걸리고 Glyph가 잠시 느려질 수 있습니다.",
 		"largeGraphContinue": "계속",
+		"legend": {
+			"aria": "범례",
+			"selected": "선택됨",
+			"linked": "연결됨",
+			"noLinks": "링크 없음",
+			"onPath": "경로 위",
+			"escToExit": "Esc로 종료",
+			"clickHint": "노트를 클릭해 집중하기"
+		},
+		"peek": {
+			"links_other": "링크 {{count}}개",
+			"backlinks_other": "백링크 {{count}}개",
+			"noLinks": "링크 없음",
+			"notes_other": "노트 {{count}}개",
+			"clickToFocus": "클릭해 집중하기"
+		},
 		"inspector": {
-			"backlinks": "백링크",
-			"linksOut": "나가는 링크",
-			"tags": "태그",
-			"connected": "연결된 노트",
 			"openNote": "노트 열기",
+			"showNotes": "노트 보기",
 			"pathFromHere": "여기서 경로 찾기",
-			"close": "닫기",
-			"tag": "태그",
 			"aria": "노트 세부 정보"
 		}
 	},

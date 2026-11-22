@@ -609,7 +609,8 @@
 		"arranging": "接続を配置しています…",
 		"loadFailed": "接続を読み込めませんでした: {{error}}",
 		"retry": "再試行",
-		"empty": "このスペースにはまだノートがありません。",
+		"emptyTitle": "まだつながりがありません",
+		"emptyBody": "ノートで [[ と入力すると、ほかのノートにリンクできます。リンクしたノートはここに表示されます。",
 		"noConnected": "このスペースには接続されたノートがありません。",
 		"graphAria": "スペースの接続",
 		"localTitle": "つながっているノート",
@@ -632,10 +633,6 @@
 		"edgeCurvature": "リンクの曲がり具合",
 		"labelZoomThreshold": "タイトルの見え方",
 		"minConnections": "最小のつながり数",
-		"unlinked": "リンクなし",
-		"clustersAria": "クラスター",
-		"toggleCluster": "{{name}}を表示または非表示",
-		"showAllClusters": "すべてのクラスターを表示",
 		"zoomIn": "拡大",
 		"zoomOut": "縮小",
 		"zoomFit": "全体を表示",
@@ -644,15 +641,26 @@
 		"largeGraphTitle": "大きな接続グラフ",
 		"largeGraphBody": "このスペースには {{count}} 件のノートがあります。グラフの構築に時間がかかり、Glyph の反応が遅くなることがあります。",
 		"largeGraphContinue": "続ける",
+		"legend": {
+			"aria": "凡例",
+			"selected": "選択中",
+			"linked": "リンクあり",
+			"noLinks": "リンクなし",
+			"onPath": "経路上",
+			"escToExit": "Esc で終了",
+			"clickHint": "ノートをクリックしてフォーカス"
+		},
+		"peek": {
+			"links_other": "{{count}} 件のリンク",
+			"backlinks_other": "{{count}} 件のバックリンク",
+			"noLinks": "リンクなし",
+			"notes_other": "{{count}} 件のノート",
+			"clickToFocus": "クリックしてフォーカス"
+		},
 		"inspector": {
-			"backlinks": "バックリンク",
-			"linksOut": "発リンク",
-			"tags": "タグ",
-			"connected": "つながっているノート",
 			"openNote": "ノートを開く",
+			"showNotes": "ノートを表示",
 			"pathFromHere": "ここからの経路",
-			"close": "閉じる",
-			"tag": "タグ",
 			"aria": "ノートの詳細"
 		}
 	},

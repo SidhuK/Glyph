@@ -3,10 +3,10 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 import type Sigma from "sigma";
 import type { LocalNoteConnections, SpaceConnections } from "../../lib/tauri";
 import { connectionsEdgeScale, spaceNodeSizeScale } from "./connectionsDensity";
-import type { ConnectionsCommunity, ConnectionsLayout } from "./connectionsLayout";
+import type { ConnectionsLayout } from "./connectionsLayout";
 
 export type ConnectionsNodeKind = "note" | "tag";
-/** Hubs carry a bold title, titles show at rest, dots are labelled only on demand. */
+/** Hubs always keep their label, titles show at rest when there is room, dots only once zoomed in. */
 export type ConnectionsNodeRank = "hub" | "title" | "dot";
 export type ConnectionsGraphVariant = "space" | "local";
 
@@ -20,9 +20,7 @@ export interface ConnectionsNodeAttributes {
 	isCenter: boolean;
 	degree: number;
 	rank: ConnectionsNodeRank;
-	/** Index into the graph's `communities`; null for unlinked notes and local graphs. */
-	community: number | null;
-	unlinked: boolean;
+	linked: boolean;
 }
 
 export interface ConnectionsEdgeAttributes {
@@ -31,23 +29,12 @@ export interface ConnectionsEdgeAttributes {
 	type: "curved";
 }
 
-export interface ConnectionsGraphAttributes {
-	communities: readonly ConnectionsCommunity[];
-}
+export type ConnectionsGraph = Graph<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>;
 
-export type ConnectionsGraph = Graph<
-	ConnectionsNodeAttributes,
-	ConnectionsEdgeAttributes,
-	ConnectionsGraphAttributes
->;
+export type ConnectionsSigma = Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>;
 
-export type ConnectionsSigma = Sigma<
-	ConnectionsNodeAttributes,
-	ConnectionsEdgeAttributes,
-	ConnectionsGraphAttributes
->;
-
-const TITLE_MIN_DEGREE = 3;
+const LABEL_ALL_MAX_NODES = 300;
+const LABELLED_HUB_COUNT = 40;
 const REDUCER_COLOR_PLACEHOLDER = "#000000";
 const LOCAL_LAYOUT_ITERATIONS = 120;
 /** Local layout runs on the UI thread; large neighbourhoods get fewer, Barnes-Hut iterations. */
@@ -55,10 +42,8 @@ const LOCAL_LAYOUT_BUDGET = 24_000;
 const LOCAL_BARNES_HUT_ORDER = 500;
 const LOCAL_SEED_RADIUS = 100;
 
-function createGraph(communities: readonly ConnectionsCommunity[]): ConnectionsGraph {
-	const graph: ConnectionsGraph = new Graph({ multi: true, type: "mixed" });
-	graph.replaceAttributes({ communities });
-	return graph;
+function createGraph(): ConnectionsGraph {
+	return new Graph({ multi: true, type: "mixed" });
 }
 
 function nodeAttributes(
@@ -77,8 +62,7 @@ function nodeAttributes(
 		isCenter: false,
 		degree: 0,
 		rank: "dot",
-		community: null,
-		unlinked: false,
+		linked: false,
 		...extra,
 	};
 }
@@ -98,65 +82,67 @@ function addEdge(
 	});
 }
 
-/** Degree counts distinct neighbours; rank and size follow from it once every edge exists. */
-function assignRanks(
-	graph: ConnectionsGraph,
-	variant: ConnectionsGraphVariant,
-	isHub: (id: string, attributes: ConnectionsNodeAttributes) => boolean,
-) {
+interface NodeSizing {
+	readonly base: number;
+	readonly step: number;
+	readonly max: number;
+}
+
+const NODE_SIZING: Record<ConnectionsGraphVariant, NodeSizing> = {
+	space: { base: 3, step: 2, max: 11 },
+	local: { base: 4, step: 1.6, max: 10 },
+};
+
+function connectionsNodeSizeFor(variant: ConnectionsGraphVariant, degree: number) {
+	const { base, step, max } = NODE_SIZING[variant];
+	return Math.min(max, base + step * Math.sqrt(degree));
+}
+
+function isNoteLinked(graph: ConnectionsGraph, id: string) {
+	return graph.someNeighbor(id, (_neighbor, attributes) => attributes.kind === "note");
+}
+
+/** Degree counts distinct neighbours; rank, size and `linked` follow once every edge exists. */
+function assignRanks(graph: ConnectionsGraph, variant: ConnectionsGraphVariant) {
 	const sizeScale = variant === "space" ? spaceNodeSizeScale(graph.order) : 1;
+	const restRank: ConnectionsNodeRank =
+		variant === "local" || graph.order <= LABEL_ALL_MAX_NODES ? "title" : "dot";
+	const degrees = new Map(graph.mapNodes((id) => [id, graph.neighbors(id).length] as const));
+	const degreeOf = (id: string) => degrees.get(id) ?? 0;
+	const hubIds = new Set(
+		variant === "local"
+			? graph.filterNodes((_id, attributes) => attributes.isCenter)
+			: graph
+					.nodes()
+					.sort((a, b) => degreeOf(b) - degreeOf(a))
+					.slice(0, LABELLED_HUB_COUNT),
+	);
 	graph.updateEachNodeAttributes((id, attributes) => {
-		const degree = graph.neighbors(id).length;
-		const rank: ConnectionsNodeRank = isHub(id, attributes)
-			? "hub"
-			: degree >= TITLE_MIN_DEGREE
-				? "title"
-				: "dot";
+		const degree = degreeOf(id);
 		return {
 			...attributes,
 			degree,
-			rank,
-			size: connectionsNodeSizeFor(variant, rank, degree) * sizeScale,
+			rank: hubIds.has(id) ? "hub" : restRank,
+			linked: attributes.kind === "tag" || isNoteLinked(graph, id),
+			size: connectionsNodeSizeFor(variant, degree) * sizeScale,
 		};
 	});
 }
 
-const NODE_BASE_SIZE: Record<ConnectionsGraphVariant, Record<ConnectionsNodeRank, number>> = {
-	space: { hub: 3.4, title: 2.8, dot: 2.2 },
-	local: { hub: 5.5, title: 4.2, dot: 3.4 },
-};
-
-function connectionsNodeSizeFor(
-	variant: ConnectionsGraphVariant,
-	rank: ConnectionsNodeRank,
-	degree: number,
-) {
-	return NODE_BASE_SIZE[variant][rank] + Math.min(0.8, Math.sqrt(degree) * 0.12);
-}
-
 export function buildSpaceConnectionsGraph(
 	payload: SpaceConnections,
-	{ positions, communities, unlinkedIds }: ConnectionsLayout,
+	{ positions }: ConnectionsLayout,
 ): ConnectionsGraph {
-	const graph = createGraph(communities);
-	const unlinked = new Set(unlinkedIds);
-	const hubIds = new Set(communities.map((community) => community.hubId));
-	const nodeExtra = (id: string): Partial<ConnectionsNodeAttributes> => ({
-		community: positions.get(id)?.community ?? null,
-		unlinked: unlinked.has(id),
-	});
+	const graph = createGraph();
 	const origin = { x: 0, y: 0 };
 
 	for (const node of payload.nodes) {
 		const position = positions.get(node.id) ?? origin;
-		graph.addNode(
-			node.id,
-			nodeAttributes(position, node.title || node.id, "note", nodeExtra(node.id)),
-		);
+		graph.addNode(node.id, nodeAttributes(position, node.title || node.id, "note"));
 	}
 	for (const tag of payload.tags) {
 		const position = positions.get(tag.id) ?? origin;
-		graph.addNode(tag.id, nodeAttributes(position, tag.title, "tag", nodeExtra(tag.id)));
+		graph.addNode(tag.id, nodeAttributes(position, tag.title, "tag"));
 	}
 
 	const edgeScale = connectionsEdgeScale(payload.edges.length + payload.tag_edges.length);
@@ -180,7 +166,7 @@ export function buildSpaceConnectionsGraph(
 		);
 	}
 
-	assignRanks(graph, "space", (id) => hubIds.has(id));
+	assignRanks(graph, "space");
 	return graph;
 }
 
@@ -192,7 +178,7 @@ function seedLocalPosition(index: number) {
 }
 
 export function buildLocalConnectionsGraph(payload: LocalNoteConnections): ConnectionsGraph {
-	const graph = createGraph([]);
+	const graph = createGraph();
 	const ringIds = [
 		...payload.nodes.filter((node) => !node.is_center).map((node) => node.id),
 		...payload.tags.map((tag) => tag.id),
@@ -241,6 +227,6 @@ export function buildLocalConnectionsGraph(payload: LocalNoteConnections): Conne
 			},
 		});
 	}
-	assignRanks(graph, "local", (_id, attributes) => attributes.isCenter);
+	assignRanks(graph, "local");
 	return graph;
 }
