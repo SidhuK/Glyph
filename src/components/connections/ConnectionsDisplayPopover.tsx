@@ -75,7 +75,7 @@ function OptionSlider({
 	);
 }
 
-export function ConnectionsDisplayPopover() {
+export function ConnectionsDisplayPopover({ disabled }: { disabled: boolean }) {
 	const { t } = useTranslation("shell");
 	const { options, setOptions } = useConnectionsView();
 	const patch = (partial: Partial<ConnectionsGraphOptions>) =>
@@ -85,7 +85,7 @@ export function ConnectionsDisplayPopover() {
 		<Popover>
 			<PopoverTrigger
 				render={
-					<Button type="button" size="sm" variant="ghost" static>
+					<Button type="button" size="sm" variant="ghost" static disabled={disabled}>
 						<HugeiconsIcon icon={SlidersHorizontalIcon} size="var(--icon-sm)" />
 						{t("connections.display")}
 					</Button>

@@ -191,12 +191,12 @@ export function layOutClusters(
 ) {
 	const clusters = communities.map(({ memberIds }) => layOutCommunity(graph, memberIds));
 	const centers = placeClusters(graph, clusters);
-	const rows: [id: string, x: number, y: number, community: number][] = [];
+	const rows: [id: string, x: number, y: number][] = [];
 	clusters.forEach(({ points }, index) => {
 		const center = centers[index] ?? { x: 0, y: 0 };
-		for (const [id, { x, y }] of points) rows.push([id, center.x + x, center.y + y, index]);
+		for (const [id, { x, y }] of points) rows.push([id, center.x + x, center.y + y]);
 	});
 	const { minX, minY, maxX, maxY } = bounds(rows.map(([, x, y]) => ({ x, y })));
 	if (maxY - minY <= maxX - minX) return rows;
-	return rows.map(([id, x, y, community]): (typeof rows)[number] => [id, y, -x, community]);
+	return rows.map(([id, x, y]): (typeof rows)[number] => [id, y, -x]);
 }

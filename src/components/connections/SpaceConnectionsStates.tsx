@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { LoaderCircle, Refresh01Icon } from "@hugeicons/core-free-icons";
+import { ChartRelationshipIcon, LoaderCircle, Refresh01Icon } from "@hugeicons/core-free-icons";
 import { useTranslation } from "react-i18next";
 import { Button } from "../ui/shadcn/button";
 
@@ -33,8 +33,12 @@ export function ConnectionsErrorState({ error, onRetry }: { error: string; onRet
 export function ConnectionsEmptyState() {
 	const { t } = useTranslation("shell");
 	return (
-		<div className="flex h-full min-h-0 flex-1 items-center justify-center p-6">
-			<p className="text-sm text-muted-foreground">{t("connections.empty")}</p>
+		<div className="connectionsEmptyState">
+			<span className="connectionsEmptyStateIcon" aria-hidden="true">
+				<HugeiconsIcon icon={ChartRelationshipIcon} size="var(--icon-lg)" />
+			</span>
+			<h2 className="connectionsEmptyStateTitle">{t("connections.emptyTitle")}</h2>
+			<p className="connectionsEmptyStateBody">{t("connections.emptyBody")}</p>
 		</div>
 	);
 }

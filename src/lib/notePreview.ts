@@ -74,3 +74,49 @@ export function joinYamlFrontmatter(frontmatter: string | null, body: string): s
 	const normalizedBody = b.length ? b.replace(/^\n+/, "\n") : "";
 	return `${fm}\n${normalizedBody}`;
 }
+
+const HEADING_LINE = /^#{1,6}\s+/;
+
+function plainMarkdownLine(line: string): string {
+	return line
+		.replace(HEADING_LINE, "")
+		.replace(/^>\s?/, "")
+		.replace(/^[-*+]\s+\[[ xX]\]\s+/, "")
+		.replace(/^[-*+]\s+/, "")
+		.replace(/^\d+\.\s+/, "")
+		.replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+		.replace(/[*_`~]/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+interface MarkdownPreviewSnippetOptions {
+	readonly lineLimit?: number;
+	readonly skipHeadings?: boolean;
+}
+
+export function markdownPreviewSnippet(
+	markdown: string,
+	{ lineLimit = 1, skipHeadings = false }: MarkdownPreviewSnippetOptions = {},
+): string {
+	const { body } = splitYamlFrontmatter(markdown);
+	const lines: string[] = [];
+	let inFence = false;
+
+	for (const rawLine of body.replace(/\r\n?/g, "\n").split("\n")) {
+		const trimmed = rawLine.trim();
+		if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
+			inFence = !inFence;
+			continue;
+		}
+		if (inFence || !trimmed) continue;
+		if (skipHeadings && HEADING_LINE.test(trimmed)) continue;
+		const line = plainMarkdownLine(trimmed);
+		if (!line) continue;
+		lines.push(line);
+		if (lines.length >= lineLimit) break;
+	}
+
+	return lines.join(" ");
+}

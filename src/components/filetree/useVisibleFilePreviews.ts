@@ -1,46 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { splitYamlFrontmatter } from "../../lib/notePreview";
+import { markdownPreviewSnippet } from "../../lib/notePreview";
 import { invoke } from "../../lib/tauri";
 
 const MARKDOWN_PREVIEW_MAX_BYTES = 4096;
-const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
 /** Must match `TEXT_PREVIEW_BATCH_MAX_PATHS` in space_fs preview.rs. */
 const TEXT_PREVIEW_BATCH_MAX_PATHS = 100;
-
-function plainMarkdownLine(line: string): string {
-	return line
-		.replace(/^#{1,6}\s+/, "")
-		.replace(/^>\s?/, "")
-		.replace(/^[-*+]\s+\[[ xX]\]\s+/, "")
-		.replace(/^[-*+]\s+/, "")
-		.replace(/^\d+\.\s+/, "")
-		.replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
-		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-		.replace(/[*_`~]/g, "")
-		.replace(/\s+/g, " ")
-		.trim();
-}
-
-function markdownPreviewSnippet(markdown: string): string {
-	const { body } = splitYamlFrontmatter(markdown);
-	const lines: string[] = [];
-	let inFence = false;
-
-	for (const rawLine of body.replace(/\r\n?/g, "\n").split("\n")) {
-		const trimmed = rawLine.trim();
-		if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
-			inFence = !inFence;
-			continue;
-		}
-		if (inFence || !trimmed) continue;
-		const line = plainMarkdownLine(trimmed);
-		if (!line) continue;
-		lines.push(line);
-		if (lines.length >= MARKDOWN_PREVIEW_LINE_LIMIT) break;
-	}
-
-	return lines.join(" ");
-}
 
 export function useVisibleFilePreviews(spacePath: string | null, focusedDirPath: string | null) {
 	const [filePreviewsByPath, setFilePreviewsByPath] = useState<

@@ -5,6 +5,7 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import type { SpaceConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { CONNECTIONS_PREVIEW_QUERY_ROOT } from "./useConnectionsNotePreview";
 import { useSpaceConnectionsGraph } from "./useSpaceConnectionsGraph";
 
 const LARGE_GRAPH_NOTE_THRESHOLD = 5_000;
@@ -42,14 +43,16 @@ export function useSpaceConnectionsData(spacePath: string, options: ConnectionsG
 
 	useTauriEvent("space:fs_changed", () => {
 		void queryClient.invalidateQueries({ queryKey: [CONNECTIONS_QUERY_ROOT, spacePath] });
+		void queryClient.invalidateQueries({ queryKey: [CONNECTIONS_PREVIEW_QUERY_ROOT, spacePath] });
 	});
 
 	const payload = connectionsQuery.data ?? null;
+	const hasLinks = Boolean(payload && payload.edges.length > 0);
 	const { filteredPayload, graph, layoutError, layoutLoading, refetchLayout } =
-		useSpaceConnectionsGraph(payload, spacePath, options);
+		useSpaceConnectionsGraph(hasLinks ? payload : null, spacePath, options);
 
 	return {
-		payload,
+		hasLinks,
 		filteredPayload,
 		graph,
 		dataLoading: connectionsQuery.isPending,

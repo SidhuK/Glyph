@@ -93,6 +93,10 @@
 	background-color: var(--bg-primary);
 }
 
+.localNoteConnectionsViewport:focus {
+	outline: none;
+}
+
 .localNoteConnectionsViewport:active {
 	cursor: grabbing;
 }

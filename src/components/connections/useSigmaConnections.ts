@@ -1,7 +1,6 @@
 import { type RefObject, useEffect, useRef, useState } from "react";
 import Sigma from "sigma";
 import { drawConnectionsNodeHover, drawConnectionsNodeLabel } from "./connectionsCanvas";
-import { drawConnectionsCaptions } from "./connectionsCaptions";
 import {
 	connectionsDotLabelRatio,
 	connectionsLabelGrid,
@@ -45,13 +44,7 @@ interface UseSigmaConnectionsOptions extends ConnectionsPointerCallbacks {
 	searchMatchIds?: ReadonlySet<string> | null;
 	selectedNodeId?: string | null;
 	path?: readonly string[] | null;
-	hiddenCommunities?: ReadonlySet<number>;
-	showUnlinked?: boolean;
 }
-
-/** Cluster captions sit this many pixels below the UI label size. */
-const CAPTION_SIZE_OFFSET_PX = 1.5;
-const NO_HIDDEN_COMMUNITIES: ReadonlySet<number> = new Set();
 
 export function useSigmaConnections({
 	graph,
@@ -63,8 +56,6 @@ export function useSigmaConnections({
 	searchMatchIds = null,
 	selectedNodeId = null,
 	path = null,
-	hiddenCommunities = NO_HIDDEN_COMMUNITIES,
-	showUnlinked = false,
 	...callbacks
 }: UseSigmaConnectionsOptions): RefObject<ConnectionsOverlayApi> {
 	const focusRef = useRef(initialConnectionsFocus());
@@ -72,7 +63,7 @@ export function useSigmaConnections({
 	displayRef.current = display;
 	const labelZoomRef = useRef(labelZoomThreshold);
 	labelZoomRef.current = labelZoomThreshold;
-	const mountState = { searchMatchIds, selectedNodeId, path, hiddenCommunities, showUnlinked };
+	const mountState = { searchMatchIds, selectedNodeId, path };
 	const mountStateRef = useRef<ConnectionsMountState>(mountState);
 	mountStateRef.current = mountState;
 	const callbacksRef = useRef(callbacks);
@@ -115,7 +106,7 @@ export function useSigmaConnections({
 				...sigmaSettingsForVariant(variant, graph.size, graph.order, labelZoomRef.current),
 				labelColor: { color: palette.textSecondary },
 				labelFont: font,
-				labelSize: resolveConnectionsLabelSize(container, variant),
+				labelSize: resolveConnectionsLabelSize(container),
 				labelWeight: "400",
 				defaultDrawNodeLabel: (context, data, settings) =>
 					drawConnectionsNodeLabel(context, data, settings, palette),
@@ -146,21 +137,6 @@ export function useSigmaConnections({
 					scheduleRefresh();
 				},
 			};
-
-			if (variant === "space") {
-				const labelsContext = activeRenderer.getCanvases().labels.getContext("2d");
-				activeRenderer.on("afterRender", () => {
-					if (!labelsContext) return;
-					const size = activeRenderer.getSetting("labelSize") - CAPTION_SIZE_OFFSET_PX;
-					drawConnectionsCaptions(
-						labelsContext,
-						activeRenderer,
-						graph,
-						{ palette, font, size },
-						focus,
-					);
-				});
-			}
 
 			let zoomPercent = connectionsZoomPercent(camera.ratio);
 			callbacksRef.current.onZoomChange?.(zoomPercent);
@@ -197,7 +173,7 @@ export function useSigmaConnections({
 				activeRenderer.setSettings({
 					labelColor: { color: palette.textSecondary },
 					labelFont: font,
-					labelSize: resolveConnectionsLabelSize(container, variant),
+					labelSize: resolveConnectionsLabelSize(container),
 				});
 				scheduleRefresh();
 			});
@@ -217,8 +193,7 @@ export function useSigmaConnections({
 			resizeObserver?.disconnect();
 			renderer?.kill();
 			sessionRef.current = null;
-			focus.hoveredNode = null;
-			focus.hoverIds = null;
+			callbacksRef.current.onNodeHover?.(null);
 		};
 	}, [containerRef, enabled, graph, variant]);
 
