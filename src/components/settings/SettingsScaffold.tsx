@@ -126,7 +126,11 @@ export function SettingsRow({
 		>
 			<CopyTag className="settingsFieldCopy" htmlFor={htmlFor}>
 				<div className="settingsLabel">
-					{typeof label === "string" ? <SettingsSearchHighlight text={label} /> : label}
+					{typeof label === "string" ? (
+						<SettingsSearchHighlight text={label} searchId={searchId} />
+					) : (
+						label
+					)}
 				</div>
 				{description ? <div className="settingsHelp">{description}</div> : null}
 			</CopyTag>

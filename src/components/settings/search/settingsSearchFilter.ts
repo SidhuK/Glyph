@@ -41,11 +41,20 @@ export function paneFilterFor(
 	tab: SettingsTab,
 ): SettingsPaneFilter | null {
 	if (!filter) return null;
+	const tabLabel = filter.matches.find((match) => match.tab === tab)?.tabLabel.toLowerCase();
+	if (tabLabel && filter.tokens.every((token) => tabLabel.includes(token))) return null;
 	const tabMatches = filter.matches.filter(
 		(match) => match.tab === tab && match.id !== tabEntryId(tab),
 	);
 	if (tabMatches.length === 0) return null;
 	return { filter, tab, matches: tabMatches };
+}
+
+export function isMatchedRow(pane: SettingsPaneFilter, row: { searchId?: string; title: string }) {
+	return pane.matches.some(
+		(match) =>
+			(row.searchId !== undefined && match.id === row.searchId) || match.title === row.title,
+	);
 }
 
 export interface HighlightedText {

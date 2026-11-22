@@ -1,10 +1,11 @@
 import { useSettingsPaneFilter } from "./SettingsSearchContext";
-import { splitFirstMatch } from "./settingsSearchFilter";
+import { isMatchedRow, splitFirstMatch } from "./settingsSearchFilter";
 
-export function SettingsSearchHighlight({ text }: { text: string }) {
+export function SettingsSearchHighlight({ text, searchId }: { text: string; searchId?: string }) {
 	const pane = useSettingsPaneFilter();
-	const parts = pane ? splitFirstMatch(text, pane.filter.tokens) : null;
-	if (!parts) return text;
+	if (!pane || !isMatchedRow(pane, { searchId, title: text })) return text;
+	const parts = splitFirstMatch(text, pane.filter.tokens);
+	if (!parts) return <mark className="settingsSearchMark">{text}</mark>;
 	return (
 		<>
 			{parts.before}
