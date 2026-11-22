@@ -3,7 +3,9 @@ import { type EditorTextColor, isEditorTextColor } from "../components/editor/te
 import { statusColorKey } from "../lib/statusProperties";
 import { invoke } from "../lib/tauri";
 
-function normalizeColors(colors: Record<string, string>): Record<string, EditorTextColor> {
+export function normalizeStatusColors(
+	colors: Record<string, string>,
+): Record<string, EditorTextColor> {
 	const next: Record<string, EditorTextColor> = {};
 	for (const [statusId, color] of Object.entries(colors)) {
 		if (isEditorTextColor(color)) {
@@ -21,7 +23,7 @@ export function useStatusPropertyColors() {
 		void invoke("databases_status_colors_get")
 			.then((nextColors) => {
 				if (!cancelled) {
-					setColors(normalizeColors(nextColors));
+					setColors(normalizeStatusColors(nextColors));
 				}
 			})
 			.catch(() => {

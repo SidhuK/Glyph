@@ -4,6 +4,7 @@ import { type KeyboardEvent, type RefObject, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { Shortcut } from "../../lib/shortcuts/types";
+import { keepKeysOutOfFolioList } from "./folioListKeys";
 
 const FOLIO_FILTER_SHORTCUT = { key: "f", meta: true } as const satisfies Shortcut;
 const FOLIO_FILTER_SHORTCUT_LABEL = formatShortcutForPlatform(FOLIO_FILTER_SHORTCUT);
@@ -16,11 +17,6 @@ export function isFolioFilterShortcut(event: KeyboardEvent): boolean {
 		!event.shiftKey &&
 		event.key.toLowerCase() === FOLIO_FILTER_SHORTCUT.key
 	);
-}
-
-function keepKeysInClearButton(event: KeyboardEvent) {
-	if (event.key === "Escape" || event.metaKey || event.ctrlKey) return;
-	event.stopPropagation();
 }
 
 interface FolioFilterFieldProps {
@@ -61,7 +57,7 @@ export const FolioFilterField = memo(function FolioFilterField({
 					type="button"
 					className="folioNotesSearchClear"
 					onMouseDown={(event) => event.preventDefault()}
-					onKeyDown={keepKeysInClearButton}
+					onKeyDown={keepKeysOutOfFolioList}
 					onClick={() => {
 						inputRef.current?.focus();
 						onQueryChange("");

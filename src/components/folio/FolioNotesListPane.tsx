@@ -12,16 +12,17 @@ import {
 import { useTranslation } from "react-i18next";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
+import { normalizeStatusColors } from "../../hooks/useStatusPropertyColors";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { FileTreeSortMode } from "../../lib/settings";
-import type { FileTreeAppearance } from "../../lib/tauri";
+import { type FileTreeAppearance, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { isDeleteKey, isEditableTarget } from "../../utils/keyboard";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
-import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
+import { EDITOR_TEXT_COLORS, type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import { isFolioFilterShortcut } from "./FolioFilterField";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
@@ -45,6 +46,7 @@ const FOLIO_FILE_ROW_ESTIMATE = 42;
 /** Matches --scroll-fade-size: the list's top fade covers this blank band until it scrolls. */
 const FOLIO_LIST_TOP_FADE = 12;
 const FOLIO_RELATIVE_TIME_REFRESH_MS = 60_000;
+const NO_STATUS_COLORS: Record<string, EditorTextColor> = {};
 
 function sqliteNoCase(value: string): string {
 	return value.replace(/[A-Z]/g, (character) => character.toLowerCase());
@@ -171,6 +173,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		refetchInterval: FOLIO_RELATIVE_TIME_REFRESH_MS,
 	});
 	const nowMs = Math.max(clockNowMs, contentUpdatedAtMs);
+	const { data: statusColors = NO_STATUS_COLORS } = useQuery({
+		queryKey: ["status-property-colors"],
+		queryFn: async () => normalizeStatusColors(await invoke("databases_status_colors_get")),
+	});
 	const pinnedRanks = useMemo(() => {
 		const ranks = new Map<string, number>();
 		pinnedFiles.forEach((path, index) => ranks.set(path, index));
@@ -243,6 +249,17 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			focusPane();
 		},
 		[focusPane, onOpenFile],
+	);
+	const createNote = useCallback(
+		async (dirPath: string) => {
+			const path = await onNewFileInDir(dirPath);
+			if (!path) return;
+			await onOpenFile(path);
+			if (onRenameFile && (folioScope.kind === "all" || folioScope.kind === "folder")) {
+				setRenamingPath(path);
+			}
+		},
+		[folioScope.kind, onNewFileInDir, onOpenFile, onRenameFile],
 	);
 	const openNoteInNewTab = useCallback(
 		(path: string) => {
@@ -434,6 +451,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								onCancelRename={cancelRename}
 								appearance={itemAppearance[note.note_path] ?? null}
 								onOpenAppearancePicker={setAppearancePickerPath}
+								statusColors={statusColors}
 								taskSummary={
 									note.is_markdown ? (taskSummariesByPath?.[note.note_path] ?? null) : null
 								}
@@ -519,7 +537,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				sortMode={folioSortMode}
 				onSearchQueryChange={setSearchQuery}
 				onSortModeChange={setFolioSortMode}
-				onNewFileInDir={onNewFileInDir}
+				onNewNote={(dirPath) => void createNote(dirPath)}
 			/>
 			{body}
 		</aside>

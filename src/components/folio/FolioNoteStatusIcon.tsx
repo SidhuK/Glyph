@@ -1,9 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { statusToneStyle } from "../../lib/statusProperties";
+import type { EditorTextColor } from "../editor/textColors";
 import { StatusIcon } from "../status/StatusIcon";
 import { statusDisplayLabel } from "../status/propertyOptionLabels";
 
-export function FolioNoteStatusIcon({ status }: { status: string | null | undefined }) {
+interface FolioNoteStatusIconProps {
+	status: string | null | undefined;
+	colors: Record<string, EditorTextColor>;
+}
+
+export function FolioNoteStatusIcon({ status, colors }: FolioNoteStatusIconProps) {
 	const { t } = useTranslation("shell");
 	const label = statusDisplayLabel(status, t);
 	if (!label) return null;
@@ -13,7 +19,7 @@ export function FolioNoteStatusIcon({ status }: { status: string | null | undefi
 			role="img"
 			aria-label={label}
 			title={label}
-			style={statusToneStyle(status)}
+			style={statusToneStyle(status, colors)}
 		>
 			<StatusIcon value={status} className="folioNoteStatusIcon" />
 		</span>

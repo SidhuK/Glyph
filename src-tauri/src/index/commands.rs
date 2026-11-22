@@ -415,11 +415,16 @@ pub async fn all_docs_list(
              SELECT vn.path, vn.title, vn.preview, vn.updated, vn.created,
                     COALESCE(tag_blob.tags, ''), COALESCE(people_blob.people, ''),
                     (
-                        SELECT NULLIF(TRIM(status_property.value_text), '')
+                        SELECT TRIM(status_property.value_text)
                         FROM note_properties status_property
                         WHERE status_property.note_id = vn.id
                           AND status_property.value_type = 'status'
-                        ORDER BY CASE WHEN LOWER(status_property.key) = 'status' THEN 0 ELSE 1 END,
+                          AND TRIM(status_property.value_text) <> ''
+                        ORDER BY CASE
+                                     WHEN status_property.key = 'status' THEN 0
+                                     WHEN LOWER(status_property.key) = 'status' THEN 1
+                                     ELSE 2
+                                 END,
                                  status_property.ordinal
                         LIMIT 1
                     )

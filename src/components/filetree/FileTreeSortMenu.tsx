@@ -33,7 +33,6 @@ function stopMenuKeyPropagation(event: KeyboardEvent) {
 	event.stopPropagation();
 }
 
-/** Trigger plus a radio menu of the file tree sort modes. */
 export function FileTreeSortMenu({
 	sortMode,
 	onSortModeChange,

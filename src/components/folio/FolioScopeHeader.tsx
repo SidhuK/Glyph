@@ -9,6 +9,7 @@ import { basename } from "../../utils/path";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { FileTreeSortMenu } from "../filetree/FileTreeSortMenu";
 import { FolioFilterField } from "./FolioFilterField";
+import { keepKeysOutOfFolioList } from "./folioListKeys";
 import type { FolioScope } from "./folioScopes";
 
 interface FolioScopeHeaderProps {
@@ -18,7 +19,7 @@ interface FolioScopeHeaderProps {
 	sortMode: FileTreeSortMode;
 	onSearchQueryChange: (query: string) => void;
 	onSortModeChange: (sortMode: FileTreeSortMode) => void;
-	onNewFileInDir: (dirPath: string) => Promise<string | null>;
+	onNewNote: (dirPath: string) => void;
 }
 
 function sortFieldLabel(sortMode: FileTreeSortMode, t: TFunction<"shell">): string {
@@ -49,7 +50,7 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 	sortMode,
 	onSearchQueryChange,
 	onSortModeChange,
-	onNewFileInDir,
+	onNewNote,
 }: FolioScopeHeaderProps) {
 	const { t } = useTranslation("shell");
 	const { spacePath } = useSpace();
@@ -83,7 +84,8 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 				<button
 					type="button"
 					className="folioNotesNewNote"
-					onClick={() => void onNewFileInDir(newNoteFolder)}
+					onKeyDown={keepKeysOutOfFolioList}
+					onClick={() => onNewNote(newNoteFolder)}
 					title={newNoteTitle}
 					aria-label={t("sidebar.newNote")}
 				>

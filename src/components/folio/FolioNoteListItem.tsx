@@ -24,7 +24,11 @@ import { noteDisplayTitle } from "../app/allDocsPreviewLines";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { HairlineTagList } from "../database/HairlineTagList";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
-import { getEditorTextColorOption, isEditorTextColor } from "../editor/textColors";
+import {
+	type EditorTextColor,
+	getEditorTextColorOption,
+	isEditorTextColor,
+} from "../editor/textColors";
 import { buildFileTreeFileNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import {
 	FILE_TREE_ENTRY_SENSORS,
@@ -53,6 +57,7 @@ interface FolioNoteListItemProps {
 	onTogglePinned: (path: string) => Promise<void> | void;
 	nowMs: number;
 	taskSummary?: NoteTaskSummary | null;
+	statusColors: Record<string, EditorTextColor>;
 	isRenaming?: boolean;
 	onCommitRename: (path: string, nextName: string) => Promise<boolean> | boolean;
 	onCancelRename: () => void;
@@ -135,6 +140,7 @@ export const FolioNoteListItem = memo(
 			onTogglePinned,
 			nowMs,
 			taskSummary = null,
+			statusColors,
 			isRenaming = false,
 			onCommitRename,
 			onCancelRename,
@@ -365,7 +371,9 @@ export const FolioNoteListItem = memo(
 					>
 						<span className="folioNoteRowTop">
 							{pinIcon}
-							{isMarkdown ? <FolioNoteStatusIcon status={note.status} /> : null}
+							{isMarkdown ? (
+								<FolioNoteStatusIcon status={note.status} colors={statusColors} />
+							) : null}
 							<InlineRenameInput
 								key={`${note.note_path}:${fileStem}`}
 								initialValue={fileStem || displayNameFromPath(note.note_path) || untitledLabel}
@@ -449,7 +457,7 @@ export const FolioNoteListItem = memo(
 							<>
 								<span className="folioNoteRowTop">
 									{pinIcon}
-									<FolioNoteStatusIcon status={note.status} />
+									<FolioNoteStatusIcon status={note.status} colors={statusColors} />
 									<span className="folioNoteTitle">{title}</span>
 									{taskProgress}
 								</span>

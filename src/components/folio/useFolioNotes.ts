@@ -166,8 +166,9 @@ export function useFolioNotes(
 		[filesQuery.data?.files, hiddenTemplateFolder, includesNonMarkdownFiles],
 	);
 	const filesPending = includesNonMarkdownFiles && filesQuery.data === undefined;
+	const filesTruncated = includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false);
 	const totalCount =
-		noteCountQuery.data === undefined || filesPending
+		noteCountQuery.data === undefined || filesPending || filesTruncated
 			? null
 			: noteCountQuery.data + visibleFiles.length;
 
@@ -202,7 +203,7 @@ export function useFolioNotes(
 		notes: items,
 		totalCount,
 		contentUpdatedAtMs,
-		filesTruncated: includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
+		filesTruncated,
 		error: notesQuery.error ?? (includesNonMarkdownFiles ? filesQuery.error : null),
 		nonMarkdownFileLimit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
 		hasNextPage: notesQuery.hasNextPage,
