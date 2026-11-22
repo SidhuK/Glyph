@@ -4,7 +4,7 @@ use std::{
 };
 use tauri::{State, WebviewWindow};
 
-use crate::{paths, space::SpaceState};
+use crate::{paths, space::SpaceState, utils};
 
 use super::helpers::{deny_hidden_rel_path, should_hide};
 use super::types::DirChildSummary;
@@ -23,13 +23,18 @@ impl SummaryAccumulator {
                 dir_rel_path: dir_rel_path.to_string_lossy().to_string(),
                 name,
                 total_files_recursive: 0,
+                total_markdown_recursive: 0,
                 truncated: false,
             },
         }
     }
 
-    fn record_file(&mut self) {
+    fn record_file(&mut self, rel_path: &Path) {
         self.summary.total_files_recursive = self.summary.total_files_recursive.saturating_add(1);
+        if utils::is_markdown_path(rel_path) {
+            self.summary.total_markdown_recursive =
+                self.summary.total_markdown_recursive.saturating_add(1);
+        }
     }
 }
 
@@ -119,7 +124,7 @@ pub async fn space_dir_children_summary(
                 let mut ancestor = child_rel.parent();
                 while let Some(dir) = ancestor {
                     if let Some(summary) = summaries.get_mut(dir) {
-                        summary.record_file();
+                        summary.record_file(&child_rel);
                     }
                     ancestor = dir.parent();
                 }

@@ -233,6 +233,11 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 	if ("archiveEnabled" in value) {
 		out.archiveEnabled = SPACE_SETTINGS.archiveEnabled.normalize(value.archiveEnabled);
 	}
+	if ("showNonMarkdownFiles" in value) {
+		out.showNonMarkdownFiles = SPACE_SETTINGS.showNonMarkdownFiles.normalize(
+			value.showNonMarkdownFiles,
+		);
+	}
 	if ("noteCreationDefaultFolder" in value) {
 		const folder = SPACE_SETTINGS.noteCreationDefaultFolder.normalize(
 			value.noteCreationDefaultFolder,
@@ -518,6 +523,12 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 		activeScopedSettings,
 		hasActiveSpace,
 	);
+	const showNonMarkdownFiles = loadSpaceSettingValue(
+		SPACE_SETTINGS.showNonMarkdownFiles,
+		entries,
+		activeScopedSettings,
+		hasActiveSpace,
+	);
 	const noteCreationDefaultFolder = loadSpaceSettingValue(
 		SPACE_SETTINGS.noteCreationDefaultFolder,
 		entries,
@@ -626,6 +637,7 @@ export async function loadSettings(scope?: SettingsScope): Promise<AppSettings> 
 			sidebarOrder,
 			sidebarCalendar,
 			showFileTreeFolderCounts,
+			showNonMarkdownFiles,
 			fileTreeSortMode,
 			sidebarFolderTabs,
 			folioMode,

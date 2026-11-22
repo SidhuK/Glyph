@@ -657,6 +657,22 @@
 			"section": "Aktualizacje",
 			"description": "Otwórz opublikowaną listę zmian programu Glyph.",
 			"keywords": ["informacje o wydaniu", "wersja", "aktualizacje"]
+		},
+		"space-show-non-markdown-files": {
+			"title": "Pokaż pliki inne niż Markdown",
+			"section": "Drzewo plików",
+			"keywords": [
+				"pasek boczny",
+				"załączniki",
+				"pdf",
+				"obrazy",
+				"folio",
+				"drzewo plików",
+				"markdown",
+				"code",
+				"hide",
+				"files"
+			]
 		}
 	}
 }

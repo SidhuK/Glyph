@@ -11,6 +11,7 @@ import {
 	modeRequiresAttachmentFolder,
 	modesUseDifferentFolderSemantics,
 } from "../../lib/attachmentStorage";
+import { useShowNonMarkdownFiles } from "../../hooks/useShowNonMarkdownFiles";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	DEFAULT_PERIOD_NOTES_ENABLED,
@@ -83,6 +84,14 @@ export function SpaceSettingsPane() {
 	const archiveSetting = useMutation({
 		mutationFn: (enabled: boolean) =>
 			writeSpaceSetting(SPACE_SETTINGS.archiveEnabled, enabled, {
+				spacePath: requireSpacePath(spacePath),
+			}),
+	});
+
+	const showNonMarkdownFiles = useShowNonMarkdownFiles();
+	const nonMarkdownFilesSetting = useMutation({
+		mutationFn: (show: boolean) =>
+			writeSpaceSetting(SPACE_SETTINGS.showNonMarkdownFiles, show, {
 				spacePath: requireSpacePath(spacePath),
 			}),
 	});
@@ -430,6 +439,28 @@ export function SpaceSettingsPane() {
 					{archiveSetting.error ? (
 						<p className="settingsError" role="alert">
 							{extractErrorMessage(archiveSetting.error)}
+						</p>
+					) : null}
+				</SettingsSection>
+
+				<SettingsSection title={t("fileTree.sectionTitle")}>
+					<SettingsRow
+						searchId="space-show-non-markdown-files"
+						label={t("fileTree.nonMarkdownFiles.label")}
+						description={t("fileTree.nonMarkdownFiles.description")}
+					>
+						<SettingsToggle
+							ariaLabel={t("fileTree.nonMarkdownFiles.ariaLabel")}
+							checked={showNonMarkdownFiles ?? true}
+							disabled={
+								!spacePath || showNonMarkdownFiles === null || nonMarkdownFilesSetting.isPending
+							}
+							onCheckedChange={(checked) => nonMarkdownFilesSetting.mutate(checked)}
+						/>
+					</SettingsRow>
+					{nonMarkdownFilesSetting.error ? (
+						<p className="settingsError" role="alert">
+							{extractErrorMessage(nonMarkdownFilesSetting.error)}
 						</p>
 					) : null}
 				</SettingsSection>

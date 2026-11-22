@@ -209,6 +209,10 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 	},
 	{
+		...bindSpaceSetting(SPACE_SETTINGS.showNonMarkdownFiles),
+		control: "toggle",
+	},
+	{
 		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesFolder),
 		control: "path",
 	},

@@ -216,6 +216,11 @@
 			"description": "Pokaż rekurencyjną sumę plików na końcu każdego wiersza folderu w drzewie plików.",
 			"ariaLabel": "Pokaż liczbę plików w folderach"
 		},
+		"nonMarkdownFiles": {
+			"label": "Pokaż pliki inne niż Markdown",
+			"description": "Pokaż pliki PDF, obrazy i inne załączniki w drzewie plików i na liście Folio. Wyłączenie tej opcji ukrywa je tylko w tych widokach.",
+			"ariaLabel": "Pokaż pliki inne niż Markdown"
+		},
 		"sort": {
 			"label": "Sortowanie drzewa plików",
 			"description": "Wybierz sposób uporządkowania folderów i plików w drzewie na pasku bocznym.",

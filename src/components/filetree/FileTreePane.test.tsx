@@ -140,6 +140,7 @@ describe("FileTreePane", () => {
 		loadSettingsMock.mockResolvedValue({
 			ui: {
 				showFileTreeFolderCounts: false,
+				showNonMarkdownFiles: true,
 				fileTreeSortMode: "name-asc",
 			},
 		});
@@ -224,7 +225,7 @@ describe("FileTreePane", () => {
 			);
 		});
 
-		expect(container.textContent).toContain("alpha");
+		await vi.waitFor(() => expect(container.textContent).toContain("alpha"));
 		expect(container.textContent).toContain("beta");
 
 		expect(container.querySelector(".fileTreePinnedSection")).toBeNull();
@@ -241,7 +242,15 @@ describe("FileTreePane", () => {
 		expect(onOpenFile).toHaveBeenCalledWith("notes/alpha.md");
 	});
 
-	it("shows non-markdown files", async () => {
+	it("hides non-markdown files when the setting is off", async () => {
+		loadSettingsMock.mockResolvedValue({
+			ui: {
+				showFileTreeFolderCounts: false,
+				showNonMarkdownFiles: false,
+				fileTreeSortMode: "name-asc",
+			},
+		});
+
 		await act(async () => {
 			root.render(
 				<QueryClientProvider client={queryClient}>
@@ -288,7 +297,7 @@ describe("FileTreePane", () => {
 			);
 		});
 
-		expect(container.textContent).toContain("note");
-		expect(container.textContent).toContain("image");
+		await vi.waitFor(() => expect(container.textContent).toContain("note"));
+		expect(container.textContent).not.toContain("image");
 	});
 });

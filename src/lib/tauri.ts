@@ -581,6 +581,7 @@ export interface DirChildSummary {
 	dir_rel_path: string;
 	name: string;
 	total_files_recursive: number;
+	total_markdown_recursive: number;
 	truncated: boolean;
 }
 
