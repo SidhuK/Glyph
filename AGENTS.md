@@ -24,6 +24,8 @@ Before pushing to main, and only when the user asks you to push:
 vp check && vp test && vp build && cd src-tauri && cargo check && cargo test
 ```
 
+PR screenshots and recordings go on the `pr-assets` branch, never in `main` or a feature branch. It has no shared history with `main` and is never merged. Add files from a separate worktree (`git worktree add ../glyph-pr-assets pr-assets`) under a folder named after the PR's branch, push, and link them from the PR description as `https://raw.githubusercontent.com/SidhuK/Glyph/pr-assets/<folder>/<file>`.
+
 ## Ask first
 
 - **Sub-agents:** don't spawn any until the user approves. Propose which agents to spawn, list the models the Agent tool currently offers, and wait for the user to pick.

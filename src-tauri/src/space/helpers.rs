@@ -18,6 +18,23 @@ const WELCOME_NOTE_CONTENT: &str = r#"# Welcome to Glyph
 
 This is your space for plain Markdown notes. Everything you write here stays in the folder you chose, so it remains yours and works with other Markdown apps too.
 
+## Get started
+
+- [ ] Create a note with ⌘N
+- [ ] Type `/` on an empty line to insert headings, lists, tables and more
+- [ ] Link notes by typing `[[`, like [[My First Note]]
+- [ ] Tag a note with #ideas so you can find it later
+- [ ] Open today's daily note with ⌘⇧D
+
+## Find your way around
+
+| Shortcut | What it does |
+| --- | --- |
+| ⌘K | Command palette (every action) |
+| ⌘P | Quick open a note |
+| ⌘⇧B | Toggle the sidebar |
+| ⌘, | Settings and themes |
+
 This note is fully editable—keep it, change it, or delete it whenever you like.
 "#;
 
