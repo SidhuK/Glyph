@@ -494,30 +494,6 @@ export function AIComposer({
 				</div>
 			) : null}
 			<div className="aiComposer">
-				{showActiveFileSuggestion ? (
-					<div className="aiComposerSuggestionHint" aria-label={t("ai.activeFile")}>
-						<button
-							type="button"
-							className="aiComposerSuggestionButton"
-							onClick={() => onAddContext("file", suggestedFilePath)}
-							aria-label={t("ai.addToContext", {
-								name: fileNameFromPath(suggestedFilePath),
-							})}
-							title={t("ai.addToContext", { name: suggestedFilePath })}
-							disabled={isAwaitingResponse}
-						>
-							<span className="aiComposerSuggestionIcon">
-								<File size="var(--icon-sm)" />
-							</span>
-							<span className="aiComposerSuggestionLabel">
-								{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
-							</span>
-							<span className="aiComposerSuggestionAddIcon">
-								<Plus size="var(--icon-sm)" aria-hidden="true" />
-							</span>
-						</button>
-					</div>
-				) : null}
 				{/* The beam shows only while a reply streams; at rest the composer has no glow. */}
 				<BorderBeam
 					className="aiComposerBeam"
@@ -529,6 +505,30 @@ export function AIComposer({
 					active={isStreamingResponse}
 				>
 					<div className="aiComposerInputShell">
+						{showActiveFileSuggestion ? (
+							<div className="aiComposerSuggestionHint" aria-label={t("ai.activeFile")}>
+								<button
+									type="button"
+									className="aiComposerSuggestionButton"
+									onClick={() => onAddContext("file", suggestedFilePath)}
+									aria-label={t("ai.addToContext", {
+										name: fileNameFromPath(suggestedFilePath),
+									})}
+									title={t("ai.addToContext", { name: suggestedFilePath })}
+									disabled={isAwaitingResponse}
+								>
+									<span className="aiComposerSuggestionIcon">
+										<File size="var(--icon-sm)" />
+									</span>
+									<span className="aiComposerSuggestionLabel">
+										{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
+									</span>
+									<span className="aiComposerSuggestionAddIcon">
+										<Plus size="var(--icon-sm)" aria-hidden="true" />
+									</span>
+								</button>
+							</div>
+						) : null}
 						<div
 							ref={composerInputRef}
 							className="aiComposerInput"

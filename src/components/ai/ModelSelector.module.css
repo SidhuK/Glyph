@@ -4,9 +4,9 @@
 	gap: var(--space-1);
 	width: fit-content;
 	max-width: 100%;
-	height: 28px;
-	padding: 0 8px;
-	border-radius: var(--radius-md);
+	height: 26px;
+	padding: 0 9px 0 5px;
+	border-radius: 999px;
 	font-size: var(--text-sm);
 	font-family: var(--font-sans);
 	font-weight: var(--font-medium);
@@ -22,7 +22,8 @@
 	text-overflow: ellipsis;
 }
 
-.trigger:hover {
+.trigger:hover,
+.trigger[data-popup-open] {
 	background: var(--bg-hover);
 	color: var(--text-primary);
 }
