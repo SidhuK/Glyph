@@ -56,11 +56,7 @@ function ResultIcon({ result }: { result: PaletteResult }) {
 function Keycaps({ keys, label }: { keys: readonly string[]; label: string }) {
 	return (
 		<span className="commandPaletteShortcut" aria-label={label}>
-			{keys.map((key, index) => (
-				<kbd key={`${index}-${key}`} className="commandPaletteKeycap">
-					{key}
-				</kbd>
-			))}
+			<kbd className="commandPaletteKeycap">{keys.join("")}</kbd>
 		</span>
 	);
 }

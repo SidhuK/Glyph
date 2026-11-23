@@ -27,10 +27,10 @@ import type { WorkspaceTab } from "./useTabManager";
 
 const PALETTE_GROUP_ORDER = [
 	"command",
-	"setting",
 	"open-tab",
 	"note",
 	"content",
+	"setting",
 	"folder",
 	"tag",
 	"person",

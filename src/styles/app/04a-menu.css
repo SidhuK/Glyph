@@ -162,7 +162,7 @@ svg.glyphMenuItemIcon {
 
 .commandPaletteHighlight {
 	border-radius: var(--card-radius);
-	background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+	background: var(--bg-active);
 }
 
 /* Gliding highlight (components/ui/shadcn/highlight.tsx): these rules only anchor the

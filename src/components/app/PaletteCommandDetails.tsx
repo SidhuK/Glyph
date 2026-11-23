@@ -24,13 +24,9 @@ export function PaletteCommandDetails({ command, onEditShortcut }: PaletteComman
 			{command.shortcut ? (
 				<div className="commandPaletteDetailsRow">
 					<span>{t("commandPalette.shortcut")}</span>
-					<span className="commandPaletteFooterKeys">
-						{formatShortcutPartsForPlatform(command.shortcut).map((part) => (
-							<kbd key={part} className="commandPaletteKeycap">
-								{part}
-							</kbd>
-						))}
-					</span>
+					<kbd className="commandPaletteKeycap">
+						{formatShortcutPartsForPlatform(command.shortcut).join("")}
+					</kbd>
 				</div>
 			) : null}
 			{isShortcutActionId(command.id) ? (

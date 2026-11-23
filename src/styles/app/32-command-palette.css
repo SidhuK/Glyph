@@ -81,6 +81,12 @@
 	padding: 0 12px;
 }
 
+.commandPaletteSearchGlyph {
+	flex: none;
+	margin-right: 10px;
+	color: var(--text-tertiary);
+}
+
 /* A typed prefix (">", "#", "settings:") becomes this token, so the scope stays visible. */
 .commandPaletteScopeToken {
 	flex: none;
@@ -313,9 +319,6 @@
 	align-items: center;
 	justify-content: center;
 	margin-block: calc((var(--palette-line) - 24px) / 2);
-	border-radius: var(--radius-md);
-	background: var(--bg-hover);
-	box-shadow: inset 0 0 0 0.5px var(--border-light);
 	color: var(--text-secondary);
 }
 
@@ -374,7 +377,7 @@
 .commandPaletteResultTitle mark {
 	padding: 0;
 	background: transparent;
-	color: var(--accent-color);
+	color: var(--text-primary);
 	font-weight: var(--font-semibold);
 }
 
@@ -542,14 +545,12 @@
 .commandPaletteShortcut {
 	display: inline-flex;
 	align-items: center;
-	gap: 3px;
 	margin-left: auto;
 }
 
 .commandPaletteShortcut .commandPaletteKeycap {
-	height: 16px;
-	min-width: 16px;
-	padding: 0 3px;
+	padding: 0 5px;
+	letter-spacing: 0.04em;
 }
 
 .commandPaletteFooter {
@@ -580,12 +581,6 @@
 	gap: 12px;
 	margin-left: auto;
 	overflow: hidden;
-}
-
-.commandPaletteFooterKeys {
-	display: inline-flex;
-	align-items: center;
-	gap: 2px;
 }
 
 /* Shared keycap. Settings → Shortcuts mirrors these exact values (11-settings-misc.css):
