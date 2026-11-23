@@ -66,6 +66,10 @@
 	color: var(--text-secondary);
 }
 
+.fileTreeSortMenu .glyphMenuItemIcon {
+	color: var(--text-tertiary);
+}
+
 /* Call sites pass their own icon sizes; menus share one so rows line up. */
 svg.glyphMenuItemIcon {
 	width: var(--icon-md);

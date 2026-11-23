@@ -301,23 +301,23 @@ button.databaseToolbarChip.databasesAddViewButton:hover {
 }
 
 .databaseViewOptionsRowControl > .glyphSelectTrigger.databaseViewOptionsSelect {
-	width: 148px;
+	width: 184px;
 	height: 26px;
 	padding: 0 6px 0 8px;
-	border-color: var(--border-light);
+	border-color: var(--border-default);
 	border-radius: var(--radius-md);
-	background: transparent;
+	background: var(--bg-primary);
 	font-size: var(--text-sm);
 }
 
 /* Ordering shares its row with the direction toggle; keep the select's left edge aligned. */
 .databaseViewOptionsRowControl
 	> .glyphSelectTrigger.databaseViewOptionsSelect:has(~ .databaseViewOptionsIconButton) {
-	width: 118px;
+	width: 154px;
 }
 
 .databaseViewOptionsRowControl > .glyphSelectTrigger.databaseViewOptionsSelect:hover {
-	border-color: var(--border-default);
+	border-color: var(--border-strong);
 }
 
 .databaseViewOptionsRowValue {
@@ -337,9 +337,9 @@ button.databaseToolbarChip.databasesAddViewButton:hover {
 	align-items: center;
 	justify-content: center;
 	height: 26px;
-	border: 1px solid var(--border-light);
+	border: 1px solid var(--border-default);
 	border-radius: var(--radius-md);
-	background: transparent;
+	background: var(--bg-primary);
 	color: var(--text-secondary);
 	cursor: pointer;
 	transition:
@@ -355,7 +355,7 @@ button.databaseToolbarChip.databasesAddViewButton:hover {
 
 .databaseViewOptionsDisclosure {
 	gap: 4px;
-	width: 148px;
+	width: 184px;
 	min-width: 0;
 	justify-content: space-between;
 	padding: 0 6px 0 8px;
@@ -374,8 +374,8 @@ button.databaseToolbarChip.databasesAddViewButton:hover {
 .databaseViewOptionsIconButton:hover,
 .databaseViewOptionsDisclosure:hover,
 .databaseViewOptionsDisclosure.is-expanded {
-	border-color: var(--border-default);
-	background: var(--bg-hover);
+	border-color: var(--border-strong);
+	background: var(--bg-primary);
 	color: var(--text-primary);
 }
 
@@ -429,13 +429,12 @@ button.databaseToolbarChip.databasesAddViewButton:hover {
 }
 
 .databaseViewPropertyChips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 2px 12px;
+	margin-inline: -6px;
 }
 
-/* Linear's display properties: shown = filled chip, hidden = the same chip with no fill or border. */
-.databaseViewPropertyChip,
 .databaseViewPresetChip {
 	height: 26px;
 	min-height: 26px;
@@ -446,7 +445,6 @@ button.databaseToolbarChip.databasesAddViewButton:hover {
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-md);
 	background: transparent;
-	color: var(--text-tertiary);
 	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	text-overflow: ellipsis;
@@ -458,56 +456,90 @@ button.databaseToolbarChip.databasesAddViewButton:hover {
 		color 140ms ease;
 }
 
-.databaseViewPropertyChip {
+.databaseViewPropertyToggle {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 4px;
+	justify-content: flex-start;
+	gap: 8px;
 	min-width: 0;
-	padding-inline: 6px;
+	height: 28px;
+	padding: 0 6px;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
 	text-align: left;
+	cursor: pointer;
 }
 
-.databaseViewPropertyChipLabel {
+.databaseViewPropertyToggle:hover:not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.databaseViewPropertyToggle:disabled {
+	cursor: default;
+}
+
+.databaseViewPropertyToggle:disabled .databaseViewPropertyCheck {
+	opacity: 0.5;
+}
+
+.databaseViewPropertyToggle.is-grouped {
+	grid-column: 1 / -1;
+	color: var(--text-tertiary);
+	cursor: default;
+}
+
+.databaseViewPropertyToggle.is-grouped > svg {
+	flex: 0 0 auto;
+}
+
+.databaseViewPropertyToggleLabel {
+	flex: 0 1 auto;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.databaseViewPropertyChip {
-	border-color: transparent;
-}
-
-.databaseViewPropertyChip:hover {
-	background: var(--bg-hover);
-	color: var(--text-secondary);
-}
-
-.databaseViewPropertyChip[aria-pressed="true"],
-.databaseViewPropertyChip[aria-pressed="true"]:hover {
-	border-color: transparent;
-	background: var(--bg-active);
-	color: var(--text-primary);
-}
-
-/* The grouped field is never a per-row column: hidden styling plus the grouping glyph. */
-.databaseViewPropertyChip.is-grouped {
-	cursor: default;
-}
-
-.databaseViewPropertyChip.is-grouped:hover {
-	background: transparent;
-	color: var(--text-tertiary);
-}
-
-.databaseViewPropertyChip.is-grouped > svg {
+.databaseViewPropertyToggleHint {
 	flex: 0 0 auto;
+	margin-left: auto;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
 }
 
-.databaseViewPropertyChip:disabled {
+.databaseViewPropertyCheck {
+	position: relative;
+	flex: 0 0 auto;
+	width: 15px;
+	height: 15px;
+	border: 1.5px solid var(--text-tertiary);
+	border-radius: 4px;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
+}
+
+.databaseViewPropertyCheck::after {
+	content: "";
+	position: absolute;
+	inset: -1.5px;
+	background: var(--text-inverse);
+	mask: var(--task-check-mask) center / contain no-repeat;
+	opacity: 0;
+}
+
+.databaseViewPropertyToggle[aria-checked="true"] .databaseViewPropertyCheck {
+	border-color: transparent;
+	background: var(--interactive-accent);
+}
+
+.databaseViewPropertyToggle[aria-checked="true"] .databaseViewPropertyCheck::after {
 	opacity: 1;
-	cursor: default;
 }
 
 .databaseViewPresetChip {

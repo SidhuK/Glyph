@@ -68,9 +68,9 @@ export const FolioFilterField = memo(function FolioFilterField({
 					<HugeiconsIcon icon={Cancel01Icon} size="var(--icon-xs)" />
 				</button>
 			) : (
-				<kbd className="commandPaletteKeycap folioNotesSearchKeycap" aria-hidden="true">
+				<span className="folioNotesSearchHint" aria-hidden="true">
 					{FOLIO_FILTER_SHORTCUT_LABEL}
-				</kbd>
+				</span>
 			)}
 		</label>
 	);
