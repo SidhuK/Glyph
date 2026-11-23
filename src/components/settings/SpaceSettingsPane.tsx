@@ -409,6 +409,7 @@ export function SpaceSettingsPane() {
 					{OPTIONAL_PERIOD_KINDS.map((kind) => (
 						<SettingsRow
 							key={kind}
+							className="settingsPeriodNoteRow"
 							searchId={PERIOD_NOTE_SEARCH_IDS[kind]}
 							label={t(`periodNotes.${kind}.label`)}
 							description={t(`periodNotes.${kind}.description`)}
