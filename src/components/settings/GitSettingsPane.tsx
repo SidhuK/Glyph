@@ -1,5 +1,7 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
+import type { IconSvgElement } from "@hugeicons/react";
 import {
+	AlertCircleIcon,
 	CheckmarkCircle02Icon,
 	CloudIcon,
 	GitBranchIcon,
@@ -16,6 +18,7 @@ import {
 	getGitSyncConnectionHelp,
 	getGitSyncPresentation,
 	getGitSyncRepoStateLabel,
+	getGitSyncRepoStateTone,
 } from "../../lib/gitSyncUi";
 import { type AttachmentStorageMode, loadSettings } from "../../lib/settings";
 import type {
@@ -33,8 +36,15 @@ import {
 	SettingsSection,
 	SettingsToggle,
 	SettingsValueCard,
+	type SettingsValueTone,
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
+
+const REPO_STATE_ICONS = {
+	success: CheckmarkCircle02Icon,
+	neutral: InformationCircleIcon,
+	warning: AlertCircleIcon,
+} as const satisfies Record<SettingsValueTone, IconSvgElement>;
 
 const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 	include_templates: true,
@@ -140,6 +150,7 @@ export function GitSettingsPane() {
 	const gitEnabledForSpace =
 		Boolean(config) && !status?.unsupported_parent_repo && status?.repo_detected;
 	const repoStateLabel = useMemo(() => getGitSyncRepoStateLabel(status), [status]);
+	const repoStateTone = getGitSyncRepoStateTone(status);
 	const connectionHelp = useMemo(
 		() => getGitSyncConnectionHelp(status, Boolean(config)),
 		[config, status],
@@ -168,8 +179,14 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={<HugeiconsIcon icon={CheckmarkCircle02Icon} size="var(--icon-md)" />}
+							icon={
+								<HugeiconsIcon
+									icon={status?.git_installed ? CheckmarkCircle02Icon : AlertCircleIcon}
+									size={14}
+								/>
+							}
 							value={status?.git_installed ? "Installed" : "Missing"}
+							tone={status?.git_installed ? "success" : "warning"}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -179,20 +196,35 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-md)" />}
+							icon={<HugeiconsIcon icon={REPO_STATE_ICONS[repoStateTone]} size={14} />}
 							value={repoStateLabel}
+							tone={repoStateTone}
 						/>
 					</SettingsRow>
 					<SettingsRow
 						label={t("gitSync.remote")}
-						description={connectionHelp}
+						description={
+							config?.remote_url ? (
+								connectionHelp
+							) : (
+								<>
+									{connectionHelp}
+									<span className="settingsHelpHint">
+										<HugeiconsIcon icon={Link01Icon} size={14} />
+										Open a folder that already has Git initialized.
+									</span>
+								</>
+							)
+						}
 						stacked
 						interactive={false}
 					>
-						<SettingsValueCard
-							icon={<HugeiconsIcon icon={Link01Icon} size="var(--icon-md)" />}
-							value={config?.remote_url ?? "Open a folder that already has Git initialized."}
-						/>
+						{config?.remote_url ? (
+							<SettingsValueCard
+								icon={<HugeiconsIcon icon={Link01Icon} size="var(--icon-md)" />}
+								value={config.remote_url}
+							/>
+						) : null}
 					</SettingsRow>
 					{config ? (
 						<SettingsRow

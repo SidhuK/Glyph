@@ -62,6 +62,15 @@ export function getGitSyncRepoStateLabel(status: GitSyncStatus | null): string {
 	return "No repo at space root";
 }
 
+export function getGitSyncRepoStateTone(
+	status: GitSyncStatus | null,
+): "success" | "neutral" | "warning" {
+	if (!status?.git_installed) return "neutral";
+	if (status.unsupported_parent_repo) return "warning";
+	if (status.configured || status.repo_detected) return "success";
+	return "neutral";
+}
+
 export function canShowGitHistory(status: GitSyncStatus | null): boolean {
 	return Boolean(
 		status?.git_installed &&

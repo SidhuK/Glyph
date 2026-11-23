@@ -181,14 +181,17 @@ export function SettingsToggle({
 	);
 }
 
+export type SettingsValueTone = "success" | "neutral" | "warning";
+
 interface SettingsValueCardProps {
 	icon: ReactNode;
 	value: string;
+	tone?: SettingsValueTone;
 }
 
-export function SettingsValueCard({ icon, value }: SettingsValueCardProps) {
+export function SettingsValueCard({ icon, value, tone }: SettingsValueCardProps) {
 	return (
-		<div className="settingsValueCard">
+		<div className="settingsValueCard" data-tone={tone}>
 			<div className="settingsValueIcon" aria-hidden="true">
 				{icon}
 			</div>

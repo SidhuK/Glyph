@@ -214,6 +214,47 @@
 	text-align: right;
 }
 
+.settingsValueCard[data-tone] {
+	align-items: center;
+	gap: 5px;
+	height: 24px;
+	padding: 0 9px 0 6px;
+	border-radius: 999px;
+	background: var(--bg-active);
+	color: var(--text-secondary);
+}
+
+.settingsValueCard[data-tone="success"] {
+	background: var(--status-success-bg);
+	color: color-mix(in srgb, var(--status-success-fg) 82%, var(--text-primary));
+}
+
+.settingsValueCard[data-tone="warning"] {
+	background: color-mix(in srgb, var(--status-warning-fg) 14%, transparent);
+	color: color-mix(in srgb, var(--status-warning-fg) 82%, var(--text-primary));
+}
+
+.settingsValueCard[data-tone] .settingsValueIcon {
+	width: auto;
+	height: auto;
+	color: inherit;
+}
+
+.settingsValueCard[data-tone] .settingsValueText {
+	color: inherit;
+	font-weight: var(--font-medium);
+	line-height: 24px;
+	white-space: nowrap;
+}
+
+.settingsHelpHint {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: 6px;
+	color: var(--text-secondary);
+}
+
 .shortcutsPane {
 	padding-bottom: 24px;
 }
