@@ -5,7 +5,13 @@ import type { FileTreeSortMode } from "../../lib/settings/model";
 import { isInTemplatesFolder } from "../../lib/templates";
 import type { AllDocsItem, FsEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { basename, displayNameFromPath, normalizeRelPath } from "../../utils/path";
+import { useShowNonMarkdownFiles } from "../../hooks/useShowNonMarkdownFiles";
+import {
+	basename,
+	displayNameFromPath,
+	isExcalidrawPath,
+	normalizeRelPath,
+} from "../../utils/path";
 import type { FolioScope } from "./folioScopes";
 
 export interface FolioItem extends Omit<AllDocsItem, "created" | "updated"> {
@@ -122,6 +128,7 @@ export function useFolioNotes(
 	// Templates only show when their folder is browsed; All notes, tags and people skip them.
 	const hiddenTemplateFolder = scope.kind === "folder" ? null : templateFolder;
 	const includesNonMarkdownFiles = scope.kind !== "tag" && scope.kind !== "person";
+	const showNonMarkdownFiles = useShowNonMarkdownFiles();
 
 	const notesQuery = useInfiniteQuery({
 		queryKey: [
@@ -156,16 +163,19 @@ export function useFolioNotes(
 				excluded_folder_prefix: hiddenTemplateFolder,
 			}),
 	});
+	const listedFiles = useMemo(() => {
+		if (!includesNonMarkdownFiles) return [];
+		const files = filesQuery.data?.files ?? [];
+		return showNonMarkdownFiles === false
+			? files.filter((file) => isExcalidrawPath(file.note_path))
+			: files;
+	}, [filesQuery.data?.files, includesNonMarkdownFiles, showNonMarkdownFiles]);
 	const visibleFiles = useMemo(
-		() =>
-			includesNonMarkdownFiles
-				? (filesQuery.data?.files ?? []).filter(
-						(file) => !isInTemplatesFolder(file.note_path, hiddenTemplateFolder),
-					)
-				: [],
-		[filesQuery.data?.files, hiddenTemplateFolder, includesNonMarkdownFiles],
+		() => listedFiles.filter((file) => !isInTemplatesFolder(file.note_path, hiddenTemplateFolder)),
+		[hiddenTemplateFolder, listedFiles],
 	);
-	const filesPending = includesNonMarkdownFiles && filesQuery.data === undefined;
+	const filesPending =
+		includesNonMarkdownFiles && (filesQuery.data === undefined || showNonMarkdownFiles === null);
 	const filesTruncated = includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false);
 	const totalCount =
 		noteCountQuery.data === undefined || filesPending || filesTruncated
@@ -176,16 +186,10 @@ export function useFolioNotes(
 		() =>
 			mergeFolioItems(
 				notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
-				includesNonMarkdownFiles ? (filesQuery.data?.files ?? []) : [],
+				listedFiles,
 				query,
 			).filter((item) => !isInTemplatesFolder(item.note_path, hiddenTemplateFolder)),
-		[
-			filesQuery.data?.files,
-			hiddenTemplateFolder,
-			includesNonMarkdownFiles,
-			notesQuery.data?.pages,
-			query,
-		],
+		[hiddenTemplateFolder, listedFiles, notesQuery.data?.pages, query],
 	);
 	const loadedPageCount = notesQuery.data?.pages.length ?? 0;
 	const contentUpdatedAtMs = Math.max(

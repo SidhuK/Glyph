@@ -74,6 +74,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "space-quick-notes-folder", tab: "space" },
 	{ id: "space-default-new-note-folder", tab: "space" },
 	{ id: "space-archive-enabled", tab: "space" },
+	{ id: "space-show-non-markdown-files", tab: "space" },
 	{ id: "space-attachments-location", tab: "space" },
 	{ id: "attachments-browser", tab: "attachments" },
 	{ id: "space-connections-graph", tab: "space" },

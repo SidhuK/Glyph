@@ -11,6 +11,7 @@ import {
 	CodeIcon,
 	CommandIcon,
 	DatabaseSearchIcon,
+	File01Icon,
 	Folder01Icon,
 	HeadingIcon,
 	LanguageSquareIcon,
@@ -73,6 +74,7 @@ const SETTING_ICONS: Record<string, SettingIcon> = {
 	"appearance-layout-task-progress-rings": CheckListIcon,
 	"appearance-layout-note-side-peek": LayoutAlignRightIcon,
 	"general-file-tree-folder-counts": Folder01Icon,
+	"space-show-non-markdown-files": File01Icon,
 	"general-file-tree-sort": SortByUp01Icon,
 	"about-alpha-releases": Megaphone01Icon,
 };

@@ -205,6 +205,11 @@
 			"description": "Mostrar o total recursivo de arquivos no final de cada linha de pasta na árvore.",
 			"ariaLabel": "Mostrar contagem de arquivos por pasta"
 		},
+		"nonMarkdownFiles": {
+			"label": "Mostrar arquivos que não são Markdown",
+			"description": "Mostrar PDFs, imagens e outros anexos na árvore de arquivos e na lista do Folio. Desativar oculta-os apenas nessas visualizações.",
+			"ariaLabel": "Mostrar arquivos que não são Markdown"
+		},
 		"sort": {
 			"label": "Ordenação da árvore de arquivos",
 			"description": "Escolha como pastas e arquivos são ordenados na árvore da barra lateral.",

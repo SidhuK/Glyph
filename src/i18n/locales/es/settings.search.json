@@ -670,6 +670,25 @@
 			"section": "Updates",
 			"description": "Open the published Glyph changelog.",
 			"keywords": ["release notes", "version", "updates"]
+		},
+		"space-show-non-markdown-files": {
+			"title": "Mostrar archivos que no son Markdown",
+			"section": "Árbol de archivos",
+			"keywords": [
+				"barra lateral",
+				"adjuntos",
+				"pdf",
+				"imágenes",
+				"folio",
+				"árbol",
+				"sidebar",
+				"attachments",
+				"images",
+				"markdown",
+				"code",
+				"hide",
+				"files"
+			]
 		}
 	}
 }

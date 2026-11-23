@@ -653,6 +653,25 @@
 			"section": "Updates",
 			"description": "Open the published Glyph changelog.",
 			"keywords": ["release notes", "version", "updates"]
+		},
+		"space-show-non-markdown-files": {
+			"title": "Markdown 以外のファイルを表示",
+			"section": "ファイルツリー",
+			"keywords": [
+				"サイドバー",
+				"添付",
+				"pdf",
+				"画像",
+				"folio",
+				"ファイルツリー",
+				"sidebar",
+				"attachments",
+				"images",
+				"markdown",
+				"code",
+				"hide",
+				"files"
+			]
 		}
 	}
 }

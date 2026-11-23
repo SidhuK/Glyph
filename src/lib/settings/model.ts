@@ -245,6 +245,7 @@ export interface AppSettings {
 		cornerRadiusStyle: UiCornerRadiusStyle;
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
+		showNonMarkdownFiles: boolean;
 		fileTreeSortMode: FileTreeSortMode;
 		sidebarFolderTabs: string[];
 		folioMode: boolean;
@@ -290,6 +291,7 @@ export interface SpaceScopedSettings {
 	dailyNotesQuarterlyNotes?: boolean;
 	quickNotesFolder?: string;
 	archiveEnabled?: boolean;
+	showNonMarkdownFiles?: boolean;
 	noteCreationDefaultFolder?: string | null;
 	templatesFolder?: string | null;
 	templatesDailyNoteTemplate?: string | null;

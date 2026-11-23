@@ -404,6 +404,22 @@
 			"description": "Enable archiving notes in this space.",
 			"keywords": ["archive", "archiving", "enable"]
 		},
+		"space-show-non-markdown-files": {
+			"title": "Show non-Markdown files",
+			"section": "File tree",
+			"keywords": [
+				"sidebar",
+				"attachments",
+				"pdf",
+				"images",
+				"folio",
+				"file tree",
+				"markdown",
+				"code",
+				"hide",
+				"files"
+			]
+		},
 		"space-default-new-note-folder": {
 			"title": "Inbox folder",
 			"section": "Inbox",

@@ -51,6 +51,10 @@ vi.mock("../../contexts", () => ({
 	}),
 }));
 
+vi.mock("../../hooks/useShowNonMarkdownFiles", () => ({
+	useShowNonMarkdownFiles: () => true,
+}));
+
 vi.mock("../../lib/settings", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("../../lib/settings")>();
 	return {
@@ -68,6 +72,7 @@ vi.mock("../../lib/settings/definitions", () => ({
 	},
 	SPACE_SETTINGS: {
 		archiveEnabled: { field: "archiveEnabled" },
+		showNonMarkdownFiles: { field: "showNonMarkdownFiles" },
 		dailyNotesFolder: { field: "dailyNotesFolder" },
 		quickNotesFolder: { field: "quickNotesFolder" },
 		attachmentStorageMode: { field: "attachmentStorageMode" },

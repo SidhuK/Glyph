@@ -822,6 +822,15 @@ export const SPACE_SETTINGS = {
 		patch: (value) => ({ archiveEnabled: value }),
 		change: (value) => ({ archive: { enabled: value } }),
 	}),
+	showNonMarkdownFiles: booleanSpaceSetting({
+		legacyKey: "ui.fileTree.showNonMarkdownFiles",
+		field: "showNonMarkdownFiles",
+		defaultValue: true,
+		discovery: searchable("space-show-non-markdown-files"),
+		read: (settings) => settings.ui.showNonMarkdownFiles,
+		patch: (value) => ({ showNonMarkdownFiles: value }),
+		change: (value) => ({ ui: { showNonMarkdownFiles: value } }),
+	}),
 	dailyNotesFolder: defineSpaceSetting({
 		legacyKey: "dailyNotes.folder",
 		field: "dailyNotesFolder",
