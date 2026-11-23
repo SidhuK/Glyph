@@ -1,8 +1,11 @@
 import type { CSSProperties } from "react";
+import type { EditorTextColor } from "../components/editor/textColors";
+import { DATABASE_NEUTRAL_TONE_STYLE, databaseValueToneStyleForColor } from "./database/palette";
 
 export interface PriorityOption {
 	id: "no" | "low" | "medium" | "high";
 	label: string;
+	color: EditorTextColor | null;
 	aliases: readonly string[];
 }
 
@@ -16,21 +19,25 @@ const PRIORITY_OPTIONS = [
 	{
 		id: "no",
 		label: "No",
+		color: null,
 		aliases: ["no", "none", "false"],
 	},
 	{
 		id: "low",
 		label: "Low",
+		color: "blue",
 		aliases: ["low"],
 	},
 	{
 		id: "medium",
 		label: "Medium",
+		color: "yellow",
 		aliases: ["medium", "med"],
 	},
 	{
 		id: "high",
 		label: "High",
+		color: "red",
 		aliases: ["high"],
 	},
 ] as const satisfies readonly PriorityOption[];
@@ -73,13 +80,22 @@ export function priorityLabel(value: string | null | undefined): string {
 	return (value ?? "").trim();
 }
 
-/**
- * Priority stays in the neutral ink like Linear: the filled/unfilled bar glyph carries the level,
- * so High/Medium/Low never compete with status colour. "No priority" drops to tertiary.
- */
+export function priorityToneStyle(value: string | null | undefined): CSSProperties {
+	const option = priorityOptionFromValue(value);
+	return option?.color
+		? databaseValueToneStyleForColor(option.id, option.color)
+		: DATABASE_NEUTRAL_TONE_STYLE;
+}
+
 export function priorityTextStyle(value: string | null | undefined): CSSProperties {
 	const option = priorityOptionFromValue(value);
-	return { color: option?.id === "no" ? "var(--text-tertiary)" : "var(--text-secondary)" };
+	if (!option?.color) {
+		return { color: option?.id === "no" ? "var(--text-tertiary)" : "var(--text-secondary)" };
+	}
+	return {
+		...priorityToneStyle(value),
+		color: "color-mix(in srgb, var(--database-tone) 78%, var(--text-primary))",
+	};
 }
 
 export function priorityColorKey(value: string | null | undefined): string | null {

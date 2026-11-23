@@ -336,9 +336,9 @@
 .notesInfoSidebarPanel {
 	--info-surface: color-mix(in srgb, var(--bg-tertiary) 42%, transparent);
 	--info-surface-border: var(--border-light);
-	/* 112px and 32px at the default UI size; they scale with the UI text. */
-	--info-label-column: calc(var(--text-base) * 8);
-	--info-row-height: calc(var(--text-base) * 32 / 14);
+	/* 104px and 30px at the default UI size; they scale with the UI text. */
+	--info-label-column: calc(var(--text-base) * 104 / 14);
+	--info-row-height: calc(var(--text-base) * 30 / 14);
 	/* Icon slot, its gap to the label and the column gap match .notePropertyRow. */
 	--info-icon-slot: 18px;
 	--info-icon-gap: 8px;
@@ -449,6 +449,11 @@
 	padding-bottom: 0;
 }
 
+.markdownEditorInfoSectionFrontmatter .notePropertyRow {
+	min-height: 30px;
+	padding-block: 1px;
+}
+
 /* One section label: caption, semibold, secondary ink, on a fixed header row so every section
    (Properties included) starts its first row the same distance below the label. */
 .markdownEditorInfoSectionLabel,
@@ -485,7 +490,7 @@
 	align-items: center;
 	gap: var(--info-column-gap);
 	min-height: var(--info-row-height);
-	font-size: var(--text-sm);
+	font-size: calc(var(--text-base) * 12.5 / 14);
 	line-height: 1.3;
 	color: var(--text-tertiary);
 }
@@ -497,7 +502,7 @@
 	align-items: center;
 	gap: var(--info-icon-gap);
 	overflow: hidden;
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 	white-space: nowrap;
 }
 
@@ -618,8 +623,56 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 5px 6px;
-	font-size: var(--text-xs);
+	gap: 6px;
+	font-size: var(--text-sm);
+}
+
+.markdownEditorInfoBacklinks {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding-top: 8px;
+}
+
+.markdownEditorInfoBacklinks > .markdownEditorInfoSection {
+	margin: 0;
+	padding: 0;
+	border-top: 0;
+}
+
+.markdownEditorInfoLinkList .wikiLink {
+	gap: 6px;
+	max-width: 100%;
+	height: 26px;
+	padding: 0 8px;
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	line-height: 1;
+	transition:
+		background-color 120ms ease,
+		border-color 120ms ease;
+}
+
+.markdownEditorInfoLinkList .wikiLinkLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-decoration: none;
+}
+
+.markdownEditorInfoLinkList .wikiLink::after {
+	width: 0.62em;
+	height: 0.62em;
+	color: var(--text-tertiary);
+	opacity: 1;
+}
+
+.markdownEditorInfoLinkList .wikiLink:is(:hover, :focus-visible) {
+	border-color: var(--border-strong);
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .unlinkedMentionsHeader {

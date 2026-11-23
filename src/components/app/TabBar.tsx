@@ -8,6 +8,7 @@ import type { MouseEvent, MutableRefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { Tooltip } from "../ui/Tooltip";
 import { ACTIVITY_TIMELINE_TAB_ID, INBOX_TAB_ID, ARCHIVE_TAB_ID } from "../../lib/activityTimeline";
 import { AGENT_VIEW_TAB_ID } from "../../lib/agentView";
 import { DATABASES_TAB_ID } from "../../lib/databases";
@@ -174,26 +175,28 @@ export function TabBar({
 		>
 			<div className="mainTabsBar" data-empty-state={useWindowBackground ? "true" : "false"}>
 				<div className="mainTabNavControls">
-					<button
-						type="button"
-						className="mainTabNavBtn"
-						onClick={onGoBack}
-						disabled={!canGoBack}
-						title={t("tabs.goBack")}
-						aria-label={t("tabs.goBack")}
-					>
-						←
-					</button>
-					<button
-						type="button"
-						className="mainTabNavBtn"
-						onClick={onGoForward}
-						disabled={!canGoForward}
-						title={t("tabs.goForward")}
-						aria-label={t("tabs.goForward")}
-					>
-						→
-					</button>
+					<Tooltip label={t("tabs.goBack")}>
+						<button
+							type="button"
+							className="mainTabNavBtn"
+							onClick={onGoBack}
+							disabled={!canGoBack}
+							aria-label={t("tabs.goBack")}
+						>
+							←
+						</button>
+					</Tooltip>
+					<Tooltip label={t("tabs.goForward")}>
+						<button
+							type="button"
+							className="mainTabNavBtn"
+							onClick={onGoForward}
+							disabled={!canGoForward}
+							aria-label={t("tabs.goForward")}
+						>
+							→
+						</button>
+					</Tooltip>
 				</div>
 				<MainTabsBreadcrumbs
 					activeTabPath={activeTabPath}

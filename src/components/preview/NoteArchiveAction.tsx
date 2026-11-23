@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useArchivedPaths, useNoteArchive } from "../../hooks/useNoteArchive";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { HugeiconsIcon } from "../HugeiconsIcon";
+import { Tooltip } from "../ui/Tooltip";
 
 export function NoteArchiveAction({ path }: { path: string }) {
 	const { t } = useTranslation("shell");
@@ -24,20 +25,21 @@ export function NoteArchiveAction({ path }: { path: string }) {
 		);
 	}
 	return (
-		<button
-			type="button"
-			className="markdownEditorToolbarBtn"
-			data-active={archived || undefined}
-			title={archived ? t("noteCollections.archivedTooltip") : label}
-			aria-label={label}
-			aria-description={archived ? t("noteCollections.archived") : undefined}
-			disabled={mutation.isPending || !paths.data}
-			onClick={() => mutation.setArchived([path], !archived)}
-		>
-			<HugeiconsIcon
-				icon={archived ? ArchiveArrowUpIcon : ArchiveArrowDownIcon}
-				size="var(--icon-md)"
-			/>
-		</button>
+		<Tooltip label={archived ? t("noteCollections.archivedTooltip") : label}>
+			<button
+				type="button"
+				className="markdownEditorToolbarBtn"
+				data-active={archived || undefined}
+				aria-label={label}
+				aria-description={archived ? t("noteCollections.archived") : undefined}
+				disabled={mutation.isPending || !paths.data}
+				onClick={() => mutation.setArchived([path], !archived)}
+			>
+				<HugeiconsIcon
+					icon={archived ? ArchiveArrowUpIcon : ArchiveArrowDownIcon}
+					size="var(--icon-md)"
+				/>
+			</button>
+		</Tooltip>
 	);
 }

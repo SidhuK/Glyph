@@ -1,17 +1,12 @@
 import { cn } from "@/lib/utils";
-import { priorityRank } from "../../lib/priorityProperties";
+import { priorityRank, priorityToneStyle } from "../../lib/priorityProperties";
 
-/** Three rising bars, bottom-aligned on a 14px grid. */
 const BARS = [
 	{ x: 1.5, height: 5 },
 	{ x: 5.75, height: 8 },
 	{ x: 10, height: 11 },
 ] as const;
 
-/**
- * The board's priority glyph: Low, Medium and High fill one, two or three bars in strong ink
- * and leave the rest faint, so each level differs by a whole bar; "No priority" fills none.
- */
 export function DatabasePriorityBars({
 	value,
 	className,
@@ -23,6 +18,7 @@ export function DatabasePriorityBars({
 	return (
 		<svg
 			className={cn("databasePriorityBars", className)}
+			style={priorityToneStyle(value)}
 			viewBox="0 0 14 14"
 			aria-hidden="true"
 			focusable="false"

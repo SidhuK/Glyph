@@ -69,6 +69,113 @@
 	margin-top: 0;
 }
 
+.settingsFolderBox {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: 0 1 236px;
+	min-width: 0;
+	height: var(--settings-control-height);
+	padding: 0 3px 0 8px;
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	cursor: default;
+	transition: border-color var(--transition-fast);
+}
+
+.settingsFolderBox:hover {
+	border-color: var(--border-strong);
+}
+
+.settingsFolderBoxIcon {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.settingsFolderBoxPath {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--text-sm);
+	color: var(--text-primary);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.settingsFolderBox[data-empty] .settingsFolderBoxPath {
+	color: var(--text-tertiary);
+}
+
+.settingsFolderBrowse {
+	flex: 0 0 auto;
+	height: 22px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: var(--settings-pill);
+	color: var(--text-primary);
+	font: inherit;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	transition: background-color var(--transition-fast);
+}
+
+.settingsFolderBrowse:hover,
+.settingsFolderBrowse:active {
+	background: var(--settings-pill-hover);
+}
+
+.settingsFolderTextButton {
+	flex: 0 0 auto;
+	height: var(--settings-control-height);
+	padding: 0 4px;
+	border: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	font-size: var(--text-sm);
+	transition: color var(--transition-fast);
+}
+
+.settingsFolderTextButton:hover,
+.settingsFolderTextButton:active {
+	background: transparent;
+	color: var(--text-primary);
+}
+
+.dailyNotesFolderRow:has(> .settingsFolderBox) {
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.settingsField.settingsPeriodNoteRow:has(> .settingsFieldCopy) {
+	flex-wrap: nowrap;
+	height: 40px;
+	min-height: 40px;
+	padding-block: 0;
+}
+
+.settingsPeriodNoteRow > .settingsFieldCopy {
+	flex-direction: row;
+	align-items: baseline;
+	gap: 12px;
+	flex: 1 1 auto;
+}
+
+.settingsPeriodNoteRow .settingsLabel {
+	flex: 0 0 auto;
+	min-width: 128px;
+	white-space: nowrap;
+}
+
+.settingsPeriodNoteRow .settingsHelp {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .settingsSectionMuted {
 	opacity: 0.56;
 }
@@ -105,6 +212,47 @@
 	color: var(--text-secondary);
 	overflow-wrap: break-word;
 	text-align: right;
+}
+
+.settingsValueCard[data-tone] {
+	align-items: center;
+	gap: 5px;
+	height: 24px;
+	padding: 0 9px 0 6px;
+	border-radius: 999px;
+	background: var(--bg-active);
+	color: var(--text-secondary);
+}
+
+.settingsValueCard[data-tone="success"] {
+	background: var(--status-success-bg);
+	color: color-mix(in srgb, var(--status-success-fg) 82%, var(--text-primary));
+}
+
+.settingsValueCard[data-tone="warning"] {
+	background: color-mix(in srgb, var(--status-warning-fg) 14%, transparent);
+	color: color-mix(in srgb, var(--status-warning-fg) 82%, var(--text-primary));
+}
+
+.settingsValueCard[data-tone] .settingsValueIcon {
+	width: auto;
+	height: auto;
+	color: inherit;
+}
+
+.settingsValueCard[data-tone] .settingsValueText {
+	color: inherit;
+	font-weight: var(--font-medium);
+	line-height: 24px;
+	white-space: nowrap;
+}
+
+.settingsHelpHint {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: 6px;
+	color: var(--text-secondary);
 }
 
 .shortcutsPane {

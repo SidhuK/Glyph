@@ -67,7 +67,6 @@ export function sortPropertyChips(chips: PropertyChip[]): PropertyChip[] {
 	return [...chips].sort((left, right) => Number(shown(right)) - Number(shown(left)));
 }
 
-/** Linear's "Display properties": an even grid of toggle chips, filled when shown. */
 export function PropertyChipsSection({
 	title,
 	chips,
@@ -95,29 +94,24 @@ export function PropertyChipsSection({
 			<div className="databaseViewPropertyChips">
 				{chips.map((chip) =>
 					chip.grouped ? (
-						<button
-							key={chip.key}
-							type="button"
-							className="databaseViewPropertyChip is-grouped"
-							aria-pressed={false}
-							aria-disabled="true"
-							aria-label={`${chip.label}, ${groupedHint}`}
-							title={groupedHint}
-						>
-							<span className="databaseViewPropertyChipLabel">{chip.label}</span>
-							<HugeiconsIcon icon={LayerIcon} size="var(--icon-xs)" aria-hidden="true" />
-						</button>
+						<div key={chip.key} className="databaseViewPropertyToggle is-grouped">
+							<HugeiconsIcon icon={LayerIcon} size="var(--icon-md)" aria-hidden="true" />
+							<span className="databaseViewPropertyToggleLabel">{chip.label}</span>
+							<span className="databaseViewPropertyToggleHint">{groupedHint}</span>
+						</div>
 					) : (
 						<button
 							key={chip.key}
 							type="button"
-							className="databaseViewPropertyChip"
-							aria-pressed={chip.enabled}
+							role="checkbox"
+							className="databaseViewPropertyToggle"
+							aria-checked={chip.enabled}
 							disabled={chip.pinned && chip.enabled}
 							title={chip.label}
 							onClick={() => onToggle(chip.key, !chip.enabled)}
 						>
-							<span className="databaseViewPropertyChipLabel">{chip.label}</span>
+							<span className="databaseViewPropertyCheck" aria-hidden="true" />
+							<span className="databaseViewPropertyToggleLabel">{chip.label}</span>
 						</button>
 					),
 				)}

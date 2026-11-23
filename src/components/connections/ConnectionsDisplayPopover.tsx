@@ -13,20 +13,11 @@ import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { useConnectionsView } from "./ConnectionsViewContext";
 
-const NATIVE_RANGE_STYLE = {
-	width: 90,
-	height: 16,
-	margin: 0,
-	padding: 0,
-	border: 0,
-	borderRadius: 0,
-	background: "transparent",
-	boxShadow: "none",
-	outline: "none",
-	accentColor: "unset",
-	WebkitAppearance: "slider-horizontal",
-	appearance: "auto",
-} satisfies CSSProperties;
+function sliderFillStyle(value: number, min: number, max: number) {
+	const percent = max > min ? ((value - min) / (max - min)) * 100 : 0;
+	const style: CSSProperties & { "--option-fill": string } = { "--option-fill": `${percent}%` };
+	return style;
+}
 
 function clampOption(value: number, min: number, max: number) {
 	if (!Number.isFinite(value)) return min;
@@ -53,11 +44,12 @@ function OptionSlider({
 			<label htmlFor={id}>{label}</label>
 			<input
 				id={id}
+				className="spaceConnectionsOptionSlider"
 				type="range"
 				min={min}
 				max={max}
 				value={value}
-				style={NATIVE_RANGE_STYLE}
+				style={sliderFillStyle(value, min, max)}
 				onChange={(event) => onChange(clampOption(Number(event.target.value), min, max))}
 			/>
 			<input
@@ -136,16 +128,16 @@ export function ConnectionsDisplayPopover({ disabled }: { disabled: boolean }) {
 						value={options.labelZoomThreshold}
 						onChange={(labelZoomThreshold) => patch({ labelZoomThreshold })}
 					/>
-					<Button
-						type="button"
-						size="sm"
-						variant="outline"
-						className="mx-auto mt-1 flex"
-						onClick={() => setOptions(DEFAULT_CONNECTIONS_GRAPH_OPTIONS)}
-					>
-						<HugeiconsIcon icon={ReloadIcon} size="var(--icon-sm)" />
-						{t("connections.resetDefaults")}
-					</Button>
+					<div className="spaceConnectionsResetRow">
+						<button
+							type="button"
+							className="spaceConnectionsReset"
+							onClick={() => setOptions(DEFAULT_CONNECTIONS_GRAPH_OPTIONS)}
+						>
+							<HugeiconsIcon icon={ReloadIcon} size="var(--icon-sm)" />
+							{t("connections.resetDefaults")}
+						</button>
+					</div>
 				</div>
 			</PopoverContent>
 		</Popover>

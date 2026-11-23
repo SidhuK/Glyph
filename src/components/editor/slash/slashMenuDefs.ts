@@ -150,6 +150,7 @@ export const SLASH_MENU: (SlashCommandDef | SlashCommandGroupDef)[] = [
 	actionCommand({
 		id: "table",
 		icon: TableIcon,
+		startsSection: true,
 		keywords: ["table", "columns", "rows", "grid"],
 		action: "table",
 	}),
@@ -162,6 +163,7 @@ export const SLASH_MENU: (SlashCommandDef | SlashCommandGroupDef)[] = [
 	{
 		groupId: "blocks",
 		icon: BlocksIcon,
+		startsSection: true,
 		children: [
 			actionCommand({
 				id: "quote",
@@ -302,6 +304,7 @@ export const SLASH_MENU: (SlashCommandDef | SlashCommandGroupDef)[] = [
 	{
 		groupId: "textColor",
 		icon: TextColorIcon,
+		startsSection: true,
 		children: [
 			...EDITOR_TEXT_COLORS.map((color) =>
 				actionCommand({
@@ -346,6 +349,7 @@ export const SLASH_MENU: (SlashCommandDef | SlashCommandGroupDef)[] = [
 	{
 		id: "insertTemplate",
 		icon: NotepadTextDashedIcon,
+		startsSection: true,
 		keywords: ["template", "snippet", "date", "time", "title", "title_slug"],
 		command: requestTemplateInsertion,
 	},

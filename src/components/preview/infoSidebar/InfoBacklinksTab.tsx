@@ -68,7 +68,7 @@ export function InfoBacklinksTab({
 	const { t } = useTranslation("editor");
 
 	return (
-		<>
+		<div className="markdownEditorInfoBacklinks">
 			<section className="markdownEditorInfoSection">
 				<h3 className="markdownEditorInfoSectionLabel">{t("infoSidebar.backlinks.heading")}</h3>
 				{backlinks.length > 0 ? (
@@ -142,6 +142,6 @@ export function InfoBacklinksTab({
 					<div className="markdownEditorInfoEmpty">{t("infoSidebar.backlinks.noLinkedNotes")}</div>
 				)}
 			</section>
-		</>
+		</div>
 	);
 }

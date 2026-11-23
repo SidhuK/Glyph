@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
-import { Bookmark01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { Bookmark01Icon, Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -622,6 +622,12 @@ export function CommandPalette({
 					<>
 						<div className="commandPaletteHeader">
 							<div className="commandPaletteInputWrapper">
+								<HugeiconsIcon
+									icon={Search01Icon}
+									size="var(--icon-md)"
+									className="commandPaletteSearchGlyph"
+									aria-hidden="true"
+								/>
 								{moveSource ? (
 									<span
 										className="commandPaletteScopeToken commandPaletteMoveToken"

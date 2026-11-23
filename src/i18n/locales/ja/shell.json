@@ -291,7 +291,7 @@
 			"archived": "アーカイブ済み"
 		},
 		"priority": {
-			"no": "優先度なし",
+			"no": "なし",
 			"low": "低",
 			"medium": "中",
 			"high": "高"

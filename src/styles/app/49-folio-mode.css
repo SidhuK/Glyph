@@ -75,10 +75,10 @@
 	align-items: center;
 	gap: 6px;
 	/* 1px border + 13px puts the glyph on the card text column (14px row padding). */
-	padding: 0 6px 0 13px;
-	border: 1px solid transparent;
+	padding: 0 10px 0 13px;
+	border: 1px solid var(--border-default);
 	border-radius: var(--search-field-radius);
-	background: var(--search-field-bg);
+	background: var(--bg-primary);
 	color: var(--text-tertiary);
 	cursor: text;
 	transition:
@@ -87,9 +87,12 @@
 		color 140ms ease;
 }
 
+.folioNotesSearch:hover {
+	border-color: var(--border-strong);
+}
+
 .folioNotesSearch:focus-within {
 	border-color: var(--border-focus);
-	background: var(--bg-primary);
 }
 
 .folioNotesSearch svg {
@@ -173,6 +176,11 @@
 .folioNotesSort svg {
 	flex: 0 0 auto;
 	color: var(--text-tertiary);
+	transition: rotate 140ms ease;
+}
+
+.folioNotesSort[data-popup-open] svg {
+	rotate: 180deg;
 }
 
 .folioNotesSort:hover,
@@ -195,8 +203,11 @@
 	outline: none;
 }
 
-.folioNotesSearchKeycap {
+.folioNotesSearchHint {
 	flex: 0 0 auto;
+	color: var(--text-placeholder);
+	font-size: var(--text-xs);
+	letter-spacing: 0.04em;
 }
 
 /* Rows start below a --scroll-fade-size band (the virtualizer's paddingStart), so the fade only

@@ -17,6 +17,7 @@ import {
 	TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 	type ToggleNoteInfoSidebarDetail,
 } from "../../lib/appEvents";
+import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
 import { joinYamlFrontmatter, splitYamlFrontmatter } from "../../lib/notePreview";
 import { groupRelationshipsByField } from "../../lib/relationships";
@@ -31,6 +32,7 @@ import {
 import { normalizeRelPath } from "../../utils/path";
 import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
 import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
+import { Tooltip } from "../ui/Tooltip";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useInlineTemplateInsertion } from "../editor/hooks/useInlineTemplateInsertion";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
@@ -519,6 +521,7 @@ export function MarkdownEditorPane({
 	}, [setAiPanelOpen, textRef]);
 	const closeInfoPanel = useCallback(() => setInfoPanelOpen(false), []);
 
+	const { getBinding } = useShortcutBindings();
 	const isLargeNote = requiresPlainEditorMode(text);
 	const isAiPanelActive = aiEnabled && aiPanelOpen;
 
@@ -535,32 +538,34 @@ export function MarkdownEditorPane({
 						<div className="markdownEditorToolbarActions">
 							<NoteArchiveAction path={relPath} />
 							{aiEnabled ? (
+								<Tooltip label={t("toolbar.aiPanel")} shortcut={getBinding("toggle-ai")}>
+									<button
+										type="button"
+										className="markdownEditorToolbarBtn"
+										data-active={isAiPanelActive || undefined}
+										onClick={() => {
+											setInfoPanelOpen(() => false);
+											setAiPanelOpen((open) => !open);
+										}}
+										aria-label={t("toolbar.aiPanel")}
+										aria-pressed={aiPanelOpen}
+									>
+										<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
+									</button>
+								</Tooltip>
+							) : null}
+							<Tooltip label={t("toolbar.info")}>
 								<button
 									type="button"
 									className="markdownEditorToolbarBtn"
-									data-active={isAiPanelActive || undefined}
-									onClick={() => {
-										setInfoPanelOpen(() => false);
-										setAiPanelOpen((open) => !open);
-									}}
-									aria-label={t("toolbar.aiPanel")}
-									title={t("toolbar.aiPanel")}
-									aria-pressed={aiPanelOpen}
+									data-active={infoPanelOpen || undefined}
+									onClick={toggleInfoPanel}
+									aria-label={t("toolbar.info")}
+									aria-pressed={infoPanelOpen}
 								>
-									<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
+									<HugeiconsIcon icon={LayoutAlignRightIcon} size="var(--icon-md)" />
 								</button>
-							) : null}
-							<button
-								type="button"
-								className="markdownEditorToolbarBtn"
-								data-active={infoPanelOpen || undefined}
-								onClick={toggleInfoPanel}
-								aria-label={t("toolbar.info")}
-								title={t("toolbar.info")}
-								aria-pressed={infoPanelOpen}
-							>
-								<HugeiconsIcon icon={LayoutAlignRightIcon} size="var(--icon-md)" />
-							</button>
+							</Tooltip>
 						</div>
 					</div>
 				</div>

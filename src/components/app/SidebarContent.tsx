@@ -1,18 +1,4 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import {
-	AiBrain04Icon as AgentIcon,
-	Archive03Icon as ArchiveIcon,
-	CheckListIcon as TasksIcon,
-	ChartRelationshipIcon as ConnectionsIcon,
-	Database01Icon as CollectionsIcon,
-	Files02Icon as AllNotesIcon,
-	InboxIcon,
-	Layout01Icon as TemplatesIcon,
-	PlusSignIcon as NewNoteIcon,
-	Refresh04Icon as SyncIcon,
-	SearchIcon,
-	StickyNote03Icon as QuickNoteIcon,
-} from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
 import {
 	Activity,
@@ -52,6 +38,7 @@ import { toast } from "../../lib/toast";
 import { basename } from "../../utils/path";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
+import { SIDEBAR_ITEM_ICONS } from "./sidebarItemIcons";
 import { PinnedFilesPane, RecentFilesPane } from "./RecentFilesPane";
 import { SidebarCreateMenu, enabledPeriodItems } from "./SidebarCreateMenu";
 import { type SidebarView, type SidebarViewKind, SidebarViewStrip } from "./SidebarViewStrip";
@@ -535,7 +522,7 @@ export const SidebarContent = memo(function SidebarContent({
 									key="agent"
 									data-sidebar-key="agent"
 									label={t("sidebar.agent")}
-									icon={AgentIcon}
+									icon={SIDEBAR_ITEM_ICONS.agent}
 									active={activeTopSection === "agent"}
 									onClick={onOpenAgent}
 								/>
@@ -557,7 +544,7 @@ export const SidebarContent = memo(function SidebarContent({
 												newNoteShortcut ? ` (${formatShortcutForPlatform(newNoteShortcut)})` : ""
 											}`}
 										>
-											<HugeiconsIcon icon={NewNoteIcon} size="var(--icon-lg)" />
+											<HugeiconsIcon icon={SIDEBAR_ITEM_ICONS.newNote} size="var(--icon-lg)" />
 											<span className="sidebarQuickActionLabel">{t("sidebar.newNote")}</span>
 											{newNoteShortcut ? (
 												<span className="sidebarQuickActionShortcut">
@@ -583,7 +570,7 @@ export const SidebarContent = memo(function SidebarContent({
 									data-sidebar-key="inbox"
 									badge={<AllNotesCountBadge inbox />}
 									label={t("sidebar.inbox")}
-									icon={InboxIcon}
+									icon={SIDEBAR_ITEM_ICONS.inbox}
 									onClick={onOpenInbox}
 									active={activeTopSection === "inbox" || inboxFolderSelected}
 								/>
@@ -593,7 +580,7 @@ export const SidebarContent = memo(function SidebarContent({
 									key="archive"
 									data-sidebar-key="archive"
 									label={t("sidebar.archive")}
-									icon={ArchiveIcon}
+									icon={SIDEBAR_ITEM_ICONS.archive}
 									onClick={onOpenArchive}
 									active={activeTopSection === "archive"}
 								/>
@@ -616,7 +603,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onFocus={onPrefetchAllDocs}
 									title={t("sidebar.allNotes")}
 								>
-									<HugeiconsIcon icon={AllNotesIcon} size="var(--icon-lg)" />
+									<HugeiconsIcon icon={SIDEBAR_ITEM_ICONS.allNotes} size="var(--icon-lg)" />
 									<span className="sidebarQuickActionLabel">{t("sidebar.allNotes")}</span>
 									<AllNotesCountBadge />
 								</button>
@@ -639,7 +626,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onFocus={() => onPrefetchDatabases()}
 									title={t("sidebar.collections")}
 								>
-									<HugeiconsIcon icon={CollectionsIcon} size="var(--icon-lg)" />
+									<HugeiconsIcon icon={SIDEBAR_ITEM_ICONS.databases} size="var(--icon-lg)" />
 									<span className="sidebarQuickActionLabel">{t("sidebar.collections")}</span>
 								</button>
 							) : null}
@@ -648,7 +635,7 @@ export const SidebarContent = memo(function SidebarContent({
 									key="tasks"
 									data-sidebar-key="tasks"
 									label={t("sidebar.tasks")}
-									icon={TasksIcon}
+									icon={SIDEBAR_ITEM_ICONS.tasks}
 									onClick={onOpenTasks}
 									active={activeTopSection === "tasks"}
 								/>
@@ -666,7 +653,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onClick={onOpenConnections}
 									title={t("sidebar.connections")}
 								>
-									<HugeiconsIcon icon={ConnectionsIcon} size="var(--icon-lg)" />
+									<HugeiconsIcon icon={SIDEBAR_ITEM_ICONS.connections} size="var(--icon-lg)" />
 									<span className="sidebarQuickActionLabel">{t("sidebar.connections")}</span>
 								</button>
 							) : null}
@@ -685,7 +672,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onClick={onOpenSearch}
 								>
 									<HugeiconsIcon
-										icon={SearchIcon}
+										icon={SIDEBAR_ITEM_ICONS.search}
 										size="var(--icon-sm)"
 										className="sidebarSearchBarIcon"
 										aria-hidden="true"
@@ -703,7 +690,7 @@ export const SidebarContent = memo(function SidebarContent({
 									key="quickNote"
 									data-sidebar-key="quickNote"
 									label={t("sidebar.quickNote")}
-									icon={QuickNoteIcon}
+									icon={SIDEBAR_ITEM_ICONS.quickNote}
 									onClick={onOpenQuickNote}
 								/>
 							) : null}
@@ -712,7 +699,7 @@ export const SidebarContent = memo(function SidebarContent({
 									key="templates"
 									data-sidebar-key="templates"
 									label={t("sidebar.templates")}
-									icon={TemplatesIcon}
+									icon={SIDEBAR_ITEM_ICONS.templates}
 									onClick={onCreateFromTemplate}
 								/>
 							) : null}
@@ -721,7 +708,7 @@ export const SidebarContent = memo(function SidebarContent({
 									key="gitSync"
 									data-sidebar-key="gitSync"
 									label={t("sidebar.gitSync")}
-									icon={SyncIcon}
+									icon={SIDEBAR_ITEM_ICONS.gitSync}
 									onClick={onGitSyncNow}
 								/>
 							) : null}

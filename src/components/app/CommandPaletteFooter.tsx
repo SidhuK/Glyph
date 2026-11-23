@@ -101,13 +101,7 @@ function FooterHints({ hints }: { hints: readonly FooterHint[] }) {
 	const { t } = useTranslation("shell");
 	return hints.map((hint) => (
 		<span key={hint.label} className="commandPaletteFooterHint">
-			<span className="commandPaletteFooterKeys">
-				{hint.keys.map((key) => (
-					<kbd key={key} className="commandPaletteKeycap">
-						{key}
-					</kbd>
-				))}
-			</span>
+			<kbd className="commandPaletteKeycap">{hint.keys.join("")}</kbd>
 			{t(`commandPalette.footer.${hint.label}`)}
 		</span>
 	));

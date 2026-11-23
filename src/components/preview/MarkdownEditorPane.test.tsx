@@ -49,6 +49,10 @@ vi.mock("../../hooks/useNoteArchive", () => ({
 	useNoteArchive: () => ({ enabled: false, isPending: false, setArchived: vi.fn() }),
 }));
 
+vi.mock("../../hooks/useShortcutBindings", () => ({
+	useShortcutBindings: () => ({ getBinding: () => null }),
+}));
+
 vi.mock("../../contexts", () => ({
 	useAISidebarContext: () => ({
 		aiEnabled: false,

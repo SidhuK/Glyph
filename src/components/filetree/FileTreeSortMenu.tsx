@@ -8,7 +8,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/shadcn/dropdown-menu";
-import type { KeyboardEvent, ReactNode } from "react";
+import { Fragment, type KeyboardEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { FILE_TREE_SORT_MODES, fileTreeSortLabel } from "../../lib/fileTreeSort";
 import type { FileTreeSortMode } from "../../lib/settings";
@@ -23,6 +23,16 @@ interface FileTreeSortMenuProps {
 	triggerLabel?: string;
 	/** Extra items listed under the sort modes, after a separator. */
 	children?: ReactNode;
+}
+
+function sortField(mode: FileTreeSortMode): string {
+	return mode.split("-")[0] ?? mode;
+}
+
+function startsSortField(index: number): boolean {
+	const mode = FILE_TREE_SORT_MODES[index];
+	const previous = FILE_TREE_SORT_MODES[index - 1];
+	return mode !== undefined && previous !== undefined && sortField(mode) !== sortField(previous);
 }
 
 // Keep menu keystrokes (navigation, activation, typeahead) away from keyboard
@@ -57,21 +67,28 @@ export function FileTreeSortMenu({
 			>
 				{triggerContent}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" side="bottom" onKeyDown={stopMenuKeyPropagation}>
+			<DropdownMenuContent
+				align="end"
+				side="bottom"
+				className="fileTreeSortMenu"
+				onKeyDown={stopMenuKeyPropagation}
+			>
 				{children ? <DropdownMenuLabel>{t("sidebar.sort")}</DropdownMenuLabel> : null}
 				<DropdownMenuRadioGroup value={sortMode}>
-					{FILE_TREE_SORT_MODES.map((mode) => (
-						<DropdownMenuRadioItem
-							key={mode}
-							value={mode}
-							closeOnClick
-							onClick={() => {
-								if (mode !== sortMode) onSortModeChange(mode);
-							}}
-						>
-							<DropdownMenuItemIcon icon={FILE_TREE_SORT_ICONS[mode]} />
-							<span className="glyphMenuItemLabel">{fileTreeSortLabel(mode)}</span>
-						</DropdownMenuRadioItem>
+					{FILE_TREE_SORT_MODES.map((mode, index) => (
+						<Fragment key={mode}>
+							{startsSortField(index) ? <DropdownMenuSeparator /> : null}
+							<DropdownMenuRadioItem
+								value={mode}
+								closeOnClick
+								onClick={() => {
+									if (mode !== sortMode) onSortModeChange(mode);
+								}}
+							>
+								<DropdownMenuItemIcon icon={FILE_TREE_SORT_ICONS[mode]} />
+								<span className="glyphMenuItemLabel">{fileTreeSortLabel(mode)}</span>
+							</DropdownMenuRadioItem>
+						</Fragment>
 					))}
 				</DropdownMenuRadioGroup>
 				{children ? (
