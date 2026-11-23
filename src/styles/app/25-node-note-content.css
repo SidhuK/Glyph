@@ -983,6 +983,10 @@
 		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 }
 
+:root {
+	--task-check-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%3E%3Cpath%20d%3D'M6%2012.5L10%2016.5L18%207.5'%20stroke%3D'black'%20stroke-width%3D'2.75'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'/%3E%3C%2Fsvg%3E");
+}
+
 .tiptapContentInline ul[data-type="taskList"] {
 	list-style: none;
 	padding-left: 0;
@@ -992,7 +996,7 @@
 .tiptapContentInline ul[data-type="taskList"] > li,
 .tiptapContentInline li[data-type="taskItem"],
 .tiptapContentInline li[data-checked] {
-	--task-checkbox-size: calc(var(--editor-font-size) - 2px);
+	--task-checkbox-size: var(--editor-font-size);
 	display: flex !important;
 	align-items: flex-start;
 	gap: 0.55em;
@@ -1040,8 +1044,8 @@
 	flex: 0 0 auto;
 	appearance: none;
 	-webkit-appearance: none;
-	border: 1.5px solid color-mix(in srgb, var(--text-tertiary) 80%, transparent);
-	border-radius: 4px;
+	border: 1.75px solid var(--text-tertiary);
+	border-radius: calc(var(--task-checkbox-size) * 0.3);
 	background: transparent;
 	cursor: pointer;
 	transition:
@@ -1054,11 +1058,10 @@
 	border-color: var(--text-secondary);
 }
 
-/* Done = the same box, filled, so both states share one silhouette. */
 .tiptapContentInline ul[data-type="taskList"] > li > label input[type="checkbox"]:checked,
 .tiptapContentInline li[data-checked] > label input[type="checkbox"]:checked {
 	border-color: transparent;
-	background: color-mix(in srgb, var(--text-tertiary) 70%, transparent);
+	background: var(--interactive-accent);
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > label::after,
@@ -1068,21 +1071,19 @@
 	position: absolute;
 	top: 50%;
 	left: 50%;
-	width: 3.5px;
-	height: 7px;
-	margin-top: -5px;
-	margin-left: -2.5px;
-	border-right: 1.75px solid var(--bg-primary);
-	border-bottom: 1.75px solid var(--bg-primary);
+	width: var(--task-checkbox-size);
+	height: var(--task-checkbox-size);
+	background: var(--text-inverse);
+	mask: var(--task-check-mask) center / contain no-repeat;
 	pointer-events: none;
 	opacity: 0;
-	transform: rotate(45deg) scale(0.75);
+	transform: translate(-50%, -50%) scale(0.75);
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li[data-checked="true"] > label::after,
 .tiptapContentInline li[data-checked="true"] > label::after {
 	opacity: 1;
-	transform: rotate(45deg) scale(1);
+	transform: translate(-50%, -50%) scale(1);
 	animation: task-check-in 180ms ease;
 }
 
@@ -1167,11 +1168,11 @@
 @keyframes task-check-in {
 	from {
 		opacity: 0;
-		transform: rotate(45deg) scale(0.75);
+		transform: translate(-50%, -50%) scale(0.75);
 	}
 	to {
 		opacity: 1;
-		transform: rotate(45deg) scale(1);
+		transform: translate(-50%, -50%) scale(1);
 	}
 }
 
