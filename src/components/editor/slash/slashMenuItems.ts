@@ -25,6 +25,7 @@ export interface SlashCommandDef {
 	keywords: string[];
 	/** The Markdown that makes the same block as you type, shown as the row's hint. */
 	shortcut?: string;
+	startsSection?: boolean;
 	command: (ctx: {
 		editor: Editor;
 		onMathEditRequest?: (request: MathEditRequest) => void;
@@ -36,6 +37,7 @@ export interface SlashCommandDef {
 export interface SlashCommandGroupDef {
 	groupId: string;
 	icon: SlashIcon;
+	startsSection?: boolean;
 	children: SlashCommandDef[];
 }
 
@@ -49,6 +51,7 @@ export interface SlashCommandGroupItem {
 	icon: SlashIcon;
 	tone?: undefined;
 	title: string;
+	startsSection?: boolean;
 	children: SlashCommandItem[];
 }
 
@@ -70,6 +73,7 @@ export function localizeSlashMenuEntry(
 	return {
 		icon: entry.icon,
 		title,
+		startsSection: entry.startsSection,
 		children: entry.children.map((child) => localizeSlashCommandItem(child, title)),
 	};
 }

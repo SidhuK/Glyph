@@ -60,6 +60,7 @@ export interface MenuRowContent {
 	/** Sets the hint in the monospace face, for Markdown the user can type instead. */
 	hintIsShortcut?: boolean;
 	hasSubmenu?: boolean;
+	startsSection?: boolean;
 }
 
 /** One row of the insert menus (slash, wiki-link, tag, mention): icon, title, trailing hint. */
@@ -71,6 +72,7 @@ export function renderMenuRow(
 	button.type = "button";
 	button.className = "slashCommandItem";
 	button.classList.toggle("active", isActive);
+	if (content.startsSection) button.dataset.sectionStart = "";
 	if (content.icon !== undefined) button.append(iconTile(content.icon, content.tone));
 	button.append(titleSpan(content.title, content.match));
 
@@ -95,11 +97,14 @@ export function renderSlashMenuItem({
 	item,
 	isActive,
 	select,
+	query,
 }: {
 	item: SlashMenuItem;
 	isActive: boolean;
 	select: (item: SlashMenuItem) => void;
+	query?: string;
 }): HTMLElement {
+	const isBrowsing = !query?.trim();
 	const isGroup = "children" in item;
 	// A Markdown shortcut says more than repeating the group name, like a macOS key equivalent.
 	const shortcut = isGroup ? undefined : item.shortcut;
@@ -108,9 +113,11 @@ export function renderSlashMenuItem({
 			icon: item.icon,
 			tone: item.tone,
 			title: item.title,
+			match: query,
 			hint: shortcut ?? (isGroup ? undefined : item.groupTitle),
 			hintIsShortcut: shortcut !== undefined,
 			hasSubmenu: isGroup,
+			startsSection: isBrowsing && item.startsSection,
 		},
 		{ isActive, onSelect: () => select(item) },
 	);
