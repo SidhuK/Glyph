@@ -14,6 +14,7 @@ import { flushSync } from "react-dom";
 import ReactDOM from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
 import { Toaster } from "./components/ui/notifications";
+import { TooltipProvider } from "./components/ui/Tooltip";
 import { changeAppLanguage, i18n, initI18n } from "./i18n";
 import { isAppLanguage } from "./i18n/locales";
 import { syncNativeMenuLabels } from "./i18n/nativeMenu";
@@ -355,7 +356,7 @@ void Promise.all([initI18n().catch(() => undefined), loadWindowRoot()]).then(([,
 					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 						<LanguageBridge />
 						<ThemeAndTypographyBridge />
-						{windowRoot}
+						<TooltipProvider>{windowRoot}</TooltipProvider>
 						<Toaster />
 					</ThemeProvider>
 				</I18nextProvider>

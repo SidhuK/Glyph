@@ -8,6 +8,8 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import type { AiStoredToolEvent } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
+import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { Tooltip } from "../ui/Tooltip";
 import { Button } from "../ui/shadcn/button";
 import type { AIActivityTimelineEvent } from "./AIActivityTimeline";
 import { AIChatThread } from "./AIChatThread";
@@ -48,6 +50,7 @@ function stripChipMarkers(text: string): string {
 export function AIPanel(props: AIPanelProps) {
 	const { t } = useTranslation("editor");
 	const { t: tShell } = useTranslation("shell");
+	const { getBinding } = useShortcutBindings();
 	const { aiAssistantMode } = useAISidebarContext();
 	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -380,44 +383,47 @@ export function AIPanel(props: AIPanelProps) {
 					</button>
 				</div>
 				<div className="aiPanelHeaderRight">
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						data-action="new-chat"
-						aria-label={tShell("ai.panel.newChat")}
-						onClick={handleNewChat}
-						title={tShell("ai.panel.newChat")}
-						disabled={chat.status === "streaming"}
-						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
-					>
-						<HugeiconsIcon icon={ChatAdd01Icon} size="var(--icon-sm)" />
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						data-action="settings"
-						aria-label={tShell("ai.panel.settings")}
-						onClick={() => openSettings("ai")}
-						title={tShell("ai.panel.settings")}
-						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
-					>
-						<SettingsIcon size="var(--icon-sm)" />
-					</Button>
-					{props.surface === "sidebar" ? (
+					<Tooltip label={tShell("ai.panel.newChat")}>
 						<Button
 							type="button"
 							variant="ghost"
 							size="icon-sm"
-							data-action="minimize"
-							aria-label={tShell("ai.panel.close")}
-							onClick={props.onClose}
-							title={tShell("ai.panel.close")}
+							data-action="new-chat"
+							aria-label={tShell("ai.panel.newChat")}
+							onClick={handleNewChat}
+							disabled={chat.status === "streaming"}
 							onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 						>
-							<HugeiconsIcon icon={LayoutAlignRightIcon} size="var(--icon-sm)" />
+							<HugeiconsIcon icon={ChatAdd01Icon} size="var(--icon-sm)" />
 						</Button>
+					</Tooltip>
+					<Tooltip label={tShell("ai.panel.settings")}>
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon-sm"
+							data-action="settings"
+							aria-label={tShell("ai.panel.settings")}
+							onClick={() => openSettings("ai")}
+							onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+						>
+							<SettingsIcon size="var(--icon-sm)" />
+						</Button>
+					</Tooltip>
+					{props.surface === "sidebar" ? (
+						<Tooltip label={tShell("ai.panel.close")} shortcut={getBinding("toggle-ai")}>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								data-action="minimize"
+								aria-label={tShell("ai.panel.close")}
+								onClick={props.onClose}
+								onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+							>
+								<HugeiconsIcon icon={LayoutAlignRightIcon} size="var(--icon-sm)" />
+							</Button>
+						</Tooltip>
 					) : null}
 				</div>
 			</div>

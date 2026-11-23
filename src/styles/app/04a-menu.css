@@ -253,3 +253,68 @@ svg.glyphMenuItemIcon {
 	min-width: max(160px, var(--anchor-width));
 	max-width: max(320px, var(--anchor-width));
 }
+
+.glyphTooltipPositioner {
+	z-index: 60;
+	pointer-events: none;
+}
+
+.glyphTooltip {
+	--glyph-tooltip-ink: color-mix(in srgb, var(--text-primary) 94%, var(--bg-primary));
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 24px;
+	padding: 0 8px;
+	border-radius: var(--radius-md);
+	background: var(--glyph-tooltip-ink);
+	color: var(--bg-primary);
+	box-shadow: var(--floating-surface-shadow);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	white-space: nowrap;
+	user-select: none;
+	transform-origin: var(--transform-origin);
+	transition:
+		opacity 120ms ease,
+		transform 120ms ease;
+}
+
+.glyphTooltip[data-starting-style],
+.glyphTooltip[data-ending-style] {
+	opacity: 0;
+	transform: scale(0.96);
+}
+
+.glyphTooltip[data-instant] {
+	transition: none;
+}
+
+.glyphTooltipKeys {
+	display: inline-flex;
+	gap: 2px;
+	margin-right: -4px;
+}
+
+.glyphTooltipKey {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 16px;
+	height: 16px;
+	padding: 0 3px;
+	border: 1px solid color-mix(in srgb, var(--bg-primary) 34%, transparent);
+	border-radius: 4px;
+	color: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	font-family: inherit;
+	font-size: calc(var(--text-base) * 10.5 / 14);
+	font-weight: var(--font-medium);
+	line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.glyphTooltip {
+		transition: none;
+	}
+}
