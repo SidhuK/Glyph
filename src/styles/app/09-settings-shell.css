@@ -103,7 +103,7 @@
 	width: 100%;
 	min-width: 0;
 	height: var(--search-field-height);
-	padding: 0 28px 0 28px;
+	padding: 0 48px 0 28px;
 	border: 0;
 	border-radius: var(--search-field-radius);
 	background: var(--search-field-bg);
@@ -128,6 +128,30 @@
 
 .settingsSidebarSearchInput::-webkit-search-cancel-button {
 	display: none;
+}
+
+.settingsSidebarSearchKeys {
+	position: absolute;
+	right: 16px;
+	display: inline-flex;
+	gap: 2px;
+	pointer-events: none;
+}
+
+.settingsSidebarSearchKey {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 16px;
+	height: 16px;
+	padding: 0 3px;
+	border: 1px solid var(--border-default);
+	border-radius: 4px;
+	color: var(--text-tertiary);
+	font-family: inherit;
+	font-size: calc(var(--text-base) * 10.5 / 14);
+	font-weight: var(--font-medium);
+	line-height: 1;
 }
 
 .settingsSidebarSearchClear {
@@ -194,14 +218,13 @@
 }
 
 .settingsTabButton {
-	--settings-tab-tint: #8e8e93;
 	position: relative;
 	display: flex;
 	align-items: center;
 	gap: 9px;
 	width: 100%;
 	height: 30px;
-	padding: 0 6px;
+	padding: 0 8px;
 	border: 0;
 	border-radius: var(--radius-md);
 	background: transparent;
@@ -210,11 +233,15 @@
 	font-weight: var(--font-normal);
 	line-height: 1;
 	cursor: default;
-	transition: opacity var(--transition-fast);
+	transition: none;
 }
 
 .settingsTabButton:not([aria-current="page"]):hover {
 	background: var(--bg-hover);
+}
+
+.settingsTabButton[aria-current="page"] {
+	background: var(--bg-active);
 }
 
 .settingsTabButton:focus-visible {
@@ -222,68 +249,17 @@
 	outline-offset: -2px;
 }
 
-.settingsTabButton[aria-current="page"] {
-	color: var(--text-inverse);
-}
-
-.settingsTabButton[aria-current="page"]:focus-visible {
-	outline-color: var(--text-inverse);
-	outline-offset: -3px;
-}
-
-.settingsTabButton[data-search-dimmed] {
-	opacity: 0.4;
-}
-
-.settingsTabButton[data-tab="appearance"],
-.settingsTabButton[data-tab="ai"] {
-	--settings-tab-tint: #5e5ce6;
-}
-
-.settingsTabButton[data-tab="typography"],
-.settingsTabButton[data-tab="experimental"] {
-	--settings-tab-tint: #ff9f0a;
-}
-
-.settingsTabButton[data-tab="sidebar"] {
-	--settings-tab-tint: #30b0c7;
-}
-
-.settingsTabButton[data-tab="editor"] {
-	--settings-tab-tint: #34c759;
-}
-
-.settingsTabButton[data-tab="shortcuts"],
-.settingsTabButton[data-tab="developer"] {
-	--settings-tab-tint: #636366;
-}
-
-.settingsTabButton[data-tab="space"] {
-	--settings-tab-tint: #0a84ff;
-}
-
-.settingsTabButton[data-tab="attachments"] {
-	--settings-tab-tint: #bf5af2;
-}
-
-.settingsTabButton[data-tab="git"] {
-	--settings-tab-tint: #ff453a;
-}
-
 .settingsTabIcon {
-	display: grid;
-	place-items: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	flex: 0 0 auto;
-	width: 22px;
-	height: 22px;
-	border-radius: 6px;
-	background: var(--settings-tab-tint);
-	color: #fff;
+	width: 18px;
+	color: var(--text-secondary);
 }
 
-.settingsTabIcon svg {
-	width: 13px;
-	height: 13px;
+.settingsTabButton[aria-current="page"] .settingsTabIcon {
+	color: var(--text-primary);
 }
 
 .settingsTabLabel {
@@ -335,11 +311,6 @@
 	text-decoration: underline;
 	text-underline-offset: 3px;
 	outline: none;
-}
-
-.settingsSidebarTabsHighlight {
-	border-radius: var(--radius-md);
-	background: var(--interactive-accent);
 }
 
 .settingsTabPanel {
@@ -412,10 +383,4 @@
 	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 36%, transparent);
 	outline-offset: 2px;
 	border-radius: var(--radius-md);
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.settingsTabButton {
-		transition: none;
-	}
 }

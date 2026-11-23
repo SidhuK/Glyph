@@ -2,7 +2,6 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { spaceDisplayName } from "../../lib/spaceRegistry";
-import { Highlight, HighlightItem } from "../ui/shadcn/highlight";
 import { SettingsNavFooter } from "./SettingsNavFooter";
 import { SettingsNavSearchField } from "./SettingsNavSearchField";
 import { SETTINGS_TAB_GROUPS, type SettingsTabGroup } from "./settingsConfig";
@@ -31,43 +30,40 @@ export const SettingsNav = memo(function SettingsNav() {
 		<div className="settingsSidebarNavSection">
 			<SettingsNavSearchField />
 			<div className="settingsSidebarTabs">
-				<Highlight value={settingsTab} className="settingsSidebarTabsHighlight">
-					{SETTINGS_TAB_GROUPS.map((group) => (
-						<section
-							key={group.id}
-							className="settingsSidebarTabGroup"
-							aria-labelledby={`settings-sidebar-group-${group.id}`}
+				{SETTINGS_TAB_GROUPS.map((group) => (
+					<section
+						key={group.id}
+						className="settingsSidebarTabGroup"
+						aria-labelledby={`settings-sidebar-group-${group.id}`}
+					>
+						<h3
+							id={`settings-sidebar-group-${group.id}`}
+							className="settingsSidebarTabGroupHeading"
 						>
-							<h3
-								id={`settings-sidebar-group-${group.id}`}
-								className="settingsSidebarTabGroupHeading"
-							>
-								{groupHeading(group)}
-							</h3>
-							{group.tabs
-								.filter((tab) => tab.id !== "developer" || developerModeEnabled)
-								.map((tab) => (
-									<HighlightItem key={tab.id} value={tab.id}>
-										<button
-											type="button"
-											data-tab={tab.id}
-											data-search-dimmed={(filter && !filter.matchedTabs.has(tab.id)) || undefined}
-											className="settingsTabButton"
-											onClick={() => setSettingsTab(tab.id)}
-											aria-current={settingsTab === tab.id ? "page" : undefined}
-										>
-											<span className="settingsTabIcon" aria-hidden="true">
-												{tab.renderIcon()}
-											</span>
-											<span className="settingsTabLabel">
-												{localizedSettingsTabLabel(tab.id, i18n.language)}
-											</span>
-										</button>
-									</HighlightItem>
-								))}
-						</section>
-					))}
-				</Highlight>
+							{groupHeading(group)}
+						</h3>
+						{group.tabs
+							.filter((tab) => tab.id !== "developer" || developerModeEnabled)
+							.map((tab) => (
+								<button
+									key={tab.id}
+									type="button"
+									data-tab={tab.id}
+									data-search-dimmed={(filter && !filter.matchedTabs.has(tab.id)) || undefined}
+									className="settingsTabButton"
+									onClick={() => setSettingsTab(tab.id)}
+									aria-current={settingsTab === tab.id ? "page" : undefined}
+								>
+									<span className="settingsTabIcon" aria-hidden="true">
+										{tab.renderIcon()}
+									</span>
+									<span className="settingsTabLabel">
+										{localizedSettingsTabLabel(tab.id, i18n.language)}
+									</span>
+								</button>
+							))}
+					</section>
+				))}
 			</div>
 			<SettingsNavFooter />
 		</div>

@@ -1,8 +1,10 @@
 import { useTranslation } from "react-i18next";
+import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { Search, X } from "../Icons";
 import { useSettingsSearch } from "./search/SettingsSearchContext";
 
 const IME_PROCESS_KEY_CODE = 229;
+const FIND_SHORTCUT_KEYS = formatShortcutPartsForPlatform({ key: "f", meta: true });
 
 export function SettingsNavSearchField() {
 	const { t } = useTranslation("settings.general");
@@ -44,7 +46,15 @@ export function SettingsNavSearchField() {
 				>
 					<X size="var(--icon-sm)" />
 				</button>
-			) : null}
+			) : (
+				<span className="settingsSidebarSearchKeys" aria-hidden="true">
+					{FIND_SHORTCUT_KEYS.map((key) => (
+						<kbd key={key} className="settingsSidebarSearchKey">
+							{key}
+						</kbd>
+					))}
+				</span>
+			)}
 		</div>
 	);
 }
