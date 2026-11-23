@@ -36,7 +36,7 @@ function boardCardDragId(notePath: string, laneId: string): string {
 export type DatabaseLaneKind = "status" | "priority" | "tag" | null;
 
 /** Lane and group labels: built-in statuses and priorities in the UI language ("No" priority
-    reads as "No priority"); everything else as stored. */
+    reads as "None"); everything else as stored. */
 export function databaseLaneDisplayLabel(
 	label: string,
 	kind: DatabaseLaneKind,

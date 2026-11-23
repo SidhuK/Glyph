@@ -549,25 +549,6 @@ button.notePropertyTagAdd {
 	font-weight: var(--font-normal);
 }
 
-/* Priority keeps a hint of its tone on the icon, pulled toward the neutral ink. */
-.notePropertyRow .propertyValueTextIcon {
-	color: color-mix(in srgb, currentcolor 50%, var(--text-tertiary));
-}
-
-/* Status is a 6px filled dot in its tone: rings are reserved for task progress. */
-.notePropertyRow .propertyValueText[data-property-kind="status"] > svg {
-	display: none;
-}
-
-.notePropertyRow .propertyValueText[data-property-kind="status"]::before {
-	content: "";
-	flex: 0 0 6px;
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
-	background: var(--database-tone, var(--text-tertiary));
-}
-
 .notePropertyRow .notePropertyTagInput {
 	flex-basis: 24px;
 	min-width: 24px;

@@ -291,7 +291,7 @@
 			"archived": "보관됨"
 		},
 		"priority": {
-			"no": "우선순위 없음",
+			"no": "없음",
 			"low": "낮음",
 			"medium": "보통",
 			"high": "높음"

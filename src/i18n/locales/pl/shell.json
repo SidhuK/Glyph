@@ -296,7 +296,7 @@
 			"archived": "Zarchiwizowane"
 		},
 		"priority": {
-			"no": "Brak priorytetu",
+			"no": "Brak",
 			"low": "Niski",
 			"medium": "Średni",
 			"high": "Wysoki"

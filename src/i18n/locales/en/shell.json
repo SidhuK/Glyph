@@ -292,7 +292,7 @@
 			"archived": "Archived"
 		},
 		"priority": {
-			"no": "No priority",
+			"no": "None",
 			"low": "Low",
 			"medium": "Medium",
 			"high": "High"
