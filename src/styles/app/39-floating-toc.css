@@ -164,10 +164,10 @@
 	cursor: pointer;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 5px;
 	padding: 12px 14px;
 	border: 0;
-	border-radius: var(--floating-surface-radius);
+	border-radius: 10px;
 	background: var(--floating-surface-bg);
 	color: var(--text-primary);
 	box-shadow: var(--floating-surface-shadow);
@@ -193,7 +193,7 @@
 .floatingTocPreviewTitle {
 	min-width: 0;
 	flex: 1 1 auto;
-	font-size: var(--text-base);
+	font-size: calc(var(--text-base) * 13.5 / 14);
 	font-weight: var(--font-semibold);
 	line-height: 1.3;
 	color: var(--text-primary);
@@ -211,7 +211,7 @@
 	overflow: hidden;
 	color: var(--text-secondary);
 	font-size: var(--floating-label-font-size);
-	line-height: 1.45;
+	line-height: 1.55;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
