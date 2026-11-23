@@ -124,6 +124,17 @@
 	color: var(--text-primary);
 }
 
+.settingsCardActions > [data-slot="button"].settingsSidebarReset,
+.settingsCardActions > [data-slot="button"].settingsSidebarReset:hover:not(:disabled) {
+	padding-inline: 4px;
+	background: transparent;
+	color: var(--text-secondary);
+}
+
+.settingsCardActions > [data-slot="button"].settingsSidebarReset:hover:not(:disabled) {
+	color: var(--text-primary);
+}
+
 .settingsCardTitle {
 	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
@@ -238,7 +249,7 @@
 .settingsSidebarItemRow::after {
 	content: "";
 	position: absolute;
-	left: var(--settings-row-inset);
+	left: 8px;
 	right: var(--settings-row-inset);
 	bottom: 0;
 	height: 1px;
@@ -248,7 +259,10 @@
 .settingsSidebarItemRow .settingsSidebarItemField {
 	flex: 1 1 auto;
 	min-width: 0;
+	min-height: 37px;
 	align-items: center;
+	padding-block: 4px;
+	padding-left: 8px;
 }
 
 .settingsSidebarItemRow .settingsSidebarItemField::after {
@@ -288,16 +302,25 @@
 	min-width: 0;
 }
 
-/* The handle lives in the card's left gutter and appears on hover, so labels keep the
-   same left edge as every other settings row. */
+.settingsSidebarItemLabel:not(:has(> .settingsSidebarDragHandle)) {
+	padding-left: 24px;
+}
+
+.settingsSidebarItemIcon {
+	flex: 0 0 auto;
+	color: var(--text-secondary);
+}
+
+.settingsSidebarItemRow[data-visible="false"] .settingsSidebarItemIcon {
+	color: var(--text-tertiary);
+}
+
 .settingsSidebarDragHandle {
-	position: absolute;
-	top: 50%;
-	left: 0;
+	flex: 0 0 16px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--settings-row-inset);
+	width: 16px;
 	height: 24px;
 	margin: 0;
 	padding: 0;
@@ -307,15 +330,6 @@
 	color: var(--text-tertiary);
 	line-height: 0;
 	cursor: grab;
-	opacity: 0;
-	translate: 0 -50%;
-	transition: opacity var(--transition-fast);
-}
-
-.settingsSidebarItemRow:hover .settingsSidebarDragHandle,
-.settingsSidebarItemRow[data-dragging="true"] .settingsSidebarDragHandle,
-.settingsSidebarDragHandle:focus-visible {
-	opacity: 1;
 }
 
 .settingsSidebarDragHandle:hover,

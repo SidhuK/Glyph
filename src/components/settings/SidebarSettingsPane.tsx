@@ -104,6 +104,7 @@ function SidebarSettingsContent({
 							type="button"
 							variant="ghost"
 							size="sm"
+							className="settingsSidebarReset"
 							aria-label={t("resetToDefaults")}
 							title={t("resetToDefaults")}
 							disabled={disabled}

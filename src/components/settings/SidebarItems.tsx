@@ -11,6 +11,7 @@ import type {
 	SidebarVisibility,
 	SidebarVisibilityKey,
 } from "../../lib/settings/model";
+import { SIDEBAR_ITEM_ICONS } from "../app/sidebarItemIcons";
 import { SettingsRow, SettingsToggle } from "./SettingsScaffold";
 import { SidebarCalendarOptions } from "./SidebarCalendarOptions";
 
@@ -46,9 +47,15 @@ function moveSidebarItem(
 	return next;
 }
 
+type ReorderableSidebarKey = Exclude<SidebarVisibilityKey, "newCanvas" | "calendar">;
+
 /** Calendar is pinned below the file tree, so it is not part of the reorderable list. */
-function visibleSidebarOrder(order: SidebarOrder): SidebarOrder {
-	return order.filter((key) => key !== "newCanvas" && key !== "calendar");
+function isReorderableSidebarKey(key: SidebarVisibilityKey): key is ReorderableSidebarKey {
+	return key !== "newCanvas" && key !== "calendar";
+}
+
+function visibleSidebarOrder(order: SidebarOrder): ReorderableSidebarKey[] {
+	return order.filter(isReorderableSidebarKey);
 }
 
 function restoreCombinedSidebarOrder(order: SidebarOrder): SidebarOrder {
@@ -125,7 +132,7 @@ function SidebarItem({
 	disabled,
 	onVisibilityChange,
 }: {
-	itemKey: SidebarVisibilityKey;
+	itemKey: ReorderableSidebarKey;
 	index: number;
 	visible: boolean;
 	disabled: boolean;
@@ -188,7 +195,7 @@ function SidebarItemRow({
 }: {
 	rowRef?: (element: Element | null) => void;
 	isDragging?: boolean;
-	itemKey: SidebarVisibilityKey;
+	itemKey: Exclude<SidebarVisibilityKey, "newCanvas">;
 	label: string;
 	visible: boolean;
 	disabled: boolean;
@@ -204,6 +211,7 @@ function SidebarItemRow({
 			ref={rowRef}
 			className="settingsSidebarItemRow"
 			data-dragging={isDragging ? "true" : undefined}
+			data-visible={visible}
 		>
 			<SettingsRow
 				className="settingsSidebarItemField"
@@ -212,6 +220,12 @@ function SidebarItemRow({
 				label={
 					<span className="settingsSidebarItemLabel">
 						{handle}
+						<HugeiconsIcon
+							icon={SIDEBAR_ITEM_ICONS[itemKey]}
+							size="var(--icon-md)"
+							className="settingsSidebarItemIcon"
+							aria-hidden="true"
+						/>
 						{label}
 					</span>
 				}
