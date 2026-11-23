@@ -55,11 +55,13 @@
 	font-family: var(--font-sans);
 }
 
-/* Two quiet icon buttons: idle in tertiary ink, the active mode in primary ink on a soft fill. */
 .notePropertiesModeSwitch {
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: 0;
+	padding: 2px;
+	border-radius: var(--radius-md);
+	background: var(--bg-hover);
 }
 
 .notePropertiesModePill {
@@ -67,11 +69,11 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	width: 26px;
+	height: 22px;
 	padding: 0;
 	border: none;
-	border-radius: var(--radius-md);
+	border-radius: calc(var(--radius-md) - 2px);
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
@@ -83,7 +85,7 @@
 
 .notePropertiesModePill:hover {
 	color: var(--text-primary);
-	background: var(--bg-hover);
+	background: transparent;
 }
 
 .notePropertiesModePill:disabled {
@@ -103,7 +105,14 @@
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
-	background: var(--state-on);
+	background: var(--bg-primary);
+	box-shadow:
+		0 0 0 0.5px var(--border-default),
+		0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.dark .notePropertiesModePillBg {
+	background: color-mix(in srgb, var(--text-primary) 16%, var(--bg-primary));
 }
 
 .notePropertiesModePill > *:not(.notePropertiesModePillBg) {
