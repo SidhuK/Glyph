@@ -336,9 +336,9 @@
 .notesInfoSidebarPanel {
 	--info-surface: color-mix(in srgb, var(--bg-tertiary) 42%, transparent);
 	--info-surface-border: var(--border-light);
-	/* 104px and 32px at the default UI size; they scale with the UI text. */
+	/* 104px and 30px at the default UI size; they scale with the UI text. */
 	--info-label-column: calc(var(--text-base) * 104 / 14);
-	--info-row-height: calc(var(--text-base) * 32 / 14);
+	--info-row-height: calc(var(--text-base) * 30 / 14);
 	/* Icon slot, its gap to the label and the column gap match .notePropertyRow. */
 	--info-icon-slot: 18px;
 	--info-icon-gap: 8px;
@@ -490,7 +490,7 @@
 	align-items: center;
 	gap: var(--info-column-gap);
 	min-height: var(--info-row-height);
-	font-size: var(--text-sm);
+	font-size: calc(var(--text-base) * 12.5 / 14);
 	line-height: 1.3;
 	color: var(--text-tertiary);
 }
@@ -502,7 +502,7 @@
 	align-items: center;
 	gap: var(--info-icon-gap);
 	overflow: hidden;
-	color: var(--text-secondary);
+	color: var(--text-tertiary);
 	white-space: nowrap;
 }
 
