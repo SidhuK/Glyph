@@ -519,7 +519,7 @@
 .slashCommandChevron {
 	flex: 0 0 auto;
 	display: inline-flex;
-	color: var(--text-quaternary);
+	color: var(--text-tertiary);
 	font-size: var(--icon-sm);
 }
 

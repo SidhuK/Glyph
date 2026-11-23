@@ -204,9 +204,7 @@ export function GitSettingsPane() {
 					<SettingsRow
 						label={t("gitSync.remote")}
 						description={
-							config?.remote_url ? (
-								connectionHelp
-							) : (
+							status?.git_installed && !status.repo_detected ? (
 								<>
 									{connectionHelp}
 									<span className="settingsHelpHint">
@@ -214,6 +212,8 @@ export function GitSettingsPane() {
 										Open a folder that already has Git initialized.
 									</span>
 								</>
+							) : (
+								connectionHelp
 							)
 						}
 						stacked

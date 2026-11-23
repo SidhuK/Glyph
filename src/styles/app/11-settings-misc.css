@@ -73,8 +73,8 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	flex: 0 0 auto;
-	width: 236px;
+	flex: 0 1 236px;
+	min-width: 0;
 	height: var(--settings-control-height);
 	padding: 0 3px 0 8px;
 	border: 1px solid var(--border-default);

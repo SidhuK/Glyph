@@ -474,17 +474,13 @@ button.databaseToolbarChip.databasesAddViewButton:hover {
 	cursor: pointer;
 }
 
-.databaseViewPropertyToggle:hover:not(:disabled) {
+.databaseViewPropertyToggle:not(.is-grouped):hover:not(:disabled) {
 	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 
 .databaseViewPropertyToggle:disabled {
 	cursor: default;
-}
-
-.databaseViewPropertyToggle:disabled .databaseViewPropertyCheck {
-	opacity: 0.5;
 }
 
 .databaseViewPropertyToggle.is-grouped {

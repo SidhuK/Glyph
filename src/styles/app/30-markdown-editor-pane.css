@@ -675,10 +675,6 @@
 	color: var(--text-primary);
 }
 
-.markdownEditorInfoLinkList .wikiLink[data-unresolved="true"] {
-	color: var(--text-tertiary);
-}
-
 .unlinkedMentionsHeader {
 	display: flex;
 	align-items: flex-start;

@@ -244,6 +244,10 @@
 	background: var(--bg-active);
 }
 
+.settingsTabButton[data-search-dimmed] {
+	opacity: 0.4;
+}
+
 .settingsTabButton:focus-visible {
 	outline: 2px solid var(--interactive-accent);
 	outline-offset: -2px;
