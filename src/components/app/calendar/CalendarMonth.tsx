@@ -143,7 +143,7 @@ export function CalendarMonth({
 				collapsible={collapse !== undefined}
 				collapsed={collapsed}
 				onGoToToday={() => {
-					setFocusedKey(null);
+					setFocusedKey(format(today, "yyyy-MM-dd"));
 					onGoToToday();
 				}}
 				onStep={goToMonth}

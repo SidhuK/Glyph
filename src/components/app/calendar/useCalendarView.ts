@@ -104,10 +104,10 @@ export function useCalendarView({
 				action: () => openPeriodNote("day", dateKey),
 			},
 		];
-		if (isPeriodNoteEnabled("week", periodNotesEnabled)) {
+		if (openWeeklyNote) {
 			items.push({
 				label: t("calendar.menu.openWeeklyNote"),
-				action: () => openPeriodNote("week", dateKey),
+				action: () => openWeeklyNote(date),
 			});
 		}
 		void showNativeContextMenu(event, items).catch((error: unknown) => {
