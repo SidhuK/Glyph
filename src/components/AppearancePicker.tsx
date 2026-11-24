@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from "react";
+import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isAppearanceEmoji } from "../lib/appearanceEmoji";
@@ -31,7 +31,7 @@ import { Popover, PopoverContent } from "./ui/shadcn/popover";
 interface AppearancePickerProps {
 	title: string;
 	trigger?: (openPicker: (anchor: Element) => void) => ReactNode;
-	anchorRef?: RefObject<Element | null>;
+	anchor?: Element | null;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	iconValue?: string | null;
@@ -51,7 +51,7 @@ interface AppearancePickerProps {
 export function AppearancePicker({
 	title,
 	trigger,
-	anchorRef,
+	anchor,
 	open,
 	onOpenChange,
 	iconValue,
@@ -137,7 +137,7 @@ export function AppearancePicker({
 			})}
 			<Popover open={resolvedOpen} onOpenChange={setOpen}>
 				<PopoverContent
-					anchor={anchorRef ?? triggerAnchorRef}
+					anchor={anchor ?? triggerAnchorRef}
 					side="right"
 					align="start"
 					sideOffset={8}

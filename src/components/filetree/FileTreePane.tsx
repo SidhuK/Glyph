@@ -93,6 +93,7 @@ const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
 
 interface AppearancePickerTarget {
 	entry: FsEntry;
+	anchor: Element | null;
 }
 
 function sortedVisibleFileTreeEntries(
@@ -611,7 +612,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const moveClickSuppressRef = useRef(false);
 	const moveClickSuppressResetTimerRef = useRef<number | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
-	const appearancePickerAnchorRef = useRef<Element | null>(null);
 	const focusedDirPathRef = useRef(focusedDirPath);
 	const settingsVersionRef = useRef(0);
 	const previousSpacePathRef = useRef(spacePath);
@@ -773,11 +773,10 @@ export const FileTreePane = memo(function FileTreePane({
 	);
 
 	const handleOpenAppearancePicker = useCallback((entry: FsEntry) => {
-		appearancePickerAnchorRef.current =
-			paneRef.current?.querySelector(
-				`.fileTreeRow[data-file-tree-path="${CSS.escape(entry.rel_path)}"]`,
-			) ?? null;
-		setAppearancePickerTarget({ entry });
+		const anchor = paneRef.current?.querySelector(
+			`.fileTreeRow[data-file-tree-path="${CSS.escape(entry.rel_path)}"]`,
+		);
+		setAppearancePickerTarget({ entry, anchor: anchor ?? null });
 	}, []);
 
 	const appearancePickerEntry = appearancePickerTarget?.entry ?? null;
@@ -982,7 +981,7 @@ export const FileTreePane = memo(function FileTreePane({
 		>
 			<AppearancePicker
 				title={t("fileTree.appearance.title")}
-				anchorRef={appearancePickerAnchorRef}
+				anchor={appearancePickerTarget?.anchor}
 				open={appearancePickerTarget !== null}
 				onOpenChange={(open) => {
 					if (!open) setAppearancePickerTarget(null);
