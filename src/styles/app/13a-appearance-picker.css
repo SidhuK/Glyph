@@ -124,6 +124,7 @@
 }
 
 .appearancePickerOption {
+	height: auto;
 	aspect-ratio: 1;
 	scroll-margin: 8px 0;
 	padding: 0;

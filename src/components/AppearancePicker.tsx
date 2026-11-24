@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isAppearanceEmoji } from "../lib/appearanceEmoji";
@@ -31,7 +31,7 @@ import { Popover, PopoverContent } from "./ui/shadcn/popover";
 interface AppearancePickerProps {
 	title: string;
 	trigger?: (openPicker: (anchor: Element) => void) => ReactNode;
-	anchor?: Element | null;
+	anchorRef?: RefObject<Element | null>;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	iconValue?: string | null;
@@ -51,7 +51,7 @@ interface AppearancePickerProps {
 export function AppearancePicker({
 	title,
 	trigger,
-	anchor,
+	anchorRef,
 	open,
 	onOpenChange,
 	iconValue,
@@ -67,10 +67,10 @@ export function AppearancePicker({
 }: AppearancePickerProps) {
 	const { t } = useTranslation("shell");
 	const [internalOpen, setInternalOpen] = useState(false);
-	const [triggerAnchor, setTriggerAnchor] = useState<Element | null>(null);
 	const [query, setQuery] = useState("");
 	const [modeChoice, setModeChoice] = useState<AppearancePickerMode | null>(null);
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const triggerAnchorRef = useRef<Element | null>(null);
 	const navigation = useIconGridNavigation(() => inputRef.current?.focus());
 	const resolvedOpen = open ?? internalOpen;
 	const normalizedQuery = query.trim().toLowerCase();
@@ -132,12 +132,12 @@ export function AppearancePicker({
 	return (
 		<>
 			{trigger?.((element) => {
-				setTriggerAnchor(element);
+				triggerAnchorRef.current = element;
 				setOpen(true);
 			})}
 			<Popover open={resolvedOpen} onOpenChange={setOpen}>
 				<PopoverContent
-					anchor={anchor ?? triggerAnchor}
+					anchor={anchorRef ?? triggerAnchorRef}
 					side="right"
 					align="start"
 					sideOffset={8}

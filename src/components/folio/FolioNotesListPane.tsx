@@ -168,11 +168,11 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [appearancePickerTarget, setAppearancePickerTarget] = useState<{
 		path: string;
-		anchor: Element | null;
 		pending?: FileTreeAppearance;
 	} | null>(null);
 	const appearancePickerPath = appearancePickerTarget?.path ?? null;
 	const paneRef = useRef<HTMLElement | null>(null);
+	const appearancePickerAnchorRef = useRef<Element | null>(null);
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
 	const { data: clockNowMs } = useQuery({
@@ -242,8 +242,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	});
 
 	const openAppearancePicker = useCallback((path: string) => {
-		const anchor = paneRef.current?.querySelector(`[data-folio-note-path="${CSS.escape(path)}"]`);
-		setAppearancePickerTarget({ path, anchor: anchor ?? null });
+		appearancePickerAnchorRef.current =
+			paneRef.current?.querySelector(`[data-folio-note-path="${CSS.escape(path)}"]`) ?? null;
+		setAppearancePickerTarget({ path });
 	}, []);
 	const focusPane = useCallback(() => {
 		requestAnimationFrame(() => paneRef.current?.focus({ preventScroll: true }));
@@ -337,9 +338,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			try {
 				await setItemAppearance(path, appearance);
 			} catch (error) {
-				setAppearancePickerTarget((target) =>
-					target?.path === path ? { path, anchor: target.anchor } : target,
-				);
+				setAppearancePickerTarget((target) => (target?.path === path ? { path } : target));
 				toast.error(t("fileTree.appearance.updateFailed"), {
 					description: extractErrorMessage(error),
 				});
@@ -528,7 +527,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 					if (!open) setAppearancePickerTarget(null);
 				}}
 				iconValue={pickerIcon}
-				anchor={appearancePickerTarget?.anchor}
+				anchorRef={appearancePickerAnchorRef}
 				showDefaultIcon
 				allowEmoji
 				onIconChange={(icon) => {
