@@ -241,6 +241,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		remainingItems: 4,
 	});
 
+	const openAppearancePicker = useCallback((path: string) => {
+		const anchor = paneRef.current?.querySelector(`[data-folio-note-path="${CSS.escape(path)}"]`);
+		setAppearancePickerTarget({ path, anchor: anchor ?? null });
+	}, []);
 	const focusPane = useCallback(() => {
 		requestAnimationFrame(() => paneRef.current?.focus({ preventScroll: true }));
 	}, []);
@@ -459,12 +463,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								onCommitRename={commitRename}
 								onCancelRename={cancelRename}
 								appearance={itemAppearance[note.note_path] ?? null}
-								onOpenAppearancePicker={(path) => {
-									const anchor = paneRef.current?.querySelector(
-										`[data-folio-note-path="${CSS.escape(path)}"]`,
-									);
-									setAppearancePickerTarget({ path, anchor: anchor ?? null });
-								}}
+								onOpenAppearancePicker={openAppearancePicker}
 								statusColors={statusColors}
 								taskSummary={
 									note.is_markdown ? (taskSummariesByPath?.[note.note_path] ?? null) : null

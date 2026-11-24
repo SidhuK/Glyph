@@ -27,11 +27,7 @@ export function AppearancePickerGrid({
 		<div className="appearancePickerScroll" onKeyDown={onGridKeyDown}>
 			{emptyLabel ? <div className="appearancePickerEmpty">{emptyLabel}</div> : null}
 			{groups.map((group) => (
-				<section
-					key={group.id}
-					className="appearancePickerSection"
-					aria-label={group.label || undefined}
-				>
+				<section key={group.id} aria-label={group.label || undefined}>
 					{group.label ? <div className="appearancePickerCategoryLabel">{group.label}</div> : null}
 					<div className="appearancePickerGrid">
 						{group.options.map((option) => {
