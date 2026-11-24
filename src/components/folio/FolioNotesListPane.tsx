@@ -166,7 +166,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		fetchNextPage,
 	} = useFolioNotes(folioScope, folioSortMode, deferredSearchQuery, pinnedFiles, templateFolder);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
-	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
+	const [appearancePickerTarget, setAppearancePickerTarget] = useState<{
+		path: string;
+		anchor: Element | null;
+		pending?: FileTreeAppearance;
+	} | null>(null);
+	const appearancePickerPath = appearancePickerTarget?.path ?? null;
 	const paneRef = useRef<HTMLElement | null>(null);
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
@@ -236,6 +241,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		remainingItems: 4,
 	});
 
+	const openAppearancePicker = useCallback((path: string) => {
+		const anchor = paneRef.current?.querySelector(`[data-folio-note-path="${CSS.escape(path)}"]`);
+		setAppearancePickerTarget({ path, anchor: anchor ?? null });
+	}, []);
 	const focusPane = useCallback(() => {
 		requestAnimationFrame(() => paneRef.current?.focus({ preventScroll: true }));
 	}, []);
@@ -328,6 +337,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			try {
 				await setItemAppearance(path, appearance);
 			} catch (error) {
+				setAppearancePickerTarget((target) =>
+					target?.path === path ? { path, anchor: target.anchor } : target,
+				);
 				toast.error(t("fileTree.appearance.updateFailed"), {
 					description: extractErrorMessage(error),
 				});
@@ -335,8 +347,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		[setItemAppearance, t],
 	);
-	const pickerAppearance = appearancePickerPath
-		? (itemAppearance[appearancePickerPath] ?? null)
+	const pickerAppearance = appearancePickerTarget
+		? (appearancePickerTarget.pending ?? itemAppearance[appearancePickerTarget.path] ?? null)
 		: null;
 	const pickerColor =
 		pickerAppearance?.color && isEditorTextColor(pickerAppearance.color)
@@ -345,13 +357,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const pickerIcon = pickerAppearance?.icon ?? null;
 	const updatePickerAppearance = useCallback(
 		(nextAppearance: FileTreeAppearance) => {
-			if (!appearancePickerPath) return;
-			void changeAppearance(appearancePickerPath, {
-				...itemAppearance[appearancePickerPath],
-				...nextAppearance,
-			});
+			if (!appearancePickerTarget) return;
+			const mergedAppearance = { ...pickerAppearance, ...nextAppearance };
+			setAppearancePickerTarget({ ...appearancePickerTarget, pending: mergedAppearance });
+			void changeAppearance(appearancePickerTarget.path, mergedAppearance);
 		},
-		[appearancePickerPath, changeAppearance, itemAppearance],
+		[appearancePickerTarget, changeAppearance, pickerAppearance],
 	);
 	const openAdjacentNote = useCallback(
 		async (direction: 1 | -1) => {
@@ -455,7 +466,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								onCommitRename={commitRename}
 								onCancelRename={cancelRename}
 								appearance={itemAppearance[note.note_path] ?? null}
-								onOpenAppearancePicker={setAppearancePickerPath}
+								onOpenAppearancePicker={openAppearancePicker}
 								statusColors={statusColors}
 								taskSummary={
 									note.is_markdown ? (taskSummariesByPath?.[note.note_path] ?? null) : null
@@ -514,10 +525,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				title={t("fileTree.appearance.title")}
 				open={appearancePickerPath !== null}
 				onOpenChange={(open) => {
-					if (!open) setAppearancePickerPath(null);
+					if (!open) setAppearancePickerTarget(null);
 				}}
 				iconValue={pickerIcon}
-				defaultIconName="document"
+				anchor={appearancePickerTarget?.anchor}
 				showDefaultIcon
 				allowEmoji
 				onIconChange={(icon) => {

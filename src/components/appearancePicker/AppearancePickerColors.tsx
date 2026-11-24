@@ -9,25 +9,15 @@ interface AppearancePickerColorsProps {
 	value: EditorTextColor | null;
 	options: readonly EditorTextColorOption[];
 	onChange: (color: EditorTextColor | null) => void;
-	/** `undefined` clears the hover preview; `null` previews the default color. */
-	onHover: (color: EditorTextColor | null | undefined) => void;
 }
 
-export function AppearancePickerColors({
-	value,
-	options,
-	onChange,
-	onHover,
-}: AppearancePickerColorsProps) {
+export function AppearancePickerColors({ value, options, onChange }: AppearancePickerColorsProps) {
 	const { t } = useTranslation("shell");
 	return (
-		<div
-			className="appearancePickerColors"
-			role="group"
-			aria-label={t("appearancePicker.color")}
-			onMouseLeave={() => onHover(undefined)}
-			onBlur={() => onHover(undefined)}
-		>
+		<div className="appearancePickerColors" role="group" aria-label={t("appearancePicker.color")}>
+			<span className="appearancePickerColorsLabel" aria-hidden="true">
+				{t("appearancePicker.color")}
+			</span>
 			{[null, ...options].map((color) => {
 				const id = color?.id ?? null;
 				const label = id ? getEditorTextColorLabel(id) : t("appearancePicker.defaultColor");
@@ -44,8 +34,6 @@ export function AppearancePickerColors({
 								: "appearancePickerSwatch appearancePickerSwatchDefault"
 						}
 						style={color ? { color: `var(${color.cssVar})` } : undefined}
-						onMouseEnter={() => onHover(id)}
-						onFocus={() => onHover(id)}
 						onClick={() => onChange(id)}
 					/>
 				);

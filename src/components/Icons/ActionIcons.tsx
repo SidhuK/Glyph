@@ -6,7 +6,6 @@ import {
 	Copy01Icon,
 	Delete,
 	Save as SaveIcon,
-	ShuffleIcon,
 } from "@hugeicons/core-free-icons";
 import { type IconProps, withDefaultIconSize } from "./NavigationIcons";
 
@@ -18,9 +17,6 @@ export const Trash2 = (props: IconProps) => (
 );
 export const RefreshCw = (props: IconProps) => (
 	<HugeiconsIcon icon={ArrowReloadHorizontalIcon} {...withDefaultIconSize(props)} />
-);
-export const Shuffle = (props: IconProps) => (
-	<HugeiconsIcon icon={ShuffleIcon} {...withDefaultIconSize(props)} />
 );
 export const Save = (props: IconProps) => (
 	<HugeiconsIcon icon={SaveIcon} {...withDefaultIconSize(props)} />

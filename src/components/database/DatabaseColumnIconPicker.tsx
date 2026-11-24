@@ -1,7 +1,4 @@
-import {
-	defaultDatabaseColumnIconName,
-	resolveDatabaseColumnIconName,
-} from "../../lib/database/columnIcons";
+import { resolveDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import type { DatabaseColumn } from "../../lib/database/types";
 import { AppearancePicker, AppearancePickerIconTrigger } from "../AppearancePicker";
 
@@ -16,14 +13,12 @@ export function DatabaseColumnIconPicker({
 	className,
 	onChange,
 }: DatabaseColumnIconPickerProps) {
-	const defaultIconName = defaultDatabaseColumnIconName(column);
 	const displayIconName = resolveDatabaseColumnIconName(column);
 
 	return (
 		<AppearancePicker
 			title="Choose column icon"
 			iconValue={column.icon ?? null}
-			defaultIconName={defaultIconName}
 			showDefaultIcon
 			onIconChange={(iconName) => onChange(iconName)}
 			trigger={(openPicker) => (

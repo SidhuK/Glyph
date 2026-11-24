@@ -12,7 +12,6 @@ import { Search } from "./Icons";
 import { AppearancePickerColors } from "./appearancePicker/AppearancePickerColors";
 import { AppearancePickerGrid } from "./appearancePicker/AppearancePickerGrid";
 import { AppearancePickerModes } from "./appearancePicker/AppearancePickerModes";
-import { AppearancePickerSummary } from "./appearancePicker/AppearancePickerSummary";
 import {
 	type AppearancePickerMode,
 	type AppearancePickerOption,
@@ -26,17 +25,16 @@ import {
 	type EditorTextColorOption,
 } from "./editor/textColors";
 import { Button } from "./ui/shadcn/button";
-import { Dialog, DialogContent, DialogTitle } from "./ui/shadcn/dialog";
 import { Input } from "./ui/shadcn/input";
+import { Popover, PopoverContent } from "./ui/shadcn/popover";
 
 interface AppearancePickerProps {
 	title: string;
-	previewLabel?: string;
-	trigger?: (openPicker: () => void) => ReactNode;
+	trigger?: (openPicker: (anchor: Element) => void) => ReactNode;
+	anchor?: Element | null;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	iconValue?: string | null;
-	defaultIconName?: string;
 	iconOptions?: readonly DatabaseColumnIconOption[];
 	/** Emoji selections call `onIconChange` with the emoji and a `null` option. */
 	onIconChange: (iconName: string | null, option: DatabaseColumnIconOption | null) => void;
@@ -52,12 +50,11 @@ interface AppearancePickerProps {
 
 export function AppearancePicker({
 	title,
-	previewLabel,
 	trigger,
+	anchor,
 	open,
 	onOpenChange,
 	iconValue,
-	defaultIconName = "tag",
 	iconOptions = DATABASE_COLUMN_ICON_OPTIONS,
 	onIconChange,
 	showDefaultIcon = false,
@@ -72,9 +69,8 @@ export function AppearancePicker({
 	const [internalOpen, setInternalOpen] = useState(false);
 	const [query, setQuery] = useState("");
 	const [modeChoice, setModeChoice] = useState<AppearancePickerMode | null>(null);
-	const [hoveredOption, setHoveredOption] = useState<AppearancePickerOption | null>(null);
-	const [hoveredColor, setHoveredColor] = useState<EditorTextColor | null | undefined>(undefined);
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const triggerAnchorRef = useRef<Element | null>(null);
 	const navigation = useIconGridNavigation(() => inputRef.current?.focus());
 	const resolvedOpen = open ?? internalOpen;
 	const normalizedQuery = query.trim().toLowerCase();
@@ -90,12 +86,9 @@ export function AppearancePicker({
 	});
 	const selectedIconName =
 		iconValue && (valueIsEmoji || getDatabaseColumnIconOption(iconValue)) ? iconValue : null;
-	const previewIconName = hoveredOption?.id ?? selectedIconName ?? defaultIconName;
-	const previewColorId = hoveredColor === undefined ? colorValue : hoveredColor;
-	const previewColor = colorOptions.find((option) => option.id === previewColorId) ?? null;
-	const colorStyle = previewColor ? { color: `var(${previewColor.cssVar})` } : undefined;
-	const canResetIcon = showDefaultIcon && Boolean(iconValue);
-	const canResetColor = showColors && colorValue !== null;
+	const selectedColor = colorOptions.find((option) => option.id === colorValue) ?? null;
+	const selectedStyle = selectedColor ? { color: `var(${selectedColor.cssVar})` } : undefined;
+	const canReset = (showDefaultIcon && Boolean(iconValue)) || (showColors && colorValue !== null);
 
 	let emptyLabel: string | null = null;
 	if (picker.loading) emptyLabel = t("appearancePicker.loadingEmoji");
@@ -110,24 +103,12 @@ export function AppearancePicker({
 		if (nextOpen) return;
 		setQuery("");
 		setModeChoice(null);
-		setHoveredOption(null);
-		setHoveredColor(undefined);
-	}
-
-	function applyIcon(option: AppearancePickerOption) {
-		onIconChange(option.id, getDatabaseColumnIconOption(option.id));
 	}
 
 	function selectIcon(option: AppearancePickerOption) {
 		rememberRecentIconId(option.id);
-		applyIcon(option);
-		setOpen(false);
-	}
-
-	function shuffleIcon() {
-		const candidates = picker.results.filter((option) => option.id !== selectedIconName);
-		const option = candidates[Math.floor(Math.random() * candidates.length)];
-		if (option) applyIcon(option);
+		onIconChange(option.id, getDatabaseColumnIconOption(option.id));
+		if (!showColors) setOpen(false);
 	}
 
 	function reset() {
@@ -136,94 +117,94 @@ export function AppearancePicker({
 		setOpen(false);
 	}
 
+	const resetButton = canReset ? (
+		<Button
+			type="button"
+			variant="ghost"
+			size="xs"
+			className="appearancePickerReset"
+			onClick={reset}
+		>
+			{t("appearancePicker.reset")}
+		</Button>
+	) : null;
+
 	return (
 		<>
-			{trigger?.(() => setOpen(true))}
-			<Dialog open={resolvedOpen} onOpenChange={setOpen}>
-				<DialogContent
-					className="commandPalette appearancePickerDialog top-[46%] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[440px]"
-					showCloseButton={false}
+			{trigger?.((element) => {
+				triggerAnchorRef.current = element;
+				setOpen(true);
+			})}
+			<Popover open={resolvedOpen} onOpenChange={setOpen}>
+				<PopoverContent
+					anchor={anchor ?? triggerAnchorRef}
+					side="right"
+					align="start"
+					sideOffset={8}
+					collisionPadding={12}
+					className="appearancePicker"
+					aria-label={title}
 					initialFocus={inputRef}
 				>
-					<DialogTitle className="sr-only">{title}</DialogTitle>
-					<div className="appearancePickerHeader">
-						<AppearancePickerSummary
-							iconName={previewIconName}
-							title={previewLabel ?? title}
-							subtitle={
-								hoveredOption?.label ??
-								picker.labelFor(selectedIconName) ??
-								t("appearancePicker.defaultIcon")
-							}
-							colorStyle={colorStyle}
-							onShuffle={shuffleIcon}
-							onReset={canResetIcon || canResetColor ? reset : undefined}
-						/>
-						<div className="appearancePickerSearchRow">
-							<div className="commandPaletteInputWrapper">
-								<Search
-									size="var(--icon-sm)"
-									className="commandPaletteSearchIcon"
-									aria-hidden="true"
-								/>
-								<Input
-									ref={inputRef}
-									value={query}
-									placeholder={t(
-										mode === "emoji"
-											? "appearancePicker.searchEmojiPlaceholder"
-											: "appearancePicker.searchPlaceholder",
-									)}
-									className="commandPaletteInput"
-									onChange={(event) => setQuery(event.target.value)}
-									onKeyDown={(event) => {
-										if (event.key === "ArrowDown") {
-											event.preventDefault();
-											navigation.focusFirstOption();
-											return;
-										}
-										const firstOption = picker.results[0];
-										if (event.key !== "Enter" || !normalizedQuery || !firstOption) return;
-										event.preventDefault();
-										selectIcon(firstOption);
-									}}
-								/>
-							</div>
-							{allowEmoji ? (
-								<AppearancePickerModes
-									value={mode}
-									onChange={(nextMode) => {
-										setModeChoice(nextMode);
-										setHoveredOption(null);
-										inputRef.current?.focus();
-									}}
-								/>
-							) : null}
-						</div>
-						{showColors ? (
-							<AppearancePickerColors
-								value={colorValue}
-								options={colorOptions}
-								onChange={(color) => onColorChange?.(color)}
-								onHover={setHoveredColor}
+					{allowEmoji ? (
+						<div className="appearancePickerTabsRow">
+							<AppearancePickerModes
+								value={mode}
+								onChange={(nextMode) => {
+									setModeChoice(nextMode);
+									inputRef.current?.focus();
+								}}
 							/>
-						) : null}
+							{resetButton}
+						</div>
+					) : null}
+					<div className="appearancePickerSearchRow">
+						<div className="appearancePickerSearch">
+							<Search size="var(--icon-sm)" aria-hidden="true" />
+							<Input
+								ref={inputRef}
+								value={query}
+								placeholder={t(
+									mode === "emoji"
+										? "appearancePicker.searchEmojiPlaceholder"
+										: "appearancePicker.searchPlaceholder",
+								)}
+								className="appearancePickerSearchInput"
+								onChange={(event) => setQuery(event.target.value)}
+								onKeyDown={(event) => {
+									if (event.key === "ArrowDown") {
+										event.preventDefault();
+										navigation.focusFirstOption();
+										return;
+									}
+									const firstOption = picker.results[0];
+									if (event.key !== "Enter" || !normalizedQuery || !firstOption) return;
+									event.preventDefault();
+									selectIcon(firstOption);
+								}}
+							/>
+						</div>
+						{allowEmoji ? null : resetButton}
 					</div>
-					<div className="commandPaletteBody appearancePickerBody">
-						<AppearancePickerGrid
-							key={`${mode}:${normalizedQuery ? "search" : "browse"}`}
-							groups={picker.groups}
-							emptyLabel={emptyLabel}
-							selectedIconName={selectedIconName}
-							iconStyle={colorStyle}
-							registerOption={navigation.registerOption}
-							onGridKeyDown={navigation.handleGridKeyDown}
-							onHover={setHoveredOption}
-							onSelect={selectIcon}
+					<AppearancePickerGrid
+						key={`${mode}:${normalizedQuery ? "search" : "browse"}`}
+						groups={picker.groups}
+						emptyLabel={emptyLabel}
+						selectedIconName={selectedIconName}
+						selectedStyle={selectedStyle}
+						registerOption={navigation.registerOption}
+						onGridKeyDown={navigation.handleGridKeyDown}
+						onSelect={selectIcon}
+					/>
+					{showColors ? (
+						<AppearancePickerColors
+							value={colorValue}
+							options={colorOptions}
+							onChange={(color) => onColorChange?.(color)}
 						/>
-					</div>
-				</DialogContent>
-			</Dialog>
+					) : null}
+				</PopoverContent>
+			</Popover>
 		</>
 	);
 }
@@ -239,7 +220,7 @@ export function AppearancePickerIconTrigger({
 	className?: string;
 	disabled?: boolean;
 	label: string;
-	onClick: () => void;
+	onClick: (anchor: Element) => void;
 }) {
 	return (
 		<Button
@@ -251,7 +232,7 @@ export function AppearancePickerIconTrigger({
 			aria-label={label}
 			onClick={(event) => {
 				event.stopPropagation();
-				onClick();
+				onClick(event.currentTarget);
 			}}
 		>
 			<DatabaseColumnIcon iconName={iconName} size="var(--icon-md)" />

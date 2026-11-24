@@ -734,9 +734,7 @@
 		"searchEmojiPlaceholder": "Buscar emoji",
 		"color": "Color",
 		"defaultColor": "Color predeterminado",
-		"defaultIcon": "Icono predeterminado",
 		"reset": "Restablecer",
-		"shuffle": "Icono aleatorio",
 		"recent": "Recientes",
 		"noResults": "No se encontraron iconos.",
 		"loadingEmoji": "Cargando emoji…",
@@ -747,7 +745,6 @@
 			"emoji": "Emoji"
 		},
 		"useIcon": "Usar icono {{label}}",
-		"categoriesLabel": "Categorías de iconos",
 		"categories": {
 			"write": "Escribir",
 			"media": "Medios",

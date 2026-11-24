@@ -93,6 +93,7 @@ const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
 
 interface AppearancePickerTarget {
 	entry: FsEntry;
+	anchor: Element | null;
 }
 
 function sortedVisibleFileTreeEntries(
@@ -772,7 +773,10 @@ export const FileTreePane = memo(function FileTreePane({
 	);
 
 	const handleOpenAppearancePicker = useCallback((entry: FsEntry) => {
-		setAppearancePickerTarget({ entry });
+		const anchor = paneRef.current?.querySelector(
+			`.fileTreeRow[data-file-tree-path="${CSS.escape(entry.rel_path)}"]`,
+		);
+		setAppearancePickerTarget({ entry, anchor: anchor ?? null });
 	}, []);
 
 	const appearancePickerEntry = appearancePickerTarget?.entry ?? null;
@@ -784,7 +788,6 @@ export const FileTreePane = memo(function FileTreePane({
 			? appearancePickerAppearance.color
 			: null;
 	const appearancePickerIcon = appearancePickerAppearance?.icon ?? null;
-	const appearancePickerDefaultIcon = appearancePickerEntry?.kind === "dir" ? "folder" : "document";
 
 	const updatePickerAppearance = useCallback(
 		(nextAppearance: FileTreeAppearance) => {
@@ -978,13 +981,12 @@ export const FileTreePane = memo(function FileTreePane({
 		>
 			<AppearancePicker
 				title={t("fileTree.appearance.title")}
-				previewLabel={appearancePickerEntry?.name}
+				anchor={appearancePickerTarget?.anchor}
 				open={appearancePickerTarget !== null}
 				onOpenChange={(open) => {
 					if (!open) setAppearancePickerTarget(null);
 				}}
 				iconValue={appearancePickerIcon}
-				defaultIconName={appearancePickerDefaultIcon}
 				showDefaultIcon
 				allowEmoji
 				onIconChange={(icon) => {
