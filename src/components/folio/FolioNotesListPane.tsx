@@ -169,6 +169,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const [appearancePickerTarget, setAppearancePickerTarget] = useState<{
 		path: string;
 		anchor: Element | null;
+		pending?: FileTreeAppearance;
 	} | null>(null);
 	const appearancePickerPath = appearancePickerTarget?.path ?? null;
 	const paneRef = useRef<HTMLElement | null>(null);
@@ -339,8 +340,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		[setItemAppearance, t],
 	);
-	const pickerAppearance = appearancePickerPath
-		? (itemAppearance[appearancePickerPath] ?? null)
+	const pickerAppearance = appearancePickerTarget
+		? (appearancePickerTarget.pending ?? itemAppearance[appearancePickerTarget.path] ?? null)
 		: null;
 	const pickerColor =
 		pickerAppearance?.color && isEditorTextColor(pickerAppearance.color)
@@ -349,13 +350,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const pickerIcon = pickerAppearance?.icon ?? null;
 	const updatePickerAppearance = useCallback(
 		(nextAppearance: FileTreeAppearance) => {
-			if (!appearancePickerPath) return;
-			void changeAppearance(appearancePickerPath, {
-				...itemAppearance[appearancePickerPath],
-				...nextAppearance,
-			});
+			if (!appearancePickerTarget) return;
+			const mergedAppearance = { ...pickerAppearance, ...nextAppearance };
+			setAppearancePickerTarget({ ...appearancePickerTarget, pending: mergedAppearance });
+			void changeAppearance(appearancePickerTarget.path, mergedAppearance);
 		},
-		[appearancePickerPath, changeAppearance, itemAppearance],
+		[appearancePickerTarget, changeAppearance, pickerAppearance],
 	);
 	const openAdjacentNote = useCallback(
 		async (direction: 1 | -1) => {
