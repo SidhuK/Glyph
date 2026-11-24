@@ -3,6 +3,8 @@ import {
 	addDays,
 	addMonths,
 	addWeeks,
+	differenceInCalendarWeeks,
+	endOfMonth,
 	endOfWeek,
 	isSameMonth,
 	isSameWeek,
@@ -11,14 +13,14 @@ import {
 } from "date-fns";
 import type { SidebarCalendarLayout } from "../../../lib/settings/model";
 
-const WEEKS_IN_GRID = 6;
 const DAYS_IN_WEEK = 7;
+export const MIDWEEK_OFFSET = 3;
 
 export function weekStartsOnForLocale(locale: string): Day {
 	return locale === "de" || locale === "es" || locale === "fr" || locale === "pl" ? 1 : 0;
 }
 
-/** Six fixed weeks so the grid height never shifts between months, or the anchor's single week. */
+/** The weeks that hold the anchor's month, or the anchor's single week. */
 export function buildVisibleWeeks(
 	anchor: Date,
 	weekStartsOn: Day,
@@ -27,9 +29,17 @@ export function buildVisibleWeeks(
 	const firstCell = startOfWeek(layout === "week" ? anchor : startOfMonth(anchor), {
 		weekStartsOn,
 	});
-	return Array.from({ length: layout === "week" ? 1 : WEEKS_IN_GRID }, (_, week) =>
+	const weekCount =
+		layout === "week"
+			? 1
+			: differenceInCalendarWeeks(endOfMonth(anchor), firstCell, { weekStartsOn }) + 1;
+	return Array.from({ length: weekCount }, (_, week) =>
 		Array.from({ length: DAYS_IN_WEEK }, (_, day) => addDays(firstCell, week * DAYS_IN_WEEK + day)),
 	);
+}
+
+export function midweekOf(date: Date, weekStartsOn: Day): Date {
+	return addDays(startOfWeek(date, { weekStartsOn }), MIDWEEK_OFFSET);
 }
 
 /** Whether `date` is inside the visible range, so navigating to it needs no page change. */

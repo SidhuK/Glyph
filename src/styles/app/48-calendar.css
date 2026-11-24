@@ -1,14 +1,11 @@
 /* Calendar card shared by the sidebar section and the Calendar pop-up. */
 
 .calendarCard {
-	--calendar-day-size: 1.5rem;
+	--calendar-day-size: 1.375rem;
+	--calendar-week-column: 22px;
+	--calendar-drawer-bg: color-mix(in srgb, var(--text-primary) 5%, transparent);
 	margin-inline: 8px;
-	/* The header row's half-leading makes up the difference, so the month title and the
-	   last row of days sit the same distance from the border. */
-	padding: 4px 4px 10px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-xl);
-	background: var(--bg-tertiary);
+	padding: 4px 2px 6px;
 	user-select: none;
 	-webkit-font-smoothing: antialiased;
 }
@@ -38,14 +35,12 @@
 
 /* ── Month row ── */
 
-/* Percent padding resolves against the grid's width: the title starts at the first day
-   circle's left edge and the last 20px control centres on the last column. */
 .calendarMonthHeader {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 2px;
-	padding: 0 calc(100% / 14 - 10px) 0 calc((100% / 7 - var(--calendar-day-size)) / 2);
+	padding-left: 4px;
 }
 
 .calendarMonthTitle {
@@ -144,6 +139,8 @@ button.calendarMonthTitleButton:hover {
 .calendarTodayButton:focus-visible,
 .calendarNavButton:focus-visible,
 .calendarDay:focus-visible,
+.calendarWeekNumber:focus-visible,
+.calendarSummaryWeek:focus-visible,
 .calendarRow:focus-visible {
 	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
@@ -177,7 +174,44 @@ button.calendarMonthTitleButton:hover {
 	cursor: default;
 }
 
+.calendarWeekNumberColumn {
+	width: var(--calendar-week-column);
+}
+
+.calendarWeekNumberCell {
+	padding: 0;
+	font-weight: inherit;
+}
+
+.calendarWeekNumber {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: var(--calendar-day-size);
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-placeholder);
+	font-size: calc(var(--text-2xs) * 0.9);
+	font-variant-numeric: tabular-nums;
+}
+
+button.calendarWeekNumber {
+	cursor: pointer;
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
+}
+
+button.calendarWeekNumber:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
 .calendarDayCell {
+	height: calc(var(--calendar-day-size) + 6px);
 	padding: 0;
 	text-align: center;
 }
@@ -187,12 +221,12 @@ button.calendarMonthTitleButton:hover {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	/* Fixed square so the global button height can't stretch it into an oval. */
+	/* Fixed square so the global button height can't stretch it. */
 	width: var(--calendar-day-size);
 	height: var(--calendar-day-size);
 	padding: 0;
 	border: 0;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-secondary);
 	font-size: var(--text-xs);
@@ -205,61 +239,117 @@ button.calendarMonthTitleButton:hover {
 }
 
 .calendarDay:hover:not([data-selected="true"]) {
-	background: var(--bg-hover);
+	background: var(--bg-active);
 }
 
 .calendarDay[data-outside="true"] {
-	color: var(--text-tertiary);
+	color: var(--text-placeholder);
 }
 
 .calendarDay[data-selected="true"] {
-	background: var(--state-on);
-	color: var(--text-primary);
-	font-weight: var(--font-semibold);
-}
-
-/* Today keeps its accent ink when it is also the selected day. */
-.calendarDay[data-today="true"] {
-	color: var(--interactive-accent);
+	background: var(--text-primary);
+	color: var(--bg-primary);
 	font-weight: var(--font-semibold);
 }
 
 .calendarDay[data-today="true"]:not([data-selected="true"]) {
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+	color: var(--text-primary);
+	font-weight: var(--font-bold);
 }
 
 .calendarDayMarker {
 	position: absolute;
-	bottom: 1px;
+	bottom: -5px;
 	left: 50%;
-	width: 4px;
-	height: 4px;
+	width: 3px;
+	height: 3px;
 	transform: translateX(-50%);
 	border-radius: var(--radius-full);
 	background: transparent;
 }
 
-.calendarDayMarker:is([data-tone="daily"], [data-tone="note"]) {
-	background: var(--interactive-accent);
+.calendarDayMarker[data-tone="daily"] {
+	background: var(--text-primary);
+}
+
+.calendarDayMarker[data-tone="note"] {
+	background: var(--text-placeholder);
+}
+
+.calendarDrawerRow > td {
+	padding: 6px 0 4px;
+}
+
+.calendarDrawer {
+	--calendar-caret-x: calc(
+		var(--calendar-week-column) + (100% - var(--calendar-week-column)) *
+			(var(--calendar-caret-column) + 0.5) / 7
+	);
+	position: relative;
+	padding: 8px 4px 6px;
+	border-radius: var(--radius-lg);
+	background: var(--calendar-drawer-bg);
+}
+
+.calendarDrawer::before {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	left: var(--calendar-caret-x);
+	width: 12px;
+	height: 6px;
+	transform: translateX(-50%);
+	background: var(--calendar-drawer-bg);
+	clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
 /* ── Day summary ── */
 
 /* One row for the daily note and exactly two for the day's other notes; more
-   notes scroll, so the card height never changes while moving between days. */
+   notes scroll, so the drawer height never changes while moving between days. */
 .calendarSummary {
 	--calendar-summary-row: 26px;
-	margin-top: 10px;
+}
+
+.calendarSummaryHeader {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0 2px 4px 8px;
 }
 
 .calendarSummaryDate {
-	padding: 0 8px 4px;
+	flex: 1;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	color: var(--text-tertiary);
+	color: var(--text-primary);
 	font-size: var(--text-xs);
-	font-weight: var(--font-medium);
+	font-weight: var(--font-semibold);
+}
+
+button.calendarSummaryWeek {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 1px;
+	height: 18px;
+	padding: 0 3px 0 7px;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: transparent;
+	box-shadow: inset 0 0 0 1px var(--border-default);
+	color: var(--text-secondary);
+	font-size: var(--text-2xs);
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	transition: background var(--transition-fast);
+}
+
+button.calendarSummaryWeek:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .calendarSummarySlot {

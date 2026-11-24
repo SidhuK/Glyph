@@ -9,7 +9,7 @@ import { type PeriodKind, isPeriodNoteEnabled } from "../../../lib/periodNotes";
 import type { SidebarCalendarDayClick, SidebarCalendarLayout } from "../../../lib/settings/model";
 import { toast } from "../../../lib/toast";
 import type { CalendarTitleAction } from "./CalendarMonth";
-import { weekStartsOnForLocale } from "./monthGrid";
+import { midweekOf, weekStartsOnForLocale } from "./monthGrid";
 import { useCalendarActivity } from "./useCalendarQueries";
 
 export type OpenPeriodNoteAtDate = (kind: PeriodKind, date: string) => Promise<void>;
@@ -38,10 +38,11 @@ export function useCalendarView({
 	const today = parseISO(getTodayDateString());
 	const monthlyNotesEnabled = isPeriodNoteEnabled("month", periodNotesEnabled);
 	const quarterlyNotesEnabled = isPeriodNoteEnabled("quarter", periodNotesEnabled);
+	const weekStartsOn = weekStartsOnForLocale(i18n.language);
 	const { activityByDate, errorMessage: activityError } = useCalendarActivity(
 		anchor,
 		layout,
-		weekStartsOnForLocale(i18n.language),
+		weekStartsOn,
 	);
 
 	const openPeriodNote = (kind: PeriodKind, date: string) => {
@@ -59,6 +60,10 @@ export function useCalendarView({
 		// Without a daily notes folder, opening shows the app's daily-note setup notice.
 		if (dayClick === "open" || wasSelected) openPeriodNote("day", dateKey);
 	};
+
+	const openWeeklyNote = isPeriodNoteEnabled("week", periodNotesEnabled)
+		? (date: Date) => openPeriodNote("week", format(midweekOf(date, weekStartsOn), "yyyy-MM-dd"))
+		: null;
 
 	const goToToday = () => {
 		const todayKey = getTodayDateString();
@@ -99,10 +104,10 @@ export function useCalendarView({
 				action: () => openPeriodNote("day", dateKey),
 			},
 		];
-		if (isPeriodNoteEnabled("week", periodNotesEnabled)) {
+		if (openWeeklyNote) {
 			items.push({
 				label: t("calendar.menu.openWeeklyNote"),
-				action: () => openPeriodNote("week", dateKey),
+				action: () => openWeeklyNote(date),
 			});
 		}
 		void showNativeContextMenu(event, items).catch((error: unknown) => {
@@ -112,6 +117,7 @@ export function useCalendarView({
 
 	return {
 		locale: i18n.language,
+		weekStartsOn,
 		anchor,
 		setAnchor,
 		selectedKey,
@@ -121,6 +127,7 @@ export function useCalendarView({
 		activityError,
 		titleAction,
 		openPeriodNote,
+		openWeeklyNote,
 		handleSelect,
 		goToToday,
 		handleDayContextMenu,

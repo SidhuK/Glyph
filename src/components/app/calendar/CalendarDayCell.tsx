@@ -45,7 +45,6 @@ export function CalendarDayCell({
 				data-selected={isSelected}
 				data-today={isToday}
 				data-outside={isOutside}
-				data-weekend={date.getDay() === 0 || date.getDay() === 6}
 				tabIndex={isTabStop ? 0 : -1}
 				aria-pressed={isSelected}
 				aria-current={isToday ? "date" : undefined}
