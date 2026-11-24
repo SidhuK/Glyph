@@ -337,6 +337,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			try {
 				await setItemAppearance(path, appearance);
 			} catch (error) {
+				setAppearancePickerTarget((target) =>
+					target?.path === path ? { path, anchor: target.anchor } : target,
+				);
 				toast.error(t("fileTree.appearance.updateFailed"), {
 					description: extractErrorMessage(error),
 				});
