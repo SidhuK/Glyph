@@ -734,9 +734,7 @@
 		"searchEmojiPlaceholder": "Emoji suchen",
 		"color": "Farbe",
 		"defaultColor": "Standardfarbe",
-		"defaultIcon": "Standardsymbol",
 		"reset": "Zurücksetzen",
-		"shuffle": "Zufälliges Symbol",
 		"recent": "Zuletzt verwendet",
 		"noResults": "Keine Symbole gefunden.",
 		"loadingEmoji": "Emoji werden geladen…",
@@ -747,7 +745,6 @@
 			"emoji": "Emoji"
 		},
 		"useIcon": "Symbol {{label}} verwenden",
-		"categoriesLabel": "Symbolkategorien",
 		"categories": {
 			"write": "Schreiben",
 			"media": "Medien",

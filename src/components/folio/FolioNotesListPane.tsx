@@ -166,7 +166,11 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		fetchNextPage,
 	} = useFolioNotes(folioScope, folioSortMode, deferredSearchQuery, pinnedFiles, templateFolder);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
-	const [appearancePickerPath, setAppearancePickerPath] = useState<string | null>(null);
+	const [appearancePickerTarget, setAppearancePickerTarget] = useState<{
+		path: string;
+		anchor: Element | null;
+	} | null>(null);
+	const appearancePickerPath = appearancePickerTarget?.path ?? null;
 	const paneRef = useRef<HTMLElement | null>(null);
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
@@ -455,7 +459,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 								onCommitRename={commitRename}
 								onCancelRename={cancelRename}
 								appearance={itemAppearance[note.note_path] ?? null}
-								onOpenAppearancePicker={setAppearancePickerPath}
+								onOpenAppearancePicker={(path) => {
+									const anchor = paneRef.current?.querySelector(
+										`[data-folio-note-path="${CSS.escape(path)}"]`,
+									);
+									setAppearancePickerTarget({ path, anchor: anchor ?? null });
+								}}
 								statusColors={statusColors}
 								taskSummary={
 									note.is_markdown ? (taskSummariesByPath?.[note.note_path] ?? null) : null
@@ -514,10 +523,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				title={t("fileTree.appearance.title")}
 				open={appearancePickerPath !== null}
 				onOpenChange={(open) => {
-					if (!open) setAppearancePickerPath(null);
+					if (!open) setAppearancePickerTarget(null);
 				}}
 				iconValue={pickerIcon}
-				defaultIconName="document"
+				anchor={appearancePickerTarget?.anchor}
 				showDefaultIcon
 				allowEmoji
 				onIconChange={(icon) => {

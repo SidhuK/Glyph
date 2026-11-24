@@ -847,9 +847,7 @@
 		"searchEmojiPlaceholder": "Search emoji",
 		"color": "Color",
 		"defaultColor": "Default color",
-		"defaultIcon": "Default icon",
 		"reset": "Reset",
-		"shuffle": "Shuffle icon",
 		"recent": "Recent",
 		"noResults": "No icons found.",
 		"loadingEmoji": "Loading emoji…",
@@ -860,7 +858,6 @@
 			"emoji": "Emoji"
 		},
 		"useIcon": "Use {{label}} icon",
-		"categoriesLabel": "Icon categories",
 		"categories": {
 			"write": "Write",
 			"media": "Media",

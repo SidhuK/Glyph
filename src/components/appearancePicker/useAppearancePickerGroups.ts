@@ -3,11 +3,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { readRecentIconIds } from "../../lib/appearancePickerRecents";
 import { isAppearanceEmoji, loadAppearanceEmojiGroups } from "../../lib/appearanceEmoji";
-import {
-	type DatabaseColumnIconOption,
-	ICON_CATEGORIES,
-	getDatabaseColumnIconOption,
-} from "../../lib/database/columnIcons";
+import { type DatabaseColumnIconOption, ICON_CATEGORIES } from "../../lib/database/columnIcons";
 
 export type AppearancePickerMode = "icons" | "emoji";
 
@@ -19,12 +15,10 @@ export interface AppearancePickerOption {
 export interface AppearancePickerGroup {
 	id: string;
 	label: string;
-	tabIconName: string;
 	options: readonly AppearancePickerOption[];
 }
 
 const RECENT_GROUP_ID = "recent";
-const RECENT_TAB_ICON = "clock";
 
 interface UseAppearancePickerGroupsArgs {
 	mode: AppearancePickerMode;
@@ -75,7 +69,6 @@ export function useAppearancePickerGroups({
 				? (emojiQuery.data ?? []).map((group) => ({
 						id: group.id,
 						label: t(`appearancePicker.emojiGroups.${group.id}`),
-						tabIconName: group.options[0]?.id ?? "",
 						options: group.options,
 					}))
 				: ICON_CATEGORIES.map((category) => {
@@ -83,7 +76,6 @@ export function useAppearancePickerGroups({
 						return {
 							id: category,
 							label: t(`appearancePicker.categories.${category}`),
-							tabIconName: options[0]?.id ?? "",
 							options,
 						};
 					});
@@ -98,31 +90,23 @@ export function useAppearancePickerGroups({
 						section.label.toLowerCase().includes(query),
 				),
 			);
-			return [{ id: "results", label: "", tabIconName: "", options: results }];
+			return [{ id: "results", label: "", options: results }];
 		}
 		if (recentOptions.length === 0) return filledSections;
 		return [
 			{
 				id: RECENT_GROUP_ID,
 				label: t("appearancePicker.recent"),
-				tabIconName: RECENT_TAB_ICON,
 				options: recentOptions,
 			},
 			...filledSections,
 		];
 	}, [emojiLabels, emojiQuery.data, iconOptions, mode, query, recentIds, t]);
 
-	function labelFor(iconName: string | null | undefined): string | null {
-		if (!iconName) return null;
-		if (isAppearanceEmoji(iconName)) return emojiLabels.get(iconName) ?? iconName;
-		return getDatabaseColumnIconOption(iconName)?.label ?? null;
-	}
-
 	return {
 		groups,
 		results: groups.flatMap((group) => group.options),
 		loading: mode === "emoji" && emojiQuery.isPending,
 		error: mode === "emoji" && emojiQuery.isError,
-		labelFor,
 	};
 }

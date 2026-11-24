@@ -785,9 +785,7 @@
 		"searchEmojiPlaceholder": "Szukaj emoji",
 		"color": "Kolor",
 		"defaultColor": "Kolor domyślny",
-		"defaultIcon": "Ikona domyślna",
 		"reset": "Resetuj",
-		"shuffle": "Losowa ikona",
 		"recent": "Ostatnie",
 		"noResults": "Nie znaleziono ikon.",
 		"loadingEmoji": "Ładowanie emoji…",
@@ -798,7 +796,6 @@
 			"emoji": "Emoji"
 		},
 		"useIcon": "Użyj ikony {{label}}",
-		"categoriesLabel": "Kategorie ikon",
 		"categories": {
 			"write": "Pisanie",
 			"media": "Media",

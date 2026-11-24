@@ -39,10 +39,6 @@ export function TagIconPicker({
 	const displayIconName = isTagIconName(selectedIconName)
 		? selectedIconName
 		: DEFAULT_TAG_ICON_NAME;
-	const defaultIconName = resolveTagIconName(tag, null, beautifulTagsEnabled);
-	const defaultDisplayIconName = isTagIconName(defaultIconName)
-		? defaultIconName
-		: DEFAULT_TAG_ICON_NAME;
 	const overrideIconName = value === undefined ? resolveOverrideIconName(tag, overrides) : value;
 
 	return (
@@ -51,7 +47,6 @@ export function TagIconPicker({
 			open={open}
 			onOpenChange={onOpenChange}
 			iconValue={overrideIconName}
-			defaultIconName={defaultDisplayIconName}
 			iconOptions={options}
 			showDefaultIcon
 			onIconChange={(iconName, option) => {
