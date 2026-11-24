@@ -1,11 +1,11 @@
 import { Collapsible, CollapsibleContent } from "@/components/ui/shadcn/collapsible";
-import { format, isSameDay, isSameMonth, parseISO } from "date-fns";
+import { format, isSameDay, parseISO } from "date-fns";
 import { type MouseEvent, type ReactNode, useCallback, useMemo, useState } from "react";
-import { activityTone } from "../../../lib/calendarActivity";
+import { useTranslation } from "react-i18next";
 import type { SidebarCalendarLayout } from "../../../lib/settings/model";
 import type { CalendarDayActivity } from "../../../lib/tauri";
-import { CalendarDayCell } from "./CalendarDayCell";
 import { CalendarMonthHeader } from "./CalendarMonthHeader";
+import { CalendarWeekRow } from "./CalendarWeekRow";
 import {
 	buildVisibleWeeks,
 	dateForNavigationKey,
@@ -39,6 +39,8 @@ interface CalendarMonthProps {
 	layout: SidebarCalendarLayout;
 	titleAction: CalendarTitleAction | null;
 	onDayContextMenu: (event: MouseEvent<HTMLButtonElement>, date: Date) => void;
+	onOpenWeeklyNote: ((date: Date) => void) | null;
+	drawer?: ReactNode;
 	/** Sidebar only: folds the calendar down to its month row. */
 	collapse?: CalendarCollapse;
 	/** Shown below the grid, folding away with it. */
@@ -57,9 +59,12 @@ export function CalendarMonth({
 	layout,
 	titleAction,
 	onDayContextMenu,
+	onOpenWeeklyNote,
+	drawer,
 	collapse,
 	children,
 }: CalendarMonthProps) {
+	const { t } = useTranslation("shell");
 	const [focusedKey, setFocusedKey] = useState<string | null>(null);
 	const weekStartsOn = weekStartsOnForLocale(locale);
 	const isWeek = layout === "week";
@@ -132,7 +137,8 @@ export function CalendarMonth({
 			<CalendarMonthHeader
 				month={month}
 				locale={locale}
-				isWeek={isWeek}
+				visibleWeek={isWeek ? weeks[0] : null}
+				showToday={!isSameDay(selected, today) || !isDateInView(today, month, weekStartsOn, layout)}
 				titleAction={titleAction}
 				collapsible={collapse !== undefined}
 				collapsed={collapsed}
@@ -145,8 +151,14 @@ export function CalendarMonth({
 
 			<CollapsibleContent className="calendarMonthBody">
 				<table className="calendarGrid" aria-label={monthYearLabel} onKeyDown={handleKeyDown}>
+					<colgroup>
+						<col className="calendarWeekNumberColumn" />
+					</colgroup>
 					<thead>
 						<tr>
+							<th scope="col" className="calendarWeekday">
+								<span className="sr-only">{t("calendar.week")}</span>
+							</th>
 							{weekdays.map((weekday) => (
 								<th key={weekday.long} scope="col" className="calendarWeekday">
 									<abbr title={weekday.long}>{weekday.narrow}</abbr>
@@ -156,27 +168,21 @@ export function CalendarMonth({
 					</thead>
 					<tbody>
 						{weeks.map((week) => (
-							<tr key={format(week[0], "yyyy-MM-dd")}>
-								{week.map((date) => {
-									const dateKey = format(date, "yyyy-MM-dd");
-									return (
-										<CalendarDayCell
-											key={dateKey}
-											date={date}
-											dateKey={dateKey}
-											label={dayLabelFormat.format(date)}
-											tone={activityTone(activityByDate.get(dateKey))}
-											isSelected={isSameDay(date, selected)}
-											isToday={isSameDay(date, today)}
-											isOutside={!isWeek && !isSameMonth(date, month)}
-											isTabStop={dateKey === tabStopKey}
-											shouldFocus={dateKey === focusedKey}
-											onSelect={handleSelect}
-											onContextMenu={onDayContextMenu}
-										/>
-									);
-								})}
-							</tr>
+							<CalendarWeekRow
+								key={format(week[0], "yyyy-MM-dd")}
+								week={week}
+								month={isWeek ? null : month}
+								selected={selected}
+								today={today}
+								activityByDate={activityByDate}
+								dayLabelFormat={dayLabelFormat}
+								tabStopKey={tabStopKey}
+								focusedKey={focusedKey}
+								drawer={drawer}
+								onOpenWeeklyNote={onOpenWeeklyNote}
+								onSelect={handleSelect}
+								onDayContextMenu={onDayContextMenu}
+							/>
 						))}
 					</tbody>
 				</table>

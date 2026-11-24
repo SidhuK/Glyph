@@ -1,7 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { CalendarDaySummary } from "./CalendarDaySummary";
 import { type CalendarCollapse, CalendarMonth } from "./CalendarMonth";
+import { midweekOf } from "./monthGrid";
 import { type OpenPeriodNoteAtDate, useCalendarView } from "./useCalendarView";
+import { isoWeekFromDate } from "../../../lib/periodNotes";
 import type { SidebarCalendarDayClick, SidebarCalendarLayout } from "../../../lib/settings/model";
 
 interface CalendarViewProps {
@@ -26,6 +28,7 @@ export function CalendarView({
 }: CalendarViewProps) {
 	const { t } = useTranslation("shell");
 	const calendar = useCalendarView({ layout, dayClick, onOpenPeriodNoteAtDate, onShowMonth });
+	const { openWeeklyNote } = calendar;
 
 	return (
 		<div className="calendarCard">
@@ -41,25 +44,32 @@ export function CalendarView({
 				onSelect={calendar.handleSelect}
 				onGoToToday={calendar.goToToday}
 				onDayContextMenu={calendar.handleDayContextMenu}
+				onOpenWeeklyNote={calendar.openWeeklyNote}
+				drawer={
+					showDaySummary ? (
+						<CalendarDaySummary
+							selectedKey={calendar.selectedKey}
+							selectedDate={calendar.selectedDate}
+							today={calendar.today}
+							locale={calendar.locale}
+							hasDailyNoteActivity={
+								calendar.activityByDate.get(calendar.selectedKey)?.hasDailyNote === true
+							}
+							weekNumber={
+								isoWeekFromDate(midweekOf(calendar.selectedDate, calendar.weekStartsOn)).week
+							}
+							onOpenWeeklyNote={openWeeklyNote && (() => openWeeklyNote(calendar.selectedDate))}
+							onOpenDailyNote={() => calendar.openPeriodNote("day", calendar.selectedKey)}
+							onOpenNote={onOpenNote}
+						/>
+					) : null
+				}
 				collapse={collapse}
 			>
 				{calendar.activityError ? (
 					<p className="calendarMessage" role="alert">
 						{t("calendar.loadFailed", { message: calendar.activityError })}
 					</p>
-				) : null}
-				{showDaySummary && layout === "month" ? (
-					<CalendarDaySummary
-						selectedKey={calendar.selectedKey}
-						selectedDate={calendar.selectedDate}
-						today={calendar.today}
-						locale={calendar.locale}
-						hasDailyNoteActivity={
-							calendar.activityByDate.get(calendar.selectedKey)?.hasDailyNote === true
-						}
-						onOpenDailyNote={() => calendar.openPeriodNote("day", calendar.selectedKey)}
-						onOpenNote={onOpenNote}
-					/>
 				) : null}
 			</CalendarMonth>
 		</div>

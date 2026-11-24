@@ -1,5 +1,10 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
-import { Calendar03Icon, NoteIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import {
+	ArrowRight01Icon,
+	Calendar03Icon,
+	NoteIcon,
+	PlusSignIcon,
+} from "@hugeicons/core-free-icons";
 import { isSameDay } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../../contexts";
@@ -12,6 +17,8 @@ interface CalendarDaySummaryProps {
 	locale: string;
 	/** From the month activity, so the row is right before the day's notes load. */
 	hasDailyNoteActivity: boolean;
+	weekNumber: number;
+	onOpenWeeklyNote: (() => void) | null;
 	onOpenDailyNote: () => void;
 	onOpenNote: (path: string) => void;
 }
@@ -23,6 +30,8 @@ export function CalendarDaySummary({
 	today,
 	locale,
 	hasDailyNoteActivity,
+	weekNumber,
+	onOpenWeeklyNote,
 	onOpenDailyNote,
 	onOpenNote,
 }: CalendarDaySummaryProps) {
@@ -36,15 +45,28 @@ export function CalendarDaySummary({
 	const otherNotes = notes.filter((note) => note !== dailyNote);
 	const hasDailyNote = dailyNote !== undefined || hasDailyNoteActivity;
 	const dateLabel = new Intl.DateTimeFormat(locale, {
-		weekday: "long",
+		weekday: "short",
 		month: "short",
 		day: "numeric",
 	}).format(selectedDate);
 
 	return (
 		<section className="calendarSummary" aria-label={dateLabel}>
-			<header className="calendarSummaryDate">
-				{isSameDay(selectedDate, today) ? t("calendar.todayDate", { date: dateLabel }) : dateLabel}
+			<header className="calendarSummaryHeader">
+				<span className="calendarSummaryDate">
+					{isSameDay(selectedDate, today) ? t("calendar.today") : dateLabel}
+				</span>
+				{onOpenWeeklyNote ? (
+					<button
+						type="button"
+						className="calendarSummaryWeek"
+						title={t("calendar.openWeeklyNoteForWeek", { week: weekNumber })}
+						onClick={onOpenWeeklyNote}
+					>
+						{t("calendar.weekNumber", { week: weekNumber })}
+						<HugeiconsIcon icon={ArrowRight01Icon} size="var(--icon-xs)" />
+					</button>
+				) : null}
 			</header>
 			{dailyNotesFolder ? (
 				<button

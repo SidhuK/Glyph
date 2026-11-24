@@ -2,12 +2,15 @@ import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { CollapsibleTrigger } from "@/components/ui/shadcn/collapsible";
 import { ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { useTranslation } from "react-i18next";
+import { isoWeekFromDate } from "../../../lib/periodNotes";
 import type { CalendarTitleAction } from "./CalendarMonth";
+import { MIDWEEK_OFFSET } from "./monthGrid";
 
 interface CalendarMonthHeaderProps {
 	month: Date;
 	locale: string;
-	isWeek: boolean;
+	visibleWeek: Date[] | null;
+	showToday: boolean;
 	titleAction: CalendarTitleAction | null;
 	/** Shows the fold toggle; the calendar's `Collapsible` owns the open state. */
 	collapsible: boolean;
@@ -20,7 +23,8 @@ interface CalendarMonthHeaderProps {
 export function CalendarMonthHeader({
 	month,
 	locale,
-	isWeek,
+	visibleWeek,
+	showToday,
 	titleAction,
 	collapsible,
 	collapsed,
@@ -28,19 +32,32 @@ export function CalendarMonthHeader({
 	onStep,
 }: CalendarMonthHeaderProps) {
 	const { t } = useTranslation("shell");
+	const isWeek = visibleWeek !== null;
 	const collapseLabel = collapsed ? t("sidebarCalendar.expand") : t("sidebarCalendar.collapse");
-	// Locale order and separators (e.g. "2026年10月"), with only the year muted.
-	const title = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" })
-		.formatToParts(month)
-		.map((part, index) =>
-			part.type === "year" ? (
-				<span key={index} className="calendarMonthTitleYear">
-					{part.value}
-				</span>
-			) : (
-				part.value
-			),
-		);
+	const title = visibleWeek ? (
+		<>
+			{new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).formatRange(
+				visibleWeek[0],
+				visibleWeek[visibleWeek.length - 1],
+			)}{" "}
+			<span className="calendarMonthTitleYear">
+				{t("calendar.weekNumber", { week: isoWeekFromDate(visibleWeek[MIDWEEK_OFFSET]).week })}
+			</span>
+		</>
+	) : (
+		// Locale order and separators (e.g. "2026年10月"), with only the year muted.
+		new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" })
+			.formatToParts(month)
+			.map((part, index) =>
+				part.type === "year" ? (
+					<span key={index} className="calendarMonthTitleYear">
+						{part.value}
+					</span>
+				) : (
+					part.value
+				),
+			)
+	);
 
 	return (
 		<header className="calendarMonthHeader">
@@ -61,9 +78,11 @@ export function CalendarMonthHeader({
 			<div className="calendarMonthControls">
 				{/* Kept mounted while collapsed so the buttons fade out instead of popping. */}
 				<div className="calendarMonthNav" inert={collapsed}>
-					<button type="button" className="calendarTodayButton" onClick={onGoToToday}>
-						{t("calendar.today")}
-					</button>
+					{showToday ? (
+						<button type="button" className="calendarTodayButton" onClick={onGoToToday}>
+							{t("calendar.today")}
+						</button>
+					) : null}
 					<button
 						type="button"
 						className="calendarNavButton"
