@@ -23,6 +23,7 @@ import {
 	paletteSettingOptions,
 } from "./settingsPaletteRegistry";
 import { type RankedResult, foldNoteRows, splitScopedGroup } from "./paletteResultGroups";
+import { restingPaletteResults } from "./paletteRestingResults";
 import type { WorkspaceTab } from "./useTabManager";
 
 const PALETTE_GROUP_ORDER = [
@@ -80,8 +81,6 @@ export interface PaletteResult {
 }
 
 const BROAD_GROUP_LIMIT = 8;
-/** With no query the command palette shows a short list of recent notes and core commands. */
-const EMPTY_QUERY_GROUP_LIMIT = 3;
 /** Content rows are one per occurrence, so this group is a match list, not a
  * note list, and needs room to show several hits from the same note. */
 const CONTENT_GROUP_LIMIT = 50;
@@ -382,6 +381,9 @@ export function buildPaletteResults({
 		});
 	}
 
+	if (emptyQuery && mode === "commands") {
+		return restingPaletteResults({ candidates, activePath, t });
+	}
 	const scored = candidates
 		.map((result) => ({ result, score: rankPaletteResult(result, parsedQuery) }))
 		.filter((item): item is RankedResult => item.score !== null);
@@ -395,9 +397,7 @@ export function buildPaletteResults({
 			? undefined
 			: kind === "content" && mode === "search"
 				? CONTENT_GROUP_LIMIT
-				: emptyQuery && mode === "commands"
-					? EMPTY_QUERY_GROUP_LIMIT
-					: BROAD_GROUP_LIMIT;
+				: BROAD_GROUP_LIMIT;
 	// Content rows fold only into title rows that survive the cap, so no note drops out of both.
 	const shownTitles = new Set(
 		scored
@@ -431,9 +431,7 @@ export function buildPaletteResults({
 						(kind) => kind !== "open-tab" && kind !== "note" && kind !== "content",
 					),
 				]
-			: emptyQuery
-				? ["note" as const, ...PALETTE_GROUP_ORDER.filter((kind) => kind !== "note")]
-				: PALETTE_GROUP_ORDER;
+			: PALETTE_GROUP_ORDER;
 	return groupOrder.flatMap((kind) => {
 		const group = (byKind.get(kind) ?? []).sort(compareRanked);
 		const split = splitScopedGroup(group, parsedQuery.scope, language, t);

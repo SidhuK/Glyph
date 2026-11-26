@@ -491,6 +491,7 @@
 			"template": "テンプレート",
 			"recent": "最近",
 			"suggested": "おすすめ",
+			"create": "作成",
 			"action": "アクション"
 		},
 		"lineNumber": "{{line}}行",

@@ -494,6 +494,7 @@
 			"template": "Vorlagen",
 			"recent": "Zuletzt",
 			"suggested": "Vorschläge",
+			"create": "Erstellen",
 			"action": "Aktionen"
 		},
 		"lineNumber": "Z. {{line}}",

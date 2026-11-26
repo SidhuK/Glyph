@@ -8,10 +8,49 @@ import {
 	rankPaletteResult,
 	stepPaletteOption,
 } from "./commandPaletteHelpers";
-import type { PaletteResult } from "./paletteResults";
+import { type PaletteResult, buildPaletteResults } from "./paletteResults";
 import { PALETTE_SETTINGS_REGISTRY } from "./settingsPaletteRegistry";
 
 describe("commandPaletteHelpers", () => {
+	it("opens on the active note's actions, then recent notes, then ways to create", () => {
+		const command = (id: string) => ({ id, label: id, action: () => {} });
+		const recent = (path: string, openedAt: number) => ({ path, spacePath: "/space", openedAt });
+		const results = buildPaletteResults({
+			query: "",
+			mode: "commands",
+			spacePath: "/space",
+			templateFolder: null,
+			activePath: "Projects/Q4 planning.md",
+			language: "en",
+			t: (key) => key,
+			sources: {
+				commands: ["new-canvas", "new-note", "copy-note-markdown", "move-active-file"].map(command),
+				settings: undefined,
+				settingValue: () => null,
+				tabs: [],
+				titleMatches: [],
+				contentMatches: [],
+				recentFiles: [
+					recent("Projects/Q4 planning.md", 3),
+					recent("Reading list.md", 2),
+					recent("Journal/Standup.md", 1),
+				],
+				folders: [],
+				tags: [],
+				people: [],
+				databases: [],
+				templates: [],
+			},
+		});
+		expect(results.map(({ label, group }) => [label, group])).toEqual([
+			["move-active-file", "Q4 planning"],
+			["copy-note-markdown", "Q4 planning"],
+			["Reading list", "commandPalette.groups.recent"],
+			["Standup", "commandPalette.groups.recent"],
+			["new-note", "commandPalette.groups.create"],
+		]);
+	});
+
 	it("parses people and tags from a mixed query", () => {
 		expect(parseSearchQueryWithPeople("@alice #project roadmap", true)).toEqual({
 			request: {
