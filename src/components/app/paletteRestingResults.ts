@@ -1,5 +1,6 @@
-import { displayNameFromPath } from "../../utils/path";
+import { displayNameFromPath, isMarkdownPath } from "../../utils/path";
 import type { PaletteResult } from "./paletteResults";
+import type { WorkspaceTab } from "./useTabManager";
 
 const NOTE_ACTION_IDS = [
 	"move-active-file",
@@ -16,22 +17,28 @@ const RECENT_NOTE_LIMIT_BESIDE_NOTE_ACTIONS = 4;
 interface RestingPaletteInput {
 	candidates: readonly PaletteResult[];
 	activePath: string | null | undefined;
+	tabs: readonly WorkspaceTab[];
 	t: (key: string) => string;
 }
 
-export function restingPaletteResults({ candidates, activePath, t }: RestingPaletteInput) {
+export function restingPaletteResults({ candidates, activePath, tabs, t }: RestingPaletteInput) {
 	const byId = new Map(candidates.map((candidate) => [candidate.id, candidate]));
 	const commands = (ids: readonly string[], group: string): PaletteResult[] =>
 		ids.flatMap((id) => {
 			const candidate = byId.get(`command:${id}`);
 			return candidate ? [{ ...candidate, group }] : [];
 		});
-	const noteActions = activePath
-		? commands(NOTE_ACTION_IDS, displayNameFromPath(activePath)).slice(0, NOTE_ACTION_LIMIT)
-		: [];
+	const noteActions =
+		activePath && isMarkdownPath(activePath)
+			? commands(NOTE_ACTION_IDS, displayNameFromPath(activePath)).slice(0, NOTE_ACTION_LIMIT)
+			: [];
+	const tabIds = new Map(
+		tabs.flatMap((tab) => (tab.kind === "file" && tab.target ? [[tab.target, tab.id]] : [])),
+	);
 	const recentNotes = candidates
 		.filter((candidate) => candidate.kind === "note")
-		.slice(0, noteActions.length ? RECENT_NOTE_LIMIT_BESIDE_NOTE_ACTIONS : RECENT_NOTE_LIMIT);
+		.slice(0, noteActions.length ? RECENT_NOTE_LIMIT_BESIDE_NOTE_ACTIONS : RECENT_NOTE_LIMIT)
+		.map((note) => ({ ...note, openTabId: tabIds.get(note.target ?? "") }));
 	return [
 		...noteActions,
 		...recentNotes,

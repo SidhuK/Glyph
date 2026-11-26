@@ -87,6 +87,33 @@ describe("commandPaletteHelpers", () => {
 		expect(parsePaletteQuery(raw)).toMatchObject({ scope, text });
 	});
 
+	it("keeps tag choices when the palette opens to pick a tag", () => {
+		const results = buildPaletteResults({
+			query: "",
+			mode: "commands",
+			spacePath: "/space",
+			templateFolder: null,
+			activePath: "Notes.md",
+			language: "en",
+			t: (key) => key,
+			sources: {
+				commands: [{ id: "tag-refactor-picker:project", label: "#project", action: () => {} }],
+				settings: undefined,
+				settingValue: () => null,
+				tabs: [],
+				titleMatches: [],
+				contentMatches: [],
+				recentFiles: [],
+				folders: [],
+				tags: [],
+				people: [],
+				databases: [],
+				templates: [],
+			},
+		});
+		expect(results.map(({ label }) => label)).toEqual(["#project"]);
+	});
+
 	it("ranks exact titles ahead of keyword and description matches", () => {
 		const result = (
 			id: string,

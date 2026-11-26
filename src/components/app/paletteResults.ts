@@ -24,6 +24,7 @@ import {
 } from "./settingsPaletteRegistry";
 import { type RankedResult, foldNoteRows, splitScopedGroup } from "./paletteResultGroups";
 import { restingPaletteResults } from "./paletteRestingResults";
+import { TAG_PICKER_COMMAND_PREFIX } from "./useTagRefactorCommands";
 import type { WorkspaceTab } from "./useTabManager";
 
 const PALETTE_GROUP_ORDER = [
@@ -381,8 +382,11 @@ export function buildPaletteResults({
 		});
 	}
 
-	if (emptyQuery && mode === "commands") {
-		return restingPaletteResults({ candidates, activePath, t });
+	const choosingTag = sources.commands.some((command) =>
+		command.id.startsWith(TAG_PICKER_COMMAND_PREFIX),
+	);
+	if (emptyQuery && mode === "commands" && !choosingTag) {
+		return restingPaletteResults({ candidates, activePath, tabs: sources.tabs, t });
 	}
 	const scored = candidates
 		.map((result) => ({ result, score: rankPaletteResult(result, parsedQuery) }))

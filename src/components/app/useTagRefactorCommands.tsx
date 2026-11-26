@@ -14,6 +14,8 @@ import {
 import { HugeiconsIcon } from "../HugeiconsIcon";
 import type { Command } from "./commandPaletteHelpers";
 
+export const TAG_PICKER_COMMAND_PREFIX = "tag-refactor-picker:";
+
 const ACTION_ICONS = {
 	rename: PencilEdit02Icon,
 	merge: GitMergeIcon,
@@ -32,7 +34,7 @@ export function useTagRefactorCommands(
 	const { run, isPending } = useTagRefactor();
 	const pickTag = (action: TagRefactorAction): Command[] =>
 		tags.map((tag) => ({
-			id: `tag-refactor-picker:${tag.tag}`,
+			id: `${TAG_PICKER_COMMAND_PREFIX}${tag.tag}`,
 			label: `#${tag.tag}`,
 			icon: <HugeiconsIcon icon={Tag01Icon} size="var(--icon-lg)" />,
 			category: t(`tags.refactor.${action}Picker`),
