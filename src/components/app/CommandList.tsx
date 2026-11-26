@@ -70,7 +70,12 @@ export function CommandList({
 					const labelId = `${id}-group-${groupIndex}`;
 					const showsEmptyHint = kind === "action" && onlyActions;
 					return (
-						<div key={key} role="group" aria-labelledby={labelId} className="commandPaletteGroup">
+						<div
+							key={`${groupIndex}:${key}`}
+							role="group"
+							aria-labelledby={labelId}
+							className="commandPaletteGroup"
+						>
 							{showsEmptyHint ? (
 								<p id={labelId} className="commandPaletteEmptyHint">
 									{emptyHint}

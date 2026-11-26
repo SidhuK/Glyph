@@ -823,3 +823,9 @@
 		transition-duration: 0ms;
 	}
 }
+
+.commandPaletteList[data-quiet-shortcuts="true"]
+	.commandPaletteItem:not([aria-selected="true"])
+	.commandPaletteShortcut {
+	visibility: hidden;
+}

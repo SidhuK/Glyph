@@ -721,6 +721,7 @@ export function CommandPalette({
 							<div
 								ref={listRef}
 								className="commandPaletteList"
+								data-quiet-shortcuts={initialMode === "commands" && !query.trim()}
 								data-with-preview={withSidePane ? "true" : "false"}
 							>
 								{query.trim() ? (

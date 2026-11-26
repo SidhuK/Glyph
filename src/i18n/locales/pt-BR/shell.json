@@ -494,6 +494,7 @@
 			"template": "Modelos",
 			"recent": "Recentes",
 			"suggested": "Sugestões",
+			"create": "Criar",
 			"action": "Ações"
 		},
 		"lineNumber": "L{{line}}",

@@ -494,6 +494,7 @@
 			"template": "Plantillas",
 			"recent": "Recientes",
 			"suggested": "Sugerencias",
+			"create": "Crear",
 			"action": "Acciones"
 		},
 		"lineNumber": "L{{line}}",

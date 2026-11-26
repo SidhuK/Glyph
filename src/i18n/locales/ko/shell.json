@@ -491,6 +491,7 @@
 			"template": "템플릿",
 			"recent": "최근",
 			"suggested": "추천",
+			"create": "만들기",
 			"action": "작업"
 		},
 		"lineNumber": "{{line}}행",
