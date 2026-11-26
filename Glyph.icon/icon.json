@@ -3,17 +3,7 @@
     "linear-gradient" : [
       "display-p3:0.26852,0.47592,0.96644,1.00000",
       "display-p3:0.10752,0.27375,0.75508,1.00000"
-    ],
-    "orientation" : {
-      "start" : {
-        "x" : 0.5,
-        "y" : 0
-      },
-      "stop" : {
-        "x" : 0.5,
-        "y" : 1
-      }
-    }
+    ]
   },
   "groups" : [
     {
@@ -28,6 +18,7 @@
             }
           ],
           "glass" : true,
+          "hidden" : true,
           "image-name" : "5-asterisks-small.svg",
           "name" : "5-asterisks-small",
           "position" : {
@@ -54,6 +45,7 @@
             }
           ],
           "glass" : true,
+          "hidden" : true,
           "image-name" : "4-wordmark.svg",
           "name" : "4-wordmark",
           "position" : {
@@ -89,6 +81,7 @@
             }
           ],
           "glass" : true,
+          "hidden" : false,
           "image-name" : "3-asterisk.svg",
           "name" : "3-asterisk",
           "position" : {
