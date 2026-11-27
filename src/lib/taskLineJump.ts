@@ -1,6 +1,6 @@
 import { normalizeRelPath } from "../utils/path";
 
-interface TaskLineJump {
+export interface TaskLineJump {
 	path: string;
 	byteOffset: number;
 }
@@ -25,8 +25,8 @@ export function pendingTaskLineJump(path: string): TaskLineJump | null {
 	return pending?.path === normalizeRelPath(path) ? pending : null;
 }
 
-export function discardTaskLineJump(path: string): void {
-	if (pendingTaskLineJump(path)) pending = null;
+export function discardTaskLineJump(jump: TaskLineJump): void {
+	if (pending?.path === jump.path && pending.byteOffset === jump.byteOffset) pending = null;
 }
 
 function isTaskLineJump(value: unknown): value is TaskLineJump {

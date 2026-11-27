@@ -369,15 +369,17 @@ export function MarkdownEditorPane({
 		[mode, text, tocHeadings],
 	);
 	const selectTaskLine = useCallback(
-		(byteOffset: number) => {
+		(byteOffset: number, onSettled: () => void) => {
 			const charOffset = charOffsetFromByteOffset(textRef.current, byteOffset);
 			if (mode === "plain") {
-				rawEditorRef.current?.selectRange(charOffset, charOffset);
-				return true;
+				const rawEditor = rawEditorRef.current;
+				if (!rawEditor) return;
+				rawEditor.selectRange(charOffset, charOffset);
+				onSettled();
+				return;
 			}
-			return tocSource
-				? scrollEditorToTaskLine(tocSource.editor, textRef.current, charOffset)
-				: false;
+			if (tocSource)
+				scrollEditorToTaskLine(tocSource.editor, textRef.current, charOffset, onSettled);
 		},
 		[mode, rawEditorRef, textRef, tocSource],
 	);

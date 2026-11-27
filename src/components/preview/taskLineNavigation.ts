@@ -23,10 +23,14 @@ export function scrollEditorToTaskLine(
 	editor: Editor,
 	markdown: string,
 	charOffset: number,
-): boolean {
-	if (editor.isDestroyed) return false;
+	onSettled: () => void,
+): void {
+	if (editor.isDestroyed) return;
 	const pos = taskItemPosition(editor, markdown, charOffset);
-	if (pos === null) return true;
+	if (pos === null) {
+		onSettled();
+		return;
+	}
 	editor.commands.expandHeadingAncestors(pos);
 	editor.commands.setTextSelection(pos + 2);
 	window.requestAnimationFrame(() => {
@@ -34,6 +38,6 @@ export function scrollEditorToTaskLine(
 		const element = editor.view.nodeDOM(pos);
 		if (element instanceof HTMLElement)
 			element.scrollIntoView({ behavior: "smooth", block: "center" });
+		onSettled();
 	});
-	return true;
 }
