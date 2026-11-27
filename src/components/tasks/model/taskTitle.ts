@@ -5,10 +5,19 @@ import { stripInlineMarkdown } from "./inlineMarkdown";
 
 const displayTitles = new WeakMap<TaskRecord, string>();
 
+const CODE_SPAN_SPLIT = /(`[^`]+`)/;
+
 function titleWithoutTags(title: string): string {
-	return title.replace(INLINE_TAG_PATTERN, (match, leading: string, name: string) =>
-		isHexColorCode(name) ? match : leading,
-	);
+	return title
+		.split(CODE_SPAN_SPLIT)
+		.map((part, index) =>
+			index % 2 === 1
+				? part
+				: part.replace(INLINE_TAG_PATTERN, (match, leading: string, name: string) =>
+						isHexColorCode(name) ? match : leading,
+					),
+		)
+		.join("");
 }
 
 export function taskDisplayTitle(record: TaskRecord): string {

@@ -71,6 +71,10 @@ pub struct TaskFieldEdits {
     pub due: Option<Option<String>>,
     #[serde(default, deserialize_with = "present")]
     pub priority: Option<Option<u8>>,
+    #[serde(default, deserialize_with = "present")]
+    pub completion: Option<Option<String>>,
+    #[serde(default, deserialize_with = "present")]
+    pub cancelled: Option<Option<String>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -97,6 +101,7 @@ pub enum TaskWriteOutcome {
     Saved { etag: String },
     IndexFailed { etag: String },
     Conflict,
+    Failed { message: String },
 }
 
 #[derive(Debug, PartialEq, Serialize)]

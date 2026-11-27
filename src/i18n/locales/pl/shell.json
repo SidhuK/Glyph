@@ -848,7 +848,7 @@
 		"quickAdd": {
 			"label": "Nowe zadanie",
 			"inputLabel": "Tytuł zadania",
-			"placeholder": "Nazwa zadania — spróbuj „jutro”, „!!” lub „#tag”",
+			"placeholder": "Nazwa zadania — spróbuj „tomorrow”, „!!” lub „#tag”",
 			"hint": "Return, aby dodać · Esc, aby anulować",
 			"add": "Dodaj",
 			"cancel": "Anuluj",

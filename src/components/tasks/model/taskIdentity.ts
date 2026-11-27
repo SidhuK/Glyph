@@ -12,16 +12,21 @@ function isSameTask(candidate: TaskRecord, target: TaskRecord): boolean {
 	);
 }
 
+function isCloserMatch(candidate: TaskRecord, best: TaskRecord, target: TaskRecord): boolean {
+	const candidateExact = candidate.text === target.text;
+	if (candidateExact !== (best.text === target.text)) return candidateExact;
+	return Math.abs(candidate.start - target.start) < Math.abs(best.start - target.start);
+}
+
 export function findSameTask(
 	records: readonly TaskRecord[],
 	target: TaskRecord,
+	claimed: ReadonlySet<TaskRecord> = new Set(),
 ): TaskRecord | null {
 	let best: TaskRecord | null = null;
 	for (const candidate of records) {
-		if (!isSameTask(candidate, target)) continue;
-		if (!best || Math.abs(candidate.start - target.start) < Math.abs(best.start - target.start)) {
-			best = candidate;
-		}
+		if (claimed.has(candidate) || !isSameTask(candidate, target)) continue;
+		if (!best || isCloserMatch(candidate, best, target)) best = candidate;
 	}
 	return best;
 }

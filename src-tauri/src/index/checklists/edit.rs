@@ -77,6 +77,12 @@ fn edit_splices(markdown: &str, edit: &TaskEdit, today: &str) -> Option<Vec<Spli
             let name = priority.and_then(priority_name).map(str::to_string);
             plan.insert(TaskFieldKey::Priority, change(name));
         }
+        if let Some(completion) = &fields.completion {
+            plan.insert(TaskFieldKey::Completion, change(completion.clone()));
+        }
+        if let Some(cancelled) = &fields.cancelled {
+            plan.insert(TaskFieldKey::Cancelled, change(cancelled.clone()));
+        }
     }
     if let Some(title) = edit.set_title.as_deref() {
         splices.extend(title_splices(markdown, item, title.trim()));

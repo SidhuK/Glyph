@@ -51,7 +51,9 @@ export function buildDoneRows({ records, today, weekStartsOn, t }: DoneRowsInput
 	const buckets = new Map<DoneBucket, TaskRecord[]>();
 	for (const record of records) {
 		const bucket = bucketFor(closedDate(record), today, weekStart);
-		buckets.set(bucket, [...(buckets.get(bucket) ?? []), record]);
+		const members = buckets.get(bucket);
+		if (members) members.push(record);
+		else buckets.set(bucket, [record]);
 	}
 	const rows: TaskListRow[] = [];
 	for (const bucket of DONE_BUCKETS) {

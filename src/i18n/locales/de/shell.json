@@ -797,7 +797,7 @@
 		"quickAdd": {
 			"label": "Neue Aufgabe",
 			"inputLabel": "Aufgabentitel",
-			"placeholder": "Aufgabe – probiere „morgen“, „!!“ oder „#tag“",
+			"placeholder": "Aufgabe – probiere „tomorrow“, „!!“ oder „#tag“",
 			"hint": "Return zum Hinzufügen · Esc zum Abbrechen",
 			"add": "Hinzufügen",
 			"cancel": "Abbrechen",

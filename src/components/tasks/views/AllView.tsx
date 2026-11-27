@@ -29,12 +29,14 @@ export function AllView({ paneElement }: { paneElement: HTMLElement | null }) {
 	const { today } = useTasks();
 	const viewState = useTaskViewState(spacePath);
 	const { filters, display } = viewState.state;
+	const taskFilters = queryFilters(filters, display);
 	const { query, records } = useTaskRecords({
 		view: "all",
-		filters: queryFilters(filters, display),
+		filters: taskFilters,
 		enabled: viewState.ready,
 	});
 	const isBoard = display.layout === "board";
+	const stateQuery = viewState.query.error ? viewState.query : query;
 
 	const toolbar = (
 		<div className="tasksToolbar">
@@ -47,7 +49,7 @@ export function AllView({ paneElement }: { paneElement: HTMLElement | null }) {
 		return (
 			<>
 				{toolbar}
-				<TasksQueryState query={query} />
+				<TasksQueryState query={stateQuery} />
 			</>
 		);
 	}
@@ -60,7 +62,7 @@ export function AllView({ paneElement }: { paneElement: HTMLElement | null }) {
 				<TasksList
 					rows={buildAllRows({ records, display, hasFilters: hasActiveFilters(filters), today, t })}
 					paneElement={paneElement}
-					keepsDone={display.includeDone}
+					keepsDone={taskFilters.include_done}
 					actions={{ onClearFilters: () => viewState.setFilters(EMPTY_TASK_FILTERS) }}
 				/>
 			)}

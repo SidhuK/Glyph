@@ -2,6 +2,7 @@ import type { IconSvgElement } from "@hugeicons/react";
 import { type KeyboardEvent, type ReactNode, useId, useState } from "react";
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { DropdownMenuItemCheck } from "@/components/ui/shadcn/dropdown-menu";
+import { isImeComposing } from "@/lib/imeComposition";
 
 export interface TaskSearchItem {
 	id: string;
@@ -60,6 +61,7 @@ export function TaskSearchList({
 	};
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+		if (isImeComposing(event)) return;
 		if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 			event.preventDefault();
 			if (total === 0) return;

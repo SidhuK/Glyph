@@ -3,7 +3,7 @@ import { useCallback, useReducer, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "@/contexts";
 import { extractErrorMessage } from "@/lib/errorUtils";
-import type { TaskRecord } from "@/lib/tauri";
+import type { TaskFieldEdits, TaskRecord } from "@/lib/tauri";
 import { toast } from "@/lib/toast";
 import { descendantsOf, taskKey } from "../model/taskIdentity";
 import { TASK_STATUS_CHAR, isOpenStatus } from "@/lib/taskFields/taskStatus";
@@ -20,13 +20,20 @@ interface UseTaskCompletionOptions {
 	writeTasks: (intents: readonly TaskWriteIntent[]) => Promise<boolean>;
 }
 
+function closureFields(record: TaskRecord): TaskFieldEdits {
+	return {
+		...(record.invalid.includes("completion") ? {} : { completion: record.completion }),
+		...(record.invalid.includes("cancelled") ? {} : { cancelled: record.cancelled }),
+	};
+}
+
 function restoreIntents(
 	original: TaskRecord,
 	descendants: readonly TaskRecord[],
 ): TaskWriteIntent[] {
 	return [original, ...descendants].map((record) => ({
 		record,
-		change: { status: record.status },
+		change: { status: record.status, fields: closureFields(record) },
 	}));
 }
 
@@ -46,26 +53,34 @@ export function useTaskCompletion({ today, writeTasks }: UseTaskCompletionOption
 		timersRef.current.delete(key);
 	};
 
-	const clearAllTimers = useCallback(() => {
+	const clearHoldTimers = useCallback(() => {
 		for (const timers of timersRef.current.values()) {
 			for (const timer of timers) window.clearTimeout(timer);
 		}
 		timersRef.current.clear();
+	}, []);
+
+	const clearAllTimers = useCallback(() => {
+		clearHoldTimers();
 		clearUndoTimer();
-	}, [clearUndoTimer]);
+	}, [clearHoldTimers, clearUndoTimer]);
 
 	const restore = (original: TaskRecord, descendants: readonly TaskRecord[]) =>
 		void writeTasks(restoreIntents(original, descendants));
 
-	const showUndoToast = (original: TaskRecord, nextStatus: string, descendants: TaskRecord[]) =>
+	const undoChange = (key: string, original: TaskRecord) => {
+		if (unwrittenRef.current.delete(key)) return;
+		restore(original, descendantsRef.current.get(key) ?? []);
+	};
+
+	const showUndoToast = (original: TaskRecord, key: string, nextStatus: string) =>
 		undoNotice.show({
 			kind: nextStatus === TASK_STATUS_CHAR.done ? "completed" : "updated",
-			undo: () => restore(original, descendants),
+			undo: () => undoChange(key, original),
 		});
 
 	const openDescendants = async (record: TaskRecord, nextStatus: string): Promise<TaskRecord[]> => {
-		const completesChildren =
-			nextStatus === TASK_STATUS_CHAR.done && record.subtask_done < record.subtask_total;
+		const completesChildren = nextStatus === TASK_STATUS_CHAR.done && record.subtask_total > 0;
 		if (!completesChildren || !spacePath) return [];
 		const noteTasks = await queryClient.fetchQuery(
 			noteTasksQueryOptions(spacePath, [record.note_path], today),
@@ -91,7 +106,7 @@ export function useTaskCompletion({ today, writeTasks }: UseTaskCompletionOption
 			window.setTimeout(() => {
 				timersRef.current.delete(key);
 				dispatch({ type: "release", key });
-				showUndoToast(record, nextStatus, descendantsRef.current.get(key) ?? []);
+				showUndoToast(record, key, nextStatus);
 			}, COMPLETION_HOLD_MS + COMPLETION_COLLAPSE_MS),
 		]);
 	};
@@ -119,18 +134,16 @@ export function useTaskCompletion({ today, writeTasks }: UseTaskCompletionOption
 	};
 
 	const flushHolds = () => {
-		clearAllTimers();
 		const flushed = [...held.values()];
 		if (flushed.length === 0) return;
+		clearHoldTimers();
 		for (const task of flushed) dispatch({ type: "release", key: task.key });
 		undoNotice.show({
 			kind: flushed.every((task) => task.nextStatus === TASK_STATUS_CHAR.done)
 				? "completed"
 				: "updated",
 			undo: () => {
-				for (const task of flushed) {
-					restore(task.original, descendantsRef.current.get(task.key) ?? []);
-				}
+				for (const task of flushed) undoChange(task.key, task.original);
 			},
 		});
 	};

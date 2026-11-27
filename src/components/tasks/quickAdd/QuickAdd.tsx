@@ -34,7 +34,7 @@ export function QuickAdd({ due }: { due: string | null }) {
 			due: parsed.due ?? presetDue,
 			priority: parsed.priority,
 		});
-		if (added) setValue("");
+		if (added) setValue((current) => (current === value ? "" : current));
 	};
 
 	return (

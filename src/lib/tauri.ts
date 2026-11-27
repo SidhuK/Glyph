@@ -599,6 +599,8 @@ export interface TaskRecord {
 export interface TaskFieldEdits {
 	due?: string | null;
 	priority?: TaskPriority | null;
+	completion?: string | null;
+	cancelled?: string | null;
 }
 
 export interface TaskEdit {
@@ -620,7 +622,8 @@ export interface TaskUpdateBatchRequest {
 export type TaskWriteOutcome =
 	| { kind: "saved"; etag: string }
 	| { kind: "index_failed"; etag: string }
-	| { kind: "conflict" };
+	| { kind: "conflict" }
+	| { kind: "failed"; message: string };
 
 export interface TaskNoteWriteResult {
 	note_path: string;

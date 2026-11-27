@@ -74,9 +74,11 @@ export function useTaskWrites(today: string) {
 				),
 				staleTime: 0,
 			});
+			const claimed = new Set<TaskRecord>();
 			const edits = intents.map((intent) => {
-				const target = findSameTask(fresh, intent.record);
+				const target = findSameTask(fresh, intent.record, claimed);
 				if (!target) throw new TaskWriteError("missing");
+				claimed.add(target);
 				return editFor(intent, target);
 			});
 			const results = await invoke("tasks_update_batch", {
@@ -87,6 +89,9 @@ export function useTaskWrites(today: string) {
 			}
 			if (results.some((result) => result.outcome.kind === "conflict")) {
 				throw new TaskWriteError("conflict");
+			}
+			for (const { outcome } of results) {
+				if (outcome.kind === "failed") throw new Error(outcome.message);
 			}
 			return results;
 		},

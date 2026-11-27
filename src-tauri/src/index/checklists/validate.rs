@@ -44,6 +44,12 @@ fn validate_edit(edit: &TaskEdit) -> Result<(), String> {
         if let Some(Some(priority)) = fields.priority {
             check_priority(priority)?;
         }
+        if let Some(Some(completion)) = &fields.completion {
+            check_date(completion, "completion")?;
+        }
+        if let Some(Some(cancelled)) = &fields.cancelled {
+            check_date(cancelled, "cancelled")?;
+        }
     }
     if let Some(title) = edit.set_title.as_deref() {
         check_title(title)?;

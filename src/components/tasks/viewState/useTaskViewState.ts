@@ -23,7 +23,10 @@ export function useTaskViewState(spacePath: string | null) {
 	const save = useMutation({
 		mutationFn: (next: TaskViewState) =>
 			spacePath ? saveTaskViewState(spacePath, next) : Promise.resolve(),
-		onError: (error) => toast.error(t("tasks.viewStateSaveFailed"), { description: error.message }),
+		onError: (error) => {
+			toast.error(t("tasks.viewStateSaveFailed"), { description: error.message });
+			void queryClient.invalidateQueries({ queryKey });
+		},
 	});
 
 	const update = (next: TaskViewState) => {
@@ -33,6 +36,7 @@ export function useTaskViewState(spacePath: string | null) {
 	};
 
 	return {
+		query,
 		state,
 		ready: query.isSuccess || !spacePath,
 		setFilters: (filters: TaskFilterState) => update({ ...state, filters }),

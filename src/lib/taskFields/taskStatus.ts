@@ -1,6 +1,6 @@
 import type { TaskRecord, TaskStatusKind } from "@/lib/tauri";
 
-const TASK_STATUS_CHAR_RE = /^[^\]\n]$/u;
+const TASK_STATUS_CHAR_RE = /^[^\]\n\r]$/u;
 
 export const TASK_STATUS_KINDS = [
 	"todo",

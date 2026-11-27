@@ -1118,13 +1118,13 @@
 	background: var(--text-tertiary);
 }
 
-.tiptapContentInline li[data-status="-"] > label::after {
+.tiptapContentInline ul[data-type="taskList"] > li[data-status="-"] > label::after {
 	mask-image: var(--task-cancel-mask);
 	opacity: 1;
 	transform: translate(-50%, -50%) scale(0.8);
 }
 
-.tiptapContentInline li[data-status="-"] > div {
+.tiptapContentInline ul[data-type="taskList"] > li[data-status="-"] > div {
 	color: var(--text-tertiary);
 }
 

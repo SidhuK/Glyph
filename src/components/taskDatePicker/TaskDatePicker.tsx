@@ -46,6 +46,7 @@ export function TaskDatePicker({ value, onSelect, onRemove, query }: TaskDatePic
 		view.focus.kind === "preset" ? presetId(view.focus.index) : dayId(view.focus.isoDate);
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+		if (event.target !== event.currentTarget) return;
 		if (event.key === "Enter") {
 			if (!activeIso) return;
 			event.preventDefault();

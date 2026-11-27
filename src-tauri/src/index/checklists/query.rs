@@ -72,12 +72,22 @@ fn task_row(row: &Row<'_>) -> Result<TaskRow, String> {
     })
 }
 
+fn note_paths_clause(note_paths: &[String], values: &mut Vec<Value>) -> String {
+    if note_paths.is_empty() {
+        return String::new();
+    }
+    values.extend(note_paths.iter().cloned().map(Value::from));
+    let placeholders = vec!["?"; note_paths.len()].join(", ");
+    format!(" AND n.id IN ({placeholders})")
+}
+
 pub(crate) fn query_tasks(
     conn: &Connection,
     request: &TaskQueryRequest,
 ) -> Result<Vec<TaskRecord>, String> {
     let filter = TaskFilter::new(&request.filters);
-    let (view_sql, values) = view_clause(request);
+    let (view_sql, mut values) = view_clause(request);
+    let note_sql = note_paths_clause(&request.filters.note_paths, &mut values);
     let sql = format!(
         "SELECT n.id, n.title, n.etag, n.updated, ci.start, ci.indent, ci.status, ci.text,
                 ci.title, ci.heading, ci.due, ci.priority, ci.completion, ci.cancelled, ci.tags,
@@ -90,7 +100,7 @@ pub(crate) fn query_tasks(
                     AND c.status_kind = 'done')
          FROM checklist_items ci
          JOIN notes n ON n.id = ci.note_id
-         WHERE {ACTIVE_NOTES} AND ({view_sql})
+         WHERE {ACTIVE_NOTES} AND ({view_sql}){note_sql}
          ORDER BY n.id ASC, ci.start ASC"
     );
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;

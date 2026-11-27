@@ -104,8 +104,13 @@ pub(super) fn update_on_disk(
     let mut results = Vec::new();
     let mut changes = Vec::new();
     for (note_path, edits) in group_by_note(&request.edits) {
-        let (outcome, change) = update_note(ctx, note_path, &edits, &request.today)?;
-        changes.extend(change);
+        let outcome = match update_note(ctx, note_path, &edits, &request.today) {
+            Ok((outcome, change)) => {
+                changes.extend(change);
+                outcome
+            }
+            Err(message) => TaskWriteOutcome::Failed { message },
+        };
         results.push(TaskNoteWriteResult {
             note_path: note_path.to_string(),
             outcome,

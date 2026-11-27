@@ -797,7 +797,7 @@
 		"quickAdd": {
 			"label": "Nueva tarea",
 			"inputLabel": "Título de la tarea",
-			"placeholder": "Nombre de la tarea: prueba «mañana», «!!» o «#etiqueta»",
+			"placeholder": "Nombre de la tarea: prueba «tomorrow», «!!» o «#etiqueta»",
 			"hint": "Retorno para añadir · Esc para cancelar",
 			"add": "Añadir",
 			"cancel": "Cancelar",

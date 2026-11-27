@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
+import { isImeComposing } from "../../lib/imeComposition";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { Search, X } from "../Icons";
 import { useSettingsSearch } from "./search/SettingsSearchContext";
 
-const IME_PROCESS_KEY_CODE = 229;
 const FIND_SHORTCUT_KEYS = formatShortcutPartsForPlatform({ key: "f", meta: true });
 
 export function SettingsNavSearchField() {
@@ -20,7 +20,7 @@ export function SettingsNavSearchField() {
 				value={query}
 				onChange={(event) => changeQuery(event.target.value)}
 				onKeyDown={(event) => {
-					if (event.nativeEvent.isComposing || event.keyCode === IME_PROCESS_KEY_CODE) return;
+					if (isImeComposing(event)) return;
 					if (event.key === "Enter") {
 						event.preventDefault();
 						revealFirstMatch();

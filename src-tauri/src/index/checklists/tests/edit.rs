@@ -99,6 +99,7 @@ fn set_fields_replaces_appends_and_removes_in_write_order() {
     let both = TaskFieldEdits {
         due: Some(Some("2026-12-05".to_string())),
         priority: Some(Some(3)),
+        ..TaskFieldEdits::default()
     };
     assert_eq!(
         applied(note, &[fields(0, text, both)]),
@@ -107,6 +108,7 @@ fn set_fields_replaces_appends_and_removes_in_write_order() {
     let removed = TaskFieldEdits {
         due: Some(None),
         priority: None,
+        ..TaskFieldEdits::default()
     };
     assert_eq!(
         applied(note, &[fields(0, text, removed)]),
@@ -115,6 +117,7 @@ fn set_fields_replaces_appends_and_removes_in_write_order() {
     let appended = TaskFieldEdits {
         due: Some(Some("2026-12-06".to_string())),
         priority: Some(Some(0)),
+        ..TaskFieldEdits::default()
     };
     assert_eq!(
         applied(
@@ -131,6 +134,7 @@ fn editing_an_emoji_alias_rewrites_it_in_bracket_form() {
     let set = TaskFieldEdits {
         due: Some(Some("2026-12-02".to_string())),
         priority: Some(None),
+        ..TaskFieldEdits::default()
     };
     assert_eq!(
         applied(note, &[fields(0, "Pay 🔼 rent 📅 2026-12-01", set)]),
@@ -144,6 +148,7 @@ fn duplicate_fields_collapse_to_the_first_on_set() {
     let set = TaskFieldEdits {
         due: Some(Some("2026-02-01".to_string())),
         priority: None,
+        ..TaskFieldEdits::default()
     };
     assert_eq!(
         applied(
@@ -191,6 +196,7 @@ fn several_edits_in_one_note_apply_without_clashing() {
     let due = TaskFieldEdits {
         due: Some(Some("2026-12-01".to_string())),
         priority: None,
+        ..TaskFieldEdits::default()
     };
     let next = applied(
         note,
@@ -241,5 +247,23 @@ fn multibyte_status_and_crlf_children_are_rewritten() {
     assert_eq!(
         applied("- [é] é\r\n  - [ ] ü\r\n", &[status(0, "é", "x")]),
         "- [x] é  [completion:: 2026-11-27]\r\n  - [x] ü  [completion:: 2026-11-27]\r\n"
+    );
+}
+
+#[test]
+fn explicit_closure_dates_override_the_status_stamp() {
+    let note = "- [ ] Renew\n";
+    let restore = TaskEdit {
+        set_status: Some("x".to_string()),
+        set_fields: Some(TaskFieldEdits {
+            completion: Some(Some("2026-11-19".to_string())),
+            cancelled: Some(None),
+            ..TaskFieldEdits::default()
+        }),
+        ..edit(0, "Renew")
+    };
+    assert_eq!(
+        applied(note, &[restore]),
+        "- [x] Renew  [completion:: 2026-11-19]\n"
     );
 }

@@ -797,7 +797,7 @@
 		"quickAdd": {
 			"label": "Nouvelle tâche",
 			"inputLabel": "Titre de la tâche",
-			"placeholder": "Nom de la tâche — essayez « demain », « !! » ou « #étiquette »",
+			"placeholder": "Nom de la tâche — essayez « tomorrow », « !! » ou « #étiquette »",
 			"hint": "Retour pour ajouter · Échap pour annuler",
 			"add": "Ajouter",
 			"cancel": "Annuler",

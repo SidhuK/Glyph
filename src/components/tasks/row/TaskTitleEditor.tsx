@@ -2,6 +2,7 @@ import { type KeyboardEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TaskRecord } from "@/lib/tauri";
 import { useTasks } from "../TasksContext";
+import { isImeComposing } from "@/lib/imeComposition";
 
 interface TitleDraft {
 	base: string;
@@ -37,7 +38,8 @@ export function TaskTitleEditor({ record }: { record: TaskRecord }) {
 	};
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-		if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+		if (isImeComposing(event)) return;
+		if (event.key === "Enter") {
 			event.preventDefault();
 			void commit(event.currentTarget.value);
 			return;

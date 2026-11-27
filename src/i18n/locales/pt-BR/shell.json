@@ -797,7 +797,7 @@
 		"quickAdd": {
 			"label": "Nova tarefa",
 			"inputLabel": "Título da tarefa",
-			"placeholder": "Nome da tarefa — experimente “amanhã”, “!!” ou “#tag”",
+			"placeholder": "Nome da tarefa — experimente “tomorrow”, “!!” ou “#tag”",
 			"hint": "Return para adicionar · Esc para cancelar",
 			"add": "Adicionar",
 			"cancel": "Cancelar",

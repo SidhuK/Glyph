@@ -1,5 +1,6 @@
 import { type KeyboardEvent, useRef } from "react";
 import type { QuickAddToken } from "@/lib/taskFields/quickAdd";
+import { isImeComposing } from "@/lib/imeComposition";
 
 interface QuickAddInputProps {
 	value: string;
@@ -53,7 +54,8 @@ export function QuickAddInput({
 	const mirrorRef = useRef<HTMLDivElement>(null);
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-		if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+		if (isImeComposing(event)) return;
+		if (event.key === "Enter") {
 			event.preventDefault();
 			onSubmit();
 			return;

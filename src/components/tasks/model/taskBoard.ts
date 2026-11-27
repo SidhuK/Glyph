@@ -20,7 +20,8 @@ export function createTaskBoardLanes(
 	records: readonly TaskRecord[],
 	orderBy: TaskOrderBy,
 ): TaskBoardLane[] {
-	const ordered = orderTasks(visibleTasks(records, false), orderBy);
+	const onBoard = records.filter((record) => isTaskBoardLaneId(record.status_kind));
+	const ordered = orderTasks(visibleTasks(onBoard, false), orderBy);
 	return LANE_ORDER.map((id) => ({
 		id,
 		records: ordered.filter((record) => record.status_kind === id),

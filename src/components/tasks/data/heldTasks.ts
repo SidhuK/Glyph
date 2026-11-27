@@ -41,7 +41,8 @@ export function withHeldTasks(
 	if (held.size === 0) return records;
 	const replaced = new Set<TaskRecord>();
 	for (const task of held.values()) {
-		const fresh = findSameTask(records, task.original);
+		const settled = records.filter((record) => record.status === task.nextStatus);
+		const fresh = findSameTask(settled, task.original, replaced);
 		if (fresh) replaced.add(fresh);
 	}
 	const heldKeys = new Set(held.keys());
