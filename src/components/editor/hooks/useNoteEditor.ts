@@ -20,6 +20,7 @@ import {
 } from "../markdown/editorMarkdownBridge";
 import { sliceToMarkdown } from "../markdown/selectionMarkdown";
 import type { TemplateInsertRequest } from "../slash/slashMenuItems";
+import type { TaskFieldRequest } from "../taskFields/taskFieldRequest";
 import {
 	type NoteInlineEditorMode,
 	type PasteMarkdownBehavior,
@@ -229,6 +230,7 @@ interface UseNoteEditorOptions {
 	onChange: (nextMarkdown: string) => void;
 	onMathEditRequest?: (request: MathEditRequest) => void;
 	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
+	onTaskFieldRequest?: (request: TaskFieldRequest) => void;
 }
 
 interface PendingMarkdownSync {
@@ -303,6 +305,7 @@ export function useNoteEditor({
 	onChange,
 	onMathEditRequest,
 	onTemplateInsertRequest,
+	onTaskFieldRequest,
 }: UseNoteEditorOptions) {
 	const { frontmatter, editorBody } = useMemo(() => {
 		if (mode === "plain") {
@@ -397,6 +400,7 @@ export function useNoteEditor({
 				onMathEditRequest,
 				onPickImages: handlePickImages,
 				onTemplateInsertRequest,
+				onTaskFieldRequest,
 				placeholder,
 			}),
 		[
@@ -407,6 +411,7 @@ export function useNoteEditor({
 			handlePickImages,
 			mode,
 			onMathEditRequest,
+			onTaskFieldRequest,
 			onTemplateInsertRequest,
 			peopleMentionsEnabled,
 			placeholder,

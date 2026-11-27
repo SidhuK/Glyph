@@ -34,3 +34,21 @@ fn mark_moved_checks_parent_and_children() {
         "- [x] parent ***Moved to*** [[2026-01-02]]\n  - [x] child\n    ```\n    - [ ] code\n    ```"
     );
 }
+
+#[test]
+fn only_open_or_in_progress_blocks_roll_over() {
+    let markdown = "- [/] doing [due:: 2026-01-05]\n- [-] dropped\n  - [x] done child\n1. [x] parent\n   - [>] deferred child\n";
+    assert_eq!(
+        candidate_texts(markdown),
+        vec![("doing".to_string(), 0), ("parent".to_string(), 1)]
+    );
+}
+
+#[test]
+fn mark_moved_keeps_cancelled_and_multibyte_statuses_sound() {
+    let block = "- [é] parent\n  - [-] dropped\n  - [/] child";
+    assert_eq!(
+        mark_moved(block, "2026-01-02").unwrap(),
+        "- [x] parent ***Moved to*** [[2026-01-02]]\n  - [-] dropped\n  - [x] child"
+    );
+}

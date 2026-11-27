@@ -21,6 +21,65 @@ interface UsePeriodNoteReturn {
 	openOrCreatePeriodNote: (folder: string, period: PeriodId) => Promise<string | null>;
 }
 
+interface EnsurePeriodNoteOptions {
+	folder: string;
+	period: PeriodId;
+	spacePath: string;
+	templatePath: string | null;
+	isCurrent: () => boolean;
+}
+
+async function periodNoteContent(
+	period: PeriodId,
+	notePath: string,
+	spacePath: string,
+	templatePath: string | null,
+): Promise<string> {
+	const content = getPeriodNoteContent(period);
+	if (!templatePath) return content;
+	try {
+		const templateDoc = await invoke("space_read_text", { path: templatePath });
+		return renderTemplate(templateDoc.text, {
+			destinationPath: notePath,
+			spaceRootPath: spacePath,
+			date: periodAnchorDate(period),
+		});
+	} catch (error) {
+		if (!isMissingFileError(error)) throw error;
+		return content;
+	}
+}
+
+export async function ensurePeriodNote({
+	folder,
+	period,
+	spacePath,
+	templatePath,
+	isCurrent,
+}: EnsurePeriodNoteOptions): Promise<string | null> {
+	const notePath = getPeriodNotePath(folder, period);
+	try {
+		await invoke("space_read_text", { path: notePath });
+		return isCurrent() ? notePath : null;
+	} catch (error) {
+		if (!isMissingFileError(error)) throw error;
+	}
+	if (!isCurrent()) return null;
+	const content = await periodNoteContent(period, notePath, spacePath, templatePath);
+	if (!isCurrent()) return null;
+	try {
+		await invoke("space_open_or_create_text", {
+			path: notePath,
+			text: content,
+			space_path: spacePath,
+		});
+	} catch (error) {
+		if (!isCurrent()) return null;
+		throw error;
+	}
+	return isCurrent() ? notePath : null;
+}
+
 export function usePeriodNote(options: UsePeriodNoteOptions): UsePeriodNoteReturn {
 	const { onOpenFile, setError, spacePath, templatePathFor } = options;
 	const inFlightKeysRef = useRef(new Set<string>());
@@ -33,54 +92,20 @@ export function usePeriodNote(options: UsePeriodNoteOptions): UsePeriodNoteRetur
 				return null;
 			}
 			try {
-				const notePath = getPeriodNotePath(folder, period);
 				const requestedSpacePath = spacePath;
-				const flightKey = `${requestedSpacePath ?? ""}\0${notePath}`;
+				if (!requestedSpacePath) return null;
+				const flightKey = `${requestedSpacePath}\0${getPeriodNotePath(folder, period)}`;
 				if (inFlightKeysRef.current.has(flightKey)) return null;
 				inFlightKeysRef.current.add(flightKey);
-				const stillOnRequestedSpace = () => spacePathRef.current === requestedSpacePath;
 				try {
-					try {
-						await invoke("space_read_text", { path: notePath });
-						if (!stillOnRequestedSpace()) return null;
-						await onOpenFile(notePath);
-						return notePath;
-					} catch (error) {
-						if (!isMissingFileError(error)) {
-							throw error;
-						}
-					}
-					if (!stillOnRequestedSpace()) return null;
-					let content = getPeriodNoteContent(period);
-					const templatePath = templatePathFor(period);
-					if (templatePath) {
-						try {
-							const templateDoc = await invoke("space_read_text", {
-								path: templatePath,
-							});
-							content = renderTemplate(templateDoc.text, {
-								destinationPath: notePath,
-								spaceRootPath: requestedSpacePath,
-								date: periodAnchorDate(period),
-							});
-						} catch (error) {
-							if (!isMissingFileError(error)) {
-								throw error;
-							}
-						}
-					}
-					if (!requestedSpacePath || !stillOnRequestedSpace()) return null;
-					try {
-						await invoke("space_open_or_create_text", {
-							path: notePath,
-							text: content,
-							space_path: requestedSpacePath,
-						});
-					} catch (error) {
-						if (!stillOnRequestedSpace()) return null;
-						throw error;
-					}
-					if (!stillOnRequestedSpace()) return null;
+					const notePath = await ensurePeriodNote({
+						folder,
+						period,
+						spacePath: requestedSpacePath,
+						templatePath: templatePathFor(period),
+						isCurrent: () => spacePathRef.current === requestedSpacePath,
+					});
+					if (!notePath) return null;
 					await onOpenFile(notePath);
 					return notePath;
 				} finally {

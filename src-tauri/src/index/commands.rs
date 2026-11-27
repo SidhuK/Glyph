@@ -8,9 +8,7 @@ use crate::space::SpaceState;
 
 use crate::notes::archive::{ACTIVE_NOTES, ARCHIVED_NOTES};
 
-use super::checklists::{
-    query_note_checklist_summaries, summarize_tasks, NoteTaskSummary, NoteTaskSummaryItem,
-};
+use super::checklists::{query_note_checklist_summaries, NoteTaskSummaryItem};
 use super::db::open_db;
 use super::indexer::{rebuild_with_progress, sync};
 use super::relationships::{query_note_relationships, NoteRelationship};
@@ -741,11 +739,6 @@ mod tests {
         assert_eq!(people[0].count, 1);
         set_people_mentions_as_tags_enabled(false);
     }
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub fn task_summary(markdown: String) -> NoteTaskSummary {
-    summarize_tasks(&markdown)
 }
 
 #[tauri::command(rename_all = "snake_case")]

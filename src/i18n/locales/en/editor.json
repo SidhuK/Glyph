@@ -340,6 +340,15 @@
 		},
 		"highlightClear": {
 			"title": "Clear highlight"
+		},
+		"taskDue": {
+			"title": "Due date"
+		},
+		"taskPriority": {
+			"title": "Priority"
+		},
+		"taskStatus": {
+			"title": "Status"
 		}
 	},
 	"tableControls": {
@@ -400,5 +409,29 @@
 		"new": "new",
 		"select": "Select",
 		"insert": "Insert"
+	},
+	"taskDatePicker": {
+		"label": "Due date",
+		"today": "Today",
+		"tomorrow": "Tomorrow",
+		"nextWeek": "Next week",
+		"remove": "Remove date",
+		"previousMonth": "Previous month",
+		"nextMonth": "Next month"
+	},
+	"taskFields": {
+		"priority": {
+			"lowest": "Lowest",
+			"low": "Low",
+			"medium": "Medium",
+			"high": "High",
+			"highest": "Urgent"
+		},
+		"status": {
+			"todo": "Todo",
+			"in_progress": "In progress",
+			"done": "Done",
+			"cancelled": "Cancelled"
+		}
 	}
 }

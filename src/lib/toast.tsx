@@ -32,6 +32,7 @@ function stylesForClassName(className: string | undefined) {
 	return {
 		title: `glyphToastTitle ${className}Title`,
 		description: `glyphToastDescription ${className}Description`,
+		badge: "glyphToastBadge",
 		button: `glyphToastButton ${className}Button`,
 	} satisfies SileoOptions["styles"];
 }

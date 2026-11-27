@@ -2,6 +2,7 @@ import type { HeadingIcon } from "@hugeicons/core-free-icons";
 import type { Editor } from "@tiptap/core";
 import { i18n } from "../../../i18n";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
+import type { TaskFieldRequest } from "../taskFields/taskFieldRequest";
 import { queryMatchesText } from "../suggestions/suggestionEngine";
 
 export type SlashIcon = typeof HeadingIcon;
@@ -30,6 +31,7 @@ export interface SlashCommandDef {
 		editor: Editor;
 		onMathEditRequest?: (request: MathEditRequest) => void;
 		onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
+		onTaskFieldRequest?: (request: TaskFieldRequest) => void;
 		range: { from: number; to: number };
 	}) => void;
 }
@@ -57,7 +59,10 @@ export interface SlashCommandGroupItem {
 
 export type SlashMenuItem = SlashCommandItem | SlashCommandGroupItem;
 
-function localizeSlashCommandItem(item: SlashCommandDef, groupTitle?: string): SlashCommandItem {
+export function localizeSlashCommandItem(
+	item: SlashCommandDef,
+	groupTitle?: string,
+): SlashCommandItem {
 	return {
 		...item,
 		title: i18n.t(`editor:slash.${item.id}.title`),

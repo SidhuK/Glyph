@@ -692,45 +692,210 @@
 		"saveError": "Impossible d’enregistrer le canevas : {{message}}"
 	},
 	"tasks": {
-		"searchPlaceholder": "Filtrer les tâches",
-		"scope": "Afficher les tâches de",
-		"scopeAll": "Toutes les notes",
-		"scopeFolder": "Dossier",
-		"scopeTag": "Tag",
-		"folder": "Dossier",
-		"allFolders": "Tous les dossiers",
-		"foldersLoadFailed": "Impossible de charger les dossiers : {{message}}",
-		"retry": "Réessayer",
-		"tag": "Tag",
-		"allTags": "Tous les tags",
-		"empty": "Aucune tâche ouverte. Les cases à cocher de vos notes apparaissent ici.",
-		"emptyScope": "Aucune tâche ouverte dans ce dossier ou ce tag.",
-		"emptySearch": "Aucune tâche ouverte ne correspond à votre recherche.",
-		"clearSearch": "Effacer la recherche",
-		"showAllNotes": "Afficher toutes les notes",
-		"openTasks_one": "{{count}} tâche ouverte",
-		"openTasks_other": "{{count}} tâches ouvertes",
-		"noteCount_one": "{{count}} note",
-		"noteCount_other": "{{count}} notes",
-		"collapseAll": "Tout replier",
-		"groupStateSaveFailed": "Impossible d’enregistrer les notes dépliées",
-		"expandAll": "Tout déplier",
-		"collapseNote": "Replier {{title}}",
-		"expandNote": "Déplier {{title}}",
+		"views": {
+			"label": "Vues des tâches",
+			"today": {
+				"tab": "Aujourd’hui",
+				"title": "Aujourd’hui"
+			},
+			"upcoming": {
+				"tab": "À venir",
+				"title": "À venir"
+			},
+			"all": {
+				"tab": "Toutes",
+				"title": "Toutes les tâches"
+			},
+			"done": {
+				"tab": "Terminées",
+				"title": "Terminées"
+			}
+		},
+		"newTask": "Nouvelle tâche",
+		"addToToday": "Ajouter à la note du jour…",
+		"addTask": "Ajouter une tâche",
+		"loading": "Chargement des tâches",
 		"loadError": "Impossible de charger les tâches : {{message}}",
-		"markDone": "Marquer « {{task}} » comme terminée",
-		"markNotDone": "Marquer « {{task}} » comme non terminée",
-		"openNote": "Ouvrir {{title}}",
+		"retry": "Réessayer",
+		"untitled": "Tâche sans titre",
 		"progress": "{{completed}} tâches terminées sur {{total}}",
-		"fraction": "{{completed}}/{{total}}",
-		"toggleFailed": "Impossible de mettre à jour la tâche",
+		"sections": {
+			"overdue": "En retard",
+			"today": "Aujourd’hui"
+		},
+		"date": {
+			"today": "Aujourd’hui",
+			"tomorrow": "Demain"
+		},
+		"doneSections": {
+			"today": "Aujourd’hui",
+			"yesterday": "Hier",
+			"thisWeek": "Cette semaine",
+			"earlier": "Plus tôt"
+		},
+		"dueGroups": {
+			"overdue": "En retard",
+			"today": "Aujourd’hui",
+			"tomorrow": "Demain",
+			"week": "7 prochains jours",
+			"later": "Plus tard",
+			"none": "Sans échéance"
+		},
+		"status": {
+			"todo": "À faire",
+			"in_progress": "En cours",
+			"done": "Terminée",
+			"cancelled": "Annulée"
+		},
+		"priority": {
+			"urgent": "Urgente",
+			"high": "Haute",
+			"medium": "Moyenne",
+			"low": "Basse",
+			"lowest": "Très basse",
+			"none": "Sans priorité"
+		},
+		"noTags": "Sans étiquette",
+		"completedToday_one": "{{count}} terminée aujourd’hui",
+		"completedToday_other": "{{count}} terminées aujourd’hui",
+		"reschedule": "Replanifier…",
+		"rescheduleLabel_one": "Replanifier {{count}} tâche en retard",
+		"rescheduleLabel_other": "Replanifier {{count}} tâches en retard",
+		"markDone": "Marquer « {{task}} » comme terminée",
+		"reopen": "Rouvrir « {{task}} »",
+		"statusHint": "Cliquez pour terminer, clic droit pour d’autres statuts",
+		"statusMenu": "Statut de la tâche",
+		"subtasks": "Sous-tâches",
+		"subtaskProgress": "{{done}} sous-tâches terminées sur {{total}}",
+		"invalidDate": "Date invalide",
+		"invalidDateHint": "L’échéance de cette tâche n’a pas pu être lue. Ouvrez la note pour la corriger.",
+		"location": "Emplacement de la tâche",
+		"openInNote": "Ouvrir dans la note",
+		"properties": {
+			"label": "Propriétés de la tâche",
+			"title": "Titre de la tâche",
+			"statusLabel": "Statut : {{value}}",
+			"due": "Échéance",
+			"dueLabel": "Échéance : {{value}}",
+			"priority": "Priorité",
+			"priorityLabel": "Priorité : {{value}}",
+			"tag": "Étiquette",
+			"tagSearch": "Ajouter une étiquette",
+			"tagPlaceholder": "Rechercher des étiquettes…",
+			"noTags": "Aucune étiquette trouvée",
+			"createTag": "Créer {{tag}}"
+		},
+		"completedToast": "Tâche terminée",
+		"statusChangedToast": "Tâche mise à jour",
+		"undo": "Annuler",
+		"writeFailed": "Impossible de mettre à jour la tâche",
+		"taskMissing": "La tâche a été déplacée ou modifiée dans sa note. Actualisez et réessayez.",
 		"conflictChanged": "La note a changé depuis le chargement de la liste. Réessayez.",
-		"conflictRolledOver": "Cette tâche a été reportée dans une autre note.",
-		"indexFailed": "Tâche enregistrée, mais l’index de recherche n’a pas pu être mis à jour.",
-		"sort": "Trier les tâches par",
-		"sortRecent": "Modifiées récemment",
-		"sortMostOpen": "Le plus de tâches ouvertes",
-		"sortTitle": "Titre"
+		"indexFailed": "Tâche enregistrée",
+		"indexFailedDetail": "L’index de recherche n’a pas pu être mis à jour.",
+		"viewStateSaveFailed": "Impossible d’enregistrer les réglages de la vue des tâches",
+		"quickAdd": {
+			"label": "Nouvelle tâche",
+			"inputLabel": "Titre de la tâche",
+			"placeholder": "Nom de la tâche — essayez « demain », « !! » ou « #étiquette »",
+			"hint": "Retour pour ajouter · Échap pour annuler",
+			"add": "Ajouter",
+			"cancel": "Annuler",
+			"addTo": "Ajouter à",
+			"dailyNote": "Note quotidienne du jour",
+			"chooseNote": "Choisir une note",
+			"targetSearch": "Choisir une note",
+			"targetPlaceholder": "Rechercher des notes…",
+			"searching": "Recherche…",
+			"noNotes": "Aucune note trouvée",
+			"removeToken": "Retirer {{token}}",
+			"added": "Tâche ajoutée à {{note}}",
+			"failed": "Impossible d’ajouter la tâche",
+			"noDailyFolder": "Définissez un dossier de notes quotidiennes dans les Réglages, ou choisissez une note pour la tâche."
+		},
+		"upcoming": {
+			"week": "Semaine",
+			"previousWeek": "Semaine précédente",
+			"nextWeek": "Semaine suivante",
+			"dayLabel_one": "{{date}}, {{count}} tâche",
+			"dayLabel_other": "{{date}}, {{count}} tâches"
+		},
+		"filters": {
+			"label": "Filtres",
+			"add": "Filtrer",
+			"clear": "Effacer les filtres",
+			"editFilter": "Modifier le filtre {{name}}",
+			"removeFilter": "Retirer le filtre {{name}}",
+			"andMore": "{{first}} +{{count}}",
+			"searchNotes": "Rechercher des notes…",
+			"searchFolders": "Rechercher des dossiers…",
+			"noFolders": "Aucun dossier trouvé",
+			"kinds": {
+				"note": "Note",
+				"folder": "Dossier",
+				"tag": "Étiquette",
+				"status": "Statut",
+				"priority": "Priorité",
+				"dueBefore": "Échéance avant",
+				"dueAfter": "Échéance après",
+				"dueNone": "Sans échéance"
+			},
+			"ops": {
+				"in": "dans",
+				"is": "est"
+			}
+		},
+		"display": {
+			"label": "Affichage",
+			"layout": "Disposition",
+			"layouts": {
+				"list": "Liste",
+				"board": "Tableau"
+			},
+			"groupBy": "Grouper par",
+			"groups": {
+				"note": "Note",
+				"status": "Statut",
+				"due": "Échéance",
+				"priority": "Priorité",
+				"tag": "Étiquette",
+				"none": "Aucun"
+			},
+			"orderBy": "Trier par",
+			"orders": {
+				"note": "Ordre dans la note",
+				"due": "Échéance",
+				"priority": "Priorité",
+				"title": "Titre"
+			},
+			"showSubtasks": "Afficher les sous-tâches",
+			"includeDone": "Inclure les terminées"
+		},
+		"board": {
+			"empty": "Aucune tâche",
+			"laneLabel_one": "{{lane}}, {{count}} tâche",
+			"laneLabel_other": "{{lane}}, {{count}} tâches"
+		},
+		"empty": {
+			"seeAll": "Voir toutes les tâches",
+			"clearFilters": "Effacer les filtres",
+			"today": {
+				"title": "Rien à faire aujourd’hui",
+				"body": "Les tâches dont l’échéance est aujourd’hui ou passée apparaissent ici."
+			},
+			"none": {
+				"title": "Aucune tâche pour l’instant",
+				"body": "Les tâches vivent dans vos notes — tapez - [ ] dans n’importe quelle note."
+			},
+			"filtered": {
+				"title": "Aucune tâche ne correspond",
+				"body": "Retirez un filtre pour voir plus de tâches."
+			},
+			"done": {
+				"title": "Rien de terminé pour l’instant",
+				"body": "Les tâches que vous terminez ou annulez apparaissent ici."
+			}
+		}
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Rechercher des icônes",

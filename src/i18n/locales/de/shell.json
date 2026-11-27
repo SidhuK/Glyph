@@ -692,45 +692,210 @@
 		"saveError": "Zeichenfläche konnte nicht gespeichert werden: {{message}}"
 	},
 	"tasks": {
-		"searchPlaceholder": "Aufgaben filtern",
-		"scope": "Aufgaben anzeigen aus",
-		"scopeAll": "Alle Notizen",
-		"scopeFolder": "Ordner",
-		"scopeTag": "Tag",
-		"folder": "Ordner",
-		"allFolders": "Alle Ordner",
-		"foldersLoadFailed": "Ordner konnten nicht geladen werden: {{message}}",
-		"retry": "Erneut versuchen",
-		"tag": "Tag",
-		"allTags": "Alle Tags",
-		"empty": "Keine offenen Aufgaben. Checklistenpunkte aus deinen Notizen erscheinen hier.",
-		"emptyScope": "Keine offenen Aufgaben in diesem Ordner oder Tag.",
-		"emptySearch": "Keine offenen Aufgaben passen zu deiner Suche.",
-		"clearSearch": "Suche löschen",
-		"showAllNotes": "Alle Notizen anzeigen",
-		"openTasks_one": "{{count}} offene Aufgabe",
-		"openTasks_other": "{{count}} offene Aufgaben",
-		"noteCount_one": "{{count}} Notiz",
-		"noteCount_other": "{{count}} Notizen",
-		"collapseAll": "Alle einklappen",
-		"groupStateSaveFailed": "Aufgeklappte Notizen konnten nicht gespeichert werden",
-		"expandAll": "Alle ausklappen",
-		"collapseNote": "{{title}} einklappen",
-		"expandNote": "{{title}} ausklappen",
+		"views": {
+			"label": "Aufgabenansichten",
+			"today": {
+				"tab": "Heute",
+				"title": "Heute"
+			},
+			"upcoming": {
+				"tab": "Demnächst",
+				"title": "Demnächst"
+			},
+			"all": {
+				"tab": "Alle",
+				"title": "Alle Aufgaben"
+			},
+			"done": {
+				"tab": "Erledigt",
+				"title": "Erledigt"
+			}
+		},
+		"newTask": "Neue Aufgabe",
+		"addToToday": "Zur heutigen Notiz hinzufügen…",
+		"addTask": "Aufgabe hinzufügen",
+		"loading": "Aufgaben werden geladen",
 		"loadError": "Aufgaben konnten nicht geladen werden: {{message}}",
-		"markDone": "„{{task}}“ als erledigt markieren",
-		"markNotDone": "„{{task}}“ als nicht erledigt markieren",
-		"openNote": "{{title}} öffnen",
+		"retry": "Erneut versuchen",
+		"untitled": "Unbenannte Aufgabe",
 		"progress": "{{completed}} von {{total}} Aufgaben erledigt",
-		"fraction": "{{completed}}/{{total}}",
-		"toggleFailed": "Die Aufgabe konnte nicht aktualisiert werden",
-		"conflictChanged": "Die Notiz hat sich seit dem Laden der Liste geändert. Versuche es erneut.",
-		"conflictRolledOver": "Diese Aufgabe wurde in eine andere Notiz übertragen.",
-		"indexFailed": "Aufgabe gespeichert, aber der Suchindex konnte nicht aktualisiert werden.",
-		"sort": "Aufgaben sortieren nach",
-		"sortRecent": "Zuletzt bearbeitet",
-		"sortMostOpen": "Meiste offene Aufgaben",
-		"sortTitle": "Titel"
+		"sections": {
+			"overdue": "Überfällig",
+			"today": "Heute"
+		},
+		"date": {
+			"today": "Heute",
+			"tomorrow": "Morgen"
+		},
+		"doneSections": {
+			"today": "Heute",
+			"yesterday": "Gestern",
+			"thisWeek": "Diese Woche",
+			"earlier": "Früher"
+		},
+		"dueGroups": {
+			"overdue": "Überfällig",
+			"today": "Heute",
+			"tomorrow": "Morgen",
+			"week": "Nächste 7 Tage",
+			"later": "Später",
+			"none": "Kein Fälligkeitsdatum"
+		},
+		"status": {
+			"todo": "Offen",
+			"in_progress": "In Arbeit",
+			"done": "Erledigt",
+			"cancelled": "Abgebrochen"
+		},
+		"priority": {
+			"urgent": "Dringend",
+			"high": "Hoch",
+			"medium": "Mittel",
+			"low": "Niedrig",
+			"lowest": "Am niedrigsten",
+			"none": "Keine Priorität"
+		},
+		"noTags": "Keine Tags",
+		"completedToday_one": "{{count}} heute erledigt",
+		"completedToday_other": "{{count}} heute erledigt",
+		"reschedule": "Verschieben…",
+		"rescheduleLabel_one": "{{count}} überfällige Aufgabe verschieben",
+		"rescheduleLabel_other": "{{count}} überfällige Aufgaben verschieben",
+		"markDone": "„{{task}}“ als erledigt markieren",
+		"reopen": "„{{task}}“ wieder öffnen",
+		"statusHint": "Klicken zum Erledigen, Rechtsklick für weitere Status",
+		"statusMenu": "Aufgabenstatus",
+		"subtasks": "Unteraufgaben",
+		"subtaskProgress": "{{done}} von {{total}} Unteraufgaben erledigt",
+		"invalidDate": "Ungültiges Datum",
+		"invalidDateHint": "Das Fälligkeitsdatum in dieser Aufgabenzeile konnte nicht gelesen werden. Öffne die Notiz, um es zu korrigieren.",
+		"location": "Ort der Aufgabe",
+		"openInNote": "In Notiz öffnen",
+		"properties": {
+			"label": "Aufgabeneigenschaften",
+			"title": "Aufgabentitel",
+			"statusLabel": "Status: {{value}}",
+			"due": "Fälligkeitsdatum",
+			"dueLabel": "Fälligkeitsdatum: {{value}}",
+			"priority": "Priorität",
+			"priorityLabel": "Priorität: {{value}}",
+			"tag": "Tag",
+			"tagSearch": "Tag hinzufügen",
+			"tagPlaceholder": "Tags suchen…",
+			"noTags": "Keine Tags gefunden",
+			"createTag": "{{tag}} erstellen"
+		},
+		"completedToast": "Aufgabe erledigt",
+		"statusChangedToast": "Aufgabe aktualisiert",
+		"undo": "Rückgängig",
+		"writeFailed": "Die Aufgabe konnte nicht aktualisiert werden",
+		"taskMissing": "Die Aufgabe wurde in ihrer Notiz verschoben oder geändert. Aktualisiere und versuche es erneut.",
+		"conflictChanged": "Die Notiz wurde seit dem Laden der Liste geändert. Versuche es erneut.",
+		"indexFailed": "Aufgabe gespeichert",
+		"indexFailedDetail": "Der Suchindex konnte nicht aktualisiert werden.",
+		"viewStateSaveFailed": "Die Einstellungen der Aufgabenansicht konnten nicht gespeichert werden",
+		"quickAdd": {
+			"label": "Neue Aufgabe",
+			"inputLabel": "Aufgabentitel",
+			"placeholder": "Aufgabe – probiere „morgen“, „!!“ oder „#tag“",
+			"hint": "Return zum Hinzufügen · Esc zum Abbrechen",
+			"add": "Hinzufügen",
+			"cancel": "Abbrechen",
+			"addTo": "Hinzufügen zu",
+			"dailyNote": "Heutige Tagesnotiz",
+			"chooseNote": "Notiz auswählen",
+			"targetSearch": "Notiz auswählen",
+			"targetPlaceholder": "Notizen suchen…",
+			"searching": "Suche…",
+			"noNotes": "Keine Notizen gefunden",
+			"removeToken": "{{token}} entfernen",
+			"added": "Aufgabe zu {{note}} hinzugefügt",
+			"failed": "Die Aufgabe konnte nicht hinzugefügt werden",
+			"noDailyFolder": "Lege in den Einstellungen einen Ordner für Tagesnotizen fest oder wähle eine Notiz für die Aufgabe."
+		},
+		"upcoming": {
+			"week": "Woche",
+			"previousWeek": "Vorherige Woche",
+			"nextWeek": "Nächste Woche",
+			"dayLabel_one": "{{date}}, {{count}} Aufgabe",
+			"dayLabel_other": "{{date}}, {{count}} Aufgaben"
+		},
+		"filters": {
+			"label": "Filter",
+			"add": "Filter",
+			"clear": "Filter löschen",
+			"editFilter": "Filter „{{name}}“ bearbeiten",
+			"removeFilter": "Filter „{{name}}“ entfernen",
+			"andMore": "{{first}} +{{count}}",
+			"searchNotes": "Notizen suchen…",
+			"searchFolders": "Ordner suchen…",
+			"noFolders": "Keine Ordner gefunden",
+			"kinds": {
+				"note": "Notiz",
+				"folder": "Ordner",
+				"tag": "Tag",
+				"status": "Status",
+				"priority": "Priorität",
+				"dueBefore": "Fällig vor",
+				"dueAfter": "Fällig nach",
+				"dueNone": "Kein Fälligkeitsdatum"
+			},
+			"ops": {
+				"in": "in",
+				"is": "ist"
+			}
+		},
+		"display": {
+			"label": "Darstellung",
+			"layout": "Layout",
+			"layouts": {
+				"list": "Liste",
+				"board": "Board"
+			},
+			"groupBy": "Gruppieren nach",
+			"groups": {
+				"note": "Notiz",
+				"status": "Status",
+				"due": "Fälligkeitsdatum",
+				"priority": "Priorität",
+				"tag": "Tag",
+				"none": "Keine"
+			},
+			"orderBy": "Sortieren nach",
+			"orders": {
+				"note": "Reihenfolge in der Notiz",
+				"due": "Fälligkeitsdatum",
+				"priority": "Priorität",
+				"title": "Titel"
+			},
+			"showSubtasks": "Unteraufgaben anzeigen",
+			"includeDone": "Erledigte einbeziehen"
+		},
+		"board": {
+			"empty": "Keine Aufgaben",
+			"laneLabel_one": "{{lane}}, {{count}} Aufgabe",
+			"laneLabel_other": "{{lane}}, {{count}} Aufgaben"
+		},
+		"empty": {
+			"seeAll": "Alle Aufgaben anzeigen",
+			"clearFilters": "Filter löschen",
+			"today": {
+				"title": "Heute ist nichts fällig",
+				"body": "Aufgaben, die heute oder früher fällig sind, erscheinen hier."
+			},
+			"none": {
+				"title": "Noch keine Aufgaben",
+				"body": "Aufgaben leben in deinen Notizen – tippe - [ ] in eine beliebige Notiz."
+			},
+			"filtered": {
+				"title": "Keine passenden Aufgaben",
+				"body": "Entferne einen Filter, um mehr Aufgaben zu sehen."
+			},
+			"done": {
+				"title": "Noch nichts erledigt",
+				"body": "Aufgaben, die du erledigst oder abbrichst, erscheinen hier."
+			}
+		}
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Symbole suchen",

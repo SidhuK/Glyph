@@ -1,0 +1,33 @@
+.taskFieldMenuPopover {
+	width: auto;
+	padding: 4px;
+	border: 0;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
+	box-shadow: var(--floating-surface-shadow);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.taskOptionMenu {
+	display: grid;
+	gap: 1px;
+	min-width: 180px;
+	font-size: var(--floating-row-font-size);
+	outline: none;
+	user-select: none;
+}
+
+.taskOptionMenuHint {
+	flex: 0 0 auto;
+	margin-left: auto;
+	padding-left: 12px;
+	color: var(--text-tertiary);
+	font-family: var(--font-mono);
+	font-size: var(--floating-label-font-size);
+	white-space: pre;
+}
+
+.taskOptionMenuHint + .glyphMenuItemCheck {
+	margin-left: 6px;
+}

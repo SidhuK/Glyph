@@ -692,45 +692,210 @@
 		"saveError": "Não foi possível salvar a tela: {{message}}"
 	},
 	"tasks": {
-		"searchPlaceholder": "Filtrar tarefas",
-		"scope": "Mostrar tarefas de",
-		"scopeAll": "Todas as notas",
-		"scopeFolder": "Pasta",
-		"scopeTag": "Tag",
-		"folder": "Pasta",
-		"allFolders": "Todas as pastas",
-		"foldersLoadFailed": "Não foi possível carregar as pastas: {{message}}",
-		"retry": "Tentar novamente",
-		"tag": "Tag",
-		"allTags": "Todas as tags",
-		"empty": "Nenhuma tarefa aberta. Os itens de checklist que você escreve nas notas aparecem aqui.",
-		"emptyScope": "Nenhuma tarefa aberta nesta pasta ou tag.",
-		"emptySearch": "Nenhuma tarefa aberta corresponde à sua busca.",
-		"clearSearch": "Limpar busca",
-		"showAllNotes": "Mostrar todas as notas",
-		"openTasks_one": "{{count}} tarefa aberta",
-		"openTasks_other": "{{count}} tarefas abertas",
-		"noteCount_one": "{{count}} nota",
-		"noteCount_other": "{{count}} notas",
-		"collapseAll": "Recolher tudo",
-		"groupStateSaveFailed": "Não foi possível salvar quais notas estão expandidas",
-		"expandAll": "Expandir tudo",
-		"collapseNote": "Recolher {{title}}",
-		"expandNote": "Expandir {{title}}",
+		"views": {
+			"label": "Visualizações de tarefas",
+			"today": {
+				"tab": "Hoje",
+				"title": "Hoje"
+			},
+			"upcoming": {
+				"tab": "Próximas",
+				"title": "Próximas"
+			},
+			"all": {
+				"tab": "Todas",
+				"title": "Todas as tarefas"
+			},
+			"done": {
+				"tab": "Concluídas",
+				"title": "Concluídas"
+			}
+		},
+		"newTask": "Nova tarefa",
+		"addToToday": "Adicionar à nota de hoje…",
+		"addTask": "Adicionar tarefa",
+		"loading": "Carregando tarefas",
 		"loadError": "Não foi possível carregar as tarefas: {{message}}",
-		"markDone": "Marcar \"{{task}}\" como concluída",
-		"markNotDone": "Marcar \"{{task}}\" como não concluída",
-		"openNote": "Abrir {{title}}",
+		"retry": "Tentar novamente",
+		"untitled": "Tarefa sem título",
 		"progress": "{{completed}} de {{total}} tarefas concluídas",
-		"fraction": "{{completed}}/{{total}}",
-		"toggleFailed": "Não foi possível atualizar a tarefa",
+		"sections": {
+			"overdue": "Atrasadas",
+			"today": "Hoje"
+		},
+		"date": {
+			"today": "Hoje",
+			"tomorrow": "Amanhã"
+		},
+		"doneSections": {
+			"today": "Hoje",
+			"yesterday": "Ontem",
+			"thisWeek": "Esta semana",
+			"earlier": "Antes"
+		},
+		"dueGroups": {
+			"overdue": "Atrasadas",
+			"today": "Hoje",
+			"tomorrow": "Amanhã",
+			"week": "Próximos 7 dias",
+			"later": "Mais tarde",
+			"none": "Sem data de vencimento"
+		},
+		"status": {
+			"todo": "A fazer",
+			"in_progress": "Em andamento",
+			"done": "Concluída",
+			"cancelled": "Cancelada"
+		},
+		"priority": {
+			"urgent": "Urgente",
+			"high": "Alta",
+			"medium": "Média",
+			"low": "Baixa",
+			"lowest": "Mínima",
+			"none": "Sem prioridade"
+		},
+		"noTags": "Sem tags",
+		"completedToday_one": "{{count}} concluída hoje",
+		"completedToday_other": "{{count}} concluídas hoje",
+		"reschedule": "Reagendar…",
+		"rescheduleLabel_one": "Reagendar {{count}} tarefa atrasada",
+		"rescheduleLabel_other": "Reagendar {{count}} tarefas atrasadas",
+		"markDone": "Marcar “{{task}}” como concluída",
+		"reopen": "Reabrir “{{task}}”",
+		"statusHint": "Clique para concluir ou clique com o botão direito para mais status",
+		"statusMenu": "Status da tarefa",
+		"subtasks": "Subtarefas",
+		"subtaskProgress": "{{done}} de {{total}} subtarefas concluídas",
+		"invalidDate": "Data inválida",
+		"invalidDateHint": "Não foi possível ler a data de vencimento desta tarefa. Abra a nota para corrigi-la.",
+		"location": "Local da tarefa",
+		"openInNote": "Abrir na nota",
+		"properties": {
+			"label": "Propriedades da tarefa",
+			"title": "Título da tarefa",
+			"statusLabel": "Status: {{value}}",
+			"due": "Data de vencimento",
+			"dueLabel": "Data de vencimento: {{value}}",
+			"priority": "Prioridade",
+			"priorityLabel": "Prioridade: {{value}}",
+			"tag": "Tag",
+			"tagSearch": "Adicionar uma tag",
+			"tagPlaceholder": "Buscar tags…",
+			"noTags": "Nenhuma tag encontrada",
+			"createTag": "Criar {{tag}}"
+		},
+		"completedToast": "Tarefa concluída",
+		"statusChangedToast": "Tarefa atualizada",
+		"undo": "Desfazer",
+		"writeFailed": "Não foi possível atualizar a tarefa",
+		"taskMissing": "A tarefa foi movida ou alterada na nota. Atualize e tente novamente.",
 		"conflictChanged": "A nota mudou desde que a lista foi carregada. Tente novamente.",
-		"conflictRolledOver": "Esta tarefa foi transferida para outra nota.",
-		"indexFailed": "Tarefa salva, mas não foi possível atualizar o índice de busca.",
-		"sort": "Ordenar tarefas por",
-		"sortRecent": "Editadas recentemente",
-		"sortMostOpen": "Mais tarefas abertas",
-		"sortTitle": "Título"
+		"indexFailed": "Tarefa salva",
+		"indexFailedDetail": "Não foi possível atualizar o índice de busca.",
+		"viewStateSaveFailed": "Não foi possível salvar as configurações da visualização de tarefas",
+		"quickAdd": {
+			"label": "Nova tarefa",
+			"inputLabel": "Título da tarefa",
+			"placeholder": "Nome da tarefa — experimente “amanhã”, “!!” ou “#tag”",
+			"hint": "Return para adicionar · Esc para cancelar",
+			"add": "Adicionar",
+			"cancel": "Cancelar",
+			"addTo": "Adicionar a",
+			"dailyNote": "Nota diária de hoje",
+			"chooseNote": "Escolher uma nota",
+			"targetSearch": "Escolher uma nota",
+			"targetPlaceholder": "Buscar notas…",
+			"searching": "Buscando…",
+			"noNotes": "Nenhuma nota encontrada",
+			"removeToken": "Remover {{token}}",
+			"added": "Tarefa adicionada a {{note}}",
+			"failed": "Não foi possível adicionar a tarefa",
+			"noDailyFolder": "Defina uma pasta de notas diárias nos Ajustes ou escolha uma nota para a tarefa."
+		},
+		"upcoming": {
+			"week": "Semana",
+			"previousWeek": "Semana anterior",
+			"nextWeek": "Próxima semana",
+			"dayLabel_one": "{{date}}, {{count}} tarefa",
+			"dayLabel_other": "{{date}}, {{count}} tarefas"
+		},
+		"filters": {
+			"label": "Filtros",
+			"add": "Filtrar",
+			"clear": "Limpar filtros",
+			"editFilter": "Editar o filtro {{name}}",
+			"removeFilter": "Remover o filtro {{name}}",
+			"andMore": "{{first}} +{{count}}",
+			"searchNotes": "Buscar notas…",
+			"searchFolders": "Buscar pastas…",
+			"noFolders": "Nenhuma pasta encontrada",
+			"kinds": {
+				"note": "Nota",
+				"folder": "Pasta",
+				"tag": "Tag",
+				"status": "Status",
+				"priority": "Prioridade",
+				"dueBefore": "Vence antes de",
+				"dueAfter": "Vence depois de",
+				"dueNone": "Sem data de vencimento"
+			},
+			"ops": {
+				"in": "em",
+				"is": "é"
+			}
+		},
+		"display": {
+			"label": "Exibição",
+			"layout": "Layout",
+			"layouts": {
+				"list": "Lista",
+				"board": "Quadro"
+			},
+			"groupBy": "Agrupar por",
+			"groups": {
+				"note": "Nota",
+				"status": "Status",
+				"due": "Data de vencimento",
+				"priority": "Prioridade",
+				"tag": "Tag",
+				"none": "Nenhum"
+			},
+			"orderBy": "Ordenar por",
+			"orders": {
+				"note": "Ordem na nota",
+				"due": "Data de vencimento",
+				"priority": "Prioridade",
+				"title": "Título"
+			},
+			"showSubtasks": "Mostrar subtarefas",
+			"includeDone": "Incluir concluídas"
+		},
+		"board": {
+			"empty": "Nenhuma tarefa",
+			"laneLabel_one": "{{lane}}, {{count}} tarefa",
+			"laneLabel_other": "{{lane}}, {{count}} tarefas"
+		},
+		"empty": {
+			"seeAll": "Ver todas as tarefas",
+			"clearFilters": "Limpar filtros",
+			"today": {
+				"title": "Nada vence hoje",
+				"body": "Tarefas com vencimento hoje ou antes aparecem aqui."
+			},
+			"none": {
+				"title": "Nenhuma tarefa ainda",
+				"body": "As tarefas ficam nas suas notas — digite - [ ] em qualquer nota."
+			},
+			"filtered": {
+				"title": "Nenhuma tarefa corresponde",
+				"body": "Remova um filtro para ver mais tarefas."
+			},
+			"done": {
+				"title": "Nada concluído ainda",
+				"body": "As tarefas que você concluir ou cancelar aparecem aqui."
+			}
+		}
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Buscar ícones",

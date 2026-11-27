@@ -1,168 +1,160 @@
-/* Task rows of the Tasks pane; custom properties are set on .tasksPane in 15-tasks.css. */
-
-/* Task row */
-.tasksTaskRow {
-	position: relative;
-	display: flex;
-	align-items: flex-start;
-	gap: 0.55em;
-	margin-inline: calc(var(--space-2) * -1);
-	padding-block: var(--space-1);
-	padding-inline: calc(var(--space-2) + var(--task-depth, 0) * var(--task-indent-step))
-		var(--space-2);
-	border-radius: var(--radius-md);
-	font-size: var(--text-base);
-	line-height: var(--tasks-line);
-	transition: background-color var(--transition-base);
-}
-
-.tasksTaskRow:hover,
-.tasksTaskRow:focus-within {
-	background: var(--tasks-row-hover);
-}
-
-.tasksTaskRow[data-nested="true"]::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: calc(
-		var(--space-2) + (var(--task-depth) - 1) * var(--task-indent-step) + var(--task-checkbox-size) /
-			2
-	);
-	width: 1px;
-	background: var(--border-light);
-	pointer-events: none;
-}
-
-.tasksCheckboxWrap {
-	position: relative;
-	display: inline-flex;
-	flex: 0 0 auto;
-	align-items: center;
-	justify-content: center;
-	box-sizing: content-box;
-	width: var(--task-checkbox-size);
-	height: var(--task-checkbox-size);
-	padding: var(--task-hit-pad);
-	margin: calc((var(--tasks-line) * 1em - var(--task-checkbox-size)) / 2 - var(--task-hit-pad))
-		calc(var(--task-hit-pad) * -1) calc(var(--task-hit-pad) * -1);
-	cursor: pointer;
-	user-select: none;
-}
-
-.tasksCheckbox {
-	flex: 0 0 auto;
-	width: var(--task-checkbox-size);
-	height: var(--task-checkbox-size);
-	margin: 0;
-	padding: 0;
-	appearance: none;
-	border: 1.75px solid var(--text-tertiary);
-	border-radius: calc(var(--task-checkbox-size) * 0.3);
-	background: transparent;
-	cursor: pointer;
+.tasksRowCollapse {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: 1fr;
 	transition:
-		background-color 180ms ease,
-		border-color 180ms ease;
+		grid-template-rows var(--tasks-complete-fill) ease,
+		opacity var(--tasks-complete-fill) ease;
 }
 
-.tasksCheckbox:hover {
-	border-color: var(--text-secondary);
-}
-
-.tasksCheckbox:checked {
-	border-color: transparent;
-	background: var(--interactive-accent);
-}
-
-.tasksCheckboxWrap::after {
-	content: "";
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	width: var(--task-checkbox-size);
-	height: var(--task-checkbox-size);
-	background: var(--text-inverse);
-	mask: var(--task-check-mask) center / contain no-repeat;
-	pointer-events: none;
+.tasksRowCollapse[data-leaving="true"] {
+	grid-template-rows: 0fr;
 	opacity: 0;
-	transform: translate(-50%, -50%) scale(0.75);
 }
 
-.tasksCheckboxWrap:has(.tasksCheckbox:checked)::after {
-	opacity: 1;
-	transform: translate(-50%, -50%) scale(1);
-	animation: task-check-in 180ms ease;
-}
-
-.tasksTaskText {
-	display: block;
-	flex: 1 1 auto;
-	min-width: 0;
-	height: auto;
+.tasksRowCollapse[data-leaving="true"] > .tasksItem {
 	overflow: hidden;
+}
+
+[data-keeps-done="true"] .tasksRowCollapse[data-leaving="true"] {
+	grid-template-rows: 1fr;
+	opacity: 1;
+}
+
+.tasksItem {
+	min-width: 0;
+	min-height: 0;
+	margin-left: calc(var(--task-depth, 0) * var(--tasks-indent-step));
+	border-radius: var(--tasks-row-radius);
+	transition:
+		background-color var(--transition-fast),
+		box-shadow var(--transition-fast);
+}
+
+.tasksItem[data-expanded="true"] {
+	margin-block: 4px;
+	background: var(--state-selected);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 22%, transparent);
+}
+
+.tasksRow {
+	display: flex;
+	height: var(--tasks-row-height);
+	align-items: center;
+	gap: 6px;
+	padding: 0 var(--tasks-row-pad) 0 2px;
+	border-radius: var(--tasks-row-radius);
+	transition: background-color var(--transition-fast);
+}
+
+.tasksItem:not([data-expanded="true"]) .tasksRow:hover,
+.tasksItem:not([data-expanded="true"]) .tasksRow:focus-within {
+	background: var(--bg-hover);
+}
+
+.tasksRowPriority {
+	display: inline-flex;
+	flex: 0 0 16px;
+	justify-content: center;
+}
+
+.tasksRowMain {
+	display: flex;
+	min-width: 0;
+	height: 100%;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: 8px;
+	padding: 0;
+	border: 0;
+	background: transparent;
 	color: var(--text-primary);
 	font: inherit;
-	text-align: left;
-	user-select: text;
+	font-size: var(--text-base);
+	text-align: start;
+	cursor: pointer;
 }
 
-/* One line per task; the full text is in the button's title tooltip. */
-.tasksTaskTextClamp {
-	display: block;
+.tasksRowTitle {
 	min-width: 0;
+	flex: 0 1 auto;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-/* Strike-through mirrors checked editor tasks, 25-node-note-content.css:939-953. */
-.tasksTaskRow[data-completing="true"] .tasksTaskText {
-	color: color-mix(in srgb, var(--text-secondary) 88%, var(--bg-primary));
-	text-decoration-line: line-through;
-	text-decoration-style: dashed;
-	text-decoration-thickness: 1px;
-	text-decoration-color: color-mix(in srgb, var(--interactive-accent) 26%, var(--text-secondary));
-	text-decoration-skip-ink: none;
+.tasksItem:is([data-status="done"], [data-status="cancelled"]) .tasksRowTitle {
+	color: var(--text-tertiary);
+	text-decoration: line-through;
+	text-decoration-color: var(--text-quaternary);
 }
 
-.tasksOpenButton {
+.tasksRowTags {
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
+.tasksRowSpacer {
+	flex: 1 1 auto;
+}
+
+.tasksSubtaskChip,
+.tasksDateChip,
+.tasksNoteChip {
 	display: inline-flex;
 	flex: 0 0 auto;
 	align-items: center;
-	justify-content: center;
-	width: var(--icon-xl);
-	height: calc(var(--tasks-line) * 1em);
+	gap: 4px;
 	color: var(--tasks-meta);
-	opacity: 0;
-	transition: opacity var(--transition-base);
+	font-size: var(--text-xs);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
 }
 
-.tasksTaskRow:hover .tasksOpenButton,
-.tasksTaskRow:focus-within .tasksOpenButton {
-	opacity: 1;
+.tasksSubtaskChip {
+	padding: 0 5px;
+	border-radius: var(--radius-sm);
+	background: var(--bg-hover);
 }
 
-.tasksOpenButton:hover {
-	color: var(--text-primary);
-	background: var(--bg-active);
+.tasksPane [data-tone="overdue"] {
+	--tasks-tone: var(--tasks-tone-overdue);
 }
 
-.tasksMatch {
-	border-radius: var(--radius-2xs);
-	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-	color: inherit;
+.tasksPane [data-tone="today"] {
+	--tasks-tone: var(--tasks-tone-today);
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.tasksCheckbox,
-	.tasksOpenButton,
-	.tasksTaskRow {
-		transition: none;
-	}
+.tasksPane [data-tone="tomorrow"] {
+	--tasks-tone: var(--tasks-tone-tomorrow);
+}
 
-	.tasksCheckboxWrap:has(.tasksCheckbox:checked)::after {
-		animation: none;
-	}
+.tasksPane [data-tone="week"] {
+	--tasks-tone: var(--tasks-tone-week);
+}
+
+.tasksPane [data-tone="later"] {
+	--tasks-tone: var(--tasks-tone-later);
+}
+
+.tasksPane [data-tone="invalid"] {
+	--tasks-tone: var(--text-error);
+}
+
+.tasksDateChip[data-tone] {
+	color: var(--tasks-tone);
+}
+
+.tasksNoteChip {
+	max-width: 32%;
+	min-width: 0;
+}
+
+.tasksNoteChipLabel {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tasksDraggable[data-dragging="true"] {
+	opacity: 0.5;
 }

@@ -545,37 +545,101 @@ interface NoteTaskSummaryItem extends NoteTaskSummary {
 	note_path: string;
 }
 
-export type TaskScope =
-	| { kind: "all" }
-	| { kind: "folder"; folder_prefix: string }
-	| { kind: "tag"; tag: string };
+export type TaskStatusKind = "todo" | "in_progress" | "done" | "cancelled";
 
-export interface TaskItem {
+export type TaskPriority = 0 | 1 | 2 | 3 | 4;
+
+export type TaskView = "today" | "upcoming" | "all" | "done";
+
+export type TaskFieldKey = "due" | "priority" | "completion" | "cancelled";
+
+export interface TaskQueryFilters {
+	note_paths: string[];
+	folder_prefixes: string[];
+	tags: string[];
+	statuses: TaskStatusKind[];
+	priorities: TaskPriority[];
+	include_no_priority: boolean;
+	due_before: string | null;
+	due_after: string | null;
+	due_none: boolean;
+	include_done: boolean;
+}
+
+export interface TaskQueryRequest {
+	space_path: string;
+	view: TaskView;
+	filters: TaskQueryFilters;
+	today: string;
+}
+
+export interface TaskRecord {
+	note_path: string;
+	note_title: string;
+	note_etag: string;
+	note_updated_ms: number;
 	start: number;
 	indent: number;
+	status: string;
+	status_kind: TaskStatusKind;
 	text: string;
-	heading: string | null;
-}
-
-export interface TaskNoteGroup {
-	note_path: string;
 	title: string;
-	etag: string;
-	total_count: number;
-	items: TaskItem[];
+	heading: string | null;
+	due: string | null;
+	priority: TaskPriority | null;
+	completion: string | null;
+	cancelled: string | null;
+	tags: string[];
+	invalid: TaskFieldKey[];
+	parent_start: number | null;
+	subtask_total: number;
+	subtask_done: number;
 }
 
-export interface TaskToggleRequest {
+export interface TaskFieldEdits {
+	due?: string | null;
+	priority?: TaskPriority | null;
+}
+
+export interface TaskEdit {
+	note_path: string;
+	etag: string;
+	start: number;
+	text: string;
+	set_status?: string;
+	set_fields?: TaskFieldEdits;
+	set_title?: string;
+}
+
+export interface TaskUpdateBatchRequest {
+	space_path: string;
+	today: string;
+	edits: TaskEdit[];
+}
+
+export type TaskWriteOutcome =
+	| { kind: "saved"; etag: string }
+	| { kind: "index_failed"; etag: string }
+	| { kind: "conflict" };
+
+export interface TaskNoteWriteResult {
+	note_path: string;
+	outcome: TaskWriteOutcome;
+}
+
+export interface TaskCreateRequest {
 	space_path: string;
 	note_path: string;
-	etag: string;
-	checked: boolean;
-	items: { start: number; text: string }[];
+	title: string;
+	due: string | null;
+	priority: TaskPriority | null;
 }
 
-export type TaskToggleOutcome =
-	| { kind: "saved"; etag: string }
-	| { kind: "index_failed"; etag: string };
+export interface TaskCreateResult {
+	note_path: string;
+	start: number;
+	outcome: TaskWriteOutcome;
+}
 
 export interface DirChildSummary {
 	dir_rel_path: string;
@@ -1258,10 +1322,10 @@ interface TauriCommands {
 		TagCount[]
 	>;
 	people_list: CommandDef<{ limit?: number | null; offset?: number | null }, PersonCount[]>;
-	task_summary: CommandDef<{ markdown: string }, NoteTaskSummary>;
 	task_summaries_for_paths: CommandDef<{ note_paths: string[] }, NoteTaskSummaryItem[]>;
-	tasks_list: CommandDef<{ space_path: string; scope: TaskScope }, TaskNoteGroup[]>;
-	tasks_toggle: CommandDef<{ request: TaskToggleRequest }, TaskToggleOutcome>;
+	tasks_query: CommandDef<{ request: TaskQueryRequest }, TaskRecord[]>;
+	tasks_update_batch: CommandDef<{ request: TaskUpdateBatchRequest }, TaskNoteWriteResult[]>;
+	tasks_create: CommandDef<{ request: TaskCreateRequest }, TaskCreateResult>;
 	backlinks: CommandDef<{ note_id: string; space_path?: string | null }, BacklinkItem[]>;
 	unlinked_mentions: CommandDef<{ note_id: string }, UnlinkedMentionsResult>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;

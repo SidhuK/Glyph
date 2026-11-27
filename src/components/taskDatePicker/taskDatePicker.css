@@ -1,0 +1,51 @@
+.taskDatePicker {
+	--calendar-day-size: 1.5rem;
+	display: grid;
+	gap: 2px;
+	width: 236px;
+	color: var(--text-primary);
+	font-size: var(--floating-row-font-size);
+	outline: none;
+	user-select: none;
+	-webkit-font-smoothing: antialiased;
+}
+
+.taskDatePicker .glyphMenuSeparator {
+	margin-inline: 4px;
+}
+
+.taskDatePickerPreset,
+.taskDatePickerRemove {
+	width: 100%;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: start;
+}
+
+.taskDatePickerRemove:hover {
+	background: var(--bg-hover);
+	color: var(--text-error);
+}
+
+.taskDatePickerCalendar {
+	padding: 2px 4px 0;
+}
+
+.taskDatePickerCalendar .calendarMonthHeader {
+	padding-left: 4px;
+}
+
+.taskDatePickerCalendar .calendarGrid {
+	margin-top: 2px;
+}
+
+.taskDatePicker .calendarDay[data-active="true"]:not([data-selected="true"]) {
+	background: var(--bg-hover);
+}
+
+.taskDatePicker:focus-visible .calendarDay[data-active="true"] {
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 1px;
+}

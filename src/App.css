@@ -11,7 +11,15 @@
 @import "./styles/app/15-all-docs.css";
 @import "./styles/app/15-activity-timeline.css";
 @import "./styles/app/15-tasks.css";
+@import "./styles/app/15-tasks-header.css";
 @import "./styles/app/15-tasks-row.css";
+@import "./styles/app/15-tasks-glyphs.css";
+@import "./styles/app/15-tasks-detail.css";
+@import "./styles/app/15-tasks-menus.css";
+@import "./styles/app/15-tasks-controls.css";
+@import "./styles/app/15-tasks-upcoming.css";
+@import "./styles/app/15-tasks-filters.css";
+@import "./styles/app/15-tasks-board.css";
 @import "./styles/app/16-main-workspace-layout.css";
 @import "./styles/app/17-main-tabs.css";
 @import "./styles/app/17a-split-editors.css";

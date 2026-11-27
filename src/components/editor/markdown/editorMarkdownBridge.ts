@@ -20,6 +20,7 @@ import { protectFootnotes, restoreEscapedFootnotes } from "./footnote";
 import { postprocessHtmlEmbeds, preprocessHtmlEmbeds } from "./htmlEmbedMarkdown";
 import { postprocessInlineTocMarkers, preprocessInlineTocMarkers } from "./inlineTocMarkdown";
 import { transformMarkdownOutsideCode, transformMarkdownOutsideFences } from "./markdownFence";
+import { restoreEscapedTaskSyntax } from "./taskMarkdown";
 import { findWikiLinkSpans, parseWikiLink, wikiLinkAttrsToMarkdown } from "./wikiLinkCodec";
 
 const WHITESPACE_LINE_SENTINEL = "\u2060";
@@ -178,7 +179,11 @@ export function postprocessMarkdownFromEditor(markdown: string): string {
 				postprocessHighlightedText(
 					postprocessColoredText(
 						postprocessHtmlEmbeds(
-							canonicalizeWikiLinks(restoreEscapedBracketSyntax(restoreEscapedFootnotes(markdown))),
+							canonicalizeWikiLinks(
+								restoreEscapedTaskSyntax(
+									restoreEscapedBracketSyntax(restoreEscapedFootnotes(markdown)),
+								),
+							),
 						),
 					),
 				),

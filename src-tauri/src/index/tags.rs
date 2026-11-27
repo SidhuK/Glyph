@@ -454,6 +454,13 @@ fn is_css_color_property(property: &str) -> bool {
         )
 }
 
+fn is_hex_color_code(candidate: &str) -> bool {
+    matches!(candidate.len(), 3 | 4 | 6 | 8)
+        && candidate.chars().all(|c| c.is_ascii_hexdigit())
+        && candidate.chars().any(|c| c.is_ascii_digit())
+        && candidate.chars().any(|c| c.is_ascii_alphabetic())
+}
+
 fn is_css_hex_color_literal(text: &str, hash_index: usize, candidate: &str) -> bool {
     if !matches!(candidate.len(), 3 | 4 | 6 | 8)
         || !candidate.chars().all(|c| c.is_ascii_hexdigit())
@@ -495,7 +502,9 @@ fn inline_tag_matches(text: &str) -> impl Iterator<Item = (Range<usize>, String)
         let full = caps.get(0)?;
         let candidate = caps.get(2)?;
         let hash_index = full.start() + caps.get(1).map_or(0, |m| m.len());
-        if is_css_hex_color_literal(text, hash_index, candidate.as_str()) {
+        if is_hex_color_code(candidate.as_str())
+            || is_css_hex_color_literal(text, hash_index, candidate.as_str())
+        {
             return None;
         }
         normalize_tag(candidate.as_str()).map(|tag| (hash_index..candidate.end(), tag))
@@ -775,6 +784,17 @@ Keep #project.
                 "facade".to_string(),
                 "fff".to_string()
             ]
+        );
+    }
+
+    #[test]
+    fn skips_standalone_hex_color_codes_that_mix_letters_and_digits() {
+        let markdown =
+            "False matches like #00C6BD, #1a2, #ff00aa80 and #0f0f. Issue #649 and #add stay.";
+
+        assert_eq!(
+            parse_inline_tags(markdown),
+            vec!["649".to_string(), "add".to_string()]
         );
     }
 

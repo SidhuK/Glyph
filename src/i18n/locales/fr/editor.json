@@ -234,6 +234,15 @@
 		},
 		"highlightClear": {
 			"title": "Effacer le surlignage"
+		},
+		"taskDue": {
+			"title": "Échéance"
+		},
+		"taskPriority": {
+			"title": "Priorité"
+		},
+		"taskStatus": {
+			"title": "Statut"
 		}
 	},
 	"tableControls": {
@@ -332,5 +341,29 @@
 		"new": "nouveau",
 		"select": "Sélectionner",
 		"insert": "Insérer"
+	},
+	"taskDatePicker": {
+		"label": "Échéance",
+		"today": "Aujourd’hui",
+		"tomorrow": "Demain",
+		"nextWeek": "La semaine prochaine",
+		"remove": "Retirer la date",
+		"previousMonth": "Mois précédent",
+		"nextMonth": "Mois suivant"
+	},
+	"taskFields": {
+		"priority": {
+			"lowest": "Très basse",
+			"low": "Basse",
+			"medium": "Moyenne",
+			"high": "Haute",
+			"highest": "Urgente"
+		},
+		"status": {
+			"todo": "À faire",
+			"in_progress": "En cours",
+			"done": "Terminée",
+			"cancelled": "Annulée"
+		}
 	}
 }

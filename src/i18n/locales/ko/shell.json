@@ -683,43 +683,206 @@
 		"saveError": "캔버스를 저장할 수 없습니다: {{message}}"
 	},
 	"tasks": {
-		"searchPlaceholder": "작업 필터",
-		"scope": "작업 표시 범위",
-		"scopeAll": "모든 노트",
-		"scopeFolder": "폴더",
-		"scopeTag": "태그",
-		"folder": "폴더",
-		"allFolders": "모든 폴더",
-		"foldersLoadFailed": "폴더를 불러오지 못했습니다: {{message}}",
-		"retry": "다시 시도",
-		"tag": "태그",
-		"allTags": "모든 태그",
-		"empty": "열린 작업이 없습니다. 노트에 작성한 체크리스트 항목이 여기에 표시됩니다.",
-		"emptyScope": "이 폴더나 태그에 열린 작업이 없습니다.",
-		"emptySearch": "검색과 일치하는 열린 작업이 없습니다.",
-		"clearSearch": "검색 지우기",
-		"showAllNotes": "모든 노트 보기",
-		"openTasks_other": "열린 작업 {{count}}개",
-		"noteCount_other": "노트 {{count}}개",
-		"collapseAll": "모두 접기",
-		"groupStateSaveFailed": "펼친 노트 상태를 저장하지 못했습니다",
-		"expandAll": "모두 펼치기",
-		"collapseNote": "{{title}} 접기",
-		"expandNote": "{{title}} 펼치기",
+		"views": {
+			"label": "작업 보기",
+			"today": {
+				"tab": "오늘",
+				"title": "오늘"
+			},
+			"upcoming": {
+				"tab": "예정",
+				"title": "예정"
+			},
+			"all": {
+				"tab": "전체",
+				"title": "모든 작업"
+			},
+			"done": {
+				"tab": "완료",
+				"title": "완료"
+			}
+		},
+		"newTask": "새 작업",
+		"addToToday": "오늘 노트에 추가…",
+		"addTask": "작업 추가",
+		"loading": "작업을 불러오는 중",
 		"loadError": "작업을 불러오지 못했습니다: {{message}}",
-		"markDone": "\"{{task}}\" 완료로 표시",
-		"markNotDone": "\"{{task}}\" 미완료로 표시",
-		"openNote": "{{title}} 열기",
+		"retry": "다시 시도",
+		"untitled": "제목 없는 작업",
 		"progress": "작업 {{total}}개 중 {{completed}}개 완료",
-		"fraction": "{{completed}}/{{total}}",
-		"toggleFailed": "작업을 업데이트하지 못했습니다",
+		"sections": {
+			"overdue": "기한 지남",
+			"today": "오늘"
+		},
+		"date": {
+			"today": "오늘",
+			"tomorrow": "내일"
+		},
+		"doneSections": {
+			"today": "오늘",
+			"yesterday": "어제",
+			"thisWeek": "이번 주",
+			"earlier": "이전"
+		},
+		"dueGroups": {
+			"overdue": "기한 지남",
+			"today": "오늘",
+			"tomorrow": "내일",
+			"week": "다음 7일",
+			"later": "나중",
+			"none": "마감일 없음"
+		},
+		"status": {
+			"todo": "할 일",
+			"in_progress": "진행 중",
+			"done": "완료",
+			"cancelled": "취소됨"
+		},
+		"priority": {
+			"urgent": "긴급",
+			"high": "높음",
+			"medium": "보통",
+			"low": "낮음",
+			"lowest": "가장 낮음",
+			"none": "우선순위 없음"
+		},
+		"noTags": "태그 없음",
+		"completedToday_other": "오늘 {{count}}개 완료",
+		"reschedule": "일정 변경…",
+		"rescheduleLabel_other": "기한이 지난 작업 {{count}}개 일정 변경",
+		"markDone": "“{{task}}” 완료로 표시",
+		"reopen": "“{{task}}” 다시 열기",
+		"statusHint": "클릭하여 완료, 오른쪽 클릭으로 다른 상태 선택",
+		"statusMenu": "작업 상태",
+		"subtasks": "하위 작업",
+		"subtaskProgress": "하위 작업 {{total}}개 중 {{done}}개 완료",
+		"invalidDate": "잘못된 날짜",
+		"invalidDateHint": "이 작업 줄의 마감일을 읽을 수 없습니다. 노트를 열어 수정하세요.",
+		"location": "작업 위치",
+		"openInNote": "노트에서 열기",
+		"properties": {
+			"label": "작업 속성",
+			"title": "작업 제목",
+			"statusLabel": "상태: {{value}}",
+			"due": "마감일",
+			"dueLabel": "마감일: {{value}}",
+			"priority": "우선순위",
+			"priorityLabel": "우선순위: {{value}}",
+			"tag": "태그",
+			"tagSearch": "태그 추가",
+			"tagPlaceholder": "태그 검색…",
+			"noTags": "태그를 찾을 수 없음",
+			"createTag": "{{tag}} 만들기"
+		},
+		"completedToast": "작업 완료",
+		"statusChangedToast": "작업 업데이트됨",
+		"undo": "실행 취소",
+		"writeFailed": "작업을 업데이트하지 못했습니다",
+		"taskMissing": "노트에서 작업이 이동되었거나 변경되었습니다. 새로 고친 후 다시 시도하세요.",
 		"conflictChanged": "목록을 불러온 뒤 노트가 변경되었습니다. 다시 시도하세요.",
-		"conflictRolledOver": "이 작업은 다른 노트로 이월되었습니다.",
-		"indexFailed": "작업은 저장되었지만 검색 색인을 업데이트하지 못했습니다.",
-		"sort": "작업 정렬 기준",
-		"sortRecent": "최근 편집순",
-		"sortMostOpen": "열린 작업 많은 순",
-		"sortTitle": "제목"
+		"indexFailed": "작업 저장됨",
+		"indexFailedDetail": "검색 색인을 업데이트하지 못했습니다.",
+		"viewStateSaveFailed": "작업 보기 설정을 저장하지 못했습니다",
+		"quickAdd": {
+			"label": "새 작업",
+			"inputLabel": "작업 제목",
+			"placeholder": "작업 이름 — “tomorrow”, “!!”, “#태그”를 써 보세요",
+			"hint": "Return으로 추가 · Esc로 취소",
+			"add": "추가",
+			"cancel": "취소",
+			"addTo": "추가할 곳",
+			"dailyNote": "오늘의 데일리 노트",
+			"chooseNote": "노트 선택",
+			"targetSearch": "노트 선택",
+			"targetPlaceholder": "노트 검색…",
+			"searching": "검색 중…",
+			"noNotes": "노트를 찾을 수 없음",
+			"removeToken": "{{token}} 제거",
+			"added": "{{note}}에 작업을 추가했습니다",
+			"failed": "작업을 추가하지 못했습니다",
+			"noDailyFolder": "설정에서 데일리 노트 폴더를 지정하거나 작업을 추가할 노트를 선택하세요."
+		},
+		"upcoming": {
+			"week": "주",
+			"previousWeek": "이전 주",
+			"nextWeek": "다음 주",
+			"dayLabel_other": "{{date}}, 작업 {{count}}개"
+		},
+		"filters": {
+			"label": "필터",
+			"add": "필터",
+			"clear": "필터 지우기",
+			"editFilter": "{{name}} 필터 편집",
+			"removeFilter": "{{name}} 필터 제거",
+			"andMore": "{{first}} +{{count}}",
+			"searchNotes": "노트 검색…",
+			"searchFolders": "폴더 검색…",
+			"noFolders": "폴더를 찾을 수 없음",
+			"kinds": {
+				"note": "노트",
+				"folder": "폴더",
+				"tag": "태그",
+				"status": "상태",
+				"priority": "우선순위",
+				"dueBefore": "마감일 이전",
+				"dueAfter": "마감일 이후",
+				"dueNone": "마감일 없음"
+			},
+			"ops": {
+				"in": ":",
+				"is": ":"
+			}
+		},
+		"display": {
+			"label": "표시",
+			"layout": "레이아웃",
+			"layouts": {
+				"list": "목록",
+				"board": "보드"
+			},
+			"groupBy": "그룹 기준",
+			"groups": {
+				"note": "노트",
+				"status": "상태",
+				"due": "마감일",
+				"priority": "우선순위",
+				"tag": "태그",
+				"none": "없음"
+			},
+			"orderBy": "정렬 기준",
+			"orders": {
+				"note": "노트 내 순서",
+				"due": "마감일",
+				"priority": "우선순위",
+				"title": "제목"
+			},
+			"showSubtasks": "하위 작업 표시",
+			"includeDone": "완료된 작업 포함"
+		},
+		"board": {
+			"empty": "작업 없음",
+			"laneLabel_other": "{{lane}}, 작업 {{count}}개"
+		},
+		"empty": {
+			"seeAll": "모든 작업 보기",
+			"clearFilters": "필터 지우기",
+			"today": {
+				"title": "오늘 마감인 작업이 없습니다",
+				"body": "마감일이 오늘이거나 지난 작업이 여기에 표시됩니다."
+			},
+			"none": {
+				"title": "아직 작업이 없습니다",
+				"body": "작업은 노트 안에 있습니다. 아무 노트에나 - [ ]를 입력하세요."
+			},
+			"filtered": {
+				"title": "일치하는 작업이 없습니다",
+				"body": "필터를 제거하면 더 많은 작업을 볼 수 있습니다."
+			},
+			"done": {
+				"title": "아직 완료한 작업이 없습니다",
+				"body": "완료하거나 취소한 작업이 여기에 표시됩니다."
+			}
+		}
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "아이콘 검색",

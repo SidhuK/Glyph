@@ -1,15 +1,19 @@
 use rusqlite::Connection;
 
-use super::super::store::{query_open_tasks, reindex_note_checklist_items};
-use super::super::types::{TaskNoteGroup, TaskScope};
+use super::super::api::{TaskQueryFilters, TaskQueryRequest, TaskView};
+use super::super::query::query_tasks;
+use super::super::store::reindex_note_checklist_items;
+use super::super::types::{TaskFieldKey, TaskStatusKind};
 use crate::index::schema::ensure_schema;
 
-fn add_note(conn: &Connection, id: &str, updated: &str, markdown: &str) {
+const TODAY: &str = "2026-11-27";
+
+fn add_note(conn: &Connection, id: &str, markdown: &str) {
     let (total, completed) = reindex_note_checklist_items(conn, id, markdown).unwrap();
     conn.execute(
-        "INSERT INTO notes(id, title, created, updated, path, etag, preview, checklist_total, checklist_completed)
-         VALUES(?, ?, '', ?, ?, 'etag', '', ?, ?)",
-        rusqlite::params![id, id, updated, id, total, completed],
+        "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview, checklist_total, checklist_completed)
+         VALUES(?, ?, '', '2026-01-02T03:04:05Z', ?, 'etag', '', ?, ?)",
+        rusqlite::params![id, id, id, total, completed],
     )
     .unwrap();
 }
@@ -20,83 +24,171 @@ fn fixture() -> Connection {
     add_note(
         &conn,
         "Work/a.md",
-        "2026-01-01",
-        "- [ ] a1\n- [x] done\n  - [ ] a2\n",
+        "- [ ] overdue [due:: 2026-11-20] [priority:: high]\n  - [x] child [completion:: 2026-11-27]\n  - [ ] open child #Client\n  - [-] dropped\n- [/] today #work/Deep [due:: 2026-11-27]\n",
     );
-    add_note(&conn, "Work/b.md", "2026-01-03", "- [ ] b1\n");
-    add_note(&conn, "Work2/c.md", "2026-01-02", "- [ ] c1\n");
-    add_note(&conn, "work/d.md", "2026-01-04", "- [ ] d1\n");
-    add_note(&conn, "done.md", "2026-01-05", "- [x] all done\n");
-    add_note(&conn, "archived.md", "2026-01-06", "- [ ] hidden\n");
+    add_note(
+        &conn,
+        "Work/b.md",
+        "---\ntags: [project, people/bob]\n---\n- [ ] later [due:: 2026-12-03]\n- [x] finished\n- [-] cancelled [cancelled:: 2026-11-01]\n",
+    );
+    add_note(
+        &conn,
+        "Work2/c.md",
+        "1. [>] waiting\n- [ ] bad [due:: 2026-02-30]\n",
+    );
+    add_note(&conn, "archived.md", "- [ ] hidden [due:: 2026-11-01]\n");
+    add_note(
+        &conn,
+        "moved.md",
+        "- [ ] gone [due:: 2026-11-01] ***Moved to*** [[2026-01-02]]\n  - [x] nested\n",
+    );
     conn.execute(
         "INSERT INTO note_properties(note_id, key, value_type, value_text, value_json)
          VALUES('archived.md', 'archived', 'checkbox', 'true', 'true')",
         [],
     )
     .unwrap();
-    conn.execute(
-        "INSERT INTO tags(note_id, tag, is_explicit)
-         VALUES('Work/a.md', 'project', 1), ('Work2/c.md', 'project', 0), ('Work2/c.md', 'project/x', 1)",
-        [],
-    )
-    .unwrap();
     conn
 }
 
-fn paths(groups: &[TaskNoteGroup]) -> Vec<&str> {
-    groups
-        .iter()
-        .map(|group| group.note_path.as_str())
+fn request(view: TaskView, filters: TaskQueryFilters) -> TaskQueryRequest {
+    TaskQueryRequest {
+        space_path: String::new(),
+        view,
+        filters,
+        today: TODAY.to_string(),
+    }
+}
+
+fn titles(conn: &Connection, request: &TaskQueryRequest) -> Vec<String> {
+    query_tasks(conn, request)
+        .unwrap()
+        .into_iter()
+        .map(|record| record.title)
         .collect()
 }
 
 #[test]
-fn all_scope_groups_open_items_by_note() {
-    let groups = query_open_tasks(&fixture(), &TaskScope::All).unwrap();
-    assert_eq!(
-        paths(&groups),
-        vec!["work/d.md", "Work/b.md", "Work2/c.md", "Work/a.md"]
+fn stores_every_task_with_parsed_fields_and_links() {
+    let conn = fixture();
+    let all = request(
+        TaskView::All,
+        TaskQueryFilters {
+            include_done: true,
+            ..Default::default()
+        },
     );
-    let a = &groups[3];
-    assert_eq!(a.total_count, 3);
-    let items = a
-        .items
-        .iter()
-        .map(|item| (item.start, item.indent, item.text.as_str()));
-    assert_eq!(items.collect::<Vec<_>>(), vec![(0, 0, "a1"), (20, 2, "a2")]);
+    let records = query_tasks(&conn, &all).unwrap();
+    assert_eq!(records.len(), 10);
+    let parent = &records[0];
+    assert_eq!((parent.note_path.as_str(), parent.start), ("Work/a.md", 0));
+    assert_eq!(
+        (parent.priority, parent.due.as_deref()),
+        (Some(3), Some("2026-11-20"))
+    );
+    assert_eq!((parent.subtask_total, parent.subtask_done), (2, 1));
+    assert_eq!(parent.note_updated_ms, 1_767_323_045_000);
+    assert_eq!(records[2].parent_start, Some(0));
+    assert_eq!(records[2].tags, vec!["client"]);
+    assert_eq!(records[3].status_kind, TaskStatusKind::Cancelled);
+    let waiting = &records[8];
+    assert_eq!(
+        (waiting.status.as_str(), waiting.status_kind),
+        (">", TaskStatusKind::Todo)
+    );
+    assert_eq!(records[9].invalid, vec![TaskFieldKey::Due]);
+    assert!(!records.iter().any(|record| record.note_path == "moved.md"));
 }
 
 #[test]
-fn folder_scope_matches_byte_exact_prefix() {
-    let scope = TaskScope::Folder {
-        folder_prefix: " /Work/ ".to_string(),
-    };
-    let groups = query_open_tasks(&fixture(), &scope).unwrap();
-    assert_eq!(paths(&groups), vec!["Work/b.md", "Work/a.md"]);
-}
-
-#[test]
-fn tag_scope_normalizes_and_includes_descendants() {
-    let scope = TaskScope::Tag {
-        tag: "#Project".to_string(),
-    };
-    let groups = query_open_tasks(&fixture(), &scope).unwrap();
-    assert_eq!(paths(&groups), vec!["Work2/c.md", "Work/a.md"]);
-}
-
-#[test]
-fn reindexing_replaces_previous_rows() {
+fn reindex_reports_summary_counts() {
     let conn = fixture();
-    let counts = reindex_note_checklist_items(&conn, "Work/b.md", "- [x] b1\n- [ ] b2 ***Moved to*** [[2026-01-02]]\n").unwrap();
+    let counts =
+        reindex_note_checklist_items(&conn, "x.md", "- [x] a\n- [-] b\n- [/] c\n").unwrap();
     assert_eq!(counts, (2, 1));
-    let groups = query_open_tasks(&conn, &TaskScope::All).unwrap();
-    assert!(!paths(&groups).contains(&"Work/b.md"));
 }
 
 #[test]
-fn moved_open_tasks_are_never_listed() {
+fn views_select_open_due_done_and_completed_today() {
     let conn = fixture();
-    add_note(&conn, "moved.md", "2026-01-09", "- [ ] gone ***Moved to*** [[2026-01-02]]\n");
-    let groups = query_open_tasks(&conn, &TaskScope::All).unwrap();
-    assert!(!paths(&groups).contains(&"moved.md"));
+    let today = titles(&conn, &request(TaskView::Today, Default::default()));
+    assert_eq!(today, vec!["overdue", "child", "today #work/Deep"]);
+    let upcoming = request(TaskView::Upcoming, Default::default());
+    assert_eq!(
+        titles(&conn, &upcoming),
+        vec!["overdue", "today #work/Deep", "later"]
+    );
+    let open = titles(&conn, &request(TaskView::All, Default::default()));
+    assert_eq!(
+        open,
+        vec![
+            "overdue",
+            "open child #Client",
+            "today #work/Deep",
+            "later",
+            "waiting",
+            "bad"
+        ]
+    );
+    let done = titles(&conn, &request(TaskView::Done, Default::default()));
+    assert_eq!(done, vec!["child", "dropped", "finished", "cancelled"]);
+}
+
+#[test]
+fn tag_filters_match_line_tags_hierarchy_and_frontmatter() {
+    let conn = fixture();
+    let by_tags = |tags: &[&str]| {
+        let filters = TaskQueryFilters {
+            tags: tags.iter().map(|tag| tag.to_string()).collect(),
+            ..Default::default()
+        };
+        titles(&conn, &request(TaskView::All, filters))
+    };
+    assert_eq!(by_tags(&["#Work"]), vec!["today #work/Deep"]);
+    assert_eq!(by_tags(&["project"]), vec!["later"]);
+    assert_eq!(by_tags(&["people/bob"]), Vec::<String>::new());
+    assert_eq!(by_tags(&["client"]), vec!["open child #Client"]);
+}
+
+#[test]
+fn location_filters_use_exact_prefixes() {
+    let conn = fixture();
+    let folder = TaskQueryFilters {
+        folder_prefixes: vec![" /Work/ ".to_string()],
+        ..Default::default()
+    };
+    assert_eq!(titles(&conn, &request(TaskView::All, folder)).len(), 4);
+    let filters = TaskQueryFilters {
+        folder_prefixes: vec!["Work2".to_string()],
+        note_paths: vec!["Work2/c.md".to_string(), "Work/a.md".to_string()],
+        ..Default::default()
+    };
+    assert_eq!(
+        titles(&conn, &request(TaskView::All, filters)),
+        vec!["waiting", "bad"]
+    );
+}
+
+#[test]
+fn priority_due_and_status_filters_combine() {
+    let conn = fixture();
+    let run = |filters: TaskQueryFilters| titles(&conn, &request(TaskView::All, filters));
+    let high_or_none = TaskQueryFilters {
+        priorities: vec![3],
+        include_no_priority: false,
+        ..Default::default()
+    };
+    assert_eq!(run(high_or_none), vec!["overdue"]);
+    let due_window = TaskQueryFilters {
+        due_after: Some("2026-11-20".to_string()),
+        due_before: Some("2026-12-03".to_string()),
+        ..Default::default()
+    };
+    assert_eq!(run(due_window), vec!["today #work/Deep"]);
+    let undated = TaskQueryFilters {
+        due_none: true,
+        statuses: vec![TaskStatusKind::Todo],
+        ..Default::default()
+    };
+    assert_eq!(run(undated), vec!["open child #Client", "waiting", "bad"]);
 }
