@@ -28,9 +28,10 @@ export function useTaskViewState(spacePath: string | null) {
 			queryClient.setQueryData(queryKey, next);
 			return { previous };
 		},
-		onError: (error, _next, context) => {
+		onError: (error, next, context) => {
 			toast.error(t("tasks.viewStateSaveFailed"), { description: error.message });
-			if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+			const isLatest = queryClient.getQueryData(queryKey) === next;
+			if (isLatest && context?.previous) queryClient.setQueryData(queryKey, context.previous);
 		},
 	});
 

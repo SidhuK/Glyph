@@ -53,6 +53,22 @@ function editFor(intent: TaskWriteIntent, target: TaskRecord): TaskEdit {
 	};
 }
 
+function matchEdits(fresh: readonly TaskRecord[], intents: readonly TaskWriteIntent[]) {
+	const claimed = new Set<TaskRecord>();
+	const edits: TaskEdit[] = [];
+	let missing = false;
+	for (const intent of intents) {
+		const target = findSameTask(fresh, intent.record, claimed);
+		if (target) {
+			claimed.add(target);
+			edits.push(editFor(intent, target));
+		} else if (!findSameTask(fresh, intent.record)) {
+			missing = true;
+		}
+	}
+	return { edits, missing };
+}
+
 function failureKey(error: Error): string {
 	if (error instanceof TaskWriteError) {
 		return error.failure === "conflict" ? "tasks.conflictChanged" : "tasks.taskMissing";
@@ -76,13 +92,8 @@ export function useTaskWrites(today: string) {
 				),
 				staleTime: 0,
 			});
-			const claimed = new Set<TaskRecord>();
-			const edits = intents.map((intent) => {
-				const target = findSameTask(fresh, intent.record, claimed);
-				if (!target) throw new TaskWriteError("missing");
-				claimed.add(target);
-				return editFor(intent, target);
-			});
+			const { edits, missing } = matchEdits(fresh, intents);
+			if (edits.length === 0) throw new TaskWriteError("missing");
 			const results = await invoke("tasks_update_batch", {
 				request: { space_path: space, today: day, edits },
 			});
@@ -95,6 +106,7 @@ export function useTaskWrites(today: string) {
 			for (const { outcome } of results) {
 				if (outcome.kind === "failed") throw new Error(outcome.message);
 			}
+			if (missing) throw new TaskWriteError("missing");
 			return results;
 		},
 		onError: (error) => {
