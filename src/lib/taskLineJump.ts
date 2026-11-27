@@ -21,12 +21,12 @@ export function requestTaskLineJump(jump: TaskLineJump): void {
 	window.dispatchEvent(new CustomEvent(TASK_LINE_JUMP_EVENT, { detail: pending }));
 }
 
-export function consumeTaskLineJump(path: string): TaskLineJump | null {
-	const normalized = normalizeRelPath(path);
-	if (!pending || pending.path !== normalized) return null;
-	const jump = pending;
-	pending = null;
-	return jump;
+export function pendingTaskLineJump(path: string): TaskLineJump | null {
+	return pending?.path === normalizeRelPath(path) ? pending : null;
+}
+
+export function discardTaskLineJump(path: string): void {
+	if (pendingTaskLineJump(path)) pending = null;
 }
 
 function isTaskLineJump(value: unknown): value is TaskLineJump {

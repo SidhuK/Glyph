@@ -373,9 +373,11 @@ export function MarkdownEditorPane({
 			const charOffset = charOffsetFromByteOffset(textRef.current, byteOffset);
 			if (mode === "plain") {
 				rawEditorRef.current?.selectRange(charOffset, charOffset);
-				return;
+				return true;
 			}
-			if (tocSource?.editor) scrollEditorToTaskLine(tocSource.editor, textRef.current, charOffset);
+			return tocSource
+				? scrollEditorToTaskLine(tocSource.editor, textRef.current, charOffset)
+				: false;
 		},
 		[mode, rawEditorRef, textRef, tocSource],
 	);

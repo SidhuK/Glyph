@@ -19,14 +19,21 @@ function taskItemPosition(editor: Editor, markdown: string, charOffset: number):
 	return ordinal >= 0 ? (positions[ordinal] ?? null) : null;
 }
 
-export function scrollEditorToTaskLine(editor: Editor, markdown: string, charOffset: number): void {
+export function scrollEditorToTaskLine(
+	editor: Editor,
+	markdown: string,
+	charOffset: number,
+): boolean {
+	if (editor.isDestroyed) return false;
 	const pos = taskItemPosition(editor, markdown, charOffset);
-	if (pos === null) return;
+	if (pos === null) return true;
 	editor.commands.expandHeadingAncestors(pos);
 	editor.commands.setTextSelection(pos + 2);
 	window.requestAnimationFrame(() => {
+		if (editor.isDestroyed) return;
 		const element = editor.view.nodeDOM(pos);
 		if (element instanceof HTMLElement)
 			element.scrollIntoView({ behavior: "smooth", block: "center" });
 	});
+	return true;
 }

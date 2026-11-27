@@ -42,7 +42,7 @@ export function useMarkdownDocumentSession({
 	const [savedText, setSavedText] = useState(() => initialText);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
-	const [loadedRelPath, setLoadedRelPath] = useState(relPath);
+	const [loadedRelPath, setLoadedRelPath] = useState(initialDoc ? relPath : "");
 	const [rawEditorReady, setRawEditorReady] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
 		initialDoc?.mtime_ms ?? null,
@@ -146,7 +146,7 @@ export function useMarkdownDocumentSession({
 		hasUserEditsRef.current = false;
 		setError(initialError);
 		setEditorMode(resolveEditorModeForNote(cached));
-		setLoadedRelPath(relPath);
+		setLoadedRelPath(initialDoc ? relPath : "");
 		setRawEditorReady(false);
 		activeRelPathRef.current = relPath;
 		if (initialDoc) {
