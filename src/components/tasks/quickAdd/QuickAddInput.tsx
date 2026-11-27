@@ -54,7 +54,10 @@ export function QuickAddInput({
 	const mirrorRef = useRef<HTMLDivElement>(null);
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-		if (isImeComposing(event)) return;
+		if (isImeComposing(event)) {
+			event.stopPropagation();
+			return;
+		}
 		if (event.key === "Enter") {
 			event.preventDefault();
 			onSubmit();

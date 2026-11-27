@@ -38,7 +38,10 @@ export function TaskTitleEditor({ record }: { record: TaskRecord }) {
 	};
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-		if (isImeComposing(event)) return;
+		if (isImeComposing(event)) {
+			event.stopPropagation();
+			return;
+		}
 		if (event.key === "Enter") {
 			event.preventDefault();
 			void commit(event.currentTarget.value);

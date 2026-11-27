@@ -68,10 +68,13 @@ export function useTaskCompletion({ today, writeTasks }: UseTaskCompletionOption
 	const restore = (original: TaskRecord, descendants: readonly TaskRecord[]) =>
 		void writeTasks(restoreIntents(original, descendants));
 
-	const undoChange = (key: string, original: TaskRecord) => {
-		if (unwrittenRef.current.delete(key)) return;
-		restore(original, descendantsRef.current.get(key) ?? []);
+	const undoIntents = (key: string, original: TaskRecord): TaskWriteIntent[] => {
+		if (unwrittenRef.current.delete(key)) return [];
+		return restoreIntents(original, descendantsRef.current.get(key) ?? []);
 	};
+
+	const undoChange = (key: string, original: TaskRecord) =>
+		void writeTasks(undoIntents(key, original));
 
 	const showUndoToast = (original: TaskRecord, key: string, nextStatus: string) =>
 		undoNotice.show({
@@ -143,7 +146,7 @@ export function useTaskCompletion({ today, writeTasks }: UseTaskCompletionOption
 				? "completed"
 				: "updated",
 			undo: () => {
-				for (const task of flushed) undoChange(task.key, task.original);
+				void writeTasks(flushed.flatMap((task) => undoIntents(task.key, task.original)));
 			},
 		});
 	};

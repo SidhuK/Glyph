@@ -23,15 +23,19 @@ export function useTaskViewState(spacePath: string | null) {
 	const save = useMutation({
 		mutationFn: (next: TaskViewState) =>
 			spacePath ? saveTaskViewState(spacePath, next) : Promise.resolve(),
-		onError: (error) => {
+		onMutate: (next) => {
+			const previous = queryClient.getQueryData<TaskViewState>(queryKey);
+			queryClient.setQueryData(queryKey, next);
+			return { previous };
+		},
+		onError: (error, _next, context) => {
 			toast.error(t("tasks.viewStateSaveFailed"), { description: error.message });
-			void queryClient.invalidateQueries({ queryKey });
+			if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
 		},
 	});
 
 	const update = (next: TaskViewState) => {
 		if (!query.isSuccess) return;
-		queryClient.setQueryData(queryKey, next);
 		save.mutate(next);
 	};
 
