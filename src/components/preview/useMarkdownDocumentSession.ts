@@ -250,6 +250,7 @@ export function useMarkdownDocumentSession({
 				pendingExternalReloadRef.current = true;
 				return;
 			}
+			setLoadedRelPath(relPath);
 			if (doc.mtime_ms === mtimeRef.current && doc.text === savedTextRef.current) {
 				return;
 			}
@@ -259,7 +260,6 @@ export function useMarkdownDocumentSession({
 			mtimeRef.current = doc.mtime_ms;
 			setSavedText(doc.text);
 			setLastSavedMtimeMs(doc.mtime_ms);
-			setLoadedRelPath(relPath);
 			hasUserEditsRef.current = false;
 		} catch (e) {
 			if (!isCurrentSession(sessionId)) return;
