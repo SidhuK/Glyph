@@ -56,7 +56,7 @@ fn edit_splices(markdown: &str, edit: &TaskEdit, today: &str) -> Option<Vec<Spli
         let kind = TaskStatusKind::from_status(status.chars().next()?);
         splices.push(Splice::replace(item.status_range(), status));
         plan_status(&mut plan, kind, today);
-        if kind == TaskStatusKind::Done {
+        if kind == TaskStatusKind::Done && !edit.skip_subtasks {
             for child in &block_items(&lines, &items, index)[1..] {
                 if child.is_open() && !child.moved {
                     splices.push(Splice::replace(child.status_range(), "x"));

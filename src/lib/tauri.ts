@@ -611,6 +611,7 @@ export interface TaskEdit {
 	set_status?: string;
 	set_fields?: TaskFieldEdits;
 	set_title?: string;
+	skip_subtasks?: boolean;
 }
 
 export interface TaskUpdateBatchRequest {

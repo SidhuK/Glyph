@@ -12,6 +12,7 @@ fn edit(start: usize, text: &str) -> TaskEdit {
         set_status: None,
         set_fields: None,
         set_title: None,
+        skip_subtasks: false,
     }
 }
 
@@ -247,6 +248,19 @@ fn multibyte_status_and_crlf_children_are_rewritten() {
     assert_eq!(
         applied("- [é] é\r\n  - [ ] ü\r\n", &[status(0, "é", "x")]),
         "- [x] é  [completion:: 2026-11-27]\r\n  - [x] ü  [completion:: 2026-11-27]\r\n"
+    );
+}
+
+#[test]
+fn skipping_subtasks_completes_only_the_target() {
+    let note = "- [ ] Parent\n  - [ ] Child\n";
+    let restore = TaskEdit {
+        skip_subtasks: true,
+        ..status(0, "Parent", "x")
+    };
+    assert_eq!(
+        applied(note, &[restore]),
+        "- [x] Parent  [completion:: 2026-11-27]\n  - [ ] Child\n"
     );
 }
 

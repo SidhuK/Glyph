@@ -86,6 +86,8 @@ pub struct TaskEdit {
     pub set_status: Option<String>,
     pub set_fields: Option<TaskFieldEdits>,
     pub set_title: Option<String>,
+    #[serde(default)]
+    pub skip_subtasks: bool,
 }
 
 #[derive(Debug, Deserialize)]

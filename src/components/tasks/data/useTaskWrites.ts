@@ -12,6 +12,7 @@ interface TaskChange {
 	status?: string;
 	fields?: TaskFieldEdits;
 	title?: string;
+	skipSubtasks?: boolean;
 }
 
 export interface TaskWriteIntent {
@@ -48,6 +49,7 @@ function editFor(intent: TaskWriteIntent, target: TaskRecord): TaskEdit {
 		...(intent.change.status !== undefined ? { set_status: intent.change.status } : {}),
 		...(intent.change.fields !== undefined ? { set_fields: intent.change.fields } : {}),
 		...(intent.change.title !== undefined ? { set_title: intent.change.title } : {}),
+		...(intent.change.skipSubtasks ? { skip_subtasks: true } : {}),
 	};
 }
 

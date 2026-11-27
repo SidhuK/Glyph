@@ -33,8 +33,18 @@ function restoreIntents(
 ): TaskWriteIntent[] {
 	return [original, ...descendants].map((record) => ({
 		record,
-		change: { status: record.status, fields: closureFields(record) },
+		change: { status: record.status, fields: closureFields(record), skipSubtasks: true },
 	}));
+}
+
+function uniqueByTask(intents: readonly TaskWriteIntent[]): TaskWriteIntent[] {
+	const seen = new Set<string>();
+	return intents.filter((intent) => {
+		const key = taskKey(intent.record);
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
 }
 
 export function useTaskCompletion({ today, writeTasks }: UseTaskCompletionOptions) {
@@ -146,7 +156,9 @@ export function useTaskCompletion({ today, writeTasks }: UseTaskCompletionOption
 				? "completed"
 				: "updated",
 			undo: () => {
-				void writeTasks(flushed.flatMap((task) => undoIntents(task.key, task.original)));
+				void writeTasks(
+					uniqueByTask(flushed.flatMap((task) => undoIntents(task.key, task.original))),
+				);
 			},
 		});
 	};

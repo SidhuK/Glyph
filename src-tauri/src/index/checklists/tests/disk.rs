@@ -35,6 +35,7 @@ fn status_edit(note_path: &str, etag: String, start: usize, text: &str) -> TaskE
         set_status: Some("x".to_string()),
         set_fields: None,
         set_title: None,
+        skip_subtasks: false,
     }
 }
 
