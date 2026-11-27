@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import {
-	consumeTaskLineJump,
+	discardTaskLineJump,
+	pendingTaskLineJump,
+	type TaskLineJump,
 	taskLineJumpFromEvent,
 	TASK_LINE_JUMP_EVENT,
 } from "../../lib/taskLineJump";
@@ -20,7 +22,7 @@ interface UseInternalAnchorNavigationArgs {
 	relPath: string;
 	headings: readonly TOCHeading[];
 	selectVisibleHeading: (heading: TOCHeading) => void;
-	selectTaskLine: (byteOffset: number) => void;
+	selectTaskLine: (byteOffset: number, onSettled: () => void) => void;
 	headingsReady: boolean;
 }
 
@@ -39,14 +41,18 @@ export function useInternalAnchorNavigation({
 	headingsRef.current = headings;
 
 	useEffect(() => {
+		const applyTaskLineJump = (jump: TaskLineJump) => {
+			selectTaskLineRef.current(jump.byteOffset, () => discardTaskLineJump(jump));
+		};
+
 		if (headingsReady) {
 			applyPendingHeadingJump({
 				path: relPath,
 				headings,
 				selectHeading: (heading) => selectVisibleHeadingRef.current(heading),
 			});
-			const taskJump = consumeTaskLineJump(relPath);
-			if (taskJump) selectTaskLineRef.current(taskJump.byteOffset);
+			const taskJump = pendingTaskLineJump(relPath);
+			if (taskJump) applyTaskLineJump(taskJump);
 		}
 
 		const onInternalAnchorClick = (event: Event) => {
@@ -63,8 +69,7 @@ export function useInternalAnchorNavigation({
 		const onTaskLineJump = (event: Event) => {
 			const jump = taskLineJumpFromEvent(event);
 			if (!headingsReady || !jump || jump.path !== normalizeRelPath(relPath)) return;
-			consumeTaskLineJump(relPath);
-			selectTaskLineRef.current(jump.byteOffset);
+			applyTaskLineJump(jump);
 		};
 
 		window.addEventListener(INTERNAL_ANCHOR_CLICK_EVENT, onInternalAnchorClick);

@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { AttachmentStorageMode } from "../../../lib/settings";
 import { VIEW_ONLY_TRANSACTION_META } from "../types";
 import { useNoteEditor } from "./useNoteEditor";
+import { forgetLastKnownNoteEditorSettings } from "./useNoteEditorSettings";
 
 const {
 	canCommands,
@@ -410,6 +411,7 @@ describe("useNoteEditor", () => {
 			asset_rel_path: "assets/image.png",
 			href: "../assets/image.png",
 		});
+		forgetLastKnownNoteEditorSettings();
 		loadSettingsMock.mockReset();
 		loadSettingsMock.mockResolvedValue(editorSettings());
 		parseMock.mockReset();
