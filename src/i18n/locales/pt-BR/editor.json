@@ -234,6 +234,15 @@
 		},
 		"highlightClear": {
 			"title": "Limpar realce"
+		},
+		"taskDue": {
+			"title": "Data de vencimento"
+		},
+		"taskPriority": {
+			"title": "Prioridade"
+		},
+		"taskStatus": {
+			"title": "Status"
 		}
 	},
 	"tableControls": {
@@ -332,5 +341,29 @@
 		"new": "nova",
 		"select": "Selecionar",
 		"insert": "Inserir"
+	},
+	"taskDatePicker": {
+		"label": "Data de vencimento",
+		"today": "Hoje",
+		"tomorrow": "Amanhã",
+		"nextWeek": "Próxima semana",
+		"remove": "Remover data",
+		"previousMonth": "Mês anterior",
+		"nextMonth": "Próximo mês"
+	},
+	"taskFields": {
+		"priority": {
+			"lowest": "Muito baixa",
+			"low": "Baixa",
+			"medium": "Média",
+			"high": "Alta",
+			"highest": "Urgente"
+		},
+		"status": {
+			"todo": "A fazer",
+			"in_progress": "Em andamento",
+			"done": "Concluída",
+			"cancelled": "Cancelada"
+		}
 	}
 }

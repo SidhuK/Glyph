@@ -749,45 +749,210 @@
 		"saveError": "Could not save canvas: {{message}}"
 	},
 	"tasks": {
-		"searchPlaceholder": "Filter tasks",
-		"scope": "Show tasks from",
-		"scopeAll": "All notes",
-		"scopeFolder": "Folder",
-		"scopeTag": "Tag",
-		"folder": "Folder",
-		"allFolders": "All folders",
-		"foldersLoadFailed": "Could not load folders: {{message}}",
-		"retry": "Retry",
-		"tag": "Tag",
-		"allTags": "All tags",
-		"empty": "No open tasks. Checklist items you write in notes show up here.",
-		"emptyScope": "No open tasks in this folder or tag.",
-		"emptySearch": "No open tasks match your search.",
-		"clearSearch": "Clear search",
-		"showAllNotes": "Show all notes",
-		"openTasks_one": "{{count}} open task",
-		"openTasks_other": "{{count}} open tasks",
-		"noteCount_one": "{{count}} note",
-		"noteCount_other": "{{count}} notes",
-		"collapseAll": "Collapse all",
-		"groupStateSaveFailed": "Could not save which notes are expanded",
-		"expandAll": "Expand all",
-		"collapseNote": "Collapse {{title}}",
-		"expandNote": "Expand {{title}}",
+		"views": {
+			"label": "Task views",
+			"today": {
+				"tab": "Today",
+				"title": "Today"
+			},
+			"upcoming": {
+				"tab": "Upcoming",
+				"title": "Upcoming"
+			},
+			"all": {
+				"tab": "All",
+				"title": "All tasks"
+			},
+			"done": {
+				"tab": "Done",
+				"title": "Done"
+			}
+		},
+		"newTask": "New task",
+		"addToToday": "Add to today's note…",
+		"addTask": "Add task",
+		"loading": "Loading tasks",
 		"loadError": "Could not load tasks: {{message}}",
-		"markDone": "Mark “{{task}}” as done",
-		"markNotDone": "Mark “{{task}}” as not done",
-		"openNote": "Open {{title}}",
+		"retry": "Retry",
+		"untitled": "Untitled task",
 		"progress": "{{completed}} of {{total}} tasks completed",
-		"fraction": "{{completed}}/{{total}}",
-		"toggleFailed": "Could not update the task",
+		"sections": {
+			"overdue": "Overdue",
+			"today": "Today"
+		},
+		"date": {
+			"today": "Today",
+			"tomorrow": "Tomorrow"
+		},
+		"doneSections": {
+			"today": "Today",
+			"yesterday": "Yesterday",
+			"thisWeek": "This week",
+			"earlier": "Earlier"
+		},
+		"dueGroups": {
+			"overdue": "Overdue",
+			"today": "Today",
+			"tomorrow": "Tomorrow",
+			"week": "Next 7 days",
+			"later": "Later",
+			"none": "No due date"
+		},
+		"status": {
+			"todo": "Todo",
+			"in_progress": "In progress",
+			"done": "Done",
+			"cancelled": "Cancelled"
+		},
+		"priority": {
+			"urgent": "Urgent",
+			"high": "High",
+			"medium": "Medium",
+			"low": "Low",
+			"lowest": "Lowest",
+			"none": "No priority"
+		},
+		"noTags": "No tags",
+		"completedToday_one": "{{count}} completed today",
+		"completedToday_other": "{{count}} completed today",
+		"reschedule": "Reschedule…",
+		"rescheduleLabel_one": "Reschedule {{count}} overdue task",
+		"rescheduleLabel_other": "Reschedule {{count}} overdue tasks",
+		"markDone": "Mark “{{task}}” as done",
+		"reopen": "Reopen “{{task}}”",
+		"statusHint": "Click to complete, right-click for more statuses",
+		"statusMenu": "Task status",
+		"subtasks": "Sub-tasks",
+		"subtaskProgress": "{{done}} of {{total}} sub-tasks done",
+		"invalidDate": "Invalid date",
+		"invalidDateHint": "The due date in this task's line couldn't be read. Open the note to fix it.",
+		"location": "Task location",
+		"openInNote": "Open in note",
+		"properties": {
+			"label": "Task properties",
+			"title": "Task title",
+			"statusLabel": "Status: {{value}}",
+			"due": "Due date",
+			"dueLabel": "Due date: {{value}}",
+			"priority": "Priority",
+			"priorityLabel": "Priority: {{value}}",
+			"tag": "Tag",
+			"tagSearch": "Add a tag",
+			"tagPlaceholder": "Search tags…",
+			"noTags": "No tags found",
+			"createTag": "Create {{tag}}"
+		},
+		"completedToast": "Task completed",
+		"statusChangedToast": "Task updated",
+		"undo": "Undo",
+		"writeFailed": "Could not update the task",
+		"taskMissing": "The task moved or changed in its note. Refresh and try again.",
 		"conflictChanged": "The note changed since the list loaded. Try again.",
-		"conflictRolledOver": "This task was rolled over to another note.",
-		"indexFailed": "Task saved, but the search index could not be updated.",
-		"sort": "Sort tasks by",
-		"sortRecent": "Recently edited",
-		"sortMostOpen": "Most open tasks",
-		"sortTitle": "Title"
+		"indexFailed": "Task saved",
+		"indexFailedDetail": "The search index could not be updated.",
+		"viewStateSaveFailed": "Could not save the task view settings",
+		"quickAdd": {
+			"label": "New task",
+			"inputLabel": "Task title",
+			"placeholder": "Task name — try “tomorrow”, “!!” or “#tag”",
+			"hint": "Return to add · Esc to cancel",
+			"add": "Add",
+			"cancel": "Cancel",
+			"addTo": "Add to",
+			"dailyNote": "Today's daily note",
+			"chooseNote": "Choose a note",
+			"targetSearch": "Choose a note",
+			"targetPlaceholder": "Search notes…",
+			"searching": "Searching…",
+			"noNotes": "No notes found",
+			"removeToken": "Remove {{token}}",
+			"added": "Task added to {{note}}",
+			"failed": "Could not add the task",
+			"noDailyFolder": "Set a daily notes folder in Settings, or pick a note to add the task to."
+		},
+		"upcoming": {
+			"week": "Week",
+			"previousWeek": "Previous week",
+			"nextWeek": "Next week",
+			"dayLabel_one": "{{date}}, {{count}} task",
+			"dayLabel_other": "{{date}}, {{count}} tasks"
+		},
+		"filters": {
+			"label": "Filters",
+			"add": "Filter",
+			"clear": "Clear filters",
+			"editFilter": "Edit {{name}} filter",
+			"removeFilter": "Remove {{name}} filter",
+			"andMore": "{{first}} +{{count}}",
+			"searchNotes": "Search notes…",
+			"searchFolders": "Search folders…",
+			"noFolders": "No folders found",
+			"kinds": {
+				"note": "Note",
+				"folder": "Folder",
+				"tag": "Tag",
+				"status": "Status",
+				"priority": "Priority",
+				"dueBefore": "Due before",
+				"dueAfter": "Due after",
+				"dueNone": "No due date"
+			},
+			"ops": {
+				"in": "in",
+				"is": "is"
+			}
+		},
+		"display": {
+			"label": "Display",
+			"layout": "Layout",
+			"layouts": {
+				"list": "List",
+				"board": "Board"
+			},
+			"groupBy": "Group by",
+			"groups": {
+				"note": "Note",
+				"status": "Status",
+				"due": "Due date",
+				"priority": "Priority",
+				"tag": "Tag",
+				"none": "None"
+			},
+			"orderBy": "Order by",
+			"orders": {
+				"note": "Note order",
+				"due": "Due date",
+				"priority": "Priority",
+				"title": "Title"
+			},
+			"showSubtasks": "Show sub-tasks",
+			"includeDone": "Include done"
+		},
+		"board": {
+			"empty": "No tasks",
+			"laneLabel_one": "{{lane}}, {{count}} task",
+			"laneLabel_other": "{{lane}}, {{count}} tasks"
+		},
+		"empty": {
+			"seeAll": "See all tasks",
+			"clearFilters": "Clear filters",
+			"today": {
+				"title": "Nothing due today",
+				"body": "Tasks with a due date of today or earlier show here."
+			},
+			"none": {
+				"title": "No tasks yet",
+				"body": "Tasks live in your notes — type - [ ] in any note."
+			},
+			"filtered": {
+				"title": "No tasks match",
+				"body": "Try removing a filter to see more tasks."
+			},
+			"done": {
+				"title": "Nothing completed yet",
+				"body": "Tasks you finish or cancel show up here."
+			}
+		}
 	},
 	"activity": {
 		"recentActivity": "Recent note activity",

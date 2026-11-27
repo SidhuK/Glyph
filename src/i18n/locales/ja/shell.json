@@ -683,43 +683,206 @@
 		"saveError": "キャンバスを保存できませんでした: {{message}}"
 	},
 	"tasks": {
-		"searchPlaceholder": "タスクを絞り込む",
-		"scope": "タスクの表示対象",
-		"scopeAll": "すべてのノート",
-		"scopeFolder": "フォルダ",
-		"scopeTag": "タグ",
-		"folder": "フォルダ",
-		"allFolders": "すべてのフォルダ",
-		"foldersLoadFailed": "フォルダを読み込めませんでした: {{message}}",
-		"retry": "再試行",
-		"tag": "タグ",
-		"allTags": "すべてのタグ",
-		"empty": "未完了のタスクはありません。ノートに書いたチェックリスト項目がここに表示されます。",
-		"emptyScope": "このフォルダまたはタグに未完了のタスクはありません。",
-		"emptySearch": "検索に一致する未完了のタスクはありません。",
-		"clearSearch": "検索をクリア",
-		"showAllNotes": "すべてのノートを表示",
-		"openTasks_other": "未完了のタスク {{count}} 件",
-		"noteCount_other": "{{count}} 件のノート",
-		"collapseAll": "すべて折りたたむ",
-		"groupStateSaveFailed": "展開したノートの状態を保存できませんでした",
-		"expandAll": "すべて展開",
-		"collapseNote": "{{title}} を折りたたむ",
-		"expandNote": "{{title}} を展開",
+		"views": {
+			"label": "タスクの表示",
+			"today": {
+				"tab": "今日",
+				"title": "今日"
+			},
+			"upcoming": {
+				"tab": "今後",
+				"title": "今後の予定"
+			},
+			"all": {
+				"tab": "すべて",
+				"title": "すべてのタスク"
+			},
+			"done": {
+				"tab": "完了",
+				"title": "完了"
+			}
+		},
+		"newTask": "新規タスク",
+		"addToToday": "今日のノートに追加…",
+		"addTask": "タスクを追加",
+		"loading": "タスクを読み込み中",
 		"loadError": "タスクを読み込めませんでした: {{message}}",
-		"markDone": "「{{task}}」を完了にする",
-		"markNotDone": "「{{task}}」を未完了にする",
-		"openNote": "{{title}} を開く",
+		"retry": "再試行",
+		"untitled": "無題のタスク",
 		"progress": "{{total}} 件中 {{completed}} 件のタスクが完了",
-		"fraction": "{{completed}}/{{total}}",
-		"toggleFailed": "タスクを更新できませんでした",
+		"sections": {
+			"overdue": "期限切れ",
+			"today": "今日"
+		},
+		"date": {
+			"today": "今日",
+			"tomorrow": "明日"
+		},
+		"doneSections": {
+			"today": "今日",
+			"yesterday": "昨日",
+			"thisWeek": "今週",
+			"earlier": "それ以前"
+		},
+		"dueGroups": {
+			"overdue": "期限切れ",
+			"today": "今日",
+			"tomorrow": "明日",
+			"week": "7 日以内",
+			"later": "それ以降",
+			"none": "期限なし"
+		},
+		"status": {
+			"todo": "未着手",
+			"in_progress": "進行中",
+			"done": "完了",
+			"cancelled": "キャンセル"
+		},
+		"priority": {
+			"urgent": "緊急",
+			"high": "高",
+			"medium": "中",
+			"low": "低",
+			"lowest": "最低",
+			"none": "優先度なし"
+		},
+		"noTags": "タグなし",
+		"completedToday_other": "今日 {{count}} 件完了",
+		"reschedule": "日程を変更…",
+		"rescheduleLabel_other": "期限切れのタスク {{count}} 件の日程を変更",
+		"markDone": "「{{task}}」を完了にする",
+		"reopen": "「{{task}}」を未完了に戻す",
+		"statusHint": "クリックで完了、右クリックでほかのステータス",
+		"statusMenu": "タスクのステータス",
+		"subtasks": "サブタスク",
+		"subtaskProgress": "{{total}} 件中 {{done}} 件のサブタスクが完了",
+		"invalidDate": "無効な日付",
+		"invalidDateHint": "このタスク行の期限を読み取れませんでした。ノートを開いて修正してください。",
+		"location": "タスクの場所",
+		"openInNote": "ノートで開く",
+		"properties": {
+			"label": "タスクのプロパティ",
+			"title": "タスクのタイトル",
+			"statusLabel": "ステータス: {{value}}",
+			"due": "期限",
+			"dueLabel": "期限: {{value}}",
+			"priority": "優先度",
+			"priorityLabel": "優先度: {{value}}",
+			"tag": "タグ",
+			"tagSearch": "タグを追加",
+			"tagPlaceholder": "タグを検索…",
+			"noTags": "タグが見つかりません",
+			"createTag": "{{tag}} を作成"
+		},
+		"completedToast": "タスクを完了しました",
+		"statusChangedToast": "タスクを更新しました",
+		"undo": "取り消す",
+		"writeFailed": "タスクを更新できませんでした",
+		"taskMissing": "タスクがノート内で移動または変更されました。更新してもう一度お試しください。",
 		"conflictChanged": "リストの読み込み後にノートが変更されました。もう一度お試しください。",
-		"conflictRolledOver": "このタスクは別のノートに繰り越されました。",
-		"indexFailed": "タスクは保存されましたが、検索インデックスを更新できませんでした。",
-		"sort": "タスクの並べ替え",
-		"sortRecent": "最近編集した順",
-		"sortMostOpen": "未完了の多い順",
-		"sortTitle": "タイトル"
+		"indexFailed": "タスクを保存しました",
+		"indexFailedDetail": "検索インデックスを更新できませんでした。",
+		"viewStateSaveFailed": "タスク表示の設定を保存できませんでした",
+		"quickAdd": {
+			"label": "新規タスク",
+			"inputLabel": "タスクのタイトル",
+			"placeholder": "タスク名 — 「tomorrow」「!!」「#タグ」も使えます",
+			"hint": "Return で追加 · Esc でキャンセル",
+			"add": "追加",
+			"cancel": "キャンセル",
+			"addTo": "追加先",
+			"dailyNote": "今日のデイリーノート",
+			"chooseNote": "ノートを選択",
+			"targetSearch": "ノートを選択",
+			"targetPlaceholder": "ノートを検索…",
+			"searching": "検索中…",
+			"noNotes": "ノートが見つかりません",
+			"removeToken": "{{token}} を削除",
+			"added": "{{note}} にタスクを追加しました",
+			"failed": "タスクを追加できませんでした",
+			"noDailyFolder": "設定でデイリーノートのフォルダを指定するか、タスクを追加するノートを選んでください。"
+		},
+		"upcoming": {
+			"week": "週",
+			"previousWeek": "前の週",
+			"nextWeek": "次の週",
+			"dayLabel_other": "{{date}}、{{count}} 件のタスク"
+		},
+		"filters": {
+			"label": "フィルタ",
+			"add": "フィルタ",
+			"clear": "フィルタをクリア",
+			"editFilter": "{{name}} フィルタを編集",
+			"removeFilter": "{{name}} フィルタを削除",
+			"andMore": "{{first}} +{{count}}",
+			"searchNotes": "ノートを検索…",
+			"searchFolders": "フォルダを検索…",
+			"noFolders": "フォルダが見つかりません",
+			"kinds": {
+				"note": "ノート",
+				"folder": "フォルダ",
+				"tag": "タグ",
+				"status": "ステータス",
+				"priority": "優先度",
+				"dueBefore": "期限が次より前",
+				"dueAfter": "期限が次より後",
+				"dueNone": "期限なし"
+			},
+			"ops": {
+				"in": ":",
+				"is": ":"
+			}
+		},
+		"display": {
+			"label": "表示",
+			"layout": "レイアウト",
+			"layouts": {
+				"list": "リスト",
+				"board": "ボード"
+			},
+			"groupBy": "グループ",
+			"groups": {
+				"note": "ノート",
+				"status": "ステータス",
+				"due": "期限",
+				"priority": "優先度",
+				"tag": "タグ",
+				"none": "なし"
+			},
+			"orderBy": "並び順",
+			"orders": {
+				"note": "ノート内の順序",
+				"due": "期限",
+				"priority": "優先度",
+				"title": "タイトル"
+			},
+			"showSubtasks": "サブタスクを表示",
+			"includeDone": "完了済みを含める"
+		},
+		"board": {
+			"empty": "タスクなし",
+			"laneLabel_other": "{{lane}}、{{count}} 件のタスク"
+		},
+		"empty": {
+			"seeAll": "すべてのタスクを表示",
+			"clearFilters": "フィルタをクリア",
+			"today": {
+				"title": "今日が期限のタスクはありません",
+				"body": "期限が今日以前のタスクがここに表示されます。"
+			},
+			"none": {
+				"title": "まだタスクがありません",
+				"body": "タスクはノートの中にあります。どのノートでも - [ ] と入力してください。"
+			},
+			"filtered": {
+				"title": "一致するタスクはありません",
+				"body": "フィルタを外すと、ほかのタスクが表示されます。"
+			},
+			"done": {
+				"title": "完了したタスクはまだありません",
+				"body": "完了またはキャンセルしたタスクがここに表示されます。"
+			}
+		}
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "アイコンを検索",

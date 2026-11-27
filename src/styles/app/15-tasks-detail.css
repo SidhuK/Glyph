@@ -1,0 +1,155 @@
+.tasksTitleInput {
+	min-width: 0;
+	height: 24px;
+	flex: 1 1 auto;
+	padding: 0 4px;
+	margin-left: -4px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-primary);
+	font: inherit;
+	font-size: var(--text-base);
+	outline: none;
+}
+
+.tasksPane .tasksTitleInput:focus-visible {
+	outline: none;
+	background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+}
+
+.tasksExpandedPanel {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	padding: 2px var(--tasks-row-pad) var(--space-2) 52px;
+}
+
+.tasksPropertyRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.tasksPropertyButton {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 24px;
+	padding: 0 8px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font: inherit;
+	font-size: var(--text-xs);
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color var(--transition-fast),
+		border-color var(--transition-fast);
+}
+
+.tasksPropertyButton:is(:hover, [data-popup-open]) {
+	background: var(--bg-hover);
+}
+
+.tasksPropertyButton[data-empty="true"] {
+	color: var(--text-tertiary);
+}
+
+.tasksPropertyButton[data-tone] {
+	color: var(--tasks-tone);
+}
+
+.tasksPropertyButton .tasksStatusGlyph {
+	width: 14px;
+	height: 14px;
+}
+
+.tasksSubtasks {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tasksSubtask {
+	display: flex;
+	min-height: 26px;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+}
+
+.tasksSubtask:is([data-status="done"], [data-status="cancelled"]) .tasksSubtaskTitle {
+	color: var(--text-tertiary);
+	text-decoration: line-through;
+}
+
+.tasksSubtaskTitle {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tasksSubtasksState {
+	margin: 0;
+	color: var(--text-error);
+	font-size: var(--text-xs);
+}
+
+.tasksExpandedFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-3);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+}
+
+.tasksBreadcrumb {
+	display: flex;
+	min-width: 0;
+	align-items: center;
+	gap: 6px;
+}
+
+.tasksBreadcrumbPart {
+	display: inline-flex;
+	min-width: 0;
+	gap: 6px;
+}
+
+.tasksBreadcrumbLabel {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tasksBreadcrumbSeparator {
+	color: var(--text-quaternary);
+}
+
+.tasksOpenInNote {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 4px;
+	height: 22px;
+	padding: 0 6px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	cursor: pointer;
+}
+
+.tasksOpenInNote:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}

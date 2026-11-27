@@ -12,7 +12,7 @@ import {
 	Calendar04Icon,
 	CancelSquareIcon,
 	ChartRelationshipIcon,
-	CheckListIcon,
+	CheckmarkSquare02Icon,
 	Copy01Icon,
 	CursorInWindowIcon,
 	Database01Icon,
@@ -629,7 +629,7 @@ export function useAppCommands({
 			},
 			{
 				id: "open-tasks",
-				icon: <HugeiconsIcon icon={CheckListIcon} size="var(--icon-lg)" />,
+				icon: <HugeiconsIcon icon={CheckmarkSquare02Icon} size="var(--icon-lg)" />,
 				enabled: Boolean(spacePath),
 				action: openTasksTab,
 			},

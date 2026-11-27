@@ -21,6 +21,7 @@ import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
 import { joinYamlFrontmatter, splitYamlFrontmatter } from "../../lib/notePreview";
 import { groupRelationshipsByField } from "../../lib/relationships";
+import { charOffsetFromByteOffset } from "../../lib/taskLineJump";
 import {
 	type BacklinkItem,
 	type GitCommitDiff,
@@ -49,6 +50,7 @@ import { peekCachedMarkdownDoc } from "./markdownCache";
 import { analyzeNoteInfo } from "./noteInfoAnalysis";
 import { useDeferredTocSource } from "./useDeferredTocSource";
 import { useInternalAnchorNavigation } from "./useInternalAnchorNavigation";
+import { scrollEditorToTaskLine } from "./taskLineNavigation";
 import { useMarkdownDocumentSession } from "./useMarkdownDocumentSession";
 import { useUnlinkedMentions } from "./useUnlinkedMentions";
 
@@ -366,10 +368,22 @@ export function MarkdownEditorPane({
 				: tocHeadings,
 		[mode, text, tocHeadings],
 	);
+	const selectTaskLine = useCallback(
+		(byteOffset: number) => {
+			const charOffset = charOffsetFromByteOffset(textRef.current, byteOffset);
+			if (mode === "plain") {
+				rawEditorRef.current?.selectRange(charOffset, charOffset);
+				return;
+			}
+			if (tocSource?.editor) scrollEditorToTaskLine(tocSource.editor, textRef.current, charOffset);
+		},
+		[mode, rawEditorRef, textRef, tocSource],
+	);
 	useInternalAnchorNavigation({
 		relPath,
 		headings: navigationHeadings,
 		selectVisibleHeading,
+		selectTaskLine,
 		headingsReady:
 			loadedRelPath === relPath && (mode === "plain" ? rawEditorReady : tocSource !== null),
 	});

@@ -1,6 +1,7 @@
 use crate::index::checklists::{
-    block_end, block_items, checklist_items_in, markdown_lines, parse_checklist_items, MarkdownLine,
-    LEGACY_MOVED_FROM_MARKER_PREFIX, MOVED_FROM_MARKER_PREFIX, MOVED_TO_MARKER_PREFIX,
+    block_end, block_items, checklist_items_in, is_valid_date, markdown_lines,
+    parse_checklist_items, task_details, MarkdownLine, LEGACY_MOVED_FROM_MARKER_PREFIX,
+    MOVED_FROM_MARKER_PREFIX, MOVED_TO_MARKER_PREFIX,
 };
 use crate::utils;
 
@@ -9,7 +10,7 @@ use super::types::RolloverCandidate;
 fn marker_date<'a>(line: &'a str, prefix: &str) -> Option<&'a str> {
     let (_, value) = line.split_once(prefix)?;
     let date = value.split_once("]]")?.0;
-    valid_date(date).then_some(date)
+    is_valid_date(date).then_some(date)
 }
 
 pub fn parse_candidates(
@@ -30,7 +31,7 @@ pub fn parse_candidates(
         let end = block_end(&lines, task.line_index, markdown.len());
         next_outer_start = end;
         let descendants = &block_items(&lines, &tasks, index)[1..];
-        let contains_unfinished = !task.checked || descendants.iter().any(|item| !item.checked);
+        let contains_unfinished = task.is_open() || descendants.iter().any(|item| item.is_open());
         if task.moved || !contains_unfinished {
             continue;
         }
@@ -46,9 +47,10 @@ pub fn parse_candidates(
             source_date: source_date.to_string(),
             original_date: original_date.to_string(),
             markdown: block,
-            text: task.text.clone(),
+            text: task_details(markdown, task).title,
             nested_count: descendants.len() as u32,
-            unfinished_nested_count: descendants.iter().filter(|item| !item.checked).count() as u32,
+            unfinished_nested_count: descendants.iter().filter(|item| item.is_open()).count()
+                as u32,
             start: task.start,
             end,
             source_mtime_ms,
@@ -63,8 +65,8 @@ pub fn mark_moved(block: &str, destination_date: &str) -> Result<String, String>
         return Err("rollover candidate is no longer a checkbox block".to_string());
     }
     let mut moved = block.to_string();
-    for item in items {
-        moved.replace_range(item.checkbox..item.checkbox + 1, "x");
+    for item in items.iter().rev().filter(|item| item.is_open()) {
+        moved.replace_range(item.status_range(), "x");
     }
     let first_line_end = moved.find('\n').unwrap_or(moved.len());
     moved.insert_str(
@@ -192,16 +194,4 @@ fn insert_at(markdown: &str, offset: usize, addition: &str) -> String {
         next.push_str(tail);
     }
     next
-}
-
-pub fn valid_date(value: &str) -> bool {
-    let bytes = value.as_bytes();
-    bytes.len() == 10
-        && bytes[4] == b'-'
-        && bytes[7] == b'-'
-        && bytes
-            .iter()
-            .enumerate()
-            .all(|(index, byte)| matches!(index, 4 | 7) || byte.is_ascii_digit())
-        && chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d").is_ok()
 }

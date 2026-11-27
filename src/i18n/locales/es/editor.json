@@ -234,6 +234,15 @@
 		},
 		"highlightClear": {
 			"title": "Quitar resaltado"
+		},
+		"taskDue": {
+			"title": "Fecha límite"
+		},
+		"taskPriority": {
+			"title": "Prioridad"
+		},
+		"taskStatus": {
+			"title": "Estado"
 		}
 	},
 	"tableControls": {
@@ -332,5 +341,29 @@
 		"new": "nueva",
 		"select": "Seleccionar",
 		"insert": "Insertar"
+	},
+	"taskDatePicker": {
+		"label": "Fecha límite",
+		"today": "Hoy",
+		"tomorrow": "Mañana",
+		"nextWeek": "La próxima semana",
+		"remove": "Quitar fecha",
+		"previousMonth": "Mes anterior",
+		"nextMonth": "Mes siguiente"
+	},
+	"taskFields": {
+		"priority": {
+			"lowest": "Muy baja",
+			"low": "Baja",
+			"medium": "Media",
+			"high": "Alta",
+			"highest": "Urgente"
+		},
+		"status": {
+			"todo": "Pendiente",
+			"in_progress": "En curso",
+			"done": "Hecha",
+			"cancelled": "Cancelada"
+		}
 	}
 }

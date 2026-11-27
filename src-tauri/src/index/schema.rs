@@ -78,8 +78,19 @@ CREATE TABLE IF NOT EXISTS checklist_items (
   note_id TEXT NOT NULL,
   start INTEGER NOT NULL,
   indent INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  status_kind TEXT NOT NULL,
   text TEXT NOT NULL,
+  title TEXT NOT NULL,
   heading TEXT,
+  due TEXT,
+  priority INTEGER,
+  completion TEXT,
+  cancelled TEXT,
+  tags TEXT NOT NULL DEFAULT '[]',
+  note_tags TEXT NOT NULL DEFAULT '[]',
+  invalid TEXT NOT NULL DEFAULT '[]',
+  parent_start INTEGER,
   PRIMARY KEY (note_id, start)
 );
 

@@ -1,0 +1,128 @@
+.tasksHeader {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+}
+
+.tasksHeaderTop {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--space-3);
+}
+
+.tasksHeaderTitles {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.tasksHeaderSubtitle {
+	min-height: 1lh;
+	margin: 0;
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+}
+
+.tasksHeaderActions {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.tasksViewSwitch {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	border-radius: var(--radius-md);
+}
+
+.tasksViewSwitchItem {
+	height: 22px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color var(--transition-fast),
+		color var(--transition-fast);
+}
+
+.tasksViewSwitchItem:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.tasksViewSwitchItem[aria-selected="true"] {
+	background: var(--bg-active);
+	color: var(--text-primary);
+}
+
+.tasksNewTaskButton,
+.tasksToolbarButton,
+.tasksSectionAction,
+.tasksIconButton,
+.tasksWeekStripToday {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 26px;
+	padding: 0 8px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	font-size: var(--text-sm);
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color var(--transition-fast),
+		color var(--transition-fast);
+}
+
+.tasksNewTaskButton {
+	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+}
+
+.tasksIconButton {
+	justify-content: center;
+	width: 26px;
+	padding: 0;
+}
+
+:is(
+		.tasksNewTaskButton,
+		.tasksToolbarButton,
+		.tasksSectionAction,
+		.tasksIconButton,
+		.tasksWeekStripToday
+	):is(:hover, [data-popup-open]):not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+:is(.tasksNewTaskButton, .tasksIconButton, .tasksWeekStripToday, .tasksSectionAction):disabled {
+	cursor: default;
+	opacity: 0.45;
+}
+
+.tasksToolbarButton[data-quiet="true"] {
+	color: var(--text-tertiary);
+}
+
+.tasksPane button:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 1px;
+}

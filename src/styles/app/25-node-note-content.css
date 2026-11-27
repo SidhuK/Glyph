@@ -984,6 +984,7 @@
 }
 
 :root {
+	--task-cancel-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%3E%3Cpath%20d%3D'M8.5%208.5L15.5%2015.5M15.5%208.5L8.5%2015.5'%20stroke%3D'black'%20stroke-width%3D'2.5'%20stroke-linecap%3D'round'/%3E%3C%2Fsvg%3E");
 	--task-check-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%3E%3Cpath%20d%3D'M6%2012.5L10%2016.5L18%207.5'%20stroke%3D'black'%20stroke-width%3D'2.75'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'/%3E%3C%2Fsvg%3E");
 }
 
@@ -1104,6 +1105,33 @@
 	text-decoration-thickness: 1px;
 	text-decoration-color: color-mix(in srgb, var(--text-tertiary) 45%, transparent);
 	text-decoration-skip-ink: none;
+}
+
+.tiptapContentInline ul[data-type="taskList"] > li[data-status="/"] > label input[type="checkbox"] {
+	padding: 2px;
+	border-color: var(--palette-yellow);
+	background: linear-gradient(90deg, transparent 50%, var(--palette-yellow) 50%) content-box;
+}
+
+.tiptapContentInline ul[data-type="taskList"] > li[data-status="-"] > label input[type="checkbox"] {
+	border-color: transparent;
+	background: var(--text-tertiary);
+}
+
+.tiptapContentInline ul[data-type="taskList"] > li[data-status="-"] > label::after {
+	mask-image: var(--task-cancel-mask);
+	opacity: 1;
+	transform: translate(-50%, -50%) scale(0.8);
+}
+
+.tiptapContentInline ul[data-type="taskList"] > li[data-status="-"] > div {
+	color: var(--text-tertiary);
+}
+
+.tiptapContentInline li[data-status="-"] > div > p:first-child {
+	text-decoration-line: line-through;
+	text-decoration-thickness: 1px;
+	text-decoration-color: color-mix(in srgb, var(--text-tertiary) 45%, transparent);
 }
 
 .tiptapHostInline.is-preview

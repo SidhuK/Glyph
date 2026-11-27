@@ -5,6 +5,7 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/shadcn/button";
+import { isOpenStatus, isTaskStatusChar, taskStatusKindOf } from "@/lib/taskFields/taskStatus";
 import { getOffsetWithinAncestor } from "../hooks/editorDomUtils";
 import type { RolloverTaskActions as TaskActions } from "../types";
 
@@ -36,6 +37,12 @@ function hasMovedMarker(node: ProseMirrorNode): boolean {
 	return MOVED_TO_DATE_PATTERN.test(markdown);
 }
 
+function isOpenTaskItem(node: ProseMirrorNode): boolean {
+	const status: unknown = node.attrs.status;
+	if (!isTaskStatusChar(status)) return node.attrs.checked !== true;
+	return isOpenStatus(taskStatusKindOf(status));
+}
+
 function activeTask(editor: Editor, host: HTMLElement): CandidateTask | null {
 	const positions: number[] = [];
 	editor.state.doc.descendants((node, position) => {
@@ -43,9 +50,9 @@ function activeTask(editor: Editor, host: HTMLElement): CandidateTask | null {
 		// must stay out of this list to keep both orderings identical.
 		if (node.type.name === "blockquote") return false;
 		if (node.type.name !== "taskItem") return true;
-		let unfinished = node.attrs.checked !== true;
+		let unfinished = isOpenTaskItem(node);
 		node.descendants((child) => {
-			if (child.type.name === "taskItem" && child.attrs.checked !== true) {
+			if (child.type.name === "taskItem" && isOpenTaskItem(child)) {
 				unfinished = true;
 			}
 		});

@@ -1,6 +1,11 @@
 import { Extension } from "@tiptap/core";
 import { Decoration } from "@tiptap/pm/view";
-import { INLINE_TAG_PATTERN, splitTagPath, tagColorFromName } from "../noteProperties/utils";
+import {
+	INLINE_TAG_PATTERN,
+	isHexColorCode,
+	splitTagPath,
+	tagColorFromName,
+} from "../noteProperties/utils";
 import {
 	type TextNodeDecorationContext,
 	createIncrementalTextDecorationPlugin,
@@ -60,7 +65,7 @@ function collectTagDecorations(
 	for (const match of text.matchAll(INLINE_TAG_PATTERN)) {
 		const leading = match[1] ?? "";
 		const tag = match[2] ?? "";
-		if (!tag) continue;
+		if (!tag || isHexColorCode(tag)) continue;
 		const start = (match.index ?? 0) + leading.length;
 		decorations.push(...tagPartDecorations(pos + start, tag));
 	}

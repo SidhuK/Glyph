@@ -1,0 +1,130 @@
+.tasksPriorityIcon {
+	display: inline-flex;
+	width: 14px;
+	height: 14px;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-tertiary);
+}
+
+.tasksPriorityIcon .databasePriorityBars {
+	width: 14px;
+	height: 14px;
+}
+
+.tasksPriorityIcon[data-level="low"] .databasePriorityBar[data-active="true"] {
+	fill: var(--palette-blue);
+}
+
+.tasksPriorityIcon[data-level="medium"] .databasePriorityBar[data-active="true"] {
+	fill: var(--palette-yellow);
+}
+
+.tasksPriorityIcon[data-level="high"] .databasePriorityBar[data-active="true"] {
+	fill: var(--palette-orange);
+}
+
+.tasksPriorityUrgent {
+	width: 14px;
+	height: 14px;
+}
+
+.tasksPriorityUrgent rect {
+	fill: var(--palette-red);
+}
+
+.tasksPriorityUrgent path {
+	fill: none;
+	stroke: var(--bg-primary);
+	stroke-width: 1.8;
+	stroke-linecap: round;
+}
+
+.tasksStatusButton {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+.tasksStatusButton:hover .tasksStatusGlyphRing {
+	stroke: var(--text-secondary);
+}
+
+.tasksStatusGlyph {
+	width: 16px;
+	height: 16px;
+	flex: 0 0 auto;
+	overflow: visible;
+}
+
+.tasksStatusGlyphRing {
+	fill: none;
+	stroke: var(--text-tertiary);
+	stroke-width: 1.5;
+	transition: stroke var(--transition-fast);
+}
+
+.tasksStatusGlyph[data-status="in_progress"] .tasksStatusGlyphRing {
+	stroke: var(--palette-yellow);
+}
+
+.tasksStatusGlyphPie {
+	fill: var(--palette-yellow);
+}
+
+.tasksStatusGlyphDisc {
+	fill: var(--interactive-accent);
+	transform-origin: 8px 8px;
+}
+
+.tasksStatusGlyph[data-status="cancelled"] .tasksStatusGlyphDisc {
+	fill: var(--text-quaternary);
+}
+
+.tasksStatusGlyphMark {
+	fill: none;
+	stroke: var(--bg-primary);
+	stroke-width: 1.7;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.tasksStatusGlyph.is-filling .tasksStatusGlyphDisc {
+	animation: tasksCircleFill var(--tasks-complete-fill) ease-out;
+}
+
+.tasksStatusGlyph.is-filling .tasksStatusGlyphMark {
+	stroke-dasharray: 12;
+	animation: tasksCircleMark var(--tasks-complete-fill) ease-out;
+}
+
+@keyframes tasksCircleFill {
+	from {
+		transform: scale(0.45);
+		opacity: 0.4;
+	}
+}
+
+@keyframes tasksCircleMark {
+	from {
+		stroke-dashoffset: 12;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tasksRowCollapse,
+	.tasksStatusGlyph.is-filling :is(.tasksStatusGlyphDisc, .tasksStatusGlyphMark) {
+		transition: none;
+		animation: none;
+	}
+}

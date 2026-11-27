@@ -12,7 +12,7 @@ import {
 	Archive03Icon,
 	ArrowDown01Icon,
 	ChartRelationshipIcon,
-	CheckListIcon,
+	CheckmarkSquare02Icon,
 	InboxIcon,
 	LibraryIcon,
 	NoteIcon,
@@ -43,7 +43,7 @@ const SPECIAL_TAB_ICONS = new Map<string, IconSvgElement>([
 	[ACTIVITY_TIMELINE_TAB_ID, NoteIcon],
 	[DATABASES_TAB_ID, LibraryIcon],
 	[SPACE_CONNECTIONS_TAB_ID, ChartRelationshipIcon],
-	[TASKS_TAB_ID, CheckListIcon],
+	[TASKS_TAB_ID, CheckmarkSquare02Icon],
 ]);
 
 interface TabOverflowMenuProps {

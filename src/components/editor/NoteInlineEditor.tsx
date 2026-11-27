@@ -47,6 +47,8 @@ import { mermaidDiagramFontKey } from "./extensions/mermaid/renderer";
 import { getMountedEditorContentRoot, getOffsetWithinAncestor } from "./hooks/editorDomUtils";
 import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
 import { useMathNodeEditor } from "./hooks/useMathNodeEditor";
+import { TaskFieldMenu } from "./taskFields/TaskFieldMenu";
+import { useTaskFieldMenu } from "./taskFields/useTaskFieldMenu";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useNoteFind } from "./hooks/useNoteFind";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
@@ -221,6 +223,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const { t } = useTranslation("editor");
 	const chromeMinimal = chrome === "minimal";
 	const mathNodeEditor = useMathNodeEditor();
+	const taskFieldMenu = useTaskFieldMenu();
 	const mathExtensions = useMemo(
 		() => (enableMath ? createGlyphMathExtensions({ onEditRequest: mathNodeEditor.open }) : []),
 		[enableMath, mathNodeEditor.open],
@@ -256,9 +259,11 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		onChange,
 		onMathEditRequest: mathNodeEditor.open,
 		onTemplateInsertRequest,
+		onTaskFieldRequest: taskFieldMenu.open,
 	});
 	const liveEditor = editor && !editor.isDestroyed ? editor : null;
 	mathNodeEditor.connect(liveEditor, mode === "rich" && !chromeMinimal);
+	taskFieldMenu.connect(liveEditor, mode === "rich");
 
 	const canEdit = mode === "rich" && Boolean(liveEditor?.isEditable);
 	const showEditorChrome = canEdit && !chromeMinimal;
@@ -909,6 +914,18 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						onDelete={mathNodeEditor.remove}
 					/>
 				</Suspense>
+			) : null}
+			{canEdit && taskFieldMenu.request ? (
+				<TaskFieldMenu
+					key={`${taskFieldMenu.request.kind}:${taskFieldMenu.request.pos}`}
+					request={taskFieldMenu.request}
+					anchorRect={taskFieldMenu.getAnchorRect()}
+					onClose={taskFieldMenu.close}
+					onSetDue={taskFieldMenu.setDue}
+					onRemoveDue={taskFieldMenu.removeDue}
+					onSetPriority={taskFieldMenu.setPriority}
+					onSetStatus={taskFieldMenu.setStatus}
+				/>
 			) : null}
 			<FocusedCodeBlockPreviewDialog
 				preview={focusedCodeBlockPreview}

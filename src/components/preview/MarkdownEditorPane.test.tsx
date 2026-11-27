@@ -166,7 +166,6 @@ describe("MarkdownEditorPane", () => {
 			| [command: "backlinks", params: { note_id: string }]
 			| [command: "note_relationships", params: { note_id: string }]
 			| [command: "note_frontmatter_parse_properties", params: { frontmatter?: string | null }]
-			| [command: "task_summary", params: { markdown: string }]
 			| [command: "databases_preview_context", params: { note_path: string }]
 	) {
 		const [command, params] = args;
@@ -201,9 +200,6 @@ describe("MarkdownEditorPane", () => {
 		}
 		if (command === "note_frontmatter_parse_properties") {
 			return Promise.resolve([]);
-		}
-		if (command === "task_summary") {
-			return Promise.resolve({ total: 0, completed: 0 });
 		}
 		throw new Error(`Unexpected command: ${command satisfies never}`);
 	}

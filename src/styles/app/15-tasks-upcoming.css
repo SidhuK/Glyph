@@ -1,0 +1,121 @@
+.tasksWeekStrip {
+	position: sticky;
+	top: var(--header-height);
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding-block: 6px 8px;
+	border-bottom: 1px solid var(--border-light);
+	background: var(--bg-primary);
+}
+
+.tasksWeekStripHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding-left: 2px;
+}
+
+.tasksWeekStripMonth {
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+}
+
+.tasksWeekStripNav {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.tasksWeekStripNav .tasksWeekStripToday {
+	height: 24px;
+	font-size: var(--text-xs);
+}
+
+.tasksWeekStripNav .tasksIconButton {
+	width: 24px;
+	height: 24px;
+}
+
+.tasksWeekDays {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 4px;
+}
+
+.tasksWeekDay {
+	display: flex;
+	min-width: 0;
+	height: auto;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 3px;
+	padding: 6px 0;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	line-height: 1.2;
+	cursor: pointer;
+	transition:
+		background-color var(--transition-fast),
+		border-color var(--transition-fast);
+}
+
+.tasksWeekDay:hover {
+	background: var(--bg-hover);
+}
+
+.tasksWeekDay[data-drop-target="true"] {
+	border-color: color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+	background: var(--state-selected);
+}
+
+.tasksWeekDayName {
+	color: var(--text-tertiary);
+	font-size: var(--text-2xs);
+	font-weight: var(--font-medium);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.tasksWeekDayNumber {
+	color: var(--text-primary);
+	font-size: var(--text-base);
+	font-weight: var(--font-medium);
+	font-variant-numeric: tabular-nums;
+}
+
+.tasksWeekDay[data-today="true"] {
+	background: color-mix(in srgb, var(--tasks-tone-today) 8%, transparent);
+}
+
+.tasksWeekDay[data-today="true"] :is(.tasksWeekDayName, .tasksWeekDayNumber) {
+	color: var(--tasks-tone-today);
+}
+
+.tasksWeekDay[data-today="true"] .tasksWeekDayNumber {
+	font-weight: var(--font-semibold);
+}
+
+.tasksWeekDayDots {
+	display: flex;
+	height: 4px;
+	gap: 2px;
+}
+
+.tasksWeekDayDot {
+	width: 4px;
+	height: 4px;
+	border-radius: 999px;
+	background: var(--text-tertiary);
+}
+
+.tasksWeekDay[data-today="true"] .tasksWeekDayDot {
+	background: var(--tasks-tone-today);
+}

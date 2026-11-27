@@ -1,137 +1,91 @@
 import { memo, useCallback, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useSpace } from "../../contexts";
-import type { TaskScope } from "../../lib/tauri";
-import { CanvasPaneAwait } from "../app/CanvasPaneAwait";
-import { dispatchInternalAnchorClick } from "../editor/markdown/editorEvents";
-import { requestHeadingNavigation, slugifyHeading } from "../editor/markdown/headingAnchor";
-import { Button } from "../ui/shadcn/button";
-import type { TaskSortMode } from "./buildTaskRows";
-import { TasksList } from "./TasksList";
-import type { TaskScopeKind } from "./TasksScopeSelects";
-import { TasksToolbar } from "./TasksToolbar";
-import { useTasksView } from "./useTasksView";
+import type { TaskView } from "@/lib/tauri";
+import { TasksHeader } from "./header/TasksHeader";
+import { TaskUndoBar } from "./TaskUndoBar";
+import { fullDisplayDate } from "./model/taskDates";
+import { TODAY_ADD_ROW_ID } from "./model/todayRows";
+import { QuickAdd } from "./quickAdd/QuickAdd";
+import { TasksContext } from "./TasksContext";
+import { useTasksController } from "./useTasksController";
+import { AllView } from "./views/AllView";
+import { DoneView } from "./views/DoneView";
+import { TodayView } from "./views/TodayView";
+import { UpcomingView } from "./views/UpcomingView";
+
+const NEW_TASK_ANCHOR = "new-task";
 
 interface TasksPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
 }
 
-function toTaskScope(kind: TaskScopeKind, folder: string, tag: string): TaskScope {
-	if (kind === "folder" && folder) return { kind, folder_prefix: folder };
-	if (kind === "tag" && tag) return { kind, tag };
-	return { kind: "all" };
+function TaskViewContent({
+	view,
+	paneElement,
+	onViewChange,
+}: {
+	view: TaskView;
+	paneElement: HTMLElement | null;
+	onViewChange: (view: TaskView) => void;
+}) {
+	switch (view) {
+		case "today":
+			return <TodayView paneElement={paneElement} onSeeAll={() => onViewChange("all")} />;
+		case "upcoming":
+			return <UpcomingView paneElement={paneElement} />;
+		case "all":
+			return <AllView paneElement={paneElement} />;
+		case "done":
+			return <DoneView paneElement={paneElement} />;
+	}
 }
 
 export const TasksPane = memo(function TasksPane({ onOpenFile }: TasksPaneProps) {
-	const { t } = useTranslation("shell");
-	const { spacePath } = useSpace();
+	const { value, clearTimers, flushHolds } = useTasksController(onOpenFile);
 	const [paneElement, setPaneElement] = useState<HTMLElement | null>(null);
-	const [search, setSearch] = useState("");
-	const [scopeKind, setScopeKind] = useState<TaskScopeKind>("all");
-	const [folder, setFolder] = useState("");
-	const [tag, setTag] = useState("");
-	const [sort, setSort] = useState<TaskSortMode>("recent");
-	const scope = toTaskScope(scopeKind, folder, tag);
-	const needle = search.trim().toLowerCase();
-	const view = useTasksView(spacePath, scope, needle, sort);
-	const { flushNow, clearTimer } = view.completion;
-	// React 19 ref cleanup: stop the hold timer when the pane unmounts.
+	const [view, setView] = useState<TaskView>("today");
 	const attachPane = useCallback(
 		(node: HTMLElement | null) => {
 			setPaneElement(node);
-			return clearTimer;
+			return clearTimers;
 		},
-		[clearTimer],
+		[clearTimers],
 	);
-	const changeScope = (apply: () => void) => {
-		flushNow();
-		apply();
+
+	const changeView = (next: TaskView) => {
+		flushHolds();
+		value.collapse();
+		value.closeQuickAdd();
+		setView(next);
 	};
 
-	const openTask = (notePath: string, heading: string | null) => {
-		if (!heading) {
-			void onOpenFile(notePath);
-			return;
-		}
-		const anchor = slugifyHeading(heading) || heading;
-		// Order matters: the event scrolls an editor already showing the note (and clears any
-		// pending jump), so it goes first; the pending jump then serves a viewer that mounts
-		// on open, such as the side peek.
-		dispatchInternalAnchorClick({ anchor: `#${anchor}`, sourcePath: notePath });
-		requestHeadingNavigation({ path: notePath, anchor });
-		void onOpenFile(notePath);
+	const openNewTask = () => {
+		paneElement?.scrollTo({ top: 0 });
+		value.openQuickAdd(
+			view === "today"
+				? { anchor: TODAY_ADD_ROW_ID, due: value.today }
+				: { anchor: NEW_TASK_ANCHOR, due: null },
+		);
 	};
-	const showAllNotes = () =>
-		changeScope(() => {
-			setScopeKind("all");
-			setFolder("");
-			setTag("");
-		});
-
-	if (view.query.isLoading) {
-		return <CanvasPaneAwait variant="all-docs" />;
-	}
-
-	const empty = needle
-		? {
-				message: t("tasks.emptySearch"),
-				action: t("tasks.clearSearch"),
-				onAction: () => setSearch(""),
-			}
-		: scope.kind !== "all"
-			? { message: t("tasks.emptyScope"), action: t("tasks.showAllNotes"), onAction: showAllNotes }
-			: { message: t("tasks.empty"), action: null, onAction: null };
 
 	return (
-		<section ref={attachPane} className="activityTimelinePane tasksPane">
-			<header className="activityTimelineHeader">
-				<h1 className="activityTimelineTitle">{t("sidebar.tasks")}</h1>
-			</header>
-			<TasksToolbar
-				spacePath={spacePath}
-				search={search}
-				onSearchChange={setSearch}
-				scopeKind={scopeKind}
-				onScopeKindChange={(kind) => changeScope(() => setScopeKind(kind))}
-				folder={folder}
-				onFolderChange={(value) => changeScope(() => setFolder(value))}
-				tag={tag}
-				onTagChange={(value) => changeScope(() => setTag(value))}
-				sort={sort}
-				onSortChange={(value) => changeScope(() => setSort(value))}
-				openTasks={view.openTasks}
-				notes={view.notes}
-				anyExpanded={view.anyExpanded}
-				onToggleAll={view.toggleAll}
-			/>
-			{view.query.error ? (
-				<div className="databaseLoadingState tasksState">
-					{t("tasks.loadError", { message: view.query.error.message })}
-				</div>
-			) : view.rows.length === 0 ? (
-				<div className="databaseLoadingState tasksState">
-					<p>{empty.message}</p>
-					{empty.action ? (
-						<Button type="button" variant="outline" size="sm" onClick={empty.onAction}>
-							{empty.action}
-						</Button>
+		<TasksContext value={value}>
+			<div className="tasksPaneFrame">
+				<section ref={attachPane} className="activityTimelinePane tasksPane">
+					<TasksHeader
+						view={view}
+						subtitle={view === "today" ? fullDisplayDate(value.today, value.dateFormat) : null}
+						onViewChange={changeView}
+						onNewTask={openNewTask}
+					/>
+					{value.quickAdd?.anchor === NEW_TASK_ANCHOR ? (
+						<div className="tasksQuickAddSlot">
+							<QuickAdd due={value.quickAdd.due} />
+						</div>
 					) : null}
-				</div>
-			) : (
-				<TasksList
-					rows={view.rows}
-					fractionWidth={view.fractionWidth}
-					paneElement={paneElement}
-					context={{
-						needle,
-						folderPrefix: scope.kind === "folder" ? scope.folder_prefix : null,
-						onComplete: view.completion.complete,
-						onCancel: view.completion.cancel,
-						onOpen: openTask,
-						onToggleCollapsed: view.toggleCollapsed,
-					}}
-				/>
-			)}
-		</section>
+					<TaskViewContent view={view} paneElement={paneElement} onViewChange={changeView} />
+				</section>
+				<TaskUndoBar />
+			</div>
+		</TasksContext>
 	);
 });

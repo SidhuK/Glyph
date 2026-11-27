@@ -1,0 +1,155 @@
+.tasksPopover {
+	width: auto;
+	padding: 4px;
+	border: 0;
+	border-radius: var(--floating-surface-radius);
+	background: var(--floating-surface-bg);
+	box-shadow: var(--floating-surface-shadow);
+	color: var(--text-primary);
+	font-size: var(--floating-row-font-size);
+	outline: none;
+}
+
+.tasksSearchList {
+	display: flex;
+	width: 260px;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.tasksTargetPopover .tasksSearchList {
+	width: 300px;
+}
+
+.tasksSearchListInput {
+	height: 28px;
+	padding: 0 8px;
+	border: 0;
+	background: transparent;
+	color: var(--text-primary);
+	font: inherit;
+	outline: none;
+}
+
+.tasksSearchListInput::placeholder {
+	color: var(--text-placeholder);
+}
+
+.tasksSearchListOptions,
+.tasksCheckList {
+	display: flex;
+	max-height: 280px;
+	flex-direction: column;
+	overflow-y: auto;
+}
+
+.tasksCheckList {
+	min-width: 200px;
+}
+
+.tasksSearchListOptions .glyphMenuItem,
+.tasksCheckList .glyphMenuItem {
+	width: 100%;
+	flex: 0 0 auto;
+	justify-content: flex-start;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-weight: var(--font-normal);
+	text-align: start;
+}
+
+.tasksSearchListOptions .glyphMenuItem[data-highlighted] {
+	background: var(--bg-hover);
+}
+
+.tasksSearchListOptions .glyphMenuItemIcon {
+	width: var(--icon-sm);
+	height: var(--icon-sm);
+	color: var(--text-tertiary);
+}
+
+.tasksCheckList .glyphMenuItem:hover {
+	background: var(--bg-hover);
+}
+
+.tasksSearchListOptions .glyphMenuItemTrailing {
+	max-width: 45%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tasksSearchListEmpty {
+	margin: 0;
+	padding: 6px 8px;
+	color: var(--text-tertiary);
+}
+
+.glyphMenuItem .tasksPriorityIcon:empty {
+	visibility: hidden;
+}
+
+.tasksPaneFrame {
+	position: relative;
+	display: flex;
+	min-width: 0;
+	min-height: 0;
+	flex: 1;
+	flex-direction: column;
+}
+
+.tasksUndoBar {
+	position: absolute;
+	bottom: 20px;
+	left: 50%;
+	z-index: 5;
+	display: inline-flex;
+	height: 32px;
+	align-items: center;
+	gap: 8px;
+	padding: 0 4px 0 12px;
+	border-radius: 999px;
+	background: var(--glyph-toast-fill);
+	box-shadow: var(--shadow-float);
+	color: var(--glyph-toast-text);
+	font-size: var(--text-sm);
+	white-space: nowrap;
+	transform: translateX(-50%);
+	animation: tasks-undo-bar-in 160ms ease-out;
+}
+
+.tasksUndoBarIcon {
+	color: var(--palette-green);
+}
+
+.tasksUndoBarAction {
+	height: 24px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--glyph-toast-text);
+	font: inherit;
+	font-weight: var(--font-semibold);
+	cursor: pointer;
+}
+
+.tasksUndoBarAction:is(:hover, :focus-visible) {
+	background: color-mix(in srgb, var(--glyph-toast-text) 12%, transparent);
+	color: var(--glyph-toast-text);
+}
+
+@keyframes tasks-undo-bar-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, 6px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tasksUndoBar {
+		animation: none;
+	}
+}

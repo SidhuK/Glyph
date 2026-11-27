@@ -12,6 +12,13 @@ const TAG_SEGMENT_PATTERN = /^[\p{L}\p{N}_][\p{L}\p{M}\p{N}_-]*$/u;
 export const INLINE_TAG_PATTERN =
 	/(^|[^\p{L}\p{M}\p{N}_/#])#([\p{L}\p{N}_][\p{L}\p{M}\p{N}_/-]*)/gu;
 
+const HEX_COLOR_CODE_PATTERN =
+	/^(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+
+export function isHexColorCode(name: string): boolean {
+	return HEX_COLOR_CODE_PATTERN.test(name);
+}
+
 export function humanizePropertyKey(key: string): string {
 	if (!key) return "";
 	return key.replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());

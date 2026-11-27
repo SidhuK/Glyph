@@ -354,6 +354,15 @@
 		},
 		"highlightClear": {
 			"title": "Wyczyść wyróżnienie"
+		},
+		"taskDue": {
+			"title": "Termin"
+		},
+		"taskPriority": {
+			"title": "Priorytet"
+		},
+		"taskStatus": {
+			"title": "Status"
 		}
 	},
 	"tableControls": {
@@ -414,5 +423,29 @@
 		"new": "nowy",
 		"select": "Wybierz",
 		"insert": "Wstaw"
+	},
+	"taskDatePicker": {
+		"label": "Termin",
+		"today": "Dziś",
+		"tomorrow": "Jutro",
+		"nextWeek": "W przyszłym tygodniu",
+		"remove": "Usuń datę",
+		"previousMonth": "Poprzedni miesiąc",
+		"nextMonth": "Następny miesiąc"
+	},
+	"taskFields": {
+		"priority": {
+			"lowest": "Najniższy",
+			"low": "Niski",
+			"medium": "Średni",
+			"high": "Wysoki",
+			"highest": "Pilny"
+		},
+		"status": {
+			"todo": "Do zrobienia",
+			"in_progress": "W toku",
+			"done": "Zrobione",
+			"cancelled": "Anulowane"
+		}
 	}
 }

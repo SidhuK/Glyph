@@ -7,7 +7,7 @@ use std::sync::{Mutex, OnceLock};
 
 use super::schema::ensure_schema;
 
-const INDEX_DB_VERSION: i32 = 9;
+const INDEX_DB_VERSION: i32 = 12;
 const WAL_SIZE_LIMIT_BYTES: i64 = 1_048_576;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
@@ -44,7 +44,7 @@ fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
         migrate_checklist_summary_columns(conn)?;
     }
 
-    if current_version < 9 {
+    if current_version < 12 {
         migrate_checklist_items(conn)?;
     }
 
@@ -137,13 +137,16 @@ fn migrate_checklist_summary_columns(conn: &rusqlite::Connection) -> Result<(), 
         .map_err(|e| e.to_string())
 }
 
-// Recreates `checklist_items` in its current shape (dev builds at version 8
-// had an older one), then clears the fingerprints so the next sync falls back
-// to a full rebuild, which fills it and recomputes checklist counts.
 fn migrate_checklist_items(conn: &rusqlite::Connection) -> Result<(), String> {
     conn.execute("DROP TABLE IF EXISTS checklist_items", [])
         .map_err(|e| e.to_string())?;
     ensure_schema(conn)?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS checklist_items_due
+         ON checklist_items(due) WHERE status_kind IN ('todo', 'in_progress')",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
     conn.execute("DELETE FROM indexed_files", [])
         .map_err(|e| e.to_string())?;
     // A note indexed before the rebuild runs would switch sync to the

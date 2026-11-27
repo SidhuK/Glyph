@@ -1,0 +1,110 @@
+.tasksFilterBar {
+	display: flex;
+	min-width: 0;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+}
+
+.tasksFilterChip {
+	display: inline-flex;
+	height: 26px;
+	align-items: stretch;
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	font-size: var(--text-xs);
+}
+
+.tasksFilterChipMain {
+	display: inline-flex;
+	min-width: 0;
+	height: auto;
+	border-radius: 0;
+	align-items: center;
+	gap: 5px;
+	padding: 0 8px;
+	border: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+span.tasksFilterChipMain {
+	cursor: default;
+}
+
+button.tasksFilterChipMain:is(:hover, [data-popup-open]) {
+	background: var(--bg-hover);
+}
+
+.tasksFilterChipName {
+	color: var(--text-secondary);
+}
+
+.tasksFilterChipOp {
+	color: var(--text-tertiary);
+}
+
+.tasksFilterChipValue {
+	max-width: 22ch;
+	overflow: hidden;
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+	text-overflow: ellipsis;
+}
+
+.tasksFilterChipRemove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: auto;
+	padding: 0;
+	border-radius: 0;
+	border: 0;
+	border-left: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+}
+
+.tasksFilterChipRemove:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.tasksDisplayPanel .tasksLayoutToggle {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	border-radius: var(--radius-md);
+}
+
+.tasksLayoutToggle [data-slot="toggle-group-item"] {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	height: 22px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.tasksLayoutToggle [data-slot="toggle-group-item"]:hover {
+	background: var(--bg-hover);
+}
+
+.tasksLayoutToggle [data-slot="toggle-group-item"][aria-pressed="true"] {
+	background: var(--bg-active);
+	color: var(--text-primary);
+}

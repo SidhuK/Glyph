@@ -234,6 +234,15 @@
 		},
 		"highlightClear": {
 			"title": "Hervorhebung entfernen"
+		},
+		"taskDue": {
+			"title": "Fälligkeitsdatum"
+		},
+		"taskPriority": {
+			"title": "Priorität"
+		},
+		"taskStatus": {
+			"title": "Status"
 		}
 	},
 	"tableControls": {
@@ -332,5 +341,29 @@
 		"new": "neu",
 		"select": "Auswählen",
 		"insert": "Einfügen"
+	},
+	"taskDatePicker": {
+		"label": "Fälligkeitsdatum",
+		"today": "Heute",
+		"tomorrow": "Morgen",
+		"nextWeek": "Nächste Woche",
+		"remove": "Datum entfernen",
+		"previousMonth": "Vorheriger Monat",
+		"nextMonth": "Nächster Monat"
+	},
+	"taskFields": {
+		"priority": {
+			"lowest": "Sehr niedrig",
+			"low": "Niedrig",
+			"medium": "Mittel",
+			"high": "Hoch",
+			"highest": "Dringend"
+		},
+		"status": {
+			"todo": "Offen",
+			"in_progress": "In Arbeit",
+			"done": "Erledigt",
+			"cancelled": "Abgebrochen"
+		}
 	}
 }

@@ -234,6 +234,15 @@
 		},
 		"highlightClear": {
 			"title": "ハイライトをクリア"
+		},
+		"taskDue": {
+			"title": "期限"
+		},
+		"taskPriority": {
+			"title": "優先度"
+		},
+		"taskStatus": {
+			"title": "ステータス"
 		}
 	},
 	"tableControls": {
@@ -331,5 +340,29 @@
 		"new": "新規",
 		"select": "選択",
 		"insert": "挿入"
+	},
+	"taskDatePicker": {
+		"label": "期限",
+		"today": "今日",
+		"tomorrow": "明日",
+		"nextWeek": "来週",
+		"remove": "日付を削除",
+		"previousMonth": "前の月",
+		"nextMonth": "次の月"
+	},
+	"taskFields": {
+		"priority": {
+			"lowest": "最低",
+			"low": "低",
+			"medium": "中",
+			"high": "高",
+			"highest": "緊急"
+		},
+		"status": {
+			"todo": "未着手",
+			"in_progress": "進行中",
+			"done": "完了",
+			"cancelled": "キャンセル"
+		}
 	}
 }

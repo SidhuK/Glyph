@@ -5,6 +5,7 @@ use std::{
 };
 use tauri::{State, WebviewWindow};
 
+use crate::index::checklists::is_valid_date;
 use crate::note_mutation::{emit_changed, index_written_markdown, SpaceChange};
 use crate::space_fs::helpers::{deny_hidden_rel_path, file_mtime_ms};
 use crate::{io_atomic, paths, space::SpaceState};
@@ -24,7 +25,7 @@ pub async fn daily_note_rollover_candidates(
 ) -> Result<Vec<RolloverCandidate>, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
-        if !markdown::valid_date(&before_date) {
+        if !is_valid_date(&before_date) {
             return Err("invalid rollover date".to_string());
         }
         let folder_rel = PathBuf::from(folder);
@@ -51,9 +52,7 @@ pub async fn daily_note_rollover_candidates(
             let Some(date) = filename.strip_suffix(".md") else {
                 continue;
             };
-            if !markdown::valid_date(date)
-                || (source_date.is_none() && date >= before_date.as_str())
-            {
+            if !is_valid_date(date) || (source_date.is_none() && date >= before_date.as_str()) {
                 continue;
             }
             if source_date.as_deref().is_some_and(|only| only != date) {
@@ -94,7 +93,7 @@ pub async fn daily_note_rollover_move(
     if items.is_empty() {
         return Err("select at least one rollover candidate".to_string());
     }
-    if !markdown::valid_date(&destination_date) {
+    if !is_valid_date(&destination_date) {
         return Err("invalid rollover destination date".to_string());
     }
     let root = state.root_for_window(&window)?;
@@ -147,7 +146,7 @@ pub async fn daily_note_rollover_move(
             let source_date = rel
                 .file_stem()
                 .and_then(|value| value.to_str())
-                .filter(|date| markdown::valid_date(date))
+                .filter(|date| is_valid_date(date))
                 .ok_or_else(|| "rollover source must be a configured daily note".to_string())?;
             let abs = paths::join_under(&root, &rel)?;
             let source = std::fs::read_to_string(&abs).map_err(|error| error.to_string())?;

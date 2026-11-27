@@ -234,6 +234,15 @@
 		},
 		"highlightClear": {
 			"title": "강조 지우기"
+		},
+		"taskDue": {
+			"title": "마감일"
+		},
+		"taskPriority": {
+			"title": "우선순위"
+		},
+		"taskStatus": {
+			"title": "상태"
 		}
 	},
 	"tableControls": {
@@ -331,5 +340,29 @@
 		"new": "새 태그",
 		"select": "선택",
 		"insert": "삽입"
+	},
+	"taskDatePicker": {
+		"label": "마감일",
+		"today": "오늘",
+		"tomorrow": "내일",
+		"nextWeek": "다음 주",
+		"remove": "날짜 제거",
+		"previousMonth": "이전 달",
+		"nextMonth": "다음 달"
+	},
+	"taskFields": {
+		"priority": {
+			"lowest": "매우 낮음",
+			"low": "낮음",
+			"medium": "보통",
+			"high": "높음",
+			"highest": "긴급"
+		},
+		"status": {
+			"todo": "할 일",
+			"in_progress": "진행 중",
+			"done": "완료",
+			"cancelled": "취소됨"
+		}
 	}
 }

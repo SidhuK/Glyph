@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
@@ -5,6 +7,10 @@ import { describe, expect, it } from "vite-plus/test";
 import { calloutDecorationsForNode, parseCalloutMarker } from "../extensions/calloutDecorations";
 import { GlyphMarkdown } from "../extensions/glyphMarkdown";
 import { HtmlCommentBlock, HtmlCommentInline } from "../extensions/htmlComment";
+import { GlyphTaskItem, GlyphTaskList } from "../extensions/taskItem";
+import { WikiLink } from "../extensions/wikiLink";
+import { applyTaskLineEdit, findTaskItemLine } from "../taskFields/taskItemLine";
+import { planTaskFieldWrite } from "../taskFields/taskLineFields";
 import { postprocessMarkdownFromEditor, preprocessMarkdownForEditor } from "./editorMarkdownBridge";
 
 function roundTripThroughEditor(markdown: string): string {
@@ -28,6 +34,40 @@ function createGlyphMarkdownEditor(markdown: string): Editor {
 		content: preprocessMarkdownForEditor(markdown),
 		contentType: "markdown",
 	});
+}
+
+function createTaskEditor(markdown: string): Editor {
+	return new Editor({
+		element: document.createElement("div"),
+		extensions: [
+			StarterKit,
+			GlyphTaskList,
+			GlyphTaskItem,
+			WikiLink,
+			GlyphMarkdown.configure({ markedOptions: { gfm: true, breaks: false } }),
+		],
+		content: preprocessMarkdownForEditor(markdown),
+		contentType: "markdown",
+	});
+}
+
+function saveTaskEditor(editor: Editor): string {
+	return postprocessMarkdownFromEditor(editor.getMarkdown()).trimEnd();
+}
+
+function firstTaskItemPos(editor: Editor): number {
+	let found = -1;
+	editor.state.doc.descendants((node, pos) => {
+		if (found === -1 && node.type.name === "taskItem") found = pos;
+		return found === -1;
+	});
+	return found;
+}
+
+function setFirstTaskChecked(editor: Editor, checked: boolean): void {
+	const pos = firstTaskItemPos(editor);
+	const node = editor.state.doc.nodeAt(pos);
+	editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...node?.attrs, checked }));
 }
 
 function saveThroughGlyphMarkdown(markdown: string): string {
@@ -200,5 +240,69 @@ describe("editorMarkdownBridge", () => {
 	])("round-trips plain-text entities in %j", (markdown, saved) => {
 		expect(saveThroughGlyphMarkdown(markdown)).toBe(saved);
 		expect(saveThroughGlyphMarkdown(saved)).toBe(saved);
+	});
+
+	it.each([" ", "x", "X", "/", "-", ">", "!"])("round-trips the task status %j", (status) => {
+		const markdown = `- [${status}] Send deck [due:: 2026-12-04]\n  - [${status}] Nested child`;
+		expect(saveTaskEditor(createTaskEditor(markdown))).toBe(markdown);
+	});
+
+	it("keeps task fields, tags, emoji aliases and moved markers as literal text", () => {
+		const markdown = [
+			"- [ ] File taxes #finance [priority:: highest] [due:: 2027-04-15]",
+			"- [x] Renew passport [due:: 2026-11-20] [completion:: 2026-11-19]",
+			"- [-] Old idea [cancelled:: 2026-11-27]",
+			"- [ ] Ask [[Bob]] [owner:: [[Bob]]] [my_key:: some value]",
+			"- [ ] Emoji 📅 2026-12-04 ⏫",
+			"- [ ] Carried [due:: 2026-12-04] ***Moved to*** [[2026-11-28]]",
+			"- [ ] Code `[due:: 2026-12-04]` stays code",
+		].join("\n");
+		expect(saveTaskEditor(createTaskEditor(markdown))).toBe(markdown);
+	});
+
+	it("keeps numbered tasks and ordered lists intact", () => {
+		const markdown = "1. [ ] Numbered task [due:: 2026-12-04]\n2. [x] Done\n3. Plain item";
+		expect(saveTaskEditor(createTaskEditor(markdown))).toBe(markdown);
+	});
+
+	it("toggles any open status to done and done back to todo", () => {
+		const editor = createTaskEditor("- [/] In progress");
+		setFirstTaskChecked(editor, true);
+		expect(saveTaskEditor(editor)).toBe("- [x] In progress");
+		setFirstTaskChecked(editor, false);
+		expect(saveTaskEditor(editor)).toBe("- [ ] In progress");
+	});
+
+	it("appends a task field after trimming trailing spaces", () => {
+		const editor = createTaskEditor("- [ ] Ship it");
+		const pos = firstTaskItemPos(editor) + 2;
+		const line = findTaskItemLine(editor, pos);
+		if (!line) throw new Error("task line not found");
+		editor.view.dispatch(editor.state.tr.insertText("  ", line.lineStart + line.text.length));
+		const spaced = findTaskItemLine(editor, pos);
+		if (!spaced) throw new Error("task line not found");
+		applyTaskLineEdit(
+			editor,
+			spaced,
+			planTaskFieldWrite({ ...spaced, key: "due", value: "2026-12-04" }),
+			pos,
+		);
+		expect(saveTaskEditor(editor)).toBe("- [ ] Ship it  [due:: 2026-12-04]");
+	});
+
+	it("writes task fields in priority, due order before a moved marker", () => {
+		const editor = createTaskEditor("- [ ] Ship it ***Moved to*** [[2026-11-28]]");
+		const writeField = (key: "due" | "priority", value: string) => {
+			const pos = firstTaskItemPos(editor) + 2;
+			const line = findTaskItemLine(editor, pos);
+			if (!line) throw new Error("task line not found");
+			applyTaskLineEdit(editor, line, planTaskFieldWrite({ ...line, key, value }), pos);
+		};
+		writeField("due", "2026-12-04");
+		writeField("priority", "high");
+		writeField("due", "2026-12-05");
+		expect(saveTaskEditor(editor)).toBe(
+			"- [ ] Ship it  [priority:: high]  [due:: 2026-12-05] ***Moved to*** [[2026-11-28]]",
+		);
 	});
 });

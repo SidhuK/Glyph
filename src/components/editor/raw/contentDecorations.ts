@@ -3,7 +3,7 @@ import type { Range, Text } from "@codemirror/state";
 import { Decoration, type EditorView } from "@codemirror/view";
 import { FOOTNOTE_PATTERN, footnoteKindAt } from "../markdown/footnote";
 import { findWikiLinkSpans, parseWikiLink } from "../markdown/wikiLinkCodec";
-import { INLINE_TAG_PATTERN } from "../noteProperties/utils";
+import { INLINE_TAG_PATTERN, isHexColorCode } from "../noteProperties/utils";
 import { EQUALS_HIGHLIGHT_SCAN_RE } from "../textHighlights";
 import { concealSyntax, shouldConceal } from "./livePresentation";
 import { isPositionInMath } from "./markdownMathLanguage";
@@ -97,7 +97,7 @@ export function addGlyphInlineDecorations(
 
 	INLINE_TAG_PATTERN.lastIndex = 0;
 	for (const match of text.matchAll(INLINE_TAG_PATTERN)) {
-		if (match.index === undefined || !match[2]) continue;
+		if (match.index === undefined || !match[2] || isHexColorCode(match[2])) continue;
 		const from = lineFrom + match.index + (match[1]?.length ?? 0);
 		if (isLiteralPosition(view, from)) continue;
 		const raw = `#${match[2]}`;

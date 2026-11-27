@@ -37,6 +37,11 @@ button:hover:not(
 			.settingsTabButton,
 			.slashCommandItem,
 			.wikiLinkSuggestionItem,
+			[class^="tasks"],
+			[class*=" tasks"],
+			[class*="taskDatePicker"],
+			.tasksSearchListOptions .glyphMenuItem,
+			.tasksCheckList .glyphMenuItem,
 			[data-sileo-toast]
 		)
 	) {
@@ -59,6 +64,11 @@ button:active:not(
 			.settingsTabButton,
 			.slashCommandItem,
 			.wikiLinkSuggestionItem,
+			[class^="tasks"],
+			[class*=" tasks"],
+			[class*="taskDatePicker"],
+			.tasksSearchListOptions .glyphMenuItem,
+			.tasksCheckList .glyphMenuItem,
 			[data-sileo-toast]
 		)
 	) {

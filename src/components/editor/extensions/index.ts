@@ -7,15 +7,15 @@ import {
 	TableHeader,
 	TableRow,
 } from "@tiptap/extension-table";
-import TaskItem from "@tiptap/extension-task-item";
-import TaskList from "@tiptap/extension-task-list";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import type { EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
+import { isDoneStatusChar } from "../../../lib/taskFields/taskStatus";
 import type { TemplateInsertRequest } from "../slash/slashMenuItems";
 import { SlashCommand } from "../slashCommands";
+import type { TaskFieldRequest } from "../taskFields/taskFieldRequest";
 import { AsteriskDividerBloom } from "./asteriskDividerBloom";
 import { CalloutDecorations } from "./calloutDecorations";
 import {
@@ -46,6 +46,7 @@ import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
 import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
+import { GlyphTaskItem, GlyphTaskList } from "./taskItem";
 import { WikiLink } from "./wikiLink";
 
 const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
@@ -243,14 +244,14 @@ const TaskListMarkdownShortcut = Extension.create({
 					const replacements: Array<{
 						pos: number;
 						size: number;
-						checked: boolean;
+						status: string;
 						text: string;
 					}> = [];
 
 					visitChangedNodes(transactions, newState, (node, pos) => {
 						if (node.type !== paragraph || node.childCount !== 1) return;
 						const text = node.textContent ?? "";
-						const match = text.match(/^\[([ xX])\]\s*(.*)$/);
+						const match = text.match(/^\[([ xX/-])\]\s*(.*)$/);
 						if (!match) return;
 
 						const $pos = newState.doc.resolve(pos + 1);
@@ -272,7 +273,7 @@ const TaskListMarkdownShortcut = Extension.create({
 						replacements.push({
 							pos: $pos.before(listDepth),
 							size: listNode.nodeSize,
-							checked: (match[1] ?? " ").toLowerCase() === "x",
+							status: match[1] ?? " ",
 							text: (match[2] ?? "").trimStart(),
 						});
 					});
@@ -287,7 +288,10 @@ const TaskListMarkdownShortcut = Extension.create({
 							null,
 							replacement.text ? textNode(replacement.text) : null,
 						);
-						const taskItemNode = taskItem.create({ checked: replacement.checked }, paragraphNode);
+						const taskItemNode = taskItem.create(
+							{ checked: isDoneStatusChar(replacement.status), status: replacement.status },
+							paragraphNode,
+						);
 						const taskListNode = taskList.create(null, [taskItemNode]);
 						tr = tr.replaceWith(replacement.pos, replacement.pos + replacement.size, taskListNode);
 					}
@@ -475,6 +479,7 @@ interface CreateEditorExtensionsOptions {
 	placeholder?: string | null;
 	onMathEditRequest?: (request: MathEditRequest) => void;
 	onTemplateInsertRequest?: (request: TemplateInsertRequest) => void;
+	onTaskFieldRequest?: (request: TaskFieldRequest) => void;
 	onListCollapseToggle?: (branches: string[]) => void;
 	onPickImages?: (editor: Editor) => void;
 }
@@ -493,6 +498,7 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		placeholder = null,
 		onMathEditRequest,
 		onTemplateInsertRequest,
+		onTaskFieldRequest,
 		onListCollapseToggle,
 		onPickImages,
 	} = options ?? {};
@@ -517,8 +523,8 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 		SyntaxHighlightedCodeBlock,
 		CodeBlockCopyControls,
 		EditorLink,
-		TaskList,
-		TaskItem.configure({ nested: true }),
+		GlyphTaskList,
+		GlyphTaskItem,
 		NoteSearch,
 		ImagePicker.configure({ onPickImages: enableEditingExtensions ? onPickImages : undefined }),
 		...(enableEditingExtensions
@@ -583,6 +589,7 @@ export function createEditorExtensions(options?: CreateEditorExtensionsOptions) 
 					SlashCommand.configure({
 						onMathEditRequest,
 						onTemplateInsertRequest,
+						onTaskFieldRequest,
 					}),
 				]
 			: []),

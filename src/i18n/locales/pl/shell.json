@@ -739,49 +739,218 @@
 		"saveError": "Nie można zapisać płótna: {{message}}"
 	},
 	"tasks": {
-		"searchPlaceholder": "Filtruj zadania",
-		"scope": "Pokaż zadania z",
-		"scopeAll": "Wszystkie notatki",
-		"scopeFolder": "Folder",
-		"scopeTag": "Tag",
-		"folder": "Folder",
-		"allFolders": "Wszystkie foldery",
-		"foldersLoadFailed": "Nie udało się wczytać folderów: {{message}}",
-		"retry": "Ponów",
-		"tag": "Tag",
-		"allTags": "Wszystkie tagi",
-		"empty": "Brak otwartych zadań. Pozycje list kontrolnych z Twoich notatek pojawią się tutaj.",
-		"emptyScope": "Brak otwartych zadań w tym folderze lub tagu.",
-		"emptySearch": "Żadne otwarte zadanie nie pasuje do wyszukiwania.",
-		"clearSearch": "Wyczyść wyszukiwanie",
-		"showAllNotes": "Pokaż wszystkie notatki",
-		"openTasks_one": "{{count}} otwarte zadanie",
-		"openTasks_few": "{{count}} otwarte zadania",
-		"openTasks_many": "{{count}} otwartych zadań",
-		"openTasks_other": "{{count}} otwartego zadania",
-		"noteCount_one": "{{count}} notatka",
-		"noteCount_few": "{{count}} notatki",
-		"noteCount_many": "{{count}} notatek",
-		"noteCount_other": "{{count}} notatki",
-		"collapseAll": "Zwiń wszystko",
-		"groupStateSaveFailed": "Nie udało się zapisać, które notatki są rozwinięte",
-		"expandAll": "Rozwiń wszystko",
-		"collapseNote": "Zwiń {{title}}",
-		"expandNote": "Rozwiń {{title}}",
+		"views": {
+			"label": "Widoki zadań",
+			"today": {
+				"tab": "Dziś",
+				"title": "Dziś"
+			},
+			"upcoming": {
+				"tab": "Nadchodzące",
+				"title": "Nadchodzące"
+			},
+			"all": {
+				"tab": "Wszystkie",
+				"title": "Wszystkie zadania"
+			},
+			"done": {
+				"tab": "Wykonane",
+				"title": "Wykonane"
+			}
+		},
+		"newTask": "Nowe zadanie",
+		"addToToday": "Dodaj do dzisiejszej notatki…",
+		"addTask": "Dodaj zadanie",
+		"loading": "Wczytywanie zadań",
 		"loadError": "Nie udało się wczytać zadań: {{message}}",
+		"retry": "Spróbuj ponownie",
+		"untitled": "Zadanie bez tytułu",
+		"progress": "Wykonano {{completed}} z {{total}} zadań",
+		"sections": {
+			"overdue": "Zaległe",
+			"today": "Dziś"
+		},
+		"date": {
+			"today": "Dziś",
+			"tomorrow": "Jutro"
+		},
+		"doneSections": {
+			"today": "Dziś",
+			"yesterday": "Wczoraj",
+			"thisWeek": "W tym tygodniu",
+			"earlier": "Wcześniej"
+		},
+		"dueGroups": {
+			"overdue": "Zaległe",
+			"today": "Dziś",
+			"tomorrow": "Jutro",
+			"week": "Następne 7 dni",
+			"later": "Później",
+			"none": "Bez terminu"
+		},
+		"status": {
+			"todo": "Do zrobienia",
+			"in_progress": "W toku",
+			"done": "Wykonane",
+			"cancelled": "Anulowane"
+		},
+		"priority": {
+			"urgent": "Pilny",
+			"high": "Wysoki",
+			"medium": "Średni",
+			"low": "Niski",
+			"lowest": "Najniższy",
+			"none": "Bez priorytetu"
+		},
+		"noTags": "Bez tagów",
+		"completedToday_one": "{{count}} wykonane dziś",
+		"completedToday_few": "{{count}} wykonane dziś",
+		"completedToday_many": "{{count}} wykonanych dziś",
+		"completedToday_other": "{{count}} wykonanego dziś",
+		"reschedule": "Zmień termin…",
+		"rescheduleLabel_one": "Zmień termin {{count}} zaległego zadania",
+		"rescheduleLabel_few": "Zmień termin {{count}} zaległych zadań",
+		"rescheduleLabel_many": "Zmień termin {{count}} zaległych zadań",
+		"rescheduleLabel_other": "Zmień termin {{count}} zaległego zadania",
 		"markDone": "Oznacz „{{task}}” jako wykonane",
-		"markNotDone": "Oznacz „{{task}}” jako niewykonane",
-		"openNote": "Otwórz {{title}}",
-		"progress": "Ukończono {{completed}} z {{total}} zadań",
-		"fraction": "{{completed}}/{{total}}",
-		"toggleFailed": "Nie udało się zaktualizować zadania",
+		"reopen": "Otwórz ponownie „{{task}}”",
+		"statusHint": "Kliknij, aby wykonać, lub kliknij prawym przyciskiem, aby wybrać inny status",
+		"statusMenu": "Status zadania",
+		"subtasks": "Podzadania",
+		"subtaskProgress": "Wykonano {{done}} z {{total}} podzadań",
+		"invalidDate": "Nieprawidłowa data",
+		"invalidDateHint": "Nie udało się odczytać terminu w wierszu tego zadania. Otwórz notatkę, aby go poprawić.",
+		"location": "Lokalizacja zadania",
+		"openInNote": "Otwórz w notatce",
+		"properties": {
+			"label": "Właściwości zadania",
+			"title": "Tytuł zadania",
+			"statusLabel": "Status: {{value}}",
+			"due": "Termin",
+			"dueLabel": "Termin: {{value}}",
+			"priority": "Priorytet",
+			"priorityLabel": "Priorytet: {{value}}",
+			"tag": "Tag",
+			"tagSearch": "Dodaj tag",
+			"tagPlaceholder": "Szukaj tagów…",
+			"noTags": "Nie znaleziono tagów",
+			"createTag": "Utwórz {{tag}}"
+		},
+		"completedToast": "Zadanie wykonane",
+		"statusChangedToast": "Zadanie zaktualizowane",
+		"undo": "Cofnij",
+		"writeFailed": "Nie udało się zaktualizować zadania",
+		"taskMissing": "Zadanie zostało przeniesione lub zmienione w notatce. Odśwież i spróbuj ponownie.",
 		"conflictChanged": "Notatka zmieniła się od wczytania listy. Spróbuj ponownie.",
-		"conflictRolledOver": "To zadanie zostało przeniesione do innej notatki.",
-		"indexFailed": "Zadanie zapisano, ale nie udało się zaktualizować indeksu wyszukiwania.",
-		"sort": "Sortuj zadania według",
-		"sortRecent": "Ostatnio edytowane",
-		"sortMostOpen": "Najwięcej otwartych zadań",
-		"sortTitle": "Tytuł"
+		"indexFailed": "Zadanie zapisane",
+		"indexFailedDetail": "Nie udało się zaktualizować indeksu wyszukiwania.",
+		"viewStateSaveFailed": "Nie udało się zapisać ustawień widoku zadań",
+		"quickAdd": {
+			"label": "Nowe zadanie",
+			"inputLabel": "Tytuł zadania",
+			"placeholder": "Nazwa zadania — spróbuj „tomorrow”, „!!” lub „#tag”",
+			"hint": "Return, aby dodać · Esc, aby anulować",
+			"add": "Dodaj",
+			"cancel": "Anuluj",
+			"addTo": "Dodaj do",
+			"dailyNote": "Dzisiejsza notatka dzienna",
+			"chooseNote": "Wybierz notatkę",
+			"targetSearch": "Wybierz notatkę",
+			"targetPlaceholder": "Szukaj notatek…",
+			"searching": "Wyszukiwanie…",
+			"noNotes": "Nie znaleziono notatek",
+			"removeToken": "Usuń {{token}}",
+			"added": "Dodano zadanie do {{note}}",
+			"failed": "Nie udało się dodać zadania",
+			"noDailyFolder": "Ustaw folder notatek dziennych w Ustawieniach albo wybierz notatkę dla zadania."
+		},
+		"upcoming": {
+			"week": "Tydzień",
+			"previousWeek": "Poprzedni tydzień",
+			"nextWeek": "Następny tydzień",
+			"dayLabel_one": "{{date}}, {{count}} zadanie",
+			"dayLabel_few": "{{date}}, {{count}} zadania",
+			"dayLabel_many": "{{date}}, {{count}} zadań",
+			"dayLabel_other": "{{date}}, {{count}} zadania"
+		},
+		"filters": {
+			"label": "Filtry",
+			"add": "Filtruj",
+			"clear": "Wyczyść filtry",
+			"editFilter": "Edytuj filtr {{name}}",
+			"removeFilter": "Usuń filtr {{name}}",
+			"andMore": "{{first}} +{{count}}",
+			"searchNotes": "Szukaj notatek…",
+			"searchFolders": "Szukaj folderów…",
+			"noFolders": "Nie znaleziono folderów",
+			"kinds": {
+				"note": "Notatka",
+				"folder": "Folder",
+				"tag": "Tag",
+				"status": "Status",
+				"priority": "Priorytet",
+				"dueBefore": "Termin przed",
+				"dueAfter": "Termin po",
+				"dueNone": "Bez terminu"
+			},
+			"ops": {
+				"in": "w",
+				"is": "to"
+			}
+		},
+		"display": {
+			"label": "Wyświetlanie",
+			"layout": "Układ",
+			"layouts": {
+				"list": "Lista",
+				"board": "Tablica"
+			},
+			"groupBy": "Grupuj według",
+			"groups": {
+				"note": "Notatka",
+				"status": "Status",
+				"due": "Termin",
+				"priority": "Priorytet",
+				"tag": "Tag",
+				"none": "Brak"
+			},
+			"orderBy": "Sortuj według",
+			"orders": {
+				"note": "Kolejność w notatce",
+				"due": "Termin",
+				"priority": "Priorytet",
+				"title": "Tytuł"
+			},
+			"showSubtasks": "Pokaż podzadania",
+			"includeDone": "Uwzględnij wykonane"
+		},
+		"board": {
+			"empty": "Brak zadań",
+			"laneLabel_one": "{{lane}}, {{count}} zadanie",
+			"laneLabel_few": "{{lane}}, {{count}} zadania",
+			"laneLabel_many": "{{lane}}, {{count}} zadań",
+			"laneLabel_other": "{{lane}}, {{count}} zadania"
+		},
+		"empty": {
+			"seeAll": "Pokaż wszystkie zadania",
+			"clearFilters": "Wyczyść filtry",
+			"today": {
+				"title": "Nic na dziś",
+				"body": "Tutaj pojawiają się zadania z terminem na dziś lub wcześniejszym."
+			},
+			"none": {
+				"title": "Nie ma jeszcze zadań",
+				"body": "Zadania żyją w Twoich notatkach — wpisz - [ ] w dowolnej notatce."
+			},
+			"filtered": {
+				"title": "Brak pasujących zadań",
+				"body": "Usuń filtr, aby zobaczyć więcej zadań."
+			},
+			"done": {
+				"title": "Nic jeszcze nie wykonano",
+				"body": "Tutaj pojawiają się zadania, które wykonasz lub anulujesz."
+			}
+		}
 	},
 	"appearancePicker": {
 		"searchPlaceholder": "Szukaj ikon",
