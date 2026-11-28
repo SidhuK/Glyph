@@ -299,7 +299,8 @@
 			"no": "Brak",
 			"low": "Niski",
 			"medium": "Średni",
-			"high": "Wysoki"
+			"high": "Wysoki",
+			"urgent": "Pilny"
 		},
 		"table": {
 			"empty": "Brak pasujących notatek"

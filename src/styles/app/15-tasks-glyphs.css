@@ -25,20 +25,8 @@
 	fill: var(--palette-orange);
 }
 
-.tasksPriorityUrgent {
-	width: 14px;
-	height: 14px;
-}
-
-.tasksPriorityUrgent rect {
+.tasksPriorityIcon[data-level="urgent"] .databasePriorityBars rect {
 	fill: var(--palette-red);
-}
-
-.tasksPriorityUrgent path {
-	fill: none;
-	stroke: var(--bg-primary);
-	stroke-width: 1.8;
-	stroke-linecap: round;
 }
 
 .tasksStatusButton {

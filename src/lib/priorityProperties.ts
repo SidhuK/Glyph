@@ -3,7 +3,7 @@ import type { EditorTextColor } from "../components/editor/textColors";
 import { DATABASE_NEUTRAL_TONE_STYLE, databaseValueToneStyleForColor } from "./database/palette";
 
 export interface PriorityOption {
-	id: "no" | "low" | "medium" | "high";
+	id: "no" | "low" | "medium" | "high" | "urgent";
 	label: string;
 	color: EditorTextColor | null;
 	aliases: readonly string[];
@@ -37,8 +37,14 @@ const PRIORITY_OPTIONS = [
 	{
 		id: "high",
 		label: "High",
-		color: "red",
+		color: "orange",
 		aliases: ["high"],
+	},
+	{
+		id: "urgent",
+		label: "Urgent",
+		color: "red",
+		aliases: ["urgent"],
 	},
 ] as const satisfies readonly PriorityOption[];
 
@@ -67,7 +73,7 @@ export function priorityOptionFromValue(value: string | null | undefined): Prior
 	return priorityId ? (PRIORITY_BY_ID.get(priorityId) ?? null) : null;
 }
 
-/** Urgency rank: high = 3 … no = 0; custom or unknown values rank below every built-in.
+/** Urgency rank: urgent = 4 … no = 0; custom or unknown values rank below every built-in.
     src-tauri/src/databases/sort_rank.rs mirrors it for sorting. */
 export function priorityRank(value: string | null | undefined): number {
 	const priorityId = priorityIdFromValue(value);

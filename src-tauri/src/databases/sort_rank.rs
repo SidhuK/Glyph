@@ -71,6 +71,7 @@ const PRIORITY_RANKS: &[&[&str]] = &[
     &["low"],
     &["medium", "med"],
     &["high"],
+    &["urgent"],
 ];
 
 /// Lowercases, turns `_`/`-` runs into spaces and collapses whitespace, like the frontend.
@@ -98,7 +99,7 @@ pub(super) fn status_rank(value: &str) -> Option<usize> {
     rank_in(STATUS_RANKS, value)
 }
 
-/// Urgency rank of a priority value (no = 0 … high = 3); `None` for blank or custom values.
+/// Urgency rank of a priority value (no = 0 … urgent = 4); `None` for blank or custom values.
 pub(super) fn priority_rank(value: &str) -> Option<usize> {
     rank_in(PRIORITY_RANKS, value)
 }
@@ -124,6 +125,7 @@ mod tests {
         assert_eq!(priority_rank("none"), Some(0));
         assert_eq!(priority_rank("Med"), Some(2));
         assert_eq!(priority_rank("High"), Some(3));
-        assert_eq!(priority_rank("urgent"), None);
+        assert_eq!(priority_rank("Urgent"), Some(4));
+        assert_eq!(priority_rank("critical"), None);
     }
 }
