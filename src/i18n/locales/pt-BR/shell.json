@@ -295,7 +295,8 @@
 			"no": "Nenhuma",
 			"low": "Baixa",
 			"medium": "Média",
-			"high": "Alta"
+			"high": "Alta",
+			"urgent": "Urgente"
 		},
 		"table": {
 			"empty": "Nenhuma nota correspondente"

@@ -295,7 +295,8 @@
 			"no": "Aucune",
 			"low": "Basse",
 			"medium": "Moyenne",
-			"high": "Haute"
+			"high": "Haute",
+			"urgent": "Urgente"
 		},
 		"table": {
 			"empty": "Aucune note correspondante"

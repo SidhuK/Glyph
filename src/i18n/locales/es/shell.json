@@ -295,7 +295,8 @@
 			"no": "Ninguna",
 			"low": "Baja",
 			"medium": "Media",
-			"high": "Alta"
+			"high": "Alta",
+			"urgent": "Urgente"
 		},
 		"table": {
 			"empty": "No hay notas que coincidan"

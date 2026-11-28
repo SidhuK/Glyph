@@ -672,6 +672,17 @@
 	fill: var(--database-tone);
 }
 
+.databasePriorityBars[data-urgent="true"] rect {
+	fill: var(--database-tone);
+}
+
+.databasePriorityBars[data-urgent="true"] path {
+	fill: none;
+	stroke: var(--bg-primary);
+	stroke-width: 1.8;
+	stroke-linecap: round;
+}
+
 .databaseBoardCardTimestamp {
 	min-width: 0;
 	flex: 0 1 auto;

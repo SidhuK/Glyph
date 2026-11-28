@@ -914,14 +914,14 @@ mod tests {
 
     #[test]
     fn priority_sorts_by_urgency_with_custom_and_blank_last() {
-        let values = ["No", "High", "", "Low", "urgent", "Medium"];
+        let values = ["No", "High", "", "Urgent", "Low", "critical", "Medium"];
         assert_eq!(
             sorted_values("priority", "priority", &values, false),
-            ["No", "Low", "Medium", "High", "urgent", ""]
+            ["No", "Low", "Medium", "High", "Urgent", "critical", ""]
         );
         assert_eq!(
             sorted_values("priority", "priority", &values, true),
-            ["High", "Medium", "Low", "No", "urgent", ""]
+            ["Urgent", "High", "Medium", "Low", "No", "critical", ""]
         );
     }
 }

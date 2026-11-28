@@ -295,7 +295,8 @@
 			"no": "Keine",
 			"low": "Niedrig",
 			"medium": "Mittel",
-			"high": "Hoch"
+			"high": "Hoch",
+			"urgent": "Dringend"
 		},
 		"table": {
 			"empty": "Keine passenden Notizen"
